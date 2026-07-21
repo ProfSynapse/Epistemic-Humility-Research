@@ -1,0 +1,258 @@
+# correctness-geometry-scale-ladder gates, v3. Transcribed from
+# scale_identifiability_design.md sections 4/6/7 (v1) + sections 13-19 (v2
+# rebuild) + sections 22-23 (v3 disposition) + LEAD ADJUDICATION sections 12,
+# 21, and the v3 teammate message (2026-07-20).
+#
+# v1 ran pre-sign 2026-07-20 (synthetic only) and FAILED G_val for all four
+# estimators at every scale (mean-shift generator, diagnosis 13.1/13.2).
+# v2 rebuilt the generator (correlated-redundant flat-Rashomon, section 14)
+# and added a NEW hard-blocking pre-outcome gate, construction-validity --
+# its criterion (a) (k=1 decodability-insufficiency) FAILED at all three
+# scales, for a MATHEMATICAL reason (LDA argument: any two-class Gaussian
+# mean-shift model has a Bayes-optimal rank-1 boundary regardless of
+# covariance structure). Both runs are retained for provenance below and in
+# NOTEBOOK.md.
+#
+# v3 (2026-07-20): the lead and the designer both concurred criterion (a) is
+# UNSATISFIABLE by any mean-shift-type construction and tests the wrong axis
+# against SO's real target (itself nearly k=1-decodable while directionally
+# unstable) -- RETIRED, not patched. Replaced with (a-new) monotone E1
+# degradation across the r-ladder and (b-new) a derived index-resolution
+# ceiling (sigma_c <= R_max); E1 designated PRIMARY; E1's own estimator was
+# fixed (averaged over R_SH=15 split-half draws, was a single noisy draw)
+# and the diffuse-calibration search's precision was raised. RESULT:
+# construction-validity v3 **PASSES** at all three scales (a, b at the
+# powered pair 8B/14B AND at 1.7B -- "full_pass" branch, not merely the
+# stated-limitation branch; c) -- see analysis-committed/
+# planted_sim_g_val.{json,md} and NOTEBOOK.md v3 entry for full numbers.
+# G_val is therefore now ACTIONABLE: E1 passes (primary); E2/E3_k1
+# descriptive-companion FAIL overall (E4 also happens to pass this run but
+# is never eligible to be primary). G1 THRESHOLDS ARE STILL NOT LOCKED --
+# that is an explicit lead action ("I lock G1 thresholds... then sign/
+# real-label authorization"), not something this build performs.
+
+gates:
+  - id: G0
+    kind: data-adequacy-precondition
+    stop: pre-outcome
+    status: PASS (verified 2026-07-20, rows.jsonl only, no tensors; unchanged by the v2 rebuild)
+    criteria:
+      - "all three manifest.json (n_layers/hidden_dim) match cell.yaml data.scales table"
+      - "rows.jsonl per-class counts match cell.yaml data.scales table exactly (1.7B 377/1476, 8B 648/1205, 14B 741/1112)"
+      - "row_key intersection across all three scales == 3000/3000 (identical pool)"
+      - "matched-n floor N*=377/377 achievable at every scale"
+    evidence: scale_ladder_real.py --mode g0 output, 2026-07-20 (re-verified after v2 rebuild); no problems, pool_intersection=3000, matched_n_achievable=true
+
+  - id: G_construction
+    kind: construction-validity
+    stop: "pre-outcome, HARD BLOCKING STOP (v3: (a-new) and (c) at all 3 scales, (b-new) at the powered pair 8B/14B; 1.7B's (b-new) is a recorded BRANCH, not a blocking requirement)"
+    tier: MUST PASS before any G_val criterion may be locked as actionable
+    status: >-
+      PASS -- ran 2026-07-20, R_SIM=30, all three scales, synthetic only, E1 averaged over
+      R_SH=15 split-half draws. a=true, b_pass_powered=true, b_1p7b_pass=true
+      (branch=full_pass, better than the pre-stated stated_limitation fallback), c=true.
+      overall_pass = true. v1/v2's records (both FAIL) are retained below for provenance.
+    criteria:
+      a_new_monotone_r_ladder:
+        rule: >-
+          v3 REPLACES the retired v2 criterion (a) (see v2_provenance below). E1 full-n means
+          across the r-ladder {compact, r2, r4, r8} at fixed rho=RHO_LADDER=0.7 must be
+          non-increasing (within the reps' own half-width-derived tolerance), at all three
+          scales -- the identifiability axis the cell actually measures.
+        result: >-
+          PASSES at all three scales. 1.7B: 0.590 -> 0.451 -> 0.301 -> 0.185 (tol 0.056). 8B:
+          0.686 -> 0.557 -> 0.394 -> 0.258 (tol 0.048). 14B: 0.678 -> 0.553 -> 0.392 -> 0.232
+          (tol 0.041). Clean monotone degradation, no reversals, at every scale.
+      b_new_index_resolution:
+        rule: >-
+          Derived index-resolution ceiling sigma_c(s) = (diffuse_hw_s / 1.645) / gap_s <=
+          R_max, gap_s = compact_mean_s(E1) - diffuse_mean_s(E1), R_max =
+          Delta_min/(z*sqrt(2)), Delta_min=0.5, z=1.5 -> R_max ~= 0.2357 (locked before the
+          run, per the design packet's own recommended values, adopted by the lead). HARD at
+          the powered pair (8B, 14B); 1.7B recorded as a BRANCH (full_pass vs
+          stated_limitation), never blocking.
+        result: >-
+          PASSES at ALL THREE scales, including 1.7B (branch = full_pass, better than the
+          design packet's own pre-run prediction that 1.7B would only clear the
+          stated_limitation branch). sigma_c: 1.7B=0.1108, 8B=0.1326, 14B=0.1078 -- all well
+          under R_max=0.2357, roughly half the ceiling everywhere. The v3 fix (i)
+          (E1 averaged over R_SH=15 split-half draws, replacing v2's single noisy draw)
+          tightened diffuse_hw enough to clear 1.7B outright, exactly as the design packet's
+          section 22.7 predicted it most likely would ("this most likely clears 1.7B
+          honestly by tightening diffuse_hw").
+      c_separation:
+        rule: "compact and diffuse E1_full_n distributions separated by more than the pooled half-width (the PRIMARY estimator only, under v3; E2_ratio/E3_k1_margin still reported alongside for transparency)."
+        result: >-
+          PASSES at all three scales on E1_full_n (diff 0.41-0.51 vs half-width 0.05-0.07).
+          E2_ratio separates at 1.7B and 14B but not 8B (diff=0.029 vs hw=0.069);
+          E3_k1_margin never separates anywhere (diff 0.003-0.006 vs hw 0.033-0.037) --
+          consistent with v2's finding that E3_k1 tracks support-breadth, a different axis
+          (see cell.yaml estimators.E3_k1).
+    consequence: >-
+      overall_pass = TRUE. G_val below is now ACTIONABLE. G1 thresholds are STILL NOT LOCKED
+      -- locking G1 from the planted bands is an explicit lead action, taken after lead review
+      of this report, per the teammate message ("I review G_val, lock G1 thresholds, and only
+      then does sign/real-label authorization happen"). No real per-row correctness label has
+      been read by any script in this experiment.
+    diffuse_calibration_achieved: >-
+      v3 fix (ii): diffuse-calibration search precision raised (quick_reps 2->5,
+      quick_calib_iters 25->35, quick_r_sh=3) to reduce the v2 calibration-procedure drift
+      (v2's 14B official R_SIM=30 mean landed at 0.266 against a 0.165 calibration estimate,
+      diff 0.101). Calibration-SEARCH estimates (quick precision, picks (r,rho) only): 1.7B
+      r=8 rho=0.7 E1=0.1738 (target 0.174, |diff|=0.0002), E3=0.298. 8B r=8 rho=0.95 E1=0.1799
+      (|diff|=0.0059), E3=0.351. 14B r=16 rho=0.5 E1=0.1654 (|diff|=0.0086), E3=0.258.
+      OFFICIAL R_SIM=30 achieved means (full precision, R_SH=15, the reported/gated numbers):
+      1.7B E1_full_n=0.1845, 8B E1_full_n=0.1769, 14B E1_full_n=0.2013. Drift from
+      search-estimate to official-achieved narrowed from v2's worst case (0.101 at 14B) to
+      v3's worst case (0.036 at 14B) but is not fully eliminated -- carried as a residual
+      calibration-procedure imprecision, not retuned further post-hoc. Priority-1 (E1)
+      close everywhere at both the search and official-achieved level; priority-2 (E3) not
+      closely matched anywhere, per the ruling, not further pursued.
+    v2_provenance: >-
+      v2's criterion (a) (k=1 decodability-insufficiency: k=1 AUROC must be materially below
+      k=r AUROC for r>1) FAILED at all 9 (scale, r) cells (rise -0.0005 to +0.0030 against a
+      >0.02 requirement) for a MATHEMATICAL reason: any two-class Gaussian mean-shift model,
+      correlated or not, has a Bayes-optimal rank-1 decision boundary (LDA argument). v2's
+      criterion (b) (compact full-n E1 >= 0.70 absolute) also failed at all three scales
+      (0.581/0.687/0.675). The lead and designer concurred (v3 disposition, section 22.1) this
+      criterion is UNSATISFIABLE by any mean-shift-type construction and tests the wrong axis
+      against SO's real target (nearly k=1-decodable while directionally unstable) -- RETIRED,
+      replaced by (a-new)/(b-new) above, NOT patched with a mixture-construction redesign.
+
+  - id: G_val
+    kind: estimator-validation
+    stop: pre-outcome
+    tier: MUST PASS before any real-data gate is read; NOW ACTIONABLE (G_construction v3 passes)
+    status: >-
+      E1 PASSES (primary, powered-pair and all-three-scales both true). E2/E3_k1
+      descriptive companions FAIL overall (all-three-scales rule not relaxed for them). E4
+      also happens to pass overall this run (all three scales) but remains never-eligible to
+      be primary. Computed 2026-07-20, R_SIM=30, synthetic only.
+    criteria: >-
+      section 16 (unchanged structure): separation (compact vs diffuse beyond pooled
+      half-width) AND monotonicity (r-ladder, within reps' spread) AND reachability. v3
+      change: E1's reachability limb is now the SAME (b-new) sigma_c<=R_max band-based test
+      G_construction uses (one source of truth), replacing v2's hand-picked absolute 0.70
+      floor; E1's overall "pass" uses the powered-pair (8B/14B) carve-out per the pre-stated
+      1.7B disposition (moot this run -- 1.7B also passed outright). E2/E3_k1/E4 keep the
+      UNCHANGED all-three-scales rule (not relaxed, per the teammate message).
+    per_estimator:
+      E1:
+        pass: true
+        detail: >-
+          PASSES at all three scales AND via the powered-pair carve-out (both are true this
+          run, since 1.7B itself passed outright): separated=true, monotone=true,
+          reachable=true (sigma_c<=R_max) at 1.7B/8B/14B. compact/diffuse E1_full_n means:
+          1.7B 0.590/0.184, 8B 0.686/0.177, 14B 0.678/0.201.
+      E2:
+        pass: false
+        detail: >-
+          FAILS OVERALL (needs all 3 scales, not relaxed). Separated + monotone at 1.7B
+          (diff=0.119 vs hw=0.089) and 14B (diff=0.269 vs hw=0.096); FAILS at 8B: not
+          separated (diff=0.029 vs hw=0.069, compact ratio 1.217 vs diffuse ratio 1.188 --
+          indistinguishable). Descriptive companion (v3), never primary-eligible.
+      E3_k1:
+        pass: false
+        detail: >-
+          Never separated at any scale (diff 0.003-0.006 vs pooled half-width 0.033-0.037),
+          monotone everywhere (flat, as expected -- see cell.yaml estimators.E3_k1
+          support-breadth framing). Descriptive companion (v3, section 22.5): a context read
+          on support-breadth, NOT a check on E1's identifiability headline.
+      E4:
+        pass: true
+        detail: >-
+          PASSES at all three scales this run (diffuse PR clearly above compact PR
+          everywhere: 1.7B diff=2.67 vs hw=2.64; 8B diff=2.84 vs hw=1.91; 14B diff=11.35 vs
+          hw=2.21). Descriptive companion regardless (lead ruling 21.3/21.5: E4 never
+          eligible to be primary) -- reported here as corroborating context, not promoted.
+    primary_designation: >-
+      E1 (section 21.5 fallback order E3_k1 -> E1 -> E2; E4 never primary). E3_k1 fails
+      separation as before, so the pre-registered fallback order resolves mechanically to E1
+      -- this is the PREDICTED result of applying the unchanged fallback order to the v3
+      numbers (the teammate message's "E1 PRIMARY" ruling is not a hand-picked override).
+      m4_prime = false.
+
+  - id: G1
+    kind: primary
+    label: sharpening-confirmed
+    status: >-
+      LOCKED 2026-07-20 (PI-approved sign-and-run instruction, teammate message; lead
+      independently re-derived sigma_c at all three scales and the E1 separations from
+      analysis-committed/planted_sim_g_val.json before locking -- confirmed match). PRIMARY G1
+      criterion is the crystallization-index trend test on E1 full-n (below). Still NOT YET
+      EVALUATED: no real per-row correctness label has been read by any script in this
+      experiment; evaluation happens only on the first real-label run, gated on the lead's
+      explicit sign confirmation (pending as of this transcription -- do not run against real
+      labels before it lands).
+    frozen_bands_e1_full_n: >-
+      FROZEN verbatim from analysis-committed/planted_sim_g_val.json `prediction_bands`
+      (file sha256 d7bce203d3658ebb5f2d92266bfa1691f08f5fb0c8160b7b1c44f39c8f0f88e5, v3 official
+      R_SIM=30 planted run, 2026-07-20). Never recomputed or retuned once a real observed value
+      exists. 1.7B: compact mean=0.5903 half_width=0.0325, diffuse mean=0.1845
+      half_width=0.0739. 8B: compact mean=0.6860 half_width=0.0302, diffuse mean=0.1769
+      half_width=0.1110. 14B: compact mean=0.6784 half_width=0.0188, diffuse mean=0.2013
+      half_width=0.0846.
+    criterion: >-
+      (i) bands frozen as above (per-scale compact/diffuse mean + half_width on E1 full-n).
+      (ii) c(s) = (observed_s - diffuse_mean_s) / (compact_mean_s - diffuse_mean_s), computed
+      per scale, UNCLIPPED (out-of-range c is informative, section 22.6.1 --
+      `crystallization_index` in scale_ladder_planted_sim.py). (iii) PASS ("sharpening
+      confirmed") iff c is monotone increasing across 1.7B->8B->14B AND Delta_c = c_14B - c_1.7B
+      > 1.645 * sigma_Delta, sigma_Delta = sqrt(sigma_c(1.7B)^2 + sigma_c(14B)^2) propagated
+      from the frozen band half-widths above AND the real-side E1 draw spread (via
+      `trend_test(c_by_scale, sigma_c_by_scale, z)` in scale_ladder_planted_sim.py). z=1.645,
+      one-sided, LOCKED NOW per this instruction (not deferred further). (iv) FALSIFIED iff E1
+      full-n at 14B shows no rise beyond the per-scale planted-band half-width vs 1.7B, under
+      BOTH layer choices (best-dial, fixed-depth) -- E1-alone; the v2 E2-joint requirement is
+      STRUCK (E2 is descriptive-only under v3, section 22.2). See top-level `falsifier:` below
+      for the confirmed standalone wording. (v) Neither PASS nor FALSIFIED resolves as one of
+      the pre-stated middle grounds M1-M3 (`middle_grounds` below, as drafted); M4_prime is MOOT
+      (G_val already passed, `primary_designation.m4_prime = false`). (vi) E2, E3_k1, E4, and
+      matched-n E1 (`e1_matched_n`) are reported descriptive-only alongside this primary read;
+      none of them gate G1.
+    evaluation_status: >-
+      EVALUATED 2026-07-20 on the first real-label run (post-repin sha 24c5da15;
+      analysis-committed/real_ladder.json, config.synthetic_smoke=false). RESULT: middle
+      ground M3 per criterion clause (v) -- PASS not awarded (layer choices disagree:
+      best_dial monotone with Delta_c 0.3022 clearing both sigma readings 0.2542/0.2880;
+      fixed_depth non-monotone, Delta_c 0.0423), FALSIFIED not triggered (best_dial raw rise
+      0.1566 exceeds every half-width reading). Full adjudication, selection-provenance
+      disclosure, and the layer-robust window qualification: AMENDMENT.md Outcome, "G1
+      resolution on the real run". Criterion text above unchanged from lock.
+
+  - id: G2
+    kind: readout-sanity
+    tier: reported
+    status: REPORTED 2026-07-20 -- the real run computes no new AUROC; the criterion's own cited committed X/CD values (0.815/0.862/0.840, all >= 0.60) stand as the reported read (see AMENDMENT.md Outcome, reported-tier gates)
+    criterion: "per-scale full-PCA-128 best-layer OOF AUROC >= 0.60 (expected PASS from X/CD, 0.81-0.86 already committed)"
+
+  - id: two_seed_robustness
+    kind: robustness
+    tier: reported, not gated
+    status: RUN 2026-07-20 -- second pinned seed (20260721) reproduces first-seed best-dial E1 means within 0.008 at every scale (0.1621/0.2283/0.3155 vs 0.1594/0.2205/0.3159); monotone rise seed-stable, no caveat triggered
+    rule: "second pinned seed rerun of the headline E1/E2 ladder at best-dial layer; disagreement is a stability caveat, never resolved by picking a seed (SO precedent)"
+
+falsifier: >-
+  CONFIRMED WORDING (v3, lead-finalized 2026-07-20, teammate message item 3 -- replaces the v2
+  E1-AND-E2 draft, parenthetical requesting lead confirmation now struck). Across
+  1.7B->8B->14B, under BOTH layer choices (best-dial, fixed-depth), E1 full-n (PRIMARY,
+  `e1_full_n`) does not show a monotone increase exceeding the per-scale planted-band
+  half-width (frozen bands: see G1 above) -- i.e. 14B's E1 full-n value is within the planted
+  bands of 1.7B's. E1-ALONE; the v2 E2-joint requirement is STRUCK (E2 is descriptive-only
+  under v3, section 22.2). STILL NOT YET TESTED on real data: G1 is now locked (see G1 above),
+  but no real per-row correctness label has been read; testing happens only after the lead's
+  explicit sign confirmation and the first real-label run.
+
+middle_grounds:
+  M1: "non-monotonic (peak at 8B) -- E1/E2 rise 1.7B->8B then fall at 14B, tracking X's AUROC arc. NOT YET TESTABLE on real data."
+  M2: "estimator disagreement -- E1 rises but E2 flat (or vice versa). NOT YET TESTABLE on real data. Observed at the SYNTHETIC-validation level in both v2 and v3: E2/E4 pass individually at some scales but not all three, while E1 (v3 primary) passes at all three."
+  M3: "layer-selection artifact -- trend present at best-dial but absent at fixed-depth. NOT YET TESTABLE."
+  M4: >-
+    instrument-resolution-limited (v1 wording) -- superseded by M4-prime below after the v2
+    rebuild; retained for provenance.
+  M4_prime: >-
+    TOTAL-INSTRUMENT-FAILURE (section 18). If G_val fails for ALL gate-able estimators, the
+    cell resolves as an honest SO-class instrument-limited null. NOT APPLICABLE to the v3 run:
+    E1 (primary) PASSES G_val, so `primary_designation.m4_prime = false`. Retained here for
+    provenance of the v1/v2 near-misses (v2: primary_designation.m4_prime was true, but moot
+    because G_construction failed one level upstream first).
