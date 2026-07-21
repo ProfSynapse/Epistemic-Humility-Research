@@ -3292,14 +3292,23 @@
             "persistence": "short-run"
           }
         },
-        "pins": {}
+        "pins": {
+          "capture_family_atlas_cell.py": "a543a88f8d0f552476968c8e248af9ec61212034f203c17f530694910b0b9b50",
+          "cell.yaml": "695b79248fd7599eb87c93855899e97bc2f4a23978b904f083b64582083cce7d",
+          "derive_unknown_refused_manifest.py": "b6054a1f8eab474ff8171bc4f416f099d9365621e468e4e201d9f6bc7f47dee5",
+          "gates.yaml": "e30e0988a223e54f1324390d045a92863430af6bde8343e30649b87124ff0df4",
+          "materialize_rows.py": "b954677feda51b078d43269686137cac3a9e5ab8f04c3c7bfbb577d33dd79797",
+          "profile_and_read_family_atlas_panel.py": "27cd945c83df20416658a5370544ea99f1422f5717f3e67cffca82d418003ed5",
+          "rebuild_expansion_candidates.py": "06a3316d0133064d1106137be4dc034f13c881235c2162f24b15efbb7b614c65",
+          "render_qwen3_atlas.py": "9d57ecc35f834a97cb2070b83348f6ad92c9f3cbced2f50867643a42cbdc2355"
+        }
       },
       "kg": [],
       "prediction": "Program-standard family-atlas prediction, kept deliberately: the eff_dim_frac profile peaks at an interior layer (inside 20%-85% of depth) and a contiguous band containing that peak holds all three axes (doubt, caution, raw_refusal) at held-out AUROC >= 0.80. See AMENDMENT.md \"Prediction\" and \"Predictions scoreboard\" for the two pre-sign calls (orchestrator: early-exterior peak + J-lens dissociation sub-call; user: interior peak).",
       "question": "Where does raw-base Qwen3-4B's (unsloth/Qwen3-4B) workspace midband sit (eff_dim_frac profile over depth), and do the doubt, caution, and raw-refusal axes read there, supplying the family-atlas-standard layer map this substrate's own prior instrument (j-space-localization-qwen3-4b, a different JVP-based instrument) never measured?",
       "registered": true,
       "slug": "qwen3-4b-family-atlas",
-      "status": "draft",
+      "status": "signed",
       "title": "Qwen3-4B family atlas",
       "type": "probe-fit",
       "verdict": ""
