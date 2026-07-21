@@ -32,6 +32,7 @@ instrument:
   - profile_and_read_family_atlas_panel.py
   - derive_unknown_refused_manifest.py
   - materialize_rows.py
+  - rebuild_expansion_candidates.py
   pins: {}  # computed by `bin/exp sign`; not filled by this draft scaffold
   persistence:
     render_qwen3_atlas.py:
@@ -82,20 +83,38 @@ instrument:
         here only to satisfy `bin/exp validate`''s persistence-declaration check.'
     materialize_rows.py:
       persistence: short-run
-      measured_smoke_wall_clock_s: 0.60
+      measured_smoke_wall_clock_s: 0.89
       note: 'Measured directly against the real committed manifests (1768 rows):
-        0.60s wall clock (two hf_hub_download cache-hit fetches + a plain JSON
-        join, no model/tokenizer load). KNOWN GAP, not a timing concern: this
-        run hard-fails (exit 1, missing_question=341, all in
-        known_correct_answered) because 341 of the 430 known_correct_answered
-        row_keys have no question text reachable from any locally cached or
-        committed source -- their text was only ever produced by the sibling
-        experiment''s `mine_known_correct.py` (a live unsloth/Qwen3-4B bf16
-        GENERATION pass), whose local output cache is absent on this machine.
-        See NOTEBOOK.md 2026-07-21 entry. This blocks capture for
-        known_correct_answered until that cache is produced or the lead
-        decides an alternate resolution -- flagged, not resolved, by this
-        script.'
+        0.89s wall clock (two hf_hub_download cache-hit fetches + one call into
+        rebuild_expansion_candidates.py''s deterministic chain + a plain JSON
+        join, no model/tokenizer load). RESOLVED (was a known gap in an earlier
+        pre-sign pass): the 341 known_correct_answered row_keys the staging
+        pool alone could not resolve are now recovered via
+        rebuild_expansion_candidates.py (see that module''s own persistence
+        entry below and NOTEBOOK.md 2026-07-21 recovery entry for the full
+        gate results). Current run: missing_question=0 across all 1768 rows
+        (confab 309/309, known_correct_answered 430/430, unknown_refused
+        1029/1029). No longer a capture-launch blocker.'
+    rebuild_expansion_candidates.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.86
+      note: 'Deterministic CPU rebuild of the Amendment AH stage-0 candidate
+        chain (AF-600 pool -> candidates.jsonl -> expansion_candidates.jsonl),
+        ported verbatim from three historical/archived scripts with only
+        input paths adjusted (see the module''s own docstring for full
+        citations, including the abandoned-branch recovery of the AF-600
+        pool builder). 0.86s wall clock: all inputs are already-local dataset
+        files plus one committed frozen manifest; no network beyond one
+        cached HF fetch for the cross-check step. Self-verifying: 12 hard
+        gates compare every stage''s output composition against the original
+        Amendment AH run''s own committed manifests
+        (professorsynapse/eh-doubt-on-command:metadata/*_manifest.json) plus
+        a positive cross-check against already-verified real text
+        (a0_pool_v21_questions.jsonl, 907 keys, 0 mismatches); all 12 PASS
+        (see NOTEBOOK.md 2026-07-21 recovery entry for the full table and
+        analysis/rebuild_verification.json, gitignored, for the raw gate
+        output). Called directly by materialize_rows.py, not run standalone
+        in the capture-launch critical path.'
 inputs:
 - experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
 - experiments/qwen3-4b-family-atlas/unknown_refused_manifest.json

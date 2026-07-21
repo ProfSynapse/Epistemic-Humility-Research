@@ -6,6 +6,98 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-21 (recovery: the 341 known_correct_answered row_keys' question
+  text, closing the blocker the prior entry flagged). Lead-scoped task: the
+  341 missing texts were never truly lost -- `mine_known_correct.py` only
+  SELECTED which candidates were known-correct (that selection is frozen as
+  the 341 row_keys in `split_manifest.json`); the text lived in that
+  script's INPUT, `expansion_candidates.jsonl`, which is deterministically
+  rebuildable on CPU from local datasets. No GPU, no sign, no push.
+
+  **Recovery chain** (new script, `rebuild_expansion_candidates.py`, this
+  directory; ports three historical pipeline stages VERBATIM, adjusting
+  only input paths -- see its own docstring for full citations):
+
+  1. **AF-600 exclusion set** (the one root unknown the lead flagged). Its
+     builder, `build_ae_base_pool_rows.py`, and the `load_selfaware_pool`
+     function it depends on (POOL_SEED 20260701), were never merged to
+     main -- recovered by reading them out of the ABANDONED local branch
+     `amendment-ae-base-doubt-coupled-caution` (commit `07c2a0c9`, confirmed
+     NOT an ancestor of HEAD via `git merge-base --is-ancestor`; retrieved
+     with `git show 07c2a0c9:<path>`, read-only, nothing checked out from
+     it). `load_selfaware_pool` itself is independently still live and
+     committed at `experiments/common/readouts/amendment_u_unified_extract.py`
+     (identical body; the abandoned script's own docstring calls it
+     "vendored" from that exact module). The one substitution: the original
+     GPU extraction file the algorithm reads as `gate_rows`
+     (`archive/experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/.../rows.jsonl`)
+     is gone everywhere; substituted with the project's own committed,
+     order-preserving distillation of that EXACT file,
+     `experiments/common/artifacts/selfaware_gate_pool/selfaware_gate_rows_frozen.jsonl`
+     (PROVENANCE.json cites the identical source path + config sha; this is
+     the same substitution already relied on elsewhere in the project, e.g.
+     Amendment Y's own live extraction manifest cites this same frozen file
+     as its `gate_rows_source`). Rebuilt pool: 600 rows, 600 unique
+     normalized questions (verified -- no accidental collision).
+  2. **candidates.jsonl** (the mined 5,000) rebuilt verbatim from
+     `archive/experiment/phase1/probe/amendments/amendment_ah_stage0_candidates.py`
+     (SEED 20260703), gated by the rebuilt AF-600 set, from local
+     `datasets/selfaware/SelfAware.json` + `datasets/kuq/{knowns_unknowns,unknowns_all}.jsonl`.
+  3. **expansion_candidates.jsonl** (13,496) rebuilt verbatim from
+     `archive/experiment/phase1/probe/amendments/amendment_ah_stage0_expand_candidates.py`
+     (same seed), gated by AF-600 ∪ mined, from the same KUQ files plus
+     `datasets/triviaqa-rc-nocontext/validation.jsonl` and
+     `datasets/popqa/test.jsonl`.
+
+  **Verification gates** (all hard-asserted in the script; independent
+  target numbers fetched from `professorsynapse/eh-doubt-on-command`'s own
+  `metadata/stage0_candidates_manifest.json` and
+  `metadata/expansion_candidates_manifest.json` -- the ORIGINAL Amendment AH
+  run's own committed provenance, not derived from anything in this
+  recovery):
+
+  | gate | result |
+  |------|--------|
+  | AF-600 pool size == 600 | PASS |
+  | AF-600 unique normalized questions == 600 | PASS |
+  | stage0 candidates n_total == 5000 | PASS |
+  | stage0 composition (kuq_ku_unknown 1768 / selfaware_answerable 2034 / selfaware_unanswerable 732 / kuq_ku_known 466) | PASS, exact |
+  | stage0 known/unknown split (2500/2500) | PASS |
+  | expansion n_total == 13496 | PASS |
+  | expansion composition (triviaqa 6000 / popqa 4000 / kuq_ku_unknown_x 3496) | PASS, exact |
+  | expansion 11-way KUQ category split | PASS, exact (all 11 categories match, e.g. "future unknown" 672, "counterfactual questions" 485, ..., see script) |
+  | join: all 430 known_correct_answered row_keys resolve (0 still missing) | PASS |
+  | join: no empty question text or aliases among resolved | PASS |
+  | join: resolved-key prefix breakdown matches the pre-verified split (ahx::triviaqa 370, ah::kuq_ku_known 26, ah::selfaware_answerable 22, ahx::popqa 12) | PASS, exact |
+  | zero overlap between the originally-resolved 89 keys and originally-missing 341 keys | PASS (89/341/0, confirms they partition the 430 as expected) |
+  | **cross-check against ALREADY-VERIFIED text**: for every `ahx::` row_key this rebuild produces that `a0_pool_v21_questions.jsonl` (the trusted staging pool) ALSO already covers, the question text is byte-identical | PASS, 907 keys checked, 0 mismatches -- independent positive evidence beyond count-matching |
+
+  All 12 gates PASS. Script + verification JSON:
+  `rebuild_expansion_candidates.py` (committed, no row text) writes
+  `analysis/rebuilt_af600_pool.jsonl`, `analysis/rebuilt_candidates.jsonl`,
+  `analysis/rebuilt_expansion_candidates.jsonl`,
+  `analysis/rebuild_verification.json` (all gitignored, verified via
+  `git check-ignore` before writing). Wall clock: 0.86s.
+
+  **Wired into `materialize_rows.py`**: now imports
+  `rebuild_expansion_candidates`'s `build_af600_pool` /
+  `build_candidates` / `build_expansion` directly (cheap, ~1s, always
+  re-derived rather than depending on a cached intermediate) and joins their
+  union against `known_correct_answered` row_keys the staging pool doesn't
+  already cover (`setdefault` -- never overrides staging-pool-sourced text).
+  Hard-fail discipline unchanged. Re-ran once:
+
+  ```
+  [materialize] WROTE analysis/rows_with_text.jsonl (1768 rows);
+  missing_question=0 missing_by_role={}
+  ```
+
+  Final materialized counts, all with non-empty question text: confab
+  **309/309**, known_correct_answered **430/430** (89 from the staging pool
+  + 341 newly recovered), unknown_refused **1029/1029**. Total 1768/1768,
+  zero missing. This cell is no longer blocked on question text for any
+  role; the capture-input pipeline is complete pending sign + launch.
+
 - 2026-07-21 (pre-sign, persistence declarations + materialization script):
   Two final pre-sign tasks per the lead.
 
