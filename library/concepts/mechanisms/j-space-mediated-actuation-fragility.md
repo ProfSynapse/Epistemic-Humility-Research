@@ -20,6 +20,7 @@ related:
 - '[[j-space-calibrated-layer-contrast-qwen3-4b]]'
 - '[[j-space-token-targeted-refusal-qwen3-4b]]'
 - '[[jspace-family-atlas]]'
+- '[[qwen3-4b-family-atlas]]'
 - '[[workspace-band-peak-location-is-family-relative]]'
 - '[[tc-2026-workspace--verbalizable-representations-global-workspace]]'
 - '[[global-workspace]]'
@@ -41,6 +42,12 @@ relationships:
   confidence: low
   evidence:
   - experiments/jspace-family-atlas/AMENDMENT.md#outcome
+- type: tested_by
+  target: '[[qwen3-4b-family-atlas]]'
+  target_id: experiment:qwen3-4b-family-atlas
+  confidence: low
+  evidence:
+  - experiments/qwen3-4b-family-atlas/AMENDMENT.md#outcome
 - type: related_to
   target: '[[workspace-band-peak-location-is-family-relative]]'
   target_id: mechanism:workspace-band-peak-location-is-family-relative
@@ -139,3 +146,15 @@ refusal all clear 0.80 held-out AUROC together (llama layers 15-23, mistral
 7-27), so a family-relative layer map exists even though the profile's own
 shape does not match the Qwen3-4B picture. The mechanism still needs
 replication beyond raw-base Qwen3-4B before it should be treated as general.
+
+`qwen3-4b-family-atlas` closes that replication gap directly, by running the
+same representation-variance `eff_dim_frac` profile on this mechanism's own
+founding substrate, raw-base Qwen3-4B. The profile peaks early-exterior at
+hs5 (0.139 depth), not at the hs23-29 J-lens band this mechanism was built
+from; the interior read band it does find (hs22-36, all three axes) sits on
+top of the J-lens peak instead. That keeps the write/read-site-mismatch
+account intact (L34/hs34 still sits after the readable interior band) while
+adding a second, independent confirmation that the J-lens's effective-
+dimensionality peak and this participation-ratio profile's peak are not the
+same signal on this substrate: readability and this profile's notion of
+dimensionality dissociate even when measured on the identical checkpoint.

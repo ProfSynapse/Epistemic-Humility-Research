@@ -791,7 +791,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[dpo-stability-over-ppo]] : Framing preference alignment as a binary classification loss over preference-pair-data rather than an RL problem **enables** More stable training without the se
 - [[dpo-token-rewards-enable-rl-policy-optimization]] : A DPO-trained policy ratio is reused as a token-wise implicit reward signal. **enables** A later RL policy-optimization stage can optimize dense token-level fee
 - [[early-mlp-drives-subject-enrichment]] : Early MLP sublayers processing the last-subject token across lower layers **enables** The last-subject-position representation becomes attribute-rich, reaching 
-- [[eff-dim-peak-decoupled-from-readable-band]] : On three families captured full-depth with the same capture-only instrument (jspace-family-atlas: Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3; gemma-4-e4b-f
+- [[eff-dim-peak-decoupled-from-readable-band]] : On four families captured full-depth with the same capture-only instrument (jspace-family-atlas: Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3; gemma-4-e4b-fa
 - [[elicitation-discourse-type-surfaces-distinct-facets]] : Choice of discourse type (description, dialogue, or narration) used to elicit persona expressions from a base model for difference-in-means vector extraction **
 - [[entity-popularity-predicts-parametric-memorization]] : Higher subject entity web popularity (Wikipedia page views) in the input question **increases** Higher LM accuracy on the corresponding factual QA question acro
 - [[entity-rarity-degrades-factual-precision]] : A topic entity is rare in LM pretraining data (low Wikipedia page-view frequency), causing the model's parametric knowledge about that entity to be sparse or ab
@@ -1143,7 +1143,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[veto-saturates-by-first-visible-token]] : Reading the post-generation correctness/veto axis at token granularity across the answer window (first visible token through answer end, veto axis refit per pos
 - [[wide-abstention-instrument-reveals-substantial-undosed-baseline-refusal]] : A wide, idiom-inclusive abstention instrument (a diverse detector-v2 pattern screen plus a blinded, symmetric human-adjudication lane) is applied to the UNDOSED
 - [[within-sample-correlation-symmetry-limits-probability-voting]] : Within-sample log-probability/correctness correlations distributed symmetrically around zero across diverse benchmarks **decreases** Reliability of probability-
-- [[workspace-band-peak-location-is-family-relative]] : On three non-Qwen instruction-tuned families captured full-depth (Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3 via jspace-family-atlas; Gemma-4-E4B-it via ge
+- [[workspace-band-peak-location-is-family-relative]] : On four families captured full-depth (Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3 via jspace-family-atlas; Gemma-4-E4B-it via gemma-4-e4b-family-atlas; raw-
 - [[write-selectivity-is-operating-point-dependent]] : The dosed write's setpoint sits either between the confab and known commitment-margin distributions (mid-band regime: dose above typical confab margins, below t
 
 ## Gaps (verified literature absences) (1)
