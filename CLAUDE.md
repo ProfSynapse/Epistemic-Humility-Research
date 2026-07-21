@@ -126,9 +126,12 @@ governed: changes need explicit rationale, changelog, and user approval.
   the scores; those are lead-only inputs. Keep for the lead: the adjudication
   itself, the red-team decision, and the PR merge (needs user approval).
 
-Canonical skill source is `.skills/`. Mirrors under `.agents/skills/` and
-`.claude/skills/` are generated. Do not hand-edit a mirror when the same file
-exists under `.skills/`; edit canonical and run the sync check/write workflow.
+Canonical skill source is `.skills/`. Mirrors under `.agents/skills/`,
+`.claude/skills/`, and `.codex/skills/` are generated. Do not hand-edit a
+mirror when the same file exists under `.skills/`; edit canonical and run the
+sync check/write workflow. A PreToolUse hook blocks direct edits to CLAUDE.md
+(a generated mirror of AGENTS.md) and to the skill mirrors, and points back to
+the canonical source plus the sync step.
 
 Use the sync script only for root project skills and root project context. It
 must not write into `synaptic-tuner/`.
