@@ -390,3 +390,28 @@ in `experiment.yaml`.
 - Did NOT download model weights, did NOT run the fleet's mining script, did
   NOT run any GPU capture. Reported to the lead for a scope decision (mine
   now vs. defer) and launch approval before either GPU stage.
+
+## 2026-07-20 - anisotropy-artifact control reanalysis (lab-notebook tier, not a registered gate)
+
+PI-directed deflationary test of the early-exterior eff_dim_frac peak:
+could mid/late-layer anisotropy (outlier eigendirections suppressing the
+participation-ratio estimator) be manufacturing the early peak? CPU-only
+reanalysis of the committed captures (2815 rows, 1301 fit rows, 43 hidden
+states), pinned estimator code imported directly, baseline reproduced to
+max abs deviation 1.04e-17.
+
+Result: NO. The layer-4 peak (depth 0.095) survives all eight correction
+variants -- whitening (correlation matrix), dropping top-1/2/4/8
+covariance eigendirections, 0.5% winsorizing, and a rank-based spectral
+entropy estimator (different estimator family) -- and a 50% row-subsample
+guard. The anisotropy hypothesis had the right qualitative input shape
+(top-1 eigenvalue share 0.141 at layer 4 vs 0.41-0.50 at layers 30-42),
+but correcting for it only compresses the peak's margin over the best
+interior candidate (1.53x baseline down to 1.12x under drop-top-8), never
+relocates it. Caveat carried: the peak's PROMINENCE partly rides on early-
+layer isotropy; its LOCATION does not.
+
+Artifacts: analysis-committed/gemma4_e4b_it/anisotropy_control/ (script +
+five JSON outputs). Aggregates only. Remaining open deflationary
+alternatives for the cross-family pattern: pool surface-diversity (untested)
+and small-N (qwen3-4b-family-atlas cell in preparation).
