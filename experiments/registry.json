@@ -1607,19 +1607,35 @@
           "presign_smoke.py": "1bc406cd71b2a884793549f3246e9192d2b4978f2dbb4192f8fd6533b803e4fb",
           "render_gemma.py": "143d832057e251522d242cff0ec5039b8c030241131efe4da832685cdca863f6",
           "render_qwen.py": "75ee9a4c3a63b2f1a29da9a2fe83dc8bbc3e10a8414825e7dbc764a17dd3b15f",
-          "source_and_generate.py": "2d6c910682188faad20f37144672b12b514d1b57d7bf6de3b7fdd05b3a4393b8",
-          "test_instrument.py": "2ac0f7da08e307040fd11a17c493eeb94f789c68ff308e0f03521dc2693d9566"
-        }
+          "source_and_generate.py": "94aacf56835be6c700ea13ae87448ebc807700fd96f3daf062f9136119e99f58",
+          "test_instrument.py": "46cf0b2f0d382e5df74ef3d94f619e18048878d37023256195ba18d074ccb709"
+        },
+        "repins": [
+          {
+            "date": "2026-07-22T16:33:04Z",
+            "file": "source_and_generate.py",
+            "new_sha256": "94aacf56835be6c700ea13ae87448ebc807700fd96f3daf062f9136119e99f58",
+            "old_sha256": "2d6c910682188faad20f37144672b12b514d1b57d7bf6de3b7fdd05b3a4393b8",
+            "reason": "Pre-result Stage A packaging repair: split deterministic surface-basis preparation into the pinned mechinterp image because the pinned vLLM 0.23.0 image lacks scipy, scikit-learn, and joblib; generation now validates hash-bound prepared artifacts before model loading."
+          },
+          {
+            "date": "2026-07-22T16:33:04Z",
+            "file": "test_instrument.py",
+            "new_sha256": "46cf0b2f0d382e5df74ef3d94f619e18048878d37023256195ba18d074ccb709",
+            "old_sha256": "2ac0f7da08e307040fd11a17c493eeb94f789c68ff308e0f03521dc2693d9566",
+            "reason": "Pre-result Stage A packaging repair: split deterministic surface-basis preparation into the pinned mechinterp image because the pinned vLLM 0.23.0 image lacks scipy, scikit-learn, and joblib; generation now validates hash-bound prepared artifacts before model loading."
+          }
+        ]
       },
       "kg": [],
       "prediction": "For both Gemma-4-E4B-it and Qwen3-4B, the surface-matched FIT profile and its fixed-seed 50% intact-triad subsample retain a unique early-exterior eff_dim_frac peak at depth at most 0.20.",
       "question": "Does the early-exterior family-atlas eff_dim_frac peak persist in fresh, cross-original, surface-matched KU-role pools for Gemma-4-E4B-it and Qwen3-4B when syntax is enforced by a pinned batch-invariant vLLM generator?",
       "registered": true,
       "slug": "family-atlas-surface-matched-vllm-control",
-      "status": "signed",
+      "status": "null-result",
       "title": "Family Atlas Surface-Matched vLLM Control",
       "type": "probe-fit",
-      "verdict": ""
+      "verdict": "Indeterminate at G0: Gemma produced 5,189 strict-valid JSON completions out of 5,200; five rows truncated at the registered 200-token cap and six stopped before completing JSON. Qwen generation and both captures were not launched."
     },
     {
       "checkpoint": {

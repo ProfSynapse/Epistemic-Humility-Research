@@ -17,6 +17,7 @@ from analyze_profiles import _peak, bootstrap_auroc_ci, planted_location_control
 from capture_full_depth import capture_content_digest, repair_invalid_rows, tensor_sha256, validate_activation_bundle
 import instrument_common
 import presign_smoke
+import source_and_generate
 from instrument_common import containment_lint, gate, load_jsonl, source_fingerprint
 from match_and_gate import ROLES, build_triads, grouped_pairwise_classifier, stage_row_exhaust
 from presign_smoke import (
@@ -345,6 +346,50 @@ def test_vllm_command_preserves_empty_qwen_multimodal_limit(tmp_path: Path) -> N
     )
     assert json.loads(command[command.index("--limit-mm-per-prompt") + 1]) == {}
     assert "--resume" not in command
+
+
+def test_surface_preparation_binds_rows_prompts_tokens_and_artifacts(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    monkeypatch.setattr(source_and_generate, "ANALYSIS", tmp_path)
+    model_id = "gemma4_e4b_it"
+    surface = tmp_path / model_id / "surface"
+    surface.mkdir(parents=True)
+    (surface / "basis.joblib").write_bytes(b"basis")
+    _write_jsonl(surface / "coordinates.jsonl", [
+        {"row_key": "umwp:1", "scalars": {}, "matching_vector": [0.0]},
+    ])
+    rows = [{"row_key": "umwp:1"}]
+    prompts = ["prompt"]
+    token_ids = [[4, 5]]
+    digest = "sha256:" + "a" * 64
+    record = {
+        "schema_version": 1,
+        "model_id": model_id,
+        "capture_image_digest": digest,
+        "surface_input_fingerprint": source_and_generate._surface_input_fingerprint(
+            rows, prompts, token_ids
+        ),
+        "basis_sha256": source_and_generate.sha256_file(surface / "basis.joblib"),
+        "coordinates_sha256": source_and_generate.sha256_file(
+            surface / "coordinates.jsonl"
+        ),
+        "runtime_versions": {
+            "scikit_learn": "1.0", "scipy": "1.0", "joblib": "1.0",
+        },
+    }
+    (surface / "preparation.json").write_text(
+        json.dumps(record), encoding="utf-8"
+    )
+    cfg = {"containers": {"capture": {"image_digest": digest}}}
+    assert source_and_generate._validate_surface_preparation(
+        cfg, model_id, rows, prompts, token_ids
+    ) == record
+
+    with pytest.raises(ValueError, match="signed generation inputs"):
+        source_and_generate._validate_surface_preparation(
+            cfg, model_id, rows, ["changed"], token_ids
+        )
 
 
 def test_vllm_provenance_binds_backend_context_and_multimodal_pins(tmp_path: Path) -> None:

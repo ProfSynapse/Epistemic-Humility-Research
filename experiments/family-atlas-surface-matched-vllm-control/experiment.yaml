@@ -1,7 +1,7 @@
 slug: family-atlas-surface-matched-vllm-control
 title: Family Atlas Surface-Matched vLLM Control
 type: probe-fit
-status: signed
+status: null-result
 registered: true
 created_at: '2026-07-22T12:16:52Z'
 question: Does the early-exterior family-atlas eff_dim_frac peak persist in fresh,
@@ -39,12 +39,12 @@ instrument:
     render_gemma.py: 143d832057e251522d242cff0ec5039b8c030241131efe4da832685cdca863f6
     render_qwen.py: 75ee9a4c3a63b2f1a29da9a2fe83dc8bbc3e10a8414825e7dbc764a17dd3b15f
     grader_port.py: dbd5e1c92047dd44ce4eea20732ed594bc8900ed6ebe5833553ddb19d56fae4a
-    source_and_generate.py: 2d6c910682188faad20f37144672b12b514d1b57d7bf6de3b7fdd05b3a4393b8
+    source_and_generate.py: 94aacf56835be6c700ea13ae87448ebc807700fd96f3daf062f9136119e99f58
     match_and_gate.py: 5fa5eb54ce92502829f87182bba5bc8f4ebf03d06de4736b34afd1df356aea05
     capture_full_depth.py: 503b0ffffa4ecd8e75bda35ac6e47e1bc50b66a88bfb922ad17397c244230090
     analyze_profiles.py: 8100be3d00c4fdf1de83a876bbc7e15f70a5b3a34158a93b952ecc5856cd96d4
     presign_smoke.py: 1bc406cd71b2a884793549f3246e9192d2b4978f2dbb4192f8fd6533b803e4fb
-    test_instrument.py: 2ac0f7da08e307040fd11a17c493eeb94f789c68ff308e0f03521dc2693d9566
+    test_instrument.py: 46cf0b2f0d382e5df74ef3d94f619e18048878d37023256195ba18d074ccb709
   persistence:
     instrument_common.py:
       persistence: short-run
@@ -76,11 +76,30 @@ instrument:
     test_instrument.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 2.1
+  repins:
+  - file: source_and_generate.py
+    old_sha256: 2d6c910682188faad20f37144672b12b514d1b57d7bf6de3b7fdd05b3a4393b8
+    new_sha256: 94aacf56835be6c700ea13ae87448ebc807700fd96f3daf062f9136119e99f58
+    date: '2026-07-22T16:33:04Z'
+    reason: 'Pre-result Stage A packaging repair: split deterministic surface-basis
+      preparation into the pinned mechinterp image because the pinned vLLM 0.23.0
+      image lacks scipy, scikit-learn, and joblib; generation now validates hash-bound
+      prepared artifacts before model loading.'
+  - file: test_instrument.py
+    old_sha256: 2ac0f7da08e307040fd11a17c493eeb94f789c68ff308e0f03521dc2693d9566
+    new_sha256: 46cf0b2f0d382e5df74ef3d94f619e18048878d37023256195ba18d074ccb709
+    date: '2026-07-22T16:33:04Z'
+    reason: 'Pre-result Stage A packaging repair: split deterministic surface-basis
+      preparation into the pinned mechinterp image because the pinned vLLM 0.23.0
+      image lacks scipy, scikit-learn, and joblib; generation now validates hash-bound
+      prepared artifacts before model loading.'
 inputs:
 - datasets/abstentionbench-repo/data.py
 - experiments/family-atlas-surface-matched-pool-control/AMENDMENT.md
 - experiments/gemma-4-e4b-family-atlas/render_gemma_atlas.py
 - experiments/qwen3-4b-family-atlas/render_qwen3_atlas.py
 - synaptic-tuner
-verdict: ''
+verdict: 'Indeterminate at G0: Gemma produced 5,189 strict-valid JSON completions
+  out of 5,200; five rows truncated at the registered 200-token cap and six stopped
+  before completing JSON. Qwen generation and both captures were not launched.'
 kg: []
