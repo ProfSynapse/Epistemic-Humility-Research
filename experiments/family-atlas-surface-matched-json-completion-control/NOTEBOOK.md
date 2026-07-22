@@ -6,6 +6,36 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-22: Ran a CPU-only, successor-design matching-feasibility diagnostic
+  over the complete retained Stage A exhaust: 5,200 generation records per
+  model, yielding 435 eligible Gemma triads and 149 eligible Qwen triads. No
+  model was loaded, no activation tensor was read, and no scientific endpoint
+  or current-experiment gate was recomputed. The diagnostic used the pinned
+  mechinterp image with scikit-learn 1.7.2 and three deterministic 120,000-step
+  optimization seeds. Private ID-only selection manifests remain under
+  `analysis/`; the aggregate contains counts, balance diagnostics, and
+  classifier scores only. Its local path is
+  `analysis/diagnostics/matching_feasibility_summary.json`, with SHA-256
+  `afb1bee60ef771e6d6a46bced0799a5cda3c7c9fb91fdf4f7709b7d574854aad`.
+
+  The diagnostic shows that stricter subset search does not provide a robust
+  successor design. Scalar-only 128-triad selections passed the existing G2
+  thresholds in 1 of 3 Gemma seeds and 2 of 3 Qwen seeds. Joint scalar-plus-
+  lexical 128-triad selections passed in 3 of 3 Gemma seeds and 0 of 3 Qwen
+  seeds. Two disjoint 64-triad partitions passed together in 0 of 3 seeds for
+  both models. A nested 128-triad primary plus balanced 64-triad sensitivity
+  passed together in 1 of 3 Gemma seeds and 0 of 3 Qwen seeds. The three roles
+  share zero category levels by construction, and exact-original-pair coverage
+  is especially sparse for Qwen confab rows at 31 of 510.
+
+  This is feasibility evidence, not a post hoc replacement gate. It supports a
+  separately registered residualization-only successor on the complete
+  existing atlas populations. That design should run the cross-fitted surface-
+  to-activation residual profile that the earlier Shape A hard stop never
+  reached, retain treatment-strength, planted-signal, permutation, and full-row
+  subsample controls, and keep optimized matching descriptive rather than
+  decisive. Any successor remains subject to a new signed instrument and PI
+  approval.
 - 2026-07-22: The PI explicitly approved both model-specific Stage A
   generations after signing: the 5,200-row Gemma-4-E4B-it generation and the
   5,200-row Qwen3-4B generation. They will run sequentially on the single local
