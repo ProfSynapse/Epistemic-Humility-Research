@@ -1,0 +1,106 @@
+schema_version: 0.2-draft
+experiment: fresh-sft-epistemic-mode-token-grpo
+status: candidate_thresholds_pending_pre_sign
+
+pre_sign:
+  exact_upstream_model_revision: required
+  no_existing_project_checkpoint_input: required
+  frozen_32_generation_label_provenance_verified: required
+  deterministic_20000_question_subset_reproduced: required
+  ambiguous_middle_ids_reconstructed: required
+  answer_confidence_target_policy_pinned: required
+  entity_cluster_split_before_generation: required
+  gold_alias_coverage: required
+  mode_tokens_roundtrip_after_save_load: required
+  independent_readout_fit_split_disjoint: required
+  sft_and_grpo_recipes_pinned: required
+  grader_and_adjudication_pins: required
+  enumerated_detector_and_patterns_pinned: required
+  posture_reviewer_model_revision_and_rubric_pinned: required
+  all_row_blinded_pool_smoke: required
+  pool_manifest_before_review_enforced_in_code: required
+  graded_hash_before_unblinding_enforced_in_code: required
+  incremental_persistence_kill_resume_smoke: required
+  no_pending_fields: required
+
+stage_sft:
+  first_token_registered_mode_rate_min: pending_pre_sign
+  valid_json_after_mode_token_rate_min: pending_pre_sign
+  required_json_fields_rate_min: pending_pre_sign
+  heldout_mode_bucket_accuracy_min: pending_pre_sign
+  forced_mode_visible_posture_compliance_min: pending_pre_sign
+  token_stripped_before_grading_fraction: 1.0
+  answer_quality_floor: pending_pre_sign
+  over_refusal_ceiling: pending_pre_sign
+  max_single_mode_share: pending_pre_sign
+  failure_disposition: stop_before_grpo
+
+internal_alignment:
+  metric: ordinal_association_independent_readout_vs_answer_confidence_mode_logits_and_choice
+  sft_min: pending_pre_sign
+  grpo_true_min: pending_pre_sign
+  true_minus_permuted_min: pending_pre_sign
+  paired_ci_lower_bound_gt: 0.0
+  fixed_readout_and_fresh_refit_polarity_match: required
+  prompt_text_only_baseline_required: true
+
+stated_answer_confidence:
+  semantics: probability_of_correct_factual_answer_not_response_appropriateness
+  heldout_brier_max: pending_pre_sign
+  heldout_ece_max: pending_pre_sign
+  minimum_standard_deviation: pending_pre_sign
+  endpoint_collapse_forbidden: true
+  monotonic_across_abstain_qualify_answer: required
+
+stage_grpo:
+  true_mode_appropriateness_minus_sft_min: pending_pre_sign
+  true_mode_appropriateness_minus_permuted_min: pending_pre_sign
+  external_utility_minus_sft_min: pending_pre_sign
+  greedy_primary: true
+  sampled_result_cannot_rescue_greedy_failure: true
+
+anti_gaming:
+  literal_mode_token_reward: 0.0
+  visible_token_rate: 0.0
+  token_posture_mismatch_rate_max: pending_pre_sign
+  single_mode_collapse_forbidden: true
+  unnecessary_qualification_cost_required: true
+  unnecessary_abstention_cost_required: true
+  qualified_wrong_remains_negative: true
+  graders_blinded_to_token_and_arm: true
+  posture_reviewer_blinded_to_answer_confidence: true
+  deterministic_screen_not_final_posture_gate: true
+  all_heldout_rows_receive_llm_posture_review: true
+  live_policy_relabeling_forbidden: true
+  live_group_derived_mode_target_forbidden: true
+  heldout_gold_answers_absent_from_sft: true
+
+posture_reviewer_calibration:
+  decoy_source: heldback_rows_disjoint_from_every_scored_rate
+  class_balanced_decoys: true
+  minimum_decoys_per_posture_per_shard: pending_pre_sign
+  per_shard_accuracy_min: pending_pre_sign
+  pooled_accuracy_min: pending_pre_sign
+  on_first_failure: void_shard_and_regrade_once_with_fresh_context_free_reviewer
+  on_second_failure: void_cell_and_report_straight
+  pool_manifest_committed_before_review: true
+  graded_sha256_committed_before_unblinding: true
+  lead_positional_and_schema_verification_before_hash_commit: true
+  transcript_audit_for_pattern_matcher_use: true
+  no_rescoring_lane: true
+
+success:
+  requires:
+  - stage_sft
+  - internal_alignment
+  - stated_answer_confidence
+  - stage_grpo
+  - anti_gaming
+  - posture_reviewer_calibration
+
+falsifier:
+  any_of:
+  - true_grpo_fails_to_beat_sft_and_permuted_on_mode_appropriateness
+  - gains_require_single_mode_collapse
+  - behavior_improves_without_independent_internal_alignment
+  - answer_quality_falls_below_locked_floor

@@ -1,0 +1,42 @@
+slug: fresh-sft-epistemic-mode-token-grpo
+title: Fresh-SFT Epistemic Mode Tokens, Then GRPO
+type: training-run
+status: draft
+registered: true
+created_at: '2026-07-22T11:04:31Z'
+question: >-
+  Can a fresh Qwen3-4B SFT learn to emit ANSWER, QUALIFY, or ABSTAIN as its
+  first action according to frozen empirical knowledge evidence, and can GRPO
+  then improve that internal-state-to-action alignment without sacrificing
+  answer quality?
+prediction: >-
+  The fresh SFT will learn valid and causally effective mode tokens, and
+  true-label GRPO will improve held-out mode selection and external utility over
+  both SFT-only and permuted-label GRPO while preserving a monotonic relationship
+  between an independent knowledge readout and token choice.
+falsifier: >-
+  Falsify the path if true-label GRPO does not beat both SFT-only and matched
+  permuted-label GRPO on held-out mode appropriateness, if gains require
+  single-mode collapse, or if behavior improves while the independent internal
+  readout no longer orders mode-token logits and choices.
+checkpoint:
+  repo: unsloth/Qwen3-4B-bnb-4bit
+  revision: pending-pre-sign-upstream-revision
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  - posture_reviewer_rubric.yaml
+  modules: []
+  pins: {}
+  persistence: {}
+inputs:
+- experiments/aux-head-cotraining-native-behavior/AMENDMENT.md
+- experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md
+- experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md
+- experiments/abstention-wide-instrument-calibration/detector_v2.py
+- experiments/abstention-wide-instrument-calibration/detector_v2_patterns.yaml
+- experiments/rr3-corrected-placebo-replication/AMENDMENT.md
+- experiments/llama-atlas-gated-wide-instrument-retest/AMENDMENT.md
+verdict: ''
+kg: []
