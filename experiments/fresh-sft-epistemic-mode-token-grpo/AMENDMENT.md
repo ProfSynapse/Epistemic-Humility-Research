@@ -1,7 +1,8 @@
 # Fresh-SFT Epistemic Mode Tokens (Stage S)
 
-**Status:** DRAFT; not signed. No full training or scored qualification is
-authorized.
+**Status:** SIGNED 2026-07-22. Full Stage-S training and dev qualification were
+explicitly authorized by the user; each paid Modal submission remains guarded
+by its signed, hash-bound invocation contract.
 
 **Tier:** Tier-2 exploratory training cell, separate from the locked PROTOCOL
 v0.3 matrix.
@@ -142,23 +143,39 @@ ANSWER rows. The 1,201-row held-out split remains sealed.
 The qualification reports:
 
 1. **Native token validity:** the unconstrained greedy first token is one of the
-   three configured tokens.
+   three configured tokens on at least 95% of dev rows.
 2. **JSON validity:** the remainder parses and contains exactly `answer` and
-   `answer_confidence` under the registered schema.
+   `answer_confidence` under the registered schema on at least 95% of dev rows;
+   JSON parsing and exact-field coverage are gated separately at 95%.
 3. **Per-mode recall:** for every frozen source mode, the two-sided 95% Wilson
    lower bound on dev recall is greater than 0.5. At `n=200`, this requires at
-   least 114 successes; the 202-row ANSWER class is evaluated at its actual
-   denominator.
+   least 114 successes; at `n=202`, it requires at least 115.
 4. **Deterministic forced-token posture contract:** forcing each configured
    first token produces the corresponding registered response structure and
-   visible posture under a pinned deterministic checker.
+   visible posture under a pinned deterministic checker on at least 95% of all
+   forced continuations. This is a structural/semantic posture check: JSON
+   parse, exact fields, finite in-range confidence, string answer, and the
+   mode-specific visible semantics must all pass. Gold correctness is retained
+   as a descriptive sub-grade and is not part of forced-posture compliance.
+   ANSWER must be nonempty/substantive and contain none of the configured
+   ignorance/uncertainty phrases; QUALIFY must exactly match `My best answer is
+   <nonempty substantive candidate>, but I am not certain.`; ABSTAIN remains
+   exact.
 5. **Anti-collapse:** success requires every per-mode majority gate and an
-   additional pre-signed maximum single-mode share.
+   additional prospectively fixed maximum single-mode count of `374/602`.
 6. **Answer-quality noninferiority:** the Stage-S checkpoint must satisfy a
-   pre-signed paired dev answer-quality floor against the original pinned base.
-
-All numeric thresholds other than the Wilson majority gate remain explicit
-pre-sign decisions. No Stage-S result may be used to set them.
+   paired correctness comparison against the base on the same dev rows.
+   The metric is paired `StageS - base` correctness; a deterministic two-sided
+   95% paired percentile-bootstrap interval uses seed `20260722` and 10,000
+   resamples, and its lower bound must be greater than `-0.10`.
+7. **Confidence validity and non-collapse:** at least 95% of native outputs have
+   a finite `answer_confidence` in `[0,1]`, and its population standard deviation
+   is at least `0.05`.
+8. **Private-token stripping:** configured special-token strings are absent
+   from 100% of both native and forced visible texts after the native leading
+   control token is stripped. The saved tokenizer must register every configured
+   string as special with the exact runtime ID and atomic encoding recorded in
+   the artifact lineage.
 
 ## 7. Prediction and falsifier
 
@@ -177,9 +194,9 @@ This falsifier adjudicates only whether the Stage-S checkpoint qualifies for a
 separate downstream experiment. It is not evidence for or against any GRPO
 hypothesis.
 
-## 8. Pre-sign blockers
+## 8. Pre-sign closure
 
-Before signing this Stage-S-only amendment:
+The prospective instrument closes the implementation surface as follows:
 
 - retain the recovered cache/manifest/model/tokenizer hashes, deterministic
   dataset-builder pins, exact three-way evidence rule, and Jeffreys target;
@@ -189,16 +206,45 @@ Before signing this Stage-S-only amendment:
   their focused tests;
 - reconcile the runtime-derived special-token lineage across every config and
   enforce string/order/tokenizer-based roundtrip checks without fixed token IDs;
-- implement and pin the dev-only qualification runner and deterministic
-  forced-token posture checker;
-- lock every remaining numeric Stage-S threshold, including token/JSON validity,
-  forced-posture compliance, maximum single-mode share, confidence non-collapse,
-  and answer-quality noninferiority;
-- implement incremental, resumable dev-generation logs and complete the
-  kill-resume smoke;
-- add and test an authorization-gated full Stage-S launch path while retaining
-  `launch_authorized: false` and a no-launch default; and
-- replace every `remaining_pre_sign` field in the Stage-S instrument.
+- pin the dev-only `qualify_stage_s.py` runner, deterministic forced-token
+  posture checker, canonical correctness scorer, and all numeric gates above;
+- persist base-native, Stage-S-native, and all three forced-token paths through
+  the tuner's public incremental `batch-generate` verb, then persist complete
+  row-level generation text, token ids, and sub-grades before aggregate scoring;
+- require resume to match the exact config/dev/prompt/token-lineage manifest and
+  Stage-S artifact-tree hash before any prompt mutation; verify every prompt
+  hash immediately before generation, every exact model/path invocation, the
+  clean pinned tuner SHA, and complete generation status/count/checkpoint/output
+  hashes before scoring. A scoring resume recomputes every existing row from
+  those hash-bound completions and accepts a skip only after canonical byte and
+  semantic equality; and
+- use the tuner's public Modal planner and `run_stable_training` wrapper for a
+  hash-bound A10G full-run package. The 2-step smoke projected about 3.5 hours
+  for roughly 2,275 optimizer steps, so the prospective timeout is 6 hours.
+  Inputs occupy one exact run namespace, only train bytes are uploaded, and
+  checkpoints/artifacts write to the existing Modal Volume. Submission remains
+  detached and requires both an invocation-only explicit-authorization flag and
+  a token bound to the resolved launch-spec hash.
+- run the verdict-bearing 3,010-generation dev qualification only through the
+  experiment-local `modal_qualify_stage_s.py::run_qualification` A10G lane. Its
+  resolved package contains dev bytes and pinned configs only (never train or
+  held-out), clones and verifies exact pushed experiment and tuner commits,
+  requires the stable full-training `DONE` identity plus final-model token
+  lineage before submission, and writes incremental/resumable output to the
+  existing artifact Volume with commits no more than 120 seconds apart. The
+  12-hour qualification timeout, immutable image, exact pips, stable output
+  namespace, final `DONE`, double hash-bound authorization, and post-submit
+  verification commands are pinned in `modal_qualification.yaml`. Its image
+  clears the inherited container entrypoint before installing exact pips; cold
+  and warm clones verify credential-free origins, reject tracked dirt, fetch
+  the exact object, detach-checkout it, and verify HEAD while tolerating only
+  untracked runtime exhaust. The qualification spec binds the full expected
+  training `DONE.identity` derived from the resolved full-training manifest,
+  and both local readiness and the remote wrapper require exact equality.
+
+Before signing, rerun the focused tests, experiment validation, registry check,
+and the real no-launch preflight/resolved-spec command. Signing and full launch
+remain separate explicit user decisions.
 
 The bounded six-row/two-step Modal tokenizer/adapter/merge compatibility smoke
 is recorded in `NOTEBOOK.md`. It is a pre-sign smoke, not an evidence run, and

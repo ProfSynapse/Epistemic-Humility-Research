@@ -1,23 +1,20 @@
 slug: fresh-sft-epistemic-mode-token-grpo
 title: Fresh-SFT Epistemic Mode Tokens (Stage S)
 type: training-run
-status: draft
+status: signed
 registered: true
 created_at: '2026-07-22T11:04:31Z'
-question: >-
-  Can a fresh Qwen3-4B SFT imitate a frozen empirical epistemic action policy by
-  emitting ANSWER, QUALIFY, or ABSTAIN as its first action while preserving the
+question: Can a fresh Qwen3-4B SFT imitate a frozen empirical epistemic action policy
+  by emitting ANSWER, QUALIFY, or ABSTAIN as its first action while preserving the
   corresponding visible posture and answer quality?
-prediction: >-
-  The fresh SFT will emit valid native mode tokens and JSON on the dev split,
-  achieve a two-sided 95% Wilson recall lower bound above 0.5 for every mode,
-  preserve the deterministic forced-token posture contract, avoid collapse, and
-  retain answer quality relative to the original pinned base.
-falsifier: >-
-  Stop this SFT checkpoint if any mode's two-sided 95% Wilson recall lower bound
-  is at most 0.5, if the native token, JSON, or deterministic causal-posture
-  contract fails, if choices collapse to one mode, or if answer quality falls
-  below the pre-signed noninferiority floor.
+prediction: The fresh SFT will emit valid native mode tokens and JSON on the dev split,
+  achieve a two-sided 95% Wilson recall lower bound above 0.5 for every mode, preserve
+  the deterministic forced-token posture contract, avoid collapse, and retain answer
+  quality relative to the original pinned base.
+falsifier: Stop this SFT checkpoint if any mode's two-sided 95% Wilson recall lower
+  bound is at most 0.5, if the native token, JSON, or deterministic causal-posture
+  contract fails, if choices collapse to one mode, or if answer quality falls below
+  the pre-signed noninferiority floor.
 checkpoint:
   repo: unsloth/Qwen3-4B-bnb-4bit
   revision: cad0bedfdd862093a12af478cb974ab2addd0e0a
@@ -28,12 +25,31 @@ instrument:
   - dataset_builder.yaml
   - stage_s.yaml
   - stage_sft_recipe.yaml
+  - qualification.yaml
+  - modal_qualification.yaml
   modules:
   - build_dataset.py
   - test_build_dataset.py
   - prepare_stage_s.py
   - test_prepare_stage_s.py
-  pins: {}
+  - qualify_stage_s.py
+  - test_qualify_stage_s.py
+  - modal_qualify_stage_s.py
+  pins:
+    cell.yaml: 97777e4ca3a3598adb91a7111c51b7663e81b108aeeb2780c371396fec833fcf
+    gates.yaml: 58fa4b9258d26edd84d5f922aaa6db55ee5cdd01648eecdd045b667144aa5bd3
+    dataset_builder.yaml: 59dd19cc19988fb9b44d806a3ec760ed72ccbd5601bfb167155bd96a7ca04192
+    stage_s.yaml: 83a9eb691564cf1fe955f57aa0d35b5dffc4532bcc1882b51d6e10913493af61
+    stage_sft_recipe.yaml: 755df3ca01450fd68a73e6b9db086b228f2b69798c0a9faf4624cba76c92b2ea
+    qualification.yaml: 142bbdc23f3a626bac9d9c086456c2d27d18e7c4d5a47635ec96671b3f5ad18a
+    modal_qualification.yaml: efbe2f4ed61103fccfe4af5f82cbbe535b0d4e0ccbaa38d5e4f338a94893cbb8
+    build_dataset.py: b7407341f669065cadde2c092d3b62add6e9ec586adbe5033024fa6672f7d414
+    test_build_dataset.py: 2da3352abd674ca9d7090bc82d167826d24713326131afb4b616c5af860dbb66
+    prepare_stage_s.py: cfa048bd042bba2790d049872c04f7e2c00af958a2ac61a113b32426301c3d93
+    test_prepare_stage_s.py: b6f6cfe3068d91ba2125aed7df14943c65f0f7e0d426f6fdd233df3cf2da1146
+    qualify_stage_s.py: 723082351ff9caef40ebd3c4f582d3a9a422b02fa9c692b06f0975f2eaa950f2
+    test_qualify_stage_s.py: fc53b026126c71e92a7ddb58b0dca12db40c6fdbbb2fe57f9d7b7c77ee4bb2ad
+    modal_qualify_stage_s.py: c13f186e4d8b7ec4591e452c46f10181a26fec32aea17956f52315ae44a6a72b
   persistence:
     build_dataset.py:
       persistence: short-run
@@ -46,7 +62,16 @@ instrument:
       measured_smoke_wall_clock_s: 4.0
     test_prepare_stage_s.py:
       persistence: short-run
-      measured_smoke_wall_clock_s: 3.0
+      measured_smoke_wall_clock_s: 6.0
+    qualify_stage_s.py:
+      persistence: incremental
+      checkpoint_path: experiments/fresh-sft-epistemic-mode-token-grpo/analysis/qualification/<run-id>/scored_rows.jsonl
+    test_qualify_stage_s.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 8.0
+    modal_qualify_stage_s.py:
+      persistence: incremental
+      checkpoint_path: experiments/fresh-sft-epistemic-mode-token-grpo/analysis/qualification/<run-id>/run_manifest.json
 inputs:
 - experiments/common/knowledge_probe/scoring.py
 verdict: ''

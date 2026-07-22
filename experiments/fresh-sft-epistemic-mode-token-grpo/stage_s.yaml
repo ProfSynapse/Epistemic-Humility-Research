@@ -64,10 +64,12 @@ modal:
   output_mount: /vol/artifacts
   cache_volume: toolset-model-cache
   gpu: A10G
-  timeout_hours: 2.0
+  # Two-step smoke throughput projected ~3.5 h for ~2,275 optimizer steps;
+  # six hours leaves prospective startup/save variance without changing steps.
+  timeout_hours: 6.0
 
 tuner:
-  expected_commit: 04b8faa463db0640bea5803ef73c3bff40ab3a93
+  expected_commit: ef4e45e611e0eef0b935b60eb42ce73d3b5268b1
   staging_root: scratch/eh_staging
   recipe_template: stage_sft_recipe.yaml
   rendered_recipe_file: stage_sft_recipe.yaml

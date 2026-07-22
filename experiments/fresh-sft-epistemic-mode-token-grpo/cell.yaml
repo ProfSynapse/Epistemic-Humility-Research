@@ -1,6 +1,6 @@
 schema_version: 0.3-draft
 experiment: fresh-sft-epistemic-mode-token-grpo
-status: blocked_remaining_pre_sign
+status: pre_sign_review_ready
 
 surface:
   starting_model: unsloth/Qwen3-4B-bnb-4bit
@@ -153,16 +153,18 @@ qualification:
   - anti_collapse
   - answer_quality_noninferiority_vs_base
   graders:
-    correctness: remaining_pre_sign
-    deterministic_forced_token_posture_contract: remaining_pre_sign
-    answer_confidence_validity_and_noncollapse: remaining_pre_sign
+    correctness: experiments/common/knowledge_probe/scoring.py:is_correct
+    deterministic_forced_token_posture_contract: qualify_stage_s.py:_posture_ok
+    answer_confidence_validity_and_noncollapse: qualify_stage_s.py:_parse_payload
   persistence: incremental_required
 
 implementation:
   dataset_builder: build_dataset.py
   sft_preparer: prepare_stage_s.py
   sft_runner: existing_generic_sft_surface_plus_special_token_roundtrip
-  dev_qualification_runner: remaining_pre_sign
-  deterministic_posture_contract_checker: remaining_pre_sign
-  full_stage_s_launch_path: remaining_pre_sign
+  dev_qualification_runner: qualify_stage_s.py
+  deterministic_posture_contract_checker: qualify_stage_s.py
+  full_stage_s_launch_path: prepare_stage_s.py:stage-full_and_launch-full
+  modal_dev_qualification_path: prepare_stage_s.py:stage-qualification_and_launch-qualification
+  modal_dev_qualification_runner: modal_qualify_stage_s.py:run_qualification
   launch_authorized: false

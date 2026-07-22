@@ -6,6 +6,69 @@ a claims surface; the signed prose lives in `AMENDMENT.md` and machine state in
 
 ## Entries
 
+### 2026-07-22: Stage S signed
+
+- The user approved the prospective gates and authorized the full Qwen3-4B
+  Stage-S run on Modal. `bin/exp sign` pinned all 14 governed config, runner,
+  and test files and moved the manifest to `signed` before any full training or
+  scored qualification.
+- The signed training lane uses Synaptic-Tuner commit
+  `ef4e45e611e0eef0b935b60eb42ce73d3b5268b1`, A10G, a six-hour ceiling, and
+  the crash-safe stable-run entrypoint. The separately guarded dev
+  qualification lane uses A10G and a twelve-hour ceiling for 3,010 generations.
+- Held-out remains sealed and unstaged. GRPO remains outside this experiment.
+- No full-run upload or paid submission had occurred at the moment of signing.
+
+### 2026-07-22: Stage-S pre-sign qualification and launch surface implemented
+
+- Prospectively locked the dev-only gates before any full training or scored
+  qualification: 95% configured-first-token, JSON-parse, exact-field,
+  forced-posture, and confidence-range rates; per-mode two-sided 95% Wilson LCB
+  above 0.5 (114/200 and 115/202); maximum single-mode count 374/602;
+  confidence population SD at least 0.05; and paired StageS-minus-base
+  correctness with a deterministic 10,000-resample percentile bootstrap (seed
+  20260722) whose two-sided 95% CI lower bound must exceed -0.10.
+- Added a dev-only qualification runner over the generic tuner's public
+  `batch-generate` verb. It hash-checks the 602-row dev split, reads runtime IDs
+  only from the adapter's configured-token lineage, persists base-native,
+  Stage-S-native, and three forced-token paths incrementally, supports exact
+  resume, and writes complete private generation text/token/sub-grade exhaust.
+  It never opens held-out; the held-out path is forbidden by contract.
+- Hardened that runner before any scored qualification: forced posture is now
+  structural/semantic rather than gold-correctness gated; configured tokens
+  must be registered special with exact lineage IDs; native and forced visible
+  token stripping is gated at 100%; preparation binds the complete Stage-S
+  artifact tree and validates resume before prompt writes; generation requires
+  the exact clean tuner commit, exact manifest model paths and prompt hashes;
+  and scoring requires complete checkpoint/status/count/output hashes.
+- Final pre-sign review tightened posture without using gold correctness:
+  ANSWER is substantive and excludes configured ignorance/uncertainty phrases,
+  QUALIFY exactly matches the configured nonempty-candidate template, and
+  ABSTAIN remains exact. Scoring resume now recomputes and canonically compares
+  every persisted row before skipping it.
+- The synthetic kill-resume smoke hard-kills the qualification process group
+  after durable generation output appears, resumes the public tuner jobs, and
+  reproduces one complete scored row per dev fixture row.
+- Extended the existing `prepare_stage_s.py` public-tuner Modal plan rather than
+  adding another app. The resolved full package is train-only, A10G, 6-hour,
+  hash-bound, detached, Volume-backed, exact-commit, and no-merge-retention.
+  `launch-full` requires both an invocation-only explicit authorization flag
+  and a token bound to the resolved spec hash.
+- Added a separate experiment-local Modal qualification lane for the 3,010
+  verdict-bearing generations. It stages only dev plus pinned configs, resolves
+  an exact pushed experiment commit and exact tuner commit, refuses launch
+  until the stable full-training DONE identity and token lineage exist, invokes
+  only `qualify_stage_s.py` and public `tuner.py batch-generate`, commits the
+  output Volume at most every 120 seconds, and uses its own hash-bound double
+  authorization and DONE/post-submit contract.
+- The Modal lane now clears the image entrypoint, enforces exact clean tracked
+  source on both cold and warm clone paths while tolerating untracked exhaust,
+  rehashes its local module before remote activity, and binds the complete
+  expected training DONE identity derived from the resolved training manifest.
+- This was implementation/preflight work only. At the time of this entry the
+  amendment was still draft, `launch_authorized` remained false, and no full
+  training, scored qualification, upload, or launch had occurred.
+
 ### 2026-07-22: user-requested Stage-S / downstream-GRPO split (draft design decision)
 
 - The user directed that GRPO be governed as a separate experiment. The current

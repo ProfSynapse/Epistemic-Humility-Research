@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import types
 
 import pytest
 import yaml
@@ -385,7 +386,7 @@ def _synthetic_modal_plan(context: dict, run_id: str, config_path: Path, dataset
                 "modal",
                 "run",
                 "--detach",
-                f"{context['tuner']['root'] / 'Trainers' / 'cloud' / 'train_modal.py'}::run_training",
+                f"{context['tuner']['root'] / 'Trainers' / 'cloud' / 'train_modal.py'}::run_stable_training",
                 "--trainer-type",
                 "sft",
                 "--repo-url",
@@ -400,10 +401,12 @@ def _synthetic_modal_plan(context: dict, run_id: str, config_path: Path, dataset
                 _sha(config_path),
                 "--dataset-sha256",
                 _sha(dataset_path),
+                "--run-id",
+                run_id,
             ],
             "verification": {
                 "require_nonempty_app_id_from_submission": True,
-                "require_remote_function": "run_training",
+                "require_remote_function": "run_stable_training",
                 "require_running_or_completed_task": True,
                 "commands": [
                     ["modal", "app", "list", "--json"],
@@ -858,4 +861,304 @@ def test_checked_in_stage_config_keeps_full_run_merge_check_separate() -> None:
     assert config["model"]["dtype"] is None
     assert config["model"]["tokenizer"]["verify_merged_model_roundtrip"] is False
     assert config["model"]["tokenizer"]["merged_model_save_method"] == "merged_4bit_forced"
-    assert config["tuner"]["expected_commit"] == "04b8faa463db0640bea5803ef73c3bff40ab3a93"
+    assert config["tuner"]["expected_commit"] == "ef4e45e611e0eef0b935b60eb42ce73d3b5268b1"
+
+
+def test_modal_qualification_image_and_clone_contract(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class FakeImage:
+        @classmethod
+        def from_registry(cls, value):
+            return cls()
+
+        def entrypoint(self, value):
+            assert value == []
+            return self
+
+        def pip_install(self, *values):
+            return self
+
+    class FakeVolume:
+        @classmethod
+        def from_name(cls, *args, **kwargs):
+            return cls()
+
+    class FakeApp:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def function(self, **kwargs):
+            return lambda function: function
+
+    fake_modal = types.SimpleNamespace(Image=FakeImage, Volume=FakeVolume, App=FakeApp)
+    monkeypatch.setitem(sys.modules, "modal", fake_modal)
+    path = MODULE_PATH.with_name("modal_qualify_stage_s.py")
+    spec = importlib.util.spec_from_file_location("modal_qualify_stage_s_test", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    commit = "a" * 40
+    destination = tmp_path / "cold"
+    calls = []
+
+    def fake_subprocess(command, **kwargs):
+        assert command[:2] == ["git", "clone"]
+        destination.mkdir(parents=True)
+        (destination / ".git").mkdir()
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    def fake_git(root, *args):
+        calls.append(args)
+        if args[:3] == ("remote", "get-url", "origin"):
+            output = "https://example.invalid/repo.git\n"
+        elif args[:2] == ("status", "--porcelain"):
+            output = ""
+        elif args[:2] == ("rev-parse", "HEAD"):
+            output = commit + "\n"
+        else:
+            output = ""
+        return subprocess.CompletedProcess(["git"], 0, output, "")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_subprocess)
+    monkeypatch.setattr(module, "_git", fake_git)
+    module._clone_exact(
+        "https://example.invalid/repo.git", "branch", commit, destination
+    )
+    assert ("fetch", "--depth", "1", "origin", commit) in calls
+    assert ("checkout", "--detach", commit) in calls
+
+    (destination / "runtime-exhaust.txt").write_text("allowed", encoding="utf-8")
+    calls.clear()
+    module._clone_exact("https://example.invalid/repo", "branch", commit, destination)
+    assert ("status", "--porcelain", "--untracked-files=no") in calls
+
+    def dirty_git(root, *args):
+        if args[:3] == ("remote", "get-url", "origin"):
+            output = "https://example.invalid/repo.git\n"
+        elif args[:2] == ("status", "--porcelain"):
+            output = " M tracked.py\n"
+        else:
+            output = commit + "\n" if args[:2] == ("rev-parse", "HEAD") else ""
+        return subprocess.CompletedProcess(["git"], 0, output, "")
+
+    monkeypatch.setattr(module, "_git", dirty_git)
+    with pytest.raises(RuntimeError, match="tracked source drift"):
+        module._clone_exact("https://example.invalid/repo", "branch", commit, destination)
+    with pytest.raises(RuntimeError, match="credential-free"):
+        module._clone_exact(
+            "https://secret@example.invalid/repo", "branch", commit, tmp_path / "credential"
+        )
+
+
+def test_full_modal_package_is_no_launch_train_only_and_double_authorization_gated(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    fixture = _fixture(tmp_path)
+    report, context = stager.preflight(
+        fixture["config_path"],
+        fixture["tuner"],
+        hf_cache_root=fixture["hf_cache"],
+        run_id="stage-s-full-contract",
+    )
+    assert report["ready_to_stage"] is True
+    monkeypatch.setattr(stager, "inspect_modal_plan", _synthetic_modal_plan)
+    result = stager.stage_full(context, "stage-s-full-contract")
+    assert result["launch_authorized"] is False
+    staged = fixture["tuner"] / result["relative_directory"]
+    assert {path.name for path in staged.iterdir()} == {
+        "full_stage_s_manifest.json",
+        "stage_s_full.yaml",
+        "stage_s_train.jsonl",
+    }
+    assert not (staged / "dev.jsonl").exists()
+    assert not (staged / "heldout.jsonl").exists()
+    trainer = yaml.safe_load((staged / "stage_s_full.yaml").read_text(encoding="utf-8"))
+    assert "max_steps" not in trainer["training"]
+    assert trainer["model"]["tokenizer"]["verify_merged_model_roundtrip"] is False
+    manifest = json.loads((staged / "full_stage_s_manifest.json").read_text(encoding="utf-8"))
+    assert manifest["heldout_staged"] is False
+    assert manifest["launch_spec"]["staged_splits"] == ["train"]
+    assert manifest["launch_spec"]["launch_argv"][:3] == ["modal", "run", "--detach"]
+    assert manifest["launch_spec"]["launch_argv"][-2:] == ["--run-id", "stage-s-full-contract"]
+    assert manifest["launch_spec"]["canonical_output"]["retain_merged_model"] is False
+    assert manifest["authorization"]["requires_explicit_user_authorization_flag"] is True
+    with pytest.raises(stager.PreflightError, match="explicit-user-authorization"):
+        stager.launch_full(
+            context,
+            "stage-s-full-contract",
+            explicit_user_authorization=False,
+            authorization_token="",
+        )
+    with pytest.raises(stager.PreflightError, match="token"):
+        stager.launch_full(
+            context,
+            "stage-s-full-contract",
+            explicit_user_authorization=True,
+            authorization_token="wrong",
+        )
+    original_sha = manifest["launch_spec"]["sha256"]
+    valid_token = stager._authorization_token("stage-s-full-contract", original_sha)
+    manifest["launch_spec"]["runtime"]["gpu"] = "A100"
+    (staged / "full_stage_s_manifest.json").write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    with pytest.raises(stager.PreflightError, match="canonical live spec hash"):
+        stager.launch_full(
+            context,
+            "stage-s-full-contract",
+            explicit_user_authorization=True,
+            authorization_token=valid_token,
+        )
+
+
+def test_modal_qualification_package_is_dev_only_pushed_source_and_training_done_gated(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    fixture = _fixture(tmp_path)
+    experiment = fixture["experiment"]
+    (experiment / "qualification.yaml").write_text("schema_version: 1\n", encoding="utf-8")
+    (experiment / "modal_qualify_stage_s.py").write_text("# modal qualification\n", encoding="utf-8")
+    branch = "test-qualification"
+    repo_url = "https://example.invalid/experiment.git"
+    modal_config = {
+        "schema_version": 1,
+        "experiment": fixture["config"]["experiment"],
+        "launch_authorized": False,
+        "source": {"repo_url": repo_url, "branch": branch},
+        "tuner": {
+            "repo_url": "https://example.invalid/synthetic.git",
+            "branch": "master",
+            "commit": fixture["tuner_commit"],
+        },
+        "runtime": {
+            "image": EXPECTED_IMAGE,
+            "pip": EXPECTED_PIP,
+            "gpu": "A10G",
+            "timeout_hours": 12.0,
+            "periodic_volume_commit_seconds": 120,
+        },
+        "volumes": {
+            "input": {"name": "inputs", "mount": "/vol/inputs"},
+            "output": {"name": "outputs", "mount": "/vol/artifacts"},
+            "cache": {"name": "cache", "mount": "/cache"},
+        },
+    }
+    (experiment / "modal_qualification.yaml").write_text(
+        yaml.safe_dump(modal_config, sort_keys=False), encoding="utf-8"
+    )
+    _git(fixture["project"], "init", "-q")
+    _git(fixture["project"], "config", "user.email", "test@example.invalid")
+    _git(fixture["project"], "config", "user.name", "Test")
+    _git(fixture["project"], "remote", "add", "origin", repo_url)
+    _git(fixture["project"], "add", ".")
+    _git(fixture["project"], "commit", "-q", "-m", "qualification fixture")
+    _git(fixture["project"], "branch", "-M", branch)
+    commit = _git(fixture["project"], "rev-parse", "HEAD")
+    _git(fixture["project"], "update-ref", f"refs/remotes/origin/{branch}", commit)
+
+    report, context = stager.preflight(
+        fixture["config_path"], fixture["tuner"], hf_cache_root=fixture["hf_cache"],
+        run_id="stage-s-qual-contract"
+    )
+    assert report["ready_to_stage"] is True
+    monkeypatch.setattr(stager, "inspect_modal_plan", _synthetic_modal_plan)
+    stager.stage_full(context, "stage-s-full-contract")
+    result = stager.stage_qualification(
+        context, "stage-s-qual-contract", "stage-s-full-contract", fixture["project"], commit
+    )
+    package = fixture["tuner"] / result["relative_directory"]
+    assert {path.name for path in package.iterdir()} == {
+        "qualification.yaml", "modal_qualification.yaml", "dev.jsonl",
+        "qualification_launch_manifest.json",
+    }
+    assert not (package / "train.jsonl").exists()
+    assert not (package / "heldout.jsonl").exists()
+    manifest = json.loads((package / "qualification_launch_manifest.json").read_text())
+    spec = manifest["launch_spec"]
+    assert spec["staged_splits"] == ["dev"]
+    assert spec["source"]["commit"] == commit
+    assert spec["tuner"]["commit"] == fixture["tuner_commit"]
+    assert spec["training_done_marker"].endswith("stage-s-full-contract-" + fixture["tuner_commit"][:8] + "/DONE")
+    assert spec["launch_argv"][:3] == ["modal", "run", "--detach"]
+    assert spec["launch_argv"][3].endswith("::run_qualification")
+    identity_arg = spec["launch_argv"][
+        spec["launch_argv"].index("--training-done-identity-json") + 1
+    ]
+    assert json.loads(identity_arg) == spec["expected_training_done_identity"]
+    expected_identity = spec["expected_training_done_identity"]
+    assert expected_identity == {
+        "run": {"id": "stage-s-full-contract", "stable": True},
+        "source": {"branch": "master", "commit": fixture["tuner_commit"]},
+        "inputs": {
+            "config": {
+                "mounted_path": "/vol/inputs/stage-s-full-contract/stage_s_full.yaml",
+                "sha256": json.loads(
+                    (fixture["tuner"] / "scratch/eh_staging/stage-s-full-contract/full_stage_s_manifest.json").read_text()
+                )["launch_spec"]["input_sha256"]["stage_s_full.yaml"],
+            },
+            "dataset": {
+                "mounted_path": "/vol/inputs/stage-s-full-contract/stage_s_train.jsonl",
+                "sha256": fixture["config"]["private_dataset"]["splits"]["train"]["sha256"],
+            },
+            "verified": True,
+            "volume_name": "synthetic-private-inputs",
+            "mount_path": "/vol/inputs",
+        },
+        "runtime": {
+            "image": EXPECTED_IMAGE,
+            "pip_packages": EXPECTED_PIP,
+            "gpu": "A10G",
+            "timeout_seconds": 7200,
+        },
+        "artifacts": {"volume_name": "synthetic-artifacts", "mount_path": "/vol/artifacts"},
+        "cache": {"volume_name": "synthetic-cache", "mount_path": "/cache/huggingface"},
+        "publish_final_model": False,
+    }
+    assert manifest["authorization"]["requires_explicit_user_authorization_flag"] is True
+    valid = stager._qualification_authorization_token("stage-s-qual-contract", spec["sha256"])
+    with pytest.raises(stager.PreflightError, match="explicit-user-authorization"):
+        stager.launch_qualification(
+            context, "stage-s-qual-contract", explicit_user_authorization=False,
+            authorization_token=valid,
+        )
+
+    original_module = (experiment / "modal_qualify_stage_s.py").read_bytes()
+    (experiment / "modal_qualify_stage_s.py").write_bytes(original_module + b"# drift\n")
+    with pytest.raises(stager.PreflightError, match="local Modal qualification module changed"):
+        stager.launch_qualification(
+            context, "stage-s-qual-contract", explicit_user_authorization=True,
+            authorization_token=valid,
+        )
+    (experiment / "modal_qualify_stage_s.py").write_bytes(original_module)
+
+    def materialize_training_artifacts(command, **kwargs):
+        target = Path(command[-1])
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if target.name == "DONE":
+            target.write_text(
+                json.dumps({"schema_version": 1, "status": "completed", "identity": expected_identity}),
+                encoding="utf-8",
+            )
+        else:
+            target.write_text(json.dumps({"configured_tokens": [{"token": "<X>", "token_id": 1}]}), encoding="utf-8")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    with monkeypatch.context() as readiness_patch:
+        readiness_patch.setattr(stager.subprocess, "run", materialize_training_artifacts)
+        stager._verify_remote_training_ready(spec, package)
+        wrong_spec = json.loads(json.dumps(spec))
+        wrong_spec["expected_training_done_identity"]["runtime"]["gpu"] = "A100"
+        with pytest.raises(stager.PreflightError, match="exact identity"):
+            stager._verify_remote_training_ready(wrong_spec, package)
+
+    def not_ready(spec, package):
+        raise stager.PreflightError("training DONE and lineage absent")
+
+    monkeypatch.setattr(stager, "_verify_remote_training_ready", not_ready)
+    with pytest.raises(stager.PreflightError, match="training DONE"):
+        stager.launch_qualification(
+            context, "stage-s-qual-contract", explicit_user_authorization=True,
+            authorization_token=valid,
+        )

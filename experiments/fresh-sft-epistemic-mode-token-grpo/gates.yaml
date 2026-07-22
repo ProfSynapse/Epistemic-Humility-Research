@@ -1,6 +1,6 @@
 schema_version: 0.3-draft
 experiment: fresh-sft-epistemic-mode-token-grpo
-status: candidate_thresholds_remaining_pre_sign
+status: thresholds_locked_pre_sign
 
 pre_sign:
   exact_upstream_model_revision: required
@@ -24,34 +24,45 @@ pre_sign:
   dev_qualification_runner_and_deterministic_posture_checker_pinned: required
   incremental_dev_generation_kill_resume_smoke: required
   full_stage_s_launch_path_authorization_gated: required
-  no_remaining_pre_sign_fields: required
+  no_unresolved_pre_sign_fields: required
 
 stage_sft:
-  first_token_configured_mode_rate_min: remaining_pre_sign
-  valid_json_after_mode_token_rate_min: remaining_pre_sign
-  required_json_fields_rate_min: remaining_pre_sign
+  first_token_configured_mode_rate_min: 0.95
+  valid_json_after_mode_token_rate_min: 0.95
+  required_json_fields_rate_min: 0.95
   dev_per_mode_recall:
     metric: two_sided_95pct_wilson_lower_bound
     lower_bound_gt: 0.5
     minimum_successes_at_n_200: 114
-    answer_mode_uses_actual_n: 202
+    minimum_successes_at_n_202: 115
     rationale: every_mode_must_clear_a_statistical_majority_gate
   dev_macro_mode_recall:
     report: required
     threshold: implied_by_all_per_mode_majority_gates
-  deterministic_forced_token_posture_compliance_min: remaining_pre_sign
+  deterministic_forced_token_posture_compliance_min: 0.95
+  forced_posture_components:
+  - json_parse
+  - exact_required_fields
+  - finite_in_range_confidence
+  - answer_is_string
+  - mode_semantics
+  gold_correctness_role: descriptive_subgrade_only
   token_stripped_before_visible_output_fraction: 1.0
   answer_quality_noninferiority:
     reference: pinned_original_base_on_same_dev_rows
-    paired_metric: remaining_pre_sign
-    noninferiority_floor: remaining_pre_sign
+    paired_metric: correctness_difference_stage_s_minus_base
+    ci: two_sided_95pct_paired_percentile_bootstrap
+    bootstrap_seed: 20260722
+    bootstrap_resamples: 10000
+    ci_lower_bound_gt: -0.10
   answer_confidence:
-    parse_and_range_valid_fraction_min: remaining_pre_sign
-    minimum_standard_deviation: remaining_pre_sign
+    parse_and_range_valid_fraction_min: 0.95
+    population_standard_deviation_min: 0.05
     endpoint_collapse_forbidden: true
   anti_collapse:
     every_per_mode_majority_gate_required: true
-    max_single_mode_share: remaining_pre_sign
+    max_single_mode_count: 374
+    denominator: 602
   heldout_rows_used_for_training_or_qualification: 0
   heldout_integrity_hash_verification_allowed: true
   failure_disposition: stop_checkpoint_before_any_downstream_experiment
