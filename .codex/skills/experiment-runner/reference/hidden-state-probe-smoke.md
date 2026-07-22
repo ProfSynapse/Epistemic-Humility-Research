@@ -6,6 +6,11 @@ resolver, the GPU-free prepare step, and (on a GPU host) one real extraction who
 delta tensors are eyeballed nonzero. This is the F1-confound guard (issue #30):
 a `delta = h_lora - h_base` that is all-zero means the adapter never engaged.
 
+This specific smoke remains on HF + PEFT because it measures a base-versus-
+adapter contrast. The general vLLM preference does not override adapter-state
+semantics. Move it to vLLM only after the exact adapter-load, base-disable, and
+delta-tensor bridge in `batched-generation.md` is registered and passes.
+
 > **GPU boundary (architecture §10).** Steps 1–4 are GPU-FREE and CI-testable.
 > Step 5 (`--run-extraction`) is GPU-REQUIRED and deferred until a GPU frees;
 > the cloud lane is additionally cost-incurring and needs explicit user approval.

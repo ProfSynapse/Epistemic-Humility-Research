@@ -54,7 +54,12 @@ stated reason):
 Execution: name the lane (local GPU or Modal), the estimated spend, and the
 instrument files pinned at sign (`cell.yaml`, `gates.yaml`, the capture
 runner, the profile/scoring script, the render module copy, any cloud
-wrapper).
+wrapper). Name the capture engine and exact version. For vLLM, pre-state and
+record the HF bridge from the family-atlas skill: prompt/token identity, state
+count and indexing, final-token anchor, normalization convention, numerical
+agreement thresholds, and the fixed-row estimator-location check. State that
+chunked prefill is disabled and batch invariance is enabled. If the bridge has
+not passed, register the HF reference fallback instead.
 
 ## Prediction
 
