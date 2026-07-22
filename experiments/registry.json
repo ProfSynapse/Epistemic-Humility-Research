@@ -1607,15 +1607,8 @@
         "revision": "cad0bedfdd862093a12af478cb974ab2addd0e0a"
       },
       "created_at": "2026-07-22T11:04:31Z",
-      "falsifier": "Falsify the path if true-label GRPO does not beat both SFT-only and matched permuted-label GRPO on held-out mode appropriateness, if gains require single-mode collapse, or if behavior improves while the independent internal readout no longer orders mode-token logits and choices.",
+      "falsifier": "Stop this SFT checkpoint if any mode's two-sided 95% Wilson recall lower bound is at most 0.5, if the native token, JSON, or deterministic causal-posture contract fails, if choices collapse to one mode, or if answer quality falls below the pre-signed noninferiority floor.",
       "inputs": [
-        "experiments/aux-head-cotraining-native-behavior/AMENDMENT.md",
-        "experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md",
-        "experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md",
-        "experiments/abstention-wide-instrument-calibration/detector_v2.py",
-        "experiments/abstention-wide-instrument-calibration/detector_v2_patterns.yaml",
-        "experiments/rr3-corrected-placebo-replication/AMENDMENT.md",
-        "experiments/llama-atlas-gated-wide-instrument-retest/AMENDMENT.md",
         "experiments/common/knowledge_probe/scoring.py"
       ],
       "instrument": {
@@ -1623,31 +1616,42 @@
           "cell.yaml",
           "gates.yaml",
           "dataset_builder.yaml",
-          "posture_reviewer_rubric.yaml"
+          "stage_s.yaml",
+          "stage_sft_recipe.yaml"
         ],
         "modules": [
           "build_dataset.py",
-          "test_build_dataset.py"
+          "test_build_dataset.py",
+          "prepare_stage_s.py",
+          "test_prepare_stage_s.py"
         ],
         "persistence": {
           "build_dataset.py": {
             "measured_smoke_wall_clock_s": 7.0,
             "persistence": "short-run"
           },
+          "prepare_stage_s.py": {
+            "measured_smoke_wall_clock_s": 4.0,
+            "persistence": "short-run"
+          },
           "test_build_dataset.py": {
             "measured_smoke_wall_clock_s": 1.0,
+            "persistence": "short-run"
+          },
+          "test_prepare_stage_s.py": {
+            "measured_smoke_wall_clock_s": 3.0,
             "persistence": "short-run"
           }
         },
         "pins": {}
       },
       "kg": [],
-      "prediction": "The fresh SFT will learn valid and causally effective mode tokens, and true-label GRPO will improve held-out mode selection and external utility over both SFT-only and permuted-label GRPO while preserving a monotonic relationship between an independent knowledge readout and token choice.",
-      "question": "Can a fresh Qwen3-4B SFT learn to emit ANSWER, QUALIFY, or ABSTAIN as its first action according to frozen empirical knowledge evidence, and can GRPO then improve that internal-state-to-action alignment without sacrificing answer quality?",
+      "prediction": "The fresh SFT will emit valid native mode tokens and JSON on the dev split, achieve a two-sided 95% Wilson recall lower bound above 0.5 for every mode, preserve the deterministic forced-token posture contract, avoid collapse, and retain answer quality relative to the original pinned base.",
+      "question": "Can a fresh Qwen3-4B SFT imitate a frozen empirical epistemic action policy by emitting ANSWER, QUALIFY, or ABSTAIN as its first action while preserving the corresponding visible posture and answer quality?",
       "registered": true,
       "slug": "fresh-sft-epistemic-mode-token-grpo",
       "status": "draft",
-      "title": "Fresh-SFT Epistemic Mode Tokens, Then GRPO",
+      "title": "Fresh-SFT Epistemic Mode Tokens (Stage S)",
       "type": "training-run",
       "verdict": ""
     },

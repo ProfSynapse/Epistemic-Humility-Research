@@ -1,10 +1,39 @@
-# Fresh-SFT Epistemic Mode Tokens, Then GRPO: notebook
+# Fresh-SFT Epistemic Mode Tokens (Stage S): notebook
 
 Running log for this experiment. Newest entry first. This is a lab notebook, not
 a claims surface; the signed prose lives in `AMENDMENT.md` and machine state in
 `experiment.yaml`.
 
 ## Entries
+
+### 2026-07-22: user-requested Stage-S / downstream-GRPO split (draft design decision)
+
+- The user directed that GRPO be governed as a separate experiment. The current
+  draft was narrowed to Stage S only: fresh SFT plus qualification on the
+  602-row dev split. The 1,201-row held-out split is sealed from Stage-S
+  qualification for a separately registered downstream experiment.
+- This is a pre-sign design correction, not an outcome-adaptive change. No full
+  Stage-S training or scored qualification has run, the amendment remains
+  unsigned, and no experiment result existed whose gate or interpretation could
+  be moved.
+- The Stage-S claim is now limited to imitation and qualification of the frozen
+  empirical action policy: native token and JSON validity, a two-sided 95%
+  Wilson recall lower bound above 0.5 for every dev mode, deterministic
+  forced-token posture, anti-collapse, and answer-quality noninferiority.
+- GRPO recipes, rewards, post-SFT capability-bank construction, true/permuted
+  controls, treatment differentials, independent-readout analysis, and full
+  blinded LLM posture adjudication are outside this amendment.
+- `posture_reviewer_rubric.yaml` remains in the directory only as unreferenced
+  downstream draft material. It is not part of the Stage-S instrument and must
+  not be read as a pinned or authorized grader.
+- The ordered token strings plus pinned upstream tokenizer are the source of
+  truth. Realized token IDs are runtime lineage, not governed constants. The
+  canonical Stage-S checkpoint is the adapter, tokenizer, configured-token
+  lineage, and exact base lineage; merged-model output remains smoke-only.
+- The existing slug/path is intentionally retained so the 17 MB private build
+  and bounded-smoke provenance remain stable. This entry changes no launch
+  authority: `launch_authorized` remains false and the full recipe remains
+  no-launch by default.
 
 ### 2026-07-22: bounded Modal Stage-S smoke completed (pre-sign; not verdict-bearing)
 

@@ -454,6 +454,11 @@ def test_stage_uses_arbitrary_tokens_and_never_writes_private_rows_to_source(tmp
     assert rendered["run"]["dry_run"] is True
     assert "pending_pre_sign" not in yaml.safe_dump(rendered)
     assert fixture["raw_marker"] in (staged / "train.jsonl").read_text(encoding="utf-8")
+    assert (staged / "dev.jsonl").is_file()
+    assert not (staged / "heldout.jsonl").exists()
+    staging_manifest = json.loads((staged / "staging_manifest.json").read_text(encoding="utf-8"))
+    assert staging_manifest["staged_splits"] == ["train", "dev"]
+    assert staging_manifest["heldout_staged"] is False
     assert _source_snapshot(fixture["experiment"]) == before
     for relative, content in before.items():
         assert fixture["raw_marker"].encode() not in content, relative

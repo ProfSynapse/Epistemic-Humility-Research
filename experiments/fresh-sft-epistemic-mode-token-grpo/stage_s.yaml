@@ -16,10 +16,12 @@ private_dataset:
       file: dev.jsonl
       rows: 602
       sha256: dcff3134f22c1f63e000d613591ca0c7d3939970608f4ffd447c4f200af68661
+      stage_s_role: qualification_only
     heldout:
       file: heldout.jsonl
       rows: 1201
       sha256: 495a908ffd0d1cbc9f09b9ef7994fd6bb683c0d533391117e94d81ada59b7839
+      stage_s_access: forbidden_sealed_for_downstream_experiment
 
 model:
   repo: unsloth/Qwen3-4B-bnb-4bit
@@ -47,6 +49,13 @@ model:
     # renderer overrides only this field to true.
     verify_merged_model_roundtrip: false
     merged_model_save_method: merged_4bit_forced
+
+canonical_output:
+  artifact: adapter_plus_tokenizer
+  exact_base_model_lineage: required
+  configured_token_lineage: required
+  retain_merged_model: false
+  merge_save_reload_role: bounded_smoke_only
 
 modal:
   input_volume: eh-mode-token-smoke-inputs

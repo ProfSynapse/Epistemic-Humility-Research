@@ -1,5 +1,6 @@
 # NO-LAUNCH Stage-S recipe template. prepare_stage_s.py injects model identity,
-# private staged train path, run identity, artifact root, and tokenizer config.
+# private staged train path, run identity, adapter/tokenizer artifact root, and
+# tokenizer config. A merged model is not the retained Stage-S checkpoint.
 # Runtime and training values below are the lead-adjudicated Stage-S candidate.
 name: pending_render
 target: local

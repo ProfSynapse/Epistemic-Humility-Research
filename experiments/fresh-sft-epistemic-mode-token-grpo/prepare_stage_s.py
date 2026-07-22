@@ -505,7 +505,11 @@ def stage(context: Mapping[str, Any], run_id: str) -> dict[str, Any]:
     temporary = Path(tempfile.mkdtemp(prefix=f".{run_id}.", dir=staging_root))
     try:
         dataset = context["dataset"]
-        for split, details in dataset["splits"].items():
+        # Stage S may stage its training rows and dev-only qualification rows.
+        # The held-out bytes remain sealed for a separately registered
+        # downstream experiment and must never enter this staging package.
+        for split in ("train", "dev"):
+            details = dataset["splits"][split]
             copied_path = temporary / f"{split}.jsonl"
             shutil.copyfile(details["path"], copied_path)
             if sha256_file(copied_path) != details["sha256"]:
@@ -531,6 +535,8 @@ def stage(context: Mapping[str, Any], run_id: str) -> dict[str, Any]:
             "tuner_commit": tuner["commit"],
             "model_repo": context["config"]["model"]["repo"],
             "model_revision": context["config"]["model"]["revision"],
+            "staged_splits": ["train", "dev"],
+            "heldout_staged": False,
             "files": files,
         }
         manifest_path = temporary / "staging_manifest.json"
