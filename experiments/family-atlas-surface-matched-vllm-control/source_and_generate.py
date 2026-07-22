@@ -321,6 +321,122 @@ def _fit_surface_basis(rows: list[dict[str, Any]], prompts: list[str], token_cou
     ])
 
 
+def _surface_input_fingerprint(
+    rows: list[dict[str, Any]], prompts: list[str], prompt_token_ids: list[list[int]],
+) -> str:
+    evidence = [
+        {
+            "row_key": row["row_key"],
+            "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+            "prompt_token_ids_sha256": hashlib.sha256(
+                json.dumps(token_ids, separators=(",", ":")).encode("ascii")
+            ).hexdigest(),
+            "prompt_token_count": len(token_ids),
+        }
+        for row, prompt, token_ids in zip(rows, prompts, prompt_token_ids)
+    ]
+    return generation_config_sha256(evidence)
+
+
+def _surface_root(model_id: str) -> Path:
+    return ANALYSIS / model_id / "surface"
+
+
+def _write_surface_preparation(
+    cfg: dict[str, Any], model_id: str, rows: list[dict[str, Any]],
+    prompts: list[str], prompt_token_ids: list[list[int]],
+) -> dict[str, Any]:
+    out = _surface_root(model_id)
+    record = {
+        "schema_version": 1,
+        "model_id": model_id,
+        "capture_image_digest": cfg["containers"]["capture"]["image_digest"],
+        "surface_input_fingerprint": _surface_input_fingerprint(
+            rows, prompts, prompt_token_ids
+        ),
+        "basis_sha256": sha256_file(out / "basis.joblib"),
+        "coordinates_sha256": sha256_file(out / "coordinates.jsonl"),
+        "runtime_versions": {
+            "scikit_learn": importlib.metadata.version("scikit-learn"),
+            "scipy": importlib.metadata.version("scipy"),
+            "joblib": importlib.metadata.version("joblib"),
+        },
+    }
+    atomic_json(out / "preparation.json", record)
+    return record
+
+
+def _validate_surface_preparation(
+    cfg: dict[str, Any], model_id: str, rows: list[dict[str, Any]],
+    prompts: list[str], prompt_token_ids: list[list[int]],
+) -> dict[str, Any]:
+    out = _surface_root(model_id)
+    record_path = out / "preparation.json"
+    if not record_path.is_file():
+        raise ValueError("surface preparation record is missing")
+    record = json.loads(record_path.read_text(encoding="utf-8"))
+    expected = {
+        "schema_version": 1,
+        "model_id": model_id,
+        "capture_image_digest": cfg["containers"]["capture"]["image_digest"],
+        "surface_input_fingerprint": _surface_input_fingerprint(
+            rows, prompts, prompt_token_ids
+        ),
+        "basis_sha256": sha256_file(out / "basis.joblib"),
+        "coordinates_sha256": sha256_file(out / "coordinates.jsonl"),
+    }
+    if any(record.get(key) != value for key, value in expected.items()):
+        raise ValueError("surface preparation differs from signed generation inputs")
+    versions = record.get("runtime_versions")
+    if not isinstance(versions, dict) or any(
+        not isinstance(versions.get(name), str) or not versions[name]
+        for name in ("scikit_learn", "scipy", "joblib")
+    ):
+        raise ValueError("surface preparation runtime provenance is incomplete")
+    coordinates = load_jsonl(out / "coordinates.jsonl")
+    coordinate_ids = [item.get("row_key") for item in coordinates]
+    expected_ids = [row["row_key"] for row in rows]
+    if coordinate_ids != expected_ids or len(coordinate_ids) != len(set(coordinate_ids)):
+        raise ValueError("surface coordinates do not exactly cover eligible rows")
+    return record
+
+
+def _generation_inputs(
+    cfg: dict[str, Any], model_id: str, rows_path: Path,
+) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, Any], Any, list[str], list[list[int]]]:
+    from transformers import AutoTokenizer
+
+    validate_source_materialization(cfg)
+    model_cfg = cfg["models"][model_id]
+    source_rows = load_jsonl(rows_path)
+    excluded = build_exclusion_manifest(model_id, source_rows, cfg)
+    rows = [row for row in source_rows if row["row_key"] not in excluded]
+    gen = _generation_config(cfg, model_id)
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_cfg["repo"], revision=gen["tokenizer_revision"], token=None,
+        trust_remote_code=gen["trust_remote_code"],
+    )
+    prompts = [render_prompt(model_id, tokenizer, row) for row in rows]
+    prompt_token_ids = [
+        tokenizer(prompt, add_special_tokens=True)["input_ids"] for prompt in prompts
+    ]
+    return model_cfg, rows, gen, tokenizer, prompts, prompt_token_ids
+
+
+def prepare_surface(model_id: str, rows_path: Path) -> dict[str, Any]:
+    cfg = load_yaml(ROOT / "cell.yaml")
+    require_pinned_container(cfg["containers"]["capture"]["image_digest"])
+    _, rows, _, _, prompts, prompt_token_ids = _generation_inputs(
+        cfg, model_id, rows_path
+    )
+    _fit_surface_basis(
+        rows, prompts, [len(token_ids) for token_ids in prompt_token_ids], model_id
+    )
+    return _write_surface_preparation(
+        cfg, model_id, rows, prompts, prompt_token_ids
+    )
+
+
 def derive_finish_evidence(
     n_new_tokens: int, max_new_tokens: int, last_token_id: int | None,
     eos_token_ids: list[int],
@@ -572,22 +688,13 @@ def run_generation(model_id: str, rows_path: Path) -> None:
     cfg = load_yaml(ROOT / "cell.yaml")
     require_pinned_container(cfg["containers"]["generation"]["image_digest"])
     tuner_source = require_synaptic_tuner_source(cfg)
-    from transformers import AutoTokenizer
-
-    validate_source_materialization(cfg)
-    model_cfg = cfg["models"][model_id]
-    source_rows = load_jsonl(rows_path)
-    excluded = build_exclusion_manifest(model_id, source_rows, cfg)
-    rows = [row for row in source_rows if row["row_key"] not in excluded]
-    gen = _generation_config(cfg, model_id)
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_cfg["repo"], revision=gen["tokenizer_revision"], token=None,
-        trust_remote_code=gen["trust_remote_code"],
+    model_cfg, rows, gen, tokenizer, prompts, prompt_token_ids = _generation_inputs(
+        cfg, model_id, rows_path
     )
-    prompts = [render_prompt(model_id, tokenizer, row) for row in rows]
-    prompt_token_ids = [tokenizer(p, add_special_tokens=True)["input_ids"] for p in prompts]
-    token_counts = [len(ids) for ids in prompt_token_ids]
-    _fit_surface_basis(rows, prompts, token_counts, model_id)
+    excluded = build_exclusion_manifest(model_id, load_jsonl(rows_path), cfg)
+    surface_preparation = _validate_surface_preparation(
+        cfg, model_id, rows, prompts, prompt_token_ids
+    )
     vllm_root = ANALYSIS / model_id / "vllm"
     prompts_path = vllm_root / "prompts_private.jsonl"
     schema_path = vllm_root / "output_schema.json"
@@ -614,6 +721,8 @@ def run_generation(model_id: str, rows_path: Path) -> None:
         "generation_config_sha256": generation_config_sha256(gen),
         "n_prompts": len(prompt_rows),
         "prompts_sha256": sha256_file(prompts_path),
+        "surface_preparation": surface_preparation,
+        "surface_preparation_sha256": generation_config_sha256(surface_preparation),
     }
     atomic_json(vllm_root / "invocation_private.json", invocation)
     command = build_vllm_command(
@@ -716,6 +825,9 @@ def main() -> None:
     g = sub.add_parser("generate")
     g.add_argument("--model-id", choices=["gemma4_e4b_it", "qwen3_4b_raw_base"], required=True)
     g.add_argument("--rows", type=Path, default=ANALYSIS / "source" / "rows.jsonl")
+    s = sub.add_parser("prepare-surface")
+    s.add_argument("--model-id", choices=["gemma4_e4b_it", "qwen3_4b_raw_base"], required=True)
+    s.add_argument("--rows", type=Path, default=ANALYSIS / "source" / "rows.jsonl")
     args = parser.parse_args()
     if args.command == "materialize":
         cfg = load_yaml(ROOT / "cell.yaml")
@@ -730,8 +842,10 @@ def main() -> None:
             canonical_source.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, canonical_source)
         print(json.dumps(materialize_source(canonical_source, ANALYSIS / "source" / "rows.jsonl", cfg), indent=2))
-    else:
+    elif args.command == "generate":
         run_generation(args.model_id, args.rows)
+    else:
+        print(json.dumps(prepare_surface(args.model_id, args.rows), indent=2))
 
 
 if __name__ == "__main__":

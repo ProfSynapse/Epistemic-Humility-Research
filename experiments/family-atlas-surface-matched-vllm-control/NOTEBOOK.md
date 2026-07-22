@@ -6,6 +6,34 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-22: The approved Gemma Stage A generation durably produced all 5,200
+  completions in the pinned vLLM V1 runtime, then failed closed during strict
+  whole-output validation. Exactly 5,189 rows were valid JSON objects. Five
+  rows reached the registered 200-token cap with incomplete JSON, and six rows
+  emitted a stop token after 6-8 completion tokens with incomplete JSON. G0
+  therefore cannot pass because its registered strict-validity requirement is
+  1.0. No role grading, matching, or capture was accepted, and Qwen was not
+  launched under the sequential approval. The private completions, checkpoint,
+  provenance, surface basis, coordinates, logs, and resume history were
+  preserved. The committed failure summary contains IDs, counts, and hashes
+  only. The PI approved a separately governed successor with premature-EOS
+  suppression, a 512-token cap, and a mandatory smoke over all 11 failure IDs;
+  this signed experiment's settings and gates remain unchanged.
+- 2026-07-22: Two Gemma Stage A launcher attempts stopped before tokenizer or
+  model loading and produced no scientific row. The first lacked read-only
+  mounts for the signed prior-atlas exclusion artifacts; both host artifacts
+  were then verified at their signed hashes. The second reached surface
+  preprocessing and exposed that the pinned vLLM image lacks SciPy,
+  scikit-learn, and joblib. Repaired the signed harness before results by
+  splitting deterministic surface preparation into the already pinned
+  mechinterp image and requiring hash-bound preparation evidence in the vLLM
+  generation phase. Repinned `source_and_generate.py` and
+  `test_instrument.py` with the packaging-failure reason; no scientific rule or
+  model setting changed.
+- 2026-07-22: The PI explicitly approved sequential local RTX 3090 Stage A
+  generation for Gemma-4-E4B-it and Qwen3-4B after signing and merge. Gemma is
+  launched first in the pinned vLLM container; Qwen may launch only after Gemma
+  exits successfully. Stage B capture remains unapproved and unlaunched.
 - 2026-07-22: PI scoreboard calls were recorded before scientific generation,
   and `bin/exp sign` pinned all 12 config and instrument files. The experiment
   is signed. Stage A generation remains unlaunched and requires separate PI

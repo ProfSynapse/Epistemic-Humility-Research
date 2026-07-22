@@ -373,4 +373,19 @@ is allowed on WSL2. Processes expected to exceed 15 minutes use
 
 ## Outcome
 
-Not run. The PI will fill this section at resolution.
+PI adjudication: **INDETERMINATE at G0** on 2026-07-22.
+
+Gemma Stage A durably generated all 5,200 registered completions in the pinned
+vLLM V1 runtime. Strict whole-output validation accepted 5,189 rows
+(0.9978846154). Five rows reached the registered 200-token cap with incomplete
+JSON, and six rows emitted a stop token after 6-8 completion tokens before the
+JSON object was complete. The registered G0 threshold is 1.0 with no salvage,
+so G0 failed and the completion set was not admitted to role grading or
+matching.
+
+Qwen Stage A was not launched under the sequential approval. Neither model was
+captured, and no controlled geometric profile or peak-location result was
+produced. This experiment therefore does not decide the surface-diversity
+alternative. The private Gemma generation and surface artifacts remain intact
+as diagnostic exhaust. The committed failure summary contains only row IDs,
+counts, and provenance hashes.
