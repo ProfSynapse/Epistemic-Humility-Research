@@ -288,6 +288,7 @@ def _fixture(tmp_path: Path) -> dict:
                 "verify_tokenizer_roundtrip": True,
                 "verify_adapter_roundtrip": True,
                 "verify_merged_model_roundtrip": False,
+                "merged_model_save_method": "merged_4bit_forced",
             },
         },
         "modal": {
@@ -443,6 +444,7 @@ def test_stage_uses_arbitrary_tokens_and_never_writes_private_rows_to_source(tmp
     rendered = yaml.safe_load((staged / "stage_sft_recipe.yaml").read_text(encoding="utf-8"))
     assert rendered["model"]["tokenizer"]["additional_special_tokens"] == fixture["renamed_tokens"]
     assert rendered["model"]["tokenizer"]["verify_merged_model_roundtrip"] is False
+    assert rendered["model"]["tokenizer"]["merged_model_save_method"] == "merged_4bit_forced"
     assert rendered["model"]["load_in_4bit"] is True
     assert rendered["model"]["dtype"] is None
     assert rendered["job"]["image"] == EXPECTED_IMAGE
@@ -515,6 +517,7 @@ def test_modal_smoke_package_is_balanced_deterministic_and_private(
     expected_smoke_tokenizer = dict(fixture["config"]["model"]["tokenizer"])
     expected_smoke_tokenizer["verify_merged_model_roundtrip"] = True
     assert trainer["model"]["tokenizer"] == expected_smoke_tokenizer
+    assert trainer["model"]["tokenizer"]["merged_model_save_method"] == "merged_4bit_forced"
     assert trainer["model"]["load_in_4bit"] is True
     assert trainer["model"]["dtype"] is None
     assert trainer["training"]["max_steps"] == 2
@@ -849,3 +852,5 @@ def test_checked_in_stage_config_keeps_full_run_merge_check_separate() -> None:
     assert config["model"]["load_in_4bit"] is True
     assert config["model"]["dtype"] is None
     assert config["model"]["tokenizer"]["verify_merged_model_roundtrip"] is False
+    assert config["model"]["tokenizer"]["merged_model_save_method"] == "merged_4bit_forced"
+    assert config["tuner"]["expected_commit"] == "67d28e25cdb93d2c7d8f51358c95a04fa870f75c"

@@ -27,7 +27,16 @@ TOKENIZER_KEYS = (
     "verify_tokenizer_roundtrip",
     "verify_adapter_roundtrip",
     "verify_merged_model_roundtrip",
+    "merged_model_save_method",
 )
+TOKENIZER_BOOLEAN_KEYS = (
+    "train_new_embedding_rows",
+    "train_new_lm_head_rows",
+    "verify_tokenizer_roundtrip",
+    "verify_adapter_roundtrip",
+    "verify_merged_model_roundtrip",
+)
+MERGED_MODEL_SAVE_METHODS = {"merged_16bit", "merged_4bit_forced"}
 RUN_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}\Z")
 COMMIT_PATTERN = re.compile(r"[0-9a-f]{40}\Z")
 OCI_IMAGE_PATTERN = re.compile(r".+@sha256:[0-9a-fA-F]{64}\Z")
@@ -105,9 +114,14 @@ def load_config(path: Path) -> dict[str, Any]:
         raise PreflightError("additional_special_tokens entries must be non-empty strings")
     if len(set(tokens)) != len(tokens):
         raise PreflightError("additional_special_tokens must not contain duplicates")
-    for key in TOKENIZER_KEYS[3:]:
+    for key in TOKENIZER_BOOLEAN_KEYS:
         if not isinstance(tokenizer[key], bool):
             raise PreflightError(f"model.tokenizer.{key} must be a YAML boolean")
+    save_method = tokenizer["merged_model_save_method"]
+    if save_method not in MERGED_MODEL_SAVE_METHODS:
+        raise PreflightError(
+            "model.tokenizer.merged_model_save_method must be a supported generic tuner value"
+        )
     return config
 
 

@@ -46,6 +46,7 @@ model:
     # Full Stage-S keeps the expensive merge smoke off. The bounded Modal smoke
     # renderer overrides only this field to true.
     verify_merged_model_roundtrip: false
+    merged_model_save_method: merged_4bit_forced
 
 modal:
   input_volume: eh-mode-token-smoke-inputs
@@ -57,7 +58,7 @@ modal:
   timeout_hours: 2.0
 
 tuner:
-  expected_commit: df52db4fa4f46637095cd6fc8a4427504ef254cf
+  expected_commit: 67d28e25cdb93d2c7d8f51358c95a04fa870f75c
   staging_root: scratch/eh_staging
   recipe_template: stage_sft_recipe.yaml
   rendered_recipe_file: stage_sft_recipe.yaml
