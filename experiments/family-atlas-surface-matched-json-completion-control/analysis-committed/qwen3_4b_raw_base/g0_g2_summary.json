@@ -1,0 +1,270 @@
+{
+  "decision_state": "indeterminate_hard_stop",
+  "gates": {
+    "g0": {
+      "checks": {
+        "containment": {
+          "errors": [],
+          "status": "pass"
+        },
+        "prior_atlas_exclusion_count": 0,
+        "source_and_generation_audit": {
+          "exact_generation_coverage": true,
+          "n_eligible": 5200,
+          "n_excluded_prior_atlas": 0,
+          "n_generations": 5200,
+          "native_source_counts": {
+            "ASDiv": {
+              "answerable": 100,
+              "unanswerable": 100
+            },
+            "GSM8K": {
+              "answerable": 1700,
+              "unanswerable": 1700
+            },
+            "MultiArith": {
+              "answerable": 300,
+              "unanswerable": 300
+            },
+            "SVAMP": {
+              "answerable": 500,
+              "unanswerable": 500
+            }
+          },
+          "pair_mapping_exact": true,
+          "regrade_parity": true,
+          "rows": 5200,
+          "source_sha256": "e8840e8383357238a08e9c5028e4758ceceb369e1db31c64678b0f851c9c9e73"
+        }
+      },
+      "reasons": [],
+      "status": "pass"
+    },
+    "g1": {
+      "checks": {
+        "fit_triads": 74,
+        "held_out_triads": 75,
+        "role_counts": {
+          "confab": 149,
+          "known_correct_answered": 149,
+          "unknown_refused": 149
+        }
+      },
+      "reasons": [],
+      "status": "pass"
+    },
+    "g2": {
+      "checks": {
+        "maximum_pairwise_best_orientation_auroc": 0.6126734842951059,
+        "maximum_pairwise_scalar_abs_smd": 0.27298071863425366,
+        "partitions": {
+          "fit": {
+            "maximum_pairwise_best_orientation_auroc": 0.6126734842951059,
+            "pairwise_best_orientation_aurocs": {
+              "confab_vs_unknown_refused": 0.6126734842951059,
+              "known_correct_answered_vs_confab": 0.5914901387874361,
+              "known_correct_answered_vs_unknown_refused": 0.5613586559532505
+            },
+            "scalar_balance": {
+              "maximum_pairwise_scalar_abs_smd": 0.27298071863425366,
+              "pairwise": {
+                "confab_vs_unknown_refused": {
+                  "digit_count": 0.17737216632918607,
+                  "digit_fraction": 0.07509866242857266,
+                  "newline_count": 0.0,
+                  "newline_fraction": 0.0,
+                  "punctuation_count": 0.1598918466553936,
+                  "punctuation_fraction": 0.1519889023500568,
+                  "question_char_count": 0.2674181536735035,
+                  "question_line_count": 0.0,
+                  "question_word_count": 0.27298071863425366,
+                  "rendered_prompt_token_count": 0.2543064513138228,
+                  "uppercase_count": 0.1402694608952733,
+                  "uppercase_fraction": 0.16518921603721867
+                },
+                "known_correct_answered_vs_confab": {
+                  "digit_count": 0.03871210949451106,
+                  "digit_fraction": 0.19171331394856655,
+                  "newline_count": 0.0,
+                  "newline_fraction": 0.0,
+                  "punctuation_count": 0.05497777097496464,
+                  "punctuation_fraction": 0.2176830619528155,
+                  "question_char_count": 0.19226045608511702,
+                  "question_line_count": 0.0,
+                  "question_word_count": 0.20927037300343365,
+                  "rendered_prompt_token_count": 0.1437489388496019,
+                  "uppercase_count": 0.14338223135058795,
+                  "uppercase_fraction": 0.06542126251818633
+                },
+                "known_correct_answered_vs_unknown_refused": {
+                  "digit_count": 0.228477712526395,
+                  "digit_fraction": 0.07035962915932166,
+                  "newline_count": 0.0,
+                  "newline_fraction": 0.0,
+                  "punctuation_count": 0.1074079923047622,
+                  "punctuation_fraction": 0.036801235200809156,
+                  "question_char_count": 0.05646920353222539,
+                  "question_line_count": 0.0,
+                  "question_word_count": 0.035002891776092906,
+                  "rendered_prompt_token_count": 0.08332387290600862,
+                  "uppercase_count": 0.009342396868640163,
+                  "uppercase_fraction": 0.0894114865958752
+                }
+              }
+            },
+            "surface_role_tag_pairwise_aurocs": {
+              "confab_vs_unknown_refused": 1.0,
+              "known_correct_answered_vs_confab": 1.0,
+              "known_correct_answered_vs_unknown_refused": 1.0
+            }
+          },
+          "held_out": {
+            "maximum_pairwise_best_orientation_auroc": 0.5671111111111111,
+            "pairwise_best_orientation_aurocs": {
+              "confab_vs_unknown_refused": 0.5671111111111111,
+              "known_correct_answered_vs_confab": 0.5473777777777777,
+              "known_correct_answered_vs_unknown_refused": 0.5605333333333333
+            },
+            "scalar_balance": {
+              "maximum_pairwise_scalar_abs_smd": 0.2727302237918762,
+              "pairwise": {
+                "confab_vs_unknown_refused": {
+                  "digit_count": 0.056103052581903366,
+                  "digit_fraction": 0.06767509178316002,
+                  "newline_count": 0.0,
+                  "newline_fraction": 0.0,
+                  "punctuation_count": 0.2727302237918762,
+                  "punctuation_fraction": 0.09750454080684942,
+                  "question_char_count": 0.10618914901995696,
+                  "question_line_count": 0.0,
+                  "question_word_count": 0.09110108172880556,
+                  "rendered_prompt_token_count": 0.13694395045580193,
+                  "uppercase_count": 0.1787641956319839,
+                  "uppercase_fraction": 0.008250890927723636
+                },
+                "known_correct_answered_vs_confab": {
+                  "digit_count": 0.21660308396324474,
+                  "digit_fraction": 0.10718776382792489,
+                  "newline_count": 0.0,
+                  "newline_fraction": 0.0,
+                  "punctuation_count": 0.09248907457327965,
+                  "punctuation_fraction": 0.13466098018937345,
+                  "question_char_count": 0.10947869355692283,
+                  "question_line_count": 0.0,
+                  "question_word_count": 0.08448374070777838,
+                  "rendered_prompt_token_count": 0.12281216199522428,
+                  "uppercase_count": 0.1340984508177343,
+                  "uppercase_fraction": 0.002137027858998787
+                },
+                "known_correct_answered_vs_unknown_refused": {
+                  "digit_count": 0.14748268849156693,
+                  "digit_fraction": 0.16454832936076919,
+                  "newline_count": 0.0,
+                  "newline_fraction": 0.0,
+                  "punctuation_count": 0.2359815037738346,
+                  "punctuation_fraction": 0.24212775595049016,
+                  "question_char_count": 0.0016446982106996925,
+                  "question_line_count": 0.0,
+                  "question_word_count": 0.010321460708798223,
+                  "rendered_prompt_token_count": 0.018087831131522226,
+                  "uppercase_count": 0.04369398360382347,
+                  "uppercase_fraction": 0.01060801668643778
+                }
+              }
+            },
+            "surface_role_tag_pairwise_aurocs": {
+              "confab_vs_unknown_refused": 1.0,
+              "known_correct_answered_vs_confab": 1.0,
+              "known_correct_answered_vs_unknown_refused": 1.0
+            }
+          }
+        },
+        "surface_role_tag_pass": true
+      },
+      "reasons": [
+        "surface AUROC 0.612673 exceeds ceiling",
+        "scalar SMD 0.272981 exceeds ceiling"
+      ],
+      "status": "fail"
+    },
+    "g3": {
+      "checks": {},
+      "reasons": [],
+      "status": "not_run"
+    },
+    "g4": {
+      "checks": {},
+      "reasons": [],
+      "status": "not_run"
+    },
+    "g5": {
+      "checks": {},
+      "reasons": [],
+      "status": "not_run"
+    }
+  },
+  "instrument_fingerprint": "eee0f391903ee0896913bd1622b023a243fecacb154e2c63957f01334e24caaf",
+  "model_id": "qwen3_4b_raw_base",
+  "positive_controls": {
+    "surface_role_tag_pass": true
+  },
+  "prior_atlas_exclusion_count": 0,
+  "registered_fit_subsample_surface_support": {
+    "maximum_pairwise_best_orientation_auroc": 0.5510204081632653,
+    "n_rows": 105,
+    "pairwise_best_orientation_aurocs": {
+      "confab_vs_unknown_refused": 0.5420408163265306,
+      "known_correct_answered_vs_confab": 0.5273469387755102,
+      "known_correct_answered_vs_unknown_refused": 0.5510204081632653
+    },
+    "pass": false,
+    "scalar_balance": {
+      "maximum_pairwise_scalar_abs_smd": 0.34906670003305257,
+      "pairwise": {
+        "confab_vs_unknown_refused": {
+          "digit_count": 0.19592414670729988,
+          "digit_fraction": 0.08337773153500491,
+          "newline_count": 0.0,
+          "newline_fraction": 0.0,
+          "punctuation_count": 0.15400168134518202,
+          "punctuation_fraction": 0.1949176808593954,
+          "question_char_count": 0.34906670003305257,
+          "question_line_count": 0.0,
+          "question_word_count": 0.3108153812123025,
+          "rendered_prompt_token_count": 0.31930676562621335,
+          "uppercase_count": 0.038343067176443514,
+          "uppercase_fraction": 0.3340124496331142
+        },
+        "known_correct_answered_vs_confab": {
+          "digit_count": 0.02980547467270199,
+          "digit_fraction": 0.08845656296810427,
+          "newline_count": 0.0,
+          "newline_fraction": 0.0,
+          "punctuation_count": 0.0,
+          "punctuation_fraction": 0.29984882702030347,
+          "question_char_count": 0.20373055572783486,
+          "question_line_count": 0.0,
+          "question_word_count": 0.2509054380762741,
+          "rendered_prompt_token_count": 0.17312337078340004,
+          "uppercase_count": 0.17755203540011943,
+          "uppercase_fraction": 0.04894794948859514
+        },
+        "known_correct_answered_vs_unknown_refused": {
+          "digit_count": 0.19091919641169586,
+          "digit_fraction": 0.023165542308419277,
+          "newline_count": 0.0,
+          "newline_fraction": 0.0,
+          "punctuation_count": 0.16256149513811408,
+          "punctuation_fraction": 0.1149172238096226,
+          "question_char_count": 0.11971873258265829,
+          "question_line_count": 0.0,
+          "question_word_count": 0.0325822331609776,
+          "rendered_prompt_token_count": 0.1063635084281095,
+          "uppercase_count": 0.13197256586592823,
+          "uppercase_fraction": 0.2762473160621752
+        }
+      }
+    }
+  },
+  "schema_version": 1
+}

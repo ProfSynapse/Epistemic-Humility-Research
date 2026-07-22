@@ -1478,6 +1478,108 @@
         "repo": "multi-model",
         "revision": "see-cell-yaml"
       },
+      "created_at": "2026-07-22T17:08:29Z",
+      "falsifier": "After G0-G4 pass for a model, any valid primary full or registered subsample profile whose eff_dim_frac peak is beyond depth 0.20 falsifies the surface-robustness prediction; a prerequisite failure or nonunique real peak is indeterminate and never a pass.",
+      "inputs": [
+        "datasets/abstentionbench-repo/data.py",
+        "experiments/common/surface-matched-json-completion/gemma_vllm_g0_failure_ids.json",
+        "experiments/common/surface-matched-json-completion/PROVENANCE.md",
+        "experiments/family-atlas-surface-matched-vllm-control/AMENDMENT.md",
+        "experiments/gemma-4-e4b-family-atlas/render_gemma_atlas.py",
+        "experiments/qwen3-4b-family-atlas/render_qwen3_atlas.py",
+        "synaptic-tuner"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "instrument_common.py",
+          "render_gemma.py",
+          "render_qwen.py",
+          "grader_port.py",
+          "source_and_generate.py",
+          "match_and_gate.py",
+          "capture_full_depth.py",
+          "analyze_profiles.py",
+          "presign_smoke.py",
+          "test_instrument.py"
+        ],
+        "persistence": {
+          "analyze_profiles.py": {
+            "checkpoint_path": "experiments/family-atlas-surface-matched-json-completion-control/analysis/<model_id>/analysis_checkpoint.json",
+            "persistence": "incremental"
+          },
+          "capture_full_depth.py": {
+            "checkpoint_path": "experiments/family-atlas-surface-matched-json-completion-control/analysis/exhaust/activations/<model_id>/activation_index.jsonl",
+            "persistence": "incremental"
+          },
+          "grader_port.py": {
+            "measured_smoke_wall_clock_s": 0.1,
+            "persistence": "short-run"
+          },
+          "instrument_common.py": {
+            "measured_smoke_wall_clock_s": 0.1,
+            "persistence": "short-run"
+          },
+          "match_and_gate.py": {
+            "checkpoint_path": "experiments/family-atlas-surface-matched-json-completion-control/analysis/<model_id>/matching_checkpoint.json",
+            "persistence": "incremental"
+          },
+          "presign_smoke.py": {
+            "checkpoint_path": "experiments/family-atlas-surface-matched-json-completion-control/analysis/<model_id>/presign_smoke/runs/<run>/checkpoint.json",
+            "persistence": "incremental"
+          },
+          "render_gemma.py": {
+            "measured_smoke_wall_clock_s": 0.1,
+            "persistence": "short-run"
+          },
+          "render_qwen.py": {
+            "measured_smoke_wall_clock_s": 0.1,
+            "persistence": "short-run"
+          },
+          "source_and_generate.py": {
+            "checkpoint_path": "experiments/family-atlas-surface-matched-json-completion-control/analysis/<model_id>/generation_rows.jsonl",
+            "persistence": "incremental"
+          },
+          "test_instrument.py": {
+            "measured_smoke_wall_clock_s": 3.0,
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "analyze_profiles.py": "8100be3d00c4fdf1de83a876bbc7e15f70a5b3a34158a93b952ecc5856cd96d4",
+          "capture_full_depth.py": "503b0ffffa4ecd8e75bda35ac6e47e1bc50b66a88bfb922ad17397c244230090",
+          "cell.yaml": "2a05866c6a7b8b306ccd9ef7587aa3bc2fa21250819068b824c46c1075e4eac4",
+          "gates.yaml": "8b87cfe4220c847dde8c5dab56a430c9b68e9e78266d011a52e517a87ebbf8f4",
+          "grader_port.py": "dbd5e1c92047dd44ce4eea20732ed594bc8900ed6ebe5833553ddb19d56fae4a",
+          "instrument_common.py": "0b83466b706bfb115e3c745bd4bd4077105f020e64475e61fa03e3a4098e99aa",
+          "match_and_gate.py": "6bd503271ddde024b1c824e134ead5aa9249486f781537724e38d3e46eb1f790",
+          "presign_smoke.py": "c5bf8ae4676c1326e60aa36b4f5900384e4e2ff1a7e7f865b4af2c4f6ebce790",
+          "render_gemma.py": "143d832057e251522d242cff0ec5039b8c030241131efe4da832685cdca863f6",
+          "render_qwen.py": "75ee9a4c3a63b2f1a29da9a2fe83dc8bbc3e10a8414825e7dbc764a17dd3b15f",
+          "source_and_generate.py": "de3641bda687c239e7439fe6ee798fd3d8dc06ddb08f175073c4c1bc88bd15dc",
+          "test_instrument.py": "305a84dd230fea3398656083a9abd7e1bc8dc3c3a40569d5d9dbddb595782762"
+        }
+      },
+      "kg": [
+        "experiment:family-atlas-surface-matched-json-completion-control"
+      ],
+      "prediction": "For both Gemma-4-E4B-it and Qwen3-4B, the surface-matched FIT profile and its fixed-seed 50% intact-triad subsample retain a unique early-exterior eff_dim_frac peak at depth at most 0.20.",
+      "question": "Does the early-exterior family-atlas eff_dim_frac peak persist in fresh, cross-original, surface-matched KU-role pools for Gemma-4-E4B-it and Qwen3-4B when a pinned batch-invariant vLLM generator must complete the registered JSON interface?",
+      "registered": true,
+      "slug": "family-atlas-surface-matched-json-completion-control",
+      "status": "null-result",
+      "title": "Family Atlas Surface-Matched JSON-Completion Control",
+      "type": "probe-fit",
+      "verdict": "Exact JSON generation and the planted surface-role sensor passed, but G2 surface balance failed for Gemma and Qwen, so no Stage B capture or peak-location endpoint ran; this is indeterminate and does not falsify the early-exterior prediction."
+    },
+    {
+      "checkpoint": {
+        "repo": "multi-model",
+        "revision": "see-cell-yaml"
+      },
       "created_at": "2026-07-21T13:43:39Z",
       "falsifier": "After G0-G4 pass for a model, any valid primary full or registered subsample profile whose eff_dim_frac peak is beyond depth 0.20 falsifies the surface-robustness prediction; a gate failure is indeterminate and never a pass.",
       "inputs": [
