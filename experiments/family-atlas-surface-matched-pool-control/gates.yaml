@@ -1,0 +1,76 @@
+schema_version: 1
+decision_states: [pass, falsified, indeterminate]
+hard_stop_before_capture_on: [g0_fail, g1_fail, g2_fail]
+
+g0:
+  name: provenance_containment_and_coverage
+  checks:
+    source_sha256_exact: true
+    source_license_exact: true
+    source_counts_exact: true
+    same_source_pair_mapping_exact: true
+    unanswerable_answer_fields_never_consumed: true
+    model_revision_and_shape_exact: true
+    render_and_anchor_contract_exact: true
+    prior_atlas_normalized_text_overlap: 0
+    committed_manifest_is_id_only: true
+    prohibited_key_and_private_text_scan: pass
+    generation_runlog_schema_smoke: pass
+    generation_runlog_full_grader_dict_present: true
+    generation_runlog_kill_resume_smoke: pass
+  on_fail: indeterminate
+
+g1:
+  name: generation_yield_and_role_quality
+  per_model:
+    grader_integrity: pass
+    minimum_fit_triads: 64
+    minimum_held_out_triads: 64
+    roles_per_triad: [confab, known_correct_answered, unknown_refused]
+  on_fail: indeterminate_hard_stop_before_capture
+
+g2:
+  name: surface_support
+  per_model:
+    evaluate_separately: [fit, held_out]
+    maximum_pairwise_scalar_abs_smd: 0.10
+    maximum_grouped_pairwise_best_orientation_held_out_auroc: 0.60
+    folds_group_intact_triads: true
+  on_fail: indeterminate_hard_stop_before_capture
+
+g3:
+  name: planted_signal_reachability
+  per_model:
+    synthetic_surface_tag: three_column_one_hot_role
+    synthetic_surface_tag_min_each_pairwise_held_out_auroc: 0.90
+    planted_location_hs:
+      gemma4_e4b_it: 21
+      qwen3_4b_raw_base: 18
+    planted_scale_grid: [0.25, 0.5, 1, 2, 4, 8, 16]
+    planted_peak_unique: true
+    planted_peak_min_runner_up_ratio: 1.05
+  on_fail: indeterminate
+
+g4:
+  name: capture_integrity_and_atlas_applicability
+  per_model:
+    full_depth_final_prompt_token_coverage: 1.0
+    exact_row_join: true
+    activation_shard_index_complete: true
+    activation_tensor_digests_exact: true
+    registered_half_fit_surface_support_recheck: pass
+    strict_interior_depth: [0.20, 0.85]
+    require_one_joint_layer_all_axes_at_or_above_auroc: 0.80
+  on_fail: indeterminate
+
+g5:
+  name: peak_location
+  prerequisites: [g0_pass, g1_pass, g2_pass, g3_pass, g4_pass]
+  per_model:
+    require_unique_real_peaks: true
+    full_matched_fit_peak_max_depth: 0.20
+    fixed_seed_half_intact_triad_peak_max_depth: 0.20
+    margin_use: descriptive_only
+  pass: both_models_satisfy_both_location_checks
+  falsified: any_valid_full_or_subsample_peak_depth_above_0.20
+  indeterminate: any_prerequisite_or_integrity_failure_or_nonunique_real_peak
