@@ -1844,7 +1844,7 @@
       "question": "Does the early-exterior family-atlas eff_dim_frac peak remain at depth at most 0.20 after cross-fitted removal of prompt-surface-predictable activation variance in the existing Gemma-4-E4B-it and Qwen3-4B atlas fit populations?",
       "registered": true,
       "slug": "family-atlas-surface-residualization-control",
-      "status": "signed",
+      "status": "running",
       "title": "Family Atlas Surface Residualization Control",
       "type": "lab-diagnostic",
       "verdict": ""

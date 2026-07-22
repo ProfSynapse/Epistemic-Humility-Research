@@ -6,6 +6,15 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-22: Launched the signed real CPU analysis through
+  `experiments/common/launch_detached.sh`. Active wrapper PID 346951 and Python
+  PID 346952; log and exit-code sidecar are under this experiment's ignored
+  `analysis/`. A sandboxed process check could not see the live host process,
+  which prompted a second identical launcher under tmux. A host-level check
+  detected both; the second process group and supervisor were terminated,
+  leaving exactly one signed run. Both commands were byte-identical and shared
+  the same instrument fingerprint. No threshold, endpoint, or instrument file
+  changed.
 - 2026-07-22: PI selected scoreboard option 1, approved signing, and approved
   the real CPU analysis launch. `bin/exp sign` pinned `cell.yaml`, `gates.yaml`,
   the analysis harness, and its focused tests. No instrument threshold or
