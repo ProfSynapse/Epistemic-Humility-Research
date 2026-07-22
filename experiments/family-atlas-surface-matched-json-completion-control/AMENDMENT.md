@@ -1,8 +1,7 @@
 # Family Atlas Surface-Matched JSON-Completion Control
 
-Status: signed 2026-07-22. The PI-approved Gemma and Qwen pre-sign smokes
-passed. No Stage A scientific generation or Stage B capture has been launched.
-Every later GPU stage requires explicit PI approval.
+Status: null-result (PI adjudicated 2026-07-22). Stage A completed for Gemma
+and Qwen. G2 failed for both models, so Stage B capture was not run.
 
 ## Instrument tier
 
@@ -423,4 +422,27 @@ is allowed on WSL2. Processes expected to exceed 15 minutes use
 
 ## Outcome
 
-Not run. The PI will fill this section at resolution.
+Stage A completed all 5,200 registered generations for each model. G0 and G1
+passed for both. Gemma produced 435 complete three-role triads, split into 216
+FIT and 219 held-out triads. Qwen produced 149 triads, split into 74 FIT and 75
+held-out triads. The planted surface-role-tag control reached pairwise AUROC
+1.0 for both models, so the surface sensor was demonstrably capable of
+detecting a present signal.
+
+G2 failed for both models. On Gemma FIT, maximum pairwise best-orientation
+surface-only AUROC was 0.7223 and maximum scalar absolute SMD was 0.5722. On
+Qwen FIT, the corresponding values were 0.6127 and 0.2730. The registered
+ceilings were AUROC at most 0.60 and maximum scalar absolute SMD at most 0.10.
+The hard stop therefore fired before Stage B capture, G3-G5, or any controlled
+`eff_dim_frac` location result.
+
+Gemma's targeted predecessor comparison covered all 5,189 predecessor-valid
+rows with zero parity failures and repaired all 11 predecessor JSON-interface
+failures. This closes the generation-interface defect but does not repair the
+surface-balance failure.
+
+The PI adjudicated the experiment as a null result caused by prerequisite
+support failure. It is indeterminate with respect to the early-exterior peak
+prediction and is not a falsification. The retained full-generation exhaust was
+subsequently used for the CPU-only matching-feasibility diagnostic recorded in
+`NOTEBOOK.md`; that diagnostic does not alter this verdict.

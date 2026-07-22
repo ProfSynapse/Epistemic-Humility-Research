@@ -1,7 +1,7 @@
 slug: family-atlas-surface-matched-json-completion-control
 title: Family Atlas Surface-Matched JSON-Completion Control
 type: probe-fit
-status: signed
+status: null-result
 registered: true
 created_at: '2026-07-22T17:08:29Z'
 question: Does the early-exterior family-atlas eff_dim_frac peak persist in fresh,
@@ -84,5 +84,7 @@ inputs:
 - experiments/gemma-4-e4b-family-atlas/render_gemma_atlas.py
 - experiments/qwen3-4b-family-atlas/render_qwen3_atlas.py
 - synaptic-tuner
-verdict: ''
+verdict: Exact JSON generation and the planted surface-role sensor passed, but G2
+  surface balance failed for Gemma and Qwen, so no Stage B capture or peak-location
+  endpoint ran; this is indeterminate and does not falsify the early-exterior prediction.
 kg: []

@@ -1512,10 +1512,10 @@
       "question": "Does the early-exterior family-atlas eff_dim_frac peak persist in fresh, cross-original, surface-matched KU-role pools for Gemma-4-E4B-it and Qwen3-4B when a pinned batch-invariant vLLM generator must complete the registered JSON interface?",
       "registered": true,
       "slug": "family-atlas-surface-matched-json-completion-control",
-      "status": "signed",
+      "status": "null-result",
       "title": "Family Atlas Surface-Matched JSON-Completion Control",
       "type": "probe-fit",
-      "verdict": ""
+      "verdict": "Exact JSON generation and the planted surface-role sensor passed, but G2 surface balance failed for Gemma and Qwen, so no Stage B capture or peak-location endpoint ran; this is indeterminate and does not falsify the early-exterior prediction."
     },
     {
       "checkpoint": {
