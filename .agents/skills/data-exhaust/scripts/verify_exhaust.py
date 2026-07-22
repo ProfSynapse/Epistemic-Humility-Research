@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Gate a built exhaust dataset directory before it is allowed near an upload.
 
-Five checks, all must pass:
+Six checks, all must pass:
 
-1. Schema check: PROVENANCE.json and README.md exist; every cell PROVENANCE.json
-   lists actually has a directory, and aggregate manifest.json sha256 entries
-   match the files on disk.
+1. Schema check: PROVENANCE.json and README.md exist; for the aggregate
+   shape, PROVENANCE.json's `files` sha256 entries match the files on disk
+   and every on-disk file is listed; for the row shape, every cell
+   PROVENANCE.json lists actually has a directory.
 2. Row counts vs manifest: for the row-level shape, PROVENANCE.json's
    n_rows_kept_with_text + n_rows_kept_text_free per cell matches the actual
    line count in rows.jsonl.
@@ -24,6 +25,17 @@ Five checks, all must pass:
    `permitted-with-conditions`, that source's exact `conditions` text from
    license-gates.md appears verbatim (whitespace-normalized) in the built
    README.md.
+6. Completeness check (aggregate shape, needs --experiment-dir): the staged
+   file set (PROVENANCE.json's `files`) plus the recorded `excluded` list
+   must equal the file set freshly re-scanned from the source
+   analysis-committed/ tree on disk right now. This is independent of
+   whatever the builder itself claims -- it re-walks the source tree rather
+   than trusting the manifest -- so a builder bug that silently drops an
+   artifact shape (the exact defect this check was added to catch; see
+   build_exhaust_dataset.py's build_aggregate docstring) fails loudly here
+   even if the builder's own bookkeeping looked internally consistent.
+   Skipped with a FAIL (not a silent pass) if --experiment-dir is omitted,
+   since completeness cannot be claimed without checking it.
 
 Exits 0 and prints a PASS summary only if every check passes. Exits nonzero
 and prints every failure found (does not stop at the first one) otherwise.
@@ -65,14 +77,21 @@ def check_containment_lint(out_dir: Path, sources: list[dict[str, Any]], errors:
     # README.md is our own generated dataset card: its "Release Boundary" and
     # "License and Attribution" sections legitimately name the hard-exclusion
     # categories and quote license conditions verbatim as policy
-    # documentation, which is not a leak. Content-scan every other file.
+    # documentation, which is not a leak. PROVENANCE.json's own aggregate
+    # 'excluded' list legitimately names the relative PATH of every file the
+    # builder skipped (that is the whole point of recording it, so a human
+    # can audit what was left out and why) -- it never carries that file's
+    # CONTENT, since a content-level hard-exclusion hit aborts the build
+    # entirely at build time (build_exhaust_dataset.py's build_aggregate).
+    # Naming a path is not a leak; both files are exempt. Content-scan every
+    # other file.
     for path in sorted(out_dir.rglob("*")):
         if not path.is_file():
             continue
         if is_hard_excluded(str(path.relative_to(out_dir))):
             errors.append(f"CONTAINMENT: hard-excluded path component in {path}")
             continue
-        if path.name == "README.md":
+        if path.name in ("README.md", "PROVENANCE.json"):
             continue
         try:
             text = path.read_text(encoding="utf-8")
@@ -148,35 +167,36 @@ def check_schema_and_counts(out_dir: Path, errors: list[str]) -> None:
         errors.append(f"missing {readme_path}")
     provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
     shape = provenance.get("shape")
-    cells = provenance.get("cells") or {}
     if shape not in ("aggregate", "rows"):
         errors.append(f"PROVENANCE.json shape must be 'aggregate' or 'rows', got '{shape}'")
+        return
 
-    for cell_id, info in cells.items():
-        cell_dir = out_dir / cell_id
-        if not cell_dir.is_dir():
-            errors.append(f"PROVENANCE.json lists cell '{cell_id}' but {cell_dir} does not exist")
-            continue
-        if shape == "aggregate":
-            manifest_path = cell_dir / "manifest.json"
-            if not manifest_path.is_file():
-                errors.append(f"missing {manifest_path}")
+    if shape == "aggregate":
+        files = provenance.get("files") or {}
+        for rel, expected_hash in files.items():
+            fpath = out_dir / rel
+            if not fpath.is_file():
+                errors.append(f"PROVENANCE.json 'files' references '{rel}' but {fpath} is missing")
                 continue
-            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-            for fname, expected_hash in (manifest.get("sha256") or {}).items():
-                fpath = cell_dir / fname
-                if not fpath.is_file():
-                    errors.append(f"{manifest_path} references '{fname}' but {fpath} is missing")
-                    continue
-                actual_hash = sha256_bytes(fpath.read_bytes())
-                if actual_hash != expected_hash:
-                    errors.append(f"{fpath}: sha256 mismatch (manifest says {expected_hash}, actual {actual_hash})")
-            listed_files = set(manifest.get("files") or [])
-            on_disk_json = {p.name for p in cell_dir.glob("*.json") if p.name != "manifest.json"}
-            extra = on_disk_json - listed_files
-            if extra:
-                errors.append(f"{cell_dir}: files on disk not listed in manifest.json: {sorted(extra)}")
-        elif shape == "rows":
+            actual_hash = sha256_bytes(fpath.read_bytes())
+            if actual_hash != expected_hash:
+                errors.append(f"{fpath}: sha256 mismatch (PROVENANCE.json says {expected_hash}, actual {actual_hash})")
+        reserved = {provenance_path, readme_path}
+        on_disk = {p for p in out_dir.rglob("*") if p.is_file() and p not in reserved}
+        listed = {out_dir / rel for rel in files}
+        extra = on_disk - listed
+        if extra:
+            errors.append(
+                f"{out_dir}: files on disk not listed in PROVENANCE.json 'files': "
+                f"{sorted(str(p.relative_to(out_dir)) for p in extra)}"
+            )
+    elif shape == "rows":
+        cells = provenance.get("cells") or {}
+        for cell_id, info in cells.items():
+            cell_dir = out_dir / cell_id
+            if not cell_dir.is_dir():
+                errors.append(f"PROVENANCE.json lists cell '{cell_id}' but {cell_dir} does not exist")
+                continue
             rows_path = cell_dir / "rows.jsonl"
             if not rows_path.is_file():
                 errors.append(f"missing {rows_path}")
@@ -189,9 +209,68 @@ def check_schema_and_counts(out_dir: Path, errors: list[str]) -> None:
                 errors.append(f"{rows_path}: PROVENANCE.json says n_rows_kept={expected_n}, actual line count={actual_n}")
 
 
+def check_completeness(out_dir: Path, experiment_dir: Path | None, errors: list[str]) -> None:
+    """Aggregate shape only: re-walk the SOURCE analysis-committed/ tree right
+    now (independent of anything the builder recorded) and require the staged
+    file set plus the recorded exclusions to equal it exactly. See module
+    docstring check 6."""
+    provenance_path = out_dir / "PROVENANCE.json"
+    if not provenance_path.is_file():
+        return  # already reported by check_schema_and_counts
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    if provenance.get("shape") != "aggregate":
+        return
+    if experiment_dir is None:
+        errors.append(
+            "COMPLETENESS: --experiment-dir not provided; cannot verify the staged files "
+            "against the source analysis-committed/ tree (this check is mandatory before publication)"
+        )
+        return
+    committed_root = experiment_dir / "analysis-committed"
+    if not committed_root.is_dir():
+        errors.append(f"COMPLETENESS: {committed_root} does not exist; cannot verify")
+        return
+
+    source_files = {p.relative_to(committed_root).as_posix() for p in committed_root.rglob("*") if p.is_file()}
+    staged_files = set((provenance.get("files") or {}).keys())
+    excluded_entries = provenance.get("excluded") or []
+    excluded_paths = {e.get("path") for e in excluded_entries}
+
+    for entry in excluded_entries:
+        if not entry.get("reason"):
+            errors.append(f"COMPLETENESS: excluded entry {entry} has no 'reason'")
+
+    expected_staged = source_files - excluded_paths
+    missing = expected_staged - staged_files
+    unexpected = staged_files - expected_staged
+    excluded_not_in_source = excluded_paths - source_files
+
+    if missing:
+        errors.append(
+            f"COMPLETENESS: {len(missing)} source file(s) present in {committed_root} but "
+            f"missing from the staged output and not recorded as excluded: {sorted(missing)}"
+        )
+    if unexpected:
+        errors.append(
+            f"COMPLETENESS: {len(unexpected)} staged file(s) do not correspond to a source "
+            f"file (and are not explained by an exclusion): {sorted(unexpected)}"
+        )
+    if excluded_not_in_source:
+        errors.append(
+            f"COMPLETENESS: 'excluded' list references path(s) not found in the current "
+            f"source tree: {sorted(excluded_not_in_source)}"
+        )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--dataset-dir", required=True, help="dataset dir produced by build_exhaust_dataset.py")
+    parser.add_argument(
+        "--experiment-dir",
+        default=None,
+        help="path to experiments/<slug>/ (the same --experiment-dir the builder was pointed at); "
+        "required for the aggregate-shape completeness check (see module docstring check 6)",
+    )
     parser.add_argument("--license-gates", default=str(DEFAULT_LICENSE_GATES))
     args = parser.parse_args(argv)
 
@@ -199,6 +278,7 @@ def main(argv: list[str] | None = None) -> int:
     if not out_dir.is_dir():
         print(f"[verify-exhaust] FATAL: {out_dir} is not a directory", file=sys.stderr)
         return 2
+    experiment_dir = Path(args.experiment_dir).resolve() if args.experiment_dir else None
 
     errors: list[str] = []
     sources = load_license_gates(Path(args.license_gates).resolve(), errors)
@@ -206,6 +286,7 @@ def main(argv: list[str] | None = None) -> int:
     check_schema_and_counts(out_dir, errors)
     check_containment_lint(out_dir, sources, errors)
     check_disclosure(out_dir, sources, errors)
+    check_completeness(out_dir, experiment_dir, errors)
 
     if errors:
         print(f"[verify-exhaust] FAIL: {len(errors)} problem(s) in {out_dir}", file=sys.stderr)

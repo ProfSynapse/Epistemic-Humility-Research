@@ -1,0 +1,76 @@
+# Cell config for evidence-response-direction-search (M4c). DRAFT.
+#
+# The constructive inversion of M4-WK. Every prior margin-cascade cell
+# auditioned a pre-fit direction against earnability rung (d) (evidence
+# responsiveness). This cell fits a direction ON the rung-(d) contrast (the
+# paired true-vs-false evidence difference M4-WK's leg-2 showed is real) and
+# asks whether that constructed direction ALSO tracks prospective ignorance at
+# baseline (rung a), specifically (rung c), and, conditionally, drives
+# abstention (rung b). Qwen only; exploratory mechanism tier; never pooled
+# with the locked headline matrix.
+#
+# No new forward passes for the CPU rungs: the cell reuses M4-WK's three
+# channel-1 capture arms (test population, 1001 rows/arm, hs20 anchors)
+# verbatim. Rung (b) is the only GPU stage and is conditional on a rung-(a)
+# pass (PI ruling 2026-07-18) plus fresh launch approval.
+
+substrate:
+  family: qwen35_4b
+  model_repo: Qwen/Qwen3.5-4B
+  model_revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+  dtype: bf16
+  enable_thinking: false
+  system_prompt: BASELINE_SYSTEM_PROMPT (frozen, M1 lineage)
+  layer: hs20
+  layer_index: 19
+  anchor: question last token, len-1, one vector per row per arm
+
+population:
+  source: M4-WK test population (test_population.json, seed 48260727)
+  roles: {confab: 400, correct_on_answerable: 360, refused_on_answerable: 241}
+  captures: reused M4-WK channel-1 arms (no_answer_baseline, true_answer, false_answer_placebo)
+  capture_source_path: /home/profsynapse/code/ehr-worktrees/m4-worldknown/experiments/margin-evidence-responsiveness-worldknown/analysis/channel1_capture/
+  note: true/false arms exist ONLY for these 400 confab rows; the within-400 fit/held-out split is a hard constraint, not a choice
+
+fit:
+  direction: d_ev
+  estimator_primary: mean paired difference mean(h_true - h_false) over FIT confab rows, unit-normalized
+  estimator_secondary: top principal component of the centered paired-difference matrix (report-only robustness reading; never rounds into the primary verdict)
+  split: {fit: 200, held_out: 200, seed: 48260728, method: id-only permutation of the 400 confab row-keys}
+  split_routine_pinned: sort the 400 confab row-keys lexicographically (byte order); perm = numpy.random.default_rng(48260728).permutation(400); fit = sorted_keys[perm[:200]], held_out = sorted_keys[perm[200:]]; the analysis re-derives this and hard-asserts equality with the committed fit_heldout_split.json (SC0 enforcement, red-team M-B)
+  d_ev_reproducibility: the analysis recomputes d_ev from staged raw tensors + the committed fit id-list and hard-asserts equality (tolerance 1e-6) with the committed d_ev.json (SC0 enforcement, red-team M-B)
+  negatives: all 360 correct-control rows are held-out by construction (never in fit)
+  sign_convention: d_ev points false -> true (grounding positive); registered confab-positive score is -(h . d_ev); orientation fixed at sign, never chosen on held-out data
+  artifact: analysis-committed/directions/hs20/d_ev.json (mechinterp-direction/v1, sha-pinned, fit-split id-list hash in provenance block)
+
+readouts:
+  rung_a_primary:
+    arm: no_answer_baseline
+    metric: held-out confab-vs-correct AUROC, bootstrap 95% CI (seed 48260724, 10000 resamples)
+    floor: 0.70
+  rung_c_primary_companion:
+    null_directions: {K: 1000, distribution: covariance-shaped from baseline confab+correct anchors, seed: 48260729, bar: 95th percentile}
+    upper_comparator: c_hat_worldknown (sha256 432c9f1f..., baseline AUROC 0.86275)
+    lower_comparator: KUQ c_hat (sha256 937d1bff..., baseline AUROC 0.3018 here)
+    strong_bar: paired AUROC-difference (d_ev minus native) lower 95% CI >= -0.05
+  rung_b_conditional_secondary:
+    condition: rung (a) pass + fresh explicit launch approval
+    reference_dose: 8 x sigma_c of d_ev baseline projection (formula-at-sign, numeric-at-repin)
+    ladder_fractions: [0.5, 1.0, 1.5, 2.0]
+    coherence_guard: rungs >= 3.0x instrument-invalid (M4-WK ruling); per-rung generation-health reported
+    control: matched control direction, paired bootstrap CI
+  kuq_transfer_ungated:
+    anchors: experiments/qwen35-4b-midband-doubt-snap/analysis/anchor_extract.safetensors (hs20)
+    roles: fit_rows_for_anchor.jsonl
+    metric: confab-vs-correct AUROC, report-only
+
+seeds:
+  fit_heldout_split: 48260728
+  bootstrap: 48260724
+  random_null: 48260729
+  series_note: extends the 4826072x series; 48260724-48260727 are M4-WK's
+
+containment:
+  committed: aggregates, direction vector, opaque id-lists, sha256 hashes only
+  never_committed: generation text, question text, answer text, token ids
+  exhaust_path: data-exhaust skill (separate, license-gated)

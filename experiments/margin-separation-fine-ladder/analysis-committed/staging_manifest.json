@@ -1,0 +1,63 @@
+{
+  "files": [
+    {
+      "cell_yaml_pin": true,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/subsample_ids_qwen35_4b.json",
+      "name": "subsample_ids",
+      "sha256": "60d5a3e13de5f85d35776dcee3c15dddea2e301951ded42849516865fe32723d",
+      "source_path": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/margin-mapping/analysis-committed/subsample_ids_qwen35_4b.json"
+    },
+    {
+      "cell_yaml_pin": true,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/qwen35_4b_margin_rows.jsonl",
+      "name": "margin_dataset",
+      "sha256": "84f4d3b8674a18eb944a4b921383e1cfb1147db892dee2c19348f671b7f41565",
+      "source_path": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/margin-mapping/analysis/margin_dataset/qwen35_4b_margin_rows.jsonl"
+    },
+    {
+      "cell_yaml_pin": true,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/runlog/qwen35_4b__rung_0p5.jsonl",
+      "name": "rung_0p5",
+      "sha256": "7bccb26ad3c02f586ca03fb426a7cf4489c892d4116d4f49db550f4ff96a42fd",
+      "source_path": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_0p5.jsonl"
+    },
+    {
+      "cell_yaml_pin": true,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/runlog/qwen35_4b__rung_0p75.jsonl",
+      "name": "rung_0p75",
+      "sha256": "512a33d0bd984cd5659f0554673357aef4397f42a785c8ca8c0ad730463154f6",
+      "source_path": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_0p75.jsonl"
+    },
+    {
+      "cell_yaml_pin": true,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/runlog/qwen35_4b__rung_1p5.jsonl",
+      "name": "rung_1p5",
+      "sha256": "c9382f8822533f13c41778c82c270c0bf5d5b5c0ceaf02a0980814fd627b3450",
+      "source_path": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_1p5.jsonl"
+    },
+    {
+      "cell_yaml_pin": true,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/runlog/qwen35_4b__rung_2.jsonl",
+      "name": "rung_2p0",
+      "sha256": "b91ebb43900ed1c8db26e19ee584995a3a3210670619df0ff67217ec66842fa1",
+      "source_path": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_2.jsonl"
+    },
+    {
+      "cell_yaml_pin": false,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/directions/hs20_c_hat.json",
+      "name": "c_hat_direction",
+      "sha256": "937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f",
+      "source_path": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json"
+    },
+    {
+      "cell_yaml_pin": false,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/heldout_rows_for_steer.jsonl",
+      "name": "question_pool",
+      "sha256": "76097bf7046cefa673280110a5d3b83aeaf0affbc98dc73078ecdec9785d178b",
+      "source_path": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/margin-mapping/analysis/staged_inputs/qwen35_4b/heldout_rows_for_steer.jsonl"
+    }
+  ],
+  "n_cell_yaml_pinned": 6,
+  "n_convention_carried_not_cell_yaml_pinned": 2,
+  "n_files": 8
+}

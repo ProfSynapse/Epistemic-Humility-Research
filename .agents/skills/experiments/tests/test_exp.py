@@ -122,6 +122,121 @@ def test_signed_experiment_validates(repo: Path):
     assert _run(repo, "validate") == 0
 
 
+# --- persistence declarations (kill-resume safety) ---------------------------
+
+def test_sign_refuses_module_without_persistence_declaration(repo: Path):
+    d = _sign_ready(repo, "cell-persist-missing")
+    (d / "harness.py").write_text("# harness\n", encoding="utf-8")
+    m = _manifest(repo, "cell-persist-missing")
+    m["instrument"]["modules"] = ["harness.py"]
+    _write_manifest(repo, "cell-persist-missing", m)
+    assert _run(repo, "sign", "cell-persist-missing") == 2
+    assert _manifest(repo, "cell-persist-missing")["status"] == "draft"
+
+
+def test_sign_accepts_incremental_persistence_declaration(repo: Path):
+    d = _sign_ready(repo, "cell-persist-incremental")
+    (d / "harness.py").write_text("# harness\n", encoding="utf-8")
+    m = _manifest(repo, "cell-persist-incremental")
+    m["instrument"]["modules"] = ["harness.py"]
+    m["instrument"]["persistence"] = {
+        "harness.py": {
+            "persistence": "incremental",
+            "checkpoint_path": "experiments/cell-persist-incremental/analysis/runlog/harness.jsonl",
+        }
+    }
+    _write_manifest(repo, "cell-persist-incremental", m)
+    assert _run(repo, "sign", "cell-persist-incremental") == 0
+    assert _manifest(repo, "cell-persist-incremental")["status"] == "signed"
+
+
+def test_sign_accepts_short_run_persistence_declaration(repo: Path):
+    d = _sign_ready(repo, "cell-persist-shortrun")
+    (d / "pool_builder.py").write_text("# pool builder\n", encoding="utf-8")
+    m = _manifest(repo, "cell-persist-shortrun")
+    m["instrument"]["modules"] = ["pool_builder.py"]
+    m["instrument"]["persistence"] = {
+        "pool_builder.py": {
+            "persistence": "short-run",
+            "measured_smoke_wall_clock_s": 42.5,
+        }
+    }
+    _write_manifest(repo, "cell-persist-shortrun", m)
+    assert _run(repo, "sign", "cell-persist-shortrun") == 0
+
+
+def test_sign_refuses_incremental_without_checkpoint_path(repo: Path):
+    d = _sign_ready(repo, "cell-persist-badincremental")
+    (d / "harness.py").write_text("# harness\n", encoding="utf-8")
+    m = _manifest(repo, "cell-persist-badincremental")
+    m["instrument"]["modules"] = ["harness.py"]
+    m["instrument"]["persistence"] = {"harness.py": {"persistence": "incremental"}}
+    _write_manifest(repo, "cell-persist-badincremental", m)
+    assert _run(repo, "sign", "cell-persist-badincremental") == 2
+
+
+def test_sign_refuses_short_run_without_numeric_wall_clock(repo: Path):
+    d = _sign_ready(repo, "cell-persist-badshortrun")
+    (d / "pool_builder.py").write_text("# pool builder\n", encoding="utf-8")
+    m = _manifest(repo, "cell-persist-badshortrun")
+    m["instrument"]["modules"] = ["pool_builder.py"]
+    m["instrument"]["persistence"] = {
+        "pool_builder.py": {"persistence": "short-run", "measured_smoke_wall_clock_s": "fast"}
+    }
+    _write_manifest(repo, "cell-persist-badshortrun", m)
+    assert _run(repo, "sign", "cell-persist-badshortrun") == 2
+
+
+def test_sign_ignores_persistence_when_no_modules(repo: Path):
+    # Config-only instruments (no bespoke modules) have nothing to declare.
+    _sign_ready(repo, "cell-persist-nomodules")
+    assert _run(repo, "sign", "cell-persist-nomodules") == 0
+
+
+def test_validate_warns_but_passes_on_draft_missing_persistence(repo: Path, capsys):
+    # validate only ever warns about a missing persistence declaration, even
+    # on a draft: the hard-enforcement point is sign, not validate. This
+    # keeps validate from retroactively failing on a stale draft that was
+    # never run through `exp sign` at all.
+    _run(repo, "new", "cell-persist-draft", "--type", "eval")
+    d = exp.experiments_dir(repo) / "cell-persist-draft"
+    (d / "harness.py").write_text("# harness\n", encoding="utf-8")
+    m = _manifest(repo, "cell-persist-draft")
+    m["question"] = "q"
+    m["instrument"]["modules"] = ["harness.py"]
+    _write_manifest(repo, "cell-persist-draft", m)
+    capsys.readouterr()
+    assert _run(repo, "validate") == 0
+    assert "warning" in capsys.readouterr().err
+
+
+def test_validate_warns_but_passes_on_signed_missing_persistence(repo: Path, capsys):
+    # A signed experiment that predates this requirement (or was hand-edited
+    # to simulate a legacy record) must only warn, never fail validate --
+    # this is the backward-compat split for the ~85 pre-existing experiments.
+    d = _sign_ready(repo, "cell-persist-legacy")
+    (d / "harness.py").write_text("# harness\n", encoding="utf-8")
+    m = _manifest(repo, "cell-persist-legacy")
+    m["instrument"]["modules"] = ["harness.py"]
+    m["instrument"]["persistence"] = {
+        "harness.py": {
+            "persistence": "incremental",
+            "checkpoint_path": "experiments/cell-persist-legacy/analysis/runlog/harness.jsonl",
+        }
+    }
+    _write_manifest(repo, "cell-persist-legacy", m)
+    _run(repo, "sign", "cell-persist-legacy")
+    # Simulate a legacy record signed before the declaration existed: strip it
+    # back out post-sign without going through repin (this mirrors a manifest
+    # written before the field existed, not a real repin scenario).
+    m2 = _manifest(repo, "cell-persist-legacy")
+    m2["instrument"]["persistence"] = {}
+    _write_manifest(repo, "cell-persist-legacy", m2)
+    capsys.readouterr()
+    assert _run(repo, "validate") == 0
+    assert "warning" in capsys.readouterr().err
+
+
 # --- pin drift detection -----------------------------------------------------
 
 def test_validate_detects_pin_drift(repo: Path):
@@ -176,6 +291,29 @@ def test_validate_flags_missing_input_path(repo: Path):
     m["question"] = "q"
     m["inputs"] = ["does/not/exist.csv"]
     _write_manifest(repo, "cell-in", m)
+    assert _run(repo, "validate") == 1
+
+
+def test_validate_tolerates_missing_gitignored_data_input(repo: Path):
+    # An input under an experiment's gitignored data dir (analysis/) is
+    # run-materialized: absent in a fresh worktree/clean clone is a warning, not
+    # a commit-blocking error. See _is_untracked_data_input.
+    _run(repo, "new", "cell-din", "--type", "eval")
+    m = _manifest(repo, "cell-din")
+    m["question"] = "q"
+    m["inputs"] = ["experiments/cell-din/analysis/runlog/x.jsonl"]
+    _write_manifest(repo, "cell-din", m)
+    assert _run(repo, "validate") == 0
+
+
+def test_validate_still_flags_missing_tracked_data_input(repo: Path):
+    # analysis-committed/ is tracked, so a missing input there is still a hard
+    # error (the relaxation is scoped to analysis/ and directions/ only).
+    _run(repo, "new", "cell-dtracked", "--type", "eval")
+    m = _manifest(repo, "cell-dtracked")
+    m["question"] = "q"
+    m["inputs"] = ["experiments/cell-dtracked/analysis-committed/ids.json"]
+    _write_manifest(repo, "cell-dtracked", m)
     assert _run(repo, "validate") == 1
 
 

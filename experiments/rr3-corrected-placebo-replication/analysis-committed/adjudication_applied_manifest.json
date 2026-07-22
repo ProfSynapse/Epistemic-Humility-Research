@@ -1,0 +1,288 @@
+{
+  "n_applied_rows": 14485,
+  "pooled_clear_positive": {
+    "clear_positive_agreement_pooled": 0.7817679558011049,
+    "clear_positive_correct_pooled": 849,
+    "clear_positive_total_pooled": 1086,
+    "floor": 0.6,
+    "n_shards": 21,
+    "passed": true
+  },
+  "pooled_failure_cells": [],
+  "shards": {
+    "core_mistral_shard_00": {
+      "cell": "core_mistral",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.9038461538461539,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "core_mistral_shard_00",
+        "status": "PASS"
+      }
+    },
+    "core_mistral_shard_01": {
+      "cell": "core_mistral",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8461538461538461,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "core_mistral_shard_01",
+        "status": "PASS"
+      }
+    },
+    "core_mistral_shard_02": {
+      "cell": "core_mistral",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7692307692307693,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "core_mistral_shard_02",
+        "status": "PASS"
+      }
+    },
+    "core_mistral_shard_03": {
+      "cell": "core_mistral",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7115384615384616,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "core_mistral_shard_03",
+        "status": "PASS"
+      }
+    },
+    "core_mistral_shard_04": {
+      "cell": "core_mistral",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.75,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "core_mistral_shard_04",
+        "status": "PASS"
+      }
+    },
+    "core_mistral_shard_05": {
+      "cell": "core_mistral",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7115384615384616,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "core_mistral_shard_05",
+        "status": "PASS"
+      }
+    },
+    "core_mistral_shard_06": {
+      "cell": "core_mistral",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7115384615384616,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "core_mistral_shard_06",
+        "status": "PASS"
+      }
+    },
+    "core_mistral_shard_07": {
+      "cell": "core_mistral",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7692307692307693,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "core_mistral_shard_07",
+        "status": "PASS"
+      }
+    },
+    "rider_llama_shard_00": {
+      "cell": "rider_llama",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.6730769230769231,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "rider_llama_shard_00",
+        "status": "PASS"
+      }
+    },
+    "rider_llama_shard_01": {
+      "cell": "rider_llama",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7692307692307693,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "rider_llama_shard_01",
+        "status": "PASS"
+      }
+    },
+    "rider_llama_shard_02": {
+      "cell": "rider_llama",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8846153846153846,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "rider_llama_shard_02",
+        "status": "PASS"
+      }
+    },
+    "rider_llama_shard_03": {
+      "cell": "rider_llama",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8269230769230769,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "rider_llama_shard_03",
+        "status": "PASS"
+      }
+    },
+    "rider_llama_shard_04": {
+      "cell": "rider_llama",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7692307692307693,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "rider_llama_shard_04",
+        "status": "PASS"
+      }
+    },
+    "rider_llama_shard_05": {
+      "cell": "rider_llama",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.75,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "rider_llama_shard_05",
+        "status": "PASS"
+      }
+    },
+    "rider_llama_shard_06": {
+      "cell": "rider_llama",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7692307692307693,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 52,
+        "passed": true,
+        "shard_id": "rider_llama_shard_06",
+        "status": "PASS"
+      }
+    },
+    "rider_mistral_shard_00": {
+      "cell": "rider_mistral",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.9215686274509803,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 51,
+        "passed": true,
+        "shard_id": "rider_mistral_shard_00",
+        "status": "PASS"
+      }
+    },
+    "rider_mistral_shard_01": {
+      "cell": "rider_mistral",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8823529411764706,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 51,
+        "passed": true,
+        "shard_id": "rider_mistral_shard_01",
+        "status": "PASS"
+      }
+    },
+    "rider_mistral_shard_02": {
+      "cell": "rider_mistral",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8823529411764706,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 51,
+        "passed": true,
+        "shard_id": "rider_mistral_shard_02",
+        "status": "PASS"
+      }
+    },
+    "rider_mistral_shard_03": {
+      "cell": "rider_mistral",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8235294117647058,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 51,
+        "passed": true,
+        "shard_id": "rider_mistral_shard_03",
+        "status": "PASS"
+      }
+    },
+    "rider_mistral_shard_04": {
+      "cell": "rider_mistral",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 0.9545454545454546,
+        "clear_positive_agreement": 0.6862745098039216,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 51,
+        "passed": true,
+        "shard_id": "rider_mistral_shard_04",
+        "status": "PASS"
+      }
+    },
+    "rider_mistral_shard_05": {
+      "cell": "rider_mistral",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.6078431372549019,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 51,
+        "passed": true,
+        "shard_id": "rider_mistral_shard_05",
+        "status": "PASS"
+      }
+    }
+  },
+  "voided_cells": []
+}

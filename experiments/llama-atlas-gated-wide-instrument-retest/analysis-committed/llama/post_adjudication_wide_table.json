@@ -1,0 +1,2108 @@
+{
+  "baseline": {
+    "confab": {
+      "n_pending_adjudication": 0,
+      "refused_narrow": {
+        "n": 1453,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.002636840678465979
+        ]
+      },
+      "refused_wide_adjudicated": {
+        "n": 1453,
+        "rate": 0.1624225739848589,
+        "successes": 236,
+        "wilson_ci_95": [
+          0.14435190868167824,
+          0.18227351506613665
+        ]
+      },
+      "refused_wide_screen": {
+        "n": 1453,
+        "rate": 0.035788024776324846,
+        "successes": 52,
+        "wilson_ci_95": [
+          0.02739498856083044,
+          0.04662916703122091
+        ]
+      }
+    },
+    "known_correct_answered": {
+      "n_pending_adjudication": 239,
+      "refused_narrow": {
+        "n": 556,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.006861690502139942
+        ]
+      },
+      "refused_wide_adjudicated": {
+        "n": 556,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.006861690502139942
+        ]
+      },
+      "refused_wide_screen": {
+        "n": 556,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.006861690502139942
+        ]
+      }
+    }
+  },
+  "cell": "llama_wide_retest",
+  "rungs": [
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.328125,
+          "successes": 189,
+          "wilson_ci_95": [
+            0.2910296474342584,
+            0.3674977017437381
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.4565972222222222,
+          "successes": 263,
+          "wilson_ci_95": [
+            0.4163402670893985,
+            0.4974292655313077
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.3524305555555556,
+          "successes": 203,
+          "wilson_ci_95": [
+            0.31451169540084833,
+            0.3923047155095528
+          ]
+        }
+      },
+      "dose_mult": 12,
+      "known": {
+        "n_pending_adjudication": 36,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.14864864864864866,
+          "successes": 33,
+          "wilson_ci_95": [
+            0.1078455825184505,
+            0.2014043629317534
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.27927927927927926,
+          "successes": 62,
+          "wilson_ci_95": [
+            0.22440075207906038,
+            0.3416665213447855
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.14864864864864866,
+          "successes": 33,
+          "wilson_ci_95": [
+            0.1078455825184505,
+            0.2014043629317534
+          ]
+        }
+      },
+      "layer": 20,
+      "n_confab": 576,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.2941746482373633
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.4357638888888889,
+          "successes": 251,
+          "wilson_ci_95": [
+            0.395827363054936,
+            0.47655154522370907
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.5486111111111112,
+          "successes": 316,
+          "wilson_ci_95": [
+            0.5077834758792832,
+            0.5887946475855259
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.4444444444444444,
+          "successes": 256,
+          "wilson_ci_95": [
+            0.40436572308753005,
+            0.4852592786669738
+          ]
+        }
+      },
+      "dose_mult": 16,
+      "known": {
+        "n_pending_adjudication": 12,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.2747747747747748,
+          "successes": 61,
+          "wilson_ci_95": [
+            0.2202599877857559,
+            0.3369515157079645
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.4864864864864865,
+          "successes": 108,
+          "wilson_ci_95": [
+            0.4215294516640721,
+            0.5519032385455511
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.2747747747747748,
+          "successes": 61,
+          "wilson_ci_95": [
+            0.2202599877857559,
+            0.3369515157079645
+          ]
+        }
+      },
+      "layer": 20,
+      "n_confab": 576,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.38618853712625223
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.022569444444444444,
+          "successes": 13,
+          "wilson_ci_95": [
+            0.013236320004259481,
+            0.0382285388235086
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.1892361111111111,
+          "successes": 109,
+          "wilson_ci_95": [
+            0.1593467326990441,
+            0.2232431208652122
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.0642361111111111,
+          "successes": 37,
+          "wilson_ci_95": [
+            0.04695964552329833,
+            0.08728646198859179
+          ]
+        }
+      },
+      "dose_mult": 2,
+      "known": {
+        "n_pending_adjudication": 83,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        }
+      },
+      "layer": 20,
+      "n_confab": 576,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.0268135371262522
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.3229166666666667,
+          "successes": 186,
+          "wilson_ci_95": [
+            0.28601256073187215,
+            0.3621671323606091
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.5989583333333334,
+          "successes": 345,
+          "wilson_ci_95": [
+            0.5584052814552926,
+            0.6382001841694974
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.328125,
+          "successes": 189,
+          "wilson_ci_95": [
+            0.2910296474342584,
+            0.3674977017437381
+          ]
+        }
+      },
+      "dose_mult": 20,
+      "known": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.21621621621621623,
+          "successes": 48,
+          "wilson_ci_95": [
+            0.16713729623246,
+            0.27494919816962776
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.6621621621621622,
+          "successes": 147,
+          "wilson_ci_95": [
+            0.5976567921698268,
+            0.7211509253146944
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.22072072072072071,
+          "successes": 49,
+          "wilson_ci_95": [
+            0.17117325593537486,
+            0.27976900839683844
+          ]
+        }
+      },
+      "layer": 20,
+      "n_confab": 576,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.43653575934847444
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.08854166666666667,
+          "successes": 51,
+          "wilson_ci_95": [
+            0.06798491042934136,
+            0.1145502588149533
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.2361111111111111,
+          "successes": 136,
+          "wilson_ci_95": [
+            0.2032477933307783,
+            0.2724709650031153
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.13541666666666666,
+          "successes": 78,
+          "wilson_ci_95": [
+            0.10987699825518052,
+            0.16578707575875143
+          ]
+        }
+      },
+      "dose_mult": 4,
+      "known": {
+        "n_pending_adjudication": 72,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        }
+      },
+      "layer": 20,
+      "n_confab": 576,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.0736885371262522
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.1527777777777778,
+          "successes": 88,
+          "wilson_ci_95": [
+            0.12570446894633716,
+            0.18445179201931236
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.2847222222222222,
+          "successes": 164,
+          "wilson_ci_95": [
+            0.24938902224356607,
+            0.3229078595551367
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.2013888888888889,
+          "successes": 116,
+          "wilson_ci_95": [
+            0.17066513911008738,
+            0.23606924532037118
+          ]
+        }
+      },
+      "dose_mult": 6,
+      "known": {
+        "n_pending_adjudication": 78,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.06756756756756757,
+          "successes": 15,
+          "wilson_ci_95": [
+            0.041370976695617234,
+            0.10847511001232601
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.07207207207207207,
+          "successes": 16,
+          "wilson_ci_95": [
+            0.04484672109975554,
+            0.11385513553831328
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.06756756756756757,
+          "successes": 15,
+          "wilson_ci_95": [
+            0.041370976695617234,
+            0.10847511001232601
+          ]
+        }
+      },
+      "layer": 20,
+      "n_confab": 576,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.1222996482373633
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.21006944444444445,
+          "successes": 121,
+          "wilson_ci_95": [
+            0.17877809689398164,
+            0.24520238101233569
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.3333333333333333,
+          "successes": 192,
+          "wilson_ci_95": [
+            0.29605202463460634,
+            0.3728229806289053
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.2586805555555556,
+          "successes": 149,
+          "wilson_ci_95": [
+            0.22460015205442518,
+            0.29595844931670134
+          ]
+        }
+      },
+      "dose_mult": 8,
+      "known": {
+        "n_pending_adjudication": 63,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.0945945945945946,
+          "successes": 21,
+          "wilson_ci_95": [
+            0.06270429721505061,
+            0.1402764090736462
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.11711711711711711,
+          "successes": 26,
+          "wilson_ci_95": [
+            0.08118908019106666,
+            0.16607047574825806
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.0945945945945946,
+          "successes": 21,
+          "wilson_ci_95": [
+            0.06270429721505061,
+            0.1402764090736462
+          ]
+        }
+      },
+      "layer": 20,
+      "n_confab": 576,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.1709107593484744
+    },
+    {
+      "arm": "random_direction",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.1545138888888889,
+          "successes": 89,
+          "wilson_ci_95": [
+            0.127294663384004,
+            0.18631081627681725
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.24131944444444445,
+          "successes": 139,
+          "wilson_ci_95": [
+            0.20816382484864826,
+            0.2779025895707606
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.1701388888888889,
+          "successes": 98,
+          "wilson_ci_95": [
+            0.14166199014037592,
+            0.20298645777699112
+          ]
+        }
+      },
+      "dose_mult": 12,
+      "known": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 0,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 0,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 0,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "layer": 20,
+      "n_confab": 576,
+      "n_known": 0,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.07889687045958554
+    },
+    {
+      "arm": "random_direction",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.1267361111111111,
+          "successes": 73,
+          "wilson_ci_95": [
+            0.10201831930041255,
+            0.15639966123766064
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.3784722222222222,
+          "successes": 218,
+          "wilson_ci_95": [
+            0.33979244592141367,
+            0.4187622454165637
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.13368055555555555,
+          "successes": 77,
+          "wilson_ci_95": [
+            0.1083021545078462,
+            0.16391270081091402
+          ]
+        }
+      },
+      "dose_mult": 16,
+      "known": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 0,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 0,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 0,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "layer": 20,
+      "n_confab": 576,
+      "n_known": 0,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.2160496482373633
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 577,
+          "rate": 0.12305025996533796,
+          "successes": 71,
+          "wilson_ci_95": [
+            0.09871263480603389,
+            0.15237388218743614
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 577,
+          "rate": 0.25996533795493937,
+          "successes": 150,
+          "wilson_ci_95": [
+            0.22584753084501816,
+            0.2972581362979502
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 577,
+          "rate": 0.14904679376083188,
+          "successes": 86,
+          "wilson_ci_95": [
+            0.12231267742256771,
+            0.18042304529549055
+          ]
+        }
+      },
+      "dose_mult": 12,
+      "known": {
+        "n_pending_adjudication": 41,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.0990990990990991,
+          "successes": 22,
+          "wilson_ci_95": [
+            0.06635706872257166,
+            0.1454794074962507
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.2747747747747748,
+          "successes": 61,
+          "wilson_ci_95": [
+            0.2202599877857559,
+            0.3369515157079645
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.1036036036036036,
+          "successes": 23,
+          "wilson_ci_95": [
+            0.07003315261899459,
+            0.15065909352995335
+          ]
+        }
+      },
+      "layer": 22,
+      "n_confab": 577,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.09754276397008046
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 577,
+          "rate": 0.08838821490467938,
+          "successes": 51,
+          "wilson_ci_95": [
+            0.06786594801426654,
+            0.11435496134641912
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 577,
+          "rate": 0.14904679376083188,
+          "successes": 86,
+          "wilson_ci_95": [
+            0.12231267742256771,
+            0.18042304529549055
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 577,
+          "rate": 0.09705372616984402,
+          "successes": 56,
+          "wilson_ci_95": [
+            0.07549715845645533,
+            0.1239401528124264
+          ]
+        }
+      },
+      "dose_mult": 16,
+      "known": {
+        "n_pending_adjudication": 19,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.06306306306306306,
+          "successes": 14,
+          "wilson_ci_95": [
+            0.03793347057563773,
+            0.10305684620217992
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.25225225225225223,
+          "successes": 56,
+          "wilson_ci_95": [
+            0.19966742414891503,
+            0.31326522969417736
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.06306306306306306,
+          "successes": 14,
+          "wilson_ci_95": [
+            0.03793347057563773,
+            0.10305684620217992
+          ]
+        }
+      },
+      "layer": 22,
+      "n_confab": 577,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": -0.013375780224027023
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 577,
+          "rate": 0.024263431542461005,
+          "successes": 14,
+          "wilson_ci_95": [
+            0.01450725715757112,
+            0.04031227808246344
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 577,
+          "rate": 0.19410745233968804,
+          "successes": 112,
+          "wilson_ci_95": [
+            0.16390228754417402,
+            0.22835872509650396
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 577,
+          "rate": 0.0658578856152513,
+          "successes": 38,
+          "wilson_ci_95": [
+            0.04835470047429441,
+            0.0891035639250814
+          ]
+        }
+      },
+      "dose_mult": 2,
+      "known": {
+        "n_pending_adjudication": 93,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        }
+      },
+      "layer": 22,
+      "n_confab": 577,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.03168487835482914
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 577,
+          "rate": 0.0034662045060658577,
+          "successes": 2,
+          "wilson_ci_95": [
+            0.0009510735186530599,
+            0.012549097141710881
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        }
+      },
+      "dose_mult": 20,
+      "known": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.0045045045045045045,
+          "successes": 1,
+          "wilson_ci_95": [
+            0.0007955986955411783,
+            0.02506970899064379
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        }
+      },
+      "layer": 22,
+      "n_confab": 577,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": -0.15895636947879305
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 577,
+          "rate": 0.05025996533795494,
+          "successes": 29,
+          "wilson_ci_95": [
+            0.03521936319637611,
+            0.07124937776824673
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 577,
+          "rate": 0.19930675909878684,
+          "successes": 115,
+          "wilson_ci_95": [
+            0.16874733463212477,
+            0.23384351915347085
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 577,
+          "rate": 0.09705372616984402,
+          "successes": 56,
+          "wilson_ci_95": [
+            0.07549715845645533,
+            0.1239401528124264
+          ]
+        }
+      },
+      "dose_mult": 4,
+      "known": {
+        "n_pending_adjudication": 81,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.02252252252252252,
+          "successes": 5,
+          "wilson_ci_95": [
+            0.009657747756870994,
+            0.05163063964981633
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        }
+      },
+      "layer": 22,
+      "n_confab": 577,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.036884185113927936
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 577,
+          "rate": 0.0779896013864818,
+          "successes": 45,
+          "wilson_ci_95": [
+            0.058795253097711955,
+            0.10276597397313837
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 577,
+          "rate": 0.2391681109185442,
+          "successes": 138,
+          "wilson_ci_95": [
+            0.2061594111738606,
+            0.275626891389437
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 577,
+          "rate": 0.12478336221837089,
+          "successes": 72,
+          "wilson_ci_95": [
+            0.10027514642823125,
+            0.15425465094687799
+          ]
+        }
+      },
+      "dose_mult": 6,
+      "known": {
+        "n_pending_adjudication": 77,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.05405405405405406,
+          "successes": 12,
+          "wilson_ci_95": [
+            0.03118823723895037,
+            0.0920905396786161
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.07657657657657657,
+          "successes": 17,
+          "wilson_ci_95": [
+            0.048357620057417686,
+            0.11920000651077674
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.05405405405405406,
+          "successes": 12,
+          "wilson_ci_95": [
+            0.03118823723895037,
+            0.0920905396786161
+          ]
+        }
+      },
+      "layer": 22,
+      "n_confab": 577,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.0767455369336853
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 577,
+          "rate": 0.09532062391681109,
+          "successes": 55,
+          "wilson_ci_95": [
+            0.07396609593037153,
+            0.12202793495687099
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 577,
+          "rate": 0.25996533795493937,
+          "successes": 150,
+          "wilson_ci_95": [
+            0.22584753084501816,
+            0.2972581362979502
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 577,
+          "rate": 0.13518197573656845,
+          "successes": 78,
+          "wilson_ci_95": [
+            0.10968409536889019,
+            0.16550538429605438
+          ]
+        }
+      },
+      "dose_mult": 8,
+      "known": {
+        "n_pending_adjudication": 69,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.08108108108108109,
+          "successes": 18,
+          "wilson_ci_95": [
+            0.05190100973676361,
+            0.1245123867615564
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.10810810810810811,
+          "successes": 24,
+          "wilson_ci_95": [
+            0.07373126780912516,
+            0.1558167482699484
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.08108108108108109,
+          "successes": 18,
+          "wilson_ci_95": [
+            0.05190100973676361,
+            0.1245123867615564
+          ]
+        }
+      },
+      "layer": 22,
+      "n_confab": 577,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.09754276397008046
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 577,
+          "rate": 0.18197573656845753,
+          "successes": 105,
+          "wilson_ci_95": [
+            0.15263177475338888,
+            0.21552627521581455
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 577,
+          "rate": 0.2512998266897747,
+          "successes": 145,
+          "wilson_ci_95": [
+            0.21763111761884418,
+            0.288258147615928
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 577,
+          "rate": 0.1923743500866551,
+          "successes": 111,
+          "wilson_ci_95": [
+            0.16228920844369082,
+            0.22652852381534788
+          ]
+        }
+      },
+      "dose_mult": 12,
+      "known": {
+        "n_pending_adjudication": 43,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.11711711711711711,
+          "successes": 26,
+          "wilson_ci_95": [
+            0.08118908019106666,
+            0.16607047574825806
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.1891891891891892,
+          "successes": 42,
+          "wilson_ci_95": [
+            0.14312269365234176,
+            0.24582918116899244
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.11711711711711711,
+          "successes": 26,
+          "wilson_ci_95": [
+            0.08118908019106666,
+            0.16607047574825806
+          ]
+        }
+      },
+      "layer": 23,
+      "n_confab": 577,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.08887725270491578
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 577,
+          "rate": 0.21317157712305027,
+          "successes": 123,
+          "wilson_ci_95": [
+            0.18170845715436354,
+            0.24842863968434584
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 577,
+          "rate": 0.2703639514731369,
+          "successes": 156,
+          "wilson_ci_95": [
+            0.23573083672478973,
+            0.3080345127080138
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 577,
+          "rate": 0.2218370883882149,
+          "successes": 128,
+          "wilson_ci_95": [
+            0.1898379939179159,
+            0.25751550482898955
+          ]
+        }
+      },
+      "dose_mult": 16,
+      "known": {
+        "n_pending_adjudication": 21,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.06756756756756757,
+          "successes": 15,
+          "wilson_ci_95": [
+            0.041370976695617234,
+            0.10847511001232601
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.12612612612612611,
+          "successes": 28,
+          "wilson_ci_95": [
+            0.08872249235983104,
+            0.17624860343974486
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.06756756756756757,
+          "successes": 15,
+          "wilson_ci_95": [
+            0.041370976695617234,
+            0.10847511001232601
+          ]
+        }
+      },
+      "layer": 23,
+      "n_confab": 577,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.107941377488278
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 577,
+          "rate": 0.02079722703639515,
+          "successes": 12,
+          "wilson_ci_95": [
+            0.01193617521142541,
+            0.03599679926533071
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 577,
+          "rate": 0.18197573656845753,
+          "successes": 105,
+          "wilson_ci_95": [
+            0.15263177475338888,
+            0.21552627521581455
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 577,
+          "rate": 0.06239168110918544,
+          "successes": 36,
+          "wilson_ci_95": [
+            0.045404566148486515,
+            0.08516713748761087
+          ]
+        }
+      },
+      "dose_mult": 2,
+      "known": {
+        "n_pending_adjudication": 78,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        }
+      },
+      "layer": 23,
+      "n_confab": 577,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.019553162583598627
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        }
+      },
+      "dose_mult": 20,
+      "known": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.0045045045045045045,
+          "successes": 1,
+          "wilson_ci_95": [
+            0.0007955986955411783,
+            0.02506970899064379
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        }
+      },
+      "layer": 23,
+      "n_confab": 577,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": -0.1624225739848589
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 577,
+          "rate": 0.053726169844020795,
+          "successes": 31,
+          "wilson_ci_95": [
+            0.03810495652291286,
+            0.07525034520498841
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 577,
+          "rate": 0.1975736568457539,
+          "successes": 114,
+          "wilson_ci_95": [
+            0.16713136022889216,
+            0.23201621317506424
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 577,
+          "rate": 0.08838821490467938,
+          "successes": 51,
+          "wilson_ci_95": [
+            0.06786594801426654,
+            0.11435496134641912
+          ]
+        }
+      },
+      "dose_mult": 4,
+      "known": {
+        "n_pending_adjudication": 77,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        }
+      },
+      "layer": 23,
+      "n_confab": 577,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.035151082860894994
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 577,
+          "rate": 0.08838821490467938,
+          "successes": 51,
+          "wilson_ci_95": [
+            0.06786594801426654,
+            0.11435496134641912
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 577,
+          "rate": 0.22530329289428075,
+          "successes": 130,
+          "wilson_ci_95": [
+            0.19309575351370228,
+            0.2611443059964816
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 577,
+          "rate": 0.1195840554592721,
+          "successes": 69,
+          "wilson_ci_95": [
+            0.09559271028955636,
+            0.14860724594063524
+          ]
+        }
+      },
+      "dose_mult": 6,
+      "known": {
+        "n_pending_adjudication": 82,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.04504504504504504,
+          "successes": 10,
+          "wilson_ci_95": [
+            0.024648807210229773,
+            0.08091842984708551
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.04954954954954955,
+          "successes": 11,
+          "wilson_ci_95": [
+            0.02788984986069597,
+            0.0865331571267449
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.04504504504504504,
+          "successes": 10,
+          "wilson_ci_95": [
+            0.024648807210229773,
+            0.08091842984708551
+          ]
+        }
+      },
+      "layer": 23,
+      "n_confab": 577,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.06288071890942185
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 577,
+          "rate": 0.12131715771230503,
+          "successes": 70,
+          "wilson_ci_95": [
+            0.09715181251077656,
+            0.15049142410105423
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 577,
+          "rate": 0.2391681109185442,
+          "successes": 138,
+          "wilson_ci_95": [
+            0.2061594111738606,
+            0.275626891389437
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 577,
+          "rate": 0.14211438474870017,
+          "successes": 82,
+          "wilson_ci_95": [
+            0.11598709713735124,
+            0.1729755040541502
+          ]
+        }
+      },
+      "dose_mult": 8,
+      "known": {
+        "n_pending_adjudication": 71,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.08108108108108109,
+          "successes": 18,
+          "wilson_ci_95": [
+            0.05190100973676361,
+            0.1245123867615564
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.12162162162162163,
+          "successes": 27,
+          "wilson_ci_95": [
+            0.08494678041568539,
+            0.17116854545376498
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.08108108108108109,
+          "successes": 18,
+          "wilson_ci_95": [
+            0.05190100973676361,
+            0.1245123867615564
+          ]
+        }
+      },
+      "layer": 23,
+      "n_confab": 577,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.0767455369336853
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.1232638888888889,
+          "successes": 71,
+          "wilson_ci_95": [
+            0.09888609967210231,
+            0.1526334434756274
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.28125,
+          "successes": 162,
+          "wilson_ci_95": [
+            0.246074956539642,
+            0.31932348786871717
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.13020833333333334,
+          "successes": 75,
+          "wilson_ci_95": [
+            0.10515707724979977,
+            0.16015934067861698
+          ]
+        }
+      },
+      "dose_mult": 12,
+      "known": {
+        "n_pending_adjudication": 37,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.036036036036036036,
+          "successes": 8,
+          "wilson_ci_95": [
+            0.018371078356966827,
+            0.06948461884009727
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.06756756756756757,
+          "successes": 15,
+          "wilson_ci_95": [
+            0.041370976695617234,
+            0.10847511001232601
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.04054054054054054,
+          "successes": 9,
+          "wilson_ci_95": [
+            0.021472703245965674,
+            0.07523876388122402
+          ]
+        }
+      },
+      "layer": 26,
+      "n_confab": 576,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.1188274260151411
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.06076388888888889,
+          "successes": 35,
+          "wilson_ci_95": [
+            0.04401249496718081,
+            0.08333517515436585
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        }
+      },
+      "dose_mult": 16,
+      "known": {
+        "n_pending_adjudication": 3,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.02702702702702703,
+          "successes": 6,
+          "wilson_ci_95": [
+            0.012444323534876785,
+            0.057699833801936135
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        }
+      },
+      "layer": 26,
+      "n_confab": 576,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": -0.10165868509597001
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.041666666666666664,
+          "successes": 24,
+          "wilson_ci_95": [
+            0.028157417256034618,
+            0.06124884721862274
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.18229166666666666,
+          "successes": 105,
+          "wilson_ci_95": [
+            0.1529010213625802,
+            0.21589195742098907
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.07465277777777778,
+          "successes": 43,
+          "wilson_ci_95": [
+            0.055893056747320334,
+            0.09904836293560029
+          ]
+        }
+      },
+      "dose_mult": 2,
+      "known": {
+        "n_pending_adjudication": 89,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.009009009009009009,
+          "successes": 2,
+          "wilson_ci_95": [
+            0.002474081989044391,
+            0.03224699562726616
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        }
+      },
+      "layer": 26,
+      "n_confab": 576,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.019869092681807754
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.006944444444444444,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.0027037761510421265,
+            0.01771811442018019
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        }
+      },
+      "dose_mult": 20,
+      "known": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        }
+      },
+      "layer": 26,
+      "n_confab": 576,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": -0.15547812954041446
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.0954861111111111,
+          "successes": 55,
+          "wilson_ci_95": [
+            0.07409581865896021,
+            0.12223622536602145
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.22569444444444445,
+          "successes": 130,
+          "wilson_ci_95": [
+            0.19343729244553856,
+            0.2615861537173245
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.125,
+          "successes": 72,
+          "wilson_ci_95": [
+            0.10045137793153733,
+            0.15451738391136413
+          ]
+        }
+      },
+      "dose_mult": 4,
+      "known": {
+        "n_pending_adjudication": 83,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.02252252252252252,
+          "successes": 5,
+          "wilson_ci_95": [
+            0.009657747756870994,
+            0.05163063964981633
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        }
+      },
+      "layer": 26,
+      "n_confab": 576,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.06327187045958554
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.1423611111111111,
+          "successes": 82,
+          "wilson_ci_95": [
+            0.11619117908425573,
+            0.17326976971036323
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.2482638888888889,
+          "successes": 143,
+          "wilson_ci_95": [
+            0.2147293574622013,
+            0.28513393173789453
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.16319444444444445,
+          "successes": 94,
+          "wilson_ci_95": [
+            0.13526448003771147,
+            0.19558709309896855
+          ]
+        }
+      },
+      "dose_mult": 6,
+      "known": {
+        "n_pending_adjudication": 87,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.036036036036036036,
+          "successes": 8,
+          "wilson_ci_95": [
+            0.018371078356966827,
+            0.06948461884009727
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.04054054054054054,
+          "successes": 9,
+          "wilson_ci_95": [
+            0.021472703245965674,
+            0.07523876388122402
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.036036036036036036,
+          "successes": 8,
+          "wilson_ci_95": [
+            0.018371078356966827,
+            0.06948461884009727
+          ]
+        }
+      },
+      "layer": 26,
+      "n_confab": 576,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.08584131490402999
+    },
+    {
+      "arm": "gated",
+      "confab": {
+        "n_pending_adjudication": 0,
+        "refused_narrow": {
+          "n": 576,
+          "rate": 0.18055555555555555,
+          "successes": 104,
+          "wilson_ci_95": [
+            0.1512921943154307,
+            0.21405156577296683
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 576,
+          "rate": 0.2673611111111111,
+          "successes": 154,
+          "wilson_ci_95": [
+            0.23284575504738478,
+            0.30495893979960037
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 576,
+          "rate": 0.19444444444444445,
+          "successes": 112,
+          "wilson_ci_95": [
+            0.1641916344880658,
+            0.22874587516170572
+          ]
+        }
+      },
+      "dose_mult": 8,
+      "known": {
+        "n_pending_adjudication": 65,
+        "refused_narrow": {
+          "n": 222,
+          "rate": 0.04504504504504504,
+          "successes": 10,
+          "wilson_ci_95": [
+            0.024648807210229773,
+            0.08091842984708551
+          ]
+        },
+        "refused_wide_adjudicated": {
+          "n": 222,
+          "rate": 0.06756756756756757,
+          "successes": 15,
+          "wilson_ci_95": [
+            0.041370976695617234,
+            0.10847511001232601
+          ]
+        },
+        "refused_wide_screen": {
+          "n": 222,
+          "rate": 0.04504504504504504,
+          "successes": 10,
+          "wilson_ci_95": [
+            0.024648807210229773,
+            0.08091842984708551
+          ]
+        }
+      },
+      "layer": 26,
+      "n_confab": 576,
+      "n_known": 222,
+      "net_lift_over_paired_baseline_wide_adjudicated": 0.1049385371262522
+    }
+  ],
+  "status": "POST-ADJUDICATION -- refused_wide_adjudicated = detector_v2 screen OR unblinded adjudicator verdict; n_pending_adjudication counts rows with no verdict yet (not graded, or excluded by a voided lane)."
+}

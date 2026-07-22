@@ -1,0 +1,192 @@
+# Cell config for margin-evidence-responsiveness (M4). DRAFT.
+#
+# The naming test for earnability criterion (d): supplying the true answer
+# in-context should COLLAPSE the c_hat projection on a confab row (move it
+# toward the known regime) and LENGTHEN its commitment margin. Qwen only
+# (mistral fails criterion (c) per the framework; mentalistic naming already
+# retired there). Every derived number is transcribed from the pre-sign
+# design derivation (analysis-committed/design_derivation/m4_design_report.json),
+# which reproduced M1's confab median tipping (9.456) and M2's readout AUROC
+# (0.9821, after the negative-z fix) exactly before deriving anything.
+
+analysis_kind: steer_capture_plus_generation_plus_cpu_grade
+posture:
+  tier: exploratory_instrument_mechanism
+  pooling: >-
+    reported separately; never pooled with the locked Phase 1 headline matrix
+    nor any resolved steering amendment. M4 adjudicates a naming criterion for
+    the framework, not a locked verdict.
+  cannot_alter_locked_verdicts: true
+
+# ===========================================================================
+# Family and frozen operating point (qwen only)
+# ===========================================================================
+families:
+  qwen35_4b:
+    role: primary
+    substrate: Qwen/Qwen3.5-4B
+    revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+    dtype: bf16
+    adapter: none
+    layer_hs_index: 20
+    reference_dose_abs: 12.608187917799976     # unchanged from M1/M2
+
+# ===========================================================================
+# The known-unknown direction (readout channel), reused byte-identically from
+# the M2 lineage. SIGN IS PINNED EXPLICITLY to avoid the raw-z trap that
+# halted M2's S1 gate and that the design derivation re-hit on its first pass.
+# ===========================================================================
+readout:
+  direction:
+    path: experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
+    sha256: 937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f
+    layer_index: 19
+    hs_index: 20
+  score: >-
+    NEGATIVE z-projection of the prompt-anchor hs20 hidden state onto frozen
+    c_hat (confab-positive orientation, higher = more confab-like). c_hat is
+    fit as unit(mean(unknown_refused) - mean(confab)), so the RAW projection
+    stored by the capture harness is confab-NEGATIVE; the registered score is
+    its negation, identical to the M2 convention. The harness MUST pin this
+    sign in code (config constant) and MUST NOT re-derive it at runtime.
+  capture:
+    engine: hf-batched
+    render: baseline render stack (atlas conventions), identical to M2
+    add_special_tokens: true
+    anchor_position: len(token_ids) - 1
+    compute_dtype: default (bf16 on CUDA)
+    persist_dtype: float32
+    batch_size: 8
+
+# ===========================================================================
+# Population (Decision record items 1-2), reused from M1's registered subsample
+# ===========================================================================
+population:
+  source: M1 registered subsample and margin dataset, reused whole
+  subsample_ids:
+    path: experiments/margin-mapping/analysis-committed/subsample_ids_qwen35_4b.json
+    sha256: 60d5a3e13de5f85d35776dcee3c15dddea2e301951ded42849516865fe32723d
+  margin_dataset:
+    path: experiments/margin-mapping/analysis/margin_dataset/qwen35_4b_margin_rows.jsonl
+    sha256: 84f4d3b8674a18eb944a4b921383e1cfb1147db892dee2c19348f671b7f41565
+  confab_projection: {n: 400, use: channel 1 (projection collapse) primary}
+  confab_margin_eligible:
+    n: 308
+    rule: confab rows with a genuine (non-right-censored) M1 tipping dose; the 92 tipping-censored confab rows have no finite own-tipping dose and are excluded from channel 2
+    use: channel 2 (margin lengthening)
+  known_projection_control:
+    n: 360
+    use: channel 1 specificity control (a row the model already knows should show little projection shift; establishes the collapse is specific to rows that needed the evidence)
+    margin_test: none (89.4% right-censored, no finite own-tipping dose to lengthen; Decision record item 3 adopts projection-only control for knowns)
+
+# ===========================================================================
+# Arms (Decision record item 4). All arms generated/captured in ONE
+# self-consistent batching regime with pinned batch composition (the M1b
+# instrument lesson: bf16 output depends on batch-mates, so a paired
+# comparison must not mix batching regimes; the M2 baseline capture is NOT
+# reused for this reason, it is recaptured fresh here).
+# ===========================================================================
+arms:
+  # Context is injected BEFORE the question so the len-1 anchor is the
+  # question's last token in ALL THREE arms (the position where c_hat was
+  # validated by M2, AUROC 0.982). Injecting after the question would move the
+  # anchor to the suffix period and make leg 1 a cross-anchor comparison
+  # (pre-sign red-team M1); before-question keeps leg 1 a clean same-anchor
+  # paired shift.
+  no_answer_baseline:
+    template: "{system_prompt}\n{user_question}"
+    note: identical prompt text to M2's baseline capture, recaptured fresh in-regime
+  true_answer:
+    template: "{system_prompt}\n[Context: the answer is {true_answer}.]\n{user_question}"
+    source: the gold answer for the row, injected from the gitignored dataset by the harness; never committed
+  false_answer_placebo:
+    template: "{system_prompt}\n[Context: the answer is {false_answer}.]\n{user_question}"
+    false_answer_rule: >-
+      a plausible-but-wrong answer drawn deterministically as a within-dataset
+      distractor: the gold answer of a different row of the same question
+      category, selected by a seeded permutation (seed 48260722), matched on
+      category where the dataset exposes one. Answer-shaped and
+      category-appropriate but incorrect. Constructed by the harness from
+      gitignored text; the distractor mapping (row_key -> donor row_key,
+      opaque ids only) is committed pre-generation under analysis-committed/.
+      Caveat (pre-sign red-team m5): a category donor's gold answer could
+      occasionally be an acceptable answer for the row, and true/false answer
+      token lengths differ per row; both bias leg 2 / D2 CONSERVATIVE (against
+      earning d), so they are acceptable and reported, not corrected.
+
+# ===========================================================================
+# Channel 1: projection collapse (capture only, forward pass, no generation)
+# ===========================================================================
+channel1_projection:
+  measurement: paired per-row readout score (registered negative-z) in each arm
+  primary_confab_test:
+    leg_1_position_into_gap: median over confab rows of (no_answer_baseline_z - true_answer_z) >= collapse_floor
+    leg_2_specificity: paired bootstrap 95% CI of (true_answer shift - false_answer shift) over confab rows excludes zero, with true_answer shift the larger
+    both_legs_required: true
+  known_control: same two legs reported on known rows; expectation is a small, non-specific shift (a row already in the known regime has little room to collapse)
+  baseline_reproduction_gate:                    # S1, pre-sign red-team M2
+    rule: >-
+      the collapse floor is calibrated from M2's committed baseline gap, but
+      leg 1's minuend is the FRESH in-regime no_answer_baseline recapture. Before
+      leg 1 is read, the fresh confab-projection median must reproduce M2's
+      committed value 3.000505444683542 within 0.10 z (about 2.3x the ~0.044
+      median SE at n=400; catches gross capture drift without a false halt on
+      sampling noise). Exceedance halts and lifts to PI (the "0.5 x gap" floor
+      stops meaning "halfway to the known regime" if the fresh baseline drifts).
+  baseline_gap_reference:                       # from committed M2 data, self-blinding-safe (baseline only)
+    confab_median_z: 3.000505444683542
+    known_median_z: 1.0521283753653026
+    gap_median: 1.9483770693182394
+    gap_median_bootstrap_ci95: [1.8500319368666398, 2.036212364053746]
+
+# ===========================================================================
+# Channel 2: margin lengthening (single-dose survival, Option A)
+# ===========================================================================
+channel2_margin:
+  design: >-
+    Option A single-dose survival. For each of the 308 eligible confab rows,
+    apply the boundary push at that row's OWN M1 tipping dose (tipping_dose_abs
+    from the margin dataset) under each generation arm, greedy decode; the row
+    "survives" if it is non-abstaining AND well-formed at that dose (i.e. the
+    margin has lengthened past its baseline tipping point). Chosen over a full
+    ladder re-run (Option B, 10x cost) because re-laddering reintroduces the
+    ~4% batch-composition tipping noise M1b characterized, for no benefit at
+    the single dose that matters.
+  arms_generated: [no_answer_baseline, true_answer, false_answer_placebo]
+  baseline_staleness_check:                       # pre-sign red-team m3
+    rule: >-
+      no_answer_baseline survival at each row's own M1 tipping dose is EXPECTED
+      ~0% by construction (the tipping dose is where the M1 baseline abstains)
+      but is MEASURED here, not assumed. It doubles as an in-regime staleness
+      check on the reused M1 tipping doses: if baseline survival exceeds 0.05
+      (the ~4% batch-composition noise established by M1b, rounded up), the M1
+      doses do not reproduce in M4's regime and channel 2 is voided / lifted to
+      PI rather than scored. This is the channel-2 analogue of channel 1's S1
+      baseline-reproduction gate.
+  detector: detector_v2 (byte-identical pins from the M1 stack); survival = NOT(detector_v2_refused OR adjudicated_abstention) AND well_formed
+  primary_test: paired rate difference (true_answer survival rate - false_answer survival rate) over the 308 rows, row-level bootstrap 95% CI (the baseline arm is a staleness diagnostic, NOT part of the primary contrast)
+  write: {law: erase_write, position: anchor_onward, setpoint: row's own M1 tipping_dose_abs}
+  generation: {decode: greedy, batch_size: 4, runlog_checkpointing: true, pinned_batch_composition: true}
+
+# ===========================================================================
+# Criterion (d) earnability: BOTH channels required
+# ===========================================================================
+criterion_d:
+  earned_if: channel1_projection primary_confab_test passes AND channel2_margin primary_test passes (floors in gates.yaml)
+  not_earned_if: either channel fails its floor
+  split_result: >-
+    if exactly one channel passes, criterion (d) is NOT earned as registered
+    and the outcome is reported as a channel dissociation (a finding echoing
+    Claim 3's two-channel structure), never rounded to a binary earned/not.
+
+analysis:
+  bootstrap: {resamples: 10000, ci: 0.95, seed: 48260721, resampling_unit: row indices within role groups}
+  paired_differences: same resamples; true-vs-false shift (channel 1), true-vs-false survival (channel 2)
+
+self_blinding:
+  rule: no paired shift, specificity difference, or survival rate computed before sign; only baseline distributions/hashes/counts of already-committed data
+  presign_allowed: baseline projection distribution (M2 data), row counts, eligibility partition, file hashes, distractor-mapping id list
+
+preflight:
+  gpu_preflight: 8-row capture smoke + 8-row generation smoke (first rows by lexicographic row_key); readback verified against setpoint; code-enforced pass marker required before either full pass
+  dose_readback: per-row readback within RELATIVE 0.005 of the commanded dose, OR within ABSOLUTE 0.005 x reference_dose_abs (M1's amended rule, carried verbatim; applies to channel 2 generations)

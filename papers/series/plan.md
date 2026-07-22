@@ -55,6 +55,7 @@ Rules:
 | Caution-ablation steering result (over-refusal 0.994 to 0.030) | 5 | Currently argued inside paper 3 section 6 (census flag A3); under the ownership rule it moves to 5, paper 3 keeps one summarizing sentence + citation |
 | Answerability gate, correctness dial, veto + decomposition (content core ~0.74) | 4 | Current after the 2026-07-10 revision arc |
 | Cross-size, cross-family, seed-robustness, pretrain-origin of the readout | 4 | |
+| Correctness-direction cross-checkpoint rotation and discriminative-subspace-overlap nulls (dial cold-transfer mechanism) | 4 | Both exploratory Tier-2 nulls; paper 5 §6.5 cites the pair as cross-family motivation only, never re-argued |
 | Workspace localization (read-only J-lens diagnostic) | 4 (descriptive subsection) | Steering cells excluded |
 | Ungated steering asymmetry; propensity-direction actuation nulls; setpoint nulls | 5 | The caveat landscape |
 | Doubt-gated caution snap (incl. multi-source replication); layer-contrast arc | 5 | The headline |
@@ -97,10 +98,16 @@ related-work rewrite, self-containment + headings, falsifier compression,
 rename). Open:
 
 - Splice the token-logprob baseline when computed (backlog LP; SWAP marker in
-  limitation 8).
-- Upgrade the dial cold-transfer rotation inference to a measurement (backlog
-  CD).
-- Both gated on the mid-band ladder freeing the local GPU.
+  limitation 8); gated on the mid-band ladder freeing the local GPU.
+- Dial cold-transfer rotation inference upgraded to a direct measurement
+  (backlog CD, resolved 2026-07-20 as a null-result) and followed up with a
+  discriminative-subspace-overlap cell asking whether transfer rides on a
+  shared subspace rather than a single axis (resolved 2026-07-20, also a
+  null-result, instrument-limited on the reliability question it was built to
+  answer). Both folded into §4.2 as exploratory Tier-2 nulls with label-clean
+  positive findings, never pooled with the headline readout numbers; the
+  answerability-vs-correctness portability contrast this pair establishes is
+  also cited (as motivation, not a cross-family claim) in paper 5 §6.5.
 
 ### Paper 5 (actuation) — the rewrite target
 

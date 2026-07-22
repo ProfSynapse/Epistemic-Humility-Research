@@ -7,48 +7,92 @@ rules. Build them separately; they go to two different HF dataset repos.
 
 Aggregate exhaust is our own computed output over our own activations and our
 own generation runs: dose-response tables, layer profiles, direction-fit
-metadata, gate/readout AUROCs, and manifests. It never contains source
-question text, aliases, or per-row generation text, so it is not gated by
-`reference/license-gates.md` and does not need the row-level license check.
-One HF dataset per experiment, one config (folder) per cell.
+metadata, gate/readout AUROCs, manifests, and family/experiment-level reports.
+It never contains source question text, aliases, or per-row generation text
+(`analysis-committed/` is the repo's own containment lane, so nothing that
+would need row-level license gating is ever committed there in the first
+place), so aggregate builds are not gated by `reference/license-gates.md` and
+do not need the row-level license check. One HF dataset per experiment.
 
-On-disk shape produced by `scripts/build_exhaust_dataset.py` (aggregate mode):
+On-disk shape produced by `scripts/build_exhaust_dataset.py` (aggregate mode)
+is copy-everything: it recursively copies every file under
+`experiments/<slug>/analysis-committed/`, at any depth and in whatever layout
+that experiment used (a flat set of top-level files, one level of cell
+subdirectories, several levels of nested phase/family subdirectories, or any
+mix), preserving each file's relative path exactly:
 
 ```
 <out-dir>/
   README.md                 # dataset card, rendered from the template
   PROVENANCE.json           # top-level provenance block (see below)
+  final_report.json         # example: a flat top-level file, copied as-is
   <cell_id>/
-    manifest.json            # per-cell file list + sha256 + source mtimes
     dose_fit.json             # verbatim copy of analysis-committed/<cell_id>/dose_fit.json
     gate_fit.json             # verbatim copy
-    g0_prep_summary.json      # verbatim copy
-    build_manifest.json       # verbatim copy
-    split_manifest.json       # verbatim copy (row_key/role/split/source/category_canon only)
-    u_d.json                  # direction JSON, verbatim copy
-    c_hat.json                # direction JSON, verbatim copy
-    random_direction.json     # direction JSON, verbatim copy
-    summary.json               # only if the cell has scored held-out (terminal cells)
-  <cell_id_2>/
-    ...
+    ...whatever else exists under this cell's source directory...
+  <phase_or_family_dir>/
+    <deeper_dir>/
+      notes.md                 # non-JSON files copy through unchanged too
 ```
 
-Not every experiment produces every file above; the builder copies whatever
-exists under `analysis-committed/<cell_id>/` and records what it found (and
-what it expected but did not find) in `PROVENANCE.json`. It never invents a
-missing file and never pads a partial cell to look complete.
+There is no per-file allowlist and no fixed cell-directory assumption: every
+file that is physically present under `analysis-committed/` gets copied,
+except the two structural hard exclusions below. This replaces an earlier
+version of this builder that only knew a fixed 9-filename list written for
+one experiment family (`doubt-snap-cross-family-confirmatory`) and only
+descended one level into cell subdirectories -- every other family's
+vocabulary (`final_report.json`, `family_report.json`, `calibration_report.json`,
+`atlas_summary.json`, `gate_report.json`, flat layouts, deeper nesting) was
+silently dropped by that allowlist. A second filter on top of the
+`analysis-committed/` containment boundary does not add safety; it only risks
+dropping content the boundary already cleared.
 
-Each artifact file is copied byte-identical in content (re-serialized with
-sorted keys and a trailing newline for determinism) from
-`experiments/<slug>/analysis-committed/<cell_id>/`. The builder does not flatten
-these into one row-per-line table: the source files have different schemas
-per artifact type (a dose sweep report is not shaped like a direction vector),
-and forcing them into a single JSON-Lines file with a uniform column set would
-either lose structure or require a stringified-JSON escape hatch that most
-consumers would have to unpack anyway. Publishing the files as-is, organized
-by cell, follows the same pattern already used by `eh-probe-directions` and
-`eh-doubt-on-command` (mixed JSON + safetensors artifacts organized by family,
-not squashed into one flat table).
+Each file is copied byte-for-byte (not re-serialized, not reformatted) from
+`experiments/<slug>/analysis-committed/` into `<out-dir>/` at the same
+relative path. `PROVENANCE.json`'s `files` map records every relative path
+that was copied together with its sha256, so both the builder's own output
+and any later consumer can confirm nothing was altered in transit. The
+builder does not flatten these into one row-per-line table: the source files
+have different schemas per artifact type (a dose sweep report is not shaped
+like a direction vector), and forcing them into a single JSON-Lines file with
+a uniform column set would either lose structure or require a
+stringified-JSON escape hatch that most consumers would have to unpack
+anyway. Publishing the files as-is, mirroring the source layout, follows the
+same pattern already used by `eh-probe-directions` and `eh-doubt-on-command`
+(mixed JSON + safetensors artifacts organized by family, not squashed into
+one flat table).
+
+### Hard exclusions (structural, not just a table entry)
+
+Two categories are excluded regardless of anything else: OpenMOSS/Cheng IDK
+data and `bridge_llama2_7b_chat`. These are enforced in code
+(`scripts/build_exhaust_dataset.py`, `scripts/verify_exhaust.py`), the same
+way as for row-level datasets, and apply in two ways during an aggregate
+build:
+
+- **Path-level match** (a file's relative path under `analysis-committed/`
+  contains one of the excluded patterns): the file is skipped -- not
+  copied -- and recorded in `PROVENANCE.json`'s `excluded` list as
+  `{"path": ..., "reason": ...}`. This is an expected, auditable outcome, not
+  a build failure.
+- **Content-level match** (an otherwise clean-path file's content contains
+  one of the excluded patterns): the build aborts entirely (`SystemExit`),
+  since prohibited content appearing inside a directory that is supposed to
+  already be public-safe is an anomaly a human needs to look at, not
+  something to silently filter out mid-build.
+
+### Completeness
+
+`scripts/verify_exhaust.py --experiment-dir <exp>` independently re-walks the
+source `analysis-committed/` tree at verify time (not trusting anything the
+builder itself recorded) and requires the staged file set plus the recorded
+`excluded` list to equal it exactly, with the differing paths printed on any
+mismatch. This is the check that catches a regression to the old
+allowlist-style bug: a builder change that silently narrows what gets copied
+again would fail this check even if the builder's own `PROVENANCE.json`
+looked internally consistent. Omitting `--experiment-dir` is itself a FAIL
+for an aggregate build, not a silent skip -- completeness cannot be claimed
+without checking it.
 
 ## Row-level datasets (license-gated)
 
@@ -168,7 +212,9 @@ manifest is never silently short a cell.
 
 ## Provenance block (every dataset, both shapes)
 
-`PROVENANCE.json` at the top of every built dataset dir carries:
+`PROVENANCE.json` at the top of every built dataset dir carries the shared
+fields on both shapes, plus one shape-specific field: `files` + `excluded`
+on aggregate builds, `cells` on row-level builds.
 
 ```json
 {
@@ -177,10 +223,20 @@ manifest is never silently short a cell.
   "repo_commit_sha": "<git rev-parse HEAD at build time>",
   "instrument_config_sha256": {"cell.yaml": "...", "gates.yaml": "...", "model_matrix.yaml": "..."},
   "generation_date": "2026-07-12T00:00:00Z",
-  "shape": "aggregate | rows",
+  "shape": "aggregate",
+  "files": {"<relative_path_under_analysis-committed>": "<sha256 of the copied file>", "...": "..."},
+  "excluded": [{"path": "<relative_path>", "reason": "hard-exclusion: relative path matches a structural pattern"}],
+  "license_gate_excluded": {},
+  "sources_present": {}
+}
+```
+
+```json
+{
+  "experiment_slug": "...",
+  "shape": "rows",
   "cells": {
-    "<cell_id>": {"files": ["dose_fit.json", "..."], "missing_expected": []},
-    "<cell_id_row_shape>": {"n_rows_kept_with_text": 0, "n_rows_kept_text_free": 0}
+    "<cell_id>": {"n_rows_kept_with_text": 0, "n_rows_kept_text_free": 0}
   },
   "license_gate_excluded": {"<source>": "<int rows dropped entirely (forbidden or pending-audit)>"},
   "sources_present": {"<source>": "<verdict of every source that appears in at least one kept row>"}
@@ -190,9 +246,15 @@ manifest is never silently short a cell.
 `instrument_config_sha256` is read straight from the experiment's
 `experiment.yaml` `instrument.pins` block (the same pins `bin/exp sign`
 recorded), not recomputed, so the exhaust always points at the exact signed
-instrument. `license_gate_excluded` is present (possibly empty) even on
-aggregate builds, since the aggregate builder still runs the hard-exclusion
-structural scan. `sources_present` is empty on aggregate builds; on row-level
-builds it drives both the README's "License and Attribution" section and
-`verify_exhaust.py`'s disclosure check for any `permitted-with-conditions`
+instrument. On aggregate builds, `files` is the complete relative-path ->
+sha256 map for every file actually copied and `excluded` is the complete
+list of files skipped by the path-level hard-exclusion filter (each with a
+`reason`); both are exhaustive, not samples, since `verify_exhaust.py`'s
+completeness check diffs them against a fresh scan of the source tree.
+`license_gate_excluded` and `sources_present` are always present (possibly
+empty) on aggregate builds too, since the aggregate builder still runs the
+hard-exclusion structural scan; `sources_present` stays empty there because
+aggregate builds carry no row-level source text. On row-level builds,
+`sources_present` drives both the README's "License and Attribution" section
+and `verify_exhaust.py`'s disclosure check for any `permitted-with-conditions`
 source.

@@ -1,0 +1,285 @@
+{
+  "inputs": {
+    "margin_rows_path": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/margin-mapping/analysis/margin_dataset/qwen35_4b_margin_rows.jsonl",
+    "margin_rows_sha256_expected": "84f4d3b8674a18eb944a4b921383e1cfb1147db892dee2c19348f671b7f41565",
+    "reference_dose_abs": 12.608187917799976,
+    "top_precollapse_dose_abs": 18.912281876699964,
+    "floor": 2.5,
+    "required_exact_rung_dose_abs": 7.564912750679985,
+    "required_exact_rung_mult": 0.6
+  },
+  "sanity_reproduction": {
+    "confab_median_dose_abs": 9.456140938349982,
+    "confab_median_ci95": [
+      6.304093958899988,
+      9.456140938349982
+    ],
+    "amendment_outcome_cited": {
+      "median": 9.456140938349982,
+      "ci95": [
+        6.304093958899988,
+        9.456140938349982
+      ]
+    },
+    "match": true,
+    "n_confab_tipping_censored": 92,
+    "n_known_tipping_censored": 322,
+    "amendment_cited": {
+      "confab_censored": 92,
+      "known_censored": 322
+    }
+  },
+  "bracket_distribution": {
+    "confab": {
+      "idx0_mult0.0": 14,
+      "idx1_mult0.0625": 47,
+      "idx2_mult0.125": 17,
+      "idx3_mult0.25": 32,
+      "idx4_mult0.5": 71,
+      "idx5_mult0.75": 53,
+      "idx6_mult1.0": 32,
+      "idx7_mult1.5": 42,
+      "censored": 92
+    },
+    "known": {
+      "idx1_mult0.0625": 1,
+      "idx2_mult0.125": 1,
+      "idx3_mult0.25": 2,
+      "idx4_mult0.5": 4,
+      "idx5_mult0.75": 9,
+      "idx6_mult1.0": 8,
+      "idx7_mult1.5": 13,
+      "censored": 322
+    },
+    "note": "idx i (1..10) means tipped at M1_MULTIPLIERS[i-1]x, bracket = (prev_rung, this_rung]; idx6=1.0x, idx5=0.75x, idx4=0.5x, idx7=1.5x are the brackets of interest for the fine window."
+  },
+  "critical_bracket_counts": {
+    "idx4_0.25to0.5x": 71,
+    "idx5_0.5to0.75x_contains_M1_median": 53,
+    "idx6_0.75to1.0x": 32,
+    "sum_idx4_5_6": 156,
+    "n_confab_total": 400
+  },
+  "candidate_rung_sets": {
+    "A_quarter_x_plus_required": {
+      "mults_sorted": [
+        0.375,
+        0.5,
+        0.6,
+        0.75,
+        0.875,
+        1.0,
+        1.5,
+        2.0
+      ],
+      "n_total_rungs": 8,
+      "n_new_rungs": 3,
+      "achievable_bounds_near_floor": [
+        1.5,
+        1.7143,
+        2.0,
+        2.5,
+        3.0,
+        4.0
+      ],
+      "hits_floor_exactly": true,
+      "within_budget_8": true
+    },
+    "B_eighth_octave_0.375_to_1.0_plus_reanchor": {
+      "mults_sorted": [
+        0.385553,
+        0.420448,
+        0.458502,
+        0.5,
+        0.545254,
+        0.594604,
+        0.64842,
+        0.707107,
+        0.771105,
+        0.840896,
+        0.917004,
+        1.0,
+        1.5,
+        2.0
+      ],
+      "n_total_rungs": 14,
+      "n_new_rungs": 10,
+      "achievable_bounds_near_floor": [
+        1.5,
+        1.6358,
+        1.7838,
+        1.9453,
+        2.1213,
+        2.3133,
+        2.5227,
+        2.751,
+        3.0,
+        3.2715,
+        3.5676,
+        3.8905
+      ],
+      "hits_floor_exactly": false,
+      "within_budget_8": false
+    },
+    "C_dense_arithmetic_0.5_to_0.75_plus_reanchor": {
+      "mults_sorted": [
+        0.5,
+        0.55,
+        0.6,
+        0.65,
+        0.7,
+        0.75,
+        1.5,
+        2.0
+      ],
+      "n_total_rungs": 8,
+      "n_new_rungs": 4,
+      "achievable_bounds_near_floor": [
+        2.0,
+        2.1429,
+        2.3077,
+        2.5,
+        2.7273,
+        3.0
+      ],
+      "hits_floor_exactly": true,
+      "within_budget_8": true
+    }
+  },
+  "expected_outcome_distribution": {
+    "A_quarter_x_plus_required": {
+      "empirical_model": {
+        "median_bound_point": 2.5,
+        "bound_ci95": [
+          2.0,
+          3.0
+        ],
+        "P_bound_ge_floor": 0.6727
+      },
+      "probit_fit_model": {
+        "median_bound_point": 2.5,
+        "bound_ci95": [
+          2.0,
+          2.5
+        ],
+        "P_bound_ge_floor": 0.5311
+      }
+    },
+    "B_eighth_octave_0.375_to_1.0_plus_reanchor": {
+      "empirical_model": {
+        "median_bound_point": 2.5226873683998092,
+        "bound_ci95": [
+          2.121319687119488,
+          3.0
+        ],
+        "P_bound_ge_floor": 0.6272
+      },
+      "probit_fit_model": {
+        "median_bound_point": 2.4134690882879175,
+        "bound_ci95": [
+          2.121319687119488,
+          2.7510114552116995
+        ],
+        "P_bound_ge_floor": 0.477
+      }
+    },
+    "C_dense_arithmetic_0.5_to_0.75_plus_reanchor": {
+      "empirical_model": {
+        "median_bound_point": 2.5,
+        "bound_ci95": [
+          2.1428571428571432,
+          3.0
+        ],
+        "P_bound_ge_floor": 0.6727
+      },
+      "probit_fit_model": {
+        "median_bound_point": 2.5,
+        "bound_ci95": [
+          2.1428571428571432,
+          2.727272727272727
+        ],
+        "P_bound_ge_floor": 0.5311
+      }
+    }
+  },
+  "population_conditioning": {
+    "m1_total_generations_confab_plus_known_10_rungs": 7600,
+    "candidates": {
+      "A_quarter_x_plus_required": {
+        "n_new_rungs": 3,
+        "full_population_cost_generations": 1200,
+        "conditional_population_cost_generations": 468,
+        "conditional_row_count_used": 156,
+        "savings_fraction_vs_full_pop": 0.61,
+        "fraction_of_M1_total_cost": 0.15789473684210525,
+        "conditional_fraction_of_M1_total_cost": 0.06157894736842105
+      },
+      "B_eighth_octave_0.375_to_1.0_plus_reanchor": {
+        "n_new_rungs": 10,
+        "full_population_cost_generations": 4000,
+        "conditional_population_cost_generations": 1560,
+        "conditional_row_count_used": 156,
+        "savings_fraction_vs_full_pop": 0.61,
+        "fraction_of_M1_total_cost": 0.5263157894736842,
+        "conditional_fraction_of_M1_total_cost": 0.20526315789473684
+      },
+      "C_dense_arithmetic_0.5_to_0.75_plus_reanchor": {
+        "n_new_rungs": 4,
+        "full_population_cost_generations": 1600,
+        "conditional_population_cost_generations": 212,
+        "conditional_row_count_used": 53,
+        "savings_fraction_vs_full_pop": 0.8674999999999999,
+        "fraction_of_M1_total_cost": 0.21052631578947367,
+        "conditional_fraction_of_M1_total_cost": 0.027894736842105264
+      }
+    },
+    "bias_note": "Conditioning on M1's own tipping_idx is NOT circular for the fine-median question because idx-4/6-bracket rows' contribution to 'is this row's true margin above or below any point in (0.5x,1.0x]' is already fully determined by M1 (idx<=4 rows have margin<=0.5x -> counts as 'below' any fine point in (0.5,1.0]; idx>=6 in the (0.75,1.0] bracket already know margin>0.75x). The risk is coverage, not bias: a bootstrap resample that draws disproportionately from a bracket not given fine treatment will report the coarse M1-bracket value for that replicate, which can only WIDEN the resampled CI relative to a full-fine-pool design, never narrow it in a way that favors a predetermined answer. Monotonicity risk (0.035 confab non-monotone, per M1 C1) means a small fraction of idx4/idx6 rows could in principle un-tip and re-tip inside the fine window under a hypothetical non-monotone path; M1's own non-monotone rate is pre-collapse and applies to the FULL ladder, not selectively to this window, so this is a pre-existing construct-level risk unchanged by conditioning."
+  },
+  "known_row_analysis": {
+    "n_known_total": 360,
+    "n_tipped_exactly_at_1.5x": 13,
+    "n_censored_or_tipped_above_1.5x": 322,
+    "fraction_censored_above_1.5x_amendment_cited": 0.8944444444444445,
+    "n_collapse_exactly_at_2.0x_rung_idx8": 285,
+    "collapse_idx_max_across_known": 8,
+    "collapse_censored_any": false,
+    "collapse_note": "No known row is collapse-censored and none has collapse_idx>8: the population-level well-formedness rate reaches 0.000 by the 2.0x rung for every row (cumulative), matching the Outcome's 'total well-formedness collapse at the 2.0x rung (25.216) in both roles'; individual rows' FIRST non-well-formed rung ranges from idx4 to idx8 (285/360 collapse exactly at idx8, the rest earlier).",
+    "option_reuse_byte_identical": {
+      "new_generations": 0,
+      "buys": "The 1.5x and 2.0x rungs for ALL 360 known rows already exist in M1's committed runlogs (qwen35_4b__rung_1p5.jsonl, qwen35_4b__rung_2.jsonl), same substrate/direction/dose/rows. Under the RG0 byte-repro rule already used elsewhere in M1 (dose-0 baseline reuse), these can be merged into M1b at zero new GPU cost and zero new adjudication. Buys: full leg-(b) censoring evidence (fraction above 1.5x) and the collapse-cliff reconfirmation (well_formed=0 at 2.0x) for free, IF the direction vector, substrate revision, and dose law are unchanged from M1 (true per the amendment: 'UNCHANGED floor 2.5' framing implies the substrate/site/direction are also unchanged)."
+    },
+    "option_rerun_1.5_2.0_only": {
+      "new_generations": 720,
+      "buys": "A fresh, M1b-native replicate of the top-rung/collapse-cliff evidence, independent of M1's specific run (hedges against a repeat of the mistral direction-vector loss incident, or any staleness in the reused artifact). Costs 720 new generations (2 rungs x 360 rows), ~9.5% of M1's total known-row cost (10 rungs x 360 = 3600), but gives NO new information about the fine confab-median region and does not change the known-row censoring picture unless the fresh run disagrees with M1 (which would itself be a red flag)."
+    },
+    "option_full_fine_ladder_for_known": {
+      "new_generations": "4 new rungs x 360 known rows = 1440 (candidate C new-rung count; candidate A would cost 1080)",
+      "buys": "Almost nothing: 89.4% of known rows are already right-censored above the top pre-collapse rung (322/360 per the amendment Outcome), so a fine ladder below 1.5x would mostly just reconfirm that the same rows still haven't tipped -- it cannot move the leg-(b) censoring fraction (which is defined relative to the SAME top pre-collapse rung, unchanged) and cannot resolve the (extrapolated, not observed) fitted known median, since that median (229.7 dose_abs on qwen) sits far above even the top M1 rung (50.4 dose_abs). Recommendation: do not run a fine ladder for known rows; it burns budget with near-zero expected information gain given leg (b) does not depend on the confab-median region at all."
+    }
+  },
+  "recommended_candidate": "C_dense_arithmetic_0.5_to_0.75_plus_reanchor",
+  "recommended_candidate_statistics": {
+    "mults": [
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      1.5,
+      2.0
+    ],
+    "n_new_rungs": 4,
+    "achievable_bounds_near_floor": [
+      2.0,
+      2.1429,
+      2.3077,
+      2.5,
+      2.7273,
+      3.0
+    ],
+    "bootstrap_ci_width_n400_empirical_model": 0.8571428571428568,
+    "bootstrap_ci_width_n400_probit_fit_model": 0.5844155844155838,
+    "point_estimate_stays_the_registered_convention": "M1's own criterion adjudication used the point-estimate bound (18.912/9.456=2.0) against the floor, reporting the bootstrap CI descriptively (M1 Outcome: 'bootstrap CI [2.0, 3.0]'). This derivation recommends the SAME convention for M1b: point estimate is the pass/fail surface, CI reported descriptively, per M1 precedent -- this is a design-info observation, not a re-opening of M1's resolved statistical convention."
+  }
+}

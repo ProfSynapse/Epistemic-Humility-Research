@@ -1,0 +1,1331 @@
+{
+  "config_sha_note": "see analysis-committed/staging_manifest.json for full provenance",
+  "families": {
+    "mistral7b_v03": {
+      "falsifier": {
+        "gate_axis_falsified": true,
+        "gate_benefit_cost_fails": false,
+        "gate_contributes_nothing": true,
+        "p1_passed": true,
+        "p2_passed": false,
+        "p3_passed": false
+      },
+      "family": "mistral7b_v03",
+      "p1": {
+        "benefit": {
+          "abstention_floor_pass": true,
+          "confab_abstention": {
+            "n": 1312,
+            "n_expected": 1312,
+            "n_missing": 0,
+            "rate": 0.694359756097561,
+            "successes": 911,
+            "wilson_ci_95": [
+              0.6688947908931409,
+              0.7186898961382899
+            ]
+          },
+          "confab_well_formed": {
+            "n": 1312,
+            "n_expected": 1312,
+            "n_missing": 0,
+            "rate": 0.9862804878048781,
+            "successes": 1294,
+            "wilson_ci_95": [
+              0.9784173556572225,
+              0.9913043318959259
+            ]
+          },
+          "passed": true,
+          "well_formed_pass": true,
+          "wilson_lcb_pass": true
+        },
+        "cost": {
+          "known_false_refusal": {
+            "n": 382,
+            "n_expected": 382,
+            "n_missing": 0,
+            "rate": 0.005235602094240838,
+            "successes": 2,
+            "wilson_ci_95": [
+              0.0014369671023544868,
+              0.018886040292084585
+            ]
+          },
+          "passed": true,
+          "rate_ceil_pass": true,
+          "wilson_ucb_pass": true
+        },
+        "passed": true
+      },
+      "p2": {
+        "c_hat": {
+          "bootstrap_ci_95": [
+            0.10335924530711277,
+            0.15558357808708975
+          ],
+          "ci_excludes_zero": true,
+          "floor": 0.2,
+          "floor_pass": false,
+          "gap_sel_c_hat": 0.12854360873451665,
+          "is_primary_falsifier_trigger": true,
+          "passed": false
+        },
+        "c_hat_diagnostics": {
+          "confab": {
+            "n_dropped_per_map": {
+              "confab_baseline": 0,
+              "confab_permuted": 0,
+              "confab_true": 0
+            },
+            "n_paired": 1312,
+            "n_row_keys_requested": 1312
+          },
+          "known": {
+            "n_dropped_per_map": {
+              "known_baseline": 0,
+              "known_permuted": 0,
+              "known_true": 0
+            },
+            "n_paired": 382,
+            "n_row_keys_requested": 382
+          }
+        },
+        "is_primary_falsifier": true,
+        "passed": false,
+        "per_seed_gap_sel_random": [
+          {
+            "diagnostics": {
+              "confab": {
+                "n_dropped_per_map": {
+                  "confab_baseline_sub": 0,
+                  "confab_permuted_s": 0,
+                  "confab_true_s": 0
+                },
+                "n_paired": 300,
+                "n_row_keys_requested": 300
+              },
+              "known": {
+                "n_dropped_per_map": {
+                  "known_baseline": 0,
+                  "known_permuted_s": 0,
+                  "known_true_s": 0
+                },
+                "n_paired": 382,
+                "n_row_keys_requested": 382
+              }
+            },
+            "gap_sel_random": 0.014520069808027912,
+            "seed": 45000002
+          },
+          {
+            "diagnostics": {
+              "confab": {
+                "n_dropped_per_map": {
+                  "confab_baseline_sub": 0,
+                  "confab_permuted_s": 0,
+                  "confab_true_s": 0
+                },
+                "n_paired": 300,
+                "n_row_keys_requested": 300
+              },
+              "known": {
+                "n_dropped_per_map": {
+                  "known_baseline": 0,
+                  "known_permuted_s": 0,
+                  "known_true_s": 0
+                },
+                "n_paired": 382,
+                "n_row_keys_requested": 382
+              }
+            },
+            "gap_sel_random": -0.013333333333333305,
+            "seed": 45000010
+          },
+          {
+            "diagnostics": {
+              "confab": {
+                "n_dropped_per_map": {
+                  "confab_baseline_sub": 0,
+                  "confab_permuted_s": 0,
+                  "confab_true_s": 0
+                },
+                "n_paired": 300,
+                "n_row_keys_requested": 300
+              },
+              "known": {
+                "n_dropped_per_map": {
+                  "known_baseline": 0,
+                  "known_permuted_s": 0,
+                  "known_true_s": 0
+                },
+                "n_paired": 382,
+                "n_row_keys_requested": 382
+              }
+            },
+            "gap_sel_random": 0.04830715532286214,
+            "seed": 45000011
+          },
+          {
+            "diagnostics": {
+              "confab": {
+                "n_dropped_per_map": {
+                  "confab_baseline_sub": 0,
+                  "confab_permuted_s": 0,
+                  "confab_true_s": 0
+                },
+                "n_paired": 300,
+                "n_row_keys_requested": 300
+              },
+              "known": {
+                "n_dropped_per_map": {
+                  "known_baseline": 0,
+                  "known_permuted_s": 0,
+                  "known_true_s": 0
+                },
+                "n_paired": 382,
+                "n_row_keys_requested": 382
+              }
+            },
+            "gap_sel_random": 0.04689354275741714,
+            "seed": 45000014
+          },
+          {
+            "diagnostics": {
+              "confab": {
+                "n_dropped_per_map": {
+                  "confab_baseline_sub": 0,
+                  "confab_permuted_s": 0,
+                  "confab_true_s": 0
+                },
+                "n_paired": 300,
+                "n_row_keys_requested": 300
+              },
+              "known": {
+                "n_dropped_per_map": {
+                  "known_baseline": 0,
+                  "known_permuted_s": 0,
+                  "known_true_s": 0
+                },
+                "n_paired": 382,
+                "n_row_keys_requested": 382
+              }
+            },
+            "gap_sel_random": 0.009284467713787017,
+            "seed": 45000021
+          }
+        ],
+        "random": {
+          "bootstrap_ci_95": [
+            -0.013333333333333305,
+            0.04830715532286214
+          ],
+          "ci_excludes_zero": false,
+          "confidently_negative": false,
+          "directional_pass": true,
+          "gap_sel_random_median": 0.014520069808027912,
+          "is_primary_falsifier_trigger": false,
+          "passed": true
+        }
+      },
+      "p3": {
+        "c_hat": {
+          "bootstrap_ci_95": [
+            0.015706806282722512,
+            0.0549738219895288
+          ],
+          "ci_excludes_zero": true,
+          "cost_protection_c_hat": 0.034031413612565446,
+          "floor": 0.1,
+          "floor_pass": false,
+          "is_primary_falsifier_trigger": true,
+          "passed": false
+        },
+        "is_primary_falsifier": true,
+        "passed": false,
+        "per_seed_cost_protection_random": [
+          {
+            "cost_protection_random": 0.007853403141361256,
+            "diagnostics": {
+              "n_dropped_per_map": {
+                "known_permuted_s": 0,
+                "known_true_s": 0
+              },
+              "n_paired": 382,
+              "n_row_keys_requested": 382
+            },
+            "seed": 45000002
+          },
+          {
+            "cost_protection_random": -0.005235602094240837,
+            "diagnostics": {
+              "n_dropped_per_map": {
+                "known_permuted_s": 0,
+                "known_true_s": 0
+              },
+              "n_paired": 382,
+              "n_row_keys_requested": 382
+            },
+            "seed": 45000010
+          },
+          {
+            "cost_protection_random": 0.05497382198952879,
+            "diagnostics": {
+              "n_dropped_per_map": {
+                "known_permuted_s": 0,
+                "known_true_s": 0
+              },
+              "n_paired": 382,
+              "n_row_keys_requested": 382
+            },
+            "seed": 45000011
+          },
+          {
+            "cost_protection_random": 0.023560209424083767,
+            "diagnostics": {
+              "n_dropped_per_map": {
+                "known_permuted_s": 0,
+                "known_true_s": 0
+              },
+              "n_paired": 382,
+              "n_row_keys_requested": 382
+            },
+            "seed": 45000014
+          },
+          {
+            "cost_protection_random": 0.002617801047120418,
+            "diagnostics": {
+              "n_dropped_per_map": {
+                "known_permuted_s": 0,
+                "known_true_s": 0
+              },
+              "n_paired": 382,
+              "n_row_keys_requested": 382
+            },
+            "seed": 45000021
+          }
+        ],
+        "random": {
+          "bootstrap_ci_95": [
+            -0.005235602094240837,
+            0.05497382198952879
+          ],
+          "cost_protection_random_median": 0.007853403141361256,
+          "gates": false
+        }
+      },
+      "per_seed_reported": {
+        "45000002": {
+          "permuted_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.22,
+              "successes": 66,
+              "wilson_ci_95": [
+                0.1768274459698328,
+                0.27025261791591293
+              ]
+            },
+            "known_false_refusal": {
+              "n": 382,
+              "n_expected": 382,
+              "n_missing": 0,
+              "rate": 0.013089005235602094,
+              "successes": 5,
+              "wilson_ci_95": [
+                0.005603450567830674,
+                0.03026998528066492
+              ]
+            }
+          },
+          "true_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.21333333333333335,
+              "successes": 64,
+              "wilson_ci_95": [
+                0.1707525956382275,
+                0.2631627078638455
+              ]
+            },
+            "known_false_refusal": {
+              "n": 382,
+              "n_expected": 382,
+              "n_missing": 0,
+              "rate": 0.005235602094240838,
+              "successes": 2,
+              "wilson_ci_95": [
+                0.0014369671023544868,
+                0.018886040292084585
+              ]
+            }
+          }
+        },
+        "45000010": {
+          "permuted_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.24333333333333335,
+              "successes": 73,
+              "wilson_ci_95": [
+                0.19822154125071836,
+                0.2949351839778819
+              ]
+            },
+            "known_false_refusal": {
+              "n": 382,
+              "n_expected": 382,
+              "n_missing": 0,
+              "rate": 0.002617801047120419,
+              "successes": 1,
+              "wilson_ci_95": [
+                0.00046225572589544094,
+                0.014677275517191456
+              ]
+            }
+          },
+          "true_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.25666666666666665,
+              "successes": 77,
+              "wilson_ci_95": [
+                0.21053333722579365,
+                0.30895290877015197
+              ]
+            },
+            "known_false_refusal": {
+              "n": 382,
+              "n_expected": 382,
+              "n_missing": 0,
+              "rate": 0.007853403141361256,
+              "successes": 3,
+              "wilson_ci_95": [
+                0.0026743884709257305,
+                0.022832095074865513
+              ]
+            }
+          }
+        },
+        "45000011": {
+          "permuted_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.39666666666666667,
+              "successes": 119,
+              "wilson_ci_95": [
+                0.34295083194304077,
+                0.452995382110032
+              ]
+            },
+            "known_false_refusal": {
+              "n": 382,
+              "n_expected": 382,
+              "n_missing": 0,
+              "rate": 0.06282722513089005,
+              "successes": 24,
+              "wilson_ci_95": [
+                0.04257981103661206,
+                0.09177967168757484
+              ]
+            }
+          },
+          "true_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.39,
+              "successes": 117,
+              "wilson_ci_95": [
+                0.3365300216309911,
+                0.446251432038409
+              ]
+            },
+            "known_false_refusal": {
+              "n": 382,
+              "n_expected": 382,
+              "n_missing": 0,
+              "rate": 0.007853403141361256,
+              "successes": 3,
+              "wilson_ci_95": [
+                0.0026743884709257305,
+                0.022832095074865513
+              ]
+            }
+          }
+        },
+        "45000014": {
+          "permuted_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.35,
+              "successes": 105,
+              "wilson_ci_95": [
+                0.29823200252235404,
+                0.4055608888450096
+              ]
+            },
+            "known_false_refusal": {
+              "n": 382,
+              "n_expected": 382,
+              "n_missing": 0,
+              "rate": 0.028795811518324606,
+              "successes": 11,
+              "wilson_ci_95": [
+                0.016153775093132844,
+                0.0508205176634758
+              ]
+            }
+          },
+          "true_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.37333333333333335,
+              "successes": 112,
+              "wilson_ci_95": [
+                0.32052468559554903,
+                0.42934486711466924
+              ]
+            },
+            "known_false_refusal": {
+              "n": 382,
+              "n_expected": 382,
+              "n_missing": 0,
+              "rate": 0.005235602094240838,
+              "successes": 2,
+              "wilson_ci_95": [
+                0.0014369671023544868,
+                0.018886040292084585
+              ]
+            }
+          }
+        },
+        "45000021": {
+          "permuted_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.26666666666666666,
+              "successes": 80,
+              "wilson_ci_95": [
+                0.21980599244000376,
+                0.31942739413145094
+              ]
+            },
+            "known_false_refusal": {
+              "n": 382,
+              "n_expected": 382,
+              "n_missing": 0,
+              "rate": 0.007853403141361256,
+              "successes": 3,
+              "wilson_ci_95": [
+                0.0026743884709257305,
+                0.022832095074865513
+              ]
+            }
+          },
+          "true_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.3,
+              "successes": 90,
+              "wilson_ci_95": [
+                0.2509396637848768,
+                0.35411752470494157
+              ]
+            },
+            "known_false_refusal": {
+              "n": 382,
+              "n_expected": 382,
+              "n_missing": 0,
+              "rate": 0.005235602094240838,
+              "successes": 2,
+              "wilson_ci_95": [
+                0.0014369671023544868,
+                0.018886040292084585
+              ]
+            }
+          }
+        }
+      },
+      "reported_rates": {
+        "baseline": {
+          "confab_abstention": {
+            "n": 1312,
+            "n_expected": 1312,
+            "n_missing": 0,
+            "rate": 0.2820121951219512,
+            "successes": 370,
+            "wilson_ci_95": [
+              0.2583272466930638,
+              0.3069699278520766
+            ]
+          },
+          "known_false_refusal": {
+            "n": 382,
+            "n_expected": 382,
+            "n_missing": 0,
+            "rate": 0.005235602094240838,
+            "successes": 2,
+            "wilson_ci_95": [
+              0.0014369671023544868,
+              0.018886040292084585
+            ]
+          }
+        },
+        "permuted_gate_c_hat": {
+          "confab_abstention": {
+            "n": 1312,
+            "n_expected": 1312,
+            "n_missing": 0,
+            "rate": 0.5998475609756098,
+            "successes": 787,
+            "wilson_ci_95": [
+              0.5730829045242738,
+              0.6260292288134417
+            ]
+          },
+          "known_false_refusal": {
+            "n": 382,
+            "n_expected": 382,
+            "n_missing": 0,
+            "rate": 0.03926701570680628,
+            "successes": 15,
+            "wilson_ci_95": [
+              0.023938409507868456,
+              0.06376978785414888
+            ]
+          }
+        },
+        "true_gate_c_hat": {
+          "confab_abstention": {
+            "n": 1312,
+            "n_expected": 1312,
+            "n_missing": 0,
+            "rate": 0.694359756097561,
+            "successes": 911,
+            "wilson_ci_95": [
+              0.6688947908931409,
+              0.7186898961382899
+            ]
+          },
+          "confab_well_formed": {
+            "n": 1312,
+            "n_expected": 1312,
+            "n_missing": 0,
+            "rate": 0.9862804878048781,
+            "successes": 1294,
+            "wilson_ci_95": [
+              0.9784173556572225,
+              0.9913043318959259
+            ]
+          },
+          "known_false_refusal": {
+            "n": 382,
+            "n_expected": 382,
+            "n_missing": 0,
+            "rate": 0.005235602094240838,
+            "successes": 2,
+            "wilson_ci_95": [
+              0.0014369671023544868,
+              0.018886040292084585
+            ]
+          }
+        }
+      },
+      "s1": {
+        "cannot_move_gate_axis": true,
+        "census_max_abs_delta_frac": 0.20333333333333334,
+        "census_median_delta_pts": 7.0,
+        "effect_ratio": 2.027938824470212,
+        "effect_ratio_floor": 3.0,
+        "effect_ratio_pass": false,
+        "family": "mistral7b_v03",
+        "gated_confab_lift_pts": 0.41234756097560976,
+        "passed": false,
+        "sign_opposition": false
+      }
+    },
+    "qwen35_4b": {
+      "falsifier": {
+        "gate_axis_falsified": true,
+        "gate_benefit_cost_fails": false,
+        "gate_contributes_nothing": true,
+        "p1_passed": true,
+        "p2_passed": false,
+        "p3_passed": false
+      },
+      "family": "qwen35_4b",
+      "p1": {
+        "benefit": {
+          "abstention_floor_pass": true,
+          "confab_abstention": {
+            "n": 1332,
+            "n_expected": 1332,
+            "n_missing": 0,
+            "rate": 0.6891891891891891,
+            "successes": 918,
+            "wilson_ci_95": [
+              0.6638199705763492,
+              0.7134703108953311
+            ]
+          },
+          "confab_well_formed": {
+            "n": 1332,
+            "n_expected": 1332,
+            "n_missing": 0,
+            "rate": 0.9774774774774775,
+            "successes": 1302,
+            "wilson_ci_95": [
+              0.968030105583904,
+              0.9841787000350992
+            ]
+          },
+          "passed": true,
+          "well_formed_pass": true,
+          "wilson_lcb_pass": true
+        },
+        "cost": {
+          "known_false_refusal": {
+            "n": 360,
+            "n_expected": 360,
+            "n_missing": 0,
+            "rate": 0.041666666666666664,
+            "successes": 15,
+            "wilson_ci_95": [
+              0.02541060939986971,
+              0.06760094274809934
+            ]
+          },
+          "passed": true,
+          "rate_ceil_pass": true,
+          "wilson_ucb_pass": true
+        },
+        "passed": true
+      },
+      "p2": {
+        "c_hat": {
+          "bootstrap_ci_95": [
+            0.11914414414414415,
+            0.17717717717717718
+          ],
+          "ci_excludes_zero": true,
+          "floor": 0.2,
+          "floor_pass": false,
+          "gap_sel_c_hat": 0.14797297297297285,
+          "is_primary_falsifier_trigger": true,
+          "passed": false
+        },
+        "c_hat_diagnostics": {
+          "confab": {
+            "n_dropped_per_map": {
+              "confab_baseline": 0,
+              "confab_permuted": 0,
+              "confab_true": 0
+            },
+            "n_paired": 1332,
+            "n_row_keys_requested": 1332
+          },
+          "known": {
+            "n_dropped_per_map": {
+              "known_baseline": 0,
+              "known_permuted": 0,
+              "known_true": 0
+            },
+            "n_paired": 360,
+            "n_row_keys_requested": 360
+          }
+        },
+        "is_primary_falsifier": true,
+        "passed": false,
+        "per_seed_gap_sel_random": [
+          {
+            "diagnostics": {
+              "confab": {
+                "n_dropped_per_map": {
+                  "confab_baseline_sub": 0,
+                  "confab_permuted_s": 0,
+                  "confab_true_s": 0
+                },
+                "n_paired": 300,
+                "n_row_keys_requested": 300
+              },
+              "known": {
+                "n_dropped_per_map": {
+                  "known_baseline": 0,
+                  "known_permuted_s": 0,
+                  "known_true_s": 0
+                },
+                "n_paired": 360,
+                "n_row_keys_requested": 360
+              }
+            },
+            "gap_sel_random": -0.010000000000000009,
+            "seed": 44000003
+          },
+          {
+            "diagnostics": {
+              "confab": {
+                "n_dropped_per_map": {
+                  "confab_baseline_sub": 0,
+                  "confab_permuted_s": 0,
+                  "confab_true_s": 0
+                },
+                "n_paired": 300,
+                "n_row_keys_requested": 300
+              },
+              "known": {
+                "n_dropped_per_map": {
+                  "known_baseline": 0,
+                  "known_permuted_s": 0,
+                  "known_true_s": 0
+                },
+                "n_paired": 360,
+                "n_row_keys_requested": 360
+              }
+            },
+            "gap_sel_random": 0.0005555555555555522,
+            "seed": 44000007
+          },
+          {
+            "diagnostics": {
+              "confab": {
+                "n_dropped_per_map": {
+                  "confab_baseline_sub": 0,
+                  "confab_permuted_s": 0,
+                  "confab_true_s": 0
+                },
+                "n_paired": 300,
+                "n_row_keys_requested": 300
+              },
+              "known": {
+                "n_dropped_per_map": {
+                  "known_baseline": 0,
+                  "known_permuted_s": 0,
+                  "known_true_s": 0
+                },
+                "n_paired": 360,
+                "n_row_keys_requested": 360
+              }
+            },
+            "gap_sel_random": -0.006666666666666668,
+            "seed": 44000010
+          },
+          {
+            "diagnostics": {
+              "confab": {
+                "n_dropped_per_map": {
+                  "confab_baseline_sub": 0,
+                  "confab_permuted_s": 0,
+                  "confab_true_s": 0
+                },
+                "n_paired": 300,
+                "n_row_keys_requested": 300
+              },
+              "known": {
+                "n_dropped_per_map": {
+                  "known_baseline": 0,
+                  "known_permuted_s": 0,
+                  "known_true_s": 0
+                },
+                "n_paired": 360,
+                "n_row_keys_requested": 360
+              }
+            },
+            "gap_sel_random": 0.0027777777777777783,
+            "seed": 44000012
+          },
+          {
+            "diagnostics": {
+              "confab": {
+                "n_dropped_per_map": {
+                  "confab_baseline_sub": 0,
+                  "confab_permuted_s": 0,
+                  "confab_true_s": 0
+                },
+                "n_paired": 300,
+                "n_row_keys_requested": 300
+              },
+              "known": {
+                "n_dropped_per_map": {
+                  "known_baseline": 0,
+                  "known_permuted_s": 0,
+                  "known_true_s": 0
+                },
+                "n_paired": 360,
+                "n_row_keys_requested": 360
+              }
+            },
+            "gap_sel_random": -0.0005555555555555661,
+            "seed": 44000013
+          }
+        ],
+        "random": {
+          "bootstrap_ci_95": [
+            -0.010000000000000009,
+            0.0027777777777777783
+          ],
+          "ci_excludes_zero": false,
+          "confidently_negative": false,
+          "directional_pass": false,
+          "gap_sel_random_median": -0.0005555555555555661,
+          "is_primary_falsifier_trigger": false,
+          "passed": true
+        }
+      },
+      "p3": {
+        "c_hat": {
+          "bootstrap_ci_95": [
+            -0.011111111111111113,
+            0.027777777777777776
+          ],
+          "ci_excludes_zero": false,
+          "cost_protection_c_hat": 0.008333333333333338,
+          "floor": 0.1,
+          "floor_pass": false,
+          "is_primary_falsifier_trigger": true,
+          "passed": false
+        },
+        "is_primary_falsifier": true,
+        "passed": false,
+        "per_seed_cost_protection_random": [
+          {
+            "cost_protection_random": 0.0,
+            "diagnostics": {
+              "n_dropped_per_map": {
+                "known_permuted_s": 0,
+                "known_true_s": 0
+              },
+              "n_paired": 360,
+              "n_row_keys_requested": 360
+            },
+            "seed": 44000003
+          },
+          {
+            "cost_protection_random": -0.002777777777777778,
+            "diagnostics": {
+              "n_dropped_per_map": {
+                "known_permuted_s": 0,
+                "known_true_s": 0
+              },
+              "n_paired": 360,
+              "n_row_keys_requested": 360
+            },
+            "seed": 44000007
+          },
+          {
+            "cost_protection_random": 0.0,
+            "diagnostics": {
+              "n_dropped_per_map": {
+                "known_permuted_s": 0,
+                "known_true_s": 0
+              },
+              "n_paired": 360,
+              "n_row_keys_requested": 360
+            },
+            "seed": 44000010
+          },
+          {
+            "cost_protection_random": 0.002777777777777778,
+            "diagnostics": {
+              "n_dropped_per_map": {
+                "known_permuted_s": 0,
+                "known_true_s": 0
+              },
+              "n_paired": 360,
+              "n_row_keys_requested": 360
+            },
+            "seed": 44000012
+          },
+          {
+            "cost_protection_random": 0.002777777777777775,
+            "diagnostics": {
+              "n_dropped_per_map": {
+                "known_permuted_s": 0,
+                "known_true_s": 0
+              },
+              "n_paired": 360,
+              "n_row_keys_requested": 360
+            },
+            "seed": 44000013
+          }
+        ],
+        "random": {
+          "bootstrap_ci_95": [
+            -0.002777777777777778,
+            0.002777777777777778
+          ],
+          "cost_protection_random_median": 0.0,
+          "gates": false
+        }
+      },
+      "per_seed_reported": {
+        "44000003": {
+          "permuted_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.1,
+              "successes": 30,
+              "wilson_ci_95": [
+                0.07094791459501532,
+                0.1391664623846215
+              ]
+            },
+            "known_false_refusal": {
+              "n": 360,
+              "n_expected": 360,
+              "n_missing": 0,
+              "rate": 0.011111111111111112,
+              "successes": 4,
+              "wilson_ci_95": [
+                0.004329143343163391,
+                0.02821651228133693
+              ]
+            }
+          },
+          "true_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.09,
+              "successes": 27,
+              "wilson_ci_95": [
+                0.06259022560547936,
+                0.12777701079864834
+              ]
+            },
+            "known_false_refusal": {
+              "n": 360,
+              "n_expected": 360,
+              "n_missing": 0,
+              "rate": 0.011111111111111112,
+              "successes": 4,
+              "wilson_ci_95": [
+                0.004329143343163391,
+                0.02821651228133693
+              ]
+            }
+          }
+        },
+        "44000007": {
+          "permuted_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.056666666666666664,
+              "successes": 17,
+              "wilson_ci_95": [
+                0.03567747646328951,
+                0.08886595802247463
+              ]
+            },
+            "known_false_refusal": {
+              "n": 360,
+              "n_expected": 360,
+              "n_missing": 0,
+              "rate": 0.0,
+              "successes": 0,
+              "wilson_ci_95": [
+                0.0,
+                0.010558056888693507
+              ]
+            }
+          },
+          "true_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.05333333333333334,
+              "successes": 16,
+              "wilson_ci_95": [
+                0.03309191251909646,
+                0.08486914177483133
+              ]
+            },
+            "known_false_refusal": {
+              "n": 360,
+              "n_expected": 360,
+              "n_missing": 0,
+              "rate": 0.002777777777777778,
+              "successes": 1,
+              "wilson_ci_95": [
+                0.000490514392087504,
+                0.015564442180557707
+              ]
+            }
+          }
+        },
+        "44000010": {
+          "permuted_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.06666666666666667,
+              "successes": 20,
+              "wilson_ci_95": [
+                0.043567515545158274,
+                0.10072305951611496
+              ]
+            },
+            "known_false_refusal": {
+              "n": 360,
+              "n_expected": 360,
+              "n_missing": 0,
+              "rate": 0.008333333333333333,
+              "successes": 3,
+              "wilson_ci_95": [
+                0.0028380524355806954,
+                0.02421070350496792
+              ]
+            }
+          },
+          "true_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.07333333333333333,
+              "successes": 22,
+              "wilson_ci_95": [
+                0.04892399383922859,
+                0.10853134160571733
+              ]
+            },
+            "known_false_refusal": {
+              "n": 360,
+              "n_expected": 360,
+              "n_missing": 0,
+              "rate": 0.008333333333333333,
+              "successes": 3,
+              "wilson_ci_95": [
+                0.0028380524355806954,
+                0.02421070350496792
+              ]
+            }
+          }
+        },
+        "44000012": {
+          "permuted_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.07333333333333333,
+              "successes": 22,
+              "wilson_ci_95": [
+                0.04892399383922859,
+                0.10853134160571733
+              ]
+            },
+            "known_false_refusal": {
+              "n": 360,
+              "n_expected": 360,
+              "n_missing": 0,
+              "rate": 0.002777777777777778,
+              "successes": 1,
+              "wilson_ci_95": [
+                0.000490514392087504,
+                0.015564442180557707
+              ]
+            }
+          },
+          "true_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.07333333333333333,
+              "successes": 22,
+              "wilson_ci_95": [
+                0.04892399383922859,
+                0.10853134160571733
+              ]
+            },
+            "known_false_refusal": {
+              "n": 360,
+              "n_expected": 360,
+              "n_missing": 0,
+              "rate": 0.0,
+              "successes": 0,
+              "wilson_ci_95": [
+                0.0,
+                0.010558056888693507
+              ]
+            }
+          }
+        },
+        "44000013": {
+          "permuted_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.1,
+              "successes": 30,
+              "wilson_ci_95": [
+                0.07094791459501532,
+                0.1391664623846215
+              ]
+            },
+            "known_false_refusal": {
+              "n": 360,
+              "n_expected": 360,
+              "n_missing": 0,
+              "rate": 0.027777777777777776,
+              "successes": 10,
+              "wilson_ci_95": [
+                0.015156982537145165,
+                0.050370071191065374
+              ]
+            }
+          },
+          "true_gate_random": {
+            "confab_abstention": {
+              "n": 300,
+              "n_expected": 300,
+              "n_missing": 0,
+              "rate": 0.09666666666666666,
+              "successes": 29,
+              "wilson_ci_95": [
+                0.06815029481828931,
+                0.13538170196951116
+              ]
+            },
+            "known_false_refusal": {
+              "n": 360,
+              "n_expected": 360,
+              "n_missing": 0,
+              "rate": 0.025,
+              "successes": 9,
+              "wilson_ci_95": [
+                0.013207232597581851,
+                0.046822921446676984
+              ]
+            }
+          }
+        }
+      },
+      "reported_rates": {
+        "baseline": {
+          "confab_abstention": {
+            "n": 1332,
+            "n_expected": 1332,
+            "n_missing": 0,
+            "rate": 0.08333333333333333,
+            "successes": 111,
+            "wilson_ci_95": [
+              0.0696619002662206,
+              0.09940117030210205
+            ]
+          },
+          "known_false_refusal": {
+            "n": 360,
+            "n_expected": 360,
+            "n_missing": 0,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.010558056888693507
+            ]
+          }
+        },
+        "permuted_gate_c_hat": {
+          "confab_abstention": {
+            "n": 1332,
+            "n_expected": 1332,
+            "n_missing": 0,
+            "rate": 0.5495495495495496,
+            "successes": 732,
+            "wilson_ci_95": [
+              0.5227259584854095,
+              0.5760881628524116
+            ]
+          },
+          "known_false_refusal": {
+            "n": 360,
+            "n_expected": 360,
+            "n_missing": 0,
+            "rate": 0.05,
+            "successes": 18,
+            "wilson_ci_95": [
+              0.031858312389668964,
+              0.0776439388101552
+            ]
+          }
+        },
+        "true_gate_c_hat": {
+          "confab_abstention": {
+            "n": 1332,
+            "n_expected": 1332,
+            "n_missing": 0,
+            "rate": 0.6891891891891891,
+            "successes": 918,
+            "wilson_ci_95": [
+              0.6638199705763492,
+              0.7134703108953311
+            ]
+          },
+          "confab_well_formed": {
+            "n": 1332,
+            "n_expected": 1332,
+            "n_missing": 0,
+            "rate": 0.9774774774774775,
+            "successes": 1302,
+            "wilson_ci_95": [
+              0.968030105583904,
+              0.9841787000350992
+            ]
+          },
+          "known_false_refusal": {
+            "n": 360,
+            "n_expected": 360,
+            "n_missing": 0,
+            "rate": 0.041666666666666664,
+            "successes": 15,
+            "wilson_ci_95": [
+              0.02541060939986971,
+              0.06760094274809934
+            ]
+          }
+        }
+      },
+      "s1": {
+        "cannot_move_gate_axis": true,
+        "census_max_abs_delta_frac": 0.08333333333333334,
+        "census_median_delta_pts": -6.0,
+        "effect_ratio": 7.270270270270268,
+        "effect_ratio_floor": 3.0,
+        "effect_ratio_pass": true,
+        "family": "qwen35_4b",
+        "gated_confab_lift_pts": 0.6058558558558558,
+        "passed": true,
+        "sign_opposition": true
+      }
+    }
+  }
+}

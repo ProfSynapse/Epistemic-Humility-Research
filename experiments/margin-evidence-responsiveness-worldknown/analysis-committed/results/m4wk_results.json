@@ -1,0 +1,177 @@
+{
+  "alias_grader_false_wrong_bound": {
+    "clear_positive_decoys": {
+      "agreement_floor": 0.6,
+      "agreement_rate": 1.0,
+      "floor_min_decoys": 25,
+      "n": 29,
+      "n_agree": 29
+    },
+    "false_wrong_rate_wilson_ci_95": {
+      "n": 117,
+      "rate": 0.042735042735042736,
+      "successes": 5,
+      "wilson_ci_95": [
+        0.018389831081890212,
+        0.09615247050710528
+      ]
+    },
+    "graded_shard_sha256": "65fe24198813c2e562232ce2f1b3106123c0b583cce2aed3f7f682408d892755",
+    "n_confab_graded": 117,
+    "n_false_wrong": 5,
+    "note": "a POSITIVE (d) verdict is robust regardless of this bound (the bias is conservative); this bound only gates interpretability of a NULL result (gates.yaml SC2 bullet 1).",
+    "null_interpretable_max": 0.1,
+    "null_would_be_interpretable": true
+  },
+  "experiment": "margin-evidence-responsiveness-worldknown",
+  "generated_note": "RAW NUMBERS ONLY. No criterion (d) earned/not-earned adjudication is made by this script; that is reserved for the lead per gates.yaml criteria.criterion_d_earned / criterion_d_not_earned / split_result.",
+  "per_direction": {
+    "native": {
+      "C1_separation_reproduction": {
+        "bracketing_report": {
+          "bottom_dose_abs": 0.5293333251305763,
+          "frac_confab_tipped_at_bottom_rung": 0.0225,
+          "frac_confab_tipping_censored": 0.8725,
+          "n_confab": 400,
+          "n_confab_tipped_at_bottom_rung": 9,
+          "n_confab_tipping_censored_at_top_rung": 349,
+          "note": "cell.yaml `channel2_margin.ladder_rebuild.bracketing_requirement`: the ladder rungs MUST bracket the observed tipping doses. A high frac_tipped_at_bottom_rung means the smallest rung is already too strong (bracketing concern from below); a high frac_tipping_censored means the largest rung is not strong enough (from above). REPORTED HERE, not gated -- re-deriving the ladder is a protocol decision reserved for lead adjudication, never silently done by this script.",
+          "top_dose_abs": 135.50933123342753
+        },
+        "median_confab_margin": 135.50933123342753,
+        "median_correct_control_margin": 135.50933123342753,
+        "reproduces_m1_style_separation": false
+      },
+      "D1_projection_collapse": {
+        "both_legs_required": true,
+        "correct_control_specificity": {
+          "correct_shift_as_large_as_confab_shift": false,
+          "median_shift_true_answer_confab": 0.592119180938631,
+          "median_shift_true_answer_correct_control": 0.40795464440318396
+        },
+        "direction": "native",
+        "leg_1_position_into_gap": {
+          "collapse_floor_z_frozen": 0.8209213240458088,
+          "median_shift_true_answer_confab": {
+            "bootstrap_ci_95": [
+              0.5363701360277506,
+              0.6694349963639568
+            ],
+            "n": 400,
+            "n_boot": 10000,
+            "point": 0.592119180938631,
+            "seed": 48260724
+          },
+          "passes_floor": false
+        },
+        "leg_2_specificity": {
+          "excludes_zero_and_true_larger": true,
+          "paired_diff_true_minus_false_shift": {
+            "bootstrap_ci_95": [
+              0.052654992689975755,
+              0.15237062513849597
+            ],
+            "excludes_zero": true,
+            "n": 400,
+            "n_boot": 10000,
+            "point": 0.10215148718241092,
+            "seed": 48260724,
+            "statistic": "mean"
+          },
+          "true_shift_larger": true
+        },
+        "n_confab": 400,
+        "n_correct_control": 360
+      },
+      "D2_margin_lengthening": {
+        "baseline_staleness_check": {
+          "ceiling": 0.05,
+          "n": 51,
+          "no_answer_baseline_survival_rate": 0.2549019607843137,
+          "passed": false
+        },
+        "d2_absolute_floor_frozen": 0.13722492664818098,
+        "direction": "native",
+        "n_margin_eligible": 51,
+        "passes_floor": false,
+        "primary_test_paired_diff_true_minus_false": {
+          "bootstrap_ci_95": [
+            -0.09803921568627451,
+            0.09803921568627451
+          ],
+          "excludes_zero": false,
+          "n": 51,
+          "n_boot": 10000,
+          "point": 0.0,
+          "seed": 48260724,
+          "statistic": "mean"
+        },
+        "survival_rates": {
+          "false_answer_placebo": 0.9411764705882353,
+          "no_answer_baseline": 0.2549019607843137,
+          "true_answer": 0.9411764705882353
+        }
+      },
+      "role": "secondary"
+    },
+    "transfer": {
+      "C1_separation_reproduction": null,
+      "D1_projection_collapse": {
+        "both_legs_required": true,
+        "correct_control_specificity": {
+          "correct_shift_as_large_as_confab_shift": null,
+          "median_shift_true_answer_confab": -0.21724835526572206,
+          "median_shift_true_answer_correct_control": -0.1217956116593586
+        },
+        "direction": "transfer",
+        "leg_1_position_into_gap": {
+          "collapse_floor_z_frozen": null,
+          "median_shift_true_answer_confab": {
+            "bootstrap_ci_95": [
+              -0.23680839206242477,
+              -0.1975934289199912
+            ],
+            "n": 400,
+            "n_boot": 10000,
+            "point": -0.21724835526572206,
+            "seed": 48260724
+          },
+          "passes_floor": null
+        },
+        "leg_2_specificity": {
+          "excludes_zero_and_true_larger": false,
+          "paired_diff_true_minus_false_shift": {
+            "bootstrap_ci_95": [
+              -0.05450753136671836,
+              -0.025301766484092696
+            ],
+            "excludes_zero": true,
+            "n": 400,
+            "n_boot": 10000,
+            "point": -0.03987710351108443,
+            "seed": 48260724,
+            "statistic": "mean"
+          },
+          "true_shift_larger": false
+        },
+        "n_confab": 400,
+        "n_correct_control": 360
+      },
+      "D2_margin_lengthening": null,
+      "role": "primary"
+    }
+  },
+  "single_regime_attestation": {
+    "channel1_false_answer_placebo": "e756a17a0c72f3948b65930920750484e0c69922f672d0a959a5e4dd760c318b",
+    "channel1_no_answer_baseline": "e756a17a0c72f3948b65930920750484e0c69922f672d0a959a5e4dd760c318b",
+    "channel1_single_regime": true,
+    "channel1_true_answer": "e756a17a0c72f3948b65930920750484e0c69922f672d0a959a5e4dd760c318b",
+    "channel2_survival_native": "011599327ea5ec9fc8574438e8ae92a7910cc103c33143757bc4f1e104a563a3",
+    "channel2_survival_transfer": null
+  },
+  "transfer_firing_gate": {
+    "fires": false,
+    "floor": 0.7,
+    "observed_auroc": 0.3018263888888889
+  }
+}

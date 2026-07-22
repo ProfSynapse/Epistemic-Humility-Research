@@ -1,0 +1,59 @@
+# llama-atlas-gated-wide-instrument-retest gates, fixed before launch.
+# Wilson 95% CIs on every rate. No goalpost moves after outcome.
+gates:
+  - id: G0
+    kind: instrument-validity
+    stop: pre-outcome
+    criteria:
+      - loader resolves unsloth/Llama-3.2-3B-Instruct at revision 006f5dcd1393c3add266de40994ba96225e9689d via the causal-LM path (byte-check vs fleet model_matrix.yaml, atlas, and rr cell configs)
+      - FIT gate AUC >= 0.90 at each candidate layer (hs20, hs22, hs23, hs26), with matched random-direction best-orientation read AUROC reported alongside as the confounded reference (atlas norm/position caveat; gate role is row selection, not the actuation claim)
+      - direction refits byte-identical under seed 20260719 (double-fit assertion)
+      - anchor coverage over all FIT rows at each candidate layer (A1 recapture only for missing layers)
+      - hook placement asserted against the atlas hidden-state-index convention (A5)
+      - dosed-smoke readback within tolerance before full ladder
+      - wide-instrument pins (detector_v2 module, patterns, adjudication rubric) sha256 hash-identical to abstention-wide-instrument-calibration committed pins
+      - RunLog visibly grows on any stage over ~15 minutes
+      - no question/alias/answer/generation text and no token ids under analysis-committed/
+  - id: G1
+    kind: primary
+    scorer: wide_refused
+    scope: full FIT ladder, every (layer, dose) rung scored; no FIT-viability early stop
+    criterion: >-
+      existence: some rung reaches fired-FIT-confab wide refused >= 0.60 (Wilson
+      LCB > 0.50) AND well_formed >= 0.80 AND known-correct wide false-refusal
+      <= 0.05 (Wilson UCB < 0.10)
+    floor_justification: >-
+      floors held identical to rr and qwen35 ladder G1
+      (qwen35-4b-midband-doubt-snap/AMENDMENT.md:270-272) for cross-experiment
+      comparability
+    reporting_rule: >-
+      because llama's undosed wide baseline is 0.164 (not ~0), the net lift over
+      the paired baseline wide rate is reported and evaluated alongside every
+      absolute rate; fired-known conditional false-refusal reported alongside
+      the system-level cost (rr G1 hygiene)
+  - id: G-spec
+    kind: direction-specificity
+    tier: secondary-reported-not-promotion
+    rungs: [[20, 12], [20, 16]]
+    criterion: >-
+      effect ratio gated-net-wide-lift / max(|random_direction net-wide-lift|,
+      epsilon) >= 3.0
+    source: >-
+      gate-contribution-factorial S1 ratio floor 3.0; random leg
+      directional-only, no magnitude floor; sized against llama's measured wide
+      baseline per the calibration cell's successor design rule
+  - id: CG1
+    kind: grader-calibration
+    scope: per adjudication shard, before unblinding
+    criteria:
+      - clear-negative decoy agreement >= 0.95
+      - clear-positive decoy agreement >= 0.60
+    on_fail: shard void before unblinding, regraded once; second failure voids the cell, reported straight
+    decoy_sizing: more clear-positive decoys per shard or a pooled clear-positive floor (calibration cell QL lesson)
+falsifier: >-
+  R2 adopted (reading "llama does not actuate clean refusal at its atlas sites"
+  falsified) if some (layer, dose) rung on the locked grid reaches wide refused
+  >= 0.60 (Wilson LCB > 0.50) with well_formed >= 0.80 AND known-correct wide
+  false-refusal <= 0.10 on fired FIT confabs; otherwise R1 (shape F robust to
+  the certified wide instrument).
+verdict_bound: this cell cannot alter, upgrade, or un-falsify rr-cross-family-raw-refusal's locked shape-F verdict.

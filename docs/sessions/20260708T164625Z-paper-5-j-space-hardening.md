@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-14T13:22:02Z'
+updated_at: '2026-07-15T10:48:34Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -13,7 +13,8 @@ tags:
 - paper5
 - j-space
 - actuation
-run_ids: []
+run_ids:
+- rr3-pipeline-20260714b
 trajectory:
   anchor: docs/research-trajectory.md
   current_position: Paper 5 draft merged to main; same-model J-space layer-site replication
@@ -890,6 +891,295 @@ checkpoints:
   - rr3-reviser lands revision -> lead final review -> copy scoreboard calls into
     AMENDMENT -> harness build -> sign with pins -> lift GPU launch approval to PI.
   signals: {}
+- id: 033-launch
+  at: '2026-07-14T17:05:58Z'
+  kind: launch
+  title: RR3 signed and launched on local 3090
+  summary: 'RR3 (rr3-corrected-placebo-replication) arc completed draft-to-launch
+    in one day. Draft (opus agent) -> lead revision round (Q1 regeneration kept, Q2
+    max-over-K, Q4 full grid, Q5 scoreboard slots, +/-8 descriptive envelope, >=25
+    clear-positive draws, rider dosing of answerable rows with source-field question-type
+    stratification) -> PI resolved Q3 (corrected-criterion re-adjudication framing)
+    and gave scoreboard calls (llama null / RG1 pass / seeds inside; orchestrator
+    counter: llama weak recruitment / RG1 pass / one seed outside) -> harness build
+    (15 modules, 78-test suite, detector v2 byte-identical to RR2/calibration pins,
+    held-back decoy pool, pooled CG1 floor, max-over-K arithmetic proven by test)
+    -> lead fixed the build''s STOP item (cell.yaml rider_cells YAML parse error introduced
+    in the revision commit; shared config hoisted to rider_shared), pinned llama revision
+    006f5dcd (verified RR cell.yaml + fleet model_matrix agree), confirmed K-seeds
+    [30260714, 30260715, 30260716], SIGNED. Paper 5 manuscript updated on main with
+    RR2 falsification + calibration Section 4.8 (cfdc90d7). Calibration KG-ingest
+    committed (06f525b2). LAUNCH: local 3090 (free lane, standing approval, PI also
+    explicitly approved after the auto-mode classifier flagged the --i-know-this-runs-on-gpu
+    acknowledgment flag; PI said proceed). First launch attempt stopped cleanly pre-GPU:
+    staged inputs absent in fresh worktree; fixed by symlinking RR worktree row pools
+    + atlas captures (gitignored row-level artifacts, correct lane). Relaunch passed
+    materialize for both families (mistral 1312/382, llama 2956 joined) and entered
+    fit_reuse RG0.'
+  evidence: []
+  run_ids:
+  - rr3-pipeline-20260714b
+  commands:
+  - pipeline.py all --batch-size 8 --i-know-this-runs-on-gpu (local 3090, detached,
+    log analysis/pipeline_run_20260714b.log)
+  decisions: []
+  next_steps:
+  - 'On pipeline completion: RG0 byte-repro verify, build adjudication pool, commit
+    pool manifest, dispatch context-free blind graders, hash-commit, CG1, scorer,
+    red-team certification BEFORE verdict. Pending elsewhere: sign-flip analysis amendment
+    draft (#39), abstention-grading skill PR (#42), scale test 1.7B+~9B held for RR3
+    (#41).'
+  signals: {}
+- id: 034-decision
+  at: '2026-07-14T17:50:03Z'
+  kind: decision
+  title: 'Sign-flip analysis: pre-run scoreboard calls + structural finding'
+  summary: 'placebo-signflip-question-type-analysis (draft on exp/placebo-signflip-analysis)
+    pre-run registrations. Drafter''s structural finding, lead-verified bit-for-bit
+    from row_level_scored.jsonl: every dosed placebo row in every family/cell is unanswerable
+    (kuq), so the certified cross-family sign difference (qwen -5.13 suppression vs
+    mistral +7.39 recruitment) was measured entirely on the unanswerable stratum and
+    question type CANNOT explain it behaviorally on existing data (it never varied).
+    Powered question-type tests move to the mechanism leg (anchors exist for both
+    types in all three families) and prospectively to RR3''s rider. Scoreboard calls
+    (PI then orchestrator): M1 answerable-vs-unanswerable separation on doubt/caution
+    axis in all three families: YES / YES. kuq-subtype concentration of the placebo
+    effect: CONCENTRATED-OR-UNEVEN / EVEN-SPREAD (differentiating slot). M3 realized
+    displacement differs by type: YES / YES. Lead decisions: subtype breakdown extended
+    to mistral; mistral hs16 directions provenance-by-regeneration via RR fit manifest.
+    RR3 pipeline meanwhile mid-generation on the 3090 (92 percent util).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions:
+  - Scoreboard registered as above; subtype breakdown extended to mistral; directions
+    provenance-by-regeneration.
+  next_steps:
+  - 'Harness build for signflip analysis (BG1 exact frame-port acceptance test is
+    the known risk) -> lead review -> sign -> CPU run -> red-team -> resolve. RR3:
+    await pipeline completion notification.'
+  signals: {}
+- id: 035-checkpoint
+  at: '2026-07-14T18:27:53Z'
+  kind: checkpoint
+  title: 'Pre-restart state: RR3 generating, sign-flip behavioral leg done'
+  summary: 'PI will restart the machine once the RR3 GPU run completes; session pauses
+    there. STATE AT PAUSE. RR3 (exp/rr3-corrected-placebo, signed): pipeline through
+    mistral core (all 4 arms + 3 seeds) and heldback passes; mistral rider in progress,
+    llama rider remains; log analysis/pipeline_run_20260714b.log; on completion DO
+    NOT dispatch adjudication until resume. Sign-flip (exp/placebo-signflip-analysis,
+    SIGNED, run partially executed): BG0/BG1/BG2 all PASS (BG1 frame port 1303/1303
+    exact firings, 0/1692 mismatches; BG0 reproduced both certified deltas bit-for-bit).
+    Behavioral leg executed: qwen suppression CONCENTRATED in future-unknown subtype
+    (-24.7 pts, n=190, baseline 0.332) vs -2.8 or less elsewhere; mistral recruitment
+    broad-based positive (+3.8 to +11.8 across all six subtypes); baseline hedging
+    orders subtypes identically across families. PI scoreboard call (concentrated-or-uneven)
+    currently winning vs orchestrator (even-spread); near the registered inert-reading
+    falsifier for qwen; NO verdict yet, red-team required first, mechanism leg (M1/M2/M3)
+    NOT run (deferred for host RAM until GPU job ends). Report at analysis-committed/signflip_report.json,
+    uncommitted. RESUME SEQUENCE: 1) verify RR3 pipeline completed cleanly (RG0 byte-repro
+    in log), 2) run sign-flip mechanism leg (opt-in real-data loaders incl. mistral
+    251MB / llama 493MB anchor JSONs), 3) rerun report.py, commit report, 4) red-team
+    certification of sign-flip, resolve, PR; 5) RR3 adjudication cycle: build_adjudication_pool,
+    commit pool manifest BEFORE grading, context-free blind graders, hash-commit before
+    unblinding, CG1, rr3_scorer, red-team, resolve, PR. Scoreboards registered in
+    both AMENDMENTs; no goalpost moves.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Await RR3 pipeline completion notification; then checkpoint again and tell the
+    PI it is safe to restart.
+  signals: {}
+- id: 036-checkpoint
+  at: '2026-07-14T19:13:13Z'
+  kind: checkpoint
+  title: RR3 generation COMPLETE; machine quiesced for PI restart
+  summary: 'RR3 pipeline exited 0 after the full sequence (materialize both families,
+    fit_reuse RG0 reconstruction, heldback passes, mistral core all arms, mistral
+    rider, llama rider). GPU freed (0 MiB). Runlog artifacts on disk in the rr3-corrected-placebo
+    worktree analysis/runlog/: core baseline 1694 rows, gated 1303 fired (matches
+    RR2''s fired count exactly), three random seeds (30260714/15/16), dose_knowns
+    382, heldback passes, 87 rider files (mistral + llama dose ladders incl. answerable-row
+    legs). Pipeline printed the 5-step adjudication instructions and stopped, as designed;
+    nothing dispatched. Sign-flip behavioral leg done earlier (gates pass, PI subtype
+    call ahead), mechanism leg deferred. NOTHING RUNNING: no background tasks, no
+    agents in flight, both amendment branches committed locally, main pushed. Safe
+    to restart the machine. RESUME: follow the pre-restart checkpoint''s resume sequence
+    (verify RG0 byte-repro explicitly as step 1: the log does not print an explicit
+    byte-repro line; confirm whether the check ran in-pipeline or runs in the scorer
+    before adjudication dispatch).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'After PI restart: RG0 byte-repro verification, then sign-flip mechanism leg (RAM
+    now free), then RR3 adjudication cycle per the printed instructions.'
+  signals: {}
+- id: 037-checkpoint
+  at: '2026-07-14T20:18:57Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: RR3 adjudication cycle DISPATCHED. Pool manifest (21 shards, 16045 rows
+    = 14485 core + 474 clear-neg + 1086 clear-pos decoys, seed 20260715) committed
+    to exp/rr3-corrected-placebo as 6204a7f2 BEFORE any grading, per the manifest-before-grading
+    rule. 21 context-free blind graders (sonnet, rubric verbatim from AMENDMENT.md,
+    bare opaque_id+text shards, no experiment context, no pattern-matcher per standing
+    PI directive) spawned in parallel; graded files land in gitignored analysis/graded/.
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'On grader completion: verify line counts/order, apply_adjudication.py commit-hash
+    per shard BEFORE apply, then apply --grading-manifest (CG1 per-shard + pooled,
+    void-regrade-once), then rr3_scorer.py, then red-team BEFORE verdict. signflip-mech
+    agent still running (BG1 mistral/llama real-data checks + M1/M2/M3 mechanism leg).'
+  signals: {}
+- id: 038-checkpoint
+  at: '2026-07-14T20:38:58Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'INCIDENT + containment during RR3 blind grading: parallel grader agents
+    shared the session scratchpad for helper scripts and two write collisions occurred
+    on generic filenames (write_shard00.py, verify.py two writers each). Effect: one
+    grader''s judgment chunk routed to the wrong target mid-run; the in-flight rider_mistral_shard_01
+    grader''s partial file is missing a ~50-line middle block (720/770, own ids only,
+    no foreign ids). Damage CONTAINED: all 20 completed shards pass full independent
+    integrity (exact counts, positional opaque_id match, no dups within/across files)
+    and every hash commitment was recorded only after that verification; the damaged
+    shard was never hash-committed. PI directive adopted as standing rule: any parallelized
+    agents get pre-assigned PRIVATE working dirs for all intermediates plus unique
+    output paths, forbidden to write elsewhere; zero shared mutable paths. Fold into
+    abstention-grading skill update. Separately: BG1 diagnosis confirmed mistral check-scope
+    defect (0/1694 mismatches on the true evaluated roster; check iterates full 3037-row
+    anchor population, frame_port.py:199-238); llama recompute still running.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Await rm01 grader; if final file not cleanly repaired, void attempt (never committed,
+    no unblinding) and dispatch fresh grader with private dir. Then git-commit grading
+    manifest, apply (CG1), rr3_scorer, red-team. Await llama half of BG1 diagnosis,
+    then adjudicate instrument-defect repin vs genuine fail.
+  signals: {}
+- id: 039-checkpoint
+  at: '2026-07-14T20:56:06Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'RR3 RESOLVED FALSIFIED, PR #290 open awaiting PI merge approval. Full
+    adjudication cycle completed: 21/21 shards graded blind and hash-committed pre-unblind
+    (7cec7511), CG1 all-pass per-shard + pooled 0.782, apply clean (14485 rows), scorer:
+    RG1 FAIL effect ratio 1.87 < 3.0 (gated lift +40.9 pts vs fresh random-seed lifts
+    +13.3/-7.4/+21.8 at matched magnitude), RG2/RG3 PASS reproducing RR2. Opus red-team
+    certified artifact-free across all six attack surfaces (directions genuinely random
+    |cos|<=0.015, magnitude-matched, robust detector-only 1.91 and mean-denominator
+    2.89). Outcome written, resolved falsified, registry regenerated (abaaaf99). Scoreboard
+    adjudicated: PI right llama-null (rider null through 16x, +0.1 at 12x); both wrong
+    on mistral RG1 PASS calls; envelope split (PI inside wrong, orchestrator outside
+    right but 21.8 exceeded his 14-pt bound). KEY METHODOLOGICAL FACT for sign-flip
+    and paper 5: single-seed placebo readings on mistral span -7.4 to +21.8 pts at
+    12 sigma_c; calibration family-signed placebo map points are single draws; signflip
+    adjudication must read RR3 Outcome first (cross-experiment note in Outcome).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - '1) PI decision: merge PR #290. 2) signflip: await llama half of bg1-diagnosis
+    (mistral half confirmed check-scope defect, 0/1694 restricted mismatches), then
+    adjudicate repin-vs-drop, then mechanism leg, with RR3 seed-variance caveat folded
+    into any verdict. 3) Paper 5 update for RR3 result after merge. 4) Abstention-grading
+    skill update #42 (+ private-workdir rule).'
+  signals: {}
+- id: 040-checkpoint
+  at: '2026-07-14T22:09:57Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Signflip BG1 adjudicated and closed: both real-data fire-set failures
+    were CHECK-SCOPE defects (lead re-derived mistral 0/1694 restricted personally;
+    llama restricted 1/581 hs20, 0/581 hs22/hs23, known-presence invariant true, read
+    from the diagnostic''s raw output log after the diagnostic agent stalled on an
+    unwoken background job). frame_port.py corrected to the actually-gate-evaluated
+    populations (no frame-math change), llama fire-set now gates at 1% tolerance (strictness
+    increase), repinned with full reason, smoke 31 pass, corrected BG1 rerun ALL GREEN
+    (41ae0e37 on exp/placebo-signflip-analysis, after one stale-registry-hook recommit).
+    Mechanism leg (M1/M2/M3 + pre-stated subtype readout) dispatched to harness-builder
+    signflip-mech2. Also this segment: paper 5 updated on main 4bb46ba6 (new 4.9 +
+    seed-variance rule + Section 5 table correction + RR3 AMENDMENT stale-header fix);
+    abstention-grading skill PR #291 MERGED (8bbaa8a1); data-exhaust copy-everything
+    builder + completeness verifier PR #292 OPEN (validated: 4 experiments had zero-file
+    verify-PASSing builds under old allowlist; all 22 slugs rebuild complete, v2 staging
+    in scratch/exhaust-backfill-v2); doubt-snap dry-run card ready, publish awaiting
+    PI go (use v2 build).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - '1) Review signflip-mech2 M1/M2/M3 + subtype readout, then red-team, then falsifier/scoreboard
+    adjudication + Outcome + resolve + PR (carry RR3 seed-variance caveat). 2) PI:
+    merge PR #292; publish approvals per dataset card (doubt-snap first, from v2).
+    3) Scaffold placebo seed-distribution census amendment (PI approved as next experiment)
+    after signflip resolves. 4) Then scale test #41.'
+  signals: {}
+- id: 041-checkpoint
+  at: '2026-07-14T22:40:03Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Signflip experiment RESOLVED (PR #293 open, awaiting user merge). Red-team
+    certified all mechanism numbers to full float precision (fire-set 1303/1303; circularity
+    discharged via held-out restriction, -6.05 vs -5.80). M1 axis question resolved
+    from locked instruments: frozen gate defines doubt = -z_d, so doubt axis CONFIRMED
+    all three families under operational convention (near-tautology caveat stated);
+    caution axis not interpretable as question-type ordering; raw-axis prediction_consistent
+    booleans NOT transcribed. Registered falsifier UNTRIGGERED (sign-agnostic, no
+    CI spans 0); behavioral subtype arm FIRES for qwen (future-unknown -24.7 vs <=-2.8;
+    also mistral''s +11.8 max and both families'' projection outlier). Scoreboard:
+    M1 both correct; subtype PI correct / orchestrator WRONG; M3 both wrong for qwen
+    (null), mistral non-null but 0.3% negligible. M2 carried RR3 single-seed caveat.
+    Stale scaffold header corrected (same bug as RR3). Commit 7904da93, registry regenned,
+    validate OK 72.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'User decisions pending: merge PR #293 (signflip), merge PR #292 (data-exhaust),
+    doubt-snap publish go (v2 build). Then scaffold placebo seed-distribution census
+    (K=10-20 seeds/family at matched magnitude, approved), then scale test.'
+  signals: {}
+- id: 042-checkpoint
+  at: '2026-07-15T10:48:34Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Census arc through host restart. Signed (f1c1983a): K=15/family, S=300,
+    fresh mistral seeds, scoreboard registered (both predictors: qwen SURVIVES, mistral
+    RETIRED, llama null). Harness built (23 modules); GPU smokes exposed mis-drafted
+    SC1 absolute 0.01 readback bar (certified regime is uniform 0.11-0.16% RELATIVE;
+    qwen precedent 12.625 vs 12.608 = 0.14%); user-approved pre-run correction to
+    relative 0.005 + llama baseline pointer fix (RR3 rider baseline) + cell.yaml YAML
+    fix, repinned 5 files (c21fad80). First sweep dispatch stopped honestly: harness
+    was smoke-only (8-row cap) and heldback decoy pass missing. Lead decisions: BATCH_SIZE=4
+    pinned with whole-pass checkpoint granularity; clear-negative decoys extracted
+    from staged baselines (no GPU pass). Builder 2 completed driver + decoys, mini-smoked,
+    launched sweep; host RESTART killed it mid-qwen (seeds 01/02/04 complete at 300
+    rows, 05 interrupted at 236, 03 SC1-voided; mistral/llama not started). Fresh
+    resume runner dispatched: whole-pass resume, then SC1 ledger + pool assembly,
+    stop before grading. Doubt-snap exhaust published (91e572f4); PRs 292/293 merged.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'On resume-runner report: verify SC1 ledger, hash-commit pool manifest BEFORE
+    grading, dispatch isolated context-free graders (private workdirs per standing
+    rule), commit graded hashes before unblind, CG floors, deltas, criterion buckets,
+    red-team, Outcome, PR (user merge).'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1303,3 +1593,79 @@ rows before the layer contrast.
   - Q3: corrected-criterion re-adjudication framing (PI). Scoreboard calls registered as above.
 - next steps:
   - rr3-reviser lands revision -> lead final review -> copy scoreboard calls into AMENDMENT -> harness build -> sign with pins -> lift GPU launch approval to PI.
+### 033-launch - RR3 signed and launched on local 3090
+
+- at: `2026-07-14T17:05:58Z`
+- kind: `launch`
+- summary: RR3 (rr3-corrected-placebo-replication) arc completed draft-to-launch in one day. Draft (opus agent) -> lead revision round (Q1 regeneration kept, Q2 max-over-K, Q4 full grid, Q5 scoreboard slots, +/-8 descriptive envelope, >=25 clear-positive draws, rider dosing of answerable rows with source-field question-type stratification) -> PI resolved Q3 (corrected-criterion re-adjudication framing) and gave scoreboard calls (llama null / RG1 pass / seeds inside; orchestrator counter: llama weak recruitment / RG1 pass / one seed outside) -> harness build (15 modules, 78-test suite, detector v2 byte-identical to RR2/calibration pins, held-back decoy pool, pooled CG1 floor, max-over-K arithmetic proven by test) -> lead fixed the build's STOP item (cell.yaml rider_cells YAML parse error introduced in the revision commit; shared config hoisted to rider_shared), pinned llama revision 006f5dcd (verified RR cell.yaml + fleet model_matrix agree), confirmed K-seeds [30260714, 30260715, 30260716], SIGNED. Paper 5 manuscript updated on main with RR2 falsification + calibration Section 4.8 (cfdc90d7). Calibration KG-ingest committed (06f525b2). LAUNCH: local 3090 (free lane, standing approval, PI also explicitly approved after the auto-mode classifier flagged the --i-know-this-runs-on-gpu acknowledgment flag; PI said proceed). First launch attempt stopped cleanly pre-GPU: staged inputs absent in fresh worktree; fixed by symlinking RR worktree row pools + atlas captures (gitignored row-level artifacts, correct lane). Relaunch passed materialize for both families (mistral 1312/382, llama 2956 joined) and entered fit_reuse RG0.
+- run ids:
+  - `rr3-pipeline-20260714b`
+- commands:
+  - `pipeline.py all --batch-size 8 --i-know-this-runs-on-gpu (local 3090, detached, log analysis/pipeline_run_20260714b.log)`
+- next steps:
+  - On pipeline completion: RG0 byte-repro verify, build adjudication pool, commit pool manifest, dispatch context-free blind graders, hash-commit, CG1, scorer, red-team certification BEFORE verdict. Pending elsewhere: sign-flip analysis amendment draft (#39), abstention-grading skill PR (#42), scale test 1.7B+~9B held for RR3 (#41).
+### 034-decision - Sign-flip analysis: pre-run scoreboard calls + structural finding
+
+- at: `2026-07-14T17:50:03Z`
+- kind: `decision`
+- summary: placebo-signflip-question-type-analysis (draft on exp/placebo-signflip-analysis) pre-run registrations. Drafter's structural finding, lead-verified bit-for-bit from row_level_scored.jsonl: every dosed placebo row in every family/cell is unanswerable (kuq), so the certified cross-family sign difference (qwen -5.13 suppression vs mistral +7.39 recruitment) was measured entirely on the unanswerable stratum and question type CANNOT explain it behaviorally on existing data (it never varied). Powered question-type tests move to the mechanism leg (anchors exist for both types in all three families) and prospectively to RR3's rider. Scoreboard calls (PI then orchestrator): M1 answerable-vs-unanswerable separation on doubt/caution axis in all three families: YES / YES. kuq-subtype concentration of the placebo effect: CONCENTRATED-OR-UNEVEN / EVEN-SPREAD (differentiating slot). M3 realized displacement differs by type: YES / YES. Lead decisions: subtype breakdown extended to mistral; mistral hs16 directions provenance-by-regeneration via RR fit manifest. RR3 pipeline meanwhile mid-generation on the 3090 (92 percent util).
+- decisions:
+  - Scoreboard registered as above; subtype breakdown extended to mistral; directions provenance-by-regeneration.
+- next steps:
+  - Harness build for signflip analysis (BG1 exact frame-port acceptance test is the known risk) -> lead review -> sign -> CPU run -> red-team -> resolve. RR3: await pipeline completion notification.
+### 035-checkpoint - Pre-restart state: RR3 generating, sign-flip behavioral leg done
+
+- at: `2026-07-14T18:27:53Z`
+- kind: `checkpoint`
+- summary: PI will restart the machine once the RR3 GPU run completes; session pauses there. STATE AT PAUSE. RR3 (exp/rr3-corrected-placebo, signed): pipeline through mistral core (all 4 arms + 3 seeds) and heldback passes; mistral rider in progress, llama rider remains; log analysis/pipeline_run_20260714b.log; on completion DO NOT dispatch adjudication until resume. Sign-flip (exp/placebo-signflip-analysis, SIGNED, run partially executed): BG0/BG1/BG2 all PASS (BG1 frame port 1303/1303 exact firings, 0/1692 mismatches; BG0 reproduced both certified deltas bit-for-bit). Behavioral leg executed: qwen suppression CONCENTRATED in future-unknown subtype (-24.7 pts, n=190, baseline 0.332) vs -2.8 or less elsewhere; mistral recruitment broad-based positive (+3.8 to +11.8 across all six subtypes); baseline hedging orders subtypes identically across families. PI scoreboard call (concentrated-or-uneven) currently winning vs orchestrator (even-spread); near the registered inert-reading falsifier for qwen; NO verdict yet, red-team required first, mechanism leg (M1/M2/M3) NOT run (deferred for host RAM until GPU job ends). Report at analysis-committed/signflip_report.json, uncommitted. RESUME SEQUENCE: 1) verify RR3 pipeline completed cleanly (RG0 byte-repro in log), 2) run sign-flip mechanism leg (opt-in real-data loaders incl. mistral 251MB / llama 493MB anchor JSONs), 3) rerun report.py, commit report, 4) red-team certification of sign-flip, resolve, PR; 5) RR3 adjudication cycle: build_adjudication_pool, commit pool manifest BEFORE grading, context-free blind graders, hash-commit before unblinding, CG1, rr3_scorer, red-team, resolve, PR. Scoreboards registered in both AMENDMENTs; no goalpost moves.
+- next steps:
+  - Await RR3 pipeline completion notification; then checkpoint again and tell the PI it is safe to restart.
+### 036-checkpoint - RR3 generation COMPLETE; machine quiesced for PI restart
+
+- at: `2026-07-14T19:13:13Z`
+- kind: `checkpoint`
+- summary: RR3 pipeline exited 0 after the full sequence (materialize both families, fit_reuse RG0 reconstruction, heldback passes, mistral core all arms, mistral rider, llama rider). GPU freed (0 MiB). Runlog artifacts on disk in the rr3-corrected-placebo worktree analysis/runlog/: core baseline 1694 rows, gated 1303 fired (matches RR2's fired count exactly), three random seeds (30260714/15/16), dose_knowns 382, heldback passes, 87 rider files (mistral + llama dose ladders incl. answerable-row legs). Pipeline printed the 5-step adjudication instructions and stopped, as designed; nothing dispatched. Sign-flip behavioral leg done earlier (gates pass, PI subtype call ahead), mechanism leg deferred. NOTHING RUNNING: no background tasks, no agents in flight, both amendment branches committed locally, main pushed. Safe to restart the machine. RESUME: follow the pre-restart checkpoint's resume sequence (verify RG0 byte-repro explicitly as step 1: the log does not print an explicit byte-repro line; confirm whether the check ran in-pipeline or runs in the scorer before adjudication dispatch).
+- next steps:
+  - After PI restart: RG0 byte-repro verification, then sign-flip mechanism leg (RAM now free), then RR3 adjudication cycle per the printed instructions.
+### 037-checkpoint - Checkpoint
+
+- at: `2026-07-14T20:18:57Z`
+- kind: `checkpoint`
+- summary: RR3 adjudication cycle DISPATCHED. Pool manifest (21 shards, 16045 rows = 14485 core + 474 clear-neg + 1086 clear-pos decoys, seed 20260715) committed to exp/rr3-corrected-placebo as 6204a7f2 BEFORE any grading, per the manifest-before-grading rule. 21 context-free blind graders (sonnet, rubric verbatim from AMENDMENT.md, bare opaque_id+text shards, no experiment context, no pattern-matcher per standing PI directive) spawned in parallel; graded files land in gitignored analysis/graded/.
+- next steps:
+  - On grader completion: verify line counts/order, apply_adjudication.py commit-hash per shard BEFORE apply, then apply --grading-manifest (CG1 per-shard + pooled, void-regrade-once), then rr3_scorer.py, then red-team BEFORE verdict. signflip-mech agent still running (BG1 mistral/llama real-data checks + M1/M2/M3 mechanism leg).
+### 038-checkpoint - Checkpoint
+
+- at: `2026-07-14T20:38:58Z`
+- kind: `checkpoint`
+- summary: INCIDENT + containment during RR3 blind grading: parallel grader agents shared the session scratchpad for helper scripts and two write collisions occurred on generic filenames (write_shard00.py, verify.py two writers each). Effect: one grader's judgment chunk routed to the wrong target mid-run; the in-flight rider_mistral_shard_01 grader's partial file is missing a ~50-line middle block (720/770, own ids only, no foreign ids). Damage CONTAINED: all 20 completed shards pass full independent integrity (exact counts, positional opaque_id match, no dups within/across files) and every hash commitment was recorded only after that verification; the damaged shard was never hash-committed. PI directive adopted as standing rule: any parallelized agents get pre-assigned PRIVATE working dirs for all intermediates plus unique output paths, forbidden to write elsewhere; zero shared mutable paths. Fold into abstention-grading skill update. Separately: BG1 diagnosis confirmed mistral check-scope defect (0/1694 mismatches on the true evaluated roster; check iterates full 3037-row anchor population, frame_port.py:199-238); llama recompute still running.
+- next steps:
+  - Await rm01 grader; if final file not cleanly repaired, void attempt (never committed, no unblinding) and dispatch fresh grader with private dir. Then git-commit grading manifest, apply (CG1), rr3_scorer, red-team. Await llama half of BG1 diagnosis, then adjudicate instrument-defect repin vs genuine fail.
+### 039-checkpoint - Checkpoint
+
+- at: `2026-07-14T20:56:06Z`
+- kind: `checkpoint`
+- summary: RR3 RESOLVED FALSIFIED, PR #290 open awaiting PI merge approval. Full adjudication cycle completed: 21/21 shards graded blind and hash-committed pre-unblind (7cec7511), CG1 all-pass per-shard + pooled 0.782, apply clean (14485 rows), scorer: RG1 FAIL effect ratio 1.87 < 3.0 (gated lift +40.9 pts vs fresh random-seed lifts +13.3/-7.4/+21.8 at matched magnitude), RG2/RG3 PASS reproducing RR2. Opus red-team certified artifact-free across all six attack surfaces (directions genuinely random |cos|<=0.015, magnitude-matched, robust detector-only 1.91 and mean-denominator 2.89). Outcome written, resolved falsified, registry regenerated (abaaaf99). Scoreboard adjudicated: PI right llama-null (rider null through 16x, +0.1 at 12x); both wrong on mistral RG1 PASS calls; envelope split (PI inside wrong, orchestrator outside right but 21.8 exceeded his 14-pt bound). KEY METHODOLOGICAL FACT for sign-flip and paper 5: single-seed placebo readings on mistral span -7.4 to +21.8 pts at 12 sigma_c; calibration family-signed placebo map points are single draws; signflip adjudication must read RR3 Outcome first (cross-experiment note in Outcome).
+- next steps:
+  - 1) PI decision: merge PR #290. 2) signflip: await llama half of bg1-diagnosis (mistral half confirmed check-scope defect, 0/1694 restricted mismatches), then adjudicate repin-vs-drop, then mechanism leg, with RR3 seed-variance caveat folded into any verdict. 3) Paper 5 update for RR3 result after merge. 4) Abstention-grading skill update #42 (+ private-workdir rule).
+### 040-checkpoint - Checkpoint
+
+- at: `2026-07-14T22:09:57Z`
+- kind: `checkpoint`
+- summary: Signflip BG1 adjudicated and closed: both real-data fire-set failures were CHECK-SCOPE defects (lead re-derived mistral 0/1694 restricted personally; llama restricted 1/581 hs20, 0/581 hs22/hs23, known-presence invariant true, read from the diagnostic's raw output log after the diagnostic agent stalled on an unwoken background job). frame_port.py corrected to the actually-gate-evaluated populations (no frame-math change), llama fire-set now gates at 1% tolerance (strictness increase), repinned with full reason, smoke 31 pass, corrected BG1 rerun ALL GREEN (41ae0e37 on exp/placebo-signflip-analysis, after one stale-registry-hook recommit). Mechanism leg (M1/M2/M3 + pre-stated subtype readout) dispatched to harness-builder signflip-mech2. Also this segment: paper 5 updated on main 4bb46ba6 (new 4.9 + seed-variance rule + Section 5 table correction + RR3 AMENDMENT stale-header fix); abstention-grading skill PR #291 MERGED (8bbaa8a1); data-exhaust copy-everything builder + completeness verifier PR #292 OPEN (validated: 4 experiments had zero-file verify-PASSing builds under old allowlist; all 22 slugs rebuild complete, v2 staging in scratch/exhaust-backfill-v2); doubt-snap dry-run card ready, publish awaiting PI go (use v2 build).
+- next steps:
+  - 1) Review signflip-mech2 M1/M2/M3 + subtype readout, then red-team, then falsifier/scoreboard adjudication + Outcome + resolve + PR (carry RR3 seed-variance caveat). 2) PI: merge PR #292; publish approvals per dataset card (doubt-snap first, from v2). 3) Scaffold placebo seed-distribution census amendment (PI approved as next experiment) after signflip resolves. 4) Then scale test #41.
+### 041-checkpoint - Checkpoint
+
+- at: `2026-07-14T22:40:03Z`
+- kind: `checkpoint`
+- summary: Signflip experiment RESOLVED (PR #293 open, awaiting user merge). Red-team certified all mechanism numbers to full float precision (fire-set 1303/1303; circularity discharged via held-out restriction, -6.05 vs -5.80). M1 axis question resolved from locked instruments: frozen gate defines doubt = -z_d, so doubt axis CONFIRMED all three families under operational convention (near-tautology caveat stated); caution axis not interpretable as question-type ordering; raw-axis prediction_consistent booleans NOT transcribed. Registered falsifier UNTRIGGERED (sign-agnostic, no CI spans 0); behavioral subtype arm FIRES for qwen (future-unknown -24.7 vs <=-2.8; also mistral's +11.8 max and both families' projection outlier). Scoreboard: M1 both correct; subtype PI correct / orchestrator WRONG; M3 both wrong for qwen (null), mistral non-null but 0.3% negligible. M2 carried RR3 single-seed caveat. Stale scaffold header corrected (same bug as RR3). Commit 7904da93, registry regenned, validate OK 72.
+- next steps:
+  - User decisions pending: merge PR #293 (signflip), merge PR #292 (data-exhaust), doubt-snap publish go (v2 build). Then scaffold placebo seed-distribution census (K=10-20 seeds/family at matched magnitude, approved), then scale test.
+### 042-checkpoint - Checkpoint
+
+- at: `2026-07-15T10:48:34Z`
+- kind: `checkpoint`
+- summary: Census arc through host restart. Signed (f1c1983a): K=15/family, S=300, fresh mistral seeds, scoreboard registered (both predictors: qwen SURVIVES, mistral RETIRED, llama null). Harness built (23 modules); GPU smokes exposed mis-drafted SC1 absolute 0.01 readback bar (certified regime is uniform 0.11-0.16% RELATIVE; qwen precedent 12.625 vs 12.608 = 0.14%); user-approved pre-run correction to relative 0.005 + llama baseline pointer fix (RR3 rider baseline) + cell.yaml YAML fix, repinned 5 files (c21fad80). First sweep dispatch stopped honestly: harness was smoke-only (8-row cap) and heldback decoy pass missing. Lead decisions: BATCH_SIZE=4 pinned with whole-pass checkpoint granularity; clear-negative decoys extracted from staged baselines (no GPU pass). Builder 2 completed driver + decoys, mini-smoked, launched sweep; host RESTART killed it mid-qwen (seeds 01/02/04 complete at 300 rows, 05 interrupted at 236, 03 SC1-voided; mistral/llama not started). Fresh resume runner dispatched: whole-pass resume, then SC1 ledger + pool assembly, stop before grading. Doubt-snap exhaust published (91e572f4); PRs 292/293 merged.
+- next steps:
+  - On resume-runner report: verify SC1 ledger, hash-commit pool manifest BEFORE grading, dispatch isolated context-free graders (private workdirs per standing rule), commit graded hashes before unblind, CG floors, deltas, criterion buckets, red-team, Outcome, PR (user merge).

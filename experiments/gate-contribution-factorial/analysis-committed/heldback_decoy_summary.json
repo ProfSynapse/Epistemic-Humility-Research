@@ -1,0 +1,32 @@
+{
+  "families": {
+    "mistral7b_v03": {
+      "decoy_baseline_runlog_path": "/home/profsynapse/code/ehr-worktrees/gate-factorial/experiments/gate-contribution-factorial/analysis/runlog/mistral7b_v03__decoy_baseline.jsonl",
+      "decoy_baseline_runlog_sha256": "85e998ba656888b4f28592877e26fd7a08bbeb237962fe9fa5315a3c160a84d1",
+      "family": "mistral7b_v03",
+      "fit_source_file_path": "/home/profsynapse/code/ehr-worktrees/rr3-corrected-placebo/experiments/rr3-corrected-placebo-replication/analysis/mistral/joined_rows_private.jsonl",
+      "lead_decision": "NOTEBOOK.md 2026-07-15 harness-accepted entry item 2: held-back pool drawn from a fresh UNSTEERED baseline generation over FIT/atlas-split known-correct rows, disjoint from the held-out pool by construction.",
+      "n_decoy_baseline_rows_generated": 255,
+      "n_decoy_source_rows": 255,
+      "n_excluded_missing_source_row": 0,
+      "n_excluded_overlap_with_scored_known_pool": 0,
+      "n_excluded_regrade_not_well_formed_correct_v2": 1,
+      "n_excluded_regrade_refused_v2": 0,
+      "n_qualifying_heldback_candidates": 254
+    },
+    "qwen35_4b": {
+      "decoy_baseline_runlog_path": "/home/profsynapse/code/ehr-worktrees/gate-factorial/experiments/gate-contribution-factorial/analysis/runlog/qwen35_4b__decoy_baseline.jsonl",
+      "decoy_baseline_runlog_sha256": "df303db0013cf0259833766a115413caa39c65f1f674806990dacd1e4f76161e",
+      "family": "qwen35_4b",
+      "fit_source_file_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband/experiments/qwen35-4b-midband-doubt-snap/analysis/fit_rows_for_anchor.jsonl",
+      "lead_decision": "NOTEBOOK.md 2026-07-15 harness-accepted entry item 2: held-back pool drawn from a fresh UNSTEERED baseline generation over FIT/atlas-split known-correct rows, disjoint from the held-out pool by construction.",
+      "n_decoy_baseline_rows_generated": 240,
+      "n_decoy_source_rows": 240,
+      "n_excluded_missing_source_row": 0,
+      "n_excluded_overlap_with_scored_known_pool": 0,
+      "n_excluded_regrade_not_well_formed_correct_v2": 1,
+      "n_excluded_regrade_refused_v2": 1,
+      "n_qualifying_heldback_candidates": 238
+    }
+  }
+}

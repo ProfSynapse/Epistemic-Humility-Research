@@ -1,0 +1,641 @@
+{
+  "step1_factorial_cdf_points": {
+    "qwen35_4b": {
+      "permuted_gate_c_hat__confab": {
+        "n_fired_role": 1025,
+        "n_missing_from_merge_or_baseline": 0,
+        "n_present": 1025,
+        "arm_rate_wilson": {
+          "n": 1025,
+          "successes": 710,
+          "rate": 0.6926829268292682,
+          "wilson_ci_95": [
+            0.6637617590573365,
+            0.7201652265957953
+          ]
+        },
+        "baseline_rate_wilson": {
+          "n": 1025,
+          "successes": 86,
+          "rate": 0.08390243902439025,
+          "wilson_ci_95": [
+            0.06844423535097263,
+            0.10246786904871957
+          ]
+        },
+        "paired_diff_bootstrap": {
+          "point": 0.608780487804878,
+          "n": 1025,
+          "bootstrap_ci_95": [
+            0.5785365853658537,
+            0.6390243902439023
+          ],
+          "n_boot": 10000,
+          "seed": 47260714
+        },
+        "low_n_flag": false
+      },
+      "permuted_gate_c_hat__known_correct_answered": {
+        "n_fired_role": 278,
+        "n_missing_from_merge_or_baseline": 0,
+        "n_present": 278,
+        "arm_rate_wilson": {
+          "n": 278,
+          "successes": 18,
+          "rate": 0.06474820143884892,
+          "wilson_ci_95": [
+            0.04134529295551967,
+            0.10001594959340224
+          ]
+        },
+        "baseline_rate_wilson": {
+          "n": 278,
+          "successes": 0,
+          "rate": 0.0,
+          "wilson_ci_95": [
+            0.0,
+            0.013629857142976395
+          ]
+        },
+        "paired_diff_bootstrap": {
+          "point": 0.06474820143884892,
+          "n": 278,
+          "bootstrap_ci_95": [
+            0.03597122302158273,
+            0.09712230215827339
+          ],
+          "n_boot": 10000,
+          "seed": 47260714
+        },
+        "low_n_flag": false
+      },
+      "true_gate_c_hat__confab": {
+        "n_fired_role": 1286,
+        "n_missing_from_merge_or_baseline": 0,
+        "n_present": 1286,
+        "arm_rate_wilson": {
+          "n": 1286,
+          "successes": 918,
+          "rate": 0.713841368584759,
+          "wilson_ci_95": [
+            0.6885311012964207,
+            0.7378778935756055
+          ]
+        },
+        "baseline_rate_wilson": {
+          "n": 1286,
+          "successes": 111,
+          "rate": 0.08631415241057543,
+          "wilson_ci_95": [
+            0.07217109802295721,
+            0.10292131917006869
+          ]
+        },
+        "paired_diff_bootstrap": {
+          "point": 0.6275272161741836,
+          "n": 1286,
+          "bootstrap_ci_95": [
+            0.6010886469673405,
+            0.6539657853810265
+          ],
+          "n_boot": 10000,
+          "seed": 47260714
+        },
+        "low_n_flag": false
+      },
+      "true_gate_c_hat__known_correct_answered": {
+        "n_fired_role": 17,
+        "n_missing_from_merge_or_baseline": 0,
+        "n_present": 17,
+        "arm_rate_wilson": {
+          "n": 17,
+          "successes": 14,
+          "rate": 0.8235294117647058,
+          "wilson_ci_95": [
+            0.5897054143116588,
+            0.9380887336237901
+          ]
+        },
+        "baseline_rate_wilson": {
+          "n": 17,
+          "successes": 0,
+          "rate": 0.0,
+          "wilson_ci_95": [
+            0.0,
+            0.1843181350088518
+          ]
+        },
+        "paired_diff_bootstrap": {
+          "point": 0.8235294117647058,
+          "n": 17,
+          "bootstrap_ci_95": [
+            0.6470588235294118,
+            1.0
+          ],
+          "n_boot": 10000,
+          "seed": 47260714
+        },
+        "low_n_flag": true
+      }
+    },
+    "mistral7b_v03": {
+      "permuted_gate_c_hat__confab": {
+        "n_fired_role": 1006,
+        "n_missing_from_merge_or_baseline": 0,
+        "n_present": 1006,
+        "arm_rate_wilson": {
+          "n": 1006,
+          "successes": 696,
+          "rate": 0.6918489065606361,
+          "wilson_ci_95": [
+            0.6626317927714014,
+            0.7196064255433583
+          ]
+        },
+        "baseline_rate_wilson": {
+          "n": 1006,
+          "successes": 280,
+          "rate": 0.2783300198807157,
+          "wilson_ci_95": [
+            0.25151831102907907,
+            0.3068282035606026
+          ]
+        },
+        "paired_diff_bootstrap": {
+          "point": 0.4135188866799204,
+          "n": 1006,
+          "bootstrap_ci_95": [
+            0.3827037773359841,
+            0.4443339960238569
+          ],
+          "n_boot": 10000,
+          "seed": 47260714
+        },
+        "low_n_flag": false
+      },
+      "permuted_gate_c_hat__known_correct_answered": {
+        "n_fired_role": 297,
+        "n_missing_from_merge_or_baseline": 0,
+        "n_present": 297,
+        "arm_rate_wilson": {
+          "n": 297,
+          "successes": 15,
+          "rate": 0.050505050505050504,
+          "wilson_ci_95": [
+            0.030842431414114097,
+            0.08164691414800847
+          ]
+        },
+        "baseline_rate_wilson": {
+          "n": 297,
+          "successes": 2,
+          "rate": 0.006734006734006734,
+          "wilson_ci_95": [
+            0.0018486542140717255,
+            0.02421643286346352
+          ]
+        },
+        "paired_diff_bootstrap": {
+          "point": 0.04377104377104377,
+          "n": 297,
+          "bootstrap_ci_95": [
+            0.0202020202020202,
+            0.0707070707070707
+          ],
+          "n_boot": 10000,
+          "seed": 47260714
+        },
+        "low_n_flag": false
+      },
+      "true_gate_c_hat__confab": {
+        "n_fired_role": 1303,
+        "n_missing_from_merge_or_baseline": 0,
+        "n_present": 1303,
+        "arm_rate_wilson": {
+          "n": 1303,
+          "successes": 911,
+          "rate": 0.6991557943207981,
+          "wilson_ci_95": [
+            0.6736981431746195,
+            0.7234426090543083
+          ]
+        },
+        "baseline_rate_wilson": {
+          "n": 1303,
+          "successes": 370,
+          "rate": 0.283960092095165,
+          "wilson_ci_95": [
+            0.26013942530417294,
+            0.30905085696001505
+          ]
+        },
+        "paired_diff_bootstrap": {
+          "point": 0.4151957022256331,
+          "n": 1303,
+          "bootstrap_ci_95": [
+            0.38756715272448194,
+            0.44282425172678436
+          ],
+          "n_boot": 10000,
+          "seed": 47260714
+        },
+        "low_n_flag": false
+      },
+      "true_gate_c_hat__known_correct_answered": {
+        "n_fired_role": 0,
+        "n_missing_from_merge_or_baseline": 0,
+        "n_present": 0,
+        "arm_rate_wilson": {
+          "n": 0,
+          "successes": 0,
+          "rate": 0.0,
+          "wilson_ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "baseline_rate_wilson": {
+          "n": 0,
+          "successes": 0,
+          "rate": 0.0,
+          "wilson_ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "paired_diff_bootstrap": {
+          "point": null,
+          "n": 0,
+          "bootstrap_ci_95": [
+            null,
+            null
+          ],
+          "n_boot": 10000,
+          "seed": 47260714,
+          "empty_population": true
+        },
+        "low_n_flag": true
+      }
+    }
+  },
+  "step2_sanity_check_dose8_vs_amendment": {
+    "confab": {
+      "n": 685,
+      "rate_at_dose8": 0.6686131386861314
+    },
+    "known_correct_answered": {
+      "n": 197,
+      "rate_at_dose8": 0.05583756345177665
+    }
+  },
+  "step2_qwen_fits": {
+    "confab": {
+      "n_rows": 685,
+      "usable_dose_multipliers": [
+        2,
+        4,
+        6,
+        8
+      ],
+      "excluded_collapse_multipliers": [
+        12,
+        16,
+        20
+      ],
+      "doses_abs": [
+        3.152046979449994,
+        6.304093958899988,
+        9.456140938349982,
+        12.608187917799976
+      ],
+      "empirical_rates": [
+        0.21021897810218979,
+        0.45985401459854014,
+        0.5824817518248175,
+        0.6686131386861314
+      ],
+      "n_bootstrap_degenerate_fits_excluded": 0,
+      "probit_fit": {
+        "mu": 2.0156839352573086,
+        "sigma": 1.1157585814243003,
+        "valid_point_fit": true,
+        "median_dose_abs": 7.505859147812445,
+        "median_dose_abs_ci95": [
+          6.859492409799049,
+          8.238949514463183
+        ],
+        "sigma_ci95": [
+          1.01915397073737,
+          1.2275368334845906
+        ]
+      },
+      "logistic_fit": {
+        "mu": 2.019480742893766,
+        "s": 0.6842266105977319,
+        "median_dose_abs": 7.534411620966656
+      }
+    },
+    "known_correct_answered": {
+      "n_rows": 197,
+      "usable_dose_multipliers": [
+        2,
+        4,
+        6,
+        8,
+        12
+      ],
+      "excluded_collapse_multipliers": [
+        16,
+        20
+      ],
+      "doses_abs": [
+        3.152046979449994,
+        6.304093958899988,
+        9.456140938349982,
+        12.608187917799976,
+        18.912281876699964
+      ],
+      "empirical_rates": [
+        0.01015228426395939,
+        0.03553299492385787,
+        0.050761421319796954,
+        0.05583756345177665,
+        0.09137055837563451
+      ],
+      "n_bootstrap_degenerate_fits_excluded": 0,
+      "probit_fit": {
+        "mu": 5.43657992316763,
+        "sigma": 1.8964115610070604,
+        "valid_point_fit": true,
+        "median_dose_abs": 229.6553996851814,
+        "median_dose_abs_ci95": [
+          40.55459309985389,
+          1778.2425108763348
+        ],
+        "sigma_ci95": [
+          0.7691396655378762,
+          3.153973089865647
+        ]
+      },
+      "logistic_fit": {
+        "mu": 4.75035021365161,
+        "s": 0.8184628221161918,
+        "median_dose_abs": 115.62477081055145
+      }
+    }
+  },
+  "step3_non_monotone_fraction": {
+    "confab": {
+      "n_total": 685,
+      "n_nonmonotone": 7,
+      "observed_fraction": 0.010218978102189781,
+      "se": 0.00384262505103313,
+      "ceiling_observed_plus_3se": 0.021746853255289172,
+      "ceiling_rounded_up_0.05": 0.05
+    },
+    "known_correct_answered": {
+      "n_total": 197,
+      "n_nonmonotone": 4,
+      "observed_fraction": 0.02030456852791878,
+      "se": 0.010048686815944823,
+      "ceiling_observed_plus_3se": 0.05045062897575325,
+      "ceiling_rounded_up_0.05": 0.1
+    }
+  },
+  "step2_mistral_single_point_fit": {
+    "confab": {
+      "observed_rate_at_reference_dose": 0.6918489065606361,
+      "n": 1006,
+      "reference_dose_abs": 3.665,
+      "shared_sigma_from_qwen": 1.1157585814243003,
+      "implied_mu": 0.7397239932984495,
+      "implied_median_dose_abs": 2.0953571020728705,
+      "median_dose_abs_ci95": [
+        1.8783101607755115,
+        2.315754113894625
+      ],
+      "assumption": "log-normal shape (sigma) shared with qwen fit; only mu identified from this single point"
+    },
+    "known_correct_answered": {
+      "observed_rate_at_reference_dose": 0.050505050505050504,
+      "n": 297,
+      "reference_dose_abs": 3.665,
+      "shared_sigma_from_qwen": 1.8964115610070604,
+      "implied_mu": 4.408898293796488,
+      "implied_median_dose_abs": 82.17887663511986,
+      "median_dose_abs_ci95": [
+        12.513139515178345,
+        727.8333473845162
+      ],
+      "assumption": "log-normal shape (sigma) shared with qwen fit; only mu identified from this single point"
+    }
+  },
+  "step2_median_ratio_known_over_confab": {
+    "qwen35_4b": {
+      "point_ratio": 30.596817121476843,
+      "bootstrap_ci_95": [
+        5.3872645380839215,
+        236.11405528918468
+      ],
+      "ratio_lower_5pct_quantile": 5.859448002008409
+    },
+    "mistral7b_v03": {
+      "point_ratio": 39.219508958078265,
+      "bootstrap_ci_95": [
+        5.929893424645371,
+        322.48901465061994
+      ],
+      "ratio_lower_5pct_quantile": 6.367922687839536,
+      "note": "single-point identification; interval driven mostly by qwen sigma uncertainty + mistral binomial n"
+    }
+  },
+  "step2_recommended_separation_floor": {
+    "per_family_lower_5pct_quantile": {
+      "qwen35_4b": 5.859448002008409,
+      "mistral7b_v03": 6.367922687839536
+    },
+    "min_across_families": 5.859448002008409,
+    "recommended_floor_rounded_down_1dp": 5.8
+  },
+  "step4_retrodiction_tolerances": {
+    "qwen35_4b__permuted_gate_c_hat__confab": {
+      "observed_rate": 0.6926829268292682,
+      "observed_n": 1025,
+      "observed_wilson_half_width": 0.02820173376922941,
+      "predicted_rate_point": 0.6791649949022854,
+      "predicted_rate_ci95": [
+        0.6437832161895769,
+        0.7130434546469382
+      ],
+      "predicted_half_width": 0.034630119228680645,
+      "tolerance": 0.06283185299791005,
+      "note": "true_gate_c_hat is NOT predictable from the no-gate margin CDF alone (fired-set composition differs); reported for completeness, tolerance treated as a diagnostic not a criterion input for that arm"
+    },
+    "qwen35_4b__permuted_gate_c_hat__known_correct_answered": {
+      "observed_rate": 0.06474820143884892,
+      "observed_n": 278,
+      "observed_wilson_half_width": 0.029335328318941284,
+      "predicted_rate_point": 0.06190775819365456,
+      "predicted_rate_ci95": [
+        0.03527401311218605,
+        0.09422396681199582
+      ],
+      "predicted_half_width": 0.029474976849904886,
+      "tolerance": 0.058810305168846166,
+      "note": "true_gate_c_hat is NOT predictable from the no-gate margin CDF alone (fired-set composition differs); reported for completeness, tolerance treated as a diagnostic not a criterion input for that arm"
+    },
+    "qwen35_4b__true_gate_c_hat__confab": {
+      "observed_rate": 0.713841368584759,
+      "observed_n": 1286,
+      "observed_wilson_half_width": 0.024673396139592407,
+      "predicted_rate_point": 0.6791649949022854,
+      "predicted_rate_ci95": [
+        0.6437832161895769,
+        0.7130434546469382
+      ],
+      "predicted_half_width": 0.034630119228680645,
+      "tolerance": 0.05930351536827305,
+      "note": "true_gate_c_hat is NOT predictable from the no-gate margin CDF alone (fired-set composition differs); reported for completeness, tolerance treated as a diagnostic not a criterion input for that arm"
+    },
+    "qwen35_4b__true_gate_c_hat__known_correct_answered": {
+      "observed_rate": 0.8235294117647058,
+      "observed_n": 17,
+      "observed_wilson_half_width": 0.17419165965606564,
+      "predicted_rate_point": 0.06190775819365456,
+      "predicted_rate_ci95": [
+        0.03527401311218605,
+        0.09422396681199582
+      ],
+      "predicted_half_width": 0.029474976849904886,
+      "tolerance": 0.20366663650597053,
+      "note": "true_gate_c_hat is NOT predictable from the no-gate margin CDF alone (fired-set composition differs); reported for completeness, tolerance treated as a diagnostic not a criterion input for that arm"
+    },
+    "mistral7b_v03__permuted_gate_c_hat__confab": {
+      "observed_rate": 0.6918489065606361,
+      "observed_n": 1006,
+      "observed_wilson_half_width": 0.028487316385978456,
+      "predicted_rate_point": 0.6918489065606361,
+      "predicted_rate_ci95": [
+        0.6630218687872763,
+        0.7206759443339961
+      ],
+      "predicted_half_width": 0.028827037773359876,
+      "tolerance": 0.05731435415933833,
+      "note": "true_gate_c_hat is NOT predictable from the no-gate margin CDF alone (fired-set composition differs); reported for completeness, tolerance treated as a diagnostic not a criterion input for that arm"
+    },
+    "mistral7b_v03__permuted_gate_c_hat__known_correct_answered": {
+      "observed_rate": 0.050505050505050504,
+      "observed_n": 297,
+      "observed_wilson_half_width": 0.025402241366947187,
+      "predicted_rate_point": 0.05050505050505047,
+      "predicted_rate_ci95": [
+        0.026936026936026914,
+        0.07744107744107738
+      ],
+      "predicted_half_width": 0.025252525252525235,
+      "tolerance": 0.05065476661947242,
+      "note": "true_gate_c_hat is NOT predictable from the no-gate margin CDF alone (fired-set composition differs); reported for completeness, tolerance treated as a diagnostic not a criterion input for that arm"
+    },
+    "mistral7b_v03__true_gate_c_hat__confab": {
+      "observed_rate": 0.6991557943207981,
+      "observed_n": 1303,
+      "observed_wilson_half_width": 0.02487223293984442,
+      "predicted_rate_point": 0.6918489065606361,
+      "predicted_rate_ci95": [
+        0.6630218687872763,
+        0.7206759443339961
+      ],
+      "predicted_half_width": 0.028827037773359876,
+      "tolerance": 0.053699270713204295,
+      "note": "true_gate_c_hat is NOT predictable from the no-gate margin CDF alone (fired-set composition differs); reported for completeness, tolerance treated as a diagnostic not a criterion input for that arm"
+    },
+    "mistral7b_v03__true_gate_c_hat__known_correct_answered": {
+      "observed_rate": 0.0,
+      "observed_n": 0,
+      "observed_wilson_half_width": 0.0,
+      "predicted_rate_point": 0.05050505050505047,
+      "predicted_rate_ci95": [
+        0.026936026936026914,
+        0.07744107744107738
+      ],
+      "predicted_half_width": 0.025252525252525235,
+      "tolerance": 0.025252525252525235,
+      "note": "true_gate_c_hat is NOT predictable from the no-gate margin CDF alone (fired-set composition differs); reported for completeness, tolerance treated as a diagnostic not a criterion input for that arm"
+    },
+    "doubt_snap__qwen35_4b__permuted_known_dose8": {
+      "observed_rate": 0.05583756345177665,
+      "observed_n": 197,
+      "observed_wilson_half_width": 0.03287146144896676,
+      "predicted_rate_point": 0.06190775819365456,
+      "predicted_rate_ci95": [
+        0.03527401311218605,
+        0.09422396681199582
+      ],
+      "predicted_half_width": 0.029474976849904886,
+      "tolerance": 0.06234643829887164,
+      "note": "IN-SAMPLE: this is the same qwen hs20 dose-ladder data the fit was trained on; not an independent retrodiction test"
+    }
+  },
+  "step4_recommended_uniform_tolerance": {
+    "max_over_permuted_and_doubt_snap_anchors": 0.06283185299791005,
+    "rounded_up_nearest_0.05": 0.1,
+    "excluded_true_gate_anchors_reason": "true_gate arms are not predictable from a no-gate margin CDF; their tolerances are reported in step4_retrodiction_tolerances for reference but excluded from the uniform recommendation"
+  },
+  "step5_power_wilson_half_widths": {
+    "200": {
+      "0.1": 0.04186768188181075,
+      "0.5": 0.06863914039610816,
+      "0.9": 0.04186768188181078
+    },
+    "400": {
+      "0.1": 0.029505658593684238,
+      "0.5": 0.048765495830290995,
+      "0.9": 0.02950565859368426
+    },
+    "600": {
+      "0.1": 0.024063010817416408,
+      "0.5": 0.039880136075810674,
+      "0.9": 0.024063010817416353
+    },
+    "known_qwen_360": {
+      "0.1": 0.03111367433179176,
+      "0.5": 0.051376202878116395,
+      "0.9": 0.031113674331791796
+    },
+    "known_mistral_382": {
+      "0.1": 0.03012927784843651,
+      "0.5": 0.04989001676621971,
+      "0.9": 0.030129277848436553
+    }
+  },
+  "step5_floor_distinguishable_from_1.0": {
+    "qwen35_4b": true,
+    "mistral7b_v03": true
+  },
+  "step5_recommended_n_confab": {
+    "value": 400,
+    "basis": "smallest evaluated n whose Wilson half-width at p=0.5 (worst case) is <=0.05; 400 is the drafter proposal and clears this comfortably (half-width computed above)"
+  },
+  "step6_ladder_span_check": {
+    "qwen35_4b": {
+      "fit_source": "direct_fit",
+      "dose_at_confab_cdf_0.05": 1.1977255529960718,
+      "dose_at_known_cdf_0.95": 5197.325043403629,
+      "ladder_bottom_0.125x": 1.576023489724997,
+      "ladder_top_64x": 806.9240267391984,
+      "bottom_covers_with_spare_rung": false,
+      "top_covers_with_spare_rung": false,
+      "note": "collapse boundary is NOT derivable from existing data; needs the GPU preflight diagnostic per the amendment's own gates section"
+    },
+    "mistral7b_v03": {
+      "fit_source": "single_point_shared_shape",
+      "dose_at_confab_cdf_0.05": 0.3343604901693243,
+      "dose_at_known_cdf_0.95": 1859.787900306203,
+      "ladder_bottom_0.125x": 0.458125,
+      "ladder_top_64x": 234.56,
+      "bottom_covers_with_spare_rung": false,
+      "top_covers_with_spare_rung": false,
+      "note": "collapse boundary is NOT derivable from existing data; needs the GPU preflight diagnostic per the amendment's own gates section"
+    }
+  }
+}

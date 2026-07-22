@@ -1,0 +1,86 @@
+slug: correctness-geometry-scale-ladder
+title: Correctness-geometry scale ladder (1.7B->8B->14B)
+type: probe-fit
+status: resolved
+registered: true
+created_at: '2026-07-20T21:20:30Z'
+question: 'Is correctness diffuseness (CD/SO''s finding at Qwen3-4B: readable but
+  weakly-identified, k=1-only shared axis, no compact discriminative subspace) a small-model
+  artifact that crystallizes into a compact, identifiable geometric object as scale
+  grows from 1.7B to 14B, on the identical-pool Amendment X raw-instruct-base ladder?'
+prediction: 'DIFFUSE-STABLE (orchestrator bet): across the matched-n (N*=377/377)
+  ladder, E1 (split-half k=1 reliability) and E2 (top-1/full concentration ratio)
+  do not rise beyond their per-scale planted bands from 1.7B to 14B; E1 stays low,
+  E2 ratio stays well below 1, E3 k=1 margin small and flat, E4 participation ratio
+  high and flat at every scale.'
+falsifier: 'Across the matched-n ladder under both layer choices (best-dial AND fixed
+  fractional depth), neither E1 nor E2 shows a monotone increase from 1.7B to 14B
+  exceeding the per-scale planted-band half-width. STATUS: not yet testable on real
+  data -- see outcome-in-progress note below; G_val failed for both E1 and E2 before
+  any real label was read.'
+checkpoint:
+  repo: reused three Amendment X raw-instruct-base extractions (see cell.yaml data.scales);
+    unsloth/Qwen3-{1.7B,8B,14B}-bnb-4bit, no adapter, CPU-only reuse of on-disk tensors,
+    no new checkpoint identity
+  revision: ''
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - scale_ladder_lib.py
+  - scale_ladder_planted_sim.py
+  - scale_ladder_real.py
+  pins:
+    cell.yaml: 65256247d3df96ee54f90aaa38c21ae12c876a3211f84361b8a44b841ee517fd
+    gates.yaml: 4da71144ea0e9f6eb7d03337e9086be2b2b6aa8a1d7395a55997af07087ac4e5
+    scale_ladder_lib.py: 95de0b43233591332e3ca2d5de6c875f6544ee487b11e9298ace183f64fd48d5
+    scale_ladder_planted_sim.py: 94dc9425721fad756a6a00cae08edf7e14a94e7053fa768c0093828c714bba46
+    scale_ladder_real.py: 24c5da158dc38ebf521e6c7ee822af1a6d483a553439d8fed76c21a6e619d10a
+  persistence:
+    scale_ladder_lib.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 2.6
+    scale_ladder_planted_sim.py:
+      persistence: incremental
+      checkpoint_path: experiments/correctness-geometry-scale-ladder/analysis/runlog/planted_sim.jsonl
+    scale_ladder_real.py:
+      persistence: incremental
+      checkpoint_path: experiments/correctness-geometry-scale-ladder/analysis/runlog/real_ladder.jsonl
+  repins:
+  - file: scale_ladder_real.py
+    old_sha256: 319249ae91be3adc925c1d711db7050eaa4fba7abae900310312b6b664891f37
+    new_sha256: c13e5792a668139a0d14c7d86afd1ab8f5c3432827a9c49072908f7683cdb887
+    date: '2026-07-21T01:27:41Z'
+    reason: 'post-sign instrument plumbing: pre-sign real-label guard made status-aware
+      (reads manifest status) instead of unconditional; no estimator, band, threshold,
+      seed, or data-path change'
+  - file: scale_ladder_real.py
+    old_sha256: c13e5792a668139a0d14c7d86afd1ab8f5c3432827a9c49072908f7683cdb887
+    new_sha256: 24c5da158dc38ebf521e6c7ee822af1a6d483a553439d8fed76c21a6e619d10a
+    date: '2026-07-21T01:42:44Z'
+    reason: 'build-defect remediation: mode=real never actually routed to real_layer_cache
+      -- synthetic_layer_cache ran unconditionally, run_config/output-filename/completion-marker
+      were hardwired synthetic-smoke regardless of --synthetic-smoke. Fixed: cache
+      selection, run_config.synthetic_smoke, output filename, completion marker, and
+      runlog path all now branch on args.synthetic_smoke; real and synthetic runlogs
+      are now disjoint files. No estimator, band, threshold, seed, or gate/config
+      change.'
+  - file: gates.yaml
+    old_sha256: 212c410af1f0d4842cd3b066a6fa5560aac9dd6c201ab4facd0084cda104780f
+    new_sha256: 4da71144ea0e9f6eb7d03337e9086be2b2b6aa8a1d7395a55997af07087ac4e5
+    date: '2026-07-21T02:20:03Z'
+    reason: 'resolution status-field update only: G1 evaluation_status EVALUATED->M3,
+      G2 and two_seed_robustness statuses filled from the real run; criterion text,
+      thresholds, frozen bands, falsifier wording byte-unchanged (red-team finding
+      1 reconciliation)'
+inputs: []
+verdict: 'G1 resolves as pre-stated middle ground M3: correctness-direction identifiability
+  rises monotonically with scale at the scale-adaptive best-dial layers (c -0.06 ->
+  +0.09 -> +0.24, Delta_c 0.302 clearing both sigma readings) but not at fixed relative
+  depth (c dips at 14B), so sharpening is confirmed only conditional on layer choice;
+  falsifier not triggered.'
+kg:
+- mechanism:l2-logistic-bootstrap-svd-cannot-resolve-multidim-discriminative-subspace
+- experiment:correctness-geometry-scale-ladder
+- mechanism:correctness-identifiability-sharpens-with-scale-under-adaptive-layer-choice

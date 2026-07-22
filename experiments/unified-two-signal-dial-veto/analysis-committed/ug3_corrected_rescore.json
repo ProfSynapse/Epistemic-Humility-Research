@@ -1,0 +1,130 @@
+{
+  "amendment": "U",
+  "diagnostic": "ug3-corrected-rescore-corrigendum",
+  "dial_layer": 22,
+  "seed": 20260718,
+  "n_boot": 10000,
+  "n_unknown_population": 677,
+  "adequacy_floor_hallucinations": 50,
+  "adequacy_floor_citation": "experiments/unified-two-signal-dial-veto/AMENDMENT.md L172: 'Hard floor >= 50 hallucinations (unknown and answered).'",
+  "original_signed": {
+    "n_hallucination": 121,
+    "auroc_tcorrect_vs_hallucination": 0.9802,
+    "ci_95": [
+      0.9684,
+      0.9898
+    ],
+    "meets_adequacy_floor": true
+  },
+  "set_A_instrument_corrected": {
+    "label": "set_A_instrument_corrected_both_answered",
+    "n_hallucination": 12,
+    "n_t_correct": 988,
+    "dial_mean_hallucination": 0.18284409169481433,
+    "auroc_tcorrect_vs_hallucination": 0.9067139001349528,
+    "ci_95": [
+      0.8133162510332534,
+      0.9705107960217534
+    ],
+    "n_boot_used": 10000,
+    "meets_adequacy_floor": false
+  },
+  "set_B_census_corrected": {
+    "label": "set_B_census_corrected_template_removed",
+    "n_hallucination": 8,
+    "n_t_correct": 988,
+    "dial_mean_hallucination": 0.2742635068176931,
+    "auroc_tcorrect_vs_hallucination": 0.8638663967611336,
+    "ci_95": [
+      0.7384218010492103,
+      0.9497603621606556
+    ],
+    "n_boot_used": 9996,
+    "meets_adequacy_floor": false,
+    "n_template_removed": 4
+  },
+  "hallucination_rate_unknown_population": {
+    "original_121_of_677": {
+      "point": 0.17872968980797638,
+      "ci_95": [
+        0.15066469719350073,
+        0.20827178729689808
+      ]
+    },
+    "set_A_n_of_677": {
+      "n": 12,
+      "point": 0.01772525849335303,
+      "ci_95": [
+        0.008862629246676515,
+        0.028064992614475627
+      ]
+    },
+    "set_B_n_of_677": {
+      "n": 8,
+      "point": 0.011816838995568686,
+      "ci_95": [
+        0.004431314623338257,
+        0.0206794682422452
+      ]
+    }
+  },
+  "control_rescore": {
+    "definition": "within-SelfAware control AUROC(known-answered vs hallucination), dial score, same T-fit L22 dial as U-G3; section 7 reported 0.93 [0.899, 0.957] over the contaminated n=121 hallucination side",
+    "section7_reproduced_kaNarrow276_vs_h121": {
+      "label": "section7_reproduction",
+      "n_known_answered": 276,
+      "n_hallucination": 121,
+      "auroc_known_answered_vs_hallucination": 0.9299916157623667,
+      "ci_95": [
+        0.9010390359898288,
+        0.9565529963280835
+      ],
+      "n_boot_used": 10000
+    },
+    "corrected_kaNarrow276_vs_setA": {
+      "label": "corrected_set_A",
+      "n_known_answered": 276,
+      "n_hallucination": 12,
+      "auroc_known_answered_vs_hallucination": 0.8140096618357489,
+      "ci_95": [
+        0.6953223347248126,
+        0.9127016737774859
+      ],
+      "n_boot_used": 10000
+    },
+    "corrected_kaNarrow276_vs_setB": {
+      "label": "corrected_set_B",
+      "n_known_answered": 276,
+      "n_hallucination": 8,
+      "auroc_known_answered_vs_hallucination": 0.7368659420289855,
+      "ci_95": [
+        0.5947207994473986,
+        0.854916067146283
+      ],
+      "n_boot_used": 9999
+    },
+    "fully_corrected_kaBoth_vs_setB": {
+      "label": "fully_corrected_both_detector_clean_control_group",
+      "n_known_answered": 270,
+      "n_hallucination": 8,
+      "auroc_known_answered_vs_hallucination": 0.75,
+      "ci_95": [
+        0.6073188361883214,
+        0.8677566879154407
+      ],
+      "n_boot_used": 9998
+    },
+    "known_answered_group_contamination": {
+      "n_known_answered_narrow": 276,
+      "n_known_answered_flipped_by_wide": 6,
+      "dial_mean_known_answered_narrow": 0.6788229424807576,
+      "dial_mean_known_answered_both": 0.6904449749181321
+    }
+  },
+  "cross_check_vs_prior_flip_rate_audit": {
+    "available": true,
+    "flip_file_n_set_a": 12,
+    "own_n_set_a": 12,
+    "keys_match": true
+  }
+}

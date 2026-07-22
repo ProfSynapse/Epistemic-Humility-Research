@@ -1,0 +1,14 @@
+{
+  "base_model": "google/gemma-4-E4B-it",
+  "cell_id": "gemma4_e4b_it",
+  "hidden_dim": 2560,
+  "layer": 39,
+  "mu_c": -33.7951705282407,
+  "mu_d": 19.29316831084325,
+  "n_confab_fit": 840,
+  "n_known_fit": 168,
+  "n_unknown_refused": 293,
+  "revision": "fee6332c1abaafb77f6f9624236c63aa2f1d0187",
+  "sigma_c": 7.199407284469439,
+  "sigma_d": 9.043972161828101
+}

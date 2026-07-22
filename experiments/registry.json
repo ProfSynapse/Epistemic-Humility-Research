@@ -703,6 +703,129 @@
     },
     {
       "checkpoint": {
+        "repo": "local four-stage set (see cell.yaml stages; raw + partrue identities pinned at staging per A3)",
+        "revision": ""
+      },
+      "created_at": "2026-07-19T20:17:25Z",
+      "falsifier": "raw->cleansft correctness cosine >= 0.80 averaged over L19-L24: no orthogonal rotation at SFT; the rotation account does not transfer to correctness.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "cd_stage_extract_gen.py",
+          "cd_rotation_analysis.py"
+        ],
+        "pins": {
+          "cd_rotation_analysis.py": "a0ffc18fcbd08bddd5bea1e9facbde5ef3aa7c6d2456f33868283ba69623d019",
+          "cd_stage_extract_gen.py": "16daec82f3321ffec97bc50485545a5434545cd4edceae84c29299c96feca20d",
+          "cell.yaml": "3ef703bd69e0089fc5ec6076a453f17cec2de3e7af8f504b7a42f0f5044eccfc",
+          "gates.yaml": "d99ef4997b0a2be1b200726c178364cc6c1a3f1bdb2b09c9d3d3e9a124cf1e63"
+        },
+        "repins": [
+          {
+            "date": "2026-07-19T20:29:47Z",
+            "file": "cell.yaml",
+            "new_sha256": "3ef703bd69e0089fc5ec6076a453f17cec2de3e7af8f504b7a42f0f5044eccfc",
+            "old_sha256": "d138bca9f3bb8c3f73815ad738fb24fbb06c9f9915950bbd969da7ce66ce3003",
+            "reason": "A3 placeholder resolution: raw-base + GRPO-par-true identities pinned to the answerability diagnostic's own committed provenance (runpod_diag_caution_timeline.sh:13,16; docs/checkpoint-staging.md:28; h9-propensity-reading-gate/AMENDMENT.md:50), no design content changed"
+          }
+        ]
+      },
+      "kg": [
+        "experiment:correctness-direction-rotation",
+        "mechanism:correctness-direction-weakly-identified-defeats-cosine-rotation-probe"
+      ],
+      "prediction": "Partial rotation: raw->cleansft correctness cosine 0.3-0.6 at L19-L24 (below the split-half noise floor), later transitions >= 0.85, and the CPU-only Instruct->grpov2 bracket cosine consistent with the partial 0.679 transfer.",
+      "question": "Does the correctness (dial) direction rotate across raw -> clean-SFT -> GRPO-v2 -> GRPO-par-true the way the answerability direction does (one near-orthogonal rotation at SFT, then stable), explaining the dial's 0.679 cold cross-checkpoint transfer?",
+      "registered": true,
+      "slug": "correctness-direction-rotation",
+      "status": "null-result",
+      "title": "Correctness-direction rotation across training stages",
+      "type": "probe-fit",
+      "verdict": "CD-G1 not met (later transitions 0.449/0.330 vs the 0.85 floor) and falsifier not fired (raw->cleansft 0.192); pre-registered readings exhausted; post-hoc: correctness direction too weakly identified (split-half floor 0.174) for the cosine instrument to resolve rotation; 0.679 cold-transfer mechanism stays open."
+    },
+    {
+      "checkpoint": {
+        "repo": "reused three Amendment X raw-instruct-base extractions (see cell.yaml data.scales); unsloth/Qwen3-{1.7B,8B,14B}-bnb-4bit, no adapter, CPU-only reuse of on-disk tensors, no new checkpoint identity",
+        "revision": ""
+      },
+      "created_at": "2026-07-20T21:20:30Z",
+      "falsifier": "Across the matched-n ladder under both layer choices (best-dial AND fixed fractional depth), neither E1 nor E2 shows a monotone increase from 1.7B to 14B exceeding the per-scale planted-band half-width. STATUS: not yet testable on real data -- see outcome-in-progress note below; G_val failed for both E1 and E2 before any real label was read.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "scale_ladder_lib.py",
+          "scale_ladder_planted_sim.py",
+          "scale_ladder_real.py"
+        ],
+        "persistence": {
+          "scale_ladder_lib.py": {
+            "measured_smoke_wall_clock_s": 2.6,
+            "persistence": "short-run"
+          },
+          "scale_ladder_planted_sim.py": {
+            "checkpoint_path": "experiments/correctness-geometry-scale-ladder/analysis/runlog/planted_sim.jsonl",
+            "persistence": "incremental"
+          },
+          "scale_ladder_real.py": {
+            "checkpoint_path": "experiments/correctness-geometry-scale-ladder/analysis/runlog/real_ladder.jsonl",
+            "persistence": "incremental"
+          }
+        },
+        "pins": {
+          "cell.yaml": "65256247d3df96ee54f90aaa38c21ae12c876a3211f84361b8a44b841ee517fd",
+          "gates.yaml": "4da71144ea0e9f6eb7d03337e9086be2b2b6aa8a1d7395a55997af07087ac4e5",
+          "scale_ladder_lib.py": "95de0b43233591332e3ca2d5de6c875f6544ee487b11e9298ace183f64fd48d5",
+          "scale_ladder_planted_sim.py": "94dc9425721fad756a6a00cae08edf7e14a94e7053fa768c0093828c714bba46",
+          "scale_ladder_real.py": "24c5da158dc38ebf521e6c7ee822af1a6d483a553439d8fed76c21a6e619d10a"
+        },
+        "repins": [
+          {
+            "date": "2026-07-21T01:27:41Z",
+            "file": "scale_ladder_real.py",
+            "new_sha256": "c13e5792a668139a0d14c7d86afd1ab8f5c3432827a9c49072908f7683cdb887",
+            "old_sha256": "319249ae91be3adc925c1d711db7050eaa4fba7abae900310312b6b664891f37",
+            "reason": "post-sign instrument plumbing: pre-sign real-label guard made status-aware (reads manifest status) instead of unconditional; no estimator, band, threshold, seed, or data-path change"
+          },
+          {
+            "date": "2026-07-21T01:42:44Z",
+            "file": "scale_ladder_real.py",
+            "new_sha256": "24c5da158dc38ebf521e6c7ee822af1a6d483a553439d8fed76c21a6e619d10a",
+            "old_sha256": "c13e5792a668139a0d14c7d86afd1ab8f5c3432827a9c49072908f7683cdb887",
+            "reason": "build-defect remediation: mode=real never actually routed to real_layer_cache -- synthetic_layer_cache ran unconditionally, run_config/output-filename/completion-marker were hardwired synthetic-smoke regardless of --synthetic-smoke. Fixed: cache selection, run_config.synthetic_smoke, output filename, completion marker, and runlog path all now branch on args.synthetic_smoke; real and synthetic runlogs are now disjoint files. No estimator, band, threshold, seed, or gate/config change."
+          },
+          {
+            "date": "2026-07-21T02:20:03Z",
+            "file": "gates.yaml",
+            "new_sha256": "4da71144ea0e9f6eb7d03337e9086be2b2b6aa8a1d7395a55997af07087ac4e5",
+            "old_sha256": "212c410af1f0d4842cd3b066a6fa5560aac9dd6c201ab4facd0084cda104780f",
+            "reason": "resolution status-field update only: G1 evaluation_status EVALUATED->M3, G2 and two_seed_robustness statuses filled from the real run; criterion text, thresholds, frozen bands, falsifier wording byte-unchanged (red-team finding 1 reconciliation)"
+          }
+        ]
+      },
+      "kg": [
+        "mechanism:l2-logistic-bootstrap-svd-cannot-resolve-multidim-discriminative-subspace",
+        "experiment:correctness-geometry-scale-ladder",
+        "mechanism:correctness-identifiability-sharpens-with-scale-under-adaptive-layer-choice"
+      ],
+      "prediction": "DIFFUSE-STABLE (orchestrator bet): across the matched-n (N*=377/377) ladder, E1 (split-half k=1 reliability) and E2 (top-1/full concentration ratio) do not rise beyond their per-scale planted bands from 1.7B to 14B; E1 stays low, E2 ratio stays well below 1, E3 k=1 margin small and flat, E4 participation ratio high and flat at every scale.",
+      "question": "Is correctness diffuseness (CD/SO's finding at Qwen3-4B: readable but weakly-identified, k=1-only shared axis, no compact discriminative subspace) a small-model artifact that crystallizes into a compact, identifiable geometric object as scale grows from 1.7B to 14B, on the identical-pool Amendment X raw-instruct-base ladder?",
+      "registered": true,
+      "slug": "correctness-geometry-scale-ladder",
+      "status": "resolved",
+      "title": "Correctness-geometry scale ladder (1.7B->8B->14B)",
+      "type": "probe-fit",
+      "verdict": "G1 resolves as pre-stated middle ground M3: correctness-direction identifiability rises monotonically with scale at the scale-adaptive best-dial layers (c -0.06 -> +0.09 -> +0.24, Delta_c 0.302 clearing both sigma readings) but not at fixed relative depth (c dips at 14B), so sharpening is confirmed only conditional on layer choice; falsifier not triggered."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
@@ -737,6 +860,50 @@
       "title": "Amendment T — Correctness-Readout Deployment-Checkpoint Port",
       "type": "historical-amendment",
       "verdict": "SUCCESS — post-gen AUROC 0.819, self-eval gain +0.074 (CI excludes 0); readout survives, direction drifts across checkpoints (cold transfer 0.68)."
+    },
+    {
+      "checkpoint": {
+        "repo": "reused five-stage/checkpoint tensor set (see cell.yaml data.stages); no new checkpoint identity, CPU-only reuse of CD and Amendment S/T on-disk extractions",
+        "revision": ""
+      },
+      "created_at": "2026-07-20T13:45:48Z",
+      "falsifier": "At every pre-registered k up to 32 over L19-L24, S->T subspace overlap is indistinguishable from the label-permutation null (inside its 95th percentile and within 0.10 of its mean) while within-stage full-n reliability is high (>= 0.70) and the recovery curve never closes more than one-quarter of the floor-to-ceiling gap at any k.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "subspace_overlap_analysis.py"
+        ],
+        "pins": {
+          "cell.yaml": "a2fda52f88177fb8b5da24fb8634b5c53bb5f3ee0440941d49a904097cdcd1d2",
+          "gates.yaml": "9cc19fb3439b09b52f16b121ce22560f701192966c27413b4bead166bf25cca5",
+          "subspace_overlap_analysis.py": "de6c16fb3c266b2d6393ba6700f83b8531108865cf96f82f10079618e330fd71"
+        },
+        "repins": [
+          {
+            "date": "2026-07-20T16:43:58Z",
+            "file": "subspace_overlap_analysis.py",
+            "new_sha256": "de6c16fb3c266b2d6393ba6700f83b8531108865cf96f82f10079618e330fd71",
+            "old_sha256": "c52260e5acec76895962a75e13ecd4f52d6643e7240cb01f366bbedbffa11d53",
+            "reason": "PI-approved parallelization retrofit after sign: layer-level joblib executor (--workers flag, symmetric 1-thread BLAS caps both paths, per-task slices only), plus allocator-alignment fix (fresh contiguous copy before the k=128 raw_span SVD; loky worker spawning perturbs main-process array alignment and OpenBLAS SIMD rounds alignment-sensitively). Smoke: workers 1 vs 8 zero-diff excluding wall_time, 19/19 assertions both, serial output byte-identical to the pre-retrofit baseline. No change to any random draw, gate computation, or output schema."
+          }
+        ]
+      },
+      "kg": [
+        "experiment:correctness-subspace-overlap",
+        "mechanism:l2-logistic-bootstrap-svd-cannot-resolve-multidim-discriminative-subspace"
+      ],
+      "prediction": "Reading A: k=8 S->T subspace overlap in the 0.45-0.70 band against a permutation null with mean ~0.20-0.35 and 95th percentile ~0.30-0.45; within-stage full-n reliability 0.75-0.90; recovery curve reaching 0.78-0.80 near the T ceiling by k=8 while the random-subspace-of-S floor stays near 0.60-0.68; the 0.679 transfer is a frozen-axis lower bound on a shared-subspace capacity near 0.80.",
+      "question": "Does correctness classification transfer across checkpoints because a top-k discriminative SUBSPACE is preserved rather than a single axis, and does that subspace overlap quantitatively account for the 0.679 S->T cold transfer?",
+      "registered": true,
+      "slug": "correctness-subspace-overlap",
+      "status": "null-result",
+      "title": "correctness-subspace-overlap",
+      "type": "probe-fit",
+      "verdict": "Null-result, instrument-limited: S->T correctness-subspace overlap at k>=4 sits inside its permutation null and the reliability limb was shown estimator-structurally unreachable for any signal, so the flat-subspace vs rotation question stays open; only the single k=1 shared direction underlying the 0.679 transfer is above null, and S's discriminative subspace reads T only about 0.04 AUROC above a random slice of S's span."
     },
     {
       "checkpoint": {
@@ -984,6 +1151,35 @@
     },
     {
       "checkpoint": {
+        "repo": "unsloth/Qwen3-4B-bnb-4bit",
+        "revision": "as-cached (S manifest model_name; arm 2 uses clean-SFT merged-16bit + GRPO-v2 adapter under scratch/schema_response_confidence/runs/, exact dirs pinned in the harness config)"
+      },
+      "created_at": "2026-07-19T00:59:03Z",
+      "falsifier": "Primary-variant logprob AUROC >= dial AUROC on the primary arm with the paired 95% CI excluding 0 in that direction (dial separation redundant with free sequence probability).",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {
+          "cell.yaml": "94454104898f8f459710f42187ed9d202c43b4db277fb31e2628c94041d9602b",
+          "gates.yaml": "a6fdb9c4bbda9dac4370c83b4c1a71ad5be96de1d26b7be27af514ce2f7a9378"
+        }
+      },
+      "kg": [],
+      "prediction": "orchestrator: LP-G1 passes; primary logprob AUROC 0.60-0.72, dial-minus-logprob margin positive with paired 95% CI excluding 0. user: approved cell + pre-approved GPU launch 2026-07-18, no separate quantitative call recorded.",
+      "question": "What is the correctness dial's margin over the model's own answer-span token log-probabilities (length-normalized mean, primary) on the exact rows the dial was measured on (amendment S base population primary; amendment T deployed arm descriptive)?",
+      "registered": true,
+      "slug": "dial-logprob-baseline",
+      "status": "resolved",
+      "title": "Dial token-logprob baseline (LP)",
+      "type": "probe-fit",
+      "verdict": "DATA-STAGE STOP (2026-07-18): LP-G0 round-trip precondition failed as pre-registered (30/3324 rows off by one BPE token; generation-time token IDs never cached); dial reproduction and inventories clean. Descriptive only: base margin dial-minus-logprob +0.014 [-0.011,+0.040] (logprob 0.820 nearly matches dial 0.834); deployed margin +0.158 [+0.122,+0.192] (logprob 0.661 vs dial 0.818). No gated claim; successor needs cached token IDs or a pre-registered tolerance."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
@@ -1163,6 +1359,42 @@
     },
     {
       "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
+      "created_at": "2026-07-18T21:08:42Z",
+      "falsifier": "With the fit/held-out split valid and all provenance gates green, d_ev's held-out baseline confab-vs-correct AUROC is < 0.70. Two pre-registered branches: (a1) CI covers 0.5, the direction carries no prospective ignorance content (an in-context answer-integration direction only) and M4-WK's fragmentation reading stands, strengthened; (a2) CI excludes 0.5 from below, the direction carries reversed-orientation baseline content, reported straight and lifted to PI, never equated with copying. A below-floor rung (a) is a substantive null, not a void/lift; void is reserved for broken SC0/SC3 provenance gates.",
+      "inputs": [
+        "experiments/margin-evidence-responsiveness-worldknown",
+        "experiments/qwen35-4b-midband-doubt-snap"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {
+          "cell.yaml": "c060fd9b2a29e826246bc1fce5de8dbd3c6c20ca7a934468e9c286d171a35049",
+          "gates.yaml": "9038b6a85533d1c2c749f6f30e3a661f4201afe4aee2c54d9a3a1c4b7ac3bd7b"
+        }
+      },
+      "kg": [
+        "experiment:evidence-response-direction-search",
+        "mechanism:evidence-fit-direction-recovers-no-specific-doubt-axis",
+        "mechanism:evidence-contrast-direction-encodes-answer-availability-not-doubt"
+      ],
+      "prediction": "d_ev separates the 200 held-out confab rows from the 360 correct-control rows at the no_answer_baseline arm with AUROC >= 0.70, exceeds the covariance-shaped random-direction null at p < 0.05, and matches the native ignorance-fit direction (paired AUROC-difference lower 95% CI >= -0.05): one evidence/doubt axis, upgrading the fragmentation reading.",
+      "question": "Does a direction fit purely on the in-context true-vs-false evidence contrast (d_ev, mean paired difference of true_answer minus false_answer_placebo hs20 anchors over 200 fit confab rows) also separate held-out confab from correct-control at the no_answer_baseline arm, i.e. do the evidence-registration and prospective-ignorance signals live on one recoverable axis, or does M4-WK's fragmentation reading stand?",
+      "registered": true,
+      "slug": "evidence-response-direction-search",
+      "status": "null-result",
+      "title": "M4c: evidence-derived doubt direction constructive search",
+      "type": "probe-fit",
+      "verdict": "The constructive search fails on specificity: d_ev fires at baseline (0.7252 >= 0.70, rung (a) pass) but is indistinguishable from covariance-shaped random directions (p = 0.191, robust across three null flavors), decisively weaker than the ignorance-fit native direction (paired diff -0.1381, lower CI -0.1895), and orders refused above confab above correct, so the evidence contrast recovers retrieval-family geometry rather than a doubt axis and M4-WK's fragmentation reading stands, strengthened."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
@@ -1262,6 +1494,273 @@
       "title": "Flavor Geometry Category Fleet",
       "type": "lab-diagnostic",
       "verdict": "Historical category-geometry diagnostic fleet banked; scripts preserve the flavor-readout, per-category geometry, pliability, and controversial-flip analyses over AH cached inputs."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-15T16:58:45Z",
+      "falsifier": "Pre-stated and fixed before the run. Gate contributes nothing (primary) iff Gap_Sel(c_hat) < 0.20 OR its bootstrap 95% CI includes 0 OR Gap_Sel(random) < 0 with CI excluding 0 OR cost_protection_c_hat is not strictly positive with CI excluding 0. Gate benefit/cost fails (P1) iff true_gate__c_hat confab abstention < 0.60 OR Wilson 95% LCB <= 0.50 OR well-formed < 0.80 OR known-correct false refusal > 0.05 OR Wilson 95% UCB >= 0.10. Direction axis (S1, secondary, cannot rescue or falsify the gate axis) fails per family iff the gated confab lift is same-signed as the census K=15 null median AND the effect ratio against the census max-over-K denominator (qwen 0.0833, mistral 0.2033) is < 3.0; a qwen sign-opposition failure would falsify the qwen direction expectation, reported straight. No rescoring lane behind the blinded adjudication lane; goalposts do not move after results.",
+      "inputs": [
+        "experiments/qwen35-4b-midband-heldout",
+        "experiments/qwen35-4b-midband-doubt-snap",
+        "experiments/rr2-mistral-adjudicated-refusal-confirm",
+        "experiments/rr3-corrected-placebo-replication",
+        "experiments/placebo-seed-distribution-census"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "common.py",
+          "config.py",
+          "render.py",
+          "gen_lib.py",
+          "steer_lib.py",
+          "staging.py",
+          "row_pool.py",
+          "subsample.py",
+          "gate_construction.py",
+          "sc1_checks.py",
+          "mistral_direction_provenance.py",
+          "run_factorial.py",
+          "build_pool.py",
+          "heldback_decoys.py",
+          "apply_adjudication.py",
+          "criterion.py",
+          "report.py",
+          "detector_v2.py",
+          "detector_v2_patterns.yaml",
+          "grader.py",
+          "test_factorial_smoke.py",
+          "test_report_smoke.py",
+          "direction_draw.py",
+          "gates_lib.py",
+          "compute_seed_ledger.py",
+          "sc1_verify_dosed_writes.py"
+        ],
+        "pins": {
+          "apply_adjudication.py": "3c488d233ac1c17bcf27b43f20154f00ec3168f5b304f64c105b3951dfff0798",
+          "build_pool.py": "827ab73b1377e42eebd7bcf2fae704fdb29a4634c78df059f67284a9e865c26d",
+          "cell.yaml": "c4939dbdcfe9588750eb5cdc38f4f9d9f0613c8f532dffd9edbc333db6f44047",
+          "common.py": "a8f6d2e051817a3b97ab4b7448b4a6c1047b74e9ab4028a9f6d4edd1f675b07d",
+          "compute_seed_ledger.py": "ad0027f518244a5b24cdecbee82da9b4218a45951c19d2672f496c43bc699cf3",
+          "config.py": "eec61e23c8e8a2db2a5bfbe91e4b38892a6e6a55405b4f592dbdb24b147fa995",
+          "criterion.py": "7253e20e394f774e299c2b99f37f1e4cbad52cacb4b29fec0184a7194ebffadd",
+          "detector_v2.py": "161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae",
+          "detector_v2_patterns.yaml": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
+          "direction_draw.py": "ade97b9f7152a3a527194f119f680faf7f72c6268dbc259ab754a1d8f9e72a26",
+          "gate_construction.py": "203c9e3dc187241d4f04f8613f84c3cf578ddac95c1cc2e312f11c18a28c45a8",
+          "gates.yaml": "0fb40a9d3b28d562838e6978319082d270f2e3dcf4f9d08d385a801b629cee66",
+          "gates_lib.py": "905b61a56c2e12937cfd2214af3da18fd9fabe241e52edbba2e6f7f1479e9b1d",
+          "gen_lib.py": "a4ee57ec67f187aefe1db67db3f051f9e1d402b87bab89bc4188af45f4940e2a",
+          "grader.py": "eb395542d4163c05417f303df04782e2ebcdcd104b5181aa0af2e966b93b1df9",
+          "heldback_decoys.py": "979163e5e00db1011a43fb12a73b650fa2d1dcc3dd696501931de26ddd8e0a17",
+          "mistral_direction_provenance.py": "0f21f1654205ea9a112fbdcdeb578233533adfcce6fd36aff52d47f01f302971",
+          "render.py": "9df8c181475ded6b9029379bd49d8486c54314b35a529284fdc7a5d5f12ee87f",
+          "report.py": "814925e358d01a0f59980cfba4259f96a83805cb9441777ac43602ca3aeea2b6",
+          "row_pool.py": "80de9817e63cdf102935a5d27f2449ede9038080571897a6d35f06b867c3c07e",
+          "run_factorial.py": "3608c176633b187326e8ee37bea926801b1b80eb612aaf92cb1c60466877a439",
+          "sc1_checks.py": "dd73f29acbac62abc791924abfd7d5e993abe046ac22756a0551ff3835066ecf",
+          "sc1_verify_dosed_writes.py": "b3e1c93d7c2f69592a0e6ef4951d93cff46404d7bd2021a19b794ac5d0a36e64",
+          "staging.py": "a902ffbdc893ffee98df62b74da0462c245f5b3459cf521cbb705dafa0f66bc6",
+          "steer_lib.py": "46951e37e919b29532db0319b6e9691f769aef74a914e73c7bd309676e9fe190",
+          "subsample.py": "993f3561dfb72071bf88a736490e8ce7f1e0e97f0f22e6e91576e8fa3767719c",
+          "test_factorial_smoke.py": "0e32b2476b5459bdeaa731ddc2b36575b3ff04f6c712688c87d6c611d83ee572",
+          "test_report_smoke.py": "9d70b6f91c420410c229a17122ff047dcc4033152bee0ad505b574fcb13ae991"
+        },
+        "repins": [
+          {
+            "date": "2026-07-15T18:08:52Z",
+            "file": "heldback_decoys.py",
+            "new_sha256": "979163e5e00db1011a43fb12a73b650fa2d1dcc3dd696501931de26ddd8e0a17",
+            "old_sha256": "248f10aeedb9acc74b68e76f91b55e8f6552d6310efb6a18e337b0b41e48e734",
+            "reason": "Lead-decided clear-negative decoy source implemented pre-grading: held-back pool from a fresh unsteered decoy-baseline pass over FIT/atlas-split known-correct rows (qwen 240 from midband-doubt-snap fit split, mistral 255 from RR hs16 fit split; 238/254 qualify under the unchanged rubric filter), disjointness from every scored row asserted loudly in code. run_factorial.py gains an additive decoy-baseline subcommand; no scored-arm generation path changed. One state-dependent smoke isolated via monkeypatched empty dir. 50/50 CPU smokes pass, lead re-verified. Repin before any grading-pool build; scored-arm generation instrument unchanged since sign-time pins."
+          },
+          {
+            "date": "2026-07-15T18:08:52Z",
+            "file": "run_factorial.py",
+            "new_sha256": "7184685c6926cc789b4488713484950dd36099e2df349fb0c601cc4bed5e4f69",
+            "old_sha256": "718e0094f2dfadb9ecbe5c31a8e708b06b412372f0cdff86a5ae7e1a6a15ed4c",
+            "reason": "Lead-decided clear-negative decoy source implemented pre-grading: held-back pool from a fresh unsteered decoy-baseline pass over FIT/atlas-split known-correct rows (qwen 240 from midband-doubt-snap fit split, mistral 255 from RR hs16 fit split; 238/254 qualify under the unchanged rubric filter), disjointness from every scored row asserted loudly in code. run_factorial.py gains an additive decoy-baseline subcommand; no scored-arm generation path changed. One state-dependent smoke isolated via monkeypatched empty dir. 50/50 CPU smokes pass, lead re-verified. Repin before any grading-pool build; scored-arm generation instrument unchanged since sign-time pins."
+          },
+          {
+            "date": "2026-07-15T18:08:52Z",
+            "file": "test_factorial_smoke.py",
+            "new_sha256": "ee9820e747c2a59ed48b6a96bc06f9369f0dba4d5821721172ca3cdfb44d7b1f",
+            "old_sha256": "d5ebf820fb04e65cf5bb61a8deff82c5855112e73052af339f925e28e467b31e",
+            "reason": "Lead-decided clear-negative decoy source implemented pre-grading: held-back pool from a fresh unsteered decoy-baseline pass over FIT/atlas-split known-correct rows (qwen 240 from midband-doubt-snap fit split, mistral 255 from RR hs16 fit split; 238/254 qualify under the unchanged rubric filter), disjointness from every scored row asserted loudly in code. run_factorial.py gains an additive decoy-baseline subcommand; no scored-arm generation path changed. One state-dependent smoke isolated via monkeypatched empty dir. 50/50 CPU smokes pass, lead re-verified. Repin before any grading-pool build; scored-arm generation instrument unchanged since sign-time pins."
+          },
+          {
+            "date": "2026-07-16T12:54:57Z",
+            "file": "run_factorial.py",
+            "new_sha256": "3608c176633b187326e8ee37bea926801b1b80eb612aaf92cb1c60466877a439",
+            "old_sha256": "7184685c6926cc789b4488713484950dd36099e2df349fb0c601cc4bed5e4f69",
+            "reason": "PI-approved pre-grading instrument defect correction 2026-07-16: run_factorial.py passed the computed gain as the sigma argument to build_hook_and_controller AND as generation strength, realizing setpoint = gain^2 on every fresh dosed write (qwen c_hat 64.01 vs registered 12.608; qwen random 158.99; mistral c_hat 144.0 vs 3.665; mistral random 13.44) - 100% SC1 readback failure, verified against the pinned hook contract and the midband-heldout precedent wiring. Fix implements the registered setpoints verbatim (sigma at construction, gain=setpoint/sigma as strength, both call sites, extracted into unit-tested pure functions). Hardening per PI directive: mandatory GPU preflight subcommand (readback verified against setpoint before full run; generate-family refuses without a preflight pass marker), live SC1 first-batch and arm-completion assertions with hard abort (steer_lib gains an after_batch callback), and CPU regression tests pinning sigma != gain against the exact pre-fix squared readbacks. Random arms regenerate on the accepted-seed ledger from the registered void-and-redraw walk (qwen 7 voids to 44000013, mistral 15 voids to 45000021, randomness bar only). Mis-dosed runlogs quarantined, reused/decoy arms untouched. No criterion, threshold, seed-policy, or registered-setpoint change; nothing was graded or unblinded. GPU preflight passed both families (rel_delta 0.0013-0.0019, tol 0.005) before relaunch."
+          },
+          {
+            "date": "2026-07-16T12:54:57Z",
+            "file": "steer_lib.py",
+            "new_sha256": "46951e37e919b29532db0319b6e9691f769aef74a914e73c7bd309676e9fe190",
+            "old_sha256": "b0bd43e33235e08a69022d021f7035f0b96cd734f76c9460beba9566b888b820",
+            "reason": "PI-approved pre-grading instrument defect correction 2026-07-16: run_factorial.py passed the computed gain as the sigma argument to build_hook_and_controller AND as generation strength, realizing setpoint = gain^2 on every fresh dosed write (qwen c_hat 64.01 vs registered 12.608; qwen random 158.99; mistral c_hat 144.0 vs 3.665; mistral random 13.44) - 100% SC1 readback failure, verified against the pinned hook contract and the midband-heldout precedent wiring. Fix implements the registered setpoints verbatim (sigma at construction, gain=setpoint/sigma as strength, both call sites, extracted into unit-tested pure functions). Hardening per PI directive: mandatory GPU preflight subcommand (readback verified against setpoint before full run; generate-family refuses without a preflight pass marker), live SC1 first-batch and arm-completion assertions with hard abort (steer_lib gains an after_batch callback), and CPU regression tests pinning sigma != gain against the exact pre-fix squared readbacks. Random arms regenerate on the accepted-seed ledger from the registered void-and-redraw walk (qwen 7 voids to 44000013, mistral 15 voids to 45000021, randomness bar only). Mis-dosed runlogs quarantined, reused/decoy arms untouched. No criterion, threshold, seed-policy, or registered-setpoint change; nothing was graded or unblinded. GPU preflight passed both families (rel_delta 0.0013-0.0019, tol 0.005) before relaunch."
+          },
+          {
+            "date": "2026-07-16T12:54:57Z",
+            "file": "test_factorial_smoke.py",
+            "new_sha256": "feb64dd7a92e7fc9135ae4f75413d992417d959c3bea746a646e5ae942b24969",
+            "old_sha256": "ee9820e747c2a59ed48b6a96bc06f9369f0dba4d5821721172ca3cdfb44d7b1f",
+            "reason": "PI-approved pre-grading instrument defect correction 2026-07-16: run_factorial.py passed the computed gain as the sigma argument to build_hook_and_controller AND as generation strength, realizing setpoint = gain^2 on every fresh dosed write (qwen c_hat 64.01 vs registered 12.608; qwen random 158.99; mistral c_hat 144.0 vs 3.665; mistral random 13.44) - 100% SC1 readback failure, verified against the pinned hook contract and the midband-heldout precedent wiring. Fix implements the registered setpoints verbatim (sigma at construction, gain=setpoint/sigma as strength, both call sites, extracted into unit-tested pure functions). Hardening per PI directive: mandatory GPU preflight subcommand (readback verified against setpoint before full run; generate-family refuses without a preflight pass marker), live SC1 first-batch and arm-completion assertions with hard abort (steer_lib gains an after_batch callback), and CPU regression tests pinning sigma != gain against the exact pre-fix squared readbacks. Random arms regenerate on the accepted-seed ledger from the registered void-and-redraw walk (qwen 7 voids to 44000013, mistral 15 voids to 45000021, randomness bar only). Mis-dosed runlogs quarantined, reused/decoy arms untouched. No criterion, threshold, seed-policy, or registered-setpoint change; nothing was graded or unblinded. GPU preflight passed both families (rel_delta 0.0013-0.0019, tol 0.005) before relaunch."
+          },
+          {
+            "date": "2026-07-16T17:32:06Z",
+            "file": "common.py",
+            "new_sha256": "a8f6d2e051817a3b97ab4b7448b4a6c1047b74e9ab4028a9f6d4edd1f675b07d",
+            "old_sha256": "8d4c925f6ba9875687184993498cfc552aeedfed2d85ace21590a637c8655e76",
+            "reason": "Pre-grading seed-SSOT correction, follow-through of the PI-approved 2026-07-16 remediation: build_pool.py and report.py iterated the raw pre-void config.RANDOM_SEED_BLOCKS to locate random-arm runlogs, while the approved void-and-redraw walk replaced 4 of 5 seeds per family; with load_jsonl returning [] for missing files, the pool and the Gap_Sel(random)/P2 statistics would have silently dropped 4 of 5 accepted-seed arms per family. Fix: new common.accepted_random_seeds() reads the committed random_seed_ledger.json (the same SSOT generate-family already enforces), hard-failing on missing ledger, missing family, wrong count, or empty accepted-seed runlogs - silent substitution is now impossible on this path. report.build_family_report gains a committed_dir parameter; fixtures write a synthetic ledger; 3 new regression tests. 61/61 CPU smokes. Found by the SC1/pool agent BEFORE any pool build or grading; no criterion, threshold, seed-policy, or registered-value change."
+          },
+          {
+            "date": "2026-07-16T17:32:06Z",
+            "file": "build_pool.py",
+            "new_sha256": "827ab73b1377e42eebd7bcf2fae704fdb29a4634c78df059f67284a9e865c26d",
+            "old_sha256": "2db9c72a390a21ac2392fa1a14231e078fd4f1eb330917a9453151e3f7e1ab77",
+            "reason": "Pre-grading seed-SSOT correction, follow-through of the PI-approved 2026-07-16 remediation: build_pool.py and report.py iterated the raw pre-void config.RANDOM_SEED_BLOCKS to locate random-arm runlogs, while the approved void-and-redraw walk replaced 4 of 5 seeds per family; with load_jsonl returning [] for missing files, the pool and the Gap_Sel(random)/P2 statistics would have silently dropped 4 of 5 accepted-seed arms per family. Fix: new common.accepted_random_seeds() reads the committed random_seed_ledger.json (the same SSOT generate-family already enforces), hard-failing on missing ledger, missing family, wrong count, or empty accepted-seed runlogs - silent substitution is now impossible on this path. report.build_family_report gains a committed_dir parameter; fixtures write a synthetic ledger; 3 new regression tests. 61/61 CPU smokes. Found by the SC1/pool agent BEFORE any pool build or grading; no criterion, threshold, seed-policy, or registered-value change."
+          },
+          {
+            "date": "2026-07-16T17:32:06Z",
+            "file": "report.py",
+            "new_sha256": "814925e358d01a0f59980cfba4259f96a83805cb9441777ac43602ca3aeea2b6",
+            "old_sha256": "819b15d711e0878a484a9b712e91c6c496c7651aa17bb9451ad663d5de6b1a5c",
+            "reason": "Pre-grading seed-SSOT correction, follow-through of the PI-approved 2026-07-16 remediation: build_pool.py and report.py iterated the raw pre-void config.RANDOM_SEED_BLOCKS to locate random-arm runlogs, while the approved void-and-redraw walk replaced 4 of 5 seeds per family; with load_jsonl returning [] for missing files, the pool and the Gap_Sel(random)/P2 statistics would have silently dropped 4 of 5 accepted-seed arms per family. Fix: new common.accepted_random_seeds() reads the committed random_seed_ledger.json (the same SSOT generate-family already enforces), hard-failing on missing ledger, missing family, wrong count, or empty accepted-seed runlogs - silent substitution is now impossible on this path. report.build_family_report gains a committed_dir parameter; fixtures write a synthetic ledger; 3 new regression tests. 61/61 CPU smokes. Found by the SC1/pool agent BEFORE any pool build or grading; no criterion, threshold, seed-policy, or registered-value change."
+          },
+          {
+            "date": "2026-07-16T17:32:06Z",
+            "file": "test_report_smoke.py",
+            "new_sha256": "9d70b6f91c420410c229a17122ff047dcc4033152bee0ad505b574fcb13ae991",
+            "old_sha256": "0b6f16c4e33629e832e6345f36cd68a3b9774052ceff8ebfabfaef86a4262158",
+            "reason": "Pre-grading seed-SSOT correction, follow-through of the PI-approved 2026-07-16 remediation: build_pool.py and report.py iterated the raw pre-void config.RANDOM_SEED_BLOCKS to locate random-arm runlogs, while the approved void-and-redraw walk replaced 4 of 5 seeds per family; with load_jsonl returning [] for missing files, the pool and the Gap_Sel(random)/P2 statistics would have silently dropped 4 of 5 accepted-seed arms per family. Fix: new common.accepted_random_seeds() reads the committed random_seed_ledger.json (the same SSOT generate-family already enforces), hard-failing on missing ledger, missing family, wrong count, or empty accepted-seed runlogs - silent substitution is now impossible on this path. report.build_family_report gains a committed_dir parameter; fixtures write a synthetic ledger; 3 new regression tests. 61/61 CPU smokes. Found by the SC1/pool agent BEFORE any pool build or grading; no criterion, threshold, seed-policy, or registered-value change."
+          },
+          {
+            "date": "2026-07-16T17:32:06Z",
+            "file": "test_factorial_smoke.py",
+            "new_sha256": "0e32b2476b5459bdeaa731ddc2b36575b3ff04f6c712688c87d6c611d83ee572",
+            "old_sha256": "feb64dd7a92e7fc9135ae4f75413d992417d959c3bea746a646e5ae942b24969",
+            "reason": "Pre-grading seed-SSOT correction, follow-through of the PI-approved 2026-07-16 remediation: build_pool.py and report.py iterated the raw pre-void config.RANDOM_SEED_BLOCKS to locate random-arm runlogs, while the approved void-and-redraw walk replaced 4 of 5 seeds per family; with load_jsonl returning [] for missing files, the pool and the Gap_Sel(random)/P2 statistics would have silently dropped 4 of 5 accepted-seed arms per family. Fix: new common.accepted_random_seeds() reads the committed random_seed_ledger.json (the same SSOT generate-family already enforces), hard-failing on missing ledger, missing family, wrong count, or empty accepted-seed runlogs - silent substitution is now impossible on this path. report.build_family_report gains a committed_dir parameter; fixtures write a synthetic ledger; 3 new regression tests. 61/61 CPU smokes. Found by the SC1/pool agent BEFORE any pool build or grading; no criterion, threshold, seed-policy, or registered-value change."
+          }
+        ]
+      },
+      "kg": [
+        "experiment:gate-contribution-factorial",
+        "mechanism:doubt-gate-adds-sub-floor-selectivity-write-drives-abstention-lift"
+      ],
+      "prediction": "Gate supplies selectivity on BOTH families: Gap_Sel(c_hat) >= 0.20 with bootstrap 95% CI excluding 0, cost-protection gap >= 0.10 with CI excluding 0, Gap_Sel(random) >= 0 directional (P1/P2/P3 pass); qwen S1 PASSES by sign-opposition to the census suppressive null (median -6.0, 14/15 negative); mistral S1 FAILS (same-signed as census recruiting null, expected effect ratio ~2.0 < 3.0), so the two axes dissociate on mistral. Predictions scoreboard (registered 2026-07-15 pre-run): orchestrator calls qwen full pass, mistral gate axis PASS + direction axis FAIL (the dissociation case), Gap_Sel(c_hat) bands qwen 0.20-0.50 / mistral 0.20-0.45; PI calls qwen full pass, mistral FULL FAIL (both axes). The differentiating slot is the mistral gate axis. No edits after results.",
+      "question": "Does the doubt GATE (row selection read from the model's internal doubt representation), rather than the write direction, produce SELECTIVE abstention (concentrated on unanswerable confab rows, withheld from known-correct rows)? Measured as the sign-robust selectivity gap Gap_Sel(d) = Sel_abs(true_gate, d) - Sel_abs(permuted_gate, d), Sel_abs = |confab_lift| - |known_lift|, in a 2x2 factorial {true doubt gate, fire-count-matched permuted gate} x {c_hat, random direction (K=5 fresh seeds)} plus baseline, both populations, wide two-instrument stack, on Qwen3.5-4B hs20 (dose_abs 12.608, census operating point) and Mistral-7B-Instruct-v0.3 hs16 (dose_abs 3.665, RR2/RR3 lineage). Direction specificity is evaluated separately (S1) against the census K=15 null.",
+      "registered": true,
+      "slug": "gate-contribution-factorial",
+      "status": "falsified",
+      "title": "Gate-contribution factorial: does the doubt gate, not the write direction, produce selective abstention",
+      "type": "steer-cell",
+      "verdict": "Gate axis falsified on both families: the dosed c_hat write alone drives most of the abstention lift (permuted-gate confab abstention 0.550 qwen / 0.600 mistral vs baselines 0.083 / 0.282); the true doubt gate adds a real but sub-floor selectivity increment (Gap_Sel(c_hat) 0.148 qwen / 0.129 mistral vs floor 0.20, CIs exclude zero) with cost protection below the 0.10 floor; S1 direction-specificity passes on qwen (ratio 7.27, sign-opposed) and fails on mistral (ratio 2.03), as predicted; CG1 28/28, red-team CONFIRM-NULL."
+    },
+    {
+      "checkpoint": {
+        "repo": "google/gemma-4-E4B-it",
+        "revision": "fee6332c1abaafb77f6f9624236c63aa2f1d0187"
+      },
+      "created_at": "2026-07-20T20:09:18Z",
+      "falsifier": "No interior eff_dim_frac peak exists (the profile is monotone to the last layer, OR the profile peaks in the outer 20% of depth on either end -- early-exterior, as jspace-family-atlas found for both llama and mistral, or late-exterior), OR no layer inside (20%, 85%) depth reaches held-out AUROC >= 0.80 on all three axes simultaneously.",
+      "inputs": [
+        "experiments/doubt-snap-cross-family-confirmatory/model_matrix.yaml"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "render_gemma_atlas.py",
+          "capture_family_atlas_cell.py",
+          "profile_and_read_family_atlas_panel.py",
+          "../doubt-snap-cross-family-confirmatory/prep_tuner_cell.py",
+          "prep_tuner_cell_gemma.py"
+        ],
+        "persistence": {
+          "../doubt-snap-cross-family-confirmatory/prep_tuner_cell.py": {
+            "checkpoint_path": "experiments/doubt-snap-cross-family-confirmatory/analysis/gemma4_e4b_it/baseline_gen/checkpoint.json",
+            "note": "Satisfied at the tuner layer: `run_baseline()` shells out to `tuner.py batch-generate --resume` with --out-dir analysis/gemma4_e4b_it/baseline_gen/, same fsync'd checkpoint.json mechanism as batch-capture above. Superseded for this cell's mining by prep_tuner_cell_gemma.py below per signed revision 1 (2026-07-20); kept pinned as the record of what the cap-200 runs (run 1, run 2) actually used, now archived.",
+            "persistence": "incremental"
+          },
+          "capture_family_atlas_cell.py": {
+            "checkpoint_path": "experiments/gemma-4-e4b-family-atlas/analysis/gemma4_e4b_it/atlas_capture/checkpoint.json",
+            "note": "Satisfied at the tuner layer: `cmd_capture` shells out to `tuner.py batch-capture --resume`, whose `hf-batched` engine writes a fsync'd checkpoint.json (see synaptic-tuner/tuner/batch/persistence.py CHECKPOINT_FILENAME) inside the run's own --out-dir (analysis/gemma4_e4b_it/atlas_capture/) after each captured row.",
+            "persistence": "incremental"
+          },
+          "prep_tuner_cell_gemma.py": {
+            "checkpoint_path": "experiments/doubt-snap-cross-family-confirmatory/analysis/gemma4_e4b_it/baseline_gen/checkpoint.json",
+            "note": "Signed revision 1 (2026-07-20) mining instrument. Local pinned copy of the fleet's prep_tuner_cell.py at its pinned sha (212a85cfcf378022ca541c23d75f2b1d1da07bbcff86fb43c282794deb587e61) with exactly four documented hunks (ROOT re-point, 400-token generation cap, 400-token parity re-decode cap, role-relevant-grade parity comparator); see AMENDMENT.md \"Signed revision 1\". ROOT is re-pointed to the fleet cell directory, so this module's data paths, model registry lookup, and analysis output location resolve exactly as prep_tuner_cell.py's did. Persistence satisfied the same way, at the tuner layer: run_baseline() shells out to tuner.py batch-generate --resume (checkpoint.json under analysis/gemma4_e4b_it/baseline_gen/) and the anchor-capture stage to tuner.py batch-capture --resume (checkpoint.json under analysis/gemma4_e4b_it/anchor_capture/), the same mechanism that made the run-2 resume free after the transient CUDA error.",
+            "persistence": "incremental"
+          },
+          "profile_and_read_family_atlas_panel.py": {
+            "measured_smoke_wall_clock_s": 184.04,
+            "note": "Measured at this cell's PROJECTED real scale (3500 synthetic rows, 43 hidden states, hidden_dim=2560, 2000 bootstrap resamples), not the tiny smoke_family_atlas.py fixture (114 rows / 4 hidden states / hidden_dim=256), to avoid an unrepresentative short-run estimate. See analysis/probe_realistic_scale_timing_notes in NOTEBOOK.md.",
+            "persistence": "short-run"
+          },
+          "render_gemma_atlas.py": {
+            "measured_smoke_wall_clock_s": 5.27,
+            "note": "Measured directly (tokenizer load + 20 render() calls against the real pinned tokenizer, CPU-only, no model weights): 5.27s total. Scales linearly with the render-only row count in the atlas capture stage (~3500 rows projected -> well under the 15-minute short-run ceiling even at full scale); the GPU-bound work in that stage is capture_family_atlas_cell.py's own batch-capture call, declared separately below.",
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "../doubt-snap-cross-family-confirmatory/prep_tuner_cell.py": "212a85cfcf378022ca541c23d75f2b1d1da07bbcff86fb43c282794deb587e61",
+          "capture_family_atlas_cell.py": "a543a88f8d0f552476968c8e248af9ec61212034f203c17f530694910b0b9b50",
+          "cell.yaml": "0202574a105b74df3d2352e0c85749ec3d7ed15addb52ae32a79ff3c15dc6f68",
+          "gates.yaml": "6e78c7c939fc75c6111b3c8dbc7f52a0782e8e7d1b4e5319ace19b7cdf0417a3",
+          "prep_tuner_cell_gemma.py": "52b2665f2ec5524a501ecc9182308b180ae03052d27e345d3adadfd1eb3a0e66",
+          "profile_and_read_family_atlas_panel.py": "27cd945c83df20416658a5370544ea99f1422f5717f3e67cffca82d418003ed5",
+          "render_gemma_atlas.py": "1a77be5f873f2364301c9ee295042d42b46b6d4c5fb23dfd2c236670df1b19d4"
+        },
+        "repins": [
+          {
+            "date": "2026-07-20T22:45:54Z",
+            "file": "gates.yaml",
+            "new_sha256": "94a44d6a43854b9eaa6701f8707b13dbe4115637d10a63f4d67a0345bf755740",
+            "old_sha256": "efeab08d26dd5ecabd4235c75f8feeefe0326118a482c3bfe6fc45105b1868bd",
+            "reason": "signed revision 1: AG0a v2 mining instrument re-specification, PI-approved 2026-07-20"
+          },
+          {
+            "date": "2026-07-21T01:11:55Z",
+            "file": "gates.yaml",
+            "new_sha256": "6e78c7c939fc75c6111b3c8dbc7f52a0782e8e7d1b4e5319ace19b7cdf0417a3",
+            "old_sha256": "94a44d6a43854b9eaa6701f8707b13dbe4115637d10a63f4d67a0345bf755740",
+            "reason": "signed revision 2: AG0a answer-capture limb, red-team SIGN-WITH-CONSTRAINTS, PI-approved 2026-07-20"
+          },
+          {
+            "date": "2026-07-21T01:11:55Z",
+            "file": "prep_tuner_cell_gemma.py",
+            "new_sha256": "52b2665f2ec5524a501ecc9182308b180ae03052d27e345d3adadfd1eb3a0e66",
+            "old_sha256": "4b1c4911712dd164a471f1cd03d41c0984b6e6024f9a30888963aca05ac14703",
+            "reason": "signed revision 2: AG0a answer-capture limb, red-team SIGN-WITH-CONSTRAINTS, PI-approved 2026-07-20"
+          }
+        ],
+        "runtime_image_digest": "sha256:d445632098cd2c70c115fe84d5343ff98286ac3f510a2d4c9cb488b550a3d23c"
+      },
+      "kg": [
+        "experiment:gemma-4-e4b-family-atlas",
+        "mechanism:workspace-band-peak-location-is-family-relative",
+        "mechanism:refused-vs-known-contrast-carries-norm-position-confound"
+      ],
+      "prediction": "Gemma-4-E4B-it shows an interior workspace band: a contiguous set of layers strictly inside (20%, 85%) depth where eff_dim_frac peaks AND all three read axes (doubt, caution, raw refusal) hold held-out AUROC >= 0.80, with the band's peak layer differing from the fleet's ported 0.94-depth layer (hs_index 40, i.e. block 39).",
+      "question": "Where does Gemma-4-E4B-it's workspace midband sit (eff_dim_frac profile over depth), and do the doubt, caution, and raw-refusal axes read there, supplying the per-family layer map no Gemma-family actuation amendment has had yet?",
+      "registered": true,
+      "slug": "gemma-4-e4b-family-atlas",
+      "status": "resolved",
+      "title": "Gemma-4-E4B family atlas",
+      "type": "probe-fit",
+      "verdict": "Falsifier fired on the profile limb: eff_dim_frac peaks early-exterior at hs_index 4 (0.0189, 0.095 depth), no interior workspace band; read panel healthy with a contiguous all-three-axes >= 0.80 band at hs 13-42. Third family (after llama and mistral) with an early-exterior peak decoupled from a healthy mid-band read panel."
     },
     {
       "checkpoint": {
@@ -1973,6 +2472,353 @@
     },
     {
       "checkpoint": {
+        "repo": "unsloth/Llama-3.2-3B-Instruct",
+        "revision": "006f5dcd1393c3add266de40994ba96225e9689d"
+      },
+      "created_at": "2026-07-19T09:46:44Z",
+      "falsifier": "R2: some (layer, dose) rung on the locked grid reaches wide refused >= 0.60 (Wilson LCB > 0.50) with well_formed >= 0.80 and known-correct wide false-refusal <= 0.10 on fired FIT confabs.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "render.py",
+          "grader.py",
+          "gen_lib.py",
+          "direction_fit.py",
+          "materialize_rows.py",
+          "steer_lib.py",
+          "dose_ladder.py",
+          "gates_lib.py",
+          "pipeline.py",
+          "test_rr_smoke.py",
+          "detector_v2.py",
+          "detector_v2_patterns.yaml",
+          "build_adjudication_pool.py",
+          "apply_adjudication.py",
+          "test_apply_adjudication_smoke.py"
+        ],
+        "pins": {
+          "apply_adjudication.py": "5ca708bb033d7fed56b275a26237fd9531a4cffe1711e213183a324831f84c36",
+          "build_adjudication_pool.py": "8e6818d5a2b98c10a2cfaf1592b22f08bf411f5c80a3d976a52ba931b716eb70",
+          "cell.yaml": "beb06586a82216a33f30eefefdb048d019224f9f5b679b3f5aeb5abaaec0de40",
+          "detector_v2.py": "161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae",
+          "detector_v2_patterns.yaml": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
+          "direction_fit.py": "d97966d05ad55df647ae2efd949fd2daf0155706ba10657019d77e5f2965ed5a",
+          "dose_ladder.py": "959b434834dbf1e3177f01e44f0ebc79bc1bf3c477323293b71f2f0fe52933a3",
+          "gates.yaml": "2c0b54f4e645a0a7f6562747c192fe4502a80c10f4166167e90a2e4fadd4f3ad",
+          "gates_lib.py": "ea66f19441fc9f32f269ff5cef97741cdf26491b108a88eea4ab81a229e629e2",
+          "gen_lib.py": "03563593d2c58e1c8f41a5f6b0449b7185a5b6940e164edce40168db53cbb449",
+          "grader.py": "54b8af60f2f287c85f3bc4a2d0c8f8ed09f685f10090bb3ef953116d1667b52c",
+          "materialize_rows.py": "f5bc3d848a17d1975d3997ddf605536c533ae22bce392d9f7f0a27c04f59e3a2",
+          "pipeline.py": "37fd27c7e7b1b971dc73bfadb31a966c95bc5a68939386a8733297243aa3e6ae",
+          "render.py": "fa378bdbcfd185f9f8bcdbeb1209cbe180b9ec50e92f9342ea7d7421ff6b3ab3",
+          "steer_lib.py": "45737d9c59cba4b00526f7dc674a2bc32bcb97d098ec4c308a97a07994155cf0",
+          "test_apply_adjudication_smoke.py": "374c9da2e5c925908e19562b3b46c70f25fd2a6ed48eaeb5c7dc0d29e44939bf",
+          "test_rr_smoke.py": "b7a10f1d75c14e84f701a6c2b8586ff4725604eefb19f26b91aae06f79b52e7c"
+        },
+        "repins": [
+          {
+            "date": "2026-07-19T10:20:00Z",
+            "file": "detector_v2.py",
+            "new_sha256": "161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae",
+            "old_sha256": "none-new-module",
+            "reason": "New module added by the harness-build assignment (cell.yaml scorer.stack.detector_v2.module): copied VERBATIM from abstention-wide-instrument-calibration/detector_v2.py. G0 wide-instrument pin check: sha256 verified hash-identical to that cell's committed pin (161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae) before any row was scored. Added post-sign with pin recorded here because exp repin repairs existing pins only (same precedent as abstention-wide-instrument-calibration's own build_regrade.py addition)."
+          },
+          {
+            "date": "2026-07-19T10:20:00Z",
+            "file": "detector_v2_patterns.yaml",
+            "new_sha256": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
+            "old_sha256": "none-new-module",
+            "reason": "New config added by the harness-build assignment (cell.yaml scorer.stack.detector_v2.patterns): copied VERBATIM from abstention-wide-instrument-calibration/detector_v2_patterns.yaml. G0 wide-instrument pin check: sha256 verified hash-identical to that cell's committed pin (36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9) before any row was scored. Added post-sign with pin recorded here because exp repin repairs existing pins only."
+          },
+          {
+            "date": "2026-07-19T11:05:00Z",
+            "file": "build_adjudication_pool.py",
+            "new_sha256": "baac3b49034c01658110e32887fa3ce9dd09d4ab194aac8fe8163cff5d7485a2",
+            "old_sha256": "none-new-module",
+            "reason": "New module added by the harness-build assignment (task step 3: build the blinded adjudication pool over detector-negative rows). Adapted from abstention-wide-instrument-calibration/build_adjudication_pool.py for this cell's single-family/single-cell design (no multi-cell loop): core = every row from any arm (gated at every rung, random_direction at the two registered rungs, and the reused baseline arm) restricted to the two tracked roles (confab, known_correct_answered) that detector_v2 screens as NOT refused; decoys carved out disjointly -- clear_negative from well_formed_correct known_correct_answered rows (any arm), clear_positive from random_direction rows detector_v2 DOES mark refused. Per the explicit CG1 lesson cited in AMENDMENT.md/gates.yaml (the calibration cell's 14-decoy draw voided a QL cell), this module sizes shard count off clear_positive availability first (MIN_CLEAR_POSITIVE_PER_SHARD_TARGET=20 per shard, i.e. >14) rather than off core size, via cap_shards_by_decoy_availability, and reports the resulting per-shard decoy counts in the committed manifest so any shortfall is visible. Mechanics (salted opaque ids via sha256, seeded shuffle, round-robin sharding) ported from the calibration cell's build_adjudication_pool.py. Per-row text lives only in gitignored analysis/shards/; the committed analysis-committed/adjudication_pool_manifest.json is ID-only (opaque ids, counts, salt hash), no question/answer/generation text, per this experiment's containment rule. This script BUILDS the pool only; it does not grade anything -- the lead orchestrates the CG1-gated blinded grading lane separately. Added post-sign with pin recorded here because exp repin repairs existing pins only (same precedent as detector_v2.py above)."
+          },
+          {
+            "date": "2026-07-19T11:20:00Z",
+            "file": "build_adjudication_pool.py",
+            "new_sha256": "8e6818d5a2b98c10a2cfaf1592b22f08bf411f5c80a3d976a52ba931b716eb70",
+            "old_sha256": "baac3b49034c01658110e32887fa3ce9dd09d4ab194aac8fe8163cff5d7485a2",
+            "reason": "Fixed a real bug found via a small dry-run smoke test on the partial (in-progress) generation output before trusting the module for the final build: `dose_ladder.load_baseline_wide_by_key` sets each baseline row's `role` from the baseline file's own `role` field, which does not exist in `baseline_graded_private.jsonl` (that file only carries a DIFFERENT pre-fit `role_candidate` label in {\"answerable\",\"unanswerable\"}) -- so `role` was always None and every baseline row was silently dropped from TRACKED_ROLES filtering (dry run showed n_rows_by_arm.baseline=0 against an expected ~2000+). This is benign inside dose_ladder.py itself (its own baseline lookups match by row_key against already role-filtered FIT row lists and never read the `role` field back), but this module needs the real role to decide TRACKED_ROLES membership and clear_negative eligibility for baseline rows, so it now joins baseline rows against `analysis/<family>/joined_rows_private.jsonl` (materialize_rows.py's row_key -> role map) by row_key instead of trusting the baseline dict's role field. Re-ran the dry run after the fix: n_rows_by_arm.baseline rose from 0 to 2009 (confab + known_correct_answered), matching expectation. No change to gated/random_direction handling, which already read role correctly from the RunLog rows themselves. No gate, floor, or falsifier threshold touched; this is a new module, not a repin of a pinned rr/calibration file."
+          },
+          {
+            "date": "2026-07-19T10:15:21Z",
+            "file": "gen_lib.py",
+            "new_sha256": "03563593d2c58e1c8f41a5f6b0449b7185a5b6940e164edce40168db53cbb449",
+            "old_sha256": "a15149b3d3e2424aff1efda9131b8f13e647a173aebd3eb6ade94cd5e574f641",
+            "reason": "Harness-build adaptation of rr's verbatim-copied modules per AMENDMENT.md 'Instrument (mechanism unchanged, scorer changed)' and the sign-time harness_status note: (1) gen_lib.grade_row now also computes the wide-instrument (detector_v2) grade alongside the unchanged narrow grade; (2) gates_lib.py adds wide-rate/undercount/net-lift/G1-wide/G-spec-ratio helpers, no existing threshold changed; (3) dose_ladder.py: single-family trim to llama only, fresh seed 20260719 (was rr's 20260713), removed FIT dose-selection/early-stop control flow since cell.yaml dose_policy.fit_dose_selection is NONE (every rung scored, no held-out stage, no heldout_scorer.py module at sign), added the wide-instrument per-rung report, a G0 hook-placement convention assertion, a G0 confounded random-direction AUC reference, and the random_direction arm at hs20 dose12/16 (cell.yaml arms[2]); (4) materialize_rows.py: single-family trim, replaced rr's heldout_power gate (this cell's cell.yaml carries no heldout_power field, FIT-only scope) with a FIT-population non-emptiness check, held-out rows still counted for provenance but never read downstream; (5) pipeline.py: removed the held-out branch (no heldout_scorer.py at sign); (6) test_rr_smoke.py: updated 4 tests for the rename/trim, no coverage removed. All 38 CPU smoke tests pass after these edits. No gate, floor, or falsifier threshold changed anywhere."
+          },
+          {
+            "date": "2026-07-19T10:15:21Z",
+            "file": "gates_lib.py",
+            "new_sha256": "a8c1c088bc0bf7daeee37d3146611b5eb54dc9e393583c1550dc765c04821b50",
+            "old_sha256": "1eed44eee8bcb898daffe1d21f68f6b398d02961c70928e3f07eb9ec40726e71",
+            "reason": "Harness-build adaptation of rr's verbatim-copied modules per AMENDMENT.md 'Instrument (mechanism unchanged, scorer changed)' and the sign-time harness_status note: (1) gen_lib.grade_row now also computes the wide-instrument (detector_v2) grade alongside the unchanged narrow grade; (2) gates_lib.py adds wide-rate/undercount/net-lift/G1-wide/G-spec-ratio helpers, no existing threshold changed; (3) dose_ladder.py: single-family trim to llama only, fresh seed 20260719 (was rr's 20260713), removed FIT dose-selection/early-stop control flow since cell.yaml dose_policy.fit_dose_selection is NONE (every rung scored, no held-out stage, no heldout_scorer.py module at sign), added the wide-instrument per-rung report, a G0 hook-placement convention assertion, a G0 confounded random-direction AUC reference, and the random_direction arm at hs20 dose12/16 (cell.yaml arms[2]); (4) materialize_rows.py: single-family trim, replaced rr's heldout_power gate (this cell's cell.yaml carries no heldout_power field, FIT-only scope) with a FIT-population non-emptiness check, held-out rows still counted for provenance but never read downstream; (5) pipeline.py: removed the held-out branch (no heldout_scorer.py at sign); (6) test_rr_smoke.py: updated 4 tests for the rename/trim, no coverage removed. All 38 CPU smoke tests pass after these edits. No gate, floor, or falsifier threshold changed anywhere."
+          },
+          {
+            "date": "2026-07-19T10:15:21Z",
+            "file": "dose_ladder.py",
+            "new_sha256": "804b148ec2d9194942922575de74aed63ebab461e6575fc96bc11ae9f4fe2faf",
+            "old_sha256": "8d4d76eecc894e492e203a97988c9b901ef641f9f74607984c241d73520c1de7",
+            "reason": "Harness-build adaptation of rr's verbatim-copied modules per AMENDMENT.md 'Instrument (mechanism unchanged, scorer changed)' and the sign-time harness_status note: (1) gen_lib.grade_row now also computes the wide-instrument (detector_v2) grade alongside the unchanged narrow grade; (2) gates_lib.py adds wide-rate/undercount/net-lift/G1-wide/G-spec-ratio helpers, no existing threshold changed; (3) dose_ladder.py: single-family trim to llama only, fresh seed 20260719 (was rr's 20260713), removed FIT dose-selection/early-stop control flow since cell.yaml dose_policy.fit_dose_selection is NONE (every rung scored, no held-out stage, no heldout_scorer.py module at sign), added the wide-instrument per-rung report, a G0 hook-placement convention assertion, a G0 confounded random-direction AUC reference, and the random_direction arm at hs20 dose12/16 (cell.yaml arms[2]); (4) materialize_rows.py: single-family trim, replaced rr's heldout_power gate (this cell's cell.yaml carries no heldout_power field, FIT-only scope) with a FIT-population non-emptiness check, held-out rows still counted for provenance but never read downstream; (5) pipeline.py: removed the held-out branch (no heldout_scorer.py at sign); (6) test_rr_smoke.py: updated 4 tests for the rename/trim, no coverage removed. All 38 CPU smoke tests pass after these edits. No gate, floor, or falsifier threshold changed anywhere."
+          },
+          {
+            "date": "2026-07-19T10:15:21Z",
+            "file": "materialize_rows.py",
+            "new_sha256": "f5bc3d848a17d1975d3997ddf605536c533ae22bce392d9f7f0a27c04f59e3a2",
+            "old_sha256": "9056303374328f3f1503f240f24fe7a99d469a7a845d4539e5f654703f3b4736",
+            "reason": "Harness-build adaptation of rr's verbatim-copied modules per AMENDMENT.md 'Instrument (mechanism unchanged, scorer changed)' and the sign-time harness_status note: (1) gen_lib.grade_row now also computes the wide-instrument (detector_v2) grade alongside the unchanged narrow grade; (2) gates_lib.py adds wide-rate/undercount/net-lift/G1-wide/G-spec-ratio helpers, no existing threshold changed; (3) dose_ladder.py: single-family trim to llama only, fresh seed 20260719 (was rr's 20260713), removed FIT dose-selection/early-stop control flow since cell.yaml dose_policy.fit_dose_selection is NONE (every rung scored, no held-out stage, no heldout_scorer.py module at sign), added the wide-instrument per-rung report, a G0 hook-placement convention assertion, a G0 confounded random-direction AUC reference, and the random_direction arm at hs20 dose12/16 (cell.yaml arms[2]); (4) materialize_rows.py: single-family trim, replaced rr's heldout_power gate (this cell's cell.yaml carries no heldout_power field, FIT-only scope) with a FIT-population non-emptiness check, held-out rows still counted for provenance but never read downstream; (5) pipeline.py: removed the held-out branch (no heldout_scorer.py at sign); (6) test_rr_smoke.py: updated 4 tests for the rename/trim, no coverage removed. All 38 CPU smoke tests pass after these edits. No gate, floor, or falsifier threshold changed anywhere."
+          },
+          {
+            "date": "2026-07-19T10:15:21Z",
+            "file": "pipeline.py",
+            "new_sha256": "37fd27c7e7b1b971dc73bfadb31a966c95bc5a68939386a8733297243aa3e6ae",
+            "old_sha256": "49964839c1d1ca6aa620d5477fa4cc07ff20e25291272f4dcf481e640796c010",
+            "reason": "Harness-build adaptation of rr's verbatim-copied modules per AMENDMENT.md 'Instrument (mechanism unchanged, scorer changed)' and the sign-time harness_status note: (1) gen_lib.grade_row now also computes the wide-instrument (detector_v2) grade alongside the unchanged narrow grade; (2) gates_lib.py adds wide-rate/undercount/net-lift/G1-wide/G-spec-ratio helpers, no existing threshold changed; (3) dose_ladder.py: single-family trim to llama only, fresh seed 20260719 (was rr's 20260713), removed FIT dose-selection/early-stop control flow since cell.yaml dose_policy.fit_dose_selection is NONE (every rung scored, no held-out stage, no heldout_scorer.py module at sign), added the wide-instrument per-rung report, a G0 hook-placement convention assertion, a G0 confounded random-direction AUC reference, and the random_direction arm at hs20 dose12/16 (cell.yaml arms[2]); (4) materialize_rows.py: single-family trim, replaced rr's heldout_power gate (this cell's cell.yaml carries no heldout_power field, FIT-only scope) with a FIT-population non-emptiness check, held-out rows still counted for provenance but never read downstream; (5) pipeline.py: removed the held-out branch (no heldout_scorer.py at sign); (6) test_rr_smoke.py: updated 4 tests for the rename/trim, no coverage removed. All 38 CPU smoke tests pass after these edits. No gate, floor, or falsifier threshold changed anywhere."
+          },
+          {
+            "date": "2026-07-19T10:15:21Z",
+            "file": "test_rr_smoke.py",
+            "new_sha256": "b7a10f1d75c14e84f701a6c2b8586ff4725604eefb19f26b91aae06f79b52e7c",
+            "old_sha256": "806b1b7c5abe8c14db1f2c21883ad1c4e5f9c8e33fdc38d48c618ae22c4196a6",
+            "reason": "Harness-build adaptation of rr's verbatim-copied modules per AMENDMENT.md 'Instrument (mechanism unchanged, scorer changed)' and the sign-time harness_status note: (1) gen_lib.grade_row now also computes the wide-instrument (detector_v2) grade alongside the unchanged narrow grade; (2) gates_lib.py adds wide-rate/undercount/net-lift/G1-wide/G-spec-ratio helpers, no existing threshold changed; (3) dose_ladder.py: single-family trim to llama only, fresh seed 20260719 (was rr's 20260713), removed FIT dose-selection/early-stop control flow since cell.yaml dose_policy.fit_dose_selection is NONE (every rung scored, no held-out stage, no heldout_scorer.py module at sign), added the wide-instrument per-rung report, a G0 hook-placement convention assertion, a G0 confounded random-direction AUC reference, and the random_direction arm at hs20 dose12/16 (cell.yaml arms[2]); (4) materialize_rows.py: single-family trim, replaced rr's heldout_power gate (this cell's cell.yaml carries no heldout_power field, FIT-only scope) with a FIT-population non-emptiness check, held-out rows still counted for provenance but never read downstream; (5) pipeline.py: removed the held-out branch (no heldout_scorer.py at sign); (6) test_rr_smoke.py: updated 4 tests for the rename/trim, no coverage removed. All 38 CPU smoke tests pass after these edits. No gate, floor, or falsifier threshold changed anywhere."
+          },
+          {
+            "date": "2026-07-19T10:18:53Z",
+            "file": "dose_ladder.py",
+            "new_sha256": "b94a381e73f8553b666c578285c2eb425724456fb5d8684382bf52fd22acd562",
+            "old_sha256": "804b148ec2d9194942922575de74aed63ebab461e6575fc96bc11ae9f4fe2faf",
+            "reason": "Added the mandatory pre-full-scoring smokes for real on the actual Llama-3.2-3B-Instruct substrate (execution binding invariant: sequential-vs-batch parity + real steer/readback before full scoring), wired per-layer before the dose sweep starts: pre_sweep_and_parity_smoke() runs the gated arm at the grid's strongest dose (mult=20) on up to 8 probe rows, asserts batch-size parity (batch=8 vs batch=1 byte-identical text) and the cell.yaml dose_policy.pre_sweep_bracketing token-movement check against the reused undosed baseline text, raising SystemExit (pre-outcome stop) on either failure. Fixed load_baseline_wide_by_key to also carry answer_text (needed by the new bracket check). No gate/floor/falsifier threshold changed; all 38 CPU smoke tests still pass."
+          },
+          {
+            "date": "2026-07-19T10:23:47Z",
+            "file": "dose_ladder.py",
+            "new_sha256": "959b434834dbf1e3177f01e44f0ebc79bc1bf3c477323293b71f2f0fe52933a3",
+            "old_sha256": "b94a381e73f8553b666c578285c2eb425724456fb5d8684382bf52fd22acd562",
+            "reason": "Real single-layer GPU sanity check (hs20) surfaced that the invented real-model batched-vs-sequential BYTE-IDENTITY check was over-strict: 2/4 probe rows differed in decoded text after 200 greedy decode steps under an active erase-write hook, while readback_measured stayed consistent to 4 significant figures across all rows/batch positions (22.5011-22.5023 vs commanded 22.5239) -- confirming the write/wiring is correct and the divergence is bf16 batched-attention float noise cascading through greedy decoding, a known benign non-determinism property, not a row/gain/indexing defect. The REGISTERED sequential_vs_batch parity smoke (cell.yaml/AMENDMENT.md citation) is the CPU synthetic-model test in test_rr_smoke.py (deterministic, already passing); real-model bitwise identity was never registered. Downgraded this finding from a SystemExit stop to a reported NOTE; the actual registered gate in this function (cell.yaml dose_policy.pre_sweep_bracketing token-movement check) still raises SystemExit on failure and is unchanged. No gate/floor/falsifier threshold changed. All 38 CPU smoke tests pass; real single-layer (hs20) end-to-end GPU sanity check (model load, double-fit byte-identical, AUC=0.9992 >= 0.90 floor, hook placement, bracket check) now completes cleanly."
+          },
+          {
+            "date": "2026-07-19T12:10:00Z",
+            "file": "apply_adjudication.py",
+            "new_sha256": "5ca708bb033d7fed56b275a26237fd9531a4cffe1711e213183a324831f84c36",
+            "old_sha256": "none-new-module",
+            "reason": "New module added by the harness-build assignment (post-pool-freeze task: port the unblinding/apply tooling so it is ready when the CG1-gated blinded grading lane, launched by the lead over the frozen pool from commit b7bfa022, completes). Adapted from abstention-wide-instrument-calibration/apply_adjudication.py, cross-checked against rr3-corrected-placebo-replication/apply_adjudication.py and .skills/experiment-runner/reference/abstention-grading.md (read both in full before writing this). Ported verbatim: the commit-hash-before-unblind guarantee (enforced in code -- `evaluate_shard` raises SystemExit if a shard's graded-file sha256 is absent from analysis-committed/adjudication_graded_manifest.json), the POSITIONAL join between the graded file and the shard id map (line-for-line opaque_id equality asserted; raises on length mismatch, reorder, or a non-boolean is_abstention value), and per-shard CG1 via the new gates_lib.cg1_evaluate_shard (0.95 clear-negative / 0.60 clear-positive floors, exactly gates.yaml's registered CG1, unchanged from the calibration cell -- this cell's gates.yaml has no pooled floor, unlike RR3's successor fix (b), so gates_lib.cg1_pooled_clear_positive reports the pooled clear-positive rate but never gates on it). SINGLE-CELL SIMPLIFICATION versus the calibration/RR3 multi-cell references: this harness has exactly one adjudication cell (build_adjudication_pool.py's id map carries no per-row \"cell\" tag), so a VOID_CELL_TERMINAL status voids the WHOLE lane (a single `experiment_voided` boolean), not a `voided_cells` set -- verified in the smoke suite (see test_apply_adjudication_smoke.py repin below) that a terminal void on one shard excludes an otherwise-passing second shard's rows too. Beyond the ported join/CG1 mechanics, `cmd_apply` also rebuilds the post-adjudication per-rung table (analysis-committed/llama/post_adjudication_wide_table.json) by re-scanning every RunLog row plus the reused baseline arm and taking refused_wide_adjudicated = detector_v2 screen OR the unblinded adjudicator verdict; rows with no verdict yet are fail-closed to \"not abstention\" and counted in a `n_pending_adjudication` coverage field per rung/population rather than silently treated as complete. Verified this table-building logic against the REAL 30-rung RunLog directory (not real graded files -- none exist yet, and grading is out of scope per the lead's instruction) with an empty adjudication map: confirmed refused_wide_adjudicated reduces exactly to refused_wide_screen and n_pending_adjudication exactly equals the detector-negative row count, i.e. the fail-closed default behaves correctly with zero adjudication coverage. Did NOT run apply against any real graded file. No gate, floor, or falsifier threshold changed; gates.yaml and cell.yaml diff is empty."
+          },
+          {
+            "date": "2026-07-19T12:10:00Z",
+            "file": "gates_lib.py",
+            "new_sha256": "ea66f19441fc9f32f269ff5cef97741cdf26491b108a88eea4ab81a229e629e2",
+            "old_sha256": "a8c1c088bc0bf7daeee37d3146611b5eb54dc9e393583c1550dc765c04821b50",
+            "reason": "Added CG1_CLEAR_NEGATIVE_MIN (0.95), CG1_CLEAR_POSITIVE_MIN (0.60), cg1_shard_pass, cg1_evaluate_shard, and cg1_pooled_clear_positive (reported only, never gated -- see apply_adjudication.py repin above), ported verbatim from abstention-wide-instrument-calibration/gates_lib.py, to back the new apply_adjudication.py module. No existing function, constant, or threshold in this file was changed; this is a pure addition."
+          },
+          {
+            "date": "2026-07-19T12:10:00Z",
+            "file": "test_apply_adjudication_smoke.py",
+            "new_sha256": "374c9da2e5c925908e19562b3b46c70f25fd2a6ed48eaeb5c7dc0d29e44939bf",
+            "old_sha256": "none-new-module",
+            "reason": "New CPU smoke suite for apply_adjudication.py, against synthetic 3-line shard + graded-file fixtures only (never the real graded files), isolated to pytest tmp_path directories so nothing here reads or writes the real analysis/ or analysis-committed/ trees. Covers: (1) the hash-refusal path (apply raises SystemExit before any commit-hash call, succeeds after); (2) the positional-mismatch raise (opaque_id reorder, line-count mismatch, and non-boolean is_abstention all raise); (3) the CG1 void ladder (attempt-1 failure -> VOID_REGRADE_ONCE, lane not yet voided; attempt-2 failure on the same content -> VOID_CELL_TERMINAL, whole lane voided, verified that a second, independently-passing shard's rows are also excluded from n_applied_rows). 7/7 pass; combined with the existing 38 test_rr_smoke.py tests, 45/45 pass."
+          }
+        ]
+      },
+      "kg": [],
+      "prediction": "R1: falsifier survives; llama stays shape F under the wide instrument; the well-formed-intact peak (hs20 dose 12, narrow 0.333) rises to ~0.45-0.55 wide but no well-formed rung crosses 0.60.",
+      "question": "Is llama's shape-F non-actuation at its atlas sites (rr-cross-family-raw-refusal, resolved falsified) robust to the certified wide abstention instrument (detector v2 + blinded adjudication), or was it substantially a canonical-phrase-coverage artifact the way mistral's F was?",
+      "registered": true,
+      "slug": "llama-atlas-gated-wide-instrument-retest",
+      "status": "resolved",
+      "title": "Llama atlas-sited gated caution ladder, wide-instrument retest",
+      "type": "steer-cell",
+      "verdict": "R1 confirmed (2026-07-19): llama shape F robust to the certified wide instrument; falsifier fired on zero rungs (well-formed peak hs20 dose 12 wide 0.457 [0.416,0.497] vs 0.60 floor); CG1 8/8 PASS attempt 1; cross-cohort baseline agreement 0.1624 vs 0.164; rr's locked verdict unchanged."
+    },
+    {
+      "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
+      "created_at": "2026-07-17T20:05:16Z",
+      "falsifier": "With all gates valid, at least one channel fails its floor: the projection does not collapse toward the known regime specifically for the true answer (D1 fails), or the margin does not lengthen for the true answer over the placebo (D2 fails). Criterion (d) is not earned; a single-channel pass is reported as a channel dissociation, not rounded to earned or not-earned.",
+      "inputs": [
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json",
+        "experiments/margin-mapping/analysis-committed/subsample_ids_qwen35_4b.json",
+        "experiments/margin-mapping/analysis/margin_dataset/qwen35_4b_margin_rows.jsonl"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {
+          "cell.yaml": "8d2c2aa0060205f005cb07f56f379d7abde640a16f30b5f65b8777f65d16f2be",
+          "gates.yaml": "92437d3d96a91db13c806be550e57fc7ea40ae19a4177f9764dde08a83e6074e"
+        }
+      },
+      "kg": [],
+      "prediction": "Supplying the true answer in-context both collapses the c_hat projection on confab rows (paired median shift toward the known regime at or above the floor, and larger than the false-answer placebo) and lengthens their margins (true-answer survival at each row's own tipping dose exceeds the placebo, CI excluding zero): qwen earns criterion (d).",
+      "question": "Does the qwen c_hat known-unknown direction satisfy earnability criterion (d)? That is, does supplying the true answer in-context both collapse the c_hat projection on a confab row (toward the known regime) and lengthen its commitment margin, specifically for the true answer over a false-answer placebo?",
+      "registered": true,
+      "slug": "margin-evidence-responsiveness",
+      "status": "historical",
+      "title": "Evidence-responsiveness: the naming test (M4)",
+      "type": "steer-cell",
+      "verdict": "Void-by-design (never run): the true_answer/false_answer arms require a per-row gold answer, but the 400 confab rows are all KUQ world-unknown questions whose source has no answer field (verified 3 ways). Criterion (d) 'supply the true answer' is ill-posed on a c_hat direction fit on world-unknown questions; (a)-(c) stand, (d) unadjudicated here. Superseded by margin-evidence-responsiveness-worldknown, which rebases the (d) test onto a world-known PopQA confab population where a true answer exists. Durable lesson (pre-sign feasibility probe) captured in the experiment-runner skill."
+    },
+    {
+      "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
+      "created_at": "2026-07-17T21:04:21Z",
+      "falsifier": "With all gates valid AND the transfer direction firing at baseline (baseline confab-vs-correct AUROC >= 0.70 on the test subset, BLOCKER B1), at least one channel on the TRANSFER direction fails its floor: the projection does not collapse toward the correct/refused regime specifically for the true answer (D1 fails), or the margin does not lengthen for the true answer over the placebo (D2 fails). Only then is criterion (d) not earned on the named KUQ direction; a single-channel pass is reported as a channel dissociation. If instead the transfer direction does not fire at baseline (AUROC < 0.70), the criterion (d) test is voided and lifted to PI, not scored as a (d)-not-earned failure. The native two-channel result is reported separately and never changes this verdict.",
+      "inputs": [
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json",
+        "datasets/popqa/test.jsonl"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {
+          "cell.yaml": "d43fdc2a5ff369173e9bf7825ec3b70d3d39caebe79ec5b91815ce67a7931486",
+          "gates.yaml": "cd78e84a95eb777f0bcee73c2cfee57c071628dc7a49112be88e3385c8985909"
+        },
+        "repins": [
+          {
+            "date": "2026-07-18T10:49:46Z",
+            "file": "cell.yaml",
+            "new_sha256": "ca7126f101e5a5b391fa1e5017ced26e065c71b532f97deac4ce07cf0b27cd2f",
+            "old_sha256": "da2338fb4b7f83ce8d4f4ef7f76385846c2f08c0f6cbb5157abe26daf7ac7584",
+            "reason": "Native direction fit realized: froze sha256/snap_standardization{mu_c,sigma_c}/reference_dose_abs for directions.native from native_fit.py's fit output (fit-split n=640: confab 400 + known_correct_answered 240, disjoint unknown_refused 180). Numeric frozen BEFORE any true/false channel-1 or channel-2 contrast is computed, per the no-goalpost self-blinding rule; only the numeric was undetermined at sign, the formula (RE_DERIVED per direction, 8x sigma_c reference dose) was locked at sign."
+          },
+          {
+            "date": "2026-07-18T11:31:41Z",
+            "file": "gates.yaml",
+            "new_sha256": "671873c5c96d602594794e75b6753ebdf18e686b2683fdf438280866c07eabc9",
+            "old_sha256": "9670fd0eed99a880c07a7e9adeeca67069c618931791cfc9188fe8f3c55f2fdd",
+            "reason": "Freeze native collapse_floor_z = 0.5 x realized native no_answer_baseline gap_z (0.8209213240458088 = 0.5 x 1.6418426480916175), the MOMENT the fresh baseline gap was measured for native (channel-1 capture, commit 3de5a30d), BEFORE any true_answer/false_answer shift is computed for native (self-blinding preserved). Transfer's collapse floor is NOT frozen: transfer's primary criterion (d) test is VOID per BLOCKER B1 (baseline AUROC 0.3018 < 0.70 floor), PI decision, void-and-lift."
+          },
+          {
+            "date": "2026-07-18T15:15:15Z",
+            "file": "cell.yaml",
+            "new_sha256": "d43fdc2a5ff369173e9bf7825ec3b70d3d39caebe79ec5b91815ce67a7931486",
+            "old_sha256": "ca7126f101e5a5b391fa1e5017ced26e065c71b532f97deac4ce07cf0b27cd2f",
+            "reason": "Ladder bracketing failure realized: native channel-2 ladder rebuild (10 rungs, [0.0625..4.0]x reference_dose_abs) left 349/400 (87.25%) confab rows right-censored at the 4.0x top rung; only 51/400 had a genuine non-right-censored tipping dose, far short of the ~308 anchor. Per cell.yaml channel2_margin.ladder_rebuild.bracketing_requirement (report, do not silently right-censor a resolvable row; re-derivation reserved for lead adjudication), this was reported and NOT resolved unilaterally. PI approved re-derivation option (b) 2026-07-18: extend the multiplier list with [6.0, 8.0, 12.0, 16.0] (original 10 rungs unchanged). Extension chosen BEFORE any survival contrast was computed (self-blinding preserved); no d2_absolute_floor has been frozen yet and none is frozen by this repin."
+          },
+          {
+            "date": "2026-07-18T17:35:55Z",
+            "file": "gates.yaml",
+            "new_sha256": "cd78e84a95eb777f0bcee73c2cfee57c071628dc7a49112be88e3385c8985909",
+            "old_sha256": "671873c5c96d602594794e75b6753ebdf18e686b2683fdf438280866c07eabc9",
+            "reason": "Freeze native d2_absolute_floor at realized n_margin_eligible=51: formula 1.96*sqrt(0.25/51)=0.13722492664818098. Rungs >=3.0x ruled instrument-invalid (lead+PI 2026-07-18, total generation collapse; all 51 tips at <=2.0x). Frozen BEFORE any survival contrast is computed. transfer not frozen (void, BLOCKER B1)."
+          }
+        ]
+      },
+      "kg": [
+        "experiment:margin-evidence-responsiveness-worldknown",
+        "mechanism:kuq-fit-direction-reverses-on-world-known-confident-wrongness",
+        "mechanism:confident-wrongness-steering-hits-coherence-ceiling-before-refusal",
+        "mechanism:evidence-registration-exists-without-driving-behavior-worldknown"
+      ],
+      "prediction": "On the TRANSFER direction, supplying the true answer in-context both collapses the c_hat projection on confab rows (paired median shift toward the correct/refused regime at or above the re-derived floor, and larger than the false-answer placebo) and lengthens their margins (true-answer survival at each row's own world-known tipping dose exceeds the placebo, CI excluding zero): qwen earns criterion (d) for the named KUQ direction. [Predictor calls registered in the scoreboard at sign.]",
+      "question": "On Qwen/Qwen3.5-4B, does the KUQ-fit c_hat known-unknown direction (TRANSFER) satisfy earnability criterion (d) on a WORLD-KNOWN error class? That is, on confident-wrong-on-answerable PopQA rows, does supplying the true answer in-context both collapse the c_hat projection (toward the correct/refused regime) and lengthen the commitment margin, specifically for the true answer over a category-matched false-answer placebo? A world-known c_hat refit natively is run as a secondary two-channel dissociation reading.",
+      "registered": true,
+      "slug": "margin-evidence-responsiveness-worldknown",
+      "status": "null-result",
+      "title": "Evidence-responsiveness on world-known QA: the M4 rebase (M4-WK)",
+      "type": "steer-cell",
+      "verdict": "Criterion (d) not licensed for any direction on the world-known error class: the named KUQ direction does not fire there (primary test void, out of domain; population reversal), the native refit shows only a weak evidence-specific, sub-floor, behaviorally-inert projection response ((d) not earned; margin channel instrument-void), so the mentalistic doubt name remains unearned; direction reads as unanswerability recognition plus a separate weak evidence-registration."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-17T01:40:56Z",
+      "falsifier": "Median margin ratio below the separation floor or its bootstrap 95% CI includes 1.0 (Claim 1 falsified); or the setpoint does not sit between the medians in either family (Claim 2 falsified); or retrodicted anchor rates miss by more than the registered tolerance; or the non-monotone fraction exceeds its ceiling or the detector-vs-adjudication calibration gate fails (instrument void, reported straight). Thresholds resolve at sign in the Decision record and never move after results.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {
+          "cell.yaml": "476463c6c7153af4fb996f4434df3b6dfd1f8b4a6e36b29b69fe31d580090da4",
+          "gates.yaml": "934cacae33965682976db6d64ce88c4ef29158ff26a6677994a3c6fd90cd60d2"
+        },
+        "repins": [
+          {
+            "date": "2026-07-17T09:10:25Z",
+            "file": "gates.yaml",
+            "new_sha256": "934cacae33965682976db6d64ce88c4ef29158ff26a6677994a3c6fd90cd60d2",
+            "old_sha256": "7eb74eedc693f0dcde3023cd0fc41bbaa80d051e3698905626fc343925460580",
+            "reason": "PI-approved SC1 readback amendment 2026-07-17 (pre-generation): add OR absolute bound 0.005 x reference_dose_abs; deterministic bf16 readback floor at 0.0625x rung, diagnostic in analysis/preflight_diag/ and NOTEBOOK"
+          }
+        ]
+      },
+      "kg": [
+        "experiment:margin-mapping",
+        "mechanism:qwen-midband-commitment-margins-miss-separation-floor"
+      ],
+      "prediction": "Median known margin exceeds median confab margin by at least the separation floor in both families, the family setpoint lies between the two medians, the margin CDFs retrodict the factorial and doubt-snap arm rates within tolerance, and the ladder top exhibits the collapse regime that explains H4's overdrive non-selectivity.",
+      "question": "Do per-row commitment margins (minimum dose along the frozen c_hat that flips a row to well-formed abstention) separate confab from known-correct rows at the mid-band operating points, with a gap containing the current setpoints, and do the measured margin distributions retrodict the three anchor results (factorial, doubt-snap, H4 overdrive) from their doses alone?",
+      "registered": true,
+      "slug": "margin-mapping",
+      "status": "falsified",
+      "title": "Margin mapping: per-row tipping dose along the known-unknown direction",
+      "type": "steer-cell",
+      "verdict": "Qwen mid-band margins are mechanistically real and correctly placed (P2, P3, C1 pass; retrodiction within 0.083) but the registered censoring-aware separation criterion fails (observable bound 2.0 vs floor 2.5), falsifying framework Claim 1 as registered at this operating point; mistral is void by instrument loss."
+    },
+    {
+      "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
+      "created_at": "2026-07-17T17:41:27Z",
+      "falsifier": "With all gates valid, the merged confab median lands above the 0.6x rung, giving a point-estimate bound below 2.5 (the median can fall between rungs, so failing bounds are not restricted to on-rung values): the separation failure is real at fine resolution, and Claim 1 remains falsified at this operating point with the quantization excuse removed.",
+      "inputs": [
+        "experiments/margin-mapping/analysis-committed/subsample_ids_qwen35_4b.json",
+        "experiments/margin-mapping/analysis/margin_dataset/qwen35_4b_margin_rows.jsonl",
+        "experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_0p5.jsonl",
+        "experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_0p75.jsonl",
+        "experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_1p5.jsonl",
+        "experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_2.jsonl"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {
+          "cell.yaml": "cc40b4327489d118ab3e105ba721538ac1e72e9632d4ae4e61f1350350dee849",
+          "gates.yaml": "45ea8f4f525257b81dfc44179aa440ce6c5f33b5cbcc6eb5eae35236fd7f6ab4"
+        }
+      },
+      "kg": [
+        "experiment:margin-separation-fine-ladder",
+        "mechanism:qwen-midband-margin-separation-is-instrument-resolution-limited"
+      ],
+      "prediction": "The merged confab median margin falls at or below the 0.6x rung (7.564912750679985 dose_abs), the observable bound reaches the registered 2.5 floor with both legs passing, and Claim 1's separation holds as registered at the qwen mid-band operating point.",
+      "question": "Was M1's censoring-aware separation failure (observable bound 2.0 vs floor 2.5) real, or an artifact of coarse ladder quantization that made the floor unreachable? At fine resolution inside the critical bracket (0.5x, 0.75x], does the merged confab median fall at or below the 0.6x rung where the bound reaches exactly 2.5?",
+      "registered": true,
+      "slug": "margin-separation-fine-ladder",
+      "status": "null-result",
+      "title": "Margin separation at fine ladder resolution (M1b)",
+      "type": "steer-cell",
+      "verdict": "qwen mid-band commitment-margin separation is instrument-resolution-limited at the boundary: M1's Claim 1 falsification (observable bound 2.0 vs floor 2.5) stands, and the fine-ladder retest halted at its pre-registered RG0 drift check establishes that the miss is neither a clean quantization artifact nor a clean real separation but sits within the bf16 instrument's own ~4% batch-composition classification noise. No separation criterion was computed; halted at RG0, PI-decided no rework."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
@@ -2044,6 +2890,211 @@
       "title": "Amendment AG — Oracle Dissociation of the Second-Person Doubt Prime",
       "type": "historical-amendment",
       "verdict": "RESOLVED — ASYMMETRIC COMPLIANCE: muzzle obeyed +34.0pt, release resisted (+7.9pt below gate); doubt axis unmoved and anti-semantic; compliance travels through the caution axis."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-14T23:00:14Z",
+      "falsifier": "Pre-stated numeric criterion, fixed before the run: a family sign SURVIVES iff f_s >= 0.80 AND bootstrap 95% LCB(f_s) > 0.50 AND |median| >= 3.0 pts in the committed direction; RETIRED iff f_s <= 0.60 OR the census IQR spans zero; INDETERMINATE otherwise. The prediction is falsified per family by landing in a different bucket than called (e.g. mistral clearing f_pos >= 0.80 with median >= +3.0 falsifies the seed-noise call; qwen failing f_neg >= 0.80 or IQR spanning zero retires the suppression reading). No rescoring lane; goalposts fixed.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "detector_v2.py",
+          "detector_v2_patterns.yaml",
+          "grader.py",
+          "common.py",
+          "config.py",
+          "render.py",
+          "gen_lib.py",
+          "steer_lib.py",
+          "staging.py",
+          "llama_setpoint_provenance.py",
+          "row_pool.py",
+          "subsample.py",
+          "direction_draw.py",
+          "sc1_checks.py",
+          "criterion.py",
+          "build_pool.py",
+          "heldback_decoys.py",
+          "apply_adjudication.py",
+          "gates_lib.py",
+          "run_census.py",
+          "sc1_ledger_summary.py",
+          "paired_delta.py",
+          "report.py",
+          "test_census_smoke.py",
+          "test_report_smoke.py"
+        ],
+        "pins": {
+          "apply_adjudication.py": "76348e047a65bd6e320b3708dae9c17d1433146efa1211532d0f061138a0dce7",
+          "build_pool.py": "2627cee359a1d01db4890e8cea1c13e364be5b6b8cfff18a6a9465d82c6cff68",
+          "cell.yaml": "b97191388cdc2077a9652fa6aa4d4e7c90fdbe1d7c4ec8d5e542f8fe9ef5e420",
+          "common.py": "1259e51b4b26e38156d5d5c0ee8cd8c3510dfcc0e24ec99c87ea04445bde2026",
+          "config.py": "dc9f43d2f6efb05a5a93fe7146aa69dd71107dd490959b40b8826c21850b4419",
+          "criterion.py": "4aa178a4556084671a9b65b5be1157ac80d4a25150b1d5ce85a60c407d2a9aa7",
+          "detector_v2.py": "161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae",
+          "detector_v2_patterns.yaml": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
+          "direction_draw.py": "ade97b9f7152a3a527194f119f680faf7f72c6268dbc259ab754a1d8f9e72a26",
+          "gates.yaml": "a66e228f49ee8560d7cc75f5035aa438ae84b6127bda8025d01c01b41719aca9",
+          "gates_lib.py": "905b61a56c2e12937cfd2214af3da18fd9fabe241e52edbba2e6f7f1479e9b1d",
+          "gen_lib.py": "846b6a257723f4e72e87376c5c6293aed3b4a580a3e261b88f4d17b45da9b3fa",
+          "grader.py": "eb395542d4163c05417f303df04782e2ebcdcd104b5181aa0af2e966b93b1df9",
+          "heldback_decoys.py": "15420fd1d9b0772e4bf29f4c71f9785b5d2b240ebc36f825dca8dcb1fdd30c94",
+          "llama_setpoint_provenance.py": "50ae84ef97f41c05f1138daec5167ba678f6eb79eedbc98f811f4d5ef5ed2886",
+          "paired_delta.py": "169322a857795737f5417fa1f3f95462e5ac8f640be7def6ea600487aba9077b",
+          "render.py": "f256f0bf7073df9981a0e3d68b2b0ae24edff7000193fe7e8325299cc4d277e3",
+          "report.py": "271299a1e539c8b4838589f2a4eb1135e61545a9439c26983e0a032ffba253cc",
+          "row_pool.py": "c78511c19072111f0042ddc266748eb6ef2ed326b6bef8bb81effd19746f24c2",
+          "run_census.py": "b24071e13cd699a2df2d5c1db74a124b6c7f9c06a9f765e8445caf785b85488a",
+          "sc1_checks.py": "ea3944837cc5a63f66cde5a78de65421c144fe810552914fe865d0b7c115b972",
+          "sc1_ledger_summary.py": "08d98ba689943f08d5a64f8ed003b050155cb59387e48ad2dddd7f5e0baa6507",
+          "staging.py": "1c8340e361d143f57ed36076d289bc3bfcf090321a8c6ce39842f6672963adba",
+          "steer_lib.py": "abf01536a69f01e72ae89abccb8f079a8d1b080fe30c0e46f5946c42a5817493",
+          "subsample.py": "f8b2ab0b2f7a16133e9d622fcba8a247bf7134f14c61df0e88124e8b80595fa1",
+          "test_census_smoke.py": "e0fd705ba701d19153f9bcf57eb404c44d80da6c7d5ff7d2806cd04770f8b6ba",
+          "test_report_smoke.py": "1cf7820a2de6efbfa78f3181672c697ce93fd038e6c4d6606dd2e8f9838ce532"
+        },
+        "repins": [
+          {
+            "date": "2026-07-15T00:38:22Z",
+            "file": "cell.yaml",
+            "new_sha256": "b97191388cdc2077a9652fa6aa4d4e7c90fdbe1d7c4ec8d5e542f8fe9ef5e420",
+            "old_sha256": "593e08d3d6bb5990876f902505839d6d8452019b8c41c012c85b70918ca5c12c",
+            "reason": "Pre-run user-approved correction 2026-07-14: SC1 readback tolerance absolute 0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity 0.004 with readback-vs-target accuracy and contradicted the qwen precedent 12.625 vs 12.608 = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16% relative offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon YAML syntax fix. No dosed generation had run; falsifier, criterion, seeds, setpoints untouched."
+          },
+          {
+            "date": "2026-07-15T00:38:22Z",
+            "file": "gates.yaml",
+            "new_sha256": "a66e228f49ee8560d7cc75f5035aa438ae84b6127bda8025d01c01b41719aca9",
+            "old_sha256": "2d0c069ef28b4c727bcb76b7ddefec3fb92a51cf96c9235edbb5ffb67e98b96a",
+            "reason": "Pre-run user-approved correction 2026-07-14: SC1 readback tolerance absolute 0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity 0.004 with readback-vs-target accuracy and contradicted the qwen precedent 12.625 vs 12.608 = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16% relative offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon YAML syntax fix. No dosed generation had run; falsifier, criterion, seeds, setpoints untouched."
+          },
+          {
+            "date": "2026-07-15T00:38:22Z",
+            "file": "config.py",
+            "new_sha256": "37db4177a6e844b404db625e960b9dccbe9ba666a4a682ab7cc6f99c2b8adba4",
+            "old_sha256": "f18a65bebf02c104ec09f96407a2b9f3b839a00b3531e80575e17263632f2825",
+            "reason": "Pre-run user-approved correction 2026-07-14: SC1 readback tolerance absolute 0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity 0.004 with readback-vs-target accuracy and contradicted the qwen precedent 12.625 vs 12.608 = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16% relative offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon YAML syntax fix. No dosed generation had run; falsifier, criterion, seeds, setpoints untouched."
+          },
+          {
+            "date": "2026-07-15T00:38:22Z",
+            "file": "sc1_checks.py",
+            "new_sha256": "ea3944837cc5a63f66cde5a78de65421c144fe810552914fe865d0b7c115b972",
+            "old_sha256": "bb80a011c1aab9d45d43ed011dc9084e1298358ef7b756e829c0367e9d3e16d4",
+            "reason": "Pre-run user-approved correction 2026-07-14: SC1 readback tolerance absolute 0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity 0.004 with readback-vs-target accuracy and contradicted the qwen precedent 12.625 vs 12.608 = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16% relative offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon YAML syntax fix. No dosed generation had run; falsifier, criterion, seeds, setpoints untouched."
+          },
+          {
+            "date": "2026-07-15T00:38:22Z",
+            "file": "test_census_smoke.py",
+            "new_sha256": "f10db86902295521eb00dbd0e514f3d72a7abd2d790987ec7565a9c36d071b62",
+            "old_sha256": "b2d0b0c4d3ec54369e25df946cb76de69e2b4632c93e4965284284671c9b7160",
+            "reason": "Pre-run user-approved correction 2026-07-14: SC1 readback tolerance absolute 0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity 0.004 with readback-vs-target accuracy and contradicted the qwen precedent 12.625 vs 12.608 = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16% relative offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon YAML syntax fix. No dosed generation had run; falsifier, criterion, seeds, setpoints untouched."
+          },
+          {
+            "date": "2026-07-15T14:11:38Z",
+            "file": "config.py",
+            "new_sha256": "dc9f43d2f6efb05a5a93fe7146aa69dd71107dd490959b40b8826c21850b4419",
+            "old_sha256": "37db4177a6e844b404db625e960b9dccbe9ba666a4a682ab7cc6f99c2b8adba4",
+            "reason": "Builder-2 full-scale capabilities, lead-reviewed post-hoc: run-family driver additions in the already-repinned modules (BATCH_SIZE=4 lead decision recorded in config.py; test updates for pass-checkpoint durability, decoy filters, and batch-size pin presence). Builder updated the pins map without appending the audit entry; this entry restores repin-trail continuity. Registered values untouched."
+          },
+          {
+            "date": "2026-07-15T14:11:38Z",
+            "file": "test_census_smoke.py",
+            "new_sha256": "e0fd705ba701d19153f9bcf57eb404c44d80da6c7d5ff7d2806cd04770f8b6ba",
+            "old_sha256": "f10db86902295521eb00dbd0e514f3d72a7abd2d790987ec7565a9c36d071b62",
+            "reason": "Builder-2 full-scale capabilities, lead-reviewed post-hoc: run-family driver additions in the already-repinned modules (BATCH_SIZE=4 lead decision recorded in config.py; test updates for pass-checkpoint durability, decoy filters, and batch-size pin presence). Builder updated the pins map without appending the audit entry; this entry restores repin-trail continuity. Registered values untouched."
+          },
+          {
+            "date": "2026-07-15T15:24:26Z",
+            "file": "report.py",
+            "new_sha256": "271299a1e539c8b4838589f2a4eb1135e61545a9439c26983e0a032ffba253cc",
+            "old_sha256": "736165cd4da8c0211ac3428bb14499bd688cafa14cc5607f4e86fc29e75abf45",
+            "reason": "Post-unblind defect correction to the registered rule verbatim: report.py joined over the adjudication output alone, silently dropping every detector-refused row from the paired join as missing, violating cell.yaml write_law.final_rate_rule (detector_v2_refused OR adjudicated_abstention, per row) and the AMENDMENT Behavioral readout definition. Fix merges runlog refused_v2 flags with blinded adjudication values per arm; accepted seeds now read from the committed sc1_ledger_summary; per-seed detector-refused counts reported. test_report_smoke.py fixtures now write runlog files with refused_v2 flags and pin the rule (detector-refused rows join as refused_final True; non-refused ungraded rows stay missing). Defect found post-unblind from the n_missing anomaly and the baseline-rate inconsistency vs the AMENDMENT's own cited baseline hedge rates; correction implements the pre-registered rule, no criterion/gate/threshold change. 60/60 CPU tests pass."
+          },
+          {
+            "date": "2026-07-15T15:24:26Z",
+            "file": "test_report_smoke.py",
+            "new_sha256": "1cf7820a2de6efbfa78f3181672c697ce93fd038e6c4d6606dd2e8f9838ce532",
+            "old_sha256": "f7a35de2bea6902fa505ad0055f28376dcda7adb6eb05598390660b8c437e53e",
+            "reason": "Post-unblind defect correction to the registered rule verbatim: report.py joined over the adjudication output alone, silently dropping every detector-refused row from the paired join as missing, violating cell.yaml write_law.final_rate_rule (detector_v2_refused OR adjudicated_abstention, per row) and the AMENDMENT Behavioral readout definition. Fix merges runlog refused_v2 flags with blinded adjudication values per arm; accepted seeds now read from the committed sc1_ledger_summary; per-seed detector-refused counts reported. test_report_smoke.py fixtures now write runlog files with refused_v2 flags and pin the rule (detector-refused rows join as refused_final True; non-refused ungraded rows stay missing). Defect found post-unblind from the n_missing anomaly and the baseline-rate inconsistency vs the AMENDMENT's own cited baseline hedge rates; correction implements the pre-registered rule, no criterion/gate/threshold change. 60/60 CPU tests pass."
+          }
+        ]
+      },
+      "kg": [
+        "experiment:placebo-seed-distribution-census",
+        "mechanism:matched-magnitude-placebo-sign-survives-as-distributional-property",
+        "mechanism:single-seed-placebo-delta-is-a-noisy-draw-from-a-wide-family-distribution",
+        "mechanism:dosed-detector-refusal-channel-drives-genuine-placebo-recruitment"
+      ],
+      "prediction": "Qwen suppression SURVIVES (fraction of seeds negative >= 0.80, median <= -3.0 pts); mistral recruitment RETIRED (fraction positive < 0.80, distribution straddles zero, per RR3's -7.4..+21.8 three-seed spread); llama centers near zero with no dominant sign (null control holds).",
+      "question": "What is the per-family DISTRIBUTION of matched-magnitude random-direction wide-instrument abstention deltas across K=15 fresh seeds (qwen hs20 at dose_abs 12.608, mistral hs16 at 3.665, llama hs20 at 12 sigma_c), and does each family's single-seed placebo-sign reading (qwen -5.13 suppression, mistral +7.39 recruitment, llama +0.1 null) survive as a distributional property or retire to seed noise?",
+      "registered": true,
+      "slug": "placebo-seed-distribution-census",
+      "status": "resolved",
+      "title": "Placebo seed-distribution census: multi-seed random-direction null at matched magnitude",
+      "type": "steer-cell",
+      "verdict": "At matched magnitude, random-direction placebos are sign-consistent rather than seed noise in all three families: qwen suppression SURVIVES robustly (14/15 negative, median -6.0), mistral recruitment SURVIVES at the exact 12/15 boundary (median +7.0, falsifying both predictors' registered RETIRED call), and null-control llama shows a newly discovered negative sign (12/15, median -7.7)."
+    },
+    {
+      "checkpoint": {
+        "repo": "(none; CPU-only re-read of persisted artifacts, no model loaded)",
+        "revision": ""
+      },
+      "created_at": "2026-07-14T17:19:16Z",
+      "falsifier": "The mechanism reading is falsified if the answerable-vs-unanswerable difference in pre-generation doubt/caution projection (M1) is statistically indistinguishable within every family (bootstrap 95% CI on the standardized mean difference spans 0 in every family and both directions). At the behavioral subtype resolution, if a single kuq subcategory carries the entire qwen suppression while others are flat, the \"question type is inert\" reading is falsified for qwen. The answerable-vs-unanswerable BEHAVIORAL contrast cannot be confirmed or falsified from existing data (qwen n=17, mistral/QL/llama n=0 dosed) and is deferred to rr3-corrected-placebo-replication.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "common.py",
+          "staging.py",
+          "frame_port.py",
+          "behavioral_leg.py",
+          "mechanism_leg.py",
+          "report.py",
+          "run_mechanism.py",
+          "test_signflip_smoke.py"
+        ],
+        "pins": {
+          "behavioral_leg.py": "be6539853c2e646b87d877b172474be5ee2b9c95ef913f81c5691cca3d29e41b",
+          "cell.yaml": "c29c3373cfb629c37572759fa369e812116fc52ba8875d0bd88565f100f8744c",
+          "common.py": "853a212e0773017b01f8ced4f2de50d638199e0ba42016e02dc37933187fd60f",
+          "frame_port.py": "4536fde43b0e79968717cffd57ec90e56e5030dc4ee602693d91c7715391f721",
+          "gates.yaml": "af871c5e1b7d4733cd0eeb23717a4f9f93f7648e2b64da1a95cc42ba32c7c18d",
+          "mechanism_leg.py": "8e3c6fcc43fd2d0bf9841d065a99d4b2925d26772f83f997b8e528377402c2b5",
+          "report.py": "564b381d6228e7f4a162eaa5933ade30855ba9e26be5856414cbb9d6956090d5",
+          "run_mechanism.py": "8687062fc647d872f48b6940b22c9bf4be9bc20a09f0c188a1415efd0861fa74",
+          "staging.py": "6f4a0bffbc4c75cac294c63263b8138449c4c1a45f47d7f27996bacb69e07422",
+          "test_signflip_smoke.py": "79fe72f6f752d2c8db8416cd26fa5ac69056fecd903f926c8f68ce3db0b4bc6d"
+        }
+      },
+      "kg": [],
+      "prediction": "Question type does NOT explain the cross-family placebo sign difference: the sign is measured entirely on the unanswerable stratum in both families, so it cannot be attributed to question-type mixing. At the mechanism level, unanswerable prompts sit higher than answerable prompts on the pre-generation doubt/caution axis in every family (M1), and within the unanswerable stratum the higher-baseline family (mistral) recruits while the headroom family (qwen) suppresses (M2 consistency); realized random displacement onto the caution axis does not differ by question type within a family (M3).",
+      "question": "Does question type (answerable triviaqa/popqa vs unanswerable kuq) modulate or explain the family-specific SIGN of the random-direction placebo response certified by the wide-instrument calibration (qwen suppresses -5.13 pts, mistral recruits +7.39 pts), analyzed CPU-only over existing generation text, committed wide grades, and pre-generation anchor hidden states?",
+      "registered": true,
+      "repins": [
+        {
+          "date": "2026-07-14",
+          "file": "frame_port.py",
+          "new_sha256": "4536fde43b0e79968717cffd57ec90e56e5030dc4ee602693d91c7715391f721",
+          "old_sha256": "306a76c9ffbe2fe5321939c33497acdf5986311a66ce591153f44b9160e777bd",
+          "reason": "Post-sign check-scope correction, lead-adjudicated after both families' BG1 real-data fire-set checks failed. Diagnosis (independently re-derived by the lead): the mistral check scored all 3037 anchor rows but the pipeline gate-evaluated only the 1694-row held-out roster (restricted mismatches 0/1694); the llama check counted unconditionally-dosed known rows as missed fires (restricted confab-only mismatches 1/581 hs20, 0/581 hs22, 0/581 hs23). Checks corrected to the populations the pipelines actually gate-evaluated; llama fire-set now also gates at the same 1% tolerance. No change to the frame math, gates, or any analysis code path."
+        }
+      ],
+      "slug": "placebo-signflip-question-type-analysis",
+      "status": "resolved",
+      "title": "Placebo sign-flip: question-type stratification of the family-specific random-direction response",
+      "type": "lab-diagnostic",
+      "verdict": "Question type does not explain the cross-family placebo sign difference (registered mechanism falsifier untriggered; M1 doubt-axis separation confirmed in all three families under the frozen gate's operational convention), but the subtype-inert reading is falsified for qwen: future-unknown carries the entire suppression (-24.7 pts vs -2.8 or smaller elsewhere), is mistral's largest recruitment (+11.8), and is the pre-generation projection outlier in both families."
     },
     {
       "checkpoint": {
@@ -2261,6 +3312,99 @@
       "title": "Protocol Amendment M: Quantile-Balanced Probe-Distilled Stated Confidence (SFT)",
       "type": "historical-amendment",
       "verdict": "FALSIFIER FIRED — behavior PASSED 4/4 (action margin +31pt) but calibration failed (correctness AUROC 0.504, 3 distinct values); scalar collapsed onto the action; bottleneck is channel/loss, not target."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "64033659d5caf1b8ed7f929b29de705e93a4d468"
+      },
+      "created_at": "2026-07-21T02:19:42Z",
+      "falsifier": "Fires if the profile peak lands in the outer 20% of depth on either end (early- or late-exterior, as in llama, mistral, and gemma), or if no layer inside (20%, 85%) depth reaches held-out AUROC >= 0.80 on all three axes simultaneously. See AMENDMENT.md \"Falsifier\" for the full registered wording.",
+      "inputs": [
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json",
+        "experiments/qwen3-4b-family-atlas/unknown_refused_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "render_qwen3_atlas.py",
+          "capture_family_atlas_cell.py",
+          "profile_and_read_family_atlas_panel.py",
+          "derive_unknown_refused_manifest.py",
+          "materialize_rows.py",
+          "rebuild_expansion_candidates.py"
+        ],
+        "persistence": {
+          "capture_family_atlas_cell.py": {
+            "checkpoint_path": "experiments/qwen3-4b-family-atlas/analysis/qwen3_4b_raw_base/atlas_capture/checkpoint.json",
+            "note": "Satisfied at the tuner layer, same mechanism gemma-4-e4b-family-atlas declared for its byte-identical copy of this script: `cmd_capture` shells out to `tuner.py batch-capture --resume`, whose `hf-batched` engine writes a fsync'd checkpoint.json (verified directly in this worktree at synaptic-tuner/tuner/batch/persistence.py -- CHECKPOINT_FILENAME = \"checkpoint.json\", _fsync_file/_fsync_dir helpers) inside the run's own --out-dir (analysis/qwen3_4b_raw_base/atlas_capture/, per this cell's cell_id) after each captured row.",
+            "persistence": "incremental"
+          },
+          "derive_unknown_refused_manifest.py": {
+            "measured_smoke_wall_clock_s": 1.196,
+            "note": "One-shot pre-sign derivation, already executed to completion (see NOTEBOOK.md); output already committed as unknown_refused_manifest.json. Re-run timed at 1.196s wall clock (fetches the already-cached source pool, applies the filter rule, cross-checks, writes ~1029 small JSON rows) -- deterministic and reproducible (re-run output sha256 identical to the committed file). Not part of the capture-launch critical path; declared here only to satisfy `bin/exp validate`'s persistence-declaration check.",
+            "persistence": "short-run"
+          },
+          "materialize_rows.py": {
+            "measured_smoke_wall_clock_s": 0.89,
+            "note": "Measured directly against the real committed manifests (1768 rows): 0.89s wall clock (two hf_hub_download cache-hit fetches + one call into rebuild_expansion_candidates.py's deterministic chain + a plain JSON join, no model/tokenizer load). RESOLVED (was a known gap in an earlier pre-sign pass): the 341 known_correct_answered row_keys the staging pool alone could not resolve are now recovered via rebuild_expansion_candidates.py (see that module's own persistence entry below and NOTEBOOK.md 2026-07-21 recovery entry for the full gate results). Current run: missing_question=0 across all 1768 rows (confab 309/309, known_correct_answered 430/430, unknown_refused 1029/1029). No longer a capture-launch blocker.",
+            "persistence": "short-run"
+          },
+          "profile_and_read_family_atlas_panel.py": {
+            "measured_smoke_wall_clock_s": 71.27,
+            "note": "Measured at this cell's ACTUAL pool scale (not a projection): 1768 synthetic rows (172 known_correct_answered fit + 258 held_out, 124 confab fit + 185 held_out, 1029 unknown_refused fit_only -- the real counts from the promoted split_manifest.json and this cell's own derived unknown_refused_manifest.json), 37 hidden states, hidden_dim=2560, 2000 bootstrap resamples, not the tiny smoke_family_atlas.py fixture (114 rows / 4 hidden states / hidden_dim=256). Build 2.57s + score 68.70s = 71.27s total, well under the 15-minute short-run ceiling. Script: /tmp/claude-1000/-mnt-f-Code-Epistemic-Humility-Research/292064d8-cb30-460a-ad90-29559ab5cf7f/scratchpad/time_profile_panel_realistic_scale_qwen3.py (scratchpad, not committed; adapted from gemma-4-e4b-family-atlas's own realistic-scale timing probe at the same scratchpad path). See NOTEBOOK.md.",
+            "persistence": "short-run"
+          },
+          "rebuild_expansion_candidates.py": {
+            "measured_smoke_wall_clock_s": 0.86,
+            "note": "Deterministic CPU rebuild of the Amendment AH stage-0 candidate chain (AF-600 pool -> candidates.jsonl -> expansion_candidates.jsonl), ported verbatim from three historical/archived scripts with only input paths adjusted (see the module's own docstring for full citations, including the abandoned-branch recovery of the AF-600 pool builder). 0.86s wall clock: all inputs are already-local dataset files plus one committed frozen manifest; no network beyond one cached HF fetch for the cross-check step. Self-verifying: 12 hard gates compare every stage's output composition against the original Amendment AH run's own committed manifests (professorsynapse/eh-doubt-on-command:metadata/*_manifest.json) plus a positive cross-check against already-verified real text (a0_pool_v21_questions.jsonl, 907 keys, 0 mismatches); all 12 PASS (see NOTEBOOK.md 2026-07-21 recovery entry for the full table and analysis/rebuild_verification.json, gitignored, for the raw gate output). Called directly by materialize_rows.py, not run standalone in the capture-launch critical path.",
+            "persistence": "short-run"
+          },
+          "render_qwen3_atlas.py": {
+            "measured_smoke_wall_clock_s": 6.525,
+            "note": "Measured directly (tokenizer load + 20 render() calls against the real pinned unsloth/Qwen3-4B tokenizer at revision 64033659d5caf1b8ed7f929b29de705e93a4d468, CPU-only, no model weights, synthetic placeholder questions only): 6.525s total. Scales linearly with the render-only row count in the atlas capture stage (1768 rows, this cell's actual pool size -- well under the 15-minute short-run ceiling even at full scale); the GPU-bound work in that stage is capture_family_atlas_cell.py's own batch-capture call, declared separately below.",
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "capture_family_atlas_cell.py": "a543a88f8d0f552476968c8e248af9ec61212034f203c17f530694910b0b9b50",
+          "cell.yaml": "695b79248fd7599eb87c93855899e97bc2f4a23978b904f083b64582083cce7d",
+          "derive_unknown_refused_manifest.py": "b6054a1f8eab474ff8171bc4f416f099d9365621e468e4e201d9f6bc7f47dee5",
+          "gates.yaml": "e30e0988a223e54f1324390d045a92863430af6bde8343e30649b87124ff0df4",
+          "materialize_rows.py": "b954677feda51b078d43269686137cac3a9e5ab8f04c3c7bfbb577d33dd79797",
+          "profile_and_read_family_atlas_panel.py": "27cd945c83df20416658a5370544ea99f1422f5717f3e67cffca82d418003ed5",
+          "rebuild_expansion_candidates.py": "06a3316d0133064d1106137be4dc034f13c881235c2162f24b15efbb7b614c65",
+          "render_qwen3_atlas.py": "07330a8322b467ebea7cb6707187e85fad49f0770c2d1718399419bd12028378"
+        },
+        "repins": [
+          {
+            "date": "2026-07-21T10:49:16Z",
+            "file": "render_qwen3_atlas.py",
+            "new_sha256": "07330a8322b467ebea7cb6707187e85fad49f0770c2d1718399419bd12028378",
+            "old_sha256": "9d57ecc35f834a97cb2070b83348f6ad92c9f3cbced2f50867643a42cbdc2355",
+            "reason": "Signed revision 1: original signed copy read only the cell-specific QWEN3_ATLAS_RENDER_MODEL/REVISION env vars, but the shared capture_family_atlas_cell.py exports FAMILY_ATLAS_RENDER_MODEL/REVISION from cell.yaml; first capture launch (capture_run1) crashed on row 1 with zero rows captured. Fix reads the shared FAMILY_ATLAS_* names first (same contract as render_gemma_atlas.py), keeps QWEN3_ATLAS_* as standalone-smoke fallback; rendered surface unchanged, CPU-smoked before repin. Lead-authored and adjudicated pre-run."
+          }
+        ]
+      },
+      "kg": [
+        "experiment:qwen3-4b-family-atlas",
+        "mechanism:eff-dim-peak-decoupled-from-readable-band",
+        "mechanism:workspace-band-peak-location-is-family-relative",
+        "mechanism:refused-vs-known-contrast-carries-norm-position-confound",
+        "mechanism:j-space-mediated-actuation-fragility",
+        "mechanism:epistemic-readouts-are-late-compression-summaries"
+      ],
+      "prediction": "Program-standard family-atlas prediction, kept deliberately: the eff_dim_frac profile peaks at an interior layer (inside 20%-85% of depth) and a contiguous band containing that peak holds all three axes (doubt, caution, raw_refusal) at held-out AUROC >= 0.80. See AMENDMENT.md \"Prediction\" and \"Predictions scoreboard\" for the two pre-sign calls (orchestrator: early-exterior peak + J-lens dissociation sub-call; user: interior peak).",
+      "question": "Where does raw-base Qwen3-4B's (unsloth/Qwen3-4B) workspace midband sit (eff_dim_frac profile over depth), and do the doubt, caution, and raw-refusal axes read there, supplying the family-atlas-standard layer map this substrate's own prior instrument (j-space-localization-qwen3-4b, a different JVP-based instrument) never measured?",
+      "registered": true,
+      "slug": "qwen3-4b-family-atlas",
+      "status": "resolved",
+      "title": "Qwen3-4B family atlas",
+      "type": "probe-fit",
+      "verdict": "FALSIFIER FIRED on the profile limb: eff_dim_frac peaks early-exterior at hs5/36 (depth 0.139), the 4th family (after llama, mistral, gemma) with an early-exterior dimensionality peak decoupled from a healthy interior three-axis read band (hs22-36 clear >=0.80 on doubt/caution/raw_refusal; caution+raw_refusal carry the band over their controls, doubt is norm/position confounded as in the other three families). Scoreboard: orchestrator WIN (early-exterior + J-lens-non-reproduction sub-call both correct) / user LOSS on the registered eff_dim_frac-peak call, with credit that the user's interior intuition is vindicated on the read panel. The eff_dim_frac profile and the read-axis panel dissociate cleanly on this family, resolving the apparent tension with j-space-localization-qwen3-4b's interior J-lens peak."
     },
     {
       "checkpoint": {
@@ -2628,6 +3772,81 @@
         "repo": "",
         "revision": ""
       },
+      "created_at": "2026-07-14T13:07:09Z",
+      "falsifier": "The direction-specificity claim is falsified if the effect ratio is < 3x, OR benefit fails (refusal < 0.60, or LCB <= 0.50, or well-formed < 0.80), OR cost fails (false refusal > 0.05, or UCB >= 0.10). No rescoring lane behind the blinded adjudication; goalposts do not move. Secondary tolerance and rider dose-response are descriptive and cannot falsify or rescue the primary verdict.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "detector_v2_patterns.yaml"
+        ],
+        "modules": [
+          "apply_adjudication.py",
+          "build_adjudication_pool.py",
+          "build_regrade.py",
+          "detector_v2.py",
+          "direction_fit.py",
+          "fit_reuse.py",
+          "gates_lib.py",
+          "gen_lib.py",
+          "grader.py",
+          "heldout_scorer.py",
+          "materialize_rows.py",
+          "pipeline.py",
+          "render.py",
+          "rg0_rr2_repro_check.py",
+          "rr3_scorer.py",
+          "steer_lib.py",
+          "test_rr3_smoke.py"
+        ],
+        "pins": {
+          "apply_adjudication.py": "6174b56808bda1ba53e97d50ad0661a7c571eb2c5f68c76d7c39f077d61b1c5b",
+          "build_adjudication_pool.py": "16a1815b2b6692bd4b9cb0369f96539f60f200f333a2a53fb5c11f107c224b13",
+          "build_regrade.py": "73e81caa345285c8e102c5ae31d0a3fab5eaedcc69ead5ddbda563a7c2973287",
+          "cell.yaml": "53cafc21f6ec21b149a2f9429bd412f7bf3c19eabd5dd5d01bc1cf0311cd23fa",
+          "detector_v2.py": "161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae",
+          "detector_v2_patterns.yaml": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
+          "direction_fit.py": "04f2996301be1c5bbdea0a865fb8685b1f4001b6e5a06a87c0ed196048d65d9a",
+          "fit_reuse.py": "9667a1b1df4f357c4a94dba94507676c7af4a1b7da56289d539c5d3b01312bfd",
+          "gates.yaml": "dddb379c81307d574ff5abeb3191c6abc13b4adda778667434069ed531d26151",
+          "gates_lib.py": "980bbc3942d8985d5e5306e42832cc3ff3f859e7c48803cd4f22a42492012e39",
+          "gen_lib.py": "32377162d2e8dd9850504d923ecf55be7b16d58aaa18115190f42b2a9b40ed1e",
+          "grader.py": "296784f0c7a23ba66cd00407677d2f2e073286a78dcb441330445783a8606676",
+          "heldout_scorer.py": "e744637fa35732608af59bd97a4a2efe8a9951e555ab011ea8d75e079901350a",
+          "materialize_rows.py": "7ecbced5acafa7d23feb6185e86443eb43937b0bb5dd57e383e69a63b916c35b",
+          "pipeline.py": "f41b3612aae2e11f300fbd007f886890075cf7ea7880866fb7a75e7fbee10be8",
+          "render.py": "43dc3d56d21eced272db64621152d311fe4eabce6863a6fe8f9fb4c9196b4866",
+          "rg0_rr2_repro_check.py": "79287ca067d6388e19edc57d44c5d02e52ccc5af7ed1e5148873bc429b94fa14",
+          "rr3_scorer.py": "b1b25e0ea837589de26a9c3c09993b5a569c5ffb1514828346ec5e1cd31b1187",
+          "steer_lib.py": "c78fd513b796dffd4f9808da7e5f2cc43d52625ad98850744c6bad1e91f29d23",
+          "test_rr3_smoke.py": "a48bbb717c0704453acbc066b4dd0f36454fcc36bf7dbd354bc9efe13e5be381"
+        },
+        "repins": [
+          {
+            "date": "2026-07-14",
+            "file": "rg0_rr2_repro_check.py",
+            "new_sha256": "79287ca067d6388e19edc57d44c5d02e52ccc5af7ed1e5148873bc429b94fa14",
+            "old_sha256": "none-new-module",
+            "reason": "Build gap closed post-sign, pre-adjudication: gates.yaml RG0 registers deterministic_repro_of_rr2_baseline_and_gated_text but the harness had no implementation. This read-only module compares RR3 core baseline and gated text to RR2's runlogs by row_key, byte-for-byte, hard stop on mismatch. Executed before any adjudication dispatch: PASS, 1694/1694 baseline and 1303/1303 gated identical, zero mismatches."
+          }
+        ]
+      },
+      "kg": [],
+      "prediction": "CORE (mistral): the gated-arm wide-instrument lift over baseline is >= 3x the MAXIMUM absolute random-arm lift over the K >= 3 fresh seeds (RG1, primary, max-over-K denominator), with benefit reproducing RR2 (adjudicated refusal >= 0.60, Wilson LCB > 0.50, well-formed >= 0.80) and cost clean (adjudicated false refusal <= 0.05, Wilson UCB < 0.10). Secondary tolerance +/- 8 points around each family's calibration-certified wide baseline. RIDER placebo-sign predictor CALLS remain TODO-for-PI-and-lead (scoreboard slots registered in AMENDMENT.md).",
+      "question": "Does the doubt-gated caution write actuate direction-specific, idiom-inclusive refusal on mistral at its atlas site (hs16, dose 12 sigma_c) under the wide instrument when direction specificity is judged by a corrected effect-ratio placebo criterion registered against the calibration wide-instrument baselines, and what is the placebo sign and dose-response across the mistral and (never-measured) llama families?",
+      "registered": true,
+      "slug": "rr3-corrected-placebo-replication",
+      "status": "falsified",
+      "title": "RR3: mistral gated-actuation confirm under corrected placebo + placebo-sign-map rider",
+      "type": "steer-cell",
+      "verdict": "FALSIFIED under the corrected effect-ratio placebo criterion: the mistral gated caution write is not direction-specific (effect ratio 1.87 < 3.0, max fresh-seed random lift +21.8 points) while benefit and cost reproduce RR2 (0.699 fired refusal, 0.005 false refusal), and the llama rider lands the family sign map's third point at null."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
       "inputs": [],
@@ -2920,6 +4139,52 @@
     },
     {
       "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
+      "created_at": "2026-07-17T16:12:45Z",
+      "falsifier": "Incremental AUROC of readout-plus-margin over readout alone below the registered floor (redundancy); or verbalized confidence matching or beating both internal channels; or the readout sanity floor failing (instrument void, no claim evaluated).",
+      "inputs": [
+        "experiments/margin-mapping/analysis-committed/subsample_ids_qwen35_4b.json",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json",
+        "experiments/doubt-snap-cross-family-confirmatory/analysis-committed/qwen35_4b/split_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {
+          "cell.yaml": "4dc5722c0c3f722200bc6df7c99abbb4ff914a6587fc2bbd389692264478c3bb",
+          "gates.yaml": "a19da59d4a9d232389724f5e99332ce874d45cd71ad6a4f1455f3486badaab54"
+        },
+        "repins": [
+          {
+            "date": "2026-07-17T17:13:12Z",
+            "file": "cell.yaml",
+            "new_sha256": "4dc5722c0c3f722200bc6df7c99abbb4ff914a6587fc2bbd389692264478c3bb",
+            "old_sha256": "d361224f2f800e28e7b10a10ee6bbc57c28c8a1241a90f9fd1ffd42be8c5a7cd",
+            "reason": "PI-approved pre-analysis sign clarification 2026-07-17: readout score = negative z-projection (lineage neg_z convention); S1 halt diagnosis in NOTEBOOK; no criterion quantity read before repin"
+          }
+        ]
+      },
+      "kg": [
+        "experiment:susceptibility-as-probe",
+        "mechanism:qwen-midband-readout-and-susceptibility-channels-are-redundant",
+        "mechanism:qwen-midband-verbalized-confidence-anti-tracks-answerability"
+      ],
+      "prediction": "The cross-fitted readout-plus-margin combination beats the readout alone by at least the registered incremental-AUROC floor, and both internal channels beat verbalized confidence.",
+      "question": "At the qwen mid-band operating point, does the susceptibility channel (the per-row commitment margin measured by M1) carry epistemic information that the frozen readout channel (the hs20 c_hat projection) misses, or are the two channels redundant views of one latent variable (framework Claim 3)?",
+      "registered": true,
+      "slug": "susceptibility-as-probe",
+      "status": "falsified",
+      "title": "Susceptibility as probe: margin vs readout vs verbalized confidence",
+      "type": "probe-fit",
+      "verdict": "The readout and susceptibility channels are redundant at the qwen mid-band operating point as registered (incremental AUROC 0.0154 vs floor 0.02, readout alone 0.982), with the margin's increment statistically real but sub-floor, and the verbalized confidence channel void by parse-rate gate and descriptively anti-predictive."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
@@ -3049,7 +4314,7 @@
       "status": "historical",
       "title": "Amendment U — Unified Single-Stream Two-Signal Mechanism (Dial-Veto on Unknowns)",
       "type": "historical-amendment",
-      "verdict": "SUCCESS — dial flags hallucinations as lowest-trust of all (U-G3 AUROC 0.980, within-SelfAware control 0.93); confident confabulation reads opposite to correctness."
+      "verdict": "CORRECTED BY CORRIGENDUM (2026-07-18): U-G3 hallucination labels were ~90% detector-artifact refusals (confirmed flip rate 90.1%); under corrected labels (n=12 instrument-corrected / n=8 census-corrected vs the pre-stated >=50 floor) U-G3 is UNPOWERED per the cell's own data-stage stop, descriptive AUROC 0.9067 / 0.8639; U-G1 stands (0.999). Original signed reading retained in AMENDMENT.md section 7: SUCCESS, U-G3 AUROC 0.980."
     },
     {
       "checkpoint": {

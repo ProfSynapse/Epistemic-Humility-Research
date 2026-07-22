@@ -1,0 +1,48 @@
+{
+  "native_auroc_reproduction": {
+    "abs_diff": 0.0435885416666667,
+    "fit_split_auroc": 0.8191614583333333,
+    "test_auroc": 0.86275,
+    "within_tolerance": true
+  },
+  "note": "NO true/false shift is computed here (self-blinding). Floor numerics above are PROPOSED (if_frozen_now); the actual freeze is a separate repin step reviewed before proceeding.",
+  "per_direction": {
+    "native": {
+      "baseline_auroc_confab_vs_correct": {
+        "bootstrap_ci_95": [
+          0.8359163194444444,
+          0.8875765625
+        ],
+        "n_boot": 10000,
+        "n_neg": 360,
+        "n_pos": 400,
+        "point": 0.86275,
+        "seed": 48260724
+      },
+      "baseline_gap_positive": true,
+      "baseline_gap_z": 1.6418426480916175,
+      "collapse_floor_z_if_frozen_now": 0.8209213240458088
+    },
+    "transfer": {
+      "baseline_auroc_confab_vs_correct": {
+        "bootstrap_ci_95": [
+          0.26474305555555555,
+          0.3396390625
+        ],
+        "n_boot": 10000,
+        "n_neg": 360,
+        "n_pos": 400,
+        "point": 0.3018263888888889,
+        "seed": 48260724
+      },
+      "baseline_gap_positive": false,
+      "baseline_gap_z": -0.18096579651231903,
+      "collapse_floor_z_if_frozen_now": -0.09048289825615952
+    }
+  },
+  "transfer_firing_gate": {
+    "fires": false,
+    "floor": 0.7,
+    "observed_auroc": 0.3018263888888889
+  }
+}

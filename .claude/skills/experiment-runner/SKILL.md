@@ -34,7 +34,7 @@ Always choose the narrowest reference needed for the task:
 | Prepare/gate hidden-state extraction | [reference/hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
 | Author a NEW steering / extraction / probe-fit / gate-scoring cell (tuner-backed) | the `mechinterp-cells` skill (`.skills/mechinterp-cells/SKILL.md`) |
 | Grade abstention/refusal in a gated harness (detector + blinded adjudication lane) | [reference/abstention-grading.md](reference/abstention-grading.md) |
-| Decide batch-1 vs batched generation for a GPU cell (parity rules, vLLM/HF lanes, numerics smoke) | [reference/batched-generation.md](reference/batched-generation.md) |
+| Select a generation or hidden-state backend (vLLM-first policy, parity exceptions, structured outputs, bridge smokes) | [reference/batched-generation.md](reference/batched-generation.md) |
 | Plan archived legacy mechinterp causal-pilot sweeps | [reference/legacy-mechinterp-causal-pilot-sweeps.md](reference/legacy-mechinterp-causal-pilot-sweeps.md) |
 | Record durable research-session memory | [reference/research-sessions.md](reference/research-sessions.md) |
 | Audit experiment/session provenance before migration | `python3 .agents/skills/experiment-runner/scripts/provenance_audit.py [--json]` |
@@ -74,9 +74,10 @@ operation, then follow any further routing inside that reference.
   OWN git worktree (`.worktrees/<branch>`) = one PR. NEVER swap branches in the
   primary working tree — live GPU queues and monitors run scripts from it in
   place. Do the full arc in that worktree (recipes, run records, scored
-  results, doc verdict), then PR into protected `main`; PRs still MERGE
-  serially, and never push to `main` directly. See
-  [reference/operator-discipline.md](reference/operator-discipline.md).
+  results, doc verdict), then PR into protected `main`. Amendments proceed in
+  PARALLEL, each in its own worktree; never stack a second amendment on
+  another amendment's branch or worktree, and never push to `main` directly.
+  See [reference/operator-discipline.md](reference/operator-discipline.md).
 - The no-pollution rule is sacrosanct: runner code may not import tuner
   internals, write committed files under `synaptic-tuner/`, or register
   Epistemic-specific tuner behavior. Ephemeral staging under already-gitignored
@@ -110,6 +111,38 @@ operation, then follow any further routing inside that reference.
   the persistence schema. Rationale and the H3 cautionary case live in the
   data-exhaust skill's "Build-time requirement" section. Containment is
   unchanged: text never leaves gitignored `analysis/`.
+- Backend choice is part of the evidence surface. New unsteered generation
+  prefers pinned vLLM with batch invariance; new full-depth extraction prefers
+  vLLM only after the model-specific HF bridge passes. Parity-locked cells keep
+  their registered backend. Read
+  [reference/batched-generation.md](reference/batched-generation.md) before
+  signing any GPU cell that generates or captures hidden states.
+- GPU smoke/preflight before every full generation run (PI standing directive
+  2026-07-16): before any full steering/generation run, execute a small-N
+  preflight on the SAME code path as the full run — a few rows per family at
+  the dose extremes (bottom rung, reference setpoint, top rungs), verifying
+  per-row readback against the commanded setpoint under the amendment's
+  registered tolerance and recording observed well-formedness at the extremes
+  as a collapse-location estimate. The full-run entrypoint REFUSES to start
+  unless the preflight wrote its pass marker (enforced in code, not by
+  convention), and live first-batch plus per-rung-completion assertions hard
+  abort mid-run on any readback violation. A preflight FAIL is a gate event
+  for the lead, never an operational retry: there is no retry-until-pass
+  (unlike CG1's explicit VOID_REGRADE_ONCE, readback has no registered retry
+  remedy), and any tolerance or rung change it motivates is a signed-config
+  amendment (repin, recorded reason, PI approval) made BEFORE generation.
+  Write tolerances with the instrument's physics in mind: bf16 readback
+  carries a roughly fixed ABSOLUTE error floor (~0.001-0.005 dose_abs
+  observed on Qwen3.5-4B hs20 / Mistral-7B hs16), so a purely RELATIVE
+  tolerance is unattainable at small absolute setpoints — prefer
+  "rel <= X OR abs <= X * reference_dose" so the gate keeps wiring-defect
+  detection power (defects like gain-squared exceed both bounds by >10x)
+  without tripping on quantization dust. Cautionary case: margin-mapping M1
+  (2026-07-17), whose preflight caught exactly this pre-run; NOTEBOOK entries
+  there record the full adjudication pattern. For how a multi-stage GPU
+  pipeline should be launched and chained around gates like this one, see the
+  mechinterp-cells launch discipline:
+  [../mechinterp-cells/reference/modal-launch.md](../mechinterp-cells/reference/modal-launch.md#long-gpu-stage-launch-discipline-no-detached-nohup).
 
 ## Matrix At A Glance
 

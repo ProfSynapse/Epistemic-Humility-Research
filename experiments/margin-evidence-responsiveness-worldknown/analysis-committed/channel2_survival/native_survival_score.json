@@ -1,0 +1,31 @@
+{
+  "baseline_staleness_check": {
+    "ceiling": 0.05,
+    "n": 51,
+    "no_answer_baseline_survival_rate": 0.2549019607843137,
+    "passed": false
+  },
+  "d2_absolute_floor_formula": "1.96 * sqrt(0.25 / n_margin_eligible)",
+  "d2_absolute_floor_if_frozen_now": 0.13722492664818098,
+  "direction": "native",
+  "n_margin_eligible": 51,
+  "note": "d2_absolute_floor is REPORTED here as 'if_frozen_now' for review; the ACTUAL frozen numeric requires a separate `bin/exp repin` of gates.yaml the MOMENT n_margin_eligible is realized (before this primary_test is computed) per gates.yaml rederived_floors.d2_absolute_floor -- self-blinding order, not this script's job to enforce retroactively.",
+  "point_estimate_ge_floor_if_frozen_now": false,
+  "primary_test_paired_diff_true_minus_false": {
+    "bootstrap_ci_95": [
+      -0.09803921568627451,
+      0.09803921568627451
+    ],
+    "excludes_zero": false,
+    "n": 51,
+    "n_boot": 10000,
+    "point": 0.0,
+    "seed": 48260724,
+    "statistic": "mean"
+  },
+  "survival_rates": {
+    "false_answer_placebo": 0.9411764705882353,
+    "no_answer_baseline": 0.2549019607843137,
+    "true_answer": 0.9411764705882353
+  }
+}

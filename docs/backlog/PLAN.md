@@ -5,9 +5,11 @@
 `TODO.md` at the repo root went stale (last substantive edit ~2026-06-26, before
 roughly 20 amendments landed). The project actually runs on **amendments**:
 pre-registered experiment cells under `experiments/<slug>/AMENDMENT.md`, each
-with a `Status:` line and (when run) a `## 8. Result` / `VERDICT:` section,
-executed one-at-a-time (one amendment = one branch = one PR, merged before the
-next branches). Proposed/queued work accretes in three scattered places —
+with a `Status:` line and (when run) a `## 8. Result` / `VERDICT:` section, each
+run in its own dedicated git worktree on its own branch, one branch = one PR
+(amendments proceed in parallel, each in its own worktree; never stacked on
+another amendment's branch or worktree). Proposed/queued work accretes in three
+scattered places:
 experiment docs, `docs/sessions/*.md` notes, and backlog notes — with no single
 prioritized index and no cheap way to keep one current.
 

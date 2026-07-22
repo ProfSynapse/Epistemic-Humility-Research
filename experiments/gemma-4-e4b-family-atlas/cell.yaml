@@ -1,0 +1,119 @@
+# gemma-4-e4b-family-atlas instrument config.
+# READ-ONLY mapping instrument at capture time: no steering, no interventions,
+# no writes to activations. UNLIKE the resolved jspace-family-atlas cells
+# (llama32_3b_instruct, mistral7b_instruct_v03), this substrate has NO
+# reusable committed split manifest under the family-atlas role/split
+# taxonomy: the doubt-snap-cross-family-confirmatory fleet defined a
+# `gemma4_e4b_it` cell in its own model_matrix.yaml (repo google/gemma-4-E4B-it
+# @ fee6332c1abaafb77f6f9624236c63aa2f1d0187, gated_access: false) but that
+# cell, and every other mid-tier/gemma cell, "were never launched (fleet
+# abandoned pre-launch)" -- experiments/doubt-snap-cross-family-confirmatory/
+# AMENDMENT.md lines 283-284. This cell therefore MINES a fresh pool per the
+# skill's fallback clause (SKILL.md step 2), reusing that fleet's own,
+# already-generic G0 prep machinery (prep_tuner_cell.py `prepare --cell-id
+# gemma4_e4b_it`, which already reads gemma4_e4b_it out of the fleet's
+# model_matrix.yaml) rather than writing a new mining pipeline. See
+# AMENDMENT.md "Row pool" for the full rationale and the exact mining
+# command. THE MINING RUN HAS NOT BEEN EXECUTED as of this draft; every
+# row-count field below is a projection from the two comparable, already-run
+# fleet cells (llama32_3b_instruct: 2956 rows; mistral7b_instruct_v03: 3037
+# rows), not a measured value, and is marked TBD.
+
+seed: 20260707  # fleet's own SEED constant (prep_tuner_cell.py); reused for pool shuffle + bootstrap parity with jspace-family-atlas
+bootstrap_resamples: 2000
+
+cells:
+  - cell_id: gemma4_e4b_it
+    family: gemma
+    repo: google/gemma-4-E4B-it
+    revision: fee6332c1abaafb77f6f9624236c63aa2f1d0187
+    # Verified via `AutoConfig.from_pretrained(..., revision=...)`.text_config
+    # (Gemma4ForConditionalGeneration is a multimodal wrapper; model_shape()
+    # in prep_tuner_cell.py already handles this via
+    # getattr(cfg, "text_config", cfg), so the fleet's own shape-detection
+    # code needs no change for this substrate).
+    num_hidden_layers: 42
+    hidden_size: 2560
+    # n_hidden_states = num_hidden_layers + 1 (index 0 = embeddings, 1..N =
+    # block outputs). Full depth means every one of these indices.
+    n_hidden_states: 43
+    # Fleet's ported comparator layer (registered rule: round(0.94 *
+    # (num_hidden_layers - 1)), 0-indexed decoder block; hs_index = block + 1;
+    # identical formula prep_tuner_cell.py:model_shape() computes).
+    # round(0.94 * 41) = round(38.54) = 39 -> hs_index 40.
+    ported_fleet_layer_idx_block: 39
+    ported_fleet_hs_index: 40
+    source:
+      fleet_experiment: doubt-snap-cross-family-confirmatory
+      fleet_cell_id: gemma4_e4b_it
+      # NOT reused verbatim (no committed split manifest exists for this
+      # cell); freshly mined via the fleet's own unlaunched-cell definition
+      # and its generic prep script.
+      mining_status: not_yet_run
+      mining_command: >-
+        python experiments/doubt-snap-cross-family-confirmatory/prep_tuner_cell.py
+        prepare --cell-id gemma4_e4b_it --batch-size <TBD, tune from smoke>
+      mining_env: "DOUBT_SNAP_RENDER_MODEL / DOUBT_SNAP_RENDER_REVISION set by prep_tuner_cell.py itself per its render_pool()"
+      row_pool_path: "experiments/doubt-snap-cross-family-confirmatory/analysis/gemma4_e4b_it/split_rows_private.jsonl  # produced by mining_command; does not exist yet"
+      split_manifest_committed_path: "experiments/doubt-snap-cross-family-confirmatory/analysis-committed/gemma4_e4b_it/split_manifest.json  # produced by mining_command; does not exist yet"
+      # PROJECTED, not measured -- extrapolated from the two comparable
+      # already-run fleet cells (same pool sources KUQ/TriviaQA/PopQA, same
+      # DEFAULT_MAX_ANSWERABLE=1600 / DEFAULT_MAX_UNANSWERABLE=2400 cap).
+      # Re-populate with real counts from split_manifest.json once mining
+      # actually runs; do not treat these as pool-adequacy evidence.
+      manifest_row_count_projected: "~2900-3100 (llama32_3b_instruct=2956, mistral7b_instruct_v03=3037)"
+      role_counts_projected: "not projectable per-role -- role assignment (confab vs known_correct_answered vs unknown_refused) depends on gemma-4-E4B-it's own baseline generation behavior, which has not been observed on this pool"
+
+capture:
+  # Manual tokenize + last-token position, mirroring
+  # doubt-snap-cross-family-confirmatory/prep_tuner_cell.py capture_anchor()
+  # exactly, and identical to jspace-family-atlas's own capture convention.
+  position_name: anchor
+  position_rule: "len(token_ids) - 1 (manual tokenize, add_special_tokens=True)"
+  layers: all  # synaptic-tuner batch-capture --layers all -> range(n_hidden_states), i.e. 0..42 inclusive
+  engine: hf-batched
+  persist_dtype: float32
+  render_fn: "render_gemma_atlas.py:render"
+  render_system_prompt_source: "ported verbatim from doubt-snap-cross-family-confirmatory/render.py BASELINE_SYSTEM_PROMPT"
+  no_re_mining: true   # true for the FULL-DEPTH ATLAS CAPTURE STAGE only, once the row pool below exists; the pool-mining stage IS new generation (see source.mining_command above) and is a separate, explicitly gated step
+  no_re_generation: true  # same caveat as no_re_mining
+  no_steering_hooks: true
+
+split:
+  # Will be produced by the fleet's own stratified_split() inside
+  # prep_tuner_cell.py `prepare`, using the SAME roles/labels convention
+  # jspace-family-atlas already consumes (assign_roles + stratified_split in
+  # prep_tuner_cell.py are cell-id-generic, not llama/mistral-specific).
+  source: freshly_mined_via_fleet_prep_script
+  labels: [fit, held_out, fit_only]
+  fit_only_roles: [unknown_refused]
+
+profile:
+  metric: eff_dim_frac
+  estimator: participation_ratio
+  # Byte-identical port of the estimator used by every prior family-atlas
+  # cell (participation ratio / n_samples on the FIT-row anchor hidden-state
+  # matrix). Not comparable to a JVP-based profile from a different
+  # instrument; comparable across this atlas's own cells only.
+  fit_rows_only: true
+
+read_panel:
+  axes:
+    doubt:
+      contrast: "known_correct_answered (positive) vs unknown_refused (negative)"
+      fit_definition: "unit(mean(H[known_correct_answered, FIT]) - mean(H[unknown_refused, refused_fit]))"
+      note: "scored on held-out known_correct_answered vs H[unknown_refused, refused_eval]; same construction as jspace-family-atlas's u_d."
+    caution:
+      contrast: "unknown_refused/refused (positive) vs confab (negative)"
+      fit_definition: "unit(mean(H[unknown_refused, refused_fit]) - mean(H[confab, FIT]))"
+      note: "pre-orthogonalization caution axis only, matching jspace-family-atlas's reporting (not c_hat)."
+    raw_refusal:
+      contrast: "unknown_refused/refused (positive) vs {confab UNION known_correct_answered}/answered (negative)"
+      fit_definition: "unit(mean(H[unknown_refused, refused_fit]) - mean(H[confab, FIT] + H[known_correct_answered, FIT]))"
+      note: "role fully determines refused/answered status; no additional private boolean fields needed beyond role."
+  fit_on: "FIT known/confab rows plus refused_fit"
+  score_on: "held-out known/confab rows plus refused_eval (two-sided held-out for every axis)"
+  bootstrap_resamples: 2000
+  bootstrap_seed: 20260707
+  metric: held_out_auroc
+  random_direction_control: true

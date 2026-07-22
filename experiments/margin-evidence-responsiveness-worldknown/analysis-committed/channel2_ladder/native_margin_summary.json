@@ -1,0 +1,71 @@
+{
+  "bracketing_report": {
+    "bottom_dose_abs": 0.5293333251305763,
+    "frac_confab_tipped_at_bottom_rung": 0.0225,
+    "frac_confab_tipping_censored": 0.8725,
+    "n_confab": 400,
+    "n_confab_tipped_at_bottom_rung": 9,
+    "n_confab_tipping_censored_at_top_rung": 349,
+    "note": "cell.yaml `channel2_margin.ladder_rebuild.bracketing_requirement`: the ladder rungs MUST bracket the observed tipping doses. A high frac_tipped_at_bottom_rung means the smallest rung is already too strong (bracketing concern from below); a high frac_tipping_censored means the largest rung is not strong enough (from above). REPORTED HERE, not gated -- re-deriving the ladder is a protocol decision reserved for lead adjudication, never silently done by this script.",
+    "top_dose_abs": 135.50933123342753
+  },
+  "direction": "native",
+  "ladder_doses_abs": [
+    0.5293333251305763,
+    1.0586666502611526,
+    2.117333300522305,
+    4.23466660104461,
+    6.3519999015669155,
+    8.46933320208922,
+    12.703999803133831,
+    16.93866640417844,
+    25.407999606267662,
+    33.87733280835688,
+    50.815999212535324,
+    67.75466561671377,
+    101.63199842507065,
+    135.50933123342753
+  ],
+  "ladder_multipliers": [
+    0.0625,
+    0.125,
+    0.25,
+    0.5,
+    0.75,
+    1.0,
+    1.5,
+    2.0,
+    3.0,
+    4.0,
+    6.0,
+    8.0,
+    12.0,
+    16.0
+  ],
+  "n_rows": 760,
+  "role_totals": {
+    "confab": 400,
+    "correct_on_answerable": 360
+  },
+  "sc3_zero_drop": {
+    "missing_by_row": {},
+    "n_rows_with_any_missing_rung": 0,
+    "unexpected_row_keys_by_rung_file": {}
+  },
+  "sc3b_censored_counts_raw": {
+    "collapse_censored": {
+      "confab": 0,
+      "correct_on_answerable": 0
+    },
+    "tipping_censored": {
+      "confab": 349,
+      "correct_on_answerable": 354
+    }
+  },
+  "sc3c_non_monotone_raw": {
+    "counts": {
+      "confab": 22,
+      "correct_on_answerable": 4
+    }
+  }
+}

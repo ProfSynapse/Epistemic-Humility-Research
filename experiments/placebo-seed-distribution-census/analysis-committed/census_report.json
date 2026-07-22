@@ -1,0 +1,1279 @@
+{
+  "families": {
+    "llama32_3b": {
+      "committed_sign": "none",
+      "complete": true,
+      "criterion": {
+        "committed_sign": "none",
+        "family": "llama32_3b",
+        "fraction_negative": 0.8,
+        "fraction_negative_bootstrap_ci_95": [
+          0.6,
+          1.0
+        ],
+        "fraction_positive": 0.2,
+        "fraction_positive_bootstrap_ci_95": [
+          0.0,
+          0.4
+        ],
+        "full_span": [
+          -12.0,
+          19.333333333333332
+        ],
+        "iqr": [
+          -9.333333333333332,
+          -1.9999999999999991
+        ],
+        "iqr_spans_zero": false,
+        "magnitude_floor_pts": 3.0,
+        "median_signed_delta_pts": -7.666666666666666,
+        "n_seeds": 15,
+        "verdict": "NEWLY_DISCOVERED_NEGATIVE_SIGN"
+      },
+      "family": "llama32_3b",
+      "n_detector_refused_baseline": 12,
+      "n_seeds_present": 15,
+      "n_seeds_registered": 15,
+      "per_seed": [
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": -9.333333333333332,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.07333333333333333,
+            "successes": 22,
+            "wilson_ci_95": [
+              0.04892399383922859,
+              0.10853134160571733
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 9,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000005
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": -7.666666666666666,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.09,
+            "successes": 27,
+            "wilson_ci_95": [
+              0.06259022560547936,
+              0.12777701079864834
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 19,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000006
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": -0.9999999999999981,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.15666666666666668,
+            "successes": 47,
+            "wilson_ci_95": [
+              0.11990681678878562,
+              0.2021080234520693
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 24,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000014
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": -5.999999999999998,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.10666666666666667,
+            "successes": 32,
+            "wilson_ci_95": [
+              0.07657584904594214,
+              0.14670328831736743
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 23,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000017
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": -10.666666666666666,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.06,
+            "successes": 18,
+            "wilson_ci_95": [
+              0.038286369524692054,
+              0.09283944515290843
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 5,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000019
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": -7.666666666666666,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.09,
+            "successes": 27,
+            "wilson_ci_95": [
+              0.06259022560547936,
+              0.12777701079864834
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 13,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000030
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": 19.333333333333332,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.36,
+            "successes": 108,
+            "wilson_ci_95": [
+              0.30776933517318583,
+              0.4157706967696869
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 97,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000037
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": -10.333333333333332,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.06333333333333334,
+            "successes": 19,
+            "wilson_ci_95": [
+              0.040916882383915276,
+              0.09679131248552161
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 5,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000043
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": 6.333333333333336,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.23,
+            "successes": 69,
+            "wilson_ci_95": [
+              0.18597181807303015,
+              0.28085538638822466
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 50,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000049
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": -3.666666666666665,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.13,
+            "successes": 39,
+            "wilson_ci_95": [
+              0.09657536941275233,
+              0.17278042929341172
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 28,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000051
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": -9.333333333333332,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.07333333333333333,
+            "successes": 22,
+            "wilson_ci_95": [
+              0.04892399383922859,
+              0.10853134160571733
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 10,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000052
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": -12.0,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.04666666666666667,
+            "successes": 14,
+            "wilson_ci_95": [
+              0.027998933682334012,
+              0.07679736022792105
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 3,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000054
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": -3.0,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.13666666666666666,
+            "successes": 41,
+            "wilson_ci_95": [
+              0.10236514609208625,
+              0.1801554129977505
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 9,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000055
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": 0.6666666666666682,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.17333333333333334,
+            "successes": 52,
+            "wilson_ci_95": [
+              0.13470060049746765,
+              0.22022614070256905
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 35,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000056
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.16666666666666666,
+            "successes": 50,
+            "wilson_ci_95": [
+              0.1287653312036807,
+              0.21299664961268325
+            ]
+          },
+          "delta_pts": -9.0,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.07666666666666666,
+            "successes": 23,
+            "wilson_ci_95": [
+              0.051627611786607464,
+              0.1124101038501748
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 19,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 43000057
+        }
+      ],
+      "setpoint_dose_abs": 13.51434840261836
+    },
+    "mistral7b_v03": {
+      "committed_sign": "positive",
+      "complete": true,
+      "criterion": {
+        "committed_sign": "positive",
+        "f_s": 0.8,
+        "f_s_bootstrap_ci_95": [
+          0.6,
+          1.0
+        ],
+        "family": "mistral7b_v03",
+        "full_span": [
+          -7.999999999999999,
+          20.333333333333336
+        ],
+        "iqr": [
+          1.1666666666666687,
+          13.666666666666666
+        ],
+        "iqr_spans_zero": false,
+        "magnitude_floor_pts": 3.0,
+        "median_signed_delta_pts": 7.000000000000001,
+        "n_seeds": 15,
+        "verdict": "SURVIVES"
+      },
+      "family": "mistral7b_v03",
+      "n_detector_refused_baseline": 45,
+      "n_seeds_present": 15,
+      "n_seeds_registered": 15,
+      "per_seed": [
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": 5.66666666666667,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.34,
+            "successes": 102,
+            "wilson_ci_95": [
+              0.2887202040964927,
+              0.395325546695362
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 50,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000004
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": 1.3333333333333364,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.2966666666666667,
+            "successes": 89,
+            "wilson_ci_95": [
+              0.24781139053784687,
+              0.35066341776013515
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 46,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000005
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": -4.999999999999999,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.23333333333333334,
+            "successes": 70,
+            "wilson_ci_95": [
+              0.18902823823172718,
+              0.28438134642136403
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 40,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000006
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": 16.333333333333332,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.44666666666666666,
+            "successes": 134,
+            "wilson_ci_95": [
+              0.39143715496049114,
+              0.503244761970127
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 81,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000008
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": -1.0000000000000009,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.2733333333333333,
+            "successes": 82,
+            "wilson_ci_95": [
+              0.22600557283569578,
+              0.3263925741194317
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 42,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000012
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": 12.666666666666664,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.41,
+            "successes": 123,
+            "wilson_ci_95": [
+              0.35582394979935006,
+              0.4664517850210681
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 105,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000013
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": 13.666666666666666,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.42,
+            "successes": 126,
+            "wilson_ci_95": [
+              0.3655060253806384,
+              0.4765168500152888
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 87,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000014
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": 1.6666666666666663,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.3,
+            "successes": 90,
+            "wilson_ci_95": [
+              0.2509396637848768,
+              0.35411752470494157
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 38,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000015
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": 1.0000000000000009,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.29333333333333333,
+            "successes": 88,
+            "wilson_ci_95": [
+              0.24468634082804494,
+              0.34720608727810065
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 59,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000017
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": 7.000000000000001,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.35333333333333333,
+            "successes": 106,
+            "wilson_ci_95": [
+              0.30140830066923496,
+              0.40896697088996514
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 48,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000019
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": 13.666666666666666,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.42,
+            "successes": 126,
+            "wilson_ci_95": [
+              0.3655060253806384,
+              0.4765168500152888
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 84,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000021
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": -7.999999999999999,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.20333333333333334,
+            "successes": 61,
+            "wilson_ci_95": [
+              0.16167385164165787,
+              0.25249431128490607
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 27,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000024
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": 20.333333333333336,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.4866666666666667,
+            "successes": 146,
+            "wilson_ci_95": [
+              0.43063449599449377,
+              0.5430359832381607
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 115,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000026
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": 10.666666666666668,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.39,
+            "successes": 117,
+            "wilson_ci_95": [
+              0.3365300216309911,
+              0.446251432038409
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 59,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000030
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.2833333333333333,
+            "successes": 85,
+            "wilson_ci_95": [
+              0.2353308526310286,
+              0.33681443489960794
+            ]
+          },
+          "delta_pts": 16.333333333333332,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.44666666666666666,
+            "successes": 134,
+            "wilson_ci_95": [
+              0.39143715496049114,
+              0.503244761970127
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 105,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 42000032
+        }
+      ],
+      "setpoint_dose_abs": 3.6653166050691754
+    },
+    "qwen35_4b": {
+      "committed_sign": "negative",
+      "complete": true,
+      "criterion": {
+        "committed_sign": "negative",
+        "f_s": 0.9333333333333333,
+        "f_s_bootstrap_ci_95": [
+          0.8,
+          1.0
+        ],
+        "family": "qwen35_4b",
+        "full_span": [
+          -8.333333333333334,
+          0.6666666666666667
+        ],
+        "iqr": [
+          -6.833333333333334,
+          -3.6666666666666674
+        ],
+        "iqr_spans_zero": false,
+        "magnitude_floor_pts": 3.0,
+        "median_signed_delta_pts": -6.000000000000001,
+        "n_seeds": 15,
+        "verdict": "SURVIVES"
+      },
+      "family": "qwen35_4b",
+      "n_detector_refused_baseline": 17,
+      "n_seeds_present": 15,
+      "n_seeds_registered": 15,
+      "per_seed": [
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": -8.0,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.02,
+            "successes": 6,
+            "wilson_ci_95": [
+              0.009197631557703617,
+              0.042939620817860576
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 2,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000001
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": -8.0,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.02,
+            "successes": 6,
+            "wilson_ci_95": [
+              0.009197631557703617,
+              0.042939620817860576
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 2,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000002
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": -4.666666666666667,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.05333333333333334,
+            "successes": 16,
+            "wilson_ci_95": [
+              0.03309191251909646,
+              0.08486914177483133
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 5,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000004
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": -6.666666666666668,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.03333333333333333,
+            "successes": 10,
+            "wilson_ci_95": [
+              0.01820494733885481,
+              0.06026182580405482
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 7,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000005
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": -6.000000000000001,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.04,
+            "successes": 12,
+            "wilson_ci_95": [
+              0.023027321487942308,
+              0.06860421203864003
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 4,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000008
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": -1.0000000000000009,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.09,
+            "successes": 27,
+            "wilson_ci_95": [
+              0.06259022560547936,
+              0.12777701079864834
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 12,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000009
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": -6.666666666666668,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.03333333333333333,
+            "successes": 10,
+            "wilson_ci_95": [
+              0.01820494733885481,
+              0.06026182580405482
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 4,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000014
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": -6.000000000000001,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.04,
+            "successes": 12,
+            "wilson_ci_95": [
+              0.023027321487942308,
+              0.06860421203864003
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 2,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000019
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": -4.000000000000001,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.06,
+            "successes": 18,
+            "wilson_ci_95": [
+              0.038286369524692054,
+              0.09283944515290843
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 14,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000028
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": -7.000000000000001,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.03,
+            "successes": 9,
+            "wilson_ci_95": [
+              0.01586185380943231,
+              0.05602253914164096
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 5,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000032
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": 0.6666666666666667,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.10666666666666667,
+            "successes": 32,
+            "wilson_ci_95": [
+              0.07657584904594214,
+              0.14670328831736743
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 25,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000036
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": -8.333333333333334,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.016666666666666666,
+            "successes": 5,
+            "wilson_ci_95": [
+              0.00713947735063333,
+              0.0384153948330945
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 3,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000037
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": -5.0,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.05,
+            "successes": 15,
+            "wilson_ci_95": [
+              0.03053164062934728,
+              0.08084703347274415
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 9,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000041
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": -3.333333333333334,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.06666666666666667,
+            "successes": 20,
+            "wilson_ci_95": [
+              0.043567515545158274,
+              0.10072305951611496
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 14,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000044
+        },
+        {
+          "baseline_rate": {
+            "n": 300,
+            "rate": 0.1,
+            "successes": 30,
+            "wilson_ci_95": [
+              0.07094791459501532,
+              0.1391664623846215
+            ]
+          },
+          "delta_pts": -3.333333333333334,
+          "dosed_rate": {
+            "n": 300,
+            "rate": 0.06666666666666667,
+            "successes": 20,
+            "wilson_ci_95": [
+              0.043567515545158274,
+              0.10072305951611496
+            ]
+          },
+          "missing_row_keys": [],
+          "n_detector_refused_dosed": 11,
+          "n_missing": 0,
+          "n_paired": 300,
+          "seed": 41000047
+        }
+      ],
+      "setpoint_dose_abs": 12.608187917799976
+    }
+  },
+  "subsample_permutation_seed": null
+}

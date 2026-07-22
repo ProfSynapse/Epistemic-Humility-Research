@@ -5,6 +5,16 @@ a claims surface; the signed prose lives in `AMENDMENT.md` and the machine state
 in `experiment.yaml`.
 
 ## Entries
+- 2026-07-14 (lead, HF exhaust publication). Data-exhaust dataset published
+  with explicit user approval to
+  professorsynapse/eh-doubt-snap-cross-family-confirmatory, HF revision
+  91e572f4440ab46f14109afb18c42e76bb9fbba5. Built with the copy-everything
+  builder (PR #292) from analysis-committed/ into
+  scratch/exhaust-backfill-v2/doubt-snap-cross-family-confirmatory/ (36
+  payload files, ~3.8 MB, verify-exhaust PASS including the completeness
+  check against the experiment dir). Supersedes the v1 build, which was
+  missing modal_status.json per family cell. Registered in
+  docs/public-artifacts.md.
 
 - 2026-07-12 (resolve): Outcome written and the manifest set to resolved,
   now that the held-for comparator landed: `qwen35-4b-midband-doubt-snap`
@@ -372,3 +382,4 @@ in `experiment.yaml`.
   selection while preserving the signed scientific instrument.
 
 - (add dated entries as the experiment progresses)
+

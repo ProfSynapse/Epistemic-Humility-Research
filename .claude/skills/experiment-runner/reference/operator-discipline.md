@@ -21,18 +21,17 @@ skill:
   `bin/exp resolve` at the verdict, plus skill notes. Open a PR into `main`, and
   remove the worktree after merge (`git worktree remove`). The pre-commit hook
   validates every manifest and regenerates `experiments/REGISTRY.md`, so run
-  `bin/exp regen` and stage it whenever a manifest changes. PR MERGE ORDER still
-  serializes through `main` — merge the in-flight amendment's PR before the
-  next amendment's PR — but a later amendment MAY branch and start
-  non-GPU/registration work in parallel in its own worktree when the user
-  directs it; rebase or merge `main` into it after the earlier PR lands. Do
-  not let any branch accumulate long-lived divergence (Amendment R reached 14
-  commits off `main` before landing — the anti-pattern this rule exists to
-  prevent). `main` is protected: open a PR, never push or commit to it
-  directly. Exception: lab-notebook smokes / diagnostics / re-runs that belong
-  to the IN-FLIGHT amendment ride its branch; only a genuinely new amendment
-  must start clean off `origin/main`. Cross-worktree gotcha: a file edited but
-  not yet committed in one worktree is invisible to the others — commit (or
+  `bin/exp regen` and stage it whenever a manifest changes. Amendments proceed
+  in PARALLEL, each in its own dedicated worktree: never stack a second
+  amendment on another amendment's branch or worktree, and never push amendment
+  evidence directly to `main`. Do not let any branch accumulate long-lived
+  divergence (Amendment R reached 14 commits off `main` before landing, the
+  anti-pattern this rule exists to prevent). `main` is protected: open a PR,
+  never push or commit to it directly. Exception: lab-notebook smokes /
+  diagnostics / re-runs that belong to the IN-FLIGHT amendment ride its branch;
+  only a genuinely new amendment must start clean off `origin/main` (in its own
+  worktree, not the in-flight amendment's). Cross-worktree gotcha: a file edited
+  but not yet committed in one worktree is invisible to the others, commit (or
   copy) before referencing it from another tree.
 - **No-pollution rule (SACROSANCT).** The runner communicates with the tuner
   ONLY through (1) the materialized recipe YAML and (2) the tuner's public CLI

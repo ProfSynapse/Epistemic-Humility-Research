@@ -1,0 +1,190 @@
+{
+  "family": "mistral7b_v03",
+  "layer_hs_index": 16,
+  "model": "mistralai/Mistral-7B-Instruct-v0.3",
+  "n_rows": 8,
+  "peak_rss_mb": 8081.3359375,
+  "peak_vram_mb": 14103.955078125,
+  "revision": "c170c708c41dac9275d15a8fff4eca08d52bab71",
+  "sc1_ledger": {
+    "n_accepted": 2,
+    "n_voids": 3
+  },
+  "seeds_used": [
+    42000017,
+    42000019
+  ],
+  "setpoint_dose_abs": 3.6653166050691754,
+  "smokes": {
+    "real_steer_plus_readback": {
+      "passed": true,
+      "readback_checks": [
+        {
+          "abs_delta": 0.005889640624435533,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.671206245693611,
+          "seed": 42000017,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.00619223422653592,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.6715088392957114,
+          "seed": 42000017,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.005880040165710643,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.671196645234886,
+          "seed": 42000017,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.005637190441110551,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.670953795510286,
+          "seed": 42000017,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.005848276354289528,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.671164881423465,
+          "seed": 42000017,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.005467887689509343,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.670784492758685,
+          "seed": 42000017,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.0058474537272457106,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.671164058796421,
+          "seed": 42000017,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.005777368443876885,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.6710939735130523,
+          "seed": 42000017,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.006764324041558911,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.6720809291107344,
+          "seed": 42000019,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.00524479636623143,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.670561401435407,
+          "seed": 42000019,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.006050684047285149,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.6713672891164606,
+          "seed": 42000019,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.006083185291562376,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.671399790360738,
+          "seed": 42000019,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.005930902576427588,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.671247507645603,
+          "seed": 42000019,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.006120720632669663,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.671437325701845,
+          "seed": 42000019,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.005751788159603866,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.6710683932287793,
+          "seed": 42000019,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.005461682490921493,
+          "family": "mistral7b_v03",
+          "passed": true,
+          "readback_measured": 3.670778287560097,
+          "seed": 42000019,
+          "target": 3.6653166050691754,
+          "tolerance": 0.01
+        }
+      ]
+    },
+    "runlog_persistence_schema": {
+      "all_smoke_rows_in_done_keys": true,
+      "n_rows_in_log": 8,
+      "no_new_lines_appended_on_resume_call": true,
+      "passed": true,
+      "schema_mismatches": [],
+      "schema_passed": true
+    },
+    "sequential_vs_batch_parity": {
+      "mismatches": [
+        {
+          "batched_text_len": 232,
+          "index": 5,
+          "row_key": "kuq_unknowns_all:1025",
+          "sequential_text_len": 257
+        }
+      ],
+      "n_mismatches": 1,
+      "n_rows": 8,
+      "passed": false
+    }
+  }
+}

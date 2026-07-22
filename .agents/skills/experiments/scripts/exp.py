@@ -57,6 +57,12 @@ RESOLVED_STATES = frozenset({"resolved", "null-result", "falsified", "historical
 # are not caught by SIGNED_PLUS.
 PIN_CHECK_STATUSES = SIGNED_PLUS | {"historical"}
 
+# Persistence declaration modes for instrument.modules (see
+# _module_persistence_problems). A killed run that buffered results in memory
+# and wrote output only at the end loses the whole run; every module a signed
+# instrument executes must say up front how it survives a kill.
+PERSISTENCE_MODES = ("incremental", "short-run")
+
 GENERATED_HEADER = "GENERATED - do not edit; run bin/exp regen and stage the result"
 
 # GitHub project the pr field links into (used only for REGISTRY.md rendering).
@@ -171,6 +177,7 @@ def _manifest_template(slug: str, exp_type: str, title: str | None = None) -> di
             "configs": [],
             "modules": [],
             "pins": {},
+            "persistence": {},
         },
         "inputs": [],
         "verdict": "",
@@ -261,6 +268,84 @@ _GATES_TEMPLATE = """# TODO: replace this placeholder with pre-stated gates.
 
 # --- validation --------------------------------------------------------------
 
+def _module_persistence_problems(instrument: dict) -> list[str]:
+    """Return human-readable problems with instrument.modules persistence
+    declarations (empty = every module is covered).
+
+    Each entry in ``instrument.modules`` must have a matching key in the
+    parallel ``instrument.persistence`` mapping (keyed by the same module
+    relpath, the same shape as ``instrument.pins``) declaring either:
+
+    - ``persistence: incremental`` with a non-empty ``checkpoint_path``, or
+    - ``persistence: short-run`` with a numeric ``measured_smoke_wall_clock_s``.
+
+    Modules are the bespoke harness scripts a cell runs (extraction, grading,
+    analysis passes); a config-only instrument (``instrument.modules: []``)
+    has nothing to declare. Callers decide whether a problem is a hard error
+    or a warning based on the manifest's status (see _validate_manifest and
+    cmd_sign).
+    """
+    modules = instrument.get("modules") or []
+    persistence = instrument.get("persistence") or {}
+    if not isinstance(persistence, dict):
+        return ["instrument.persistence must be a mapping keyed by module relpath"]
+    problems: list[str] = []
+    for rel in modules:
+        rel = str(rel)
+        entry = persistence.get(rel)
+        if entry is None:
+            problems.append(
+                f"module {rel!r} has no persistence declaration (add "
+                f"instrument.persistence.{rel!r} with persistence: "
+                "incremental|short-run)"
+            )
+            continue
+        if not isinstance(entry, dict):
+            problems.append(f"instrument.persistence[{rel!r}] must be a mapping")
+            continue
+        mode = entry.get("persistence")
+        if mode not in PERSISTENCE_MODES:
+            problems.append(
+                f"instrument.persistence[{rel!r}].persistence must be one of "
+                f"{', '.join(PERSISTENCE_MODES)}, got {mode!r}"
+            )
+            continue
+        if mode == "incremental":
+            checkpoint_path = entry.get("checkpoint_path")
+            if not (isinstance(checkpoint_path, str) and checkpoint_path.strip()):
+                problems.append(
+                    f"instrument.persistence[{rel!r}]: checkpoint_path must be a "
+                    "non-empty string for persistence: incremental"
+                )
+        else:  # short-run
+            wall_clock = entry.get("measured_smoke_wall_clock_s")
+            if not isinstance(wall_clock, (int, float)) or isinstance(wall_clock, bool):
+                problems.append(
+                    f"instrument.persistence[{rel!r}]: measured_smoke_wall_clock_s must "
+                    "be a number for persistence: short-run"
+                )
+    return problems
+
+
+def _is_untracked_data_input(rel: str) -> bool:
+    """True when an input path lives under an experiment's gitignored data dir.
+
+    Each experiment carries an untracked ``analysis/`` scratch dir and a
+    gitignored ``directions/`` data dir (see the module docstring). Inputs that
+    point into either are run-materialized data: present in the canonical
+    checkout and sha256-verified by SC0 staging at run time, but legitimately
+    absent in a fresh linked worktree or a clean clone. Their absence must not
+    block a commit that does not even touch that experiment. Tracked locations
+    such as ``analysis-committed/`` are NOT matched and stay strictly enforced.
+    """
+    parts = Path(rel).parts
+    return (
+        len(parts) >= 4
+        and parts[0] == EXPERIMENTS_DIRNAME
+        and parts[2] in ("analysis", "directions")
+    )
+
+
 def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[str]:
     """Return a list of human-readable problems for one manifest (empty = ok)."""
     problems: list[str] = []
@@ -311,6 +396,18 @@ def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[s
     if not isinstance(repins, list):
         err("instrument.repins must be a list")
         repins = []
+
+    # Persistence declarations (kill-resume safety): required per module, but
+    # `validate` only ever WARNS about a missing one, at every status,
+    # including draft. The hard-enforcement point is `cmd_sign`, which
+    # refuses to pin an instrument missing one; that is the mandatory gate
+    # every new experiment already passes before it can run. Warning-only in
+    # validate means a stale draft that predates this field (or was run
+    # informally without ever going through `exp sign`, e.g. a Tier-2
+    # exploratory cell) never starts failing validate retroactively; nothing
+    # here can move a manifest's goalposts after the fact.
+    for p in _module_persistence_problems(instrument):
+        print(f"exp validate: warning: {slug}: {p}", file=sys.stderr)
 
     inputs = data.get("inputs", []) or []
     if not isinstance(inputs, list):
@@ -381,11 +478,26 @@ def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[s
                 f"{new[:12]}... does not match pin {str(pins[rel])[:12]}..."
             )
 
-    # Inputs: repo-relative paths that must exist.
+    # Inputs: repo-relative paths that must exist. Inputs under an experiment's
+    # gitignored data dirs (``analysis/`` scratch, ``directions/`` data) are
+    # run-materialized: present in the canonical checkout and sha256-verified by
+    # SC0 staging at run time, but legitimately absent in a fresh linked worktree
+    # or clean clone. A missing one is a non-fatal warning (to stderr) rather
+    # than a commit-blocking error, so a commit that does not touch that
+    # experiment is never blocked by data it never needed. Tracked inputs
+    # (configs, analysis-committed manifests, dataset cards) must still exist.
     for rel in inputs:
         ipath = root / str(rel)
-        if not ipath.exists():
-            err(f"input path does not exist: {rel}")
+        if ipath.exists():
+            continue
+        if _is_untracked_data_input(str(rel)):
+            print(
+                f"exp validate: warning: {slug}: gitignored data input absent "
+                f"(ok in a worktree/clean clone; sha-staged at run time): {rel}",
+                file=sys.stderr,
+            )
+            continue
+        err(f"input path does not exist: {rel}")
 
     # KG ids must resolve to real library nodes.
     if kg:
@@ -604,6 +716,15 @@ def cmd_sign(root: Path, slug: str) -> int:
     if not pin_targets:
         raise ExpError(
             f"{slug}: instrument.configs is empty; list the instrument files before signing"
+        )
+
+    persistence_problems = _module_persistence_problems(instrument)
+    if persistence_problems:
+        raise ExpError(
+            f"{slug}: instrument.modules has missing/invalid persistence "
+            "declarations; a signed instrument must state up front how each "
+            "module survives a kill (see the experiments SKILL.md persistence "
+            "section):\n  - " + "\n  - ".join(persistence_problems)
         )
 
     pins: dict[str, str] = {}

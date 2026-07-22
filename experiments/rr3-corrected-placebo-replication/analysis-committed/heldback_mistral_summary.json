@@ -1,0 +1,35 @@
+{
+  "family": "mistral",
+  "n_fit_known": 255,
+  "n_well_formed_correct_and_non_refused_v2_candidates": 255,
+  "v2": {
+    "n": 255,
+    "not_well_formed_correct": {
+      "n": 255,
+      "rate": 0.0,
+      "successes": 0,
+      "wilson_ci_95": [
+        8.673617379884035e-19,
+        0.014840971914608158
+      ]
+    },
+    "refused": {
+      "n": 255,
+      "rate": 0.0,
+      "successes": 0,
+      "wilson_ci_95": [
+        8.673617379884035e-19,
+        0.014840971914608158
+      ]
+    },
+    "well_formed": {
+      "n": 255,
+      "rate": 0.996078431372549,
+      "successes": 254,
+      "wilson_ci_95": [
+        0.9781248795102228,
+        0.9993074110999899
+      ]
+    }
+  }
+}

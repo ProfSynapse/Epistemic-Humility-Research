@@ -390,7 +390,10 @@ label DPO looks better calibrated than SFT (MAE 0.303 vs 0.424) because it is
 confident on more known rows; against actual answer correctness it is much
 worse (MAE 0.616 vs 0.282; Brier 0.564 vs 0.260) because many of its
 confident answers are wrong. Repositioning toward answering *feels* like
-confidence from the outside, and it is exactly the failure C1 predicts.
+confidence from the outside, and it is exactly the failure C1 predicts; this is the
+same seam the program's readout paper later formalizes as two dissociable axes, an
+answerability gate and a correctness dial ([*It's What's on the Inside That
+Counts*](../paper-4-two-signal-readout/manuscript.md)).
 
 ![[figures/fig-p1-05-stated-confidence.png]]
 
@@ -708,8 +711,9 @@ headline surface (PROTOCOL v0.3, signed 2026-06-10); Amendments A/B are signed
 prospective extensions; Amendments D/E/F/J are exploratory single-seed
 evidence cells with pre-stated predictions and falsifiers, reported here as
 exploratory and never pooled with the headline block. The confidence-channel
-training variants (proper-scoring GRPO, contrastive SFT, RL-on-contrastive;
-Amendments J/K/N) and the probe program are reported in full in the
+training variants (proper-scoring GRPO, contrastive SFT, RL-on-contrastive,
+and their descendants; the confidence-channel amendment set, Amendments
+J/K/L/M/N) and the probe program are reported in full in the
 companion diagnosis paper, [*Knows but Doesn't
 Say*](../paper-3-knows-but-doesnt-say/manuscript.md); the readout work is reported
 in [*It's What's on the Inside That

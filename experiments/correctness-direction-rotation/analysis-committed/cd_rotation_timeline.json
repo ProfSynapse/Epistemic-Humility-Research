@@ -1,0 +1,1488 @@
+{
+  "layers": {
+    "L0": {
+      "stages": {
+        "raw": {
+          "auroc": 0.5355,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.5965,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.6391,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.5916,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.0998,
+        "cleansft->grpov2": 0.1518,
+        "grpov2->partrue": -0.0168,
+        "raw_vs_grpov2": -0.0633,
+        "cleansft_vs_grpov2": 0.1518,
+        "partrue_vs_grpov2": -0.0168
+      },
+      "split_half_cosine_grpov2": 0.1028,
+      "instruct_to_grpov2_bracket_cosine": -0.0489
+    },
+    "L1": {
+      "stages": {
+        "raw": {
+          "auroc": 0.6717,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.6375,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.6757,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.6447,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": -0.0689,
+        "cleansft->grpov2": 0.2114,
+        "grpov2->partrue": 0.0554,
+        "raw_vs_grpov2": -0.0277,
+        "cleansft_vs_grpov2": 0.2114,
+        "partrue_vs_grpov2": 0.0554
+      },
+      "split_half_cosine_grpov2": 0.1673,
+      "instruct_to_grpov2_bracket_cosine": 0.0516
+    },
+    "L2": {
+      "stages": {
+        "raw": {
+          "auroc": 0.6998,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.6626,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.6808,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.6237,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.012,
+        "cleansft->grpov2": 0.3421,
+        "grpov2->partrue": 0.203,
+        "raw_vs_grpov2": -0.0102,
+        "cleansft_vs_grpov2": 0.3421,
+        "partrue_vs_grpov2": 0.203
+      },
+      "split_half_cosine_grpov2": 0.0607,
+      "instruct_to_grpov2_bracket_cosine": -0.0299
+    },
+    "L3": {
+      "stages": {
+        "raw": {
+          "auroc": 0.7513,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.6658,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.6984,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.6412,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.017,
+        "cleansft->grpov2": 0.2936,
+        "grpov2->partrue": 0.1492,
+        "raw_vs_grpov2": 0.025,
+        "cleansft_vs_grpov2": 0.2936,
+        "partrue_vs_grpov2": 0.1492
+      },
+      "split_half_cosine_grpov2": 0.3356,
+      "instruct_to_grpov2_bracket_cosine": -0.0921
+    },
+    "L4": {
+      "stages": {
+        "raw": {
+          "auroc": 0.7604,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.6761,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.6957,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.6262,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.0677,
+        "cleansft->grpov2": 0.1359,
+        "grpov2->partrue": 0.234,
+        "raw_vs_grpov2": 0.1132,
+        "cleansft_vs_grpov2": 0.1359,
+        "partrue_vs_grpov2": 0.234
+      },
+      "split_half_cosine_grpov2": 0.3619,
+      "instruct_to_grpov2_bracket_cosine": 0.034
+    },
+    "L5": {
+      "stages": {
+        "raw": {
+          "auroc": 0.7555,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.6433,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.6709,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.6384,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.0934,
+        "cleansft->grpov2": 0.2222,
+        "grpov2->partrue": 0.1461,
+        "raw_vs_grpov2": 0.0247,
+        "cleansft_vs_grpov2": 0.2222,
+        "partrue_vs_grpov2": 0.1461
+      },
+      "split_half_cosine_grpov2": 0.2329,
+      "instruct_to_grpov2_bracket_cosine": -0.0448
+    },
+    "L6": {
+      "stages": {
+        "raw": {
+          "auroc": 0.76,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.6527,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.691,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.6204,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.201,
+        "cleansft->grpov2": 0.1583,
+        "grpov2->partrue": 0.0788,
+        "raw_vs_grpov2": -0.0386,
+        "cleansft_vs_grpov2": 0.1583,
+        "partrue_vs_grpov2": 0.0788
+      },
+      "split_half_cosine_grpov2": 0.2216,
+      "instruct_to_grpov2_bracket_cosine": 0.1394
+    },
+    "L7": {
+      "stages": {
+        "raw": {
+          "auroc": 0.7718,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.694,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7054,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.6467,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1189,
+        "cleansft->grpov2": 0.2018,
+        "grpov2->partrue": 0.1221,
+        "raw_vs_grpov2": -0.0305,
+        "cleansft_vs_grpov2": 0.2018,
+        "partrue_vs_grpov2": 0.1221
+      },
+      "split_half_cosine_grpov2": 0.3005,
+      "instruct_to_grpov2_bracket_cosine": 0.109
+    },
+    "L8": {
+      "stages": {
+        "raw": {
+          "auroc": 0.7766,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.6866,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7107,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.6509,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.0216,
+        "cleansft->grpov2": 0.2361,
+        "grpov2->partrue": 0.1421,
+        "raw_vs_grpov2": -0.0567,
+        "cleansft_vs_grpov2": 0.2361,
+        "partrue_vs_grpov2": 0.1421
+      },
+      "split_half_cosine_grpov2": 0.1007,
+      "instruct_to_grpov2_bracket_cosine": 0.0702
+    },
+    "L9": {
+      "stages": {
+        "raw": {
+          "auroc": 0.7773,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7012,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7091,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.6516,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.0289,
+        "cleansft->grpov2": 0.2565,
+        "grpov2->partrue": 0.1506,
+        "raw_vs_grpov2": 0.0243,
+        "cleansft_vs_grpov2": 0.2565,
+        "partrue_vs_grpov2": 0.1506
+      },
+      "split_half_cosine_grpov2": 0.0915,
+      "instruct_to_grpov2_bracket_cosine": 0.0931
+    },
+    "L10": {
+      "stages": {
+        "raw": {
+          "auroc": 0.7674,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.6997,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7035,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.6607,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": -0.0004,
+        "cleansft->grpov2": 0.1268,
+        "grpov2->partrue": 0.1245,
+        "raw_vs_grpov2": -0.1124,
+        "cleansft_vs_grpov2": 0.1268,
+        "partrue_vs_grpov2": 0.1245
+      },
+      "split_half_cosine_grpov2": 0.1091,
+      "instruct_to_grpov2_bracket_cosine": 0.2116
+    },
+    "L11": {
+      "stages": {
+        "raw": {
+          "auroc": 0.7744,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7123,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.692,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.6973,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.0772,
+        "cleansft->grpov2": 0.2864,
+        "grpov2->partrue": 0.0689,
+        "raw_vs_grpov2": 0.0232,
+        "cleansft_vs_grpov2": 0.2864,
+        "partrue_vs_grpov2": 0.0689
+      },
+      "split_half_cosine_grpov2": 0.2191,
+      "instruct_to_grpov2_bracket_cosine": 0.098
+    },
+    "L12": {
+      "stages": {
+        "raw": {
+          "auroc": 0.7891,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.714,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.6894,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.6988,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.0189,
+        "cleansft->grpov2": 0.246,
+        "grpov2->partrue": 0.1328,
+        "raw_vs_grpov2": -0.0256,
+        "cleansft_vs_grpov2": 0.246,
+        "partrue_vs_grpov2": 0.1328
+      },
+      "split_half_cosine_grpov2": 0.0859,
+      "instruct_to_grpov2_bracket_cosine": 0.1257
+    },
+    "L13": {
+      "stages": {
+        "raw": {
+          "auroc": 0.795,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7226,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.6872,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7159,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.0316,
+        "cleansft->grpov2": 0.2474,
+        "grpov2->partrue": 0.1857,
+        "raw_vs_grpov2": 0.1172,
+        "cleansft_vs_grpov2": 0.2474,
+        "partrue_vs_grpov2": 0.1857
+      },
+      "split_half_cosine_grpov2": 0.0537,
+      "instruct_to_grpov2_bracket_cosine": 0.1594
+    },
+    "L14": {
+      "stages": {
+        "raw": {
+          "auroc": 0.7937,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7374,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7211,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7335,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1183,
+        "cleansft->grpov2": 0.2942,
+        "grpov2->partrue": 0.1878,
+        "raw_vs_grpov2": 0.1027,
+        "cleansft_vs_grpov2": 0.2942,
+        "partrue_vs_grpov2": 0.1878
+      },
+      "split_half_cosine_grpov2": 0.0666,
+      "instruct_to_grpov2_bracket_cosine": 0.1461
+    },
+    "L15": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8034,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.76,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7378,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7688,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1039,
+        "cleansft->grpov2": 0.3102,
+        "grpov2->partrue": 0.3025,
+        "raw_vs_grpov2": 0.0135,
+        "cleansft_vs_grpov2": 0.3102,
+        "partrue_vs_grpov2": 0.3025
+      },
+      "split_half_cosine_grpov2": 0.0782,
+      "instruct_to_grpov2_bracket_cosine": 0.1569
+    },
+    "L16": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8235,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7754,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7578,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7832,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1705,
+        "cleansft->grpov2": 0.3467,
+        "grpov2->partrue": 0.3118,
+        "raw_vs_grpov2": -0.0313,
+        "cleansft_vs_grpov2": 0.3467,
+        "partrue_vs_grpov2": 0.3118
+      },
+      "split_half_cosine_grpov2": 0.0963,
+      "instruct_to_grpov2_bracket_cosine": 0.1794
+    },
+    "L17": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8284,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7804,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7547,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7691,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.155,
+        "cleansft->grpov2": 0.4038,
+        "grpov2->partrue": 0.3195,
+        "raw_vs_grpov2": -0.023,
+        "cleansft_vs_grpov2": 0.4038,
+        "partrue_vs_grpov2": 0.3195
+      },
+      "split_half_cosine_grpov2": 0.0851,
+      "instruct_to_grpov2_bracket_cosine": 0.1956
+    },
+    "L18": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8412,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7924,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7713,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7827,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1834,
+        "cleansft->grpov2": 0.3786,
+        "grpov2->partrue": 0.3272,
+        "raw_vs_grpov2": 0.0388,
+        "cleansft_vs_grpov2": 0.3786,
+        "partrue_vs_grpov2": 0.3272
+      },
+      "split_half_cosine_grpov2": 0.185,
+      "instruct_to_grpov2_bracket_cosine": 0.2639
+    },
+    "L19": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8373,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7825,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7845,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7883,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.191,
+        "cleansft->grpov2": 0.442,
+        "grpov2->partrue": 0.2045,
+        "raw_vs_grpov2": 0.0043,
+        "cleansft_vs_grpov2": 0.442,
+        "partrue_vs_grpov2": 0.2045
+      },
+      "split_half_cosine_grpov2": 0.26,
+      "instruct_to_grpov2_bracket_cosine": 0.2535
+    },
+    "L20": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8402,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7869,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.8027,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7998,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.2118,
+        "cleansft->grpov2": 0.4664,
+        "grpov2->partrue": 0.3722,
+        "raw_vs_grpov2": 0.0281,
+        "cleansft_vs_grpov2": 0.4664,
+        "partrue_vs_grpov2": 0.3722
+      },
+      "split_half_cosine_grpov2": 0.1728,
+      "instruct_to_grpov2_bracket_cosine": 0.2123
+    },
+    "L21": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8444,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7777,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.8112,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7956,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.2497,
+        "cleansft->grpov2": 0.4515,
+        "grpov2->partrue": 0.1808,
+        "raw_vs_grpov2": 0.0429,
+        "cleansft_vs_grpov2": 0.4515,
+        "partrue_vs_grpov2": 0.1808
+      },
+      "split_half_cosine_grpov2": 0.158,
+      "instruct_to_grpov2_bracket_cosine": 0.1691
+    },
+    "L22": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8561,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7825,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.8044,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7848,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1558,
+        "cleansft->grpov2": 0.4551,
+        "grpov2->partrue": 0.3325,
+        "raw_vs_grpov2": 0.0243,
+        "cleansft_vs_grpov2": 0.4551,
+        "partrue_vs_grpov2": 0.3325
+      },
+      "split_half_cosine_grpov2": 0.1202,
+      "instruct_to_grpov2_bracket_cosine": 0.1429
+    },
+    "L23": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8458,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7947,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.8029,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7958,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1825,
+        "cleansft->grpov2": 0.4488,
+        "grpov2->partrue": 0.3987,
+        "raw_vs_grpov2": 0.1964,
+        "cleansft_vs_grpov2": 0.4488,
+        "partrue_vs_grpov2": 0.3987
+      },
+      "split_half_cosine_grpov2": 0.1702,
+      "instruct_to_grpov2_bracket_cosine": 0.1371
+    },
+    "L24": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8604,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7998,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.8,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.8174,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1629,
+        "cleansft->grpov2": 0.4273,
+        "grpov2->partrue": 0.4916,
+        "raw_vs_grpov2": 0.1072,
+        "cleansft_vs_grpov2": 0.4273,
+        "partrue_vs_grpov2": 0.4916
+      },
+      "split_half_cosine_grpov2": 0.1606,
+      "instruct_to_grpov2_bracket_cosine": 0.1021
+    },
+    "L25": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8531,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7894,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.8065,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.792,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1682,
+        "cleansft->grpov2": 0.5487,
+        "grpov2->partrue": 0.3873,
+        "raw_vs_grpov2": 0.1421,
+        "cleansft_vs_grpov2": 0.5487,
+        "partrue_vs_grpov2": 0.3873
+      },
+      "split_half_cosine_grpov2": 0.1967,
+      "instruct_to_grpov2_bracket_cosine": 0.1722
+    },
+    "L26": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8506,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7863,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.8087,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7918,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1244,
+        "cleansft->grpov2": 0.4738,
+        "grpov2->partrue": 0.3806,
+        "raw_vs_grpov2": 0.0497,
+        "cleansft_vs_grpov2": 0.4738,
+        "partrue_vs_grpov2": 0.3806
+      },
+      "split_half_cosine_grpov2": 0.2277,
+      "instruct_to_grpov2_bracket_cosine": 0.1845
+    },
+    "L27": {
+      "stages": {
+        "raw": {
+          "auroc": 0.851,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7848,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.8072,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7951,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1705,
+        "cleansft->grpov2": 0.4842,
+        "grpov2->partrue": 0.373,
+        "raw_vs_grpov2": 0.0971,
+        "cleansft_vs_grpov2": 0.4842,
+        "partrue_vs_grpov2": 0.373
+      },
+      "split_half_cosine_grpov2": 0.2085,
+      "instruct_to_grpov2_bracket_cosine": 0.2132
+    },
+    "L28": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8403,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7871,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.8044,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.8024,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1509,
+        "cleansft->grpov2": 0.4396,
+        "grpov2->partrue": 0.413,
+        "raw_vs_grpov2": 0.0948,
+        "cleansft_vs_grpov2": 0.4396,
+        "partrue_vs_grpov2": 0.413
+      },
+      "split_half_cosine_grpov2": 0.3378,
+      "instruct_to_grpov2_bracket_cosine": 0.1568
+    },
+    "L29": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8315,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7942,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7946,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7901,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1913,
+        "cleansft->grpov2": 0.357,
+        "grpov2->partrue": 0.4615,
+        "raw_vs_grpov2": 0.0944,
+        "cleansft_vs_grpov2": 0.357,
+        "partrue_vs_grpov2": 0.4615
+      },
+      "split_half_cosine_grpov2": 0.0889,
+      "instruct_to_grpov2_bracket_cosine": 0.1428
+    },
+    "L30": {
+      "stages": {
+        "raw": {
+          "auroc": 0.824,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7937,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7997,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7962,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.2395,
+        "cleansft->grpov2": 0.4386,
+        "grpov2->partrue": 0.353,
+        "raw_vs_grpov2": 0.1048,
+        "cleansft_vs_grpov2": 0.4386,
+        "partrue_vs_grpov2": 0.353
+      },
+      "split_half_cosine_grpov2": 0.2243,
+      "instruct_to_grpov2_bracket_cosine": 0.0737
+    },
+    "L31": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8228,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7852,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7877,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7951,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.2387,
+        "cleansft->grpov2": 0.3508,
+        "grpov2->partrue": 0.2986,
+        "raw_vs_grpov2": 0.1202,
+        "cleansft_vs_grpov2": 0.3508,
+        "partrue_vs_grpov2": 0.2986
+      },
+      "split_half_cosine_grpov2": 0.2147,
+      "instruct_to_grpov2_bracket_cosine": 0.0742
+    },
+    "L32": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8141,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7821,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.8018,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7922,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1507,
+        "cleansft->grpov2": 0.3463,
+        "grpov2->partrue": 0.3215,
+        "raw_vs_grpov2": 0.072,
+        "cleansft_vs_grpov2": 0.3463,
+        "partrue_vs_grpov2": 0.3215
+      },
+      "split_half_cosine_grpov2": 0.1325,
+      "instruct_to_grpov2_bracket_cosine": 0.0418
+    },
+    "L33": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8186,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.8088,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7916,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.8138,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.107,
+        "cleansft->grpov2": 0.4467,
+        "grpov2->partrue": 0.4179,
+        "raw_vs_grpov2": 0.1443,
+        "cleansft_vs_grpov2": 0.4467,
+        "partrue_vs_grpov2": 0.4179
+      },
+      "split_half_cosine_grpov2": 0.2112,
+      "instruct_to_grpov2_bracket_cosine": 0.138
+    },
+    "L34": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8132,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7726,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7838,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.8064,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.177,
+        "cleansft->grpov2": 0.4354,
+        "grpov2->partrue": 0.378,
+        "raw_vs_grpov2": 0.1477,
+        "cleansft_vs_grpov2": 0.4354,
+        "partrue_vs_grpov2": 0.378
+      },
+      "split_half_cosine_grpov2": 0.2647,
+      "instruct_to_grpov2_bracket_cosine": 0.1098
+    },
+    "L35": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8246,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.751,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7802,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.7845,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.2471,
+        "cleansft->grpov2": 0.2606,
+        "grpov2->partrue": 0.2843,
+        "raw_vs_grpov2": 0.0701,
+        "cleansft_vs_grpov2": 0.2606,
+        "partrue_vs_grpov2": 0.2843
+      },
+      "split_half_cosine_grpov2": 0.2294,
+      "instruct_to_grpov2_bracket_cosine": 0.1398
+    },
+    "L36": {
+      "stages": {
+        "raw": {
+          "auroc": 0.8226,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 1323
+        },
+        "cleansft": {
+          "auroc": 0.7708,
+          "underpowered": false,
+          "n_correct": 750,
+          "n_wrong": 500
+        },
+        "grpov2": {
+          "auroc": 0.7902,
+          "underpowered": false,
+          "n_correct": 988,
+          "n_wrong": 500
+        },
+        "partrue": {
+          "auroc": 0.778,
+          "underpowered": false,
+          "n_correct": 500,
+          "n_wrong": 717
+        }
+      },
+      "direction_cosines": {
+        "raw->cleansft": 0.1164,
+        "cleansft->grpov2": 0.3628,
+        "grpov2->partrue": 0.2965,
+        "raw_vs_grpov2": 0.1715,
+        "cleansft_vs_grpov2": 0.3628,
+        "partrue_vs_grpov2": 0.2965
+      },
+      "split_half_cosine_grpov2": 0.3952,
+      "instruct_to_grpov2_bracket_cosine": 0.194
+    }
+  },
+  "class_balance": {
+    "raw": {
+      "n_rows": 1823,
+      "n_correct": 500,
+      "n_wrong": 1323,
+      "cd_g0_floor_150_150": true
+    },
+    "cleansft": {
+      "n_rows": 1250,
+      "n_correct": 750,
+      "n_wrong": 500,
+      "cd_g0_floor_150_150": true
+    },
+    "grpov2": {
+      "n_rows": 1488,
+      "n_correct": 988,
+      "n_wrong": 500,
+      "cd_g0_floor_150_150": true
+    },
+    "partrue": {
+      "n_rows": 1217,
+      "n_correct": 500,
+      "n_wrong": 717,
+      "cd_g0_floor_150_150": true
+    },
+    "s_bracket_input": {
+      "n_rows": 1836,
+      "n_correct": 500,
+      "n_wrong": 1336
+    }
+  },
+  "config": {
+    "seed": 20260719,
+    "pca_dim": 128,
+    "n_folds": 5,
+    "min_class": 30,
+    "basis_stage": "raw",
+    "label": "correct(1)-vs-wrong(0), per-stage forced-best-guess",
+    "position": "post_generation_only",
+    "gate_layers_L19_L24": [
+      "L19",
+      "L20",
+      "L21",
+      "L22",
+      "L23",
+      "L24"
+    ]
+  },
+  "summary": {
+    "raw_to_cleansft_cosine_mean_L19_L24": 0.19228333333333333,
+    "cleansft_to_grpov2_cosine_mean_L19_L24": 0.44851666666666673,
+    "grpov2_to_partrue_cosine_mean_L19_L24": 0.33005,
+    "split_half_noise_floor_mean_L19_L24": 0.17363333333333333,
+    "instruct_to_grpov2_bracket_mean_L19_L24": 0.1695,
+    "best_layer_auroc_by_stage": {
+      "raw": {
+        "layer": "L24",
+        "auroc": 0.8604,
+        "cd_g2_flag_below_0_60": false
+      },
+      "cleansft": {
+        "layer": "L33",
+        "auroc": 0.8088,
+        "cd_g2_flag_below_0_60": false
+      },
+      "grpov2": {
+        "layer": "L21",
+        "auroc": 0.8112,
+        "cd_g2_flag_below_0_60": false
+      },
+      "partrue": {
+        "layer": "L24",
+        "auroc": 0.8174,
+        "cd_g2_flag_below_0_60": false
+      }
+    },
+    "reported_straight_no_verdict": true
+  }
+}

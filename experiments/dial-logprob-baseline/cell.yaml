@@ -1,0 +1,40 @@
+# dial-logprob-baseline (LP) instrument config, pinned at sign.
+# CPU/GPU harness config for the teacher-forced logprob baseline vs the dial.
+apiVersion: lab-cell/v1
+experiment: dial-logprob-baseline
+seed: 20260719
+n_boot_paired: 2000
+arms:
+  - id: s_base_primary
+    model:
+      name: unsloth/Qwen3-4B-bnb-4bit    # S manifest model_name, verbatim
+      adapter: null
+    rows: archive/experiment/phase1-data/probe/qwen3-4b-instruct/amendment_s/stage2/rows.jsonl
+    tensors_dir: archive/experiment/phase1-data/probe/qwen3-4b-instruct/amendment_s/stage2
+    dial_layer: 20                        # S best post layer (S AMENDMENT sec.7)
+    dial_signed_auroc: 0.834              # LP-G0 reproduction target
+    n_rows_expected: 1836
+    gate: LP-G1
+  - id: t_deployed_descriptive
+    model:
+      name: scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624  # merged-16bit base; exact final dir pinned by harness at build
+      adapter: scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+    rows: archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2/rows.jsonl
+    tensors_dir: archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2
+    dial_layer: 22                        # T best post layer (deployment-port sec.7)
+    dial_signed_auroc: 0.819              # LP-G0 reproduction target
+    n_rows_expected: 1488
+    gate: descriptive-only
+logprob_variants:
+  primary: mean_answer_span               # length-normalized mean token logprob
+  secondary: [sum_answer_span, min_answer_span]   # descriptive only
+sequence_reconstruction:
+  source_fields: [prompt_len, answer_tok_len]
+  roundtrip_assert: exact                 # LP-G0 data-stage stop on any mismatch
+dial_refit:
+  module: experiments/common/readouts/amendment_s_correctness_probe_score.py
+  procedure: source-cell out-of-fold (oof_probe), reproduce signed AUROC before unblinding
+containment:
+  commit: [id_manifest, aggregate_json, variant_table]
+  never_commit: [question_text, answer_text, aliases, token_ids, per_row_scores]
+lane: local-3090   # GPU launch pre-approved by PI 2026-07-18
