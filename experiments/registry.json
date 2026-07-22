@@ -1797,6 +1797,55 @@
     },
     {
       "checkpoint": {
+        "repo": "analysis-only re-read of persisted family-atlas captures; no model loaded",
+        "revision": ""
+      },
+      "created_at": "2026-07-22T20:37:15Z",
+      "falsifier": "After G0-G4 pass, any required combined-surface residual profile on either substrate whose peak lies beyond depth 0.20 falsifies the surface-robustness prediction and blocks finalizing paper 4 section 6.x with the current geometric interpretation.",
+      "inputs": [
+        "experiments/family-atlas-surface-diversity-control/AMENDMENT.md",
+        "experiments/family-atlas-surface-diversity-control/analysis-committed/aggregate_results.json",
+        "experiments/family-atlas-surface-matched-json-completion-control/AMENDMENT.md",
+        "experiments/gemma-4-e4b-family-atlas/AMENDMENT.md",
+        "experiments/qwen3-4b-family-atlas/AMENDMENT.md",
+        "docs/atlas/family-layer-map.md",
+        "papers/paper-4-two-signal-readout/manuscript.md",
+        "papers/common/terminology.md",
+        ".skills/experiment-runner/reference/amendment-vs-lab-notebook.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "reanalyze_surface_residualization.py",
+          "test_surface_residualization_control.py"
+        ],
+        "persistence": {
+          "reanalyze_surface_residualization.py": {
+            "checkpoint_path": "experiments/family-atlas-surface-residualization-control/analysis/checkpoints",
+            "persistence": "incremental"
+          },
+          "test_surface_residualization_control.py": {
+            "measured_smoke_wall_clock_s": 1.69,
+            "persistence": "short-run"
+          }
+        },
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "For both Gemma-4-E4B-it and Qwen3-4B, the eff_dim_frac peak remains early-exterior at depth at most 0.20 in both the full-fit combined-surface residual profile and its fixed-seed 50% stratified stability profile.",
+      "question": "Does the early-exterior family-atlas eff_dim_frac peak remain at depth at most 0.20 after cross-fitted removal of prompt-surface-predictable activation variance in the existing Gemma-4-E4B-it and Qwen3-4B atlas fit populations?",
+      "registered": true,
+      "slug": "family-atlas-surface-residualization-control",
+      "status": "draft",
+      "title": "Family Atlas Surface Residualization Control",
+      "type": "lab-diagnostic",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
