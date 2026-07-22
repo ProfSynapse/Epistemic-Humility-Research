@@ -21,15 +21,24 @@ falsifier: >-
   readout no longer orders mode-token logits and choices.
 checkpoint:
   repo: unsloth/Qwen3-4B-bnb-4bit
-  revision: pending-pre-sign-upstream-revision
+  revision: cad0bedfdd862093a12af478cb974ab2addd0e0a
 instrument:
   configs:
   - cell.yaml
   - gates.yaml
+  - dataset_builder.yaml
   - posture_reviewer_rubric.yaml
-  modules: []
+  modules:
+  - build_dataset.py
+  - test_build_dataset.py
   pins: {}
-  persistence: {}
+  persistence:
+    build_dataset.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 7.0
+    test_build_dataset.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.0
 inputs:
 - experiments/aux-head-cotraining-native-behavior/AMENDMENT.md
 - experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md
@@ -38,5 +47,6 @@ inputs:
 - experiments/abstention-wide-instrument-calibration/detector_v2_patterns.yaml
 - experiments/rr3-corrected-placebo-replication/AMENDMENT.md
 - experiments/llama-atlas-gated-wide-instrument-retest/AMENDMENT.md
+- experiments/common/knowledge_probe/scoring.py
 verdict: ''
 kg: []

@@ -4,24 +4,28 @@ status: blocked_pre_sign
 
 surface:
   starting_model: unsloth/Qwen3-4B-bnb-4bit
-  starting_revision: pending_pre_sign
+  starting_revision: cad0bedfdd862093a12af478cb974ab2addd0e0a
+  tokenizer_json_sha256: aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4
+  model_config_sha256: 131ad2a5941d6b7b6b44838ff5a66b9e9d78c171b56fcaab36024095b54bc1c9
   prohibit_project_checkpoint_input: true
   renderer: qwen3_chat_enable_thinking_false
-  first_assistant_action_constrained_to_modes: true
+  primary_first_assistant_action_constrained_to_modes: false
+  mode_restricted_decode_role: diagnostic_only
+  forced_mode_continuation_role: causal_semantics_test
   primary_decode: greedy
 
 mode_tokens:
   answer:
     token: <ANSWER>
-    token_id: pending_pre_sign
+    token_id: 151669
     public_semantics: answer normally because the answer is reliably known
   qualify:
     token: <QUALIFY>
-    token_id: pending_pre_sign
+    token_id: 151670
     public_semantics: state uncertainty and give the best supported answer
   abstain:
     token: <ABSTAIN>
-    token_id: pending_pre_sign
+    token_id: 151671
     public_semantics: say the answer is not known reliably and do not invent one
   strip_before_external_grading: true
   literal_token_reward: 0.0
@@ -35,11 +39,9 @@ output_contract:
     additional_fields_allowed: false
   answer_confidence:
     semantics: estimated_probability_model_can_supply_a_correct_factual_answer
-    target_source: pending_pre_sign_recovered_p_correct_or_fixed_class_bands
-    fixed_class_bands_if_cache_unavailable:
-      abstain: pending_pre_sign_non_endpoint
-      qualify: pending_pre_sign_non_endpoint
-      answer: pending_pre_sign_non_endpoint
+    target_source: jeffreys_posterior_mean_over_frozen_32_sample_probe
+    formula: (correct_count + 0.5) / 33
+    greedy_correct_retained_as_separate_mode_axis: true
     endpoints_as_sft_targets: forbidden
   historical_response_confidence_reused: false
   historical_response_confidence_reason: >-
@@ -58,28 +60,35 @@ capability_bank_pre_sft:
   enable_thinking: false
   max_probe_questions: 20000
   subset_seed: 20260610
-  split_before_generation: question_entity_cluster
-  frozen_known_count: 8892
-  frozen_unknown_count: 7103
-  frozen_train_count: 14395
-  frozen_dev_count: 1600
-  qualify_count: pending_pre_sign_reconstructed_from_20000_minus_frozen_keys
-  no_new_generation_required_for_categorical_labels: true
+  generation_predates_this_experiment: true
+  split_before_stage_s_training: transitive_canonical_answer_alias_and_normalized_question_component
+  frozen_mode_counts:
+    abstain: 10156
+    qualify: 1537
+    answer: 8307
+  no_new_generation_required_for_labels_or_confidence_targets: true
   row_level_probe_results_cache:
-    local: absent
+    local: present_canonical_checkout_only
+    sha256: f8b4b89345f15b89fa40fd834c3d9249e0a5417b67d2cf7da7eee6f936635c43
+    rows: 20000
     huggingface_inventory: absent
-    approximate_original_size_mb: 123
+    private_and_gitignored: true
+  probe_manifest:
+    sha256: 52f374db01b4e60c55784ae7bfa3b9353e4830ac73628457fd858b0707eb18b4
+    probe_config_sha: 893861257973170b
   correct_count_field: correct_generations_of_32
   refusal_count_field: refusal_generations_of_32
   persist_generation_text: true
   persist_full_subgrades: true
   buckets:
     abstain:
-      rule: p_correct_equals_0
+      rule: exact_one_sided_95pct_upper_bound_below_0_5
+      correct_count: 0_to_10
     qualify:
-      rule: neither_known_nor_unknown
+      rule: correct_count_11_to_21_or_high_evidence_with_greedy_wrong
     answer:
-      rule: greedy_correct_and_p_correct_gte_0_5
+      rule: exact_one_sided_95pct_lower_bound_above_0_5_and_greedy_correct
+      correct_count: 22_to_32
 
 stage_sft:
   name: fresh_mode_token_sft
@@ -91,6 +100,31 @@ stage_sft:
   - new_mode_token_embeddings_and_lm_head_rows
   dataset:
     split: entity_cluster_disjoint
+    builder_config: dataset_builder.yaml
+    builder_config_sha256: 59dd19cc19988fb9b44d806a3ec760ed72ccbd5601bfb167155bd96a7ca04192
+    builder_module: build_dataset.py
+    canonical_normalizer: experiments/common/knowledge_probe/scoring.py
+    canonical_normalizer_sha256: 1be766d57a8c8b8e99748156c72e3a4b967f768ce81a561e95be2c1636c80948
+    expected_private_build:
+      aggregate_manifest_sha256: 5a46784252e1746eb700513bff0fdd3cacd144fa536207396575d3f838199a2a
+      train_sha256: da473bc05e544cd2cbfc091e9a9f319ed5623fef2ef969ad02a732d307246268
+      dev_sha256: dcff3134f22c1f63e000d613591ca0c7d3939970608f4ffd447c4f200af68661
+      heldout_sha256: 495a908ffd0d1cbc9f09b9ef7994fd6bb683c0d533391117e94d81ada59b7839
+    allocation:
+      train:
+        abstain: 9556
+        qualify: 937
+        answer: 7704
+      dev:
+        abstain: 200
+        qualify: 200
+        answer: 202
+      heldout:
+        abstain: 400
+        qualify: 400
+        answer: 401
+      identity_overlap_across_splits: 0
+      normalized_question_overlap_across_splits: 0
     answer_target: <ANSWER> plus correct direct answer
     qualify_target: <QUALIFY> plus uncertainty statement and supported best answer
     abstain_target: <ABSTAIN> plus honest idk with no gold answer in completion
@@ -100,8 +134,10 @@ stage_sft:
   output_checkpoint: fresh_stage_s_merged_or_adapter_lineage_pinned_after_run
 
 native_action_head:
-  implementation: normal_lm_head_restricted_to_registered_mode_tokens
+  implementation: normal_lm_head_full_vocabulary_with_registered_mode_rows
   hidden_state_position: final_prompt_token
+  primary_choice: unconstrained_full_vocabulary_argmax
+  registered_mode_logit_softmax: diagnostic
   separate_runtime_router: false
   note: >-
     The three vocabulary logits are the primary action head. A custom router is
@@ -164,8 +200,12 @@ arms:
 
 evaluation:
   primary_decode: greedy
+  primary_first_token_vocabulary: full_unconstrained_vocabulary
+  balanced_heldout_rows: 1201
+  heldout_per_mode_target: 400
+  overall_population_rate_requires_prevalence_reweighting: true
   secondary_decode: sampled_descriptive_only
-  heldout_population: entity_disjoint_selfaware_and_model_unknown_sets_pending_pin
+  heldout_population: frozen_entity_and_normalized_question_disjoint_builder_split
   compare:
   - sft_vs_base
   - sft_grpo_true_vs_sft
@@ -209,6 +249,7 @@ evaluation:
   persistence: incremental_required
 
 implementation:
+  dataset_builder: build_dataset.py
   sft_runner: existing_generic_sft_surface_plus_special_token_roundtrip
   grpo_runner: pending_first_action_mode_reward_surface
   capability_bank_runner: pending_batched_generation_and_grading_surface

@@ -6,6 +6,34 @@ a claims surface; the signed prose lives in `AMENDMENT.md` and machine state in
 
 ## Entries
 
+### 2026-07-22: pre-sign cache recovery and dataset-contract build
+
+- Located the complete local 20,000-row Qwen3-4B probe cache and its manifest;
+  verified SHA-256 values `f8b4b893...635c43` and `52f374db...18b4`, probe
+  config `893861257973170b`, 32 samples per row, and thinking disabled. This
+  supersedes the earlier same-day note that the row cache was absent.
+- User selected a substantive 0.5 capability reference but rejected a bare
+  majority as too arbitrary. The unsigned draft now uses exact one-sided 95%
+  binomial evidence: `k<=10` ABSTAIN, `k>=22` plus greedy-correct ANSWER, and
+  QUALIFY otherwise. Counts are 10,156 / 8,307 / 1,537 for
+  ABSTAIN / ANSWER / QUALIFY. Confidence target is `(k+0.5)/33`.
+- Added a fail-closed deterministic dataset builder and synthetic tests. It
+  reuses the canonical probe normalizers, groups transitive answer/alias and
+  normalized-question components, targets 200 dev and 400 held-out rows per
+  mode, and writes row-bearing products only beneath ignored `analysis/`.
+- Two real builds were byte-identical. Final allocation is 18,197 train, 602
+  dev, and 1,201 held-out rows; normalized answer/alias and normalized-question
+  overlap across splits are both zero. The largest of 11,092 components has 55
+  rows, so the entity-disjoint split is feasible without removing mixed-mode
+  groups.
+- Created a separate Synaptic-Tuner worktree for generic, config-driven special
+  tokens. No experiment semantics or concrete mode strings are embedded in the
+  tuner. CPU tests cover current/legacy tokenizer APIs, tied and untied heads,
+  selective-row AdamW isolation, Unsloth-style parameter freezing, and
+  adapter/tokenizer persistence. No GPU or scored generation was run.
+- The amendment remains unsigned and launch authorization remains false.
+  Performance thresholds that require an independent pilot remain pending.
+
 ### 2026-07-22: lineage and mechanism correction
 
 - User clarified that the intended substrate is a **new SFT from the original

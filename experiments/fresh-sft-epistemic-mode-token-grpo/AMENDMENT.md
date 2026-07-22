@@ -20,9 +20,8 @@ from any existing project SFT, GRPO-v3, contrastive-SFT, or merged checkpoint.
 
 The intended order is:
 
-1. reuse the existing frozen Qwen3-4B 32-generation knowledge labels and
-   reconstruct the retained ambiguous-middle question ids from the pinned probe
-   subset;
+1. reuse the recovered frozen Qwen3-4B 32-generation row cache and apply the
+   locked three-way binomial-evidence rule to the pinned 20,000-question subset;
 2. train a new SFT from that original Qwen base to learn both the visible
    behavior and the first action token;
 3. measure whether the new SFT's token logits align with an independently fitted
@@ -58,44 +57,63 @@ The token is followed by a parseable JSON object:
 ```
 
 `answer_confidence` estimates the probability that the model could supply a
-correct factual answer. Its SFT target uses pre-registered non-endpoint bands
-for the three frozen knowledge classes; exact per-question `p_correct` may
-replace the band center only if the original provenance-matching row cache is
-recovered before sign. It is distinct
+correct factual answer under the frozen 32-sample probe. Its SFT target is the
+Jeffreys posterior mean `(k + 0.5) / 33`, where `k` is the number of correct
+probe samples. This preserves within-mode variation without teaching exact
+zero or one. It is distinct
 from the historical `response_confidence` field, which estimated whether the
 chosen response was appropriate. A correct abstention can have high response
 appropriateness while knowledge is low, so silently reusing that field would
 make internal-knowledge alignment mathematically incoherent. Response
 appropriateness remains externally grader-scored.
 
-### 3.1 Existing frozen empirical knowledge labels
+### 3.1 Frozen empirical evidence and the three-way decision rule
 
 The original Qwen3-4B probe already ran 32 stochastic samples at temperature
-1.0/top-p 0.9 plus one greedy decode with thinking disabled. Its preregistered
-rule maps directly onto the new modes:
+1.0/top-p 0.9 plus one greedy decode with thinking disabled. Its complete
+20,000-row cache is available locally and provenance-matches the probe manifest:
 
-- `P_correct == 0` -> `<ABSTAIN>`;
-- neither known nor unknown -> `<QUALIFY>`;
-- `greedy_correct AND P_correct >= 0.5` -> `<ANSWER>`.
+- probe cache SHA-256
+  `f8b4b89345f15b89fa40fd834c3d9249e0a5417b67d2cf7da7eee6f936635c43`;
+- probe-manifest SHA-256
+  `52f374db01b4e60c55784ae7bfa3b9353e4830ac73628457fd858b0707eb18b4`;
+- probe config SHA `893861257973170b`, `n=32`, seed `20260610`, thinking
+  disabled.
 
-No new threshold pilot is needed. The tracked `questions_frozen.json` preserves
-8,892 known and 7,103 unknown keys, split into 14,395 train and 1,600 dev keys.
-The deterministic 20,000-question probe subset can be reconstructed from the
-pinned source-selection algorithm; its complement after removing frozen
-known/unknown keys is the retained ambiguous-middle `<QUALIFY>` pool.
+The operational reference remains a 50% probability of answering correctly,
+but a raw `k/32 > 0.5` vote would treat `k=16` and `k=17` as meaningfully
+different while ignoring sampling uncertainty. The experiment instead uses
+exact one-sided 95% Clopper-Pearson evidence around `p=0.5`:
 
-What is not currently present locally or on the project's Hugging Face dataset
-inventory is the approximately 123 MB row-level `probe_results.jsonl` cache with
-each exact `p_correct`, sampled answer, and sampled-correct vector. That absence
-does not block categorical mode labels. Before sign, choose one of two honest
-scalar targets: recover a provenance-matching copy of that cache and use its
-per-question `p_correct`, or use fixed non-endpoint confidence bands for
-`ABSTAIN`/`QUALIFY`/`ANSWER`. Do not regenerate merely to choose thresholds that
-are already governed.
+- `<ABSTAIN>` when `k <= 10` (the upper bound is below 0.5);
+- `<ANSWER>` when `k >= 22` (the lower bound is above 0.5) **and** the frozen
+  greedy answer is correct;
+- `<QUALIFY>` otherwise: `k=11..21`, plus the rare `k>=22` rows whose frozen
+  greedy answer is wrong.
 
-Question/entity clusters are split before generation. Held-out questions and
-their gold answers never appear in SFT targets. This prevents the experiment
-from calling memorization of its training answers epistemic alignment.
+For `n=32`, the boundary values are `U(10)=0.472140`, `U(11)=0.504191`,
+`L(21)=0.495809`, and `L(22)=0.527860`. The realized null tail at either
+extreme is 0.0250512 because the binomial count is discrete. This makes the
+sampling-evidence rule non-arbitrary conditional on the substantive 0.5
+reference; it does not turn that reference into an ontological definition of
+knowledge.
+
+Applied before looking at training outcomes, the rule yields 10,156 ABSTAIN,
+1,537 QUALIFY, and 8,307 ANSWER rows. Fifty-three high-evidence rows have a
+wrong greedy answer and therefore remain QUALIFY with relatively high numeric
+confidence. Greedy correctness is retained as a separate axis; the protocol
+does not pretend that the discrete mode is a deterministic function of the
+Jeffreys target.
+
+The original probe was generated before this experiment was proposed, so the
+draft's earlier claim that entity clusters were split before generation was
+incorrect. Reuse remains valid because generation did not train the model and
+no outcome-adaptive threshold was selected. For Stage S, rows are now grouped
+*after probe recovery but before SFT* by transitive overlap of the canonical
+normalized answer/alias identities and exact normalized-question duplicates.
+Whole components, never individual rows, enter train, dev, or held-out. Thus
+held-out facts and aliases never appear in SFT targets even though their frozen
+probe evidence predates this split.
 
 ## 4. Stage S: new SFT
 
@@ -111,6 +129,16 @@ is:
 The mode token is the first supervised assistant token. The answer text and
 posture are trained in the same new SFT, because the stated hypothesis is that
 SFT teaches both the action vocabulary and what each action does.
+
+The deterministic builder targets 200 dev and 400 held-out rows per mode,
+allocating complete answer/alias/question components and leaving the remainder
+for training. The recovered topology has 11,092 components (largest 55 rows),
+so this is feasible without discarding mixed-mode components. The frozen build
+produces 18,197 train rows, 602 dev rows, and 1,201 held-out rows with zero
+normalized answer/alias or normalized-question overlap.
+At 400 rows per mode, the worst-case two-sided 95% Wilson half-width is about
+4.88 percentage points; a generic 10% split would leave only about 154 QUALIFY
+rows and materially weaker resolution for the rare middle class.
 
 For `<ABSTAIN>` rows, no gold answer is placed in the completion. For
 `<QUALIFY>` rows, the target answer must be supported by a correct sampled answer
@@ -128,8 +156,8 @@ and `<ABSTAIN>` are therefore the action head:
 ```text
 prompt-end hidden state h
         -> normal LM head
-        -> logits for ANSWER / QUALIFY / ABSTAIN
-        -> chosen token
+        -> full-vocabulary next-token logits, including the three mode rows
+        -> unconstrained chosen token (primary) or registered-logit diagnostic
         -> visible continuation
 ```
 
@@ -176,7 +204,11 @@ internal readout remains outside the reward to reduce direct readout gaming.
 
 ## 7. Evaluation and anti-gaming controls
 
-Primary serving evaluation is greedy. The mode token is stripped before blinded
+Primary serving evaluation is greedy and the first generated token is
+unconstrained over the full vocabulary. A mode-restricted decode is diagnostic
+only; it cannot establish that SFT learned to emit the action vocabulary.
+Forced-token continuation tests separately ask whether each registered token
+causes its promised visible posture. The mode token is stripped before blinded
 external grading. Report separately:
 
 1. **Token validity:** the first action is one of the three registered tokens.
@@ -190,6 +222,11 @@ external grading. Report separately:
    logits, and greedy choices on held-out questions.
 6. **Treatment differential:** true-label GRPO beats both SFT-only and the
    permuted-label GRPO control.
+
+The balanced held-out set supports per-mode recall, macro averages, and paired
+arm comparisons. Any population-weighted overall rate must be reweighted to the
+frozen 20,000-row mode prevalence rather than treating the balanced evaluation
+sample as naturally prevalent.
 
 Required defenses include entity-disjoint splits, a prompt-text-only baseline,
 within-stratum permutation, blinded posture/refusal adjudication, exact token
@@ -257,16 +294,14 @@ internal alignment is behavioral mimicry, not success.
 
 Before signing:
 
-- pin the original Qwen3-4B upstream revision and tokenizer;
-- verify the candidate dataset has gold/alias coverage and an entity-disjoint
-  split before reading scored outcomes;
-- reproduce the pinned 20,000-question subset and recover the retained
-  ambiguous-middle ids by set difference against the frozen known/unknown keys;
-- decide and pin whether `answer_confidence` uses recovered per-row `p_correct`
-  or fixed non-endpoint class bands;
-- select token IDs and verify tokenizer, adapter, merge, save, and reload paths;
-- build the fresh Stage-S dataset without gold-answer leakage into held-out
-  clusters;
+- retain the recovered cache/manifest/model/tokenizer hashes and deterministic
+  dataset-builder pins in the signed instrument;
+- retain the exact three-way evidence rule and Jeffreys target above without
+  outcome-adaptive relabeling;
+- verify the final private build reproduces the registered counts, precision
+  targets, and zero-overlap assertions;
+- complete a same-model tokenizer, adapter, merge, save, and reload smoke for
+  the three registered token IDs;
 - pin the exact SFT and GRPO recipes and reward table;
 - fit and pin the independent prompt-end readout on a disjoint probe split;
 - lock numeric SFT, GRPO, anti-collapse, and internal-alignment gates;

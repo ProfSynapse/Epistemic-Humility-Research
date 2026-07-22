@@ -7,11 +7,16 @@ pre_sign:
   no_existing_project_checkpoint_input: required
   frozen_32_generation_label_provenance_verified: required
   deterministic_20000_question_subset_reproduced: required
-  ambiguous_middle_ids_reconstructed: required
-  answer_confidence_target_policy_pinned: required
-  entity_cluster_split_before_generation: required
+  exact_binomial_three_way_rule_reproduces_10156_1537_8307: required
+  answer_confidence_jeffreys_target_policy_pinned: required
+  component_split_before_stage_s_training: required
+  normalized_answer_alias_overlap_across_splits: 0
+  normalized_question_overlap_across_splits: 0
+  heldout_per_mode_target: 400
+  heldout_per_mode_absolute_deviation_max: 5
   gold_alias_coverage: required
-  mode_tokens_roundtrip_after_save_load: required
+  mode_tokens_atomic_ids: [151669, 151670, 151671]
+  mode_tokens_tokenizer_adapter_and_merge_roundtrip: required
   independent_readout_fit_split_disjoint: required
   sft_and_grpo_recipes_pinned: required
   grader_and_adjudication_pins: required
@@ -27,27 +32,35 @@ stage_sft:
   first_token_registered_mode_rate_min: pending_pre_sign
   valid_json_after_mode_token_rate_min: pending_pre_sign
   required_json_fields_rate_min: pending_pre_sign
-  heldout_mode_bucket_accuracy_min: pending_pre_sign
+  heldout_per_mode_recall:
+    metric: two_sided_95pct_wilson_lower_bound
+    lower_bound_gt: 0.3333333333333333
+    rationale: beats_three_way_chance_for_every_mode_without_a_single_mode_collapse
+  heldout_macro_mode_recall:
+    report: required
+    threshold: implied_by_all_per_mode_recall_gates
   forced_mode_visible_posture_compliance_min: pending_pre_sign
   token_stripped_before_grading_fraction: 1.0
   answer_quality_floor: pending_pre_sign
   over_refusal_ceiling: pending_pre_sign
-  max_single_mode_share: pending_pre_sign
+  max_single_mode_share: 0.747
+  max_single_mode_share_rationale: implied_by_per_mode_wilson_recall_gates_on_balanced_1201_row_heldout
   failure_disposition: stop_before_grpo
 
 internal_alignment:
   metric: ordinal_association_independent_readout_vs_answer_confidence_mode_logits_and_choice
-  sft_min: pending_pre_sign
-  grpo_true_min: pending_pre_sign
-  true_minus_permuted_min: pending_pre_sign
-  paired_ci_lower_bound_gt: 0.0
+  sft_association_paired_ci_lower_bound_gt: 0.0
+  sft_minus_prompt_text_only_baseline_paired_ci_lower_bound_gt: 0.0
+  grpo_true_association_paired_ci_lower_bound_gt: 0.0
+  true_minus_permuted_min: pending_pre_sign_power_or_pilot
   fixed_readout_and_fresh_refit_polarity_match: required
   prompt_text_only_baseline_required: true
 
 stated_answer_confidence:
   semantics: probability_of_correct_factual_answer_not_response_appropriateness
-  heldout_brier_max: pending_pre_sign
-  heldout_ece_max: pending_pre_sign
+  heldout_brier_minus_constant_prior_paired_ci_upper_bound_lt: 0.0
+  heldout_brier_minus_mode_only_predictor_paired_ci_upper_bound_lt: 0.0
+  heldout_ece: report_required_absolute_ceiling_pending_pilot
   minimum_standard_deviation: pending_pre_sign
   endpoint_collapse_forbidden: true
   monotonic_across_abstain_qualify_answer: required

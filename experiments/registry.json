@@ -1604,7 +1604,7 @@
     {
       "checkpoint": {
         "repo": "unsloth/Qwen3-4B-bnb-4bit",
-        "revision": "pending-pre-sign-upstream-revision"
+        "revision": "cad0bedfdd862093a12af478cb974ab2addd0e0a"
       },
       "created_at": "2026-07-22T11:04:31Z",
       "falsifier": "Falsify the path if true-label GRPO does not beat both SFT-only and matched permuted-label GRPO on held-out mode appropriateness, if gains require single-mode collapse, or if behavior improves while the independent internal readout no longer orders mode-token logits and choices.",
@@ -1615,16 +1615,30 @@
         "experiments/abstention-wide-instrument-calibration/detector_v2.py",
         "experiments/abstention-wide-instrument-calibration/detector_v2_patterns.yaml",
         "experiments/rr3-corrected-placebo-replication/AMENDMENT.md",
-        "experiments/llama-atlas-gated-wide-instrument-retest/AMENDMENT.md"
+        "experiments/llama-atlas-gated-wide-instrument-retest/AMENDMENT.md",
+        "experiments/common/knowledge_probe/scoring.py"
       ],
       "instrument": {
         "configs": [
           "cell.yaml",
           "gates.yaml",
+          "dataset_builder.yaml",
           "posture_reviewer_rubric.yaml"
         ],
-        "modules": [],
-        "persistence": {},
+        "modules": [
+          "build_dataset.py",
+          "test_build_dataset.py"
+        ],
+        "persistence": {
+          "build_dataset.py": {
+            "measured_smoke_wall_clock_s": 7.0,
+            "persistence": "short-run"
+          },
+          "test_build_dataset.py": {
+            "measured_smoke_wall_clock_s": 1.0,
+            "persistence": "short-run"
+          }
+        },
         "pins": {}
       },
       "kg": [],
