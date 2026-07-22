@@ -1563,7 +1563,9 @@
           "test_instrument.py": "305a84dd230fea3398656083a9abd7e1bc8dc3c3a40569d5d9dbddb595782762"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:family-atlas-surface-matched-json-completion-control"
+      ],
       "prediction": "For both Gemma-4-E4B-it and Qwen3-4B, the surface-matched FIT profile and its fixed-seed 50% intact-triad subsample retain a unique early-exterior eff_dim_frac peak at depth at most 0.20.",
       "question": "Does the early-exterior family-atlas eff_dim_frac peak persist in fresh, cross-original, surface-matched KU-role pools for Gemma-4-E4B-it and Qwen3-4B when a pinned batch-invariant vLLM generator must complete the registered JSON interface?",
       "registered": true,

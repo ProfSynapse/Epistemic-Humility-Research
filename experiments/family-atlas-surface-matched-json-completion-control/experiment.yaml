@@ -87,4 +87,5 @@ inputs:
 verdict: Exact JSON generation and the planted surface-role sensor passed, but G2
   surface balance failed for Gemma and Qwen, so no Stage B capture or peak-location
   endpoint ran; this is indeterminate and does not falsify the early-exterior prediction.
-kg: []
+kg:
+- experiment:family-atlas-surface-matched-json-completion-control
