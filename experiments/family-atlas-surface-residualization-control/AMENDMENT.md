@@ -202,7 +202,7 @@ After G0-G4 pass, any required combined-surface residual profile on either subst
 | Predictor | Call |
 |---|---|
 | orchestrator | Both substrates retain an early-exterior peak in both required residual profiles. |
-| Joseph Rosenbaum | |
+| Joseph Rosenbaum | Both substrates retain an early-exterior peak in both required residual profiles. |
 
 ## Run boundary
 
