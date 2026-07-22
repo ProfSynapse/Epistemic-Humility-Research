@@ -1,0 +1,217 @@
+schema_version: 0.2-draft
+experiment: fresh-sft-epistemic-mode-token-grpo
+status: blocked_pre_sign
+
+surface:
+  starting_model: unsloth/Qwen3-4B-bnb-4bit
+  starting_revision: pending_pre_sign
+  prohibit_project_checkpoint_input: true
+  renderer: qwen3_chat_enable_thinking_false
+  first_assistant_action_constrained_to_modes: true
+  primary_decode: greedy
+
+mode_tokens:
+  answer:
+    token: <ANSWER>
+    token_id: pending_pre_sign
+    public_semantics: answer normally because the answer is reliably known
+  qualify:
+    token: <QUALIFY>
+    token_id: pending_pre_sign
+    public_semantics: state uncertainty and give the best supported answer
+  abstain:
+    token: <ABSTAIN>
+    token_id: pending_pre_sign
+    public_semantics: say the answer is not known reliably and do not invent one
+  strip_before_external_grading: true
+  literal_token_reward: 0.0
+
+output_contract:
+  prefix: exactly_one_registered_mode_token
+  json_after_prefix:
+    required_fields:
+    - answer
+    - answer_confidence
+    additional_fields_allowed: false
+  answer_confidence:
+    semantics: estimated_probability_model_can_supply_a_correct_factual_answer
+    target_source: pending_pre_sign_recovered_p_correct_or_fixed_class_bands
+    fixed_class_bands_if_cache_unavailable:
+      abstain: pending_pre_sign_non_endpoint
+      qualify: pending_pre_sign_non_endpoint
+      answer: pending_pre_sign_non_endpoint
+    endpoints_as_sft_targets: forbidden
+  historical_response_confidence_reused: false
+  historical_response_confidence_reason: >-
+    It measures response appropriateness, which is high for a correct abstention
+    while knowledge confidence is low; reusing it would invert the intended
+    internal-knowledge relationship on abstention rows.
+  response_appropriateness_scored_externally: true
+
+capability_bank_pre_sft:
+  source: existing_phase1_qwen3_4b_knowledge_probe
+  model: unsloth/Qwen3-4B-bnb-4bit
+  generations_per_question: 32
+  temperature: 1.0
+  top_p: 0.9
+  seed: 20260610
+  enable_thinking: false
+  max_probe_questions: 20000
+  subset_seed: 20260610
+  split_before_generation: question_entity_cluster
+  frozen_known_count: 8892
+  frozen_unknown_count: 7103
+  frozen_train_count: 14395
+  frozen_dev_count: 1600
+  qualify_count: pending_pre_sign_reconstructed_from_20000_minus_frozen_keys
+  no_new_generation_required_for_categorical_labels: true
+  row_level_probe_results_cache:
+    local: absent
+    huggingface_inventory: absent
+    approximate_original_size_mb: 123
+  correct_count_field: correct_generations_of_32
+  refusal_count_field: refusal_generations_of_32
+  persist_generation_text: true
+  persist_full_subgrades: true
+  buckets:
+    abstain:
+      rule: p_correct_equals_0
+    qualify:
+      rule: neither_known_nor_unknown
+    answer:
+      rule: greedy_correct_and_p_correct_gte_0_5
+
+stage_sft:
+  name: fresh_mode_token_sft
+  base: original_qwen3_4b_only
+  existing_project_adapter_or_merged_checkpoint: forbidden
+  objective: first_mode_token_plus_visible_response_cross_entropy
+  trainable_parameters:
+  - lora_adapter
+  - new_mode_token_embeddings_and_lm_head_rows
+  dataset:
+    split: entity_cluster_disjoint
+    answer_target: <ANSWER> plus correct direct answer
+    qualify_target: <QUALIFY> plus uncertainty statement and supported best answer
+    abstain_target: <ABSTAIN> plus honest idk with no gold answer in completion
+    rejected_or_fabricated_teacher_forcing: false
+    heldout_gold_answer_in_training: false
+  recipe: pending_pre_sign
+  output_checkpoint: fresh_stage_s_merged_or_adapter_lineage_pinned_after_run
+
+native_action_head:
+  implementation: normal_lm_head_restricted_to_registered_mode_tokens
+  hidden_state_position: final_prompt_token
+  separate_runtime_router: false
+  note: >-
+    The three vocabulary logits are the primary action head. A custom router is
+    a successor hypothesis only if native token logits fail while the independent
+    readout remains valid.
+
+independent_readout:
+  role: measurement_only
+  target: pre_registered_empirical_correctness_statistic_or_bucket
+  input: prompt_end_hidden_state
+  family: linear_or_ordinal_probe_pending_pre_sign
+  fit_split: disjoint_probe_split
+  used_as_runtime_controller: false
+  used_in_sft_loss: false
+  used_in_grpo_reward: false
+  fixed_and_fresh_post_training_audit: true
+  artifact: pending_pre_sign
+
+capability_bank_pre_grpo:
+  model: frozen_fresh_stage_s_checkpoint
+  generations_per_question: 32
+  live_policy_relabeling_forbidden: true
+  persist_generation_text: true
+  persist_full_subgrades: true
+  bucket_thresholds: same_locked_rule_as_pre_sft
+
+stage_grpo:
+  enabled_only_after_sft_gates: true
+  base: fresh_stage_s_checkpoint
+  existing_grpo_v3_checkpoint: forbidden
+  recipe: pending_pre_sign
+  reward:
+    factual_correctness: pending_pre_sign
+    answer_confidence_proper_score: pending_pre_sign
+    answer_mode_appropriateness: pending_pre_sign
+    qualify_mode_appropriateness: pending_pre_sign
+    abstain_mode_appropriateness: pending_pre_sign
+    unnecessary_qualification_cost: pending_pre_sign
+    unnecessary_abstention_cost: pending_pre_sign
+    unsupported_answer_cost: pending_pre_sign
+    literal_token_reward: 0.0
+  label_source: frozen_pre_grpo_capability_bank
+  live_group_derived_mode_target: forbidden
+
+arms:
+  base:
+    train: false
+    checkpoint: pinned_original_qwen3_4b
+  sft:
+    train: true
+    stage: stage_sft
+  sft_grpo_true:
+    train: true
+    base: sft
+    capability_labels: frozen_real
+  sft_grpo_permuted:
+    train: true
+    base: sft
+    capability_labels: permuted_within_source_and_correct_count_strata
+
+evaluation:
+  primary_decode: greedy
+  secondary_decode: sampled_descriptive_only
+  heldout_population: entity_disjoint_selfaware_and_model_unknown_sets_pending_pin
+  compare:
+  - sft_vs_base
+  - sft_grpo_true_vs_sft
+  - sft_grpo_true_vs_sft_grpo_permuted
+  graders:
+    correctness: pending_pre_sign
+    deterministic_response_screen:
+      module_source: experiments/abstention-wide-instrument-calibration/detector_v2.py
+      pattern_source: experiments/abstention-wide-instrument-calibration/detector_v2_patterns.yaml
+      pre_sign_disposition: hash_audited_promoted_copy_or_exact_pin
+      role: reported_screen_not_final_posture_label
+      persist_matched_pattern_ids: true
+    blinded_posture_review:
+      scope: every_heldout_response_every_arm_every_population
+      rubric: posture_reviewer_rubric.yaml
+      model_and_revision: pending_pre_sign
+      context_visible:
+      - decoded_answer_text_only
+      context_hidden:
+      - mode_token
+      - answer_confidence
+      - arm
+      - source
+      - capability_bucket
+      - gold_answer
+      - expected_posture
+      output_enum:
+      - ANSWER
+      - QUALIFY
+      - ABSTAIN
+      - OTHER
+      final_posture_instrument: true
+      no_regex_or_keyword_classifier_by_reviewer: true
+      private_workdir_and_unique_output_per_shard: true
+      positional_join: true
+      pool_manifest_committed_before_review: true
+      graded_sha256_committed_before_unblinding: true
+      one_fresh_agent_regrade_then_void: true
+      no_rescoring_lane: true
+    answer_confidence_calibration: pending_pre_sign
+  persistence: incremental_required
+
+implementation:
+  sft_runner: existing_generic_sft_surface_plus_special_token_roundtrip
+  grpo_runner: pending_first_action_mode_reward_surface
+  capability_bank_runner: pending_batched_generation_and_grading_surface
+  posture_pool_builder: pending_rr3_pattern_adapted_to_all_rows_multiclass
+  posture_apply_unblind: pending_hash_gated_positional_join
+  launch_authorized: false
