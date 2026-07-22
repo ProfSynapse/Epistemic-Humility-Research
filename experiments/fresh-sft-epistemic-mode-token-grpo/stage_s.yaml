@@ -57,7 +57,7 @@ modal:
   timeout_hours: 2.0
 
 tuner:
-  expected_commit: c0d29251c64004486829ec2a63ff9190d780b442
+  expected_commit: 428da6b2b1378db6181983400c4965ec193729ca
   staging_root: scratch/eh_staging
   recipe_template: stage_sft_recipe.yaml
   rendered_recipe_file: stage_sft_recipe.yaml
