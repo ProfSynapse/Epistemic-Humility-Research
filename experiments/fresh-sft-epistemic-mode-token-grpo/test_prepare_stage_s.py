@@ -853,4 +853,4 @@ def test_checked_in_stage_config_keeps_full_run_merge_check_separate() -> None:
     assert config["model"]["dtype"] is None
     assert config["model"]["tokenizer"]["verify_merged_model_roundtrip"] is False
     assert config["model"]["tokenizer"]["merged_model_save_method"] == "merged_4bit_forced"
-    assert config["tuner"]["expected_commit"] == "67d28e25cdb93d2c7d8f51358c95a04fa870f75c"
+    assert config["tuner"]["expected_commit"] == "b0b7c7f83f2c8f21a1b7fc127b81a85bf3baff0a"
