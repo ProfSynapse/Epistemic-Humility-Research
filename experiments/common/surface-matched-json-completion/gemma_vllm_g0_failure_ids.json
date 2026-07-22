@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "source_experiment": "family-atlas-surface-matched-vllm-control",
+  "model_id": "gemma4_e4b_it",
+  "expected_completion_rows": 5200,
+  "expected_strict_valid_rows": 5189,
+  "failure_count": 11,
+  "failure_ids": [
+    "umwp:43",
+    "umwp:747",
+    "umwp:959",
+    "umwp:1373",
+    "umwp:1436",
+    "umwp:1570",
+    "umwp:2437",
+    "umwp:4223",
+    "umwp:4682",
+    "umwp:5051",
+    "umwp:5103"
+  ],
+  "origin_hashes": {
+    "completions_sha256": "adb53c0b3024ae32c816ba19912d4215605e42c7e1a11d85914622513f7aee8b",
+    "checkpoint_sha256": "42f3432b6bbb61e33d889a895f7052c747119ae825573801eda085c2c2d28e4f",
+    "provenance_sha256": "175c661b6b550e4584daf8a8d3dc40e4656da1162972c0c23568a1d8cabc1715",
+    "failure_summary_sha256": "3170c85db5bd8c6481363a3e1f22772032b36b1e9be1433f248661bf8efd7336"
+  }
+}

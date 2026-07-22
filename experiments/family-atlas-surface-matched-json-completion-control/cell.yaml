@@ -1,0 +1,444 @@
+schema_version: 1
+seed: 20260721
+
+posture:
+  tier: 2
+  shape: fresh_surface_matched_pool_vllm
+  confirmatory: false
+  tested_families: [gemma, qwen3]
+
+source:
+  name: UMWP
+  official_url: https://raw.githubusercontent.com/Yuki-Asuuna/UMWP/refs/heads/main/data/StandardDataset.jsonl
+  license: CC-BY-SA-4.0
+  raw_sha256: e8840e8383357238a08e9c5028e4758ceceb369e1db31c64678b0f851c9c9e73
+  expected_rows: 5200
+  expected_answerable: 2600
+  expected_unanswerable: 2600
+  native_source_counts:
+    ASDiv: {answerable: 100, unanswerable: 100}
+    GSM8K: {answerable: 1700, unanswerable: 1700}
+    MultiArith: {answerable: 300, unanswerable: 300}
+    SVAMP: {answerable: 500, unanswerable: 500}
+  answerable_nonempty_answer_count: 2600
+  unanswerable_same_source_single_relevant_id_count: 2600
+  unanswerable_nonnull_bookkeeping_answer_ids: [2613, 4258]
+  consume_unanswerable_answer: false
+
+models:
+  gemma4_e4b_it:
+    repo: google/gemma-4-E4B-it
+    revision: fee6332c1abaafb77f6f9624236c63aa2f1d0187
+    num_hidden_layers: 42
+    n_hidden_states: 43
+    hidden_size: 2560
+    planted_hs_index: 21
+    tokenizer_revision: fee6332c1abaafb77f6f9624236c63aa2f1d0187
+    render_contract: experiments/family-atlas-surface-matched-json-completion-control/render_gemma.py:render_with_tokenizer
+    anchor_rule: len(token_ids) - 1 with add_special_tokens=true
+    prior_atlas_pool:
+      source_experiment: doubt-snap-cross-family-confirmatory/gemma4_e4b_it
+      local_artifact: /home/profsynapse/code/ehr-worktrees/gemma-atlas/experiments/doubt-snap-cross-family-confirmatory/analysis/gemma4_e4b_it/split_rows_private.jsonl
+      sha256: c207b245919932928c5f4b35edf5dd01d8d3bf29336868436d59b71ed05de4cd
+  qwen3_4b_raw_base:
+    repo: unsloth/Qwen3-4B
+    revision: 64033659d5caf1b8ed7f929b29de705e93a4d468
+    num_hidden_layers: 36
+    n_hidden_states: 37
+    hidden_size: 2560
+    planted_hs_index: 18
+    tokenizer_revision: 64033659d5caf1b8ed7f929b29de705e93a4d468
+    render_contract: experiments/family-atlas-surface-matched-json-completion-control/render_qwen.py:render_with_tokenizer
+    anchor_rule: len(token_ids) - 1 with add_special_tokens=true
+    prior_atlas_pool:
+      source_experiment: qwen3-4b-family-atlas
+      local_artifact: /home/profsynapse/code/ehr-worktrees/qwen3-atlas/experiments/qwen3-4b-family-atlas/analysis/rows_with_text.jsonl
+      sha256: d1e7154481c8e5265e9701ada6e7aaffd7d7dba4d589002330a45b12eb56af98
+
+generation:
+  engine: vllm
+  decode: greedy
+  do_sample: false
+  max_new_tokens: 512
+  min_new_tokens: 1
+  batch_size: 16
+  num_beams: 1
+  canonical_eos_enabled: true
+  vllm:
+    synaptic_tuner_host_revision: 901dbe803699e0bf00b73426526babdaf8598cf3
+    synaptic_tuner_source:
+      root: synaptic-tuner
+      algorithm: sha256_canonical_path_digest_size_v1
+      sha256: e989fb5ef07d95612dbb6aff88f92c259a484d557c8bb4e91ddf8add2007bee3
+      files:
+      - tuner.py
+      - tuner/__init__.py
+      - tuner/cli/__init__.py
+      - tuner/cli/main.py
+      - tuner/cli/parser.py
+      - tuner/cli/router.py
+      - tuner/handlers/__init__.py
+      - tuner/handlers/base.py
+      - tuner/handlers/batch_generate_handler.py
+      - tuner/core/__init__.py
+      - tuner/core/config.py
+      - tuner/core/interfaces.py
+      - tuner/utils/__init__.py
+      - tuner/utils/conda.py
+      - tuner/utils/environment.py
+      - tuner/utils/validation.py
+      - tuner/batch/__init__.py
+      - tuner/batch/runner.py
+      - tuner/batch/persistence.py
+      - tuner/batch/gpu_telemetry.py
+      - tuner/batch/sync_hook.py
+      - tuner/batch/engines/__init__.py
+      - tuner/batch/engines/base.py
+      - tuner/batch/engines/vllm_engine.py
+      - shared/utilities/__init__.py
+      - shared/utilities/paths.py
+    expected_version: 0.23.0
+    model_runner: v1
+    batch_invariant: true
+    batch_invariant_env: VLLM_BATCH_INVARIANT=1_before_engine_construction
+    compute_dtype: bfloat16
+    trust_remote_code: false
+    tensor_parallel_size: 1
+    max_model_len: 2048
+    gpu_memory_utilization: 0.90
+    max_num_seqs: 32
+    max_num_batched_tokens: 8192
+    per_model:
+      gemma4_e4b_it:
+        limit_mm_per_prompt: {image: 0, audio: 0, video: 0}
+        suppress_tokens:
+        - {token: "<turn|>", expected_id: 106}
+        - {token: "<|tool_response>", expected_id: 50}
+      qwen3_4b_raw_base:
+        limit_mm_per_prompt: {}
+        suppress_tokens:
+        - {token: "<|endoftext|>", expected_id: 151643}
+    structured_output_backend: xgrammar
+    structured_output_disable_any_whitespace: true
+    output_schema:
+      type: object
+      properties:
+        answer: {type: string}
+        response_confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+      required: [answer, response_confidence]
+      additionalProperties: false
+    require_prompt_token_ids_sha256: true
+    require_prompt_token_count: true
+    require_completion_token_ids: true
+    require_finish_reason: true
+    require_schema_hash: true
+  grader_contract:
+    base: program_standard_degeneracy_refusal_alias_correctness
+    answerable_alias_conversion: canonical_string_from_numeric_umwp_answer
+    unanswerable_answers_consumed: false
+    required_fixture_classes: [integer, negative, decimal, numeric_boundary, refusal, malformed, degenerate, wrong_answer]
+  role_labels: [confab, known_correct_answered, unknown_refused]
+  exclude_ambiguous_grade: true
+  answerable_reference_answers_only: true
+  fresh_exclusion:
+    normalization: unicode_normalize_casefold_whitespace_collapse
+    against_each_models_prior_atlas_pool: true
+    commit_hashes: false
+
+surface_basis:
+  scalar_features:
+  - rendered_prompt_token_count
+  - question_char_count
+  - question_word_count
+  - question_line_count
+  - digit_count_and_fraction
+  - punctuation_count_and_fraction
+  - newline_count_and_fraction
+  - uppercase_count_and_fraction
+  lexical:
+    word_ngram_range: [1, 2]
+    char_ngram_range: [3, 5]
+    hash_features_word: 65536
+    hash_features_char: 65536
+    alternate_sign: false
+    tfidf_sublinear_tf: true
+    svd_components_word: 64
+    svd_components_char: 64
+    svd_seed: 20260721
+    scaling: standard
+  block_by: native_source
+  forbidden_features:
+  - role
+  - answer_text
+  - alias_text
+  - UMWP_category
+  - model_generation
+  - model_grade
+  - activation
+  - completion_length
+
+matching:
+  ratio: "1:1:1"
+  roles: [known_correct_answered, confab, unknown_refused]
+  method: deterministic_two_pass_hungarian
+  pass_1:
+    sides: [confab, unknown_refused]
+    within: [native_source, UMWP_category]
+    quota: smaller_role_count_per_source_category
+  pass_2:
+    left: mean_surface_vector_of_matched_unknown_pair
+    right: known_correct_answered
+    within: native_source
+  cost: squared_euclidean_standardized_scalar_and_lexical_svd
+  within: native_source
+  without_replacement: true
+  cross_original: true
+  forbidden_edge_cost: infinity
+  tie_break: lexicographic_role_ordered_umwp_ids
+  category_use: balance_confab_vs_unknown_refused_and_report_only
+  partition:
+    unit: intact_triad
+    stratify_by: native_source
+    seed: 20260721
+  minimum_fit_triads: 64
+  minimum_held_out_triads: 64
+
+surface_classifier:
+  feature_basis: full_hashed_lexical_plus_scalars
+  comparisons: all_pairwise_one_vs_one
+  folds: 5
+  grouped_by: intact_triad
+  metric: maximum_pairwise_best_orientation_held_out_auroc
+  max_auroc: 0.60
+  max_pairwise_scalar_abs_smd: 0.10
+  positive_control_tag: three_column_one_hot_role
+  positive_control_min_each_pairwise_auroc: 0.90
+
+capture:
+  layers: all
+  position: final_prompt_token
+  persist_dtype: float32
+  no_steering_hooks: true
+  profile_population: matched_fit_intact_triads
+
+profile:
+  metric: eff_dim_frac
+  estimator: participation_ratio_over_n_rows
+  depth_formula: hs_index / (n_hidden_states - 1)
+  early_exterior_max_depth: 0.20
+  primary_invariant: peak_location
+  margin_decision_use: descriptive_only
+  require_unique_real_peak: true
+  subsample:
+    fraction: 0.50
+    unit: intact_triad
+    stratify_by: native_source
+    seed: 20260721
+
+read_panel:
+  held_out: true
+  axes: [doubt, caution, raw_refusal]
+  minimum_auroc: 0.80
+  strict_interior_depth: [0.20, 0.85]
+  require_joint_layer: true
+  bootstrap_resamples: 2000
+  bootstrap_seed: 20260707
+  random_direction_seed: 20260707
+
+planted_location_control:
+  seed: 20260722
+  distribution: centered_high_rank_gaussian_row_space_noise
+  rms_scale_grid: [0.25, 0.5, 1, 2, 4, 8, 16]
+  require_unique_peak: true
+  min_peak_to_runner_up_ratio: 1.05
+
+secondary_sensitivities:
+  exact_original_pairs:
+    decision_use: descriptive_only
+    split_by_unanswerable_behavior: true
+
+containers:
+  generation:
+    base_image: vllm/vllm-openai:v0.23.0@sha256:3a1e7f5904e1a1192a02aa0086ceaffc33985d7044c7bb25b3a43d61bdbe3ac0
+    image_index_digest: sha256:6d8429e38e3747723ca07ee1b17972e09bb9c51c4032b266f24fb1cc3b22ed8f
+    image_digest: sha256:3a1e7f5904e1a1192a02aa0086ceaffc33985d7044c7bb25b3a43d61bdbe3ac0
+    expected_vllm_version: 0.23.0
+    hardware_class: NVIDIA_RTX_3090_sm86
+    minimum_compute_capability: 8.0
+    registered_compute_capability: 8.6
+    registered_host_driver: 591.86
+    require_startup_provenance: [vllm, cuda, torch, transformers, image_digest]
+  capture:
+    image_digest: sha256:d445632098cd2c70c115fe84d5343ff98286ac3f510a2d4c9cb488b550a3d23c
+    engine: hf_batched
+
+runtime:
+  wsl_docker_host: unix:///var/run/docker.sock
+  forbid_cpu_model_load_wsl2: true
+  detached_after_minutes: 15
+  detached_launcher: experiments/common/launch_detached.sh
+  approvals:
+  - presign_gemma_vllm_smoke
+  - presign_qwen_vllm_smoke
+  - stage_a_gemma_baseline_generation
+  - stage_a_qwen_baseline_generation
+  - stage_b_gemma_full_depth_capture
+  - stage_b_qwen_full_depth_capture
+  stage_b_requires: [g1_pass, g2_pass, fresh_pi_approval]
+
+presign_reachability:
+  base_stratified_rows_per_model: 20
+  private_rows_per_model: 31
+  base_smoke_manifests:
+    gemma4_e4b_it:
+      artifact: experiments/family-atlas-surface-matched-vllm-control/analysis-committed/gemma4_e4b_it/presign_smoke_manifest.jsonl
+      sha256: d743153fcd5e9f9543ad8b90978ed2bb5b16cea71b589852f85adba941b4150a
+      expected_count: 20
+      model_only_row_id: umwp:609
+    qwen3_4b_raw_base:
+      artifact: experiments/family-atlas-surface-matched-vllm-control/analysis-committed/qwen3_4b_raw_base/presign_smoke_manifest.jsonl
+      sha256: 733207b80ab991fd66958222fd54d7d853b7ba2ef73abdc938b7d9709ec1c68e
+      expected_count: 20
+      model_only_row_id: umwp:717
+  expected_cross_model_base_overlap: 19
+  expected_cross_model_full_overlap: 30
+  prior_failure_manifest:
+    artifact: experiments/common/surface-matched-json-completion/gemma_vllm_g0_failure_ids.json
+    sha256: 85a9dd50bf5ef4ca25bfe7c7301dcd9935359d0ce019d8ab1eeb5fddba1b7e61
+    expected_count: 11
+  require_base_failure_id_overlap: 0
+  require_prior_failures_natural_before_cap: true
+  require_suppressed_token_evidence_absent: true
+  repeats_original_order: 2
+  repeats_fixed_permutation: 2
+  exact_prompt_bytes: true
+  exact_prompt_token_sequence_sha256: true
+  prompt_plus_generation_within_max_model_len: true
+  exact_completion_token_ids_across_repeats: true
+  exact_finish_reasons_across_repeats: true
+  exact_parsed_objects_across_repeats: true
+  whole_output_schema_valid_fraction: 1.0
+  salvage_parsing: forbidden
+  kill_after_first_durable_rows: 16
+  kill_resume_canonical_rowlog_exact: true
+  planted_role_matcher_minimum_fit_triads: 64
+  planted_role_matcher_minimum_held_out_triads: 64
+
+private_predecessor_comparator:
+  gate_effect: g0
+  pooling_forbidden: true
+  model_id: gemma4_e4b_it
+  completions:
+    local_artifact: /home/profsynapse/code/ehr-worktrees/surface-matched-vllm-control/experiments/family-atlas-surface-matched-vllm-control/analysis/gemma4_e4b_it/vllm/completions.jsonl
+    sha256: adb53c0b3024ae32c816ba19912d4215605e42c7e1a11d85914622513f7aee8b
+    expected_rows: 5200
+    expected_strict_valid: 5189
+    expected_invalid: 11
+  valid_id_requirements:
+  - completion_token_ids_exact
+  - finish_reason_exact
+  - parsed_object_exact
+  invalid_id_requirements:
+  - successor_strict_valid
+  - successor_natural_before_512
+  raw_text_comparison: forbidden
+  private_exhaust: analysis/gemma4_e4b_it/predecessor_parity_private.jsonl
+  committed_output: analysis-committed/gemma4_e4b_it/g0_predecessor_parity_summary.json
+
+containment:
+  private_root: experiments/family-atlas-surface-matched-json-completion-control/analysis
+  committed_root: experiments/family-atlas-surface-matched-json-completion-control/analysis-committed
+  committed_row_manifest_fields: [row_id]
+  committed_jsonl_rows_strictly_id_only: true
+  prohibited_committed_fields:
+  - question
+  - answer
+  - aliases
+  - generation
+  - token_ids
+  - normalized_text_hash
+  committed_outputs: id_only_manifests_and_aggregates_only
+
+data_exhaust:
+  generation_runlog:
+    persistence: incremental
+    resumable: true
+    stable_row_key: "umwp:<id>"
+    required_private_fields:
+    - row_key
+    - source
+    - native_source
+    - original_pair_id
+    - category_canon
+    - model
+    - model_revision
+    - renderer_id
+    - seed
+    - prompt_bytes_sha256
+    - prompt_token_ids_sha256
+    - prompt_token_count
+    - generation_text
+    - completion_token_ids
+    - suppressed_token_strings
+    - suppressed_token_ids
+    - finish_reason
+    - parsed_object
+    - answer_value
+    - terminated_naturally
+    - n_new_tokens
+    - full_grader_dict
+    - role
+    - split
+    - triad_id
+    - vllm_version
+    - vllm_model_runner
+    - image_digest
+    - runtime_versions
+    - schema_sha256
+    - scheduler_pins
+    - checkpoint_config_sha256
+    - resume_history
+    schema_smoke_before_sign: true
+    kill_resume_smoke_before_sign: true
+  activations:
+    private_root: analysis/exhaust/activations
+    format: safetensors_sharded
+    persistence: incremental
+    index_fields:
+    - row_key
+    - hs_index
+    - shard_key
+    - dtype
+    - shape
+    - anchor_index
+    - token_ids_sha256
+    - model
+    - model_revision
+    - tensor_sha256
+    - instrument_fingerprint
+    - capture_content_digest
+    retain_private_surface_scalars: true
+    retain_private_lexical_pc_coordinates: true
+    public_token_ids: false
+    public_raw_hashed_lexical_features: false
+  terminal_packages:
+    aggregate: required
+    row_level_generations: required_after_license_gate
+    activation_bundle_private_staging: required
+    public_activation_bundle: separate_source_and_model_license_audit
+  row_level_license:
+    source_key: umwp
+    current_data_exhaust_disposition: pending_audit
+    upstream_declared_data_license: CC-BY-SA-4.0
+    constituent_source_terms_audit_required: true
+    require_canonical_license_gate_entry: true
+    full_text_requires_attribution_and_share_alike_disclosure: true
+    fallback_disposition: license_gate_decides_text_free_or_excluded
+  publication:
+    terminal_status_required: true
+    verification_required: true
+    exact_upload_pi_approval_required: true
+    live_upload_before_terminal: false
