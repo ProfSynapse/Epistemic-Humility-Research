@@ -6,6 +6,49 @@ a claims surface; the signed prose lives in `AMENDMENT.md` and machine state in
 
 ## Entries
 
+### 2026-07-22: bounded Modal Stage-S smoke completed (pre-sign; not verdict-bearing)
+
+- Scope was the six-row, two-step Modal pre-sign smoke only. The amendment is
+  still unsigned; full Stage-S was not authorized or launched, and this entry
+  is not an experiment verdict.
+- Attempt 1 used tuner `67d28e25cdb93d2c7d8f51358c95a04fa870f75c`,
+  Modal app `ap-cYm0lXakdNZJWJZK03zhe7`, and canonical run id
+  `20260722_173803-67d28e25`. The two trainer steps and adapter path completed,
+  then the forced four-bit merge check failed. Canonical manifest status is
+  `failed: Training script exited with code 1`; the root exception was
+  `TypeError: 'BitsAndBytesConfig' object does not support item assignment`
+  when `unsloth_zoo` tried to write `llm_int8_skip_modules` through mapping
+  syntax. Tuner commit `b0b7c7f83f2c8f21a1b7fc127b81a85bf3baff0a`
+  (`Harden forced 4-bit merge compatibility`) fixed that compatibility seam.
+- Attempt 2 used tuner `b0b7c7f83f2c8f21a1b7fc127b81a85bf3baff0a`,
+  Modal app `ap-SSgsOGdrXZiR0SxjOynOdS`, and canonical run id
+  `20260722_180721-b0b7c7f8`. The item-assignment failure was gone and the
+  four-bit merge reached native save, but canonical manifest status was again
+  `failed: Training script exited with code 1`. Transformers attempted reverse
+  weight conversion on already prequantized merged weights and raised
+  `NotImplementedError` from `reverse_weight_conversion`. Tuner commit
+  `04b8faa463db0640bea5803ef73c3bff40ab3a93`
+  (`Save prequantized merge candidates natively`) selected the compatible
+  native representation without reverse conversion.
+- Attempt 3 used tuner `04b8faa463db0640bea5803ef73c3bff40ab3a93`,
+  Modal app `ap-RzuBUu1lyqSAAfcOGF9ubn`, and canonical run id
+  `20260722_183208-04b8faa4`. The canonical manifest and job provenance both
+  ended `completed` after two trainer steps. The final tokenizer retained
+  `<ANSWER>=151670`, `<QUALIFY>=151671`, and `<ABSTAIN>=151672`; the adapter-only
+  artifact contained 505 tensors, no full-vocabulary tensors, and passed an
+  exact 505-tensor save/reload comparison. The forced merge saved an NF4
+  bitsandbytes four-bit model, reloaded it locally on CPU as four-bit, preserved
+  live topology and all three configured rows, and produced identical selected
+  input/output row SHA-256
+  `0ae61a31730c3a82144e65ddf14963ff37c7208258e1061ab5f62090663b49f5`.
+  Temporary merged artifacts were removed and nothing was published.
+- Durable artifacts are on Modal Volume `toolset-training-artifacts` at
+  `/outputs/runs/modal/sft/20260722_183208-04b8faa4/`; the canonical final model,
+  manifest, provenance, training lineage, and capacity features remain there.
+- This closes the bounded tokenizer/adapter/merge/save/reload smoke blocker
+  only. The next gate is user review of the draft, explicit signing, and
+  separate authorization for full Stage-S—not an automatic launch.
+
 ### 2026-07-22: pre-sign cache recovery and dataset-contract build
 
 - Located the complete local 20,000-row Qwen3-4B probe cache and its manifest;
