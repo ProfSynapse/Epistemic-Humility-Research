@@ -1682,7 +1682,7 @@
       "question": "Can a fresh Qwen3-4B SFT imitate a frozen empirical epistemic action policy by emitting ANSWER, QUALIFY, or ABSTAIN as its first action while preserving the corresponding visible posture and answer quality?",
       "registered": true,
       "slug": "fresh-sft-epistemic-mode-token-grpo",
-      "status": "signed",
+      "status": "running",
       "title": "Fresh-SFT Epistemic Mode Tokens (Stage S)",
       "type": "training-run",
       "verdict": ""

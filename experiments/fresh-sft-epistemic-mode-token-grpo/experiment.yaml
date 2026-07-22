@@ -1,7 +1,7 @@
 slug: fresh-sft-epistemic-mode-token-grpo
 title: Fresh-SFT Epistemic Mode Tokens (Stage S)
 type: training-run
-status: signed
+status: running
 registered: true
 created_at: '2026-07-22T11:04:31Z'
 question: Can a fresh Qwen3-4B SFT imitate a frozen empirical epistemic action policy

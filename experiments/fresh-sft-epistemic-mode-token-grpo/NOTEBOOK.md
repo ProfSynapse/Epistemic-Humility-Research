@@ -6,6 +6,22 @@ a claims surface; the signed prose lives in `AMENDMENT.md` and machine state in
 
 ## Entries
 
+### 2026-07-22: full Stage-S training launched on Modal
+
+- After explicit user authorization to upload the full private training
+  payload and launch paid compute, staged exactly 18,197 train rows plus the
+  signed direct-SFT YAML under Modal input namespace
+  `stage-s-full-20260722-204622-qwen3-4b`. Dev and held-out were not uploaded.
+- Submitted the signed Qwen3-4B A10G six-hour stable run through direct remote
+  function `run_stable_training`. Launch-spec SHA-256 is
+  `709dcd83b421977c670696aea9925559f86368f7b5bb3c69d5b34ca86d066e54`;
+  tuner commit is `ef4e45e611e0eef0b935b60eb42ce73d3b5268b1`.
+- Modal app `ap-kvsfvqaI0ZmXmpEPiNkcL0` showed one live task. Remote logs confirmed
+  exact source materialization and the expected `train_sft.py` invocation with
+  the stable run timestamp, Modal Volume output root, and mounted signed config.
+- The experiment status moved from `signed` to `running`. Qualification remains
+  unlaunched and requires the committed training `DONE` identity first.
+
 ### 2026-07-22: Stage S signed
 
 - The user approved the prospective gates and authorized the full Qwen3-4B
