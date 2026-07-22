@@ -1461,15 +1461,17 @@
           "test_surface_diversity_control.py": "07dcf8491fdb14cf436279c3666729893e7bffc5250da1fb8eafa8cd575aae04"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:family-atlas-surface-diversity-control"
+      ],
       "prediction": "For both Gemma-4-E4B-it and Qwen3-4B, the eff_dim_frac peak remains early-exterior at depth at most 0.20 in both the full-fit-pool combined-surface residual profile and the viable KUQ-only matched combined-residual profile, including the fixed-seed 50% full-row and intact-matched-pair subsamples.",
       "question": "Do the Gemma-4-E4B-it and Qwen3-4B early-exterior eff_dim_frac peaks persist after controlling for the registered linear question-surface model and prompt length on their existing captures?",
       "registered": true,
       "slug": "family-atlas-surface-diversity-control",
-      "status": "running",
+      "status": "null-result",
       "title": "Family Atlas Surface-Diversity Control",
       "type": "lab-diagnostic",
-      "verdict": ""
+      "verdict": "G0-G1 passed, but G2 matching support failed for Gemma and Qwen, so residualization and peak-location endpoints were not reached; this is indeterminate and does not falsify the early-exterior prediction."
     },
     {
       "checkpoint": {

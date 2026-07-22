@@ -1,6 +1,6 @@
 # Family Atlas Surface-Diversity Control
 
-Status: running (CPU analysis complete; PI verdict adjudication pending).
+Status: null-result (PI adjudicated 2026-07-22).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -289,8 +289,10 @@ pairs but had best-orientation surface-role AUROC 0.643 and maximum scalar SMD
 0.154; Qwen retained 108 pairs but had AUROC 0.610 and maximum scalar SMD 0.174.
 The registered thresholds were AUROC at most 0.60 and maximum scalar SMD at most
 0.10. The hard stop therefore fired before G3-G5, and no controlled peak profile
-was computed. The aggregate instrument status is `indeterminate` with the
-pre-stated Shape B escalation. PI verdict adjudication remains pending.
+was computed. The aggregate instrument status is `indeterminate`. The PI
+adjudicated this as a null result caused by prerequisite support failure, not a
+falsification of the early-exterior prediction. The registered Shape B
+escalation was subsequently attempted in separately governed experiments.
 
 Aggregate artifact:
 `analysis-committed/aggregate_results.json`, sha256
