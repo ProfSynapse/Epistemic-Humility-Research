@@ -6,6 +6,10 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-22: PI selected scoreboard option 1, approved signing, and approved
+  the real CPU analysis launch. `bin/exp sign` pinned `cell.yaml`, `gates.yaml`,
+  the analysis harness, and its focused tests. No instrument threshold or
+  endpoint changed after signing.
 - 2026-07-22: Scaffolded from updated `main` with `bin/exp new` as a Tier 3
   registered lab diagnostic. The decisive design uses full-population
   cross-fitted residualization and contains no matching gate. No activation

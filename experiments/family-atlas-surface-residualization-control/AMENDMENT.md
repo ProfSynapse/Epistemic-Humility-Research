@@ -1,6 +1,7 @@
 # Family Atlas Surface Residualization Control
 
-Status: draft (not signed; do not run the real-data analysis).
+Status: signed 2026-07-22 (machine state and instrument hashes in
+`experiment.yaml`; real-data CPU launch approved by the PI).
 
 The machine state lives in `experiment.yaml`. This document pre-states the
 design and decision rules before any controlled profile is computed.
