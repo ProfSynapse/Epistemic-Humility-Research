@@ -1,8 +1,8 @@
 # Fresh-SFT Epistemic Mode Tokens (Stage S)
 
-**Status:** SIGNED 2026-07-22. Full Stage-S training and dev qualification were
-explicitly authorized by the user; each paid Modal submission remains guarded
-by its signed, hash-bound invocation contract.
+**Status:** RUNNING. Signed 2026-07-22; full Stage-S training completed on
+2026-07-22. Dev qualification remains unlaunched, and every paid Modal
+submission remains guarded by its signed, hash-bound invocation contract.
 
 **Tier:** Tier-2 exploratory training cell, separate from the locked PROTOCOL
 v0.3 matrix.
@@ -259,5 +259,59 @@ does not authorize full Stage S.
 
 ## 10. Outcome
 
-Not run. At resolution, report every pre-signed Stage-S qualification gate on
-the dev split without using or scoring sealed held-out row content.
+Full Stage-S training completed all 2,275 optimizer steps, and the canonical
+adapter, tokenizer, special-token lineage, and terminal provenance were
+persisted. This is an operational training result, not the experiment verdict.
+
+**Qualification history (two runs, one valid).** The first dev qualification
+run (`stage-s-dev-20260723-local-prep`, 2026-07-23) completed but is
+INVALID as an instrument failure: the pinned tuner's `hf_batched` engine
+loaded the adapter directory via a bare `AutoModelForCausalLM.from_pretrained`,
+which applied the LoRA matrices but silently dropped the `trainable_tokens`
+embedding delta — the sole mechanism differentiating the three mode tokens.
+Diagnostic evidence (transformers' own UNEXPECTED/MISSING load report in the
+run log; embedding rows bit-identical to untouched reserved rows; all three
+forced-token lanes producing byte-identical output per row) and the repair
+(tuner commit `f6f1229`, PEFT-aware adapter-dir loading, regression-tested)
+are recorded in `NOTEBOOK.md`. TUNER-PIN DEVIATION, recorded: the signed
+`qualification.yaml` pins tuner `ef4e45e6`; the verdict-bearing re-run
+executed with the repaired tuner `f6f1229` (the pinned commit plus only the
+loader fix). The signed file keeps its signed bytes (the `exp repin` verb is
+scoped to signed-but-unlaunched instruments, so a mid-run repin is not
+representable); the executed tuner commit is captured in the run manifest and
+this deviation record. No gate, scorer, threshold, or dataset changed.
+
+**Verdict-bearing run** (`stage-s-dev-20260723-rerun-f6f1229`, 2026-07-23).
+LANE DEVIATION, recorded: §8 pins the verdict-bearing qualification to the
+Modal A10G lane; this run executed on the local RTX 3090 at explicit user
+direction (user accepted the local run as verdict-bearing, 2026-07-23), with
+the identical pinned runner, scorer, dev hashes, seed, and gates — only the
+compute lane differed. Results, straight:
+
+- Format/mechanism gates ALL PASS at 1.0: configured first token 602/602,
+  valid JSON, exact fields, confidence parse, forced-posture compliance
+  1806/1806, token stripping native+forced, confidence SD 0.4845.
+- Per-mode recall: ABSTAIN 154/200 = 0.77 (Wilson lower 0.707) PASS;
+  ANSWER 160/202 = 0.792 (Wilson lower 0.731) PASS; **QUALIFY 0/200 = 0.00
+  (Wilson lower 0.0) FAIL** — the native policy collapsed to two modes
+  (predicted counts: ABSTAIN 290, ANSWER 312, QUALIFY 0). Max-single-mode
+  312 <= 374 passes, so this is a QUALIFY void, not a one-mode collapse.
+- Answer-quality noninferiority FAIL: paired StageS−base correctness
+  −0.239, 95% CI [−0.281, −0.196], vs the −0.10 floor. Mechanism note
+  (descriptive, not a gate reinterpretation): the checkpoint over-abstains
+  (290 predicted vs 200 true ABSTAIN), and abstentions on answerable rows
+  score 0 against base's correct answers.
+
+**FALSIFIER FIRED** on two pre-registered limbs (QUALIFY Wilson lower <= 0.5;
+answer quality below the noninferiority floor): this Stage-S checkpoint does
+not qualify for the separate downstream GRPO experiment. Per §7 this
+adjudicates only checkpoint qualification, not any GRPO hypothesis. Held-out
+remains sealed (0 rows accessed in both runs).
+
+**Scoreboard adjudication:** orchestrator call vindicated (named the rare
+QUALIFY mode as the highest qualification risk; it was the sole recall
+failure). User call partial: the SFT demonstrably teaches the special tokens
+and two of three modes, but not the full three-way policy. Likely mechanism
+for the void (post-hoc, non-binding): QUALIFY was ~8% of training sources
+(1,537 vs 10,156/8,307); a successor design should address class balance and
+pre-test QUALIFY's in-representation separability before any retrain.

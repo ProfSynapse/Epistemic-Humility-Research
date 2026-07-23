@@ -1,7 +1,7 @@
 slug: fresh-sft-epistemic-mode-token-grpo
 title: Fresh-SFT Epistemic Mode Tokens (Stage S)
 type: training-run
-status: running
+status: falsified
 registered: true
 created_at: '2026-07-22T11:04:31Z'
 question: Can a fresh Qwen3-4B SFT imitate a frozen empirical epistemic action policy
@@ -74,5 +74,11 @@ instrument:
       checkpoint_path: experiments/fresh-sft-epistemic-mode-token-grpo/analysis/qualification/<run-id>/run_manifest.json
 inputs:
 - experiments/common/knowledge_probe/scoring.py
-verdict: ''
+verdict: 'Falsifier fired on the valid corrected dev qualification (local lane and
+  repaired-tuner deviations user-accepted and recorded): the fresh SFT installs the
+  native mode-token mechanism perfectly (all format gates 1.0 after the tuner adapter-loading
+  instrument failure was diagnosed and repaired at f6f1229) and learns ABSTAIN 0.77
+  / ANSWER 0.79 recall, but never emits QUALIFY natively (0/200) and answer quality
+  falls below the noninferiority floor (-0.239 vs -0.10) via over-abstention, so the
+  Stage-S checkpoint does not qualify for downstream GRPO; held-out remains sealed.'
 kg: []

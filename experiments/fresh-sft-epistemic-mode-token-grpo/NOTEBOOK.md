@@ -6,6 +6,163 @@ a claims surface; the signed prose lives in `AMENDMENT.md` and machine state in
 
 ## Entries
 
+### 2026-07-23: corrected dev qualification stage-s-dev-20260723-rerun-f6f1229 VALID; falsifier fired; experiment resolved falsified
+
+- Re-ran the full 3,010-generation dev qualification on the repaired tuner
+  (`f6f1229`), fresh run id `stage-s-dev-20260723-rerun-f6f1229`, same
+  hash-bound arguments, pinned runtime, seed 20260722, batch 8, local
+  RTX 3090. Held-out sealed both runs (`heldout_rows_accessed: 0`).
+- LANE DEVIATION recorded: §8 pins the verdict-bearing qualification to the
+  Modal A10G lane; the user explicitly directed and accepted local execution
+  as verdict-bearing (2026-07-23). Identical runner/scorer/hashes/gates; only
+  the compute lane differed.
+- Instrument now clean: every format gate at 1.0 (native configured first
+  token 602/602, JSON, fields, confidence parse, forced posture 1806/1806,
+  stripping). Confirms the first run's zeros were entirely the loader defect.
+- Behavioral result, straight: ABSTAIN recall 0.77 (Wilson lower 0.707) PASS,
+  ANSWER 0.792 (0.731) PASS, QUALIFY 0/200 FAIL; predicted mode counts
+  ABSTAIN 290 / ANSWER 312 / QUALIFY 0; answer-quality noninferiority FAIL
+  (−0.239, CI [−0.281, −0.196], floor −0.10); confidence SD 0.4845 PASS;
+  max-single-mode 312/602 PASS.
+- Lead adjudication: falsifier fired on the QUALIFY-recall and
+  answer-quality limbs; checkpoint does not qualify for downstream GRPO.
+  Full adjudication prose in AMENDMENT.md §10. Resolved with
+  `--status falsified`. Successor design (class-balanced retrain with a
+  QUALIFY separability pre-gate) to be drafted as a NEW experiment.
+- Bookkeeping correction (lead): the earlier entry below records editing
+  `qualification.yaml`'s tuner pin to `f6f1229`. That edit was reverted —
+  the signed file keeps its signed bytes (`exp repin` is scoped to
+  signed-but-unlaunched instruments; a mid-run repin is intentionally not
+  representable, and the pin-drift validator correctly rejected the edited
+  file at commit). The repaired-tuner execution is instead recorded as a
+  deviation in AMENDMENT.md §10, with the executed commit captured in the
+  re-run's `run_manifest.json`. The re-run itself verified the tuner
+  worktree at `f6f1229` clean at launch time.
+
+### 2026-07-23: dev qualification run stage-s-dev-20260723-local-prep INVALIDATED as an instrument failure; tuner engine repaired at f6f1229
+
+- The local RTX 3090 dev qualification run `stage-s-dev-20260723-local-prep`
+  (prepare -> generate -> score against `qualification.yaml`) completed and
+  produced a `summary.json` with every gate failing:
+  `configured_first_token_rate=0.0`, all 602 native rows scored mode `None`,
+  `forced_posture_compliance=0.3328`, and
+  `answer_quality_noninferiority` point difference `-0.573`
+  (CI `[-0.613, -0.533]`). Adjudicating this run's numeric result against the
+  gates in `qualification.yaml` was withheld pending diagnosis, per the
+  read-before-you-cite / no-goalpost-tuning discipline.
+- A bounded, read-only GPU diagnostic (no re-scoring, no gate/scorer/config
+  edits, at most a handful of forward passes) traced the null result to an
+  **instrument defect in the Synaptic-Tuner generation engine**, not a
+  behavioral failure of the trained SFT checkpoint:
+  - Transformers' own load report, emitted every time the qualification
+    runner loaded the local Stage-S adapter directory (visible in
+    `stage_s_qualify_run.log` lines 168 and 337, for the `stage_s_native` and
+    `stage_s_forced` invocations respectively), flagged
+    `model.embed_tokens.token_adapter.trainable_tokens_delta` as
+    `UNEXPECTED` and the corresponding `.default`-suffixed keys as `MISSING`.
+  - `tuner/batch/engines/hf_batched.py`'s `_ModelBundle` loaded the local
+    adapter directory via a bare `AutoModelForCausalLM.from_pretrained()`
+    instead of `peft.PeftModel.from_pretrained(base, adapter_dir)`. The
+    ~500 standard LoRA `lora_A`/`lora_B` matrices merged fine through that
+    generic state-dict load; the adapter's `trainable_token_indices`
+    embedding-delta component (the sole mechanism differentiating
+    `<ANSWER>`/`<QUALIFY>`/`<ABSTAIN>`) did not, and was silently dropped
+    rather than raising.
+  - Direct comparison: loading the checkpoint the way the qualification
+    runner actually does (PATH A) left the embedding rows for token ids
+    151670-151672 bit-identical (norm 0.364954-0.364955) to an untouched
+    reserved vocabulary row, with those three tokens sitting at logit rank
+    ~57,000-78,000 out of ~152,000 at the generation position. Loading the
+    same checkpoint via explicit `peft.PeftModel.from_pretrained` (PATH B)
+    shifted those rows measurably (norm 0.411-0.418) and put the three
+    configured tokens in the top-3 logit slots by a wide margin (24.4-30.25
+    vs ~15-17 for the next-best ordinary token) on every probe prompt tried.
+  - The forced-lane data corroborates the same defect: all three forced
+    tokens (`<ANSWER>`, `<QUALIFY>`, `<ABSTAIN>`) produced byte-identical
+    completions for 100% of the 602 forced rows in every lane
+    (`{"answer":"I don't know reliably.","answer_confidence":0.0151...}`,
+    an exactly memorized Jeffreys-mean-`(0+0.5)/33` ABSTAIN training target),
+    consistent with the model being unable to distinguish those three token
+    ids from any other unused vocabulary slot. `forced_posture_compliance`
+    landing at exactly 1/3 (0.3328) reflects only that ABSTAIN's target
+    happens to equal this universal fallback string, not partial per-mode
+    differentiation.
+  - Training's own recorded final loss (`0.1282158998`, all 2,275 steps
+    completed, per the entry below) is consistent with PATH B's clean,
+    strongly-separated signal and not with PATH A's null signal, i.e. the
+    SFT itself is not implicated by this evidence.
+- Repair: tuner commit `f6f1229065b846b9bae2fa1d375d112d4a0850a1` on
+  `feature/configurable-special-tokens` (parent
+  `ef4e45e611e0eef0b935b60eb42ce73d3b5268b1`) adds generic local-adapter-dir
+  detection (`adapter_config.json` present) to `_ModelBundle` and routes
+  that case through `peft.AutoPeftModelForCausalLM.from_pretrained`, which
+  resolves the base model from the adapter's own config and applies every
+  adapter component (LoRA deltas and the trainable-tokens embedding delta)
+  through PEFT's own loader. Plain hub ids and non-adapter local paths are
+  unaffected. No Epistemic-specific logic: detection and repair are generic,
+  with no token-id knowledge added to the tuner. Verified: the tuner's own
+  focused suite (`tests/batch/test_engines_and_runner.py`, 14/14 including
+  two new regression tests; `tests/trainers/sft/test_special_tokens.py`,
+  74/74, untouched by the change) and an engine-path re-run of the
+  PATH-A/PATH-B diagnostic against the real Stage-S checkpoint, which
+  reproduced PATH B's numbers exactly through the fixed `_ModelBundle` code.
+- Disposition: `stage-s-dev-20260723-local-prep`'s recorded gate failures are
+  an **instrument-failure invalidation**, not a Stage-S falsifier result.
+  `qualification.yaml`'s `tuner.expected_commit` is updated to
+  `f6f1229065b846b9bae2fa1d375d112d4a0850a1` for the corrected re-run. No
+  gate, scorer, threshold, posture contract, or dataset row was touched by
+  this diagnosis or repair; held-out remained sealed throughout (all
+  diagnostic and repair work read only from the dev split and the already-
+  produced qualification artifacts). This adjudication is recorded here at
+  the lead's direction; the corrected re-run under the repaired tuner
+  commit is the qualifying result for the Stage-S falsifier in
+  `AMENDMENT.md` section 7.
+
+### 2026-07-23: full Stage-S training completed and adapter harvested
+
+- Modal app `ap-kvsfvqaI0ZmXmpEPiNkcL0` completed normally at
+  `2026-07-22T22:07:13Z`. The trainer reached 2,275/2,275 steps in 4,336.5
+  seconds at 0.525 steps/second and recorded descriptive final train loss
+  `0.1282158998`.
+- The committed `DONE`, `COMPLETION_READY.json`, manifest, job provenance, and
+  training lineage agree on status and exact identity: run
+  `stage-s-full-20260722-204622-qwen3-4b`, tuner commit
+  `ef4e45e611e0eef0b935b60eb42ce73d3b5268b1`, config SHA-256
+  `dbc79b62e77923dfcea04193b1017aa5d05deac2ce96efafdab3478952d9739b`,
+  and train SHA-256
+  `da473bc05e544cd2cbfc091e9a9f319ed5623fef2ef969ad02a732d307246268`.
+- Downloaded the canonical eight-file adapter/tokenizer bundle plus six root
+  provenance files into the ignored local path
+  `analysis/checkpoints/stage-s-full-20260722-204622-qwen3-4b-ef4e45e6/`.
+  No train, dev, or held-out rows were downloaded during this harvest.
+- The local adapter SHA-256
+  `2dfa92f4d3e8cd332552c70ae84e5bdc6d8883451a575d30e5ef51a4a4861a09`
+  and adapter-config SHA-256 match the training lineage. Safetensors exposes
+  the expected 505 tensors. The artifact-tree SHA-256 is
+  `0a226657eff07cc9aa7a0aa784d871b0eda4864995dfdb129063e3f4bcf7afb5`.
+- Low-level offline tokenizer validation confirmed atomic encodings and exact
+  configured IDs: `<ANSWER>=151670`, `<QUALIFY>=151671`, and
+  `<ABSTAIN>=151672`. The current local `unsloth_env` Transformers version is
+  not compatible with the newer saved `extra_special_tokens` config shape, so
+  evaluation must use the signed pinned qualification image/dependencies or an
+  equivalently compatible runtime. System Python with the signed Transformers
+  5.5.0 pin loads the tokenizer successfully. The older-environment failure is
+  a local runtime mismatch, not an artifact-integrity failure.
+- The signed qualifier's GPU-free `prepare` phase completed as run
+  `stage-s-dev-20260723-local-prep` against the local artifact tree and the
+  allowed 602-row dev split. It materialized 602 base-native prompts, 602
+  Stage-S-native prompts, and 1,806 forced-token prompts, reported
+  `heldout_rows_accessed=0`, and left `launch_authorized=false`. No generation,
+  scoring, or paid compute occurred.
+- Modal CLI 1.5.1 directory-level `volume get` concatenated the remote files
+  into one noncanonical file. The correct named files were fetched separately,
+  verified, and the duplicate was removed. The canonical Modal source remains
+  unchanged and recoverable.
+- The experiment remains `running`: training is complete, but the 602-row
+  dev-only qualification has only been prepared locally and remains unlaunched.
+  No scientific gate or verdict has been adjudicated, and held-out remains
+  sealed.
+
 ### 2026-07-22: full Stage-S training launched on Modal
 
 - After explicit user authorization to upload the full private training
