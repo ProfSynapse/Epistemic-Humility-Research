@@ -1839,7 +1839,9 @@
           "test_surface_residualization_control.py": "401aea1283209ce82d24ee037e6b3f97f64eb777ed624980fdc78dd8cfbc0823"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:family-atlas-surface-residualization-control"
+      ],
       "prediction": "For both Gemma-4-E4B-it and Qwen3-4B, the eff_dim_frac peak remains early-exterior at depth at most 0.20 in both the full-fit combined-surface residual profile and its fixed-seed 50% stratified stability profile.",
       "question": "Does the early-exterior family-atlas eff_dim_frac peak remain at depth at most 0.20 after cross-fitted removal of prompt-surface-predictable activation variance in the existing Gemma-4-E4B-it and Qwen3-4B atlas fit populations?",
       "registered": true,

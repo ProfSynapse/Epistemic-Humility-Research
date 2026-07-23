@@ -48,4 +48,5 @@ inputs:
 verdict: Registered linear prompt-surface residualization left the early-exterior
   eff_dim_frac peak unchanged on Gemma (hs4, depth 0.095) and Qwen (hs5, depth 0.139)
   in full and 50% profiles; G0-G5 all passed.
-kg: []
+kg:
+- experiment:family-atlas-surface-residualization-control
