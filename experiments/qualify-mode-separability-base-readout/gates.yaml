@@ -1,0 +1,76 @@
+# QUALIFY mode separability on base-model readout: pre-stated pass/fail thresholds.
+# DRAFT. LOCK at signing (bin/exp sign). Full rationale in AMENDMENT.md.
+# Provenance for every numeric bar is cited inline; nothing here is a rounded
+# convenient default.
+
+# --- PRIMARY gate: banded QUALIFY-vs-rest AUROC from the k-regression (a) ---
+# This is the readout that most directly tests the lead's ordinal-band framing:
+# if k is well encoded, the distance-from-band-center score should separate
+# QUALIFY from the rest even though a naive linear one-vs-rest probe cannot.
+# Reported at all 4 depths (25/50/75/95% of 36 layers); the PRIMARY claim is the
+# BEST-performing depth (max over 4 correlated depths, not multiplicity-corrected
+# -- this is exploratory lab-diagnostic evidence, not a locked headline claim; see
+# AMENDMENT.md "Multiple comparisons" note). Thresholds are copied verbatim from
+# the program's only prior precedent for "does this base-model readout clear a
+# useful, certifiable level" (bb-base-propensity-fit-read/gates.yaml
+# reading_gate, itself derived from AL/H9's readout-quality contrast bar).
+primary_gate:
+  metric: qualify_vs_rest_auroc_from_a_k_regression
+  selection: max_over_4_depths
+  bootstrap_resamples: 1000
+  bootstrap_ci: 0.95
+  pass:
+    auroc_min: 0.62            # AND ci_lower > pass_ci_lower_min
+    ci_lower_min: 0.55
+  fail:
+    auroc_max: 0.55            # OR ci_upper < fail_ci_upper_max
+    ci_upper_max: 0.60
+  inconclusive: "point estimate strictly between 0.55 and 0.62, or a CI straddling the lines"
+  interpretation:
+    pass: "QUALIFY is recoverable from the base model's own representation; a class-balanced retrain is plausibly worth trying"
+    fail: "QUALIFY is not linearly encoded (even under a band-aware readout) at any measured depth; retraining with class balance alone would not be expected to fix the void -- the category itself is not recoverable this way"
+    inconclusive: "no retrain recommendation either way; report the numbers straight and flag for a larger fit population or different anchor before deciding"
+
+# --- SECONDARY (reported, non-gating): direct multinomial 3-way readout (b) -
+# A genuinely different model class (softmax over 3 classes, not a thresholded
+# regression) that can also express a middle band via the two decision
+# boundaries around the QUALIFY class. Expected to correlate with the primary
+# gate; if it diverges by more than the pass/fail bar width (0.62-0.55=0.07 AUROC),
+# that is flagged as an anomaly for lead review, not silently resolved either way.
+secondary_readout:
+  metric: qualify_vs_rest_auroc_from_b_multinomial
+  selection: report_all_4_depths_and_max
+  bootstrap_resamples: 1000
+  bootstrap_ci: 0.95
+  divergence_flag_threshold: 0.07     # |secondary_max - primary_max| > this -> flag, do not resolve silently
+
+# --- FLOOR / CONTRAST (reported, non-gating): naive linear QUALIFY-vs-rest (c)
+# Expected to underperform (a)/(b) if the "middle band defeats one-vs-rest"
+# premise holds. This is the demonstration case, not a claim; if (c) is NOT
+# meaningfully lower than (a)/(b) (within the same 0.07 AUROC band used above),
+# that is also reported straight -- it would mean the naive floor was not
+# actually informative here, worth noting for future diagnostic design.
+naive_floor:
+  metric: qualify_vs_rest_auroc_from_c_naive_binary
+  selection: report_all_4_depths_and_max
+  bootstrap_resamples: 1000
+  bootstrap_ci: 0.95
+  expected_gap_vs_primary_min: 0.07   # descriptive; not a pass/fail bar
+
+# --- Mechanical / fidelity checks (precondition; must pass before gates are meaningful)
+mechanical_checks:
+  extraction_completeness:
+    # every fit_population + eval row must have all 4 depths persisted before fitting
+    required: 100pct
+  predicted_k_dev_sd_min: 0.01          # a k-regression that collapsed to a constant is a pipeline failure, not a null result
+  no_nan_or_inf_in_features_or_predictions: true
+  determinism_check:                    # mirrors bb-base-propensity-fit-read BB-FID-1
+    cosine_min: 0.999999
+    maxabs_diff_max: 1.0e-5
+    applies_at: best-performing depth by primary QUALIFY AUROC (post-hoc index, not a knob)
+
+# --- Descriptive-only outputs (reported, never gating) ---------------------
+descriptive:
+  - spearman_and_pearson_dev_k_regression: "true correct_count vs predicted_k, all 602 dev rows"
+  - banded_classification_accuracy: "predicted_k thresholded at 10/21 (cell.yaml band_rule) vs true 3-way mode_label, all 602 dev rows, confusion matrix reported"
+  - per_mode_recall_precision_from_a_and_b: "ABSTAIN/QUALIFY/ANSWER, from both the banded-threshold classifier (a) and the direct multinomial classifier (b)"

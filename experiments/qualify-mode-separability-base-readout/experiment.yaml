@@ -1,0 +1,64 @@
+slug: qualify-mode-separability-base-readout
+title: QUALIFY Mode Separability on Base-Model Readout
+type: lab-diagnostic
+status: signed
+registered: true
+created_at: '2026-07-23T22:27:09Z'
+question: Is the QUALIFY category of the falsified fresh-sft-epistemic-mode-token-grpo
+  Stage-S checkpoint recoverable from the base model's own pre-generation representations
+  -- i.e. would a class-balanced retrain plausibly fix the QUALIFY-void, or is the
+  category itself not encoded in the base model?
+prediction: The QUALIFY band is substantially recoverable from base-model hidden states
+  under a band-aware readout (banded k-regression and/or direct multinomial 3-way
+  readout clear the primary PASS bar, AUROC>=0.62 with CI lower>0.55, at at least
+  one of the four measured depths), while the naive linear QUALIFY-vs-rest floor underperforms
+  both band-aware readouts by a nontrivial margin -- supporting a retrain-worth-trying
+  verdict and confirming the class-imbalance-during-training mechanism flagged in
+  fresh-sft-epistemic-mode-token-grpo/AMENDMENT.md sec 10 rather than a fundamentally
+  unencoded category.
+falsifier: If both the banded k-regression QUALIFY-vs-rest AUROC and the direct multinomial
+  3-way QUALIFY-vs-rest AUROC fail the PASS bar at every one of the four measured
+  depths (point AUROC<=0.55 OR bootstrap 95% CI upper<0.60), that falsifies recoverability
+  under this instrument -- a class-balanced retrain would not be expected to fix the
+  QUALIFY-void by this evidence, and the category should be treated as not encoded
+  (or not linearly/banded-linearly encoded) in the base model's representation at
+  these depths.
+checkpoint:
+  repo: unsloth/Qwen3-4B-bnb-4bit
+  revision: cad0bedfdd862093a12af478cb974ab2addd0e0a
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - extract_hidden_states.py
+  - fit_readouts.py
+  - test_qualify_separability.py
+  pins:
+    cell.yaml: 227a129d641dcf26d8f23bdfdbe223f9a119a1d9b6e662bb3c913f05f8725ca0
+    gates.yaml: ad4629db1cc7d860ea2d06c81ce9cafa8cd25462372f91b93222fc00adba3104
+    extract_hidden_states.py: b0bfabf76a472d0066e3f5b90bd5d488947a8d3deaba90134b184871071c0b74
+    fit_readouts.py: e835fd9c6009f3b51c204f831173ce6f8fa93bf3962f43661b6f595aaf2925b8
+    test_qualify_separability.py: 469d8c293dca5a705b9342237f6640c5b4d75cfb4b6fd298f6fb6ed2c2b9eec3
+  persistence:
+    extract_hidden_states.py:
+      persistence: incremental
+      checkpoint_path: experiments/qualify-mode-separability-base-readout/analysis/extraction/index.jsonl
+    fit_readouts.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 30.0
+    test_qualify_separability.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 5.0
+inputs:
+- experiments/fresh-sft-epistemic-mode-token-grpo/AMENDMENT.md
+- experiments/fresh-sft-epistemic-mode-token-grpo/dataset_builder.yaml
+- experiments/fresh-sft-epistemic-mode-token-grpo/qualification.yaml
+- experiments/fresh-sft-epistemic-mode-token-grpo/analysis/dataset/train.jsonl
+- experiments/fresh-sft-epistemic-mode-token-grpo/analysis/dataset/dev.jsonl
+- experiments/fresh-sft-epistemic-mode-token-grpo/analysis/dataset/aggregate_manifest.json
+- experiments/bb-base-propensity-fit-read/AMENDMENT.md
+- experiments/bb-base-propensity-fit-read/gates.yaml
+- docs/atlas/family-layer-map.md
+verdict: ''
+kg: []
