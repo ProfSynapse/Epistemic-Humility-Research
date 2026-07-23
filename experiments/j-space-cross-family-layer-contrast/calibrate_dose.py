@@ -57,6 +57,30 @@ def choose_dose(layer_results: list[dict], min_confab_rate: float) -> dict | Non
     )[0]
 
 
+def _dose_key(layer_name: str, dose: float) -> str:
+    return f"{layer_name}::{dose}"
+
+
+def load_dose_checkpoint(path: Path) -> dict[str, dict]:
+    """Load the per-(layer,dose) checkpoint records: {key -> dose record}."""
+    if not path.is_file():
+        return {}
+    out: dict[str, dict] = {}
+    for ln in path.open(encoding="utf-8"):
+        if ln.strip():
+            obj = json.loads(ln)
+            out[obj["key"]] = obj["rec"]
+    return out
+
+
+def append_dose_checkpoint(path: Path, key: str, rec: dict) -> None:
+    """Durably append one completed (layer,dose) record before moving on, so a
+    kill mid dose-ladder loses at most the in-flight cell, not the whole sweep."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps({"key": key, "rec": rec}, ensure_ascii=False) + "\n")
+
+
 def run(args: argparse.Namespace) -> dict:
     family = args.family
     fam_cfg = load_family(family)
@@ -86,33 +110,62 @@ def run(args: argparse.Namespace) -> dict:
     )
     base_rows = confab_fit + known_fit
 
-    model, tokenizer, _hidden_size, _n_layers = ml.load_model_and_tokenizer(family)
+    # Kill-resume: the dose ladder is a long per-(layer,dose) GPU generation
+    # sweep. Each completed (layer,dose) cell is appended durably to a JSONL
+    # checkpoint the moment it finishes, and a resumed run skips cells already
+    # recorded (own-JSONL resume, the mine_eval_pool.py pattern). It is keyed by
+    # (layer,dose), NOT per-row, because the ladder runs the SAME rows under
+    # DIFFERENT doses -- a per-row key would collide across doses (this is the
+    # exact reason calibrate_dose was left out of run_contrast.py's per-row
+    # RunLog wiring). Resume assumes the same --doses ladder; use --fresh to
+    # restart. See experiment.yaml instrument.persistence.
+    ckpt_path = analysis / "runlog" / "calibrate_dose_records.jsonl"
+    if args.fresh and ckpt_path.is_file():
+        ckpt_path.unlink()
+    done = load_dose_checkpoint(ckpt_path)
+    work = [(hs, layer_dir_name(hs), dose) for hs in hs_list for dose in args.doses]
+    pending = [w for w in work if _dose_key(w[1], w[2]) not in done]
+    print(f"[calibrate:{family}] {len(done)} (layer,dose) cells done, "
+          f"{len(pending)} pending", flush=True)
+
+    model = None
     try:
-        layers = {}
-        for hs_index in hs_list:
-            layer_name = layer_dir_name(hs_index)
-            is_late = is_late_reference(fam_cfg, hs_index)
-            role = "late_reference_descriptive" if is_late else "midband"
-            gate_rows = pl.compute_gate_decisions(family, base_rows, hs_index)
-            results = []
-            for dose in args.doses:
-                print(f"[calibrate:{family}] layer={layer_name} role={role} dose={dose}", flush=True)
-                rec = pl.run_layer(family, model, tokenizer, hs_index, gate_rows, dose)
-                rec["dose_target"] = dose
-                rec["usable"] = dose_is_usable(rec, args.min_confab_rate)
-                results.append(rec)
-            selected = choose_dose(results, args.min_confab_rate)
-            layers[layer_name] = {
-                "hs_index": hs_index, "role": role,
-                "n_confab_fit_rows": len(confab_fit),
-                "n_known_fit_rows": len(known_fit), "doses": results,
-                "selected_dose": selected["dose_target"] if selected else None,
-                "selected": selected, "has_usable_dose": selected is not None,
-            }
+        gate_cache: dict[int, list] = {}
+        for hs_index, layer_name, dose in pending:
+            if model is None:  # load lazily -- a fully-resumed run needs no GPU
+                model, tokenizer, _hidden_size, _n_layers = ml.load_model_and_tokenizer(family)
+            role = "late_reference_descriptive" if is_late_reference(fam_cfg, hs_index) else "midband"
+            if hs_index not in gate_cache:
+                gate_cache[hs_index] = pl.compute_gate_decisions(family, base_rows, hs_index)
+            print(f"[calibrate:{family}] layer={layer_name} role={role} dose={dose}", flush=True)
+            rec = pl.run_layer(family, model, tokenizer, hs_index, gate_cache[hs_index], dose)
+            rec["dose_target"] = dose
+            rec["usable"] = dose_is_usable(rec, args.min_confab_rate)
+            key = _dose_key(layer_name, dose)
+            append_dose_checkpoint(ckpt_path, key, rec)  # durable before next cell
+            done[key] = rec
     finally:
-        del model
+        if model is not None:
+            del model
         gc.collect()
         torch.cuda.empty_cache()
+
+    # Reconstruct per-layer results from the checkpoint (the resumable source of
+    # truth), then select each layer's dose.
+    layers = {}
+    for hs_index in hs_list:
+        layer_name = layer_dir_name(hs_index)
+        is_late = is_late_reference(fam_cfg, hs_index)
+        role = "late_reference_descriptive" if is_late else "midband"
+        results = [done[_dose_key(layer_name, dose)] for dose in args.doses]
+        selected = choose_dose(results, args.min_confab_rate)
+        layers[layer_name] = {
+            "hs_index": hs_index, "role": role,
+            "n_confab_fit_rows": len(confab_fit),
+            "n_known_fit_rows": len(known_fit), "doses": results,
+            "selected_dose": selected["dose_target"] if selected else None,
+            "selected": selected, "has_usable_dose": selected is not None,
+        }
 
     selected_all = {name: rec["selected_dose"] for name, rec in layers.items()
                     if rec["selected_dose"] is not None}

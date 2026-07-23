@@ -2605,6 +2605,72 @@
           "run_contrast.py",
           "cross_family_rollup.py"
         ],
+        "persistence": {
+          "build_directions.py": {
+            "checkpoint_path": "experiments/j-space-cross-family-layer-contrast/analysis-committed/<family>/layers/",
+            "persistence": "incremental"
+          },
+          "calibrate_dose.py": {
+            "checkpoint_path": "experiments/j-space-cross-family-layer-contrast/analysis/<family>/runlog/calibrate_dose_records.jsonl",
+            "persistence": "incremental"
+          },
+          "cross_family_rollup.py": {
+            "measured_smoke_wall_clock_s": 0.001,
+            "persistence": "short-run"
+          },
+          "extract_anchor.py": {
+            "checkpoint_path": "experiments/j-space-cross-family-layer-contrast/analysis/<family>/anchor_extract.safetensors",
+            "persistence": "incremental"
+          },
+          "family_config.py": {
+            "measured_smoke_wall_clock_s": 0.023,
+            "persistence": "short-run"
+          },
+          "gate_fit.py": {
+            "measured_smoke_wall_clock_s": 0.523,
+            "persistence": "short-run"
+          },
+          "gen_lib.py": {
+            "measured_smoke_wall_clock_s": 0.826,
+            "persistence": "short-run"
+          },
+          "grader.py": {
+            "measured_smoke_wall_clock_s": 0.023,
+            "persistence": "short-run"
+          },
+          "jlens_profile.py": {
+            "checkpoint_path": "experiments/j-space-cross-family-layer-contrast/analysis-committed/<family>/layer_profile.json",
+            "persistence": "incremental"
+          },
+          "materialize_reused_rows.py": {
+            "measured_smoke_wall_clock_s": 0.07,
+            "persistence": "short-run"
+          },
+          "mine_eval_pool.py": {
+            "checkpoint_path": "experiments/j-space-cross-family-layer-contrast/analysis/<family>/pool_generations.jsonl",
+            "persistence": "incremental"
+          },
+          "model_lib.py": {
+            "measured_smoke_wall_clock_s": 1.196,
+            "persistence": "short-run"
+          },
+          "pipeline.py": {
+            "measured_smoke_wall_clock_s": 1.236,
+            "persistence": "short-run"
+          },
+          "run_contrast.py": {
+            "checkpoint_path": "experiments/j-space-cross-family-layer-contrast/analysis/<family>/runlog/<mode>/<layer>.jsonl",
+            "persistence": "incremental"
+          },
+          "scorers.py": {
+            "measured_smoke_wall_clock_s": 0.022,
+            "persistence": "short-run"
+          },
+          "split_fit_heldout.py": {
+            "measured_smoke_wall_clock_s": 0.005,
+            "persistence": "short-run"
+          }
+        },
         "pins": {}
       },
       "kg": [],

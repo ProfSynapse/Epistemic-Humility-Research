@@ -45,6 +45,70 @@ instrument:
   - pipeline.py
   - run_contrast.py
   - cross_family_rollup.py
+  persistence:
+    # <family> is a per-family path segment (families run one at a time); the
+    # checkpoint_path shows the convention, the real path substitutes the slug.
+    # Kill-resume drill: extract_anchor.py and calibrate_dose.py flush+resume
+    # were CPU-tested with a mocked model this session (partial->resume skips
+    # done work, full-resume loads no model, --fresh restarts); run_contrast.py
+    # rides the tuner RunLog; the rest are per-item/per-layer writers or timed
+    # short single-shots. short-run seconds are freshly measured smokes.
+    #
+    # Import-only libraries (never run standalone; no run loop): timed by their
+    # cold import / self-check smoke.
+    family_config.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.023
+    model_lib.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.196
+    gen_lib.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.826
+    grader.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.023
+    scorers.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.022
+    pipeline.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.236
+    # CPU single-shot writers: buffer in memory, write once, but finish in well
+    # under a second at representative sizes -- losing the whole run to a kill is
+    # an acceptable risk (measured this session).
+    materialize_reused_rows.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.07
+    split_fit_heldout.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.005
+    gate_fit.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.523
+    cross_family_rollup.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.001
+    # GPU-long / per-item / per-layer writers: incremental, resumable from their
+    # own on-disk checkpoint (never declared short-run to dodge the gate).
+    mine_eval_pool.py:
+      persistence: incremental
+      checkpoint_path: experiments/j-space-cross-family-layer-contrast/analysis/<family>/pool_generations.jsonl
+    extract_anchor.py:
+      persistence: incremental
+      checkpoint_path: experiments/j-space-cross-family-layer-contrast/analysis/<family>/anchor_extract.safetensors
+    calibrate_dose.py:
+      persistence: incremental
+      checkpoint_path: experiments/j-space-cross-family-layer-contrast/analysis/<family>/runlog/calibrate_dose_records.jsonl
+    run_contrast.py:
+      persistence: incremental
+      checkpoint_path: experiments/j-space-cross-family-layer-contrast/analysis/<family>/runlog/<mode>/<layer>.jsonl
+    jlens_profile.py:
+      persistence: incremental
+      checkpoint_path: experiments/j-space-cross-family-layer-contrast/analysis-committed/<family>/layer_profile.json
+    build_directions.py:
+      persistence: incremental
+      checkpoint_path: experiments/j-space-cross-family-layer-contrast/analysis-committed/<family>/layers/
   pins: {}
 inputs:
 - experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md

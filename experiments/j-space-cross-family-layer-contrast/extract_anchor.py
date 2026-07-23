@@ -43,9 +43,12 @@ def load_jsonl(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.open(encoding="utf-8") if line.strip()]
 
 
+FLUSH_EVERY = 50  # rows between durable safetensors+manifest flushes (kill-resume safety)
+
+
 def run(args: argparse.Namespace) -> int:
     import torch
-    from safetensors.torch import save_file
+    from safetensors.torch import save_file, load_file
 
     family = args.family
     cfg = load_family(family)
@@ -59,6 +62,29 @@ def run(args: argparse.Namespace) -> int:
         print(f"[extract-anchor:{family}] ERROR: no rows in {rows_path}", file=sys.stderr)
         return 1
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    rows_sha = sha256_file(rows_path)
+
+    # Kill-resume: this is a per-row GPU forward loop that previously buffered
+    # ALL rows in memory and wrote the safetensors + manifest only at the end,
+    # so a kill lost the whole extraction. It now flushes durably every
+    # FLUSH_EVERY rows and RESUMES from the last flush. Resume reuses an existing
+    # partial extraction only when its fingerprint (rows_sha256 + candidate hs
+    # set) matches; --fresh forces a clean restart. See experiment.yaml
+    # instrument.persistence and experiments/common/README-runlog.md.
+    tensors: dict[str, "torch.Tensor"] = {}
+    row_meta: list[dict] = []
+    done_keys: set[str] = set()
+    if not args.fresh and out_path.is_file() and manifest_path.is_file():
+        prev = json.loads(manifest_path.read_text())
+        if prev.get("rows_sha256") == rows_sha and prev.get("hidden_states_indices") == hs_list:
+            tensors = dict(load_file(str(out_path)))
+            row_meta = list(prev.get("rows", []))
+            done_keys = {rm["row_key"] for rm in row_meta}
+            print(f"[extract-anchor:{family}] resume: {len(done_keys)} rows already "
+                  f"extracted, {len(rows) - len(done_keys)} remaining", flush=True)
+        else:
+            print(f"[extract-anchor:{family}] existing extract has a different "
+                  f"fingerprint (rows/layers changed); starting fresh", flush=True)
 
     print(f"[extract-anchor:{family}] loading {cfg['checkpoint']['repo']} bf16, "
           f"hs_indices={hs_list}", flush=True)
@@ -69,10 +95,27 @@ def run(args: argparse.Namespace) -> int:
         f"requested hs={hs_list} requires >= {max(hs_list)} hidden layers, got {n_layers}"
     )
 
-    tensors: dict[str, "torch.Tensor"] = {}
-    row_meta = []
+    def write_manifest(complete: bool) -> dict:
+        manifest = {
+            "stage": "j_space_cross_family_layer_contrast_anchor_extract",
+            "family": family, "base_model": cfg["checkpoint"]["repo"],
+            "substrate": "bf16", "torch_dtype": str(param_dtype),
+            "hidden_size": hidden_size, "n_hidden_layers": n_layers,
+            "layer_labels": [f"hs{h}" for h in hs_list],
+            "hidden_states_indices": hs_list, "anchor_position": "prompt_len-1",
+            "rows_path": str(rows_path), "rows_sha256": rows_sha,
+            "out_path": str(out_path), "n_rows_extracted": len(row_meta),
+            "n_rows_total": len(rows), "complete": complete,
+            "runtime_sec": round(time.time() - t0, 1), "rows": row_meta,
+        }
+        manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        return manifest
+
     t0 = time.time()
+    since_flush = 0
     for idx, row in enumerate(rows, start=1):
+        if row["row_key"] in done_keys:
+            continue
         rendered = ml.render(family, tokenizer, row)
         enc = tokenizer(rendered, return_tensors="pt").to(device)
         prompt_len = int(enc["input_ids"].shape[1])
@@ -88,22 +131,17 @@ def run(args: argparse.Namespace) -> int:
             "row_key": row["row_key"], "role": row["role"],
             "category_canon": row.get("category_canon"), "prompt_len": prompt_len,
         })
+        since_flush += 1
+        if since_flush >= FLUSH_EVERY:
+            save_file(tensors, str(out_path))  # durable checkpoint
+            write_manifest(complete=False)
+            since_flush = 0
         if idx % 50 == 0 or idx == len(rows):
-            print(f"[extract-anchor:{family}] {idx}/{len(rows)}", flush=True)
+            print(f"[extract-anchor:{family}] {idx}/{len(rows)} "
+                  f"(extracted {len(row_meta)})", flush=True)
 
     save_file(tensors, str(out_path))
-    manifest = {
-        "stage": "j_space_cross_family_layer_contrast_anchor_extract",
-        "family": family, "base_model": cfg["checkpoint"]["repo"],
-        "substrate": "bf16", "torch_dtype": str(param_dtype),
-        "hidden_size": hidden_size, "n_hidden_layers": n_layers,
-        "layer_labels": [f"hs{h}" for h in hs_list],
-        "hidden_states_indices": hs_list, "anchor_position": "prompt_len-1",
-        "rows_path": str(rows_path), "rows_sha256": sha256_file(rows_path),
-        "out_path": str(out_path), "n_rows_extracted": len(rows),
-        "runtime_sec": round(time.time() - t0, 1), "rows": row_meta,
-    }
-    manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    manifest = write_manifest(complete=True)
     print(json.dumps({k: manifest[k] for k in ("stage", "family", "n_rows_extracted",
                                                 "runtime_sec")}, indent=2))
     return 0
@@ -115,6 +153,9 @@ def parse_args(argv=None) -> argparse.Namespace:
     ap.add_argument("--rows", default=None)
     ap.add_argument("--out", default=None)
     ap.add_argument("--manifest", default=None)
+    ap.add_argument("--fresh", action="store_true",
+                    help="Ignore any existing partial extraction and restart from row 0 "
+                         "(default: resume from the last durable flush if the fingerprint matches).")
     return ap.parse_args(argv)
 
 
