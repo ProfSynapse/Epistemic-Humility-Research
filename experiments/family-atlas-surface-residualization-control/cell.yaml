@@ -1,0 +1,153 @@
+schema_version: 1
+seed: 20260721
+analysis_only: true
+gpu_allowed: false
+fresh_capture_allowed: false
+
+source_roots:
+  gemma4_e4b_it:
+    atlas_root_env: GEMMA4_E4B_ATLAS_ROOT
+    private_rows_env: GEMMA4_E4B_SURFACE_ROWS
+    logical_experiment: experiments/gemma-4-e4b-family-atlas
+    committed_dir: analysis-committed/gemma4_e4b_it
+    capture_dir: analysis/gemma4_e4b_it/atlas_capture
+    capture_input: analysis/gemma4_e4b_it/atlas_capture_rows.jsonl
+    estimator_module: profile_and_read_family_atlas_panel.py
+    model: google/gemma-4-E4B-it
+    revision: fee6332c1abaafb77f6f9624236c63aa2f1d0187
+    expected_rows: 2815
+    expected_fit_rows: 1301
+    n_hidden_states: 43
+    hidden_size: 2560
+    primary: true
+    expected_sha256:
+      atlas_summary: 3374521c60cfc898485ed1839507f925e517a67ff8313cf04d78db4c45764560
+      capture_index: a11ed3a81fe5cf15e70b3d97a2a532f0aef98c63ebd0db39ce21186fac56f1d0
+      capture_input: 9ff0ea7c1405b4bd701d8a065b294684a076d9b4fe5325bc5d4ef4004ec57d6d
+      capture_manifest: e23f1877c66c5db6926a6df3d5fd24e96356758da1516345e639cd94c4a2edaf
+      estimator_module: 27cd945c83df20416658a5370544ea99f1422f5717f3e67cffca82d418003ed5
+      private_rows: c207b245919932928c5f4b35edf5dd01d8d3bf29336868436d59b71ed05de4cd
+      split_manifest: 2aace2691d5193fb22f82e91db379de4edd3527eb4d8e5128161a9f0e65f28aa
+    expected_activation_content_sha256: 9c0a89082aa96ac454c54110bcaead51d075e80a6f918080d516846b81f40493
+  qwen3_4b_raw_base:
+    atlas_root_env: QWEN3_4B_ATLAS_ROOT
+    private_rows_env: QWEN3_4B_SURFACE_ROWS
+    logical_experiment: experiments/qwen3-4b-family-atlas
+    committed_dir: analysis-committed/qwen3_4b_raw_base
+    capture_dir: analysis/qwen3_4b_raw_base/atlas_capture
+    capture_input: analysis/qwen3_4b_raw_base/atlas_capture_rows.jsonl
+    estimator_module: profile_and_read_family_atlas_panel.py
+    model: unsloth/Qwen3-4B
+    revision: 64033659d5caf1b8ed7f929b29de705e93a4d468
+    expected_rows: 1768
+    expected_fit_rows: 1325
+    n_hidden_states: 37
+    hidden_size: 2560
+    primary: false
+    expected_sha256:
+      atlas_summary: ec1f7b20734efaff8a61fea5dbf011bfc5c4925c9d6a0d87c2787d81f5bcb022
+      capture_index: 00fc99cf28962991a280c7bf8079406e58ab519469a078287754c012271eb8f8
+      capture_input: a79745b454c8854a2600a090a4032641d4be5d8ac99617a642f983edfcdbaa78
+      capture_manifest: 8f8724b3eb6bbe57c71ba6a701b727a0242862aa1cbe22a9dd5d735c32247603
+      estimator_module: 27cd945c83df20416658a5370544ea99f1422f5717f3e67cffca82d418003ed5
+      private_rows: d1e7154481c8e5265e9701ada6e7aaffd7d7dba4d589002330a45b12eb56af98
+      split_manifest: a41d7f42e74ddc6e41e1f6d2c04007c8bb6a9dcbfe5f664c5ce1050ba55175b5
+    expected_activation_content_sha256: c3d5cd911ee10a60fbf4cd2a5e6561dd2bffba57d8882ce0de1703c2fac43f70
+
+population:
+  full_fit_splits: [fit, fit_only]
+  roles: [confab, known_correct_answered, unknown_refused]
+  infer_source_from_row_key: true
+
+surface_covariates:
+  scalar:
+    - rendered_prompt_token_count
+    - question_character_count
+    - question_whitespace_word_count
+    - question_line_count
+    - digit_count
+    - digit_fraction
+    - punctuation_count
+    - punctuation_fraction
+    - newline_count
+    - newline_fraction
+    - uppercase_count
+    - uppercase_fraction
+  categorical: [render_template_id, source, category]
+  lexical:
+    input: question_text_only
+    word_ngram_range: [1, 2]
+    char_ngram_range: [3, 5]
+    word_hash_features: 4096
+    char_hash_features: 4096
+    word_svd_components: 32
+    char_svd_components: 32
+    alternate_sign: false
+    sublinear_tf: true
+  prohibited_inputs:
+    - role
+    - completion_length
+    - model_output_length
+    - answer_correctness
+    - reference_answer_length
+    - alias_length
+    - answer_text
+    - aliases
+    - baseline_behavior
+    - generated_text
+
+residualization:
+  outer_folds: 5
+  inner_folds: 3
+  alpha_grid: [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
+  alpha_metric: activation_mse
+  variants: [low_dimensional, lexical, combined, surface_explained]
+  primary_variant: combined
+
+treatment_strength:
+  layer_range: non_embedding_early_exterior
+  min_observed_max_activation_oof_r2: 0.01
+  permutation_null_quantile: 0.95
+  min_above_permutation_quantile: 0.005
+
+planted_signal:
+  hs_index: 2
+  alpha_grid: [0.25, 0.5, 1.0, 2.0, 4.0, 8.0]
+  projection_seed: 20260722
+  scale: target_layer_centered_activation_rms
+  min_peak_to_runner_up_ratio: 1.05
+  max_controlled_normalized_profile_deviation: 0.05
+
+permutation_control:
+  n_permutations: 20
+  seed_start: 20260800
+  strata: [source, role]
+  min_early_exterior: 18
+  max_median_abs_peak_shift_hs: 1
+
+subsample_guard:
+  fraction: 0.50
+  seed: 20260723
+  strata: [source, role]
+
+peak_location:
+  depth_formula: hs_index / (n_hidden_states - 1)
+  early_exterior_max_depth: 0.20
+  margin_is_decisive: false
+
+data_exhaust:
+  private_fit_manifest: analysis/exhaust/<model_id>/fit_rows_private.jsonl
+  surface_matrices: analysis/exhaust/<model_id>/surface_matrices.npz
+  oof_prediction_checkpoints: analysis/checkpoints/<model_id>/<surface_block>/hs<index>.npz
+  aggregate_oof_prediction_content_digest: true
+  reconstruction: source_activation_minus_oof_prediction
+  commit_policy: aggregate_hashes_shapes_and_profiles_only
+
+execution:
+  runner: reanalyze_surface_residualization.py
+  output_root: experiments/family-atlas-surface-residualization-control/analysis
+  aggregate_filename: aggregate_results.json
+  checkpoint_dir: checkpoints
+  long_run_launcher: experiments/common/launch_detached.sh
+  output_policy: aggregate_allowlist_only
+  preprocessing_scope: prompt_only_transductive_basis_activation_mapping_out_of_fold

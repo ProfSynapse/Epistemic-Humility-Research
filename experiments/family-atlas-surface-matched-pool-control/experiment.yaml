@@ -1,0 +1,94 @@
+slug: family-atlas-surface-matched-pool-control
+title: Family Atlas Surface-Matched Pool Control
+type: probe-fit
+status: null-result
+registered: true
+created_at: '2026-07-21T13:43:39Z'
+question: Does the early-exterior family-atlas eff_dim_frac peak persist in fresh,
+  cross-original surface-matched KU-role pools for Gemma-4-E4B-it and Qwen3-4B?
+prediction: For both Gemma-4-E4B-it and Qwen3-4B, the surface-matched FIT profile
+  and its fixed-seed 50% intact-triad subsample retain an early-exterior eff_dim_frac
+  peak at depth at most 0.20.
+falsifier: After G0-G4 pass for a model, any valid primary full or registered subsample
+  profile whose eff_dim_frac peak is beyond depth 0.20 falsifies the surface-robustness
+  prediction; a gate failure is indeterminate and never a pass.
+checkpoint:
+  repo: multi-model
+  revision: see-cell-yaml
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - instrument_common.py
+  - render_gemma.py
+  - render_qwen.py
+  - grader_port.py
+  - source_and_generate.py
+  - match_and_gate.py
+  - capture_full_depth.py
+  - analyze_profiles.py
+  - test_instrument.py
+  pins:
+    cell.yaml: 026bf838fe5723348b83cbde02b9077273da9f502ce862314914c68327918ea8
+    gates.yaml: 5e4def35023ffbb5ee365f3548cd810a814f2c910f69cbb79e8b295415fd450a
+    instrument_common.py: a6ecdd77c7ac31070ce85f604ac27977a9cfced88ff886015a4814d804d22d36
+    render_gemma.py: 143d832057e251522d242cff0ec5039b8c030241131efe4da832685cdca863f6
+    render_qwen.py: 75ee9a4c3a63b2f1a29da9a2fe83dc8bbc3e10a8414825e7dbc764a17dd3b15f
+    grader_port.py: dbd5e1c92047dd44ce4eea20732ed594bc8900ed6ebe5833553ddb19d56fae4a
+    source_and_generate.py: 2635e1f33a5a0c927d182c73d177c20dde2546f03b4e738b0634fb00e390c701
+    match_and_gate.py: 6c1531c6f32f9dd3708834729f3ef8c818b649b47b4e5a30532bc8f115c9b4d8
+    capture_full_depth.py: 12bd77cea8690662a9061a7944fa17930f9b5a033786c8715867724272c56711
+    analyze_profiles.py: 8100be3d00c4fdf1de83a876bbc7e15f70a5b3a34158a93b952ecc5856cd96d4
+    test_instrument.py: 3126a323f54c4db1b361b3b935ffbdd0e45e53e12b0b58996785fe441aaad96c
+  persistence:
+    instrument_common.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.1
+    render_gemma.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.1
+    render_qwen.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.1
+    grader_port.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.1
+    source_and_generate.py:
+      persistence: incremental
+      checkpoint_path: experiments/family-atlas-surface-matched-pool-control/analysis/<model_id>/generation_rows.jsonl
+    match_and_gate.py:
+      persistence: incremental
+      checkpoint_path: experiments/family-atlas-surface-matched-pool-control/analysis/<model_id>/matching_checkpoint.json
+    capture_full_depth.py:
+      persistence: incremental
+      checkpoint_path: experiments/family-atlas-surface-matched-pool-control/analysis/exhaust/activations/<model_id>/activation_index.jsonl
+    analyze_profiles.py:
+      persistence: incremental
+      checkpoint_path: experiments/family-atlas-surface-matched-pool-control/analysis/<model_id>/analysis_checkpoint.json
+    test_instrument.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.9
+  repins:
+  - file: source_and_generate.py
+    old_sha256: c625332c7d5ddd90d8c4898f8821738542e153a1ccac958409cba90152b761c8
+    new_sha256: 2635e1f33a5a0c927d182c73d177c20dde2546f03b4e738b0634fb00e390c701
+    date: '2026-07-21T15:39:14Z'
+    reason: 'Prelaunch materialization repair: official UMWP uses relevant_ids on
+      all unanswerable rows; the signed adapter and fixture used the nonexistent singular
+      spelling. No model launched and no gates or thresholds changed.'
+  - file: test_instrument.py
+    old_sha256: 647bd3caaaa989b68e1da34bd185d1dac54ababc1ccbe9e6cf40d48940dc9599
+    new_sha256: 3126a323f54c4db1b361b3b935ffbdd0e45e53e12b0b58996785fe441aaad96c
+    date: '2026-07-21T15:39:14Z'
+    reason: 'Prelaunch materialization repair: official UMWP uses relevant_ids on
+      all unanswerable rows; the signed adapter and fixture used the nonexistent singular
+      spelling. No model launched and no gates or thresholds changed.'
+inputs:
+- datasets/abstentionbench-repo/data.py
+- experiments/gemma-4-e4b-family-atlas/render_gemma_atlas.py
+- experiments/qwen3-4b-family-atlas/render_qwen3_atlas.py
+verdict: Gemma Stage A passed G0 but failed the registered G1 yield floor with 36
+  FIT and 38 held-out triads; Qwen Stage A and all captures were not run, so the surface-diversity
+  test is indeterminate.
+kg: []

@@ -51,6 +51,7 @@ CANONICAL_ROOT = REPO_ROOT / ".skills"
 MIRROR_ROOTS = (
     REPO_ROOT / ".claude" / "skills",
     REPO_ROOT / ".agents" / "skills",
+    REPO_ROOT / ".codex" / "skills",
 )
 PROJECT_CONTEXT_DOCS = (
     REPO_ROOT / "AGENTS.md",

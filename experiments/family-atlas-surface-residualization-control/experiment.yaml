@@ -1,0 +1,52 @@
+slug: family-atlas-surface-residualization-control
+title: Family Atlas Surface Residualization Control
+type: lab-diagnostic
+status: resolved
+registered: true
+created_at: '2026-07-22T20:37:15Z'
+question: Does the early-exterior family-atlas eff_dim_frac peak remain at depth at
+  most 0.20 after cross-fitted removal of prompt-surface-predictable activation variance
+  in the existing Gemma-4-E4B-it and Qwen3-4B atlas fit populations?
+prediction: For both Gemma-4-E4B-it and Qwen3-4B, the eff_dim_frac peak remains early-exterior
+  at depth at most 0.20 in both the full-fit combined-surface residual profile and
+  its fixed-seed 50% stratified stability profile.
+falsifier: After G0-G4 pass, any required combined-surface residual profile on either
+  substrate whose peak lies beyond depth 0.20 falsifies the surface-robustness prediction
+  and blocks finalizing paper 4 section 6.x with the current geometric interpretation.
+checkpoint:
+  repo: analysis-only re-read of persisted family-atlas captures; no model loaded
+  revision: ''
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - reanalyze_surface_residualization.py
+  - test_surface_residualization_control.py
+  pins:
+    cell.yaml: 7c354fe4b37d150f48e60167d085aaf7938d476610e3fe69d27ffb01367b3fd6
+    gates.yaml: 5c851758edc9e8f68c527dd42a990be9ba04a5ea60d9acffa4dd410051d709f1
+    reanalyze_surface_residualization.py: d8cacf172d7b4571978105fb40579393d0fed519d024cfa794789b30722b174f
+    test_surface_residualization_control.py: 401aea1283209ce82d24ee037e6b3f97f64eb777ed624980fdc78dd8cfbc0823
+  persistence:
+    reanalyze_surface_residualization.py:
+      persistence: incremental
+      checkpoint_path: experiments/family-atlas-surface-residualization-control/analysis/checkpoints
+    test_surface_residualization_control.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.69
+inputs:
+- experiments/family-atlas-surface-diversity-control/AMENDMENT.md
+- experiments/family-atlas-surface-diversity-control/analysis-committed/aggregate_results.json
+- experiments/family-atlas-surface-matched-json-completion-control/AMENDMENT.md
+- experiments/gemma-4-e4b-family-atlas/AMENDMENT.md
+- experiments/qwen3-4b-family-atlas/AMENDMENT.md
+- docs/atlas/family-layer-map.md
+- papers/paper-4-two-signal-readout/manuscript.md
+- papers/common/terminology.md
+- .skills/experiment-runner/reference/amendment-vs-lab-notebook.md
+verdict: Registered linear prompt-surface residualization left the early-exterior
+  eff_dim_frac peak unchanged on Gemma (hs4, depth 0.095) and Qwen (hs5, depth 0.139)
+  in full and 50% profiles; G0-G5 all passed.
+kg:
+- experiment:family-atlas-surface-residualization-control

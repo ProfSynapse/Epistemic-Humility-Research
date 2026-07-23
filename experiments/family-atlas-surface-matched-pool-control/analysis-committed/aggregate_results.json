@@ -1,0 +1,14 @@
+{
+  "decision": "indeterminate",
+  "experiment": "family-atlas-surface-matched-pool-control",
+  "models": {
+    "gemma4_e4b_it": null,
+    "qwen3_4b_raw_base": null
+  },
+  "packaging_gate": {
+    "allowlist_version": 1,
+    "errors": [],
+    "status": "pass"
+  },
+  "schema_version": 1
+}

@@ -1,0 +1,34 @@
+{
+  "completion_token_ids_identical": true,
+  "finish_reasons_identical": true,
+  "generation_image_digest": "sha256:3a1e7f5904e1a1192a02aa0086ceaffc33985d7044c7bb25b3a43d61bdbe3ac0",
+  "kill_resume_canonical_rowlog_exact": true,
+  "model_id": "gemma4_e4b_it",
+  "n_rows": 20,
+  "parsed_objects_identical": true,
+  "row_manifest_sha256": "b280b923163667f2ecbd9f694c608db46e45f5a371cd6f917041261298441422",
+  "run_count": 5,
+  "salvage_parsing_used": false,
+  "scheduler": {
+    "batch_size": 16,
+    "max_model_len": 2048,
+    "max_num_batched_tokens": 8192,
+    "max_num_seqs": 32
+  },
+  "schema_version": 1,
+  "selection_stratum_counts": {
+    "ASDiv:answerable": 2,
+    "ASDiv:unanswerable": 2,
+    "GSM8K:answerable": 3,
+    "GSM8K:unanswerable": 3,
+    "MultiArith:answerable": 2,
+    "MultiArith:unanswerable": 2,
+    "SVAMP:answerable": 3,
+    "SVAMP:unanswerable": 3
+  },
+  "status": "pass",
+  "synaptic_tuner_source_fingerprint": "5a693532465c771ec7c7afe7bcbb6e55c08a508e6d3a1d321bcb8fdb32140576",
+  "vllm_model_runner": "v1",
+  "vllm_version": "0.23.0",
+  "whole_output_schema_valid_fraction": 1.0
+}
