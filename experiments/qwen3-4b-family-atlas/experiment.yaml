@@ -1,0 +1,150 @@
+slug: qwen3-4b-family-atlas
+title: Qwen3-4B family atlas
+type: probe-fit
+status: resolved
+registered: true
+created_at: '2026-07-21T02:19:42Z'
+question: Where does raw-base Qwen3-4B's (unsloth/Qwen3-4B) workspace midband sit
+  (eff_dim_frac profile over depth), and do the doubt, caution, and raw-refusal axes
+  read there, supplying the family-atlas-standard layer map this substrate's own prior
+  instrument (j-space-localization-qwen3-4b, a different JVP-based instrument) never
+  measured?
+prediction: 'Program-standard family-atlas prediction, kept deliberately: the eff_dim_frac
+  profile peaks at an interior layer (inside 20%-85% of depth) and a contiguous band
+  containing that peak holds all three axes (doubt, caution, raw_refusal) at held-out
+  AUROC >= 0.80. See AMENDMENT.md "Prediction" and "Predictions scoreboard" for the
+  two pre-sign calls (orchestrator: early-exterior peak + J-lens dissociation sub-call;
+  user: interior peak).'
+falsifier: Fires if the profile peak lands in the outer 20% of depth on either end
+  (early- or late-exterior, as in llama, mistral, and gemma), or if no layer inside
+  (20%, 85%) depth reaches held-out AUROC >= 0.80 on all three axes simultaneously.
+  See AMENDMENT.md "Falsifier" for the full registered wording.
+checkpoint:
+  repo: unsloth/Qwen3-4B
+  revision: 64033659d5caf1b8ed7f929b29de705e93a4d468
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - render_qwen3_atlas.py
+  - capture_family_atlas_cell.py
+  - profile_and_read_family_atlas_panel.py
+  - derive_unknown_refused_manifest.py
+  - materialize_rows.py
+  - rebuild_expansion_candidates.py
+  pins:
+    cell.yaml: 695b79248fd7599eb87c93855899e97bc2f4a23978b904f083b64582083cce7d
+    gates.yaml: e30e0988a223e54f1324390d045a92863430af6bde8343e30649b87124ff0df4
+    render_qwen3_atlas.py: 07330a8322b467ebea7cb6707187e85fad49f0770c2d1718399419bd12028378
+    capture_family_atlas_cell.py: a543a88f8d0f552476968c8e248af9ec61212034f203c17f530694910b0b9b50
+    profile_and_read_family_atlas_panel.py: 27cd945c83df20416658a5370544ea99f1422f5717f3e67cffca82d418003ed5
+    derive_unknown_refused_manifest.py: b6054a1f8eab474ff8171bc4f416f099d9365621e468e4e201d9f6bc7f47dee5
+    materialize_rows.py: b954677feda51b078d43269686137cac3a9e5ab8f04c3c7bfbb577d33dd79797
+    rebuild_expansion_candidates.py: 06a3316d0133064d1106137be4dc034f13c881235c2162f24b15efbb7b614c65
+  persistence:
+    render_qwen3_atlas.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 6.525
+      note: 'Measured directly (tokenizer load + 20 render() calls against the real
+        pinned unsloth/Qwen3-4B tokenizer at revision 64033659d5caf1b8ed7f929b29de705e93a4d468,
+        CPU-only, no model weights, synthetic placeholder questions only): 6.525s
+        total. Scales linearly with the render-only row count in the atlas capture
+        stage (1768 rows, this cell''s actual pool size -- well under the 15-minute
+        short-run ceiling even at full scale); the GPU-bound work in that stage is
+        capture_family_atlas_cell.py''s own batch-capture call, declared separately
+        below.'
+    capture_family_atlas_cell.py:
+      persistence: incremental
+      checkpoint_path: experiments/qwen3-4b-family-atlas/analysis/qwen3_4b_raw_base/atlas_capture/checkpoint.json
+      note: 'Satisfied at the tuner layer, same mechanism gemma-4-e4b-family-atlas
+        declared for its byte-identical copy of this script: `cmd_capture` shells
+        out to `tuner.py batch-capture --resume`, whose `hf-batched` engine writes
+        a fsync''d checkpoint.json (verified directly in this worktree at synaptic-tuner/tuner/batch/persistence.py
+        -- CHECKPOINT_FILENAME = "checkpoint.json", _fsync_file/_fsync_dir helpers)
+        inside the run''s own --out-dir (analysis/qwen3_4b_raw_base/atlas_capture/,
+        per this cell''s cell_id) after each captured row.'
+    profile_and_read_family_atlas_panel.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 71.27
+      note: 'Measured at this cell''s ACTUAL pool scale (not a projection): 1768 synthetic
+        rows (172 known_correct_answered fit + 258 held_out, 124 confab fit + 185
+        held_out, 1029 unknown_refused fit_only -- the real counts from the promoted
+        split_manifest.json and this cell''s own derived unknown_refused_manifest.json),
+        37 hidden states, hidden_dim=2560, 2000 bootstrap resamples, not the tiny
+        smoke_family_atlas.py fixture (114 rows / 4 hidden states / hidden_dim=256).
+        Build 2.57s + score 68.70s = 71.27s total, well under the 15-minute short-run
+        ceiling. Script: /tmp/claude-1000/-mnt-f-Code-Epistemic-Humility-Research/292064d8-cb30-460a-ad90-29559ab5cf7f/scratchpad/time_profile_panel_realistic_scale_qwen3.py
+        (scratchpad, not committed; adapted from gemma-4-e4b-family-atlas''s own realistic-scale
+        timing probe at the same scratchpad path). See NOTEBOOK.md.'
+    derive_unknown_refused_manifest.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.196
+      note: One-shot pre-sign derivation, already executed to completion (see NOTEBOOK.md);
+        output already committed as unknown_refused_manifest.json. Re-run timed at
+        1.196s wall clock (fetches the already-cached source pool, applies the filter
+        rule, cross-checks, writes ~1029 small JSON rows) -- deterministic and reproducible
+        (re-run output sha256 identical to the committed file). Not part of the capture-launch
+        critical path; declared here only to satisfy `bin/exp validate`'s persistence-declaration
+        check.
+    materialize_rows.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.89
+      note: 'Measured directly against the real committed manifests (1768 rows): 0.89s
+        wall clock (two hf_hub_download cache-hit fetches + one call into rebuild_expansion_candidates.py''s
+        deterministic chain + a plain JSON join, no model/tokenizer load). RESOLVED
+        (was a known gap in an earlier pre-sign pass): the 341 known_correct_answered
+        row_keys the staging pool alone could not resolve are now recovered via rebuild_expansion_candidates.py
+        (see that module''s own persistence entry below and NOTEBOOK.md 2026-07-21
+        recovery entry for the full gate results). Current run: missing_question=0
+        across all 1768 rows (confab 309/309, known_correct_answered 430/430, unknown_refused
+        1029/1029). No longer a capture-launch blocker.'
+    rebuild_expansion_candidates.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.86
+      note: 'Deterministic CPU rebuild of the Amendment AH stage-0 candidate chain
+        (AF-600 pool -> candidates.jsonl -> expansion_candidates.jsonl), ported verbatim
+        from three historical/archived scripts with only input paths adjusted (see
+        the module''s own docstring for full citations, including the abandoned-branch
+        recovery of the AF-600 pool builder). 0.86s wall clock: all inputs are already-local
+        dataset files plus one committed frozen manifest; no network beyond one cached
+        HF fetch for the cross-check step. Self-verifying: 12 hard gates compare every
+        stage''s output composition against the original Amendment AH run''s own committed
+        manifests (professorsynapse/eh-doubt-on-command:metadata/*_manifest.json)
+        plus a positive cross-check against already-verified real text (a0_pool_v21_questions.jsonl,
+        907 keys, 0 mismatches); all 12 PASS (see NOTEBOOK.md 2026-07-21 recovery
+        entry for the full table and analysis/rebuild_verification.json, gitignored,
+        for the raw gate output). Called directly by materialize_rows.py, not run
+        standalone in the capture-launch critical path.'
+  repins:
+  - file: render_qwen3_atlas.py
+    old_sha256: 9d57ecc35f834a97cb2070b83348f6ad92c9f3cbced2f50867643a42cbdc2355
+    new_sha256: 07330a8322b467ebea7cb6707187e85fad49f0770c2d1718399419bd12028378
+    date: '2026-07-21T10:49:16Z'
+    reason: 'Signed revision 1: original signed copy read only the cell-specific QWEN3_ATLAS_RENDER_MODEL/REVISION
+      env vars, but the shared capture_family_atlas_cell.py exports FAMILY_ATLAS_RENDER_MODEL/REVISION
+      from cell.yaml; first capture launch (capture_run1) crashed on row 1 with zero
+      rows captured. Fix reads the shared FAMILY_ATLAS_* names first (same contract
+      as render_gemma_atlas.py), keeps QWEN3_ATLAS_* as standalone-smoke fallback;
+      rendered surface unchanged, CPU-smoked before repin. Lead-authored and adjudicated
+      pre-run.'
+inputs:
+- experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
+- experiments/qwen3-4b-family-atlas/unknown_refused_manifest.json
+verdict: 'FALSIFIER FIRED on the profile limb: eff_dim_frac peaks early-exterior at
+  hs5/36 (depth 0.139), the 4th family (after llama, mistral, gemma) with an early-exterior
+  dimensionality peak decoupled from a healthy interior three-axis read band (hs22-36
+  clear >=0.80 on doubt/caution/raw_refusal; caution+raw_refusal carry the band over
+  their controls, doubt is norm/position confounded as in the other three families).
+  Scoreboard: orchestrator WIN (early-exterior + J-lens-non-reproduction sub-call
+  both correct) / user LOSS on the registered eff_dim_frac-peak call, with credit
+  that the user''s interior intuition is vindicated on the read panel. The eff_dim_frac
+  profile and the read-axis panel dissociate cleanly on this family, resolving the
+  apparent tension with j-space-localization-qwen3-4b''s interior J-lens peak.'
+kg:
+- experiment:qwen3-4b-family-atlas
+- mechanism:eff-dim-peak-decoupled-from-readable-band
+- mechanism:workspace-band-peak-location-is-family-relative
+- mechanism:refused-vs-known-contrast-carries-norm-position-confound
+- mechanism:j-space-mediated-actuation-fragility
+- mechanism:epistemic-readouts-are-late-compression-summaries

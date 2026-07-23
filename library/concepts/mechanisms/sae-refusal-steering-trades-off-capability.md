@@ -32,6 +32,6 @@ relationships:
     confidence: high
 ---
 
-This mechanism records the encoder/SAE caution for Phase 3: even when a sparse
+This mechanism records the encoder/SAE caution For mechanism work: even when a sparse
 feature is behaviorally active, steering it may harm unrelated capabilities.
 

@@ -22,7 +22,7 @@ surface:
     committed_outputs: aggregate_and_id_manifest_only
 
 fresh_pool:
-  candidate_source: /home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl
+  candidate_source: /home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl
   exclude_predecessor_split: experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
   private_rows_path: experiments/j-space-layer-contrast-replication-qwen3-4b/analysis/fresh_eval_rows.jsonl
   private_generations_path: experiments/j-space-layer-contrast-replication-qwen3-4b/analysis/fresh_pool_generations.jsonl

@@ -52,7 +52,7 @@ by `materialize_rows.py`, which:
 3. Joins `aliases` (gold-answer text, needed to grade known_correct_answered
    rows' correctness after a false-positive dose) from the LOCAL
    canonical-checkout
-   `experiment/phase1/probe/analysis/ah_main/gen_A0/rows.jsonl` (gitignored,
+   `archive/experiment/phase1/probe/analysis/ah_main/gen_A0/rows.jsonl` (gitignored,
    never committed or re-staged). Aliases originate from this repo's own
    already-committed `datasets/kuq/knowns_unknowns.jsonl` /
    `datasets/selfaware/SelfAware.json`; this script only reads them locally.

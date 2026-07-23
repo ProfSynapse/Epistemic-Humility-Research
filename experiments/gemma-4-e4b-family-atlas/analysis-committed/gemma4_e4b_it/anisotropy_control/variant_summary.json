@@ -1,0 +1,65 @@
+[
+  {
+    "variant": "baseline",
+    "peak_layer": 4,
+    "peak_depth_frac": 0.09523809523809523,
+    "peak_value": 0.018947084002220047,
+    "classification": "early-exterior"
+  },
+  {
+    "variant": "whitened_correlation",
+    "peak_layer": 4,
+    "peak_depth_frac": 0.09523809523809523,
+    "peak_value": 0.02104621625450185,
+    "classification": "early-exterior"
+  },
+  {
+    "variant": "drop_top_k1",
+    "peak_layer": 4,
+    "peak_depth_frac": 0.09523809523809523,
+    "peak_value": 0.02738511018894791,
+    "classification": "early-exterior"
+  },
+  {
+    "variant": "drop_top_k2",
+    "peak_layer": 4,
+    "peak_depth_frac": 0.09523809523809523,
+    "peak_value": 0.03297123888266305,
+    "classification": "early-exterior"
+  },
+  {
+    "variant": "drop_top_k4",
+    "peak_layer": 4,
+    "peak_depth_frac": 0.09523809523809523,
+    "peak_value": 0.04158292188936782,
+    "classification": "early-exterior"
+  },
+  {
+    "variant": "drop_top_k8",
+    "peak_layer": 4,
+    "peak_depth_frac": 0.09523809523809523,
+    "peak_value": 0.05714862625453309,
+    "classification": "early-exterior"
+  },
+  {
+    "variant": "winsorized_0.5pct",
+    "peak_layer": 4,
+    "peak_depth_frac": 0.09523809523809523,
+    "peak_value": 0.01878527963877099,
+    "classification": "early-exterior"
+  },
+  {
+    "variant": "spectral_entropy_effrank",
+    "peak_layer": 4,
+    "peak_depth_frac": 0.09523809523809523,
+    "peak_value": 70.73091252143932,
+    "classification": "early-exterior"
+  },
+  {
+    "variant": "spectral_entropy_effrank_norm",
+    "peak_layer": 4,
+    "peak_depth_frac": 0.09523809523809523,
+    "peak_value": 0.054366573805871884,
+    "classification": "early-exterior"
+  }
+]

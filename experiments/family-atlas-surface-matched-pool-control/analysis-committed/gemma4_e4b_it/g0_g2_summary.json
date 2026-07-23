@@ -1,0 +1,84 @@
+{
+  "decision_state": "indeterminate_hard_stop",
+  "gates": {
+    "g0": {
+      "checks": {
+        "containment": {
+          "errors": [],
+          "status": "pass"
+        },
+        "prior_atlas_exclusion_count": 0,
+        "source_and_generation_audit": {
+          "exact_generation_coverage": true,
+          "n_eligible": 5200,
+          "n_excluded_prior_atlas": 0,
+          "n_generations": 5200,
+          "native_source_counts": {
+            "ASDiv": {
+              "answerable": 100,
+              "unanswerable": 100
+            },
+            "GSM8K": {
+              "answerable": 1700,
+              "unanswerable": 1700
+            },
+            "MultiArith": {
+              "answerable": 300,
+              "unanswerable": 300
+            },
+            "SVAMP": {
+              "answerable": 500,
+              "unanswerable": 500
+            }
+          },
+          "pair_mapping_exact": true,
+          "regrade_parity": true,
+          "rows": 5200,
+          "source_sha256": "e8840e8383357238a08e9c5028e4758ceceb369e1db31c64678b0f851c9c9e73"
+        }
+      },
+      "reasons": [],
+      "status": "pass"
+    },
+    "g1": {
+      "checks": {
+        "fit_triads": 36,
+        "held_out_triads": 38,
+        "role_counts": {
+          "confab": 74,
+          "known_correct_answered": 74,
+          "unknown_refused": 74
+        }
+      },
+      "reasons": [
+        "triad floor failed: fit=36, held_out=38, floor=64"
+      ],
+      "status": "fail"
+    },
+    "g2": {
+      "checks": {},
+      "reasons": [
+        "G1 yield failed"
+      ],
+      "status": "not_run"
+    },
+    "g3": {
+      "checks": {},
+      "reasons": [],
+      "status": "not_run"
+    },
+    "g4": {
+      "checks": {},
+      "reasons": [],
+      "status": "not_run"
+    },
+    "g5": {
+      "checks": {},
+      "reasons": [],
+      "status": "not_run"
+    }
+  },
+  "instrument_fingerprint": "471577e86d57632da4b0a2fcd8c40d78297c1bf5bbaae3bd0012ccc7edcf3efb",
+  "model_id": "gemma4_e4b_it",
+  "schema_version": 1
+}

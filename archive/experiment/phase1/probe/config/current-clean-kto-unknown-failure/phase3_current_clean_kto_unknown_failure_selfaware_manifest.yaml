@@ -1,0 +1,27 @@
+purpose: >-
+  Build a focused clean SFT->KTO SelfAware behavior panel for the
+  unknown-answering side of calibrated expression. The panel mirrors the GRPO
+  v2 and GRPO-DPO unknown-failure panels for cross-regimen comparison.
+
+behavior_arm: clean_sft_kto
+strata_prefix: kto_unknown_failure_panel
+
+inputs:
+  scored_rows: ../eval/results_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_full_4b/clean_schema_sft_kto_seed1_corrected_base__selfaware/scored_rows.jsonl
+
+sampling:
+  seed: 20260626
+
+require_quotas: true
+
+quotas:
+  unknown_answered_wrong: 64
+  unknown_refused: 64
+  known_correct_answered: 64
+  known_refused: 64
+
+output:
+  manifest: manifests/phase3_current_clean_kto_unknown_failure_selfaware_manifest.json
+  row_keys_file: archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_selfaware_row_keys.txt
+  selected_scored_rows: archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_selfaware_scored_rows.jsonl
+  summary: archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_selfaware_manifest.summary.json

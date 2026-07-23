@@ -1,0 +1,67 @@
+slug: qwen35-4b-midband-heldout
+title: Qwen3.5-4B mid-band doubt-snap held-out confirmation (hs20 frozen operating
+  point)
+type: steer-cell
+status: resolved
+registered: true
+created_at: '2026-07-13T10:32:51Z'
+question: Does the resolved qwen35-4b-midband-doubt-snap hs20 operating point (frozen
+  direction set, gate threshold, standardization scalars, and dose 8 x sigma_c), applied
+  unchanged, decouple refusal induction from output corruption on the untouched qwen35_4b
+  held-out pool?
+prediction: On the 1,332 held-out confabs the frozen gated arm reaches refused rate
+  >= 0.60 and well-formed rate >= 0.80 simultaneously with known-correct false-refusal
+  <= 0.10 over the full 360 held-out knowns, and the placebo arms behave (random_direction
+  within 2 points of baseline on both populations, permuted_gate strictly worse on
+  known false-refusal), promoting the hs20 window to a held-out claim about Qwen3.5-4B.
+falsifier: Promotion is refused if held-out fired-confab refused < 0.60 (shape B),
+  or refused >= 0.60 with well-formed < 0.80 (shape C), or the confab thresholds clear
+  but known-correct false-refusal > 0.10 (shape D), or the confab and cost thresholds
+  clear but random_direction is not a no-op or permuted_gate is not strictly worse
+  (shape E).
+checkpoint:
+  repo: Qwen/Qwen3.5-4B
+  revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  - frozen_operating_point_hashes.json
+  modules:
+  - capture_anchors.py
+  - gate_lib.py
+  - gen_lib.py
+  - grader.py
+  - materialize_rows.py
+  - pipeline.py
+  - render.py
+  - steer_lib.py
+  - test_qw35_heldout_smoke.py
+  pins:
+    cell.yaml: 41f79258b8df8506e610bf4b71a744b31d81d0f549bb5e4efbc3cfa9a5a1a771
+    gates.yaml: 48884e642e9be37eea350a08f596e131c0f12b4c17c263f12ce4055c69be190c
+    frozen_operating_point_hashes.json: 9447aac4f47cf620ab88c5c15e67b53a02c6d04616b80b80e1908fcc88557af2
+    capture_anchors.py: db42375b999b8f4ce477616d8afbfbaf9a85f038cb46d8085795fef33bfbab2d
+    gate_lib.py: 785bbce8a2730fdc62533ad70ec4821608b84a96d40d727aa1010ce6ba482e92
+    gen_lib.py: 66ed19e435914a936280d44cd14ff61818be644bb7349620194c9bb055cf9961
+    grader.py: 8d6c7fc0f92f7a84f1ff36469449ea15e1e98289d6558d14eedfdf628f7de864
+    materialize_rows.py: af70cde9dc68bd56806966b17f45f9212fd48f7ce590adf711ad3015a4bc5887
+    pipeline.py: 57a3adb5fe2915a93c585bbcae870e4526d7ae3c2271fbb00020a1d71551534b
+    render.py: f8faeb9f583a32a095259463cf5212908cc6499d19bf57e895a9896ef1c10745
+    steer_lib.py: c08d8231b4129754a4ac25f90dcefcb7e224a77c4b6c2bcd32eeb8684318ac0c
+    test_qw35_heldout_smoke.py: c70786aec90c90486fbb22f45ddea070b54f5d0a88c5d745c09a1328232ce088
+inputs:
+- experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md
+- experiments/qwen35-4b-midband-doubt-snap/cell.yaml
+- experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json
+- experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/u_d.json
+- experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
+- experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/random_direction.json
+- experiments/qwen35-4b-midband-doubt-snap/analysis-committed/reused_rows_manifest.json
+verdict: The frozen hs20 mid-band operating point transfers to the untouched Qwen3.5-4B
+  held-out pool with refused 0.678, well-formed 0.977, known-correct false refusal
+  0.039, and intact placebo specificity, promoting the doubt-gated caution-snap window
+  from an in-sample selection to a held-out claim about this model.
+kg:
+- experiment:qwen35-4b-midband-heldout
+- mechanism:qwen35-4b-midband-window-transfers-to-heldout-pool

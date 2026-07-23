@@ -68,6 +68,6 @@ relationships:
 
 A calibration-aware preference optimization objective that augments DPO with a differentiable per-token L1 calibration loss. The loss uses a sigmoid of the ground-truth vs best-competitor probability margin as a smooth correctness surrogate and penalizes the absolute deviation between predicted confidence and this surrogate. Applied to both preferred and dispreferred sequences during training; introduces no extra model parameters and negligible overhead relative to DPO.
 
-**Why it matters here:** Prevents confidence drift during preference alignment without requiring a separate calibration phase or additional compute. Directly applicable to Phase 1 DPO arm on Qwen3-4B. Provides calibrated token probabilities that enable Confidence@k inference-time selection.
+**Why it matters here:** Prevents confidence drift during preference alignment without requiring a separate calibration phase or additional compute. Directly applicable to the locked training-regimen study DPO arm on Qwen3-4B. Provides calibrated token probabilities that enable Confidence@k inference-time selection.
 
 **Lineage:** Proposed in arXiv:2601.23096. Builds on direct-preference-optimization by adding a per-token calibration term grounded in population L1 calibration risk and Jensen's inequality. Distinct from cdpo-calibrated-dpo (which uses verbalized confidence labels) and from regularized-calibration-aware-fine-tuning (which is a post-hoc supervised phase). Companion to confidence-at-k.

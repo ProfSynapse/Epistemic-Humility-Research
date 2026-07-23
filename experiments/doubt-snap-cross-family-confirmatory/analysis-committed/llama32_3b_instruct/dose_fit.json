@@ -1,0 +1,152 @@
+{
+  "reports": [
+    {
+      "confab_tighten": {
+        "n": 581,
+        "rate": 0.11015490533562823,
+        "successes": 64,
+        "wilson_ci_95": [
+          0.08721272252771646,
+          0.1382183867622206
+        ]
+      },
+      "dose": 11.0,
+      "known_correct_cost_control": {
+        "n": 222,
+        "rate": 0.009009009009009009,
+        "successes": 2,
+        "wilson_ci_95": [
+          0.002474081989044391,
+          0.03224699562726616
+        ]
+      }
+    },
+    {
+      "confab_tighten": {
+        "n": 581,
+        "rate": 0.18416523235800344,
+        "successes": 107,
+        "wilson_ci_95": [
+          0.15475655723050452,
+          0.21772295073728115
+        ]
+      },
+      "dose": 19.0,
+      "known_correct_cost_control": {
+        "n": 222,
+        "rate": 0.009009009009009009,
+        "successes": 2,
+        "wilson_ci_95": [
+          0.002474081989044391,
+          0.03224699562726616
+        ]
+      }
+    },
+    {
+      "confab_tighten": {
+        "n": 581,
+        "rate": 0.10499139414802065,
+        "successes": 61,
+        "wilson_ci_95": [
+          0.0826069625269537,
+          0.13256495615755204
+        ]
+      },
+      "dose": 26.0,
+      "known_correct_cost_control": {
+        "n": 222,
+        "rate": 0.013513513513513514,
+        "successes": 3,
+        "wilson_ci_95": [
+          0.004606265568081087,
+          0.03897058197835507
+        ]
+      }
+    },
+    {
+      "confab_tighten": {
+        "n": 581,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.006568376374069393
+        ]
+      },
+      "dose": 34.0,
+      "known_correct_cost_control": {
+        "n": 222,
+        "rate": 0.018018018018018018,
+        "successes": 4,
+        "wilson_ci_95": [
+          0.007028604354170409,
+          0.045404013122391326
+        ]
+      }
+    },
+    {
+      "confab_tighten": {
+        "n": 581,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.006568376374069393
+        ]
+      },
+      "dose": 41.0,
+      "known_correct_cost_control": {
+        "n": 222,
+        "rate": 0.018018018018018018,
+        "successes": 4,
+        "wilson_ci_95": [
+          0.007028604354170409,
+          0.045404013122391326
+        ]
+      }
+    },
+    {
+      "confab_tighten": {
+        "n": 581,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.006568376374069393
+        ]
+      },
+      "dose": 48.0,
+      "known_correct_cost_control": {
+        "n": 222,
+        "rate": 0.018018018018018018,
+        "successes": 4,
+        "wilson_ci_95": [
+          0.007028604354170409,
+          0.045404013122391326
+        ]
+      }
+    },
+    {
+      "confab_tighten": {
+        "n": 581,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.006568376374069393
+        ]
+      },
+      "dose": 60.0,
+      "known_correct_cost_control": {
+        "n": 222,
+        "rate": 0.018018018018018018,
+        "successes": 4,
+        "wilson_ci_95": [
+          0.007028604354170409,
+          0.045404013122391326
+        ]
+      }
+    }
+  ],
+  "selected_dose": null
+}

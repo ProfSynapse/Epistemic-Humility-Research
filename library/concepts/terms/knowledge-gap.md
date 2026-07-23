@@ -19,7 +19,7 @@ training-data cutoffs, coverage gaps, or domain sparsity, and is distinct from
 reasoning failure: the model simply was never exposed to the fact.
 
 **Why it matters here:** Identifying knowledge gaps is the core motivation for
-abstention research; the Phase 1 study examines whether SFT, DPO, and KTO can
+abstention research; the locked training-regimen study examines whether SFT, DPO, and KTO can
 teach a model to recognize its own gaps and abstain rather than hallucinate.
 
 **Lineage:** closely related to [[knowledge-boundary]] (the boundary between

@@ -1,0 +1,152 @@
+{
+  "baseline_confab_full_population": {
+    "n": 1312,
+    "refused_final": {
+      "n": 1312,
+      "n_uncovered": 0,
+      "rate": 0.2858231707317073,
+      "successes": 375,
+      "wilson_ci_95": [
+        0.262028737705843,
+        0.3108681365850118
+      ]
+    }
+  },
+  "gated_confab_full_population": {
+    "lift_over_baseline": 0.40853658536585363,
+    "n": 1312,
+    "refused_final": {
+      "n": 1312,
+      "n_uncovered": 0,
+      "rate": 0.694359756097561,
+      "successes": 911,
+      "wilson_ci_95": [
+        0.6688947908931409,
+        0.7186898961382899
+      ]
+    }
+  },
+  "gated_fired_confab": {
+    "n": 1303,
+    "refused_final": {
+      "n": 1303,
+      "n_uncovered": 0,
+      "rate": 0.6991557943207981,
+      "successes": 911,
+      "wilson_ci_95": [
+        0.6736981431746195,
+        0.7234426090543083
+      ]
+    },
+    "well_formed": {
+      "n": 1303,
+      "rate": 0.9869531849577897,
+      "successes": 1286,
+      "wilson_ci_95": [
+        0.9792051706818825,
+        0.9918384026871148
+      ]
+    }
+  },
+  "gated_known_full_population": {
+    "n": 382,
+    "refused_final": {
+      "n": 382,
+      "n_uncovered": 0,
+      "rate": 0.005235602094240838,
+      "successes": 2,
+      "wilson_ci_95": [
+        0.0014369671023544868,
+        0.018886040292084585
+      ]
+    }
+  },
+  "gates": {
+    "rg1_direction_specificity": {
+      "effect_ratio": 1.8741258741258742,
+      "floor": 3.0,
+      "gated_lift": 0.40853658536585363,
+      "max_over_k_random_lift_abs": 0.21798780487804875,
+      "passed": false,
+      "random_lifts_abs": [
+        0.1326219512195122,
+        0.0739329268292683,
+        0.21798780487804875
+      ]
+    },
+    "rg2_benefit": {
+      "refused_pass": true,
+      "well_formed_pass": true
+    },
+    "rg3_cost_pass": true
+  },
+  "random_direction_per_seed": [
+    {
+      "confab_refused_final": {
+        "n": 1312,
+        "n_uncovered": 0,
+        "rate": 0.4184451219512195,
+        "successes": 549,
+        "wilson_ci_95": [
+          0.3920282401246915,
+          0.44533818531702185
+        ]
+      },
+      "lift_over_baseline": 0.1326219512195122,
+      "secondary_tolerance": {
+        "calibration_certified_wide_baseline": 0.28,
+        "envelope_points": 8.0,
+        "family_id": "mistral7b_instruct_v03",
+        "gates": false,
+        "inside_envelope": false,
+        "random_lift_points": 13.26219512195122
+      },
+      "seed": 30260714
+    },
+    {
+      "confab_refused_final": {
+        "n": 1312,
+        "n_uncovered": 0,
+        "rate": 0.21189024390243902,
+        "successes": 278,
+        "wilson_ci_95": [
+          0.19063553465641758,
+          0.23482716456757924
+        ]
+      },
+      "lift_over_baseline": -0.0739329268292683,
+      "secondary_tolerance": {
+        "calibration_certified_wide_baseline": 0.28,
+        "envelope_points": 8.0,
+        "family_id": "mistral7b_instruct_v03",
+        "gates": false,
+        "inside_envelope": true,
+        "random_lift_points": -7.39329268292683
+      },
+      "seed": 30260715
+    },
+    {
+      "confab_refused_final": {
+        "n": 1312,
+        "n_uncovered": 0,
+        "rate": 0.5038109756097561,
+        "successes": 661,
+        "wilson_ci_95": [
+          0.4767849268775922,
+          0.530814772868122
+        ]
+      },
+      "lift_over_baseline": 0.21798780487804875,
+      "secondary_tolerance": {
+        "calibration_certified_wide_baseline": 0.28,
+        "envelope_points": 8.0,
+        "family_id": "mistral7b_instruct_v03",
+        "gates": false,
+        "inside_envelope": false,
+        "random_lift_points": 21.798780487804876
+      },
+      "seed": 30260716
+    }
+  ],
+  "verdict": "FALSIFIED"
+}

@@ -48,6 +48,6 @@ relationships:
 
 A large-scale multimodal Transformer developed by OpenAI, pre-trained to predict the next token in a document from image and text inputs, then aligned with RLHF. Architecture details (model size, hardware, training compute) are not disclosed in the technical report. Exhibits human-level performance on several professional and academic benchmarks.
 
-**Why it matters here:** GPT-4 is the primary reference model for the calibration-degradation-under-RLHF finding (Figure 8) and for the over-abstention-vs-safety tradeoff that motivates the Phase 1 study. Its base-vs-RLHF capability comparison (73.7% vs 74.0%) is used as evidence that alignment cost falls on calibration, not on task accuracy.
+**Why it matters here:** GPT-4 is the primary reference model for the calibration-degradation-under-RLHF finding (Figure 8) and for the over-abstention-vs-safety tradeoff that motivates the locked training-regimen study. Its base-vs-RLHF capability comparison (73.7% vs 74.0%) is used as evidence that alignment cost falls on calibration, not on task accuracy.
 
 **Lineage:** Successor to GPT-3 ([[gpt-3]]) and InstructGPT ([[instructgpt]]). Described in arXiv:2303.08774.

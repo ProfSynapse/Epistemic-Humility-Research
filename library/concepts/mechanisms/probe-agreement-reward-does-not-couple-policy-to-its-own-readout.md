@@ -48,7 +48,7 @@ relationships:
   confidence: medium
 ---
 
-Amendment AI (experiment/protocol/AMENDMENT-AI-probe-as-reward.md, adjudicated
+Amendment AI (experiments/probe-as-reward/AMENDMENT.md, adjudicated
 NULL 2026-07-05) tried the most direct incentive design available for
 readout-consultation: make the RL reward equal to the policy's own pre-
 generation probe score. The trained policy ends up significantly LESS

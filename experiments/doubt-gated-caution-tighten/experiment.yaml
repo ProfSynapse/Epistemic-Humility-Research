@@ -29,7 +29,7 @@ instrument:
     cell.yaml: a6d3ddc4030442757549d05ac8ac4c58d0c535401c5d86f532490744e82e14ee
     gates.yaml: 48b65487b9b5b20693645e42ef0c8a4387446638db7c500721d74001fd331c4d
     gen_lib.py: 6cffc7282591ca3b0db79d985a024ca2b63cab8afc1c5f5085d13cbdb98b79ce
-    grader.py: ad6cfdf197b775f1bc41850729f58ddd9f81a6e2db583d91cff91e94154a29f8
+    grader.py: dbe39384038feeba162a4c54690973be9544edf81285d002c48f6e0dedeb81d5
     model_lib.py: ce71f6d02d97efdabb3d05e9709eff0dc0d50f2710eed4fe82f06df68389a047
 inputs:
 - experiments/doubt-gated-caution-tighten/analysis-committed/split_manifest.json
@@ -41,4 +41,5 @@ inputs:
 verdict: 'Doubt-gated caution snap passed as a training-free selective tighten instrument
   on bf16 raw-base Qwen3-4B: G1 73.5% clean_tighten, G2 3.1% false-refusal with Wilson
   UCB 6.0%, and G3 placebos clean.'
-kg: []
+kg:
+- experiment:doubt-gated-caution-tighten

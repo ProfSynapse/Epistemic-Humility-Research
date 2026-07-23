@@ -1,0 +1,41 @@
+# Gates for margin-separation-fine-ladder (M1b). DRAFT; fixed at sign.
+# Floors carried verbatim from M1 (gates.yaml, signed 2026-07-17) except where
+# an item is marked NEW, in which case its provenance is in the AMENDMENT
+# Decision record. Nothing moves after results.
+
+statistics:
+  rates: Wilson 95% CI (alpha 0.05) on every rate
+  medians_and_ratios: bootstrap 95% CI, 10000 resamples, seed 48260719
+  resampling_unit: row indices within role groups
+  pass_fail_surface: point estimate (M1 precedent); CI reported descriptively
+
+integrity:
+  SC0_provenance_staging:
+    - every reused artifact (c_hat direction, M1 margin dataset, M1 runlogs, detector stack) staged with sha256 and verified against the pins in cell.yaml (byte-identical)
+    - the 53-row refined-subset opaque-id list committed BEFORE any generation; membership recomputed from the pinned margin dataset at staging and asserted equal
+    - NEW rg0_drift_check: 8 of the 53 refined rows regenerated at the 0.75x rung, byte-compared against M1's pinned rung_0p75 runlog; any mismatch halts (on_failure: halt, report, lift to PI)
+  SC1_dose_and_preflight:
+    - per-row readback within RELATIVE 0.005 of the commanded dose at every rung, OR within ABSOLUTE 0.005 x family reference_dose_abs (M1's PI-approved rule, carried verbatim)
+    - MANDATORY GPU preflight before the full run: 4 rows at each of the 0.55x and 0.7x rungs; readback verified against setpoint; generate refuses without a preflight pass marker
+    - live first-batch and per-rung-completion assertions with hard abort
+  SC2_grading_integrity:
+    - calibration slice only: pool sha256 + opaque-id list committed before grading; graded-file sha256 committed before unblind (enforced in code)
+    - CG1: clear-negative agreement >= 0.95; clear-positive >= 0.60; >= 25 clear-positive decoys; VOID_REGRADE_ONCE remedy
+    - detector-vs-adjudication disagreement on the calibration slice <= 0.05 on the abstention bit; exceedance voids the WHOLE instrument (no criterion verdict, reported straight), never a fallback to carried M1 values
+  SC3_coverage_and_merge_audit:
+    - zero silent drops; every refined row appears at every new rung or is reported missing with reason
+    - merge audit: every one of the 400 confab rows' final margin value traceable to exactly one provenance class (M1-carried idx<=4, M1-carried idx>=6/censored, or M1b-refined) with counts asserted equal to the pre-committed bracket distribution (181 / 166 / 53)
+    - censored rows reported as censored per role, never imputed
+    - non-monotone rows in the merged fine sequence flagged and reported as a class
+
+criteria:
+  P1_separation_censoring_aware:
+    leg_a: median merged confab margin <= family reference setpoint (1.0x)
+    leg_b: '>= 50% of known rows neither tipped nor collapsed at the highest pre-collapse rung (evaluated on M1 runlogs reused byte-identically under RG0; Decision record item 3, DECIDED Option 1)'
+    observable_bound_floor: 2.5                 # UNCHANGED from M1
+    numerator: 18.912281876699964               # the 1.5x rung (highest pre-collapse rung; M1 collapse evidence)
+    both_legs_required: true
+  C1_construct_integrity:
+    non_monotone_ceiling_refined_subset: 0.05   # fraction gate over the 53-row merged fine sequence: flagged/53 <= 0.05, so at most 2 flagged rows pass and 3 fail; M1's confab ceiling applied to the refined class
+    calibration_agreement_max_disagreement: 0.05
+    on_failure: instrument void, no framework claim evaluated, reported straight

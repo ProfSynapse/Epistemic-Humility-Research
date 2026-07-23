@@ -1,0 +1,10 @@
+{
+  "experiment/protocol/PROTOCOL.md": "docs/protocols/phase1/PROTOCOL.md",
+  "experiment/protocol/rewardcal-kto-recipe.md": "docs/protocols/phase1/rewardcal-kto-recipe.md",
+  "experiment/protocol/PHASE3-control-system-protocol.md": "docs/protocols/phase3/control-system-protocol.md",
+  "experiment/protocol/EXPLORATORY-gradient-probes.md": "archive/docs/protocol/EXPLORATORY-gradient-probes.md",
+  "experiment/protocol/RESEARCH-DIRECTIONS.md": "archive/docs/protocol/RESEARCH-DIRECTIONS.md",
+  "experiment/protocol/future-work-section-v0.md": "archive/docs/protocol/future-work-section-v0.md",
+  "experiment/protocol/research-trajectory.md": "archive/docs/protocol/research-trajectory.md",
+  "experiment/protocol/notes/ak-stage1-modal-launch-plan.md": "experiments/commitment-point/PLAN.md"
+}

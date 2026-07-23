@@ -1,0 +1,197 @@
+# qwen3-4b-family-atlas instrument config.
+# READ-ONLY mapping instrument at capture time: no steering, no interventions,
+# no writes to activations. This is the SINGLE-CELL, pool-already-exists
+# shape (like jspace-family-atlas's llama32_3b_instruct / mistral7b_instruct_v03
+# cells), NOT the fresh-mining shape gemma-4-e4b-family-atlas needed: this
+# substrate's row pool, baseline gradings, and role/split assignments for two
+# of its three roles are already committed and reusable verbatim.
+#
+# Source: experiments/common/doubt-gated-caution-tighten-heldout-split/
+# split_manifest.json, promoted from doubt-gated-caution-tighten's own
+# analysis-committed/split_manifest.json (already promoted once for
+# experiments/j-space-midband-write-sweep-qwen3-4b's reuse; this is a THIRD
+# consumer of the same promoted manifest, no re-promotion needed).
+#
+# RESOLVED GAP (was TODO-LEAD; closed 2026-07-21): the promoted
+# split_manifest.json's `rows` list carries row-level IDs for confab (309)
+# and known_correct_answered (430) ONLY -- the two roles
+# split_fit_heldout.py actually splits. unknown_refused (1029 rows) was
+# recorded there as a COUNT field only (n_unknown_refused_fit_only: 1029),
+# with no row-key list (split_fit_heldout.py never splits that role, so it
+# never entered the manifest's `rows` list), and the original gitignored
+# local file that had it was not reachable. Closed by
+# `derive_unknown_refused_manifest.py` (this directory), which re-derives
+# the row-key list DETERMINISTICALLY from the same private AK Stage-1 pool
+# (`professorsynapse/eh-al-prep-staging:pools/ak_stage1_pool.jsonl`,
+# sha256 48654798d5e94edfbf4abb550ed053f863369e14c05be0187fd8ab192befaa9d)
+# via `extract_l34_anchor.py:99`'s exact filter rule
+# (`not r["confab_on_unanswerable"]`), self-checked two ways before writing:
+# (1) count reproduces exactly 1029, matching the promoted manifest's own
+# `n_unknown_refused_fit_only`; (2) the SAME pool's `confab_on_unanswerable
+# == True` row-key set (n=309) is byte-identical AS A SET to the promoted
+# manifest's own committed confab row-key set, proving this is the same
+# source pool snapshot, not a coincidental count match. Output committed as
+# `unknown_refused_manifest.json` in this directory (row_key/role/split
+# only, same minimal schema as the promoted manifest -- no question text,
+# no answers, no aliases). See NOTEBOOK.md for the full derivation log.
+#
+# NOT yet done (a later, still-gated step, not part of closing this
+# blocker): this row-key list is not yet joined against question text into
+# a local materialized row-pool JSONL (`capture_family_atlas_cell.py`'s
+# `--row-pool` input needs role+split+question for every row across all
+# three roles, mirroring `doubt-gated-caution-tighten/materialize_rows.py`'s
+# pattern but extended to also cover unknown_refused). That materialization
+# script does not exist yet and is local/gitignored-only when it does;
+# writing and running it is capture-launch preparation, gated the same way
+# the rest of capture is (sign + launch approval), not part of this
+# blocker's resolution.
+
+seed: 20260707  # source experiment's own SPLIT_SEED; reused for read-panel bootstrap parity with jspace-family-atlas and gemma-4-e4b-family-atlas
+bootstrap_resamples: 2000
+
+cells:
+  - cell_id: qwen3_4b_raw_base
+    family: qwen3
+    repo: unsloth/Qwen3-4B
+    revision: 64033659d5caf1b8ed7f929b29de705e93a4d468
+    # Pin provenance: experiments/h6-genstream-hook-firing-check/NOTEBOOK.md
+    # (2026-07-13 launch-time resolution entry): "revision: unsloth/Qwen3-4B
+    # main = 64033659d5caf1b8ed7f929b29de705e93a4d468, unchanged on the Hub
+    # since 2025-05-13." No experiment in this program's Qwen3-4B lineage
+    # (doubt-gated-caution-tighten, j-space-midband-write-sweep-qwen3-4b,
+    # j-space-localization-qwen3-4b) pins a revision itself
+    # (model_lib.py:MODEL_NAME loads via bare repo id, no revision kwarg);
+    # this is the only recorded revision hash for this exact repo anywhere
+    # in the repo, corroborated as unchanged on the Hub as of that entry's
+    # date. docs/atlas/family-layer-map.md's existing qwen3 row (a DIFFERENT
+    # instrument, j-space-localization-qwen3-4b) states "no revision pin
+    # recorded" for the same reason.
+    #
+    # A DIFFERENT Qwen3-4B checkpoint (Qwen/Qwen3-4B official, revision
+    # 1cfa9a7208912126459214e8b04321603b3df60c) is pinned elsewhere in the
+    # program (experiments/aq-sycophancy-activation-actuator/
+    # eval_16bit_sycophancy_answer.yaml, model_tag qwen3-4b-official-bf16),
+    # for an unrelated eval surface. This cell pins unsloth/Qwen3-4B, NOT
+    # that checkpoint, because it is the substrate the row pool, the
+    # existing L34 direction fits, and every per-family actuation amendment
+    # this atlas is meant to inform (doubt-gated-caution-tighten,
+    # j-space-midband-write-sweep-qwen3-4b) actually used.
+    num_hidden_layers: 36
+    hidden_size: 2560
+    # Verified against this substrate's own committed direction vectors:
+    # experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json
+    # ("hidden_dim": 2560). num_hidden_layers=36 corroborated by
+    # docs/atlas/family-layer-map.md's existing qwen3 row (n_layers column)
+    # and by the hs_index/decoder_block_index pairing in
+    # experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/
+    # build_manifest_layers.json (hs23 -> decoder_block_index 22, i.e.
+    # hs_index = decoder_block_index + 1, consistent with num_hidden_layers=36
+    # giving hs_index range 0..36).
+    n_hidden_states: 37
+    # This program's own ported comparator layer for Qwen3-4B is NOT the
+    # doubt-snap-cross-family-confirmatory fleet's round(0.94*(N-1)) rule
+    # (that fleet's model_matrix.yaml has no qwen3_4b cell at all -- Qwen3-4B
+    # is the program's ORIGINAL substrate the fleet's ported-layer rule was
+    # itself copied FROM, not a fleet member). The actual ported/resolved
+    # write site for this substrate is L34 (doubt-gated-caution-tighten's
+    # headline gated-snap site), decoder_block_index 33, hs_index 34.
+    # Coincidentally this equals round(0.94*(36-1))=33 -> hs_index 34, the
+    # same depth-fraction formula the fleet later copied from this substrate
+    # (see jspace-family-atlas/AMENDMENT.md "Motivation": "the registered
+    # layer rule round(0.94 * (num_hidden_layers - 1)) copied Qwen3-4B's
+    # working depth fraction to every family").
+    ported_fleet_layer_idx_block: 33
+    ported_fleet_hs_index: 34
+    source:
+      fleet_experiment: doubt-gated-caution-tighten
+      fleet_cell_id: null  # doubt-gated-caution-tighten is not a doubt-snap-cross-family-confirmatory fleet member; single-experiment source, not a fleet cell_id
+      promoted_via: experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
+      # ID-only (row_key/role/split), no question text; promoted once already
+      # for j-space-midband-write-sweep-qwen3-4b's reuse (see that manifest's
+      # own PROVENANCE.md). This cell is a third, unmodified consumer.
+      row_pool_path: "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json"
+      # unknown_refused row-key list, freshly derived and promoted for THIS
+      # cell only (see RESOLVED GAP note above); NOT part of the shared
+      # promoted manifest above, which remains untouched.
+      unknown_refused_manifest_path: "experiments/qwen3-4b-family-atlas/unknown_refused_manifest.json"
+      # Row counts verified directly against the committed manifests above
+      # (aggregate counts only; no row text touched).
+      manifest_row_count: 1768  # 739 (confab + known_correct_answered, promoted manifest) + 1029 (unknown_refused, this cell's own derived manifest)
+      role_counts:
+        confab: 309
+        known_correct_answered: 430
+        unknown_refused: 1029  # real row-key list now committed in unknown_refused_manifest.json (derived + cross-checked; see RESOLVED GAP note)
+      role_split_counts:
+        confab_fit: 124
+        confab_held_out: 185
+        known_correct_answered_fit: 172
+        known_correct_answered_held_out: 258
+        unknown_refused_fit_only: 1029  # real row-key list now committed in unknown_refused_manifest.json
+
+capture:
+  # Manual tokenize + last-token position, mirroring
+  # doubt-gated-caution-tighten/extract_l34_anchor.py's own anchor
+  # convention exactly (token_ids = tok(prompt, add_special_tokens=True)
+  # ["input_ids"]; anchor = len(token_ids) - 1), for audit-parity with that
+  # experiment's own L34 capture, identical in spirit to jspace-family-atlas
+  # and gemma-4-e4b-family-atlas's own capture conventions.
+  position_name: anchor
+  position_rule: "len(token_ids) - 1 (manual tokenize, add_special_tokens=True)"
+  layers: all  # synaptic-tuner batch-capture --layers all -> range(n_hidden_states), i.e. 0..36 inclusive
+  engine: hf-batched
+  persist_dtype: float32
+  render_fn: "render_qwen3_atlas.py:render"
+  render_system_prompt_source: "ported verbatim from experiments/common/renders/ah_a0_raw_base_render.py BASELINE_SYSTEM_PROMPT (doubt-gated-caution-tighten's own render surface)"
+  no_re_mining: true
+  no_re_generation: true
+  no_steering_hooks: true
+
+split:
+  # Carried verbatim from the promoted split_manifest.json for confab and
+  # known_correct_answered, plus this cell's own derived
+  # unknown_refused_manifest.json (see RESOLVED GAP note above).
+  # unknown_refused is fit_only by the source experiment's own design
+  # (never split; see split_fit_heldout.py docstring).
+  source: promoted_committed_split_manifest_plus_derived_unknown_refused_manifest
+  labels: [fit, held_out, fit_only]
+  fit_only_roles: [unknown_refused]
+
+profile:
+  metric: eff_dim_frac
+  estimator: participation_ratio
+  # Byte-identical port of the estimator used by every prior family-atlas
+  # cell (participation ratio / n_samples on the FIT-row anchor hidden-state
+  # matrix). Not comparable to a JVP-based profile from a different
+  # instrument (j-space-localization-qwen3-4b, this substrate's OWN prior
+  # J-lens instrument, uses a related-looking but numerically distinct
+  # effective-dimension metric over gradient-based JVP push vectors);
+  # comparable across this atlas's own cells only.
+  fit_rows_only: true
+
+read_panel:
+  # unknown_refused is fit_only in the source split (no held-out partition
+  # at all), matching both jspace-family-atlas cells exactly.
+  # profile_and_read_family_atlas_panel.py's split_refused_pool() subdivides
+  # it deterministically (seed 20260707) into refused_fit (direction
+  # fitting) and refused_eval (scoring), making every reported panel number
+  # two-sided held-out. Row-key list resolved (see RESOLVED GAP note above);
+  # text materialization is a separate, later, still-gated step.
+  axes:
+    doubt:
+      contrast: "known_correct_answered (positive) vs unknown_refused (negative)"
+      fit_definition: "unit(mean(H[known_correct_answered, FIT]) - mean(H[unknown_refused, refused_fit]))"
+      note: "scored on held-out known_correct_answered vs H[unknown_refused, refused_eval]; same construction as this substrate's own u_d (build_directions.py) except for the refused_fit/refused_eval subdivision, and identical in form to jspace-family-atlas's doubt axis."
+    caution:
+      contrast: "unknown_refused/refused (positive) vs confab (negative)"
+      fit_definition: "unit(mean(H[unknown_refused, refused_fit]) - mean(H[confab, FIT]))"
+      note: "pre-orthogonalization caution axis only, matching jspace-family-atlas and gemma-4-e4b-family-atlas's own reporting convention (not this substrate's own 2-D orthogonalized c_hat)."
+    raw_refusal:
+      contrast: "unknown_refused/refused (positive) vs {confab UNION known_correct_answered}/answered (negative)"
+      fit_definition: "unit(mean(H[unknown_refused, refused_fit]) - mean(H[confab, FIT] + H[known_correct_answered, FIT]))"
+      note: "role fully determines refused/answered status; no additional private boolean fields needed beyond role."
+  fit_on: "FIT known/confab rows plus refused_fit"
+  score_on: "held-out known/confab rows plus refused_eval (two-sided held-out for every axis)"
+  bootstrap_resamples: 2000
+  bootstrap_seed: 20260707
+  metric: held_out_auroc
+  random_direction_control: true

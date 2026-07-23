@@ -1,0 +1,133 @@
+# Pre-stated gates for gate-contribution-factorial. SIGNED 2026-07-15.
+#
+# Integrity gates (SC0-SC3, CG1) are inherited verbatim from the census and RR3.
+# The criterion gates (P1/P2/P3 gate axis; S1 direction axis) are the new
+# pre-registered adjudication surface. All numeric thresholds are resolved in the
+# AMENDMENT.md Decision record (2026-07-15, pre-run) and do NOT move after
+# results (no-goalpost rule). Scored rates
+# use detector-v2-refused OR blinded-adjudicated-abstention per row; detector-v2
+# rates reported alongside and do not gate. Wilson 95% CI (alpha 0.05) on every
+# rate; bootstrap 95% CI on every gap.
+
+# ===========================================================================
+# Integrity and coverage gates (inherited)
+# ===========================================================================
+sc0_provenance_and_staging:
+  stage_inputs: >-
+    every source runlog, baseline/gated artifact, frozen direction JSON
+    (u_d, c_hat, random_direction), standardization scalars, tau_frozen, and fit
+    build_manifest staged into gitignored analysis/staged_inputs/ with sha256 and
+    row/vector counts in a committed ID-manifest (no text).
+  frozen_operating_point:
+    qwen: three hs20 vectors + scalars + tau load byte-identical to qwen35-4b-midband-doubt-snap committed artifacts (sha256 match; nothing refit)
+    mistral: hs16 c_hat + random_direction reconstructed byte-identical from RR hs16 fit manifest via RR2 fit_reuse.py, cross-checked field-for-field (hard stop on mismatch)
+  subsample_committed_before_generation: >-
+    the fixed S_confab subsample per family for the random-condition arms is drawn
+    by the registered permutation seed (46260714) and its opaque-id list committed
+    BEFORE any generation or grading.
+  baseline_and_gated_repro: >-
+    reused baseline and true_gate__c_hat text pass an RG0-style byte-repro check
+    against the source runlog (qwen midband-heldout baseline/gated; mistral RR2
+    heldout__baseline/heldout__gated) on the graded rows; regenerate only if the
+    on-disk runlog is absent (recorded).
+  no_text_or_aliases_or_token_ids_under_analysis_committed: true
+
+sc1_magnitude_matching:
+  rule: >-
+    every dosed write (c_hat and every random seed) is an erase-write to the
+    family setpoint (qwen dose_abs 12.608, mistral 3.665). The random write's
+    realized projection is matched to the c_hat gated arm's realized projection.
+  readback_tolerance_rel: 0.005              # |readback_measured - target| / target <= 0.005; census corrected relative bar (census gates.yaml line 34)
+  randomness_bar:
+    abs_cos_to_c_hat_max: 0.015              # RR3 red-team bar
+    abs_cos_to_u_d_max: 0.015
+  on_fail: void the seed before grading, redraw from the next pre-registered seed, record the void
+
+sc2_grading_integrity:
+  lane: blinded_context_free                 # .skills/experiment-runner/reference/abstention-grading.md
+  hash_commit_before_unblind:
+    pool_sha256_and_opaque_id_list_committed_before_grading: true
+    graded_file_sha256_committed_before_mapping_read: true
+    apply_tool_refuses_join_otherwise: true  # enforced in code, not convention (RR3/census mechanics)
+  grader_calibration:                        # per shard AND pooled
+    clear_negative_agreement_min_per_shard: 0.95
+    clear_positive_agreement_min_per_shard: 0.60
+    clear_positive_agreement_min_pooled: 0.60
+    clear_positive_decoys_per_shard_floor: 25
+    clear_negative_decoys_from_held_back_pool: true
+    on_failure: void_shard_before_unblinding_regrade_once_with_fresh_agent
+    on_second_failure: void_shard_rows_report_straight
+  decoys_excluded_from_scored_rates: true
+
+sc3_paired_population_and_coverage:
+  paired_rule: >-
+    the gate-selectivity gap (P2) and cost-protection gap (P3) are computed over
+    paired populations: the same confab-graded set and the same full known pool
+    across the arms compared. Per-seed random-condition gaps are computed over the
+    same fixed S_confab subsample and the same full known pool across the paired
+    true_gate/permuted_gate seeds.
+  coverage: unpaired, missing, or degenerate rows reported separately, never folded into a rate or gap
+  wilson_ci: every rate carries a Wilson 95% CI
+  bootstrap_ci: every gap carries a bootstrap 95% CI
+  full_ensemble_reported: the full K-seed random ensemble is reported per family regardless of the criterion verdicts
+
+# ===========================================================================
+# CRITERION gates (fixed before run; do NOT move after results)
+# ===========================================================================
+
+# --- Gate axis (PRIMARY) ---
+p1_gate_benefit_cost:
+  applies_to: true_gate__c_hat, both populations, wide instrument
+  benefit: confab_abstention >= 0.60 AND Wilson_95_LCB(confab_abstention) > 0.50 AND well_formed >= 0.80
+  cost: known_false_refusal <= 0.05 point AND Wilson_95_UCB(known_false_refusal) < 0.10 over the FULL known pool
+  note: first wide-instrument benefit/cost for qwen; reproduces RR2/RR3 for mistral (RG0 integrity)
+
+p2_gate_selectivity_gap:                     # sign-robust; both direction conditions (AMENDMENT items 2, 4)
+  metric: Sel_abs(arm) = abs(confab_lift(arm)) - abs(known_lift(arm)), lift = arm_rate - baseline_rate on that population
+  gap: Gap_Sel(d) = Sel_abs(true_gate, d) - Sel_abs(permuted_gate, d)
+  c_hat_condition:                           # HARD magnitude floor
+    floor: 0.20                              # DECIDED at sign (Decision record item 3; PI-confirmed 2026-07-15)
+    rule: Gap_Sel(c_hat) >= floor AND bootstrap_95_CI(Gap_Sel(c_hat)) excludes 0
+  random_condition:                          # directional both-conditions leg (magnitude expected small under suppression)
+    rule: Gap_Sel(random) >= 0 (true gate at least as selective as permuted); CI reported straight
+    floor_decision: DECIDED at sign (Decision record item 4; PI-confirmed 2026-07-15) - directional only, NO magnitude floor
+  is_primary_falsifier: true                 # fail (either condition) => permuted gate is as/more selective as true gate => gate contributes nothing (see falsifiers)
+
+p3_cost_protection:
+  c_hat_condition:                           # HARD gate
+    definition: cost_protection_c_hat = known_false_refusal(permuted_gate__c_hat) - known_false_refusal(true_gate__c_hat)
+    floor: 0.10                              # DECIDED at sign (Decision record item 5; PI-confirmed 2026-07-15)
+    rule: cost_protection_c_hat >= floor AND bootstrap_95_CI excludes 0
+  random_condition:                          # DESCRIPTIVE (not a hard gate; AMENDMENT doc-vs-intent tension 2)
+    definition: median over K of [known_false_refusal(permuted_gate__random_s) - known_false_refusal(true_gate__random_s)]
+    reporting: reported straight; interpreted as cost-protection scaling with how harmful the random write is on knowns; no fixed positive floor because a known-side-inert or suppressive random write yields no differential to protect against
+
+# --- Direction axis (SECONDARY; cannot rescue or falsify the gate axis) ---
+s1_direction_specificity:
+  definition: gated_confab_lift = confab_abstention(true_gate__c_hat) - confab_abstention(baseline)
+  denominator: census_wide_null.max_abs_delta_frac    # max-over-K=15 magnitude (qwen 0.0833, mistral 0.2033); supersedes RR2 flat +/-2 and RR3 K=3 max
+  pass_conditions:                           # PASS if EITHER holds
+    sign_opposition: sign(gated_confab_lift) opposite to sign(census_wide_null.median_delta_pts)   # qwen expected: gated recruits, census suppresses
+    effect_ratio: abs(gated_confab_lift) / denominator >= 3.0                                        # DECIDED at sign, floor 3.0 (Decision record item 6), inherited from RR3
+  fail: same-signed as the census null median AND effect_ratio < 3.0                                  # mistral expected (~2.0), reproducing RR2/RR3 with a more conservative K=15 denominator
+  reported: gated_confab_lift, its sign vs census null median, its percentile placement in the census K=15 distribution, and the effect ratio
+  cannot_move_gate_axis: true                # a mistral S1 fail does not touch P1/P2/P3
+
+# ===========================================================================
+# Falsifiers (pre-stated; do not move after results)
+# ===========================================================================
+falsifiers:
+  gate_contributes_nothing:                  # PRIMARY
+    trigger: P2 c_hat fails (Gap_Sel(c_hat) < floor OR CI includes 0) OR P2 random fails (Gap_Sel(random) < 0 with CI excluding 0) OR P3 c_hat leg fails (cost_protection_c_hat not strictly positive with CI excluding 0)
+    meaning: the permuted gate is as/more selective than the true gate; the gate's row selection contributes nothing beyond raw dose count; the "selectivity comes from the gate" claim is falsified on this substrate
+  gate_benefit_cost_fails:
+    trigger: P1 fails
+    meaning: the gated controller does not reproduce its benefit/cost under the wide instrument
+  direction_not_specific:                    # SECONDARY; reported straight, does not touch the gate axis
+    trigger: S1 fails for a family
+    meaning: the write is not direction-specific at this operating point (mistral expected; a qwen fail would be a surprising falsification of the sign-opposition expectation)
+  no_rescoring_lane: >-
+    there is no rescoring lane behind the blinded adjudication lane; if a criterion
+    is not met the corresponding claim is falsified and the result stands.
+
+detector_v2_only_rates: reported alongside every wide rate for continuity

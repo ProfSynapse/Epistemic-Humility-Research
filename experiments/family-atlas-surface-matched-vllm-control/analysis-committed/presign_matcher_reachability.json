@@ -1,0 +1,13 @@
+{
+  "fit_triads": 64,
+  "held_out_triads": 64,
+  "planted_triads": 128,
+  "private_manifest_sha256": "1382a4ea84a49f19d72fdbb5169e0e44d1222ffe0aa3ded2bfe7f2cbecff7242",
+  "roles_per_triad": [
+    "known_correct_answered",
+    "confab",
+    "unknown_refused"
+  ],
+  "schema_version": 1,
+  "status": "pass"
+}

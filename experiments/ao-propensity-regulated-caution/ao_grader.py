@@ -1,7 +1,7 @@
 """Grader for the AO propensity-regulated-caution cell.
 
 Ported (logic, not import) from the FROZEN steering harness
-``experiment/phase1/probe/steering/steering_common.py`` (726 lines, read in
+``archive/experiment/phase1/probe/steering/steering_common.py`` (726 lines, read in
 full; not modified): ``is_degenerate`` is copied verbatim (the repeated
 n-gram / empty-output coherence-floor check), and the refusal/correctness
 structure mirrors its ``grade_output`` (degenerate -> abstained/refused ->
@@ -10,7 +10,7 @@ imported directly because its module-level imports pull in unrelated
 dataset-builder machinery (``amendment_s_correctness_probe_extract``,
 ``amendment_u_unified_extract``, ``confidence_steer``); this module stays
 self-contained per the task's instruction, importing only the lightweight,
-dependency-free ``experiment/phase1/eval/scorers.py`` (the same import
+dependency-free ``archive/experiment/phase1/eval/scorers.py`` (the same import
 steering_common.py itself makes for ``is_stated_confidence_refusal`` /
 ``is_correct``).
 
@@ -18,7 +18,7 @@ Refusal/correctness on RAW ``answer_text`` (no JSON-schema unwrap): this
 checkpoint's baseline system prompt constrains output to
 ``{"answer": ..., "response_confidence": ...}`` (see the AI-TRUE extraction
 manifest), but the ACTUAL byte-pinned grader for this exact surface
-(``experiment/phase1/probe/amendment_ai_verdict_extract_gen.py`` at
+(``archive/experiment/phase1/probe/amendment_ai_verdict_extract_gen.py`` at
 generation time, and ``amendment_al_prep_grade_a0_generations.py`` at
 grading time -- together "the AL A0 cell" grader the AMENDMENT names) calls
 ``scorers.is_stated_confidence_refusal`` / ``scorers.is_correct`` directly on
@@ -91,7 +91,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-EVAL_DIR = Path("/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/eval")
+EVAL_DIR = Path("/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/eval")
 if str(EVAL_DIR) not in sys.path:
     sys.path.insert(0, str(EVAL_DIR))
 import scorers  # noqa: E402  (eval/scorers.py -- Cheng-validated port, dependency-free)

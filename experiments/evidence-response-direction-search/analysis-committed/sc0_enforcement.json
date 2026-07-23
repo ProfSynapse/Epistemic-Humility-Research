@@ -1,0 +1,14 @@
+{
+  "d_ev_reproduces": {
+    "cos_sim_recomputed_vs_committed": 0.9999999999999998,
+    "max_abs_diff": 0.0,
+    "n_fit": 200,
+    "tol": 1e-06
+  },
+  "sc0_void": false,
+  "split_reproduces": {
+    "fit_match": true,
+    "held_out_match": true,
+    "seed": 48260728
+  }
+}

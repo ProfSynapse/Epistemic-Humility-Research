@@ -1,0 +1,190 @@
+{
+  "family": "qwen35_4b",
+  "layer_hs_index": 20,
+  "model": "Qwen/Qwen3.5-4B",
+  "n_rows": 8,
+  "peak_rss_mb": 9200.7421875,
+  "peak_vram_mb": 8606.38720703125,
+  "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+  "sc1_ledger": {
+    "n_accepted": 2,
+    "n_voids": 0
+  },
+  "seeds_used": [
+    41000001,
+    41000002
+  ],
+  "setpoint_dose_abs": 12.608187917799976,
+  "smokes": {
+    "real_steer_plus_readback": {
+      "passed": false,
+      "readback_checks": [
+        {
+          "abs_delta": 0.014868795342456664,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.623056713142432,
+          "seed": 41000001,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.01830179450376157,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.626489712303737,
+          "seed": 41000001,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.016991707869285833,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.625179625669261,
+          "seed": 41000001,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.018878981596619937,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.627066899396596,
+          "seed": 41000001,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.017737241987608954,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.625925159787585,
+          "seed": 41000001,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.016693337334848124,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.624881255134824,
+          "seed": 41000001,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.016437039006680365,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.624624956806656,
+          "seed": 41000001,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.018100441006074774,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.62628835880605,
+          "seed": 41000001,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.015759528143510337,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.623947445943486,
+          "seed": 41000002,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.01978938649545192,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.627977304295428,
+          "seed": 41000002,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.01895758553478366,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.62714550333476,
+          "seed": 41000002,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.016352823086256407,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.624540740886232,
+          "seed": 41000002,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.02207965289021807,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.630267570690194,
+          "seed": 41000002,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.01738662955363246,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.625574547353608,
+          "seed": 41000002,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.016968394769767414,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.625156312569743,
+          "seed": 41000002,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.017336517475134983,
+          "family": "qwen35_4b",
+          "passed": false,
+          "readback_measured": 12.62552443527511,
+          "seed": 41000002,
+          "target": 12.608187917799976,
+          "tolerance": 0.01
+        }
+      ]
+    },
+    "runlog_persistence_schema": {
+      "all_smoke_rows_in_done_keys": true,
+      "n_rows_in_log": 8,
+      "no_new_lines_appended_on_resume_call": true,
+      "passed": true,
+      "schema_mismatches": [],
+      "schema_passed": true
+    },
+    "sequential_vs_batch_parity": {
+      "mismatches": [
+        {
+          "batched_text_len": 318,
+          "index": 7,
+          "row_key": "kuq_unknowns_all:1070",
+          "sequential_text_len": 305
+        }
+      ],
+      "n_mismatches": 1,
+      "n_rows": 8,
+      "passed": false
+    }
+  }
+}

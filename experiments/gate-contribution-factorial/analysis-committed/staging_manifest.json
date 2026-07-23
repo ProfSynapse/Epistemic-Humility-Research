@@ -1,0 +1,176 @@
+{
+  "files": [
+    {
+      "count": 1692,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/baseline.jsonl",
+      "kind": "jsonl",
+      "name": "qwen_baseline_runlog",
+      "sha256": "05280e75107cf287378a35666204b382b9e3a49c2a5ed0ac3aab7d6cfa262c45",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/runlog/baseline.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1303,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/gated.jsonl",
+      "kind": "jsonl",
+      "name": "qwen_gated_runlog",
+      "note": "fired-rows-only pass (1303 rows); combined with baseline for non-fired rows at read time (gate_construction / run_factorial)",
+      "sha256": "56803702a89b22f378c04ccb011fbb27953e92da052b30c25d686a2ed2a98ec3",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/runlog/gated.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1692,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/fire_decisions_heldout.jsonl",
+      "kind": "jsonl",
+      "name": "qwen_fire_decisions",
+      "note": "row-level neg_z_d/fire decisions at the frozen tau; numbers only, no text",
+      "sha256": "461146ca758b4c5fd7bac9f8d6a77f868fc38dc1397fb9240626b6fc8a3c4ed7",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/fire_decisions_heldout.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1692,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/heldout_rows_for_steer.jsonl",
+      "kind": "jsonl",
+      "name": "qwen_heldout_rows_for_steer",
+      "note": "question text + aliases + role/split/category_canon per row_key; gitignored destination only. ALSO the exact row ORDER used for the qwen permuted-gate index draw (gate_construction.qwen_permuted_gate_row_keys)",
+      "sha256": "76097bf7046cefa673280110a5d3b83aeaf0affbc98dc73078ecdec9785d178b",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/heldout_rows_for_steer.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1694,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/baseline.jsonl",
+      "kind": "jsonl",
+      "name": "mistral_baseline_runlog",
+      "sha256": "aa28a8b956997ed200d02bcbd855b8697f51f7f5c094fc08216e424d48e7986b",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/runlog/heldout__baseline.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1303,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/gated.jsonl",
+      "kind": "jsonl",
+      "name": "mistral_gated_runlog",
+      "note": "fired-rows-only pass (1303 confab rows, 0 known; RR2 lines 142, 151)",
+      "sha256": "1be19a3314176c2e9b0afa3d07530f9f3fec4ca02196fafd4e50122eb14bb0c6",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/runlog/heldout__gated.jsonl",
+      "staged": true
+    },
+    {
+      "count": 3037,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/joined_rows_private.jsonl",
+      "kind": "jsonl",
+      "name": "mistral_joined_rows_private",
+      "note": "question text + aliases + role/split per row_key, gitignored destination only",
+      "sha256": "21ac7bc2e6aab2f6446e57cace3c44ee33f63f018f04af776b84f45886a76fb6",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/joined_rows_private.jsonl",
+      "staged": true
+    },
+    {
+      "count": 2,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/directions/hs16_u_d.json",
+      "kind": "json",
+      "name": "mistral_hs16_u_d",
+      "sha256": "0771ab2c63de3292676cb70d19fd0758729651dccc6bb58dbf37e8cade0466be",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/directions/hs16_u_d.json",
+      "staged": true
+    },
+    {
+      "count": 2,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/directions/hs16_c_hat.json",
+      "kind": "json",
+      "name": "mistral_hs16_c_hat",
+      "sha256": "f6555f329208f74d15638cf0c2da2f936cfdf74844c889da0b9f89f202e1fc2d",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/directions/hs16_c_hat.json",
+      "staged": true
+    },
+    {
+      "count": 3,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/directions/hs16_random_direction.json",
+      "kind": "json",
+      "name": "mistral_hs16_random_direction",
+      "sha256": "5364f29810db67d389be4c0ccedef17d381cbeb94d6dddede71f732c306288e8",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/directions/hs16_random_direction.json",
+      "staged": true
+    },
+    {
+      "count": 12,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/directions/hs16_build_manifest.json",
+      "kind": "json",
+      "name": "mistral_hs16_build_manifest_rr2",
+      "note": "RR2's own reconstruction (via its fit_reuse.py) of RR's committed hs16 fit; cross-checked field-for-field against RR's committed manifest by mistral_direction_provenance.py",
+      "sha256": "87667fae8b2fd459bffd6c5bd6df64e1c65ad3faf27eb235ba0d7d30f0675899",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/directions/hs16_build_manifest.json",
+      "staged": true
+    },
+    {
+      "count": 6,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/fit_reuse_report_rr2.json",
+      "kind": "json",
+      "name": "mistral_fit_reuse_report_rr2",
+      "note": "RR2's own RG0 field-for-field crosscheck of its hs16 reconstruction against RR's committed manifest; pass=true expected (independently re-verified by mistral_direction_provenance.py)",
+      "sha256": "e9a0d310e04bef76504cc5b34a654fbb3f79ad19e27d9e3487804efaf487a001",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/fit_reuse_report.json",
+      "staged": true
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "qwen_hs20_u_d",
+      "sha256": "18e78f257484692c1cef7013d47cb64739542d32b3e9949d0258b4ddc3b0c84c",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/gate-factorial/experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/u_d.json",
+      "staged": false
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "qwen_hs20_c_hat",
+      "sha256": "937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/gate-factorial/experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json",
+      "staged": false
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "qwen_hs20_random_direction",
+      "sha256": "db8b930d79d98f52417566d9a87c876470f6b820684ee9456a58f7213d33cafa",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/gate-factorial/experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/random_direction.json",
+      "staged": false
+    },
+    {
+      "count": 8,
+      "dest_path": null,
+      "kind": "json",
+      "name": "qwen_doubt_snap_build_manifest",
+      "sha256": "f0a8ea7a19526a97801ca49861bc33ee1dd2cd4668a0ba6f2f842c298a544425",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/gate-factorial/experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json",
+      "staged": false
+    },
+    {
+      "count": 3,
+      "dest_path": null,
+      "kind": "json",
+      "name": "qwen_heldout_frozen_operating_point_hashes",
+      "sha256": "9447aac4f47cf620ab88c5c15e67b53a02c6d04616b80b80e1908fcc88557af2",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/gate-factorial/experiments/qwen35-4b-midband-heldout/frozen_operating_point_hashes.json",
+      "staged": false
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "rr_mistral_hs16_build_manifest",
+      "sha256": "87667fae8b2fd459bffd6c5bd6df64e1c65ad3faf27eb235ba0d7d30f0675899",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/gate-factorial/experiments/rr-cross-family-raw-refusal/analysis-committed/mistral/hs16_fit_build_manifest.json",
+      "staged": false
+    }
+  ],
+  "n_committed_local": 6,
+  "n_files": 18,
+  "n_symlinked": 12
+}

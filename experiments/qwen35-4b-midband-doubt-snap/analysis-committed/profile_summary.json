@@ -1,0 +1,35 @@
+{
+  "model": "Qwen/Qwen3.5-4B",
+  "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+  "n_layers": 32,
+  "late_site_hs_index": 30,
+  "status": "complete",
+  "source": "analysis/profile_full.json",
+  "band_selection_rule": "profiled-grid peak of effective_dim_frac_mean, plus its immediately adjacent profiled layers",
+  "curve_summary": {
+    "hs_indices": [2, 5, 7, 10, 13, 15, 18, 20, 23, 26, 28, 30, 31, 32],
+    "effective_dim_frac_mean": [
+      0.3361584518946461,
+      0.5082322168210333,
+      0.38700781479019536,
+      0.5303179445331007,
+      0.41391798976334776,
+      0.47253364200206677,
+      0.4833063669333874,
+      0.5295654218668727,
+      0.558028832677691,
+      0.5254610775495777,
+      0.4855032274167433,
+      0.3992182955271543,
+      0.3956201413962435,
+      0.08333333333337657
+    ],
+    "shape": "rises from a shallow hs2 baseline (0.336) through mid-depth (hs5-hs20, oscillating 0.39-0.53), peaks at hs23 (0.558), descends through hs26 (0.525) and hs28 (0.486), falls further at the late-site region hs30-31 (~0.396-0.399), and collapses at the final layer hs32 (0.083, RMSNorm degeneracy at the output)."
+  },
+  "peak_hs_index": 23,
+  "peak_effective_dim_frac_mean": 0.558028832677691,
+  "midband_candidates_hs": [20, 23, 26],
+  "late_comparator_hs_index": 30,
+  "late_comparator_effective_dim_frac_mean": 0.3992182955271543,
+  "note": "Screening profile only (n_prompts=12, n_random_dirs=3 vs the Qwen3-4B jlens.py reference's 1000x5), reduced for the ~50x per-eval JVP cost on this hybrid linear-attention architecture. Band location, not a statistically hardened profile."
+}

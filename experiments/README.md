@@ -15,13 +15,13 @@ everything needed to run and adjudicate it:
   experiment consumes the same direction.
 
 Shared, cross-experiment code lives under `experiments/common/`
-(`graders/`, `renders/`, and promoted `directions/`).
+(`cloud/`, `graders/`, `renders/`, and promoted `directions/`).
 
 ## Rules
 
 - **Experiments-first.** New work lands here, not in `experiment/` (singular),
-  which is the FROZEN historical Phase 1 protocol era. See
-  `experiment/phase1/README.md`.
+  which is the FROZEN historical locked training-regimen protocol era. See
+  `archive/experiment/phase1/README.md`.
 - **Indices are generated, never hand-edited.** The registry and any roll-up
   index are produced from each experiment's `experiment.yaml` manifest.
 - **Lifecycle tooling is `bin/exp`.** Scaffolding, signing, index regeneration,

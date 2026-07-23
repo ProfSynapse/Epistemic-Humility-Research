@@ -1,0 +1,422 @@
+{
+  "config_fingerprint": "f1f7d5a49a00bb08d49e9b59c6b9e385e250177c15601d97d30379e053e09f40",
+  "decision": {
+    "reason": "one or more integrity, support, reachability, or negative-control gates failed; escalate to Shape B",
+    "status": "indeterminate"
+  },
+  "experiment": "family-atlas-surface-diversity-control",
+  "gates": {
+    "G0": "pass",
+    "G1": "pass",
+    "G2": "fail",
+    "G3": "fail",
+    "G4": "fail",
+    "G5": "fail"
+  },
+  "report_kind": "result",
+  "schema_version": 1,
+  "substrates": {
+    "gemma4_e4b_it": {
+      "gates": {
+        "G0": true,
+        "G1": true,
+        "G2": false,
+        "G3": false,
+        "G4": false,
+        "G5": false
+      },
+      "matching": {
+        "exact_source": true,
+        "heldout_surface_role_auroc": 0.6426632808768885,
+        "max_abs_scalar_smd": 0.154455784061735,
+        "n_pairs": 293,
+        "support_pass": false
+      },
+      "peaks": {
+        "baseline": {
+          "classification": "early-exterior",
+          "peak_depth": 0.09523809523809523,
+          "peak_hs_index": 4,
+          "peak_to_runner_up_ratio": 1.1474977359663159,
+          "peak_value": 0.01894708400222005,
+          "runner_up_hs_index": 5
+        },
+        "full_fit_combined_residual": null,
+        "full_fit_combined_residual_seeded_50pct": null,
+        "kuq_matched_combined_residual": null,
+        "kuq_matched_combined_residual_seeded_50pct": null,
+        "kuq_matched_unweighted": null,
+        "lexical_residual": null,
+        "low_dimensional_residual": null,
+        "surface_explained": null
+      },
+      "permutations": {
+        "early_count": 0,
+        "max_early_r2": [],
+        "median_abs_peak_shift": 0.0,
+        "n": 0,
+        "pass": false,
+        "peak_hs_indices": []
+      },
+      "planted": {
+        "alpha": null,
+        "controlled_peak": null,
+        "max_normalized_deviation": null,
+        "pass": false,
+        "raw_peak": null
+      },
+      "profiles": {
+        "baseline": [
+          0.0007686395080707148,
+          0.0016016580013982142,
+          0.008609532145897254,
+          0.011982458066702407,
+          0.01894708400222005,
+          0.016511652623231173,
+          0.016376640461241657,
+          0.007467220682426434,
+          0.005568137969629315,
+          0.005544013734552144,
+          0.006855507793132708,
+          0.008680962561513728,
+          0.012420443805481811,
+          0.008810236672404414,
+          0.008789380624050741,
+          0.00895415964463134,
+          0.009063906547852293,
+          0.008537785410867206,
+          0.007077161146372772,
+          0.0071635959953220245,
+          0.0070293006351326145,
+          0.007073718621036446,
+          0.006767311284316783,
+          0.007568605766549624,
+          0.00758220685897353,
+          0.007228178263893065,
+          0.006725978463987237,
+          0.00567062749823584,
+          0.004380013577990665,
+          0.0037334979527771863,
+          0.0030922361149470427,
+          0.0028941725892218015,
+          0.0027837303742461483,
+          0.002850873651851729,
+          0.0030181262131582184,
+          0.0030787161880817234,
+          0.0031851807790707325,
+          0.003122833131088767,
+          0.0031552362342193935,
+          0.003262768798344793,
+          0.0034117957631562314,
+          0.0037682727618973647,
+          0.003839732105002559
+        ],
+        "full_fit_combined_residual": [],
+        "full_fit_combined_residual_seeded_50pct": [],
+        "kuq_matched_combined_residual": [],
+        "kuq_matched_combined_residual_seeded_50pct": [],
+        "kuq_matched_unweighted": [],
+        "lexical_residual": [],
+        "low_dimensional_residual": [],
+        "surface_explained": []
+      },
+      "provenance": {
+        "activation_content_sha256": "9c0a89082aa96ac454c54110bcaead51d075e80a6f918080d516846b81f40493",
+        "activation_file_count": 2815,
+        "capture_coverage": 1.0,
+        "counts": {
+          "capture_index": 2815,
+          "capture_input": 2815,
+          "fit_rows": 1301,
+          "joined_rows": 2815,
+          "private_rows": 2815,
+          "split_rows": 2815
+        },
+        "files": {
+          "atlas_summary": {
+            "file_sha256": "3374521c60cfc898485ed1839507f925e517a67ff8313cf04d78db4c45764560",
+            "path_sha256": "79fa8324db858b00b40baf9d67b790f88e663a0aede7e2a9d62a992431cd5142",
+            "record_count": 1
+          },
+          "capture_index": {
+            "file_sha256": "a11ed3a81fe5cf15e70b3d97a2a532f0aef98c63ebd0db39ce21186fac56f1d0",
+            "path_sha256": "b11fa34dd1fbc2a4fc06b8fe6fc759870418d2d3f8455c89e3f77be721bc8c33",
+            "record_count": 2815
+          },
+          "capture_input": {
+            "file_sha256": "9ff0ea7c1405b4bd701d8a065b294684a076d9b4fe5325bc5d4ef4004ec57d6d",
+            "path_sha256": "4bac1f90a8f4fbf35ec1b500c6936420883c49bb4797e3f3e8c595beab4047fb",
+            "record_count": 2815
+          },
+          "capture_manifest": {
+            "file_sha256": "e23f1877c66c5db6926a6df3d5fd24e96356758da1516345e639cd94c4a2edaf",
+            "path_sha256": "ba5c8c2a266076bcea241bbbbaa8878b500729394ab020b1e5eb1568716ad7a8",
+            "record_count": 1
+          },
+          "estimator_module": {
+            "file_sha256": "27cd945c83df20416658a5370544ea99f1422f5717f3e67cffca82d418003ed5",
+            "path_sha256": "c6ffd858d54329697ec642e892d09e8c758869e3b781b57e1c90a110cb9f3fba",
+            "record_count": 1
+          },
+          "private_rows": {
+            "file_sha256": "c207b245919932928c5f4b35edf5dd01d8d3bf29336868436d59b71ed05de4cd",
+            "path_sha256": "c160330c46329182825af56512c0ec1e3d96de9fa8c9b41f34dff5bc1652c935",
+            "record_count": 2815
+          },
+          "split_manifest": {
+            "file_sha256": "2aace2691d5193fb22f82e91db379de4edd3527eb4d8e5128161a9f0e65f28aa",
+            "path_sha256": "29a4e953af60d54129ecdd515e2f6cb592697d24b96622727e54d5231ec7be41",
+            "record_count": 2815
+          }
+        },
+        "fit_role_counts": {
+          "confab": 840,
+          "known_correct_answered": 168,
+          "unknown_refused": 293
+        },
+        "hidden_size": 2560,
+        "missing_counts": {
+          "activation_rows": 0,
+          "capture_files": 0,
+          "capture_index": 0,
+          "capture_input": 0,
+          "private_rows": 0,
+          "question": 0,
+          "token_count": 0
+        },
+        "model_revision_match": true,
+        "n_hidden_states": 43,
+        "required_field_coverage": {
+          "category": 2815,
+          "prompt_token_count": 2815,
+          "question": 2815,
+          "render_template_id": 2815,
+          "role": 2815,
+          "source": 2815,
+          "split": 2815
+        }
+      },
+      "r2_profiles": {
+        "excess_over_p95": 0.0,
+        "observed": [],
+        "observed_early_max": 0.0,
+        "permutation_p95_early_max": 0.0,
+        "permutations": []
+      },
+      "subsamples": {
+        "full": {
+          "n_rows": 0,
+          "peak": null,
+          "profile": [],
+          "support_pass": false
+        },
+        "matched_pairs": {
+          "heldout_surface_role_auroc": 1.0,
+          "max_abs_scalar_smd": 0.0,
+          "n_pairs": 0,
+          "peak": null,
+          "profile": [],
+          "support_pass": false
+        }
+      }
+    },
+    "qwen3_4b_raw_base": {
+      "gates": {
+        "G0": true,
+        "G1": true,
+        "G2": false,
+        "G3": false,
+        "G4": false,
+        "G5": false
+      },
+      "matching": {
+        "exact_source": true,
+        "heldout_surface_role_auroc": 0.6103395061728394,
+        "max_abs_scalar_smd": 0.17379709147819825,
+        "n_pairs": 108,
+        "support_pass": false
+      },
+      "peaks": {
+        "baseline": {
+          "classification": "early-exterior",
+          "peak_depth": 0.1388888888888889,
+          "peak_hs_index": 5,
+          "peak_to_runner_up_ratio": 1.0028456389203881,
+          "peak_value": 0.014891024101325834,
+          "runner_up_hs_index": 4
+        },
+        "full_fit_combined_residual": null,
+        "full_fit_combined_residual_seeded_50pct": null,
+        "kuq_matched_combined_residual": null,
+        "kuq_matched_combined_residual_seeded_50pct": null,
+        "kuq_matched_unweighted": null,
+        "lexical_residual": null,
+        "low_dimensional_residual": null,
+        "surface_explained": null
+      },
+      "permutations": {
+        "early_count": 0,
+        "max_early_r2": [],
+        "median_abs_peak_shift": 0.0,
+        "n": 0,
+        "pass": false,
+        "peak_hs_indices": []
+      },
+      "planted": {
+        "alpha": null,
+        "controlled_peak": null,
+        "max_normalized_deviation": null,
+        "pass": false,
+        "raw_peak": null
+      },
+      "profiles": {
+        "baseline": [
+          0.0007547169811320754,
+          0.00955907604508722,
+          0.012417223279373625,
+          0.013216803875161078,
+          0.014848769863881285,
+          0.014891024101325834,
+          0.013458074092047459,
+          0.011521880991671164,
+          0.012072435682923927,
+          0.011001244906689248,
+          0.009714276485435094,
+          0.008523581370282536,
+          0.008241392381158608,
+          0.0085221702534158,
+          0.00790577560604072,
+          0.007719812908915502,
+          0.007872724542903295,
+          0.00799141419844581,
+          0.0074435936811662225,
+          0.007598290887328098,
+          0.008073761735955441,
+          0.008079548702981776,
+          0.007923580627506756,
+          0.008762614105782671,
+          0.00852110334109931,
+          0.008446611311128975,
+          0.009223394700266127,
+          0.008851264791230364,
+          0.009054865638509447,
+          0.009335918572288094,
+          0.009492640095905414,
+          0.009248197097257592,
+          0.008727665037513517,
+          0.008763060376870826,
+          0.008591270896456402,
+          0.008144868797887709,
+          0.006865965964771651
+        ],
+        "full_fit_combined_residual": [],
+        "full_fit_combined_residual_seeded_50pct": [],
+        "kuq_matched_combined_residual": [],
+        "kuq_matched_combined_residual_seeded_50pct": [],
+        "kuq_matched_unweighted": [],
+        "lexical_residual": [],
+        "low_dimensional_residual": [],
+        "surface_explained": []
+      },
+      "provenance": {
+        "activation_content_sha256": "c3d5cd911ee10a60fbf4cd2a5e6561dd2bffba57d8882ce0de1703c2fac43f70",
+        "activation_file_count": 1768,
+        "capture_coverage": 1.0,
+        "counts": {
+          "capture_index": 1768,
+          "capture_input": 1768,
+          "fit_rows": 1325,
+          "joined_rows": 1768,
+          "private_rows": 1768,
+          "split_rows": 1768
+        },
+        "files": {
+          "atlas_summary": {
+            "file_sha256": "ec1f7b20734efaff8a61fea5dbf011bfc5c4925c9d6a0d87c2787d81f5bcb022",
+            "path_sha256": "c5d4aac41283fc750d2bc7deb41ddd0d8c40148af88cbe23bc14791bf1521e69",
+            "record_count": 1
+          },
+          "capture_index": {
+            "file_sha256": "00fc99cf28962991a280c7bf8079406e58ab519469a078287754c012271eb8f8",
+            "path_sha256": "d1612fa88b6347849f4a9ccca11b19cb1d1b5f56aaaeb4e56550d68d935d82f9",
+            "record_count": 1768
+          },
+          "capture_input": {
+            "file_sha256": "a79745b454c8854a2600a090a4032641d4be5d8ac99617a642f983edfcdbaa78",
+            "path_sha256": "c27f9c2f0fb4ae323360a87eb3d7c3cf33aaaac58887cafafa232d3a25740d1f",
+            "record_count": 1768
+          },
+          "capture_manifest": {
+            "file_sha256": "8f8724b3eb6bbe57c71ba6a701b727a0242862aa1cbe22a9dd5d735c32247603",
+            "path_sha256": "66567afce5ae444162cdacc0179e5d53f9786ca5664ee2907b10fda5b6269be9",
+            "record_count": 1
+          },
+          "estimator_module": {
+            "file_sha256": "27cd945c83df20416658a5370544ea99f1422f5717f3e67cffca82d418003ed5",
+            "path_sha256": "8606dc5aa32ffe8b577f2dd796b5f19427069a45ef036e900818aa65568d8d51",
+            "record_count": 1
+          },
+          "private_rows": {
+            "file_sha256": "d1e7154481c8e5265e9701ada6e7aaffd7d7dba4d589002330a45b12eb56af98",
+            "path_sha256": "e88d26b9e940bbaef002390c04c4207c180938c77277b590d0094b407abf89a7",
+            "record_count": 1768
+          },
+          "split_manifest": {
+            "file_sha256": "a41d7f42e74ddc6e41e1f6d2c04007c8bb6a9dcbfe5f664c5ce1050ba55175b5",
+            "path_sha256": "b9c68729ecd0aed14cd63a87bb58ae4e1b4e6731d8374bb1d0c29118ed8b616d",
+            "record_count": 1768
+          }
+        },
+        "fit_role_counts": {
+          "confab": 124,
+          "known_correct_answered": 172,
+          "unknown_refused": 1029
+        },
+        "hidden_size": 2560,
+        "missing_counts": {
+          "activation_rows": 0,
+          "capture_files": 0,
+          "capture_index": 0,
+          "capture_input": 0,
+          "private_rows": 0,
+          "question": 0,
+          "token_count": 0
+        },
+        "model_revision_match": true,
+        "n_hidden_states": 37,
+        "required_field_coverage": {
+          "category": 1768,
+          "prompt_token_count": 1768,
+          "question": 1768,
+          "render_template_id": 1768,
+          "role": 1768,
+          "source": 1768,
+          "split": 1768
+        }
+      },
+      "r2_profiles": {
+        "excess_over_p95": 0.0,
+        "observed": [],
+        "observed_early_max": 0.0,
+        "permutation_p95_early_max": 0.0,
+        "permutations": []
+      },
+      "subsamples": {
+        "full": {
+          "n_rows": 0,
+          "peak": null,
+          "profile": [],
+          "support_pass": false
+        },
+        "matched_pairs": {
+          "heldout_surface_role_auroc": 1.0,
+          "max_abs_scalar_smd": 0.0,
+          "n_pairs": 0,
+          "peak": null,
+          "profile": [],
+          "support_pass": false
+        }
+      }
+    }
+  }
+}

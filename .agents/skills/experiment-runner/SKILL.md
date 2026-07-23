@@ -1,13 +1,13 @@
 ---
 name: experiment-runner
-description: Operational runbook for the Epistemic-Humility Phase 1 experiment runner - expands the PROTOCOL v0.3 (LOCKED) run matrix (3-seed headline + LR/beta sensitivity panel at 4B, 3-seed confirm at 8B, 2 bridge replication cells) into per-cell tuner invocations across two lanes (local RTX 3090 / HF Jobs cloud), with hard pre-registration count assertions, prerequisite gating, data staging, and committed provenance run records. Use when launching, dry-running, or gating the Phase 1 matrix, materializing per-cell recipes, or inspecting run records. This skill is about USING the runner via checked-in scripts; it never modifies the synaptic-tuner submodule.
+description: Operational runbook for the Epistemic-Humility Locked Matrix Experiment Runner - expands the PROTOCOL v0.3 (LOCKED) run matrix (3-seed headline + LR/beta sensitivity panel at 4B, 3-seed confirm at 8B, 2 bridge replication cells) into per-cell tuner invocations across two lanes (local RTX 3090 / HF Jobs cloud), with hard pre-registration count assertions, prerequisite gating, data staging, and committed provenance run records. Use when launching, dry-running, or gating the locked matrix, materializing per-cell recipes, or inspecting run records. This skill is about USING the runner via checked-in scripts; it never modifies the synaptic-tuner submodule.
 allowed-tools: Read, Bash, Write, Grep, Glob
 ---
 
-# Phase 1 Experiment Runner
+# Locked Matrix Experiment Runner
 
-Use the checked-in runner scripts to expand, gate, stage, and inspect Phase 1
-experiment cells. This skill is orchestration glue: it talks to the
+Use the checked-in runner scripts to expand, gate, stage, and inspect locked
+matrix cells. This skill is orchestration glue: it talks to the
 `synaptic-tuner` submodule only through materialized recipe YAML and public tuner
 CLI verbs. It must not add experiment-specific code or config to the tuner.
 
@@ -33,10 +33,11 @@ Always choose the narrowest reference needed for the task:
 | Use common launch command patterns | [reference/common-patterns.md](reference/common-patterns.md) |
 | Prepare/gate hidden-state extraction | [reference/hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
 | Author a NEW steering / extraction / probe-fit / gate-scoring cell (tuner-backed) | the `mechinterp-cells` skill (`.skills/mechinterp-cells/SKILL.md`) |
-| Decide batch-1 vs batched generation for a GPU cell (parity rules, vLLM/HF lanes, numerics smoke) | [reference/batched-generation.md](reference/batched-generation.md) |
-| Stage an aux_head co-training arm (Phase B: build dataset + A0/A1/A2 recipes + launch prereqs) | [reference/aux-head-cotraining-arms.md](reference/aux-head-cotraining-arms.md) |
-| Plan Phase 3 causal-pilot sweeps | [reference/phase3-causal-pilot-sweeps.md](reference/phase3-causal-pilot-sweeps.md) |
+| Grade abstention/refusal in a gated harness (detector + blinded adjudication lane) | [reference/abstention-grading.md](reference/abstention-grading.md) |
+| Select a generation or hidden-state backend (vLLM-first policy, parity exceptions, structured outputs, bridge smokes) | [reference/batched-generation.md](reference/batched-generation.md) |
+| Plan archived legacy mechinterp causal-pilot sweeps | [reference/legacy-mechinterp-causal-pilot-sweeps.md](reference/legacy-mechinterp-causal-pilot-sweeps.md) |
 | Record durable research-session memory | [reference/research-sessions.md](reference/research-sessions.md) |
+| Audit experiment/session provenance before migration | `python3 .agents/skills/experiment-runner/scripts/provenance_audit.py [--json]` |
 | Orchestrate a GPU-runner subagent (watchers, messaging, division of labor) | [reference/subagent-orchestration.md](reference/subagent-orchestration.md) |
 | Create or update experiment notes | [reference/experiment-notes.md](reference/experiment-notes.md) |
 | Publish or document public HF artifacts | [reference/hf-publication.md](reference/hf-publication.md) |
@@ -54,18 +55,17 @@ operation, then follow any further routing inside that reference.
 |------|---------|
 | Dry-run the matrix (expand + assert counts, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/run_matrix.py --dry-run` |
 | Check prerequisites per cell (gate, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/run_matrix.py --check-only --lane local` |
-| Standalone prereq report | `python3 .agents/skills/experiment-runner/scripts/check_prereqs.py --matrix .agents/skills/experiment-runner/config/matrix.yaml --data-root experiment/phase1/data --lane local` |
+| Standalone prereq report | `python3 .agents/skills/experiment-runner/scripts/check_prereqs.py --matrix .agents/skills/experiment-runner/config/matrix.yaml --data-root archive/experiment/phase1/data --lane local` |
 | Prepare one local 4B cell (stage data + materialized recipe + run record) | `python3 .agents/skills/experiment-runner/scripts/prepare_local_cell.py --run-id sft__4b__headline__seed1 --status launched` |
-| Inspect a run record | `Get-Content experiment/phase1/run_records/<run_id>.json` |
-| Prepare/gate one hidden-state extraction (GPU-free; gate + resolve, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py --config experiment/phase1/probe/config/hidden_state_probe.yaml` |
-| Plan Phase 3 causal-pilot sweeps (GPU-free by default) | `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml` |
-| Build aux_head co-training datasets (real + shuffled placebo; CPU-only) | `python3 experiment/phase1/probe/amendment_r_build_phase_b_aux_dataset.py --out-dir scratch/amendment_r/phase_b` |
+| Inspect a run record | `Get-Content archive/experiment/phase1/run_records/<run_id>.json` |
+| Prepare/gate one hidden-state extraction (GPU-free; gate + resolve, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py --config experiments/common/configs/knowledge-probe/hidden_state_probe.yaml` |
+| Plan archived legacy mechinterp causal-pilot sweeps (GPU-free by default) | `python experiments/common/mechinterp/causal_pilot_sweep.py --config archive/experiment/phase1/probe/config/causal-pilot-core/mechinterp_causal_pilot_local_sweep.yaml` |
 
 ## Core Invariants
 
 - The matrix SSOT is `config/matrix.yaml`; per-arm default recipes live under
-  `experiment/phase1/recipes/`; provenance records live under
-  `experiment/phase1/run_records/`.
+  `archive/experiment/phase1/recipes/`; provenance records live under
+  `archive/experiment/phase1/run_records/`.
 - `run_matrix.py` must assert the pre-registered counts: 19 @ 4B, 9 @ 8B,
   and 2 bridge cells. Never loosen these assertions to absorb a matrix edit.
 - Launch/cancel/delete actions require exact user approval in the current
@@ -74,9 +74,10 @@ operation, then follow any further routing inside that reference.
   OWN git worktree (`.worktrees/<branch>`) = one PR. NEVER swap branches in the
   primary working tree — live GPU queues and monitors run scripts from it in
   place. Do the full arc in that worktree (recipes, run records, scored
-  results, doc verdict), then PR into protected `main`; PRs still MERGE
-  serially, and never push to `main` directly. See
-  [reference/operator-discipline.md](reference/operator-discipline.md).
+  results, doc verdict), then PR into protected `main`. Amendments proceed in
+  PARALLEL, each in its own worktree; never stack a second amendment on
+  another amendment's branch or worktree, and never push to `main` directly.
+  See [reference/operator-discipline.md](reference/operator-discipline.md).
 - The no-pollution rule is sacrosanct: runner code may not import tuner
   internals, write committed files under `synaptic-tuner/`, or register
   Epistemic-specific tuner behavior. Ephemeral staging under already-gitignored
@@ -96,6 +97,52 @@ operation, then follow any further routing inside that reference.
   session note + run record. Every amendment pre-states a prediction, a falsifier,
   and its gates — and never moves the goalposts after the result. See
   [reference/amendment-vs-lab-notebook.md](reference/amendment-vs-lab-notebook.md).
+- Abstention grading: an exact-phrase refusal detector alone is not an
+  acceptance instrument. Any harness whose gates score abstention pairs a
+  frozen, pinned detector (screen) with a pre-registered BLINDED adjudication
+  lane covering detector-negative rows from BOTH populations (benefit and
+  cost), with manifest-before-grading and hash-before-unblinding enforced in
+  code, and a falsifier that closes the regress (no rescoring lane behind the
+  lane). Protocol, rubric, cautionary case, and pre-sign checklist:
+  [reference/abstention-grading.md](reference/abstention-grading.md).
+- Data-exhaust at build time: every generation harness persists per-sample
+  generation text and the full sub-grade dict in its gitignored row-level run
+  log; booleans-only logs are a build defect, and the pre-sign review checks
+  the persistence schema. Rationale and the H3 cautionary case live in the
+  data-exhaust skill's "Build-time requirement" section. Containment is
+  unchanged: text never leaves gitignored `analysis/`.
+- Backend choice is part of the evidence surface. New unsteered generation
+  prefers pinned vLLM with batch invariance; new full-depth extraction prefers
+  vLLM only after the model-specific HF bridge passes. Parity-locked cells keep
+  their registered backend. Read
+  [reference/batched-generation.md](reference/batched-generation.md) before
+  signing any GPU cell that generates or captures hidden states.
+- GPU smoke/preflight before every full generation run (PI standing directive
+  2026-07-16): before any full steering/generation run, execute a small-N
+  preflight on the SAME code path as the full run — a few rows per family at
+  the dose extremes (bottom rung, reference setpoint, top rungs), verifying
+  per-row readback against the commanded setpoint under the amendment's
+  registered tolerance and recording observed well-formedness at the extremes
+  as a collapse-location estimate. The full-run entrypoint REFUSES to start
+  unless the preflight wrote its pass marker (enforced in code, not by
+  convention), and live first-batch plus per-rung-completion assertions hard
+  abort mid-run on any readback violation. A preflight FAIL is a gate event
+  for the lead, never an operational retry: there is no retry-until-pass
+  (unlike CG1's explicit VOID_REGRADE_ONCE, readback has no registered retry
+  remedy), and any tolerance or rung change it motivates is a signed-config
+  amendment (repin, recorded reason, PI approval) made BEFORE generation.
+  Write tolerances with the instrument's physics in mind: bf16 readback
+  carries a roughly fixed ABSOLUTE error floor (~0.001-0.005 dose_abs
+  observed on Qwen3.5-4B hs20 / Mistral-7B hs16), so a purely RELATIVE
+  tolerance is unattainable at small absolute setpoints — prefer
+  "rel <= X OR abs <= X * reference_dose" so the gate keeps wiring-defect
+  detection power (defects like gain-squared exceed both bounds by >10x)
+  without tripping on quantization dust. Cautionary case: margin-mapping M1
+  (2026-07-17), whose preflight caught exactly this pre-run; NOTEBOOK entries
+  there record the full adjudication pattern. For how a multi-stage GPU
+  pipeline should be launched and chained around gates like this one, see the
+  mechinterp-cells launch discipline:
+  [../mechinterp-cells/reference/modal-launch.md](../mechinterp-cells/reference/modal-launch.md#long-gpu-stage-launch-discipline-no-detached-nohup).
 
 ## Matrix At A Glance
 

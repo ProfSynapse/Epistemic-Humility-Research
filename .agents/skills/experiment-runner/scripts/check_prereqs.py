@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Phase 1 experiment-runner — prerequisite gate.
+locked training-regimen experiment-runner -- prerequisite gate.
 
 Location: .claude/skills/experiment-runner/scripts/check_prereqs.py
-Purpose: Assert the PROTOCOL.md v0.3 §5 launch prerequisites are verifiably
+Purpose: Assert the PROTOCOL.md v0.3 section 5 launch prerequisites are verifiably
     present BEFORE run_matrix.py launches any cell. A hard failure ABORTS the
     whole matrix (never a single cell); two checks instead SKIP only the
     affected cells (cloud-data-not-published, bridge-prereqs-absent) so a
@@ -18,7 +18,7 @@ Design notes:
     function that touches huggingface_hub, and it is monkeypatchable so the gate
     logic is unit-testable with NO network.
 - Side-effect-free: this module reads/queries; it never fetches, publishes, or
-    writes. Publishing Phase-1 datasets to the hub is the tuner's
+    writes. Publishing locked training-regimen datasets to the hub is the tuner's
     dataset-publishing skill's job, not this gate's.
 """
 
@@ -43,7 +43,7 @@ MANIFEST_FILENAME = "build_manifest.json"
 
 
 class PrereqError(Exception):
-    """A hard prerequisite failure — run_matrix.py aborts the whole matrix."""
+    """A hard prerequisite failure -- run_matrix.py aborts the whole matrix."""
 
 
 @dataclass
@@ -143,25 +143,25 @@ def hub_dataset_revision(dataset_name: str) -> Optional[str]:
 # The cloud lane is only safe to launch once the tuner forwards per-cell `seed`
 # AND `beta` all the way to the trainer. If it does not, a cloud cell silently
 # trains at the default seed (42) and default beta while the run record claims
-# the intended values — invisible corruption of the seed sweep and beta panel
-# (the HANDOFF §5 failure mode). The GENERAL tuner capability is being added by
+# the intended values -- invisible corruption of the seed sweep and beta panel
+# (the HANDOFF section 5 failure mode). The GENERAL tuner capability is being added by
 # coder-cloud (Task #32), mirroring the existing learning-rate flow.
 #
 # We do NOT trust a hardcoded flag or a submodule SHA: the capability lands as
 # working-tree edits before it is committed/pushed, so a version string would
-# lie. Instead — same live-check philosophy as the hub gate — we PROBE the actual
+# lie. Instead -- same live-check philosophy as the hub gate -- we PROBE the actual
 # tuner source surface the runner will execute against. The probe is text-based
 # (no torch/trl import; import-light) and monkeypatchable so the gate stays
 # unit-testable.
 #
 # Three load-bearing surface elements must all be present (contract coordinated
-# with coder-cloud + architect, Task #32 — names verified against the in-flight
+# with coder-cloud + architect, Task #32 -- names verified against the in-flight
 # tuner working tree on feature/dpo-trainer):
 #   1. CloudTrainingConfig carries `seed` and `beta` fields   (tuner/core/config.py)
 #   2. the HF command builder emits `--seed` and `--beta`     (.../cloud/_hf_command_builder.py)
 #   3. the CLI exposes `--train-seed` / `--train-beta`        (tuner/cli/parser.py)
 #
-# The OPEN decision ALWAYS comes from the live probe — there is deliberately no
+# The OPEN decision ALWAYS comes from the live probe -- there is deliberately no
 # manual flag that can force the lane OPEN. A hand-flipped "capability present"
 # boolean is exactly the desync the ruling excluded: someone sets it True while
 # the pinned submodule predates #32 and the silent seed-42 corruption returns.
@@ -180,7 +180,7 @@ _CLI_PARSER_REL = "tuner/cli/parser.py"
 def _read_tuner_source(research_repo_root: Path, rel: str) -> Optional[str]:
     """Read a tuner source file as text, or None if it is not present.
 
-    Text-only probe seam (no tuner import → no torch/trl). Monkeypatchable.
+    Text-only probe seam (no tuner import -> no torch/trl). Monkeypatchable.
     """
     path = research_repo_root / _TUNER_DIRNAME / rel
     try:
@@ -194,7 +194,7 @@ def cloud_seed_beta_capability_probe(research_repo_root: Path) -> bool:
 
     Returns True only if all three load-bearing surface elements are present in
     the actual tuner working tree (config fields, builder emission, CLI flags).
-    A missing file or any missing element → False (fail-closed: a probe that
+    A missing file or any missing element -> False (fail-closed: a probe that
     cannot confirm the capability must not green-light a cloud launch).
     """
     config_src = _read_tuner_source(research_repo_root, _CLOUD_CONFIG_REL)
@@ -226,7 +226,7 @@ def cloud_chat_template_kwargs_capability_probe(research_repo_root: Path) -> boo
     PROTOCOL.md:193 pins enable_thinking=False for the hybrid Qwen3 pair (which
     default thinking ON). The SFT recipes carry it as training.chat_template_kwargs;
     the cloud lane must forward it to the trainer or a cloud SFT cell silently
-    trains with thinking-mode ON while the run record claims the protocol pin —
+    trains with thinking-mode ON while the run record claims the protocol pin --
     the same silent-substitution corruption class as a dropped seed (tuner #45/#48).
 
     Returns True only if BOTH cloud surface elements are present in the actual
@@ -266,7 +266,7 @@ def cloud_capability_ready(research_repo_root: Optional[Path] = None) -> bool:
 
     The OPEN decision comes ONLY from the live probe of the tuner source
     (cloud_seed_beta_capability_probe). FORCE_SEED_BETA_GATE_CLOSED can additionally
-    force CLOSED but can never force OPEN — there is no manual 'capability present'
+    force CLOSED but can never force OPEN -- there is no manual 'capability present'
     flag, by design (a hand-flip would desync from the pinned submodule).
     """
     if FORCE_SEED_BETA_GATE_CLOSED:
@@ -277,23 +277,23 @@ def cloud_capability_ready(research_repo_root: Optional[Path] = None) -> bool:
     )
 
 
-# Local-lane forwarding surface — the mechanism is the HANDLER EXTENSION (§9.2
+# Local-lane forwarding surface -- the mechanism is the HANDLER EXTENSION (section 9.2
 # lines 994-1013, lead-ratified final; trainer-`--config`/direct-invocation path
-# explicitly WITHDRAWN at §9.2 :1175-1176) PLUS LoRA FLAG PARITY (§9.2(b)/(d) item
-# 5, §5.2 SSOT, lead-ratified 2026-06-10). The tuner's local-run handler command
+# explicitly WITHDRAWN at section 9.2 :1175-1176) PLUS LoRA FLAG PARITY (section 9.2(b)/(d) item
+# 5, section 5.2 SSOT, lead-ratified 2026-06-10). The tuner's local-run handler command
 # builder is already method-generic (reads run.trainer, forwards a training-key
 # whitelist with zero SFT-specific logic). coder-cloud's re-scoped #34:
-#   1. widens the _compile dispatch guard past SFT-only → method ∈ {sft,dpo,kto};
+#   1. widens the _compile dispatch guard past SFT-only -> method in {sft,dpo,kto};
 #   2. forwards `beta` (method-gated to dpo/kto; `seed` already forwarded via #32);
 #   3. adds LoRA flag parity to train_dpo.py / train_kto.py (the trainers gain
 #      `--lora-*` argparse). This is the HYBRID ruling on coder-cloud's flag-diff:
 #      run-control flags (--quiet/--no-dashboard/--save-*/--load-in-4bit) stay
 #      method-gated in the builder, but the LoRA SCALARS get parity because the
-#      recipe `lora:` block is the §5.2 SSOT and the 8B recipes pin r=64/alpha=128
-#      vs the trainer config.yaml default r=32/alpha=64 — gating (not forwarding)
+#      recipe `lora:` block is the section 5.2 SSOT and the 8B recipes pin r=64/alpha=128
+#      vs the trainer config.yaml default r=32/alpha=64 -- gating (not forwarding)
 #      would silently corrupt the budget confound control on every 8B dpo/kto arm.
-# So the LOCAL probe checks the HANDLER source (dispatch + seed/beta forward) AND —
-# for the dpo/kto path — the TRAINER source for `--lora-*` parity. A missing LoRA
+# So the LOCAL probe checks the HANDLER source (dispatch + seed/beta forward) AND --
+# for the dpo/kto path -- the TRAINER source for `--lora-*` parity. A missing LoRA
 # sink is the SAME whole-matrix-corruption class as a missing seed/beta sink.
 # Fail-closed: local cells gate-closed until #34's guard-widen + beta + LoRA parity
 # all land in the pinned submodule, then it flips.
@@ -301,7 +301,7 @@ _LOCAL_HANDLER_REL = "tuner/handlers/local_run_handler.py"
 _DPO_TRAINER_REL = "Trainers/dpo/train_dpo.py"
 _KTO_TRAINER_REL = "Trainers/kto/train_kto.py"
 # The five LoRA scalar flags the handler builder emits and the dpo/kto trainers
-# must accept (§9.2(d) item 5). The builder's _flag_name maps key->`--kebab-case`,
+# must accept (section 9.2(d) item 5). The builder's _flag_name maps key->`--kebab-case`,
 # so e.g. lora_r -> --lora-r. The recipe lora: block is the SSOT for these values.
 _LORA_PARITY_FLAGS = (
     "--lora-r", "--lora-alpha", "--lora-dropout",
@@ -312,16 +312,16 @@ _LORA_PARITY_FLAGS = (
 def local_seed_beta_capability_probe(research_repo_root: Path) -> bool:
     """Live-probe the tuner source for LOCAL-lane per-cell forwarding capability.
 
-    Handler-extension + LoRA-parity contract (§9.2 :994-1013 + (d) item 5, tuner
+    Handler-extension + LoRA-parity contract (section 9.2 :994-1013 + (d) item 5, tuner
     task #34). Returns True only if ALL hold:
       1. the local run handler forwards `seed` AND `beta` in its training-key
          whitelist (seed via #32, beta via #34); and
-      2. dispatch is no longer SFT-only — the `elif method == "sft"` guard in
+      2. dispatch is no longer SFT-only -- the `elif method == "sft"` guard in
          _compile has been widened so dpo/kto route through the generic builder; and
-      3. LoRA flag parity — `train_dpo.py` AND `train_kto.py` accept every `--lora-*`
-         scalar flag the builder emits (§5.2 budget SSOT; a missing sink silently
+      3. LoRA flag parity -- `train_dpo.py` AND `train_kto.py` accept every `--lora-*`
+         scalar flag the builder emits (section 5.2 budget SSOT; a missing sink silently
          mistrains every local dpo/kto arm at the wrong budget at 8B).
-    A missing file or any missing element → False (fail-closed: a probe that cannot
+    A missing file or any missing element -> False (fail-closed: a probe that cannot
     confirm the capability must not green-light a local launch). Against the
     pre-#34 tree this returns False (handler omits `beta` / still SFT-gated, and/or
     the trainers lack `--lora-*`); it flips True once #34 lands all three pieces.
@@ -344,8 +344,8 @@ def local_seed_beta_capability_probe(research_repo_root: Path) -> bool:
     )
     if sft_only_gate:
         return False
-    # 3. LoRA flag parity (§9.2(d) item 5): the dpo/kto trainers must accept every
-    #    --lora-* scalar the builder emits, or the recipe's §5.2 budget SSOT is
+    # 3. LoRA flag parity (section 9.2(d) item 5): the dpo/kto trainers must accept every
+    #    --lora-* scalar the builder emits, or the recipe's section 5.2 budget SSOT is
     #    silently dropped in favor of the trainer's config.yaml default at 8B.
     for rel in (_DPO_TRAINER_REL, _KTO_TRAINER_REL):
         trainer_src = _read_tuner_source(research_repo_root, rel)
@@ -412,14 +412,14 @@ def check_cell(
     # Bridge cells are LOCAL-LANE ONLY: the OpenMOSS bridge training data is
     # user-authorized for vendored use but DO-NOT-REDISTRIBUTE (no license), so
     # it will never be published to the HF hub. A bridge cell on the cloud lane
-    # is therefore a structurally invalid request — no future state makes it
-    # runnable on cloud — so it ABORTS (loud), unlike the not-yet-available SKIP
+    # is therefore a structurally invalid request -- no future state makes it
+    # runnable on cloud -- so it ABORTS (loud), unlike the not-yet-available SKIP
     # conditions below. This abort precedes the bridge-prereqs-absent skip: a
     # mis-specified lane is a config error, not a "data not fetched yet" state.
     if is_bridge and lane == "cloud":
         raise PrereqError(
             "bridge cell requested on the cloud lane, but bridge training data is "
-            "do-not-redistribute and is never published to the hub — bridge arms "
+            "do-not-redistribute and is never published to the hub -- bridge arms "
             "are LOCAL-LANE ONLY. Launch the bridge arms with --lane local."
         )
 
@@ -430,26 +430,26 @@ def check_cell(
             skip_reason="bridge prerequisites absent (Cheng IDK data / gated Llama-2 access)",
         )
 
-    # Tuner capability gate — applies to BOTH lanes. The tuner must forward per-cell
+    # Tuner capability gate -- applies to BOTH lanes. The tuner must forward per-cell
     # seed (and, for DPO/KTO, beta) AND honor the recipe's LoRA budget (LoRA flag
     # parity, local dpo/kto) all the way to the trainer, or cells silently train at
     # the default seed (42) / default beta / wrong LoRA budget while the run record
-    # claims the intended values (HANDOFF §5 failure mode). Each lane has its OWN
+    # claims the intended values (HANDOFF section 5 failure mode). Each lane has its OWN
     # forwarding surface, so we probe the lane the cell will run on, live against the
     # actual tuner source (not a flag).
     #
-    # This is a WHOLE-MATRIX ABORT, not a cell skip (§9.2(d) item 5): a missing
+    # This is a WHOLE-MATRIX ABORT, not a cell skip (section 9.2(d) item 5): a missing
     # seed/beta sink makes every headline seed identical and every beta-panel cell
-    # land at the default — it corrupts the ENTIRE headline + panel design, not one
-    # arm — and a missing LoRA sink mistrains every local dpo/kto arm at the wrong
-    # §5.2 budget. There is no meaningful partial run, so the gate aborts loudly with
+    # land at the default -- it corrupts the ENTIRE headline + panel design, not one
+    # arm -- and a missing LoRA sink mistrains every local dpo/kto arm at the wrong
+    # section 5.2 budget. There is no meaningful partial run, so the gate aborts loudly with
     # the missing capability + the lane it gates, rather than silently launching.
     if not lane_capability_ready(lane, research_repo_root):
         raise PrereqError(
             f"tuner {lane} lane has not landed the per-cell forwarding capability "
             f"(seed/beta forwarding + dispatch; LoRA flag parity for local dpo/kto; "
             f"chat_template_kwargs forwarding for cloud SFT, coder-cloud #48) "
-            f"— capability probe failed against the pinned submodule. This ABORTS "
+            f"-- capability probe failed against the pinned submodule. This ABORTS "
             f"the whole matrix: a missing seed/beta/LoRA sink silently corrupts the "
             f"entire headline + panel design, and a missing chat_template_kwargs sink "
             f"trains the cloud SFT arm with thinking-mode ON against PROTOCOL.md:193. "
@@ -463,7 +463,7 @@ def check_cell(
             )
         if not hf_token_present():
             raise PrereqError("cloud lane: HF_TOKEN / HF_API_KEY not present in environment")
-        # Item 3a: hub-dataset availability — skip-not-abort for this arm.
+        # Item 3a: hub-dataset availability -- skip-not-abort for this arm.
         revision = hub_dataset_revision(dataset_name) if dataset_name else None
         if revision is None:
             return CellPrereqResult(
@@ -476,7 +476,7 @@ def check_cell(
 
 
 # ===========================================================================
-# Hidden-state EXTRACTION gate (architecture §4 + §6 + §8) — ADDITIVE.
+# Hidden-state EXTRACTION gate (architecture section 4 + section 6 + section 8) -- ADDITIVE.
 # ===========================================================================
 #
 # Everything below is the off-matrix extraction capability. It NEVER alters the
@@ -484,8 +484,8 @@ def check_cell(
 # capability probes, `PrereqError` vs `CellPrereqResult` semantics, and
 # `FORCE_SEED_BETA_GATE_CLOSED` are untouched. Extraction is EXPLORATORY, so
 # every failure here is a SKIP (`CellPrereqResult(skip=True)`), NEVER a
-# `PrereqError` — there is no matrix to abort, and a missing prereq must degrade
-# gracefully rather than tear anything down (§4.3). The locked 19/9/2 count
+# `PrereqError` -- there is no matrix to abort, and a missing prereq must degrade
+# gracefully rather than tear anything down (section 4.3). The locked 19/9/2 count
 # assertions live in run_matrix.py and are not referenced here.
 
 
@@ -500,10 +500,37 @@ def _resolve_against_probe_dir(probe_dir: Path, rel_or_abs: str) -> Path:
     return candidate if candidate.is_absolute() else (probe_dir / candidate)
 
 
+def _probe_dir_for_extraction_config(config_path: Path, research_repo_root: Path) -> Path:
+    """Return the harness probe dir for a hidden-state extraction config.
+
+    Legacy checked-in configs lived at probe/config/<file>.yaml, where
+    config_path.parent.parent was the probe dir. The live default now lives under
+    experiments/common/configs/knowledge-probe/, but its relative paths still follow
+    the harness convention and resolve against archive/experiment/phase1/probe.
+    """
+    resolved_config = config_path.resolve()
+    repo_probe_dir = (research_repo_root / "archive" / "experiment" / "phase1" / "probe").resolve()
+    common_config_dir = (
+        research_repo_root / "experiments" / "common" / "configs" / "knowledge-probe"
+    ).resolve()
+    try:
+        resolved_config.relative_to(common_config_dir)
+        return repo_probe_dir
+    except ValueError:
+        pass
+
+    legacy_probe_dir = resolved_config.parent.parent
+    if (legacy_probe_dir / "hidden_state_probe.py").is_file():
+        return legacy_probe_dir
+    if (repo_probe_dir / "hidden_state_probe.py").is_file():
+        return repo_probe_dir
+    return legacy_probe_dir
+
+
 def _first_probe_row_sha(results_path: Path) -> Optional[str]:
     """Stream the first non-empty JSONL row and return its probe_config_sha.
 
-    Reads ONE line only (the file is ~123MB; never whole-load it — §4.3 E1).
+    Reads ONE line only (the file is ~123MB; never whole-load it -- section 4.3 E1).
     Returns None if the file is unreadable/empty or the row lacks the field.
     """
     try:
@@ -533,9 +560,9 @@ def check_extraction_cell(
     """Fail-closed, SKIP-not-abort prereq gate for one hidden-state extraction.
 
     Returns a CellPrereqResult so the report shape matches the train/eval gate.
-    EVERY failing check yields CellPrereqResult(skip=True, ...) — never a
+    EVERY failing check yields CellPrereqResult(skip=True, ...) -- never a
     PrereqError. Checks run in order; the first failure decides the skip reason
-    (architecture §4.3):
+    (architecture section 4.3):
 
       E1  probe_results.jsonl present on disk for the model_tag
       E2  probe_results.jsonl probe_config_sha matches the expected provenance
@@ -544,17 +571,17 @@ def check_extraction_cell(
           run_records/<id>.json exists)
       E4  each active arm's adapter dir contains adapter_config.json
 
-    A null model.revision is a WARN (not a SKIP) on the local lane (§8): the
+    A null model.revision is a WARN (not a SKIP) on the local lane (section 8): the
     post-load _commit_hash still pins identity for an exploratory local run, but
     the operator is reminded to pin before a reproducible run. The cloud lane's
-    revision requirement is enforced in the cloud-extract verb contract (§6.2),
+    revision requirement is enforced in the cloud-extract verb contract (section 6.2),
     not here.
     """
     # Import the runner-side resolver lazily so this module stays import-light and
     # the resolver is co-located in the same scripts/ dir (synced canonical tree).
     import resolve_run_record  # noqa: PLC0415  (local import: keep module light)
 
-    probe_dir = config_path.resolve().parent.parent  # config/<f>.yaml -> probe/
+    probe_dir = _probe_dir_for_extraction_config(config_path, research_repo_root)
     details: dict = {}
     warnings: list[str] = []
 
@@ -563,10 +590,10 @@ def check_extraction_cell(
     arms = config.get("arms") or []
     prov = config.get("manifest_provenance") or {}
 
-    # Revision-pin WARN (§8): surfaced regardless of which check decides the gate.
+    # Revision-pin WARN (section 8): surfaced regardless of which check decides the gate.
     if model.get("revision") is None:
         warnings.append(
-            "model.revision is null — acceptable for an exploratory LOCAL run "
+            "model.revision is null -- acceptable for an exploratory LOCAL run "
             "(the resolved snapshot SHA is still recovered post-load), but SHOULD "
             "be pinned to a commit SHA before a reproducible run (cloud REQUIRES it)."
         )
@@ -585,7 +612,7 @@ def check_extraction_cell(
         model_tag = model.get("model_tag", "<unknown>")
         return _skip(
             f"probe_results.jsonl absent for {model_tag} (run the probe tier "
-            f"first; WS-1 output, ~123MB, gitignored) — expected {results_path}"
+            f"first; WS-1 output, ~123MB, gitignored) -- expected {results_path}"
         )
 
     # --- E2: probe_config_sha provenance -----------------------------------
@@ -594,9 +621,9 @@ def check_extraction_cell(
     details["probe_config_sha_found"] = found_sha
     if expected_sha is None:
         # Null expectation cannot fail-closed against an unknown; WARN loudly and
-        # degrade E2 to presence-only (§4.4 preferred-source decision).
+        # degrade E2 to presence-only (section 4.4 preferred-source decision).
         warnings.append(
-            "selection.expected_probe_config_sha is null — E2 degraded to "
+            "selection.expected_probe_config_sha is null -- E2 degraded to "
             "presence-only; the probe_config_sha provenance of "
             f"{results_path} (found {found_sha!r}) is NOT being verified. Set "
             "selection.expected_probe_config_sha to enforce it."
@@ -604,7 +631,7 @@ def check_extraction_cell(
     elif found_sha != expected_sha:
         return _skip(
             f"probe_results.jsonl probe_config_sha mismatch / contaminated "
-            f"(expected {expected_sha!r}, found {found_sha!r}) — the probe rows "
+            f"(expected {expected_sha!r}, found {found_sha!r}) -- the probe rows "
             f"were produced by a different probe config (e.g. thinking-mode ON)"
         )
 
@@ -613,14 +640,14 @@ def check_extraction_cell(
     # the gate checks the SAME adapter the harness will load. We only need the
     # harness mirror when an active arm's adapter is NULL (it must be filled from
     # eval_arms_source). If every active arm already carries an explicit adapter,
-    # no mirror — and thus no harness import — is required (KISS + avoids a
+    # no mirror -- and thus no harness import -- is required (KISS + avoids a
     # needless dependency when the config is self-contained).
     active_arms = [a for a in arms if a.get("adapter_state") == "active"]
     needs_mirror = any(a.get("adapter") is None for a in active_arms)
     if needs_mirror:
         # Temporarily expose the probe dir so the harness module is importable,
         # and ALWAYS restore sys.path afterward (finally) so this gate never leaks
-        # an entry into a long-lived process — e.g. a test session — which could
+        # an entry into a long-lived process -- e.g. a test session -- which could
         # otherwise bleed imports across cells/tests.
         probe_dir_str = str(probe_dir)
         sys.path.insert(0, probe_dir_str)
@@ -632,19 +659,19 @@ def check_extraction_cell(
                 a for a in resolved_config["arms"]
                 if a.get("adapter_state") == "active"
             ]
-        except Exception as exc:  # noqa: BLE001 — a mirror failure is a SKIP, not abort
+        except Exception as exc:  # noqa: BLE001 -- a mirror failure is a SKIP, not abort
             return _skip(f"could not resolve active-arm adapter path(s): {exc}")
         finally:
             try:
                 sys.path.remove(probe_dir_str)
             except ValueError:
-                pass  # already removed/absent — nothing to restore
+                pass  # already removed/absent -- nothing to restore
 
     if not active_arms:
         return _skip("no active arm declared in the extraction config")
 
     records_dir = run_records_dir if run_records_dir is not None else (
-        research_repo_root / "experiment" / "phase1" / "run_records")
+        research_repo_root / "archive" / "experiment" / "phase1" / "run_records")
 
     # --- E3 + E4 per active arm --------------------------------------------
     resolved_ids: dict[str, str] = {}
@@ -656,7 +683,7 @@ def check_extraction_cell(
         # E3: aligned_run_record_id resolvable. The reverse-lookup is the single
         # source of truth for the verified-gate: it returns id=None (with a reason)
         # on zero-match / ambiguous / unverified, honoring require_verified. An
-        # explicitly-pinned id does NOT bypass that gate — it is an ADDITIONAL
+        # explicitly-pinned id does NOT bypass that gate -- it is an ADDITIONAL
         # constraint: the pin must equal what the reverse-lookup independently
         # resolves (so a pinned-but-unverified id fails closed exactly like an
         # unpinned one). require_verified (set False by --allow-unverified) is the
@@ -674,7 +701,7 @@ def check_extraction_cell(
         if explicit_id is not None and result.id != explicit_id:
             return _skip(
                 f"aligned_run_record_id {explicit_id!r} disagrees with the "
-                f"verified adapter reverse-lookup ({result.id!r}) — fail-closed"
+                f"verified adapter reverse-lookup ({result.id!r}) -- fail-closed"
             )
         resolved_ids[arm["name"]] = result.id
 
@@ -691,19 +718,19 @@ def check_extraction_cell(
     return CellPrereqResult(ok=True, details={**details, "warnings": warnings})
 
 
-# --- Cloud-extract runner-side gating (architecture §6.5) --------------------
+# --- Cloud-extract runner-side gating (architecture section 6.5) --------------------
 #
 # The runner-side PROBE + gate for the cloud-extract verb. The verb ITSELF is
 # built by backend-coder in the synaptic-tuner submodule (a separate repo); this
 # is only the runner's live capability probe + the push-gate sequence, mirroring
-# the seed/beta probe philosophy: NEVER trust a flag/SHA — probe the actual tuner
+# the seed/beta probe philosophy: NEVER trust a flag/SHA -- probe the actual tuner
 # source the runner will execute against. False => the cloud-extract path SKIPs
 # (it is exploratory), NEVER a whole-matrix abort.
 _CLOUD_EXTRACT_VERB = "cloud-extract"
 
 
 def cloud_extract_capability_probe(research_repo_root: Path) -> bool:
-    """Live-probe the tuner source for the cloud-extract verb (§6.5 step 2).
+    """Live-probe the tuner source for the cloud-extract verb (section 6.5 step 2).
 
     Returns True only if BOTH surface elements are present in the actual tuner
     working tree:
@@ -736,7 +763,7 @@ def cloud_extract_prereqs(
     adapter_repo_id: Optional[str] = None,
     base_model_name: Optional[str] = None,
 ) -> CellPrereqResult:
-    """Runner-side push-gate sequence for a cloud-extract launch (§6.5).
+    """Runner-side push-gate sequence for a cloud-extract launch (section 6.5).
 
     SKIP-not-abort (cloud-extract is exploratory). Sequence (each a SKIP reason):
       1. submodule pushed (the pinned SHA carrying the verb is reachable)
@@ -747,7 +774,7 @@ def cloud_extract_prereqs(
 
     This is the runner half ONLY; the verb itself is backend-coder's submodule
     work. The capability probe confirms the verb exists in SOURCE; submodule_pushed
-    separately confirms the pinned commit is reachable — both must hold (§6.5
+    separately confirms the pinned commit is reachable -- both must hold (section 6.5
     layering note), so even after the probe passes on the working tree, a launch
     correctly SKIPs until the verb is committed and pushed.
     """
@@ -756,7 +783,7 @@ def cloud_extract_prereqs(
             ok=True, skip=True,
             skip_reason=(
                 "tuner cloud-extract verb not present in source (capability probe "
-                "failed) — backend-coder's submodule verb has not landed yet"
+                "failed) -- backend-coder's submodule verb has not landed yet"
             ),
         )
     if not submodule_pushed(research_repo_root):
@@ -779,7 +806,7 @@ def cloud_extract_prereqs(
         if name and hub_dataset_revision(name) is None and label == "slice dataset":
             return CellPrereqResult(
                 ok=True, skip=True,
-                skip_reason=f"cloud-extract: {label} '{name}' not resolvable on the HF hub — publish it first",
+                skip_reason=f"cloud-extract: {label} '{name}' not resolvable on the HF hub -- publish it first",
             )
     # adapter_repo_id is a MODEL repo; its resolution is verified by the verb at
     # launch (model-info), not a dataset-revision check, so it is surfaced in
@@ -793,12 +820,12 @@ def cloud_extract_prereqs(
 
 
 def _build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Phase 1 prerequisite gate (standalone).")
+    parser = argparse.ArgumentParser(description="locked training-regimen prerequisite gate (standalone).")
     parser.add_argument("--matrix", required=True, help="Path to config/matrix.yaml")
-    parser.add_argument("--data-root", required=True, help="Research-repo data root (experiment/phase1/data)")
+    parser.add_argument("--data-root", required=True, help="Research-repo data root (archive/experiment/phase1/data)")
     parser.add_argument("--research-repo-root", default=".", help="Research repo root (default: cwd)")
     parser.add_argument("--lane", choices=["local", "cloud"], default="local")
-    parser.add_argument("--recipes-dir", default="experiment/phase1/recipes",
+    parser.add_argument("--recipes-dir", default="archive/experiment/phase1/recipes",
                         help="Dir holding the base recipe YAMLs")
     return parser
 
@@ -812,7 +839,7 @@ def main(argv: Optional[list] = None) -> int:
     print("  performs the per-cell gate during expansion. Use --check-only there")
     print("  for the full per-cell report.")
     if not lane_capability_ready(args.lane, Path(args.research_repo_root)):
-        print(f"  NOTE: {args.lane} lane is gated CLOSED — the seed/beta capability")
+        print(f"  NOTE: {args.lane} lane is gated CLOSED -- the seed/beta capability")
         print("  probe failed against the submodule source (tuner does not yet")
         print(f"  forward per-cell seed/beta on the {args.lane} lane; Task #32). Cells")
         print("  record as SKIPPED until the probe passes against the tuner source.")

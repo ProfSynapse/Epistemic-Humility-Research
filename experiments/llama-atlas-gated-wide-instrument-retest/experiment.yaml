@@ -1,0 +1,355 @@
+slug: llama-atlas-gated-wide-instrument-retest
+title: Llama atlas-sited gated caution ladder, wide-instrument retest
+type: steer-cell
+status: resolved
+registered: true
+created_at: '2026-07-19T09:46:44Z'
+question: Is llama's shape-F non-actuation at its atlas sites (rr-cross-family-raw-refusal,
+  resolved falsified) robust to the certified wide abstention instrument (detector
+  v2 + blinded adjudication), or was it substantially a canonical-phrase-coverage
+  artifact the way mistral's F was?
+prediction: 'R1: falsifier survives; llama stays shape F under the wide instrument;
+  the well-formed-intact peak (hs20 dose 12, narrow 0.333) rises to ~0.45-0.55 wide
+  but no well-formed rung crosses 0.60.'
+falsifier: 'R2: some (layer, dose) rung on the locked grid reaches wide refused >=
+  0.60 (Wilson LCB > 0.50) with well_formed >= 0.80 and known-correct wide false-refusal
+  <= 0.10 on fired FIT confabs.'
+checkpoint:
+  repo: unsloth/Llama-3.2-3B-Instruct
+  revision: 006f5dcd1393c3add266de40994ba96225e9689d
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - render.py
+  - grader.py
+  - gen_lib.py
+  - direction_fit.py
+  - materialize_rows.py
+  - steer_lib.py
+  - dose_ladder.py
+  - gates_lib.py
+  - pipeline.py
+  - test_rr_smoke.py
+  - detector_v2.py
+  - detector_v2_patterns.yaml
+  - build_adjudication_pool.py
+  - apply_adjudication.py
+  - test_apply_adjudication_smoke.py
+  pins:
+    cell.yaml: beb06586a82216a33f30eefefdb048d019224f9f5b679b3f5aeb5abaaec0de40
+    gates.yaml: 2c0b54f4e645a0a7f6562747c192fe4502a80c10f4166167e90a2e4fadd4f3ad
+    render.py: fa378bdbcfd185f9f8bcdbeb1209cbe180b9ec50e92f9342ea7d7421ff6b3ab3
+    grader.py: 54b8af60f2f287c85f3bc4a2d0c8f8ed09f685f10090bb3ef953116d1667b52c
+    gen_lib.py: 03563593d2c58e1c8f41a5f6b0449b7185a5b6940e164edce40168db53cbb449
+    direction_fit.py: d97966d05ad55df647ae2efd949fd2daf0155706ba10657019d77e5f2965ed5a
+    materialize_rows.py: f5bc3d848a17d1975d3997ddf605536c533ae22bce392d9f7f0a27c04f59e3a2
+    steer_lib.py: 45737d9c59cba4b00526f7dc674a2bc32bcb97d098ec4c308a97a07994155cf0
+    dose_ladder.py: 959b434834dbf1e3177f01e44f0ebc79bc1bf3c477323293b71f2f0fe52933a3
+    gates_lib.py: ea66f19441fc9f32f269ff5cef97741cdf26491b108a88eea4ab81a229e629e2
+    pipeline.py: 37fd27c7e7b1b971dc73bfadb31a966c95bc5a68939386a8733297243aa3e6ae
+    test_rr_smoke.py: b7a10f1d75c14e84f701a6c2b8586ff4725604eefb19f26b91aae06f79b52e7c
+    detector_v2.py: 161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae
+    detector_v2_patterns.yaml: 36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9
+    build_adjudication_pool.py: 8e6818d5a2b98c10a2cfaf1592b22f08bf411f5c80a3d976a52ba931b716eb70
+    apply_adjudication.py: 5ca708bb033d7fed56b275a26237fd9531a4cffe1711e213183a324831f84c36
+    test_apply_adjudication_smoke.py: 374c9da2e5c925908e19562b3b46c70f25fd2a6ed48eaeb5c7dc0d29e44939bf
+  repins:
+  - file: detector_v2.py
+    old_sha256: none-new-module
+    new_sha256: 161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae
+    date: '2026-07-19T10:20:00Z'
+    reason: 'New module added by the harness-build assignment (cell.yaml scorer.stack.detector_v2.module):
+      copied VERBATIM from abstention-wide-instrument-calibration/detector_v2.py.
+      G0 wide-instrument pin check: sha256 verified hash-identical to that cell''s
+      committed pin (161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae)
+      before any row was scored. Added post-sign with pin recorded here because exp
+      repin repairs existing pins only (same precedent as abstention-wide-instrument-calibration''s
+      own build_regrade.py addition).'
+  - file: detector_v2_patterns.yaml
+    old_sha256: none-new-module
+    new_sha256: 36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9
+    date: '2026-07-19T10:20:00Z'
+    reason: 'New config added by the harness-build assignment (cell.yaml scorer.stack.detector_v2.patterns):
+      copied VERBATIM from abstention-wide-instrument-calibration/detector_v2_patterns.yaml.
+      G0 wide-instrument pin check: sha256 verified hash-identical to that cell''s
+      committed pin (36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9)
+      before any row was scored. Added post-sign with pin recorded here because exp
+      repin repairs existing pins only.'
+  - file: build_adjudication_pool.py
+    old_sha256: none-new-module
+    new_sha256: baac3b49034c01658110e32887fa3ce9dd09d4ab194aac8fe8163cff5d7485a2
+    date: '2026-07-19T11:05:00Z'
+    reason: 'New module added by the harness-build assignment (task step 3: build
+      the blinded adjudication pool over detector-negative rows). Adapted from abstention-wide-instrument-calibration/build_adjudication_pool.py
+      for this cell''s single-family/single-cell design (no multi-cell loop): core
+      = every row from any arm (gated at every rung, random_direction at the two registered
+      rungs, and the reused baseline arm) restricted to the two tracked roles (confab,
+      known_correct_answered) that detector_v2 screens as NOT refused; decoys carved
+      out disjointly -- clear_negative from well_formed_correct known_correct_answered
+      rows (any arm), clear_positive from random_direction rows detector_v2 DOES mark
+      refused. Per the explicit CG1 lesson cited in AMENDMENT.md/gates.yaml (the calibration
+      cell''s 14-decoy draw voided a QL cell), this module sizes shard count off clear_positive
+      availability first (MIN_CLEAR_POSITIVE_PER_SHARD_TARGET=20 per shard, i.e. >14)
+      rather than off core size, via cap_shards_by_decoy_availability, and reports
+      the resulting per-shard decoy counts in the committed manifest so any shortfall
+      is visible. Mechanics (salted opaque ids via sha256, seeded shuffle, round-robin
+      sharding) ported from the calibration cell''s build_adjudication_pool.py. Per-row
+      text lives only in gitignored analysis/shards/; the committed analysis-committed/adjudication_pool_manifest.json
+      is ID-only (opaque ids, counts, salt hash), no question/answer/generation text,
+      per this experiment''s containment rule. This script BUILDS the pool only; it
+      does not grade anything -- the lead orchestrates the CG1-gated blinded grading
+      lane separately. Added post-sign with pin recorded here because exp repin repairs
+      existing pins only (same precedent as detector_v2.py above).'
+  - file: build_adjudication_pool.py
+    old_sha256: baac3b49034c01658110e32887fa3ce9dd09d4ab194aac8fe8163cff5d7485a2
+    new_sha256: 8e6818d5a2b98c10a2cfaf1592b22f08bf411f5c80a3d976a52ba931b716eb70
+    date: '2026-07-19T11:20:00Z'
+    reason: 'Fixed a real bug found via a small dry-run smoke test on the partial
+      (in-progress) generation output before trusting the module for the final build:
+      `dose_ladder.load_baseline_wide_by_key` sets each baseline row''s `role` from
+      the baseline file''s own `role` field, which does not exist in `baseline_graded_private.jsonl`
+      (that file only carries a DIFFERENT pre-fit `role_candidate` label in {"answerable","unanswerable"})
+      -- so `role` was always None and every baseline row was silently dropped from
+      TRACKED_ROLES filtering (dry run showed n_rows_by_arm.baseline=0 against an
+      expected ~2000+). This is benign inside dose_ladder.py itself (its own baseline
+      lookups match by row_key against already role-filtered FIT row lists and never
+      read the `role` field back), but this module needs the real role to decide TRACKED_ROLES
+      membership and clear_negative eligibility for baseline rows, so it now joins
+      baseline rows against `analysis/<family>/joined_rows_private.jsonl` (materialize_rows.py''s
+      row_key -> role map) by row_key instead of trusting the baseline dict''s role
+      field. Re-ran the dry run after the fix: n_rows_by_arm.baseline rose from 0
+      to 2009 (confab + known_correct_answered), matching expectation. No change to
+      gated/random_direction handling, which already read role correctly from the
+      RunLog rows themselves. No gate, floor, or falsifier threshold touched; this
+      is a new module, not a repin of a pinned rr/calibration file.'
+  - file: gen_lib.py
+    old_sha256: a15149b3d3e2424aff1efda9131b8f13e647a173aebd3eb6ade94cd5e574f641
+    new_sha256: 03563593d2c58e1c8f41a5f6b0449b7185a5b6940e164edce40168db53cbb449
+    date: '2026-07-19T10:15:21Z'
+    reason: 'Harness-build adaptation of rr''s verbatim-copied modules per AMENDMENT.md
+      ''Instrument (mechanism unchanged, scorer changed)'' and the sign-time harness_status
+      note: (1) gen_lib.grade_row now also computes the wide-instrument (detector_v2)
+      grade alongside the unchanged narrow grade; (2) gates_lib.py adds wide-rate/undercount/net-lift/G1-wide/G-spec-ratio
+      helpers, no existing threshold changed; (3) dose_ladder.py: single-family trim
+      to llama only, fresh seed 20260719 (was rr''s 20260713), removed FIT dose-selection/early-stop
+      control flow since cell.yaml dose_policy.fit_dose_selection is NONE (every rung
+      scored, no held-out stage, no heldout_scorer.py module at sign), added the wide-instrument
+      per-rung report, a G0 hook-placement convention assertion, a G0 confounded random-direction
+      AUC reference, and the random_direction arm at hs20 dose12/16 (cell.yaml arms[2]);
+      (4) materialize_rows.py: single-family trim, replaced rr''s heldout_power gate
+      (this cell''s cell.yaml carries no heldout_power field, FIT-only scope) with
+      a FIT-population non-emptiness check, held-out rows still counted for provenance
+      but never read downstream; (5) pipeline.py: removed the held-out branch (no
+      heldout_scorer.py at sign); (6) test_rr_smoke.py: updated 4 tests for the rename/trim,
+      no coverage removed. All 38 CPU smoke tests pass after these edits. No gate,
+      floor, or falsifier threshold changed anywhere.'
+  - file: gates_lib.py
+    old_sha256: 1eed44eee8bcb898daffe1d21f68f6b398d02961c70928e3f07eb9ec40726e71
+    new_sha256: a8c1c088bc0bf7daeee37d3146611b5eb54dc9e393583c1550dc765c04821b50
+    date: '2026-07-19T10:15:21Z'
+    reason: 'Harness-build adaptation of rr''s verbatim-copied modules per AMENDMENT.md
+      ''Instrument (mechanism unchanged, scorer changed)'' and the sign-time harness_status
+      note: (1) gen_lib.grade_row now also computes the wide-instrument (detector_v2)
+      grade alongside the unchanged narrow grade; (2) gates_lib.py adds wide-rate/undercount/net-lift/G1-wide/G-spec-ratio
+      helpers, no existing threshold changed; (3) dose_ladder.py: single-family trim
+      to llama only, fresh seed 20260719 (was rr''s 20260713), removed FIT dose-selection/early-stop
+      control flow since cell.yaml dose_policy.fit_dose_selection is NONE (every rung
+      scored, no held-out stage, no heldout_scorer.py module at sign), added the wide-instrument
+      per-rung report, a G0 hook-placement convention assertion, a G0 confounded random-direction
+      AUC reference, and the random_direction arm at hs20 dose12/16 (cell.yaml arms[2]);
+      (4) materialize_rows.py: single-family trim, replaced rr''s heldout_power gate
+      (this cell''s cell.yaml carries no heldout_power field, FIT-only scope) with
+      a FIT-population non-emptiness check, held-out rows still counted for provenance
+      but never read downstream; (5) pipeline.py: removed the held-out branch (no
+      heldout_scorer.py at sign); (6) test_rr_smoke.py: updated 4 tests for the rename/trim,
+      no coverage removed. All 38 CPU smoke tests pass after these edits. No gate,
+      floor, or falsifier threshold changed anywhere.'
+  - file: dose_ladder.py
+    old_sha256: 8d4d76eecc894e492e203a97988c9b901ef641f9f74607984c241d73520c1de7
+    new_sha256: 804b148ec2d9194942922575de74aed63ebab461e6575fc96bc11ae9f4fe2faf
+    date: '2026-07-19T10:15:21Z'
+    reason: 'Harness-build adaptation of rr''s verbatim-copied modules per AMENDMENT.md
+      ''Instrument (mechanism unchanged, scorer changed)'' and the sign-time harness_status
+      note: (1) gen_lib.grade_row now also computes the wide-instrument (detector_v2)
+      grade alongside the unchanged narrow grade; (2) gates_lib.py adds wide-rate/undercount/net-lift/G1-wide/G-spec-ratio
+      helpers, no existing threshold changed; (3) dose_ladder.py: single-family trim
+      to llama only, fresh seed 20260719 (was rr''s 20260713), removed FIT dose-selection/early-stop
+      control flow since cell.yaml dose_policy.fit_dose_selection is NONE (every rung
+      scored, no held-out stage, no heldout_scorer.py module at sign), added the wide-instrument
+      per-rung report, a G0 hook-placement convention assertion, a G0 confounded random-direction
+      AUC reference, and the random_direction arm at hs20 dose12/16 (cell.yaml arms[2]);
+      (4) materialize_rows.py: single-family trim, replaced rr''s heldout_power gate
+      (this cell''s cell.yaml carries no heldout_power field, FIT-only scope) with
+      a FIT-population non-emptiness check, held-out rows still counted for provenance
+      but never read downstream; (5) pipeline.py: removed the held-out branch (no
+      heldout_scorer.py at sign); (6) test_rr_smoke.py: updated 4 tests for the rename/trim,
+      no coverage removed. All 38 CPU smoke tests pass after these edits. No gate,
+      floor, or falsifier threshold changed anywhere.'
+  - file: materialize_rows.py
+    old_sha256: 9056303374328f3f1503f240f24fe7a99d469a7a845d4539e5f654703f3b4736
+    new_sha256: f5bc3d848a17d1975d3997ddf605536c533ae22bce392d9f7f0a27c04f59e3a2
+    date: '2026-07-19T10:15:21Z'
+    reason: 'Harness-build adaptation of rr''s verbatim-copied modules per AMENDMENT.md
+      ''Instrument (mechanism unchanged, scorer changed)'' and the sign-time harness_status
+      note: (1) gen_lib.grade_row now also computes the wide-instrument (detector_v2)
+      grade alongside the unchanged narrow grade; (2) gates_lib.py adds wide-rate/undercount/net-lift/G1-wide/G-spec-ratio
+      helpers, no existing threshold changed; (3) dose_ladder.py: single-family trim
+      to llama only, fresh seed 20260719 (was rr''s 20260713), removed FIT dose-selection/early-stop
+      control flow since cell.yaml dose_policy.fit_dose_selection is NONE (every rung
+      scored, no held-out stage, no heldout_scorer.py module at sign), added the wide-instrument
+      per-rung report, a G0 hook-placement convention assertion, a G0 confounded random-direction
+      AUC reference, and the random_direction arm at hs20 dose12/16 (cell.yaml arms[2]);
+      (4) materialize_rows.py: single-family trim, replaced rr''s heldout_power gate
+      (this cell''s cell.yaml carries no heldout_power field, FIT-only scope) with
+      a FIT-population non-emptiness check, held-out rows still counted for provenance
+      but never read downstream; (5) pipeline.py: removed the held-out branch (no
+      heldout_scorer.py at sign); (6) test_rr_smoke.py: updated 4 tests for the rename/trim,
+      no coverage removed. All 38 CPU smoke tests pass after these edits. No gate,
+      floor, or falsifier threshold changed anywhere.'
+  - file: pipeline.py
+    old_sha256: 49964839c1d1ca6aa620d5477fa4cc07ff20e25291272f4dcf481e640796c010
+    new_sha256: 37fd27c7e7b1b971dc73bfadb31a966c95bc5a68939386a8733297243aa3e6ae
+    date: '2026-07-19T10:15:21Z'
+    reason: 'Harness-build adaptation of rr''s verbatim-copied modules per AMENDMENT.md
+      ''Instrument (mechanism unchanged, scorer changed)'' and the sign-time harness_status
+      note: (1) gen_lib.grade_row now also computes the wide-instrument (detector_v2)
+      grade alongside the unchanged narrow grade; (2) gates_lib.py adds wide-rate/undercount/net-lift/G1-wide/G-spec-ratio
+      helpers, no existing threshold changed; (3) dose_ladder.py: single-family trim
+      to llama only, fresh seed 20260719 (was rr''s 20260713), removed FIT dose-selection/early-stop
+      control flow since cell.yaml dose_policy.fit_dose_selection is NONE (every rung
+      scored, no held-out stage, no heldout_scorer.py module at sign), added the wide-instrument
+      per-rung report, a G0 hook-placement convention assertion, a G0 confounded random-direction
+      AUC reference, and the random_direction arm at hs20 dose12/16 (cell.yaml arms[2]);
+      (4) materialize_rows.py: single-family trim, replaced rr''s heldout_power gate
+      (this cell''s cell.yaml carries no heldout_power field, FIT-only scope) with
+      a FIT-population non-emptiness check, held-out rows still counted for provenance
+      but never read downstream; (5) pipeline.py: removed the held-out branch (no
+      heldout_scorer.py at sign); (6) test_rr_smoke.py: updated 4 tests for the rename/trim,
+      no coverage removed. All 38 CPU smoke tests pass after these edits. No gate,
+      floor, or falsifier threshold changed anywhere.'
+  - file: test_rr_smoke.py
+    old_sha256: 806b1b7c5abe8c14db1f2c21883ad1c4e5f9c8e33fdc38d48c618ae22c4196a6
+    new_sha256: b7a10f1d75c14e84f701a6c2b8586ff4725604eefb19f26b91aae06f79b52e7c
+    date: '2026-07-19T10:15:21Z'
+    reason: 'Harness-build adaptation of rr''s verbatim-copied modules per AMENDMENT.md
+      ''Instrument (mechanism unchanged, scorer changed)'' and the sign-time harness_status
+      note: (1) gen_lib.grade_row now also computes the wide-instrument (detector_v2)
+      grade alongside the unchanged narrow grade; (2) gates_lib.py adds wide-rate/undercount/net-lift/G1-wide/G-spec-ratio
+      helpers, no existing threshold changed; (3) dose_ladder.py: single-family trim
+      to llama only, fresh seed 20260719 (was rr''s 20260713), removed FIT dose-selection/early-stop
+      control flow since cell.yaml dose_policy.fit_dose_selection is NONE (every rung
+      scored, no held-out stage, no heldout_scorer.py module at sign), added the wide-instrument
+      per-rung report, a G0 hook-placement convention assertion, a G0 confounded random-direction
+      AUC reference, and the random_direction arm at hs20 dose12/16 (cell.yaml arms[2]);
+      (4) materialize_rows.py: single-family trim, replaced rr''s heldout_power gate
+      (this cell''s cell.yaml carries no heldout_power field, FIT-only scope) with
+      a FIT-population non-emptiness check, held-out rows still counted for provenance
+      but never read downstream; (5) pipeline.py: removed the held-out branch (no
+      heldout_scorer.py at sign); (6) test_rr_smoke.py: updated 4 tests for the rename/trim,
+      no coverage removed. All 38 CPU smoke tests pass after these edits. No gate,
+      floor, or falsifier threshold changed anywhere.'
+  - file: dose_ladder.py
+    old_sha256: 804b148ec2d9194942922575de74aed63ebab461e6575fc96bc11ae9f4fe2faf
+    new_sha256: b94a381e73f8553b666c578285c2eb425724456fb5d8684382bf52fd22acd562
+    date: '2026-07-19T10:18:53Z'
+    reason: 'Added the mandatory pre-full-scoring smokes for real on the actual Llama-3.2-3B-Instruct
+      substrate (execution binding invariant: sequential-vs-batch parity + real steer/readback
+      before full scoring), wired per-layer before the dose sweep starts: pre_sweep_and_parity_smoke()
+      runs the gated arm at the grid''s strongest dose (mult=20) on up to 8 probe
+      rows, asserts batch-size parity (batch=8 vs batch=1 byte-identical text) and
+      the cell.yaml dose_policy.pre_sweep_bracketing token-movement check against
+      the reused undosed baseline text, raising SystemExit (pre-outcome stop) on either
+      failure. Fixed load_baseline_wide_by_key to also carry answer_text (needed by
+      the new bracket check). No gate/floor/falsifier threshold changed; all 38 CPU
+      smoke tests still pass.'
+  - file: dose_ladder.py
+    old_sha256: b94a381e73f8553b666c578285c2eb425724456fb5d8684382bf52fd22acd562
+    new_sha256: 959b434834dbf1e3177f01e44f0ebc79bc1bf3c477323293b71f2f0fe52933a3
+    date: '2026-07-19T10:23:47Z'
+    reason: 'Real single-layer GPU sanity check (hs20) surfaced that the invented
+      real-model batched-vs-sequential BYTE-IDENTITY check was over-strict: 2/4 probe
+      rows differed in decoded text after 200 greedy decode steps under an active
+      erase-write hook, while readback_measured stayed consistent to 4 significant
+      figures across all rows/batch positions (22.5011-22.5023 vs commanded 22.5239)
+      -- confirming the write/wiring is correct and the divergence is bf16 batched-attention
+      float noise cascading through greedy decoding, a known benign non-determinism
+      property, not a row/gain/indexing defect. The REGISTERED sequential_vs_batch
+      parity smoke (cell.yaml/AMENDMENT.md citation) is the CPU synthetic-model test
+      in test_rr_smoke.py (deterministic, already passing); real-model bitwise identity
+      was never registered. Downgraded this finding from a SystemExit stop to a reported
+      NOTE; the actual registered gate in this function (cell.yaml dose_policy.pre_sweep_bracketing
+      token-movement check) still raises SystemExit on failure and is unchanged. No
+      gate/floor/falsifier threshold changed. All 38 CPU smoke tests pass; real single-layer
+      (hs20) end-to-end GPU sanity check (model load, double-fit byte-identical, AUC=0.9992
+      >= 0.90 floor, hook placement, bracket check) now completes cleanly.'
+  - file: apply_adjudication.py
+    old_sha256: none-new-module
+    new_sha256: 5ca708bb033d7fed56b275a26237fd9531a4cffe1711e213183a324831f84c36
+    date: '2026-07-19T12:10:00Z'
+    reason: 'New module added by the harness-build assignment (post-pool-freeze task:
+      port the unblinding/apply tooling so it is ready when the CG1-gated blinded
+      grading lane, launched by the lead over the frozen pool from commit b7bfa022,
+      completes). Adapted from abstention-wide-instrument-calibration/apply_adjudication.py,
+      cross-checked against rr3-corrected-placebo-replication/apply_adjudication.py
+      and .skills/experiment-runner/reference/abstention-grading.md (read both in
+      full before writing this). Ported verbatim: the commit-hash-before-unblind guarantee
+      (enforced in code -- `evaluate_shard` raises SystemExit if a shard''s graded-file
+      sha256 is absent from analysis-committed/adjudication_graded_manifest.json),
+      the POSITIONAL join between the graded file and the shard id map (line-for-line
+      opaque_id equality asserted; raises on length mismatch, reorder, or a non-boolean
+      is_abstention value), and per-shard CG1 via the new gates_lib.cg1_evaluate_shard
+      (0.95 clear-negative / 0.60 clear-positive floors, exactly gates.yaml''s registered
+      CG1, unchanged from the calibration cell -- this cell''s gates.yaml has no pooled
+      floor, unlike RR3''s successor fix (b), so gates_lib.cg1_pooled_clear_positive
+      reports the pooled clear-positive rate but never gates on it). SINGLE-CELL SIMPLIFICATION
+      versus the calibration/RR3 multi-cell references: this harness has exactly one
+      adjudication cell (build_adjudication_pool.py''s id map carries no per-row "cell"
+      tag), so a VOID_CELL_TERMINAL status voids the WHOLE lane (a single `experiment_voided`
+      boolean), not a `voided_cells` set -- verified in the smoke suite (see test_apply_adjudication_smoke.py
+      repin below) that a terminal void on one shard excludes an otherwise-passing
+      second shard''s rows too. Beyond the ported join/CG1 mechanics, `cmd_apply`
+      also rebuilds the post-adjudication per-rung table (analysis-committed/llama/post_adjudication_wide_table.json)
+      by re-scanning every RunLog row plus the reused baseline arm and taking refused_wide_adjudicated
+      = detector_v2 screen OR the unblinded adjudicator verdict; rows with no verdict
+      yet are fail-closed to "not abstention" and counted in a `n_pending_adjudication`
+      coverage field per rung/population rather than silently treated as complete.
+      Verified this table-building logic against the REAL 30-rung RunLog directory
+      (not real graded files -- none exist yet, and grading is out of scope per the
+      lead''s instruction) with an empty adjudication map: confirmed refused_wide_adjudicated
+      reduces exactly to refused_wide_screen and n_pending_adjudication exactly equals
+      the detector-negative row count, i.e. the fail-closed default behaves correctly
+      with zero adjudication coverage. Did NOT run apply against any real graded file.
+      No gate, floor, or falsifier threshold changed; gates.yaml and cell.yaml diff
+      is empty.'
+  - file: gates_lib.py
+    old_sha256: a8c1c088bc0bf7daeee37d3146611b5eb54dc9e393583c1550dc765c04821b50
+    new_sha256: ea66f19441fc9f32f269ff5cef97741cdf26491b108a88eea4ab81a229e629e2
+    date: '2026-07-19T12:10:00Z'
+    reason: Added CG1_CLEAR_NEGATIVE_MIN (0.95), CG1_CLEAR_POSITIVE_MIN (0.60), cg1_shard_pass,
+      cg1_evaluate_shard, and cg1_pooled_clear_positive (reported only, never gated
+      -- see apply_adjudication.py repin above), ported verbatim from abstention-wide-instrument-calibration/gates_lib.py,
+      to back the new apply_adjudication.py module. No existing function, constant,
+      or threshold in this file was changed; this is a pure addition.
+  - file: test_apply_adjudication_smoke.py
+    old_sha256: none-new-module
+    new_sha256: 374c9da2e5c925908e19562b3b46c70f25fd2a6ed48eaeb5c7dc0d29e44939bf
+    date: '2026-07-19T12:10:00Z'
+    reason: 'New CPU smoke suite for apply_adjudication.py, against synthetic 3-line
+      shard + graded-file fixtures only (never the real graded files), isolated to
+      pytest tmp_path directories so nothing here reads or writes the real analysis/
+      or analysis-committed/ trees. Covers: (1) the hash-refusal path (apply raises
+      SystemExit before any commit-hash call, succeeds after); (2) the positional-mismatch
+      raise (opaque_id reorder, line-count mismatch, and non-boolean is_abstention
+      all raise); (3) the CG1 void ladder (attempt-1 failure -> VOID_REGRADE_ONCE,
+      lane not yet voided; attempt-2 failure on the same content -> VOID_CELL_TERMINAL,
+      whole lane voided, verified that a second, independently-passing shard''s rows
+      are also excluded from n_applied_rows). 7/7 pass; combined with the existing
+      38 test_rr_smoke.py tests, 45/45 pass.'
+inputs: []
+verdict: 'R1 confirmed (2026-07-19): llama shape F robust to the certified wide instrument;
+  falsifier fired on zero rungs (well-formed peak hs20 dose 12 wide 0.457 [0.416,0.497]
+  vs 0.60 floor); CG1 8/8 PASS attempt 1; cross-cohort baseline agreement 0.1624 vs
+  0.164; rr''s locked verdict unchanged.'
+kg: []

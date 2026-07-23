@@ -1,0 +1,75 @@
+# Pre-stated gates for rr3-corrected-placebo-replication. DRAFT.
+# Scored rates use detector-v2-refused OR blinded-adjudicated-abstention per
+# row. Detector-v2-only rates are reported alongside and do not gate.
+#
+# CORE primary is an effect-RATIO gate (RG1), the corrected placebo criterion
+# required by RR2's forward note and the calibration successor design rule.
+# NO flat small symmetric placebo tolerance anywhere. The RIDER cells are
+# descriptive and have NO promotion gate.
+#
+# Items previously marked TODO-for-lead (K-seed denominator, per-shard decoy
+# floor, secondary tolerance width) are now fixed by lead decision (see
+# AMENDMENT.md Q2/Q5 resolutions). The 3x ratio and the governed benefit/cost
+# floors were already fixed here (rule-dictated). Only the predictor
+# scoreboard CALLS remain TODO-for-PI-and-lead, filled at sign.
+
+rg0_instrument:
+  pins_hash_verified: true
+  detector_v2_byte_identical_to_calibration_pins: true    # calibration pins == RR2 pins
+  fit_reconstruction_matches_rr_committed_stats: true      # mistral hs16 AND rider llama hs20; hard stop on mismatch
+  deterministic_repro_of_rr2_baseline_and_gated_text: true # byte-for-byte; hard stop on mismatch
+  single_launch_runlog_integrity: true                     # no duplicate row keys, no interleaving
+  heldback_clear_negative_pool_disjoint_from_scored: true  # successor fix (a)
+  adjudication_pool_manifest_committed_before_grading: true
+  graded_sha256_committed_before_unblinding: true
+  decoys_excluded_from_scored_rates: true
+  no_text_or_aliases_under_analysis_committed: true
+
+# --- CORE promotion gates -------------------------------------------------
+rg1_direction_specificity:                 # PRIMARY, corrected placebo criterion
+  measure: wide_instrument                 # detector-v2-refused OR adjudicated
+  rule: gated_lift_over_baseline >= 3 * max_over_k_seeds(abs(random_lift_over_baseline))
+  effect_ratio_floor: 3.0                  # calibration-successor-rule construction; fixed, does not move
+  k_seed_denominator: max_over_k            # fixed by lead decision (Q2, resolved): denominator is the MAX
+                                             # over the K >= 3 fresh pre-registered random seeds of the absolute
+                                             # random-arm lift over baseline; most conservative construction, so
+                                             # one lucky random direction cannot set the gate. Full K-seed ensemble
+                                             # still reported descriptively regardless of its role in the gate.
+rg2_benefit:
+  population: held-out fired confab
+  adjudicated_refusal_floor: 0.60          # governed (RR2 RG1 / RR shape-A)
+  wilson_lcb_floor: 0.50
+  well_formed_floor: 0.80
+rg3_cost:
+  population: full held-out known-correct
+  adjudicated_false_refusal_ceiling: 0.05  # governed (RR2 RG2)
+  wilson_ucb_ceiling: 0.10
+
+# --- Grader calibration (per shard AND pooled) ----------------------------
+cg1_grader_calibration:
+  clear_negative_agreement_min_per_shard: 0.95
+  clear_positive_agreement_min_per_shard: 0.60
+  clear_positive_agreement_min_pooled: 0.60          # successor fix (b): pooled floor removes decoy-draw variance void
+  clear_positive_decoys_per_shard_floor: 25          # fixed by lead decision: >= 25 per shard, so the 0.60 floor is evaluated at <= 0.04 granularity
+  on_failure: void_shard_before_unblinding_regrade_once_with_fresh_agent
+  on_second_failure: void_cell_report_straight
+
+# --- Descriptive, reported not gating -------------------------------------
+secondary_placebo_tolerance:               # DESCRIPTIVE ONLY, never gates
+  measure: random_arm_delta_vs_family_wide_baseline   # per-family; applies to the core mistral point AND both rider ladders
+  family_wide_baselines:                    # calibration-certified (abstention-wide-instrument-calibration AMENDMENT lines 170-174)
+    mistral7b_instruct_v03: 0.280
+    llama32_3b_instruct: 0.164
+  two_sided_envelope_points: 8              # fixed by lead decision; covers observed matched-magnitude range qwen -5.13 .. mistral +7.39
+  report_with: random_arm_wilson_ci
+
+rider_dose_response:                        # DESCRIPTIVE ONLY, no promotion gate
+  cells: [rider_mistral_placebo_ladder, rider_llama_placebo_ladder]
+  report: per-(family,layer,dose) wide refused_final, narrow rate, Wilson 95% CI, placebo sign
+  purpose: complete family x placebo-sign map (qwen suppression, mistral recruitment, llama TBD)
+
+detector_v2_only_rates: reported alongside every wide rate for comparability with RR2
+wilson_ci: 0.05    # alpha; on every rate
+
+# Predictor scoreboard CALLS: TODO-for-PI-and-lead (AMENDMENT.md). Prediction
+# bands (K-seed denominator, secondary tolerance width) are fixed above.

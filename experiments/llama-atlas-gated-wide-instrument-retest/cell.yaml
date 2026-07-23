@@ -1,0 +1,191 @@
+# llama-atlas-gated-wide-instrument-retest cell. DRAFT until `bin/exp sign`.
+# Fresh GPU re-run of rr-cross-family-raw-refusal's llama FIT dose ladder at the
+# atlas-band sites, scored PRIMARY under the certified wide instrument
+# (detector_v2 + blinded adjudication) instead of the locked 3-phrase canonical
+# detector. Mechanism unchanged; scorer changed. Cannot alter rr's locked
+# shape-F verdict. See AMENDMENT.md for full prose and doc:line citations.
+
+seed: 20260719            # fresh fits and the frozen random_direction placebo
+fit_seed_note: >-
+  gate tau (Youden-J), c_hat orthogonalizer (LogisticRegression saga,
+  random_state=SEED), standardization scalars, and the random_direction placebo
+  are all fit fresh per candidate layer; every fit is run twice and asserted
+  byte-identical before any artifact is written (mirrors
+  rr-cross-family-raw-refusal cell.yaml fit_seed_note).
+
+posture:
+  tier: exploratory_tier2
+  pooling: >-
+    never pooled with the locked Phase 1 headline matrix, never pooled with
+    rr-cross-family-raw-refusal (resolved falsified; this re-run cannot
+    un-falsify it), never pooled with the qwen35 chain.
+
+# ---------------------------------------------------------------------------
+# Substrate: llama only, fleet revision, byte-checked at G0.
+# ---------------------------------------------------------------------------
+families:
+  - id: llama32_3b_instruct
+    model: unsloth/Llama-3.2-3B-Instruct
+    revision: 006f5dcd1393c3add266de40994ba96225e9689d  # fleet model_matrix.yaml, lead-verified 2026-07-19
+    substrate: bf16
+    adapter: none
+    loader: AutoModelForCausalLM.from_pretrained
+    n_decoder_layers: 28
+    atlas_hidden_states: 29
+    candidate_layers: [20, 22, 23, 26]  # rr atlas band {20,22,23} + hs26 late-site internal replication (adjudicated 2026-07-18)
+    atlas_map_source: >-
+      experiments/jspace-family-atlas/AMENDMENT.md:184-185 (best read llama ~L20-23),
+      :178-182 (raw-refusal axis best 0.90 at L20-25); hs26 = ported late site
+      round(0.94*(28-1))=25 -> hidden-state index 26
+      (doubt-snap-cross-family-confirmatory llama cell)
+
+layer_index_convention:
+  source: experiments/jspace-family-atlas (atlas_summary.json, per-layer keys 0..28)
+  convention: hidden-state index h = output of decoder block h; hs0 = embedding stream
+  resolved_at: sign  # pinned in AMENDMENT.md Design/Substrate; harness asserts hook placement at G0
+
+# ---------------------------------------------------------------------------
+# Instrument: identical construction to rr; only the SCORER changes.
+# ---------------------------------------------------------------------------
+instrument:
+  gate:
+    score: neg_z_d
+    definition: "neg_z_d = -(proj_u_d - mu_d)/sigma_d, clipped to [-2, 2]"
+    fire_rule: "neg_z_d >= tau_frozen"
+    tau_fit: "Youden-J on FIT confab vs FIT known_correct_answered"
+    source: experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:145-147
+  snap:
+    law: erase_write
+    position: anchor_onward
+    direction: c_hat
+    c_hat_construction: >-
+      mass-mean caution (mean refused minus mean confab) orthogonalized against a
+      LogisticRegression(saga, C=1.0, tol=1e-3, max_iter=5000, random_state=SEED)
+      confab-propensity direction, QR erase; FIT-standardized projections
+    source: experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md:163-167
+  generation:
+    do_sample: false
+    min_new_tokens: 1
+    max_new_tokens: 200
+    eos_enabled: true
+    enable_thinking: false
+  render:
+    source: experiments/doubt-snap-cross-family-confirmatory/render.py
+    anchor_position: prompt_len_minus_1
+  reproducibility:
+    double_fit_byte_identical: true
+    fit_auc_floor: 0.90                  # per candidate layer, FIT gate AUC (G0)
+
+# THE CHANGE vs rr: primary scorer is the certified wide instrument.
+scorer:
+  primary: wide_refused                  # refused-or-adjudicated-abstention per row
+  stack:
+    detector_v2:
+      module: experiments/abstention-wide-instrument-calibration/detector_v2.py
+      patterns: experiments/abstention-wide-instrument-calibration/detector_v2_patterns.yaml
+      pin_rule: sha256 hash-identical to the calibration cell's committed pins (G0)
+    adjudication_lane:
+      scope: detector-negative rows
+      rubric: RR2 abstention rubric, verbatim (calibration cell pin)
+      blinding: salted opaque ids, seeded shuffle, clear-negative + clear-positive decoys
+      calibration_gate: CG1 (gates.yaml)
+      decoy_lesson: >-
+        more clear-positive decoys per shard or a pooled clear-positive floor
+        (abstention-wide-instrument-calibration QL void on decoy-draw variance)
+  also_reported:
+    - narrow_refused_3phrase             # the rr/locked detector, for the wide-vs-narrow contrast
+    - undercount_delta                   # wide minus narrow, per rung
+    - net_lift_over_wide_baseline        # vs llama undosed wide baseline 0.164 (calibration cell)
+    - well_formed
+    - clean_tighten
+    - degenerate
+    - natural_stop
+    - mean_new_tokens
+  confidence_intervals: Wilson 95% (alpha 0.05) on every rate
+
+# ---------------------------------------------------------------------------
+# Populations: reused verbatim from the fleet llama cell; no re-mining.
+# ---------------------------------------------------------------------------
+population:
+  reuse_from: doubt-snap-cross-family-confirmatory (llama32_3b_instruct cell)
+  reuse_scope: row pools, baseline generations, gradings, role assignments (verbatim)
+  reuse_precedent: experiments/jspace-family-atlas/AMENDMENT.md:40-41
+  roles:
+    known_correct_answered: TriviaQA + PopQA, kept only if undosed baseline well-formed and correct
+    confab: KUQ, undosed baseline confabulates
+    unknown_refused: KUQ, undosed baseline refuses (fit_only)
+  role_source: experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:170-178
+  anchors:
+    reuse_from: experiments/jspace-family-atlas full-depth captures (final-prompt-token anchor, every layer)
+    recapture_rule: >-
+      harness-build verifies the atlas capture covers each candidate layer
+      (open decision A1); if a candidate layer is missing, re-capture ONLY that
+      layer's anchors under the atlas convention; resolution recorded in
+      NOTEBOOK.md.
+  splits:
+    fit: used for gate/direction/standardization fit and the FULL scored ladder
+    held_out: NOT TOUCHED (FIT-only scope, adjudicated 2026-07-18)
+  containment:
+    committed_row_text: forbidden
+    committed_aliases: forbidden
+    committed_answer_text: forbidden
+    committed_token_ids: forbidden
+    committed: ID-only manifests (row_key, role, split, source, category_canon) + aggregates only
+  exhaust_staging:
+    rule: >-
+      dosed RunLogs (gitignored analysis/) are staged to the durable store
+      BEFORE any worktree teardown (open decision A6; lesson from rr's lost
+      llama dosed text); staging path recorded in NOTEBOOK.md.
+    durable_dir: /home/profsynapse/code/ehr-exhaust/llama-atlas-gated-wide-instrument-retest/
+
+# ---------------------------------------------------------------------------
+# Dose policy: rr's grid verbatim; whole ladder scored, no FIT dose selection.
+# ---------------------------------------------------------------------------
+dose_policy:
+  grid_sigma_relative: [2, 4, 6, 8, 12, 16, 20]   # x sigma_c per candidate layer
+  grid_source: experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md:260 (rr reproduced it)
+  sigma_c_from: fresh FIT build_manifest.json per layer
+  finalized_absolute_at: sign
+  pre_sweep_bracketing:
+    check: fixed-strength gen-stream probe on probe rows; strongest arm must move tokens
+    on_byte_identical: >-
+      re-bracket pre-sweep and pre-outcome to log-span the empirical response
+      region (the ONLY permitted grid change; never after outcome)
+  fit_dose_selection: >-
+    NONE. Every (layer, dose) rung is scored under the wide instrument; shape
+    assignment happens after full scoring. No FIT-viability early stop.
+
+# ---------------------------------------------------------------------------
+# Arms.
+# ---------------------------------------------------------------------------
+arms:
+  - name: baseline
+    description: reused undosed generations; reference for net wide lift (llama undosed wide 0.164)
+  - name: gated
+    description: >-
+      real instrument at EVERY (layer, dose) rung on fired FIT confabs and the
+      FIT known-correct cost population
+  - name: random_direction
+    description: >-
+      same fired FIT confabs; frozen random placebo direction, magnitude matched
+      to the gated arm's realized projection; run at hs20 dose 12 and hs20 dose
+      16 only (adjudicated 2026-07-18); compares behavioral refusal RATE, not
+      read AUROC, so unaffected by the atlas norm/position read confound
+    rungs: [[20, 12], [20, 16]]
+    confound_note: experiments/jspace-family-atlas/AMENDMENT.md:170-173
+
+execution:
+  lanes:
+    - local_3090       # bf16 3B in 24GB; free; PI pre-approved 2026-07-18
+  model: rr execution model (batch verbs for capture; mechinterp steer for writes)
+  smokes_before_full_scoring:
+    - sequential_vs_batch parity
+    - real mechinterp steer + readback
+  synaptic_tuner_pin: RESOLVED_AT_HARNESS_BUILD  # submodule commit recorded by the harness-build assignment
+  gpu_python: /home/profsynapse/miniconda3/bin/python3
+
+outputs:
+  local_private_dir: experiments/llama-atlas-gated-wide-instrument-retest/analysis/          # gitignored
+  committed_public_dir: experiments/llama-atlas-gated-wide-instrument-retest/analysis-committed/
+
+harness_status: modules_copied_from_rr_unadapted  # scorer swap + single-family trim happen in the harness-build assignment via audited repins

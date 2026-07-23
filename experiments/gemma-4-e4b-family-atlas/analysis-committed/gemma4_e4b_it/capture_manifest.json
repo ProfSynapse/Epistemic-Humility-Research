@@ -1,0 +1,31 @@
+{
+  "batch_size": 16,
+  "capture_index_sha256": "a11ed3a81fe5cf15e70b3d97a2a532f0aef98c63ebd0db39ce21186fac56f1d0",
+  "cell_id": "gemma4_e4b_it",
+  "coverage_frac": 1.0,
+  "coverage_pass_ag0": true,
+  "hidden_size": 2560,
+  "layers_requested": "all",
+  "missing_row_count": 0,
+  "missing_row_keys_sample": [],
+  "model": "google/gemma-4-E4B-it",
+  "n_hidden_states": 43,
+  "n_rows_captured": 2815,
+  "n_rows_in_pool": 2815,
+  "num_hidden_layers": 42,
+  "persist_dtype": "float32",
+  "position_name": "anchor",
+  "position_rule": "len(token_ids) - 1 (manual tokenize, add_special_tokens=True)",
+  "revision": "fee6332c1abaafb77f6f9624236c63aa2f1d0187",
+  "row_pool_source": {
+    "fleet_cell_id": "gemma4_e4b_it",
+    "fleet_experiment": "doubt-snap-cross-family-confirmatory",
+    "manifest_row_count_projected": "~2900-3100 (llama32_3b_instruct=2956, mistral7b_instruct_v03=3037)",
+    "mining_command": "python experiments/doubt-snap-cross-family-confirmatory/prep_tuner_cell.py prepare --cell-id gemma4_e4b_it --batch-size <TBD, tune from smoke>",
+    "mining_env": "DOUBT_SNAP_RENDER_MODEL / DOUBT_SNAP_RENDER_REVISION set by prep_tuner_cell.py itself per its render_pool()",
+    "mining_status": "not_yet_run",
+    "role_counts_projected": "not projectable per-role -- role assignment (confab vs known_correct_answered vs unknown_refused) depends on gemma-4-E4B-it's own baseline generation behavior, which has not been observed on this pool",
+    "row_pool_path": "experiments/doubt-snap-cross-family-confirmatory/analysis/gemma4_e4b_it/split_rows_private.jsonl  # produced by mining_command; does not exist yet",
+    "split_manifest_committed_path": "experiments/doubt-snap-cross-family-confirmatory/analysis-committed/gemma4_e4b_it/split_manifest.json  # produced by mining_command; does not exist yet"
+  }
+}

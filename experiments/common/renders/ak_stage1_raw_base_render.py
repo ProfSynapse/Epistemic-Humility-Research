@@ -1,7 +1,7 @@
 """Render function for the AK Stage-1 raw-base surface (checkpoint_tag
 "raw-base", unsloth/Qwen3-4B-bnb-4bit, no adapter).
 
-The AK Stage-1 raw-base capture (experiment/phase1/probe/
+The AK Stage-1 raw-base capture (archive/experiment/phase1/probe/
 amendment_ak_gentime_positions_extract.py) deliberately excludes question text
 from its per-row output ("NO question text -> NO-LICENSE safe", see that
 script's docstring): the committed and gitignored `rows.jsonl` this project's
@@ -30,9 +30,9 @@ gitignored analysis data on the ext4 checkout -- never committed, matching the
 licensing posture of the AK capture itself, which excluded this same text for
 the same reason):
   - question text: two AH Stage-0 pool files, keyed by row_key --
-      experiment/phase1/probe/analysis/ah_stage0/candidates.jsonl
+      archive/experiment/phase1/probe/analysis/ah_stage0/candidates.jsonl
         (row_key prefix "ah::", the AH "mined" pass)
-      experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl
+      archive/experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl
         (row_key prefix "ahx::", the AH "expansion" pass)
   - system prompt: the AK Stage-1 raw-base capture manifest
       $HOME/ak_census_data/ak-stage1-raw-base-r1/data/manifest.json
@@ -75,9 +75,9 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 # running from, or with a copy staged into, a different checkout.
 _CANONICAL_CHECKOUT = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 _DEFAULT_QUESTION_POOLS = [
-    _CANONICAL_CHECKOUT / "experiment" / "phase1" / "probe" / "analysis"
+    _CANONICAL_CHECKOUT / "archive" / "experiment" / "phase1" / "probe" / "analysis"
     / "ah_stage0" / "candidates.jsonl",
-    _CANONICAL_CHECKOUT / "experiment" / "phase1" / "probe" / "analysis"
+    _CANONICAL_CHECKOUT / "archive" / "experiment" / "phase1" / "probe" / "analysis"
     / "ah_stage0" / "expansion" / "expansion_candidates.jsonl",
 ]
 _DEFAULT_MANIFEST_PATH = (

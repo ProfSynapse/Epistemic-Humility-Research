@@ -20,7 +20,7 @@ models:
 - clean-sft-grpo-v2-seed1
 metrics:
 - auroc
-provenance: 'Internal amendment (Tier-2 exploratory local mechanism evidence under PHASE3-control-system-protocol.md, RQ4 Stage 1). Source of truth: experiment/protocol/AMENDMENT-AC-doubt-regulated-caution.md. Checkpoint: clean-SFT -> GRPO-v2 seed1. Rows: frozen behavior overlay analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl, cells known_refused (n=168), known_correct_answered (n=373), unknown_refused (n=676), 4868 units across 4 arms. Analysis: analyze_ac_doubt_coupled.py, paired row-level bootstrap, 10k resamples, seed 20260703.'
+provenance: 'Internal amendment (Tier-2 exploratory local mechanism evidence under mechinterp-control-system-protocol.md, RQ4 Stage 1). Source of truth: experiments/doubt-regulated-caution/AMENDMENT.md. Checkpoint: clean-SFT -> GRPO-v2 seed1. Rows: frozen behavior overlay analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl, cells known_refused (n=168), known_correct_answered (n=373), unknown_refused (n=676), 4868 units across 4 arms. Analysis: analyze_ac_doubt_coupled.py, paired row-level bootstrap, 10k resamples, seed 20260703.'
 related:
 - '[[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]'
 - '[[caution-residual-ablation-relaxes-overrefusal-asymmetrically]]'
@@ -78,7 +78,7 @@ determines the fabricate-vs-refuse choice, not merely correlates with it.
   (>= 5pt required, CI excludes 0). PASS. Per-arm selectivity gap: coupled
   +0.068 (kr refusal 0.994->0.506, ur refusal 1.000->0.580); permuted -0.019
   (kr 0.994->0.518, ur 1.000->0.504); constant-ablate -0.039 (kr 0.994->0.536,
-  ur 1.000->0.503). (experiment/protocol/AMENDMENT-AC-doubt-regulated-caution.md
+  ur 1.000->0.503). (experiments/doubt-regulated-caution/AMENDMENT.md
   section 8.)
 - Evidence label: secondary estimate, no gate (AC-G2). Coupled beats constant
   ablate on the same selectivity gap by +10.7 points, CI [+7.1, +14.5]. The

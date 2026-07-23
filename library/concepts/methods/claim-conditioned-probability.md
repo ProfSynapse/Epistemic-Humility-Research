@@ -48,6 +48,6 @@ relationships:
 
 A claim-level uncertainty scoring function for white-box LLMs that estimates the probability of a specific atomic claim being correct conditioned on the claim itself, rather than on surface properties like token order or claim length. CCP focuses uncertainty estimation on claim-specific semantic content, filtering out non-task-relevant factors that confound simpler token-probability measures.
 
-**Why it matters here:** CCP is the strongest tested claim-level signal for filtering incorrect atomic claims in long-form generation (PR-AUC 0.360/0.367/0.238 on Mistral 7B / Llama3 8B / Gemma3 12B, outperforming Max Token Entropy across all three). It is the recommended input scorer for adaptive conformal factuality pipelines and is a candidate read-out after Phase 1 training arms.
+**Why it matters here:** CCP is the strongest tested claim-level signal for filtering incorrect atomic claims in long-form generation (PR-AUC 0.360/0.367/0.238 on Mistral 7B / Llama3 8B / Gemma3 12B, outperforming Max Token Entropy across all three). It is the recommended input scorer for adaptive conformal factuality pipelines and is a candidate read-out after locked training-regimen arms.
 
 **Lineage:** Introduced by Fadeeva et al. (2024, FActScore-related work); implemented in the LM-Polygraph library. Related to token-probability approaches like Maximum Probability and Perplexity but conditioned on the target claim.

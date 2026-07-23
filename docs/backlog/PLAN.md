@@ -4,19 +4,22 @@
 
 `TODO.md` at the repo root went stale (last substantive edit ~2026-06-26, before
 roughly 20 amendments landed). The project actually runs on **amendments**:
-pre-registered experiment cells under `experiment/protocol/AMENDMENT-*.md`, each
-with a `Status:` line and (when run) a `## 8. Result` / `VERDICT:` section,
-executed one-at-a-time (one amendment = one branch = one PR, merged before the
-next branches). Proposed/queued work accretes in three scattered places —
-protocol docs, `docs/sessions/*.md` notes, and the user's memory notes — with no
-single prioritized index and no cheap way to keep one current.
+pre-registered experiment cells under `experiments/<slug>/AMENDMENT.md`, each
+with a `Status:` line and (when run) a `## 8. Result` / `VERDICT:` section, each
+run in its own dedicated git worktree on its own branch, one branch = one PR
+(amendments proceed in parallel, each in its own worktree; never stacked on
+another amendment's branch or worktree). Proposed/queued work accretes in three
+scattered places:
+experiment docs, `docs/sessions/*.md` notes, and backlog notes — with no single
+prioritized index and no cheap way to keep one current.
 
 ## Design decision
 
 **Two files, one generated and one hand-curated, joined in `TODO.md`.**
 
 - `bin/build_backlog_index.py` (stdlib only, deterministic, idempotent) scans
-  `experiment/protocol/*.md`, extracts each doc's `Status:` line and any
+  `experiments/*/experiment.yaml` plus co-located `AMENDMENT.md`, extracts each
+  historical amendment doc's `Status:` line and any
   `## 8. Result` / `## Result` / `VERDICT:` verdict, classifies it into a small
   fixed status vocabulary, and writes a table between fenced markers inside
   `TODO.md`:

@@ -36,7 +36,7 @@ humility" claims as facet-specific unless stated otherwise.
 
 **Why it matters here:** Epistemic humility is the organizing construct for this
 research program: calibration, [[abstention]], and uncertainty reporting are all
-facets of a model knowing when not to answer. The Phase 1 training-method study
+facets of a model knowing when not to answer. The locked training-regimen training-method study
 targets the abstention facet in the text-only setting via the
 abstention/over-abstention tradeoff, while HumbleBench targets the
 false-option-rejection facet in the multimodal setting.

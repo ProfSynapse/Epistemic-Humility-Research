@@ -37,7 +37,9 @@ relationships:
   confidence: medium
 ---
 
-Session-0037 arm A (analysis/mi_confab_phenotypes_20260704/), on 309 baseline
+Session-0037 arm A
+(experiments/confab-mechanics-cpu-fleet/analysis-committed/confab-phenotypes/),
+on 309 baseline
 confabulations with a 100 percent activation-cache join. Confabulations are long and
 generic (about 50 words, low fact density) where correct answers are terse and dense
 (about 11 words); within that phenotype, the graded doubt reading predicts how

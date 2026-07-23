@@ -46,16 +46,24 @@ Use artifact type to choose where to look:
 - Orientation and contribution norms: root docs such as `README.md`,
   `CONTRIBUTING.md`, and nearby architecture notes.
 - Research synthesis: `meta-analysis/`, especially evidence tables, analysis
-  scripts, paper drafts, and provenance reports.
+  scripts, and source-of-record synthesis apparatus.
+- Paper production: `papers/`, organized one directory per paper with
+  `manuscript.md`, `analysis/`, `figures/`, `scripts/`, and paper-specific
+  `notes/`. Shared writing conventions live in `papers/common/`; series-level
+  planning lives in `papers/series/`.
+- Notes by type: `docs/sessions/` for chronological session logs,
+  `experiments/<slug>/RUNBOOK.md` and `experiments/<slug>/PLAN.md` for reusable
+  experiment-local operating specs, and `library/notes/` for KG-backed
+  literature/internal synthesis notes.
 - New experiments (any evidence-producing type: steering cell, training run,
   eval, probe-fit, lab diagnostic): the experiments-first tree `experiments/`,
   one self-contained directory per experiment holding a signed `AMENDMENT.md`, a
   machine-readable `experiment.yaml` manifest, pinned instrument configs, and a
   generated registry. Scaffold and manage them with `bin/exp` (the `experiments`
   skill). This is where new evidence-producing work goes.
-- Locked Phase 1 protocol and its records: `experiment/`, especially protocols,
+- Locked locked training-regimen protocol and its records: `experiment/`, especially protocols,
   architecture docs, phase directories, configs, recipes, and run records. This
-  tree is retained for the locked Phase 1 matrix and its historical amendments;
+  tree is retained for the locked training-regimen matrix and its historical amendments;
   do not add new experiments here, use `experiments/` instead.
 - Literature graph and concepts: `library/`, including paper notes, concept
   notes, schema docs, manifests, and fulltext where available.
@@ -63,6 +71,9 @@ Use artifact type to choose where to look:
   before reading raw rows.
 - Skills and agent workflows: `.skills/` as canonical source, with generated
   mirrors under agent-specific directories.
+- Archive: `archive/` holds superseded files retained for provenance. Do not use
+  archived files as current sources of truth unless the citing text explicitly
+  says it is referring to a superseded or retired artifact.
 
 When protocol, preregistration, or paper-claim files are involved, read the
 local instructions in that area before editing. Treat registered study design as
@@ -86,10 +97,41 @@ governed: changes need explicit rationale, changelog, and user approval.
   typed research graph.
 - `kg-ingest`: use when adding or backfilling papers into the library as typed
   concepts, claims, mechanisms, evidence, and lineage edges.
+- `mechinterp-cells`: use when authoring, organizing, or launching a
+  tuner-backed mech-interp cell (steering / extraction / probe-fit /
+  gate-scoring via declarative recipe YAML); includes the dose-calibration and
+  data-containment rules. Never modifies the tuner submodule or the frozen
+  legacy machinery.
+- `mech-interp-runner`: use for the legacy local mech-interp sweep machinery
+  (candidate inventories, causal-pilot planning, offline aggregation) of
+  already-signed amendments; new cell work goes through `mechinterp-cells`.
+- `family-atlas`: use when a new model/family/size enters the program, before
+  designing any per-family actuation cell; runs the standard full-depth
+  read-atlas (workspace profile + three-axis read panel) whose resolved rows
+  land in `docs/atlas/family-layer-map.md`. Layer choices are never ported
+  across families.
+- `data-exhaust`: use when packaging a terminal experiment's row-level exhaust
+  as a public HF dataset (license gate, build, verify, dry-run card, upload);
+  fail-closed on unaudited sources, and upload only after the user approves
+  the dry-run card.
+- `pr-workflow`: standing discipline for branches, worktrees, commits, and PR
+  merges; read before spawning a file-writing subagent, committing
+  housekeeping docs, or merging PRs.
+- `experiment-wrapup`: the mechanical downstream half of a resolve, run AFTER
+  the lead has adjudicated the verdict/falsifier/scores - write the AMENDMENT
+  Outcome, `bin/exp resolve`, update the family-layer-map and
+  prediction-scoreboard registries, open the resolve PR, commit the living
+  tracking docs to main, hand off KG ingest. Delegable to a sonnet/haiku
+  subagent given a locked adjudication packet. It never decides the verdict or
+  the scores; those are lead-only inputs. Keep for the lead: the adjudication
+  itself, the red-team decision, and the PR merge (needs user approval).
 
-Canonical skill source is `.skills/`. Mirrors under `.agents/skills/` and
-`.claude/skills/` are generated. Do not hand-edit a mirror when the same file
-exists under `.skills/`; edit canonical and run the sync check/write workflow.
+Canonical skill source is `.skills/`. Mirrors under `.agents/skills/`,
+`.claude/skills/`, and `.codex/skills/` are generated. Do not hand-edit a
+mirror when the same file exists under `.skills/`; edit canonical and run the
+sync check/write workflow. A PreToolUse hook blocks direct edits to CLAUDE.md
+(a generated mirror of AGENTS.md) and to the skill mirrors, and points back to
+the canonical source plus the sync step.
 
 Use the sync script only for root project skills and root project context. It
 must not write into `synaptic-tuner/`.
@@ -145,8 +187,7 @@ inspection or fixture debugging.
 - READ BEFORE YOU CITE. Before stating any fact about a prior experiment or
   amendment (its design, mechanism, checkpoint, gates, result, verdict, or what
   it "showed" / "proved" / "worked"), open and read its governed doc first:
-  `experiment/protocol/AMENDMENT-*.md` (pre-migration) or
-  `experiments/<slug>/AMENDMENT.md` (new layout). The amendment/protocol docs are
+  `experiments/<slug>/AMENDMENT.md`. The amendment/protocol docs are
   the SOLE source of truth for experimental facts. Memory, session notes, the
   knowledge graph, prior chat summaries, and this file's Retrieved/Working Memory
   are navigation aids ONLY: they point you to the doc, they are never themselves

@@ -1,0 +1,36 @@
+# Pre-stated gates for abstention-wide-instrument-calibration.
+# Integrity gates only; this experiment has no promotion gate. Fixed before
+# launch; changing any value after results exist requires a new signed
+# revision.
+
+cg0_instrument:
+  pins_hash_verified: true
+  detector_v2_byte_identical_to_rr2_pins: true
+  staging_manifest_committed_before_scoring: true
+  ql_subsample_seed: 20260714
+  ql_subsample_rows_per_layer_dose_cell: 250
+  pool_shuffle_seed: 20260714
+  pool_manifest_committed_before_grading: true
+  graded_sha256_committed_before_unblinding: true
+  decoys_excluded_from_scored_rates: true
+
+cg1_grader_calibration_per_shard:
+  clear_negative_agreement_min: 0.95
+  clear_positive_agreement_min: 0.60
+  on_failure: void_shard_before_unblinding_regrade_once_with_fresh_agent
+  on_second_failure: void_cell_report_straight
+
+cg2_coverage:
+  all_registered_cells_scored: true
+  wilson_ci_on_every_rate: true
+  paired_population_rule_in_every_delta: true
+  committed_report: analysis-committed/calibration_report.json
+
+# Prediction bands (measurement targets, not promotion thresholds):
+prediction:
+  qwen_wide_baseline_confab_max: 0.15
+  qwen_placebo_delta_points_max: 3.0
+  llama_wide_baseline_confab_max: 0.15
+falsifier:
+  qwen_wide_baseline_confab_fires_at: 0.20
+  qwen_placebo_delta_points_fires_at: 5.0

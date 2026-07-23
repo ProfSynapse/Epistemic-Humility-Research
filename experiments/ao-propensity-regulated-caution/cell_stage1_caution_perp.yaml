@@ -25,7 +25,7 @@
 #
 # SCHEMA BLOCKER (RESOLVED, this session): this candidate's original JSON
 # (analysis/amendment_ao_prep/caution_perp_direction_L35_ai_true.json) is
-# written in the legacy "phase3-residual-caution-direction/v1" schema (field
+# written in the legacy "mechinterp-residual-caution-direction/v1" schema (field
 # "theta", not "vector"), which made MechInterp.probe.fit.load_frozen_direction
 # raise KeyError: 'vector'. Fixed with a local converter,
 # analysis/amendment_ao_prep/convert_directions_to_tuner_schema.py (gitignored,

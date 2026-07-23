@@ -1,0 +1,94 @@
+# Pre-stated gates for placebo-seed-distribution-census. DRAFT (not signed).
+#
+# Integrity and coverage gates only. NO promotion gate: outputs are a per-family
+# matched-magnitude delta distribution and a survive/retire adjudication, and
+# every criterion outcome is a reportable result. The survive/retire CRITERION
+# (sc_criterion) is fixed here BEFORE the run and does not move after results
+# (no-goalpost rule). Scored rates use detector-v2-refused OR
+# blinded-adjudicated-abstention per row; detector-v2-only rates reported
+# alongside and do not gate. Wilson 95% CI (alpha 0.05) on every rate; bootstrap
+# 95% CI on every sign-fraction.
+
+sc0_provenance_and_staging:
+  stage_inputs: >-
+    every source runlog, baseline artifact, frozen direction JSON
+    (random_direction basis + c_hat setpoint), and fit build_manifest staged
+    into gitignored analysis/staged_inputs/ with sha256 and row/vector counts in
+    a committed ID-manifest (no text).
+  subsample_committed_before_generation: >-
+    the fixed S subsample per family is drawn by the registered permutation seed
+    (40260714) and its opaque-id list committed BEFORE any generation or grading.
+  baseline_repro: >-
+    reused baseline text passes an RG0-style byte-repro check against the
+    family's committed baseline runlog on the S rows (qwen QH baseline.jsonl,
+    mistral heldout__baseline.jsonl, llama RR baseline).
+  no_text_or_aliases_or_token_ids_under_analysis_committed: true
+
+sc1_magnitude_matching:
+  rule: >-
+    each seed's random-direction write is an erase-write to the SAME per-family
+    setpoint (qwen dose_abs 12.608, mistral 3.665, llama 12 x sigma_c(hs20)
+    re-derived byte-identical from RR's committed llama hs20 fit manifest at
+    build). This is the census validity condition: it makes the K deltas a
+    single-magnitude comparable sample.
+  readback_tolerance_rel: 0.005              # |readback_measured - target| / target <= 0.005. CORRECTED pre-run 2026-07-14 (user-approved): the drafted absolute 0.01 conflated RR3's arm-to-arm setpoint-identity margin (0.004, Outcome 482-487) with readback-vs-target accuracy and contradicted the qwen precedent cited beside it (12.625 vs 12.608 = 0.017 = 0.14% rel); certified precedents show a systematic ~0.11-0.16% relative readback offset in every family, so the bar is relative with ~3x headroom. Corrected before any dosed generation ran; falsifier and criterion untouched.
+  randomness_bar:
+    abs_cos_to_c_hat_max: 0.015              # RR3 red-team bar
+    abs_cos_to_u_d_max: 0.015
+  on_fail: void the seed before grading, redraw from the next pre-registered seed, record the void
+
+sc2_grading_integrity:
+  lane: blinded_context_free                 # .skills/experiment-runner/reference/abstention-grading.md
+  hash_commit_before_unblind:
+    pool_sha256_and_opaque_id_list_committed_before_grading: true
+    graded_file_sha256_committed_before_mapping_read: true
+    apply_tool_refuses_join_otherwise: true  # enforced in code, not convention (RR3 mechanics)
+  grader_calibration:                        # per shard AND pooled
+    clear_negative_agreement_min_per_shard: 0.95
+    clear_positive_agreement_min_per_shard: 0.60
+    clear_positive_agreement_min_pooled: 0.60      # successor fix (b): pooled floor removes decoy-draw variance void
+    clear_positive_decoys_per_shard_floor: 25      # successor fix (b)
+    clear_negative_decoys_from_held_back_pool: true # successor fix (a)
+    on_failure: void_shard_before_unblinding_regrade_once_with_fresh_agent
+    on_second_failure: void_shard_rows_report_straight
+  decoys_excluded_from_scored_rates: true
+
+sc3_paired_population_and_coverage:
+  paired_rule: >-
+    every per-seed delta is computed over the exact fixed S rows shared across
+    the baseline and all K dosed seeds; unpaired, missing, or degenerate rows for
+    any seed are reported separately for that seed, never inside its delta.
+  wilson_ci: every rate carries a Wilson 95% CI
+  bootstrap_ci: every sign-fraction carries a bootstrap 95% CI
+  full_ensemble_reported: the full K-seed ensemble is reported per family regardless of the survive/retire verdict
+  llama_null_control: llama reported as a null-control family (no committed sign to defend)
+  rr3_seed_handling: >-
+    if RR3's three mistral seeds count toward K, their deltas are recomputed on
+    the census S rows (paired rule applies) from RR3 persisted row-level grades;
+    otherwise they are reported beside the distribution as external full-pool
+    points, labeled as such, never inside the census K.
+
+# ===========================================================================
+# Survive / retire CRITERION (fixed before run; does NOT move after results)
+# ===========================================================================
+sc_criterion:
+  applies_to_families_with_committed_sign: [qwen35_4b, mistral7b_v03]   # llama has no committed sign; null-control form below
+  definitions:
+    f_s: fraction of the K census seeds whose signed matched-magnitude delta has the family's committed sign s
+    m: median signed delta over the K seeds
+    magnitude_floor_pts: 3.0               # below both historical magnitudes 5.13 and 7.39, so not trivially cleared
+  survives:
+    rule: f_s >= 0.80 AND bootstrap_95_lower_bound(f_s) > 0.50 AND |m| >= 3.0 with m in the s direction
+  retired_falsified:
+    rule: f_s <= 0.60 OR interquartile_range(signed_delta) spans zero (25th and 75th percentiles on opposite sides)
+  indeterminate:
+    rule: neither survives nor retired (0.60 < f_s < 0.80, or f_s >= 0.80 with |m| < 3.0)
+    handling: reported straight; sign neither confirmed distributional nor retired
+  llama_null_control:
+    expectation: distribution centered near zero (|median| < 3.0) with no dominant sign
+    if_concentrated: a llama distribution with f on one sign >= 0.80 and |median| >= 3.0 is reported as a NEWLY DISCOVERED llama placebo sign, not a falsification of anything
+  no_rescoring_lane: >-
+    there is no rescoring lane behind the blinded adjudication lane; if a family
+    meets its RETIRE trigger the sign reading is retired and the result stands.
+
+detector_v2_only_rates: reported alongside every wide rate for continuity

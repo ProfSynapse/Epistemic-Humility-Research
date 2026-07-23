@@ -1,0 +1,966 @@
+{
+  "llama": {
+    "baseline_confab_full_population": {
+      "n": 872,
+      "refused_final": {
+        "n": 872,
+        "n_uncovered": 0,
+        "rate": 0.17889908256880735,
+        "successes": 156,
+        "wilson_ci_95": [
+          0.1548857054445063,
+          0.20572917027280607
+        ]
+      }
+    },
+    "dose_response": [
+      {
+        "confab": {
+          "by_source": {},
+          "n": 250,
+          "refused_final": {
+            "n": 250,
+            "n_uncovered": 0,
+            "rate": 0.18,
+            "successes": 45,
+            "wilson_ci_95": [
+              0.13733343230144174,
+              0.23235187937564278
+            ]
+          }
+        },
+        "direction_seed": 21260716,
+        "dose_multiplier": 2,
+        "known_correct_answered": {
+          "by_source": {
+            "popqa": {
+              "n": 54,
+              "rate": {
+                "n": 54,
+                "rate": 0.0,
+                "successes": 0,
+                "wilson_ci_95": [
+                  0.0,
+                  0.0664135880908964
+                ]
+              }
+            },
+            "triviaqa": {
+              "n": 280,
+              "rate": {
+                "n": 280,
+                "rate": 0.0035714285714285713,
+                "successes": 1,
+                "wilson_ci_95": [
+                  0.0006307232802881257,
+                  0.01994928235019393
+                ]
+              }
+            }
+          },
+          "n": 334,
+          "refused_final": {
+            "n": 334,
+            "n_uncovered": 0,
+            "rate": 0.0029940119760479044,
+            "successes": 1,
+            "wilson_ci_95": [
+              0.0005287122877524648,
+              0.016761820499682663
+            ]
+          }
+        },
+        "lift_over_baseline": 0.001100917431192644,
+        "secondary_tolerance": {
+          "calibration_certified_wide_baseline": 0.164,
+          "envelope_points": 8.0,
+          "family_id": "llama32_3b_instruct",
+          "gates": false,
+          "inside_envelope": true,
+          "random_lift_points": 0.1100917431192644
+        }
+      },
+      {
+        "confab": {
+          "by_source": {},
+          "n": 250,
+          "refused_final": {
+            "n": 250,
+            "n_uncovered": 0,
+            "rate": 0.188,
+            "successes": 47,
+            "wilson_ci_95": [
+              0.1444258093511374,
+              0.24101736953401998
+            ]
+          }
+        },
+        "direction_seed": 21260718,
+        "dose_multiplier": 4,
+        "known_correct_answered": {
+          "by_source": {
+            "popqa": {
+              "n": 54,
+              "rate": {
+                "n": 54,
+                "rate": 0.0,
+                "successes": 0,
+                "wilson_ci_95": [
+                  0.0,
+                  0.0664135880908964
+                ]
+              }
+            },
+            "triviaqa": {
+              "n": 280,
+              "rate": {
+                "n": 280,
+                "rate": 0.0,
+                "successes": 0,
+                "wilson_ci_95": [
+                  8.673617379884035e-19,
+                  0.013533818620629409
+                ]
+              }
+            }
+          },
+          "n": 334,
+          "refused_final": {
+            "n": 334,
+            "n_uncovered": 0,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.011370596237961843
+            ]
+          }
+        },
+        "lift_over_baseline": 0.009100917431192651,
+        "secondary_tolerance": {
+          "calibration_certified_wide_baseline": 0.164,
+          "envelope_points": 8.0,
+          "family_id": "llama32_3b_instruct",
+          "gates": false,
+          "inside_envelope": true,
+          "random_lift_points": 0.9100917431192651
+        }
+      },
+      {
+        "confab": {
+          "by_source": {},
+          "n": 250,
+          "refused_final": {
+            "n": 250,
+            "n_uncovered": 0,
+            "rate": 0.148,
+            "successes": 37,
+            "wilson_ci_95": [
+              0.10931982398325646,
+              0.1973340188615365
+            ]
+          }
+        },
+        "direction_seed": 21260720,
+        "dose_multiplier": 6,
+        "known_correct_answered": {
+          "by_source": {
+            "popqa": {
+              "n": 54,
+              "rate": {
+                "n": 54,
+                "rate": 0.0,
+                "successes": 0,
+                "wilson_ci_95": [
+                  0.0,
+                  0.0664135880908964
+                ]
+              }
+            },
+            "triviaqa": {
+              "n": 280,
+              "rate": {
+                "n": 280,
+                "rate": 0.014285714285714285,
+                "successes": 4,
+                "wilson_ci_95": [
+                  0.0055690880340429905,
+                  0.03614947862599701
+                ]
+              }
+            }
+          },
+          "n": 334,
+          "refused_final": {
+            "n": 334,
+            "n_uncovered": 0,
+            "rate": 0.011976047904191617,
+            "successes": 4,
+            "wilson_ci_95": [
+              0.004666837779836055,
+              0.03038350465601892
+            ]
+          }
+        },
+        "lift_over_baseline": -0.030899082568807357,
+        "secondary_tolerance": {
+          "calibration_certified_wide_baseline": 0.164,
+          "envelope_points": 8.0,
+          "family_id": "llama32_3b_instruct",
+          "gates": false,
+          "inside_envelope": true,
+          "random_lift_points": -3.0899082568807357
+        }
+      },
+      {
+        "confab": {
+          "by_source": {},
+          "n": 250,
+          "refused_final": {
+            "n": 250,
+            "n_uncovered": 0,
+            "rate": 0.18,
+            "successes": 45,
+            "wilson_ci_95": [
+              0.13733343230144174,
+              0.23235187937564278
+            ]
+          }
+        },
+        "direction_seed": 21260722,
+        "dose_multiplier": 8,
+        "known_correct_answered": {
+          "by_source": {
+            "popqa": {
+              "n": 54,
+              "rate": {
+                "n": 54,
+                "rate": 0.05555555555555555,
+                "successes": 3,
+                "wilson_ci_95": [
+                  0.0190732684546909,
+                  0.15107214318166143
+                ]
+              }
+            },
+            "triviaqa": {
+              "n": 280,
+              "rate": {
+                "n": 280,
+                "rate": 0.014285714285714285,
+                "successes": 4,
+                "wilson_ci_95": [
+                  0.0055690880340429905,
+                  0.03614947862599701
+                ]
+              }
+            }
+          },
+          "n": 334,
+          "refused_final": {
+            "n": 334,
+            "n_uncovered": 0,
+            "rate": 0.020958083832335328,
+            "successes": 7,
+            "wilson_ci_95": [
+              0.01018838099998488,
+              0.04262177108428994
+            ]
+          }
+        },
+        "lift_over_baseline": 0.001100917431192644,
+        "secondary_tolerance": {
+          "calibration_certified_wide_baseline": 0.164,
+          "envelope_points": 8.0,
+          "family_id": "llama32_3b_instruct",
+          "gates": false,
+          "inside_envelope": true,
+          "random_lift_points": 0.1100917431192644
+        }
+      },
+      {
+        "confab": {
+          "by_source": {},
+          "n": 250,
+          "refused_final": {
+            "n": 250,
+            "n_uncovered": 0,
+            "rate": 0.18,
+            "successes": 45,
+            "wilson_ci_95": [
+              0.13733343230144174,
+              0.23235187937564278
+            ]
+          }
+        },
+        "direction_seed": 21260726,
+        "dose_multiplier": 12,
+        "known_correct_answered": {
+          "by_source": {
+            "popqa": {
+              "n": 54,
+              "rate": {
+                "n": 54,
+                "rate": 0.07407407407407407,
+                "successes": 4,
+                "wilson_ci_95": [
+                  0.02918152776550481,
+                  0.1755411583859995
+                ]
+              }
+            },
+            "triviaqa": {
+              "n": 280,
+              "rate": {
+                "n": 280,
+                "rate": 0.014285714285714285,
+                "successes": 4,
+                "wilson_ci_95": [
+                  0.0055690880340429905,
+                  0.03614947862599701
+                ]
+              }
+            }
+          },
+          "n": 334,
+          "refused_final": {
+            "n": 334,
+            "n_uncovered": 0,
+            "rate": 0.023952095808383235,
+            "successes": 8,
+            "wilson_ci_95": [
+              0.012185804575784165,
+              0.046544284057963944
+            ]
+          }
+        },
+        "lift_over_baseline": 0.001100917431192644,
+        "secondary_tolerance": {
+          "calibration_certified_wide_baseline": 0.164,
+          "envelope_points": 8.0,
+          "family_id": "llama32_3b_instruct",
+          "gates": false,
+          "inside_envelope": true,
+          "random_lift_points": 0.1100917431192644
+        }
+      },
+      {
+        "confab": {
+          "by_source": {},
+          "n": 250,
+          "refused_final": {
+            "n": 250,
+            "n_uncovered": 0,
+            "rate": 0.188,
+            "successes": 47,
+            "wilson_ci_95": [
+              0.1444258093511374,
+              0.24101736953401998
+            ]
+          }
+        },
+        "direction_seed": 21260730,
+        "dose_multiplier": 16,
+        "known_correct_answered": {
+          "by_source": {
+            "popqa": {
+              "n": 54,
+              "rate": {
+                "n": 54,
+                "rate": 0.14814814814814814,
+                "successes": 8,
+                "wilson_ci_95": [
+                  0.07703063137605341,
+                  0.26600115283605885
+                ]
+              }
+            },
+            "triviaqa": {
+              "n": 280,
+              "rate": {
+                "n": 280,
+                "rate": 0.017857142857142856,
+                "successes": 5,
+                "wilson_ci_95": [
+                  0.007651017654096145,
+                  0.0411137360157965
+                ]
+              }
+            }
+          },
+          "n": 334,
+          "refused_final": {
+            "n": 334,
+            "n_uncovered": 0,
+            "rate": 0.038922155688622756,
+            "successes": 13,
+            "wilson_ci_95": [
+              0.02288511525558541,
+              0.0654446561255291
+            ]
+          }
+        },
+        "lift_over_baseline": 0.009100917431192651,
+        "secondary_tolerance": {
+          "calibration_certified_wide_baseline": 0.164,
+          "envelope_points": 8.0,
+          "family_id": "llama32_3b_instruct",
+          "gates": false,
+          "inside_envelope": true,
+          "random_lift_points": 0.9100917431192651
+        }
+      },
+      {
+        "confab": {
+          "by_source": {},
+          "n": 250,
+          "refused_final": {
+            "n": 250,
+            "n_uncovered": 0,
+            "rate": 0.264,
+            "successes": 66,
+            "wilson_ci_95": [
+              0.2132279591407553,
+              0.32191495822109456
+            ]
+          }
+        },
+        "direction_seed": 21260734,
+        "dose_multiplier": 20,
+        "known_correct_answered": {
+          "by_source": {
+            "popqa": {
+              "n": 54,
+              "rate": {
+                "n": 54,
+                "rate": 0.05555555555555555,
+                "successes": 3,
+                "wilson_ci_95": [
+                  0.0190732684546909,
+                  0.15107214318166143
+                ]
+              }
+            },
+            "triviaqa": {
+              "n": 280,
+              "rate": {
+                "n": 280,
+                "rate": 0.060714285714285714,
+                "successes": 17,
+                "wilson_ci_95": [
+                  0.038249060730398105,
+                  0.09506993705772632
+                ]
+              }
+            }
+          },
+          "n": 334,
+          "refused_final": {
+            "n": 334,
+            "n_uncovered": 0,
+            "rate": 0.059880239520958084,
+            "successes": 20,
+            "wilson_ci_95": [
+              0.03909421214516738,
+              0.09067511508226013
+            ]
+          }
+        },
+        "lift_over_baseline": 0.08510091743119266,
+        "secondary_tolerance": {
+          "calibration_certified_wide_baseline": 0.164,
+          "envelope_points": 8.0,
+          "family_id": "llama32_3b_instruct",
+          "gates": false,
+          "inside_envelope": false,
+          "random_lift_points": 8.510091743119267
+        }
+      }
+    ],
+    "family": "llama",
+    "gates": "NONE (descriptive rider cell, no promotion gate per AMENDMENT.md)",
+    "layer": 20
+  },
+  "mistral": {
+    "baseline_confab_full_population": {
+      "n": 1312,
+      "refused_final": {
+        "n": 1312,
+        "n_uncovered": 0,
+        "rate": 0.2858231707317073,
+        "successes": 375,
+        "wilson_ci_95": [
+          0.262028737705843,
+          0.3108681365850118
+        ]
+      }
+    },
+    "dose_response": [
+      {
+        "confab": {
+          "by_source": {},
+          "n": 250,
+          "refused_final": {
+            "n": 250,
+            "n_uncovered": 0,
+            "rate": 0.268,
+            "successes": 67,
+            "wilson_ci_95": [
+              0.21691132145905745,
+              0.32611052950682884
+            ]
+          }
+        },
+        "direction_seed": 20260716,
+        "dose_multiplier": 2,
+        "known_correct_answered": {
+          "by_source": {
+            "popqa": {
+              "n": 86,
+              "rate": {
+                "n": 86,
+                "rate": 0.03488372093023256,
+                "successes": 3,
+                "wilson_ci_95": [
+                  0.01193379807740838,
+                  0.09760871102560764
+                ]
+              }
+            },
+            "triviaqa": {
+              "n": 296,
+              "rate": {
+                "n": 296,
+                "rate": 0.013513513513513514,
+                "successes": 4,
+                "wilson_ci_95": [
+                  0.005267354609202348,
+                  0.03422504536533001
+                ]
+              }
+            }
+          },
+          "n": 382,
+          "refused_final": {
+            "n": 382,
+            "n_uncovered": 0,
+            "rate": 0.01832460732984293,
+            "successes": 7,
+            "wilson_ci_95": [
+              0.008904171554393882,
+              0.03733621659680606
+            ]
+          }
+        },
+        "lift_over_baseline": -0.017823170731707305,
+        "secondary_tolerance": {
+          "calibration_certified_wide_baseline": 0.28,
+          "envelope_points": 8.0,
+          "family_id": "mistral7b_instruct_v03",
+          "gates": false,
+          "inside_envelope": true,
+          "random_lift_points": -1.7823170731707305
+        }
+      },
+      {
+        "confab": {
+          "by_source": {},
+          "n": 250,
+          "refused_final": {
+            "n": 250,
+            "n_uncovered": 0,
+            "rate": 0.328,
+            "successes": 82,
+            "wilson_ci_95": [
+              0.2727894639149596,
+              0.3884163911114733
+            ]
+          }
+        },
+        "direction_seed": 20260718,
+        "dose_multiplier": 4,
+        "known_correct_answered": {
+          "by_source": {
+            "popqa": {
+              "n": 86,
+              "rate": {
+                "n": 86,
+                "rate": 0.046511627906976744,
+                "successes": 4,
+                "wilson_ci_95": [
+                  0.01823396823832083,
+                  0.1135699781371198
+                ]
+              }
+            },
+            "triviaqa": {
+              "n": 296,
+              "rate": {
+                "n": 296,
+                "rate": 0.013513513513513514,
+                "successes": 4,
+                "wilson_ci_95": [
+                  0.005267354609202348,
+                  0.03422504536533001
+                ]
+              }
+            }
+          },
+          "n": 382,
+          "refused_final": {
+            "n": 382,
+            "n_uncovered": 0,
+            "rate": 0.020942408376963352,
+            "successes": 8,
+            "wilson_ci_95": [
+              0.010649211365961295,
+              0.04077465293659082
+            ]
+          }
+        },
+        "lift_over_baseline": 0.04217682926829269,
+        "secondary_tolerance": {
+          "calibration_certified_wide_baseline": 0.28,
+          "envelope_points": 8.0,
+          "family_id": "mistral7b_instruct_v03",
+          "gates": false,
+          "inside_envelope": true,
+          "random_lift_points": 4.217682926829269
+        }
+      },
+      {
+        "confab": {
+          "by_source": {},
+          "n": 250,
+          "refused_final": {
+            "n": 250,
+            "n_uncovered": 0,
+            "rate": 0.288,
+            "successes": 72,
+            "wilson_ci_95": [
+              0.23540981157275126,
+              0.34700670741331713
+            ]
+          }
+        },
+        "direction_seed": 20260720,
+        "dose_multiplier": 6,
+        "known_correct_answered": {
+          "by_source": {
+            "popqa": {
+              "n": 86,
+              "rate": {
+                "n": 86,
+                "rate": 0.023255813953488372,
+                "successes": 2,
+                "wilson_ci_95": [
+                  0.0064009262042708515,
+                  0.08088014562632057
+                ]
+              }
+            },
+            "triviaqa": {
+              "n": 296,
+              "rate": {
+                "n": 296,
+                "rate": 0.02027027027027027,
+                "successes": 6,
+                "wilson_ci_95": [
+                  0.009322358060511956,
+                  0.04351042524770746
+                ]
+              }
+            }
+          },
+          "n": 382,
+          "refused_final": {
+            "n": 382,
+            "n_uncovered": 0,
+            "rate": 0.020942408376963352,
+            "successes": 8,
+            "wilson_ci_95": [
+              0.010649211365961295,
+              0.04077465293659082
+            ]
+          }
+        },
+        "lift_over_baseline": 0.002176829268292657,
+        "secondary_tolerance": {
+          "calibration_certified_wide_baseline": 0.28,
+          "envelope_points": 8.0,
+          "family_id": "mistral7b_instruct_v03",
+          "gates": false,
+          "inside_envelope": true,
+          "random_lift_points": 0.2176829268292657
+        }
+      },
+      {
+        "confab": {
+          "by_source": {},
+          "n": 250,
+          "refused_final": {
+            "n": 250,
+            "n_uncovered": 0,
+            "rate": 0.264,
+            "successes": 66,
+            "wilson_ci_95": [
+              0.2132279591407553,
+              0.32191495822109456
+            ]
+          }
+        },
+        "direction_seed": 20260722,
+        "dose_multiplier": 8,
+        "known_correct_answered": {
+          "by_source": {
+            "popqa": {
+              "n": 86,
+              "rate": {
+                "n": 86,
+                "rate": 0.13953488372093023,
+                "successes": 12,
+                "wilson_ci_95": [
+                  0.08165847155571476,
+                  0.22823697299912266
+                ]
+              }
+            },
+            "triviaqa": {
+              "n": 296,
+              "rate": {
+                "n": 296,
+                "rate": 0.013513513513513514,
+                "successes": 4,
+                "wilson_ci_95": [
+                  0.005267354609202348,
+                  0.03422504536533001
+                ]
+              }
+            }
+          },
+          "n": 382,
+          "refused_final": {
+            "n": 382,
+            "n_uncovered": 0,
+            "rate": 0.041884816753926704,
+            "successes": 16,
+            "wilson_ci_95": [
+              0.02594354025003146,
+              0.06694813326333807
+            ]
+          }
+        },
+        "lift_over_baseline": -0.02182317073170731,
+        "secondary_tolerance": {
+          "calibration_certified_wide_baseline": 0.28,
+          "envelope_points": 8.0,
+          "family_id": "mistral7b_instruct_v03",
+          "gates": false,
+          "inside_envelope": true,
+          "random_lift_points": -2.182317073170731
+        }
+      },
+      {
+        "confab": {
+          "by_source": {},
+          "n": 250,
+          "refused_final": {
+            "n": 250,
+            "n_uncovered": 0,
+            "rate": 0.248,
+            "successes": 62,
+            "wilson_ci_95": [
+              0.19855156651487427,
+              0.3050756164308297
+            ]
+          }
+        },
+        "direction_seed": 20260726,
+        "dose_multiplier": 12,
+        "known_correct_answered": {
+          "by_source": {
+            "popqa": {
+              "n": 86,
+              "rate": {
+                "n": 86,
+                "rate": 0.0,
+                "successes": 0,
+                "wilson_ci_95": [
+                  0.0,
+                  0.042758197285742226
+                ]
+              }
+            },
+            "triviaqa": {
+              "n": 296,
+              "rate": {
+                "n": 296,
+                "rate": 0.0,
+                "successes": 0,
+                "wilson_ci_95": [
+                  0.0,
+                  0.012811633307158257
+                ]
+              }
+            }
+          },
+          "n": 382,
+          "refused_final": {
+            "n": 382,
+            "n_uncovered": 0,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.009956055091734722
+            ]
+          }
+        },
+        "lift_over_baseline": -0.03782317073170732,
+        "secondary_tolerance": {
+          "calibration_certified_wide_baseline": 0.28,
+          "envelope_points": 8.0,
+          "family_id": "mistral7b_instruct_v03",
+          "gates": false,
+          "inside_envelope": true,
+          "random_lift_points": -3.7823170731707325
+        }
+      },
+      {
+        "confab": {
+          "by_source": {},
+          "n": 250,
+          "refused_final": {
+            "n": 250,
+            "n_uncovered": 0,
+            "rate": 0.3,
+            "successes": 75,
+            "wilson_ci_95": [
+              0.2465717791163956,
+              0.3594815406817822
+            ]
+          }
+        },
+        "direction_seed": 20260730,
+        "dose_multiplier": 16,
+        "known_correct_answered": {
+          "by_source": {
+            "popqa": {
+              "n": 86,
+              "rate": {
+                "n": 86,
+                "rate": 0.023255813953488372,
+                "successes": 2,
+                "wilson_ci_95": [
+                  0.0064009262042708515,
+                  0.08088014562632057
+                ]
+              }
+            },
+            "triviaqa": {
+              "n": 296,
+              "rate": {
+                "n": 296,
+                "rate": 0.016891891891891893,
+                "successes": 5,
+                "wilson_ci_95": [
+                  0.007236239007100655,
+                  0.03892635263427524
+                ]
+              }
+            }
+          },
+          "n": 382,
+          "refused_final": {
+            "n": 382,
+            "n_uncovered": 0,
+            "rate": 0.01832460732984293,
+            "successes": 7,
+            "wilson_ci_95": [
+              0.008904171554393882,
+              0.03733621659680606
+            ]
+          }
+        },
+        "lift_over_baseline": 0.014176829268292668,
+        "secondary_tolerance": {
+          "calibration_certified_wide_baseline": 0.28,
+          "envelope_points": 8.0,
+          "family_id": "mistral7b_instruct_v03",
+          "gates": false,
+          "inside_envelope": true,
+          "random_lift_points": 1.4176829268292668
+        }
+      },
+      {
+        "confab": {
+          "by_source": {},
+          "n": 250,
+          "refused_final": {
+            "n": 250,
+            "n_uncovered": 0,
+            "rate": 0.268,
+            "successes": 67,
+            "wilson_ci_95": [
+              0.21691132145905745,
+              0.32611052950682884
+            ]
+          }
+        },
+        "direction_seed": 20260734,
+        "dose_multiplier": 20,
+        "known_correct_answered": {
+          "by_source": {
+            "popqa": {
+              "n": 86,
+              "rate": {
+                "n": 86,
+                "rate": 0.1511627906976744,
+                "successes": 13,
+                "wilson_ci_95": [
+                  0.09052122983132334,
+                  0.24163565199593867
+                ]
+              }
+            },
+            "triviaqa": {
+              "n": 296,
+              "rate": {
+                "n": 296,
+                "rate": 0.033783783783783786,
+                "successes": 10,
+                "wilson_ci_95": [
+                  0.018452324934225522,
+                  0.061061225041368
+                ]
+              }
+            }
+          },
+          "n": 382,
+          "refused_final": {
+            "n": 382,
+            "n_uncovered": 0,
+            "rate": 0.060209424083769635,
+            "successes": 23,
+            "wilson_ci_95": [
+              0.04045238936134255,
+              0.08872361721149219
+            ]
+          }
+        },
+        "lift_over_baseline": -0.017823170731707305,
+        "secondary_tolerance": {
+          "calibration_certified_wide_baseline": 0.28,
+          "envelope_points": 8.0,
+          "family_id": "mistral7b_instruct_v03",
+          "gates": false,
+          "inside_envelope": true,
+          "random_lift_points": -1.7823170731707305
+        }
+      }
+    ],
+    "family": "mistral",
+    "gates": "NONE (descriptive rider cell, no promotion gate per AMENDMENT.md)",
+    "layer": 16
+  }
+}

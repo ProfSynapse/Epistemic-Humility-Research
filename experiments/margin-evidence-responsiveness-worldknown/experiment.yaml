@@ -1,0 +1,98 @@
+slug: margin-evidence-responsiveness-worldknown
+title: 'Evidence-responsiveness on world-known QA: the M4 rebase (M4-WK)'
+type: steer-cell
+status: null-result
+registered: true
+created_at: '2026-07-17T21:04:21Z'
+question: On Qwen/Qwen3.5-4B, does the KUQ-fit c_hat known-unknown direction (TRANSFER)
+  satisfy earnability criterion (d) on a WORLD-KNOWN error class? That is, on confident-wrong-on-answerable
+  PopQA rows, does supplying the true answer in-context both collapse the c_hat projection
+  (toward the correct/refused regime) and lengthen the commitment margin, specifically
+  for the true answer over a category-matched false-answer placebo? A world-known
+  c_hat refit natively is run as a secondary two-channel dissociation reading.
+prediction: 'On the TRANSFER direction, supplying the true answer in-context both
+  collapses the c_hat projection on confab rows (paired median shift toward the correct/refused
+  regime at or above the re-derived floor, and larger than the false-answer placebo)
+  and lengthens their margins (true-answer survival at each row''s own world-known
+  tipping dose exceeds the placebo, CI excluding zero): qwen earns criterion (d) for
+  the named KUQ direction. [Predictor calls registered in the scoreboard at sign.]'
+falsifier: 'With all gates valid AND the transfer direction firing at baseline (baseline
+  confab-vs-correct AUROC >= 0.70 on the test subset, BLOCKER B1), at least one channel
+  on the TRANSFER direction fails its floor: the projection does not collapse toward
+  the correct/refused regime specifically for the true answer (D1 fails), or the margin
+  does not lengthen for the true answer over the placebo (D2 fails). Only then is
+  criterion (d) not earned on the named KUQ direction; a single-channel pass is reported
+  as a channel dissociation. If instead the transfer direction does not fire at baseline
+  (AUROC < 0.70), the criterion (d) test is voided and lifted to PI, not scored as
+  a (d)-not-earned failure. The native two-channel result is reported separately and
+  never changes this verdict.'
+checkpoint:
+  repo: Qwen/Qwen3.5-4B
+  revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules: []
+  pins:
+    cell.yaml: d43fdc2a5ff369173e9bf7825ec3b70d3d39caebe79ec5b91815ce67a7931486
+    gates.yaml: cd78e84a95eb777f0bcee73c2cfee57c071628dc7a49112be88e3385c8985909
+  repins:
+  - file: cell.yaml
+    old_sha256: da2338fb4b7f83ce8d4f4ef7f76385846c2f08c0f6cbb5157abe26daf7ac7584
+    new_sha256: ca7126f101e5a5b391fa1e5017ced26e065c71b532f97deac4ce07cf0b27cd2f
+    date: '2026-07-18T10:49:46Z'
+    reason: 'Native direction fit realized: froze sha256/snap_standardization{mu_c,sigma_c}/reference_dose_abs
+      for directions.native from native_fit.py''s fit output (fit-split n=640: confab
+      400 + known_correct_answered 240, disjoint unknown_refused 180). Numeric frozen
+      BEFORE any true/false channel-1 or channel-2 contrast is computed, per the no-goalpost
+      self-blinding rule; only the numeric was undetermined at sign, the formula (RE_DERIVED
+      per direction, 8x sigma_c reference dose) was locked at sign.'
+  - file: gates.yaml
+    old_sha256: 9670fd0eed99a880c07a7e9adeeca67069c618931791cfc9188fe8f3c55f2fdd
+    new_sha256: 671873c5c96d602594794e75b6753ebdf18e686b2683fdf438280866c07eabc9
+    date: '2026-07-18T11:31:41Z'
+    reason: 'Freeze native collapse_floor_z = 0.5 x realized native no_answer_baseline
+      gap_z (0.8209213240458088 = 0.5 x 1.6418426480916175), the MOMENT the fresh
+      baseline gap was measured for native (channel-1 capture, commit 3de5a30d), BEFORE
+      any true_answer/false_answer shift is computed for native (self-blinding preserved).
+      Transfer''s collapse floor is NOT frozen: transfer''s primary criterion (d)
+      test is VOID per BLOCKER B1 (baseline AUROC 0.3018 < 0.70 floor), PI decision,
+      void-and-lift.'
+  - file: cell.yaml
+    old_sha256: ca7126f101e5a5b391fa1e5017ced26e065c71b532f97deac4ce07cf0b27cd2f
+    new_sha256: d43fdc2a5ff369173e9bf7825ec3b70d3d39caebe79ec5b91815ce67a7931486
+    date: '2026-07-18T15:15:15Z'
+    reason: 'Ladder bracketing failure realized: native channel-2 ladder rebuild (10
+      rungs, [0.0625..4.0]x reference_dose_abs) left 349/400 (87.25%) confab rows
+      right-censored at the 4.0x top rung; only 51/400 had a genuine non-right-censored
+      tipping dose, far short of the ~308 anchor. Per cell.yaml channel2_margin.ladder_rebuild.bracketing_requirement
+      (report, do not silently right-censor a resolvable row; re-derivation reserved
+      for lead adjudication), this was reported and NOT resolved unilaterally. PI
+      approved re-derivation option (b) 2026-07-18: extend the multiplier list with
+      [6.0, 8.0, 12.0, 16.0] (original 10 rungs unchanged). Extension chosen BEFORE
+      any survival contrast was computed (self-blinding preserved); no d2_absolute_floor
+      has been frozen yet and none is frozen by this repin.'
+  - file: gates.yaml
+    old_sha256: 671873c5c96d602594794e75b6753ebdf18e686b2683fdf438280866c07eabc9
+    new_sha256: cd78e84a95eb777f0bcee73c2cfee57c071628dc7a49112be88e3385c8985909
+    date: '2026-07-18T17:35:55Z'
+    reason: 'Freeze native d2_absolute_floor at realized n_margin_eligible=51: formula
+      1.96*sqrt(0.25/51)=0.13722492664818098. Rungs >=3.0x ruled instrument-invalid
+      (lead+PI 2026-07-18, total generation collapse; all 51 tips at <=2.0x). Frozen
+      BEFORE any survival contrast is computed. transfer not frozen (void, BLOCKER
+      B1).'
+inputs:
+- experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
+- datasets/popqa/test.jsonl
+verdict: 'Criterion (d) not licensed for any direction on the world-known error class:
+  the named KUQ direction does not fire there (primary test void, out of domain; population
+  reversal), the native refit shows only a weak evidence-specific, sub-floor, behaviorally-inert
+  projection response ((d) not earned; margin channel instrument-void), so the mentalistic
+  doubt name remains unearned; direction reads as unanswerability recognition plus
+  a separate weak evidence-registration.'
+kg:
+- experiment:margin-evidence-responsiveness-worldknown
+- mechanism:kuq-fit-direction-reverses-on-world-known-confident-wrongness
+- mechanism:confident-wrongness-steering-hits-coherence-ceiling-before-refusal
+- mechanism:evidence-registration-exists-without-driving-behavior-worldknown

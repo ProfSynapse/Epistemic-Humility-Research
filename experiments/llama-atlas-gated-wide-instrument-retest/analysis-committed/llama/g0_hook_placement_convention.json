@@ -1,0 +1,17 @@
+{
+  "candidate_layers": [
+    20,
+    22,
+    23,
+    26
+  ],
+  "convention": "hs_index_h_is_output_of_decoder_block_h; hook_block = h - 1",
+  "decoder_blocks": [
+    19,
+    21,
+    22,
+    25
+  ],
+  "n_decoder_layers": 28,
+  "passed": true
+}

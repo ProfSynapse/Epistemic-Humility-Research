@@ -42,7 +42,7 @@ import sys
 import time
 from pathlib import Path
 
-PROBE_DIR = Path("/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe")
+PROBE_DIR = Path("/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe")
 EVAL_DIR = PROBE_DIR.parent / "eval"
 for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
@@ -50,11 +50,11 @@ for p in (str(PROBE_DIR), str(EVAL_DIR)):
 
 MODEL_NAME = "unsloth/Qwen3-4B"
 AH_A0_ROWS = Path(
-    "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/"
+    "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/"
     "analysis/ah_main/gen_A0/rows.jsonl"
 )
 AK_STAGE1_POOL = Path(
-    "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/"
+    "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/"
     "analysis/ak_stage1/ak_stage1_pool.jsonl"
 )
 

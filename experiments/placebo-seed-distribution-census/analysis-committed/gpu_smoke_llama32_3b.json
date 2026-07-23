@@ -1,0 +1,202 @@
+{
+  "family": "llama32_3b",
+  "layer_hs_index": 20,
+  "model": "unsloth/Llama-3.2-3B-Instruct",
+  "n_rows": 8,
+  "peak_rss_mb": 7280.16015625,
+  "peak_vram_mb": 6368.6201171875,
+  "revision": "006f5dcd1393c3add266de40994ba96225e9689d",
+  "sc1_ledger": {
+    "n_accepted": 2,
+    "n_voids": 3
+  },
+  "seeds_used": [
+    43000017,
+    43000019
+  ],
+  "setpoint_dose_abs": 13.51434840261836,
+  "smokes": {
+    "real_steer_plus_readback": {
+      "passed": false,
+      "readback_checks": [
+        {
+          "abs_delta": 0.014680368315474368,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.499668034302886,
+          "seed": 43000017,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.01432211216788204,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.500026290450478,
+          "seed": 43000017,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.017001148043071623,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.497347254575288,
+          "seed": 43000017,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.015190083925425313,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.499158318692935,
+          "seed": 43000017,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.015455242107144329,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.498893160511216,
+          "seed": 43000017,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.012191038563194923,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.502157364055165,
+          "seed": 43000017,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.01393443242604775,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.500413970192312,
+          "seed": 43000017,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.015277234676339901,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.49907116794202,
+          "seed": 43000017,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.015042863013967178,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.499305539604393,
+          "seed": 43000019,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.01696056310802163,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.497387839510338,
+          "seed": 43000019,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.01459221242011921,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.49975619019824,
+          "seed": 43000019,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.014645904359802842,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.499702498258557,
+          "seed": 43000019,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.01622688257966587,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.498121520038694,
+          "seed": 43000019,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.015263724649138055,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.499084677969222,
+          "seed": 43000019,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.015534782228222355,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.498813620390138,
+          "seed": 43000019,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        },
+        {
+          "abs_delta": 0.014538259113486163,
+          "family": "llama32_3b",
+          "passed": false,
+          "readback_measured": 13.499810143504874,
+          "seed": 43000019,
+          "target": 13.51434840261836,
+          "tolerance": 0.01
+        }
+      ]
+    },
+    "runlog_persistence_schema": {
+      "all_smoke_rows_in_done_keys": true,
+      "n_rows_in_log": 8,
+      "no_new_lines_appended_on_resume_call": true,
+      "passed": true,
+      "schema_mismatches": [],
+      "schema_passed": true
+    },
+    "sequential_vs_batch_parity": {
+      "mismatches": [
+        {
+          "batched_text_len": 344,
+          "index": 3,
+          "row_key": "kuq_unknowns_all:1018",
+          "sequential_text_len": 352
+        },
+        {
+          "batched_text_len": 115,
+          "index": 5,
+          "row_key": "kuq_unknowns_all:1045",
+          "sequential_text_len": 117
+        },
+        {
+          "batched_text_len": 213,
+          "index": 7,
+          "row_key": "kuq_unknowns_all:1052",
+          "sequential_text_len": 328
+        }
+      ],
+      "n_mismatches": 3,
+      "n_rows": 8,
+      "passed": false
+    }
+  }
+}

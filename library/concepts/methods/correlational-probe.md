@@ -28,5 +28,5 @@ relationships:
 
 A correlational probe reads information from activations without by itself
 showing that the readout causally controls model behavior. This node makes the
-Phase 3 Tier 1 to Tier 2 distinction queryable in the KG.
+mechanism program Tier 1 to Tier 2 distinction queryable in the KG.
 

@@ -56,17 +56,19 @@ inputs:
 - experiments/j-space-localization-qwen3-4b/AMENDMENT.md
 - experiments/j-space-localization-qwen3-4b/NOTEBOOK.md
 - experiments/doubt-gated-caution-tighten/AMENDMENT.md
-- experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md
-# CONSUMED doubt-snap artifacts (sign-time revision 2026-07-23): recorded in
-# each families/<slug>.yaml `reuse.doubt_snap` block (committed_dir + pinned
-# sha256) and in AMENDMENT.md "Consumed doubt-snap artifacts", NOT here,
-# because these paths live on `main` and are not present on this
-# 677-commits-behind branch yet (see AMENDMENT.md "Open questions at sign" #0:
-# the branch must be updated with main before this experiment can materialize
-# its reuse). The `inputs` list is existence-checked by `bin/exp validate`, so
-# not-yet-present cross-branch paths cannot be listed here without failing it:
-#   experiments/doubt-snap-cross-family-confirmatory/ (AMENDMENT + analysis-committed/{llama32_3b_instruct,mistral7b_instruct_v03,qwen35_4b,gemma4_e4b_it}/)
-#   experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md
-#   experiments/qwen35-4b-midband-heldout/AMENDMENT.md
+# Amendment Z (migrated from experiment/protocol/ to the experiments-first tree
+# on main; path fixed when this branch merged main 2026-07-23):
+- experiments/cross-family-confirmatory/AMENDMENT.md
+# CONSUMED doubt-snap artifacts (sign-time revision 2026-07-23; now present
+# after the merge of main). Reused pool/split + frozen late-site direction/gate,
+# hash-pinned per family in families/<slug>.yaml `reuse.doubt_snap`; see
+# AMENDMENT.md "Consumed doubt-snap artifacts".
+- experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md
+- experiments/doubt-snap-cross-family-confirmatory/analysis-committed/llama32_3b_instruct
+- experiments/doubt-snap-cross-family-confirmatory/analysis-committed/mistral7b_instruct_v03
+- experiments/doubt-snap-cross-family-confirmatory/analysis-committed/qwen35_4b
+- experiments/doubt-snap-cross-family-confirmatory/analysis-committed/gemma4_e4b_it
+- experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md
+- experiments/qwen35-4b-midband-heldout/AMENDMENT.md
 verdict: ''
 kg: []

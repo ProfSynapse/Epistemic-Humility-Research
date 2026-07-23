@@ -22,7 +22,7 @@ For reusable fixed panels, put row keys in a text file and reference it:
 runner_overrides:
   selection:
     probe_results: null
-    row_keys_file: experiment/phase1/probe/config/example_fixed_row_keys.txt
+    row_keys_file: archive/experiment/phase1/probe/config/example_fixed_row_keys.txt
 ```
 
 Use one row key per line. Blank lines and `#` comments are allowed. Keep these
@@ -35,8 +35,8 @@ For behavior-cell replay panels from an existing behavior-labeled rows file,
 use the checked-in builder instead of copying row keys from terminal output:
 
 ```bash
-python experiment/phase1/probe/phase3_behavior_panel_row_keys.py \
-  --config experiment/phase1/probe/config/example_behavior_panel_row_keys.yaml
+python experiments/common/mechinterp/behavior_panel_row_keys.py \
+  --config archive/experiment/phase1/probe/config/example_behavior_panel_row_keys.yaml
 ```
 
 The builder selects deterministic row-key quotas by `behavior_cell`, applies
@@ -50,8 +50,8 @@ extraction slice does not. For SelfAware full-eval rare-cell panels, first build
 a focused extraction-ready manifest from scored rows:
 
 ```bash
-python experiment/phase1/probe/phase3_selfaware_behavior_manifest.py \
-  --config experiment/phase1/probe/config/example_selfaware_behavior_manifest.yaml
+python experiments/common/mechinterp/selfaware_behavior_manifest.py \
+  --config archive/experiment/phase1/probe/config/example_selfaware_behavior_manifest.yaml
 ```
 
 Then point a `selection.source: selfaware_manifest` hidden-state extraction at

@@ -20,7 +20,7 @@ with verified answers and supporting evidence documents. The dataset contains
 roughly 95,000 question-answer pairs across a Web and Wikipedia domain split.
 
 **Why it matters here:** The alignment-for-honesty framework (and, by extension,
-the Phase 1 SFT-vs-DPO-vs-KTO study) uses TriviaQA as its primary evaluation
+the locked training-regimen SFT-vs-DPO-vs-KTO study) uses TriviaQA as its primary evaluation
 and training corpus: 87,622 training samples are used to construct the
 model-specific idk fine-tuning sets, and 11,313 test samples serve as the
 evaluation set for [[honesty-score]], [[prudence-score]], and

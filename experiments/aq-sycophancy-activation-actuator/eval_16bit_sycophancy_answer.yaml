@@ -1,7 +1,7 @@
 # Draft answer-sycophancy eval for AQ row-pool construction.
 #
 # The phase1 eval runner resolves `gold_path`, eval-set paths, and `results_dir`
-# relative to experiment/phase1/eval/run_eval.py, even when this config lives
+# relative to archive/experiment/phase1/eval/run_eval.py, even when this config lives
 # in the experiments-first tree.
 
 model_tag: qwen3-4b-official-bf16

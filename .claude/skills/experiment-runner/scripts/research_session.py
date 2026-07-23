@@ -38,8 +38,9 @@ VALID_KINDS = {
     "amendment",
     "infrastructure",
 }
-SESSION_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_.-]*$")
-SESSION_FILENAME_RE = re.compile(r"^\d{4} - [a-z0-9][a-z0-9-]*\.md$")
+SESSION_ID_RE = re.compile(r"^(?:[a-z0-9][a-z0-9_.-]*|\d{8}T\d{6}Z-[a-z0-9][a-z0-9_.-]*)$")
+LEGACY_SESSION_FILENAME_RE = re.compile(r"^\d{4} - [a-z0-9][a-z0-9-]*\.md$")
+TIMESTAMP_SESSION_FILENAME_RE = re.compile(r"^\d{8}T\d{6}Z-[a-z0-9][a-z0-9_.-]*\.md$")
 FRONTMATTER_RE = re.compile(r"\A---[ \t]*\r?\n(?P<body>.*?)\r?\n---(?:\r?\n|\Z)", re.S)
 
 
@@ -60,6 +61,19 @@ def slugify_title(value: str) -> str:
     return slug or "session"
 
 
+def filename_timestamp(value: str | None = None) -> str:
+    """Return a compact UTC timestamp suitable for a filename."""
+    stamp = value or now_utc()
+    match = re.match(r"^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z$", stamp)
+    if not match:
+        raise SessionError(f"timestamp must be UTC ISO-8601 like 2026-07-08T17:15:28Z: {stamp}")
+    return "".join(match.groups()[:3]) + "T" + "".join(match.groups()[3:]) + "Z"
+
+
+def default_session_id(title: str, *, timestamp: str | None = None) -> str:
+    return f"{filename_timestamp(timestamp)}-{slugify_title(title)}"
+
+
 def next_session_number(root: Path = Path(".")) -> str:
     session_dir = root / SESSION_ROOT
     highest = 0
@@ -71,9 +85,24 @@ def next_session_number(root: Path = Path(".")) -> str:
     return f"{highest + 1:04d}"
 
 
-def default_session_path(session_id: str, title: str | None = None, root: Path = Path(".")) -> Path:
-    filename_title = slugify_title(title or session_id)
-    return root / SESSION_ROOT / f"{next_session_number(root)} - {filename_title}.md"
+def default_session_path(
+    session_id: str,
+    title: str | None = None,
+    root: Path = Path("."),
+    *,
+    filename_mode: str = "timestamp",
+    timestamp: str | None = None,
+) -> Path:
+    if filename_mode == "timestamp":
+        if TIMESTAMP_SESSION_FILENAME_RE.match(f"{session_id}.md"):
+            filename_stem = session_id
+        else:
+            filename_stem = f"{filename_timestamp(timestamp)}-{session_id}"
+        return root / SESSION_ROOT / f"{filename_stem}.md"
+    if filename_mode == "numbered":
+        filename_title = slugify_title(title or session_id)
+        return root / SESSION_ROOT / f"{next_session_number(root)} - {filename_title}.md"
+    raise SessionError("filename_mode must be 'timestamp' or 'numbered'")
 
 
 def split_frontmatter(text: str) -> tuple[dict[str, Any], str]:
@@ -150,13 +179,16 @@ def create_session(
     session_id: str,
     title: str,
     question: str,
-    phase: str = "",
+    track: str = "",
     status: str = "active",
     tags: list[str] | None = None,
     overwrite: bool = False,
 ) -> dict[str, Any]:
     if not SESSION_ID_RE.match(session_id):
-        raise SessionError("session_id must be lowercase alnum plus '.', '_', or '-'")
+        raise SessionError(
+            "session_id must be lowercase alnum plus '.', '_', or '-' "
+            "or a generated YYYYMMDDTHHMMSSZ-<title-slug> id"
+        )
     if status not in VALID_STATUS:
         raise SessionError(f"invalid status {status!r}; expected one of {sorted(VALID_STATUS)}")
     if path.exists() and not overwrite:
@@ -169,17 +201,18 @@ def create_session(
         "status": status,
         "created_at": timestamp,
         "updated_at": timestamp,
-        "phase": phase,
         "question": question,
         "tags": normalize_list(tags),
         "run_ids": [],
         "trajectory": {
-            "anchor": "experiment/protocol/research-trajectory.md",
+            "anchor": "docs/research-trajectory.md",
             "current_position": "",
             "changed_by_session": "",
         },
         "checkpoints": [],
     }
+    if track:
+        data["track"] = track
     write_session(path, data, render_initial_body(data))
     return data
 
@@ -237,11 +270,24 @@ def validate_session(data: dict[str, Any], *, path: Path | None = None) -> list[
     location = f"{path}: " if path else ""
     if data.get("schema_version") != SCHEMA_VERSION:
         errors.append(f"{location}schema_version must be {SCHEMA_VERSION!r}")
-    if path is not None and path.parent.name == "sessions" and not SESSION_FILENAME_RE.match(path.name):
-        errors.append(f"{location}filename must match '0001 - session-title.md'")
+    if (
+        path is not None
+        and path.parent.name == "sessions"
+        and not (
+            LEGACY_SESSION_FILENAME_RE.match(path.name)
+            or TIMESTAMP_SESSION_FILENAME_RE.match(path.name)
+        )
+    ):
+        errors.append(
+            f"{location}filename must match 'YYYYMMDDTHHMMSSZ-session-id.md' "
+            "or legacy '0001 - session-title.md'"
+        )
     session_id = data.get("session_id")
     if not isinstance(session_id, str) or not SESSION_ID_RE.match(session_id):
-        errors.append(f"{location}session_id must be lowercase alnum plus '.', '_', or '-'")
+        errors.append(
+            f"{location}session_id must be lowercase alnum plus '.', '_', or '-' "
+            "or a generated YYYYMMDDTHHMMSSZ-<title-slug> id"
+        )
     if not data.get("title"):
         errors.append(f"{location}title is required")
     if data.get("status") not in VALID_STATUS:
@@ -295,9 +341,20 @@ def iter_session_files(path: Path) -> list[Path]:
 
 def validate_path(path: Path) -> list[str]:
     errors: list[str] = []
-    for session_file in iter_session_files(path):
+    files = iter_session_files(path)
+    seen_session_ids: dict[str, Path] = {}
+    for session_file in files:
         data, _ = load_session(session_file)
         errors.extend(validate_session(data, path=session_file))
+        session_id = data.get("session_id")
+        if isinstance(session_id, str) and session_id:
+            previous = seen_session_ids.get(session_id)
+            if previous is not None:
+                errors.append(
+                    f"{session_file}: session_id {session_id!r} duplicates {previous}"
+                )
+            else:
+                seen_session_ids[session_id] = session_file
     return errors
 
 
@@ -306,13 +363,22 @@ def _parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     init = sub.add_parser("init", help="Create a new research session note.")
-    init.add_argument("--session-id", required=True)
+    init.add_argument(
+        "--session-id",
+        help="Durable session id. Defaults to YYYYMMDDTHHMMSSZ-<title-slug>.",
+    )
     init.add_argument("--title", required=True)
     init.add_argument("--question", required=True)
-    init.add_argument("--phase", default="")
+    init.add_argument("--track", default="", help="Research track label for this session.")
     init.add_argument("--status", choices=sorted(VALID_STATUS), default="active")
     init.add_argument("--tag", action="append", default=[])
-    init.add_argument("--path", help="Output path. Defaults to docs/sessions/0001 - <title>.md.")
+    init.add_argument(
+        "--filename-mode",
+        choices=["timestamp", "numbered"],
+        default="timestamp",
+        help="Default output filename style when --path is omitted (default: timestamp).",
+    )
+    init.add_argument("--path", help="Output path. Defaults to docs/sessions/<generated-session-id>.md.")
     init.add_argument("--overwrite", action="store_true")
 
     checkpoint = sub.add_parser("checkpoint", help="Append a checkpoint to a session.")
@@ -337,13 +403,18 @@ def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
         if args.cmd == "init":
-            path = Path(args.path) if args.path else default_session_path(args.session_id, args.title)
+            session_id = args.session_id or default_session_id(args.title)
+            path = Path(args.path) if args.path else default_session_path(
+                session_id,
+                args.title,
+                filename_mode=args.filename_mode,
+            )
             data = create_session(
                 path,
-                session_id=args.session_id,
+                session_id=session_id,
                 title=args.title,
                 question=args.question,
-                phase=args.phase,
+                track=args.track,
                 status=args.status,
                 tags=args.tag,
                 overwrite=args.overwrite,

@@ -45,7 +45,7 @@ aggregate "Truthful rate" sums Ik-Ik and Ik-Idk and serves as the primary
 evaluation criterion.
 
 **Why it matters here:** The quadrant decomposition disentangles over-refusal
-from under-refusal, which is exactly the precision-recall tension the Phase 1
+from under-refusal, which is exactly the precision-recall tension the locked training-regimen
 experiment probes when comparing SFT, DPO, and KTO on abstention.
 
 **Lineage:** proposed in [[2401.13275--can-ai-assistants-know-what-they-dont-know]];

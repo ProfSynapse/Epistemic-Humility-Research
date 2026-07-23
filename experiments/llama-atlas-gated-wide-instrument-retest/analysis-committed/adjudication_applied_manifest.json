@@ -1,0 +1,95 @@
+{
+  "cell": "llama_wide_retest",
+  "experiment_voided": false,
+  "n_applied_rows": 20948,
+  "pooled_clear_positive": {
+    "clear_positive_agreement_pooled": 0.8914285714285715,
+    "clear_positive_correct_pooled": 156,
+    "clear_positive_total_pooled": 175,
+    "gated": false,
+    "n_shards": 8,
+    "note": "reported only; this cell's gates.yaml has no pooled clear-positive gate"
+  },
+  "shards": {
+    "llama_wide_retest_shard_00": {
+      "attempt": 1,
+      "clear_negative_agreement": 0.9812206572769953,
+      "clear_negative_total": 213,
+      "clear_positive_agreement": 0.7272727272727273,
+      "clear_positive_total": 22,
+      "passed": true,
+      "shard_id": "llama_wide_retest_shard_00",
+      "status": "PASS"
+    },
+    "llama_wide_retest_shard_01": {
+      "attempt": 1,
+      "clear_negative_agreement": 1.0,
+      "clear_negative_total": 213,
+      "clear_positive_agreement": 0.8181818181818182,
+      "clear_positive_total": 22,
+      "passed": true,
+      "shard_id": "llama_wide_retest_shard_01",
+      "status": "PASS"
+    },
+    "llama_wide_retest_shard_02": {
+      "attempt": 1,
+      "clear_negative_agreement": 1.0,
+      "clear_negative_total": 213,
+      "clear_positive_agreement": 0.9545454545454546,
+      "clear_positive_total": 22,
+      "passed": true,
+      "shard_id": "llama_wide_retest_shard_02",
+      "status": "PASS"
+    },
+    "llama_wide_retest_shard_03": {
+      "attempt": 1,
+      "clear_negative_agreement": 1.0,
+      "clear_negative_total": 212,
+      "clear_positive_agreement": 0.9090909090909091,
+      "clear_positive_total": 22,
+      "passed": true,
+      "shard_id": "llama_wide_retest_shard_03",
+      "status": "PASS"
+    },
+    "llama_wide_retest_shard_04": {
+      "attempt": 1,
+      "clear_negative_agreement": 1.0,
+      "clear_negative_total": 212,
+      "clear_positive_agreement": 0.9090909090909091,
+      "clear_positive_total": 22,
+      "passed": true,
+      "shard_id": "llama_wide_retest_shard_04",
+      "status": "PASS"
+    },
+    "llama_wide_retest_shard_05": {
+      "attempt": 1,
+      "clear_negative_agreement": 1.0,
+      "clear_negative_total": 212,
+      "clear_positive_agreement": 0.8636363636363636,
+      "clear_positive_total": 22,
+      "passed": true,
+      "shard_id": "llama_wide_retest_shard_05",
+      "status": "PASS"
+    },
+    "llama_wide_retest_shard_06": {
+      "attempt": 1,
+      "clear_negative_agreement": 1.0,
+      "clear_negative_total": 212,
+      "clear_positive_agreement": 1.0,
+      "clear_positive_total": 22,
+      "passed": true,
+      "shard_id": "llama_wide_retest_shard_06",
+      "status": "PASS"
+    },
+    "llama_wide_retest_shard_07": {
+      "attempt": 1,
+      "clear_negative_agreement": 1.0,
+      "clear_negative_total": 212,
+      "clear_positive_agreement": 0.9523809523809523,
+      "clear_positive_total": 21,
+      "passed": true,
+      "shard_id": "llama_wide_retest_shard_07",
+      "status": "PASS"
+    }
+  }
+}

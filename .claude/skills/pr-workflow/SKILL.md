@@ -24,7 +24,7 @@ files, before committing housekeeping docs, and before merging PRs.
 | Artifact | Flow |
 |----------|------|
 | Session notes, `TODO.md`, `docs/ideas/`, backlog edits | Commit directly to `main` |
-| Amendments, `experiment*/` code, `experiment/protocol/` docs, `experiments/<slug>/` | One branch = one PR = MERGED before the next amendment branches |
+| Amendments, `experiment*/` code, `docs/protocols/` docs, `experiments/<slug>/` | One dedicated git worktree under `/home/profsynapse/code/ehr-worktrees/<slug>` on its own branch off up-to-date `main` = one PR. Amendments proceed in parallel, each in its own worktree; never stack a second amendment on another amendment's branch or worktree, and never push amendment evidence directly to `main` |
 | `synaptic-tuner/` submodule | Its own branch + PR, generic/experiment-agnostic only |
 | Skills (`.skills/` + generated mirrors) | Reusable infra: sync workflow, then branch + PR (NOT direct-to-main; skills are not housekeeping docs) |
 | Dataset / pool / question-text / eval-row text | NEVER committed (public repo). Stage to the PRIVATE HF dataset repo `professorsynapse/eh-al-prep-staging`; fetch at runtime. See "Datasets are never committed" below |
@@ -38,7 +38,7 @@ This is a PUBLIC repository. Dataset content, pools, question text, and eval-row
 text are NEVER committed. Committing question text publicly is a hard-to-reverse
 redistribution: pools are gitignored, some derive from a NO-LICENSE FalseQA
 source, and the PRIVATE staging repo is the belt-and-suspenders redistribution
-boundary (see the `experiment/phase1/probe/cloud/upload_folder.py` docstring).
+boundary (see the `experiments/common/cloud/upload_folder.py` docstring).
 
 Source data is staged to the PRIVATE HF dataset repo
 `professorsynapse/eh-al-prep-staging` (`repo_type="dataset"`, private), following
@@ -46,8 +46,8 @@ the AK/AP/AM/AL pattern:
 
 ```python
 # upload (from the cloud/Modal side)
-#   experiment/phase1/probe/cloud/upload_folder.py   # whole extraction dir
-#   experiment/phase1/probe/cloud/upload_result.py   # small result/manifest/rows
+#   experiments/common/cloud/upload_folder.py   # whole extraction dir
+#   experiments/common/cloud/upload_result.py   # small result/manifest/rows
 
 # fetch at runtime
 from huggingface_hub import hf_hub_download

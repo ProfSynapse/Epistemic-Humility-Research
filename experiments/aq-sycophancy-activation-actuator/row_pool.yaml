@@ -9,7 +9,7 @@ source:
   eval_family: sycophancy_answer
   benchmark: SycophancyEval answer rows
   benchmark_path: datasets/sycophancy-eval/answer.jsonl
-  scored_results_dir: experiment/phase1/eval/results_aq_sycophancy_answer_16bit
+  scored_results_dir: archive/experiment/phase1/eval/results_aq_sycophancy_answer_16bit
   manifest_builder: experiments/aq-sycophancy-activation-actuator/build_aq_row_pool.py
   source_eval_config: experiments/aq-sycophancy-activation-actuator/eval_16bit_sycophancy_answer.yaml
 

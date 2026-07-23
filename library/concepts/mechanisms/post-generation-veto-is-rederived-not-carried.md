@@ -47,7 +47,8 @@ relationships:
   confidence: high
 ---
 
-Session-0037 veto-transport analysis (analysis/mi_veto_transport_20260704/, TODO
+Session-0037 veto-transport analysis
+(experiments/commitment-point/analysis-committed/veto-transport/, TODO
 item 31), CPU-only on the cached Amendment S/T/U/W extraction tensors. Answerability
 behaves as a carried question property (it rides through generation almost
 untouched) while correctness/trust behaves as a computed answer property. Same-row

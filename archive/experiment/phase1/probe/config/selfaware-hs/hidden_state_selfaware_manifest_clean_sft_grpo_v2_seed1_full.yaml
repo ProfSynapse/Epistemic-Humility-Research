@@ -1,0 +1,44 @@
+# mechinterp dedicated SelfAware frozen-manifest hidden-state extraction, full run.
+#
+# Current JSON-output response-confidence clean SFT->GRPO v2 row. This extracts
+# the GRPO adapter over the clean SFT merged base so h_base is the schema SFT
+# model and delta isolates the reward-shaped GRPO surface.
+
+model:
+  model_tag: qwen3-4b-clean-sft-grpo-v2-seed1-selfaware
+  # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit @ ac361232c001af0ed5b0386b06dafc35d5cd31ea
+  model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+  revision: null
+  enable_thinking: false
+
+extraction:
+  layer_list: null
+  token_position_rule: final_prompt_token
+  compute_dtype: bfloat16
+  persist_dtype: float32
+  persistence_format: safetensors
+  device: cuda
+  persist_delta: true
+
+arms:
+  - name: clean_sft_merged_seed1_base
+    adapter_state: disabled
+    adapter: null
+  - name: clean_sft_grpo_v2_seed1
+    adapter_state: active
+    adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+
+eval_arms_source: null
+
+selection:
+  source: selfaware_manifest
+  manifest: experiments/common/artifacts/row_manifests/selfaware/mechinterp_selfaware_frozen_row_manifest.json
+
+output:
+  hidden_states_subdir: hidden_states_selfaware_clean_sft_grpo_v2_full
+  manifest_filename: manifest.json
+  rows_filename: rows.jsonl
+
+manifest_provenance:
+  aligned_run_record_id: schema_clean_sft_grpo_v2_seed1_full
+  source_split: mechinterp-selfaware-frozen-row-manifest/v1

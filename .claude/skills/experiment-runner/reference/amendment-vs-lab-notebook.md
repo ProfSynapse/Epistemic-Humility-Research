@@ -69,11 +69,43 @@ separates science from rifling. Corollary: **do not move the goalposts** —
 redefining a gate after seeing the result voids the test. If a result is
 ambiguous, report it as ambiguous; do not retune the gate to manufacture a pass.
 
+## Pre-sign feasibility probe: every arm must be constructible from real data
+
+Before signing an amendment, confirm that every arm it defines can actually be
+built from data that exists. This matters most when the amendment introduces a
+NEW arm that injects or consumes a field the reused pipeline never touched: a
+gold answer, an alias, a distractor donor, a per-row label. Check that the field
+EXISTS and is non-empty on the actual test population (the committed id list),
+not merely somewhere under `datasets/`. Record the check in the NOTEBOOK before
+sign: field name, source path, row count, and coverage on the test-population
+ids.
+
+This is a feasibility/coverage probe, not a headline quantity, so it is allowed
+and REQUIRED even under a self-blinding rule. Self-blinding forbids computing the
+RESULT before sign (the shift, AUROC, survival, effect); it does not forbid
+confirming the arm can be built. Reading a self-blinding rule as "do not look at
+the data at all" is how a design gets signed against a population that cannot
+support it.
+
+Worked failure (M4, `margin-evidence-responsiveness`): the amendment defined a
+`true_answer` arm ("supply the gold answer in-context") plus a category-matched
+`false_answer` arm, with the primary test on 400 confab rows. Those rows are all
+KUQ world-unknown questions, whose source dataset carries no answer field at all;
+by construction the questions have no canonical answer. The design derivation
+reproduced the reused instrument's median and AUROC exactly but never touched the
+new arms' answer text (self-blinding kept it away from row content), so the gap
+survived both sign and a full pre-sign red-team and surfaced only when the build
+harness went to inject answers that did not exist. Distinguish **world-unknown**
+(no answer exists for anyone) from **model-unknown** (an answer exists, the model
+lacks it): an evidence-injection or "supply the true answer" arm is well-posed
+only on the model-unknown case.
+
 ## Where a tier-2 amendment lives
 
 Amendments use the experiments-first layout. Do not hand-author a file under
-`experiment/protocol/`; that tree is retained for the locked Phase 1 protocol and
-its historical amendments only. For a new amendment:
+`experiment/protocol/`; legacy amendment records live under `experiments/<slug>/`,
+and cross-cutting protocol docs live under `docs/protocols/`. For a new
+amendment:
 
 1. `bin/exp new <slug> --type <t>` scaffolds `experiments/<slug>/` with an
    `AMENDMENT.md` template (Motivation, Design, Prediction, Falsifier, Gates,

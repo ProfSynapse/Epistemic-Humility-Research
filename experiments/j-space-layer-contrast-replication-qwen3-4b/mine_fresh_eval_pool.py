@@ -34,7 +34,7 @@ ANALYSIS = HERE / "analysis"
 COMMITTED = HERE / "analysis-committed"
 SOURCE = HERE.parent / "j-space-midband-write-sweep-qwen3-4b"
 RENDER_DIR = HERE.parent / "common" / "renders"
-EVAL_DIR = Path("/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/eval")
+EVAL_DIR = Path("/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/eval")
 
 for p in (str(SOURCE), str(RENDER_DIR), str(EVAL_DIR)):
     if p not in sys.path:
@@ -47,7 +47,7 @@ MODEL_NAME = "unsloth/Qwen3-4B"
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 EXPANSION_CANDIDATES = (
     CANONICAL
-    / "experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl"
+    / "archive/experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl"
 )
 PREDECESSOR_SPLIT = (
     HERE.parent

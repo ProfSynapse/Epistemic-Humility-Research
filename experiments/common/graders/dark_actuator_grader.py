@@ -1,12 +1,12 @@
 """Project grader for the dark-actuator-screen tuner mechinterp steer cells.
 
 NOT the AA/AK unified harness. This is a SELF-CONTAINED equivalent of the
-refusal-detection half of `experiment/phase1/probe/steering/steering_common.py`
+refusal-detection half of `archive/experiment/phase1/probe/steering/steering_common.py`
 `grade_output` (frozen, read-only -- see steering/LEGACY.md), built so this
 screen does not need that module's heavier import-time dependencies
 (amendment_s_correctness_probe_extract, amendment_u_unified_extract dataset
 builders). The refusal-marker regexes below are IMPORTED verbatim from
-`experiment/phase1/eval/scorers.py` (`is_stated_confidence_refusal`), the same
+`archive/experiment/phase1/eval/scorers.py` (`is_stated_confidence_refusal`), the same
 Cheng-validated primitive `grade_output` calls; only the degenerate-output
 check is a local, deliberately small port of `steering_common.is_degenerate`
 (same n-gram-repeat / no-alnum / empty rule).
@@ -19,7 +19,7 @@ carry the original input row's other fields, so this grader loads the row
 POOL once at import time and looks up each row's baseline (pre-intervention)
 confab/refuse label by row_key -- the AK Stage-1 `confab_on_unanswerable`
 field, present on every row in the AK Stage-1 raw-base pool this screen reads
-(experiment/phase1/probe/dark_displacement_census.py Surface).
+(experiments/dark-actuator-screen/dark_displacement_census.py surface).
 
 The pool path is resolved from the DARK_ACTUATOR_ROWS_POOL env var if set,
 else the default cell.yaml `surface.rows_path`
@@ -37,7 +37,7 @@ from pathlib import Path
 from typing import Optional
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-EVAL_DIR = REPO_ROOT / "experiment" / "phase1" / "eval"
+EVAL_DIR = REPO_ROOT / "archive" / "experiment" / "phase1" / "eval"
 if str(EVAL_DIR) not in sys.path:
     sys.path.insert(0, str(EVAL_DIR))
 

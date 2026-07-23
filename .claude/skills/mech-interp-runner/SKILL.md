@@ -1,21 +1,22 @@
 ---
 name: mech-interp-runner
-description: Run, plan, validate, or aggregate Epistemic-Humility local Phase 3 mechanistic-interpretability sweeps, including hidden-state candidate inventories, causal-pilot sweep planning, explicit non-GPU/GPU gates, base-original skip handling, and offline result aggregation. Use when working on local mech-interp sweeps, causal-pilot diagnostics, activation-addition/logit-diagnostic runs, behavior-axis scans, SAE feature screens, or future reruns of the Phase 3 full candidate inventory.
+description: Run, plan, validate, or aggregate Epistemic-Humility local mechanistic-interpretability sweeps, including hidden-state candidate inventories, causal-pilot sweep planning, explicit non-GPU/GPU gates, base-original skip handling, and offline result aggregation. Use when working on local mech-interp sweeps, causal-pilot diagnostics, activation-addition/logit-diagnostic runs, behavior-axis scans, SAE feature screens, or future reruns of the legacy full candidate inventory.
 allowed-tools: Read, Bash, Write, Grep, Glob
 ---
 
 # Mech-Interp Runner
 
-> This skill drives the **frozen** bespoke Phase 3 machinery (see
-> `experiment/phase1/probe/steering/LEGACY.md`). It mints NO new cells. To author
+> This skill drives the **frozen** bespoke local mech-interp machinery (see
+> `archive/experiment/phase1/probe/steering/LEGACY.md`). It mints NO new cells. To author
 > a NEW steering / extraction / probe-fit / gate-scoring cell, use the
 > `mechinterp-cells` skill (tuner-backed `mechinterp` verbs), not this one.
 
 Use the checked-in scripts and configs to plan, gate, run, and aggregate local
-Phase 3 mech-interp work. Do not hand-roll terminal loops. This `SKILL.md` is a
+mech-interp work. Do not hand-roll terminal loops. This `SKILL.md` is a
 progressive-disclosure router: it carries the invariants and routing only.
 Procedural detail lives in `references/`, and current results live in
-`docs/sessions/` and `experiment/notes/` — never inline run history here.
+`docs/sessions/` and experiment-local docs under `experiments/<slug>/` - never
+inline run history here.
 
 ## Start Here
 
@@ -35,6 +36,7 @@ Always choose the narrowest reference needed for the task:
 | Test answer-sycophancy / helpfulness pressure across regimens | [references/sycophancy-probe-path.md](references/sycophancy-probe-path.md) |
 | Test whether a read-side finding generalizes to a second known/unknown dataset | [references/cross-dataset-transfer.md](references/cross-dataset-transfer.md) |
 | Test WHEN an axis fires vs the decision token (pre-commitment vs decision-echo, read-only) | [references/read-trajectory-timing.md](references/read-trajectory-timing.md) |
+| Select a backend for a legacy rerun without breaking parity | [../experiment-runner/reference/batched-generation.md](../experiment-runner/reference/batched-generation.md) |
 
 Do not preload all references. Read only the file needed for the current
 operation, then follow any further routing inside it.
@@ -49,15 +51,15 @@ Windows console encoding failures.
 
 | Task | Command |
 |------|---------|
-| Discover subcommands | `python .skills/mech-interp-runner/scripts/phase3_cli.py --help` |
-| Quick non-GPU validation | `python .skills/mech-interp-runner/scripts/phase3_cli.py validate --quick` |
-| Behavior-axis scan | `python .skills/mech-interp-runner/scripts/phase3_cli.py behavior-axis-scan --config <cfg>` |
-| Causal sweep (plan/materialize) | `python .skills/mech-interp-runner/scripts/phase3_cli.py causal-sweep --config <cfg> --mode-filter logit_diagnostic --write-plan --materialize-configs` |
-| Sycophancy generation analysis | `python .skills/mech-interp-runner/scripts/phase3_cli.py sycophancy-generation-analysis --generations <jsonl> --output-root <dir>` |
-| Cross-dataset panel (step 1) | `python .skills/mech-interp-runner/scripts/phase3_cli.py xdataset-build-panel --source <jsonl> --dataset <id> --out-dir <dir> --n-known 600 --n-unknown 400` |
-| Cross-dataset behavior rows (step 3) | `python .skills/mech-interp-runner/scripts/phase3_cli.py xdataset-behavior --generation <rows.jsonl> --panel-rows <gen_rows.jsonl> --out-dir <dir>` |
-| Residual caution direction (read-trajectory step 1) | `python .skills/mech-interp-runner/scripts/phase3_cli.py residual-caution-direction --extraction-dir <ext> --behavior-rows <rows.jsonl> --layer 35 --out <dir>/caution_direction_L35.json` |
-| Read-trajectory re-analysis (GPU-free) | `python .skills/mech-interp-runner/scripts/phase3_cli.py residual-read-trajectory-analysis --rows <rows.jsonl> --out <analysis.json>` |
+| Discover subcommands | `python .skills/mech-interp-runner/scripts/mechinterp_cli.py --help` |
+| Quick non-GPU validation | `python .skills/mech-interp-runner/scripts/mechinterp_cli.py validate --quick` |
+| Behavior-axis scan | `python .skills/mech-interp-runner/scripts/mechinterp_cli.py behavior-axis-scan --config <cfg>` |
+| Causal sweep (plan/materialize) | `python .skills/mech-interp-runner/scripts/mechinterp_cli.py causal-sweep --config <cfg> --mode-filter logit_diagnostic --write-plan --materialize-configs` |
+| Sycophancy generation analysis | `python .skills/mech-interp-runner/scripts/mechinterp_cli.py sycophancy-generation-analysis --generations <jsonl> --output-root <dir>` |
+| Cross-dataset panel (step 1) | `python .skills/mech-interp-runner/scripts/mechinterp_cli.py xdataset-build-panel --source <jsonl> --dataset <id> --out-dir <dir> --n-known 600 --n-unknown 400` |
+| Cross-dataset behavior rows (step 3) | `python .skills/mech-interp-runner/scripts/mechinterp_cli.py xdataset-behavior --generation <rows.jsonl> --panel-rows <gen_rows.jsonl> --out-dir <dir>` |
+| Residual caution direction (read-trajectory step 1) | `python .skills/mech-interp-runner/scripts/mechinterp_cli.py residual-caution-direction --extraction-dir <ext> --behavior-rows <rows.jsonl> --layer 35 --out <dir>/caution_direction_L35.json` |
+| Read-trajectory re-analysis (GPU-free) | `python .skills/mech-interp-runner/scripts/mechinterp_cli.py residual-read-trajectory-analysis --rows <rows.jsonl> --out <analysis.json>` |
 
 Use `--dry-run` on any subcommand to print the delegated command before running
 it. For live Docker/GPU execution the same approval rule applies: do not pass
@@ -80,7 +82,10 @@ it. For live Docker/GPU execution the same approval rule applies: do not pass
   `h_base` is the SFT-merged pre-adapter model, not original Qwen base.
 - Keep generated outputs gitignored by default unless a governed publication
   decision explicitly whitelists them.
-- Stay local to this repository for Phase 3 mech-interp work. Do not use external
+- Legacy reruns keep their registered generation and capture backend. The
+  project-wide vLLM preference applies to new surfaces after the required
+  smokes and bridges; it never authorizes an engine swap inside a frozen cell.
+- Stay local to this repository for mech-interp work. Do not use external
   workflow or memory systems unless the user explicitly asks in the current turn.
 
 ## Validation
@@ -88,19 +93,19 @@ it. For live Docker/GPU execution the same approval rule applies: do not pass
 Run focused non-GPU checks after runner/config/skill edits:
 
 ```bash
-python -m pytest experiment/phase1/probe/tests/test_phase3_causal_pilot_sweep.py \
-  experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py \
-  experiment/phase1/probe/tests/test_phase3_causal_pilot_dry_run.py -q
-python -m pytest experiment/phase1/probe/tests/test_phase3_behavior_axis_scan.py \
-  experiment/phase1/probe/tests/test_phase3_behavior_axis_directions.py \
-  experiment/phase1/probe/tests/test_phase3_calibrated_expression_plane.py \
-  experiment/phase1/probe/tests/test_phase3_logit_cell_analysis.py -q
-python -m pytest experiment/phase1/probe/tests/test_phase3_sae_smoke.py \
-  experiment/phase1/probe/tests/test_phase3_sae_train.py \
-  experiment/phase1/probe/tests/test_phase3_sae_feature_analysis.py \
-  experiment/phase1/probe/tests/test_phase3_sae_feature_directions.py \
-  experiment/phase1/probe/tests/test_phase3_sae_behavior_feature_analysis.py -q
-python -m pytest .skills/mech-interp-runner/tests/test_phase3_cli.py -q
+python -m pytest experiments/common/knowledge_probe/tests/test_mechinterp_causal_pilot_sweep.py \
+  experiments/common/knowledge_probe/tests/test_mechinterp_causal_pilot_runner.py \
+  experiments/common/knowledge_probe/tests/test_mechinterp_causal_pilot_dry_run.py -q
+python -m pytest experiments/common/knowledge_probe/tests/test_mechinterp_behavior_axis_scan.py \
+  experiments/common/knowledge_probe/tests/test_mechinterp_behavior_axis_directions.py \
+  experiments/common/knowledge_probe/tests/test_mechinterp_calibrated_expression_plane.py \
+  experiments/common/knowledge_probe/tests/test_mechinterp_logit_cell_analysis.py -q
+python -m pytest experiments/common/knowledge_probe/tests/test_mechinterp_sae_smoke.py \
+  experiments/common/knowledge_probe/tests/test_mechinterp_sae_train.py \
+  experiments/common/knowledge_probe/tests/test_mechinterp_sae_feature_analysis.py \
+  experiments/common/knowledge_probe/tests/test_mechinterp_sae_feature_directions.py \
+  experiments/common/knowledge_probe/tests/test_mechinterp_sae_behavior_feature_analysis.py -q
+python -m pytest .skills/mech-interp-runner/tests/test_mechinterp_cli.py -q
 python bin/sync_skills.py --check
 ```
 
@@ -113,8 +118,8 @@ After context compaction or degraded memory:
    results if they affect the next experiment.
 3. Set up or run the current local experiment with checked-in scripts/configs.
 4. Analyze outputs against the research target (interpretation-invariants).
-5. Update session notes, experiment notes, and this skill when a durable
-   procedure or gotcha changes.
+5. Update session notes, experiment-local runbooks/plans, and this skill when a
+   durable procedure or gotcha changes.
 6. Choose the next highest-ROI local slice from the evidence and repeat.
 
 ## Skill Maintenance
@@ -126,7 +131,8 @@ Edit the canonical tree under `.skills/mech-interp-runner/` only; `.agents/` and
 - Put durable procedure and gotchas in one-level `references/*.md` files and
   link them from `Start Here`.
 - Put current findings, numeric results, and interpretation snapshots in
-  `docs/sessions/*.md` and `experiment/notes/*.md` — not in the skill.
+  `docs/sessions/*.md` and experiment-local docs under `experiments/<slug>/` -
+  not in the skill.
 - Put reusable analysis logic in checked-in scripts/configs, not prose.
 - If a section grows because of one experiment, move the details to a session or
   experiment note and leave only the general rule plus the reference path.

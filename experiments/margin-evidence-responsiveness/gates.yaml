@@ -1,0 +1,50 @@
+# Gates for margin-evidence-responsiveness (M4). DRAFT; fixed at sign.
+# Floors derived pre-sign from committed M1/M2 data (design derivation) or
+# carried as CONVENTION from M1/M2. Nothing moves after results.
+
+statistics:
+  rates: Wilson 95% CI (alpha 0.05) on every rate
+  medians_shifts_differences: bootstrap 95% CI, 10000 resamples, seed 48260721
+  resampling_unit: row indices within role groups
+  pass_fail_surface: point estimate against floor plus a CI condition where stated
+
+integrity:
+  SC0_provenance_staging:
+    - every reused artifact (c_hat direction, M1 subsample ids, M1 margin dataset, detector stack) staged with sha256 and verified against the cell.yaml pins (byte-identical)
+    - the 308-row confab_margin_eligible id list AND the false-answer distractor mapping (opaque ids only, no text) committed BEFORE any generation; eligibility recomputed from the pinned margin dataset at staging and asserted equal
+    - single-batching-regime attestation: all three arms captured/generated in one run with a pinned, recorded batch composition; the M2 baseline capture is NOT reused (recaptured fresh in-regime)
+  SC1_dose_and_preflight:
+    - channel 2 per-row readback within RELATIVE 0.005 of the commanded dose (row's own M1 tipping_dose_abs), OR within ABSOLUTE 0.005 x reference_dose_abs (M1's amended rule, verbatim)
+    - MANDATORY GPU preflight before any full pass: 8-row capture smoke + 8-row generation smoke; generate/capture refuses without a pass marker
+    - live first-batch and per-arm-completion assertions with hard abort
+  SC2_grading_integrity:
+    - channel 2 calibration slice: 100 rows stratified across the true_answer and false_answer generation arms (seed 48260723); pool sha256 + opaque-id list committed before grading; graded-file sha256 committed before unblind (enforced in code)
+    - CG1: clear-negative agreement >= 0.95; clear-positive >= 0.60; >= 25 clear-positive decoys; VOID_REGRADE_ONCE remedy
+    - detector-vs-adjudication disagreement on the slice <= 0.05 on the abstention bit; exceedance voids channel 2 for criterion use (channel 1 needs no grading and is unaffected)
+    - rationale: M1's CG1 validated detector_v2 at these doses on baseline outputs; the answer-supplied arms shift the output distribution, so a fresh slice drift-checks the detector on answer-supplied text
+  SC3_coverage:
+    - zero silent drops; every row appears in every applicable arm or is reported missing with reason
+    - channel 2 survival never imputed for a missing generation; a missing row is reported, not defaulted
+    - the 400/308/360 population partition asserted at analysis time against the pre-committed id lists
+  S1_baseline_reproduction:                        # pre-sign red-team M2 + m3
+    - channel 1: fresh in-regime no_answer_baseline confab-projection median reproduces M2's committed 3.000505444683542 within 0.10 z before leg 1 is read; exceedance halts and lifts to PI (the 0.5 x gap floor loses meaning if the fresh baseline drifts)
+    - channel 2: no_answer_baseline survival at each row's own M1 tipping dose is measured; if it exceeds 0.05 (the M1b ~4% batch-composition noise, rounded up) the M1 doses do not reproduce in M4's regime and channel 2 is voided / lifted to PI, not scored
+    - on_failure: halt, report straight, lift to PI; never a silent retry
+
+criteria:
+  D1_projection_collapse:                        # channel 1, confab rows
+    leg_1_position_into_gap:
+      rule: median over confab rows of (no_answer_baseline_z - true_answer_z) >= collapse_floor_z
+      collapse_floor_z: 0.9741885346591197       # LOCKED at 0.5 x baseline gap_median 1.9483770693182394; the 0.25/0.75/1.0 candidates are NOT retained as fallbacks (pre-sign red-team m6: exactly one fraction is the registered bar)
+    leg_2_specificity:
+      rule: paired bootstrap 95% CI of (true_answer shift - false_answer shift) over confab rows excludes zero, true_answer shift the larger
+    both_legs_required: true
+  D2_margin_lengthening:                          # channel 2, 308 eligible confab rows
+    rule: paired rate difference (true_answer survival - false_answer survival) bootstrap 95% CI excludes zero AND point estimate >= absolute_floor
+    absolute_floor: 0.056                          # LOCKED: normal-approx (Wald) 95% half-width 1.96*sqrt(0.25/308)=0.0558 at worst-case p=0.5, n=308, rounded to 0.056 (unpaired anchor; the paired design has strictly smaller variance). Not a Wilson interval (true Wilson at n=308 is 0.0555; both round to 0.056). red-team m4.
+  criterion_d_earned: D1 AND D2 both pass
+  criterion_d_not_earned: either D1 or D2 fails its floor; a single-channel pass is reported as a channel dissociation, never rounded to a binary
+  C1_construct_integrity:
+    known_control_specificity: the known-row projection shift is reported; a known-row leg-1 shift as large as the confab leg-1 shift would indicate the collapse is not specific to rows that needed the evidence (reported as a construct caveat, not a silent pass)
+    single_regime_required: SC0 batching attestation must hold; a mixed-regime capture voids the paired comparison
+    on_failure: instrument void, no criterion (d) verdict, reported straight
