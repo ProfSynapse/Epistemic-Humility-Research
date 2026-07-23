@@ -1,23 +1,22 @@
 slug: j-space-cross-family-layer-contrast
 type: steer-cell
-status: draft
+status: signed
 registered: true
-question: Does useful, selective J-space mid-band actuation (calibrated mid-band
-  gated caution snap achieving held-out confab clean_tighten above a floor at low
-  known-correct cost) generalize across model families, or is it specific to Qwen3
-  lineage?
+question: Does useful, selective J-space mid-band actuation (calibrated mid-band gated
+  caution snap achieving held-out confab clean_tighten above a floor at low known-correct
+  cost) generalize across model families, or is it specific to Qwen3 lineage?
 prediction: For at least 3 of the families that run past G0, that family's own best
-  calibrated mid-band write site clears BOTH primary gates on held-out -- confab
-  clean_tighten at or above the G1 floor (>=0.50, Wilson lower >0.40) AND
-  known-correct not_well_formed_correct cost at or below the G2 cap (<=0.05,
-  Wilson upper <0.10; both adjudicated lead+user 2026-07-23). The frozen
-  late-reference arm is a non-gating descriptive
-  comparator, expected weak or dead per doubt-snap-cross-family-confirmatory.
+  calibrated mid-band write site clears BOTH primary gates on held-out -- confab clean_tighten
+  at or above the G1 floor (>=0.50, Wilson lower >0.40) AND known-correct not_well_formed_correct
+  cost at or below the G2 cap (<=0.05, Wilson upper <0.10; both adjudicated lead+user
+  2026-07-23). The frozen late-reference arm is a non-gating descriptive comparator,
+  expected weak or dead per doubt-snap-cross-family-confirmatory.
 falsifier: If at most 1 of the families that run past G0 clears both primary gates,
   mid-band actuation is Qwen-lineage-specific or an artifact - FALSIFIED. If exactly
   2 clear both, the result is MIXED and no claim is promoted.
 checkpoint:
-  repo: cross-family (4 checkpoints; see families/*.yaml and AMENDMENT.md "Family table")
+  repo: cross-family (4 checkpoints; see families/*.yaml and AMENDMENT.md "Family
+    table")
   revision: raw-base bf16 instruct, no adapter, no 4-bit quantization, no task training,
     per family
 instrument:
@@ -46,16 +45,6 @@ instrument:
   - run_contrast.py
   - cross_family_rollup.py
   persistence:
-    # <family> is a per-family path segment (families run one at a time); the
-    # checkpoint_path shows the convention, the real path substitutes the slug.
-    # Kill-resume drill: extract_anchor.py and calibrate_dose.py flush+resume
-    # were CPU-tested with a mocked model this session (partial->resume skips
-    # done work, full-resume loads no model, --fresh restarts); run_contrast.py
-    # rides the tuner RunLog; the rest are per-item/per-layer writers or timed
-    # short single-shots. short-run seconds are freshly measured smokes.
-    #
-    # Import-only libraries (never run standalone; no run loop): timed by their
-    # cold import / self-check smoke.
     family_config.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.023
@@ -74,9 +63,6 @@ instrument:
     pipeline.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 1.236
-    # CPU single-shot writers: buffer in memory, write once, but finish in well
-    # under a second at representative sizes -- losing the whole run to a kill is
-    # an acceptable risk (measured this session).
     materialize_reused_rows.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.07
@@ -89,8 +75,6 @@ instrument:
     cross_family_rollup.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.001
-    # GPU-long / per-item / per-layer writers: incremental, resumable from their
-    # own on-disk checkpoint (never declared short-run to dodge the gate).
     mine_eval_pool.py:
       persistence: incremental
       checkpoint_path: experiments/j-space-cross-family-layer-contrast/analysis/<family>/pool_generations.jsonl
@@ -109,7 +93,29 @@ instrument:
     build_directions.py:
       persistence: incremental
       checkpoint_path: experiments/j-space-cross-family-layer-contrast/analysis-committed/<family>/layers/
-  pins: {}
+  pins:
+    cell.yaml: be93520fc9a1c3ce14f4c8fe94f177e253fd0cd9357bc9ed9474b49fb253d306
+    gates.yaml: f220d45d4bd2447b21bbbe125de03adff3bbc0495cc8e0c956438c8093ec0406
+    families/llama-3.2-3b.yaml: 457a019e9a69f55226cc00ed533453196c97451c0fdf31ea47cd9691e9ee64bf
+    families/mistral-7b-v03.yaml: db3d5645748fb20af5510c5b39b6f2a4ad8d4eaa3e9c46f11600fe90dd437c7c
+    families/qwen35-4b.yaml: d726633f7e7c2cd387aed3fd61763beaf5a6ca144c7cc0cc0d5f0ddbfad5ea33
+    families/gemma4-e4b.yaml: 5ffc121302f28e5655a9d0ccdd5acb043c099b4e38663232bdf742848c6199f2
+    family_config.py: 9da242fee0450e5beedea3ad73fc3cfae6312efcbd86ca446813b342547b31b3
+    model_lib.py: b5e7239f0ba25ce42e7df624e0706d421beaba23bbff9bc2dd421f55ee2681ce
+    gen_lib.py: d2ad45da8ac021a1aec250048ba604c7969e60cbd422927f9883cf3c8a8817a7
+    grader.py: 35dfbaf9d4932471c1da43087b03e5c81921af2c998ce167e7fceb1539fb48b5
+    scorers.py: 1b3eda5d8d68c9184674f092805278505c5cd2065a21ffe7ec348e9ea5a00c37
+    materialize_reused_rows.py: 0e18237650492b7b1597ef8fb6e56f1d813314f2407eaca1329f1bb5ab5c53b5
+    mine_eval_pool.py: 3cc24dc80f46767e4301dbb380787a6e2ea846184617febc0f0774e725396906
+    split_fit_heldout.py: ead418c1b8b075993f0510e92c1c5ddd8fe5fcb09f27e02321efc45209173ec3
+    jlens_profile.py: 260cf29e1db4cf23b3becb82c5d54e32473be3a9e2a573bedbc66cb16536ce56
+    extract_anchor.py: 448e10fb67f48753e9ad8540ede44ea9b41b0fb283b4603bb44df7e9555e5c8d
+    build_directions.py: 833528a619ae6e0c57fbdfac4c2b5645455bf40eb0254f10cc36dbb0ec988b77
+    gate_fit.py: b4e11ccb604813dd1bf2f8a2be6db6d4808cf6df7a0634d72cef3bc6c0e12b1f
+    calibrate_dose.py: b817c12f901d33ea0510f7e6eabdc880e3a8ff21711b66effba70a1603bff5a1
+    pipeline.py: b404a152099632f59286ab6f89dc7e64ad0988fbc97202e18be5f2a35b759357
+    run_contrast.py: fc7dabd96348293b87da9e96ef3bc42ea9c3bb1776fcc7f184bbb5c6aa597456
+    cross_family_rollup.py: 918949481e7f357c2e374fb7bccf9148c456c8f98f0c500ebffbeaf0473d98c9
 inputs:
 - experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md
 - experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json
@@ -122,13 +128,7 @@ inputs:
 - experiments/j-space-localization-qwen3-4b/AMENDMENT.md
 - experiments/j-space-localization-qwen3-4b/NOTEBOOK.md
 - experiments/doubt-gated-caution-tighten/AMENDMENT.md
-# Amendment Z (migrated from experiment/protocol/ to the experiments-first tree
-# on main; path fixed when this branch merged main 2026-07-23):
 - experiments/cross-family-confirmatory/AMENDMENT.md
-# CONSUMED doubt-snap artifacts (sign-time revision 2026-07-23; now present
-# after the merge of main). Reused pool/split + frozen late-site direction/gate,
-# hash-pinned per family in families/<slug>.yaml `reuse.doubt_snap`; see
-# AMENDMENT.md "Consumed doubt-snap artifacts".
 - experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md
 - experiments/doubt-snap-cross-family-confirmatory/analysis-committed/llama32_3b_instruct
 - experiments/doubt-snap-cross-family-confirmatory/analysis-committed/mistral7b_instruct_v03

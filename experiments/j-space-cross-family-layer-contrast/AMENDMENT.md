@@ -306,11 +306,11 @@ resolved late-site null), reported descriptively; it does not gate the primary.
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | |
-| user | |
+| orchestrator | SUCCESS: >=3 of the run families clear both primary gates (G1+G2). Basis: the c_hat audit in doubt-snap-cross-family-confirmatory shows the caution encoding reads in every family, and its nulls were late-site-specific; Llama is the most likely single miss. |
+| user | MIXED: exactly 2 of the run families clear both primary gates. |
 
-(Left blank at draft time; the lead fills both rows at sign time, per the
-lead's explicit instruction for this scaffold.)
+(Registered at sign time, 2026-07-23, before any GPU work for this
+experiment; neither call moves after results per the no-goalpost rule.)
 
 ## Falsifier
 
