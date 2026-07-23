@@ -36,7 +36,7 @@ column headers (`doubt` / `caution` / `raw_refusal`) are artifact keys from
 `atlas_summary.json` and keep their names verbatim under that file's usage
 rule 1. In prose, `doubt` is the known-unknown (KU, answerability) axis.
 
-## Cross-family pattern (standing summary, updated 2026-07-21)
+## Cross-family pattern (standing summary, updated 2026-07-23)
 
 Four families measured with the same instrument now show the same shape,
 and the registered interior-workspace prediction has failed in all four
@@ -80,10 +80,16 @@ winsorizing, a rank-based spectral-entropy estimator, and a 50% subsample
 guard; margin over the best interior candidate compresses 1.53x -> 1.12x
 but the peak never relocates -- see
 `experiments/gemma-4-e4b-family-atlas/analysis-committed/gemma4_e4b_it/anisotropy_control/`
-and that cell's NOTEBOOK.md, lab-notebook tier); pool-composition
-(surface-diversity) artifact UNTESTED; small-N coincidence now weaker as a
-concern with the qwen3-4b replication (4 of 4 families, resolved
-2026-07-21) but not formally tested.
+and that cell's NOTEBOOK.md, lab-notebook tier); **registered linear
+pool-composition and prompt-surface account TESTED AND SURVIVED 2026-07-23**
+on Gemma and Qwen. Cross-fitted residualization removed a measurable
+surface-predictable activation component, passed planted-signal and permutation
+controls, and left the required peaks at Gemma hs4 (0.095 depth) and Qwen hs5
+(0.139) in both full and 50% profiles. This closes the registered linear
+surface-diversity alternative, not every nonlinear raw-token surface encoding;
+see `experiments/family-atlas-surface-residualization-control/AMENDMENT.md`.
+Small-N coincidence is now weaker as a concern with the qwen3-4b replication
+(4 of 4 families, resolved 2026-07-21) but not formally tested.
 
 ## Comparability notes
 
