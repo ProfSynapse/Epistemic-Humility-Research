@@ -1,7 +1,8 @@
 # Family Atlas Surface Residualization Control
 
-Status: running (signed and PI-approved CPU analysis launched 2026-07-22;
-machine state and instrument hashes in `experiment.yaml`).
+Status: resolved 2026-07-23. The registered linear prompt-surface
+residualization control passed on both substrates; machine state and instrument
+hashes are in `experiment.yaml`.
 
 The machine state lives in `experiment.yaml`. This document pre-states the
 design and decision rules before any controlled profile is computed.
@@ -216,4 +217,45 @@ expected to exceed 15 minutes must use
 
 ## Outcome
 
-Not run.
+**RESOLVED, SURFACE-ROBUSTNESS PREDICTION PASSED.** The CPU-only run exited
+zero and wrote the positive-schema aggregate at
+`analysis-committed/aggregate_results.json` with SHA-256
+`dbc496ba8a5fb905fabd7a73a4f76252e2ce98e8b72ab5c9ea5b1a3e006bfede`.
+No model was loaded and no GPU was used. The retained private matrices,
+row-aligned out-of-fold predictions, fold state, and checkpoints remain under
+gitignored `analysis/` for later reanalysis.
+
+All registered gates G0-G5 passed for both substrates. G0 verified provenance,
+coverage, containment, and the private data exhaust. G1 reproduced the source
+profiles within the registered `1e-6` tolerance. The baseline and full-fit
+combined-residual peaks were unchanged in location:
+
+| Substrate | Baseline peak | Full residual peak | 50% stability peak |
+|---|---:|---:|---:|
+| Gemma-4-E4B-it | hs4, depth 0.095 | hs4, depth 0.095 | hs4, depth 0.095 (n=650) |
+| Qwen3-4B | hs5, depth 0.139 | hs5, depth 0.139 | hs5, depth 0.139 (n=660) |
+
+G2 established treatment strength rather than a vacuous unchanged profile.
+Gemma's maximum early combined-surface activation OOF R2 was 0.6722 against a
+20-permutation p95 of 0.2039, an excess of 0.4682. Qwen's was 0.4468 against
+0.0418, an excess of 0.4050. G3 also passed: the planted surface component
+moved the raw peak to hs2 for both substrates, then residualization restored
+the controlled peak to hs4 for Gemma and hs5 for Qwen. Maximum normalized
+deviation from the corresponding unplanted controlled profile was 0.0081 and
+0.0071, both below the registered 0.05 ceiling.
+
+G4 passed with all 20 of 20 permuted profiles early-exterior for each
+substrate and median absolute peak shift 0. G5 therefore decides the result:
+all four required controlled profiles remained at depth at most 0.20. The
+pre-stated falsifier did not fire.
+
+This rejects the registered linear prompt-surface account as an explanation
+for the early-peak location on these Gemma and Qwen populations. It does not
+exclude every nonlinear encoding of the raw token sequence, and the result
+must not be generalized beyond that stated scope. Within that scope, the final
+surface-diversity gate for paper 4 section 6.x is satisfied.
+
+Prediction scoring: Joseph Rosenbaum **WIN** and orchestrator **WIN**. Both
+pre-registered the same call that Gemma and Qwen would retain early-exterior
+peaks in the full residual and 50% stability profiles, and all four required
+profiles did so.
