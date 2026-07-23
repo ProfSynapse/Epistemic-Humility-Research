@@ -25,15 +25,17 @@ either a `full_summary.json` or a recorded NOT-RUN.
 # 1. Reuse doubt-snap's pool + FIT/HELD-OUT split (supersedes mine + split):
 python experiments/j-space-cross-family-layer-contrast/materialize_reused_rows.py --family <slug>
 #    (prints the `modal volume get` command for the private row text; re-run to normalize it)
-# 2. NEW work: mid-band localization, fit, dose calibration (mid-band candidates only):
+# 2. NEW work: mid-band localization + fit (mid-band candidates only), then dose
+#    calibration (mid-band candidates AND the reused-frozen late site -- option B):
 python experiments/j-space-cross-family-layer-contrast/jlens_profile.py --family <slug>
 python experiments/j-space-cross-family-layer-contrast/extract_anchor.py --family <slug>
 python experiments/j-space-cross-family-layer-contrast/build_directions.py --family <slug> --verify-reproducible
 python experiments/j-space-cross-family-layer-contrast/gate_fit.py --family <slug>
 python experiments/j-space-cross-family-layer-contrast/calibrate_dose.py --family <slug>
-# 3. Outcome. Primary = mid-band absolute gates. The SECONDARY late arm runs only
-#    if --late-dose is given (open question 1); without it the late arm is skipped
-#    and the primary is unaffected:
+# 3. Outcome. Primary = mid-band absolute gates. The SECONDARY late arm uses the
+#    fresh late dose from calibrate_dose.py (option B); --late-dose overrides it,
+#    and if no usable late dose was found the late arm is skipped and the primary
+#    is unaffected:
 python experiments/j-space-cross-family-layer-contrast/run_contrast.py --family <slug> --mode smoke --n-rows 8 [--late-dose D]
 # only after smoke G0 passes:
 python experiments/j-space-cross-family-layer-contrast/run_contrast.py --family <slug> --mode full --i-know-this-is-the-cross-family-run [--late-dose D]
@@ -110,24 +112,26 @@ original G3-floor decision. The remaining items 2-6 are carried from the draft.*
    check can resolve any path. All pinned sha256 were computed from `main` and
    are authoritative. See AMENDMENT.md "Open questions at sign" #0.
 
-1a. **Primary gate NUMBERS (PROPOSED).** G1 mid-band actuation floor =
-   clean_tighten >= 0.50 with Wilson lower > 0.40; G2 selectivity cap =
-   not_well_formed_correct <= 0.05 with Wilson upper < 0.10. Full derivation in
-   AMENDMENT.md "Gates -> derivation". Stricter G1 alternative offered: 0.60 /
-   0.50 (the sibling Qwen3.5-4B's own passing held-out floor). Drafter
-   recommends the conservative 0.50/0.40.
+1a. **[RESOLVED 2026-07-23, lead+user] Primary gate NUMBERS.** ADOPTED the
+   conservative option: G1 mid-band actuation floor = clean_tighten >= 0.50 with
+   Wilson lower > 0.40; G2 selectivity cap = not_well_formed_correct <= 0.05 with
+   Wilson upper < 0.10. The stricter G1 alternative (0.60 / 0.50, the sibling
+   Qwen3.5-4B's own passing held-out floor) was offered and NOT elected. Full
+   derivation in AMENDMENT.md "Gates -> derivation".
 
-1b. **Late-arm DOSE gap.** doubt-snap selected NO late-site dose for any family
-   (`selected_dose: null`; gemma has no dose sweep at all). "Reuse the frozen
-   late-site ... calibrated dose" cannot be satisfied literally. Options: (A)
-   report the late arm at each family's doubt-snap FIT peak-clean_tighten dose
-   (llama 19 / mistral 30 / qwen35-4b 40; gemma unavailable), or (B) calibrate
-   the late dose fresh here with the same ladder as the mid-band arm.
-   **Drafter recommends (B)** -- apples-to-apples, covers gemma, and the late
-   arm is non-gating so verbatim dose reuse buys nothing. The `run_contrast.py
-   --late-dose` flag (or a `reuse.doubt_snap.late_site.resolved_late_dose` YAML
-   field) resolves this; without it the late arm is skipped and the primary is
-   unaffected.
+1b. **[RESOLVED 2026-07-23, lead+user -> option (B)] Late-arm DOSE gap.**
+   doubt-snap selected NO late-site dose for any family (`selected_dose: null`;
+   gemma has no dose sweep at all), so verbatim dose reuse cannot be satisfied
+   literally. ADOPTED option (B): the late-site scalar dose is calibrated FRESH
+   here with the same `calibrate_dose.py` ladder as the mid-band arm, on the
+   reused FIT rows, for all four families (gemma included). This is a deliberate
+   deviation from verbatim reuse -- the late arm is non-gating/descriptive, so
+   verbatim dose reuse buys nothing, and a same-ladder late dose makes the
+   mid-vs-late delta fair and uniform. The frozen late-site DIRECTION/GATE stay
+   reused verbatim (hash-pinned); only the scalar dose is recalibrated.
+   `calibrate_dose.py` sweeps the late site alongside the mid-band candidates,
+   and `run_contrast.py` (`resolve_late_dose`) reads the fresh late dose from the
+   calibration summary (`--late-dose` still overrides).
 
 1c. **The former G3 late-reference floor is DROPPED.** The reframe makes the
    late arm a non-gating descriptive comparator, so the draft's per-family
@@ -263,13 +267,18 @@ original G3-floor decision. The remaining items 2-6 are carried from the draft.*
    import is deliberately lazy (`model_lib.load_run_log_class()`, called
    at the start of `run_contrast.py`'s `run_layers()`), so it fails with a
    clear message naming the required branch rather than breaking `--help`
-   or unrelated imports -- verified: `--help` still runs clean, and
-   calling it against this worktree's current submodule checkout (pinned
-   to a commit before `feature/runlog` branched) raises that exact
-   message. **Before this experiment can be signed and run for real, the
-   tuner branch `feature/runlog` must be merged and this repo's
-   `synaptic-tuner` submodule pointer bumped to include it** -- otherwise
-   `run_contrast.py` cannot run at all, in either mode. `calibrate_dose.py`
+   or unrelated imports -- verified: `--help` still runs clean.
+   **[RESOLVED 2026-07-23] After merging `main`, this repo's `synaptic-tuner`
+   submodule gitlink pin is `901dbe8` (main's pointer), and `feature/runlog`
+   (tip `8d95786`, `shared/utilities/run_log.py` +
+   `tests/shared/utilities/test_run_log.py`) is an ANCESTOR of `901dbe8`
+   (verified read-only: 0 commits on runlog not in `901dbe8`; the `run_log.py`
+   blob is present in the `901dbe8` tree; `901dbe8` is on `origin/main`). No
+   further submodule pointer bump is needed.** The only remaining step is a
+   routine `git submodule update` to materialize `901dbe8` in this worktree
+   (its submodule working tree is still checked out at the older `e4ca5d4`);
+   that is a working-tree checkout, not a pointer change, and the submodule was
+   not modified. `calibrate_dose.py`
    was deliberately left unwired: its dose ladder calls
    `pipeline.py:run_layer` repeatedly for the SAME rows under DIFFERENT
    doses, so a single per-layer run-log path would collide row keys across

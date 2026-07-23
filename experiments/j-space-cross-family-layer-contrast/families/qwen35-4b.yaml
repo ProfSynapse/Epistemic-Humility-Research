@@ -198,9 +198,10 @@ reuse:
       g0_prep_summary: {path: g0_prep_summary.json, sha256: 02dfdbc0fd436ff65190a8b9bc0f7be95aab6548a26aaeef1086966fbba99737}
 
 primary_gate:
-  # PROPOSED (2026-07-23) -- ABSOLUTE mid-band actuation; same numbers across
-  # families; derivation in AMENDMENT.md "Gates -> derivation". Supersedes and
-  # DROPS the draft's g3_late_reference_floor (late arm now non-gating).
+  # ADJUDICATED by lead+user 2026-07-23 (conservative option chosen) --
+  # ABSOLUTE mid-band actuation; same numbers across families; derivation in
+  # AMENDMENT.md "Gates -> derivation". Supersedes and DROPS the draft's
+  # g3_late_reference_floor (late arm now non-gating).
   g1_midband_clean_tighten_floor: {rate: 0.50, wilson_lower_ci: 0.40}
   g2_midband_known_correct_cost_cap: {rate: 0.05, wilson_upper_ci: 0.10}
 

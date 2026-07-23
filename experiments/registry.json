@@ -2607,7 +2607,7 @@
         "pins": {}
       },
       "kg": [],
-      "prediction": "For at least 3 of the families that run past G0, that family's own best calibrated mid-band write site clears BOTH primary gates on held-out -- confab clean_tighten at or above the G1 floor (PROPOSED >=0.50, Wilson lower >0.40) AND known-correct not_well_formed_correct cost at or below the G2 cap (PROPOSED <=0.05, Wilson upper <0.10). The frozen late-reference arm is a non-gating descriptive comparator, expected weak or dead per doubt-snap-cross-family-confirmatory.",
+      "prediction": "For at least 3 of the families that run past G0, that family's own best calibrated mid-band write site clears BOTH primary gates on held-out -- confab clean_tighten at or above the G1 floor (>=0.50, Wilson lower >0.40) AND known-correct not_well_formed_correct cost at or below the G2 cap (<=0.05, Wilson upper <0.10; both adjudicated lead+user 2026-07-23). The frozen late-reference arm is a non-gating descriptive comparator, expected weak or dead per doubt-snap-cross-family-confirmatory.",
       "question": "Does useful, selective J-space mid-band actuation (calibrated mid-band gated caution snap achieving held-out confab clean_tighten above a floor at low known-correct cost) generalize across model families, or is it specific to Qwen3 lineage?",
       "registered": true,
       "slug": "j-space-cross-family-layer-contrast",

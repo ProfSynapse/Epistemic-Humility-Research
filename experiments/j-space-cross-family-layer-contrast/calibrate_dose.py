@@ -27,8 +27,9 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from family_config import (  # noqa: E402
-    FAMILY_SLUGS, layer_dir_name,
+    FAMILY_SLUGS, layer_dir_name, is_late_reference,
     midband_hs_indices as family_midband_hs_indices,
+    late_reference_hs as family_late_reference_hs,
 )
 import model_lib as ml  # noqa: E402
 import pipeline as pl  # noqa: E402
@@ -58,12 +59,22 @@ def choose_dose(layer_results: list[dict], min_confab_rate: float) -> dict | Non
 
 def run(args: argparse.Namespace) -> dict:
     family = args.family
-    # MID-BAND candidates only. The late reference arm reuses doubt-snap's
-    # frozen direction/gate, but doubt-snap selected NO late-site dose for any
-    # family (all G0 dose-viability stops); resolving the late-arm dose is an
-    # open question for the lead at sign (see AMENDMENT.md "Open questions at
-    # sign" #2). This calibration therefore covers mid-band candidates only.
-    hs_list = family_midband_hs_indices(load_family(family))
+    fam_cfg = load_family(family)
+    # MID-BAND candidates are the calibration's gating target. The late-reference
+    # arm is calibrated here TOO (option B, AMENDMENT.md "Open questions at
+    # sign" #2, RESOLVED 2026-07-23 lead+user): doubt-snap selected NO late-site
+    # dose for any family (all G0 dose-viability stops), so rather than reuse a
+    # non-existent dose we recalibrate the late-site scalar dose FRESH here on
+    # the reused FIT rows with the SAME ladder as the mid-band arm. The frozen
+    # late-site direction/gate are still reused VERBATIM -- pipeline.py branches
+    # on the late site to load them; only the scalar dose is recalibrated. A
+    # dead late arm (no usable dose) is EXPECTED and non-gating: it does NOT
+    # fail calibration; only the mid-band layers gate the exit status.
+    midband_hs = family_midband_hs_indices(fam_cfg)
+    late_hs = family_late_reference_hs(fam_cfg)
+    hs_list = midband_hs + [late_hs]
+    midband_names = [layer_dir_name(hs) for hs in midband_hs]
+    late_name = layer_dir_name(late_hs)
     analysis = HERE / "analysis" / family
     committed = HERE / "analysis-committed" / family
     analysis.mkdir(parents=True, exist_ok=True)
@@ -80,17 +91,20 @@ def run(args: argparse.Namespace) -> dict:
         layers = {}
         for hs_index in hs_list:
             layer_name = layer_dir_name(hs_index)
+            is_late = is_late_reference(fam_cfg, hs_index)
+            role = "late_reference_descriptive" if is_late else "midband"
             gate_rows = pl.compute_gate_decisions(family, base_rows, hs_index)
             results = []
             for dose in args.doses:
-                print(f"[calibrate:{family}] layer={layer_name} dose={dose}", flush=True)
+                print(f"[calibrate:{family}] layer={layer_name} role={role} dose={dose}", flush=True)
                 rec = pl.run_layer(family, model, tokenizer, hs_index, gate_rows, dose)
                 rec["dose_target"] = dose
                 rec["usable"] = dose_is_usable(rec, args.min_confab_rate)
                 results.append(rec)
             selected = choose_dose(results, args.min_confab_rate)
             layers[layer_name] = {
-                "hs_index": hs_index, "n_confab_fit_rows": len(confab_fit),
+                "hs_index": hs_index, "role": role,
+                "n_confab_fit_rows": len(confab_fit),
                 "n_known_fit_rows": len(known_fit), "doses": results,
                 "selected_dose": selected["dose_target"] if selected else None,
                 "selected": selected, "has_usable_dose": selected is not None,
@@ -100,13 +114,31 @@ def run(args: argparse.Namespace) -> dict:
         gc.collect()
         torch.cuda.empty_cache()
 
-    selected = {name: rec["selected_dose"] for name, rec in layers.items()
-                if rec["selected_dose"] is not None}
+    selected_all = {name: rec["selected_dose"] for name, rec in layers.items()
+                    if rec["selected_dose"] is not None}
+    midband_selected = {name: layers[name]["selected_dose"] for name in midband_names
+                        if layers[name]["selected_dose"] is not None}
+    late_selected_dose = layers[late_name]["selected_dose"]
     summary = {
         "family": family, "mode": "fit_dose_calibration", "calibration_split": "fit",
         "doses": args.doses, "min_confab_rate_for_usable": args.min_confab_rate,
-        "layers": layers, "selected_doses": selected,
-        "all_layers_have_usable_dose": len(selected) == len(hs_list),
+        "midband_hs_indices": midband_hs, "late_reference_hs": late_hs,
+        "layers": layers,
+        "selected_doses": selected_all,
+        "midband_selected_doses": midband_selected,
+        "late_reference_selected_dose": {
+            "layer": late_name, "hs_index": late_hs,
+            "selected_dose": late_selected_dose,
+            "note": ("late arm calibrated fresh with the mid-band ladder (option B, "
+                     "non-gating descriptive); frozen late-site direction/gate reused "
+                     "verbatim. A null selected_dose means no usable late-site dose was "
+                     "found -- expected per doubt-snap's late-site null -- and the late "
+                     "arm is then SKIPPED without affecting the primary."),
+        },
+        # Calibration SUCCESS is defined on the mid-band arm only; the late arm
+        # is non-gating and a dead late dose is expected, not a failure.
+        "all_midband_have_usable_dose": len(midband_selected) == len(midband_hs),
+        "all_layers_have_usable_dose": len(selected_all) == len(hs_list),
     }
 
     (analysis / "dose_calibration_summary.json").write_text(json.dumps(summary, indent=2))
@@ -127,7 +159,10 @@ def parse_args(argv=None) -> argparse.Namespace:
 
 def main(argv=None) -> int:
     summary = run(parse_args(argv))
-    return 0 if summary["all_layers_have_usable_dose"] else 1
+    # Exit status gates on the MID-BAND arm only. The late-reference arm is
+    # non-gating/descriptive; a null late dose is an expected outcome, not a
+    # calibration failure.
+    return 0 if summary["all_midband_have_usable_dose"] else 1
 
 
 if __name__ == "__main__":

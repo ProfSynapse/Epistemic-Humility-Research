@@ -8,9 +8,12 @@
 # gates NOTHING. See AMENDMENT.md "Design" / "Gates" and LAUNCH-PLAN.md
 # "Decision points for the lead".
 #
-# All gate NUMBERS below are PROPOSED pending lead adjudication (they are the
-# drafter's derivation from the predecessor operating points, written out in
-# AMENDMENT.md "Gates -> derivation"); they are not yet signed.
+# The gate NUMBERS below were ADJUDICATED by lead+user 2026-07-23 (conservative
+# option chosen): G1 mid-band actuation floor = clean_tighten >= 0.50 point /
+# Wilson 95% lower CI > 0.40; G2 mid-band selectivity cap =
+# not_well_formed_correct <= 0.05 point / Wilson 95% upper CI < 0.10. The
+# derivation from the predecessor operating points is in AMENDMENT.md
+# "Gates -> derivation". Still DRAFT until `bin/exp sign`.
 
 seed: 20260709
 alpha: 0.05
@@ -58,8 +61,8 @@ per_family_gates:
     population: confab_held_out
     metric: confab_tighten.rate (clean_tighten)
     site: best mid-band candidate (highest held-out confab clean_tighten, ties broken by lower known-correct cost)
-    pass_if_rate: ">= 0.50   # PROPOSED"
-    pass_if_wilson_lower_ci: "> 0.40   # PROPOSED"
+    pass_if_rate: ">= 0.50   # adjudicated lead+user 2026-07-23"
+    pass_if_wilson_lower_ci: "> 0.40   # adjudicated lead+user 2026-07-23"
     derivation_ref: "AMENDMENT.md 'Gates -> derivation' (same-lineage mid-band held-out operating points 0.66 Qwen3.5-4B / 0.89 Qwen3-4B; observed dead/weak late-site region <= 0.33)"
 
   - name: g2_midband_selectivity_cap
@@ -68,8 +71,8 @@ per_family_gates:
     population: known_correct_answered_held_out
     metric: known_correct_cost_control.rate (not_well_formed_correct)
     site: same best mid-band candidate selected for G1
-    pass_if_rate: "<= 0.05   # PROPOSED"
-    pass_if_wilson_upper_ci: "< 0.10   # PROPOSED"
+    pass_if_rate: "<= 0.05   # adjudicated lead+user 2026-07-23"
+    pass_if_wilson_upper_ci: "< 0.10   # adjudicated lead+user 2026-07-23"
     derivation_ref: "AMENDMENT.md 'Gates -> derivation' (qwen35-4b-midband-heldout cost gate; observed mid-band costs 0.035 Qwen3-4B / 0.039 Qwen3.5-4B)"
 
   per_family_primary_pass_rule: "a family PASSES the primary iff G1 AND G2 both pass on its held-out pool."

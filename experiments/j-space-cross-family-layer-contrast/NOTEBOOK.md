@@ -24,13 +24,14 @@ Changes made:
   gates.yaml, AMENDMENT.md (Prediction/Falsifier/Gates + new "Gates ->
   derivation" and "Open questions at sign"), experiment.yaml, and
   run_contrast.py/cross_family_rollup.py updated.
-- **PROPOSED gate numbers with written derivation.** G1 = clean_tighten >= 0.50,
-  Wilson lower > 0.40 (below the weaker same-lineage mid-band held-out point
-  ~0.66 Qwen3.5-4B / 0.89 Qwen3-4B, far above the dead late-site region <= 0.33;
-  Wilson-lower 0.10 below the point, mirroring qwen35-4b-midband-heldout's gate
-  shape). Stricter alternative 0.60/0.50 offered. G2 = not_well_formed_correct
+- **Gate numbers with written derivation (adjudicated lead+user 2026-07-23,
+  conservative option chosen).** G1 = clean_tighten >= 0.50, Wilson lower > 0.40
+  (below the weaker same-lineage mid-band held-out point ~0.66 Qwen3.5-4B / 0.89
+  Qwen3-4B, far above the dead late-site region <= 0.33; Wilson-lower 0.10 below
+  the point, mirroring qwen35-4b-midband-heldout's gate shape). The stricter
+  0.60/0.50 alternative was offered and NOT elected. G2 = not_well_formed_correct
   <= 0.05, Wilson upper < 0.10 (inherits qwen35-4b-midband-heldout's cost gate;
-  both Qwen substrates cleared at 0.035/0.039). All PROPOSED pending lead sign.
+  both Qwen substrates cleared at 0.035/0.039).
 - **Consumes doubt-snap artifacts, hash-pinned.** Each `families/<slug>.yaml`
   gained a `reuse.doubt_snap` block: committed-artifact relative paths + sha256
   (split_manifest, build_manifest, c_hat, u_d, random_direction, gate_fit,
@@ -38,9 +39,11 @@ Changes made:
   (block/hs_index, tau_frozen, mu_c/sigma_c/mu_d/sigma_d), FIT/held-out counts.
   New `materialize_reused_rows.py` replaces mine_eval_pool.py + split_fit_heldout.py
   (retained fallback-only) for the four reused families; family_config.py gained
-  reuse accessors; build_directions/gate_fit/calibrate_dose scoped to mid-band
-  only; pipeline.py's compute_gate_decisions/run_layer branch the late arm to
-  the frozen reuse artifacts. Late reference site is now DEFINED as doubt-snap's
+  reuse accessors; build_directions/gate_fit scoped to mid-band only (late-site
+  direction/gate reused frozen, not refit); calibrate_dose sweeps mid-band AND
+  the late site (option B -- fresh late-site DOSE, frozen late direction/gate);
+  pipeline.py's compute_gate_decisions/run_layer branch the late arm to the
+  frozen reuse artifacts. Late reference site is now DEFINED as doubt-snap's
   frozen block (llama 25 / mistral 29 / qwen35-4b 29 / gemma 39; hs_index+1 =
   26/30/30/40 -- coincidentally equal to this experiment's own 0.9444*L estimate).
 - **Gemma-4-E4B Modal fallback pre-authorized** (LAUNCH-PLAN.md + AMENDMENT.md):
@@ -54,6 +57,15 @@ cells `selected_dose: null`); (2) gemma4_e4b_it was never behaviorally launched
 0.9472 (weakest), held-out known 251 (~1-row margin). Plus the branch-behind-main
 dependency (open question #0) and the Modal-volume row-text retention question
 (proven only for the qwen35_4b cell).
+
+**Resolved at finalization (2026-07-23, lead+user).** Gap (1): option (B)
+adopted -- the late-site DOSE is calibrated fresh with the mid-band ladder for
+all four families (frozen late direction/gate still reused verbatim); see
+AMENDMENT.md open question #2. Gate numbers adjudicated (conservative option):
+G1 0.50/0.40, G2 0.05/0.10. Branch-behind-main resolved by merging `main`
+(submodule pin -> 901dbe8, which already contains `feature/runlog`; no pointer
+bump needed). Modal retention checked: llama/mistral/qwen35_4b row text PRESENT,
+gemma ABSENT (never launched -> pre-authorized Modal fresh-mine fallback).
 
 Verification (CPU-only): `bin/exp validate` OK (after moving the not-yet-present
 doubt-snap `inputs` paths into a comment, since validate existence-checks

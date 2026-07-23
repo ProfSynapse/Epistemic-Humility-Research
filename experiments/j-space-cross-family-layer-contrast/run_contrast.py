@@ -11,8 +11,11 @@ doubt-snap's resolved late-site null.
 REFRAMED 2026-07-23 (sign-time revision): the old relative G1/G2/G3 contrast
 (best mid-band beats late by >=10pp, etc.) is replaced by absolute mid-band
 gates read from each family's `primary_gate` block. The late arm gates NOTHING;
-if its dose is unresolved (doubt-snap selected no late-site dose for any family
--- open question #2), the late arm is SKIPPED and the primary is unaffected.
+its scalar dose is calibrated FRESH here with the same calibrate_dose.py ladder
+as the mid-band arm (option B, RESOLVED 2026-07-23; the frozen late-site
+direction/gate stay reused verbatim). If no usable late dose is found -- expected
+per doubt-snap's late-site null -- the late arm is SKIPPED and the primary is
+unaffected.
 
 Ported from `j-space-layer-contrast-replication-qwen3-4b/run_contrast.py` and
 `j-space-midband-write-sweep-qwen3-4b/pipeline.py`, generalized to `--family`.
@@ -62,24 +65,48 @@ def selected_rows(family: str, n_rows: int | None) -> list[dict]:
 
 def load_midband_selected_doses(family: str) -> dict[str, float]:
     """Mid-band per-layer FIT-calibrated doses (calibrate_dose.py output). The
-    late arm's dose is NOT here (it is reused-frozen / open question, resolved
-    separately via --late-dose)."""
+    late arm's dose is resolved separately (resolve_late_dose): it is
+    non-gating and may be null, so it is NOT part of the mid-band dose map. Only
+    the mid-band arm gates calibration success."""
     path = HERE / "analysis-committed" / family / "dose_calibration_summary.json"
     data = json.loads(path.read_text())
-    selected = {str(k): float(v) for k, v in data["selected_doses"].items()}
-    if not data.get("all_layers_have_usable_dose"):
+    midband_names = {layer_dir_name(hs) for hs in family_midband_hs_indices(load_family(family))}
+    src = data.get("midband_selected_doses")
+    if src is None:  # pre-option-B schema: filter the flat selected_doses map
+        src = {k: v for k, v in data.get("selected_doses", {}).items() if k in midband_names}
+    selected = {str(k): float(v) for k, v in src.items()}
+    ok = data.get("all_midband_have_usable_dose", data.get("all_layers_have_usable_dose"))
+    if not ok:
         raise ValueError(f"[{family}] calibration summary says not all mid-band layers have usable doses")
+    if set(selected) != midband_names:
+        raise ValueError(
+            f"[{family}] calibration summary mid-band doses incomplete: "
+            f"have {sorted(selected)}, need {sorted(midband_names)}"
+        )
     return selected
 
 
 def resolve_late_dose(family: str, cli_late_dose: float | None) -> float | None:
-    """Late-arm dose resolution (OPEN QUESTION #2 -- doubt-snap selected no
-    late-site dose for any family). Priority: explicit --late-dose, else the
-    family YAML `reuse.doubt_snap.late_site.resolved_late_dose` if the lead set
-    one at sign, else None (late arm skipped -- the primary does not depend on
-    it). This function never invents a dose."""
+    """Late-arm dose resolution. Option (B) (RESOLVED 2026-07-23, lead+user):
+    the late-site scalar dose is calibrated FRESH here with the same
+    calibrate_dose.py ladder as the mid-band arm (doubt-snap selected no
+    late-site dose for any family, so there is nothing to reuse verbatim; the
+    frozen late-site DIRECTION/GATE are still reused verbatim). Priority:
+    explicit --late-dose override, else the fresh late dose from this
+    experiment's calibrate_dose.py summary
+    (`late_reference_selected_dose.selected_dose`), else the family YAML
+    `reuse.doubt_snap.late_site.resolved_late_dose` (legacy manual override),
+    else None (no usable late dose -> late arm SKIPPED; the primary does not
+    depend on it). This function never invents a dose."""
     if cli_late_dose is not None:
         return float(cli_late_dose)
+    path = HERE / "analysis-committed" / family / "dose_calibration_summary.json"
+    if path.exists():
+        data = json.loads(path.read_text())
+        block = data.get("late_reference_selected_dose") or {}
+        dose = block.get("selected_dose")
+        if dose is not None:
+            return float(dose)
     ls = (load_family(family).get("reuse", {}).get("doubt_snap", {}) or {}).get("late_site", {}) or {}
     resolved = ls.get("resolved_late_dose")
     return float(resolved) if resolved is not None else None
@@ -200,7 +227,8 @@ def evaluate_primary(family: str, layer_results: dict[str, dict]) -> dict:
     else:
         out["secondary_late_reference"] = {
             "gating": "none",
-            "status": "SKIPPED -- late-arm dose unresolved (open question #2); "
+            "status": "SKIPPED -- no usable late-arm dose found in fresh "
+                      "calibration (expected per doubt-snap's late-site null); "
                       "the primary does not depend on the late arm.",
         }
     return out
@@ -280,10 +308,11 @@ def main(argv=None) -> int:
     parser.add_argument("--n-rows", type=int, default=8, help="smoke mode only")
     parser.add_argument(
         "--late-dose", type=float, default=None,
-        help="Resolve the SECONDARY late-reference arm's dose (open question #2: "
-             "doubt-snap selected no late-site dose). If omitted and the family "
-             "YAML has no resolved_late_dose, the late arm is SKIPPED and only "
-             "the primary (mid-band) gates are evaluated.",
+        help="Override the SECONDARY late-reference arm's dose. If omitted, the "
+             "fresh late dose from calibrate_dose.py's summary "
+             "(late_reference_selected_dose) is used (option B); if that is null "
+             "too, the late arm is SKIPPED and only the primary (mid-band) gates "
+             "are evaluated.",
     )
     parser.add_argument("--i-know-this-is-the-cross-family-run", action="store_true")
     resume_group = parser.add_mutually_exclusive_group()

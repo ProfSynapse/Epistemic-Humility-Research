@@ -47,8 +47,8 @@ Three structural changes were made at sign-time prep, after the sibling
 `doubt-snap-cross-family-confirmatory` experiment RESOLVED (2026-07-12,
 confirmatory not promoted -- every launched cell stopped at its registered G0
 FIT dose-viability rule at the late 0.94-depth write site). These changes are
-reflected throughout the sections below; the numbers they introduce are
-PROPOSED pending lead adjudication at sign.
+reflected throughout the sections below; the numbers they introduce were
+ADJUDICATED by lead+user 2026-07-23 (conservative option chosen).
 
 1. **Primary endpoint reframed to ABSOLUTE mid-band actuation.** The primary
    per-family gates are no longer a relative mid-vs-late contrast. They are
@@ -313,9 +313,10 @@ between prediction and falsifier -- the roll-up covers every family disposition
 
 ## Gates
 
-All numbers below marked PROPOSED are the drafter's derivation (see "Gates ->
-derivation") pending lead adjudication at sign; they are pinned identically
-across families in each `families/<slug>.yaml` `primary_gate` block.
+The gate numbers below were ADJUDICATED by lead+user 2026-07-23 (conservative
+option chosen); the drafter's derivation is preserved under "Gates ->
+derivation". They are pinned identically across families in each
+`families/<slug>.yaml` `primary_gate` block.
 
 - **G0 (per-family instrument validity; stop, not outcome)**: that family's
   checkpoint loads via the hardened loader and yields a valid hidden-states
@@ -336,11 +337,12 @@ across families in each `families/<slug>.yaml` `primary_gate` block.
   denominator -- neither a PASS nor a FALSIFIER hit for that family**, matching
   Amendment Z's / doubt-snap's INELIGIBLE disposition.
 - **G1 (PRIMARY -- mid-band actuation floor, per family)**: the best mid-band
-  site's held-out confab `clean_tighten` rate **>= 0.50 (PROPOSED)** AND its
-  Wilson 95% lower CI **> 0.40 (PROPOSED)**.
+  site's held-out confab `clean_tighten` rate **>= 0.50** AND its Wilson 95%
+  lower CI **> 0.40** (adjudicated lead+user 2026-07-23).
 - **G2 (PRIMARY -- mid-band selectivity cap, per family)**: that same best
   mid-band site's held-out known-correct `not_well_formed_correct` cost
-  **<= 0.05 (PROPOSED)** AND its Wilson 95% upper CI **< 0.10 (PROPOSED)**.
+  **<= 0.05** AND its Wilson 95% upper CI **< 0.10** (adjudicated lead+user
+  2026-07-23).
 - **Secondary late reference (descriptive, NOT a gate)**: the frozen late arm's
   held-out confab `clean_tighten` and known-correct cost, plus the
   best-mid-band-minus-late delta, are reported for contrast with doubt-snap's
@@ -348,7 +350,7 @@ across families in each `families/<slug>.yaml` `primary_gate` block.
   expected and is not disqualifying. (This replaces the draft's G1/G2 relative
   contrast and its G3 late-reference-viability floor, all dropped.)
 
-### Gates -> derivation (PROPOSED, pending lead adjudication)
+### Gates -> derivation (adjudicated lead+user 2026-07-23, conservative option chosen)
 
 Every number is derived from resolved predecessor operating points, read from
 their governed docs; no round number without stated provenance.
@@ -405,10 +407,14 @@ no claim promoted.**
    reused path. All pinned sha256 in the `families/<slug>.yaml` `reuse` blocks
    were computed from `main` and are authoritative; they simply cannot be
    verified in this worktree until it carries `main`'s content.
-1. **Primary gate NUMBERS (G1 floor / G2 cap).** Adjudicate the PROPOSED
-   0.50/0.40 floor and 0.05/0.10 cap, or elect the stricter 0.60/0.50 floor
-   (see "Gates -> derivation").
-2. **Late-arm DOSE gap.** doubt-snap selected NO late-site dose for any family
+1. **[RESOLVED 2026-07-23, lead+user] Primary gate NUMBERS (G1 floor / G2 cap).**
+   ADOPTED the conservative option: G1 floor `clean_tighten` >= 0.50 point /
+   Wilson lower > 0.40, G2 cap `not_well_formed_correct` <= 0.05 point / Wilson
+   upper < 0.10. The stricter 0.60/0.50 alternative was NOT elected. Numbers are
+   pinned in `gates.yaml` and every `families/<slug>.yaml` `primary_gate` block;
+   the derivation is preserved under "Gates -> derivation".
+2. **[RESOLVED 2026-07-23, lead+user -> option (B)] Late-arm DOSE gap.**
+   doubt-snap selected NO late-site dose for any family
    (all G0 dose-viability stops; `selected_dose: null`). "Reuse the frozen
    late-site ... calibrated dose" (the sign-time instruction) cannot be
    satisfied literally. Options: **(A)** report the late arm at each family's
@@ -422,12 +428,34 @@ no claim promoted.**
    is now non-gating and descriptive, so verbatim dose reuse buys nothing for
    confirmatory integrity, and a same-ladder late dose makes the mid-vs-late
    delta fair and uniform across all four families.
-3. **Modal-volume retention.** The reuse pulls private row text from the
-   `eh-doubt-snap-cross-family` Modal volume; proven accessible for the
-   qwen35_4b cell (`qwen35-4b-midband-doubt-snap`), NOT yet re-verified for the
-   llama / mistral / gemma cells. If a family's row text is gone, that family
-   cannot use the reused pool without a lead-authorized fresh mine (which loses
-   reuse provenance).
+   **RESOLUTION (2026-07-23, lead+user): option (B) adopted.** The late-site
+   scalar dose is calibrated FRESH here with the same `calibrate_dose.py` ladder
+   as the mid-band arm, on the reused FIT rows, for all four families (including
+   gemma, which has no committed `dose_fit.json`). This is a DELIBERATE
+   deviation from verbatim dose reuse: because the late arm is
+   non-gating/descriptive, verbatim dose reuse buys nothing for confirmatory
+   integrity, while a same-ladder late dose makes the mid-vs-late delta fair and
+   uniform across families. The frozen late-site DIRECTION and GATE
+   (`c_hat`/`u_d`/`tau`/standardization from `build_manifest`/`gate_fit`) are
+   still reused VERBATIM and remain hash-pinned in the `reuse` block; only the
+   scalar write dose is recalibrated here. Plumbing: `calibrate_dose.py` now
+   sweeps the late site alongside the mid-band candidates, and
+   `run_contrast.py` (`resolve_late_dose`) reads the fresh late dose from the
+   calibration summary (CLI `--late-dose` still overrides).
+3. **[CHECKED 2026-07-23] Modal-volume retention.** The reuse pulls private row
+   text from the `eh-doubt-snap-cross-family` Modal volume. `modal volume ls`
+   (existence-only, no downloads) on 2026-07-23: **llama32_3b_instruct/analysis
+   PRESENT** (full analysis set incl. `split_rows_private.jsonl`,
+   `candidate_pool_private.jsonl`, `fit_rows_for_dose.jsonl`,
+   `heldout_rows_for_steer.jsonl`); **mistral7b_instruct_v03/analysis PRESENT**
+   (same set); **qwen35_4b PRESENT** (already proven); **gemma4_e4b_it ABSENT**
+   -- no gemma directory exists anywhere on the volume (root holds only
+   qwen35_9b, qwen35_4b, llama32_3b_instruct, mistral7b_instruct_v03, plus
+   `_archive`/`_live`, neither containing gemma). This is CONSISTENT with gemma
+   `never_behaviorally_launched: true` / `dose_fit: null`: gemma has no reusable
+   doubt-snap row text, so gemma's late arm follows the pre-authorized Modal
+   fallback (fresh mine) rather than reuse. llama/mistral/qwen35-4b reuse is
+   green on retention.
 4. **Gemma reuse caveats.** Gemma's late-site artifacts are FIT-prep only
    (never dose-exercised; no `dose_fit.json`); its late gate AUC is 0.9472
    (weakest, still >= 0.90); its held-out known count is 251 (~1-row margin
@@ -437,9 +465,19 @@ no claim promoted.**
    render/anchor convention (BASELINE_SYSTEM_PROMPT, anchor at `prompt_len - 1`,
    `enable_thinking=False`); this must be smoke-verified at first run
    (cannot be GPU-tested pre-sign).
-6. **RunLog dependency (carried from the draft).** `run_contrast.py` requires
-   the tuner branch `feature/runlog`; the submodule pointer must be bumped to
-   include it before this experiment can run (LAUNCH-PLAN.md decision point 6).
+6. **[RESOLVED 2026-07-23] RunLog dependency (carried from the draft).**
+   `run_contrast.py` requires the tuner branch `feature/runlog`. After merging
+   `main` (2026-07-23) this experiment's submodule gitlink pin is
+   `901dbe803699e0bf00b73426526babdaf8598cf3` (main's pointer). Verified
+   read-only that `feature/runlog` (tip `8d95786`, `shared/utilities/run_log.py`
+   + `tests/shared/utilities/test_run_log.py`) IS an ancestor of `901dbe8`
+   (0 commits on runlog not in `901dbe8`; `run_log.py` blob present in the
+   `901dbe8` tree; `901dbe8` is on `origin/main`). **No further submodule
+   pointer bump is needed** -- the RunLog dependency is already satisfied by the
+   pinned pointer. NOTE (not a pointer bump): this worktree's submodule working
+   tree is still checked out at the older `e4ca5d4`; a routine `git submodule
+   update` to materialize `901dbe8` is required before launch, but the pinned
+   pointer itself needs no change. The submodule was not modified.
 
 ## Outcome
 

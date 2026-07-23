@@ -8,9 +8,10 @@ question: Does useful, selective J-space mid-band actuation (calibrated mid-band
   lineage?
 prediction: For at least 3 of the families that run past G0, that family's own best
   calibrated mid-band write site clears BOTH primary gates on held-out -- confab
-  clean_tighten at or above the G1 floor (PROPOSED >=0.50, Wilson lower >0.40) AND
-  known-correct not_well_formed_correct cost at or below the G2 cap (PROPOSED <=0.05,
-  Wilson upper <0.10). The frozen late-reference arm is a non-gating descriptive
+  clean_tighten at or above the G1 floor (>=0.50, Wilson lower >0.40) AND
+  known-correct not_well_formed_correct cost at or below the G2 cap (<=0.05,
+  Wilson upper <0.10; both adjudicated lead+user 2026-07-23). The frozen
+  late-reference arm is a non-gating descriptive
   comparator, expected weak or dead per doubt-snap-cross-family-confirmatory.
 falsifier: If at most 1 of the families that run past G0 clears both primary gates,
   mid-band actuation is Qwen-lineage-specific or an artifact - FALSIFIED. If exactly
