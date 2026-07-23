@@ -31,6 +31,13 @@ What it does (all CPU-only; no GPU, no model load):
 This supersedes `mine_eval_pool.py` + `split_fit_heldout.py` for the reused
 families (those are retained only as a lead-authorized fallback if a family's
 Modal row text is gone).
+
+FRESH-MINE families (gemma4-e4b, lead-authorized 2026-07-23; `reuse.doubt_snap.
+pool_provenance: fresh_mine`): the doubt-snap row text IS gone from the Modal
+volume, so that fallback is the actual path. For these families this script only
+VERIFIES the frozen late-site direction/gate (the artifacts they still consume)
+and defers the pool/split to `mine_eval_pool.py` + `split_fit_heldout.py`; it
+does not copy a doubt-snap split. See `integrity_artifact_names` (family_config).
 """
 
 from __future__ import annotations
@@ -47,6 +54,7 @@ sys.path.insert(0, str(HERE))
 
 from family_config import (  # noqa: E402
     FAMILY_SLUGS, load_family, reuse_block, reuse_artifact_path, reuse_artifact_sha256,
+    integrity_artifact_names, is_fresh_mine,
 )
 
 
@@ -72,8 +80,7 @@ def verify_committed_artifacts(cfg: dict) -> dict[str, str]:
     if not rb:
         raise SystemExit(f"[{cfg['family']}] no reuse.doubt_snap block; nothing to materialize")
     verified: dict[str, str] = {}
-    for name in ("split_manifest", "build_manifest", "c_hat", "u_d",
-                 "random_direction", "gate_fit", "dose_fit", "g0_prep_summary"):
+    for name in integrity_artifact_names(cfg):
         pinned = reuse_artifact_sha256(cfg, name)
         path = reuse_artifact_path(cfg, name)
         if pinned is None or path is None:
@@ -104,6 +111,27 @@ def main(argv=None) -> int:
         raise SystemExit(f"[{family}] no reuse.doubt_snap block; use mine_eval_pool.py fallback")
 
     verified = verify_committed_artifacts(cfg)
+
+    # FRESH-MINE family (gemma4-e4b, lead-authorized 2026-07-23): the doubt-snap
+    # row text is absent from the Modal volume, so there is NO reused pool/split
+    # to materialize. This script only VERIFIES the frozen late-site
+    # direction/gate operating point (done above, scoped by
+    # integrity_artifact_names) and then hands the pool off to the fresh-mine
+    # tools. It does NOT copy a doubt-snap split or emit a reused-rows manifest.
+    if is_fresh_mine(cfg):
+        print(
+            f"\n[materialize:{family}] FRESH-MINE family: verified the frozen "
+            f"late-site direction/gate operating point ({sorted(verified)}). "
+            f"There is NO reused pool/split to materialize for this family (reuse "
+            f"provenance for the pool is LOST). Mine the pool + split FRESH on "
+            f"this family's own checkpoint:\n"
+            f"  python mine_eval_pool.py --family {family} ...\n"
+            f"  python split_fit_heldout.py --family {family} ...\n"
+            f"The frozen late-site c_hat/u_d/tau/standardization above are then "
+            f"applied to the fresh rows as a frozen operating point "
+            f"(qwen35-4b-midband-heldout pattern)."
+        )
+        return 0
 
     # (2) Copy the verified ID-only split into this experiment's committed dir.
     committed = HERE / "analysis-committed" / family

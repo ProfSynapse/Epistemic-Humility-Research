@@ -67,6 +67,31 @@ G1 0.50/0.40, G2 0.05/0.10. Branch-behind-main resolved by merging `main`
 bump needed). Modal retention checked: llama/mistral/qwen35_4b row text PRESENT,
 gemma ABSENT (never launched -> pre-authorized Modal fresh-mine fallback).
 
+**Final pre-sign pass (2026-07-23, lead+user).**
+- GEMMA FRESH MINE (adjudicated): gemma's pool/split cannot be reused (row text
+  absent), so `pool_provenance: fresh_mine` for gemma ONLY -- mine_eval_pool.py +
+  split_fit_heldout.py run fresh on gemma's own checkpoint; reuse provenance for
+  the pool is LOST and recorded. The frozen late-site direction/tau/
+  standardization stay reused verbatim + hash-pinned, applied to the fresh rows
+  as a frozen operating point (qwen35-4b-midband-heldout pattern); late dose
+  still fresh (option B). G0 reuse-integrity is scoped per family via
+  `family_config.integrity_artifact_names`: reused-pool families verify 8
+  artifacts (incl. split_manifest); gemma verifies ONLY the 5 frozen late-site
+  artifacts (build_manifest/c_hat/u_d/random_direction/gate_fit). Verified by
+  running materialize_reused_rows.py --family gemma4-e4b: 5 late-site hashes
+  match, no split copied, rc=0. Other three families' G0 untouched.
+- VENDOR SCORERS (adjudicated): the merge pulled main commit 21cd5c50 which
+  archived experiment/phase1/eval/scorers.py, breaking grader.py's hardcoded
+  EVAL_DIR. Vendored scorers.py INTO the experiment dir (sibling convention, no
+  external dependency). BYTE-IDENTITY: archived source
+  sha256 75e690f583d83d654cb88a3b066b39acb7e9e1b954c9d5677d4b887d6c30905a; the
+  vendored file is a provenance header (891 bytes) + that source VERBATIM, so its
+  post-header body sha256 == 75e690f5... (byte-identical), and the full vendored
+  file sha256 = 1b3eda5d8d68c9184674f092805278505c5cd2065a21ffe7ec348e9ea5a00c37.
+  grader.py now imports the local copy (EVAL_DIR dropped). Import smoke:
+  `run_contrast.py --help` and `calibrate_dose.py --help` both exit 0, proving
+  the grader -> gen_lib -> pipeline -> run_contrast/calibrate_dose chain resolves.
+
 Verification (CPU-only): `bin/exp validate` OK (after moving the not-yet-present
 doubt-snap `inputs` paths into a comment, since validate existence-checks
 inputs and this branch lacks main's content); `py_compile` OK on all scripts;

@@ -33,6 +33,7 @@ instrument:
   - model_lib.py
   - gen_lib.py
   - grader.py
+  - scorers.py
   - materialize_reused_rows.py
   - mine_eval_pool.py
   - split_fit_heldout.py

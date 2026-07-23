@@ -22,9 +22,17 @@ either a `full_summary.json` or a recorded NOT-RUN.
 ## Per-stage commands (per family; replace `<slug>` with the family slug)
 
 ```bash
-# 1. Reuse doubt-snap's pool + FIT/HELD-OUT split (supersedes mine + split):
+# 1. Pool + FIT/HELD-OUT split.
+#    REUSED-POOL families (llama-3.2-3b, mistral-7b-v03, qwen35-4b): reuse
+#    doubt-snap's pool + split verbatim (supersedes mine + split):
 python experiments/j-space-cross-family-layer-contrast/materialize_reused_rows.py --family <slug>
 #    (prints the `modal volume get` command for the private row text; re-run to normalize it)
+#    FRESH-MINE family (gemma4-e4b ONLY; pool_provenance: fresh_mine,
+#    lead-authorized 2026-07-23 -- doubt-snap row text absent from the Modal
+#    volume): mine + split fresh on gemma's own checkpoint. materialize_...py for
+#    gemma verifies only the frozen late-site direction/gate, then defers here:
+python experiments/j-space-cross-family-layer-contrast/mine_eval_pool.py --family gemma4-e4b
+python experiments/j-space-cross-family-layer-contrast/split_fit_heldout.py --family gemma4-e4b
 # 2. NEW work: mid-band localization + fit (mid-band candidates only), then dose
 #    calibration (mid-band candidates AND the reused-frozen late site -- option B):
 python experiments/j-space-cross-family-layer-contrast/jlens_profile.py --family <slug>
@@ -86,6 +94,22 @@ sweep on all four families.
 | Mistral-7B-v0.3 | 7B | The VRAM-heaviest family (~14-15GB bf16 weights). Generation and extraction fit a 24GB 3090; the J-lens profile stage's eager-attention double-backward is the pressure point, so budget for reduced batch or fewer random probe directions. A profile-stage OOM is a batching problem, not a G0 loader blocker. |
 | Qwen3.5-4B | 4B | Should fit for the text-only path; the multimodal loader may pull in a vision tower's weights even for text prompts, which is a decision point (see below), not resolved here. |
 | Gemma-4-E4B | ~4B effective | **FLAGGED, highest risk of the four.** The E4B multimodal architecture may load a vision encoder even for text-only prompts. Combined with the J-lens profile stage's extra double-backward-JVP activation memory (the localization experiment's own docstring notes this needs `attn_implementation="eager"`, which is generally MORE memory-hungry than fused SDPA attention), this could approach the 24GB ceiling. Amendment Z's own risk table lists this as "loader risk only" for its own (non-J-lens) extraction; the J-lens profile stage is this experiment's OWN additional risk on top of Amendment Z's, not something Amendment Z already validated. |
+
+## Gemma-4-E4B pool provenance = FRESH MINE (adjudicated 2026-07-23, lead+user)
+
+Distinct from the compute-location fallback below: gemma's doubt-snap row text
+is ABSENT from the `eh-doubt-snap-cross-family` Modal volume (verified 2026-07-23
+`modal volume ls`), so its eval pool + FIT/HELD-OUT split CANNOT be reused. The
+lead authorizes the fresh-mine path for **gemma ONLY**: `mine_eval_pool.py` +
+`split_fit_heldout.py` run fresh on gemma's own checkpoint at launch (step 1
+above). **Reuse provenance for gemma's pool is LOST and recorded as such**
+(`families/gemma4-e4b.yaml reuse.doubt_snap.pool_provenance: fresh_mine`). The
+frozen late-site DIRECTION / tau / standardization stay reused verbatim
+(committed + hash-pinned) and are applied to gemma's fresh rows as a frozen
+operating point (qwen35-4b-midband-heldout pattern); the late DOSE is calibrated
+fresh (option B). Gemma's G0 reuse-integrity hash check is scoped to those frozen
+late-site artifacts only. This holds regardless of whether gemma runs locally or
+on the Modal compute fallback below.
 
 ## Gemma-4-E4B Modal fallback (pre-authorized 2026-07-23, user)
 

@@ -194,6 +194,23 @@ reuse:
     revision: fee6332c1abaafb77f6f9624236c63aa2f1d0187
     hidden_dim: 2560
     never_behaviorally_launched: true
+    # POOL/SPLIT PROVENANCE (adjudicated lead+user 2026-07-23): the doubt-snap
+    # row text for this cell is ABSENT from the Modal volume
+    # eh-doubt-snap-cross-family (verified 2026-07-23 `modal volume ls`: no gemma
+    # directory anywhere on the volume), so the pool/split CANNOT be reused. The
+    # lead authorizes the fresh-mine fallback for gemma ONLY: mine_eval_pool.py +
+    # split_fit_heldout.py run fresh on gemma's own checkpoint at launch. REUSE
+    # PROVENANCE FOR THE POOL IS LOST for this family and is recorded as such.
+    # The frozen late-site DIRECTION + tau + standardization (build_manifest /
+    # c_hat / u_d / random_direction / gate_fit below) are STILL reused verbatim
+    # -- committed + hash-pinned -- and applied to the fresh rows as a FROZEN
+    # OPERATING POINT (the qwen35-4b-midband-heldout frozen-direction-on-fresh-
+    # activations pattern). The late-arm DOSE is calibrated fresh on gemma's
+    # fresh FIT rows (option B), uniform with the other three families. Only the
+    # frozen late-site artifacts are G0 integrity-checked for gemma (see
+    # family_config.integrity_artifact_names); split_manifest / g0_prep_summary /
+    # pool_counts below are REFERENCE-ONLY (doubt-snap origin), not consumed.
+    pool_provenance: fresh_mine
     late_site:
       block: 39
       hs_index: 40
@@ -208,12 +225,18 @@ reuse:
       # here or the gemma late arm omitted. OPEN QUESTION at sign.
       doubt_snap_selected_dose: null
       doubt_snap_fit_peak_clean_tighten: null   # dose_fit.json ABSENT
+    # REFERENCE-ONLY (doubt-snap origin): NOT the consumed pool. gemma
+    # fresh-mines its own pool/split, whose real counts will differ from these.
     pool_counts:
       confab_fit: 840
       known_correct_answered_fit: 168
       confab_held_out: 1263
-      known_correct_answered_held_out: 251   # ~1-row margin over the 250 power bar
+      known_correct_answered_held_out: 251   # doubt-snap count; fresh mine will differ
     artifacts:
+      # split_manifest / g0_prep_summary: REFERENCE-ONLY (pool artifacts gemma no
+      # longer consumes under fresh-mine); NOT G0 integrity-checked for gemma.
+      # The rest (build_manifest / c_hat / u_d / random_direction / gate_fit) are
+      # the frozen late-site operating point gemma DOES consume + hash-verify.
       split_manifest: {path: split_manifest.json, sha256: 2aace2691d5193fb22f82e91db379de4edd3527eb4d8e5128161a9f0e65f28aa}
       build_manifest: {path: build_manifest.json, sha256: c72b2fd0f61159d03f7fd77a5b3b536667f3be4083651827b2bd020cc03e9a82}
       c_hat: {path: c_hat.json, sha256: 56ad3101fc27c0e1c2cbb93cf1b574e0d423215ebae1c1d0756d9b3726b50496}

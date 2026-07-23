@@ -157,6 +157,47 @@ def reuse_artifact_sha256(family_cfg: dict[str, Any], name: str) -> str | None:
     return art.get("sha256") if art else None
 
 
+# Full set of doubt-snap artifacts a REUSED-POOL family consumes + integrity-
+# checks (pool/split manifests AND the frozen late-site direction/gate).
+_ALL_REUSE_ARTIFACTS = (
+    "split_manifest", "build_manifest", "c_hat", "u_d",
+    "random_direction", "gate_fit", "dose_fit", "g0_prep_summary",
+)
+# The frozen late-site OPERATING POINT only: direction (c_hat/u_d), its build
+# standardization (build_manifest: mu_d/sigma_d/mu_c/sigma_c), the random-
+# direction control, and the frozen gate (gate_fit: tau). A fresh-mine family
+# consumes ONLY these; it mines its own pool/split (qwen35-4b-midband-heldout
+# frozen-direction-on-fresh-rows pattern).
+_LATE_SITE_ARTIFACTS = ("build_manifest", "c_hat", "u_d", "random_direction", "gate_fit")
+
+
+def pool_provenance(family_cfg: dict[str, Any]) -> str:
+    """How this family obtains its eval pool + FIT/HELD-OUT split. Default
+    'reused' (materialize_reused_rows.py copies the doubt-snap split verbatim).
+    'fresh_mine' (gemma4-e4b, lead-authorized 2026-07-23): the doubt-snap row
+    text is absent from the Modal volume, so the pool/split are mined fresh here
+    (mine_eval_pool.py + split_fit_heldout.py) on this family's own checkpoint;
+    reuse provenance for the pool is LOST. The frozen late-site direction/gate
+    are still reused verbatim regardless (see integrity_artifact_names)."""
+    rb = reuse_block(family_cfg)
+    return (rb or {}).get("pool_provenance", "reused")
+
+
+def is_fresh_mine(family_cfg: dict[str, Any]) -> bool:
+    return pool_provenance(family_cfg) == "fresh_mine"
+
+
+def integrity_artifact_names(family_cfg: dict[str, Any]) -> tuple[str, ...]:
+    """Which pinned reuse artifacts G0 hash-verifies for this family. Reused-pool
+    families verify the pool/split manifests AND the frozen late-site
+    direction/gate. Fresh-mine families (gemma) verify ONLY the frozen late-site
+    direction/gate they actually consume -- they mine their own pool/split, so
+    the doubt-snap pool manifests are neither consumed nor integrity-checked."""
+    if is_fresh_mine(family_cfg):
+        return _LATE_SITE_ARTIFACTS
+    return _ALL_REUSE_ARTIFACTS
+
+
 def hs_indices(family_cfg: dict[str, Any]) -> list[int]:
     """Full candidate layer set for this family: midband candidates plus the
     late reference, in the same order convention as the predecessor's

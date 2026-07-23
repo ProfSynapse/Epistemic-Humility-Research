@@ -26,10 +26,12 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-EVAL_DIR = Path("/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/eval")
-if str(EVAL_DIR) not in sys.path:
-    sys.path.insert(0, str(EVAL_DIR))
-import scorers  # noqa: E402  (eval/scorers.py -- Cheng-validated port, dependency-free)
+_HERE = Path(__file__).resolve().parent
+if str(_HERE) not in sys.path:
+    sys.path.insert(0, str(_HERE))
+import scorers  # noqa: E402  (VENDORED local copy -- see scorers.py provenance
+# header; byte-identical body to archive/experiment/phase1/eval/scorers.py,
+# vendored because main commit 21cd5c50 archived the old external path.)
 
 
 _MAX_NGRAM = 20

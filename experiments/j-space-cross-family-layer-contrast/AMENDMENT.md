@@ -114,12 +114,13 @@ resolved per-family committed artifacts under
 `experiments/doubt-snap-cross-family-confirmatory/analysis-committed/<cell>/`,
 each pinned by sha256 in the corresponding `families/<slug>.yaml` `reuse` block:
 
-- **Eval pool + FIT/HELD-OUT split, reused verbatim.** Each family's role
-  labels (confab / known_correct_answered / unknown_refused) and its
+- **Eval pool + FIT/HELD-OUT split, reused verbatim (three families; gemma
+  fresh-mines).** For **llama-3.2-3b, mistral-7b-v03, qwen35-4b**, each family's
+  role labels (confab / known_correct_answered / unknown_refused) and its
   FIT/HELD-OUT partition are the doubt-snap cell's own `split_manifest.json`
   (ID-only: row_key + role + split + source + category_canon). This SUPERSEDES
-  this experiment's own `mine_eval_pool.py` + `split_fit_heldout.py` for these
-  four families -- no re-mining, no re-splitting. The private row TEXT lives on
+  this experiment's own `mine_eval_pool.py` + `split_fit_heldout.py` for those
+  three families -- no re-mining, no re-splitting. The private row TEXT lives on
   the Modal volume `eh-doubt-snap-cross-family` (committed artifacts are ID-only)
   and is pulled read-only, sha256-verified, into this experiment's gitignored
   `analysis/<family>/from_doubt_snap/` by `materialize_reused_rows.py`, exactly
@@ -128,6 +129,12 @@ each pinned by sha256 in the corresponding `families/<slug>.yaml` `reuse` block:
   from TriviaQA/PopQA (answerable) + KUQ (unanswerable), NOT this experiment's
   own draft "AH expansion candidate pool" -- reusing the split means adopting
   doubt-snap's source, which is the intended consequence of the reuse.
+  **gemma4-e4b is the exception (adjudicated lead+user 2026-07-23,
+  `pool_provenance: fresh_mine`):** its doubt-snap row text is absent from the
+  Modal volume, so its pool/split are mined FRESH here (`mine_eval_pool.py` +
+  `split_fit_heldout.py`, lead-authorized) -- reuse provenance for gemma's pool
+  is LOST and recorded as such. Only the frozen late-site direction/gate (next
+  bullet) are reused for gemma; see "Open questions at sign" #3.
 - **Late-reference arm = doubt-snap's frozen late site, reused verbatim.** The
   secondary late arm loads that cell's committed `c_hat.json` (write direction),
   `u_d.json` (doubt sensor), `gate_fit.json` (`tau_frozen`), and
@@ -139,13 +146,20 @@ each pinned by sha256 in the corresponding `families/<slug>.yaml` `reuse` block:
   experiment's own `round(0.9444 * n_hidden_layers)` late estimate for all four
   families, but the SITE is DEFINED as doubt-snap's frozen block, not
   re-derived. Per-family frozen scalars, counts, and artifact hashes are pinned
-  in each `families/<slug>.yaml` `reuse.doubt_snap` block.
+  in each `families/<slug>.yaml` `reuse.doubt_snap` block. For **gemma4-e4b**
+  (fresh-mine pool) this frozen late-site direction/gate is applied to gemma's
+  OWN fresh rows as a frozen operating point -- the same
+  frozen-direction-on-fresh-activations discipline as `qwen35-4b-midband-heldout`
+  -- and it is the ONLY reuse gemma keeps; its late DOSE is still calibrated
+  fresh (option B).
 
 Only genuinely new work remains in THIS experiment: per-family J-lens mid-band
 band localization, mid-band direction fits + dose calibration, and the outcome
-runs. The mid-band directions/gate are fit fresh on the REUSED FIT split; the
-primary is scored on the REUSED HELD-OUT split -- the same reuse discipline
-`qwen35-4b-midband-doubt-snap` / `qwen35-4b-midband-heldout` used.
+runs. The mid-band directions/gate are fit fresh on the FIT split; the primary
+is scored on the HELD-OUT split -- the REUSED doubt-snap split for
+llama/mistral/qwen35-4b, and gemma's OWN fresh-mined split for gemma -- the same
+reuse discipline `qwen35-4b-midband-doubt-snap` / `qwen35-4b-midband-heldout`
+used.
 
 **Two gaps found while pinning the artifacts (flagged, not guessed around;
 carried to "Open questions at sign"):**
@@ -320,12 +334,18 @@ derivation". They are pinned identically across families in each
 
 - **G0 (per-family instrument validity; stop, not outcome)**: that family's
   checkpoint loads via the hardened loader and yields a valid hidden-states
-  tuple; the reused doubt-snap `split_manifest.json` and the frozen late-site
-  artifacts (`c_hat`/`u_d`/`gate_fit`/`build_manifest`) hash byte-identical to
-  the sha256 pinned in `families/<slug>.yaml` `reuse`; the reused pool has at
-  least 150 held-out confab rows AND at least 250 held-out known_correct_answered
-  rows (doubt-snap's own power bar; note gemma's held-out known = 251, a ~1-row
-  margin); no restricted text/generations are committed; that family's
+  tuple; the pinned reuse artifacts this family actually consumes hash
+  byte-identical to `families/<slug>.yaml` `reuse` (for the REUSED-POOL families
+  llama/mistral/qwen35-4b: the doubt-snap `split_manifest.json` AND the frozen
+  late-site direction/gate `c_hat`/`u_d`/`random_direction`/`gate_fit`/
+  `build_manifest`; for the FRESH-MINE family gemma4-e4b: ONLY the frozen
+  late-site direction/gate artifacts -- gemma mines its own pool/split, so its
+  split_manifest/g0_prep_summary are reference-only and not hash-checked, per
+  `family_config.integrity_artifact_names`); the pool has at least 150 held-out
+  confab rows AND at least 250 held-out known_correct_answered rows (doubt-snap's
+  own power bar; for llama/mistral/qwen35-4b this is the reused pool, for gemma
+  it is gemma's OWN fresh mine); no restricted text/generations are committed;
+  that family's
   `band_selection.status == resolved` before extraction; MID-BAND direction
   refits are byte-identical (`--verify-reproducible`); gate AUC (`neg_z_d`, FIT
   confab vs FIT known_correct_answered) >=0.90 at every MID-BAND candidate
@@ -442,24 +462,43 @@ no claim promoted.**
    sweeps the late site alongside the mid-band candidates, and
    `run_contrast.py` (`resolve_late_dose`) reads the fresh late dose from the
    calibration summary (CLI `--late-dose` still overrides).
-3. **[CHECKED 2026-07-23] Modal-volume retention.** The reuse pulls private row
-   text from the `eh-doubt-snap-cross-family` Modal volume. `modal volume ls`
-   (existence-only, no downloads) on 2026-07-23: **llama32_3b_instruct/analysis
-   PRESENT** (full analysis set incl. `split_rows_private.jsonl`,
-   `candidate_pool_private.jsonl`, `fit_rows_for_dose.jsonl`,
-   `heldout_rows_for_steer.jsonl`); **mistral7b_instruct_v03/analysis PRESENT**
-   (same set); **qwen35_4b PRESENT** (already proven); **gemma4_e4b_it ABSENT**
-   -- no gemma directory exists anywhere on the volume (root holds only
-   qwen35_9b, qwen35_4b, llama32_3b_instruct, mistral7b_instruct_v03, plus
-   `_archive`/`_live`, neither containing gemma). This is CONSISTENT with gemma
-   `never_behaviorally_launched: true` / `dose_fit: null`: gemma has no reusable
-   doubt-snap row text, so gemma's late arm follows the pre-authorized Modal
-   fallback (fresh mine) rather than reuse. llama/mistral/qwen35-4b reuse is
-   green on retention.
-4. **Gemma reuse caveats.** Gemma's late-site artifacts are FIT-prep only
-   (never dose-exercised; no `dose_fit.json`); its late gate AUC is 0.9472
-   (weakest, still >= 0.90); its held-out known count is 251 (~1-row margin
-   over the 250 bar). Confirm gemma proceeds on these reused artifacts.
+3. **[RESOLVED 2026-07-23, lead+user] Modal-volume retention -> gemma fresh
+   mine.** The reuse pulls private row text from the `eh-doubt-snap-cross-family`
+   Modal volume. `modal volume ls` (existence-only, no downloads) on 2026-07-23:
+   **llama32_3b_instruct/analysis PRESENT** (full analysis set incl.
+   `split_rows_private.jsonl`, `candidate_pool_private.jsonl`,
+   `fit_rows_for_dose.jsonl`, `heldout_rows_for_steer.jsonl`);
+   **mistral7b_instruct_v03/analysis PRESENT** (same set); **qwen35_4b PRESENT**
+   (already proven); **gemma4_e4b_it ABSENT** -- no gemma directory exists
+   anywhere on the volume (root holds only qwen35_9b, qwen35_4b,
+   llama32_3b_instruct, mistral7b_instruct_v03, plus `_archive`/`_live`, neither
+   containing gemma). Consistent with gemma `never_behaviorally_launched: true`.
+   **DISPOSITION (lead-authorized):** gemma's pool/split CANNOT be reused, so the
+   fresh-mine fallback is authorized for **gemma ONLY** -- `mine_eval_pool.py` +
+   `split_fit_heldout.py` run fresh on gemma's own checkpoint at launch. **Reuse
+   provenance for gemma's pool is LOST and is recorded as such**
+   (`families/gemma4-e4b.yaml reuse.doubt_snap.pool_provenance: fresh_mine`;
+   pool_counts + split_manifest + g0_prep_summary marked reference-only). The
+   frozen late-site DIRECTION / tau / standardization (`c_hat`, `u_d`,
+   `random_direction`, `gate_fit`, `build_manifest`) are STILL reused verbatim --
+   committed + hash-pinned -- and applied to gemma's fresh rows as a FROZEN
+   OPERATING POINT, mirroring `qwen35-4b-midband-heldout`'s
+   frozen-direction-on-fresh-activations pattern. Gemma's late-arm DOSE is
+   calibrated fresh on its fresh FIT rows (option B), uniform with the other
+   three families. Gemma's G0 reuse-integrity hash check is scoped to the frozen
+   late-site artifacts only (see gates.yaml `reused_rows_integrity` and
+   `family_config.integrity_artifact_names`); the >=150 / >=250 held-out power
+   bar applies to gemma's own fresh mine. llama/mistral/qwen35-4b reuse is
+   unaffected (row text PRESENT; full pool reuse).
+4. **[RESOLVED 2026-07-23, lead+user] Gemma reuse caveats.** Gemma's frozen
+   late-site artifacts are FIT-prep only (never dose-exercised; no
+   `dose_fit.json`); its late gate AUC is 0.9472 (weakest, still >= 0.90). These
+   frozen late-site direction/gate files are the ONLY reuse gemma keeps, applied
+   to gemma's fresh rows as a frozen operating point (see #3). The doubt-snap
+   held-out-known count of 251 (~1-row margin) is now MOOT: gemma fresh-mines its
+   own pool, so the >=250 held-out-known power bar applies to gemma's OWN mine,
+   not to that reference count. Gemma proceeds: fresh pool/split + frozen
+   late-site operating point + fresh late dose (option B).
 5. **Render/anchor reconciliation.** The frozen late direction/gate are valid
    only if this experiment's anchors at the late site use doubt-snap's own
    render/anchor convention (BASELINE_SYSTEM_PROMPT, anchor at `prompt_len - 1`,

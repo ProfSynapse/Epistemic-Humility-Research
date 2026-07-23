@@ -26,21 +26,31 @@ per_family_gates:
         pass_if: "the family's checkpoint loads via model_lib.load_model_and_tokenizer and yields a hidden_states tuple of length n_hidden_layers+1"
       - id: reused_rows_integrity
         pass_if: >-
-          the doubt-snap-cross-family-confirmatory committed split_manifest.json
-          for this family's cell hashes byte-identical to families/<slug>.yaml
-          reuse.doubt_snap.artifacts.split_manifest.sha256, AND the frozen
-          late-site direction/gate artifacts (c_hat.json, u_d.json, gate_fit.json,
-          build_manifest.json) each hash byte-identical to their pinned sha256 in
-          the same reuse block. Nothing about the reused rows or the late arm is
-          refit here.
+          every pinned reuse artifact this family actually consumes hashes
+          byte-identical to its sha256 in families/<slug>.yaml reuse.doubt_snap
+          (family_config.integrity_artifact_names is the authority). REUSED-POOL
+          families (llama-3.2-3b, mistral-7b-v03, qwen35-4b): the committed
+          split_manifest.json AND the frozen late-site direction/gate artifacts
+          (c_hat.json, u_d.json, random_direction.json, gate_fit.json,
+          build_manifest.json). FRESH-MINE family (gemma4-e4b,
+          reuse.doubt_snap.pool_provenance: fresh_mine, lead-authorized
+          2026-07-23): ONLY the frozen late-site direction/gate artifacts
+          (c_hat.json, u_d.json, random_direction.json, gate_fit.json,
+          build_manifest.json) -- gemma mines its own pool/split, so its
+          split_manifest / g0_prep_summary are reference-only and NOT
+          hash-checked here. Nothing about the reused rows or the late arm is
+          refit at any family.
       - id: reused_pool_powered
         pass_if: >-
-          the reused doubt-snap pool for this family has at least 150 held-out
-          confab rows AND at least 250 held-out known_correct_answered rows
-          (doubt-snap's own registered held-out power bar, inherited verbatim;
-          the primary is scored on the held-out partition). NOTE: gemma4-e4b's
-          held-out known count is 251, a ~1-row margin -- flagged in
-          families/gemma4-e4b.yaml.
+          REUSED-POOL families (llama-3.2-3b, mistral-7b-v03, qwen35-4b): the
+          reused doubt-snap pool has at least 150 held-out confab rows AND at
+          least 250 held-out known_correct_answered rows (doubt-snap's own
+          registered held-out power bar, inherited verbatim). FRESH-MINE family
+          (gemma4-e4b): the SAME bar (>=150 held-out confab, >=250 held-out
+          known_correct_answered) applies to gemma's OWN fresh mine + split, not
+          to doubt-snap's reference counts (reuse.pool_counts for gemma is
+          reference-only). The primary is scored on the held-out partition in
+          both cases.
       - id: containment
         pass_if: "no question text, aliases, raw generations, or row-level outputs are committed for this family (only ID-only manifests + aggregate JSON)"
       - id: band_selection_resolved
