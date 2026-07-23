@@ -1,0 +1,67 @@
+schema_version: 1
+decision_order: [G0, G1, G3, G2, G4, G5]
+integrity_failure_disposition: indeterminate
+
+G0:
+  name: provenance_containment_capture_coverage
+  requirements:
+    model_revision_matches_config: true
+    capture_coverage_fraction: 1.0
+    row_layer_width_counts_match_config: true
+    writes_beneath_experiment_analysis_only: true
+    aggregate_output_allowlist_only: true
+    prohibited_private_fields_absent: true
+    private_data_exhaust_beneath_analysis_only: true
+    private_data_exhaust_content_addressed: true
+
+G1:
+  name: exact_baseline_reproduction
+  metric: max_abs_deviation_from_committed_eff_dim_frac
+  threshold: 1.0e-6
+  operator: less_than_or_equal
+  hard_stop_on_fail: true
+
+G2:
+  name: surface_treatment_strength
+  per_substrate:
+    layer_range: non_embedding_early_exterior
+    min_observed_early_max_activation_oof_r2: 0.01
+    permutation_max_r2_quantile: 0.95
+    min_observed_above_permutation_quantile: 0.005
+  failure_disposition: indeterminate
+  hard_stop_before_location_decision_on_fail: true
+
+G3:
+  name: planted_signal_reachability
+  hs_index: 2
+  alpha_grid: [0.25, 0.5, 1.0, 2.0, 4.0, 8.0]
+  min_raw_peak_to_runner_up_ratio: 1.05
+  controlled_peak_must_not_equal_hs2: true
+  max_controlled_normalized_profile_deviation: 0.05
+  failure_disposition: indeterminate
+  hard_stop_on_fail: true
+
+G4:
+  name: permutation_negative_control
+  n_permutations: 20
+  min_early_exterior_permutations: 18
+  max_median_abs_peak_shift_hs: 1
+  failure_disposition: indeterminate
+  hard_stop_before_location_decision_on_fail: true
+
+G5:
+  name: peak_location_decision
+  valid_only_after: [G0, G1, G2, G3, G4]
+  early_exterior_max_depth: 0.20
+  required_profiles_per_substrate:
+    - full_fit_combined_residual
+    - full_fit_combined_residual_seeded_50pct
+  descriptive_profiles_not_decisive:
+    - baseline
+    - low_dimensional_residual
+    - lexical_residual
+    - surface_explained
+  pass_rule: all_required_profiles_for_both_substrates_peak_at_or_below_boundary
+  falsifier_rule: any_valid_required_profile_peaks_above_boundary
+  peak_margin_is_decisive: false
+  gate_failure_disposition: indeterminate_never_pass_or_falsification
