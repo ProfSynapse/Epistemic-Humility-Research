@@ -25,7 +25,8 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from family_config import (  # noqa: E402
-    FAMILY_SLUGS, layer_dir_name, load_family, hs_indices as family_hs_indices,
+    FAMILY_SLUGS, layer_dir_name, load_family,
+    midband_hs_indices as family_midband_hs_indices,
 )
 
 
@@ -79,7 +80,9 @@ def main(argv=None) -> int:
     from safetensors.numpy import load_file
 
     family = args.family
-    hs_list = family_hs_indices(load_family(family))
+    # MID-BAND candidates only; the late arm's gate (tau_frozen) is reused
+    # verbatim from the doubt-snap artifacts and is not refit here.
+    hs_list = family_midband_hs_indices(load_family(family))
     analysis = HERE / "analysis" / family
     committed = HERE / "analysis-committed" / family
     out_path = committed / "gate_fit_layers.json"

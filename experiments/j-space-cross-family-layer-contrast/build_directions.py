@@ -39,7 +39,8 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from family_config import (  # noqa: E402
-    FAMILY_SLUGS, hs_to_block, layer_dir_name, load_family, hs_indices as family_hs_indices,
+    FAMILY_SLUGS, hs_to_block, layer_dir_name, load_family,
+    midband_hs_indices as family_midband_hs_indices,
 )
 
 RANDOM_STATE = 20260707  # pinned, identical across families (see module docstring)
@@ -130,7 +131,10 @@ def main(argv=None) -> int:
 
     family = args.family
     cfg = load_family(family)
-    hs_list = family_hs_indices(cfg)  # raises if band_selection unresolved
+    # MID-BAND candidates only; the late reference arm is loaded frozen from the
+    # reused doubt-snap artifacts (see AMENDMENT.md "Consumed doubt-snap
+    # artifacts") and is never refit here.
+    hs_list = family_midband_hs_indices(cfg)  # raises if band_selection unresolved
 
     analysis = HERE / "analysis" / family
     committed = HERE / "analysis-committed" / family

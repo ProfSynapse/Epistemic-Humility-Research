@@ -23,6 +23,9 @@ import yaml
 
 HERE = Path(__file__).resolve().parent
 FAMILIES_DIR = HERE / "families"
+# experiments/<slug>/ -> repo root, for resolving reuse.committed_dir which is
+# recorded repo-relative (experiments/doubt-snap-.../analysis-committed/<cell>).
+REPO_ROOT = HERE.parent.parent
 
 FAMILY_SLUGS = ["llama-3.2-3b", "mistral-7b-v03", "qwen35-4b", "gemma4-e4b"]
 
@@ -89,13 +92,69 @@ def midband_hs_indices(family_cfg: dict[str, Any]) -> list[int]:
 
 
 def late_reference_hs(family_cfg: dict[str, Any]) -> int:
+    """The late reference site is DEFINED by the reused doubt-snap frozen late
+    site (reuse.doubt_snap.late_site.hs_index = doubt-snap decoder block + 1),
+    not re-localized by this experiment's J-lens. Falls back to the legacy
+    band_selection.late_reference_hs only if no reuse block is present."""
+    ls = late_site(family_cfg)
+    if ls and ls.get("hs_index") is not None:
+        return int(ls["hs_index"])
     value = family_cfg.get("band_selection", {}).get("late_reference_hs")
     if value is None:
         raise ValueError(
-            f"{family_cfg.get('family')}: late_reference_hs not yet resolved -- "
-            "run jlens_profile.py for this family before requesting its layer set."
+            f"{family_cfg.get('family')}: late_reference_hs not resolved -- no "
+            "reuse.doubt_snap.late_site.hs_index and no band_selection fallback."
         )
     return int(value)
+
+
+# --- reused doubt-snap artifacts (sign-time revision 2026-07-23) --------------
+
+def reuse_block(family_cfg: dict[str, Any]) -> dict[str, Any] | None:
+    """The `reuse.doubt_snap` block, or None if this family is not reusing a
+    doubt-snap cell (e.g. a fallback-fresh-mine family)."""
+    return (family_cfg.get("reuse") or {}).get("doubt_snap")
+
+
+def late_site(family_cfg: dict[str, Any]) -> dict[str, Any] | None:
+    rb = reuse_block(family_cfg)
+    return rb.get("late_site") if rb else None
+
+
+def is_late_reference(family_cfg: dict[str, Any], hs_index: int) -> bool:
+    ls = late_site(family_cfg)
+    if not ls or ls.get("hs_index") is None:
+        return hs_index == family_cfg.get("band_selection", {}).get("late_reference_hs")
+    return hs_index == int(ls["hs_index"])
+
+
+def reuse_committed_dir(family_cfg: dict[str, Any]) -> Path | None:
+    rb = reuse_block(family_cfg)
+    if not rb or not rb.get("committed_dir"):
+        return None
+    return (REPO_ROOT / rb["committed_dir"]).resolve()
+
+
+def reuse_artifact_path(family_cfg: dict[str, Any], name: str) -> Path | None:
+    """Absolute path to a pinned reused doubt-snap artifact (e.g. 'c_hat',
+    'u_d', 'gate_fit', 'build_manifest', 'split_manifest'), or None if the
+    artifact is not recorded (e.g. gemma's absent dose_fit)."""
+    rb = reuse_block(family_cfg)
+    d = reuse_committed_dir(family_cfg)
+    if not rb or d is None:
+        return None
+    art = (rb.get("artifacts") or {}).get(name)
+    if not art or not art.get("path"):
+        return None
+    return d / art["path"]
+
+
+def reuse_artifact_sha256(family_cfg: dict[str, Any], name: str) -> str | None:
+    rb = reuse_block(family_cfg)
+    if not rb:
+        return None
+    art = (rb.get("artifacts") or {}).get(name)
+    return art.get("sha256") if art else None
 
 
 def hs_indices(family_cfg: dict[str, Any]) -> list[int]:

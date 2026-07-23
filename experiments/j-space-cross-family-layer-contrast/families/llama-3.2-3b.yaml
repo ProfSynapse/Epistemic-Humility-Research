@@ -112,14 +112,65 @@ doses:
   ladder: [25, 50, 75, 100, 125, 150, 175, 200]
   selected: {}
 
-g3_late_reference_floor:
-  clean_tighten_rate_floor: 0.40
-  wilson_lower_ci_floor: 0.30
-  note: >-
-    Lower than Qwen3-4B's own predecessor floor (rate >=0.60, CI lower >0.50)
-    per the lead's locked design ("instruct families may differ"). Flagged
-    to the lead in LAUNCH-PLAN.md as an open decision point, not re-derived
-    here.
+reuse:
+  # CONSUMED from the resolved doubt-snap-cross-family-confirmatory experiment
+  # (resolved 2026-07-12; confirmatory NOT promoted -- every cell stopped at
+  # its registered G0 FIT dose-viability rule at the late 0.94-depth write
+  # site). This experiment reuses that cell's mined eval pool, FIT/HELD-OUT
+  # split, and frozen late-site direction+gate VERBATIM (hash-pinned); only
+  # the mid-band localization/fit/calibration and the outcome runs are new
+  # here. See AMENDMENT.md "Consumed doubt-snap artifacts".
+  doubt_snap:
+    experiment: doubt-snap-cross-family-confirmatory
+    cell: llama32_3b_instruct
+    committed_dir: experiments/doubt-snap-cross-family-confirmatory/analysis-committed/llama32_3b_instruct
+    modal_volume: eh-doubt-snap-cross-family
+    modal_path_prefix: doubt-snap-cross-family-r1/llama32_3b_instruct/analysis
+    revision: 006f5dcd1393c3add266de40994ba96225e9689d
+    hidden_dim: 3072
+    # Frozen late reference site = doubt-snap's own round(0.94*(n_layers-1))
+    # write site: block index = build_manifest.json "layer"; hs_index = block+1.
+    # For this family this equals this experiment's own 0.9444*n_layers estimate
+    # (hs26) -- a numeric coincidence; the SITE is DEFINED as doubt-snap's
+    # frozen block, pinned by the reused build_manifest below (not re-derived).
+    late_site:
+      block: 25
+      hs_index: 26
+      tau_frozen: -0.27270999889106745
+      gate_auc_on_fit: 0.9992479570792824
+      mu_d: -0.13531677845215398
+      sigma_d: 3.583327330519094
+      mu_c: -1.8743009609914807
+      sigma_c: 2.0923817293880265
+      # doubt-snap selected NO late dose (G0 dose-viability stop). Its FIT dose
+      # sweep peaks at clean_tighten 0.184 @ dose 19 (cost 0.009), below its own
+      # 0.60 floor. Late-arm dose is an OPEN QUESTION at sign (LAUNCH-PLAN
+      # decision point 1); the late arm gates nothing regardless.
+      doubt_snap_selected_dose: null
+      doubt_snap_fit_peak_clean_tighten: {rate: 0.1842, dose: 19.0, known_cost: 0.009}
+    pool_counts:
+      confab_fit: 581
+      known_correct_answered_fit: 222
+      confab_held_out: 872
+      known_correct_answered_held_out: 334
+    artifacts:
+      split_manifest: {path: split_manifest.json, sha256: 4ef45f58f2e98e3c724ed1561020e92593144105e863654cd26736461f9045e5}
+      build_manifest: {path: build_manifest.json, sha256: b20c3064fc2186eae21eacb7501550823db6cab2ff5702d8d9121f4e4c57967e}
+      c_hat: {path: c_hat.json, sha256: 0ce10fae12192c6f6863315322f31d97024831f8ea63493985e8cf9ae180fb2d}
+      u_d: {path: u_d.json, sha256: dc7e2e97c6bbb48cce9206e2416bb6a528863d01bdb810bc37127b4767bee161}
+      random_direction: {path: random_direction.json, sha256: 57ad0c843cc766e3870cf99c1bfc3245643831b2f3ad078d3cb4012e7f4daa79}
+      gate_fit: {path: gate_fit.json, sha256: 953fa2093183b80376c68c0f677249649a2a2e49fe58c254bc11526fef9cd4e4}
+      dose_fit: {path: dose_fit.json, sha256: c4412303b9d830599deecf7b67943653130a12d313ff8a4df3285771315936f6}
+      g0_prep_summary: {path: g0_prep_summary.json, sha256: da73f0158609141a5f2b381c83c84fcd2eb67eca2a4a361d404ab3fbea5c498f}
+
+primary_gate:
+  # PROPOSED (2026-07-23 sign-time revision) -- ABSOLUTE mid-band actuation,
+  # identical numbers across all four families; derivation written out in
+  # AMENDMENT.md "Gates -> derivation". Supersedes and DROPS the draft's
+  # per-family g3_late_reference_floor (0.40/0.30): the late arm is now a
+  # non-gating secondary descriptive comparator.
+  g1_midband_clean_tighten_floor: {rate: 0.50, wilson_lower_ci: 0.40}
+  g2_midband_known_correct_cost_cap: {rate: 0.05, wilson_upper_ci: 0.10}
 
 vram:
   bf16_weights_estimate_gb: "~6.4GB (3.21B params x 2 bytes)"

@@ -109,12 +109,56 @@ doses:
   ladder: [25, 50, 75, 100, 125, 150, 175, 200]
   selected: {}
 
-g3_late_reference_floor:
-  clean_tighten_rate_floor: 0.40
-  wilson_lower_ci_floor: 0.30
-  note: >-
-    Same lowered floor as llama-3.2-3b.yaml; flagged to the lead, not
-    re-derived here.
+reuse:
+  # CONSUMED from the resolved doubt-snap-cross-family-confirmatory experiment
+  # (resolved 2026-07-12; confirmatory NOT promoted). Reuse of this cell's
+  # mined pool + FIT/HELD-OUT split + frozen late-site direction/gate,
+  # hash-pinned. See AMENDMENT.md "Consumed doubt-snap artifacts" and
+  # llama-3.2-3b.yaml's identical reuse-block header.
+  doubt_snap:
+    experiment: doubt-snap-cross-family-confirmatory
+    cell: mistral7b_instruct_v03
+    committed_dir: experiments/doubt-snap-cross-family-confirmatory/analysis-committed/mistral7b_instruct_v03
+    modal_volume: eh-doubt-snap-cross-family
+    modal_path_prefix: doubt-snap-cross-family-r1/mistral7b_instruct_v03/analysis
+    revision: c170c708c41dac9275d15a8fff4eca08d52bab71
+    hidden_dim: 4096
+    late_site:
+      block: 29
+      hs_index: 30
+      tau_frozen: -0.8913234780750627
+      gate_auc_on_fit: 0.9998833400637143
+      mu_d: -2.481688499178803
+      sigma_d: 1.5382371809779534
+      mu_c: -0.20473676290269346
+      sigma_c: 0.9390147895867568
+      # doubt-snap late arm is a TRUE BEHAVIORAL NULL here: FIT dose sweep
+      # clean_tighten is 0.000 at every dose on the correctly-bracketed grid
+      # (the write moves tokens but induces no clean refusal). selected_dose
+      # null. Late-arm dose is an OPEN QUESTION at sign; late arm gates nothing.
+      doubt_snap_selected_dose: null
+      doubt_snap_fit_peak_clean_tighten: {rate: 0.0, dose: 30.0, known_cost: 0.0118}
+    pool_counts:
+      confab_fit: 874
+      known_correct_answered_fit: 255
+      confab_held_out: 1312
+      known_correct_answered_held_out: 382
+    artifacts:
+      split_manifest: {path: split_manifest.json, sha256: e917ab0063eb3349a344816f28a75eb48a7858a7356504b2a265fb5720348c7b}
+      build_manifest: {path: build_manifest.json, sha256: 62e50d8a06fa17633a7a4aeaa3f516f77f284943e39013bfb85e03f2f25868c1}
+      c_hat: {path: c_hat.json, sha256: d0af3a80de5e62d35692c42b0479fe61560757e174c77b0ac7b2c2c083fb6a29}
+      u_d: {path: u_d.json, sha256: 20ee3f4c94082122839b813bba72e9e24b45b44ef303d8cd8bfb0e3d17acd15e}
+      random_direction: {path: random_direction.json, sha256: 738d81012f8a441bb36f4191dd1d5bd87632e096defc7a6f229679f05e6b9525}
+      gate_fit: {path: gate_fit.json, sha256: ed022c79ab45160f3cbb6e30fde02b34f0fafeb39aee9a66e8646afb8b642605}
+      dose_fit: {path: dose_fit.json, sha256: b2a39f0b5ef6d1c7db8bcf32428098af9c7959bb2024681c4b3d5aa08a55af94}
+      g0_prep_summary: {path: g0_prep_summary.json, sha256: 4e307e306fa35b5a6100650abfaefad6e7c1909db97033e40bfde820e84cfb0d}
+
+primary_gate:
+  # PROPOSED (2026-07-23) -- ABSOLUTE mid-band actuation; same numbers across
+  # families; derivation in AMENDMENT.md "Gates -> derivation". Supersedes and
+  # DROPS the draft's g3_late_reference_floor (late arm now non-gating).
+  g1_midband_clean_tighten_floor: {rate: 0.50, wilson_lower_ci: 0.40}
+  g2_midband_known_correct_cost_cap: {rate: 0.05, wilson_upper_ci: 0.10}
 
 vram:
   bf16_weights_estimate_gb: "~14-15GB at 7B params"

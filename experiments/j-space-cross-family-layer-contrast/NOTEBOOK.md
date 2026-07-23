@@ -6,6 +6,65 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-23 -- sign-time revision: primary reframe + doubt-snap reuse (CPU-only, no GPU, NOT signed)
+
+Lead-directed, user-approved structural revision of the draft, after
+`doubt-snap-cross-family-confirmatory` RESOLVED (2026-07-12, confirmatory not
+promoted -- every launched cell stopped at G0 FIT dose-viability at the late
+0.94-depth site; gemma4_e4b_it never behaviorally launched). All predecessor
+docs and doubt-snap committed artifacts were read from the canonical `main`
+checkout (this worktree is 677 commits behind main and does NOT contain them).
+
+Changes made:
+- **Primary endpoint reframed to ABSOLUTE mid-band actuation.** New per-family
+  primary gates: G1 mid-band held-out confab clean_tighten floor, G2 mid-band
+  known-correct not_well_formed_correct cost cap. The late-reference arm is
+  DEMOTED to a non-gating secondary descriptive comparator; the draft's relative
+  G1/G2 contrast and the G3 late-viability floor (0.40/0.30) are DROPPED.
+  gates.yaml, AMENDMENT.md (Prediction/Falsifier/Gates + new "Gates ->
+  derivation" and "Open questions at sign"), experiment.yaml, and
+  run_contrast.py/cross_family_rollup.py updated.
+- **PROPOSED gate numbers with written derivation.** G1 = clean_tighten >= 0.50,
+  Wilson lower > 0.40 (below the weaker same-lineage mid-band held-out point
+  ~0.66 Qwen3.5-4B / 0.89 Qwen3-4B, far above the dead late-site region <= 0.33;
+  Wilson-lower 0.10 below the point, mirroring qwen35-4b-midband-heldout's gate
+  shape). Stricter alternative 0.60/0.50 offered. G2 = not_well_formed_correct
+  <= 0.05, Wilson upper < 0.10 (inherits qwen35-4b-midband-heldout's cost gate;
+  both Qwen substrates cleared at 0.035/0.039). All PROPOSED pending lead sign.
+- **Consumes doubt-snap artifacts, hash-pinned.** Each `families/<slug>.yaml`
+  gained a `reuse.doubt_snap` block: committed-artifact relative paths + sha256
+  (split_manifest, build_manifest, c_hat, u_d, random_direction, gate_fit,
+  dose_fit, g0_prep_summary), Modal volume + path, frozen late-site params
+  (block/hs_index, tau_frozen, mu_c/sigma_c/mu_d/sigma_d), FIT/held-out counts.
+  New `materialize_reused_rows.py` replaces mine_eval_pool.py + split_fit_heldout.py
+  (retained fallback-only) for the four reused families; family_config.py gained
+  reuse accessors; build_directions/gate_fit/calibrate_dose scoped to mid-band
+  only; pipeline.py's compute_gate_decisions/run_layer branch the late arm to
+  the frozen reuse artifacts. Late reference site is now DEFINED as doubt-snap's
+  frozen block (llama 25 / mistral 29 / qwen35-4b 29 / gemma 39; hs_index+1 =
+  26/30/30/40 -- coincidentally equal to this experiment's own 0.9444*L estimate).
+- **Gemma-4-E4B Modal fallback pre-authorized** (LAUNCH-PLAN.md + AMENDMENT.md):
+  local first, Modal fallback for the Gemma cell only on a G0 OOM, NOT-RUN only
+  if Modal also fails.
+
+Two artifact gaps found while pinning (flagged as open questions, not guessed
+around): (1) NO family has a calibrated late-site dose to reuse (all doubt-snap
+cells `selected_dose: null`); (2) gemma4_e4b_it was never behaviorally launched
+-- FIT prep is committed but no dose_fit.json/modal_status.json, late gate AUC
+0.9472 (weakest), held-out known 251 (~1-row margin). Plus the branch-behind-main
+dependency (open question #0) and the Modal-volume row-text retention question
+(proven only for the qwen35_4b cell).
+
+Verification (CPU-only): `bin/exp validate` OK (after moving the not-yet-present
+doubt-snap `inputs` paths into a comment, since validate existence-checks
+inputs and this branch lacks main's content); `py_compile` OK on all scripts;
+`--help` OK on the no-torch scripts (materialize_reused_rows, cross_family_rollup,
+build_directions, gate_fit) and family_config reuse accessors resolve all four
+families' pins. Full `--help` of the torch+MechInterp scripts needs the project
+`unsloth_env` (pre-existing, unchanged by this revision). Did NOT sign, did NOT
+run any model/GPU/Modal work, did NOT touch the 3090 or the synaptic-tuner
+submodule. Predictions scoreboard left blank for the lead to fill at sign.
+
 ### 2026-07-09 -- tokenizer/config verification pass (CPU-only, no GPU work run)
 
 Resolved LAUNCH-PLAN.md decision points #3 (multimodal config nesting), #4

@@ -22,7 +22,10 @@ HERE = Path(__file__).resolve().parent
 import gen_lib as gl  # noqa: E402
 import grader  # noqa: E402
 import model_lib as ml  # noqa: E402
-from family_config import layer_dir_name, load_family  # noqa: E402
+from family_config import (  # noqa: E402
+    layer_dir_name, load_family,
+    is_late_reference as fc_is_late, reuse_artifact_path as fc_reuse_path,
+)
 from MechInterp.intervention import get_decoder_layer  # noqa: E402
 
 MAX_NEW = gl.MAX_NEW_CAP
@@ -84,18 +87,41 @@ def stratified_subset(rows: list[dict], n: int) -> list[dict]:
     return out[:n]
 
 
+def _late_gate_params(cfg: dict) -> dict:
+    """Doubt gate params for the LATE reference arm, loaded FROZEN from the
+    reused doubt-snap artifacts (u_d vector + mu_d/sigma_d from build_manifest
+    + tau_frozen from gate_fit). Nothing here is refit by this experiment."""
+    build = json.loads(fc_reuse_path(cfg, "build_manifest").read_text())
+    gate = json.loads(fc_reuse_path(cfg, "gate_fit").read_text())
+    return {
+        "u_d": load_direction_vector(fc_reuse_path(cfg, "u_d")),
+        "mu_d": build["mu_d"], "sigma_d": build["sigma_d"],
+        "tau": gate["tau_frozen"], "sigma_c": build["sigma_c"],
+        "c_hat_path": fc_reuse_path(cfg, "c_hat"),
+    }
+
+
 def compute_gate_decisions(family: str, rows: list[dict], hs_index: int) -> list[dict]:
+    cfg = load_family(family)
     extract_tensors = HERE / "analysis" / family / "anchor_extract.safetensors"
-    build_manifest_path = HERE / "analysis-committed" / family / "build_manifest_layers.json"
-    gate_fit_path = HERE / "analysis-committed" / family / "gate_fit_layers.json"
 
     tensors = __import__("safetensors.numpy", fromlist=["load_file"]).load_file(str(extract_tensors))
     fresh = {k: np.asarray(v, dtype=np.float64) for k, v in tensors.items()}
-    layer_name = layer_dir_name(hs_index)
-    u_d = load_direction_vector(layer_paths(family, hs_index)["u_d"])
-    build = json.loads(build_manifest_path.read_text())["layers"][layer_name]
-    gate = json.loads(gate_fit_path.read_text())["layers"][layer_name]
-    mu_d, sigma_d, tau = build["mu_d"], build["sigma_d"], gate["tau_frozen"]
+
+    if fc_is_late(cfg, hs_index):
+        # LATE reference arm: frozen doubt gate from the reused doubt-snap cell.
+        lp = _late_gate_params(cfg)
+        u_d, mu_d, sigma_d, tau = lp["u_d"], lp["mu_d"], lp["sigma_d"], lp["tau"]
+    else:
+        # MID-BAND candidate: gate fit fresh by this experiment on the reused
+        # FIT split.
+        layer_name = layer_dir_name(hs_index)
+        build_manifest_path = HERE / "analysis-committed" / family / "build_manifest_layers.json"
+        gate_fit_path = HERE / "analysis-committed" / family / "gate_fit_layers.json"
+        u_d = load_direction_vector(layer_paths(family, hs_index)["u_d"])
+        build = json.loads(build_manifest_path.read_text())["layers"][layer_name]
+        gate = json.loads(gate_fit_path.read_text())["layers"][layer_name]
+        mu_d, sigma_d, tau = build["mu_d"], build["sigma_d"], gate["tau_frozen"]
 
     out = []
     for row in rows:
@@ -165,13 +191,22 @@ def run_layer(family: str, model, tokenizer, hs_index: int, rows: list[dict],
     single run log path would collide), the whole-arm-in-memory behavior is
     unchanged.
     """
-    layer_name = layer_dir_name(hs_index)
-    build = json.loads((HERE / "analysis-committed" / family / "build_manifest_layers.json").read_text())
-    build = build["layers"][layer_name]
-    strength = dose_target / build["sigma_c"]
-    hook, controller, layer_idx, _sigma, _rec = ml.setup_hook_from_path(
-        layer_paths(family, hs_index)["c_hat"]
-    )
+    cfg = load_family(family)
+    if fc_is_late(cfg, hs_index):
+        # LATE reference arm: frozen c_hat + sigma_c from the reused doubt-snap
+        # cell. setup_hook_from_path reads the write vector, sigma, and decoder
+        # block index from doubt-snap's own committed c_hat.json.
+        lp = _late_gate_params(cfg)
+        sigma_c = lp["sigma_c"]
+        c_hat_path = lp["c_hat_path"]
+    else:
+        layer_name = layer_dir_name(hs_index)
+        build = json.loads((HERE / "analysis-committed" / family / "build_manifest_layers.json").read_text())
+        build = build["layers"][layer_name]
+        sigma_c = build["sigma_c"]
+        c_hat_path = layer_paths(family, hs_index)["c_hat"]
+    strength = dose_target / sigma_c
+    hook, controller, layer_idx, _sigma, _rec = ml.setup_hook_from_path(c_hat_path)
     dev = next(model.parameters()).device
     eos_ids = ml.resolve_eos_ids(family, tokenizer)
     layer_module = get_decoder_layer(model, layer_idx)

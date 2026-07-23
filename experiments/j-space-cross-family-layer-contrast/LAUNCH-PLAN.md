@@ -22,16 +22,21 @@ either a `full_summary.json` or a recorded NOT-RUN.
 ## Per-stage commands (per family; replace `<slug>` with the family slug)
 
 ```bash
-python experiments/j-space-cross-family-layer-contrast/mine_eval_pool.py --family <slug>
-python experiments/j-space-cross-family-layer-contrast/split_fit_heldout.py --family <slug>
+# 1. Reuse doubt-snap's pool + FIT/HELD-OUT split (supersedes mine + split):
+python experiments/j-space-cross-family-layer-contrast/materialize_reused_rows.py --family <slug>
+#    (prints the `modal volume get` command for the private row text; re-run to normalize it)
+# 2. NEW work: mid-band localization, fit, dose calibration (mid-band candidates only):
 python experiments/j-space-cross-family-layer-contrast/jlens_profile.py --family <slug>
 python experiments/j-space-cross-family-layer-contrast/extract_anchor.py --family <slug>
 python experiments/j-space-cross-family-layer-contrast/build_directions.py --family <slug> --verify-reproducible
 python experiments/j-space-cross-family-layer-contrast/gate_fit.py --family <slug>
 python experiments/j-space-cross-family-layer-contrast/calibrate_dose.py --family <slug>
-python experiments/j-space-cross-family-layer-contrast/run_contrast.py --family <slug> --mode smoke --n-rows 8
+# 3. Outcome. Primary = mid-band absolute gates. The SECONDARY late arm runs only
+#    if --late-dose is given (open question 1); without it the late arm is skipped
+#    and the primary is unaffected:
+python experiments/j-space-cross-family-layer-contrast/run_contrast.py --family <slug> --mode smoke --n-rows 8 [--late-dose D]
 # only after smoke G0 passes:
-python experiments/j-space-cross-family-layer-contrast/run_contrast.py --family <slug> --mode full --i-know-this-is-the-cross-family-run
+python experiments/j-space-cross-family-layer-contrast/run_contrast.py --family <slug> --mode full --i-know-this-is-the-cross-family-run [--late-dose D]
 ```
 
 After all four families have run (or stopped at G0):
@@ -80,17 +85,54 @@ sweep on all four families.
 | Qwen3.5-4B | 4B | Should fit for the text-only path; the multimodal loader may pull in a vision tower's weights even for text prompts, which is a decision point (see below), not resolved here. |
 | Gemma-4-E4B | ~4B effective | **FLAGGED, highest risk of the four.** The E4B multimodal architecture may load a vision encoder even for text-only prompts. Combined with the J-lens profile stage's extra double-backward-JVP activation memory (the localization experiment's own docstring notes this needs `attn_implementation="eager"`, which is generally MORE memory-hungry than fused SDPA attention), this could approach the 24GB ceiling. Amendment Z's own risk table lists this as "loader risk only" for its own (non-J-lens) extraction; the J-lens profile stage is this experiment's OWN additional risk on top of Amendment Z's, not something Amendment Z already validated. |
 
-## Decision points for the lead (none resolved by this draft)
+## Gemma-4-E4B Modal fallback (pre-authorized 2026-07-23, user)
 
-1. **G3 late-reference floor (0.40 rate / 0.30 Wilson-lower CI, all four
-   families)**. This is LOWER than the Qwen3-4B predecessors' own G3 floor
-   (0.60/0.50) per the locked design's stated rationale ("instruct families
-   may differ"), but the exact numbers 0.40/0.30 were chosen by this
-   drafting pass as a round, defensible-looking floor, not derived from any
-   family-specific power analysis or pilot data (no GPU work has run). The
-   lead should decide whether 0.40/0.30 is the right floor, or whether it
-   should be derived per-family from that family's own FIT-side dose
-   calibration numbers before the held-out contrast runs.
+The Gemma-4-E4B cell runs on the local RTX 3090 first, like the other three
+families. **If it OOMs at G0 after bounded debugging** -- a real risk given its
+trimodal loader materializes vision + audio towers even for text-only prompts
+(verified CPU-only, see families/gemma4-e4b.yaml), on top of the J-lens profile
+stage's eager-attention double-backward activation memory -- **a Modal fallback
+for the Gemma cell only is pre-authorized by the user.** Other families stay
+local-only. A G0 NOT-RUN is recorded for Gemma only if the Modal fallback ALSO
+fails after bounded debugging; a local OOM alone is not a NOT-RUN. This is the
+only cell with a pre-authorized cloud fallback.
+
+## Decision points for the lead
+
+**Sign-time revision (2026-07-23) added items 0/1a/1b/1c below and MOOTED the
+original G3-floor decision. The remaining items 2-6 are carried from the draft.**
+
+0. **Branch is 677 commits behind `main`; the reused artifacts are not on it.**
+   The reuse design depends on `doubt-snap-cross-family-confirmatory` and its
+   qwen35-4b-midband successors, which resolved on `main` after this branch was
+   cut. The branch MUST be updated with `main` (rebase/merge -- a git decision
+   the lead owns) before `materialize_reused_rows.py` or the G0 reuse-integrity
+   check can resolve any path. All pinned sha256 were computed from `main` and
+   are authoritative. See AMENDMENT.md "Open questions at sign" #0.
+
+1a. **Primary gate NUMBERS (PROPOSED).** G1 mid-band actuation floor =
+   clean_tighten >= 0.50 with Wilson lower > 0.40; G2 selectivity cap =
+   not_well_formed_correct <= 0.05 with Wilson upper < 0.10. Full derivation in
+   AMENDMENT.md "Gates -> derivation". Stricter G1 alternative offered: 0.60 /
+   0.50 (the sibling Qwen3.5-4B's own passing held-out floor). Drafter
+   recommends the conservative 0.50/0.40.
+
+1b. **Late-arm DOSE gap.** doubt-snap selected NO late-site dose for any family
+   (`selected_dose: null`; gemma has no dose sweep at all). "Reuse the frozen
+   late-site ... calibrated dose" cannot be satisfied literally. Options: (A)
+   report the late arm at each family's doubt-snap FIT peak-clean_tighten dose
+   (llama 19 / mistral 30 / qwen35-4b 40; gemma unavailable), or (B) calibrate
+   the late dose fresh here with the same ladder as the mid-band arm.
+   **Drafter recommends (B)** -- apples-to-apples, covers gemma, and the late
+   arm is non-gating so verbatim dose reuse buys nothing. The `run_contrast.py
+   --late-dose` flag (or a `reuse.doubt_snap.late_site.resolved_late_dose` YAML
+   field) resolves this; without it the late arm is skipped and the primary is
+   unaffected.
+
+1c. **The former G3 late-reference floor is DROPPED.** The reframe makes the
+   late arm a non-gating descriptive comparator, so the draft's per-family
+   `g3_late_reference_floor` (0.40 / 0.30) no longer exists; the original
+   decision about that floor is moot.
 2. **RESOLVED PRE-SIGN (was: Ministral-3-3B FP8 load risk).** The
    Mistral-family cell was substituted to `mistralai/Mistral-7B-Instruct-v0.3`
    before any Mistral-family run, inheriting the doubt-snap-cross-family

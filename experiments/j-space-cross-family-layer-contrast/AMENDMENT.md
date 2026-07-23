@@ -38,8 +38,38 @@ from the locked headline matrix (`experiment/protocol/PROTOCOL.md`) and is
 NOT pooled with either of the two Qwen3-4B-only same-model J-space
 experiments above. Per-family results are exploratory Tier-2 evidence; the
 cross-family roll-up rule (see Gates) is the only claim-promoting surface
-this experiment can produce, and even a SUCCESS verdict here promotes "the
-mid-band advantage is not Qwen3-specific," not a headline number.
+this experiment can produce, and even a SUCCESS verdict here promotes "mid-band
+actuation is not Qwen3-specific," not a headline number.
+
+### Sign-time revision (2026-07-23, lead-directed, user-approved)
+
+Three structural changes were made at sign-time prep, after the sibling
+`doubt-snap-cross-family-confirmatory` experiment RESOLVED (2026-07-12,
+confirmatory not promoted -- every launched cell stopped at its registered G0
+FIT dose-viability rule at the late 0.94-depth write site). These changes are
+reflected throughout the sections below; the numbers they introduce are
+PROPOSED pending lead adjudication at sign.
+
+1. **Primary endpoint reframed to ABSOLUTE mid-band actuation.** The primary
+   per-family gates are no longer a relative mid-vs-late contrast. They are
+   now: the J-lens-selected mid-band site must achieve held-out confab
+   `clean_tighten` above a floor (G1) AND keep known-correct false-refusal
+   cost below a cap (G2). The late-reference arm is DEMOTED to a secondary
+   descriptive comparator with NO gate (old draft G1/G2/G3 relative-contrast
+   gates are dropped). This is because doubt-snap already resolved that the
+   inherited late 0.94-depth site is weak or dead across these families, so a
+   relative "beat the late site" bar would be trivially cleared by any real
+   mid-band actuation and tells us nothing about whether mid-band actuation is
+   itself useful; the interesting cross-family question is absolute.
+2. **Consumes doubt-snap's resolved per-family artifacts** (see the section
+   below): each family's mined eval pool, FIT/HELD-OUT split, and frozen
+   late-site direction/gate are reused verbatim, hash-pinned. The only new
+   work here is per-family J-lens mid-band localization, mid-band direction
+   fits + dose calibration, and the outcome runs.
+3. **Gemma-4-E4B Modal fallback pre-authorized** (see "Substrate" and
+   LAUNCH-PLAN.md): the Gemma cell runs on the local 3090 first; if it OOMs at
+   G0 after bounded debugging, a Modal fallback for that cell is pre-authorized
+   by the user; a G0 NOT-RUN is recorded only if Modal also fails.
 
 ## Design
 
@@ -47,6 +77,15 @@ Substrate: four raw-base instruct checkpoints, bf16, no adapter, no 4-bit
 quantization, no task training. See the family table below for exact
 checkpoints, loader notes, and VRAM risk (transcribed from Amendment Z where
 overlapping, extended with this experiment's own J-space-specific notes).
+
+Lane: local RTX 3090 for all four families. **Gemma-4-E4B Modal fallback,
+pre-authorized (user, 2026-07-23):** the Gemma cell runs locally first; if it
+OOMs at G0 after bounded debugging (its trimodal loader materializes vision +
+audio towers even for text-only prompts, and the J-lens profile stage's
+eager-attention double-backward adds activation memory on top -- see the family
+table and LAUNCH-PLAN.md VRAM section), a Modal fallback for the Gemma cell
+only is pre-authorized; a G0 NOT-RUN is recorded for Gemma only if the Modal
+fallback also fails. The other three families are local-only.
 
 ### Family table
 
@@ -63,47 +102,92 @@ all live in `families/<slug>.yaml` -- no other script in this experiment
 hardcodes a checkpoint string, hidden size, or layer index; every script
 reads a family only through `family_config.py`.
 
-### Pre-sign coordination note: reuse the doubt-snap cross-family FIT artifacts
+### Consumed doubt-snap artifacts (resolved; hash-pinned)
 
-The signed `doubt-snap-cross-family-confirmatory` experiment is, at draft
-time, mid-run on Modal over an overlapping family panel (its small tier
-shares Llama-3.2-3B, Mistral-7B-v0.3, Qwen3.5-4B, and Gemma-4-E4B with this
-experiment). Its per-family FIT pipeline produces exactly the artifacts steps
-1 and 3-4 above would rebuild: per-family eval pools (confab /
-known_correct_answered role labels), FIT-split direction fits, frozen gate
-thresholds, and a calibrated dose at its fixed late write site
-(`round(0.94 * (num_hidden_layers - 1))`, the hs34 depth-fraction analog).
+`doubt-snap-cross-family-confirmatory` RESOLVED 2026-07-12 (read its
+AMENDMENT.md Outcome section: confirmatory NOT promoted; every launched cell
+stopped at the registered pre-outcome G0 FIT dose-viability rule at the late
+`round(0.94 * (num_hidden_layers - 1))` write site; Gemma-4-E4B's cell had its
+FIT prep committed but was never behaviorally launched). Its small tier shares
+all four of this experiment's checkpoints. This experiment CONSUMES its
+resolved per-family committed artifacts under
+`experiments/doubt-snap-cross-family-confirmatory/analysis-committed/<cell>/`,
+each pinned by sha256 in the corresponding `families/<slug>.yaml` `reuse` block:
 
-This experiment therefore HOLDS unsigned until that run resolves, and before
-sign it must be revised to CONSUME those artifacts wherever they exist:
-reuse each family's mined pool and FIT/HELD-OUT split verbatim (pinned by
-manifest hash), reuse its late-site direction/tau/dose as this experiment's
-late-reference arm, and add only what is genuinely new here (the J-lens
-band localization per family, mid-band-layer direction fits and dose
-calibration, and the mid-band vs late contrast itself). If the doubt-snap
-run resolves with a family NOT-RUN or ineligible, that family enters this
-experiment with the same status rather than being re-attempted here without
-a fresh eligibility decision by the lead. This note is a design constraint
-on the sign-time revision, not a result claim about the running experiment.
+- **Eval pool + FIT/HELD-OUT split, reused verbatim.** Each family's role
+  labels (confab / known_correct_answered / unknown_refused) and its
+  FIT/HELD-OUT partition are the doubt-snap cell's own `split_manifest.json`
+  (ID-only: row_key + role + split + source + category_canon). This SUPERSEDES
+  this experiment's own `mine_eval_pool.py` + `split_fit_heldout.py` for these
+  four families -- no re-mining, no re-splitting. The private row TEXT lives on
+  the Modal volume `eh-doubt-snap-cross-family` (committed artifacts are ID-only)
+  and is pulled read-only, sha256-verified, into this experiment's gitignored
+  `analysis/<family>/from_doubt_snap/` by `materialize_reused_rows.py`, exactly
+  the mechanism `experiments/qwen35-4b-midband-doubt-snap/materialize_reused_rows.py`
+  used for the qwen35_4b cell. **Source note:** doubt-snap's pools are mined
+  from TriviaQA/PopQA (answerable) + KUQ (unanswerable), NOT this experiment's
+  own draft "AH expansion candidate pool" -- reusing the split means adopting
+  doubt-snap's source, which is the intended consequence of the reuse.
+- **Late-reference arm = doubt-snap's frozen late site, reused verbatim.** The
+  secondary late arm loads that cell's committed `c_hat.json` (write direction),
+  `u_d.json` (doubt sensor), `gate_fit.json` (`tau_frozen`), and
+  `build_manifest.json` (`mu_d`/`sigma_d`/`mu_c`/`sigma_c`, `layer`, `hidden_dim`,
+  `revision`) -- nothing about the late arm is refit here. The late site's
+  decoder-block index is the reused `build_manifest.json` `layer`
+  (llama 25, mistral 29, qwen35-4b 29, gemma 39); this experiment's `hs_index`
+  for it is `block + 1` (26 / 30 / 30 / 40). This happens to equal this
+  experiment's own `round(0.9444 * n_hidden_layers)` late estimate for all four
+  families, but the SITE is DEFINED as doubt-snap's frozen block, not
+  re-derived. Per-family frozen scalars, counts, and artifact hashes are pinned
+  in each `families/<slug>.yaml` `reuse.doubt_snap` block.
+
+Only genuinely new work remains in THIS experiment: per-family J-lens mid-band
+band localization, mid-band direction fits + dose calibration, and the outcome
+runs. The mid-band directions/gate are fit fresh on the REUSED FIT split; the
+primary is scored on the REUSED HELD-OUT split -- the same reuse discipline
+`qwen35-4b-midband-doubt-snap` / `qwen35-4b-midband-heldout` used.
+
+**Two gaps found while pinning the artifacts (flagged, not guessed around;
+carried to "Open questions at sign"):**
+
+- **No family has a calibrated late-site DOSE to reuse.** Every doubt-snap cell
+  stopped at G0 dose-viability with `selected_dose: null`; the committed
+  `dose_fit.json` (present for llama/mistral/qwen35-4b, ABSENT for gemma) records
+  a FIT dose SWEEP but no selected dose. So "reuse its late-site ... calibrated
+  dose" (the sign-time instruction) cannot be satisfied literally. See the
+  open-questions section for the two resolution options and the drafter's
+  recommendation.
+- **Gemma-4-E4B was never behaviorally launched in doubt-snap.** Its FIT-prep
+  artifacts (pool, split, frozen late-site direction/gate) ARE committed and
+  reusable, but there is no `dose_fit.json`, no `modal_status.json`, and its
+  frozen late-site direction/gate were never dose-exercised against a real
+  generation. Its late-site gate AUC (0.9472) is the weakest of the four (still
+  >= the 0.90 G0 floor) and its held-out known count (251) is a ~1-row margin
+  over the 250 power bar.
+
+The reuse depends on the `eh-doubt-snap-cross-family` Modal volume still
+retaining each family's `analysis/` row-text files; `qwen35-4b-midband-doubt-snap`
+proved this works for the qwen35_4b cell, but the llama / mistral / gemma cells'
+row text on that volume is not yet re-verified (open question).
 
 ### Per-family pipeline (FIT side, all pre-outcome)
 
 For each family, in Amendment Z's run order (Llama, Mistral, Qwen3.5,
 Gemma):
 
-1. **Mine a private eval pool** (`mine_eval_pool.py --family <slug>`): generate
-   on that family's OWN raw-base checkpoint over the shared AH expansion
-   candidate pool (question/alias text is family-agnostic; the resulting
-   role labels are family-specific, since "does this family answer or
-   refuse" is exactly what defines confab / known_correct_answered /
-   unknown_refused). No predecessor split to exclude (each family's pool is
-   fresh from scratch). Same selection rules as the Qwen3-4B replication:
-   confab = gold-unanswerable + answered; known_correct_answered =
-   gold-answerable + answered + correct; unknown_refused = gold-unanswerable
-   + refused + not degenerate (fitting scaffold only, never itself graded).
-   Text/aliases/generations stay private under `analysis/<family>/`;
-   committed output is an ID-only manifest under
-   `analysis-committed/<family>/eval_pool_manifest.json`.
+1. **Materialize the reused eval pool + split** (`materialize_reused_rows.py
+   --family <slug>`): pull the doubt-snap cell's FIT/HELD-OUT rows read-only,
+   sha256-verified, from the Modal volume `eh-doubt-snap-cross-family` into
+   gitignored `analysis/<family>/from_doubt_snap/`, and verify the committed
+   `split_manifest.json` against the sha256 pinned in `families/<slug>.yaml`
+   `reuse.doubt_snap.artifacts.split_manifest`. Role labels (confab /
+   known_correct_answered / unknown_refused) and the FIT/HELD-OUT partition are
+   doubt-snap's own, reused verbatim -- this experiment does NOT re-mine or
+   re-split. (`mine_eval_pool.py` / `split_fit_heldout.py` are retained only as
+   a fallback if a family's Modal row text is gone and the lead authorizes a
+   fresh mine; a fresh mine would NOT be the reused pool and loses the reuse
+   provenance.) Text/aliases/generations stay private; committed output is the
+   ID-only `analysis-committed/<family>/reused_rows_manifest.json`.
 2. **J-lens layer_profile** (`jlens_profile.py --family <slug>`) to locate
    that family's own workspace-like band. Reuses
    `j-space-localization-qwen3-4b/jlens.py`'s `layer_profile()` UNCHANGED
@@ -114,27 +198,38 @@ Gemma):
    **Band-selection rule (LOCKED, pre-stated)**: midband candidates = the
    profiled hs_index at the effective-dimensionality-fraction peak, plus the
    profiled hs_indices immediately adjacent to it in the depth sweep (one on
-   each side, where available). Late reference = `round((34/36) *
-   n_hidden_layers)` -- the depth-FRACTION analog of Qwen3-4B's own hs34
-   write site over its 36 hidden layers, not the same absolute index. Do
-   NOT assume Qwen3-4B's own hs23-29 band or hs34 late site transfers to any
-   other family; each family's own `n_hidden_layers` and its own profile
-   determine its own absolute layer indices.
-3. **Fit per-layer directions + gate** (`build_directions.py`,
+   each side, where available). Do NOT assume Qwen3-4B's own hs23-29 band
+   transfers; each family's own `n_hidden_layers` and its own profile
+   determine its own absolute mid-band indices. The **late reference site is
+   NOT localized here** -- it is doubt-snap's frozen late site (decoder block =
+   the reused `build_manifest.json` `layer`; hs_index = block + 1; llama 26 /
+   mistral 30 / qwen35-4b 30 / gemma 40), consumed verbatim per the reuse
+   section above.
+3. **Fit MID-BAND directions + gate** (`build_directions.py`,
    `gate_fit.py --family <slug>`): identical method to
    `j-space-midband-write-sweep-qwen3-4b/build_directions.py` /
-   `gate_fit.py`, on that family's own FIT split only. `u_d` (doubt),
-   `pos_ctrl`/`neg_ctrl` (caution/propensity), `c_hat` (orthogonalized
-   caution write direction), and a Youden-J frozen `tau` on `neg_z_d`, per
-   candidate layer. `random_state=20260707`, pinned identically across
-   families; `--verify-reproducible` byte-identical refit check required
-   before trusting any family's directions.
-4. **Per-layer dose calibration** (`calibrate_dose.py --family <slug>`):
+   `gate_fit.py`, on that family's REUSED FIT split only, for the MID-BAND
+   candidate layers only. `u_d` (doubt), `pos_ctrl`/`neg_ctrl`
+   (caution/propensity), `c_hat` (orthogonalized caution write direction), and
+   a Youden-J frozen `tau` on `neg_z_d`, per mid-band candidate layer.
+   `random_state=20260707`, pinned identically across families;
+   `--verify-reproducible` byte-identical refit check required before trusting
+   any family's mid-band directions. The LATE arm is NOT fit here -- its
+   `c_hat`/`u_d`/`tau`/standardization are loaded frozen from the reused
+   doubt-snap artifacts (reuse section). Anchor extraction and the render/anchor
+   convention (BASELINE_SYSTEM_PROMPT, anchor at `prompt_len - 1`,
+   `enable_thinking=False`) must match doubt-snap's own convention so the frozen
+   late direction/gate are valid on this experiment's fresh activations -- this
+   is the same constraint `qwen35-4b-midband-doubt-snap` observed when reusing
+   this cell's rows; see "Open questions at sign".
+4. **Per-MID-BAND-layer dose calibration** (`calibrate_dose.py --family <slug>`):
    identical method to `j-space-midband-dose-calibration-qwen3-4b/calibrate_dose.py`
    (same dose ladder `[25, 50, 75, 100, 125, 150, 175, 200]`, same usability
-   rule, same selection rule), on that family's own FIT rows at that
-   family's own resolved layers. Does NOT assume Qwen3-4B's own selected
-   setpoints (hs23=25, hs26=75, hs29=125, hs34=175) transfer.
+   rule, same selection rule), on that family's REUSED FIT rows at that
+   family's own resolved MID-BAND layers. Does NOT assume Qwen3-4B's own
+   selected setpoints transfer. The late arm's dose is NOT set here -- it is an
+   open question (doubt-snap selected no late dose for any family; see the reuse
+   section and "Open questions at sign").
 5. **G0 instrument smoke per family** (`run_contrast.py --family <slug> --mode
    smoke`): readback within tolerance, 0 collapse, gate AUC >=0.90 on FIT,
    identical generation contract to the two Qwen3-4B predecessors
@@ -156,9 +251,18 @@ ported unchanged).
 
 ### Outcome (held-out, per family)
 
-Layer contrast: best mid-band site vs late reference site, gated snap at
-calibrated doses, over that family's own held-out confab and
-known_correct_answered rows (`run_contrast.py --family <slug> --mode full`).
+**Primary (gating):** the best mid-band site's held-out confab `clean_tighten`
+(G1 floor) and its held-out known-correct `not_well_formed_correct` cost (G2
+cap), over that family's REUSED held-out confab and known_correct_answered
+rows (`run_contrast.py --family <slug> --mode full`). "Best mid-band site" =
+the mid-band candidate with the highest held-out confab `clean_tighten`, ties
+broken by lower known-correct cost.
+
+**Secondary (descriptive, non-gating):** the frozen late-reference arm's
+held-out confab `clean_tighten` and known-correct cost, and the
+best-mid-band-minus-late delta on both metrics, reported alongside for contrast
+with doubt-snap's resolved late-site null. No late-arm gate.
+
 Metrics identical to both Qwen3-4B predecessors: confab `clean_tighten`,
 known-correct `not_well_formed_correct` cost.
 
@@ -167,21 +271,22 @@ Cross-family roll-up (`cross_family_rollup.py`): combines every family's
 the single cross-family verdict per the Gates section below.
 
 Instrument files pinned at sign: `cell.yaml`, `gates.yaml`, `family_config.py`,
-`model_lib.py`, `gen_lib.py`, `grader.py`, `mine_eval_pool.py`,
-`split_fit_heldout.py`, `jlens_profile.py`, `extract_anchor.py`,
-`build_directions.py`, `gate_fit.py`, `calibrate_dose.py`, `run_contrast.py`,
-`cross_family_rollup.py`, and every `families/<slug>.yaml`.
+`model_lib.py`, `gen_lib.py`, `grader.py`, `materialize_reused_rows.py`,
+`mine_eval_pool.py`, `split_fit_heldout.py` (the last two retained as
+fallback-only), `jlens_profile.py`, `extract_anchor.py`, `build_directions.py`,
+`gate_fit.py`, `calibrate_dose.py`, `run_contrast.py`, `cross_family_rollup.py`,
+and every `families/<slug>.yaml`.
 
 ## Prediction
 
-SUCCESS means: for at least 3 of the 4 families that actually run past G0,
-that family's own best calibrated mid-band write site beats that family's own
-calibrated late-reference site by at least 10 percentage points on held-out
-confab `clean_tighten`, without increasing known-correct false-refusal cost
-by more than 2 percentage points (G1 AND G2 both pass). This would mean the
-mid-band write-site advantage found on Qwen3-4B is a property of instruct
-LMs writing near their own workspace-like band in general, not an artifact
-of Qwen3-4B's own architecture or pretraining.
+SUCCESS means: for at least 3 of the families that actually run past G0, that
+family's own best calibrated mid-band write site clears BOTH primary gates on
+held-out -- confab `clean_tighten` at or above the G1 floor AND known-correct
+`not_well_formed_correct` cost at or below the G2 cap. This would mean useful,
+selective mid-band actuation is a property of instruct LMs writing near their
+own workspace-like band in general, not an artifact of Qwen3 lineage. The late
+reference arm is expected to be weak or dead across families (doubt-snap's
+resolved late-site null), reported descriptively; it does not gate the primary.
 
 ## Predictions scoreboard
 
@@ -195,57 +300,152 @@ lead's explicit instruction for this scaffold.)
 
 ## Falsifier
 
-If at most 1 of the 4 (or of however many run past G0) families passes G1
-AND G2, the mid-band write-site advantage is Qwen-specific or an artifact of
-the same-model experiments' own setup -- FALSIFIED, and the J-space
-actuation-bridge layer-site claim does NOT generalize across families. If
-exactly 2 of 4 pass, the result is MIXED and no claim is promoted either way.
+If at most 1 of the families that run past G0 clears both primary gates,
+useful mid-band actuation does NOT generalize across families (the Qwen3-lineage
+mid-band actuation is family-specific or an artifact) -- FALSIFIED. If exactly
+2 of the run families clear both primary gates, the result is MIXED and no
+claim is promoted either way. This falsifier is defined over the ABSOLUTE
+primary gates on held-out; unlike doubt-snap's own falsifier (which could not
+fire because every cell stopped at G0 before its held-out surface), a G0 stop
+here removes a family from the denominator rather than leaving the result
+between prediction and falsifier -- the roll-up covers every family disposition
+(pass / fail / NOT-RUN) explicitly.
 
 ## Gates
 
+All numbers below marked PROPOSED are the drafter's derivation (see "Gates ->
+derivation") pending lead adjudication at sign; they are pinned identically
+across families in each `families/<slug>.yaml` `primary_gate` block.
+
 - **G0 (per-family instrument validity; stop, not outcome)**: that family's
   checkpoint loads via the hardened loader and yields a valid hidden-states
-  tuple; the family's eval pool has at least 200 confab rows and at least
-  300 known_correct_answered rows; no restricted text/generations are
-  committed; that family's `band_selection.status == resolved` before
-  extraction; direction refits are byte-identical
-  (`--verify-reproducible`); gate AUC (`neg_z_d`, FIT confab vs FIT
-  known_correct_answered) >=0.90 at every candidate layer; smoke readback is
-  within 5%+0.5 absolute of each layer's calibrated dose; smoke collapse on
-  dosed rows is 0 for every candidate layer. **A family that fails G0 after
-  bounded debugging is recorded as NOT-RUN with the explicit blocker and
-  excluded from the cross-family denominator -- it is neither a PASS nor a
-  FALSIFIER hit for that family**, matching Amendment Z's own INELIGIBLE
-  disposition.
-- **G1 (mid-band tighten improvement, per family)**: that family's best
-  mid-band confab `clean_tighten` rate minus that family's late-reference
-  `clean_tighten` rate >= 10 percentage points.
-- **G2 (no selectivity regression, per family)**: that family's best
-  mid-band known-correct false-refusal cost minus that family's
-  late-reference cost <= 2 percentage points.
-- **G3 (late-reference viable, per family)**: that family's late-reference
-  confab `clean_tighten` rate >= 0.40 AND Wilson lower 95% CI > 0.30. **This
-  floor is intentionally LOWER than the Qwen3-4B predecessors' own G3 floor
-  (rate >=0.60, CI lower >0.50)** because instruct families may differ in
-  how viable an inherited late-layer write site is at all -- **this 0.40/0.30
-  floor is a decision point flagged to the lead (see LAUNCH-PLAN.md), not an
-  independently re-derived number.** If G3 fails for a family, that family's
-  G1/G2 numbers are read as a reference-replication problem for that family
-  specifically, not evidence against mid-band superiority in general.
+  tuple; the reused doubt-snap `split_manifest.json` and the frozen late-site
+  artifacts (`c_hat`/`u_d`/`gate_fit`/`build_manifest`) hash byte-identical to
+  the sha256 pinned in `families/<slug>.yaml` `reuse`; the reused pool has at
+  least 150 held-out confab rows AND at least 250 held-out known_correct_answered
+  rows (doubt-snap's own power bar; note gemma's held-out known = 251, a ~1-row
+  margin); no restricted text/generations are committed; that family's
+  `band_selection.status == resolved` before extraction; MID-BAND direction
+  refits are byte-identical (`--verify-reproducible`); gate AUC (`neg_z_d`, FIT
+  confab vs FIT known_correct_answered) >=0.90 at every MID-BAND candidate
+  layer; smoke readback within 5%+0.5 absolute of each layer's calibrated dose;
+  smoke collapse on dosed rows is 0 for every mid-band candidate and the late
+  arm. **A family that fails G0 after bounded debugging (including a Gemma cell
+  that OOMs both locally and on the pre-authorized Modal fallback) is recorded
+  as NOT-RUN with the explicit blocker and excluded from the cross-family
+  denominator -- neither a PASS nor a FALSIFIER hit for that family**, matching
+  Amendment Z's / doubt-snap's INELIGIBLE disposition.
+- **G1 (PRIMARY -- mid-band actuation floor, per family)**: the best mid-band
+  site's held-out confab `clean_tighten` rate **>= 0.50 (PROPOSED)** AND its
+  Wilson 95% lower CI **> 0.40 (PROPOSED)**.
+- **G2 (PRIMARY -- mid-band selectivity cap, per family)**: that same best
+  mid-band site's held-out known-correct `not_well_formed_correct` cost
+  **<= 0.05 (PROPOSED)** AND its Wilson 95% upper CI **< 0.10 (PROPOSED)**.
+- **Secondary late reference (descriptive, NOT a gate)**: the frozen late arm's
+  held-out confab `clean_tighten` and known-correct cost, plus the
+  best-mid-band-minus-late delta, are reported for contrast with doubt-snap's
+  resolved late-site null. There is no late-viability gate; a dead late arm is
+  expected and is not disqualifying. (This replaces the draft's G1/G2 relative
+  contrast and its G3 late-reference-viability floor, all dropped.)
 
-**CROSS-FAMILY SUCCESS = G1 AND G2 pass in >=3 of 4 run families.** If a
-family did not run (G0 stop), the denominator becomes ">=3 of the families
-that ran"; if fewer than 3 families ran at all, the experiment is
+### Gates -> derivation (PROPOSED, pending lead adjudication)
+
+Every number is derived from resolved predecessor operating points, read from
+their governed docs; no round number without stated provenance.
+
+- **G1 floor = clean_tighten >= 0.50, Wilson lower > 0.40.** Two same-lineage
+  MID-BAND held-out operating points bracket the plausible range:
+  `unsloth/Qwen3-4B` hs23 = **0.892** clean_tighten (Wilson [0.839, 0.929],
+  `j-space-calibrated-layer-contrast-qwen3-4b` Outcome), and `Qwen/Qwen3.5-4B`
+  hs20 held-out ~**0.66** (refused 0.678 AND well-formed 0.977 =>
+  clean_tighten conjunction lower bound 0.655, `qwen35-4b-midband-heldout`
+  Outcome). The observed LATE-site clean_tighten this experiment demotes is
+  **<= 0.33** everywhere (doubt-snap FIT peaks: llama 0.184, mistral 0.000,
+  qwen35-4b 0.326). A cross-family ABSOLUTE floor must sit below the weaker
+  same-lineage mid-band point (0.66) to allow genuine cross-family attenuation,
+  yet far above the dead late-site region (<= 0.33) so it cannot be cleared by
+  a late-style non-actuating write. **0.50** (a majority of fired confabs
+  cleanly tighten) with Wilson-lower **0.40** (set 0.10 below the point floor,
+  mirroring the `qwen35-4b-midband-heldout` gate shape of 0.60 point / 0.50
+  Wilson-lower) satisfies both. **Stricter alternative for the lead:** 0.60
+  point / 0.50 Wilson-lower -- the exact floor the one non-original Qwen sibling
+  (Qwen3.5-4B) actually cleared on held-out (refused 0.678, Wilson-lower 0.652),
+  applied here to the stricter `clean_tighten` conjunction (~0.655, clears with
+  little margin). The drafter RECOMMENDS the conservative 0.50/0.40 because
+  clean_tighten is stricter than the `refused` metric 0.60 was set against, and
+  cross-family attenuation is expected; the point is to detect real mid-band
+  actuation, not to demand Qwen-level performance.
+- **G2 cap = not_well_formed_correct <= 0.05, Wilson upper < 0.10.** Directly
+  inherits the `qwen35-4b-midband-heldout` G1 cost gate (<= 0.05 point, Wilson
+  upper < 0.10). Both same-lineage mid-band operating points clear it: Qwen3-4B
+  hs23 **0.035** (9/258, `j-space-calibrated-layer-contrast-qwen3-4b`) and
+  Qwen3.5-4B hs20 held-out **0.039** (14/360, `qwen35-4b-midband-heldout`).
+
+**CROSS-FAMILY SUCCESS = the PRIMARY (G1 AND G2) passes in >= 3 of the families
+that run past G0.** If a family did not run (G0 stop), the denominator is "the
+families that ran"; if fewer than 3 families ran at all, the experiment is
 **INCONCLUSIVE**, not a pass.
 
-**FALSIFIER: G1 AND G2 pass in <=1 of 4 run families** => the mid-band
-advantage is Qwen-specific or an artifact. **2 of 4 => MIXED, no claim
-promoted.**
+**FALSIFIER: the PRIMARY passes in <= 1 of the families that run past G0** =>
+mid-band actuation is Qwen-lineage-specific or an artifact. **Exactly 2 => MIXED,
+no claim promoted.**
+
+## Open questions at sign (for the lead)
+
+0. **This branch is 677 commits behind `main`; the reused artifacts are not on
+   it yet.** The entire reuse design depends on
+   `doubt-snap-cross-family-confirmatory` (and its qwen35-4b-midband successors),
+   which resolved on `main` AFTER this experiment's branch
+   (`exp/j-space-cross-family-layer-contrast`) was created. The doubt-snap
+   committed artifacts, the pinned hashes' target files, and the predecessor
+   AMENDMENTs are all present on `main` and were read there to author this
+   revision, but they are ABSENT from this worktree. The branch MUST be brought
+   up to date with `main` (rebase or merge -- a lead/git decision) before
+   `materialize_reused_rows.py` or the G0 reuse-integrity check can resolve any
+   reused path. All pinned sha256 in the `families/<slug>.yaml` `reuse` blocks
+   were computed from `main` and are authoritative; they simply cannot be
+   verified in this worktree until it carries `main`'s content.
+1. **Primary gate NUMBERS (G1 floor / G2 cap).** Adjudicate the PROPOSED
+   0.50/0.40 floor and 0.05/0.10 cap, or elect the stricter 0.60/0.50 floor
+   (see "Gates -> derivation").
+2. **Late-arm DOSE gap.** doubt-snap selected NO late-site dose for any family
+   (all G0 dose-viability stops; `selected_dose: null`). "Reuse the frozen
+   late-site ... calibrated dose" (the sign-time instruction) cannot be
+   satisfied literally. Options: **(A)** report the late arm at each family's
+   doubt-snap FIT peak-`clean_tighten` dose from the committed `dose_fit.json`
+   (llama 19, mistral 30, qwen35-4b 40) -- already computed, hash-pinned, but a
+   sub-viability "best case" on per-cell-recalibrated grids, and UNAVAILABLE for
+   gemma (no `dose_fit.json`). **(B)** calibrate the late-site dose fresh here
+   with the same `calibrate_dose.py` ladder used for the mid-band arm, on the
+   reused FIT rows -- apples-to-apples with the mid-band arm and covers gemma,
+   but deviates from "reuse verbatim." **Drafter recommends (B):** the late arm
+   is now non-gating and descriptive, so verbatim dose reuse buys nothing for
+   confirmatory integrity, and a same-ladder late dose makes the mid-vs-late
+   delta fair and uniform across all four families.
+3. **Modal-volume retention.** The reuse pulls private row text from the
+   `eh-doubt-snap-cross-family` Modal volume; proven accessible for the
+   qwen35_4b cell (`qwen35-4b-midband-doubt-snap`), NOT yet re-verified for the
+   llama / mistral / gemma cells. If a family's row text is gone, that family
+   cannot use the reused pool without a lead-authorized fresh mine (which loses
+   reuse provenance).
+4. **Gemma reuse caveats.** Gemma's late-site artifacts are FIT-prep only
+   (never dose-exercised; no `dose_fit.json`); its late gate AUC is 0.9472
+   (weakest, still >= 0.90); its held-out known count is 251 (~1-row margin
+   over the 250 bar). Confirm gemma proceeds on these reused artifacts.
+5. **Render/anchor reconciliation.** The frozen late direction/gate are valid
+   only if this experiment's anchors at the late site use doubt-snap's own
+   render/anchor convention (BASELINE_SYSTEM_PROMPT, anchor at `prompt_len - 1`,
+   `enable_thinking=False`); this must be smoke-verified at first run
+   (cannot be GPU-tested pre-sign).
+6. **RunLog dependency (carried from the draft).** `run_contrast.py` requires
+   the tuner branch `feature/runlog`; the submodule pointer must be bumped to
+   include it before this experiment can run (LAUNCH-PLAN.md decision point 6).
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the per-family gate results, the
-cross-family roll-up, and the one-sentence summary that also goes into
-`verdict:` in the manifest. No GPU work has run for this experiment as of
-this draft; every artifact under `analysis-committed/` at draft time (if
-any) is a scaffold placeholder, not a result.
+Filled at resolve. Record the verdict, the per-family primary gate results
+(G1/G2 with Wilson CIs), the descriptive late-arm numbers, the cross-family
+roll-up, and the one-sentence summary that also goes into `verdict:` in the
+manifest. No GPU work has run for this experiment as of this draft; every
+artifact under `analysis-committed/` at draft time is a scaffold placeholder,
+not a result.

@@ -26,7 +26,10 @@ import torch
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
-from family_config import FAMILY_SLUGS, layer_dir_name, hs_indices as family_hs_indices  # noqa: E402
+from family_config import (  # noqa: E402
+    FAMILY_SLUGS, layer_dir_name,
+    midband_hs_indices as family_midband_hs_indices,
+)
 import model_lib as ml  # noqa: E402
 import pipeline as pl  # noqa: E402
 from family_config import load_family  # noqa: E402
@@ -55,7 +58,12 @@ def choose_dose(layer_results: list[dict], min_confab_rate: float) -> dict | Non
 
 def run(args: argparse.Namespace) -> dict:
     family = args.family
-    hs_list = family_hs_indices(load_family(family))
+    # MID-BAND candidates only. The late reference arm reuses doubt-snap's
+    # frozen direction/gate, but doubt-snap selected NO late-site dose for any
+    # family (all G0 dose-viability stops); resolving the late-arm dose is an
+    # open question for the lead at sign (see AMENDMENT.md "Open questions at
+    # sign" #2). This calibration therefore covers mid-band candidates only.
+    hs_list = family_midband_hs_indices(load_family(family))
     analysis = HERE / "analysis" / family
     committed = HERE / "analysis-committed" / family
     analysis.mkdir(parents=True, exist_ok=True)

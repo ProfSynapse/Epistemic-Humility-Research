@@ -2,17 +2,19 @@ slug: j-space-cross-family-layer-contrast
 type: steer-cell
 status: draft
 registered: true
-question: Does the J-space mid-band write-site advantage found on raw-base Qwen3-4B
-  (calibrated mid-band gated caution snap beats a late-layer site on held-out confab
-  clean_tighten at matched selectivity cost) transfer across model families, or is
-  it Qwen3-4B-specific?
-prediction: For at least 3 of the 4 families that run past G0, that family's own
-  best calibrated mid-band write site will beat that family's own calibrated late-reference
-  site by at least 10 percentage points on held-out confab clean_tighten, without
-  increasing known-correct false-refusal cost by more than 2 percentage points.
-falsifier: If at most 1 of the 4 (or of however many run past G0) families passes
-  G1 AND G2, the mid-band write-site advantage is Qwen-specific or an artifact -
-  FALSIFIED. If exactly 2 of 4 pass, the result is MIXED and no claim is promoted.
+question: Does useful, selective J-space mid-band actuation (calibrated mid-band
+  gated caution snap achieving held-out confab clean_tighten above a floor at low
+  known-correct cost) generalize across model families, or is it specific to Qwen3
+  lineage?
+prediction: For at least 3 of the families that run past G0, that family's own best
+  calibrated mid-band write site clears BOTH primary gates on held-out -- confab
+  clean_tighten at or above the G1 floor (PROPOSED >=0.50, Wilson lower >0.40) AND
+  known-correct not_well_formed_correct cost at or below the G2 cap (PROPOSED <=0.05,
+  Wilson upper <0.10). The frozen late-reference arm is a non-gating descriptive
+  comparator, expected weak or dead per doubt-snap-cross-family-confirmatory.
+falsifier: If at most 1 of the families that run past G0 clears both primary gates,
+  mid-band actuation is Qwen-lineage-specific or an artifact - FALSIFIED. If exactly
+  2 clear both, the result is MIXED and no claim is promoted.
 checkpoint:
   repo: cross-family (4 checkpoints; see families/*.yaml and AMENDMENT.md "Family table")
   revision: raw-base bf16 instruct, no adapter, no 4-bit quantization, no task training,
@@ -30,6 +32,7 @@ instrument:
   - model_lib.py
   - gen_lib.py
   - grader.py
+  - materialize_reused_rows.py
   - mine_eval_pool.py
   - split_fit_heldout.py
   - jlens_profile.py
@@ -54,5 +57,16 @@ inputs:
 - experiments/j-space-localization-qwen3-4b/NOTEBOOK.md
 - experiments/doubt-gated-caution-tighten/AMENDMENT.md
 - experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md
+# CONSUMED doubt-snap artifacts (sign-time revision 2026-07-23): recorded in
+# each families/<slug>.yaml `reuse.doubt_snap` block (committed_dir + pinned
+# sha256) and in AMENDMENT.md "Consumed doubt-snap artifacts", NOT here,
+# because these paths live on `main` and are not present on this
+# 677-commits-behind branch yet (see AMENDMENT.md "Open questions at sign" #0:
+# the branch must be updated with main before this experiment can materialize
+# its reuse). The `inputs` list is existence-checked by `bin/exp validate`, so
+# not-yet-present cross-branch paths cannot be listed here without failing it:
+#   experiments/doubt-snap-cross-family-confirmatory/ (AMENDMENT + analysis-committed/{llama32_3b_instruct,mistral7b_instruct_v03,qwen35_4b,gemma4_e4b_it}/)
+#   experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md
+#   experiments/qwen35-4b-midband-heldout/AMENDMENT.md
 verdict: ''
 kg: []

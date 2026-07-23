@@ -149,12 +149,60 @@ doses:
   ladder: [25, 50, 75, 100, 125, 150, 175, 200]
   selected: {}
 
-g3_late_reference_floor:
-  clean_tighten_rate_floor: 0.40
-  wilson_lower_ci_floor: 0.30
-  note: >-
-    Same lowered floor as llama-3.2-3b.yaml; flagged to the lead, not
-    re-derived here.
+reuse:
+  # CONSUMED from the resolved doubt-snap-cross-family-confirmatory experiment
+  # (resolved 2026-07-12; confirmatory NOT promoted). Reuse of this cell's
+  # mined pool + FIT/HELD-OUT split + frozen late-site direction/gate,
+  # hash-pinned. NOTE: this is the ONE family whose mid-band actuation is
+  # ALREADY separately established on held-out (experiments/
+  # qwen35-4b-midband-heldout, resolved 2026-07-13, hs20 PROMOTED) -- that
+  # result reused this SAME doubt-snap qwen35_4b pool/split, so this family's
+  # primary is effectively a re-derivation on the same substrate and should be
+  # read as a coherence check, not fresh cross-family evidence. See AMENDMENT.md
+  # "Consumed doubt-snap artifacts".
+  doubt_snap:
+    experiment: doubt-snap-cross-family-confirmatory
+    cell: qwen35_4b
+    committed_dir: experiments/doubt-snap-cross-family-confirmatory/analysis-committed/qwen35_4b
+    modal_volume: eh-doubt-snap-cross-family
+    modal_path_prefix: doubt-snap-cross-family-r1/qwen35_4b/analysis
+    revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+    hidden_dim: 2560
+    late_site:
+      block: 29
+      hs_index: 30
+      tau_frozen: -0.5531870382129124
+      gate_auc_on_fit: 0.995988350244269
+      mu_d: -4.534379808215027
+      sigma_d: 4.328826424430434
+      mu_c: -7.37191478870769
+      sigma_c: 2.800614474339479
+      # doubt-snap selected NO late dose (G0 dose-viability stop). FIT sweep
+      # peaks at clean_tighten 0.326 @ dose 40 (cost 0.0292), below its 0.60
+      # floor. Late-arm dose OPEN QUESTION at sign; late arm gates nothing.
+      doubt_snap_selected_dose: null
+      doubt_snap_fit_peak_clean_tighten: {rate: 0.3258, dose: 40.0, known_cost: 0.0292}
+    pool_counts:
+      confab_fit: 887
+      known_correct_answered_fit: 240
+      confab_held_out: 1332
+      known_correct_answered_held_out: 360
+    artifacts:
+      split_manifest: {path: split_manifest.json, sha256: 2f622f5abe110349216207424bdbd919775e93f6d92f334b99f6424505f21e5c}
+      build_manifest: {path: build_manifest.json, sha256: 8954b8263019ae415692d84ea87c42d7dd851f9d22d222df1e3e8196e3508e63}
+      c_hat: {path: c_hat.json, sha256: fe6baf61e58635d4f2c4db68d04be3ce2378954a892da4652cd9397f4d5b3795}
+      u_d: {path: u_d.json, sha256: aa4b63e2dde99b6282207e8974ee6ea34881162e126aea61fdf4b4ea0e358580}
+      random_direction: {path: random_direction.json, sha256: 02d72ba87c45065b8546ac6ce526c9d7bdcf6a84301dd82cf3edc00591c51604}
+      gate_fit: {path: gate_fit.json, sha256: a34bd876028aded806a8a5f5f90c99871932dd545c2afa23ea2bdea2c67ad3d3}
+      dose_fit: {path: dose_fit.json, sha256: f83ed17ccb7cdef3da5308990d01e026753aaea8e609b9d701e93bad1b16a99c}
+      g0_prep_summary: {path: g0_prep_summary.json, sha256: 02dfdbc0fd436ff65190a8b9bc0f7be95aab6548a26aaeef1086966fbba99737}
+
+primary_gate:
+  # PROPOSED (2026-07-23) -- ABSOLUTE mid-band actuation; same numbers across
+  # families; derivation in AMENDMENT.md "Gates -> derivation". Supersedes and
+  # DROPS the draft's g3_late_reference_floor (late arm now non-gating).
+  g1_midband_clean_tighten_floor: {rate: 0.50, wilson_lower_ci: 0.40}
+  g2_midband_known_correct_cost_cap: {rate: 0.05, wilson_upper_ci: 0.10}
 
 vram:
   bf16_weights_estimate_gb: "~8GB at 4B params, plus multimodal tower overhead if the vision encoder loads even for a text-only run"

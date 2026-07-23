@@ -169,12 +169,66 @@ doses:
   ladder: [25, 50, 75, 100, 125, 150, 175, 200]
   selected: {}
 
-g3_late_reference_floor:
-  clean_tighten_rate_floor: 0.40
-  wilson_lower_ci_floor: 0.30
-  note: >-
-    Same lowered floor as llama-3.2-3b.yaml; flagged to the lead, not
-    re-derived here.
+reuse:
+  # CONSUMED from the resolved doubt-snap-cross-family-confirmatory experiment
+  # (resolved 2026-07-12; confirmatory NOT promoted). SPECIAL CASE, flagged for
+  # the lead: gemma4_e4b_it's FIT-prep artifacts (mined pool, FIT/HELD-OUT
+  # split, frozen late-site direction + gate) ARE committed and reusable, BUT
+  # this cell was NEVER BEHAVIORALLY LAUNCHED in doubt-snap (fleet abandoned
+  # pre-launch). Consequences: (1) there is NO dose_fit.json and NO
+  # modal_status.json for this cell -- the late arm has no doubt-snap dose data
+  # AT ALL (not even a sub-viability FIT peak), so gemma's late-arm dose MUST be
+  # resolved fresh here or the late arm omitted (OPEN QUESTION at sign);
+  # (2) the frozen late-site direction/gate were never dose-exercised against a
+  # real generation, so their behavioral validity is unproven; (3) its late-site
+  # gate AUC is 0.9472 -- the weakest of the four (still >= the 0.90 G0 floor),
+  # and its answer_capture_rate (0.929) / eos_emission_rate (0.885) are the
+  # lowest of the four. See AMENDMENT.md "Consumed doubt-snap artifacts" and
+  # "Open questions at sign".
+  doubt_snap:
+    experiment: doubt-snap-cross-family-confirmatory
+    cell: gemma4_e4b_it
+    committed_dir: experiments/doubt-snap-cross-family-confirmatory/analysis-committed/gemma4_e4b_it
+    modal_volume: eh-doubt-snap-cross-family
+    modal_path_prefix: doubt-snap-cross-family-r1/gemma4_e4b_it/analysis
+    revision: fee6332c1abaafb77f6f9624236c63aa2f1d0187
+    hidden_dim: 2560
+    never_behaviorally_launched: true
+    late_site:
+      block: 39
+      hs_index: 40
+      tau_frozen: -0.7486986370767261
+      gate_auc_on_fit: 0.9472222222222222   # weakest of the four; still >= 0.90
+      mu_d: 19.29316831084325
+      sigma_d: 9.043972161828101
+      mu_c: -33.7951705282407
+      sigma_c: 7.199407284469439
+      # NO doubt-snap dose data for gemma (cell never launched; dose_fit.json
+      # ABSENT). Late-arm dose cannot be reused; it must be calibrated fresh
+      # here or the gemma late arm omitted. OPEN QUESTION at sign.
+      doubt_snap_selected_dose: null
+      doubt_snap_fit_peak_clean_tighten: null   # dose_fit.json ABSENT
+    pool_counts:
+      confab_fit: 840
+      known_correct_answered_fit: 168
+      confab_held_out: 1263
+      known_correct_answered_held_out: 251   # ~1-row margin over the 250 power bar
+    artifacts:
+      split_manifest: {path: split_manifest.json, sha256: 2aace2691d5193fb22f82e91db379de4edd3527eb4d8e5128161a9f0e65f28aa}
+      build_manifest: {path: build_manifest.json, sha256: c72b2fd0f61159d03f7fd77a5b3b536667f3be4083651827b2bd020cc03e9a82}
+      c_hat: {path: c_hat.json, sha256: 56ad3101fc27c0e1c2cbb93cf1b574e0d423215ebae1c1d0756d9b3726b50496}
+      u_d: {path: u_d.json, sha256: 0558800d8ed606653b59cc194b5a7c9da355c4f25459dbe7105f5812ba651086}
+      random_direction: {path: random_direction.json, sha256: d09e652389bfb876e307dc9704398bfecbf597091eca625e1a887d868fac84f1}
+      gate_fit: {path: gate_fit.json, sha256: 90b05243efac1bf771ac7af442ef55f76b85b3a693518832738ff134ba2a1f07}
+      dose_fit: null   # ABSENT -- cell never behaviorally dose-swept
+      g0_prep_summary: {path: g0_prep_summary.json, sha256: 5e9175f1a896f489343b7eb00606b5df203c6158b79e7a3c134d440dd8caea13}
+
+primary_gate:
+  # PROPOSED (2026-07-23) -- ABSOLUTE mid-band actuation; same numbers across
+  # families; derivation in AMENDMENT.md "Gates -> derivation". Supersedes and
+  # DROPS the draft's g3_late_reference_floor (late arm now non-gating).
+  g1_midband_clean_tighten_floor: {rate: 0.50, wilson_lower_ci: 0.40}
+  g2_midband_known_correct_cost_cap: {rate: 0.05, wilson_upper_ci: 0.10}
 
 vram:
   bf16_weights_estimate_gb: "~8-9GB at ~4B effective params, TIGHT if the multimodal loader also materializes a vision tower"

@@ -2,7 +2,14 @@
 """Mine a private per-family eval pool for the cross-family J-space layer
 contrast.
 
-LOCKED DESIGN (see AMENDMENT.md "Design", step 1): for each family, generate
+FALLBACK-ONLY (sign-time revision 2026-07-23): for the four reused families
+this is SUPERSEDED by `materialize_reused_rows.py`, which consumes
+`doubt-snap-cross-family-confirmatory`'s already-mined pool + FIT/HELD-OUT split
+verbatim. Run this only if a family's Modal row text is gone AND the lead
+authorizes a fresh mine (which is NOT the reused pool and loses reuse
+provenance). See AMENDMENT.md "Consumed doubt-snap artifacts".
+
+LEGACY DESIGN (only if used as fallback): for each family, generate
 on that family's OWN raw-base checkpoint over the shared AH expansion
 candidate pool (the question/alias text is family-agnostic; only the
 GENERATION and the resulting role labels are family-specific), and select:

@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Cross-family J-space layer contrast -- FIT / HELD-OUT split (CPU-only).
 
+FALLBACK-ONLY (sign-time revision 2026-07-23): SUPERSEDED for the four reused
+families by `materialize_reused_rows.py`, which copies doubt-snap's frozen
+FIT/HELD-OUT split verbatim. Run only in the lead-authorized fresh-mine
+fallback. See AMENDMENT.md "Consumed doubt-snap artifacts".
+
 Ported from `experiments/doubt-gated-caution-tighten/split_fit_heldout.py`,
 parameterized by `--family`. Builds ONE deterministic, stratified-by-
 category_canon FIT/HELD-OUT split over the two gate-relevant roles (confab,
