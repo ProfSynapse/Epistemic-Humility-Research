@@ -1,0 +1,70 @@
+# NO-LAUNCH two-way SFT recipe template (DRAFT). Mirrors the pinned Stage-S recipe
+# (stage_sft_recipe.yaml) EXACTLY except where AMENDMENT.md sec 4.1 flags a change.
+# prepare_training.py injects model identity, staged train path, run identity, and
+# artifact root at render time. A merged model is not the retained checkpoint.
+name: pending_render
+target: local
+method: sft
+provider: local_docker
+
+job:
+  image: unsloth/unsloth@sha256:0e57d91e2d61539e9d144949fd0629d9f91e93c86a8bf46a2003f3a999cc3133
+  pull_policy: missing
+  transfer: auto
+  keep_container: false
+
+setup:
+  pip:
+    - unsloth==2026.4.2
+    - unsloth_zoo==2026.4.2
+    - torch==2.9.0
+    - transformers==5.5.0
+    - peft==0.18.1
+    - trl==0.24.0
+    - bitsandbytes==0.49.2
+    - huggingface_hub==1.9.0
+    - safetensors==0.5.2
+    - datasets==4.3.0
+    - accelerate==1.4.0
+
+run:
+  method: sft
+  trainer: Trainers/sft/train_sft.py
+  dry_run: true
+  dashboard: false
+  quiet: true
+
+model:
+  load_in_4bit: true
+  dtype: null
+
+dataset: {}
+
+# Unchanged from Stage-S. Row count is identical (18,197 relabeled, not resized),
+# so the ~2,275-optimizer-step budget and its wall-clock projection carry over.
+# No class rebalancing is added: two-way train is 0.525/0.475 (see AMENDMENT 4.1).
+training:
+  batch_size: 2
+  gradient_accumulation: 4
+  learning_rate: 0.0002
+  num_epochs: 1
+  max_seq_length: 2048
+  save_steps: 500
+  save_total_limit: 2
+  chat_template_kwargs:
+    enable_thinking: false
+
+lora:
+  r: 32
+  alpha: 64
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+artifacts: {}

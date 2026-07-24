@@ -4482,6 +4482,84 @@
     },
     {
       "checkpoint": {
+        "repo": "unsloth/Qwen3-4B-bnb-4bit",
+        "revision": "cad0bedfdd862093a12af478cb974ab2addd0e0a"
+      },
+      "created_at": "2026-07-24T00:26:00Z",
+      "falsifier": "Stop this checkpoint if either mode's two-sided 95% Wilson recall lower bound <=0.5, the native token/JSON/two-token forced-posture contract fails, the dev abstention rate falls outside the pre-registered band, attempted-row noninferiority CI lower <=-0.10, or the confidence calibration gate fails (AUROC<0.62 or ECE>=0.30 at the locked bars).",
+      "inputs": [
+        "experiments/common/knowledge_probe/scoring.py"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "dataset_builder.yaml",
+          "training.yaml",
+          "sft_recipe.yaml",
+          "qualification.yaml"
+        ],
+        "modules": [
+          "build_dataset.py",
+          "test_build_dataset.py",
+          "prepare_training.py",
+          "test_prepare_training.py",
+          "qualify.py",
+          "test_qualify.py"
+        ],
+        "persistence": {
+          "build_dataset.py": {
+            "measured_smoke_wall_clock_s": 0.57,
+            "persistence": "short-run"
+          },
+          "prepare_training.py": {
+            "measured_smoke_wall_clock_s": 0.08,
+            "persistence": "short-run"
+          },
+          "qualify.py": {
+            "checkpoint_path": "experiments/twoway-mode-token-confidence-sft/analysis/qualification/<run-id>/scored_rows.jsonl",
+            "persistence": "incremental"
+          },
+          "test_build_dataset.py": {
+            "measured_smoke_wall_clock_s": 0.5,
+            "persistence": "short-run"
+          },
+          "test_prepare_training.py": {
+            "measured_smoke_wall_clock_s": 0.65,
+            "persistence": "short-run"
+          },
+          "test_qualify.py": {
+            "measured_smoke_wall_clock_s": 0.46,
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "build_dataset.py": "aaf79a6fb38dcd394c44e5974654140b7506468e3c17205c79a7a79cae792ff5",
+          "cell.yaml": "41b7477bbe499d48894890dc76eefb0853ae2e0315a90b86d30f1c3376cc9f36",
+          "dataset_builder.yaml": "def0ca43d11b80580f19d93ff3d062d4024f71ce92e870a9a5bbb1fd39e224ad",
+          "gates.yaml": "48f9eb16770c6c35548352bab8629989ac34b1f18ce3df994ce31b53b210f382",
+          "prepare_training.py": "3587ee4b68f06b93146639447ca8fcf29f1edb74c48b63368b1cf8f85c5a8f71",
+          "qualification.yaml": "d29b99029ec96ed9ff2066f171a4ebd58c0c0b7cd282d71a7eba28c493b62f5b",
+          "qualify.py": "f41a1287ee41a2bd7049aca4769e69cee28e51db0ecef79d10893d142cc2cc9e",
+          "sft_recipe.yaml": "5cd11a79e0b4ea1e7a2b689cd5af47c479ca83264118e64a549c040123221a0a",
+          "test_build_dataset.py": "8281cb51c38724d36bd5fc9d2f690ecaa75b4c88bed23577d8603f3f2533b269",
+          "test_prepare_training.py": "7d98dac95f93878edf0c1f0be45244d6f29328c4dc20fe4f153fcbb091f3e42f",
+          "test_qualify.py": "8d83ca90db0f9493b9e85ac42000303abb912606d76eea03c953b1014c42d2e6",
+          "training.yaml": "323f79ed0d21f1c51e30cdd1d71987769278e456ded7613ef78491d5a92c62f9"
+        }
+      },
+      "kg": [],
+      "prediction": "On dev the two-way SFT emits valid native <ANSWER>/<ABSTAIN> tokens and JSON (>=95%), clears two-sided 95% Wilson recall lower bound >0.5 for both modes while abstaining less than Stage-S (rate near the true 0.332, inside [0.22,0.42]), preserves the two-token forced-posture contract, passes answer-quality noninferiority on attempted rows (paired CI lower > -0.10) because it attempts the middle band as base does, keeps the confidence scalar valid and non-collapsed (SD>=0.10), and clears the new calibration gate (discrimination AUROC>=0.62, ECE<0.30) - eliminating both Stage-S failure modes.",
+      "question": "Can a fresh Qwen3-4B SFT imitate a frozen empirical epistemic action policy reduced to two native first-token modes (<ANSWER> attempt vs <ABSTAIN> decline) while emitting a calibrated answer_confidence scalar, avoiding the Stage-S QUALIFY void by construction, not over-abstaining, and supporting a graded product-layer \"qualify\" rendering from the scalar rather than a trained class?",
+      "registered": true,
+      "slug": "twoway-mode-token-confidence-sft",
+      "status": "signed",
+      "title": "Two-Way Native Mode Token plus Answer-Confidence SFT",
+      "type": "training-run",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "unsloth/Qwen3-4B",
         "revision": "raw-base (no adapter; bf16, no 4-bit quantization)"
       },
