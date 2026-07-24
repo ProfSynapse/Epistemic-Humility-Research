@@ -2,14 +2,13 @@
 
 **Tier:** 1 (signed protocol revision — touches gate definitions, the roll-up
 interpretation rule, and a shared measurement instrument)
-**Version:** v1.2
+**Version:** v1.3
 **Date drafted:** 2026-07-24
-**Status:** DRAFT — **NOT SIGNABLE.** Two open blockers, listed in full under
-Sign-off: (1) the re-scoped Defect 3 consumer audit, which peer review found
-unsound and which is in progress; (2) the write-side seam, which requires
-`gemma4-e4b-kv-seam-quarantine` to run first per PI decision. Nothing in this
-document is in force until signed, and it must not be signed while either
-remains open.
+**Status:** DRAFT — **NOT SIGNABLE.** The Defect 3 consumer audit is now
+complete and found **two resolved, registered experiments affected**; that
+finding is recorded here but its remedy is not yet scoped. One blocker remains:
+the write-side seam requires `gemma4-e4b-kv-seam-quarantine` to run first, per
+PI decision. Nothing in this document is in force until signed.
 **Occasioned by:** resolution of `j-space-cross-family-layer-contrast`
 (verdict INCONCLUSIVE, signed 2026-07-24)
 
@@ -292,15 +291,16 @@ argument above is stronger and does not depend on it.
    on at least one non-sharing family and requiring bit-identity (or cos
    1.000000). If it is not a no-op, this clause does not authorize the edit and
    the revision returns for re-signature.
-3. **Consumers of the corrupted read path: AUDIT INCOMPLETE — BLOCKING.**
+3. **Consumers of the corrupted read path: RE-SCOPED AUDIT COMPLETE 2026-07-24.
+   Two resolved, registered experiments ARE affected.**
 
    > **RETRACTION.** The v1.0 draft of this clause stated "AUDITED 2026-07-24,
    > blast radius is gemma-4-E4B only… the audit is complete and this clause is
    > discharged, not deferred," and concluded that **no prior resolved
-   > experiment is invalidated**. That conclusion is **withdrawn as unsupported,
-   > and is affirmatively known to be false as stated.** Peer review found the
-   > audit's enumeration method unsound and the re-scoped audit is in progress.
-   > This revision is **not signable** until it completes.
+   > experiment is invalidated**. That conclusion is **withdrawn — it is
+   > affirmatively false.** Peer review found the enumeration method unsound;
+   > the re-scoped audit, enumerated by capture path, found **two** resolved
+   > registered experiments affected.
 
    **Why the original audit was unsound.** It enumerated consumers by artifact
    filename (`layer_profile.json`, 4 found, all inside this experiment) and by
@@ -339,18 +339,62 @@ argument above is stronger and does not depend on it.
    cache-independent in source, so their site selection — including the **hs20
    promotion** — is unaffected. Nothing in the retraction touches it.
 
-   **What must be established before signature.** A disposition — affected /
-   clean / indeterminate, with file:line evidence and the specific hidden-state
-   indices each claim rests on — for every experiment that captures gemma-4-E4B
-   activations, enumerated **by capture path, not by model name or artifact
-   name**. Seven experiments reference gemma-4-E4B (`gemma-4-e4b-family-atlas`;
-   `family-atlas-surface-{residualization,diversity,matched-json-completion,matched-pool,matched-vllm}-control`;
-   `gemma4-e4b-kv-seam-quarantine`), six of them resolved or null-result and all
-   registered. An experiment is affected only if the checkpoint shares KV **and**
-   capture used `use_cache=False` **and** the indices its claims rest on include
-   hs25 or above — hs00–hs24 are bit-identical, so a gemma experiment confined to
-   hs≤24 is clean. Indeterminate must be recorded as indeterminate and never
-   rounded to clean.
+   **Disposition, enumerated by capture path.** An experiment is affected only
+   if the checkpoint shares KV **and** capture used `use_cache=False` **and** the
+   indices its claims rest on include hs25 or above (hs00–hs24 are bit-identical,
+   so a gemma experiment confined to hs≤24 is clean).
+
+   | experiment | status | disposition | basis |
+   |---|---|---|---|
+   | `gemma-4-e4b-family-atlas` | resolved | **AFFECTED** | `cell.yaml:73-74` — `layers: all` (hs0–42 inclusive), `engine: hf-batched` ⇒ `hf_batched.py:466` |
+   | `family-atlas-surface-residualization-control` | resolved | **AFFECTED (inherited)** | loads no model; re-reads the atlas's captures |
+   | `family-atlas-surface-diversity-control` | null-result | clean — endpoint not reached | verdict turns on G2 surface matching, activation-independent |
+   | `…-matched-json-completion-control` | null-result | clean — capture never launched | halted at G2 |
+   | `…-matched-pool-control` | null-result | clean — capture never launched | failed G1 yield floor |
+   | `…-matched-vllm-control` | null-result | clean — capture never launched | halted at G0 |
+   | `gemma4-e4b-kv-seam-quarantine` | draft | design contaminated, no verdict falls | see clause 6 |
+
+   **Which indices the affected claims rest on.** `gemma-4-e4b-family-atlas`:
+   its falsifier fired on the eff-dim peak at hs4 (clean), but its substantive
+   claim — no interior workspace band in (20%, 85%) depth, i.e. hs≈9–36 — is
+   corrupt from hs25, and its "all three axes ≥ 0.80 at hs13–42" panel claim
+   rests on corrupt data directly. `…-residualization-control`: "no peak beyond
+   depth 0.20" is a global argmax over hs0–42, and the region where a late peak
+   would appear is exactly the corrupt one.
+
+   **Only one experiment ever wrote gemma activations** — the atlas. The
+   residualization control consumes those same bytes; the three matched controls
+   never captured. No unnamed eighth capturer exists: `qwen3-4b-family-atlas`
+   references gemma's render module but its `checkpoint.repo` is Qwen and it
+   writes no gemma activations.
+
+   **The four "clean" controls are clean because they halted, not because their
+   engine was safe.** This corrects a prior of mine that was wrong for a
+   plausible-sounding reason: I assumed `…-matched-vllm-control` was safe
+   because it used vLLM. vLLM is its *generation* engine only; its capture path
+   is `capture_full_depth.py:273` —
+   `model(**encoded, output_hidden_states=True, use_cache=False, …)` — plain HF,
+   same hazard. **Any of the three matched controls, if re-run to Stage B as
+   currently written, would be affected.** They must not be re-run before their
+   capture path is corrected.
+
+   **The defect is in at least four distinct files**, which is why any
+   single-file fix is insufficient: `j-space-localization-qwen3-4b/jlens.py:195`,
+   `qwen35-4b-midband-doubt-snap/jlens_qwen35.py:127`,
+   `synaptic-tuner/tuner/batch/engines/hf_batched.py:466`, and
+   `family-atlas-surface-matched-vllm-control/capture_full_depth.py:273`.
+
+   **Contamination flag.** `…-diversity-control`'s G1
+   `exact_baseline_reproduction` did read the corrupt captures and reproduced the
+   committed `eff_dim_frac` profile to ≤ 1e-6. That proves re-read consistency
+   with a corrupt baseline, not correctness. Its registered verdict is
+   unaffected, but **if that control is ever cited as having validated or
+   reproduced the gemma profile, the citation is contaminated.**
+
+   **Remedy and ordering.** Both affected experiments require re-capture at
+   `use_cache=True` and re-profiling. `…-residualization-control` **cannot be
+   re-derived in isolation** — it re-reads the atlas's captures, so it must be
+   re-derived only after the atlas is re-captured.
 
    Two `jlens` copies carry the identical defect and are still to be corrected:
    `j-space-localization-qwen3-4b/jlens.py:195` and
@@ -478,6 +522,7 @@ it is not destructive, but it is uncharacterized.
 | v1.0 | 2026-07-24 | Initial revision. Retires G2 for future pre-registrations and introduces G2a/G2b; registers NOT-ADJUDICABLE as a disposition; makes the INCONCLUSIVE floor canonical; authorizes the `jlens.py` `use_cache` repair and voids gemma4-e4b band selection. |
 | v1.1 | 2026-07-24 | Revised after independent adversarial peer review. **Retracts** the v1.0 claim that the Defect 3 audit was complete and that no prior resolved experiment was affected — the audit enumerated by artifact filename rather than by capture path and missed `hf_batched.py:466`, through which the resolved, registered `gemma-4-e4b-family-atlas` captured gemma-4-E4B. Document marked NOT SIGNABLE pending the re-scoped audit. **Withdraws** the invented "more conservative reading governs" precedence rule and re-anchors Defect 2 on the hash-pinned `cross_family_rollup.py`. Upgrades the gemma and Qwen3.5 mechanism claims from config keys to source citations, and **withdraws** the unsupported "min cos 1.000000 on the extraction path" claim. Fire-rate reporting strengthened from "should" to MUST with the affected G2 PASSes enumerated. Corrects the claim that G2a is what the old G2 approximated — they are different quantities. Pins the gemma re-derivation to a full hs0…hs42 sweep to close the sweep-choice latitude vector, and states plainly that the defect's discovery was outcome-triggered even though the mechanism is outcome-independent. Fixes a v1.0 heading that still read "NOT-ADJUDICABLE, not PASS", contradicting its own corrected body. |
 | v1.2 | 2026-07-24 | Second review round. Adds the **write-side seam** as a defect independent of `use_cache`: on gemma-4-E4B blocks 24-41 take K/V from donor blocks 22/23 (`modeling_gemma4.py:1148-1153`, `:1198-1199`), so a dose written there cannot alter the keys/values any layer in that range attends over. Records the mechanism in its correct **narrowed-not-severed** form -- `:1192` computes queries unconditionally, so the write does still reach attention weights, the FFN and the residual; the reviewer's stronger claim that routing is untouchable was verified against source and found overstated. Adds clause 6 HOLDING all gemma dosed runs, per PI decision, until `gemma4-e4b-kv-seam-quarantine` runs and is folded in. Adds an explicit open-blockers list and a review record. |
+| v1.3 | 2026-07-24 | Re-scoped Defect 3 audit **complete**, enumerated by capture path. **Two** resolved registered experiments are affected: `gemma-4-e4b-family-atlas` (`cell.yaml:73-74`, `layers: all`, `engine: hf-batched`) and `family-atlas-surface-residualization-control`, which re-reads the same corrupt bytes and so cannot be re-derived until the atlas is re-captured. Records which hidden-state indices each affected claim rests on. Corrects a prior of the drafter's: the vLLM control is not safe by virtue of its engine -- vLLM is its generation engine only and its capture path is `capture_full_depth.py:273`, plain HF at `use_cache=False`. All four "clean" controls are clean only because they halted before capture, and would be affected if re-run as written. Notes the defect spans at least four distinct files, so no single-file fix suffices. Flags that the diversity control's exact-baseline reproduction demonstrates re-read consistency with a corrupt baseline, not correctness. |
 
 ## Relationship to prior documents
 
@@ -506,24 +551,33 @@ it is not destructive, but it is uncharacterized.
 - Enters force on signature. Until then, `j-space-cross-family-layer-contrast`
   remains at its signed INCONCLUSIVE verdict and no gemma re-run is authorized.
 
+### Closed blockers
+
+1. **Defect 3 clause 3 — re-scoped consumer audit: CLOSED 2026-07-24.**
+   Re-enumerated by capture path rather than by artifact filename. Two resolved,
+   registered experiments are affected: `gemma-4-e4b-family-atlas` (captured
+   gemma at every hidden-state index through `hf_batched.py:466`) and
+   `family-atlas-surface-residualization-control`, which re-reads the same
+   corrupt bytes. **The v1.0 "no prior resolved experiment is invalidated" claim
+   is affirmatively false.** What remains is not the audit but the remedy: both
+   need re-capture at `use_cache=True`, atlas first, and neither the re-capture
+   nor the remedy is scoped or authorized by this document.
+
 ### Open blockers — this document is NOT signable while any remain
 
-1. **Defect 3 clause 3 — re-scoped consumer audit.** In progress. The v1.0
-   blast-radius claim is retracted; at least one resolved, registered experiment
-   (`gemma-4-e4b-family-atlas`) captured gemma-4-E4B through
-   `hf_batched.py:466`. Until the audit lands, this document cannot state what
-   prior work is affected.
-2. **Write-side seam — `gemma4-e4b-kv-seam-quarantine` must run first**
+1. **Write-side seam — `gemma4-e4b-kv-seam-quarantine` must run first**
    (PI decision, 2026-07-24). Its pre-registration text must be rewritten off
    the withdrawn AUC and the corrupt `clean_tighten` before it can be signed or
    run, and its own path to a legitimate run is not yet cleared (input
    dependency on an unmerged branch; `persistence:` block incomplete pending
    measured smoke timings).
-3. **Housekeeping, non-blocking but unresolved:** `extract_anchor.py:160` was
-   repaired to `use_cache=True` ahead of any signature. The repair is correct
-   and carries a provenance guard at `:90`, but it is uncommitted and was made
-   outside the authorization this document provides. It should be regularized
-   before it underpins a registered run.
+
+### Unresolved, not blocking signature
+
+- `extract_anchor.py:160` was repaired to `use_cache=True` ahead of any signature. The repair is correct and
+  carries a provenance guard at `:90`, but it is uncommitted and was made outside
+  the authorization this document provides. It should be regularized before it
+  underpins a registered run.
 
 ### Review record
 
