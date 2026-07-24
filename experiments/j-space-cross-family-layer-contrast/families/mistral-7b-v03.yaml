@@ -1,120 +1,86 @@
-# Family config: Mistral 7B Instruct v0.3. DRAFT until `bin/exp sign`.
-#
-# SUBSTITUTION NOTE (pre-outcome, inherited from doubt-snap-cross-family):
-# Amendment Z's original Mistral-family pick was
-# mistralai/Ministral-3-3B-Instruct-2512. Amendment Z only READ activations,
-# so that checkpoint was eligible there. The doubt-snap-cross-family
-# confirmatory (experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md,
-# "Pre-outcome loader-eligibility note") discovered before any Mistral-family
-# behavioral outcome that Ministral-3 exposes Mistral3ForConditionalGeneration,
-# not a causal-LM substrate for the registered raw-text activation WRITE path,
-# and replaced it with the pinned causal-LM mistralai/Mistral-7B-Instruct-v0.3.
-# This experiment also writes activations, so it inherits that substitution
-# for the same reason, made here before any Mistral-family run.
-
 family: mistral-7b-v03
 risk_order: 2
-
 checkpoint:
   repo: mistralai/Mistral-7B-Instruct-v0.3
   fallback_repo: null
   revision: raw instruct checkpoint (Apache-2.0, ungated, no adapter, no 4-bit quantization)
   scale_params_b: 7
   hf_token_required: false
-
 loader:
-  model_classes: [AutoModelForCausalLM]
+  model_classes:
+  - AutoModelForCausalLM
   hidden_size_field: hidden_size
   num_layers_field: num_hidden_layers
   nested_text_config: false
   dtype: bf16
-  notes: >-
-    Plain MistralForCausalLM, text-only, bf16-native weights; none of
-    Ministral-3's FP8 dtype-load risk and none of the conditional-generation
-    wrapper problem. This is the same pinned checkpoint the running
-    doubt-snap-cross-family confirmatory uses for its Mistral small-tier
-    cell, so its loader behavior will have been exercised there first.
-    VERIFIED 2026-07-09 against mistralai/Mistral-7B-Instruct-v0.3's
-    config.json/tokenizer_config.json/special_tokens_map.json/
-    generation_config.json (JSON only, no weights): "architectures" ==
-    ["MistralForCausalLM"] exactly, confirming the substitution rationale.
-    hidden_size=4096, num_hidden_layers=32, both flat top-level fields
-    (nested_text_config: false confirmed correct).
-
+  notes: 'Plain MistralForCausalLM, text-only, bf16-native weights; none of Ministral-3''s
+    FP8 dtype-load risk and none of the conditional-generation wrapper problem. This is the
+    same pinned checkpoint the running doubt-snap-cross-family confirmatory uses for its Mistral
+    small-tier cell, so its loader behavior will have been exercised there first. VERIFIED
+    2026-07-09 against mistralai/Mistral-7B-Instruct-v0.3''s config.json/tokenizer_config.json/special_tokens_map.json/
+    generation_config.json (JSON only, no weights): "architectures" == ["MistralForCausalLM"]
+    exactly, confirming the substitution rationale. hidden_size=4096, num_hidden_layers=32,
+    both flat top-level fields (nested_text_config: false confirmed correct).'
 render:
-  fn: "backends:render_probe_prompt"
-  enable_thinking_equivalent: >-
-    Mistral has no native thinking-toggle kwarg; enable_thinking=False is a
-    no-op tried first by render_probe_prompt's mode-discovery loop. VERIFIED
-    2026-07-09: no "enable_thinking" or thinking-token reference anywhere in
-    the tokenizer_config.json-embedded chat_template (Mistral ships its
-    template inline in tokenizer_config.json, not as a separate
-    chat_template.jinja file -- confirmed no separate file exists in the
-    repo).
-  system_prompt_source: >-
-    Same baseline system prompt string as the Qwen3-4B AH-A0 arm, reused
+  fn: backends:render_probe_prompt
+  enable_thinking_equivalent: 'Mistral has no native thinking-toggle kwarg; enable_thinking=False
+    is a no-op tried first by render_probe_prompt''s mode-discovery loop. VERIFIED 2026-07-09:
+    no "enable_thinking" or thinking-token reference anywhere in the tokenizer_config.json-embedded
+    chat_template (Mistral ships its template inline in tokenizer_config.json, not as a separate
+    chat_template.jinja file -- confirmed no separate file exists in the repo).'
+  system_prompt_source: Same baseline system prompt string as the Qwen3-4B AH-A0 arm, reused
     verbatim (see llama-3.2-3b.yaml's identical note).
-  system_role_support: >-
-    VERIFIED 2026-07-09 by reading the chat_template embedded in
-    tokenizer_config.json directly: the template detects
-    `messages[0]["role"] == "system"` but does NOT give it its own turn
-    marker -- it FOLDS the system content into the first user turn's
-    `[INST] <system_message>\n\n<user_content>[/INST]` block. System role
-    is accepted but rendered differently from Llama/Qwen (which emit a
-    separate system turn); noted here since it changes what the rendered
-    prompt actually looks like even though render_probe_prompt's own
-    discovery loop should handle it without a fallback failure.
-
+  system_role_support: 'VERIFIED 2026-07-09 by reading the chat_template embedded in tokenizer_config.json
+    directly: the template detects `messages[0]["role"] == "system"` but does NOT give it
+    its own turn marker -- it FOLDS the system content into the first user turn''s `[INST]
+    <system_message>\n\n<user_content>[/INST]` block. System role is accepted but rendered
+    differently from Llama/Qwen (which emit a separate system turn); noted here since it changes
+    what the rendered prompt actually looks like even though render_probe_prompt''s own discovery
+    loop should handle it without a fallback failure.'
 eos:
   include_tokenizer_eos: true
   additional_end_of_turn_tokens: []
-  notes: >-
-    Mistral instruct chat templates typically rely on the tokenizer's own
-    eos_token_id for turn end (no separate named end-of-turn token analogous
-    to Llama's <|eot_id|> or Qwen's <|im_end|>); confirm against the actual
-    tokenizer's special_tokens_map at extraction time rather than assuming
-    this list is complete. VERIFIED 2026-07-09 against
-    mistralai/Mistral-7B-Instruct-v0.3's special_tokens_map.json/
-    tokenizer_config.json/generation_config.json (JSON only, no weights):
-    eos_token_id=2 ("</s>") at both config.json top level and
-    generation_config.json; special_tokens_map.json and tokenizer_config.json
-    agree the tokenizer's own eos_token is "</s>"; additional_special_tokens
-    is null/None. The draft's "no extra token" guess is CONFIRMED correct --
-    the chat template (embedded in tokenizer_config.json) appends eos_token
-    directly after each assistant turn and after tool-call blocks, with no
-    separate named end-of-turn token.
-
+  notes: 'Mistral instruct chat templates typically rely on the tokenizer''s own eos_token_id
+    for turn end (no separate named end-of-turn token analogous to Llama''s <|eot_id|> or
+    Qwen''s <|im_end|>); confirm against the actual tokenizer''s special_tokens_map at extraction
+    time rather than assuming this list is complete. VERIFIED 2026-07-09 against mistralai/Mistral-7B-Instruct-v0.3''s
+    special_tokens_map.json/ tokenizer_config.json/generation_config.json (JSON only, no weights):
+    eos_token_id=2 ("</s>") at both config.json top level and generation_config.json; special_tokens_map.json
+    and tokenizer_config.json agree the tokenizer''s own eos_token is "</s>"; additional_special_tokens
+    is null/None. The draft''s "no extra token" guess is CONFIRMED correct -- the chat template
+    (embedded in tokenizer_config.json) appends eos_token directly after each assistant turn
+    and after tool-call blocks, with no separate named end-of-turn token.'
 band_selection:
-  status: not_yet_run
-  method: >-
-    Same j-lens layer_profile() method as llama-3.2-3b.yaml: midband
-    candidates = effective-dim peak layer + adjacent profiled layers; late
-    reference = the depth-fraction analog of Qwen3-4B's hs34
-    (34/36 = 0.9444). This family's own n_hidden_layers determines its own
-    absolute layer indices; hs23-29 does NOT transfer by assumption.
+  status: resolved
+  method: 'Same j-lens layer_profile() method as llama-3.2-3b.yaml: midband candidates = effective-dim
+    peak layer + adjacent profiled layers; late reference = the depth-fraction analog of Qwen3-4B''s
+    hs34 (34/36 = 0.9444). This family''s own n_hidden_layers determines its own absolute
+    layer indices; hs23-29 does NOT transfer by assumption.'
   n_hidden_layers: 32
   late_reference_depth_fraction_target: 0.9444
-  late_reference_hs_estimate: >-
-    round(0.9444 * 32) = 30. n_hidden_layers=32 VERIFIED 2026-07-09 from
-    mistralai/Mistral-7B-Instruct-v0.3's config.json (top-level
-    num_hidden_layers field, hidden_size=4096); this estimate is still an
-    ESTIMATE for the profile stage to confirm/select against, only the
-    input layer count is now config-verified rather than assumed.
-  midband_candidates_hs: null
-  late_reference_hs: null
-  effective_dim_peak_hs: null
-
+  late_reference_hs_estimate: round(0.9444 * 32) = 30. n_hidden_layers=32 VERIFIED 2026-07-09
+    from mistralai/Mistral-7B-Instruct-v0.3's config.json (top-level num_hidden_layers field,
+    hidden_size=4096); this estimate is still an ESTIMATE for the profile stage to confirm/select
+    against, only the input layer count is now config-verified rather than assumed.
+  midband_candidates_hs:
+  - 12
+  - 15
+  - 19
+  late_reference_hs: 30
+  effective_dim_peak_hs: 15
 doses:
   status: not_yet_calibrated
-  ladder: [25, 50, 75, 100, 125, 150, 175, 200]
+  ladder:
+  - 25
+  - 50
+  - 75
+  - 100
+  - 125
+  - 150
+  - 175
+  - 200
   selected: {}
-
 reuse:
-  # CONSUMED from the resolved doubt-snap-cross-family-confirmatory experiment
-  # (resolved 2026-07-12; confirmatory NOT promoted). Reuse of this cell's
-  # mined pool + FIT/HELD-OUT split + frozen late-site direction/gate,
-  # hash-pinned. See AMENDMENT.md "Consumed doubt-snap artifacts" and
-  # llama-3.2-3b.yaml's identical reuse-block header.
   doubt_snap:
     experiment: doubt-snap-cross-family-confirmatory
     cell: mistral7b_instruct_v03
@@ -132,40 +98,51 @@ reuse:
       sigma_d: 1.5382371809779534
       mu_c: -0.20473676290269346
       sigma_c: 0.9390147895867568
-      # doubt-snap late arm is a TRUE BEHAVIORAL NULL here: FIT dose sweep
-      # clean_tighten is 0.000 at every dose on the correctly-bracketed grid
-      # (the write moves tokens but induces no clean refusal). selected_dose
-      # null. Late-arm dose is an OPEN QUESTION at sign; late arm gates nothing.
       doubt_snap_selected_dose: null
-      doubt_snap_fit_peak_clean_tighten: {rate: 0.0, dose: 30.0, known_cost: 0.0118}
+      doubt_snap_fit_peak_clean_tighten:
+        rate: 0.0
+        dose: 30.0
+        known_cost: 0.0118
     pool_counts:
       confab_fit: 874
       known_correct_answered_fit: 255
       confab_held_out: 1312
       known_correct_answered_held_out: 382
     artifacts:
-      split_manifest: {path: split_manifest.json, sha256: e917ab0063eb3349a344816f28a75eb48a7858a7356504b2a265fb5720348c7b}
-      build_manifest: {path: build_manifest.json, sha256: 62e50d8a06fa17633a7a4aeaa3f516f77f284943e39013bfb85e03f2f25868c1}
-      c_hat: {path: c_hat.json, sha256: d0af3a80de5e62d35692c42b0479fe61560757e174c77b0ac7b2c2c083fb6a29}
-      u_d: {path: u_d.json, sha256: 20ee3f4c94082122839b813bba72e9e24b45b44ef303d8cd8bfb0e3d17acd15e}
-      random_direction: {path: random_direction.json, sha256: 738d81012f8a441bb36f4191dd1d5bd87632e096defc7a6f229679f05e6b9525}
-      gate_fit: {path: gate_fit.json, sha256: ed022c79ab45160f3cbb6e30fde02b34f0fafeb39aee9a66e8646afb8b642605}
-      dose_fit: {path: dose_fit.json, sha256: b2a39f0b5ef6d1c7db8bcf32428098af9c7959bb2024681c4b3d5aa08a55af94}
-      g0_prep_summary: {path: g0_prep_summary.json, sha256: 4e307e306fa35b5a6100650abfaefad6e7c1909db97033e40bfde820e84cfb0d}
-
+      split_manifest:
+        path: split_manifest.json
+        sha256: e917ab0063eb3349a344816f28a75eb48a7858a7356504b2a265fb5720348c7b
+      build_manifest:
+        path: build_manifest.json
+        sha256: 62e50d8a06fa17633a7a4aeaa3f516f77f284943e39013bfb85e03f2f25868c1
+      c_hat:
+        path: c_hat.json
+        sha256: d0af3a80de5e62d35692c42b0479fe61560757e174c77b0ac7b2c2c083fb6a29
+      u_d:
+        path: u_d.json
+        sha256: 20ee3f4c94082122839b813bba72e9e24b45b44ef303d8cd8bfb0e3d17acd15e
+      random_direction:
+        path: random_direction.json
+        sha256: 738d81012f8a441bb36f4191dd1d5bd87632e096defc7a6f229679f05e6b9525
+      gate_fit:
+        path: gate_fit.json
+        sha256: ed022c79ab45160f3cbb6e30fde02b34f0fafeb39aee9a66e8646afb8b642605
+      dose_fit:
+        path: dose_fit.json
+        sha256: b2a39f0b5ef6d1c7db8bcf32428098af9c7959bb2024681c4b3d5aa08a55af94
+      g0_prep_summary:
+        path: g0_prep_summary.json
+        sha256: 4e307e306fa35b5a6100650abfaefad6e7c1909db97033e40bfde820e84cfb0d
 primary_gate:
-  # ADJUDICATED by lead+user 2026-07-23 (conservative option chosen) --
-  # ABSOLUTE mid-band actuation; same numbers across families; derivation in
-  # AMENDMENT.md "Gates -> derivation". Supersedes and DROPS the draft's
-  # g3_late_reference_floor (late arm now non-gating).
-  g1_midband_clean_tighten_floor: {rate: 0.50, wilson_lower_ci: 0.40}
-  g2_midband_known_correct_cost_cap: {rate: 0.05, wilson_upper_ci: 0.10}
-
+  g1_midband_clean_tighten_floor:
+    rate: 0.5
+    wilson_lower_ci: 0.4
+  g2_midband_known_correct_cost_cap:
+    rate: 0.05
+    wilson_upper_ci: 0.1
 vram:
-  bf16_weights_estimate_gb: "~14-15GB at 7B params"
-  feasibility_note: >-
-    Fits a single RTX 3090 (24GB) for generation and anchor extraction, but
-    with less headroom than the 3-4B families. The J-lens layer_profile's
-    eager-attention double-backward is the pressure point at 7B: budget for
-    reduced batch or reduced n_random_dirs, and treat a profile-stage OOM as
-    a batching problem to solve, not a G0 loader blocker.
+  bf16_weights_estimate_gb: ~14-15GB at 7B params
+  feasibility_note: 'Fits a single RTX 3090 (24GB) for generation and anchor extraction, but
+    with less headroom than the 3-4B families. The J-lens layer_profile''s eager-attention
+    double-backward is the pressure point at 7B: budget for reduced batch or reduced n_random_dirs,
+    and treat a profile-stage OOM as a batching problem to solve, not a G0 loader blocker.'

@@ -57,9 +57,14 @@ import model_lib as ml  # noqa: E402
 from family_config import FAMILY_SLUGS, load_family  # noqa: E402
 
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+# The phase1 tree was archived after this script was pinned; the corpus now
+# lives under divergent-pool-own-readout's phase1-migrated mirror (same file:
+# 13496 rows, sha256 2886a602..., its sidecar manifest still names the old
+# path as canonical). Repointed via governed repin 2026-07-24.
 EXPANSION_CANDIDATES = (
     CANONICAL
-    / "experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl"
+    / "experiments/divergent-pool-own-readout/analysis/phase1-migrated"
+    / "probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl"
 )
 REPO_ROOT = HERE.parents[1]
 

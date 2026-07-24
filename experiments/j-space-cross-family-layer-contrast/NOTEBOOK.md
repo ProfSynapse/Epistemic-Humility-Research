@@ -6,6 +6,264 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-24 -- qwen3.5-4b j-space DISPOSITION: DEFERRED (back-burnered by user, not a G0 stop)
+
+**Killed run.** `jlens_profile.py --family qwen35-4b` was terminated by the lead's
+direction (PID 922336 + wrapper 922335) after logging only 1 of 10 depth-sweep
+points (hs_index=1) in 6h13m wall clock -- that single point cost 20172.8s
+(~5.6h), ~20x the LAUNCH-PLAN's 2-3h whole-stage budget. Root cause (read-only
+diagnostic, no pinned-file edit): the log's first computation line reads "The
+fast path is not available because one of the required library is not
+installed. Falling back to torch implementation" -- Qwen3.5-4B's hybrid
+linear/full-attention layers (config.text_config.layer_types alternates the
+two) fall back to a slow plain-PyTorch path without the optional
+flash-linear-attention/causal-conv1d packages. Confirmed genuine ongoing
+compute, not a hang, via steady 104% CPU on the actual python child process and
+non-zero (30-40%) GPU utilization the entire run. `jlens.layer_profile()` has
+no resume-from-partial logic, so a restart always begins again from
+depth_sweep[0]; the completed hs_index=1 result is durably checkpointed at
+`analysis-committed/qwen35-4b/layer_profile.json` but is a PARTIAL/INCOMPLETE
+artifact, not usable as evidence. `families/qwen35-4b.yaml`'s
+`band_selection.status` remains `not_yet_run` (the write-back only fires at
+the end of a completed sweep, which never occurred).
+
+**Disposition: DEFERRED (back-burnered), not NOT-RUN/G0 stop.** This is a
+distinct category from llama/mistral's G0 dose-viability stops -- no gate
+fired, no dose was ever calibrated; the profile stage itself couldn't
+complete in budget. User decision (2026-07-24 morning) is to back-burner this
+family rather than force a decision now. Three restart paths remain on the
+table for a future signed revision or lab-notebook entry: (a) a smaller
+first-pass `--n-prompts` (200-300), which the LAUNCH-PLAN itself pre-flagged
+as a contingency but which still costs hours not minutes at linear scaling,
+not the sub-hour the local-smoke-scale reference implied; (b) installing
+flash-linear-attention/causal-conv1d and retrying n=1000, CAVEATED that the
+J-lens double-backward JVP machinery may not be supported by the fused
+kernels at all, making the observed fallback the only correct path rather
+than a fixable slowdown -- a cheap CPU/1-layer smoke should answer this
+before committing further GPU time; (c) accepting a NOT-PROFILED disposition
+for this family this round. None of these paths were taken; qwen3.5-4b is
+simply held, dependency-install path documented for whoever picks it back up.
+
+### 2026-07-24 -- norm-scaled dose-ladder signed revision being drafted (context, not yet in effect)
+
+The lead is drafting a signed revision to re-run llama-3.2-3b and
+mistral-7b-v03's dose calibration on a norm-scaled ladder rather than the
+current fixed absolute ladder ([25,50,...,200], calibrated on Qwen3-4B's own
+residual scale). Their extraction/build_directions/gate_fit artifacts remain
+valid and reusable across this revision (only calibrate_dose + downstream
+would re-run); expect a return to those two families after gemma4-e4b's
+pipeline completes. Qwen3-4B's own reference anchor L2 norms were recovered
+for comparison: hs23 66.7, hs26 124.8, hs29 209.2, hs34 423.8 -- its own
+SELECTED doses sat at 0.37-0.60x the median norm at each layer, with a usable
+band roughly 0.2-1.0x median norm. Under the old fixed absolute ladder,
+llama's mid-band doses translated to 1.8-14.6x its own (much smaller) median
+norms -- entirely outside the 0.2-1.0x usable band that worked for Qwen3-4B.
+This closes the physics of both G0 dose-viability stops observed so far: the
+ladder was never wrong in absolute terms, it was calibrated for one family's
+residual scale and applied unchanged to others whose scale differs by an
+order of magnitude. This is background for a FUTURE signed revision only --
+no ladder value has been changed in this run, and none of llama/mistral's
+G0 dispositions above are altered by this note.
+
+### 2026-07-23 -- mistral-7b-v03 DISPOSITION: NOT-RUN (G0 dose-viability stop)
+
+**Pre-calibration anchor L2 norm read (lead, computed from extraction
+safetensors before calibrate_dose ran, per the standing "free early
+viability read" rule).** hs12 3.35, hs15 4.43, hs19 8.00, hs30 (late) 21.46
+(300-row samples). ALL FOUR layers -- including the late-reference arm --
+sit below the ladder floor (dose 25), a stronger and more uniform
+below-floor pattern than llama's (which had its late arm above floor at
+30.4). This strongly predicted the same units-mismatch dose-viability stop,
+in advance of calibrate_dose running.
+
+**calibrate_dose.py ran to completion cleanly** with the repinned `--fresh`
+flag (same bugfix as llama): 32/32 (layer,dose) cells (mid-band
+hs12/hs15/hs19 x late hs30, all 8 ladder doses [25...200]), ~35 min GPU
+time, readback within tolerance at every single cell (write mechanism
+confirmed accurate, `frac_readback_within_tol == 1.0` on all 32 cells).
+Result: `all_midband_have_usable_dose: false`, `all_layers_have_usable_dose:
+false` -- no dose at any of the 4 layers clears the locked usability bar.
+Unlike llama (which had one near-miss cell at 0.125 collapse), mistral's
+collapse pattern is close to total: `collapse_rate_on_dosed` is 1.0 at
+every single (layer, dose) cell except one (hs30/late at dose=25, where
+collapse is 0.0 but `confab_tighten` is still 0.0, so still unusable).
+`confab_tighten.rate` is 0.0 at every single cell across all layers and
+doses -- the write never registers a usable caution effect anywhere on the
+ladder for this family. `known_correct_cost_control.rate` is pinned at
+0.125 (1/8) at every cell regardless of dose or layer, consistent with one
+fixed known-correct FIT row failing independent of the intervention. Full
+per-cell numbers: `analysis-committed/mistral-7b-v03/dose_calibration_summary.json`.
+
+**Bug-vs-genuine-behavior check (read-only diagnostic, scratchpad-only, not
+part of the pinned instrument, no pinned-file changes).** Wrote a throwaway
+script reusing `pipeline.py`'s own `render`/`run_pass_fixed`/
+`setup_hook_from_path`/`compute_gate_decisions` verbatim to print RAW
+generated text for 2 fired confab rows at hs12 (the lowest-norm mid-band
+layer), doses 25 and 50 (readback confirmed accurate: 25.00-25.01,
+50.01-50.01 respectively; `strength = dose/sigma_c` computed as ~120-240,
+several times larger than the strength that produces the same collapse
+pattern in llama at the same nominal doses, consistent with mistral's even
+smaller sigma_c/anchor-norm scale at these layers):
+- BASE (undosed): clean well-formed JSON on both rows, e.g. `{"answer": "I
+  don't have the ability to definitively say that biodegradable materials
+  are the most effective solution...", "response_confidence": 0.3}`.
+- DOSED at 25 (the ladder's lowest dose): immediate collapse into repeated
+  fragment loops from the very first tokens -- `{ answer answeratr -
+  -atr -atratratratratrat...` -- no coherent JSON structure or semantic
+  content survives even at the ladder floor, unlike llama where the
+  semantic caution direction read through briefly before collapsing.
+- DOSED at 50: same pattern, different repeated fragment (`aughteropter
+  opteropteropter...`).
+
+This confirms genuine over-steering / total repetition-collapse from the
+very first dose on the ladder, not a detection false-positive or a
+hook/readback bug -- the write mechanism is accurate (readback matches
+target to within fractions of a unit at every cell) but the model cannot
+sustain ANY coherent generation under this write at ANY point on the
+locked ladder, worse than llama's partial degradation-then-collapse
+pattern. Consistent with the anchor-norm prediction above: a units
+mismatch between the ladder (calibrated on Qwen3-4B's residual scale) and
+mistral-7b-v03's own (much smaller) residual scale at these layers, not a
+per-family tuning failure. No off-ladder dose was tried and none of the
+min-confab-rate/layer/ladder parameters were touched -- all locked per the
+signed instrument; ladder extension is a signed-revision question the lead
+is lifting to the user separately, out of scope for this run.
+
+**Formal G0 gate firing on record.** `run_contrast.py --family
+mistral-7b-v03 --mode smoke --n-rows 8` invoked and exits with:
+`ValueError: [mistral-7b-v03] calibration summary says not all mid-band
+layers have usable doses` (raised at `load_midband_selected_doses`,
+run_contrast.py line 80) -- the instrument's own designed gate, not a
+workaround. Identical failure mode and identical gate-firing mechanism as
+llama-3.2-3b.
+
+**Note on family substitution provenance.** This family's YAML already
+records the pre-existing substitution (Ministral-3-3B -> Mistral-7B-
+Instruct-v0.3, due to a conditional-gen class issue) and the doubt-snap
+reused late-site fit was already a TRUE BEHAVIORAL NULL there
+(`doubt_snap_fit_peak_clean_tighten: {rate: 0.0, dose: 30.0, known_cost:
+0.0118}`) -- consistent with this family also failing to produce a usable
+intervention effect in the predecessor experiment at its frozen late site,
+independent of this experiment's fresh mid-band mining.
+
+**Disposition:** NOT-RUN (G0 dose-viability stop) -- CONFIRMED by lead
+adjudication, mirroring llama-3.2-3b's confirmed disposition pattern. Two
+of two families run so far have hit the identical G0 stop; qwen3.5-4b and
+gemma-4-e4b remain to test whether this is family-general or specific to
+the two `torch_dtype`-heterogeneous / smaller-residual-scale families run
+first per the locked order.
+
+**Cross-family observation (lead, added at adjudication).** Mistral is
+qualitatively WORSE than llama at the ladder floor -- zero semantic
+read-through even at dose=25 (immediate token-loop collapse) vs llama's
+brief coherent refusal before collapsing. This is consistent with mistral
+having the smallest sigma_c of the two families run so far, and therefore
+the largest effective strength (`dose/sigma_c`) at any given nominal dose
+on the shared ladder. The resulting cross-family strength gradient --
+qwen3-4b in-range (ladder was calibrated on it), llama roughly 2-4x over,
+mistral roughly 5-10x over -- is the central design input for the
+norm-scaled-ladder question the lead is lifting to the user separately;
+not acted on here, ladder stays locked as signed.
+
+### 2026-07-23 -- llama-3.2-3b DISPOSITION: NOT-RUN (G0 dose-viability stop, adjudicated)
+
+**calibrate_dose.py ran to completion cleanly** with the repinned `--fresh`
+flag: 32/32 (layer,dose) cells (mid-band hs17/20/23 x late hs26, all 8
+ladder doses [25...200]), ~24 min GPU time, readback within 5%+0.5 tolerance
+at every single cell (the write mechanism itself is not the problem).
+Result: `all_midband_have_usable_dose: false`, `all_layers_have_usable_dose:
+false` -- no dose at any of the 4 layers clears the locked usability bar
+(`frac_readback_within_tol == 1.0` AND `collapse_rate_on_dosed == 0.0`
+exactly AND FIT confab `clean_tighten` rate `>= 0.5`). Best case across the
+whole ladder: hs23 dose=25 at 1/8 (0.125) collapse, still nonzero. Full
+per-cell numbers: `analysis-committed/llama-3.2-3b/dose_calibration_summary.json`.
+
+**Bug-vs-genuine-behavior check (read-only diagnostic, scratchpad-only, not
+part of the pinned instrument, no pinned-file changes).** Wrote a throwaway
+script reusing `pipeline.py`'s own `render`/`run_pass_fixed`/
+`setup_hook_from_path`/`compute_gate_decisions` verbatim to print RAW
+generated text for 2 fired confab rows at hs17, doses 25 and 100:
+- BASE (undosed): clean well-formed JSON, e.g. `{"answer": "It depends on
+  the severity and type of disaster...", "response_confidence": 0.6}`.
+- DOSED at 25 (the ladder's lowest dose): readback confirms the write lands
+  at the correct magnitude (25.00-25.01); the semantic caution direction
+  DOES read through (`{"answer" isUnknown I don't know the answer" ...`) but
+  then collapses into runaway `unable unable unable...` repetition, hitting
+  the 200-token cap without terminating naturally.
+- DOSED at 100: worse degradation into token salad (`пока oren oren
+  oren... impossible impossible...`).
+
+This confirms genuine over-steering / repetition-collapse, not a detection
+false-positive or a hook/readback bug -- the write mechanism is accurate and
+the direction is semantically correct, but the model cannot sustain
+coherent generation under this write at ANY point on the locked ladder.
+
+**Root-cause corroboration (lead, independent, read-only).** Anchor L2 norms
+computed directly from the extraction safetensors (300-row samples, tight
+spread): hs17 13.7, hs20 17.2, hs23 21.9, hs26 30.4. The ladder floor (dose
+25) EXCEEDS the entire typical hidden-state norm at all three mid-band
+layers -- a UNITS MISMATCH between the ladder (calibrated on Qwen3-4B's
+residual scale) and llama-3.2-3b's own residual scale, not a per-family
+tuning failure. This exactly predicts the diagnostic's observed pattern
+(semantics read through at the lowest dose, then immediate repetition
+collapse, worse at higher doses). No off-ladder dose was tried and none of
+the min-confab-rate/layer/ladder parameters were touched -- all locked per
+the signed instrument; ladder extension is a signed-revision question the
+lead is lifting to the user separately, out of scope for this run.
+
+**Formal G0 gate firing on record.** `run_contrast.py --family llama-3.2-3b
+--mode smoke --n-rows 8` invoked and exits 1:
+`ValueError: [llama-3.2-3b] calibration summary says not all mid-band
+layers have usable doses` (raised at `load_midband_selected_doses`,
+run_contrast.py line 80) -- the instrument's own designed gate, not a
+workaround.
+
+**DISPOSITION (adjudicated lead+drafter 2026-07-23): NOT-RUN, G0
+dose-viability stop.** Matches gates.yaml's pre-anticipated category
+verbatim ("A family that fails G0 after bounded debugging... is recorded
+as NOT-RUN with the explicit blocker and excluded from the cross-family
+denominator -- neither a PASS nor a FALSIFIER hit for that family"),
+structurally the same category as `doubt-snap-cross-family-confirmatory`'s
+own late-site dose-viability stops. llama-3.2-3b is excluded from the
+cross-family roll-up denominator; proceeding to mistral-7b-v03 next per the
+locked run order.
+
+### 2026-07-23 -- llama-3.2-3b: extraction + mid-band fit/gate results; calibrate_dose.py pinned-code bug found, fixed, repinned
+
+**extract_anchor.py** (GPU): 2956/2956 rows extracted in 112.8s, safetensors
+139.6M, `analysis/llama-3.2-3b/anchor_extract_manifest.json` `complete: true`.
+Ran with the two render() fixes below (PYTHONPATH + vendored shim).
+
+**build_directions.py --verify-reproducible** (CPU): reproducibility check
+PASS at all three mid-band candidate layers (hs17, hs20, hs23). `cos_u_d_u_p`
+near-orthogonal at every layer (0.038-0.040), `cos_caution_dir_c_hat` >=0.985
+(orthogonalized caution direction still highly aligned with the raw caution
+axis, as expected). Standardization stats (`mu_d`/`sigma_d`/`mu_c`/`sigma_c`)
+written per layer to `build_manifest.json`.
+
+**gate_fit.py** (CPU): Youden-J frozen tau at all three mid-band layers, AUC
+(`neg_z_d`, FIT confab vs FIT known_correct_answered) well above the 0.90 G0
+floor at every candidate:
+- hs17: AUC 0.9993, tau -0.3755, tpr 0.9931, fpr 0.0090 (tp 577 fn 4 fp 2 tn 220)
+- hs20: AUC 0.9991, tau -0.3401, tpr 0.9931, fpr 0.0090 (tp 577 fn 4 fp 2 tn 220)
+- hs23: AUC 0.9990, tau -0.2667, tpr 0.9914, fpr 0.0090 (tp 576 fn 5 fp 2 tn 220)
+
+**calibrate_dose.py pinned-code bug (found, lead-fixed, repinned).** First
+invocation crashed immediately, before any GPU dose-ladder generation:
+`AttributeError: 'Namespace' object has no attribute 'fresh'` at line 123
+(`if args.fresh and ckpt_path.is_file():`) -- the script's own argparse block
+(lines 204-209) never defined a `--fresh` flag, despite the script's own
+comment at line 118 documenting one ("Resume assumes the same --doses ladder;
+use --fresh to restart") -- an authoring omission, not a design gap;
+`run_contrast.py`'s argparse correctly has `[--resume | --fresh]`. Not an
+environment issue (100% reproducible on any family/args, before any GPU
+work). Reported to lead with exact line numbers and a minimal one-line
+proposed diff; lead independently verified, applied the diff verbatim (one
+`parser.add_argument("--fresh", action="store_true", ...)`, no other line
+changed), smoke-checked `--help` shows the flag, and ran the governed repin:
+`calibrate_dose.py` `b817c12f...` -> `0579f52891b1...` (reason recorded in
+`instrument.repins`). Dose ladder, gates, and resume logic untouched.
+
 ### 2026-07-23 -- launch G0 crash diagnosis: two dead render() imports, one PYTHONPATH fix + one vendored shim (CPU-only diagnosis, no GPU work counted toward outcome; pending lead repin before relaunch)
 
 llama-3.2-3b's `extract_anchor.py` crashed at G0 (`model_lib.py`'s `render()`)

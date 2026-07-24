@@ -1,0 +1,57 @@
+{
+  "family": "mistral-7b-v03",
+  "substrate": "bf16",
+  "base_model": "mistralai/Mistral-7B-Instruct-v0.3",
+  "hidden_dim": 4096,
+  "random_state": 20260707,
+  "reproducibility_verified": true,
+  "extract_manifest_sha256": "343b67c46f30fbcade9a353be526df8eb2b43dc001250edef3af5c8975931834",
+  "split_manifest_sha256": "e917ab0063eb3349a344816f28a75eb48a7858a7356504b2a265fb5720348c7b",
+  "layers": {
+    "hs12": {
+      "hs_index": 12,
+      "decoder_block_index": 11,
+      "n_known_correct_answered_fit": 255,
+      "n_confab_fit": 874,
+      "n_unknown_refused": 214,
+      "cos_u_d_u_p": 0.029705631340701987,
+      "cos_caution_dir_c_hat": 0.9842043351698491,
+      "mu_d": -0.4790299186024995,
+      "sigma_d": 0.3180183311645166,
+      "mu_p": 0.03394347866158259,
+      "sigma_p": 0.007619571527351457,
+      "mu_c": 0.3818263163413401,
+      "sigma_c": 0.20817377217715535
+    },
+    "hs15": {
+      "hs_index": 15,
+      "decoder_block_index": 14,
+      "n_known_correct_answered_fit": 255,
+      "n_confab_fit": 874,
+      "n_unknown_refused": 214,
+      "cos_u_d_u_p": 0.048279758544587666,
+      "cos_caution_dir_c_hat": 0.9027363077156006,
+      "mu_d": -0.7447834131661291,
+      "sigma_d": 0.42187925735149345,
+      "mu_p": -0.11144391573261272,
+      "sigma_p": 0.011071170609631434,
+      "mu_c": 0.11780339157450083,
+      "sigma_c": 0.28318107746401894
+    },
+    "hs19": {
+      "hs_index": 19,
+      "decoder_block_index": 18,
+      "n_known_correct_answered_fit": 255,
+      "n_confab_fit": 874,
+      "n_unknown_refused": 214,
+      "cos_u_d_u_p": 0.04487732299379985,
+      "cos_caution_dir_c_hat": 0.8889100033074371,
+      "mu_d": -1.0118523673202036,
+      "sigma_d": 0.6587744642197345,
+      "mu_p": -0.07918085505471525,
+      "sigma_p": 0.01591176619352627,
+      "mu_c": -0.17621462219461348,
+      "sigma_c": 0.37382188637847086
+    }
+  }
+}

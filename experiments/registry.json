@@ -2673,13 +2673,13 @@
         },
         "pins": {
           "build_directions.py": "833528a619ae6e0c57fbdfac4c2b5645455bf40eb0254f10cc36dbb0ec988b77",
-          "calibrate_dose.py": "b817c12f901d33ea0510f7e6eabdc880e3a8ff21711b66effba70a1603bff5a1",
+          "calibrate_dose.py": "a3ed05621739ef7e2cec9875cfbe81a53cd00aca523e64e40df5bd3b5a353e46",
           "cell.yaml": "be93520fc9a1c3ce14f4c8fe94f177e253fd0cd9357bc9ed9474b49fb253d306",
           "cross_family_rollup.py": "918949481e7f357c2e374fb7bccf9148c456c8f98f0c500ebffbeaf0473d98c9",
           "extract_anchor.py": "448e10fb67f48753e9ad8540ede44ea9b41b0fb283b4603bb44df7e9555e5c8d",
           "families/gemma4-e4b.yaml": "5ffc121302f28e5655a9d0ccdd5acb043c099b4e38663232bdf742848c6199f2",
           "families/llama-3.2-3b.yaml": "942be30a2826b231725b18cb4529595ea506165cc4dfa98cb373337a91d2ae41",
-          "families/mistral-7b-v03.yaml": "db3d5645748fb20af5510c5b39b6f2a4ad8d4eaa3e9c46f11600fe90dd437c7c",
+          "families/mistral-7b-v03.yaml": "af3891ca6a6c92b7375b92ae241edcdf1d8331c0bae88d37effc52b77ef3426c",
           "families/qwen35-4b.yaml": "d726633f7e7c2cd387aed3fd61763beaf5a6ca144c7cc0cc0d5f0ddbfad5ea33",
           "family_config.py": "9da242fee0450e5beedea3ad73fc3cfae6312efcbd86ca446813b342547b31b3",
           "gate_fit.py": "b4e11ccb604813dd1bf2f8a2be6db6d4808cf6df7a0634d72cef3bc6c0e12b1f",
@@ -2688,7 +2688,7 @@
           "grader.py": "35dfbaf9d4932471c1da43087b03e5c81921af2c998ce167e7fceb1539fb48b5",
           "jlens_profile.py": "260cf29e1db4cf23b3becb82c5d54e32473be3a9e2a573bedbc66cb16536ce56",
           "materialize_reused_rows.py": "0e18237650492b7b1597ef8fb6e56f1d813314f2407eaca1329f1bb5ab5c53b5",
-          "mine_eval_pool.py": "3cc24dc80f46767e4301dbb380787a6e2ea846184617febc0f0774e725396906",
+          "mine_eval_pool.py": "2e6dbeb1eddf5cb1926fe61e6cf8eb620de052670f6421c56dee02d94cd7dc0b",
           "model_lib.py": "b5e7239f0ba25ce42e7df624e0706d421beaba23bbff9bc2dd421f55ee2681ce",
           "pipeline.py": "b404a152099632f59286ab6f89dc7e64ad0988fbc97202e18be5f2a35b759357",
           "run_contrast.py": "fc7dabd96348293b87da9e96ef3bc42ea9c3bb1776fcc7f184bbb5c6aa597456",
@@ -2702,6 +2702,41 @@
             "new_sha256": "942be30a2826b231725b18cb4529595ea506165cc4dfa98cb373337a91d2ae41",
             "old_sha256": "457a019e9a69f55226cc00ed533453196c97451c0fdf31ea47cd9691e9ee64bf",
             "reason": "Pre-registered profile-stage write-back: jlens_profile.py resolved llama's band_selection (mid-band candidates hs17/20/23, late ref hs26) into the family YAML per the signed design ('writes the resolved band back into families/<slug>.yaml in place'); no gate or threshold changed"
+          },
+          {
+            "date": "2026-07-24T00:59:10Z",
+            "file": "calibrate_dose.py",
+            "new_sha256": "0579f52891b1bc14522e157b1f546cb3826bda9587b5ea704ac7027fe4f36ab0",
+            "old_sha256": "b817c12f901d33ea0510f7e6eabdc880e3a8ff21711b66effba70a1603bff5a1",
+            "reason": "calibrate_dose.py authoring omission: --fresh referenced at runtime (line 123) but never added to argparse; every invocation crashed with AttributeError before GPU work. One-line add_argument('--fresh', action='store_true') matching the script's own documented resume/--fresh contract and run_contrast.py's precedent. No behavioral change to the dose ladder, gates, or resume logic."
+          },
+          {
+            "date": "2026-07-24T02:34:49Z",
+            "file": "families/mistral-7b-v03.yaml",
+            "new_sha256": "af3891ca6a6c92b7375b92ae241edcdf1d8331c0bae88d37effc52b77ef3426c",
+            "old_sha256": "db3d5645748fb20af5510c5b39b6f2a4ad8d4eaa3e9c46f11600fe90dd437c7c",
+            "reason": "Pre-registered band_selection write-back after mistral-7b-v03 jlens_profile resolved: mid-band candidates hs12/15/19 (effective-dim peak hs15), late reference hs30, status resolved. Same pre-registered mutation class as the llama-3.2-3b repin."
+          },
+          {
+            "date": "2026-07-24T09:08:23Z",
+            "file": "mine_eval_pool.py",
+            "new_sha256": "2e6dbeb1eddf5cb1926fe61e6cf8eb620de052670f6421c56dee02d94cd7dc0b",
+            "old_sha256": "3cc24dc80f46767e4301dbb380787a6e2ea846184617febc0f0774e725396906",
+            "reason": "Archived-path repoint (4th instance of the phase1-reorg breakage class this session): EXPANSION_CANDIDATES hardcoded the retired experiment/phase1/probe/.../expansion_candidates.jsonl path, which no longer exists; the identical corpus (13496 rows, 10000 known / 3496 unknown, triviaqa 6000 / popqa 4000 / kuq_ku_unknown_x 3496, sha256 2886a602a2d8eca90bec2346ba21dc33...) now lives under experiments/divergent-pool-own-readout/analysis/phase1-migrated/, whose sidecar manifest still declares the old path as canonical origin. One constant repointed; no logic changed. Unblocks gemma4-e4b fresh-mine."
+          },
+          {
+            "date": "2026-07-24T09:44:58Z",
+            "file": "calibrate_dose.py",
+            "new_sha256": "43aeaecb6f92c0e1cd13a73fbe1ff4af931bc789595f7dbe7a119971c63b6c4f",
+            "old_sha256": "0579f52891b1bc14522e157b1f546cb3826bda9587b5ea704ac7027fe4f36ab0",
+            "reason": "Revision R2 (user-ratified 2026-07-24): dose ladder respecified as normalized RATIO_LADDER [0.100..2.000] x per-layer median anchor L2 norm computed at runtime from the family's own frozen anchor_extract.safetensors. Derived from recovered Qwen3-4B reference norms (selected doses 0.37-0.60x, usable band 0.20-1.00x, failure evidence bracketing both sides); sanity check passed (normalized ladder recovers Qwen3-4B's four selected doses within one rung). Usability/selection rules unchanged; v2 checkpoints isolated (calibrate_dose_records_v2.jsonl + namespaced resume keys); --doses absolute escape hatch reproduces v1 exactly. CPU-validated against real llama/mistral extractions reproducing the ratified translation tables. Applies to llama/mistral re-calibration and gemma's first calibration; qwen3.5 deferred."
+          },
+          {
+            "date": "2026-07-24T09:45:36Z",
+            "file": "calibrate_dose.py",
+            "new_sha256": "a3ed05621739ef7e2cec9875cfbe81a53cd00aca523e64e40df5bd3b5a353e46",
+            "old_sha256": "43aeaecb6f92c0e1cd13a73fbe1ff4af931bc789595f7dbe7a119971c63b6c4f",
+            "reason": "R2 provenance correction: two comment lines misdated the normalized-ladder revision as sign-time 2026-07-23; corrected to mid-run R2 user-ratified 2026-07-24 (after the llama/mistral v1 G0 stops). Comments only; zero code change from 43aeaecb."
           }
         ]
       },

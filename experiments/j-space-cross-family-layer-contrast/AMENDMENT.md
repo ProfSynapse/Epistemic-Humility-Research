@@ -71,7 +71,56 @@ ADJUDICATED by lead+user 2026-07-23 (conservative option chosen).
    G0 after bounded debugging, a Modal fallback for that cell is pre-authorized
    by the user; a G0 NOT-RUN is recorded only if Modal also fails.
 
-## Design
+### Mid-run revision R2 (2026-07-24, lead-drafted, user-ratified): norm-scaled dose ladder
+
+**What happened under the original registration.** Llama-3.2-3b and
+mistral-7b-v03 both stopped at the registered G0 dose-viability rule: zero
+usable doses at any layer on the absolute ladder [25..200] (full dispositions
+in NOTEBOOK.md; formal `run_contrast.py --mode smoke` ValueError on record for
+both). Diagnosis, corroborated three ways (raw-text collapse samples; per-family
+anchor-norm measurements; recovered Qwen3-4B reference norms): the absolute
+ladder was implicitly denominated in Qwen3-4B's residual units. Qwen3-4B's
+selected doses sat at 0.37-0.60x its per-layer median anchor L2 norm (usable
+window 0.20-1.00x, with real failure evidence bracketing both sides: too-weak
+at 0.12x, collapse at 1.12-1.20x). The same absolute doses put llama's
+mid-band at 1.8-14.6x its norms and mistral's at 3.1-60x — outside the usable
+band everywhere, exactly reproducing the observed collapse.
+
+**The change (single knob, user-ratified 2026-07-24).** `calibrate_dose.py`'s
+ladder is respecified as RATIOS of per-layer median anchor L2 norm (each
+family's own norms, computed at runtime from its own already-frozen
+`anchor_extract.safetensors`): 8 geometric rungs
+[0.100, 0.153, 0.235, 0.361, 0.554, 0.850, 1.304, 2.000] (ratio 20^(1/7)).
+Rungs r2-r5 cover the Qwen3-4B-validated usable band [0.20, 1.00]; r0/r1 and
+r6/r7 are two-sided margin. Sanity check (required pre-registration, PASSED):
+the normalized ladder recovers Qwen3-4B's own four selected doses within one
+rung (all four in the [r3, r4] bracket, 4-14% from nearest rung). Derivation
+artifacts: recovered Qwen3-4B norms (296 FIT rows, provenance-verified against
+the committed split manifest, method byte-identical to the pinned extractor)
+and the full ratio analysis, retained with the revision evidence.
+
+**What does NOT change.** The usability rule (readback within tolerance, zero
+collapse, FIT confab clean_tighten >= 0.5), the selection rule (highest tighten
+rate, then lower cost, then lower dose/ratio), G1/G2 gates and their floors,
+held-out discipline, the generation contract, and every frozen
+direction/gate/split artifact. Llama and mistral's extractions, directions,
+and gate fits are dose-independent and carry forward unchanged.
+
+**Scope.** (a) Llama-3.2-3b and mistral-7b-v03 re-run dose calibration under
+the normalized ladder; their ladder-v1 NOT-RUN dispositions remain on record
+as evidence about the ORIGINAL registration (instrument-resolution-limited),
+and their final per-family dispositions are determined by the v2 pipeline
+outcome. (b) Gemma-4-e4b, not yet calibrated, calibrates under the normalized
+ladder from the start. (c) qwen3.5-4b remains deferred (user decision
+2026-07-24) and is outside this revision.
+
+**Roll-up and scoreboard semantics.** The registered roll-up rule is unchanged
+and is adjudicated over families as finally disposed under this revision
+(a family "runs past G0" if its v2 calibration finds a usable dose and G0
+passes). The pre-registered scoreboard calls are NOT reopened: both calls
+stand as written and are adjudicated against the final roll-up. This revision
+is recorded BEFORE any v2 calibration cell has run; no v2 behavioral result
+existed when the ladder was ratified.
 
 Substrate: four raw-base instruct checkpoints, bf16, no adapter, no 4-bit
 quantization, no task training. See the family table below for exact
