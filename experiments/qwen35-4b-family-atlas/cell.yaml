@@ -203,7 +203,7 @@ capture:
     branch: feature/multimodal-loader-fallback
     commit: e0e02a3
     includes: f6f1229
-    verified_by: lead (numeric bit-close test vs direct output_hidden_states; hidden-state indexing through the ConditionalGeneration wrapper matches text-only: hs[0]=embeddings, hs[i]=post-block-i, count=num_hidden_layers+1 -- this cell's n_hidden_states=33 / hs_index=block+1 convention holds unchanged)
+    verified_by: "lead (numeric bit-close test vs direct output_hidden_states; hidden-state indexing through the ConditionalGeneration wrapper matches text-only: hs[0]=embeddings, hs[i]=post-block-i, count=num_hidden_layers+1 -- this cell's n_hidden_states=33 / hs_index=block+1 convention holds unchanged)"
   # Post-capture validity check (asserted in AG0, see gates.yaml): the capture
   # log MUST show the ImageTextToText loader path fired (the tuner fix logs the
   # chosen loader). A CausalLM path would mean the fix did not engage and the

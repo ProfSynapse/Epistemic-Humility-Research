@@ -35,7 +35,7 @@ instrument:
   - profile_and_read_family_atlas_panel.py
   - materialize_rows.py
   pins:
-    cell.yaml: bb8d4ad05f82d8721bf533ab592fa8bcd3047bbe88ff458b1dfbf9c0f8dc00cd
+    cell.yaml: 9fe570a7a5f22430b6a6f3da251ded6076cf6d175e5a64cf101fda7268c495ac
     gates.yaml: 91f2300a1350d875f85d26d99e55e96b5667ca11645c59c9be52c0b18c746fe2
     render_qwen35_atlas.py: 28eaefc2d32552b6d8aa603aa5249ec87754d5e172303e3ce6a369fa75d84b6f
     capture_family_atlas_cell.py: 574c5a71f16486ed8c20d0456c6494b79c8a78244d5b71a3de132fb52845199c
@@ -89,6 +89,17 @@ instrument:
         restricted-data access) and is MEASURED AT CAPTURE; both the join (sub-second)
         and the small-file fetch are short-run. Output is the gitignored analysis/rows_with_text.jsonl;
         no row text is ever committed.
+  repins:
+  - file: cell.yaml
+    old_sha256: bb8d4ad05f82d8721bf533ab592fa8bcd3047bbe88ff458b1dfbf9c0f8dc00cd
+    new_sha256: 9fe570a7a5f22430b6a6f3da251ded6076cf6d175e5a64cf101fda7268c495ac
+    date: '2026-07-24T09:13:48Z'
+    reason: 'YAML wellformedness defect baked in at sign (bb8d4ad0): tuner_submodule_pin.verified_by
+      held an unquoted scalar containing an inner '': '' which yaml.safe_load rejects
+      (ScannerError line 206); bin/exp validate hashes bytes and never parses, so
+      the capture wrapper was the first consumer to hit it. One-line fix quoting the
+      value; zero semantic change (all 7 top-level keys identical post-parse). Capture
+      had not run; no GPU work, no evidence affected.'
 inputs:
 - experiments/common/qwen35-4b-doubt-snap-split/split_manifest.json
 verdict: ''

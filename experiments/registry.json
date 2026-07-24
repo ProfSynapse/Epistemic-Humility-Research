@@ -3885,12 +3885,21 @@
         },
         "pins": {
           "capture_family_atlas_cell.py": "574c5a71f16486ed8c20d0456c6494b79c8a78244d5b71a3de132fb52845199c",
-          "cell.yaml": "bb8d4ad05f82d8721bf533ab592fa8bcd3047bbe88ff458b1dfbf9c0f8dc00cd",
+          "cell.yaml": "9fe570a7a5f22430b6a6f3da251ded6076cf6d175e5a64cf101fda7268c495ac",
           "gates.yaml": "91f2300a1350d875f85d26d99e55e96b5667ca11645c59c9be52c0b18c746fe2",
           "materialize_rows.py": "432e9fb5cddf36136249d34b18d510edb5f6f805132593bc33a0f6a6006dd2b1",
           "profile_and_read_family_atlas_panel.py": "27cd945c83df20416658a5370544ea99f1422f5717f3e67cffca82d418003ed5",
           "render_qwen35_atlas.py": "28eaefc2d32552b6d8aa603aa5249ec87754d5e172303e3ce6a369fa75d84b6f"
-        }
+        },
+        "repins": [
+          {
+            "date": "2026-07-24T09:13:48Z",
+            "file": "cell.yaml",
+            "new_sha256": "9fe570a7a5f22430b6a6f3da251ded6076cf6d175e5a64cf101fda7268c495ac",
+            "old_sha256": "bb8d4ad05f82d8721bf533ab592fa8bcd3047bbe88ff458b1dfbf9c0f8dc00cd",
+            "reason": "YAML wellformedness defect baked in at sign (bb8d4ad0): tuner_submodule_pin.verified_by held an unquoted scalar containing an inner ': ' which yaml.safe_load rejects (ScannerError line 206); bin/exp validate hashes bytes and never parses, so the capture wrapper was the first consumer to hit it. One-line fix quoting the value; zero semantic change (all 7 top-level keys identical post-parse). Capture had not run; no GPU work, no evidence affected."
+          }
+        ]
       },
       "kg": [],
       "prediction": "Program-standard family-atlas prediction, kept deliberately (fifth-family test of the decoupling pattern): the eff_dim_frac profile peaks at an interior layer (inside 20%-85% of depth) and a contiguous band containing that peak holds all three axes (doubt, caution, raw_refusal) at held-out AUROC >= 0.80, with the peak layer differing from this substrate's established mid-band write site hs20. See AMENDMENT.md \"Prediction\" and the DRAFT \"Predictions scoreboard\" (to be ratified by lead + user before sign).",
