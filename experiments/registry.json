@@ -3906,10 +3906,10 @@
       "question": "Where does raw-base Qwen3.5-4B's (Qwen/Qwen3.5-4B) workspace midband sit (eff_dim_frac profile over depth), and do the doubt, caution, and raw-refusal axes read there, supplying the family-atlas-standard layer map this substrate's own steer cells (qwen35-4b-midband-doubt-snap / -heldout, which established the hs20 write site behaviorally) never measured, and testing whether the eff_dim_frac peak decouples from both the interior read band AND the independently established interior write site?",
       "registered": true,
       "slug": "qwen35-4b-family-atlas",
-      "status": "signed",
+      "status": "null-result",
       "title": "Qwen3.5-4B family atlas",
       "type": "probe-fit",
-      "verdict": ""
+      "verdict": "qwen3.5-4b atlas capture valid (AG0 pass); eff_dim_frac profile shallow-bimodal (hs18 interior vs hs32 late-exterior) with the pre-registered reproducibility check failing to resolve the peak -- profile limb inconclusive, early-exterior pattern broken at family 5; read panel healthy across hs7-27 with read != write dissociation from hs20 supported."
     },
     {
       "checkpoint": {

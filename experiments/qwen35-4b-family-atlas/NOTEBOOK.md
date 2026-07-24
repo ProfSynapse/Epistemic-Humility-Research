@@ -6,6 +6,92 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-24 -- GPU window: submodule wired, capture fired
+
+Lead authorized (in my worktree only) initializing the `synaptic-tuner`
+submodule and checking it out to the fixed tuner commit, then sent GPU FREE
+(0MiB confirmed, gemma j-space queued behind). Recording the wiring here per
+the AG0 stale-gitlink failure mode this gate was written for.
+
+**Submodule wiring (before -> after).**
+- BEFORE: `synaptic-tuner` uninitialized (`git submodule status` leading `-`),
+  recorded gitlink `901dbe803699e0bf00b73426526babdaf8598cf3`, `tuner.py` absent.
+  As-staged, capture would have resolved the tuner at the stale gitlink
+  (pre-multimodal-fix) or found nothing -- the silent garbage-weight load AG0
+  guards against.
+- ACTION: `git submodule update --init synaptic-tuner`;
+  `git -C synaptic-tuner fetch origin feature/multimodal-loader-fallback`;
+  `git -C synaptic-tuner checkout e0e02a349df2a5ee24eb3e6d56c785519b9f5519`.
+- AFTER: HEAD `e0e02a349df2a5ee24eb3e6d56c785519b9f5519` (resolves e0e02a3 exactly),
+  working tree clean, `f6f1229` confirmed ancestor, `tuner.py` present, subject
+  "Add generic multimodal loader fallback for composite-config checkpoints".
+
+**Capture BLOCKED on a YAML defect in the signed cell.yaml (did NOT run).**
+The wired capture command failed instantly (exit 0 from the wrapper but a
+Python traceback) before the model loaded: `yaml.safe_load(cell.yaml)` raised
+`ScannerError: mapping values are not allowed here`, cell.yaml line 206. The
+`tuner_submodule_pin.verified_by:` value is an unquoted scalar containing an
+inner `: ` ("...matches text-only: hs[0]=embeddings..."), which YAML parses as a
+nested mapping. This defect was baked into the file at sign (sha bb8d4ad0);
+`bin/exp validate` never caught it because validate compares sha256 only and
+does not `yaml.safe_load` cell.yaml -- the capture tool is the first consumer
+that actually parses it. Confirmed the sole fix is to quote that one value
+(whole file then parses; new sha 9fe570a7). Signed file left UNTOUCHED
+(bb8d4ad0 intact); escalated to lead for re-sign. Capture will re-fire after
+re-sign. NO loader path exercised yet; AG0 not yet evaluable.
+
+### 2026-07-24 -- capture re-fired (valid), AG0/AG1/AG2 evaluated
+
+Lead re-signed cell.yaml with the quote fix (pin 9fe570a7) and authorized the
+submodule wiring (recorded above). Re-fire ran clean; results below.
+
+**Capture COMPLETE, VALID.** 3000/3000 rows, coverage_frac 1.0,
+coverage_pass_ag0 true, n_hidden_states 33, hidden_size 2560. Tensors real
+(per-layer L2 norm grows L0=0.79 -> L32=157.6; rows distinct; values +/-20).
+3000 safetensors (985M) under analysis/qwen35_4b/atlas_capture/tensors/, all
+gitignored, git tree clean.
+
+**AG0 -> PASS.** coverage 1.0 (>=0.95). loader path: tuner logs it only at
+logging.INFO (not emitted), so verified by construction -- the tuner's own
+_is_composite_text_config(Qwen3.5-4B @ pinned rev) = True (Qwen3_5Config,
+get_text_config() is not config) forces the AutoModelForImageTextToText
+pre-check branch (CausalLM never attempted), and ZERO missing/unexpected-key
+warnings in the log (garbage-substitution signature absent). held_out power:
+confab 1332 (>=150), known 360 (>=250). direction_refit_determinism: two
+independent score runs BYTE-IDENTICAL. GATE-INSTRUMENT GAP (flagged, candidate
+skill note): AG0's "grep the tuner log for the loader path" is unsatisfiable as
+written (INFO not emitted); durable check = composite-config assertion +
+missing-key-warning absence.
+
+**AG1 -> profile at every layer; reproducibility does NOT hold (flagged for
+lead).** Full-sample eff_dim_frac peak hs18 (depth 0.5625, interior), but the
+profile is shallow/bimodal: hs18=0.01019, hs19=0.01012, hs32=0.00999,
+hs20=0.00961, hs1=0.00923. On 20% row subsamples (261 of 1308 fit rows) the
+peak flips interior(hs18/19) vs final-layer hs32: only 3/8 seeds within +/-1 of
+hs18, 5/8 peak at hs32 (late-exterior). Pre-registered ±1 subsample
+reproducibility fails -> peak is instrument-resolution-limited, interior vs
+late-exterior.
+
+**AG2 -> read panel produced (no numeric gate).** All three axes >=0.80
+held-out across a wide interior band (well inside (20%,85%)=hs7-27), so the
+"no interior layer clears all three" falsifier limb does NOT fire. doubt
+saturates ~1.0 but is heavily norm/position confounded (random control
+ref_vs_known up to 0.990 @hs18, 0.991 @hs31); caution & raw_refusal are the
+clean axes (controls mostly 0.5-0.77). hs20 relation: profile peak (hs18) is 2
+hs before hs20, and at hs20 the caution/raw_refusal random controls are the
+panel's highest (0.915/0.859) -- read signal NOT centered on hs20, confound-heavy
+there. Supports the hs20-dissociation sub-call.
+
+Scoreboard bearing (LEAD adjudicates against AMENDMENT Prediction/Falsifier;
+not a verdict here): the EARLY-EXTERIOR peak both parties called is NOT present
+-- early region hs1-6 never a subsample peak; the only non-interior competing
+mode is LATE-exterior (hs32). Read-panel-healthy limb: correct. hs20
+dissociation sub-call: supported. Falsifier is genuinely ambiguous: full-sample
+point estimate = interior peak (falsifier not fired, registered prediction met);
+pre-registered reproducibility gate = interior peak not robust, late-exterior
+co-equal (pushes toward falsifier firing, but via LATE-exterior, not the
+early-exterior mechanism either party predicted).
+
 ### 2026-07-23 -- tuner fix landed; indexing watch CLOSED; CPU sign-prep complete
 
 Lead relayed the tuner fix and instructed completion of all CPU-side sign prep.

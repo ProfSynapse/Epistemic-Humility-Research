@@ -1,0 +1,46 @@
+{
+  "batch_size": 8,
+  "capture_index_sha256": "afc564e4382de6e558f0143f3c267aaa54e676c697e9c1a930739099337906e6",
+  "cell_id": "qwen35_4b",
+  "coverage_frac": 1.0,
+  "coverage_pass_ag0": true,
+  "engine": "hf-batched",
+  "hidden_size": 2560,
+  "layers_requested": "all",
+  "missing_row_count": 0,
+  "missing_row_keys_sample": [],
+  "model": "Qwen/Qwen3.5-4B",
+  "n_hidden_states": 33,
+  "n_rows_captured": 3000,
+  "n_rows_in_pool": 3000,
+  "num_hidden_layers": 32,
+  "persist_dtype": "float32",
+  "position_name": "anchor",
+  "position_rule": "len(token_ids) - 1 (manual tokenize, add_special_tokens=True)",
+  "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+  "row_pool_source": {
+    "committed_split_manifest": "experiments/common/qwen35-4b-doubt-snap-split/split_manifest.json",
+    "committed_split_manifest_sha256": "2f622f5abe110349216207424bdbd919775e93f6d92f334b99f6424505f21e5c",
+    "fleet_cell_id": "qwen35_4b",
+    "fleet_experiment": "doubt-snap-cross-family-confirmatory",
+    "manifest_row_count": 3000,
+    "origin_committed_split_manifest": "experiments/doubt-snap-cross-family-confirmatory/analysis-committed/qwen35_4b/split_manifest.json",
+    "private_question_source_file": "split_rows_private.jsonl",
+    "private_question_source_modal_prefix": "doubt-snap-cross-family-r1/qwen35_4b/analysis",
+    "private_question_source_modal_volume": "eh-doubt-snap-cross-family",
+    "private_question_source_sha256": "42659f4019d0cbe0178bddd6a7e6323299555092ecd8da4c9ac5d58e42b15a58",
+    "role_counts": {
+      "confab": 2219,
+      "known_correct_answered": 600,
+      "unknown_refused": 181
+    },
+    "role_split_counts": {
+      "confab_fit": 887,
+      "confab_held_out": 1332,
+      "known_correct_answered_fit": 240,
+      "known_correct_answered_held_out": 360,
+      "unknown_refused_fit_only": 181
+    },
+    "row_pool_path": "experiments/common/qwen35-4b-doubt-snap-split/split_manifest.json"
+  }
+}

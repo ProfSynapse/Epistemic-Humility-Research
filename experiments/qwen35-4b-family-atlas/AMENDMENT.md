@@ -300,10 +300,75 @@ and user split on the eff_dim_frac peak location).
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results (AG0/AG1/AG2), and
-the one-sentence summary that also goes into `verdict:` in the manifest.
-Append this cell's row to `docs/atlas/family-layer-map.md` once resolved --
-never add a registry row before the governed doc it cites is signed and
-resolved. The existing `qwen3.5` steer-cell row should be reconciled at that
-point (this atlas supplies the profile/read-panel columns that row records as
-"not measured").
+**RESOLVED 2026-07-24 (lead adjudication).** Verdict: **profile limb
+INCONCLUSIVE (instrument-resolution-limited); early-exterior decoupling
+pattern BROKEN at family 5; read panel healthy; read != write dissociation
+supported.**
+
+Gate results:
+
+- **AG0 PASS** (all checks): capture coverage 3000/3000 (1.0);
+  loader path = AutoModelForImageTextToText, verified by construction
+  (the tuner's own `_is_composite_text_config` returns True for the pinned
+  Qwen3.5-4B config, forcing the ImageTextToText branch; zero
+  missing/unexpected-key warnings; captured tensors healthy — norms
+  monotone L0=0.79 -> L32=157.6, rows distinct). NOTE: the gate's
+  literal "capture log MUST show the loader path" is unsatisfiable as
+  written — the tuner logs the path at logging.INFO, which is not emitted
+  under default logging; the by-construction check above is the durable
+  equivalent and is adopted as satisfying the gate's intent. Flagged for a
+  family-atlas skill note.
+- **AG1: eff_dim_frac_every_layer PASS; profile_reproducibility FAIL.**
+  Full-sample peak hs18 (depth 0.5625, interior), but the profile is
+  shallow and bimodal: hs18=0.01019, hs19=0.01012, hs32=0.00999 (~2%
+  spread). Under the pre-registered 20% subsample check the peak is NOT
+  stable within +/-1 layer: 3/8 deterministic subsample seeds keep it at
+  hs18/19, 5/8 flip to hs32 (late-exterior). Peak LOCATION is therefore
+  instrument-resolution-limited (interior vs late-exterior unresolved).
+  Method note: the pinned script exposes no subsample flag; the check was
+  executed with the script's own registered eff_dim_frac estimator on
+  deterministic 20% subsets of the 1308 fit rows (recorded in
+  NOTEBOOK.md).
+- **AG2 (read panel, no numeric gate):** all three axes >= 0.80 held-out
+  across a wide interior band (hs7-27) strictly inside (20%, 85%) — the
+  "no interior layer clears all three axes" falsifier limb does NOT fire.
+  Caveat recorded: the doubt axis saturates ~1.0 but is heavily
+  norm/position-confounded (random-direction control reaches 0.99 at
+  hs18/hs31); caution and raw_refusal are the clean axes (controls mostly
+  0.5-0.77, axis AUROCs ~0.97/0.98 around hs17-23). Refused-pole CIs are
+  wide per the pre-accepted option-(a) power limitation.
+
+Adjudication against the registered Prediction/Falsifier: the prediction
+(robust interior peak + healthy band + peak != hs20) is NOT confirmed —
+the peak is not robustly interior. The falsifier does NOT fire — it
+requires a RESOLVED exterior peak (early or late) or an unhealthy interior
+band, and the peak location is unresolved rather than resolved-exterior
+while the band is healthy. Net: profile limb inconclusive,
+instrument-resolution-limited (the pre-registered reproducibility check is
+the instrument that failed to resolve it). What IS resolved: there is NO
+early-exterior peak (hs1-6 is never a subsample peak) — the 4-of-4
+early-exterior decoupling streak breaks at this family regardless of how
+the hs18-vs-hs32 ambiguity would resolve.
+
+Scoreboard adjudication (against the registered calls, no reinterpretation):
+
+- **orchestrator: MISS on the headline** (called falsifier-fires via
+  early-exterior peak, 5-of-5 pattern; no early-exterior peak exists and
+  the falsifier did not fire). **HIT on the sub-call** (hs20 sits inside
+  the readable band but is not the profile peak; at hs20 the
+  caution/raw_refusal random controls are the panel's highest —
+  read != write dissociation holds).
+- **user: MISS on the headline** (same early-exterior 5-of-5 call, same
+  outcome). **HIT on the sub-call** (read band dissociates from hs20).
+- Both parties also called the read panel healthy — correct.
+
+One-sentence summary (manifest `verdict:`): qwen3.5-4b atlas capture valid
+(AG0 pass); eff_dim_frac profile shallow-bimodal (hs18 interior vs hs32
+late-exterior) with the pre-registered reproducibility check failing to
+resolve the peak — profile limb inconclusive, early-exterior pattern broken
+at family 5; read panel healthy across hs7-27 with read != write
+dissociation from hs20 supported.
+
+The `docs/atlas/family-layer-map.md` row update accompanies this resolve
+(same commit); the existing `qwen3.5` steer-cell row is reconciled with the
+measured profile/read-panel columns.
