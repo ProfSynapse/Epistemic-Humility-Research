@@ -2,10 +2,12 @@
 
 **Tier:** 1 (signed protocol revision — touches gate definitions, the roll-up
 interpretation rule, and a shared measurement instrument)
-**Version:** v1.0
+**Version:** v1.1
 **Date drafted:** 2026-07-24
-**Status:** DRAFT — awaiting user signature. Nothing in this document is in force
-until signed.
+**Status:** DRAFT — **NOT SIGNABLE.** Blocked on the re-scoped Defect 3 audit
+(clause 3), which peer review found incomplete and which is in progress. Nothing
+in this document is in force until signed, and it must not be signed while that
+clause is open.
 **Occasioned by:** resolution of `j-space-cross-family-layer-contrast`
 (verdict INCONCLUSIVE, signed 2026-07-24)
 
@@ -31,7 +33,7 @@ re-running the family that Defect 2's rule requires.
 
 ---
 
-## Defect 1 — G2 is structurally vacuous (NOT-ADJUDICABLE, not PASS)
+## Defect 1 — G2 is structurally vacuous (PASSes stand; non-diagnostic)
 
 ### The defect
 
@@ -85,9 +87,23 @@ overriding it.
    0 dosed rows is evidence about the population's baseline malformedness only,
    and must never be cited as evidence that the write is selective or safe.
 3. **Reporting requirement (applies immediately, retroactively, to reporting
-   only — not to verdicts).** Fire rate must be reported as a companion number
+   only — not to verdicts).** Fire rate MUST be reported as a companion number
    to every cost/harm gate's point estimate and CI, per the reference's review
    checklist. This changes what is *printed*, not what any gate *decided*.
+
+   "MUST", not "should": a caveat that travels only by good intention does not
+   travel. The following prior G2 PASSes are affected and MUST carry the
+   companion fire rate wherever their verdict is reported:
+
+   | experiment | family | site | G2 as reported | dosed fraction of denominator |
+   |---|---|---|---|---|
+   | `j-space-cross-family-layer-contrast` | llama-3.2-3b | hs17 | PASS (4/334 = 0.0120) | **0/334** |
+   | `j-space-cross-family-layer-contrast` | mistral-7b-v03 | hs15 | PASS (2/382 = 0.0052) | **0/382** |
+
+   This enumeration is the complete set known at drafting **for this
+   experiment**. Any G2-equivalent cost gate in another experiment whose dosed
+   denominator is 0 falls under the same requirement; discovering one is a
+   reporting correction, not a new revision.
 4. **G2 is superseded for FUTURE pre-registrations by two separately-adjudicable
    gates.** This is a forward-looking design change, per the reference's "Design
    prescription for a FUTURE non-vacuous gate":
@@ -95,7 +111,12 @@ overriding it.
    - **G2a — gate selectivity (no new measurement required).** On known-correct
      rows, the fraction on which the KU readout gate FIRES. Cap: `<= 0.05`,
      Wilson upper `< 0.10`. Already measured and strongly passing (0/334,
-     0/382). This is what the old G2 was accidentally approximating.
+     0/382). **G2a is not a rename of the old G2 — it is a different
+     quantity.** The old G2 measured `not_well_formed_correct`, the baseline
+     malformedness of an undosed population; G2a measures the readout gate's
+     FIRE RATE on known-correct rows. The old gate was not approximating this
+     one; it was measuring a baseline property because its denominator was
+     never dosed. G2a replaces it, and does not inherit its results.
    - **G2b — write selectivity under forced dose (new measurement).** A
      stratified sample of known-correct rows is dosed **unconditionally**,
      bypassing the gate, at the same site and dose selected for G1. Metric:
@@ -131,8 +152,9 @@ overriding it.
 
 Forward-looking for gate *definitions*; immediate for *reporting* (fire-rate
 companion numbers). **No prior verdict is reopened.** Prior Outcome sections
-should be annotated with the fire-rate caveat where a G2 PASS was reported, as
-an addition to the record rather than a change to it.
+MUST be annotated with the fire-rate caveat where a G2 PASS was reported —
+see the enumeration in clause 3 — as an addition to the record rather than a
+change to it.
 
 ---
 
@@ -156,17 +178,34 @@ under-determined its own verdict.
 
 ### The revision
 
-1. **The INCONCLUSIVE floor is canonical.** Fewer than the registered minimum
-   number of families running past G0 ⇒ INCONCLUSIVE, and this test is
-   evaluated **before** the falsifier test. Rationale: a denominator too small
-   to establish "generalizes" is equally too small to establish "does not
-   generalize." The falsifier clause presupposes an adequate denominator.
-2. **`experiment.yaml`'s `falsifier:` field must be corrected to match.** Until
-   corrected it is superseded by this revision, not by silent edit.
-3. **Precedence rule (general).** Where registered documents conflict:
-   (a) the registered *instrument* (the roll-up script) governs over prose;
-   (b) where prose conflicts, the **more conservative** reading governs;
-   (c) the conflict must be recorded in the Outcome, never resolved silently.
+1. **The INCONCLUSIVE floor is canonical, because the registered instrument
+   implements it.** `cross_family_rollup.py` is a registered instrument module
+   (`experiment.yaml:46`, sha256-pinned at `:118`) and it hard-codes
+   `if n_ran < 3: verdict = "inconclusive"` (`:71-72`, `:100`), implementing the
+   floor that `AMENDMENT.md` already stated. INCONCLUSIVE is therefore what the
+   registered, hash-pinned instrument *computes* — it is not a reading this
+   revision selects between two prose options. The floor is evaluated **before**
+   the falsifier test, as the instrument evaluates it.
+
+   Supporting rationale, not the basis: a denominator too small to establish
+   "generalizes" is equally too small to establish "does not generalize."
+2. **`experiment.yaml`'s `falsifier:` field is an incomplete transcription and
+   must be corrected to match.** It omits a floor that both the AMENDMENT and
+   the pinned instrument carry. Until corrected it is superseded by this
+   revision, not by silent edit.
+3. **No general precedence rule is minted here.** An earlier draft of this
+   revision introduced a rule that "where prose conflicts, the more conservative
+   reading governs." **That is withdrawn.** It was not needed — the hash-pinned
+   instrument settles this case on its own — and minting a general adjudication
+   principle as a side effect of adjudicating one experiment is precisely the
+   pattern that review exists to catch. `operator-discipline.md` contains no
+   such rule, and if one is wanted it must be proposed there on its own and
+   reviewed on its own merits.
+
+   What *is* registered here, narrowly: **where a registered instrument and
+   registered prose conflict, the instrument governs**, because the instrument
+   is what actually computed the result and it is hash-pinned. And the conflict
+   must be recorded in the Outcome, never resolved silently.
 4. **No verdict may be announced from a remembered or paraphrased rule.** The
    adjudicating rule must be read from the registered document, and the
    registered instrument must be executed, before any verdict is stated. This
@@ -192,6 +231,12 @@ blocks 22/23 **through the cache object**; disabling the cache starves them.
 Measured: hs00–hs24 bit-identical to a correct run; hs25 collapses to cos 0.732
 and decays to 0.075 by hs42.
 
+**Mechanism confirmed in source**, not inferred from config keys:
+`transformers/models/gemma4/modeling_gemma4.py:1197-1199` — shared layers read
+K/V from `past_key_values.shared_layers`; with `use_cache=False` the cache is
+`None` (`:1571`), so donor K/V is never read. Boundary 42 − 18 = 24, and
+block 24's output is hs25 — which is exactly where the collapse begins.
+
 `jlens.py` is imported unmodified by `jlens_profile.py` and is marked
 do-NOT-modify/shared, so the defect propagates to every consumer.
 
@@ -206,8 +251,34 @@ mid-band sites were selected from corrupt activations**, which also explains
 why all three sit at relative depth 0.81–1.00, inside the measured dead band,
 and why the write null was 0/176.
 
-Families without cross-layer KV sharing (llama, mistral, qwen) are unaffected —
-verified min cos 1.000000 between `use_cache` settings on the extraction path.
+Families without cross-layer KV sharing (llama, mistral, qwen) are unaffected.
+Evidence, in descending order of strength:
+
+- **Qwen3.5-4B, from source — decisive.** `modeling_qwen3_5.py:433-435` gates
+  use of cached state on `seq_len == 1`, i.e. incremental decode only. In a full
+  prefill — which is what every capture and extraction path here performs —
+  `use_precomputed_states` is False regardless of `use_cache`; the cache is
+  written but never read. Prefill hidden states are therefore identical under
+  both settings by construction. No `shared_layers` or `num_kv_shared` symbol
+  exists anywhere in the `qwen3_5` module or config.
+
+  This matters more than the absence of a config key. Qwen3.5-4B is a
+  gated-delta **linear-attention hybrid** whose `linear_attention` layers carry
+  recurrent state in the cache object — the same *class* of hazard as KV
+  sharing, even though it is not KV sharing. "No sharing keys in `config.json`"
+  would not have ruled it out. The source does.
+- **Llama-3.2-3B, measured.** A/B through the exact `jlens` call pattern, all
+  29 hidden states × 4 prompts: worst cosine 0.999999702, max absolute
+  elementwise difference 0.000e+00, with a vacuity guard asserting distinct
+  storage and non-degenerate activations.
+- **Mistral-7B-v0.3**: no cross-layer KV sharing and no linear-attention
+  state; unaffected by the same reasoning as llama.
+
+An earlier draft of this section claimed "verified min cos 1.000000 between
+`use_cache` settings on the extraction path" for all three families. **That
+claim is withdrawn**: no artifact was located showing that A/B was actually run
+on the Qwen3.5-4B checkpoint specifically, as opposed to qwen3-4b. The source
+argument above is stronger and does not depend on it.
 
 ### The revision
 
@@ -219,51 +290,116 @@ verified min cos 1.000000 between `use_cache` settings on the extraction path.
    on at least one non-sharing family and requiring bit-identity (or cos
    1.000000). If it is not a no-op, this clause does not authorize the edit and
    the revision returns for re-signature.
-3. **Consumers of the shared j-lens: AUDITED 2026-07-24, blast radius is
-   gemma-4-E4B only.** The audit is complete and this clause is discharged, not
-   deferred.
+3. **Consumers of the corrupted read path: AUDIT INCOMPLETE — BLOCKING.**
 
-   Two copies of the instrument carry the identical defect:
-   `j-space-localization-qwen3-4b/jlens.py:195` and
-   `qwen35-4b-midband-doubt-snap/jlens_qwen35.py:127`. Four
-   `layer_profile.json` artifacts exist in total, all in
-   `j-space-cross-family-layer-contrast`.
+   > **RETRACTION.** The v1.0 draft of this clause stated "AUDITED 2026-07-24,
+   > blast radius is gemma-4-E4B only… the audit is complete and this clause is
+   > discharged, not deferred," and concluded that **no prior resolved
+   > experiment is invalidated**. That conclusion is **withdrawn as unsupported,
+   > and is affirmatively known to be false as stated.** Peer review found the
+   > audit's enumeration method unsound and the re-scoped audit is in progress.
+   > This revision is **not signable** until it completes.
 
-   Cross-layer KV sharing, read from each checkpoint's `config.json`
-   (`text_config` where nested):
+   **Why the original audit was unsound.** It enumerated consumers by artifact
+   filename (`layer_profile.json`, 4 found, all inside this experiment) and by
+   copies of `jlens` (2 found). Neither is the axis along which the defect
+   propagates. The defect attaches to any **activation-capture path that runs a
+   `use_cache=False` forward on a KV-sharing checkpoint**, whatever the
+   resulting artifact is called. A capture that writes a "panel" or
+   `capture_manifest` instead of a `layer_profile.json` is invisible to a
+   filename search while being equally corrupt.
+
+   This is the same error shape as Defect 1 itself: choosing a denominator
+   because it was easy to enumerate rather than because it defined the exposed
+   population.
+
+   **Known missed consumer.** `synaptic-tuner/tuner/batch/engines/hf_batched.py:466`
+   (`_capture_chunk`) performs the batched capture forward with
+   `use_cache=False`. (`:258` is `use_cache=True` — a different function, the
+   generation path; the two must not be conflated.)
+   `experiments/gemma-4-e4b-family-atlas/capture_family_atlas_cell.py` routes
+   through `synaptic-tuner/tuner.py` to that engine, and its layer default is
+   `range(n_hidden_states)` — every index `0..num_hidden_layers` inclusive.
+   `gemma-4-e4b-family-atlas` is **status `resolved`, `registered: true`**.
+
+   Cross-layer KV sharing per checkpoint (config plus source, see above) is
+   unchanged and stands:
 
    | model | n_layers | KV sharing | affected |
    |---|---:|---|:--:|
    | google/gemma-4-E4B-it | 42 | `num_kv_shared_layers: 18` (⇒ boundary at 24) | **YES** |
-   | Qwen/Qwen3.5-4B | 32 | none (hybrid linear/full attention, no sharing keys) | no |
+   | Qwen/Qwen3.5-4B | 32 | none; prefill is cache-independent (`modeling_qwen3_5.py:433-435`) | no |
    | meta-llama/Llama-3.2-3B-Instruct | 28 | none | no |
    | mistralai/Mistral-7B-Instruct-v0.3 | 32 | none | no |
 
-   **Consequence: no prior resolved experiment is invalidated.**
-   `qwen35-4b-midband-doubt-snap` and `qwen35-4b-midband-heldout` profiled
-   Qwen3.5-4B, which does not share KV, so their site selection — including the
-   hs20 promotion — stands. Hybrid linear/full attention is not KV sharing and
-   does not trigger this defect. The only invalid site selection anywhere is
-   gemma4-e4b's, addressed in clause 4.
+   **What still stands.** `qwen35-4b-midband-doubt-snap` and
+   `qwen35-4b-midband-heldout` ran on Qwen3.5-4B, whose prefill is
+   cache-independent in source, so their site selection — including the **hs20
+   promotion** — is unaffected. Nothing in the retraction touches it.
 
-   The second copy (`jlens_qwen35.py:127`) should still be corrected for
-   hygiene, since it would silently corrupt any future KV-sharing model pointed
-   at it, but no existing result depends on the fix.
+   **What must be established before signature.** A disposition — affected /
+   clean / indeterminate, with file:line evidence and the specific hidden-state
+   indices each claim rests on — for every experiment that captures gemma-4-E4B
+   activations, enumerated **by capture path, not by model name or artifact
+   name**. Seven experiments reference gemma-4-E4B (`gemma-4-e4b-family-atlas`;
+   `family-atlas-surface-{residualization,diversity,matched-json-completion,matched-pool,matched-vllm}-control`;
+   `gemma4-e4b-kv-seam-quarantine`), six of them resolved or null-result and all
+   registered. An experiment is affected only if the checkpoint shares KV **and**
+   capture used `use_cache=False` **and** the indices its claims rest on include
+   hs25 or above — hs00–hs24 are bit-identical, so a gemma experiment confined to
+   hs≤24 is clean. Indeterminate must be recorded as indeterminate and never
+   rounded to clean.
+
+   Two `jlens` copies carry the identical defect and are still to be corrected:
+   `j-space-localization-qwen3-4b/jlens.py:195` and
+   `qwen35-4b-midband-doubt-snap/jlens_qwen35.py:127`. The second is hygiene —
+   it would silently corrupt any future KV-sharing model pointed at it — but no
+   existing result is known to depend on it.
+
+   The `hf_batched.py:466` fix is **not** authorized by this clause. It is a
+   submodule shared beyond this project; correcting it requires its own
+   assessment of who else depends on the current behaviour.
 4. **gemma4-e4b's band selection is voided and must be re-derived** from a
    corrected profile run. `band_selection.status` reverts `resolved` →
    `not_yet_run`; `midband_candidates_hs`, `effective_dim_peak_hs`, and
    `late_reference_hs` are cleared and re-derived by the same registered method
    applied to correct data.
 
-   **This is repair, not goalpost movement.** The distinction: goalpost movement
-   is re-selecting sites *because a result was unfavourable*; this is
-   re-selecting because the *instrument that chose them was broken*, established
-   by a mechanism independent of any outcome. The prior gemma null (0/176) is
-   accordingly **uninterpretable, not negative**, and must not be cited as
-   evidence of a gemma write failure.
+   **The depth sweep is pinned here, in this document, before the re-run.**
+   The gemma re-derivation MUST profile **every hidden state hs0…hs42
+   inclusive** — the full stack, no subsampling. Rationale: `select_band` is a
+   deterministic argmax over `eff_dim_frac` plus adjacent layers, so given a
+   fixed profile there is **zero operator latitude** in which site wins. But the
+   *sweep* (`n_points` / `--layers`) is a free parameter, and changing which
+   depths are evaluated changes which index can win the argmax. Leaving it
+   unpinned would leave a live steering vector — especially now, since the
+   corrected read profile has **already been seen**. Requiring the full stack
+   removes the parameter entirely rather than fixing it at some chosen value.
+
+   **This is repair, not goalpost movement — with the timing stated plainly.**
+   The distinction: goalpost movement is re-selecting sites *because a result
+   was unfavourable*; this is re-selecting because the *instrument that chose
+   them was broken*. The mechanism is outcome-independent — it is a fact about
+   `use_cache` and KV sharing that holds regardless of what any experiment
+   found, confirmed in `modeling_gemma4.py`.
+
+   **However, the discovery was outcome-triggered**, and this revision does not
+   gloss that: the `use_cache` audit was prompted by an unexplained gemma null
+   (0/176), because nobody audits an instrument that appears to be working. An
+   outcome-triggered discovery of an outcome-independent defect is still repair
+   — but the honest statement is "we went looking because the result was
+   strange," not "we established this independently of any outcome." What makes
+   it repair is the mechanism's outcome-independence and the determinism of
+   `select_band` under a pinned full-stack sweep, not the circumstances of its
+   discovery.
+
+   The prior gemma null (0/176) is accordingly **uninterpretable, not
+   negative**, and must not be cited as evidence of a gemma write failure.
 5. **The re-derived sites are binding once written**, before any dosed run at
    them. The selection must be committed and the family file updated prior to
-   running, so the sites cannot be tuned against the result.
+   running, so the sites cannot be tuned against the result. With the sweep
+   pinned in clause 4 and `select_band` deterministic, the site is fully
+   determined by the corrected profile — there is nothing left to choose.
 
 ### Known limitation recorded at sign
 
@@ -285,7 +421,8 @@ it is not destructive, but it is uncharacterized.
 
 | Version | Date | Change |
 |---|---|---|
-| v1.0 | 2026-07-24 | Initial revision. Retires G2, introduces G2a/G2b, makes vacuous-denominator gates NOT-ADJUDICABLE; makes the INCONCLUSIVE floor canonical and adds a document-precedence rule; authorizes the `jlens.py` `use_cache` repair and voids gemma4-e4b band selection. |
+| v1.0 | 2026-07-24 | Initial revision. Retires G2 for future pre-registrations and introduces G2a/G2b; registers NOT-ADJUDICABLE as a disposition; makes the INCONCLUSIVE floor canonical; authorizes the `jlens.py` `use_cache` repair and voids gemma4-e4b band selection. |
+| v1.1 | 2026-07-24 | Revised after independent adversarial peer review. **Retracts** the v1.0 claim that the Defect 3 audit was complete and that no prior resolved experiment was affected — the audit enumerated by artifact filename rather than by capture path and missed `hf_batched.py:466`, through which the resolved, registered `gemma-4-e4b-family-atlas` captured gemma-4-E4B. Document marked NOT SIGNABLE pending the re-scoped audit. **Withdraws** the invented "more conservative reading governs" precedence rule and re-anchors Defect 2 on the hash-pinned `cross_family_rollup.py`. Upgrades the gemma and Qwen3.5 mechanism claims from config keys to source citations, and **withdraws** the unsupported "min cos 1.000000 on the extraction path" claim. Fire-rate reporting strengthened from "should" to MUST with the affected G2 PASSes enumerated. Corrects the claim that G2a is what the old G2 approximated — they are different quantities. Pins the gemma re-derivation to a full hs0…hs42 sweep to close the sweep-choice latitude vector, and states plainly that the defect's discovery was outcome-triggered even though the mechanism is outcome-independent. Fixes a v1.0 heading that still read "NOT-ADJUDICABLE, not PASS", contradicting its own corrected body. |
 
 ## Relationship to prior documents
 
@@ -297,9 +434,15 @@ it is not destructive, but it is uncharacterized.
   until that field is corrected.
 - **Does not** disturb G0, G1, the late-reference arm's non-gating status, or
   the reused doubt-snap pool/split pinning.
-- **Does not** re-adjudicate any prior experiment. The Defect 3 audit is
-  complete and found no prior resolved result affected; the Defect 1 caveat is
-  reporting-only and explicitly does not reopen verdicts.
+- **Does not** re-adjudicate any prior experiment *on the strength of Defect 1*,
+  whose caveat is reporting-only and explicitly does not reopen verdicts.
+- **Defect 3 may yet require re-adjudication of prior experiments.** The v1.0
+  claim that the audit was complete and found no prior resolved result affected
+  is retracted (see Defect 3 clause 3). At least one resolved, registered
+  experiment — `gemma-4-e4b-family-atlas` — captured gemma-4-E4B activations
+  through a `use_cache=False` path. Whether its claims actually rest on
+  corrupted indices is undetermined. This document cannot state the blast radius
+  until the re-scoped audit lands.
 
 ## Sign-off
 
