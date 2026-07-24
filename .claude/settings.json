@@ -1,5 +1,17 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/regrounding.sh\"",
+            "timeout": 10,
+            "statusMessage": "Re-grounding on EHR operating invariants..."
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Write|Edit|MultiEdit",
@@ -15,6 +27,12 @@
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/block_claudemd_write.sh",
             "timeout": 10,
             "statusMessage": "Checking write target is not a generated mirror (CLAUDE.md/skills)..."
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/path_write_guard.sh\"",
+            "timeout": 10,
+            "statusMessage": "Checking write target is not frozen backup / tuner pollution..."
           }
         ]
       },
@@ -26,6 +44,18 @@
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/launch_guard.sh",
             "timeout": 10,
             "statusMessage": "Checking launch is doc-recorded before running..."
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/bin_search_guard.sh\"",
+            "timeout": 10,
+            "statusMessage": "Checking bin/search was tried before raw code search..."
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/main_protect_guard.sh\"",
+            "timeout": 10,
+            "statusMessage": "Checking not committing on protected main..."
           }
         ]
       }
@@ -48,6 +78,11 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session_note_tracker.sh wrote",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_write_reminders.sh\"",
             "timeout": 10
           }
         ]
