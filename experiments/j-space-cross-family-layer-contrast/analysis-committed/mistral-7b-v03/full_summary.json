@@ -1,0 +1,109 @@
+{
+  "family": "mistral-7b-v03",
+  "mode": "full",
+  "layer_doses": {
+    "hs12": 1.85399885808548,
+    "hs15": 3.7646132819167275
+  },
+  "late_arm_included": false,
+  "pool_counts": {
+    "confab_held_out": 1312,
+    "known_correct_answered_held_out": 382
+  },
+  "n_rows": 1694,
+  "layers": {
+    "hs12": {
+      "hs_index": 12,
+      "n_rows": 1694,
+      "n_fired": 1305,
+      "readback_mean": 1.8440805242784497,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.0,
+      "confab_tighten": {
+        "n": 1312,
+        "successes": 289,
+        "rate": 0.22027439024390244,
+        "wilson_ci_95": [
+          0.19868380723559795,
+          0.2434982314289704
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 382,
+        "successes": 2,
+        "rate": 0.005235602094240838,
+        "wilson_ci_95": [
+          0.0014369671023544868,
+          0.018886040292084585
+        ]
+      },
+      "dose_target": 1.85399885808548
+    },
+    "hs15": {
+      "hs_index": 15,
+      "n_rows": 1694,
+      "n_fired": 1293,
+      "readback_mean": 3.7657171757497028,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.0,
+      "confab_tighten": {
+        "n": 1312,
+        "successes": 642,
+        "rate": 0.4893292682926829,
+        "wilson_ci_95": [
+          0.46235084990937314,
+          0.5163699908026267
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 382,
+        "successes": 2,
+        "rate": 0.005235602094240838,
+        "wilson_ci_95": [
+          0.0014369671023544868,
+          0.018886040292084585
+        ]
+      },
+      "dose_target": 3.7646132819167275
+    }
+  },
+  "primary": {
+    "family": "mistral-7b-v03",
+    "best_mid_layer": "hs15",
+    "g1_floor_used": {
+      "rate": 0.5,
+      "wilson_lower_ci": 0.4
+    },
+    "g2_cap_used": {
+      "rate": 0.05,
+      "wilson_upper_ci": 0.1
+    },
+    "best_mid_confab_clean_tighten": {
+      "n": 1312,
+      "successes": 642,
+      "rate": 0.4893292682926829,
+      "wilson_ci_95": [
+        0.46235084990937314,
+        0.5163699908026267
+      ]
+    },
+    "best_mid_known_correct_cost": {
+      "n": 382,
+      "successes": 2,
+      "rate": 0.005235602094240838,
+      "wilson_ci_95": [
+        0.0014369671023544868,
+        0.018886040292084585
+      ]
+    },
+    "g1_midband_actuation_floor_pass": false,
+    "g2_midband_selectivity_cap_pass": true,
+    "primary_pass": false,
+    "late_reference_layer": "hs30",
+    "secondary_late_reference": {
+      "gating": "none",
+      "status": "SKIPPED -- no usable late-arm dose found in fresh calibration (expected per doubt-snap's late-site null); the primary does not depend on the late arm."
+    }
+  },
+  "primary_pass": false
+}

@@ -569,9 +569,104 @@ no claim promoted.**
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the per-family primary gate results
-(G1/G2 with Wilson CIs), the descriptive late-arm numbers, the cross-family
-roll-up, and the one-sentence summary that also goes into `verdict:` in the
-manifest. No GPU work has run for this experiment as of this draft; every
-artifact under `analysis-committed/` at draft time is a scaffold placeholder,
-not a result.
+**VERDICT: INCONCLUSIVE.** Signed 2026-07-24 (lead + user). Instrument of
+record: `cross_family_rollup.py`, output at
+`analysis-committed/cross_family_rollup.json`.
+
+Only 2 of the 4 registered families ran past G0. Per the roll-up rule stated
+above at "if fewer than 3 families ran at all, the experiment is INCONCLUSIVE,
+not a pass", the cross-family question is **not answered in either direction**:
+2 families supports neither "generalizes" nor "does not generalize".
+
+### Per-family primary gates (held-out)
+
+| family | best mid site | G1 confab `clean_tighten` | Wilson 95% | G1 | G2 known-correct | Wilson 95% | G2 | primary |
+|---|---|---|---|:--:|---|---|:--:|:--:|
+| llama-3.2-3b | hs17 | 647/872 = **0.7420** | [0.7119, 0.7699] | PASS | 4/334 = 0.0120 (fired 0/334) | [0.0047, 0.0304] | PASS (non-diagnostic) | PASS |
+| mistral-7b-v03 | hs15 | 642/1312 = **0.4893** | [0.4624, 0.5164] | FAIL | 2/382 = 0.0052 (fired 0/382) | [0.0014, 0.0189] | PASS (non-diagnostic) | FAIL |
+| qwen35-4b | -- | not run | | | | | | not run |
+| gemma4-e4b | -- | not run (G0: instrument invalid, see below) | | | | | | not run |
+
+Mistral fails G1 on the **floor** only (0.4893 < 0.50); its Wilson lower
+(0.4624) clears the 0.40 sub-criterion, and the interval straddles the floor
+(upper 0.5164). This is a marginal miss, not a collapse, and should not be
+reported as "mistral does not actuate".
+
+Late-reference arm (non-gating, descriptive): SKIPPED on both run families --
+no usable late-arm dose was found in fresh calibration, as anticipated by
+`doubt-snap-cross-family-confirmatory`'s late-site null. The primary does not
+depend on the late arm.
+
+### Registered-instrument defects found at resolve
+
+Three defects were found while resolving. All are recorded here rather than
+worked around, and none of them changes the INCONCLUSIVE verdict.
+
+1. **G2 is non-diagnostic here: its PASS stands, but carries a caveat.** Dosing
+   occurs only when the KU readout gate fires, and the gate correctly does not
+   fire on known-correct rows. The dosed known-correct denominator is therefore
+   **0 on every family measured** (llama hs17: 0/334; mistral hs15: 0/382;
+   mistral hs12: 1/382). The G2 numerator's failure events are drawn entirely
+   from never-dosed rows -- confirmed by `successes=2` being identical at two
+   different mistral layers under different doses, i.e. the metric is invariant
+   to the intervention it claims to measure.
+
+   Per the standing rule in
+   `.skills/experiment-runner/reference/gate-diagnosticity.md` -- "a locked
+   gate's PASS stands exactly as registered even when it is later shown to be
+   non-diagnostic; that caveat travels forward with the result, it does not
+   reopen the verdict" -- **the registered G2 PASSes are NOT re-labelled.** They
+   stand as PASS, reported here with their fire rates (0/334 and 0/382), and
+   must never be cited as evidence that the write is selective or safe: at 0
+   dosed rows they are evidence about baseline malformedness only. An earlier
+   draft of the Outcome proposed retroactive re-labelling to NOT-ADJUDICABLE;
+   that was withdrawn as goalpost movement in the direction of severity. The
+   replacement gates (G2a gate-selectivity, G2b forced-dose write-selectivity,
+   with a computed minimum-N floor of 35) are forward-looking only and are
+   specified in the pending Tier 1 revision at
+   `docs/protocols/2026-07-24-jspace-gate-and-instrument-revision.md`.
+2. **The registered success/falsifier rule is stated inconsistently across two
+   registered documents.** `AMENDMENT.md` (this file, above) contains the
+   "fewer than 3 families ran => INCONCLUSIVE" floor; `experiment.yaml`'s
+   `falsifier:` field does not, stating only "<=1 clears => FALSIFIED, exactly
+   2 => MIXED". At the observed n_run=2 / n_passed=1 both texts fire, giving
+   INCONCLUSIVE and FALSIFIED respectively. Resolved in favour of INCONCLUSIVE:
+   the roll-up script implements the floor, and the floor is the conservative
+   reading (2 families can no more establish "does not generalize" than
+   "generalizes"). Folded into the same Tier 1 revision.
+3. **gemma4-e4b activations were corrupted by `use_cache=False`** (G0 stop, so
+   excluded from the denominator rather than counted as a failure). On
+   gemma-4-E4B, blocks 24-41 read donor K/V from blocks 22/23
+   (`first_kv_shared_layer_idx = 24`) *through the cache object*; disabling the
+   cache starves them. hs00-hs24 were bit-identical to a correct run; hs25
+   collapsed to cos 0.732 and decayed to 0.075 by hs42. The family's 0/176
+   write null was fit on corrupt activations and is therefore
+   **uninterpretable, not negative**. Re-extraction at full depth with
+   `use_cache=True` is complete and verified both negatively (all previously
+   cached indices changed) and positively (no discontinuity at the hs24/hs25
+   seam: cos 0.658 vs median 0.900, robust z -2.52). llama/mistral/qwen are
+   unaffected (min cos 1.000000) and their results stand.
+
+### Descriptive finding not covered by the gates
+
+gemma-4-E4B is **readable at every depth**: held-out KU-direction AUC >= 0.977
+from hs5 through hs42, peaking at hs18 (relative depth 0.429) at 0.9999. The
+read profile is therefore **saturated** and supplies no site-selection signal
+for this family. Combined with the write null, this sharpens the read/write
+dissociation already visible in llama and mistral: sites chosen by a READ
+criterion are not thereby good WRITE sites, and on gemma the read criterion
+cannot choose at all.
+
+One unexplained observation, recorded so it is not lost: in the *corrected*
+gemma data, `cos(hs23, hs24) = 0.012484` -- near-orthogonal, at the donor-block
+boundary. Read AUC shows no disruption across it (hs23 0.9998, hs24 0.9980), so
+it is not destructive, but it is uncharacterized.
+
+### Status
+
+The experiment is **not resolved**. qwen35-4b is being run to reach the minimum
+denominator of 3 registered by the roll-up rule; this is protocol-following
+under the INCONCLUSIVE verdict, not a post-hoc denominator change. This Outcome
+will be re-adjudicated on the roll-up instrument once that family completes,
+and any revision will be recorded as an amendment to this section rather than
+by overwriting it.

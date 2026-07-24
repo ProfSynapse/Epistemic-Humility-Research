@@ -75,13 +75,25 @@ def load_midband_selected_doses(family: str) -> dict[str, float]:
     if src is None:  # pre-option-B schema: filter the flat selected_doses map
         src = {k: v for k, v in data.get("selected_doses", {}).items() if k in midband_names}
     selected = {str(k): float(v) for k, v in src.items()}
-    ok = data.get("all_midband_have_usable_dose", data.get("all_layers_have_usable_dose"))
-    if not ok:
-        raise ValueError(f"[{family}] calibration summary says not all mid-band layers have usable doses")
-    if set(selected) != midband_names:
+    # Partial mid-band coverage is PERMITTED (user-approved 2026-07-24): R2's
+    # registered roll-up semantics ("a family 'runs past G0' if its v2
+    # calibration finds a usable dose and G0 passes") supersede this loader's
+    # original all-midband precondition, which was written under the sign-time
+    # assumption (true for Qwen3-4B) that every candidate would be usable.
+    # Layers without a calibrated dose are never dosed downstream (see
+    # _layer_dose_map); zero usable doses anywhere remains a hard stop -- that
+    # family is a G0 dose-viability NOT-RUN and never reaches this script.
+    if not selected:
         raise ValueError(
-            f"[{family}] calibration summary mid-band doses incomplete: "
-            f"have {sorted(selected)}, need {sorted(midband_names)}"
+            f"[{family}] calibration summary has no usable mid-band dose at "
+            f"any layer -- this family is a dose-viability NOT-RUN and "
+            f"run_contrast should not have been invoked"
+        )
+    extra = set(selected) - midband_names
+    if extra:
+        raise ValueError(
+            f"[{family}] calibration summary contains non-mid-band layers: "
+            f"{sorted(extra)} (mid-band set is {sorted(midband_names)})"
         )
     return selected
 
@@ -250,7 +262,9 @@ def _layer_dose_map(family: str, late_dose: float | None) -> dict[int, float]:
     selected = load_midband_selected_doses(family)
     dose_map: dict[int, float] = {}
     for hs_index in family_midband_hs_indices(cfg):
-        dose_map[hs_index] = selected[layer_dir_name(hs_index)]
+        name = layer_dir_name(hs_index)
+        if name in selected:  # only usable-dose (calibrated) sites are dosed
+            dose_map[hs_index] = selected[name]
     if late_dose is not None:
         dose_map[family_late_reference_hs(cfg)] = late_dose
     return dose_map

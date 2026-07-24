@@ -1,0 +1,32 @@
+{
+  "family": "qwen35-4b",
+  "checkpoint_repo": "Qwen/Qwen3.5-4B",
+  "n_hidden_layers": 32,
+  "depth_sweep": [
+    1,
+    5,
+    8,
+    12,
+    15,
+    19,
+    22,
+    26,
+    29,
+    32
+  ],
+  "n_prompts": 1000,
+  "seed": 20260707,
+  "per_layer": {
+    "1": {
+      "excess_kurtosis_mean": 0.37415755045377447,
+      "excess_kurtosis_std": 0.07473940326161253,
+      "sparsity_mean": 0.20644658485775755,
+      "sparsity_std": 0.0010762683435851536,
+      "effective_dim_frac_mean": 0.020360465460313233,
+      "effective_dim_frac_std": 0.002773083683107427,
+      "n_random_dirs": 6,
+      "n_prompts": 1000,
+      "elapsed_sec": 20172.843475341797
+    }
+  }
+}

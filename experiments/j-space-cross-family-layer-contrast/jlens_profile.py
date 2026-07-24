@@ -93,7 +93,23 @@ def run(args: argparse.Namespace) -> int:
     repo = cfg["checkpoint"]["repo"]
 
     model, tokenizer = jlens.load_model(model_name=repo, device=args.device)
-    n_hidden_layers = model.config.num_hidden_layers
+    # Nested-text-config families (gemma4, qwen3.5) keep num_hidden_layers and
+    # hidden_size on config.text_config; mirror model_lib.py's established
+    # resolution using the same families/<slug>.yaml loader fields
+    # (family-generic, no special-casing). Gemma4Config forwards neither
+    # attribute top-level. The imported jlens.py (do-NOT-modify, shared
+    # verbatim with j-space-localization-qwen3-4b) reads
+    # model.config.hidden_size directly inside layer_profile(), so the
+    # resolved fields are ALSO mirrored onto model.config (set only when
+    # absent) instead of modifying jlens.py.
+    text_cfg = model.config
+    if cfg["loader"].get("nested_text_config") and hasattr(model.config, "text_config"):
+        text_cfg = model.config.text_config
+        for _field in (cfg["loader"]["num_layers_field"],
+                       cfg["loader"]["hidden_size_field"]):
+            if not hasattr(model.config, _field):
+                setattr(model.config, _field, getattr(text_cfg, _field))
+    n_hidden_layers = getattr(text_cfg, cfg["loader"]["num_layers_field"])
     depth_sweep = args.layers or default_depth_sweep(n_hidden_layers, args.n_points)
     print(f"[jlens-profile:{family}] n_hidden_layers={n_hidden_layers} "
           f"depth_sweep={depth_sweep}", flush=True)

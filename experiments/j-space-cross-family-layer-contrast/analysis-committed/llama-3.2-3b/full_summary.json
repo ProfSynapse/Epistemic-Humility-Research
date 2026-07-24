@@ -1,0 +1,81 @@
+{
+  "family": "llama-3.2-3b",
+  "mode": "full",
+  "layer_doses": {
+    "hs17": 4.954897429720482
+  },
+  "late_arm_included": false,
+  "pool_counts": {
+    "confab_held_out": 872,
+    "known_correct_answered_held_out": 334
+  },
+  "n_rows": 1206,
+  "layers": {
+    "hs17": {
+      "hs_index": 17,
+      "n_rows": 1206,
+      "n_fired": 870,
+      "readback_mean": 4.968763927602852,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.0,
+      "confab_tighten": {
+        "n": 872,
+        "successes": 647,
+        "rate": 0.7419724770642202,
+        "wilson_ci_95": [
+          0.7119141629213736,
+          0.7699081985916519
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 334,
+        "successes": 4,
+        "rate": 0.011976047904191617,
+        "wilson_ci_95": [
+          0.004666837779836055,
+          0.03038350465601892
+        ]
+      },
+      "dose_target": 4.954897429720482
+    }
+  },
+  "primary": {
+    "family": "llama-3.2-3b",
+    "best_mid_layer": "hs17",
+    "g1_floor_used": {
+      "rate": 0.5,
+      "wilson_lower_ci": 0.4
+    },
+    "g2_cap_used": {
+      "rate": 0.05,
+      "wilson_upper_ci": 0.1
+    },
+    "best_mid_confab_clean_tighten": {
+      "n": 872,
+      "successes": 647,
+      "rate": 0.7419724770642202,
+      "wilson_ci_95": [
+        0.7119141629213736,
+        0.7699081985916519
+      ]
+    },
+    "best_mid_known_correct_cost": {
+      "n": 334,
+      "successes": 4,
+      "rate": 0.011976047904191617,
+      "wilson_ci_95": [
+        0.004666837779836055,
+        0.03038350465601892
+      ]
+    },
+    "g1_midband_actuation_floor_pass": true,
+    "g2_midband_selectivity_cap_pass": true,
+    "primary_pass": true,
+    "late_reference_layer": "hs26",
+    "secondary_late_reference": {
+      "gating": "none",
+      "status": "SKIPPED -- no usable late-arm dose found in fresh calibration (expected per doubt-snap's late-site null); the primary does not depend on the late arm."
+    }
+  },
+  "primary_pass": true
+}
