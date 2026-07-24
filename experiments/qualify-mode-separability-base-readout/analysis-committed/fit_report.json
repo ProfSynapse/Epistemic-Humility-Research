@@ -1,0 +1,528 @@
+{
+  "cell_sha256_note": "see experiment.yaml instrument.pins for the signed cell.yaml/gates.yaml hashes",
+  "n_fit_rows": 2811,
+  "n_dev_rows": 602,
+  "depths": [
+    9,
+    18,
+    27,
+    34
+  ],
+  "per_depth": {
+    "depth_9": {
+      "a_k_regression": {
+        "spearman_r": 0.29952195337840154,
+        "spearman_p": 6.062673466329808e-14,
+        "pearson_r": 0.31355381464095866,
+        "pearson_p": 3.35968743790771e-15,
+        "predicted_k_dev_sd": 5.536851406097412,
+        "qualify_vs_rest_auroc": {
+          "point": 0.544726368159204,
+          "ci_lower": 0.5014834222560975,
+          "ci_upper": 0.5986723337690283,
+          "n_valid_resamples": 1000
+        },
+        "abstain_vs_rest_auroc": {
+          "point": 0.6305223880597015,
+          "ci_lower": 0.587085182805865,
+          "ci_upper": 0.6815828350092868,
+          "n_valid_resamples": 1000
+        },
+        "answer_vs_rest_auroc": {
+          "point": 0.670829207920792,
+          "ci_lower": 0.6253776580785255,
+          "ci_upper": 0.7168665045181306,
+          "n_valid_resamples": 1000
+        },
+        "banded_classification": {
+          "confusion": {
+            "ABSTAIN": {
+              "ABSTAIN": 41,
+              "QUALIFY": 136,
+              "ANSWER": 23
+            },
+            "QUALIFY": {
+              "ABSTAIN": 24,
+              "QUALIFY": 147,
+              "ANSWER": 29
+            },
+            "ANSWER": {
+              "ABSTAIN": 10,
+              "QUALIFY": 131,
+              "ANSWER": 61
+            }
+          },
+          "per_mode": {
+            "ABSTAIN": {
+              "recall": 0.205,
+              "precision": 0.5466666666666666,
+              "n_true": 200
+            },
+            "QUALIFY": {
+              "recall": 0.735,
+              "precision": 0.35507246376811596,
+              "n_true": 200
+            },
+            "ANSWER": {
+              "recall": 0.30198019801980197,
+              "precision": 0.5398230088495575,
+              "n_true": 202
+            }
+          },
+          "accuracy": 0.41362126245847175
+        }
+      },
+      "b_multinomial_3way": {
+        "qualify_vs_rest_auroc": {
+          "point": 0.5543532338308458,
+          "ci_lower": 0.5075603957647072,
+          "ci_upper": 0.6042182069260851,
+          "n_valid_resamples": 1000
+        },
+        "classification": {
+          "confusion": {
+            "ABSTAIN": {
+              "ABSTAIN": 83,
+              "QUALIFY": 65,
+              "ANSWER": 52
+            },
+            "QUALIFY": {
+              "ABSTAIN": 67,
+              "QUALIFY": 76,
+              "ANSWER": 57
+            },
+            "ANSWER": {
+              "ABSTAIN": 44,
+              "QUALIFY": 51,
+              "ANSWER": 107
+            }
+          },
+          "per_mode": {
+            "ABSTAIN": {
+              "recall": 0.415,
+              "precision": 0.42783505154639173,
+              "n_true": 200
+            },
+            "QUALIFY": {
+              "recall": 0.38,
+              "precision": 0.3958333333333333,
+              "n_true": 200
+            },
+            "ANSWER": {
+              "recall": 0.5297029702970297,
+              "precision": 0.49537037037037035,
+              "n_true": 202
+            }
+          },
+          "accuracy": 0.4418604651162791
+        }
+      },
+      "c_naive_qualify_vs_rest": {
+        "qualify_vs_rest_auroc": {
+          "point": 0.5427985074626865,
+          "ci_lower": 0.49715236425655857,
+          "ci_upper": 0.593746260483341,
+          "n_valid_resamples": 1000
+        }
+      }
+    },
+    "depth_18": {
+      "a_k_regression": {
+        "spearman_r": 0.3736381476434346,
+        "spearman_p": 2.21404819972327e-21,
+        "pearson_r": 0.37984659601193227,
+        "pearson_p": 4.24500677172532e-22,
+        "predicted_k_dev_sd": 6.35365629196167,
+        "qualify_vs_rest_auroc": {
+          "point": 0.5575870646766169,
+          "ci_lower": 0.5111837107457234,
+          "ci_upper": 0.604066854753748,
+          "n_valid_resamples": 1000
+        },
+        "abstain_vs_rest_auroc": {
+          "point": 0.6809203980099503,
+          "ci_lower": 0.6377162916669565,
+          "ci_upper": 0.727274207822494,
+          "n_valid_resamples": 1000
+        },
+        "answer_vs_rest_auroc": {
+          "point": 0.7175247524752475,
+          "ci_lower": 0.6760156549605001,
+          "ci_upper": 0.7624099435156779,
+          "n_valid_resamples": 1000
+        },
+        "banded_classification": {
+          "confusion": {
+            "ABSTAIN": {
+              "ABSTAIN": 54,
+              "QUALIFY": 121,
+              "ANSWER": 25
+            },
+            "QUALIFY": {
+              "ABSTAIN": 28,
+              "QUALIFY": 136,
+              "ANSWER": 36
+            },
+            "ANSWER": {
+              "ABSTAIN": 7,
+              "QUALIFY": 114,
+              "ANSWER": 81
+            }
+          },
+          "per_mode": {
+            "ABSTAIN": {
+              "recall": 0.27,
+              "precision": 0.6067415730337079,
+              "n_true": 200
+            },
+            "QUALIFY": {
+              "recall": 0.68,
+              "precision": 0.3665768194070081,
+              "n_true": 200
+            },
+            "ANSWER": {
+              "recall": 0.400990099009901,
+              "precision": 0.5704225352112676,
+              "n_true": 202
+            }
+          },
+          "accuracy": 0.45016611295681064
+        }
+      },
+      "b_multinomial_3way": {
+        "qualify_vs_rest_auroc": {
+          "point": 0.5698134328358209,
+          "ci_lower": 0.5213420031801783,
+          "ci_upper": 0.6158860958724411,
+          "n_valid_resamples": 1000
+        },
+        "classification": {
+          "confusion": {
+            "ABSTAIN": {
+              "ABSTAIN": 96,
+              "QUALIFY": 66,
+              "ANSWER": 38
+            },
+            "QUALIFY": {
+              "ABSTAIN": 60,
+              "QUALIFY": 78,
+              "ANSWER": 62
+            },
+            "ANSWER": {
+              "ABSTAIN": 34,
+              "QUALIFY": 41,
+              "ANSWER": 127
+            }
+          },
+          "per_mode": {
+            "ABSTAIN": {
+              "recall": 0.48,
+              "precision": 0.5052631578947369,
+              "n_true": 200
+            },
+            "QUALIFY": {
+              "recall": 0.39,
+              "precision": 0.42162162162162165,
+              "n_true": 200
+            },
+            "ANSWER": {
+              "recall": 0.6287128712871287,
+              "precision": 0.5594713656387665,
+              "n_true": 202
+            }
+          },
+          "accuracy": 0.5
+        }
+      },
+      "c_naive_qualify_vs_rest": {
+        "qualify_vs_rest_auroc": {
+          "point": 0.5589676616915423,
+          "ci_lower": 0.5093028780513909,
+          "ci_upper": 0.6065889350808839,
+          "n_valid_resamples": 1000
+        }
+      }
+    },
+    "depth_27": {
+      "a_k_regression": {
+        "spearman_r": 0.4426890325129534,
+        "spearman_p": 2.7846432071073635e-30,
+        "pearson_r": 0.45139001012424107,
+        "pearson_p": 1.4781170230781103e-31,
+        "predicted_k_dev_sd": 6.833683013916016,
+        "qualify_vs_rest_auroc": {
+          "point": 0.5690049751243781,
+          "ci_lower": 0.5228395383022042,
+          "ci_upper": 0.6137750429771976,
+          "n_valid_resamples": 1000
+        },
+        "abstain_vs_rest_auroc": {
+          "point": 0.7156965174129353,
+          "ci_lower": 0.6730066757404887,
+          "ci_upper": 0.7600464394426119,
+          "n_valid_resamples": 1000
+        },
+        "answer_vs_rest_auroc": {
+          "point": 0.7461757425742575,
+          "ci_lower": 0.7069715643108923,
+          "ci_upper": 0.7853793606869861,
+          "n_valid_resamples": 1000
+        },
+        "banded_classification": {
+          "confusion": {
+            "ABSTAIN": {
+              "ABSTAIN": 60,
+              "QUALIFY": 116,
+              "ANSWER": 24
+            },
+            "QUALIFY": {
+              "ABSTAIN": 27,
+              "QUALIFY": 127,
+              "ANSWER": 46
+            },
+            "ANSWER": {
+              "ABSTAIN": 8,
+              "QUALIFY": 101,
+              "ANSWER": 93
+            }
+          },
+          "per_mode": {
+            "ABSTAIN": {
+              "recall": 0.3,
+              "precision": 0.631578947368421,
+              "n_true": 200
+            },
+            "QUALIFY": {
+              "recall": 0.635,
+              "precision": 0.3691860465116279,
+              "n_true": 200
+            },
+            "ANSWER": {
+              "recall": 0.4603960396039604,
+              "precision": 0.5705521472392638,
+              "n_true": 202
+            }
+          },
+          "accuracy": 0.46511627906976744
+        }
+      },
+      "b_multinomial_3way": {
+        "qualify_vs_rest_auroc": {
+          "point": 0.6171268656716418,
+          "ci_lower": 0.5661715224759926,
+          "ci_upper": 0.6642291672842319,
+          "n_valid_resamples": 1000
+        },
+        "classification": {
+          "confusion": {
+            "ABSTAIN": {
+              "ABSTAIN": 99,
+              "QUALIFY": 60,
+              "ANSWER": 41
+            },
+            "QUALIFY": {
+              "ABSTAIN": 60,
+              "QUALIFY": 72,
+              "ANSWER": 68
+            },
+            "ANSWER": {
+              "ABSTAIN": 31,
+              "QUALIFY": 42,
+              "ANSWER": 129
+            }
+          },
+          "per_mode": {
+            "ABSTAIN": {
+              "recall": 0.495,
+              "precision": 0.5210526315789473,
+              "n_true": 200
+            },
+            "QUALIFY": {
+              "recall": 0.36,
+              "precision": 0.41379310344827586,
+              "n_true": 200
+            },
+            "ANSWER": {
+              "recall": 0.6386138613861386,
+              "precision": 0.542016806722689,
+              "n_true": 202
+            }
+          },
+          "accuracy": 0.4983388704318937
+        }
+      },
+      "c_naive_qualify_vs_rest": {
+        "qualify_vs_rest_auroc": {
+          "point": 0.5897014925373134,
+          "ci_lower": 0.5406396623256376,
+          "ci_upper": 0.6390525636210238,
+          "n_valid_resamples": 1000
+        }
+      }
+    },
+    "depth_34": {
+      "a_k_regression": {
+        "spearman_r": 0.4376409757158923,
+        "spearman_p": 1.471651984851149e-29,
+        "pearson_r": 0.4385573896059143,
+        "pearson_p": 1.090051923284633e-29,
+        "predicted_k_dev_sd": 5.820602893829346,
+        "qualify_vs_rest_auroc": {
+          "point": 0.5388308457711442,
+          "ci_lower": 0.4934075392201513,
+          "ci_upper": 0.5844660977386876,
+          "n_valid_resamples": 1000
+        },
+        "abstain_vs_rest_auroc": {
+          "point": 0.6881467661691543,
+          "ci_lower": 0.6480764113245829,
+          "ci_upper": 0.7290380497032333,
+          "n_valid_resamples": 1000
+        },
+        "answer_vs_rest_auroc": {
+          "point": 0.7582301980198021,
+          "ci_lower": 0.7218365923549572,
+          "ci_upper": 0.7944764346141083,
+          "n_valid_resamples": 1000
+        },
+        "banded_classification": {
+          "confusion": {
+            "ABSTAIN": {
+              "ABSTAIN": 39,
+              "QUALIFY": 143,
+              "ANSWER": 18
+            },
+            "QUALIFY": {
+              "ABSTAIN": 28,
+              "QUALIFY": 144,
+              "ANSWER": 28
+            },
+            "ANSWER": {
+              "ABSTAIN": 7,
+              "QUALIFY": 106,
+              "ANSWER": 89
+            }
+          },
+          "per_mode": {
+            "ABSTAIN": {
+              "recall": 0.195,
+              "precision": 0.527027027027027,
+              "n_true": 200
+            },
+            "QUALIFY": {
+              "recall": 0.72,
+              "precision": 0.366412213740458,
+              "n_true": 200
+            },
+            "ANSWER": {
+              "recall": 0.4405940594059406,
+              "precision": 0.6592592592592592,
+              "n_true": 202
+            }
+          },
+          "accuracy": 0.45182724252491696
+        }
+      },
+      "b_multinomial_3way": {
+        "qualify_vs_rest_auroc": {
+          "point": 0.5924004975124378,
+          "ci_lower": 0.5464408385849984,
+          "ci_upper": 0.6411238831992199,
+          "n_valid_resamples": 1000
+        },
+        "classification": {
+          "confusion": {
+            "ABSTAIN": {
+              "ABSTAIN": 95,
+              "QUALIFY": 63,
+              "ANSWER": 42
+            },
+            "QUALIFY": {
+              "ABSTAIN": 61,
+              "QUALIFY": 83,
+              "ANSWER": 56
+            },
+            "ANSWER": {
+              "ABSTAIN": 28,
+              "QUALIFY": 42,
+              "ANSWER": 132
+            }
+          },
+          "per_mode": {
+            "ABSTAIN": {
+              "recall": 0.475,
+              "precision": 0.5163043478260869,
+              "n_true": 200
+            },
+            "QUALIFY": {
+              "recall": 0.415,
+              "precision": 0.44148936170212766,
+              "n_true": 200
+            },
+            "ANSWER": {
+              "recall": 0.6534653465346535,
+              "precision": 0.5739130434782609,
+              "n_true": 202
+            }
+          },
+          "accuracy": 0.5149501661129569
+        }
+      },
+      "c_naive_qualify_vs_rest": {
+        "qualify_vs_rest_auroc": {
+          "point": 0.5804726368159204,
+          "ci_lower": 0.5352098961098822,
+          "ci_upper": 0.6285656670344835,
+          "n_valid_resamples": 1000
+        }
+      }
+    }
+  },
+  "primary_gate": {
+    "best_depth": 27,
+    "auroc": {
+      "point": 0.5690049751243781,
+      "ci_lower": 0.5228395383022042,
+      "ci_upper": 0.6137750429771976,
+      "n_valid_resamples": 1000
+    },
+    "verdict": "INCONCLUSIVE"
+  },
+  "secondary_readout": {
+    "best_depth_multinomial": 27,
+    "auroc": {
+      "point": 0.6171268656716418,
+      "ci_lower": 0.5661715224759926,
+      "ci_upper": 0.6642291672842319,
+      "n_valid_resamples": 1000
+    },
+    "max_over_depths_auroc": {
+      "point": 0.6171268656716418,
+      "ci_lower": 0.5661715224759926,
+      "ci_upper": 0.6642291672842319,
+      "n_valid_resamples": 1000
+    },
+    "divergence_from_primary": 0.04812189054726368,
+    "divergence_flag": false
+  },
+  "naive_floor": {
+    "best_depth": 27,
+    "max_over_depths_auroc": {
+      "point": 0.5897014925373134,
+      "ci_lower": 0.5406396623256376,
+      "ci_upper": 0.6390525636210238,
+      "n_valid_resamples": 1000
+    },
+    "gap_vs_primary": -0.020696517412935322
+  },
+  "determinism_check": {
+    "cosine": 1.0,
+    "maxabs_diff": 0.0,
+    "pass": true
+  },
+  "mechanical_checks": {
+    "predicted_k_dev_sd_ok": true,
+    "no_nan_ok": true,
+    "extraction_complete": true
+  }
+}

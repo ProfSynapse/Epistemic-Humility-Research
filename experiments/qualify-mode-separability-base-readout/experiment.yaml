@@ -1,7 +1,7 @@
 slug: qualify-mode-separability-base-readout
 title: QUALIFY Mode Separability on Base-Model Readout
 type: lab-diagnostic
-status: signed
+status: null-result
 registered: true
 created_at: '2026-07-23T22:27:09Z'
 question: Is the QUALIFY category of the falsified fresh-sft-epistemic-mode-token-grpo
@@ -60,5 +60,13 @@ inputs:
 - experiments/bb-base-propensity-fit-read/AMENDMENT.md
 - experiments/bb-base-propensity-fit-read/gates.yaml
 - docs/atlas/family-layer-map.md
-verdict: ''
+verdict: 'Inconclusive by the pre-registered bands, falsifier not fired: the base
+  model encodes a real but only moderate graded capability signal (Spearman k-readout
+  0.30-0.44 rising with depth; scale ends read 0.72/0.76) while the QUALIFY middle
+  band itself reads weakly under every readout class (banded k-regression 0.569 [0.523,0.614],
+  multinomial 0.617 [0.566,0.664], naive 0.590 at best depth hs27), and the naive
+  floor did NOT underperform the band-capable readouts, so the crisp-band premise
+  fails and neither plain class-rebalanced retraining nor category-not-encoded is
+  supported; evidence favors ordinal-aware redesign of the QUALIFY supervision or
+  a 2-way policy plus the confidence scalar.'
 kg: []

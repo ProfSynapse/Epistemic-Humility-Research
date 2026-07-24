@@ -339,5 +339,49 @@ convention, `bb-base-propensity-fit-read/AMENDMENT.md` sec 10):
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-23. Extraction 3,413/3,413 rows (2,811 balanced fit /
+602 dev), one designed resume event (the 20 pre-sign smoke rows skipped via
+the index), fit_readouts ran on the signed pinned bytes with zero
+post-sign changes. Determinism check exact (cosine 1.0, maxabs 0.0).
+Held-out never opened. Full aggregates:
+`analysis-committed/fit_report.json`.
+
+**PRIMARY GATE: INCONCLUSIVE** by the pre-registered bands. Best depth
+hs27 (75%): banded k-regression QUALIFY-vs-rest AUROC 0.5690, 95% CI
+[0.5228, 0.6138] — the point sits between the FAIL ceiling (0.55) and
+the PASS floor (0.62), and the CI straddles both lines. Falsifier NOT
+fired: the confirmatory multinomial readout reaches 0.6171 [0.5662,
+0.6642] at hs27, above the FAIL band, so "both band-capable readouts
+fail at all depths" is false.
+
+Per-depth (a) banded k-regression QUALIFY AUROC: 0.5447 / 0.5576 /
+0.5690 / 0.5388 at hs9/18/27/34. Linear k readout: Spearman 0.300 ->
+0.443 rising with depth (all p < 1e-13). Context: the scale ENDS read
+substantially better than the middle at every depth (ABSTAIN-vs-rest up
+to 0.716, ANSWER-vs-rest up to 0.758, vs QUALIFY's 0.54-0.62 band).
+
+**Pre-registered premise check, reported straight:** the naive linear
+floor (c) was NOT meaningfully below the band-capable readouts —
+at best depths the ordering is (b) 0.6171 > (c) 0.5897 > (a) 0.5690.
+The design's motivating hypothesis (QUALIFY under-separates naively
+because a well-encoded k makes the middle band linearly inseparable)
+is not supported: k itself is only moderately encoded (r ~0.44), and
+the middle band is weak under every readout class. The banded
+classifier over-predicts QUALIFY broadly (recall 0.64-0.74, precision
+~0.36): the representation supports a fuzzy graded capability signal,
+not a crisp middle category.
+
+**Scoreboard adjudication:** the drafting subagent's call (primary
+PASSES at >=1 depth, naive floor visibly underperforms) MISSED on both
+limbs — the primary landed in the inconclusive band and the floor did
+not underperform. No user call was recorded at sign (sign happened in
+the same session hours after the draft; the omission is procedural,
+noted here rather than backfilled).
+
+**Reading for the successor decision (non-binding):** neither the
+clean "retrain justified" nor "category not encoded" answer obtained.
+The evidence pattern — graded k signal real but weak in the middle,
+crisp band absent — favors an ordinal-aware redesign of the QUALIFY
+supervision (or a 2-way policy plus the already-working confidence
+scalar) over a plain class-rebalanced retrain of the same discrete
+3-way rule.
