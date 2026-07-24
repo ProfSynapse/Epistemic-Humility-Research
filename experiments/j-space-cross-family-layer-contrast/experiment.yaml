@@ -96,7 +96,7 @@ instrument:
   pins:
     cell.yaml: be93520fc9a1c3ce14f4c8fe94f177e253fd0cd9357bc9ed9474b49fb253d306
     gates.yaml: f220d45d4bd2447b21bbbe125de03adff3bbc0495cc8e0c956438c8093ec0406
-    families/llama-3.2-3b.yaml: 457a019e9a69f55226cc00ed533453196c97451c0fdf31ea47cd9691e9ee64bf
+    families/llama-3.2-3b.yaml: 942be30a2826b231725b18cb4529595ea506165cc4dfa98cb373337a91d2ae41
     families/mistral-7b-v03.yaml: db3d5645748fb20af5510c5b39b6f2a4ad8d4eaa3e9c46f11600fe90dd437c7c
     families/qwen35-4b.yaml: d726633f7e7c2cd387aed3fd61763beaf5a6ca144c7cc0cc0d5f0ddbfad5ea33
     families/gemma4-e4b.yaml: 5ffc121302f28e5655a9d0ccdd5acb043c099b4e38663232bdf742848c6199f2
@@ -116,6 +116,15 @@ instrument:
     pipeline.py: b404a152099632f59286ab6f89dc7e64ad0988fbc97202e18be5f2a35b759357
     run_contrast.py: fc7dabd96348293b87da9e96ef3bc42ea9c3bb1776fcc7f184bbb5c6aa597456
     cross_family_rollup.py: 918949481e7f357c2e374fb7bccf9148c456c8f98f0c500ebffbeaf0473d98c9
+  repins:
+  - file: families/llama-3.2-3b.yaml
+    old_sha256: 457a019e9a69f55226cc00ed533453196c97451c0fdf31ea47cd9691e9ee64bf
+    new_sha256: 942be30a2826b231725b18cb4529595ea506165cc4dfa98cb373337a91d2ae41
+    date: '2026-07-24T00:26:21Z'
+    reason: 'Pre-registered profile-stage write-back: jlens_profile.py resolved llama''s
+      band_selection (mid-band candidates hs17/20/23, late ref hs26) into the family
+      YAML per the signed design (''writes the resolved band back into families/<slug>.yaml
+      in place''); no gate or threshold changed'
 inputs:
 - experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md
 - experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json

@@ -6,6 +6,75 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-23 -- launch G0 crash diagnosis: two dead render() imports, one PYTHONPATH fix + one vendored shim (CPU-only diagnosis, no GPU work counted toward outcome; pending lead repin before relaunch)
+
+llama-3.2-3b's `extract_anchor.py` crashed at G0 (`model_lib.py`'s `render()`)
+with two sequential `ModuleNotFoundError`s, both caused by an UNRELATED prior
+main-branch reorg archiving files this experiment's pinned `model_lib.py`
+imports by bare module name via a hardcoded `sys.path` entry
+(`PROBE_DIR = .../experiment/phase1/probe`). Neither import target still
+lives at that path.
+
+1. **`backends.render_probe_prompt`** -- `experiment/phase1/probe/backends.py`
+   was archived; the archive copy is a dead compat wrapper pointing at a
+   nonexistent `experiments/common/phase1_probe/`. FIXED via environment only
+   (no code/file changes): `PYTHONPATH=/home/profsynapse/code/
+   Epistemic-Humility-Research/experiments/common/knowledge_probe` added to
+   every pipeline invocation. That directory's `backends.py` is the live,
+   actively-maintained successor with an IDENTICAL
+   `render_probe_prompt(tokenizer, system_prompt, question, *,
+   enable_thinking, mode=None)` signature (verified by CPU-only import +
+   `inspect.signature`), explicitly documented there as the shared render
+   path for "the hidden-state harness" too.
+2. **`amendment_ah_stage0_extract.load_baseline_system_prompt`** -- NOT
+   env-fixable: the only surviving copy is archived
+   (`archive/experiment/phase1/probe/amendments/`), hardcodes a config
+   filename (`experiments/doubt-regulated-caution/
+   phase3_ac_doubt_coupled_intervention.yaml`) that no longer exists at that
+   path (renamed via `git log --follow`: moved by commit 6b66536a, then
+   dropped the `phase3_` prefix by commit d55b7d26 -- `git show d55b7d26` on
+   that file confirms the `prompt:` block itself is untouched in that patch),
+   and its sibling archived `path_compat.py` is independently broken (its
+   `repo_root()` heuristic depends on `experiment/phase1/eval/scorers.py`,
+   itself archived by the same reorg that broke this experiment's own
+   `grader.py` `EVAL_DIR`, already fixed by vendoring `scorers.py` at
+   sign-time -- see the entry below). The live successor `path_compat.py`
+   (`experiments/common/readouts/`) fixes the `repo_root()` check but drops
+   the `phase1_probe_dir()`/`phase1_eval_dir()` names the archived script
+   imports -- an API mismatch on top of the dead filename, not just a stale
+   search path. Lead-adjudicated 2026-07-23: vendored a minimal shim,
+   `amendment_ah_stage0_extract.py`, into this experiment directory (sibling
+   convention, matching the `scorers.py` precedent) that supplies ONLY
+   `load_baseline_system_prompt()`, reading the renamed live yaml
+   (`experiments/doubt-regulated-caution/ac_doubt_coupled_intervention.yaml`
+   `prompt.system`) and FAIL-CLOSED asserting its sha256 equals a hardcoded
+   `_EXPECTED_SHA256` (`81a04a99827ade21b9d5bd1832c2012429d196f96e604238a4b927701ca58e3c`)
+   computed at shim-authoring time -- a future edit to that yaml's
+   `prompt.system` will raise instead of silently changing what every
+   family's generation renders. Smoke-tested both the happy path and the
+   fail-closed mismatch path (CPU-only, deliberately corrupted the expected
+   hash in-process to confirm it raises).
+
+   **Cross-check (required before trusting this shim for the reused frozen
+   late-site arm):** loaded `experiments/doubt-snap-cross-family-
+   confirmatory/render.py`'s hardcoded `BASELINE_SYSTEM_PROMPT` literal
+   directly (module import, not hand-transcribed) and compared byte-for-byte
+   against the shim's yaml-sourced string: **IDENTICAL** -- same sha256
+   `81a04a99827ade21b9d5bd1832c2012429d196f96e604238a4b927701ca58e3c` for
+   both. This confirms the render convention this shim restores is the same
+   one doubt-snap's frozen late-site directions (`c_hat`/`u_d`/`gate_fit`,
+   reused verbatim by this experiment) were actually fit under -- resolves
+   AMENDMENT.md "Open questions at sign" #5 (render/anchor reconciliation)
+   affirmatively for the system-prompt component; anchor position and
+   `enable_thinking` convention are separately unchanged (ported verbatim in
+   `model_lib.py`/`gen_lib.py`, not touched by this fix).
+
+No pinned-byte edits: `model_lib.py` and every other pinned instrument file
+are unmodified. The new shim file is NOT yet part of the signed pin set --
+lead is running a governed repin to add it before any GPU relaunch. Did NOT
+restart `extract_anchor.py` or any other GPU work pending that repin
+confirmation.
+
 ### 2026-07-23 -- sign-time revision: primary reframe + doubt-snap reuse (CPU-only, no GPU, NOT signed)
 
 Lead-directed, user-approved structural revision of the draft, after

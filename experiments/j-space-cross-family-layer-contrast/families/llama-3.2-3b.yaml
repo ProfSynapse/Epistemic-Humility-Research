@@ -1,125 +1,87 @@
-# Family config: Meta Llama 3.2 3B Instruct. DRAFT until `bin/exp sign`.
-#
-# Checkpoint and risk notes are transcribed verbatim from Amendment Z
-# (experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md, "Models" table
-# and "Run order"). This is Amendment Z's run-order position 1 (lowest risk).
-
 family: llama-3.2-3b
 risk_order: 1
-
 checkpoint:
   repo: unsloth/Llama-3.2-3B-Instruct
   fallback_repo: meta-llama/Llama-3.2-3B-Instruct
   revision: raw-base (bf16 instruct, no adapter, no 4-bit quantization)
   scale_params_b: 3
   hf_token_required: false
-
 loader:
-  # Amendment Z's load_model_and_config() order: AutoModelForCausalLM first,
-  # then AutoModelForImageTextToText / AutoModelForVision2Seq fallback for
-  # multimodal families. Llama-3.2-3B-Instruct is text-only LlamaForCausalLM,
-  # so it always resolves on the first class and is Amendment Z's "lowest
-  # risk -- first real data point" family.
-  model_classes: [AutoModelForCausalLM]
+  model_classes:
+  - AutoModelForCausalLM
   hidden_size_field: hidden_size
   num_layers_field: num_hidden_layers
   nested_text_config: false
   dtype: bf16
-  notes: >-
-    Standard LlamaForCausalLM. No known loader risk (Amendment Z: "text-only,
-    standard LlamaForCausalLM -- lowest risk"). VERIFIED 2026-07-09 against
-    unsloth/Llama-3.2-3B-Instruct's config.json/tokenizer_config.json/
-    special_tokens_map.json/generation_config.json/chat_template.jinja
-    (JSON/text config files only, no weights downloaded, no GPU, no
-    generation): "architectures" == ["LlamaForCausalLM"] exactly (no
-    ConditionalGeneration wrapper); hidden_size/num_hidden_layers are
-    flat top-level fields, confirming nested_text_config: false is correct.
-
+  notes: 'Standard LlamaForCausalLM. No known loader risk (Amendment Z: "text-only, standard
+    LlamaForCausalLM -- lowest risk"). VERIFIED 2026-07-09 against unsloth/Llama-3.2-3B-Instruct''s
+    config.json/tokenizer_config.json/ special_tokens_map.json/generation_config.json/chat_template.jinja
+    (JSON/text config files only, no weights downloaded, no GPU, no generation): "architectures"
+    == ["LlamaForCausalLM"] exactly (no ConditionalGeneration wrapper); hidden_size/num_hidden_layers
+    are flat top-level fields, confirming nested_text_config: false is correct.'
 render:
-  # backends.render_probe_prompt (experiment/phase1/probe/backends.py) is
-  # already model-agnostic: it drives tokenizer.apply_chat_template with a
-  # discovery/fallback over enable_thinking kwarg surfaces and self-checks
-  # that no <think> scaffolding leaks into the rendered prompt. Reused
-  # unchanged; do not fork a Llama-specific renderer.
-  fn: "backends:render_probe_prompt"
-  enable_thinking_equivalent: >-
-    Llama 3.2's chat template has no native thinking-toggle kwarg; the
-    enable_thinking=False call is a harmless no-op tried first by
-    render_probe_prompt's own mode-discovery loop, matching the family's
-    default (non-thinking) chat behavior. VERIFIED 2026-07-09: no
-    "enable_thinking" or "<think" token/kwarg reference anywhere in the
-    downloaded chat_template.jinja.
-  system_role_support: >-
-    VERIFIED 2026-07-09 by reading chat_template.jinja directly (no
-    AutoTokenizer load needed): the template checks
-    `messages[0]['role'] == 'system'` and renders it in its own
-    `<|start_header_id|>system<|end_header_id|>` block distinct from the
-    first user turn. System role is natively supported, not folded.
-  system_prompt_source: >-
-    Same baseline system prompt string as the Qwen3-4B AH-A0 arm
-    (amendment_ah_stage0_extract.load_baseline_system_prompt), reused
-    verbatim so the ONLY delta between families is the checkpoint, matching
-    Amendment Z's own cross-family method note ("system prompt identical to
-    X").
-
+  fn: backends:render_probe_prompt
+  enable_thinking_equivalent: 'Llama 3.2''s chat template has no native thinking-toggle kwarg;
+    the enable_thinking=False call is a harmless no-op tried first by render_probe_prompt''s
+    own mode-discovery loop, matching the family''s default (non-thinking) chat behavior.
+    VERIFIED 2026-07-09: no "enable_thinking" or "<think" token/kwarg reference anywhere in
+    the downloaded chat_template.jinja.'
+  system_role_support: 'VERIFIED 2026-07-09 by reading chat_template.jinja directly (no AutoTokenizer
+    load needed): the template checks `messages[0][''role''] == ''system''` and renders it
+    in its own `<|start_header_id|>system<|end_header_id|>` block distinct from the first
+    user turn. System role is natively supported, not folded.'
+  system_prompt_source: Same baseline system prompt string as the Qwen3-4B AH-A0 arm (amendment_ah_stage0_extract.load_baseline_system_prompt),
+    reused verbatim so the ONLY delta between families is the checkpoint, matching Amendment
+    Z's own cross-family method note ("system prompt identical to X").
 eos:
   include_tokenizer_eos: true
-  additional_end_of_turn_tokens: ["<|eot_id|>"]
-  notes: >-
-    Llama 3 chat models emit <|eot_id|> as the turn-end marker in addition
-    to the tokenizer's own eos_token_id; both must be in eos_token_id passed
-    to model.generate() or greedy decode will not stop naturally at turn end.
-    VERIFIED 2026-07-09 against unsloth/Llama-3.2-3B-Instruct's
-    special_tokens_map.json/tokenizer_config.json/generation_config.json
-    (JSON only, no weights): the draft's guess is directionally right but
-    the tokenizer's own default eos_token is ALREADY "<|eot_id|>" (id
-    128009, per special_tokens_map.json and tokenizer_config.json's
-    "eos_token" field) -- so include_tokenizer_eos: true already covers it,
-    it is not purely "additional". generation_config.json's own
-    eos_token_id list is actually THREE ids: [128001 "<|end_of_text|>",
-    128008 "<|eom_id|>", 128009 "<|eot_id|>"] (ids resolved via
-    tokenizer_config.json's added_tokens_decoder). If a caller relies on
-    generation_config defaults for stopping, <|eom_id|> (end-of-message,
-    relevant for tool-call continuations) is also in-scope, not just
-    <|eot_id|>; harmless to include all three in eos_token_id at generate()
-    time.
-
+  additional_end_of_turn_tokens:
+  - <|eot_id|>
+  notes: 'Llama 3 chat models emit <|eot_id|> as the turn-end marker in addition to the tokenizer''s
+    own eos_token_id; both must be in eos_token_id passed to model.generate() or greedy decode
+    will not stop naturally at turn end. VERIFIED 2026-07-09 against unsloth/Llama-3.2-3B-Instruct''s
+    special_tokens_map.json/tokenizer_config.json/generation_config.json (JSON only, no weights):
+    the draft''s guess is directionally right but the tokenizer''s own default eos_token is
+    ALREADY "<|eot_id|>" (id 128009, per special_tokens_map.json and tokenizer_config.json''s
+    "eos_token" field) -- so include_tokenizer_eos: true already covers it, it is not purely
+    "additional". generation_config.json''s own eos_token_id list is actually THREE ids: [128001
+    "<|end_of_text|>", 128008 "<|eom_id|>", 128009 "<|eot_id|>"] (ids resolved via tokenizer_config.json''s
+    added_tokens_decoder). If a caller relies on generation_config defaults for stopping,
+    <|eom_id|> (end-of-message, relevant for tool-call continuations) is also in-scope, not
+    just <|eot_id|>; harmless to include all three in eos_token_id at generate() time.'
 band_selection:
-  status: not_yet_run
-  method: >-
-    j-lens layer_profile() effective-dimensionality-fraction sweep across
-    depth (ported from jlens_profile.py, see j-space-localization-qwen3-4b's
-    jlens.py). Midband candidates = the profiled layer at the effective-dim
-    peak plus its immediately adjacent profiled layers. Late reference =
-    the depth-fraction analog of Qwen3-4B's hs34 (34/36 = 0.9444 of
-    num_hidden_layers, rounded to the nearest profiled layer). DO NOT assume
-    hs23-29 transfers; this family's own n_hidden_layers determines its own
-    absolute layer indices.
+  status: resolved
+  method: j-lens layer_profile() effective-dimensionality-fraction sweep across depth (ported
+    from jlens_profile.py, see j-space-localization-qwen3-4b's jlens.py). Midband candidates
+    = the profiled layer at the effective-dim peak plus its immediately adjacent profiled
+    layers. Late reference = the depth-fraction analog of Qwen3-4B's hs34 (34/36 = 0.9444
+    of num_hidden_layers, rounded to the nearest profiled layer). DO NOT assume hs23-29 transfers;
+    this family's own n_hidden_layers determines its own absolute layer indices.
   n_hidden_layers: 28
   late_reference_depth_fraction_target: 0.9444
-  late_reference_hs_estimate: >-
-    round(0.9444 * 28) = 26. n_hidden_layers=28 VERIFIED 2026-07-09 from
-    unsloth/Llama-3.2-3B-Instruct's config.json (top-level
-    num_hidden_layers field, hidden_size=3072); this estimate is still an
-    ESTIMATE for the profile stage to confirm/select against, only the
-    input layer count is now config-verified rather than assumed.
-  midband_candidates_hs: null
-  late_reference_hs: null
-  effective_dim_peak_hs: null
-
+  late_reference_hs_estimate: round(0.9444 * 28) = 26. n_hidden_layers=28 VERIFIED 2026-07-09
+    from unsloth/Llama-3.2-3B-Instruct's config.json (top-level num_hidden_layers field, hidden_size=3072);
+    this estimate is still an ESTIMATE for the profile stage to confirm/select against, only
+    the input layer count is now config-verified rather than assumed.
+  midband_candidates_hs:
+  - 17
+  - 20
+  - 23
+  late_reference_hs: 26
+  effective_dim_peak_hs: 20
 doses:
   status: not_yet_calibrated
-  ladder: [25, 50, 75, 100, 125, 150, 175, 200]
+  ladder:
+  - 25
+  - 50
+  - 75
+  - 100
+  - 125
+  - 150
+  - 175
+  - 200
   selected: {}
-
 reuse:
-  # CONSUMED from the resolved doubt-snap-cross-family-confirmatory experiment
-  # (resolved 2026-07-12; confirmatory NOT promoted -- every cell stopped at
-  # its registered G0 FIT dose-viability rule at the late 0.94-depth write
-  # site). This experiment reuses that cell's mined eval pool, FIT/HELD-OUT
-  # split, and frozen late-site direction+gate VERBATIM (hash-pinned); only
-  # the mid-band localization/fit/calibration and the outcome runs are new
-  # here. See AMENDMENT.md "Consumed doubt-snap artifacts".
   doubt_snap:
     experiment: doubt-snap-cross-family-confirmatory
     cell: llama32_3b_instruct
@@ -128,11 +90,6 @@ reuse:
     modal_path_prefix: doubt-snap-cross-family-r1/llama32_3b_instruct/analysis
     revision: 006f5dcd1393c3add266de40994ba96225e9689d
     hidden_dim: 3072
-    # Frozen late reference site = doubt-snap's own round(0.94*(n_layers-1))
-    # write site: block index = build_manifest.json "layer"; hs_index = block+1.
-    # For this family this equals this experiment's own 0.9444*n_layers estimate
-    # (hs26) -- a numeric coincidence; the SITE is DEFINED as doubt-snap's
-    # frozen block, pinned by the reused build_manifest below (not re-derived).
     late_site:
       block: 25
       hs_index: 26
@@ -142,38 +99,49 @@ reuse:
       sigma_d: 3.583327330519094
       mu_c: -1.8743009609914807
       sigma_c: 2.0923817293880265
-      # doubt-snap selected NO late dose (G0 dose-viability stop). Its FIT dose
-      # sweep peaks at clean_tighten 0.184 @ dose 19 (cost 0.009), below its own
-      # 0.60 floor. Late-arm dose is an OPEN QUESTION at sign (LAUNCH-PLAN
-      # decision point 1); the late arm gates nothing regardless.
       doubt_snap_selected_dose: null
-      doubt_snap_fit_peak_clean_tighten: {rate: 0.1842, dose: 19.0, known_cost: 0.009}
+      doubt_snap_fit_peak_clean_tighten:
+        rate: 0.1842
+        dose: 19.0
+        known_cost: 0.009
     pool_counts:
       confab_fit: 581
       known_correct_answered_fit: 222
       confab_held_out: 872
       known_correct_answered_held_out: 334
     artifacts:
-      split_manifest: {path: split_manifest.json, sha256: 4ef45f58f2e98e3c724ed1561020e92593144105e863654cd26736461f9045e5}
-      build_manifest: {path: build_manifest.json, sha256: b20c3064fc2186eae21eacb7501550823db6cab2ff5702d8d9121f4e4c57967e}
-      c_hat: {path: c_hat.json, sha256: 0ce10fae12192c6f6863315322f31d97024831f8ea63493985e8cf9ae180fb2d}
-      u_d: {path: u_d.json, sha256: dc7e2e97c6bbb48cce9206e2416bb6a528863d01bdb810bc37127b4767bee161}
-      random_direction: {path: random_direction.json, sha256: 57ad0c843cc766e3870cf99c1bfc3245643831b2f3ad078d3cb4012e7f4daa79}
-      gate_fit: {path: gate_fit.json, sha256: 953fa2093183b80376c68c0f677249649a2a2e49fe58c254bc11526fef9cd4e4}
-      dose_fit: {path: dose_fit.json, sha256: c4412303b9d830599deecf7b67943653130a12d313ff8a4df3285771315936f6}
-      g0_prep_summary: {path: g0_prep_summary.json, sha256: da73f0158609141a5f2b381c83c84fcd2eb67eca2a4a361d404ab3fbea5c498f}
-
+      split_manifest:
+        path: split_manifest.json
+        sha256: 4ef45f58f2e98e3c724ed1561020e92593144105e863654cd26736461f9045e5
+      build_manifest:
+        path: build_manifest.json
+        sha256: b20c3064fc2186eae21eacb7501550823db6cab2ff5702d8d9121f4e4c57967e
+      c_hat:
+        path: c_hat.json
+        sha256: 0ce10fae12192c6f6863315322f31d97024831f8ea63493985e8cf9ae180fb2d
+      u_d:
+        path: u_d.json
+        sha256: dc7e2e97c6bbb48cce9206e2416bb6a528863d01bdb810bc37127b4767bee161
+      random_direction:
+        path: random_direction.json
+        sha256: 57ad0c843cc766e3870cf99c1bfc3245643831b2f3ad078d3cb4012e7f4daa79
+      gate_fit:
+        path: gate_fit.json
+        sha256: 953fa2093183b80376c68c0f677249649a2a2e49fe58c254bc11526fef9cd4e4
+      dose_fit:
+        path: dose_fit.json
+        sha256: c4412303b9d830599deecf7b67943653130a12d313ff8a4df3285771315936f6
+      g0_prep_summary:
+        path: g0_prep_summary.json
+        sha256: da73f0158609141a5f2b381c83c84fcd2eb67eca2a4a361d404ab3fbea5c498f
 primary_gate:
-  # ADJUDICATED by lead+user 2026-07-23 (conservative option chosen) --
-  # ABSOLUTE mid-band actuation, identical numbers across all four families;
-  # derivation written out in AMENDMENT.md "Gates -> derivation". Supersedes
-  # and DROPS the draft's per-family g3_late_reference_floor (0.40/0.30): the
-  # late arm is now a non-gating secondary descriptive comparator.
-  g1_midband_clean_tighten_floor: {rate: 0.50, wilson_lower_ci: 0.40}
-  g2_midband_known_correct_cost_cap: {rate: 0.05, wilson_upper_ci: 0.10}
-
+  g1_midband_clean_tighten_floor:
+    rate: 0.5
+    wilson_lower_ci: 0.4
+  g2_midband_known_correct_cost_cap:
+    rate: 0.05
+    wilson_upper_ci: 0.1
 vram:
-  bf16_weights_estimate_gb: "~6.4GB (3.21B params x 2 bytes)"
-  feasibility_note: >-
-    Comfortably fits a single RTX 3090 (24GB) alongside activations, KV
-    cache, and the erase_write hook's readback buffers at this scale.
+  bf16_weights_estimate_gb: ~6.4GB (3.21B params x 2 bytes)
+  feasibility_note: Comfortably fits a single RTX 3090 (24GB) alongside activations, KV cache,
+    and the erase_write hook's readback buffers at this scale.
