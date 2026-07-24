@@ -2,12 +2,14 @@
 
 **Tier:** 1 (signed protocol revision — touches gate definitions, the roll-up
 interpretation rule, and a shared measurement instrument)
-**Version:** v1.1
+**Version:** v1.2
 **Date drafted:** 2026-07-24
-**Status:** DRAFT — **NOT SIGNABLE.** Blocked on the re-scoped Defect 3 audit
-(clause 3), which peer review found incomplete and which is in progress. Nothing
-in this document is in force until signed, and it must not be signed while that
-clause is open.
+**Status:** DRAFT — **NOT SIGNABLE.** Two open blockers, listed in full under
+Sign-off: (1) the re-scoped Defect 3 consumer audit, which peer review found
+unsound and which is in progress; (2) the write-side seam, which requires
+`gemma4-e4b-kv-seam-quarantine` to run first per PI decision. Nothing in this
+document is in force until signed, and it must not be signed while either
+remains open.
 **Occasioned by:** resolution of `j-space-cross-family-layer-contrast`
 (verdict INCONCLUSIVE, signed 2026-07-24)
 
@@ -401,6 +403,58 @@ argument above is stronger and does not depend on it.
    pinned in clause 4 and `select_band` deterministic, the site is fully
    determined by the corrected profile — there is nothing left to choose.
 
+6. **HELD — no gemma dosed run is authorized by this revision.** Clause 5
+   governs *how* a site is committed; it does not authorize *dosing* one.
+   Independent review identified a second defect, distinct from the `use_cache`
+   corruption and not remedied by fixing it, described below. Per PI decision
+   2026-07-24, `experiments/gemma4-e4b-kv-seam-quarantine` runs **first**, and
+   its result is folded in before any gemma write site is dosed.
+
+### The write-side seam — a second, independent defect
+
+Defect 3 above is a **read**-side corruption: it broke the instrument that
+*chose* gemma's sites. Fixing `use_cache` repairs that. It does not establish
+that the corrected instrument's answer is a site worth *writing* to. Those are
+different claims and only the first is discharged here.
+
+**Mechanism, verified in source.** On gemma-4-E4B, blocks 24–41 are KV-shared
+(`modeling_gemma4.py:1148-1153`): they take keys and values from a donor block
+(22 or 23) rather than computing their own. `:1198-1199` reads
+`past_key_values.shared_layers[...]`; `:1204-1205` — the local `k_proj`/`v_proj`
+path — is skipped entirely for these layers.
+
+A dose written into the residual stream at any layer in 24–41 therefore **cannot
+alter the keys or values that any layer in that range attends over**. The
+donors sit upstream of the write and their K/V are already fixed.
+
+**Stated precisely, because the strong form is wrong.** `:1192` computes
+`query_states = self.q_proj(hidden_states)` **unconditionally**, shared layers
+included. Attention routing is `softmax(QKᵀ)V`; a write that changes Q changes
+the attention weights. The write also reaches the FFN and the residual stream,
+and hence the logits. So the causal channel into blocks 24–41 is **narrowed, not
+severed** — it is wrong to say a write there cannot influence attention routing.
+What it cannot do is change *what there is to attend to*.
+
+**Why this bears on clause 5.** The corrected gemma read profile is saturated
+(see the limitation note below): AUC ≥ 0.977 from hs5 to hs42, and eff-dim spans
+a narrow range across clean layers. A near-flat selection curve means the
+argmax could land back in 25–42 for reasons having nothing to do with the
+corruption — simply because there is little to distinguish depths. Committing to
+such a site and dosing it, under clause 5's "binding once written", would risk
+producing a null that is uninterpretable for a **second, different** reason:
+ambiguous between "gemma is not actuable" and "we wrote into a region with
+reduced causal leverage." That is the precise failure this revision exists to
+get out of, reproduced one level down.
+
+**Disposition.** `gemma4-e4b-kv-seam-quarantine` (currently draft) is already
+scaffolded to test exactly this, with pre-specified sites — hs38 and hs22/hs24
+straddling the seam — that do **not** depend on the voided band selection. It
+runs first. Its `question`, `prediction`, and `falsifier` must first be rewritten:
+as drafted they rest on the withdrawn KU readout AUC 0.977–0.982 and on a
+`clean_tighten` of 0.000 measured on corrupt activations, and its prediction
+should be stated against the **narrowed-channel** mechanism above rather than a
+severed one.
+
 ### Known limitation recorded at sign
 
 Gemma's corrected read profile is **saturated** — held-out KU-direction AUC
@@ -423,6 +477,7 @@ it is not destructive, but it is uncharacterized.
 |---|---|---|
 | v1.0 | 2026-07-24 | Initial revision. Retires G2 for future pre-registrations and introduces G2a/G2b; registers NOT-ADJUDICABLE as a disposition; makes the INCONCLUSIVE floor canonical; authorizes the `jlens.py` `use_cache` repair and voids gemma4-e4b band selection. |
 | v1.1 | 2026-07-24 | Revised after independent adversarial peer review. **Retracts** the v1.0 claim that the Defect 3 audit was complete and that no prior resolved experiment was affected — the audit enumerated by artifact filename rather than by capture path and missed `hf_batched.py:466`, through which the resolved, registered `gemma-4-e4b-family-atlas` captured gemma-4-E4B. Document marked NOT SIGNABLE pending the re-scoped audit. **Withdraws** the invented "more conservative reading governs" precedence rule and re-anchors Defect 2 on the hash-pinned `cross_family_rollup.py`. Upgrades the gemma and Qwen3.5 mechanism claims from config keys to source citations, and **withdraws** the unsupported "min cos 1.000000 on the extraction path" claim. Fire-rate reporting strengthened from "should" to MUST with the affected G2 PASSes enumerated. Corrects the claim that G2a is what the old G2 approximated — they are different quantities. Pins the gemma re-derivation to a full hs0…hs42 sweep to close the sweep-choice latitude vector, and states plainly that the defect's discovery was outcome-triggered even though the mechanism is outcome-independent. Fixes a v1.0 heading that still read "NOT-ADJUDICABLE, not PASS", contradicting its own corrected body. |
+| v1.2 | 2026-07-24 | Second review round. Adds the **write-side seam** as a defect independent of `use_cache`: on gemma-4-E4B blocks 24-41 take K/V from donor blocks 22/23 (`modeling_gemma4.py:1148-1153`, `:1198-1199`), so a dose written there cannot alter the keys/values any layer in that range attends over. Records the mechanism in its correct **narrowed-not-severed** form -- `:1192` computes queries unconditionally, so the write does still reach attention weights, the FFN and the residual; the reviewer's stronger claim that routing is untouchable was verified against source and found overstated. Adds clause 6 HOLDING all gemma dosed runs, per PI decision, until `gemma4-e4b-kv-seam-quarantine` runs and is folded in. Adds an explicit open-blockers list and a review record. |
 
 ## Relationship to prior documents
 
@@ -450,3 +505,38 @@ it is not destructive, but it is uncharacterized.
 - Approved by: _pending user signature_
 - Enters force on signature. Until then, `j-space-cross-family-layer-contrast`
   remains at its signed INCONCLUSIVE verdict and no gemma re-run is authorized.
+
+### Open blockers — this document is NOT signable while any remain
+
+1. **Defect 3 clause 3 — re-scoped consumer audit.** In progress. The v1.0
+   blast-radius claim is retracted; at least one resolved, registered experiment
+   (`gemma-4-e4b-family-atlas`) captured gemma-4-E4B through
+   `hf_batched.py:466`. Until the audit lands, this document cannot state what
+   prior work is affected.
+2. **Write-side seam — `gemma4-e4b-kv-seam-quarantine` must run first**
+   (PI decision, 2026-07-24). Its pre-registration text must be rewritten off
+   the withdrawn AUC and the corrupt `clean_tighten` before it can be signed or
+   run, and its own path to a legitimate run is not yet cleared (input
+   dependency on an unmerged branch; `persistence:` block incomplete pending
+   measured smoke timings).
+3. **Housekeeping, non-blocking but unresolved:** `extract_anchor.py:160` was
+   repaired to `use_cache=True` ahead of any signature. The repair is correct
+   and carries a provenance guard at `:90`, but it is uncommitted and was made
+   outside the authorization this document provides. It should be regularized
+   before it underpins a registered run.
+
+### Review record
+
+Independently reviewed 2026-07-24 by two reviewers who did not coordinate.
+Between them they produced: the retraction of the Defect 3 audit (enumeration
+by artifact filename rather than capture path); the withdrawal of the invented
+precedence rule; the withdrawal of an unsupported `min cos 1.000000` claim; the
+source-level proof that Qwen3.5-4B's prefill is cache-independent despite
+carrying recurrent state in the cache; independent recomputation of the N = 35
+floor and the companion figures; the sweep-choice latitude vector; and the
+write-side seam above. Both reviewers' mechanism claims were re-verified against
+source before being written here — one was found overstated and is corrected in
+the text rather than adopted.
+
+No reviewer approved this document, and none was asked to. Signature is the
+PI's alone.
