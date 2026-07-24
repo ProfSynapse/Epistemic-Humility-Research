@@ -32,7 +32,7 @@ set -u
 
 payload=$(cat)
 verdict=$(HOOK_PAYLOAD="$payload" python3 - <<'PYEOF'
-import os, json, shlex
+import os, json, shlex, re
 
 try:
     d = json.loads(os.environ.get("HOOK_PAYLOAD", ""))
@@ -46,14 +46,35 @@ if not cmd.strip():
 if "EHR_SEARCH_OK=" in cmd:
     print("ALLOW"); raise SystemExit
 
-# Isolate the FIRST top-level command segment. A search that is fed by a pipe
-# (`... | grep`) is a filter, not an exploration, so only the leading segment
-# matters. Split on the first top-level |, &&, ||, ;, or newline.
-seg = cmd
-for sep in ("\n", "&&", "||", "|", ";"):
-    i = seg.find(sep)
-    if i != -1:
-        seg = seg[:i]
+# Isolate the first SEARCH-BEARING command segment.
+#
+# Two different things can precede the real command, and they are not the same:
+#   * A PIPE (`cat x | grep y`) makes the search a FILTER over another command's
+#     output, not an exploration. Still allowed -- so we never look past a `|`.
+#   * A `cd` (`cd /repo && rg foo`) is pure harness noise: this session's shell
+#     resets cwd between calls, so nearly every Bash call opens with a `cd`.
+#     Treating `cd` as "the leading command" turned this guard off for the
+#     dominant command shape -- `rg foo` was blocked while `cd X && rg foo`
+#     sailed through. So we SKIP leading `cd` segments and judge what follows.
+segments = re.split(r"&&|\|\||;|\n", cmd)
+seg = ""
+for s in segments:
+    s = s.strip()
+    if not s:
+        continue
+    try:
+        probe = shlex.split(s)
+    except Exception:
+        probe = s.split()
+    if probe and probe[0] == "cd":
+        continue          # harness noise, keep looking
+    seg = s
+    break
+
+# Never look past a pipe: beyond it, a search is a filter.
+i = seg.find("|")
+if i != -1:
+    seg = seg[:i]
 seg = seg.strip()
 
 try:
