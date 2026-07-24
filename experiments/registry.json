@@ -3845,6 +3845,68 @@
         "repo": "Qwen/Qwen3.5-4B",
         "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
       },
+      "created_at": "2026-07-24T00:16:16Z",
+      "falsifier": "Fires if the profile peak lands in the outer 20% of depth on either end (early- or late-exterior, as in llama, mistral, gemma, and qwen3-4b), or if no layer inside (20%, 85%) depth reaches held-out AUROC >= 0.80 on all three axes simultaneously. See AMENDMENT.md \"Falsifier\" for the full registered wording.",
+      "inputs": [
+        "experiments/common/qwen35-4b-doubt-snap-split/split_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "render_qwen35_atlas.py",
+          "capture_family_atlas_cell.py",
+          "profile_and_read_family_atlas_panel.py",
+          "materialize_rows.py"
+        ],
+        "persistence": {
+          "capture_family_atlas_cell.py": {
+            "checkpoint_path": "experiments/qwen35-4b-family-atlas/analysis/qwen35_4b/atlas_capture/checkpoint.json",
+            "note": "Satisfied at the tuner layer, same mechanism gemma-4-e4b-family-atlas and qwen3-4b-family-atlas declared for their byte-identical copies of this script: cmd_capture shells out to tuner.py batch-capture --resume, whose hf-batched engine writes an fsync'd checkpoint.json (synaptic-tuner/tuner/batch/persistence.py, CHECKPOINT_FILENAME = \"checkpoint.json\") inside the run's own --out-dir (analysis/qwen35_4b/atlas_capture/, per this cell's cell_id) after each captured row. Capture requires the tuner multimodal loader fix (see cell.yaml capture.tuner_submodule_pin).",
+            "persistence": "incremental"
+          },
+          "materialize_rows.py": {
+            "measured_smoke_wall_clock_s": 0.008,
+            "note": "Join+write COMPUTE measured directly over the real 3000-row committed manifest with synthetic question text = 0.008s (pure CPU dict join; question-text length does not materially affect it). The end-to-end run additionally (a) fetches split_rows_private.jsonl from the read-only Modal volume eh-doubt-snap-cross-family (a single small JSONL) and (b) sha256-verifies it fail-closed against 42659f4019d0cbe0178bddd6a7e6323299555092ecd8da4c9ac5d58e42b15a58. That fetch is genuinely unmeasurable at scaffold time (needs Modal auth + restricted-data access) and is MEASURED AT CAPTURE; both the join (sub-second) and the small-file fetch are short-run. Output is the gitignored analysis/rows_with_text.jsonl; no row text is ever committed.",
+            "persistence": "short-run"
+          },
+          "profile_and_read_family_atlas_panel.py": {
+            "measured_smoke_wall_clock_s": 91.71,
+            "note": "Measured at this cell's ACTUAL pool scale (not a projection) via a synthetic-capture probe, matching qwen3-4b-family-atlas's realistic-scale timing method: 3000 rows (887 confab fit + 1332 held_out, 240 known fit + 360 held_out, 181 unknown_refused fit_only -- the real counts from the promoted split_manifest), 33 hidden states, hidden_dim=2560, 2000 bootstrap resamples. build synthetic captures 3.50s + score (eff_dim_frac profile + three-axis read panel + random-direction control + bootstrap) 88.21s = 91.71s total, well under the 15-minute short-run ceiling. Refused pool split reproduced deterministically as 90 refused_fit / 91 refused_eval; per_layer count 33 (hs 0..32). Probe script: scratchpad, not committed (adapted from .skills/family-atlas/scripts/smoke_family_atlas.py to realistic scale). See NOTEBOOK.md.",
+            "persistence": "short-run"
+          },
+          "render_qwen35_atlas.py": {
+            "measured_smoke_wall_clock_s": 4.918,
+            "note": "Measured directly (tokenizer load + 20 render() calls against the real pinned Qwen/Qwen3.5-4B tokenizer at revision 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a, CPU-only, no model weights, synthetic questions): 4.918s. The direct enable_thinking=False path renders cleanly (empty <think></think> block; assert_no_think_scaffolding passes). Scales linearly with the render-only row count in the atlas capture stage (3000 rows, this cell's pool size, well under the 15-minute short-run ceiling even at full scale); the GPU-bound work in that stage is capture_family_atlas_cell.py's own batch-capture call, declared separately below.",
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "capture_family_atlas_cell.py": "574c5a71f16486ed8c20d0456c6494b79c8a78244d5b71a3de132fb52845199c",
+          "cell.yaml": "bb8d4ad05f82d8721bf533ab592fa8bcd3047bbe88ff458b1dfbf9c0f8dc00cd",
+          "gates.yaml": "91f2300a1350d875f85d26d99e55e96b5667ca11645c59c9be52c0b18c746fe2",
+          "materialize_rows.py": "432e9fb5cddf36136249d34b18d510edb5f6f805132593bc33a0f6a6006dd2b1",
+          "profile_and_read_family_atlas_panel.py": "27cd945c83df20416658a5370544ea99f1422f5717f3e67cffca82d418003ed5",
+          "render_qwen35_atlas.py": "28eaefc2d32552b6d8aa603aa5249ec87754d5e172303e3ce6a369fa75d84b6f"
+        }
+      },
+      "kg": [],
+      "prediction": "Program-standard family-atlas prediction, kept deliberately (fifth-family test of the decoupling pattern): the eff_dim_frac profile peaks at an interior layer (inside 20%-85% of depth) and a contiguous band containing that peak holds all three axes (doubt, caution, raw_refusal) at held-out AUROC >= 0.80, with the peak layer differing from this substrate's established mid-band write site hs20. See AMENDMENT.md \"Prediction\" and the DRAFT \"Predictions scoreboard\" (to be ratified by lead + user before sign).",
+      "question": "Where does raw-base Qwen3.5-4B's (Qwen/Qwen3.5-4B) workspace midband sit (eff_dim_frac profile over depth), and do the doubt, caution, and raw-refusal axes read there, supplying the family-atlas-standard layer map this substrate's own steer cells (qwen35-4b-midband-doubt-snap / -heldout, which established the hs20 write site behaviorally) never measured, and testing whether the eff_dim_frac peak decouples from both the interior read band AND the independently established interior write site?",
+      "registered": true,
+      "slug": "qwen35-4b-family-atlas",
+      "status": "signed",
+      "title": "Qwen3.5-4B family atlas",
+      "type": "probe-fit",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
       "falsifier": "No mid-band layer/dose achieves that window, and every mid-band layer shows the same refusal-vs-well-formed entanglement as the late site (refusal rises only as well-formed falls, no dose clears both thresholds at once).",
       "inputs": [
         "experiments/j-space-localization-qwen3-4b/jlens.py",

@@ -1,0 +1,168 @@
+# Qwen3.5-4B family atlas notebook
+
+Running log for this experiment. Newest entry first. This is a lab notebook, not
+a claims surface; the signed prose lives in `AMENDMENT.md` and the machine state
+in `experiment.yaml`.
+
+## Entries
+
+### 2026-07-23 -- tuner fix landed; indexing watch CLOSED; CPU sign-prep complete
+
+Lead relayed the tuner fix and instructed completion of all CPU-side sign prep.
+All done below; still NO commit, NO sign, NO GPU, and hands-off the tuner.
+
+**Layer-indexing PENDING WATCH -> CLOSED (no discrepancy).** The tuner agent
+read transformers 5.5.0 source and confirmed numerically (bit-close test vs a
+direct `output_hidden_states` call): the `Qwen3_5ForConditionalGeneration`
+wrapper uses the identical hook-based capture as text-only models --
+`hidden_states[0]`=embeddings, `[i]`=post-block-i, count=`num_hidden_layers`+1.
+So this cell's `n_hidden_states=33` / `hs_index = decoder_block_index + 1`
+convention, the AG1 scope `hs 0..32`, and the family-layer-map block->hs
+pairing (block 19 -> hs20, block 29 -> hs30) all hold unchanged. Closure
+citation: tuner commit `e0e02a3`. My own realistic-scale profile probe
+independently produced `per_layer` count = 33, consistent.
+
+**Loader blocker CLEARED (corrected mechanism).** My CPU meta smoke caught the
+incompatibility via `from_config`'s `AttributeError`, but the tuner agent found
+the real `from_pretrained` failure mode is WORSE: silent substitution of a flat
+text-only class with garbage weights (all keys missing/unexpected, no
+exception) -- same bug class as Stage-S run 1. The fix (tuner branch
+`feature/multimodal-loader-fallback` @ `e0e02a3`, includes `f6f1229`) adds a
+generic composite-config `get_text_config()` pre-check routing to
+`AutoModelForImageTextToText` before `AutoModelForCausalLM`, and logs the
+loader path. Recorded in AMENDMENT "Design -> Execution" and "Known
+limitations". Capture requirements imposed on this cell: (1) submodule pinned
+to `e0e02a3` at launch (`cell.yaml` `capture.tuner_submodule_pin`); (2) new AG0
+check `loader_path_is_image_text_to_text` asserts the ImageTextToText path
+fired (a CausalLM path == garbage capture -> discard). Both authored.
+
+**materialize_rows.py written.** Joins the committed ID-only manifest
+(`experiments/common/qwen35-4b-doubt-snap-split/split_manifest.json`) against
+the doubt-snap qwen35_4b private pool `split_rows_private.jsonl` (Modal volume
+`eh-doubt-snap-cross-family`). Fail-closed: sha256 gate against
+`42659f40...`, every committed row_key must resolve to a question, private-pool
+role/split must agree with the committed manifest, role counts must equal
+{confab 2219, known 600, unknown_refused 181}. Output is gitignored
+`analysis/rows_with_text.jsonl`; zero committed row text. Fetch is a deliberate
+`--fetch` (modal volume get) or pre-placed pool; sha always verified.
+
+**Persistence declarations authored (measured on CPU where possible).**
+- render_qwen35_atlas.py: short-run, 4.918s (real pinned tokenizer load + 20
+  renders; direct enable_thinking=False path renders the empty <think></think>
+  block cleanly, assert_no_think_scaffolding passes).
+- profile_and_read_family_atlas_panel.py: short-run, 91.71s (synthetic-capture
+  probe at ACTUAL scale: 3000 rows, 33 hidden states, dim 2560, 2000 resamples;
+  build 3.50s + score 88.21s; refused split reproduced 90/91). Well under the
+  15-min ceiling.
+- materialize_rows.py: short-run, 0.008s join compute over the real 3000-row
+  manifest (synthetic text); the Modal fetch + sha verify are measured at
+  capture (genuinely unmeasurable now -- needs Modal auth + restricted data).
+- capture_family_atlas_cell.py: incremental, checkpoint_path
+  analysis/qwen35_4b/atlas_capture/checkpoint.json (tuner batch-capture
+  --resume fsync'd checkpoint).
+
+**Tuner pin recorded** in cell.yaml capture block and experiment.yaml
+persistence note; experiment.yaml modules now include materialize_rows.py.
+
+Still deferred to sign: orchestrator scoreboard ratification + `bin/exp sign`
+(pins), kg node (created at ingest/resolve). Capture goes into the first GPU
+window after j-space, per the lead.
+
+### 2026-07-23 -- lead adjudications applied + CPU loader smoke (CONFIRMED capture blocker)
+
+Lead adjudicated the scaffold's open points. Applied (all CPU-only, no
+commits):
+
+**Loader smoke (CPU-only, no CUDA, no weight download).** Ran the meta-device
+load-path check that mirrors what `AutoModelForCausalLM.from_pretrained` calls
+internally. Env: transformers 5.5.0, torch 2.9.0+cu128.
+- `AutoConfig.from_pretrained('Qwen/Qwen3.5-4B', revision=851bf6e...)` OK:
+  `Qwen3_5Config`, `architectures=['Qwen3_5ForConditionalGeneration']`,
+  top-level has NO `vocab_size`; `text_config` (`Qwen3_5TextConfig`) has
+  `num_hidden_layers=32`, `hidden_size=2560`, `vocab_size=248320`. Confirms
+  the 2026-07-09 config findings.
+- `AutoModelForCausalLM` maps `qwen3_5` -> `Qwen3_5ForCausalLM`.
+  `AutoModelForCausalLM.from_config(cfg)` on `torch.device('meta')` FAILED:
+  `AttributeError: 'Qwen3_5Config' object has no attribute 'vocab_size'`,
+  raised at `Qwen3_5TextModel.__init__` ->
+  `nn.Embedding(config.vocab_size, ...)` (reads `vocab_size` on the top-level
+  multimodal config, which does not have it).
+- `AutoModelForImageTextToText.from_config(cfg)` on meta SUCCEEDED ->
+  `Qwen3_5ForConditionalGeneration`.
+
+VERDICT: CONFIRMED capture blocker, NOT the "open risk" the scaffold
+hypothesized. `from_pretrained` calls the same `cls(config)` constructor, so
+the tuner's hardcoded `AutoModelForCausalLM.from_pretrained`
+(`synaptic-tuner/tuner/batch/engines/hf_batched.py:91`) will fail identically
+on this checkpoint. The gemma precedent does NOT transfer (gemma's CausalLM
+constructor tolerates the nested config; Qwen3.5's does not). Per lead
+instruction, STOPPED at the tuner boundary -- did NOT patch the tuner. The
+generic multimodal loader-fallback chain (CausalLM -> ImageTextToText ->
+Vision2Seq, per Amendment Z's `load_model_and_config`) is escalated to the
+lead as a separate synaptic-tuner decision. Recorded in AMENDMENT.md
+"Design -> Execution" and "Known limitations".
+
+**Refused-pole power -- option (a) accepted.** 181 fit_only refused rows
+(-> ~90/91 split) accepted with lower power; no AG0 floor added, no fresh
+mining. Recorded prominently in AMENDMENT.md "Known limitations" and cell.yaml.
+
+**Shared-input promotion -- done (uncommitted).** Promoted the doubt-snap
+qwen35_4b split_manifest to
+`experiments/common/qwen35-4b-doubt-snap-split/split_manifest.json`
+(byte-identical, sha256 2f622f5a...) + `PROVENANCE.md`, per the qwen3-4b
+precedent. cell.yaml `source` and experiment.yaml `inputs` now consume the
+promoted path. Left uncommitted for the lead's evidence commit.
+
+Deferred to sign/launch as proposed: question-text materialization
+(`materialize_rows.py`), persistence declarations, kg node.
+
+Scoreboard now filled: orchestrator row PROPOSED (early-exterior, retained for
+lead ratification at sign); user row recorded 2026-07-23 (early-exterior peak
+PRESENT -> 5/5; sub-call: read-panel band dissociates from the hs20 write
+site). Both call the same direction, independently.
+
+**PENDING WATCH before sign (relayed by lead 2026-07-23).** A separate agent
+is implementing the generic multimodal loader fallback in synaptic-tuner
+(CausalLM -> ImageTextToText chain, kept generic, CPU-only verification;
+I stay hands-off the tuner). Its report will state whether hidden-state layer
+indexing through the `Qwen3_5ForConditionalGeneration` wrapper matches
+text-only indexing. If there is any off-by-one or extra-embedding-state
+discrepancy, THIS cell must account for it before sign: `cell.yaml`
+`n_hidden_states=33` / `hs_index = decoder_block_index + 1` convention, the
+AG1 scope `hs 0..32`, and the family-layer-map comparability note (hs indices
+must line up with the qwen35 steer cells' block->hs pairing, block 19 -> hs20,
+block 29 -> hs30). Awaiting the lead's relay; no action until then.
+
+### 2026-07-23 -- scaffolded (draft, NOT signed, NO GPU)
+
+Scaffolded the fifth family-atlas cell, for `Qwen/Qwen3.5-4B` @
+`851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a`. Followed the `family-atlas` skill
+procedure and used `qwen3-4b-family-atlas` as the closest template.
+
+Files: `AMENDMENT.md`, `cell.yaml`, `gates.yaml`, `experiment.yaml` (all
+filled in), `render_qwen35_atlas.py` (ported from the SOURCE POOL's own render
+`doubt-snap-cross-family-confirmatory/render.py`, not from qwen3-4b's render,
+for anchor comparability), plus byte-identical copies of the canonical
+`capture_family_atlas_cell.py` (sha256 574c5a71...) and
+`profile_and_read_family_atlas_panel.py` (sha256 27cd945c...) from
+`.skills/family-atlas/scripts/`.
+
+Row pool: reuses the resolved `doubt-snap-cross-family-confirmatory` qwen35_4b
+committed `split_manifest.json` (sha256 2f622f5a...) verbatim. Cleaner than
+qwen3-4b: all three roles carry row-level IDs already (confab 2219, known 600,
+unknown_refused 181 fit_only) -- NO derive-unknown-refused step needed.
+
+`bin/exp validate`: no hard errors for this slug; the only remaining lines are
+the three expected sign-time persistence-declaration warnings (fill at sign
+with measured wall-clock, per qwen3-4b's own precedent). kg left empty for the
+draft (node created at kg-ingest/resolve).
+
+Open items handed to the lead (see AMENDMENT.md): (1) multimodal loader OPEN
+RISK -- tuner `hf_batched` engine hardcodes `AutoModelForCausalLM`, but gemma
+(also nested-config multimodal) loaded fine that way; verify with a cheap
+pre-sign loader smoke before any generic tuner fallback PR; (2) refused-pole
+power (181 -> ~90/91) -- decide whether to add an AG0 floor; (3) shared-input
+promotion of the doubt-snap manifest to `experiments/common/`; (4) scoreboard
+calls (orchestrator proposed early-exterior / user blank) to ratify pre-sign;
+(5) question-text materialization (`materialize_rows.py`) as a gated
+capture-launch precondition. NO sign, NO GPU, NO commits performed.
