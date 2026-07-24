@@ -6,6 +6,140 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-24 -- A_lin depth ladder on CLEAN activations: finding (6) DISSOLVED (it was Defect 3), and the accessibility/actuation windows are measured and do NOT overlap
+
+**Tier 3, analysis-only.** No new cell, no new arm, no gate touched. This entry
+RECORDS A MEASUREMENT. It does **not** re-label the gemma arm or any verdict:
+per `amendment-vs-lab-notebook.md` decision question 1, a disposition change to
+the gemma arm would touch the governed headline surface and is Tier 1. Nothing
+here is authorized to move it.
+
+**Provenance caveat on the clean extraction (added after the resolve commit).**
+The clean full-depth gemma activations this ladder reads were produced by a
+MODIFIED `extract_anchor.py` (`use_cache=True`, `--layers all`) that is **not**
+the version pinned in `experiment.yaml`. This experiment is resolved, so its
+instrument is frozen and `bin/exp repin` correctly refuses to move the pin --
+the pinned hash records which instrument produced the RECORDED result, and the
+recorded gemma result is `not_run`. So the ladder below is a diagnostic read
+against artifacts whose generator is not the registered one. That is fine for a
+Tier 3 measurement and is exactly why it cannot re-label anything, but it must
+not be cited as if it came off the registered instrument. The corrected script
+is preserved for the successor experiment.
+
+Artifacts (gitignored-private, `analysis/crystallization-ladder/`):
+`alin_recompute.py`, `alin_report.json` (sha256 7f90b3906a786bb2...).
+
+**Definition used, resolved from artifacts rather than assumed.** `A_lin(hs_N)` =
+top-1 accuracy of `softcap(lm_head(final_norm(h)))` at the anchor
+(`prompt_len-1`) predicting the model's own RECORDED GREEDY next token
+(`do_sample=False`, `gen_lib.py`). Validated on gemma row 0 -> id 14937 (`{"`),
+matching the linear-accessibility probe doc. Because generation is greedy the
+target IS by construction the argmax of the correct FINAL-layer logits, so a
+faithful lens MUST score 1.000 at the terminal layer. That makes the terminal
+row a HARNESS CHECK with a known correct answer, not evidence about the model.
+
+**Harness check passes in both families:** gemma hs42 = 1.000 (rank 1, all 806
+rows); llama hs26 = 1.000. Live `.logits` at `use_cache=True`: gemma 1.000,
+llama 1.000. Vacuity guards (distinct storage, non-zero norms) passed on every
+comparison.
+
+#### 1. Finding (6) is dissolved -- it was Defect 3 wearing a different hat
+
+Same harness, same targets, same 806 rows; the ONLY variable is which cached
+activations are read.
+
+| depth | CLEAN (`forward_use_cache: True`) | CORRUPT (`prefix-kvseam-bug-20260724/`) |
+|---|---|---|
+| hs34 | **0.967** (median rank 1) | 0.000 (median rank 110,692) |
+| hs38 | **0.968** (rank 1) | 0.000 (rank 204,746) |
+| hs40 | **0.970** (rank 1) | 0.000 (rank 85,073) |
+| hs42 | **1.000** (rank 1) | 0.000 (rank 3,563) |
+
+And end-to-end on the live generation path (n=200):
+
+| live `.logits` | top-1 | median rank |
+|---|---|---|
+| `use_cache=True` | **1.000** | 1 |
+| `use_cache=False` | 0.000 | 2,333 |
+
+The reported finding-(6) signature (teacher-forced top-1 2.9%, true token at
+rank 6227) reproduces ONLY on the corrupt path. **Gemma's output path is not
+broken.** It was being measured through KV-starved blocks: the corrupt
+extraction held only hs34/38/40/42, every one inside the corrupted region
+(>= hs25, cos 0.732 -> 0.075). Gemma's behavioral numbers -- the 0/176 included
+-- are not void on finding-(6) grounds.
+
+#### 2. The accessibility window and the actuation window do not overlap
+
+Median rank of the true next token, aligned by relative depth (`rd = hs/n_layers`).
+Both families on CLEAN activations, identical code path.
+
+| rd | llama-3.2-3b (28L, vocab 128,256) | gemma-4-E4B (42L, vocab 262,144) |
+|---|---|---|
+| ~0.52-0.61 | hs17 -- rank **9** | hs22 -- rank **86,572** |
+| ~0.67-0.71 | hs20 -- rank **3** | hs28 -- rank **8,523** |
+| ~0.81-0.82 | hs23 -- rank 2, top-1 0.339 | hs34 -- rank 1, top-1 **0.967** |
+| ~0.93-1.00 | hs26 -- top-1 1.000 | hs42 -- top-1 1.000 |
+
+Gemma is **not globally worse** -- at rd ~0.81 it is well AHEAD of llama (0.967
+vs 0.339). It **crystallizes late**. Set that against the dose record, recomputed
+here from the registered `dose_calibration_summary.json` artifacts: the maximum
+relative depth at which ANY family has ever produced a usable dose is **0.607**
+(llama hs17); gemma's `selected_doses` is `{}` at every site it was tested
+(hs34/38/42 = rd 0.810/0.905/1.000).
+
+- Writes work only at **rd <= 0.607**.
+- Gemma is linearly accessible only at **rd >= ~0.81**.
+
+**The windows do not intersect.** At the depths where writes actuate, gemma's
+content is not yet in output space; by the depth it is, the actuating band is
+past. This is a complete account of the gemma null that requires neither the KV
+quarantine hypothesis nor the write-side seam. It is the "linear accessibility /
+crystallization gap" already named in the quarantine draft's own competing-
+explanations section as the strongest competitor -- now with cross-family
+numbers behind it instead of an argument.
+
+**Standing of this claim.** Two families, one anchor position, one target
+definition, one lens (final-norm + tied unembed, no tuned lens). It is an
+OBSERVATIONAL depth contrast, not a manipulation: it does not establish that
+low `A_lin` CAUSES write-inertness, only that gemma has no depth where both
+conditions hold. Vocab sizes differ 2x, so ranks are not directly comparable
+across families in absolute terms -- the llama-vs-gemma gap (rank 9 vs 86,572)
+survives that by three orders of magnitude, but a two-family n does not make a law.
+
+#### 3. Consequence: G0-ALIN as pre-registered cannot discriminate
+
+Gemma's clean `A_lin` is at the FLOOR everywhere below hs28 -- top-1 exactly
+0.000 at hs15/18/20/22/24, with median ranks 61,283 / 119,450 / 88,087 / 86,572
+/ 144,858. The `gemma4-e4b-kv-seam-quarantine` precondition **G0-ALIN** selects
+arm A3 as "whichever of hs22/hs23 has the higher `A_lin`". Both candidates sit
+at chance, so that rule is choosing between noise. Recording this as a defect in
+that draft's site-selection rule; adjudicating it is not this entry's business.
+
+#### 4. Two corrections to `gemma4-e4b-kv-seam-quarantine/DECISION_MEMO.md`
+
+The memo (14:41) predates the clean full-depth gemma extraction (16:13) by 92
+minutes and is stale on its own cost analysis. `analysis/gemma4-e4b/anchor_extract_manifest.json`:
+`forward_use_cache: True`, all 43 indices hs0..hs42, 806 rows, 34,658 keys. Its
+"3,224 keys, verified" describes the QUARANTINED pre-fix file (806 x 4 layers).
+Therefore: G0-ALIN Part 1 is CPU-computable (hs22/23/24 are on disk, clean),
+gemma's shallow-site anchor norms are computable, and "both options require a
+fresh extraction" is false.
+
+Separately, the memo's "cached activations are faithful (cos 0.9998)" appears
+nowhere in that experiment's `AMENDMENT.md` or `NOTEBOOK.md`. The same figure
+appears at this experiment's `extract_anchor.py:158`, labelled there as VACUOUS:
+CPU and GPU agreed at cos 0.998-0.9998 "because BOTH ran the broken path". That
+number should not be cited as evidence the hidden states were faithful.
+
+#### 5. Caveat on the llama control's provenance
+
+`analysis/llama-3.2-3b/anchor_extract_manifest.json` has NO `forward_use_cache`
+field -- it is a pre-fix extraction. llama is architecturally unaffected by the
+defect (no cross-layer KV sharing; min cos 1.000000 either way), and its harness
+row passes at 1.000, so the control is sound. But it is not a post-fix artifact
+and should not be described as one.
+
 ### 2026-07-24 -- mistral-7b-v03 full held-out run COMPLETE -- FINAL numbers for hs15 (the deciding site); G2 vacuity independently confirmed from my own run logs
 
 `run_contrast.py --family mistral-7b-v03 --mode full --i-know-this-is-the-
