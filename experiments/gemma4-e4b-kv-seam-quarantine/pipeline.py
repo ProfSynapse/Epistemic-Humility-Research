@@ -23,7 +23,7 @@ import gen_lib as gl  # noqa: E402
 import grader  # noqa: E402
 import model_lib as ml  # noqa: E402
 from family_config import (  # noqa: E402
-    layer_dir_name, load_family,
+    SITE_SETS, layer_dir_name, load_family, site_set_artifact,
     is_late_reference as fc_is_late, reuse_artifact_path as fc_reuse_path,
 )
 from MechInterp.intervention import get_decoder_layer  # noqa: E402
@@ -33,6 +33,35 @@ MAX_NEW = gl.MAX_NEW_CAP
 
 def load_jsonl(path: Path) -> list[dict]:
     return [json.loads(ln) for ln in path.open(encoding="utf-8") if ln.strip()]
+
+
+def load_roll_up_layer(family: str, stem: str, layer_name: str) -> dict:
+    """Read one layer's record out of a per-site-set roll-up JSON.
+
+    build_directions/gate_fit/calibrate_dose write one roll-up per site set
+    (`<stem>.json` for midband, `<stem>.<site_set>.json` otherwise), so a
+    layer's record lives in exactly one of them. Rather than thread `site_set`
+    through every function here, resolve BY CONTENT: site sets are disjoint
+    layer sets, so at most one roll-up can contain `layer_name` and the lookup
+    is unambiguous. Un-suffixed (midband) is tried first, preserving the
+    pre-existing single-file path exactly.
+    """
+    committed = HERE / "analysis-committed" / family
+    tried = []
+    for site_set in [None, *sorted(SITE_SETS)]:
+        name = stem if site_set is None else site_set_artifact(stem, site_set)
+        path = committed / name
+        if path in tried or not path.is_file():
+            continue
+        tried.append(path)
+        layers = json.loads(path.read_text()).get("layers", {})
+        if layer_name in layers:
+            return layers[layer_name]
+    raise FileNotFoundError(
+        f"{family}: no roll-up derived from {stem!r} contains layer {layer_name!r}; "
+        f"searched {[p.name for p in tried] or '(none present)'}. Run the build/fit "
+        f"stage for the site set that includes this layer."
+    )
 
 
 def load_direction_vector(path: Path) -> np.ndarray:
@@ -116,11 +145,9 @@ def compute_gate_decisions(family: str, rows: list[dict], hs_index: int) -> list
         # MID-BAND candidate: gate fit fresh by this experiment on the reused
         # FIT split.
         layer_name = layer_dir_name(hs_index)
-        build_manifest_path = HERE / "analysis-committed" / family / "build_manifest_layers.json"
-        gate_fit_path = HERE / "analysis-committed" / family / "gate_fit_layers.json"
         u_d = load_direction_vector(layer_paths(family, hs_index)["u_d"])
-        build = json.loads(build_manifest_path.read_text())["layers"][layer_name]
-        gate = json.loads(gate_fit_path.read_text())["layers"][layer_name]
+        build = load_roll_up_layer(family, "build_manifest_layers.json", layer_name)
+        gate = load_roll_up_layer(family, "gate_fit_layers.json", layer_name)
         mu_d, sigma_d, tau = build["mu_d"], build["sigma_d"], gate["tau_frozen"]
 
     out = []
@@ -201,8 +228,7 @@ def run_layer(family: str, model, tokenizer, hs_index: int, rows: list[dict],
         c_hat_path = lp["c_hat_path"]
     else:
         layer_name = layer_dir_name(hs_index)
-        build = json.loads((HERE / "analysis-committed" / family / "build_manifest_layers.json").read_text())
-        build = build["layers"][layer_name]
+        build = load_roll_up_layer(family, "build_manifest_layers.json", layer_name)
         sigma_c = build["sigma_c"]
         c_hat_path = layer_paths(family, hs_index)["c_hat"]
     strength = dose_target / sigma_c

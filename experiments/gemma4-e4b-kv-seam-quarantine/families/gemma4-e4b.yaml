@@ -116,6 +116,26 @@ band_selection:
   - 42
   late_reference_hs: 40
   effective_dim_peak_hs: 38
+  # DESCRIPTIVE shallow ladder, arms D1-D4. Registered 2026-07-24 in
+  # gates.yaml `descriptive_shallow_ladder` and cell.yaml `arms`; added here
+  # 2026-07-25 so the site set is resolved from a hash-pinned config rather
+  # than from the command line. Selected with `--site-set shallow_ladder`.
+  #
+  # NOT folded into midband_candidates_hs on purpose: these sites are at
+  # relative depth 0.357-0.548 and "midband" for this family means 0.810-1.000,
+  # and midband_candidates_hs has other consumers whose swept site set must not
+  # change silently. See family_config.shallow_ladder_hs_indices.
+  #
+  # hs = residual stream at the OUTPUT of decoder block hs-1. Donors are blocks
+  # 22 (sliding) and 23 (full), so hs15/18/20 reach BOTH donors and hs23 reaches
+  # the full donor only -- all four are below the KV-sharing seam. Held-out KU
+  # readout AUC at these sites is 0.9996-0.9999 on the clean use_cache=True
+  # extract, so a null here cannot be attributed to the readout failing.
+  shallow_ladder_hs:
+  - 15
+  - 18
+  - 20
+  - 23
 doses:
   status: not_yet_calibrated
   ladder:
