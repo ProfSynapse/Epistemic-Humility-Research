@@ -6,12 +6,24 @@ Status: **DRAFT (not signed; do not launch).** Drafted by a delegated agent
 G2-diagnosticity claim, the underived `n_fired_known < 10` threshold, and the
 missing shallow-depth arms are all corrected below, and the corresponding blocks
 in `gates.yaml` and `experiment.yaml` are corrected to match. The lead has **NOT
-signed it**; several pre-sign items remain open (see "Open questions at sign"),
-the input dependency on the unmerged parent branch is unresolved, and
-`instrument.persistence` still needs measured smoke wall-clock timings — the
-first item that costs GPU. **No GPU work has run for this experiment.** Nothing
-in this rewrite moves a locked threshold; it changes what the numbers are
-claimed to mean and adds descriptive, non-gating arms.
+signed it**; several pre-sign items remain open (see "Open questions at sign").
+Nothing in this rewrite moves a locked threshold; it changes what the numbers
+are claimed to mean and adds descriptive, non-gating arms.
+
+**Header updated 2026-07-25 — three clauses above were stale and are corrected
+here rather than silently edited away.** (a) "the input dependency on the
+unmerged parent branch is unresolved" — resolved; the render path is vendored
+into this experiment and the cross-experiment PYTHONPATH dependency is gone.
+(b) "`instrument.persistence` still needs measured smoke wall-clock timings —
+the first item that costs GPU" — the timings are measured and declared, and they
+cost **no** GPU; the smoke ran CPU-only, and `gate_fit.py` turned out to need no
+checkpoint at all. (c) "**No GPU work has run for this experiment**" — no longer
+true. Two lead-authorized pre-sign carve-outs have run, both recorded in
+`cell.yaml execution.gpu_carve_outs`: the donor projection diagnostic, and the
+`seam_pair` dose calibration. Both are FIT-split instrument work. **No arm has
+run, `run_contrast.py` has not been executed in any mode, and no held-out row
+has been touched** — that part of the original claim still holds and is the part
+that matters.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
