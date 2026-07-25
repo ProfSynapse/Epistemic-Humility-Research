@@ -68,6 +68,7 @@ instrument:
   - run_contrast.py
   - kv_seam_preflight.py
   - donor_diagnostic.py
+  - alin_sweep.py
   pins: {}
   persistence:
     # INCOMPLETE BY DESIGN. The short-run modules need measured smoke wall-clock
@@ -133,6 +134,18 @@ instrument:
       rationale: >-
         Forward passes only, no accumulated state. Dominated by model load, so a
         resume would save nothing.
+    alin_sweep.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 18.05
+      measured_on: >-
+        2026-07-25, CPU ONLY (CUDA_VISIBLE_DEVICES=""), full G0-ALIN Part 1 over
+        9 depths x 292 FIT rows, maxRSS 2.6 GB. Run four times, bit-identical
+        output each time (excluding the timestamp field).
+      rationale: >-
+        Loads only the final RMSNorm and the tied unembedding -- not the model --
+        and re-runs in 18s, so there is no state worth checkpointing. Deliberately
+        avoids the family loader, whose device_map="auto" would place weights on
+        CUDA and break this gate's CPU-only scope.
 # inputs: BLOCKED ON A REAL DEPENDENCY, NOT AN OVERSIGHT.
 # Every input below lives in experiments/j-space-cross-family-layer-contrast/,
 # which exists only on the unmerged worktree branch

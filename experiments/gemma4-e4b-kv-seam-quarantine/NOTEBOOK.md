@@ -615,3 +615,84 @@ wrong hash and confirmed to actually raise** — an unfired guard is not a guard
 Still outstanding before `bin/exp sign`: `alin_sweep.py` (Parts 1 and 2), the
 fired-only G2 companion metric, `rollup.py`, and the measured smoke wall-clock
 timings for `instrument.persistence`.
+
+### 2026-07-25 — G0-ALIN Part 1 run (CPU, 18s): A_lin is at the floor below the seam, the tie-break decides, A3 = hs22
+
+`alin_sweep.py`, 292 FIT rows, 9 depths, pinned revision, **no CUDA**, 18.05s,
+2.6 GB RSS. Report: `analysis-committed/gemma4-e4b/alin_part1_selection.json`.
+
+| Site | `A_lin` | median rank |
+|---|---|---|
+| hs15 / hs18 / hs20 | 0.0000 | 61 260 / 120 190 / 88 181 |
+| **hs22** | **0.0000** | **83 008** |
+| **hs23** | **0.0000** | **238 571** |
+| hs24 | 0.0000 | 143 970 |
+| hs34 / hs38 / hs42 | 0.9760 / 0.9760 / 0.9966 | 1 / 1 / 1 |
+
+**A3 = hs22, A6 = hs23, A5 = hs24. No confound declared** (|0.0 − 0.0| = 0.0,
+band 0.10). The arm table no longer has a hole in it.
+
+**The registered statistic is at the floor, and the tie-break — not I — decided.**
+`A_lin` is *exactly* 0.0000 at every below-seam site, so `|ΔA_lin| = 0.0 < 0.01`
+fires the pre-stated tie-break to hs22 (broader donor reach). This is precisely
+the condition the parent's session record flagged as a blocker ("G0-ALIN as
+pre-registered cannot discriminate hs22 from hs23"). Having now run it, I don't
+think that's a defect in the rule: the tie-break exists for exactly this case and
+resolves on a stated principle rather than on noise.
+
+**What makes me comfortable with it is corroboration from a statistic I did not
+use.** Median rank is nowhere near the floor and separates the candidates
+sharply: hs22 ranks the true token **83 008** vs hs23's **238 571** — better by
+~3×, with hs23 the worst site at any depth measured (vocab is 262 144, so hs23
+sits near the bottom of it). Had rank been the registered statistic it would have
+picked hs22 too. So the selection does not depend on which statistic got locked.
+Recorded as an observation only — **substituting rank for the registered top-1
+accuracy would be goalpost movement on a locked rule, and I didn't.**
+
+**Consequence: A6 and D4 are now the same cell.** A3 took hs22, so A6 is hs23 —
+which is D4's registered site under the same condition (ON). D4's registration
+note pre-stated this exact contingency, so the rule was already written: one arm
+run, reported under both labels, never counted twice. One asymmetry now matters
+and is recorded in `cell.yaml`: D4 is unconditional while A6 is conditional on A3
+finding a usable FIT dose, so the cell **runs** as D4 regardless and is
+additionally **read** as A6 only if A6's condition is met.
+
+**Harness validation — four checks.** (1) Terminal-layer tautology: greedy
+decoding makes the recorded token the argmax of the true final-layer logits, so
+hs42 must be ~1.0 — measured **0.9966**, median rank 1, and *every* miss a rank-2
+near-tie versus the parent's GPU 1.0000, i.e. CPU/GPU tie-breaking rather than
+lens failure. The corrupt extraction scored 0.000 here, so this check has real
+teeth. (2) Distinct-storage / non-vacuity on the cached tensors. (3) A
+`prompt_len` re-render check across all 806 rows, proving the render used here
+reproduces the one the activations were extracted under. (4) External: the
+FIT-only numbers reproduce the parent's all-rows ladder at every shared depth
+(hs15 61 260 vs 61 283; hs20 88 181 vs 88 087; hs24 143 970 vs 144 858).
+
+**One thing CPU cannot do, recorded rather than papered over.** I first wrote the
+calibration to *resolve* `final_is_postnorm` on CPU by requiring exactly one
+output recipe to be tautological at hs42. It doesn't work — both score ~0.99,
+because re-normalizing an already-normalized vector barely moves the argmax. The
+fail-closed guard caught it and refused rather than silently picking one, which
+is the behaviour I wanted from it. The recipe is therefore taken from the
+parent's decisive GPU calibration (max-abs reconstruction 0.0 vs 17.6875), and it
+**cannot touch this selection**: the two recipes differ only at hs42, and every
+candidate site is normed identically under either.
+
+**Two provenance checks done before trusting any of this.** The manifest records
+`forward_use_cache: True`, so these are the *corrected* clean activations, not
+the withdrawn `use_cache=False` ones that made blocks ≥ hs25 meaningless
+(AMENDMENT.md:379) — the script now refuses outright on a `use_cache=False`
+manifest. And the local HF cache holds **two** revisions of this checkpoint with
+`refs/main` pointing at the one the experiment does *not* pin; their
+`model.safetensors` is the same blob but their chat templates differ. Verified
+both render all 806 rows to identical `prompt_len` (the differences are in
+tool-calling/thinking macros this probe never exercises), and pinned `revision=`
+explicitly anyway so the ambiguity cannot come back.
+
+Part 2 (`A_lin(hs38)` under both KV conditions) is unchanged and still GPU-blocked:
+it needs `extract_anchor.py --kv-sharing off`. It is now the *same script* pointed
+at the OFF extraction, which is what the gate's "identical logit-lens code path"
+requirement asks for.
+
+Still outstanding before `bin/exp sign`: G0-ALIN Part 2, the fired-only G2
+companion metric, `rollup.py`, and persistence timings for the remaining modules.
