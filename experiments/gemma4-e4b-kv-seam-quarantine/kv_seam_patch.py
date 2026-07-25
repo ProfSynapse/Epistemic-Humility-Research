@@ -46,6 +46,54 @@ EXPECTED_DONOR_BLOCKS = {"full_attention": 23, "sliding_attention": 22}
 EXPECTED_DONOR_BLOCKS_TUPLE = (22, 23)
 
 
+#: The KV condition whose artifacts keep the historical un-suffixed filenames.
+DEFAULT_KV_SHARING = "on"
+KV_SHARING_CHOICES = ("on", "off")
+
+
+def condition_artifact(name: str, kv_sharing: str) -> str:
+    """Filename for a per-KV-condition artifact.
+
+    Same reasoning as `family_config.site_set_artifact`, one axis over: every
+    output path in this instrument is fixed per family, so running the OFF
+    condition would overwrite the ON condition's artifacts. That is worse here
+    than for site sets, because the two conditions produce artifacts with
+    IDENTICAL schemas over the SAME layers -- a clobber would be invisible on
+    inspection and would silently turn the primary A1-vs-A2 contrast into a
+    comparison of an arm against itself.
+
+    `on` keeps the historical un-suffixed names, so the sharing-ON arm is
+    byte-for-byte the pre-existing path. `off` gets `<stem>.kv_off.<ext>`.
+    """
+    if kv_sharing == DEFAULT_KV_SHARING:
+        return name
+    if kv_sharing not in KV_SHARING_CHOICES:
+        raise ValueError(f"unknown kv_sharing {kv_sharing!r}; expected one of {KV_SHARING_CHOICES}")
+    stem, dot, ext = name.rpartition(".")
+    if not dot:
+        return f"{name}.kv_{kv_sharing}"
+    return f"{stem}.kv_{kv_sharing}.{ext}"
+
+
+def refuse_to_write_through_symlink(path) -> None:
+    """Guard: refuse to overwrite a path that is a symlink.
+
+    This instrument's inputs are staged as relative symlinks into
+    `experiments/common/artifacts/` and into the producing experiment's private
+    `analysis/`. `anchor_extract.safetensors` in particular is a symlink to the
+    parent's 341.7 MB CLEAN use_cache=True extract, which is the sole surviving
+    copy and is not in version control. A stage that wrote to its default output
+    path would follow that symlink and destroy it. Fail closed instead.
+    """
+    import os
+    if os.path.islink(path):
+        raise RuntimeError(
+            f"refusing to write through symlink {path} -> {os.readlink(path)}. "
+            "This path is a staged INPUT, not an output. Pass an explicit "
+            "--out/--manifest, or use the condition-scoped default."
+        )
+
+
 def get_text_layers(model):
     """Return the `nn.ModuleList` of `Gemma4TextDecoderLayer`.
 
@@ -256,6 +304,134 @@ def count_kv_projection_calls(model):
     finally:
         for h in handles:
             h.remove()
+
+
+def donor_projection_diagnostic(model, enc) -> dict:
+    """How much can the OFF condition possibly differ from ON? One forward pass.
+
+    Registered as "Open questions at sign" #4 and authorized by the lead
+    2026-07-25 to run BEFORE any GPU spend on the main run.
+
+    Under sharing ON, every block in 24..41 attends over its donor's K/V. Under
+    OFF, each recomputes K/V from its own residual stream with its own retained
+    `k_proj`/`v_proj`. If those retained projections closely reproduce what the
+    donor would have produced, the OFF manipulation is nearly a NO-OP -- and a
+    negative A2 would then be uninformative rather than evidence about the KV
+    pathway. That is a conclusion far cheaper to reach here than after a full
+    dosed run.
+
+    Method: run ONE forward with sharing ON, capturing (a) each shared block's
+    own `k_proj`/`v_proj` output on its actual input, and (b) its donor's. The
+    comparison is per-block cosine and relative L2 error over the flattened
+    projection output.
+
+    IMPORTANT about what this does and does not establish. A high cosine bounds
+    how much OFF *can* differ at the projection output; it does not prove
+    downstream behaviour is unchanged, because attention is nonlinear in K and
+    small differences can amplify. Read a high cosine as "OFF is a weak
+    manipulation, treat a null as uninformative", NOT as "OFF is provably
+    inert". A low cosine is the cleanly interpretable direction.
+
+    READ THE COSINE, NOT THE REL-L2. The hooks sit on the `k_proj`/`v_proj`
+    modules, so they capture the projection output BEFORE
+    `Gemma4TextAttention`'s `k_norm`/`v_norm` (`Gemma4RMSNorm` over head_dim,
+    applied at `key_states = self.k_norm(key_states)`). Gemma's residual-stream
+    norm grows with depth, so blocks 24..41 project a much larger-magnitude
+    input than blocks 22/23 do, and `rel_l2_err` inherits that scale gap
+    wholesale -- values of 3-14 are mostly the depth scale difference, which
+    RMSNorm then removes. Cosine is scale-invariant and is the load-bearing
+    statistic here. `rel_l2_err` is retained only because a cosine near zero
+    with a rel-L2 near zero would be self-contradictory and worth catching.
+    """
+    layers = get_text_layers(model)
+    geom = verify_architecture(model)
+    first = geom["first_kv_shared_layer_idx"]
+    donors = geom["donors"]
+    cfg = model.config.get_text_config()
+
+    own: dict[int, dict[str, torch.Tensor]] = {}
+    handles = []
+
+    def _mk(i, name):
+        def _hook(_m, _inp, out):
+            own.setdefault(i, {})[name] = out.detach().float().cpu()
+        return _hook
+
+    # Hook k_proj/v_proj on EVERY block. Under sharing ON the shared blocks skip
+    # their projections entirely, so their hooks would never fire -- which is
+    # exactly why the shared blocks are run a second time, OFF, below.
+    for i, lyr in enumerate(layers):
+        for name in ("k_proj", "v_proj"):
+            mod = getattr(lyr.self_attn, name, None)
+            if mod is not None:
+                handles.append(mod.register_forward_hook(_mk(i, name)))
+    try:
+        with torch.no_grad():
+            # OFF forces every shared block to actually execute its own
+            # projections, so `own` gets populated for blocks 24..41. The donor
+            # blocks (22, 23) are non-shared and execute under either condition.
+            with kv_sharing(model, enabled=False):
+                model(**enc, past_key_values=build_full_length_cache(model), use_cache=True)
+    finally:
+        for h in handles:
+            h.remove()
+
+    def _cmp(a: torch.Tensor, b: torch.Tensor) -> dict:
+        av, bv = a.reshape(-1), b.reshape(-1)
+        cos = float(torch.nn.functional.cosine_similarity(av, bv, dim=0))
+        denom = float(torch.linalg.vector_norm(bv))
+        rel = float(torch.linalg.vector_norm(av - bv) / denom) if denom else float("nan")
+        return {"cosine": cos, "rel_l2_err": rel}
+
+    per_block = {}
+    for i in range(first, cfg.num_hidden_layers):
+        donor_idx = donors[cfg.layer_types[i]]
+        if i not in own or donor_idx not in own:
+            continue
+        per_block[i] = {
+            "donor_block": donor_idx,
+            "layer_type": cfg.layer_types[i],
+            "k_proj": _cmp(own[i]["k_proj"], own[donor_idx]["k_proj"]),
+            "v_proj": _cmp(own[i]["v_proj"], own[donor_idx]["v_proj"]),
+        }
+
+    def _summ(key: str, stat: str) -> dict:
+        vals = [b[key][stat] for b in per_block.values()]
+        if not vals:
+            return {}
+        t = torch.tensor(vals)
+        return {"min": float(t.min()), "median": float(t.median()),
+                "max": float(t.max()), "mean": float(t.mean())}
+
+    return {
+        "diagnostic": "donor_vs_own_kv_projection",
+        "registered_as": "AMENDMENT.md 'Open questions at sign' #4",
+        "n_blocks_compared": len(per_block),
+        "shared_blocks": list(range(first, cfg.num_hidden_layers)),
+        "donors": donors,
+        "summary": {
+            "k_proj_cosine": _summ("k_proj", "cosine"),
+            "k_proj_rel_l2_err": _summ("k_proj", "rel_l2_err"),
+            "v_proj_cosine": _summ("v_proj", "cosine"),
+            "v_proj_rel_l2_err": _summ("v_proj", "rel_l2_err"),
+        },
+        "per_block": {str(k): v for k, v in per_block.items()},
+        "interpretation_note": (
+            "High cosine => the OFF condition is a WEAK manipulation and a negative "
+            "A2 is uninformative, not evidence about the KV pathway. It does NOT "
+            "prove OFF is inert: attention is nonlinear in K and small projection "
+            "differences can amplify downstream. Low cosine is the cleanly "
+            "interpretable direction."
+        ),
+        "measurement_caveat": (
+            "READ THE COSINE, NOT THE REL-L2. These hooks capture k_proj/v_proj "
+            "output BEFORE Gemma4TextAttention's k_norm/v_norm (Gemma4RMSNorm over "
+            "head_dim). Gemma's residual norm grows with depth, so blocks 24..41 "
+            "project a much larger-magnitude input than blocks 22/23; rel_l2_err "
+            "inherits that scale gap wholesale and RMSNorm then removes it. Cosine "
+            "is scale-invariant and is the load-bearing statistic."
+        ),
+    }
 
 
 @contextlib.contextmanager

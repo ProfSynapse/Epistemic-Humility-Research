@@ -45,6 +45,7 @@ from family_config import (  # noqa: E402
     resolve_site_set, site_set_artifact,
     late_reference_hs as family_late_reference_hs,
 )
+import kv_seam_patch as kv  # noqa: E402
 import model_lib as ml  # noqa: E402
 import pipeline as pl  # noqa: E402
 from family_config import load_family  # noqa: E402
@@ -56,13 +57,21 @@ from family_config import load_family  # noqa: E402
 RATIO_LADDER = [0.100, 0.153, 0.235, 0.361, 0.554, 0.850, 1.304, 2.000]
 
 
-def compute_median_norms(family: str, hs_list: list[int]) -> dict[int, float]:
+def compute_median_norms(family: str, hs_list: list[int],
+                         kv_sharing: str = "on") -> dict[int, float]:
     """Per-layer median anchor L2 norm, over every row this family's
     `anchor_extract.safetensors` holds for that layer (keys are
     `hs<layer>__<safe_row_key>`, per `pipeline.compute_gate_decisions`'s own
     lookup convention). Used to translate the normalized RATIO_LADDER into
-    each layer's own absolute dose units."""
-    extract_path = HERE / "analysis" / family / "anchor_extract.safetensors"
+    each layer's own absolute dose units.
+
+    Condition-scoped: cell.yaml `dose_ladder.dose_rule` reads "dose = ratio x
+    that site's own median anchor L2 norm, computed under that arm's own
+    condition". The OFF residual stream has different norms, so the same ratio
+    rung is a different absolute dose there -- which is exactly the intent, the
+    arms being matched BY RATIO RUNG rather than by absolute magnitude."""
+    extract_path = (HERE / "analysis" / family
+                    / kv.condition_artifact("anchor_extract.safetensors", kv_sharing))
     tensors = load_file(str(extract_path))
     medians: dict[int, float] = {}
     for hs_index in hs_list:
@@ -179,7 +188,8 @@ def run(args: argparse.Namespace) -> dict:
     # that layer's absolute dose units.
     ratio_mode = args.doses is None
     ratios_used = list(args.ratios) if ratio_mode else None
-    median_norms = compute_median_norms(family, hs_list) if ratio_mode else {}
+    median_norms = (compute_median_norms(family, hs_list, args.kv_sharing)
+                    if ratio_mode else {})
     if ratio_mode:
         print(f"[calibrate:{family}] normalized ladder mode: ratios={ratios_used} "
               f"median_norms={{ {', '.join(f'{layer_dir_name(h)}: {median_norms[h]:.4f}' for h in hs_list)} }}",
@@ -226,8 +236,14 @@ def run(args: argparse.Namespace) -> dict:
     # layer sets), but `--fresh` unlinks the WHOLE checkpoint file. Sharing one
     # file would let a `--fresh` shallow_ladder run silently discard midband
     # resume state. `midband` keeps the historical filenames unchanged.
+    #
+    # KV-sharing condition isolation, same reasoning again: the ON and OFF arms
+    # run the SAME (layer,dose) cells and would collide on key, so the condition
+    # scopes the filename too. `on` keeps the historical filenames unchanged.
     ckpt_name = "calibrate_dose_records.jsonl" if not ratio_mode else "calibrate_dose_records_v2.jsonl"
-    ckpt_path = analysis / "runlog" / site_set_artifact(ckpt_name, args.site_set)
+    ckpt_path = analysis / "runlog" / kv.condition_artifact(
+        site_set_artifact(ckpt_name, args.site_set), args.kv_sharing
+    )
     if args.fresh and ckpt_path.is_file():
         ckpt_path.unlink()
     done = load_dose_checkpoint(ckpt_path)
@@ -247,10 +263,12 @@ def run(args: argparse.Namespace) -> dict:
                 model, tokenizer, _hidden_size, _n_layers = ml.load_model_and_tokenizer(family)
             role = "late_reference_descriptive" if is_late_reference(fam_cfg, hs_index) else "midband"
             if hs_index not in gate_cache:
-                gate_cache[hs_index] = pl.compute_gate_decisions(family, base_rows, hs_index)
+                gate_cache[hs_index] = pl.compute_gate_decisions(
+                    family, base_rows, hs_index, kv_sharing=args.kv_sharing)
             print(f"[calibrate:{family}] layer={layer_name} role={role} "
                   f"ratio={ratio} dose={dose}", flush=True)
-            rec = pl.run_layer(family, model, tokenizer, hs_index, gate_cache[hs_index], dose)
+            rec = pl.run_layer(family, model, tokenizer, hs_index, gate_cache[hs_index], dose,
+                               kv_sharing=args.kv_sharing)
             rec["dose_target"] = dose
             rec["ratio"] = ratio
             rec["median_norm"] = median_norms.get(hs_index)
@@ -295,6 +313,7 @@ def run(args: argparse.Namespace) -> dict:
     summary = {
         "family": family, "mode": "fit_dose_calibration", "calibration_split": "fit",
         "site_set": args.site_set,
+        "kv_sharing": args.kv_sharing,
         "dose_mode": "ratio_normalized" if ratio_mode else "absolute_v1_escape_hatch",
         "ratio_ladder": ratios_used,
         "absolute_doses_arg": args.doses,
@@ -319,7 +338,9 @@ def run(args: argparse.Namespace) -> dict:
         "all_layers_have_usable_dose": len(selected_all) == len(hs_list),
     }
 
-    out_name = site_set_artifact("dose_calibration_summary.json", args.site_set)
+    out_name = kv.condition_artifact(
+        site_set_artifact("dose_calibration_summary.json", args.site_set), args.kv_sharing
+    )
     (analysis / out_name).write_text(json.dumps(summary, indent=2))
     (committed / out_name).write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary, indent=2))
@@ -333,6 +354,15 @@ def parse_args(argv=None) -> argparse.Namespace:
                         help="named site set from families/<family>.yaml "
                              "band_selection. Default 'midband' preserves the "
                              "pre-existing behaviour exactly.")
+    parser.add_argument(
+        "--kv-sharing", default=kv.DEFAULT_KV_SHARING, choices=list(kv.KV_SHARING_CHOICES),
+        help="KV-sharing condition for KV-sharing architectures. 'on' (default) "
+             "is the native architecture; 'off' severs the donor seam. Selects "
+             "the condition's own anchor extract for gate decisions and "
+             "condition-scopes the checkpoint and summary; 'off' writes "
+             "<stem>.kv_off.<ext>. Doses calibrated under one condition are NOT "
+             "transferable to the other -- calibrate each arm it will be used in.",
+    )
     parser.add_argument("--n-confab", type=int, default=8)
     parser.add_argument("--n-known", type=int, default=8)
     parser.add_argument(

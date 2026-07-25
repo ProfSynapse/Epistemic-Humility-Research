@@ -138,7 +138,7 @@ below_seam_site_selection:
   rule: "A3 = whichever of hs22/hs23 has the HIGHER A_lin; the other becomes A6"
   tie_break: "|delta A_lin| < 0.01 -> hs22 (the site with broader donor reach)"
   measured_by: gates.yaml g0_alin_site_selection (CPU-only, recommended pre-sign)
-  hs38_retained_for_A1_A2_because: "it is the site the parent actually ran, so A1 is a replication rather than a new measurement"
+  hs38_retained_for_A1_A2_because: "it is the site the parent actually ran, so A1 replicates the parent's site and method rather than choosing a new one. A1 refits its own hs38 direction under ON -- it does NOT reuse the parent's corrupt-derived hs38 artifacts; see inputs_reused.frozen_hs38_direction"
 
 descriptive_contrast:           # NON-GATING; cannot discriminate; not in success_rule
   id: A3_vs_A5
@@ -197,10 +197,22 @@ dose_ladder:
 inputs_reused:
   pool: parent gemma4-e4b fresh-mined evaluation pool (hash-pinned at sign)
   split: parent FIT/HELD-OUT split, FIT_FRAC=0.40 (hash-pinned at sign)
-  frozen_hs38_direction: parent's frozen hs38 direction/gate artifacts (A1 only)
+  frozen_hs38_direction: >-
+    NOT REUSED. Resolved by the lead on 2026-07-25, before any GPU work on this
+    experiment. This key previously read "parent's frozen hs38 direction/gate
+    artifacts (A1 only)", which contradicted readouts.method -- and the parent's
+    hs34/hs38/hs42 artifacts are corrupt-derived anyway: they were fit on
+    use_cache=False activations, which PROVENANCE.md and the parent's
+    AMENDMENT.md:637 record as "uninterpretable, not negative". Reusing them
+    would seat a corrupt direction in the very arm that A2 is contrasted
+    against (primary_contrast: A2_vs_A1). A1 therefore refits hs38 fresh on
+    this experiment's FIT split under sharing ON, exactly like every other arm,
+    via `build_directions.py --site-set midband --kv-sharing on`. A1 is a
+    replication of the parent's SITE AND METHOD, not of its artifacts.
   note: >-
-    Promotion decision OPEN for the lead -- this is the second consumer of these
-    artifacts. See AMENDMENT.md "Open questions at sign" #1.
+    Promotion decision OPEN for the lead -- this is the second consumer of the
+    parent's POOL and SPLIT (the two keys above; the direction artifacts are no
+    longer consumed). See AMENDMENT.md "Open questions at sign" #1.
 
 # CALLER CONTRACT -- applies to EVERY arm, ON and OFF alike. Flipping the sharing
 # flag alone CRASHES: transformers builds a 24-entry cache for this config
@@ -245,14 +257,16 @@ pipeline_stages:
 
 integration_status:
   state: NOT_READY_TO_SIGN
+  done:
+    - "--kv-sharing {on,off} flag threaded through extract_anchor.py, build_directions.py, gate_fit.py, calibrate_dose.py, run_contrast.py and pipeline.py. build_directions.py and gate_fit.py were NOT on the original list; readouts.refit_policy requires the OFF arms to refit their own directions/tau/median anchor norms, so the condition axis has to reach every fitted artifact, not just the activations."
+    - "fresh build_full_length_cache(model) passed as past_key_values= on EVERY generate() call in EVERY arm, ON and OFF alike (OFF raises IndexError without it; ON needs it so the two conditions do not differ in cache construction). Extended to extract_anchor.py's plain forward as well: the CALLER CONTRACT's letter covers generate() only, but its intent -- identical cache construction across conditions -- covers any forward that builds a cache."
+    - "harness call-site instrumentation counting build_full_length_cache() vs generate()/forward() invocations per arm, for gates.yaml cache_construction_identical_in_both_arms"
+    - "condition field (kv_sharing) written into every output record and manifest, and every artifact filename condition-scoped via kv_seam_patch.condition_artifact. kv_sharing=on is the identity, so historical filenames are byte-for-byte unchanged. Every cross-condition read is fail-closed: a missing OFF artifact RAISES, naming the stage that produces it, rather than silently falling back to ON parameters the arm never fit -- which would make A1-vs-A2 a comparison of an arm against itself."
+    - "kv_seam_preflight.py driver for the G0-KV checks, including cache-growth and cache-substitution-no-op (checks 5 and 6, implementing those two gate criteria verbatim). 6/6 PASS, CPU-only, no checkpoint download."
   missing:
-    - "--kv-sharing {on,off} flag threaded through calibrate_dose.py, run_contrast.py, pipeline.py"
-    - "fresh build_full_length_cache(model) passed as past_key_values= on EVERY generate() call in EVERY arm, ON and OFF alike (OFF raises IndexError without it; ON needs it so the two conditions do not differ in cache construction)"
-    - "harness call-site instrumentation counting build_full_length_cache() vs generate() invocations per arm, for gates.yaml cache_construction_identical_in_both_arms"
-    - "condition field written into every output record and manifest"
-    - "preflight_kv_seam.py driver for the G0-KV checks, including cache-growth and cache-substitution-no-op"
     - "alin_sweep.py for G0-ALIN Part 1 (CPU-only; A3's site is undetermined until it runs)"
-    - "extract_anchor.py --kv-sharing off, plus alin_sweep.py --both-conditions for G0-ALIN Part 2 (GPU; the primary contrast discriminates nothing without it)"
+    - "alin_sweep.py --both-conditions for G0-ALIN Part 2 (GPU; the primary contrast discriminates nothing without it)"
+    - "vendored shim (or promotion) for model_lib.render()'s bare-module imports of `backends` and `amendment_ah_stage0_extract`. Neither lives in this experiment; the donor diagnostic ran only by putting experiments/common/knowledge_probe AND the parent experiment's directory on PYTHONPATH. Depending on the parent's directory at runtime is a cross-experiment dependency that should not survive to sign. See NOTEBOOK.md 2026-07-25 and the parent's 2026-07-23 dead-import entry."
     - "fired-only G2 companion metric (n_fired_known + Wilson) and the undosed floor, per gates.yaml g2 companion_metrics_reported_always"
     - "rollup.py for the per-arm tables and the pre-stated contrasts"
     - "measured smoke wall-clock timings for instrument.persistence (bin/exp sign refuses without them)"
@@ -263,3 +277,23 @@ prerequisites:
 execution:
   lane: local_3090
   gpu_work_by_this_agent: forbidden (draft scaffold only; unsigned)
+  gpu_carve_outs:
+    - id: donor_projection_diagnostic
+      authorized_by: lead, explicitly, 2026-07-25
+      scope: >-
+        Load google/gemma-4-E4B-it and run donor_diagnostic.py ONLY -- forward
+        passes for kv_seam_patch.donor_projection_diagnostic(). No dosing, no
+        generation, no arm executes, nothing written to analysis-committed/.
+      rationale: >-
+        This diagnostic exists to de-risk the design BEFORE signing, so running
+        it after signing would invert its purpose. The main run stays blocked by
+        gpu_work_by_this_agent above; this carve-out does not lift that.
+      status: >-
+        RUN 2026-07-25, 4 rows, bf16 on the local 3090. Result: median per-block
+        cosine k_proj -0.0024, v_proj -0.0051; largest cosine at any block on any
+        row 0.032. Bit-identical across two invocations. The sharing-OFF
+        manipulation is STRONG -- the weak-manipulation risk this diagnostic was
+        built to detect did NOT materialize, so an A2 null will be informative
+        rather than vacuous. Record:
+        analysis/gemma4-e4b/donor_projection_diagnostic.json (private).
+        AMENDMENT.md "Open questions at sign" #4 is CLOSED.

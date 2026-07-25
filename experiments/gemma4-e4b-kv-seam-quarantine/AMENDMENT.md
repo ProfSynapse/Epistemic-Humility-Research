@@ -1297,16 +1297,63 @@ Registered before any GPU work. Calls do not move after results.
 
 ## Open questions at sign (for the lead)
 
-1. **Pool/split promotion.** This experiment consumes the parent's gemma
-   fresh-mined pool, FIT/HELD-OUT split, and (for A1) the parent's frozen hs38
-   direction/gate. Under the `experiments` skill promotion rule, the second
+1. **Pool/split promotion.** *(The hs38 direction/gate clause is CLOSED as of
+   2026-07-25; pool/split promotion remains OPEN.)*
+
+   ~~and (for A1) the parent's frozen hs38 direction/gate~~ — **A1 no longer
+   consumes the parent's hs38 artifacts.** `cell.yaml` carried a live
+   contradiction: `inputs_reused.frozen_hs38_direction` said A1 reuses them,
+   while `readouts.method` said every arm fits its own directions under its own
+   KV-sharing condition. The lead resolved it on 2026-07-25, before any GPU work
+   on the main run, in favour of `readouts.method`: **A1 refits hs38 fresh on
+   this experiment's FIT split under sharing ON, exactly like every other arm.**
+   Reuse was not merely inconsistent but untenable — the parent's hs34/hs38/hs42
+   artifacts are corrupt-derived (`AMENDMENT.md:637`, `PROVENANCE.md`), so
+   reusing them would seat a corrupt direction in the very arm that A2 is
+   contrasted against (`primary_contrast: A2_vs_A1`). A1 replicates the parent's
+   **site and method**, not its artifacts. No code change was required;
+   `cell.yaml` was corrected in two places.
+
+   Still open: this experiment consumes the parent's gemma
+   fresh-mined pool and FIT/HELD-OUT split. Under the `experiments` skill promotion rule, the second
    consumer triggers promotion to `experiments/common/`. The drafter did not
    promote anything (no commits authorized, and the parent lives on the
    `exp/j-space-cross-family-layer-contrast` worktree, not on `main`). The lead
    must decide: promote to `experiments/common/` and repoint `inputs:`, or
    consume in place. Either way the parent's branch must be merged or the
    artifacts made reachable before any path here resolves.
-2. **Instrument integration is not done.** The copied scripts are byte-identical
+2. **Instrument integration.** *(Largely CLOSED 2026-07-25 — see
+   `cell.yaml integration_status.done`. The `instrument.persistence` timings and
+   the remaining drivers are still outstanding, so this item does not clear
+   `bin/exp sign`.)*
+
+   **Done.** `--kv-sharing {on,off}` is threaded through `extract_anchor.py`,
+   `build_directions.py`, `gate_fit.py`, `calibrate_dose.py`, `run_contrast.py`
+   and `pipeline.py`. Two of those — `build_directions.py` and `gate_fit.py` —
+   were **not** on the original list; `readouts.refit_policy` requires the
+   sharing-OFF arms to refit their own directions, tau and median anchor norms,
+   so the condition axis has to reach every *fitted* artifact, not just the
+   activations. Every artifact filename is condition-scoped via
+   `kv_seam_patch.condition_artifact`, with `on` as the identity so historical
+   filenames are byte-for-byte unchanged; every cross-condition read is
+   fail-closed, raising and naming the stage that produces the missing artifact
+   rather than silently falling back to ON parameters the arm never fit (which
+   would make A1-vs-A2 a comparison of an arm against itself). The fresh
+   per-call `build_full_length_cache(model)` contract is applied to every
+   `generate()` in every arm, and extended to `extract_anchor.py`'s plain
+   forward — the contract's letter covers `generate()` only, but its intent
+   (identical cache construction across conditions) covers any forward that
+   builds a cache. Call-site counters for
+   `cache_construction_identical_in_both_arms` are in place.
+   `kv_seam_preflight.py` now runs **6/6 PASS** on CPU, checks 5 and 6 being the
+   `cache_growth_under_off` and `cache_substitution_noop_under_on` gate criteria
+   implemented verbatim.
+
+   **Still outstanding:** `alin_sweep.py` (Parts 1 and 2), the fired-only G2
+   companion metric, `rollup.py`, and the measured smoke wall-clock timings for
+   `instrument.persistence`.
+
+   *(Original text, retained for audit:)* The copied scripts are byte-identical
    parent copies and do NOT yet carry: the `--kv-sharing {on,off}` flag; the
    **fresh-per-call `build_full_length_cache(model)` passed as
    `past_key_values=` on EVERY `generate()` call in EVERY arm, ON and OFF alike**
@@ -1318,17 +1365,53 @@ Registered before any GPU work. Calls do not move after results.
    cache-growth and cache-substitution-no-op checks. These must be written and smoke-timed before
    `bin/exp sign` -- and `sign` will refuse until `instrument.persistence` is
    complete, which requires those measured timings.
-3. **C1 NLL threshold.** 10% is the drafter's proposal; 5% is the stricter
-   alternative. The drafter would accept either and has no strong preference,
-   but the number must be fixed before C1 runs.
-4. **Recommended added diagnostic (drafter).** Before or alongside G0-KV: for
-   each block in 24..41, compare its own `k_proj` output against its donor's
-   `k_proj` output on the same input, and report the cosine/relative-error
-   distribution. This is one forward pass and it directly measures how much the
-   OFF condition can possibly differ from ON. If the retained projections closely
-   reproduce their donor, the OFF manipulation is nearly a no-op and a negative
-   A2 means almost nothing -- which the lead would much rather know before
-   spending GPU time than after.
+3. **C1 NLL threshold. CLOSED — FIXED AT 10%.** Fixed by the lead on
+   2026-07-25, before C1 runs and before any GPU work on this experiment. The
+   drafter offered 10% or a stricter 5%; 10% stands, and is written into
+   `gates.yaml` as `threshold_frac: 0.10` with a `resolved_by_lead` note. **This
+   parameter is now closed and moves for no result.**
+4. **Recommended added diagnostic (drafter). CLOSED — RUN 2026-07-25. Result:
+   the sharing-OFF manipulation is STRONG, and the risk this diagnostic was
+   built to detect did not materialize.**
+
+   Authorized by the lead as a scoped GPU carve-out
+   (`cell.yaml execution.gpu_carve_outs.donor_projection_diagnostic`) while the
+   main run stays blocked, on the reasoning that a pre-sign de-risking
+   measurement cannot do its job after signing. Driver: `donor_diagnostic.py`,
+   4 rows of the parent's gemma pool, `google/gemma-4-E4B-it` bf16 on the local
+   3090, forward passes only — no dosing, no generation, no arm executed,
+   nothing written to `analysis-committed/`.
+
+   **Every block in 24..41 computes K and V essentially ORTHOGONAL to what its
+   donor produces.** Median per-block cosine across 4 rows: **k_proj −0.0024**
+   (range −0.0026..−0.0020), **v_proj −0.0051** (range −0.0056..−0.0047). The
+   largest cosine at any block on any row was **0.032**. Bit-identical across
+   two independent invocations. Per-block detail and the full record are in
+   `analysis/gemma4-e4b/donor_projection_diagnostic.json` (private).
+
+   **What this licenses.** The feared outcome was a high cosine, under which OFF
+   would be nearly a no-op and a negative A2 would mean almost nothing. That is
+   not what the data show. A2 is a genuine manipulation of the KV pathway, so an
+   A2 null will be informative rather than vacuous. This does **not** promote
+   anything about the *direction* of the effect — it removes one specific way
+   the primary contrast could have been dead on arrival, nothing more.
+
+   **Read the cosine, not the rel-L2.** `rel_l2_err` came out at 3–14, which
+   looks alarming and is mostly an artifact of where the hooks sit: they capture
+   `k_proj`/`v_proj` output **before** `Gemma4TextAttention`'s `k_norm`/`v_norm`
+   (`Gemma4RMSNorm` over `head_dim`). Gemma's residual norm grows with depth, so
+   blocks 24..41 project a much larger-magnitude input than blocks 22/23, and
+   `rel_l2_err` inherits that scale gap wholesale — RMSNorm then removes it.
+   Cosine is scale-invariant and is the load-bearing statistic. This caveat is
+   emitted into the JSON as `measurement_caveat` so it cannot be separated from
+   the numbers later.
+
+   **One structural note worth carrying forward.** The three full-attention
+   shared blocks (29, 35, 41, donor 23) show markedly lower `rel_l2_err`
+   (2.7–7.4) than the fifteen sliding-attention ones (5.8–14.6, donor 22).
+   Their cosines are equally near zero, so this changes no conclusion here — but
+   it is a scale difference between the two donor channels, and A6 (the
+   sliding-vs-full donor-channel arm) is the arm that would notice it.
 5. **`A_lin` is now TWO deliverables, and the second one is a decision.**
    *Part 1* (site selection for the descriptive A3 arm) is CPU-only over the
    parent's already-cached gemma activations, touches no GPU, and the drafter

@@ -40,6 +40,7 @@ from family_config import (  # noqa: E402
     resolve_site_set, site_set_artifact,
     late_reference_hs as family_late_reference_hs,
 )
+import kv_seam_patch as kv  # noqa: E402
 import model_lib as ml  # noqa: E402
 import pipeline as pl  # noqa: E402
 
@@ -63,7 +64,8 @@ def selected_rows(family: str, n_rows: int | None) -> list[dict]:
     return pl.stratified_subset(confab, n_confab) + pl.stratified_subset(known, n_known)
 
 
-def load_midband_selected_doses(family: str, site_set: str = "midband") -> dict[str, float]:
+def load_midband_selected_doses(family: str, site_set: str = "midband",
+                                kv_sharing: str = "on") -> dict[str, float]:
     """Gating-arm per-layer FIT-calibrated doses (calibrate_dose.py output). The
     late arm's dose is resolved separately (resolve_late_dose): it is
     non-gating and may be null, so it is NOT part of the mid-band dose map. Only
@@ -71,9 +73,12 @@ def load_midband_selected_doses(family: str, site_set: str = "midband") -> dict[
 
     `site_set` selects WHICH arm is the gating one and hence which
     calibrate_dose roll-up to read; the JSON key names are unchanged across
-    site sets, so only the filename varies."""
-    path = HERE / "analysis-committed" / family / site_set_artifact(
-        "dose_calibration_summary.json", site_set)
+    site sets, so only the filename varies. `kv_sharing` scopes it the same
+    way: an OFF arm must be dosed from the OFF calibration, because under
+    cell.yaml `dose_ladder.dose_rule` the ratio rung is scaled by that
+    condition's own median anchor norm."""
+    path = HERE / "analysis-committed" / family / kv.condition_artifact(
+        site_set_artifact("dose_calibration_summary.json", site_set), kv_sharing)
     data = json.loads(path.read_text())
     midband_names = {layer_dir_name(hs) for hs in resolve_site_set(load_family(family), site_set)}
     src = data.get("midband_selected_doses")
@@ -104,7 +109,8 @@ def load_midband_selected_doses(family: str, site_set: str = "midband") -> dict[
 
 
 def resolve_late_dose(family: str, cli_late_dose: float | None,
-                      site_set: str = "midband") -> float | None:
+                      site_set: str = "midband",
+                      kv_sharing: str = "on") -> float | None:
     """Late-arm dose resolution. Option (B) (RESOLVED 2026-07-23, lead+user):
     the late-site scalar dose is calibrated FRESH here with the same
     calibrate_dose.py ladder as the mid-band arm (doubt-snap selected no
@@ -118,8 +124,8 @@ def resolve_late_dose(family: str, cli_late_dose: float | None,
     depend on it). This function never invents a dose."""
     if cli_late_dose is not None:
         return float(cli_late_dose)
-    path = HERE / "analysis-committed" / family / site_set_artifact(
-        "dose_calibration_summary.json", site_set)
+    path = HERE / "analysis-committed" / family / kv.condition_artifact(
+        site_set_artifact("dose_calibration_summary.json", site_set), kv_sharing)
     if path.exists():
         data = json.loads(path.read_text())
         block = data.get("late_reference_selected_dose") or {}
@@ -138,6 +144,7 @@ def run_layers(
     *,
     mode: str,
     fresh: bool = False,
+    kv_sharing: str = "on",
 ) -> dict[str, dict]:
     """Run each requested layer's dosed pass for one family, checkpointing per
     row. `hs_index_to_dose` maps an hs_index (mid-band candidate or the late
@@ -150,19 +157,28 @@ def run_layers(
         for hs_index, dose in hs_index_to_dose.items():
             layer_name = layer_dir_name(hs_index)
             print(f"[contrast:{family}] layer={layer_name} dose={dose}", flush=True)
-            gate_rows = pl.compute_gate_decisions(family, rows, hs_index)
-            log_path = HERE / "analysis" / family / "runlog" / mode / f"{layer_name}.jsonl"
+            gate_rows = pl.compute_gate_decisions(family, rows, hs_index,
+                                                  kv_sharing=kv_sharing)
+            # Run logs are condition-scoped: resuming an ON log under OFF would
+            # silently interleave two conditions into one arm's records, and the
+            # per-row `kv_sharing` field would be the only trace. `on` keeps the
+            # historical path. run_config carries it too, so RunLog's own config
+            # check is a second line of defence.
+            log_path = (HERE / "analysis" / family / "runlog" / mode
+                        / kv.condition_artifact(f"{layer_name}.jsonl", kv_sharing))
             run_log = RunLog(
                 log_path,
                 run_config={
                     "experiment": "j-space-cross-family-layer-contrast",
                     "family": family, "mode": mode, "layer": layer_name,
                     "hs_index": hs_index, "dose_target": dose,
+                    "kv_sharing": kv_sharing,
                 },
                 fresh=fresh,
             )
             try:
-                rec = pl.run_layer(family, model, tokenizer, hs_index, gate_rows, dose, run_log=run_log)
+                rec = pl.run_layer(family, model, tokenizer, hs_index, gate_rows, dose,
+                                   run_log=run_log, kv_sharing=kv_sharing)
             finally:
                 run_log.close()
             rec["dose_target"] = dose
@@ -263,11 +279,12 @@ def g0_smoke_pass(layer_results: dict[str, dict]) -> bool:
 
 
 def _layer_dose_map(family: str, late_dose: float | None,
-                    site_set: str = "midband") -> dict[int, float]:
+                    site_set: str = "midband",
+                    kv_sharing: str = "on") -> dict[int, float]:
     """The selected site set's candidates (always) + the late reference (only
     if a late dose is resolved)."""
     cfg = load_family(family)
-    selected = load_midband_selected_doses(family, site_set)
+    selected = load_midband_selected_doses(family, site_set, kv_sharing)
     dose_map: dict[int, float] = {}
     for hs_index in resolve_site_set(cfg, site_set):
         name = layer_dir_name(hs_index)
@@ -289,41 +306,47 @@ def write_summary(family: str, name: str, summary: dict, commit_public: bool) ->
 
 
 def run_smoke(family: str, n_rows: int, late_dose: float | None, *, fresh: bool = False,
-              site_set: str = "midband") -> dict:
-    dose_map = _layer_dose_map(family, late_dose, site_set)
+              site_set: str = "midband", kv_sharing: str = "on") -> dict:
+    dose_map = _layer_dose_map(family, late_dose, site_set, kv_sharing)
     rows = selected_rows(family, n_rows)
-    layer_results = run_layers(family, rows, dose_map, mode="smoke", fresh=fresh)
+    layer_results = run_layers(family, rows, dose_map, mode="smoke", fresh=fresh,
+                               kv_sharing=kv_sharing)
     summary = {
-        "family": family, "mode": "smoke", "site_set": site_set,
+        "family": family, "mode": "smoke", "site_set": site_set, "kv_sharing": kv_sharing,
         "layer_doses": {layer_dir_name(k): v for k, v in dose_map.items()},
         "late_arm_included": late_dose is not None,
         "pool_counts": pool_counts(family), "n_rows": len(rows), "layers": layer_results,
         "g0_smoke_pass": g0_smoke_pass(layer_results),
     }
-    write_summary(family, site_set_artifact("smoke_summary.json", site_set), summary,
-                  commit_public=False)
+    write_summary(family,
+                  kv.condition_artifact(site_set_artifact("smoke_summary.json", site_set),
+                                        kv_sharing),
+                  summary, commit_public=False)
     print(json.dumps(summary, indent=2))
     return summary
 
 
 def run_full(family: str, late_dose: float | None, *, fresh: bool = False,
-             site_set: str = "midband") -> dict:
-    dose_map = _layer_dose_map(family, late_dose, site_set)
+             site_set: str = "midband", kv_sharing: str = "on") -> dict:
+    dose_map = _layer_dose_map(family, late_dose, site_set, kv_sharing)
     rows = selected_rows(family, None)
     rng = pyrandom.Random(20260708)
     rng.shuffle(rows)
-    layer_results = run_layers(family, rows, dose_map, mode="full", fresh=fresh)
+    layer_results = run_layers(family, rows, dose_map, mode="full", fresh=fresh,
+                               kv_sharing=kv_sharing)
     primary = evaluate_primary(family, layer_results)
     summary = {
-        "family": family, "mode": "full", "site_set": site_set,
+        "family": family, "mode": "full", "site_set": site_set, "kv_sharing": kv_sharing,
         "layer_doses": {layer_dir_name(k): v for k, v in dose_map.items()},
         "late_arm_included": late_dose is not None,
         "pool_counts": pool_counts(family), "n_rows": len(rows), "layers": layer_results,
         "primary": primary,
         "primary_pass": bool(g0_smoke_pass(layer_results) and primary["primary_pass"]),
     }
-    write_summary(family, site_set_artifact("full_summary.json", site_set), summary,
-                  commit_public=True)
+    write_summary(family,
+                  kv.condition_artifact(site_set_artifact("full_summary.json", site_set),
+                                        kv_sharing),
+                  summary, commit_public=True)
     print(json.dumps(summary, indent=2))
     return summary
 
@@ -335,6 +358,15 @@ def main(argv=None) -> int:
                         help="named site set from families/<family>.yaml "
                              "band_selection. Default 'midband' preserves the "
                              "pre-existing behaviour exactly.")
+    parser.add_argument(
+        "--kv-sharing", default=kv.DEFAULT_KV_SHARING, choices=list(kv.KV_SHARING_CHOICES),
+        help="KV-sharing condition for KV-sharing architectures. 'on' (default) "
+             "is the native architecture; 'off' is the A2 counterfactual arm, "
+             "which severs the donor seam. Both arms pass a FRESH full-length "
+             "cache on every generate() call (CALLER CONTRACT, cell.yaml) so the "
+             "cache object is constant across arms. Outputs are condition-scoped: "
+             "'off' writes <stem>.kv_off.<ext>, never over the 'on' artifacts.",
+    )
     parser.add_argument("--mode", choices=["smoke", "full"], required=True)
     parser.add_argument("--n-rows", type=int, default=8, help="smoke mode only")
     parser.add_argument(
@@ -357,11 +389,12 @@ def main(argv=None) -> int:
     )
     args = parser.parse_args(argv)
 
-    late_dose = resolve_late_dose(args.family, args.late_dose, args.site_set)
+    late_dose = resolve_late_dose(args.family, args.late_dose, args.site_set,
+                                  args.kv_sharing)
 
     if args.mode == "smoke":
         smoke = run_smoke(args.family, args.n_rows, late_dose, fresh=args.fresh,
-                          site_set=args.site_set)
+                          site_set=args.site_set, kv_sharing=args.kv_sharing)
         return 0 if smoke["g0_smoke_pass"] else 4
 
     if not args.i_know_this_is_the_cross_family_run:
@@ -371,7 +404,8 @@ def main(argv=None) -> int:
             file=sys.stderr,
         )
         return 2
-    run_full(args.family, late_dose, fresh=args.fresh, site_set=args.site_set)
+    run_full(args.family, late_dose, fresh=args.fresh, site_set=args.site_set,
+             kv_sharing=args.kv_sharing)
     return 0
 
 
