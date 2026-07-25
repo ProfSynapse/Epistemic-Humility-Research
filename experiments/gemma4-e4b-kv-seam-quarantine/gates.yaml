@@ -405,6 +405,82 @@ gates:
       This rule governs the NON-GATING fired-only companion only. The gating
       full-population G2 is unchanged and is adjudicated exactly as transcribed.
 
+  # ------------------------------------------------------------------ G3 ----
+  # Registered 2026-07-25, pre-signature, before any arm has run. This ADDS a
+  # gate; it moves no threshold in this file. G1 and G2 are untouched.
+  - name: g3_direction_specificity
+    role: specificity
+    scope: >-
+      Arms with a registered placebo counterpart ONLY -- currently A3 (P1) and
+      A5 (P2). NOT the primary. A1, A2, A4 and the shallow ladder D1-D4 have no
+      placebo arm registered and this gate does not apply to them.
+    primitive: effect_ratio_over_matched_placebo
+    definition: >-
+      lift(arm) = held-out confab clean_tighten rate at that arm's selected dose
+      MINUS the same rate on the SAME held-out confab rows with no injection.
+      effect_ratio = lift(true) / max over the K accepted placebo draws of
+      |lift(placebo_k)|.
+    pass_if: "effect_ratio >= 3.0"
+    effect_ratio_floor_source: >-
+      rr3-corrected-placebo-replication/gates_lib.py:32
+      RG1_EFFECT_RATIO_FLOOR = 3.0, with K >= 3 and a max-over-seeds denominator.
+      TRANSCRIBED, not re-derived and not re-tuned for this substrate.
+    denominator_is_max_not_mean: >-
+      Deliberate and inherited. A mean over K draws lets one benign draw dilute
+      one large one; the max is the worst case the random-direction family
+      actually produced, which is the honest denominator for a claim of
+      specificity.
+    zero_denominator_rule: >-
+      If max_k |lift(placebo_k)| == 0.000 exactly, effect_ratio is undefined,
+      NOT infinite. The disposition is PASS-DEGENERATE: reported as a pass with
+      the label attached and with K and the raw per-draw rates in the table. It
+      may not be cited as a large effect ratio. This is the failure mode that
+      let qwen35-4b-midband-heldout G3(i) pass on a narrow baseline of 0.000 and
+      it is named here so it cannot be reported as a clean win.
+    why_not_the_factorial_s1_criterion: >-
+      gate-contribution-factorial/gates.yaml:106-115 S1 is the program's current
+      state of the art and its line 108 explicitly SUPERSEDES both RR2's flat
+      +/-2-point symmetric band and RR3's K=3 max. S1 is nonetheless NOT used
+      here, for one reason: its denominator is a per-family census null
+      (max over K=15 seeds, qwen 0.0833, mistral 0.2033) and GEMMA HAS NO CENSUS.
+      Borrowing qwen's 0.0833 would import another family's random-direction
+      sensitivity as if it were gemma's, which is exactly the substitution this
+      program refuses elsewhere. RG1 is used instead BECAUSE it is
+      self-contained: it computes its own denominator from the same run, at the
+      same site, on the same rows. That is a real weakening -- K = 3-5 draws is a
+      worse estimate of the tail than K = 15 -- and it is recorded as a
+      limitation, not presented as equivalent.
+      The RR2 flat +/-2-point band is NOT used, is NOT an alternative, and may
+      not be substituted at resolve. RR3 forbids it explicitly.
+    what_a_failure_means: >-
+      An arm that clears G1 and fails G3 ACTUATED but did so non-specifically.
+      It is reported as "actuates, not direction-specific", it may NOT be cited
+      as evidence that the KU readout drives the behavior, and it may not be
+      pooled with any direction-specific result in this program. It is not
+      re-run with a different dose or a different K to chase a pass.
+    interaction_with_success_rule: >-
+      NONE, and this is deliberate. A3 and A5 are DESCRIPTIVE and already sit
+      outside success_rule; adding a gate to them cannot change what the
+      experiment's prediction turns on. success_rule and falsifier_rule are
+      reproduced UNCHANGED below. See AMENDMENT.md "Open questions at sign" for
+      the two consequences of leaving them unchanged, both of which are the
+      lead's call and neither of which is resolved here:
+      (1) falsifier_rule requires A3 to fail a PRIMARY gate. An A3 that passes G1
+      non-specifically therefore blocks the falsifier even though it is not a
+      real actuation. Left as written, because amending the falsifier to fire on
+      a G3 failure would make falsification EASIER after the gate was added --
+      the drafter will not make that change unilaterally.
+      (2) falsifier_rule clause (ii) reads a D1-D4 G1 pass as "gemma IS actuable".
+      No D arm has a placebo counterpart, so that reading would rest on exactly
+      the evidence this gate exists to demand. Extending P-arms to the D sites is
+      a cost decision, not a drafting one.
+    reporting: >-
+      Reported whatever it shows, including when the matched true arm is a
+      dose-viability NOT-RUN (in which case its placebo is NOT-RUN too and the
+      pair is reported as such). The full per-draw table -- seed, both SC1
+      cosines, accept/void, readback, tighten rate -- is committed alongside the
+      arm result, not summarized away.
+
 per_arm_pass_rule: >-
   An arm PASSES iff G1 AND G2 both pass on its condition-matched held-out split
   at its selected dose. An arm with no usable FIT dose is NOT-RUN, which is
@@ -539,6 +615,11 @@ multiplicity_note: >-
   explicit blocker. No arm may be added, dropped, or re-labeled after any result
   is seen; A6's conditionality is registered in advance with its trigger (A3 has
   a usable FIT dose), and D1-D4 are registered unconditionally.
+  P1 and P2 (added 2026-07-25, pre-signature) do not change this count. They are
+  CONTROLS, not additional tests: neither bears G1 or G2, neither can pass or
+  fail the prediction, and each exists only to supply the denominator for
+  g3_direction_specificity at its matched arm. A placebo arm cannot be reported
+  as a finding in its own right.
 
 summary_rule: >-
   This experiment promotes at most an EXPLORATORY LEAD -- "the gemma null is

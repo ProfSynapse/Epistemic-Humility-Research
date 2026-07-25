@@ -1024,6 +1024,13 @@ and the full-population number diluted it. This reporting rule applies even when
 the companion is NOT-ADJUDICABLE -- a 2/2 failure on two dosed rows is not
 gradeable, but it is not something to leave out of the summary either.
 
+**G3 (`g3_direction_specificity`) was added 2026-07-25, pre-signature.** It
+applies to A3 and A5 only, via their placebo counterparts P1 and P2. It adds a
+gate; it moves no threshold, and G1 and G2 are untouched. See "Pre-sign record:
+the direction-specificity control" below for what it establishes and what it
+does not, and item 7 of "Open questions at sign" for the three parameters left
+to the lead.
+
 ## Competing explanations
 
 KV quarantine is **one** account of the parent's gemma null. At least three
@@ -1530,7 +1537,60 @@ Registered before any GPU work. Calls do not move after results.
    note": A1/A2 holds the site *index* fixed, not the site's representation.
    A1/A2 is correct because it is the only contrast that *can* be made
    discriminating -- by pairing it with G0-ALIN Part 2. No decision is needed on
-   which contrast is primary; the decision that remains is item 5.
+   which contrast is primary; the decision that remains is item 5. *(Superseded
+   in one respect on 2026-07-25: item 7 below adds a second live decision. Item
+   6's substance -- that the primary contrast is settled -- is unchanged.)*
+
+7. **The placebo arms: three decisions, none of them the drafter's to make.**
+   Registered 2026-07-25, pre-signature, before any arm has run: arms `P1`/`P2`
+   in `cell.yaml`, block `placebo_direction_control`, and gate
+   `g3_direction_specificity` in `gates.yaml`. What is registered is a
+   matched-magnitude random-direction control at hs22 and hs24 -- same site,
+   same dose, same fired rows, same law, **only the written direction differs**.
+   Three things are deliberately left open.
+
+   **(a) K, the number of draws.** Floor 3, inherited as a hard guard from
+   `rr3-corrected-placebo-replication/gates_lib.py` (it raises below 3). Drafter
+   recommends **5**. The cost is roughly linear in K: order 20-30 min of GPU per
+   draw per site, so K=5 across both sites is order 3-5 GPU hours plus one
+   undosed baseline pass per site. K=3 is defensible and cheaper; K=15 would
+   match the census construction but costs three times K=5 and is only worth it
+   if the draws are also intended to seed a reusable gemma family null.
+
+   **(b) The criterion is RG1, not the program's current best.** The state of
+   the art is `gate-contribution-factorial` S1, whose own text (`gates.yaml:108`)
+   says it **supersedes** RR3's K=3 max. S1 is not used here for one reason and
+   it should be stated plainly rather than buried: **S1's denominator is a
+   per-family census null, and gemma has no census.** The available numbers are
+   qwen's 0.0833 and mistral's 0.2033 -- another family's random-direction
+   sensitivity. Importing one would be the same substitution this design refuses
+   everywhere else. RG1 is used instead *because* it computes its own denominator
+   from the same run at the same site on the same rows. That is genuinely weaker
+   -- 3-5 draws estimate a tail worse than 15 do -- and it is recorded as a
+   limitation of this experiment, not argued away. If the lead would rather buy
+   the stronger criterion, the purchase is a gemma placebo census, and that is a
+   separate experiment, not a parameter here.
+
+   **(c) Two consequences of leaving `success_rule` and `falsifier_rule`
+   untouched.** Both rules are reproduced verbatim; G3 changes neither. That is
+   the conservative choice, and it has two costs the lead should see before
+   signing rather than at resolve.
+   - `falsifier_rule` fires only if A3 fails a **primary** gate. An A3 that
+     clears G1 *non-specifically* would therefore block falsification while not
+     being a real actuation. Amending the falsifier to fire on a G3 failure would
+     make falsification **easier** than it was before the gate was added, and the
+     drafter will not make a change with that direction unilaterally.
+   - `falsifier_rule` clause (ii) reads any D1-D4 G1 pass as "gemma IS actuable".
+     No D arm has a placebo counterpart, so that reading would rest on exactly
+     the evidence G3 exists to demand. Extending P-arms to the four D sites is a
+     cost decision (roughly quadrupling (a)'s estimate), not a drafting one.
+
+   **Nothing in this item authorizes a run.** `execution.gpu_work_by_this_agent`
+   remains `forbidden`; the two standing carve-outs
+   (`donor_projection_diagnostic`, `seam_pair_dose_calibration`) are both
+   complete and neither covers `run_contrast.py` in any mode. The placebo arms
+   are **registered, not runnable**: `run_contrast.py` has no random-direction
+   code path today, and writing one is greenfield work that has not been done.
 
 ## Drafter's note (recorded for the lead; not a design change)
 
@@ -1672,6 +1732,50 @@ hs24 are essentially **orthogonal** (cosine +0.005) despite both reading
 known-unknown above 0.997 AUC. Adjacent sites elsewhere share more (0.20–0.26 at
 one step). Nothing in the design depends on this; it is recorded because "the
 same direction is readable at both depths" would be the wrong mental picture.
+
+## Pre-sign record: the direction-specificity control (P1, P2, G3)
+
+Registered 2026-07-25, before any arm has run. The decisions it leaves open are
+item 7 of "Open questions at sign"; this section records why it exists at all.
+
+**The gap it closes.** As drafted before today, this experiment had no undosed
+baseline arm on the dosed sites and no random-direction arm anywhere. Under that
+design, an arm clearing G1 would have established that *writing a vector of a
+particular magnitude at a particular site raises hedging on confabulation rows*
+— and nothing further. It would carry no evidence that the KU readout is what
+does the work. That is not a hypothetical failure mode in this program: in
+`rr3-corrected-placebo-replication`, mistral's **random** direction lifted
+hedging by **+21.8 points**, giving an effect ratio of 1.87 against a floor of
+3.0 — RG1 FAIL. A run that cannot separate those two accounts cannot contribute
+to the question this program is actually asking.
+
+**What is registered.** P1 (hs22, matched to A3) and P2 (hs24, matched to A5):
+same site, same calibrated dose, same `erase_write`/`anchor_onward` law, and the
+**same fired rows** as the true arm. Only the written direction differs. Draws
+are fresh unit normals under registered seeds, screened by the SC1 bar
+(`|cos| <= 0.015` against both `c_hat` and `u_d`) with a void-and-redraw ledger,
+because at `hidden_dim = 2560` only about a third of raw draws clear it and an
+unscreened draw biases the control *toward* the true direction. Magnitude is
+matched by the `sigma = 1.0` convention and verified by the same readback
+tolerance the true arms carry. G3 passes at `effect_ratio >= 3.0`, denominator
+`max` over draws, transcribed from RR3.
+
+**Why the fire set is held fixed rather than permuted.** The
+`gate-contribution-factorial` construction permutes the gate indices, which
+varies gate *and* direction together and answers a different question: how much
+of the lift the gate contributes. The question here is narrower and prior to it
+— *given the rows the readout selected, does it matter which direction is
+written there.* Holding the fire set fixed is what makes that attribution clean.
+The cost is that G3 says nothing about the gate's contribution, and that
+limitation is registered in `cell.yaml
+placebo_direction_control.what_this_does_not_establish` rather than discovered
+later.
+
+**What it does not reach.** The primary contrast. A1-vs-A2 sits at hs38 and has
+no placebo arm registered; a specificity result at hs22/hs24 does not transfer
+to a different site under a different reachability regime. Nor does a G3 pass
+make the boundary push selective or safe — G2's dosed known-correct denominator
+is roughly 2 rows at these sites and stands NOT-ADJUDICABLE either way.
 
 ## Outcome
 
