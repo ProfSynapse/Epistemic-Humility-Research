@@ -78,7 +78,7 @@ arms:
     kv_sharing: off
     role: PRIMARY -- same site, mechanism toggled
   - id: A3
-    site_hs: PENDING_G0_ALIN      # hs22 or hs23, by below_seam_site_selection
+    site_hs: 22                   # RESOLVED 2026-07-25 by below_seam_site_selection.RESOLVED (tie -> tie_break -> hs22)
     kv_sharing: on
     role: below-seam, donor-reachable, unmodified model
   - id: A4
@@ -90,10 +90,19 @@ arms:
     kv_sharing: on
     role: seam-adjacent quarantine control (one or two blocks from A3, unmodified model)
   - id: A6
-    site_hs: THE_OTHER_OF_HS22_HS23   # whichever A3 did not take
+    site_hs: 23                   # RESOLVED 2026-07-25: A3 took hs22, so A6 is hs23
     kv_sharing: on
     role: the other donor-reachability regime (both donors vs full donor only)
     conditional_on: "A3 has a usable FIT dose"
+    coincides_with: >-
+      D4. REALIZED 2026-07-25: A3 took hs22, so A6 is hs23, which is D4's
+      registered site under the same condition (ON). Per D4's pre-stated note,
+      ONE arm is run and reported under BOTH labels with the coincidence stated
+      -- never run twice, never reported as two independent observations. Note
+      the two labels ask different questions of the same cell: D4 asks where in
+      the depth ladder actuation appears, A6 asks whether the full-donor-only
+      regime behaves like the both-donors regime. One measurement can answer
+      both; it cannot be counted twice.
   # ---- Descriptive shallow ladder. Registered 2026-07-24 (lead), pre-signature,
   # before any GPU work. NON-GATING: D1-D4 do not enter success_rule and enter
   # falsifier_rule only asymmetrically (gates.yaml descriptive_shallow_ladder).
@@ -119,6 +128,11 @@ arms:
       hs23 is also A6's site if A3 takes hs22. If the two coincide, ONE arm is
       run and reported under BOTH labels with that fact stated -- never run twice
       and never reported as two independent observations.
+      REALIZED 2026-07-25: A3 took hs22 (G0-ALIN Part 1 tie-break), so this
+      condition is now live and D4 == A6 is a single cell. A6 additionally
+      carries conditional_on "A3 has a usable FIT dose"; D4 does NOT and is
+      unconditional, so the cell RUNS as D4 regardless and is additionally
+      READ as A6 only when A6's condition is met.
   - id: C0
     site_hs: null
     kv_sharing: on
@@ -138,6 +152,33 @@ below_seam_site_selection:
   rule: "A3 = whichever of hs22/hs23 has the HIGHER A_lin; the other becomes A6"
   tie_break: "|delta A_lin| < 0.01 -> hs22 (the site with broader donor reach)"
   measured_by: gates.yaml g0_alin_site_selection (CPU-only, recommended pre-sign)
+  RESOLVED:
+    run: "2026-07-25, alin_sweep.py, CPU-only, 292 FIT rows, 18.05s. Report: analysis-committed/gemma4-e4b/alin_part1_selection.json"
+    a_lin_hs22: 0.0000
+    a_lin_hs23: 0.0000
+    delta: 0.0
+    outcome: "TIE (|delta| = 0.0 < 0.01) -> tie_break fires -> A3 = hs22, A6 = hs23"
+    A3: hs22
+    A6: hs23
+    A5: hs24
+    confound_declaration: "NOT declared. |A_lin(A3) - A_lin(A5)| = |0.0 - 0.0| = 0.0, well inside the 0.10 band."
+    note_on_the_floor: >-
+      A_lin is EXACTLY 0.0000 at every below-seam site (hs15/18/20/22/23/24), so
+      the registered statistic carries no selection signal and the outcome is
+      decided entirely by the pre-stated tie-break. This is the condition flagged
+      as a blocker in the parent's session record (2026-07-24, "G0-ALIN as
+      pre-registered cannot discriminate hs22 from hs23"). It is not a defect in
+      the rule: the tie-break exists precisely for this case and resolves to hs22
+      on a stated principle (broader donor reach), not to noise.
+    corroboration: >-
+      The tie-break's choice is INDEPENDENTLY corroborated by median rank, which
+      is not at the floor and was NOT used for selection: hs22 ranks the true
+      token 83008 vs hs23's 238571 -- hs22 is better by ~3x, and hs23 is the
+      worst site measured at any depth (vocab is 262144, so hs23 sits near the
+      bottom of it). Had the finer statistic been the registered one it would
+      have chosen hs22 too, so the selection does not turn on which statistic
+      was locked. Recorded as an OBSERVATION; substituting rank for the
+      registered top-1 accuracy would be goalpost movement and was refused.
   hs38_retained_for_A1_A2_because: "it is the site the parent actually ran, so A1 replicates the parent's site and method rather than choosing a new one. A1 refits its own hs38 direction under ON -- it does NOT reuse the parent's corrupt-derived hs38 artifacts; see inputs_reused.frozen_hs38_direction"
 
 descriptive_contrast:           # NON-GATING; cannot discriminate; not in success_rule
@@ -264,9 +305,9 @@ integration_status:
     - "condition field (kv_sharing) written into every output record and manifest, and every artifact filename condition-scoped via kv_seam_patch.condition_artifact. kv_sharing=on is the identity, so historical filenames are byte-for-byte unchanged. Every cross-condition read is fail-closed: a missing OFF artifact RAISES, naming the stage that produces it, rather than silently falling back to ON parameters the arm never fit -- which would make A1-vs-A2 a comparison of an arm against itself."
     - "kv_seam_preflight.py driver for the G0-KV checks, including cache-growth and cache-substitution-no-op (checks 5 and 6, implementing those two gate criteria verbatim). 6/6 PASS, CPU-only, no checkpoint download."
     - "vendored shims for model_lib.render()'s bare-module imports of `backends` and `amendment_ah_stage0_extract`, both now living in this experiment directory. The cross-experiment PYTHONPATH dependency is GONE: the render path resolves with only synaptic-tuner on the path, verified 2026-07-25. backends.py is a RE-EXPORT of the live experiments/common/knowledge_probe/backends.py (resolved repo-root-relative), deliberately not a copy -- copying would fork the render at the moment of copying and let this experiment drift from the convention its inputs were produced under. Both shims are fail-closed: backends.py freezes a sha256 over the render path only (NOT the whole file, which also carries an untouched vLLM backend) plus render_probe_prompt's exact signature; amendment_ah_stage0_extract.py keeps the parent's byte-identical prompt sha256 freeze. Both guards were verified to actually fire. One deliberate change from the parent's copy: absolute paths became repo-root-relative walks, because an absolute path silently binds a worktree run to the canonical checkout's copy of the prompt rather than the one under review."
+    - "alin_sweep.py for G0-ALIN Part 1. RUN 2026-07-25, CPU-only, 18.05s, no CUDA. A_lin is exactly 0.0000 at every below-seam site, so selection falls to the pre-stated tie-break: A3 = hs22, A6 = hs23, A5 = hs24, no confound declared. The arm table no longer has a hole in it. Harness validated by the terminal-layer tautology (hs42 = 0.9966, median rank 1, every miss a rank-2 near-tie against the parent's GPU 1.0000) plus a distinct-storage vacuity guard; FIT-only numbers reproduce the parent's all-rows ladder at every shared depth. See below_seam_site_selection.RESOLVED."
   missing:
-    - "alin_sweep.py for G0-ALIN Part 1 (CPU-only; A3's site is undetermined until it runs)"
-    - "alin_sweep.py --both-conditions for G0-ALIN Part 2 (GPU; the primary contrast discriminates nothing without it)"
+    - "alin_sweep.py --both-conditions for G0-ALIN Part 2 (GPU; the primary contrast discriminates nothing without it). The Part 1 code path is now written and validated, so Part 2 is the SAME script pointed at the OFF extraction -- which is what the gate's 'identical logit-lens code path' requirement demands."
     - "fired-only G2 companion metric (n_fired_known + Wilson) and the undosed floor, per gates.yaml g2 companion_metrics_reported_always"
     - "rollup.py for the per-arm tables and the pre-stated contrasts"
     - "measured smoke wall-clock timings for instrument.persistence (bin/exp sign refuses without them)"

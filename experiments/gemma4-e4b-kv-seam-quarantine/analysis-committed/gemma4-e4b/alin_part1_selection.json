@@ -1,0 +1,171 @@
+{
+  "gate": "g0_alin_site_selection",
+  "part": "1 of 2",
+  "generated": "2026-07-25T13:22:16Z",
+  "family": "gemma4-e4b",
+  "checkpoint": "google/gemma-4-E4B-it",
+  "revision": "fee6332c1abaafb77f6f9624236c63aa2f1d0187",
+  "device": "cpu",
+  "definition": "A_lin = top-1 accuracy of softcap(W_U @ final_norm(h_anchor)) predicting the row's recorded greedy next token, argmax over the full vocabulary; median rank reported as an observation",
+  "split": "fit",
+  "n_fit_rows_scored": 292,
+  "softcap": 30.0,
+  "rms_norm_eps": 1e-06,
+  "calibration": {
+    "final_is_postnorm": true,
+    "resolved_by": "j-space-cross-family-layer-contrast/analysis/crystallization-ladder/alin_recompute.py calibrate_head(), GPU, 2026-07-24: maxabs_recon_postnorm=0.0 vs maxabs_recon_prenorm=17.6875, vocab=262144, softcap=30.0",
+    "cpu_can_resolve_this": false,
+    "why_not": "both recipes score ~0.99 with median rank 1 at the terminal layer -- re-normalizing an already-normalized vector barely moves the argmax. Discriminating them needs a live forward to reconstruct out.logits, which is GPU work and outside this gate's CPU-only scope.",
+    "affects_selection": false,
+    "affects_selection_why": "the two recipes differ only at hs42; hs22/hs23/hs24 are normed identically either way",
+    "head_dtype": "torch.bfloat16",
+    "candidates": {
+      "postnorm_no_extra_norm": {
+        "n": 292,
+        "top1_acc": 0.9966,
+        "median_rank": 1,
+        "mean_rank": 1.0,
+        "p90_rank": 1,
+        "min_rank": 1,
+        "max_rank": 2
+      },
+      "prenorm_apply_norm": {
+        "n": 292,
+        "top1_acc": 0.9863,
+        "median_rank": 1,
+        "mean_rank": 1.0,
+        "p90_rank": 1,
+        "min_rank": 1,
+        "max_rank": 2
+      }
+    }
+  },
+  "vacuity_guard": {
+    "pair": [
+      22,
+      42
+    ],
+    "hsA_norm": 81.938,
+    "hsB_norm": 228.468,
+    "distinct": true,
+    "both_nonzero": true
+  },
+  "harness_self_test": {
+    "terminal_layer_tautology": {
+      "site": "hs42",
+      "top1_acc": 0.9966,
+      "median_rank": 1,
+      "threshold": 0.98,
+      "max_rank": 2,
+      "pass": true,
+      "why": "the recorded generation is greedy, so the recorded token IS the argmax of the true final-layer logits; a wrong norm/softcap/tying recipe cannot reproduce this -- the corrupt extraction scored 0.000 here",
+      "tolerance_note": "threshold is 0.98, not 1.0: this runs on CPU in the head's dtype while the parent ran on GPU, so rows whose top-2 logits near-tie can swap. max_rank is reported so a real failure (rank in the thousands) cannot hide behind that tolerance."
+    },
+    "vacuity_guard_pass": true,
+    "all_fit_rows_present_at_every_depth": true
+  },
+  "by_depth": {
+    "hs15": {
+      "n": 292,
+      "top1_acc": 0.0,
+      "median_rank": 61260,
+      "mean_rank": 62120.7,
+      "p90_rank": 85429,
+      "min_rank": 511,
+      "max_rank": 112313
+    },
+    "hs18": {
+      "n": 292,
+      "top1_acc": 0.0,
+      "median_rank": 120190,
+      "mean_rank": 112832.1,
+      "p90_rank": 140169,
+      "min_rank": 23964,
+      "max_rank": 178919
+    },
+    "hs20": {
+      "n": 292,
+      "top1_acc": 0.0,
+      "median_rank": 88181,
+      "mean_rank": 92942.8,
+      "p90_rank": 122836,
+      "min_rank": 45440,
+      "max_rank": 243006
+    },
+    "hs22": {
+      "n": 292,
+      "top1_acc": 0.0,
+      "median_rank": 83008,
+      "mean_rank": 100795.4,
+      "p90_rank": 174683,
+      "min_rank": 24707,
+      "max_rank": 214634
+    },
+    "hs23": {
+      "n": 292,
+      "top1_acc": 0.0,
+      "median_rank": 238571,
+      "mean_rank": 230037.4,
+      "p90_rank": 250511,
+      "min_rank": 44111,
+      "max_rank": 259374
+    },
+    "hs24": {
+      "n": 292,
+      "top1_acc": 0.0,
+      "median_rank": 143970,
+      "mean_rank": 144365.9,
+      "p90_rank": 167169,
+      "min_rank": 93932,
+      "max_rank": 201108
+    },
+    "hs34": {
+      "n": 292,
+      "top1_acc": 0.976,
+      "median_rank": 1,
+      "mean_rank": 1.1,
+      "p90_rank": 1,
+      "min_rank": 1,
+      "max_rank": 9
+    },
+    "hs38": {
+      "n": 292,
+      "top1_acc": 0.976,
+      "median_rank": 1,
+      "mean_rank": 1.0,
+      "p90_rank": 1,
+      "min_rank": 1,
+      "max_rank": 3
+    },
+    "hs42": {
+      "n": 292,
+      "top1_acc": 0.9966,
+      "median_rank": 1,
+      "mean_rank": 1.0,
+      "p90_rank": 1,
+      "min_rank": 1,
+      "max_rank": 2
+    }
+  },
+  "selection": {
+    "rule": "A3 = whichever of hs22/hs23 has the HIGHER A_lin; ties (|delta| < 0.01) break to hs22, the site that reaches BOTH donors. A5 is hs24 regardless (first quarantined block).",
+    "a_lin_hs22": 0.0,
+    "a_lin_hs23": 0.0,
+    "delta_a_lin": 0.0,
+    "tie_band": 0.01,
+    "tie": true,
+    "selection_basis": "tie_break",
+    "A3": "hs22",
+    "A6": "hs23",
+    "A5": "hs24",
+    "confound_declaration": {
+      "rule": "|A_lin(A3) - A_lin(A5)| > 0.1 -> the A3-vs-A5 DESCRIPTIVE contrast is declared CONFOUNDED BY LINEAR ACCESSIBILITY at registration time",
+      "a_lin_A3": 0.0,
+      "a_lin_A5": 0.0,
+      "abs_delta": 0.0,
+      "band": 0.1,
+      "declared_confounded": false
+    },
+    "statistic_note": "The registered statistic is TOP-1 ACCURACY. Median rank is recorded as an observation only and takes no part in selection; substituting it would be goalpost movement on a locked rule."
+  }
+}

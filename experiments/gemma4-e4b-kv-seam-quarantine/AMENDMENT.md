@@ -339,10 +339,10 @@ generation contract, and graders are the parent's, unchanged
 |---|---|---|---|
 | **A1** | hs38 | ON | Above-seam null replication. Expected to reproduce the parent's zero. |
 | **A2** | hs38 | **OFF** | **PRIMARY.** Same site, same ratio ladder, mechanism toggled. |
-| **A3** | hs22 *or* hs23, by the A_lin rule below | ON | Below-seam, donor-reachable. Unmodified model. |
-| **A4** | same site as A3 | OFF | 2x2 completion. |
-| **A5** | hs24 | ON | **Seam-adjacent quarantine control.** One or two blocks from A3, downstream of both donors. |
-| **A6** | the below-seam site A3 did *not* take | ON | The other donor-reachability regime (both donors vs full donor only). **Conditional:** run only if A3 finds a usable FIT dose — dissociating the sliding from the full donor channel is meaningless if the below-seam write does not actuate at all. |
+| **A3** | **hs22** (resolved 2026-07-25 by the A_lin rule below) | ON | Below-seam, donor-reachable — reaches **both** donors. Unmodified model. |
+| **A4** | **hs22** (same site as A3) | OFF | 2x2 completion. |
+| **A5** | hs24 | ON | **Seam-adjacent quarantine control.** Two blocks from A3, downstream of both donors. |
+| **A6** | **hs23** (the site A3 did not take) | ON | The other donor-reachability regime (**full donor only**, vs A3's both-donors). **Conditional:** run only if A3 finds a usable FIT dose — dissociating the sliding from the full donor channel is meaningless if the below-seam write does not actuate at all. |
 | **D1-D4** | hs15, hs18, hs20, hs23 | ON | **Shallow depth ladder** (added 2026-07-24, user-directed). Unmodified model. See below. |
 | **C0** | -- | ON | No injection. Baseline confab / known-correct rates. |
 | **C1** | -- | **OFF** | No injection. **Precondition control** (see below). |
@@ -606,6 +606,69 @@ Recorded for all six candidate sites (hs22, hs23, hs24, hs34, hs38, hs42) on the
 it determines a registered arm's site, and deferring it would mean signing an
 amendment whose arm table has a hole in it. If the lead prefers to sign first,
 the rule above is what binds, and the sweep becomes the first thing the run does.
+
+#### Part 1 RESULT — run 2026-07-25 (CPU-only, 18.05s, no CUDA)
+
+`alin_sweep.py`, 292 FIT rows, pinned revision. Full record:
+`analysis-committed/gemma4-e4b/alin_part1_selection.json`.
+
+| Site | `A_lin` | median rank of the true token |
+|---|---|---|
+| hs15 | 0.0000 | 61 260 |
+| hs18 | 0.0000 | 120 190 |
+| hs20 | 0.0000 | 88 181 |
+| **hs22** | **0.0000** | **83 008** |
+| **hs23** | **0.0000** | **238 571** |
+| hs24 | 0.0000 | 143 970 |
+| hs34 | 0.9760 | 1 |
+| hs38 | 0.9760 | 1 |
+| hs42 | 0.9966 | 1 |
+
+**Selection: A3 = hs22, A6 = hs23, A5 = hs24.** `A_lin` is **exactly 0.0000 at
+every below-seam site**, so `|ΔA_lin(hs22, hs23)| = 0.0 < 0.01` — a tie, and the
+pre-stated tie-break decides: **hs22**, the site that reaches both donors.
+
+**Confound declaration: NOT made.** `|A_lin(A3) − A_lin(A5)| = |0.0 − 0.0| = 0.0`,
+far inside the 0.10 band. Note this is the *weak* reading of that rule — the
+declaration exists to flag a measurably large accessibility gap, and here there
+is no gap because both sites are at the floor together. A3-vs-A5 remains
+non-discriminating regardless, per Threats (c).
+
+**The registered statistic carries no selection signal, and that was foreseen.**
+This is exactly the condition the parent's session record flagged as a blocker
+("G0-ALIN as pre-registered cannot discriminate hs22 from hs23", 2026-07-24).
+It is not a defect in the rule. The tie-break was written for this case and
+resolves on a stated principle — broader donor reach — not on noise.
+
+**The choice is independently corroborated by a statistic that is *not* at the
+floor.** Median rank was recorded as an observation and took **no part** in
+selection, but it separates the candidates sharply: hs22 ranks the true token
+**83 008** against hs23's **238 571** — better by ~3×, with hs23 the worst site
+measured at any depth (the vocabulary is 262 144, so hs23 sits near the bottom
+of it). Had the finer statistic been the registered one, it would have chosen
+hs22 as well. The selection therefore does not turn on which statistic was
+locked. Substituting rank for the registered top-1 accuracy would have been
+goalpost movement and was refused.
+
+**Harness validation.** Three guards, all passed: the terminal-layer tautology
+(greedy decoding makes the recorded token the argmax of the true final-layer
+logits, so hs42 must be ~1.0 — measured **0.9966**, median rank 1, and every
+single miss a rank-2 near-tie against the parent's GPU-measured 1.0000, i.e.
+CPU/GPU tie-breaking, not lens failure); a distinct-storage/non-vacuity check on
+the cached tensors; and a `prompt_len` re-render check on all 806 rows, which
+proves the render used here reproduces the one the activations were extracted
+under. As a fourth, external check, the FIT-only numbers reproduce the parent's
+all-rows ladder at every shared depth (hs15 61 260 vs 61 283; hs20 88 181 vs
+88 087; hs24 143 970 vs 144 858; hs34 0.976 vs 0.967).
+
+**One limitation, recorded rather than papered over.** The script cannot resolve
+`final_is_postnorm` on CPU — both output recipes score ~0.99 at the terminal
+layer, because re-normalizing an already-normalized vector barely moves the
+argmax. An earlier revision tried to derive it from the tautology and its
+fail-closed guard correctly refused. The recipe is therefore taken from the
+parent's decisive GPU calibration (max-abs reconstruction error 0.0 vs 17.6875).
+**It cannot affect this selection:** the two recipes differ only at hs42, and
+every candidate site is normed identically under either one.
 
 **Part 2 -- `A_lin(hs38)` under BOTH KV conditions (GPU; a run stage, not a
 pre-sign deliverable).**
