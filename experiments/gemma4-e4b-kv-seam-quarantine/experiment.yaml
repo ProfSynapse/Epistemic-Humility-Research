@@ -1,0 +1,110 @@
+slug: gemma4-e4b-kv-seam-quarantine
+title: 'Gemma-4-E4B KV-sharing seam: is the mid-band null a quarantine artifact?'
+type: steer-cell
+status: draft
+registered: true
+created_at: '2026-07-24T17:44:35Z'
+question: Gemma-4-E4B was stopped at dose-viability in j-space-cross-family-layer-contrast,
+  but that stop is uninterpretable rather than negative - every site it used (hs34,
+  hs38, hs40, hs42) lies above the KV-sharing seam, and the extraction that produced
+  its write directions, gate standardization and dose targets ran with use_cache=False,
+  which starves exactly those layers (parent AMENDMENT.md:637). Two things are open
+  at once. Blocks 24-41 read K/V from donor blocks 22/23, so a write above the seam
+  cannot change what later layers attend over - though q_proj still runs unconditionally
+  and the write still reaches the query path, FFN and residual stream, so the causal
+  channel is narrowed, not severed. Is gemma inert above the seam because of that narrowing,
+  and does the boundary push actuate at all below the donors, in the relative-depth
+  band 0.357-0.548 where every other family in this program actuates?
+prediction: A2 (hs38, KV sharing OFF) clears BOTH primary gates on held-out -- confab
+  clean_tighten >= 0.50 with Wilson 95% lower CI > 0.40, AND known-correct not_well_formed_correct
+  <= 0.05 with Wilson 95% upper CI < 0.10 -- while A1 (hs38, sharing ON) does not,
+  with C1 having passed its precondition criterion and |A_lin(hs38,OFF) - A_lin(hs38,ON)|
+  <= 0.05. Registered non-gating expectations - on the unmodified model A3 (hs22, donors
+  reachable) clears both gates while A5 (hs24, quarantined) does not, and at least one
+  shallow-ladder arm D1-D4 (hs15/hs18/hs20/hs23) finds a usable FIT dose and clears
+  G1. The fired-only selectivity companion is expected NOT-ADJUDICABLE at every arm
+  (projected 2-22 dosed known-correct rows against a computed Wilson floor of 35).
+falsifier: If C1 PASSES its pre-stated criterion, and A2's write verifies (readback
+  within tolerance at every dosed cell) and A2 fails either primary gate, AND A3 also
+  fails either primary gate, then the KV-quarantine explanation is FALSIFIED - gemma's
+  inertness stands as a property of the model rather than of the injection site, and
+  no further seam-relocation attempt on this model is warranted. The shallow ladder
+  enters asymmetrically - if all of D1-D4 also fail G1 with verified readback and at
+  least one usable FIT dose, the falsifier is strengthened to a depth-swept negative
+  across the entire donor-reachable band; if any of D1-D4 clears G1 while A1 does not,
+  gemma is actuable and the above-seam null is not a property of the model, which SUPPORTS
+  but does not establish the quarantine account. Subordinate dispositions pre-stated
+  in gates.yaml - VOID if A1 finds a usable FIT dose and clears G1 (no verdict on the
+  KV hypothesis); INCONCLUSIVE if C1 fails (A2/A4 NOT-RUN, A3/A5/D1-D4 still resolve);
+  NULL-RESULT if no arm has a usable dose (the ladder is registered and does not move).
+checkpoint:
+  repo: google/gemma-4-E4B-it
+  revision: fee6332c1abaafb77f6f9624236c63aa2f1d0187
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  - families/gemma4-e4b.yaml
+  modules:
+  - kv_seam_patch.py
+  - family_config.py
+  - model_lib.py
+  - gen_lib.py
+  - grader.py
+  - scorers.py
+  - extract_anchor.py
+  - build_directions.py
+  - gate_fit.py
+  - calibrate_dose.py
+  - pipeline.py
+  - run_contrast.py
+  pins: {}
+  persistence:
+    # INCOMPLETE BY DESIGN. The short-run modules need measured smoke wall-clock
+    # timings, which require a GPU run this drafting agent was not authorized to
+    # perform; `bin/exp sign` refuses until they are filled, which is the correct
+    # gate. `bin/exp validate` only warns. The incremental declarations below are
+    # structural (checkpoint paths under THIS experiment's tree) and are already
+    # correct.
+    extract_anchor.py:
+      persistence: incremental
+      checkpoint_path: experiments/gemma4-e4b-kv-seam-quarantine/analysis/anchor_extract.safetensors
+    build_directions.py:
+      persistence: incremental
+      checkpoint_path: experiments/gemma4-e4b-kv-seam-quarantine/analysis-committed/<condition>/layers/
+    calibrate_dose.py:
+      persistence: incremental
+      checkpoint_path: experiments/gemma4-e4b-kv-seam-quarantine/analysis/runlog/<condition>/calibrate_dose_records.jsonl
+    run_contrast.py:
+      persistence: incremental
+      checkpoint_path: experiments/gemma4-e4b-kv-seam-quarantine/analysis/runlog/<arm>/<mode>/<site>.jsonl
+# inputs: BLOCKED ON A REAL DEPENDENCY, NOT AN OVERSIGHT.
+# Every input below lives in experiments/j-space-cross-family-layer-contrast/,
+# which exists only on the unmerged worktree branch
+# exp/j-space-cross-family-layer-contrast (checkout:
+# /home/profsynapse/code/ehr-worktrees/jspace-cross-family). `bin/exp validate`
+# fails on inputs whose paths do not exist from the repo root, so the list is
+# held here commented rather than dropped -- the provenance record must not be
+# lost, and the manifest must not assert paths that are not there.
+#
+# UNCOMMENT VERBATIM once the lead resolves "Open questions at sign" #1: either
+# the parent branch merges to main, or the pool/split/frozen-direction artifacts
+# are promoted to experiments/common/ (this experiment is their second consumer,
+# which is exactly what the promotion rule triggers on) and these paths are
+# repointed there.
+#
+# inputs:
+# - experiments/j-space-cross-family-layer-contrast/AMENDMENT.md
+# - experiments/j-space-cross-family-layer-contrast/NOTEBOOK.md
+# - experiments/j-space-cross-family-layer-contrast/gates.yaml
+# - experiments/j-space-cross-family-layer-contrast/families/gemma4-e4b.yaml
+# - experiments/j-space-cross-family-layer-contrast/analysis/gemma4-e4b/arch_literature_memo.md
+# - experiments/j-space-cross-family-layer-contrast/analysis-committed/gemma4-e4b/split_manifest.json
+# - experiments/j-space-cross-family-layer-contrast/analysis-committed/gemma4-e4b/eval_pool_manifest.json
+# - experiments/j-space-cross-family-layer-contrast/analysis-committed/gemma4-e4b/gate_fit_layers.json
+# - experiments/j-space-cross-family-layer-contrast/analysis-committed/gemma4-e4b/build_manifest_layers.json
+# - experiments/j-space-cross-family-layer-contrast/analysis-committed/gemma4-e4b/dose_calibration_summary.json
+# - experiments/j-space-cross-family-layer-contrast/analysis-committed/gemma4-e4b/layer_profile.json
+inputs: []
+verdict: ''
+kg: []
