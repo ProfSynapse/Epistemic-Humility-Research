@@ -146,6 +146,78 @@ instrument:
         and re-runs in 18s, so there is no state worth checkpointing. Deliberately
         avoids the family loader, whose device_map="auto" would place weights on
         CUDA and break this gate's CPU-only scope.
+    # SMOKE RUN 2026-07-25 (lead-authorized). The eight declarations below close
+    # the last `bin/exp sign` persistence blocker. All measured, none estimated,
+    # and the whole sweep turned out to be CPU -- see NOTEBOOK.md 2026-07-25
+    # "smoke run". Method is identical to the two shims above: cold interpreter
+    # per run, three runs, worst observed value recorded (not the best, and not
+    # the mean -- a persistence claim should be conservative).
+    #
+    # SEVEN OF THE EIGHT ARE LIBRARY MODULES with no CLI and no run stage. They
+    # are in `instrument.modules` because they are load-bearing instrument code,
+    # and `bin/exp sign` requires a declaration for every module, library or not.
+    # `short-run` is the honest reading: nothing accumulates, so the measured
+    # import IS the full cost of doing their work from scratch.
+    family_config.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.02
+      measured_on: "2026-07-25, CPU, cold interpreter, three runs, 0.02s each"
+      rationale: "Library module: yaml-backed family/site-set resolution. No run stage, no state."
+    scorers.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.02
+      measured_on: "2026-07-25, CPU, cold interpreter, three runs, 0.02s each"
+      rationale: "Vendored library module (see NOTEBOOK.md 'VENDOR SCORERS'). Pure scoring functions."
+    grader.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.02
+      measured_on: "2026-07-25, CPU, cold interpreter, three runs, 0.02s each"
+      rationale: "Library module: alias-matched grading. Its __main__ is a self-test, not a run stage."
+    kv_seam_patch.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.13
+      measured_on: "2026-07-25, CPU, cold interpreter, three runs, 1.02-1.13s (torch import dominates)"
+      rationale: >-
+        Library module: the sharing toggle, the cache builder and the
+        architecture verifier. Imports torch, which is the entire cost; the
+        module's own body is trivial. No state.
+    gen_lib.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.25
+      measured_on: "2026-07-25, CPU, cold interpreter, three runs, 1.05-1.25s (torch import dominates)"
+      rationale: "Library module: the fixed-budget generation pass. No state."
+    model_lib.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.68
+      measured_on: "2026-07-25, CPU, cold interpreter, three runs, 1.64-1.68s (torch import dominates)"
+      rationale: >-
+        Library module: render, hook setup, EOS resolution. This import also
+        exercises the two vendored shims' fail-closed guards, since render()
+        resolves `backends` and `amendment_ah_stage0_extract` by bare module name.
+    pipeline.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.75
+      measured_on: "2026-07-25, CPU, cold interpreter, three runs, 1.63-1.75s"
+      rationale: >-
+        Library module: the gate-decision and dosed-row loop imported by
+        calibrate_dose.py and run_contrast.py. The stages that CALL it are the
+        ones that accumulate state, and they are declared `incremental` above.
+    # The one genuine run stage among the eight, and the only remaining pipeline
+    # stage that turns out not to need a GPU at all: it fits tau on the already
+    # cached anchor activations with numpy, and never loads the checkpoint.
+    gate_fit.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 2.67
+      measured_on: >-
+        2026-07-25, REAL RUN (not an import): `gate_fit.py --family gemma4-e4b
+        --site-set shallow_ladder --kv-sharing on`, CPU only, three cold runs,
+        2.37-2.67s, maxRSS 1.6 GB. Dominated by loading the anchor extract
+        safetensors. Byte-identical stdout across all three runs, and every AUC,
+        tau and confusion count identical to the previously committed roll-up.
+      rationale: >-
+        Writes ONE roll-up per site set in a single atomic write at the end. A
+        kill loses nothing partial, and re-running costs 2.7s, so resume logic
+        would cost more than the work it saved.
 # inputs: BLOCKED ON A REAL DEPENDENCY, NOT AN OVERSIGHT.
 # Every input below lives in experiments/j-space-cross-family-layer-contrast/,
 # which exists only on the unmerged worktree branch
