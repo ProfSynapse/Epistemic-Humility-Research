@@ -8,6 +8,43 @@ instructions apply to this project root only. Do not install, copy, or rewrite
 these project instructions inside `synaptic-tuner/`; that directory is a
 separate git submodule with its own ownership boundary.
 
+## Operating Rules (hook-enforced where possible)
+
+The highest-frequency mistakes, several blocked by PreToolUse hooks that name
+the correct alternative. A blocked call means RE-ROUTE, not retry. These are
+also re-injected into context after every compaction (the moment they are most
+often forgotten).
+
+1. SEARCH FIRST. Run `bin/search <query> --limit 10` before any `rg`/`grep`/
+   `find`/`rtk grep`; restate this rule in every search subagent's prompt.
+   [`bin_search_guard`: exploratory search blocked; conscious bypass `EHR_SEARCH_OK=1`]
+2. PROTECTED main. Do experiment/feature work on a BRANCH in its own worktree,
+   merged via PR — never `git commit`/`push` on `main`. Only living tracking
+   docs go direct to main, and only via the experiment-wrapup workflow.
+   [`main_protect_guard`: blocked; sanctioned tracking-doc bypass `EHR_MAIN_OK=1`]
+3. CANONICAL CHECKOUT ONLY. Work in `/home/profsynapse/code/Epistemic-Humility-
+   Research`; `/mnt/f/...` is a FROZEN read-only backup. `cd` to canonical
+   explicitly (the shell may start on /mnt/f). [`path_write_guard`: frozen-backup writes blocked]
+4. NO TUNER POLLUTION. Never install root-project instructions/orchestration
+   (`CLAUDE.md`, `AGENTS.md`, `.claude`/`.agents`/`.codex`/`.skills`) inside
+   `synaptic-tuner/`. [`path_write_guard`: blocked]
+5. NO MIRROR EDITS. Edit canonical `.skills/` (and `AGENTS.md`), then
+   `python3 bin/sync_skills.py --write`; never hand-edit `CLAUDE.md` or a skill
+   mirror. [`block_claudemd_write`: blocked]
+6. READ BEFORE YOU CITE. State no experimental fact from memory/notes/KG/summary
+   — open `experiments/<slug>/AMENDMENT.md` first. Never announce a verdict
+   (SUCCESS / FAILED / FALSIFIED / INCONCLUSIVE / MIXED) from a remembered or
+   paraphrased rule — RUN the registered roll-up instrument (e.g.
+   `cross_family_rollup.py`) and quote its output. (Not hook-enforceable — this
+   one is on you; re-injected after every compaction.)
+7. GOVERNED-DOC DISCIPLINE. Before drafting/editing a protocol, gate, or
+   amendment, read the governing reference under
+   `.skills/experiment-runner/reference/` (amendment-vs-lab-notebook,
+   gate-diagnosticity, operator-discipline, protocol-amendment-template).
+   After editing an `experiment.yaml`, validate (`bin/validate-experiments`) and
+   regen the registry (`bin/exp regen`). [`post_write_reminders`: non-blocking
+   nudge; `.githooks/pre-commit` hard-enforces validate + regen at commit]
+
 ## Purpose
 
 This repository supports research on epistemic humility in language models:
