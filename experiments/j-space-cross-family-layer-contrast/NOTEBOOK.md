@@ -6,6 +6,80 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-24 -- CORRECTION to the A_lin entry below: `A_lin` is NOT the read instrument, and the KU readout gate reads gemma BEST exactly where the write side has never been tried
+
+**Tier 3, correction.** Corrects the framing of the entry immediately below.
+The measurements in that entry stand; the INFERENCE drawn from them in its
+section 2 does not, and section 2's conclusion is withdrawn and replaced here.
+
+**What I got wrong, and why.** I explained the gemma null as "the accessibility
+window and the actuation window do not overlap", using `A_lin` -- the training-
+free logit lens, i.e. the model's OWN unembedding applied to a mid-stack state
+-- as the measure of the read side. `A_lin` is not the read instrument. The
+registered read instrument is the **KU readout gate** (`gate_fit.py`: a fitted
+linear readout, `u_d = unit(mean(known FIT) - mean(unknown))`, scored held-out).
+Those are different objects and they are now measured to be different.
+
+`analysis/gemma4-e4b/read_profile_full_depth.json` already contained the answer.
+It was written 2026-07-24 16:15, on the CLEAN extraction
+(`extract_manifest_sha256 060c3f3b...`, `forward_use_cache: true`), with the
+same estimator used for every family. I committed the entry below at 19:05
+without opening it -- a read-before-you-cite failure against the artifact that
+most directly bore on my claim.
+
+**What it says: gemma is readable nearly everywhere, and BEST in the shallow band.**
+Held-out KU-readout AUC (confab=1 vs known_correct=0), G0 floor 0.9:
+
+| hs | rd | AUC held-out |
+|---|---|---|
+| 5 | 0.119 | 0.9978 |
+| 15 | 0.357 | 0.9997 |
+| **18** | **0.429** | **0.9999** (peak) |
+| 20 | 0.476 | 0.9996 |
+| 23 | 0.548 | 0.9998 |
+| 25 | 0.595 | 0.9974 |
+| 34 | 0.810 | 0.9804 |
+| 42 | 1.000 | 0.9891 |
+
+The four sites where the behavioral null was measured (hs34-hs42, rd >= 0.810)
+are the WORST-reading sites in the profile, not the best -- and they are still
+well above the floor. So there is no read-side gap anywhere that matters, and
+the "windows do not overlap" claim is withdrawn: on the instrument that actually
+gates this experiment, they overlap comfortably.
+
+**What survives, and it is the load-bearing half.** The explanation of the gemma
+null never needed the read side at all. It is purely an ACTUATION-ceiling
+statement, and that still holds exactly as measured:
+
+* across all three families, no site has ever produced a usable dose above
+  `rd 0.607` (llama hs17);
+* gemma's shallowest tested write site is `rd 0.810`.
+
+Gemma was only ever written ABOVE the ceiling. That accounts for the null on its
+own, and still needs neither the KV-quarantine explanation nor the write-side
+seam. The `A_lin` observation (gemma decodable by its own unembedding only from
+rd ~0.81) remains true and is interesting -- a state can be linearly READABLE by
+a fitted probe long before it is DECODABLE by the model's own unembedding -- but
+it does no explanatory work here, and I should not have given it any.
+
+**Why this strengthens the successor rather than weakening it.** The read side is
+strongest (AUC 0.9997-0.9999) precisely in the band `rd 0.357-0.548` where the
+write side has never been tried in gemma, and that band is entirely UPSTREAM of
+the KV-sharing seam (first quarantined state hs25, `rd 0.595`). The read-side
+precondition for a shallow-band write ladder is therefore already satisfied on
+registered instrumentation, at zero additional GPU cost.
+
+**One confound to record while it is fresh.** For gemma the KV seam (`rd 0.595`)
+and the cross-family actuation ceiling (`rd 0.607`) are the SAME relative depth.
+"Writes above the seam are inert" and "writes above rd ~0.6 are inert" therefore
+predict identical gemma data, so no gemma-only experiment can discriminate them.
+The existing cross-family data already can: llama and mistral have no cross-layer
+KV sharing (measured -- `use_cache` changes their hidden states not at all, min
+cos 1.000000) and show the ceiling regardless. A mechanism absent from llama
+cannot explain llama's ceiling. This is recorded as an argument, not a verdict;
+per PI decision the quarantine blocker on the protocol revision stands until the
+write-side ladder reports.
+
 ### 2026-07-24 -- A_lin depth ladder on CLEAN activations: finding (6) DISSOLVED (it was Defect 3), and the accessibility/actuation windows are measured and do NOT overlap
 
 **Tier 3, analysis-only.** No new cell, no new arm, no gate touched. This entry
