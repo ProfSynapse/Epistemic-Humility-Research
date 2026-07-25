@@ -2217,6 +2217,8 @@
           "gen_lib.py",
           "grader.py",
           "scorers.py",
+          "backends.py",
+          "amendment_ah_stage0_extract.py",
           "extract_anchor.py",
           "build_directions.py",
           "gate_fit.py",
@@ -2227,6 +2229,18 @@
           "donor_diagnostic.py"
         ],
         "persistence": {
+          "amendment_ah_stage0_extract.py": {
+            "measured_on": "2026-07-25, CPU, cold interpreter, three runs, 0.02s each. Covers locating the yaml, parsing it, and verifying the frozen prompt sha256.",
+            "measured_smoke_wall_clock_s": 0.02,
+            "persistence": "short-run",
+            "rationale": "Import-restoration shim, not a run stage. Same reasoning as backends.py."
+          },
+          "backends.py": {
+            "measured_on": "2026-07-25, CPU, cold interpreter, `python3 -c \"import backends\"`, three runs, 0.02s each. Covers the whole job: locate the upstream module, exec it, hash the render path, assert the signature, re-export.",
+            "measured_smoke_wall_clock_s": 0.02,
+            "persistence": "short-run",
+            "rationale": "Import-restoration shim, not a run stage. Stateless and sub-second; resume logic would cost more than the work it saved."
+          },
           "build_directions.py": {
             "checkpoint_path": "experiments/gemma4-e4b-kv-seam-quarantine/analysis-committed/<condition>/layers/",
             "persistence": "incremental"
