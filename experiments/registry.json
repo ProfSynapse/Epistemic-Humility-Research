@@ -2266,15 +2266,63 @@
             "checkpoint_path": "experiments/gemma4-e4b-kv-seam-quarantine/analysis/anchor_extract.safetensors",
             "persistence": "incremental"
           },
+          "family_config.py": {
+            "measured_on": "2026-07-25, CPU, cold interpreter, three runs, 0.02s each",
+            "measured_smoke_wall_clock_s": 0.02,
+            "persistence": "short-run",
+            "rationale": "Library module: yaml-backed family/site-set resolution. No run stage, no state."
+          },
+          "gate_fit.py": {
+            "measured_on": "2026-07-25, REAL RUN (not an import): `gate_fit.py --family gemma4-e4b --site-set shallow_ladder --kv-sharing on`, CPU only, three cold runs, 2.37-2.67s, maxRSS 1.6 GB. Dominated by loading the anchor extract safetensors. Byte-identical stdout across all three runs, and every AUC, tau and confusion count identical to the previously committed roll-up.",
+            "measured_smoke_wall_clock_s": 2.67,
+            "persistence": "short-run",
+            "rationale": "Writes ONE roll-up per site set in a single atomic write at the end. A kill loses nothing partial, and re-running costs 2.7s, so resume logic would cost more than the work it saved."
+          },
+          "gen_lib.py": {
+            "measured_on": "2026-07-25, CPU, cold interpreter, three runs, 1.05-1.25s (torch import dominates)",
+            "measured_smoke_wall_clock_s": 1.25,
+            "persistence": "short-run",
+            "rationale": "Library module: the fixed-budget generation pass. No state."
+          },
+          "grader.py": {
+            "measured_on": "2026-07-25, CPU, cold interpreter, three runs, 0.02s each",
+            "measured_smoke_wall_clock_s": 0.02,
+            "persistence": "short-run",
+            "rationale": "Library module: alias-matched grading. Its __main__ is a self-test, not a run stage."
+          },
+          "kv_seam_patch.py": {
+            "measured_on": "2026-07-25, CPU, cold interpreter, three runs, 1.02-1.13s (torch import dominates)",
+            "measured_smoke_wall_clock_s": 1.13,
+            "persistence": "short-run",
+            "rationale": "Library module: the sharing toggle, the cache builder and the architecture verifier. Imports torch, which is the entire cost; the module's own body is trivial. No state."
+          },
           "kv_seam_preflight.py": {
             "measured_on": "2026-07-25, CPU only, no checkpoint download, 6/6 PASS",
             "measured_smoke_wall_clock_s": 6.87,
             "persistence": "short-run",
             "rationale": "Builds six independent tiny randomly-initialized models from a fixed seed, one per check, so checks cannot leak state into each other. Resumability would defeat that isolation."
           },
+          "model_lib.py": {
+            "measured_on": "2026-07-25, CPU, cold interpreter, three runs, 1.64-1.68s (torch import dominates)",
+            "measured_smoke_wall_clock_s": 1.68,
+            "persistence": "short-run",
+            "rationale": "Library module: render, hook setup, EOS resolution. This import also exercises the two vendored shims' fail-closed guards, since render() resolves `backends` and `amendment_ah_stage0_extract` by bare module name."
+          },
+          "pipeline.py": {
+            "measured_on": "2026-07-25, CPU, cold interpreter, three runs, 1.63-1.75s",
+            "measured_smoke_wall_clock_s": 1.75,
+            "persistence": "short-run",
+            "rationale": "Library module: the gate-decision and dosed-row loop imported by calibrate_dose.py and run_contrast.py. The stages that CALL it are the ones that accumulate state, and they are declared `incremental` above."
+          },
           "run_contrast.py": {
             "checkpoint_path": "experiments/gemma4-e4b-kv-seam-quarantine/analysis/runlog/<arm>/<mode>/<site>.jsonl",
             "persistence": "incremental"
+          },
+          "scorers.py": {
+            "measured_on": "2026-07-25, CPU, cold interpreter, three runs, 0.02s each",
+            "measured_smoke_wall_clock_s": 0.02,
+            "persistence": "short-run",
+            "rationale": "Vendored library module (see NOTEBOOK.md 'VENDOR SCORERS'). Pure scoring functions."
           }
         },
         "pins": {}

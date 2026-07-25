@@ -696,3 +696,83 @@ requirement asks for.
 
 Still outstanding before `bin/exp sign`: G0-ALIN Part 2, the fired-only G2
 companion metric, `rollup.py`, and persistence timings for the remaining modules.
+
+### 2026-07-25 — smoke run: the persistence blocker is closed, and it found two things
+
+Lead-authorized ("smoke it"). Scope was the remaining
+`instrument.persistence` timings, the last thing `bin/exp sign` mechanically
+refuses on. **It never touched the GPU** — see below, that turned out not to be
+a concession but a finding.
+
+**All eight remaining modules declared, all measured, none estimated.** Method
+identical to the two shims: cold interpreter per run, three runs, **worst**
+observed value recorded rather than the best or the mean.
+
+| Module | s | note |
+|---|---|---|
+| `family_config.py` / `scorers.py` / `grader.py` | 0.02 | pure-python libraries |
+| `kv_seam_patch.py` / `gen_lib.py` / `model_lib.py` | 1.13 / 1.25 / 1.68 | torch import is the entire cost |
+| `pipeline.py` | 1.75 | library; its *callers* are the `incremental` ones |
+| **`gate_fit.py`** | **2.67** | **real run, not an import** |
+
+`bin/validate-experiments` now reports **zero** warnings for this experiment,
+down from eight. Re-reading `cmd_sign` (`.skills/experiments/scripts/exp.py:721`)
+against the manifest: status is `draft`, prediction and falsifier are filled,
+`instrument.configs` is non-empty, every module has a persistence declaration,
+every pinned file exists. **There is no longer a tool-level obstacle to signing.**
+That is not the same as being ready to sign — the remaining blockers are
+scientific and are tracked in `cell.yaml integration_status.missing` — but the
+distinction is now clean, and "the tool won't let me" has stopped being one of
+the reasons.
+
+**Finding 1 — the last unrun pipeline stage doesn't need a GPU.** I had been
+carrying `gate_fit.py` as GPU-blocked along with everything else. It isn't: it
+fits tau on the *already cached* anchor activations with numpy and never loads
+the checkpoint. So it was run for real — `--site-set shallow_ladder
+--kv-sharing on`, three cold runs, 2.37–2.67s, maxRSS 1.6 GB, byte-identical
+stdout each time.
+
+Comparing its output against the previously committed roll-up: **every AUC,
+every tau, every confusion count identical.** One key was added —
+`"kv_sharing": "on"`. The committed artifact predates the condition-scoping
+work, so it was stale against its own producer. The regenerated file is
+committed. Nothing was recomputed into a different answer; a provenance field
+that should always have been there now is.
+
+A process note worth keeping: my first comparison was `diff -q ... && echo
+BIT-IDENTICAL`, and it printed BIT-IDENTICAL **while the files differed** — the
+`rtk` wrapper standing in for `diff` here does not return diff's exit status.
+Caught only because the unified diff was printed alongside it and visibly
+disagreed. Structural comparisons in this repo go through `json.load` and `==`,
+not through a shell exit code.
+
+**Finding 2 — the arm table names two sites no stage can address. This blocks
+the run.** `A3 = hs22` and `A5 = hs24` were resolved yesterday by G0-ALIN Part 1
+and registered in `cell.yaml`. But `build_directions.py`, `gate_fit.py` and
+`calibrate_dose.py` all select sites through `--site-set`, resolved against
+`families/gemma4-e4b.yaml band_selection`, and that file registers exactly two
+sets: `midband_candidates_hs: [34, 38, 42]` and `shallow_ladder_hs: [15, 18, 20,
+23]`. Addressable sites are therefore `{15, 18, 20, 23, 34, 38, 42}` — **hs22
+and hs24 are in neither.** Confirmed by calling `resolve_site_set` directly, not
+by reading the yaml.
+
+So the two arms carrying the experiment's own registered non-gating expectation
+("A3 clears both gates while A5 does not") currently have no path to a fitted
+direction, a tau, or a dose. This is a manifest gap created by resolving the
+sites, not a defect in the science, and it is exactly the class of thing the
+smoke exists to surface before a GPU run rather than 90 minutes into one.
+**Not fixed unilaterally**: `band_selection` carries `status: resolved`, so
+adding a site set to it is an edit to a registered surface and goes to the lead.
+
+**Finding 3 (incidental) — the `synaptic-tuner` prerequisite is not a version
+floor.** `cell.yaml prerequisites` reads `>= 7a44eb3
+(fix/gemma4-decoder-layer-path)`, which reads like "any recent enough tuner".
+It isn't: `7a44eb3` is the head of an **unmerged** remote branch. The canonical
+checkout's submodule sits at `b1ea382` (a later merge on the mainline) and does
+**not** contain it — its `_LAYER_PATHS` has `language_model.model.layers` but
+not the `model.language_model.layers` entry gemma-4-E4B needs. The only local
+checkout that satisfies the prerequisite is the one in the
+`jspace-cross-family` worktree, which is what this smoke ran against. Anyone
+running this experiment from the canonical checkout gets the tuner that does not
+work, and `>=` is the reason they would not expect that. Worth rewording before
+sign.
