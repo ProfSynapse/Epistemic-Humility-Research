@@ -1,0 +1,96 @@
+{
+  "family": "gemma4-e4b",
+  "site_set": "shallow_ladder",
+  "hs_indices": [
+    15,
+    18,
+    20,
+    23
+  ],
+  "population": {
+    "positive_class": "confab FIT (n=112)",
+    "negative_class": "known_correct_answered FIT (n=180)"
+  },
+  "score_definition": "neg_z_d = -z_d; z_d clipped to [-2,+2] and standardized with each layer's FIT-pool mu_d/sigma_d",
+  "sign_convention": "confab rows have LOW doubt; fire iff neg_z_d >= tau, equivalently z_d <= -tau",
+  "tau_frozen_method": "youden_j",
+  "g0_auc_floor": 0.9,
+  "layers": {
+    "hs15": {
+      "hs_index": 15,
+      "auc_neg_z_d_on_fit": 0.9998511904761905,
+      "auc_raw_z_d_on_fit": 0.00014880952380952328,
+      "youden_tau": {
+        "tau": -0.11704108817761964,
+        "stats": {
+          "tpr_confab_caught": 1.0,
+          "fpr_known_correct_flagged": 0.011111111111111112,
+          "tp": 112,
+          "fn": 0,
+          "fp": 2,
+          "tn": 178,
+          "youden_j": 0.9888888888888889
+        }
+      },
+      "tau_frozen": -0.11704108817761964,
+      "g0_auc_pass": true
+    },
+    "hs18": {
+      "hs_index": 18,
+      "auc_neg_z_d_on_fit": 0.9999503968253969,
+      "auc_raw_z_d_on_fit": 4.960317460317443e-05,
+      "youden_tau": {
+        "tau": -0.017473150152183998,
+        "stats": {
+          "tpr_confab_caught": 1.0,
+          "fpr_known_correct_flagged": 0.005555555555555556,
+          "tp": 112,
+          "fn": 0,
+          "fp": 1,
+          "tn": 179,
+          "youden_j": 0.9944444444444445
+        }
+      },
+      "tau_frozen": -0.017473150152183998,
+      "g0_auc_pass": true
+    },
+    "hs20": {
+      "hs_index": 20,
+      "auc_neg_z_d_on_fit": 0.9997519841269842,
+      "auc_raw_z_d_on_fit": 0.00024801587301587213,
+      "youden_tau": {
+        "tau": -0.04361060288133894,
+        "stats": {
+          "tpr_confab_caught": 1.0,
+          "fpr_known_correct_flagged": 0.005555555555555556,
+          "tp": 112,
+          "fn": 0,
+          "fp": 1,
+          "tn": 179,
+          "youden_j": 0.9944444444444445
+        }
+      },
+      "tau_frozen": -0.04361060288133894,
+      "g0_auc_pass": true
+    },
+    "hs23": {
+      "hs_index": 23,
+      "auc_neg_z_d_on_fit": 0.999702380952381,
+      "auc_raw_z_d_on_fit": 0.00029761904761904656,
+      "youden_tau": {
+        "tau": 0.1086796612204689,
+        "stats": {
+          "tpr_confab_caught": 1.0,
+          "fpr_known_correct_flagged": 0.005555555555555556,
+          "tp": 112,
+          "fn": 0,
+          "fp": 1,
+          "tn": 179,
+          "youden_j": 0.9944444444444445
+        }
+      },
+      "tau_frozen": 0.1086796612204689,
+      "g0_auc_pass": true
+    }
+  }
+}

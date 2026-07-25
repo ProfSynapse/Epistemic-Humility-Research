@@ -36,8 +36,8 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from family_config import (  # noqa: E402
-    FAMILY_SLUGS, layer_dir_name, load_family,
-    midband_hs_indices as family_midband_hs_indices,
+    FAMILY_SLUGS, SITE_SETS, layer_dir_name, load_family,
+    resolve_site_set, site_set_artifact,
     late_reference_hs as family_late_reference_hs,
 )
 import model_lib as ml  # noqa: E402
@@ -63,14 +63,19 @@ def selected_rows(family: str, n_rows: int | None) -> list[dict]:
     return pl.stratified_subset(confab, n_confab) + pl.stratified_subset(known, n_known)
 
 
-def load_midband_selected_doses(family: str) -> dict[str, float]:
-    """Mid-band per-layer FIT-calibrated doses (calibrate_dose.py output). The
+def load_midband_selected_doses(family: str, site_set: str = "midband") -> dict[str, float]:
+    """Gating-arm per-layer FIT-calibrated doses (calibrate_dose.py output). The
     late arm's dose is resolved separately (resolve_late_dose): it is
     non-gating and may be null, so it is NOT part of the mid-band dose map. Only
-    the mid-band arm gates calibration success."""
-    path = HERE / "analysis-committed" / family / "dose_calibration_summary.json"
+    the mid-band arm gates calibration success.
+
+    `site_set` selects WHICH arm is the gating one and hence which
+    calibrate_dose roll-up to read; the JSON key names are unchanged across
+    site sets, so only the filename varies."""
+    path = HERE / "analysis-committed" / family / site_set_artifact(
+        "dose_calibration_summary.json", site_set)
     data = json.loads(path.read_text())
-    midband_names = {layer_dir_name(hs) for hs in family_midband_hs_indices(load_family(family))}
+    midband_names = {layer_dir_name(hs) for hs in resolve_site_set(load_family(family), site_set)}
     src = data.get("midband_selected_doses")
     if src is None:  # pre-option-B schema: filter the flat selected_doses map
         src = {k: v for k, v in data.get("selected_doses", {}).items() if k in midband_names}
@@ -93,12 +98,13 @@ def load_midband_selected_doses(family: str) -> dict[str, float]:
     if extra:
         raise ValueError(
             f"[{family}] calibration summary contains non-mid-band layers: "
-            f"{sorted(extra)} (mid-band set is {sorted(midband_names)})"
+            f"{sorted(extra)} (site set {site_set!r} is {sorted(midband_names)})"
         )
     return selected
 
 
-def resolve_late_dose(family: str, cli_late_dose: float | None) -> float | None:
+def resolve_late_dose(family: str, cli_late_dose: float | None,
+                      site_set: str = "midband") -> float | None:
     """Late-arm dose resolution. Option (B) (RESOLVED 2026-07-23, lead+user):
     the late-site scalar dose is calibrated FRESH here with the same
     calibrate_dose.py ladder as the mid-band arm (doubt-snap selected no
@@ -112,7 +118,8 @@ def resolve_late_dose(family: str, cli_late_dose: float | None) -> float | None:
     depend on it). This function never invents a dose."""
     if cli_late_dose is not None:
         return float(cli_late_dose)
-    path = HERE / "analysis-committed" / family / "dose_calibration_summary.json"
+    path = HERE / "analysis-committed" / family / site_set_artifact(
+        "dose_calibration_summary.json", site_set)
     if path.exists():
         data = json.loads(path.read_text())
         block = data.get("late_reference_selected_dose") or {}
@@ -255,13 +262,14 @@ def g0_smoke_pass(layer_results: dict[str, dict]) -> bool:
     return True
 
 
-def _layer_dose_map(family: str, late_dose: float | None) -> dict[int, float]:
-    """Mid-band candidates (always) + the late reference (only if a late dose
-    is resolved)."""
+def _layer_dose_map(family: str, late_dose: float | None,
+                    site_set: str = "midband") -> dict[int, float]:
+    """The selected site set's candidates (always) + the late reference (only
+    if a late dose is resolved)."""
     cfg = load_family(family)
-    selected = load_midband_selected_doses(family)
+    selected = load_midband_selected_doses(family, site_set)
     dose_map: dict[int, float] = {}
-    for hs_index in family_midband_hs_indices(cfg):
+    for hs_index in resolve_site_set(cfg, site_set):
         name = layer_dir_name(hs_index)
         if name in selected:  # only usable-dose (calibrated) sites are dosed
             dose_map[hs_index] = selected[name]
@@ -280,37 +288,42 @@ def write_summary(family: str, name: str, summary: dict, commit_public: bool) ->
         (committed / name).write_text(json.dumps(summary, indent=2))
 
 
-def run_smoke(family: str, n_rows: int, late_dose: float | None, *, fresh: bool = False) -> dict:
-    dose_map = _layer_dose_map(family, late_dose)
+def run_smoke(family: str, n_rows: int, late_dose: float | None, *, fresh: bool = False,
+              site_set: str = "midband") -> dict:
+    dose_map = _layer_dose_map(family, late_dose, site_set)
     rows = selected_rows(family, n_rows)
     layer_results = run_layers(family, rows, dose_map, mode="smoke", fresh=fresh)
     summary = {
-        "family": family, "mode": "smoke", "layer_doses": {layer_dir_name(k): v for k, v in dose_map.items()},
+        "family": family, "mode": "smoke", "site_set": site_set,
+        "layer_doses": {layer_dir_name(k): v for k, v in dose_map.items()},
         "late_arm_included": late_dose is not None,
         "pool_counts": pool_counts(family), "n_rows": len(rows), "layers": layer_results,
         "g0_smoke_pass": g0_smoke_pass(layer_results),
     }
-    write_summary(family, "smoke_summary.json", summary, commit_public=False)
+    write_summary(family, site_set_artifact("smoke_summary.json", site_set), summary,
+                  commit_public=False)
     print(json.dumps(summary, indent=2))
     return summary
 
 
-def run_full(family: str, late_dose: float | None, *, fresh: bool = False) -> dict:
-    dose_map = _layer_dose_map(family, late_dose)
+def run_full(family: str, late_dose: float | None, *, fresh: bool = False,
+             site_set: str = "midband") -> dict:
+    dose_map = _layer_dose_map(family, late_dose, site_set)
     rows = selected_rows(family, None)
     rng = pyrandom.Random(20260708)
     rng.shuffle(rows)
     layer_results = run_layers(family, rows, dose_map, mode="full", fresh=fresh)
     primary = evaluate_primary(family, layer_results)
     summary = {
-        "family": family, "mode": "full",
+        "family": family, "mode": "full", "site_set": site_set,
         "layer_doses": {layer_dir_name(k): v for k, v in dose_map.items()},
         "late_arm_included": late_dose is not None,
         "pool_counts": pool_counts(family), "n_rows": len(rows), "layers": layer_results,
         "primary": primary,
         "primary_pass": bool(g0_smoke_pass(layer_results) and primary["primary_pass"]),
     }
-    write_summary(family, "full_summary.json", summary, commit_public=True)
+    write_summary(family, site_set_artifact("full_summary.json", site_set), summary,
+                  commit_public=True)
     print(json.dumps(summary, indent=2))
     return summary
 
@@ -318,6 +331,10 @@ def run_full(family: str, late_dose: float | None, *, fresh: bool = False) -> di
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--family", required=True, choices=FAMILY_SLUGS)
+    parser.add_argument("--site-set", default="midband", choices=sorted(SITE_SETS),
+                        help="named site set from families/<family>.yaml "
+                             "band_selection. Default 'midband' preserves the "
+                             "pre-existing behaviour exactly.")
     parser.add_argument("--mode", choices=["smoke", "full"], required=True)
     parser.add_argument("--n-rows", type=int, default=8, help="smoke mode only")
     parser.add_argument(
@@ -340,10 +357,12 @@ def main(argv=None) -> int:
     )
     args = parser.parse_args(argv)
 
-    late_dose = resolve_late_dose(args.family, args.late_dose)
+    late_dose = resolve_late_dose(args.family, args.late_dose, args.site_set)
 
     if args.mode == "smoke":
-        return 0 if run_smoke(args.family, args.n_rows, late_dose, fresh=args.fresh)["g0_smoke_pass"] else 4
+        smoke = run_smoke(args.family, args.n_rows, late_dose, fresh=args.fresh,
+                          site_set=args.site_set)
+        return 0 if smoke["g0_smoke_pass"] else 4
 
     if not args.i_know_this_is_the_cross_family_run:
         print(
@@ -352,7 +371,7 @@ def main(argv=None) -> int:
             file=sys.stderr,
         )
         return 2
-    run_full(args.family, late_dose, fresh=args.fresh)
+    run_full(args.family, late_dose, fresh=args.fresh, site_set=args.site_set)
     return 0
 
 

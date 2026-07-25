@@ -39,8 +39,8 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from family_config import (  # noqa: E402
-    FAMILY_SLUGS, hs_to_block, layer_dir_name, load_family,
-    midband_hs_indices as family_midband_hs_indices,
+    FAMILY_SLUGS, SITE_SETS, hs_to_block, layer_dir_name, load_family,
+    resolve_site_set, site_set_artifact,
 )
 
 RANDOM_STATE = 20260707  # pinned, identical across families (see module docstring)
@@ -127,14 +127,18 @@ def main(argv=None) -> int:
     ap.add_argument("--family", required=True, choices=FAMILY_SLUGS)
     ap.add_argument("--verify-reproducible", action="store_true",
                      help="fit twice and assert byte-identical before writing")
+    ap.add_argument("--site-set", default="midband", choices=sorted(SITE_SETS),
+                     help="named site set from families/<family>.yaml "
+                          "band_selection. Default 'midband' preserves the "
+                          "pre-existing behaviour exactly.")
     args = ap.parse_args(argv)
 
     family = args.family
     cfg = load_family(family)
-    # MID-BAND candidates only; the late reference arm is loaded frozen from the
-    # reused doubt-snap artifacts (see AMENDMENT.md "Consumed doubt-snap
+    # The selected site set only; the late reference arm is loaded frozen from
+    # the reused doubt-snap artifacts (see AMENDMENT.md "Consumed doubt-snap
     # artifacts") and is never refit here.
-    hs_list = family_midband_hs_indices(cfg)  # raises if band_selection unresolved
+    hs_list = resolve_site_set(cfg, args.site_set)  # raises if unresolved
 
     analysis = HERE / "analysis" / family
     committed = HERE / "analysis-committed" / family
@@ -176,6 +180,7 @@ def main(argv=None) -> int:
 
     report = {
         "family": family, "substrate": "bf16", "base_model": cfg["checkpoint"]["repo"],
+        "site_set": args.site_set, "hs_indices": list(hs_list),
         "hidden_dim": hidden_dim, "random_state": RANDOM_STATE,
         "reproducibility_verified": bool(args.verify_reproducible),
         "extract_manifest_sha256": _sha256_file(extract_manifest_path),
@@ -267,7 +272,8 @@ def main(argv=None) -> int:
             "mu_c": mu_c, "sigma_c": sigma_c,
         }
 
-    (committed / "build_manifest_layers.json").write_text(json.dumps(report, indent=2))
+    out_name = site_set_artifact("build_manifest_layers.json", args.site_set)
+    (committed / out_name).write_text(json.dumps(report, indent=2))
     print(json.dumps(report, indent=2))
     return 0
 

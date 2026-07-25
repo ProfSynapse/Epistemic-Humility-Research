@@ -25,8 +25,8 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from family_config import (  # noqa: E402
-    FAMILY_SLUGS, layer_dir_name, load_family,
-    midband_hs_indices as family_midband_hs_indices,
+    FAMILY_SLUGS, SITE_SETS, layer_dir_name, load_family, resolve_site_set,
+    site_set_artifact,
 )
 
 
@@ -75,17 +75,22 @@ def youden_tau(scores: np.ndarray, labels: np.ndarray) -> tuple[float, dict]:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--family", required=True, choices=FAMILY_SLUGS)
+    ap.add_argument("--site-set", default="midband", choices=sorted(SITE_SETS),
+                    help="named site set from families/<family>.yaml "
+                         "band_selection. Default 'midband' preserves the "
+                         "pre-existing behaviour exactly.")
     args = ap.parse_args(argv)
 
     from safetensors.numpy import load_file
 
     family = args.family
-    # MID-BAND candidates only; the late arm's gate (tau_frozen) is reused
-    # verbatim from the doubt-snap artifacts and is not refit here.
-    hs_list = family_midband_hs_indices(load_family(family))
+    # The selected site set only (default: MID-BAND candidates); the late arm's
+    # gate (tau_frozen) is reused verbatim from the doubt-snap artifacts and is
+    # not refit here.
+    hs_list = resolve_site_set(load_family(family), args.site_set)
     analysis = HERE / "analysis" / family
     committed = HERE / "analysis-committed" / family
-    out_path = committed / "gate_fit_layers.json"
+    out_path = committed / site_set_artifact("gate_fit_layers.json", args.site_set)
 
     extract_manifest = json.loads((analysis / "anchor_extract_manifest.json").read_text())
     role_by_key = {rm["row_key"]: rm["role"] for rm in extract_manifest["rows"]}
@@ -99,11 +104,14 @@ def main(argv=None) -> int:
 
     fresh = {k: np.asarray(v, dtype=np.float64)
              for k, v in load_file(str(analysis / "anchor_extract.safetensors")).items()}
-    build_manifest = json.loads((committed / "build_manifest_layers.json").read_text())
+    build_manifest = json.loads(
+        (committed / site_set_artifact("build_manifest_layers.json", args.site_set)).read_text()
+    )
     labels = np.concatenate([np.ones(len(confab_fit)), np.zeros(len(known_fit))]).astype(int)
 
     report = {
         "family": family,
+        "site_set": args.site_set, "hs_indices": list(hs_list),
         "population": {"positive_class": f"confab FIT (n={len(confab_fit)})",
                        "negative_class": f"known_correct_answered FIT (n={len(known_fit)})"},
         "score_definition": ("neg_z_d = -z_d; z_d clipped to [-2,+2] and standardized with "

@@ -91,6 +91,83 @@ def midband_hs_indices(family_cfg: dict[str, Any]) -> list[int]:
     return list(values)
 
 
+def shallow_ladder_hs_indices(family_cfg: dict[str, Any]) -> list[int]:
+    """The DESCRIPTIVE shallow ladder (arms D1-D4), registered in gates.yaml
+    `descriptive_shallow_ladder` and cell.yaml `arms`.
+
+    Deliberately a SEPARATE key from midband_candidates_hs rather than an
+    extension of it. Two reasons, both load-bearing:
+
+    1. These sites are not midband. gemma4-e4b's shallow ladder sits at relative
+       depth 0.357-0.548; "midband" for this family means 0.810-1.000. Folding
+       them into midband_candidates_hs would mislabel them at every call site.
+    2. midband_candidates_hs has other consumers (hs_indices(), the A-arms, the
+       parent's profile stage). Extending it would silently change the site set
+       those consumers sweep, which is exactly the kind of quiet scope change a
+       pre-registration is supposed to prevent.
+
+    Site sets are resolved from config, never from the command line, so the
+    registered ladder is hash-pinned at `bin/exp sign` along with the rest of
+    families/<family>.yaml.
+    """
+    values = family_cfg.get("band_selection", {}).get("shallow_ladder_hs")
+    if not values:
+        raise ValueError(
+            f"{family_cfg.get('family')}: shallow_ladder_hs not present in "
+            "band_selection -- this family has no registered shallow ladder. "
+            "Only gemma4-e4b defines one (experiments/"
+            "gemma4-e4b-kv-seam-quarantine/gates.yaml descriptive_shallow_ladder)."
+        )
+    return list(values)
+
+
+#: Named site sets selectable with `--site-set`. Adding a set here is an
+#: instrument change and must be registered in gates.yaml before it is run.
+SITE_SETS: dict[str, Any] = {
+    "midband": midband_hs_indices,
+    "shallow_ladder": shallow_ladder_hs_indices,
+}
+
+
+#: The site set whose artifacts keep the historical un-suffixed filenames.
+DEFAULT_SITE_SET = "midband"
+
+
+def site_set_artifact(name: str, site_set: str) -> str:
+    """Filename for a per-site-set roll-up artifact.
+
+    The three roll-ups (build_manifest_layers, gate_fit_layers,
+    dose_calibration_summary) are written to ONE path per family. Without
+    scoping, running a second site set would overwrite the first's file with a
+    report containing only the second's layers -- silently destroying the
+    A-arms' frozen directions/gates rather than merging with them.
+
+    `midband` keeps the historical un-suffixed names byte-for-byte, so every
+    already-committed artifact and every existing caller is untouched. Any
+    other site set gets `<stem>.<site_set>.<ext>`.
+    """
+    if site_set == DEFAULT_SITE_SET:
+        return name
+    stem, dot, ext = name.rpartition(".")
+    if not dot:
+        return f"{name}.{site_set}"
+    return f"{stem}.{site_set}.{ext}"
+
+
+def resolve_site_set(family_cfg: dict[str, Any], name: str) -> list[int]:
+    """Resolve a named site set for this family. Raises on an unknown name
+    rather than falling back, so a typo can never silently sweep the wrong
+    band."""
+    try:
+        resolver = SITE_SETS[name]
+    except KeyError:
+        raise ValueError(
+            f"unknown --site-set {name!r}; registered sets are "
+            f"{sorted(SITE_SETS)}"
+        ) from None
+    return resolver(family_cfg)
+
+
 def late_reference_hs(family_cfg: dict[str, Any]) -> int:
     """The late reference site is DEFINED by the reused doubt-snap frozen late
     site (reuse.doubt_snap.late_site.hs_index = doubt-snap decoder block + 1),

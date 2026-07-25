@@ -1,0 +1,4858 @@
+{
+  "stage": "j_space_cross_family_layer_contrast_eval_pool",
+  "family": "gemma4-e4b",
+  "checkpoint_repo": "google/gemma-4-E4B-it",
+  "substrate": "bf16",
+  "candidate_source": "experiments/divergent-pool-own-readout/analysis/phase1-migrated/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl",
+  "target_confab": 280,
+  "target_known_correct": 450,
+  "target_unknown_refused": 200,
+  "public_manifest_policy": "ID/provenance/role metadata only. Question text, aliases, and model generations remain private under analysis/.",
+  "counts": {
+    "generated_total": 3786,
+    "generated_unknown": 356,
+    "generated_known": 3430,
+    "selected_confab": 280,
+    "selected_unknown_refused": 76,
+    "selected_known_correct_answered": 450
+  },
+  "rows": [
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000000",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000001",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000002",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000003",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000004",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000005",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000006",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000007",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000008",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000009",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000010",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000011",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000012",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000013",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000014",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000015",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000016",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000017",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000018",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000019",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000020",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000021",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000022",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000023",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000024",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000025",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000026",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000027",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000028",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000029",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000030",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000031",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000032",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000033",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000034",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000035",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000036",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000037",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000038",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000039",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000040",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000041",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000042",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000043",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000044",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000045",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000046",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000047",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000048",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000049",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000050",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000051",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000052",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000053",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000054",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000055",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000056",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000057",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000058",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000059",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000060",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000061",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000062",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000063",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000064",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000065",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000066",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000067",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000068",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000069",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000070",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000071",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000072",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000073",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000074",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000075",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000076",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000077",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000078",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000079",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000080",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000081",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000082",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000083",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000084",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000085",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000086",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000087",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000088",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000089",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000090",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000091",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000092",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000093",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000094",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000095",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000096",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000097",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000098",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000099",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000100",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000101",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000102",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000103",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000104",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000105",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000106",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000107",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000108",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000109",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000110",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000111",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000112",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000113",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000114",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000115",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000116",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000117",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000118",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000119",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000120",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000121",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000122",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000123",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000124",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000125",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000126",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000127",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000128",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000129",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000130",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000131",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000132",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000133",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000134",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000135",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000136",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000137",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000138",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000139",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000140",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000141",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000142",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000143",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000144",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000145",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000146",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000147",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000148",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000149",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000150",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000151",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000152",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000153",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000154",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000155",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000156",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000157",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000158",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000159",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000160",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000161",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000162",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000163",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000164",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000165",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000166",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000167",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000168",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000169",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000170",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000171",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000172",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000173",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000174",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000175",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000176",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000177",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000178",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000179",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000180",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000181",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000182",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000183",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000184",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000185",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000186",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000187",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000188",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000189",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000190",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000191",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000192",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000193",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000194",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000195",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000196",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000197",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000198",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000199",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000200",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000201",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000202",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000203",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000204",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000205",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000206",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000207",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000208",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000209",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000210",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000211",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000212",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000213",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000214",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000215",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000216",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000217",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000218",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000219",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000220",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000221",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000222",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000223",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000224",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000225",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000226",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000227",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000228",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000229",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000230",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000231",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000232",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000233",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000234",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000235",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000236",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000237",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000238",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000239",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000240",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000241",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000242",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000243",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000244",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000245",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000246",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000247",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000248",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000249",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000250",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000251",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000252",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000253",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::popqa::009502",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009512",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009516",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009542",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009557",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009571",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009579",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009584",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009588",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009597",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009599",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009608",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009645",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009646",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009649",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009654",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009678",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009686",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009691",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009709",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009711",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009713",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009727",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009732",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009737",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009740",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009742",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009745",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009751",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009755",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009761",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009773",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009778",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009781",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009786",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009792",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009797",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009819",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009821",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009850",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009851",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009863",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009865",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009866",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009882",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009900",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009901",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009934",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009946",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009949",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009959",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009972",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::009991",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010011",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010016",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010026",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010108",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010110",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010127",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010179",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010188",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010221",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010284",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010304",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010347",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010394",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010426",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010454",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010455",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010460",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010527",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010616",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010622",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010624",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010626",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010629",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010633",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010636",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010654",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010666",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010668",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010675",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010687",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010689",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010694",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010702",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010705",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010716",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010722",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010729",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010736",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010739",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010741",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010744",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010759",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010760",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010763",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010764",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010767",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010769",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010773",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010775",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010778",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010785",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010791",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010793",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010797",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010804",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010805",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010822",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010824",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010832",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010851",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010860",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010880",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010881",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010882",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010883",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010887",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010888",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010893",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010907",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010908",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010913",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010915",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010916",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010925",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010928",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010937",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010946",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010948",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010951",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010988",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010993",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::010996",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011001",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011004",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011027",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011033",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011047",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011048",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011075",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011079",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011080",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011084",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011088",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011099",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011100",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011117",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011118",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011129",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011132",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011138",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011142",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011150",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011152",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011153",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011163",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011168",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011172",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011180",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011184",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011185",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011187",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011204",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011227",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011232",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011240",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011246",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011250",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011263",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011264",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011265",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011272",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011283",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011284",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011285",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011287",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011308",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011309",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011322",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011351",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011355",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011357",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011362",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011383",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011392",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011420",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011432",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011435",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011440",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011457",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011459",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011464",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011479",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011480",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011481",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011494",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011495",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011500",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011502",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011508",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011514",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011515",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011519",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011524",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011534",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011537",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011538",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011550",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011551",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011556",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011573",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011592",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011596",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011601",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011604",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011620",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011625",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011627",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011632",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011634",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011638",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011640",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011651",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011656",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011658",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011659",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011661",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011671",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011676",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011678",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011682",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011683",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011684",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011711",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011712",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011715",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011721",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011722",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011728",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011730",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011735",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011741",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011748",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011756",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011761",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011773",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011778",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011782",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011813",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011825",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011840",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011843",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011867",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011870",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011875",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011884",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011897",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011898",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011906",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011909",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011922",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011928",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011930",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011936",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011970",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011974",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011975",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011976",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011980",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011986",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::011996",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012010",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012016",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012017",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012033",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012038",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012040",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012041",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012045",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012063",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012067",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012070",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012079",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012084",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012109",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012110",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012117",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012126",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012129",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012148",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012157",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012161",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012171",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012180",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012197",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012198",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012216",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012219",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000254",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000255",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000256",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000257",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000258",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000259",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000260",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000261",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000262",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000263",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000264",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000265",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000266",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000267",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000268",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000269",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000270",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000271",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000272",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000273",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000274",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000275",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000276",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000277",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000278",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000279",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000280",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000281",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000282",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000283",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000284",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000285",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000286",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000287",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000288",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000289",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000290",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000291",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000292",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000293",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000294",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000295",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000296",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000297",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000298",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000299",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000300",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000301",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000302",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000303",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000304",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000305",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000306",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000307",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000308",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000309",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000310",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000311",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000312",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000313",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000314",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000315",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000316",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000317",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000318",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000319",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000320",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000321",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000322",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000323",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "unsolved problem"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000324",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000325",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000326",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000327",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000328",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000329",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000330",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000331",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000332",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000333",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "counterfactual"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000334",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000335",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000336",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000337",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000338",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000339",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000340",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000341",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000342",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000343",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "controversial"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000344",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000345",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000346",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000347",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "false assumption"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000348",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "ambiguous"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000349",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000350",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000351",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000352",
+      "role": "unknown_refused",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000353",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000354",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000355",
+      "role": "confab",
+      "source": "kuq_ku_unknown_x",
+      "category_canon": "future unknown"
+    },
+    {
+      "row_key": "ahx::popqa::012222",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012232",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012235",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012238",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012239",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012247",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012256",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012257",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012260",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012270",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012280",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012289",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012290",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012299",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012301",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012302",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012313",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012342",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012344",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012350",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012360",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012365",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012367",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012379",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012382",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012399",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012403",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012423",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012430",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012435",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012442",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012448",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012451",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012468",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012480",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012483",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012488",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012506",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012521",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012522",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012524",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012533",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012539",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012552",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012562",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012563",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012585",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012586",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012587",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012592",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012629",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012631",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012639",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012655",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012667",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012671",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012673",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012689",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012691",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012702",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012703",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012706",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012708",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012710",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012712",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012714",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012719",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012727",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012730",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012733",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012738",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012739",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012740",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012742",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012744",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012746",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012748",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012750",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012754",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012755",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012759",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012760",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012762",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012766",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012767",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012769",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012771",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012775",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012776",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012777",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012778",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012779",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012780",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012782",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012783",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012786",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012789",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012791",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012792",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012794",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012796",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012797",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012799",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012800",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012804",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012805",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012808",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012809",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012811",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012812",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012813",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012814",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012815",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012816",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012819",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012823",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012824",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012825",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012831",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012834",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012837",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012839",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012852",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012853",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012854",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012858",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012861",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012863",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012865",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012872",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012875",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012876",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012880",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012889",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012890",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012892",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012894",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012895",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012897",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012902",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012903",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012906",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012910",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012912",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012914",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012915",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012919",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012920",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012924",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    },
+    {
+      "row_key": "ahx::popqa::012925",
+      "role": "known_correct_answered",
+      "source": "popqa",
+      "category_canon": "popqa"
+    }
+  ],
+  "runtime_sec": 1585.4
+}

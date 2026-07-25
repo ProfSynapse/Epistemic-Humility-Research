@@ -41,8 +41,8 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from family_config import (  # noqa: E402
-    FAMILY_SLUGS, layer_dir_name, is_late_reference,
-    midband_hs_indices as family_midband_hs_indices,
+    FAMILY_SLUGS, SITE_SETS, layer_dir_name, is_late_reference,
+    resolve_site_set, site_set_artifact,
     late_reference_hs as family_late_reference_hs,
 )
 import model_lib as ml  # noqa: E402
@@ -148,7 +148,12 @@ def run(args: argparse.Namespace) -> dict:
     # on the late site to load them; only the scalar dose is recalibrated. A
     # dead late arm (no usable dose) is EXPECTED and non-gating: it does NOT
     # fail calibration; only the mid-band layers gate the exit status.
-    midband_hs = family_midband_hs_indices(fam_cfg)
+    #
+    # `midband_*` below names the GATING arm, which is whichever site set this
+    # run selected (default: midband). The output key names are left unchanged
+    # so run_contrast.py's existing contract still reads; `site_set` records
+    # which set the gating arm actually was.
+    midband_hs = resolve_site_set(fam_cfg, args.site_set)
     late_hs = family_late_reference_hs(fam_cfg)
     hs_list = midband_hs + [late_hs]
     midband_names = [layer_dir_name(hs) for hs in midband_hs]
@@ -215,8 +220,14 @@ def run(args: argparse.Namespace) -> dict:
     # ever bypassed. The ABSOLUTE escape hatch intentionally keeps using the
     # original `calibrate_dose_records.jsonl` filename so it still resumes
     # true v1 runs exactly as before.
+    #
+    # Site-set isolation, same reasoning one level out: the per-key namespacing
+    # already makes cross-site-set collision impossible (site sets are disjoint
+    # layer sets), but `--fresh` unlinks the WHOLE checkpoint file. Sharing one
+    # file would let a `--fresh` shallow_ladder run silently discard midband
+    # resume state. `midband` keeps the historical filenames unchanged.
     ckpt_name = "calibrate_dose_records.jsonl" if not ratio_mode else "calibrate_dose_records_v2.jsonl"
-    ckpt_path = analysis / "runlog" / ckpt_name
+    ckpt_path = analysis / "runlog" / site_set_artifact(ckpt_name, args.site_set)
     if args.fresh and ckpt_path.is_file():
         ckpt_path.unlink()
     done = load_dose_checkpoint(ckpt_path)
@@ -283,6 +294,7 @@ def run(args: argparse.Namespace) -> dict:
     late_selected_dose = layers[late_name]["selected_dose"]
     summary = {
         "family": family, "mode": "fit_dose_calibration", "calibration_split": "fit",
+        "site_set": args.site_set,
         "dose_mode": "ratio_normalized" if ratio_mode else "absolute_v1_escape_hatch",
         "ratio_ladder": ratios_used,
         "absolute_doses_arg": args.doses,
@@ -307,8 +319,9 @@ def run(args: argparse.Namespace) -> dict:
         "all_layers_have_usable_dose": len(selected_all) == len(hs_list),
     }
 
-    (analysis / "dose_calibration_summary.json").write_text(json.dumps(summary, indent=2))
-    (committed / "dose_calibration_summary.json").write_text(json.dumps(summary, indent=2))
+    out_name = site_set_artifact("dose_calibration_summary.json", args.site_set)
+    (analysis / out_name).write_text(json.dumps(summary, indent=2))
+    (committed / out_name).write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary, indent=2))
     return summary
 
@@ -316,6 +329,10 @@ def run(args: argparse.Namespace) -> dict:
 def parse_args(argv=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--family", required=True, choices=FAMILY_SLUGS)
+    parser.add_argument("--site-set", default="midband", choices=sorted(SITE_SETS),
+                        help="named site set from families/<family>.yaml "
+                             "band_selection. Default 'midband' preserves the "
+                             "pre-existing behaviour exactly.")
     parser.add_argument("--n-confab", type=int, default=8)
     parser.add_argument("--n-known", type=int, default=8)
     parser.add_argument(
