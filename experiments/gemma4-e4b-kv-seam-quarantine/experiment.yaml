@@ -51,7 +51,15 @@ instrument:
   - model_lib.py
   - gen_lib.py
   - grader.py
+  # Three vendored import-restoration shims, siblings of one another. model_lib
+  # resolves `backends` and `amendment_ah_stage0_extract` by BARE MODULE NAME,
+  # so they must sit in this directory; before they did, a correct render
+  # depended on PYTHONPATH being set right at every launch. Each is fail-closed
+  # against a frozen hash rather than a silent fallback. See NOTEBOOK.md
+  # "VENDOR SCORERS" and 2026-07-25.
   - scorers.py
+  - backends.py
+  - amendment_ah_stage0_extract.py
   - extract_anchor.py
   - build_directions.py
   - gate_fit.py
@@ -80,6 +88,30 @@ instrument:
     run_contrast.py:
       persistence: incremental
       checkpoint_path: experiments/gemma4-e4b-kv-seam-quarantine/analysis/runlog/<arm>/<mode>/<site>.jsonl
+    # The two vendored render shims below have no run stage at all -- they are
+    # import targets that model_lib.render() resolves by bare module name. The
+    # declaration is here because `bin/exp sign` requires one for every entry in
+    # instrument.modules, library or not. `short-run` is the honest reading: a
+    # kill loses nothing because there is nothing accumulated to lose, and the
+    # measured number IS the full cost of doing their work from scratch.
+    backends.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.02
+      measured_on: >-
+        2026-07-25, CPU, cold interpreter, `python3 -c "import backends"`, three
+        runs, 0.02s each. Covers the whole job: locate the upstream module,
+        exec it, hash the render path, assert the signature, re-export.
+      rationale: >-
+        Import-restoration shim, not a run stage. Stateless and sub-second;
+        resume logic would cost more than the work it saved.
+    amendment_ah_stage0_extract.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.02
+      measured_on: >-
+        2026-07-25, CPU, cold interpreter, three runs, 0.02s each. Covers
+        locating the yaml, parsing it, and verifying the frozen prompt sha256.
+      rationale: >-
+        Import-restoration shim, not a run stage. Same reasoning as backends.py.
     # The two diagnostics below are short-run by nature, not by omission: neither
     # accumulates state, and re-running either from scratch is cheaper than any
     # resume logic would be. Their timings are MEASURED, not estimated.

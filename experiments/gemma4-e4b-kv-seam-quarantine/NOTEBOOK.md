@@ -553,3 +553,65 @@ GPU work. Written into `gates.yaml` as `threshold_frac: 0.10` with a
 Still outstanding before `bin/exp sign`: `alin_sweep.py` (Parts 1 and 2), the
 fired-only G2 companion metric, `rollup.py`, and the measured smoke wall-clock
 timings for `instrument.persistence` (`sign` refuses without them).
+
+### 2026-07-25 — render path vendored into the experiment; the cross-experiment PYTHONPATH dependency is gone
+
+The donor diagnostic yesterday only ran because I put **two** other
+directories on `PYTHONPATH`: `experiments/common/knowledge_probe` (for
+`backends`) and the parent experiment `j-space-cross-family-layer-contrast`
+(for `amendment_ah_stage0_extract`). That is a cross-experiment runtime
+dependency, and it should not survive to sign. `model_lib.render()` resolves
+both by **bare module name** —
+
+```python
+module_name, func_name = cfg["render"]["fn"].split(":")   # "backends:render_probe_prompt"
+module = importlib.import_module(module_name)
+```
+
+— so a correct render depended on an environment variable being set correctly
+at every launch, with a *silent-wrong-answer* failure mode if it ever pointed
+at the archived tree instead of the live one. Both shims now live in this
+experiment directory, sibling to the existing vendored `scorers.py`.
+
+**`backends.py` is a re-export, not a copy.** It resolves
+`experiments/common/knowledge_probe/backends.py` by path and re-exports
+`render_probe_prompt` / `assert_no_think_scaffolding`. Copying was the obvious
+move and is the wrong one: that module is live and actively maintained, and it
+is the same render path the probe harness used to produce this experiment's
+inputs. A copy would fork the render at the moment of copying and let this
+experiment drift from the convention its own inputs were produced under, with
+nothing on disk to reveal the drift. So: re-export the live code, and freeze
+what it must not become.
+
+**What each shim freezes.** `backends.py` hashes the *render path only* —
+`render_probe_prompt`, `_apply_chat_template`, `assert_no_think_scaffolding`,
+`_RENDER_MODES`, and the two thinking-marker constants — deliberately not the
+whole file, because `backends.py` also carries a vLLM backend this experiment
+never touches and an edit there should not stop a run. It separately asserts
+`render_probe_prompt`'s exact signature, so a compatible-*looking* but
+reordered parameter list fails here instead of rendering something subtly
+different. `amendment_ah_stage0_extract.py` keeps the parent's prompt sha256
+freeze, byte-identical (`81a04a99...`).
+
+**One deliberate change from the parent's copies: absolute → repo-root-relative
+path resolution.** Both parent shims hardcoded absolute paths into the
+canonical checkout. In a git worktree that silently binds the run to a
+*different* tree's copy of the prompt than the one under review — the run and
+the review disagree and nothing says so. Both now walk up from `__file__`. The
+hash freeze is the real content guarantee either way, so relative resolution is
+strictly safer: it reads from whichever tree is being run, and still refuses if
+that tree's copy is not the frozen one. Verified: from this worktree,
+`_config_path()` resolves inside `ehr-worktrees/kv-seam-siteset`, not into the
+canonical checkout.
+
+**Verification (CPU, no checkpoint).** With `PYTHONPATH` holding *only*
+`synaptic-tuner` — both extra entries dropped — all six checks pass: both
+shims import; the frozen prompt loads at the expected sha256; the config
+resolves into this worktree; `family_config`'s `render.fn`
+`backends:render_probe_prompt` resolves through `model_lib`'s real
+`importlib.import_module` path; and **both fail-closed guards were poked with a
+wrong hash and confirmed to actually raise** — an unfired guard is not a guard.
+
+Still outstanding before `bin/exp sign`: `alin_sweep.py` (Parts 1 and 2), the
+fired-only G2 companion metric, `rollup.py`, and the measured smoke wall-clock
+timings for `instrument.persistence`.
