@@ -776,3 +776,176 @@ checkout that satisfies the prerequisite is the one in the
 running this experiment from the canonical checkout gets the tuner that does not
 work, and `>=` is the reason they would not expect that. Worth rewording before
 sign.
+
+---
+
+## 2026-07-25 — Registering `seam_pair`, and what the CPU fits already say
+
+Finding 2 above (the arm table naming two sites no stage can address) went to
+the lead, who authorized **one** new site set, `seam_pair = [22, 24]`, and
+authorized taking it **through dose calibration**. Not two sets, and not an
+edit widening `shallow_ladder` — a new named set, so the existing
+`shallow_ladder` artifacts stay byte-comparable against their own history and
+the AMENDMENT's Threats (c) confound reading is untouched.
+
+Registration is three surfaces, because `family_config.py` says a new set
+"must be registered in gates.yaml before it is run":
+
+1. `families/gemma4-e4b.yaml` — `band_selection.seam_pair_hs: [22, 24]`
+2. `family_config.py` — `seam_pair_hs_indices()` resolver + `SITE_SETS` entry
+3. `gates.yaml` — a `seam_pair_site_set:` block recording, per site, the
+   readout distance and the donor set: A3 = hs22, rd 0.524, donors 22 and 23;
+   A5 = hs24, rd 0.571, donors **NONE**.
+
+The block also carries `why_one_set_and_not_two`,
+`why_not_folded_into_shallow_ladder`, and `what_this_set_does_not_fix` — that
+last one exists so nobody later reads the new set as having retired the
+confound. It has not.
+
+**The CPU fits landed first, and they already establish the dissociation the
+quarantine hypothesis needs.** `gate_fit.py` never loads the checkpoint (it
+fits tau on cached activations with numpy), so both sites got a gate without
+touching the GPU:
+
+| site | role | readout AUC | G0 floor |
+|---|---|---|---|
+| hs22 (A3) | below seam, donor-reachable | **0.999702** | ≥ 0.90 ✅ |
+| hs24 (A5) | at seam, no donors | **0.997569** | ≥ 0.90 ✅ |
+
+This matters more than it looks. If A5 later fails to actuate, that failure
+**cannot** be attributed to the readout falling apart at hs24 — the read is
+demonstrably near-perfect there. Only the write would be quarantined. Had
+hs24's AUC come in under the floor, the arm would have been uninterpretable
+before it ever ran.
+
+**Incidental, descriptive, non-gating: the KU direction rotates completely
+across the seam.** Cosine similarity between fitted `u_d` vectors:
+
+```
+        hs15   hs18   hs20   hs22   hs23   hs24
+hs15   +1.000 +0.165 +0.068 +0.001 -0.008 +0.006
+hs18   +0.165 +1.000 +0.258 +0.104 +0.054 -0.017
+hs20   +0.068 +0.258 +1.000 +0.203 +0.049 -0.033
+hs22   +0.001 +0.104 +0.203 +1.000 +0.230 +0.005
+hs23   -0.008 +0.054 +0.049 +0.230 +1.000 +0.106
+hs24   +0.006 -0.017 -0.033 +0.005 +0.106 +1.000
+```
+
+Neighbours share a little (0.20-0.26 at one step); hs22 and hs24 are
+**orthogonal (+0.005)** despite both reading known-unknown at ~0.998+ AUC.
+So "the same feature is readable at both depths" is the wrong picture — two
+different directions each carry it. This is an observation for the record,
+not a gate, and nothing in the arm table depends on it.
+
+### Written BEFORE hs24's numbers landed: a null dose at hs24 would prove nothing
+
+hs22's ladder finished first, so there was a gap in which hs24's result was
+still unknown. Recording the interpretation rule now, in that gap, so it cannot
+be accused of being fitted to the answer.
+
+The tempting read is: "hs24 gets no usable dose → the write is quarantined."
+**That inference is not available**, and the repo's own prior calibrations are
+why. The only two committed `dose_calibration_summary.json` files in the
+repository — llama-3.2-3b and mistral-7b-v03, both from the parent experiment —
+say this:
+
+| family | site | role | selected ratio | tighten |
+|---|---|---|---|---|
+| llama-3.2-3b | hs17 | midband | 0.361 | 0.875 |
+| llama-3.2-3b | hs20 | midband | **none** | — |
+| llama-3.2-3b | hs23 | midband | **none** | — |
+| llama-3.2-3b | hs26 | late ref | **none** | — |
+| mistral-7b-v03 | hs12 | midband | 0.554 | 0.625 |
+| mistral-7b-v03 | hs15 | midband | 0.85 | 0.625 |
+| mistral-7b-v03 | hs19 | midband | **none** | — |
+| mistral-7b-v03 | hs30 | late ref | **none** | — |
+
+`all_midband_have_usable_dose: False` in **both** families. Failing to find a
+usable dose is the **modal outcome** for a mid-band site in this instrument —
+4 of 5 mid-band sites across two families produced nothing. A null at hs24 is
+therefore consistent with quarantine and equally consistent with the ordinary
+calibration failure that happens at most sites regardless of seam geometry.
+The calibration cannot separate those two. Only the sharing-ON vs sharing-OFF
+contrast can, because only it holds the site fixed and moves the mechanism.
+
+The late reference is null in both prior families too. So a null hs40 here is
+the **expected** result and is not a defect — which is exactly why the arm is
+registered as non-gating and descriptive, and why `calibrate_dose.py` exits 0
+on the mid-band arm alone.
+
+Two things this does buy us, both real:
+
+- **hs22 selecting ratio 0.361 lands on the same rung as llama-3.2-3b's hs17.**
+  Different family, different depth, different tokenizer, same normalized rung.
+  For the program's "does this generalize across model families" question that
+  is a genuine cross-family anchor — the ratio ladder appears to be measuring
+  something family-independent, which is the whole reason it was normalized by
+  each layer's own median anchor norm rather than left absolute.
+- **A usable dose at hs22 is a positive result that does not depend on hs24.**
+  A3 actuates: monotone dose-response, zero known-correct cost, self-limiting
+  at 0.85 where collapse begins. That stands on its own.
+
+This is also the first `dose_calibration_summary` for gemma4-e4b anywhere in
+the repo, so there is no same-family precedent to compare the selected rung
+against. The cross-family comparison above is the best available and should be
+read as suggestive, not as a replication.
+
+### The calibration landed, and A5 is not quarantined on this measurement
+
+24/24 cells, exit 0, ~24 min on the local 3090.
+
+| rung | hs22 (A3) | hs24 (A5) | hs40 (late ref) |
+|---|---|---|---|
+| 0.100 | 0.000 | 0.000 | 0.000 |
+| 0.153 | 0.250 | 0.000 | 0.000 |
+| 0.235 | 0.375 | 0.375 | 0.125 |
+| 0.361 | **0.500 ✅** | **0.500 ✅** | 0.125 |
+| 0.554 | 0.125 | **0.750 ✅** | 0.250 |
+| 0.850 | 0.500 ✗collapse .25 | 0.000 | 0.000 ✗collapse .67 |
+| 1.304 | 0.000 ✗collapse .25 | 0.000 | 0.000 ✗collapse 1.0 |
+| 2.000 | 0.000 ✗collapse 1.0 | 0.000 ✗collapse .625 | 0.000 ✗collapse 1.0 |
+
+Selected: **hs22 → ratio 0.361** (dose 28.5068, tighten 0.500);
+**hs24 → ratio 0.554** (dose 50.5311, tighten 0.750); **hs40 → null.**
+`all_midband_have_usable_dose: true`.
+
+Two things are worth saying plainly.
+
+**First, the honest headline: A5 actuates, and by the selection statistic it
+actuates *better* than A3** — 0.750 versus 0.500. hs24 is the first block whose
+own K/V never reach anything downstream; if the KV channel were load-bearing
+for a dosed write to take effect, hs24 is precisely where the write should have
+stopped working. It didn't. The residual-stream path appears to carry the
+boundary push on its own.
+
+That said — and this is the part the interpretation rule written above the
+result already committed us to — **this does not refute the quarantine
+account, and reporting it as a refutation would be wrong.** The stage ran
+sharing **ON only**, on the **FIT** split, with **8 fired rows per cell**. It
+is not the ON/OFF contrast. `AMENDMENT.md` Threats (c) registers A3-vs-A5 as
+non-discriminating *regardless of what it shows*, and that was written long
+before these numbers existed. What the result genuinely changes is narrower:
+it makes the tidy version of the story less likely, and it removes the
+possibility of reading an A5 null as confirmation, because there is no A5 null.
+
+The 0.750 vs 0.500 gap is also n=8 against n=8. Wilson CIs [0.41, 0.93] and
+[0.22, 0.78] overlap across most of their range. "A5 actuates" is solid;
+"A5 actuates *more*" is not a claim this instrument can make.
+
+**Second, gemma4-e4b is the first family in the repo where every mid-band site
+calibrated.** llama-3.2-3b and mistral-7b-v03 both recorded
+`all_midband_have_usable_dose: false` (1 of 3 and 2 of 3 sites usable
+respectively). Here it is 2 of 2. The prediction logged above — that a null was
+the modal outcome and hs24 would probably produce one — was **wrong**, and it
+was wrong in the direction that makes the experiment more informative rather
+than less: both arms are now runnable.
+
+hs40's null is the one part that went exactly as the precedent said. Null late
+reference in all three families now.
+
+**Consequence: A6 is unlocked.** It was registered
+`conditional_on: "A3 has a usable FIT dose"`. A3 has one. A6 is hs23, already
+reachable through the pre-existing `shallow_ladder` set, so nothing further
+needs registering. Per its `coincides_with` note it runs once and is reported
+under both the A6 and D4 labels.
+

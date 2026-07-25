@@ -121,11 +121,48 @@ def shallow_ladder_hs_indices(family_cfg: dict[str, Any]) -> list[int]:
     return list(values)
 
 
+def seam_pair_hs_indices(family_cfg: dict[str, Any]) -> list[int]:
+    """The two sites straddling the KV donor seam: A3 (hs22) and A5 (hs24).
+
+    Added 2026-07-25, after G0-ALIN Part 1 resolved A3 to hs22 and A5 to hs24
+    (AMENDMENT.md "Part 1 RESULT"). Before this, both arms named sites that NO
+    site set contained, so `build_directions.py` / `gate_fit.py` /
+    `calibrate_dose.py` -- all of which select sites through `--site-set` --
+    could not address them at all. The two arms carrying this experiment's
+    registered non-gating expectation had no path to a direction, a tau or a
+    dose. Found by the 2026-07-25 smoke run; see NOTEBOOK.md.
+
+    ONE set covering BOTH sites, deliberately, rather than one set per arm.
+    A3-vs-A5 is a contrast, and it is read as one: any difference in HOW the
+    two directions or thresholds were fit lands squarely on the comparison the
+    experiment is registered to make. A single invocation of each fitting stage
+    over both sites makes "identical code path" structural rather than something
+    to be checked afterwards.
+
+    Deliberately NOT an extension of shallow_ladder_hs, for the same two reasons
+    that key gives for not extending midband_candidates_hs, plus one specific to
+    this pair: shallow_ladder's registered story is the donor-REACHABLE band
+    (gates.yaml `descriptive_shallow_ladder`), and hs24 is the quarantined site.
+    Folding it in would put a site inside a set whose definition excludes it,
+    and would make D1-D4's already-committed roll-ups stale.
+    """
+    values = family_cfg.get("band_selection", {}).get("seam_pair_hs")
+    if not values:
+        raise ValueError(
+            f"{family_cfg.get('family')}: seam_pair_hs not present in "
+            "band_selection -- the A3/A5 sites are resolved by G0-ALIN Part 1 "
+            "and must be registered in families/<family>.yaml before the arms "
+            "can be fit. Only gemma4-e4b defines this pair."
+        )
+    return list(values)
+
+
 #: Named site sets selectable with `--site-set`. Adding a set here is an
 #: instrument change and must be registered in gates.yaml before it is run.
 SITE_SETS: dict[str, Any] = {
     "midband": midband_hs_indices,
     "shallow_ladder": shallow_ladder_hs_indices,
+    "seam_pair": seam_pair_hs_indices,
 }
 
 

@@ -547,3 +547,54 @@ summary_rule: >-
   checkpoint such as Gemma-4-E2B whose different sharing ratio puts its seam at a
   different depth) before any claim. Nothing here is pooled with the headline
   matrix or with the parent experiment.
+
+# ---------------------------------------------------------------------------
+# Registered 2026-07-25, after G0-ALIN Part 1. family_config.SITE_SETS requires
+# any new named site set to be registered here before it is run.
+# ---------------------------------------------------------------------------
+seam_pair_site_set:
+  name: seam_pair
+  sites:
+    - id: A3
+      site: hs22
+      relative_depth: 0.524
+      hooks_output_of_block: 21
+      donors_reachable: "22 and 23"
+    - id: A5
+      site: hs24
+      relative_depth: 0.571
+      hooks_output_of_block: 23
+      donors_reachable: "NONE -- quarantined; block 24 is the first that reads K/V from the donors"
+  condition: "sharing ON (unmodified model), dosed"
+  gating: >-
+    NONE beyond what cell.yaml already registers. This entry adds no gate and
+    changes no threshold. A3 and A5 carry the experiment's registered NON-GATING
+    expectation (experiment.yaml prediction: "on the unmodified model A3 clears
+    both gates while A5 does not"); they do not enter success_rule.
+  why_one_set_and_not_two: >-
+    A3-vs-A5 is read as a contrast, so any difference in HOW the two directions
+    or thresholds were fit lands directly on that comparison. One set means one
+    invocation of build_directions.py, gate_fit.py and calibrate_dose.py over
+    both sites, which makes the identical-code-path requirement structural
+    rather than an after-the-fact check.
+  why_not_folded_into_shallow_ladder: >-
+    shallow_ladder's registered definition is the donor-REACHABLE band
+    (descriptive_shallow_ladder.why_these_sites, holding reachability constant
+    at "both donors" while sweeping depth). hs24 is the quarantined site and is
+    exactly what that definition excludes. Folding it in would also make D1-D4's
+    already-committed roll-ups stale.
+  what_this_set_does_not_fix: >-
+    Registering the sites makes them addressable. It does NOT change the
+    confound already recorded at AMENDMENT.md Threats (c): A3-vs-A5 varies donor
+    reachability AND two blocks of computation at once, so that contrast alone
+    discriminates nothing. D1-D3 hold reachability constant and are what make a
+    depth trend attributable to depth. Nothing here weakens that reading.
+  no_re_extraction_required: >-
+    The clean use_cache=True extract already stores all 43 hidden states,
+    including hs22 and hs24 (both are in G0-ALIN's RECORDED_FOR). These arms
+    consume existing activations; they add direction fits, dose calibrations and
+    dosed generation, not an extraction.
+  dose_ladder: >-
+    The registered ratio ladder, unchanged. Zero usable rungs at a site = that
+    arm is a dose-viability NOT-RUN with its full per-rung table. The ladder
+    DOES NOT MOVE.

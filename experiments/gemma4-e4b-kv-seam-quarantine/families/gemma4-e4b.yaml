@@ -136,6 +136,16 @@ band_selection:
   - 18
   - 20
   - 23
+  # The two sites straddling the KV donor seam, resolved by G0-ALIN Part 1
+  # 2026-07-25: A3 = hs22 (donors 22 and 23 reachable) and A5 = hs24 (quarantined,
+  # reads K/V from the donors rather than from its own block). Registered as ONE
+  # set because A3-vs-A5 is a contrast and is fit in a single pass, so "identical
+  # code path" is structural rather than checked after the fact. NOT folded into
+  # shallow_ladder_hs: that set's registered story is the donor-reachable band and
+  # hs24 is precisely the site it excludes. See gates.yaml seam_pair_site_set.
+  seam_pair_hs:
+    - 22
+    - 24
 doses:
   status: not_yet_calibrated
   ladder:

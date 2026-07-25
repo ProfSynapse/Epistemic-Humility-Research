@@ -469,16 +469,38 @@ execution counter (`count_kv_projection_calls`), and the donor key capture
 (`capture_donor_keys`). It is Gemma-4-specific by construction and must not be
 promoted into `synaptic-tuner/`.
 
-Required integration work before sign (not yet done in this draft -- see "Open
-questions at sign" #2): a `--kv-sharing {on,off}` flag threaded through
-`calibrate_dose.py`, `run_contrast.py`, and `pipeline.py`, wrapping every model
-forward in `kv_seam_patch.kv_sharing(...)`, and writing the condition into every
-output record and manifest so no artifact is condition-ambiguous.
+Required integration work before sign (see "Open questions at sign" #2): a
+`--kv-sharing {on,off}` flag threaded through `calibrate_dose.py`,
+`run_contrast.py`, and `pipeline.py`, wrapping every model forward in
+`kv_seam_patch.kv_sharing(...)`, and writing the condition into every output
+record and manifest so no artifact is condition-ambiguous.
+
+**Status updated 2026-07-25: done for every stage exercised so far, and the
+artifacts demonstrate it rather than merely asserting it.**
+`build_manifest_layers.seam_pair.json` and `gate_fit_layers.seam_pair.json` both
+carry `"kv_sharing": "on"`, `dose_calibration_summary.seam_pair.json` carries it
+at top level, and all 24 per-cell calibration records carry it individually. The
+calibration checkpoint filename is scoped by **both** site set and condition, so
+an ON run and an OFF run of the same cells can neither collide nor silently
+resume from each other. `run_contrast.py` has not been executed in any mode, so
+its threading is written but **not yet exercised** — that part stays open.
 
 Prerequisite: `synaptic-tuner` at or after commit `7a44eb3`
 (`fix/gemma4-decoder-layer-path`), which added `model.language_model.layers` to
 `MechInterp/intervention/hooks.py::_LAYER_PATHS`. Without it the intervention
 engine cannot locate Gemma-4's decoder blocks at all.
+
+**Correction 2026-07-25: `>=` is misleading here and should not be read as a
+version floor.** `7a44eb3` is the head of an *unmerged* remote branch. The
+canonical checkout's submodule sits at `b1ea382`, a later commit on the
+mainline, and does **not** contain the fix — its `_LAYER_PATHS` has
+`language_model.model.layers` but not the `model.language_model.layers` entry
+gemma-4-E4B needs. So "at or after `7a44eb3`" is satisfied by strictly fewer
+checkouts than it appears to be, and anyone running this experiment from the
+canonical checkout gets a tuner that cannot locate the decoder blocks. Every
+stage run so far used the `jspace-cross-family` worktree's submodule, which is
+the only local checkout that actually satisfies the requirement. This wording
+should be replaced with the specific commit-or-branch requirement before sign.
 
 ### Generation contract
 
@@ -1568,9 +1590,86 @@ Two smaller points, both already reflected in the draft above:
   unmodified model and a C1 failure has no bearing on them -- which is another
   reason the load-bearing contrast should not depend on C1 at all.
 
+## Pre-sign record: the `seam_pair` site set and its dose calibration
+
+**Added 2026-07-25, pre-sign, under the `seam_pair_dose_calibration` carve-out
+in `cell.yaml`. This section records instrument and input state. It adjudicates
+no gate and resolves no arm.**
+
+Resolving A3 = hs22 and A5 = hs24 (G0-ALIN Part 1) created a manifest gap: every
+stage selects sites through `--site-set`, resolved against
+`families/gemma4-e4b.yaml band_selection`, which registered only
+`midband_candidates_hs: [34, 38, 42]` and `shallow_ladder_hs: [15, 18, 20, 23]`.
+Addressable sites were `{15, 18, 20, 23, 34, 38, 42}` — **neither A3 nor A5 was
+addressable by any stage.** A new site set `seam_pair: [22, 24]` was registered
+across the three required surfaces (family yaml, `family_config.SITE_SETS`,
+`gates.yaml`). `shallow_ladder` and `midband` are untouched, so their existing
+artifacts remain comparable against their own history.
+
+**G0 readout, CPU-only** (`gate_fit.py` fits tau on cached activations and never
+loads the checkpoint):
+
+| site | role | AUC (neg_z_d, FIT) | TPR | FPR | tau | G0 ≥ 0.90 |
+|---|---|---|---|---|---|---|
+| hs22 (A3) | below seam, reaches both donors | 0.999702 | 1.000 | 0.006 | +0.09325 | pass |
+| hs24 (A5) | at seam, no donors | 0.997569 | 1.000 | 0.033 | −0.10294 | pass |
+
+This matters for interpretability, not just bookkeeping: **an A5 failure to
+actuate could not have been attributed to the readout degrading at hs24**, since
+the read is near-perfect there. Only the write would have been in question.
+
+**Dose calibration** (FIT split, sharing **ON** only, registered 8-rung
+`RATIO_LADDER`, 8 confab + 8 known rows per cell; 24 cells, exit 0):
+
+| site | selected ratio | dose | tighten | known-correct cost | collapse |
+|---|---|---|---|---|---|
+| hs22 (A3) | 0.361 | 28.5068 | 0.500 | 0.000 | 0.000 |
+| hs24 (A5) | 0.554 | 50.5311 | 0.750 | 0.000 | 0.000 |
+| hs40 (late ref) | **null** | — | — | — | — |
+
+`all_midband_have_usable_dose: true`. Readback stayed within tolerance at all 24
+cells. Both ladders self-limit at high dose (collapse appears at 0.85–2.0),
+which is the ladder behaving as designed. hs40's null is the expected outcome —
+the late reference is null in llama-3.2-3b and mistral-7b-v03 as well — and the
+late arm is skipped without affecting the primary.
+
+**What this does and does not establish.** A5 actuates, and on the selection
+statistic it actuates at least as well as A3. hs24 is the first block whose own
+K/V never reach anything downstream, so if the KV channel were load-bearing for
+a dosed write to take effect, hs24 is where it should have stopped working.
+It did not.
+
+That is **not** a refutation of the quarantine account and is not reported as
+one. This stage ran sharing ON only, on FIT, with 8 fired rows per cell; it is
+not the ON/OFF contrast. Threats (c) above already registers A3-vs-A5 as
+descriptive and non-discriminating *regardless of what it shows*, written before
+these numbers existed. The 0.750-vs-0.500 gap is n=8 against n=8 with Wilson CIs
+[0.41, 0.93] and [0.22, 0.78] — "A5 actuates" is supported; "A5 actuates more"
+is not. What the result does change is narrower and real: the tidy version of
+the quarantine story is less likely, and an A5 null can no longer be read as
+confirmation, because there is no A5 null.
+
+**Consequence for A6.** A6 is registered `conditional_on: "A3 has a usable FIT
+dose"`. A3 has one, so **A6 is unlocked.** A6 is hs23, already addressable
+through `shallow_ladder`; no further registration is required. Per its
+`coincides_with` note it runs once and is reported under both the A6 and D4
+labels.
+
+**Incidental, descriptive, non-gating.** The fitted KU directions at hs22 and
+hs24 are essentially **orthogonal** (cosine +0.005) despite both reading
+known-unknown above 0.997 AUC. Adjacent sites elsewhere share more (0.20–0.26 at
+one step). Nothing in the design depends on this; it is recorded because "the
+same direction is readable at both depths" would be the wrong mental picture.
+
 ## Outcome
 
 Filled at resolve. Record the verdict, the per-arm G1/G2 results with Wilson CIs,
 the primary contrast, every secondary contrast, the G0-KV preflight record, the
 C1 numbers, and the one-sentence summary that also goes into `verdict:` in the
-manifest. No GPU work has run for this experiment as of this draft.
+manifest.
+
+**No arm has run.** The GPU work done to date is confined to the two carve-outs
+recorded in `cell.yaml execution.gpu_carve_outs` — the donor projection
+diagnostic and the `seam_pair` dose calibration above. Both are pre-sign
+instrument work on the FIT split. `run_contrast.py` has not been executed in any
+mode, no held-out row has been touched, and no gate has been adjudicated.

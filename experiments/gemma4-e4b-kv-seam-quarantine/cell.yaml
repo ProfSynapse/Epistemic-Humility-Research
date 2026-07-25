@@ -282,19 +282,30 @@ cache_contract:
     cache_construction_identical_in_both_arms, cache_shape,
     cache_growth_under_off, cache_substitution_noop_under_on
 
+# CORRECTED 2026-07-25 against the actual argparse of every script. This list is
+# the runbook someone follows to reproduce the cell, so a flag that does not
+# exist is a reproducibility defect, not a typo. Four lines were wrong: the
+# preflight was named backwards AND marked unwritten when it is written and
+# passing; `run_contrast.py --arm` does not exist (it selects by --site-set,
+# which is what makes A3+A5 one invocation); `alin_sweep.py --site/--both-
+# conditions` are Part 2's interface and are still unimplemented; and alin_sweep
+# was marked NOT YET WRITTEN after it had been written and run. Sites are
+# selected by NAMED SITE SET everywhere -- never by a bare --site, which no
+# stage accepts -- so a typo cannot silently sweep an unregistered band.
 pipeline_stages:
-  - alin_sweep.py                                         # G0-ALIN PART 1 (site selection); CPU-only over the parent's cached ON activations. NOT YET WRITTEN. Recommended PRE-SIGN.
-  - preflight_kv_seam.py                                  # G0-KV; see gates.yaml. NOT YET WRITTEN.
-  - run_contrast.py --arm C0 --kv-sharing on --split fit  # C0/C1 precondition, FIT only
-  - run_contrast.py --arm C1 --kv-sharing off --split fit
-  - extract_anchor.py --kv-sharing off                    # GPU. No OFF activation cache exists anywhere -- the OFF model has never been run. Feeds BOTH the OFF direction fits and G0-ALIN Part 2.
-  - alin_sweep.py --site hs38 --both-conditions           # G0-ALIN PART 2 (discrimination measurement). Identical logit-lens path / FIT row ids / answer-token set; only the activation file differs. LOAD-BEARING: without it the primary contrast discriminates nothing.
-  - build_directions.py --site <hs> --kv-sharing <cond>
-  - gate_fit.py --site <hs> --kv-sharing <cond>
-  - calibrate_dose.py --site <hs> --kv-sharing <cond>
-  - run_contrast.py --arm <A*> --mode smoke --n-rows 8
-  - run_contrast.py --arm <A*> --mode full
-  - rollup.py                                             # per-arm tables + contrasts. NOT YET WRITTEN.
+  - kv_seam_preflight.py                                                        # G0-KV; see gates.yaml. WRITTEN, 6/6 PASS, CPU-only, no checkpoint download.
+  - alin_sweep.py [--emit-selection]                                            # G0-ALIN PART 1 (site selection). CPU-only over the parent's cached ON activations. RUN 2026-07-25 -> A3=hs22, A5=hs24, A6=hs23.
+  - build_directions.py --family <f> --site-set seam_pair --kv-sharing on       # CPU. A3/A5 directions. RUN 2026-07-25.
+  - gate_fit.py --family <f> --site-set seam_pair --kv-sharing on               # CPU, no checkpoint load. RUN 2026-07-25: hs22 AUC 0.9997, hs24 AUC 0.9976, both clear the G0 0.90 floor.
+  - calibrate_dose.py --family <f> --site-set seam_pair --kv-sharing on         # GPU. Also recalibrates the late reference hs40 (hs_list = site set + late site, by design).
+  - run_contrast.py --family <f> --site-set seam_pair --kv-sharing on --mode smoke --n-rows 8
+  - run_contrast.py --family <f> --site-set seam_pair --kv-sharing on --mode full
+  # ---- the OFF condition, all still blocked on the OFF extraction ----
+  - extract_anchor.py --family <f> --site-set <set> --kv-sharing off            # GPU. No OFF activation cache exists anywhere -- the OFF model has never been run. Feeds BOTH the OFF direction fits and G0-ALIN Part 2.
+  - alin_sweep.py <Part 2 interface, NOT YET IMPLEMENTED>                       # G0-ALIN PART 2 (discrimination measurement). Same script pointed at the OFF extraction: identical logit-lens path / FIT row ids / answer-token set, only the activation file differs. LOAD-BEARING: without it the primary contrast discriminates nothing. The --site/--both-conditions flags this line used to name do not exist yet.
+  - build_directions.py / gate_fit.py / calibrate_dose.py --kv-sharing off      # readouts.refit_policy: OFF arms refit their OWN directions, tau and median anchor norms on the SAME FIT rows.
+  - run_contrast.py --site-set midband --kv-sharing {on,off} --mode full        # A1 vs A2, the primary contrast.
+  - rollup.py                                                                   # per-arm tables + contrasts. NOT YET WRITTEN.
 
 integration_status:
   state: NOT_READY_TO_SIGN
@@ -339,3 +350,74 @@ execution:
         rather than vacuous. Record:
         analysis/gemma4-e4b/donor_projection_diagnostic.json (private).
         AMENDMENT.md "Open questions at sign" #4 is CLOSED.
+    - id: seam_pair_dose_calibration
+      authorized_by: >-
+        lead, explicitly, 2026-07-25, in answer to a question that named this
+        exact stage and its cost ("Through dose calibration (GPU)"). The same
+        answer authorized the seam_pair site set that makes the stage runnable.
+      scope: >-
+        Load google/gemma-4-E4B-it and run calibrate_dose.py --site-set
+        seam_pair --kv-sharing on ONLY: the registered 8-rung RATIO_LADDER,
+        8 confab + 8 known rows per cell, sharing ON. No arm executes, no
+        held-out row is touched, and no gate is adjudicated.
+      sites_actually_calibrated: >-
+        THREE, not two. CORRECTED 2026-07-25 mid-run, after the launch log
+        showed 24 pending cells rather than the 16 this entry originally
+        implied. calibrate_dose.py sets `hs_list = <selected site set> +
+        [late_reference_hs]` unconditionally (line 167), so EVERY site set also
+        recalibrates the late reference hs40 -- by design and documented at
+        lines 150-157: the late arm's frozen direction and gate are reused
+        verbatim, but its scalar DOSE is recalibrated fresh against whichever
+        ladder is running, because a dose calibrated under a different ladder
+        would not be comparable. The original wording here said "at hs22 and
+        hs24" and was narrower than what actually runs. Recording the
+        correction rather than quietly widening the scope: the extra site is
+        the script's registered behaviour, not an expansion of the authorized
+        work, and hs40 is a non-gating descriptive arm either way.
+      writes_to_analysis_committed: >-
+        YES, and this is the difference from the donor_projection_diagnostic
+        carve-out above, which wrote nothing there. This stage writes
+        dose_calibration_summary.seam_pair.json plus a private per-cell runlog.
+        That is the stage's normal output and is what makes A3/A5 runnable; it
+        is recorded here so the carve-out is not read as narrower than it is.
+      rationale: >-
+        A3 and A5 could not be fit at all before the seam_pair site set existed,
+        so their dose calibration is the last artifact standing between the
+        resolved arm table and a runnable experiment. Doing it pre-sign is the
+        same argument as the donor diagnostic: it de-risks the design while the
+        design can still change.
+      does_not_lift: >-
+        gpu_work_by_this_agent above still stands. This carve-out covers dose
+        CALIBRATION on the FIT split only. It does NOT authorize run_contrast.py
+        in any mode, held-out evaluation, or any arm.
+      status: >-
+        RUN AND COMPLETE, 2026-07-25. Exit 0, all 24 (site, rung) cells, ~24 min
+        on the local 3090. Report:
+        analysis-committed/gemma4-e4b/dose_calibration_summary.seam_pair.json;
+        per-cell runlog analysis/gemma4-e4b/runlog/
+        calibrate_dose_records_v2.seam_pair.jsonl (private).
+      result: >-
+        BOTH mid-band sites found a usable dose --
+        all_midband_have_usable_dose: true. hs22 (A3) selected ratio 0.361
+        (dose 28.5068, tighten 0.500); hs24 (A5) selected ratio 0.554 (dose
+        50.5311, tighten 0.750). The late reference hs40 selected NOTHING
+        (null), which is the expected and precedented outcome -- it is null in
+        both prior families -- and the late arm is skipped without touching the
+        primary. Readback stayed within tolerance (1.00) at all 24 cells, and
+        known-correct cost control was 0.000 at every cell.
+      what_this_does_not_establish: >-
+        A5 actuating at least as well as A3 is NOT a refutation of the
+        quarantine account and must not be reported as one. This stage ran
+        sharing ON only, on the FIT split, with 8 fired rows per cell -- it is
+        not the ON/OFF contrast, which is the only measurement registered as
+        able to discriminate. AMENDMENT.md Threats (c) already registers
+        A3-vs-A5 as descriptive and non-discriminating REGARDLESS of what it
+        shows. What the result does do is make the tidy version of the
+        quarantine story less likely, and remove the possibility of reading an
+        A5 null as confirmation -- there is no A5 null to read.
+      consequence_for_A6: >-
+        A6 is registered conditional_on "A3 has a usable FIT dose". A3 has one
+        (ratio 0.361), so A6 is UNLOCKED. A6 is hs23, already addressable via
+        the pre-existing shallow_ladder set, so no further registration is
+        needed. Per its coincides_with note it runs ONCE and is reported under
+        both the A6 and D4 labels.

@@ -1,0 +1,48 @@
+{
+  "family": "gemma4-e4b",
+  "substrate": "bf16",
+  "base_model": "google/gemma-4-E4B-it",
+  "site_set": "seam_pair",
+  "hs_indices": [
+    22,
+    24
+  ],
+  "kv_sharing": "on",
+  "hidden_dim": 2560,
+  "random_state": 20260707,
+  "reproducibility_verified": true,
+  "extract_manifest_sha256": "060c3f3b225fc4bca59a5b6bb91a6c91bf13d4798f14a4e3a84bd8dd09158b01",
+  "split_manifest_sha256": "8d2281179ab865bea8fd7918c0ee14b33db7113c4ed375ff0740c36cee2f1d87",
+  "layers": {
+    "hs22": {
+      "hs_index": 22,
+      "decoder_block_index": 21,
+      "n_known_correct_answered_fit": 180,
+      "n_confab_fit": 112,
+      "n_unknown_refused": 76,
+      "cos_u_d_u_p": 0.00917669810408344,
+      "cos_caution_dir_c_hat": 0.9676636508262677,
+      "mu_d": 5.776018829990967,
+      "sigma_d": 11.779634842129118,
+      "mu_p": 0.3173294849793078,
+      "sigma_p": 0.04829646694349945,
+      "mu_c": 3.408982981542152,
+      "sigma_c": 12.863870168281267
+    },
+    "hs24": {
+      "hs_index": 24,
+      "decoder_block_index": 23,
+      "n_known_correct_answered_fit": 180,
+      "n_confab_fit": 112,
+      "n_unknown_refused": 76,
+      "cos_u_d_u_p": 0.09746340930850925,
+      "cos_caution_dir_c_hat": 0.873646511238203,
+      "mu_d": 7.387925355595129,
+      "sigma_d": 5.987951427071386,
+      "mu_p": -0.7383422654800783,
+      "sigma_p": 0.3424568090904631,
+      "mu_c": 12.822942804526402,
+      "sigma_c": 7.570134878279889
+    }
+  }
+}
