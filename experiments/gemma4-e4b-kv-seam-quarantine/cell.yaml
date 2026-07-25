@@ -328,7 +328,15 @@ placebo_direction_control:
       instead of gain * sigma. test_factorial_smoke.py pins sigma != gain as a
       regression guard. Any implementation here carries the same assertion.
   k_number_of_draws:
-    status: OPEN AT SIGN -- see AMENDMENT.md "Open questions at sign"
+    status: CLOSED
+    K: 5
+    resolved_by_lead: >-
+      FIXED at K = 5 on 2026-07-25 by the lead, before any placebo arm runs and
+      before any arm of this experiment has run. The drafter offered 3 (the
+      inherited floor), 5, and 15 (census-matched); 5 stands. Scope was fixed at
+      the same time to hs22 and hs24 ONLY -- the P-arms are NOT extended to the
+      shallow ladder D1-D4. This parameter is now CLOSED and moves for no result.
+    scope_of_this_control: "hs22 (P1) and hs24 (P2). D1-D4 have no placebo counterpart."
     drafter_recommendation: 5
     hard_floor: 3
     floor_source: >-

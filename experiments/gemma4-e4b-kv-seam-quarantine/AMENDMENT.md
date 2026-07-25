@@ -1541,21 +1541,23 @@ Registered before any GPU work. Calls do not move after results.
    in one respect on 2026-07-25: item 7 below adds a second live decision. Item
    6's substance -- that the primary contrast is settled -- is unchanged.)*
 
-7. **The placebo arms: three decisions, none of them the drafter's to make.**
+7. **The placebo arms.** *(Two of the three sub-items were CLOSED by the lead
+   on 2026-07-25, the same day, before any arm has run. (b) remains a recorded
+   limitation rather than an open decision.)*
    Registered 2026-07-25, pre-signature, before any arm has run: arms `P1`/`P2`
    in `cell.yaml`, block `placebo_direction_control`, and gate
    `g3_direction_specificity` in `gates.yaml`. What is registered is a
    matched-magnitude random-direction control at hs22 and hs24 -- same site,
    same dose, same fired rows, same law, **only the written direction differs**.
-   Three things are deliberately left open.
 
-   **(a) K, the number of draws.** Floor 3, inherited as a hard guard from
-   `rr3-corrected-placebo-replication/gates_lib.py` (it raises below 3). Drafter
-   recommends **5**. The cost is roughly linear in K: order 20-30 min of GPU per
-   draw per site, so K=5 across both sites is order 3-5 GPU hours plus one
-   undosed baseline pass per site. K=3 is defensible and cheaper; K=15 would
-   match the census construction but costs three times K=5 and is only worth it
-   if the draws are also intended to seed a reusable gemma family null.
+   **(a) K, the number of draws. CLOSED: K = 5, hs22 and hs24 only.** Fixed by
+   the lead 2026-07-25, before any placebo draw exists. The drafter offered 3
+   (the inherited hard floor from `rr3-corrected-placebo-replication/gates_lib.py`,
+   which raises below 3), 5, and 15 (census-matched); **5** stands. Cost is
+   roughly linear in K -- order 20-30 min of GPU per draw per site, so order 3-5
+   GPU hours across both sites plus one undosed baseline pass per site. The
+   P-arms are **not** extended to the shallow ladder D1-D4; see (c). This
+   parameter is now CLOSED and moves for no result.
 
    **(b) The criterion is RG1, not the program's current best.** The state of
    the art is `gate-contribution-factorial` S1, whose own text (`gates.yaml:108`)
@@ -1571,19 +1573,32 @@ Registered before any GPU work. Calls do not move after results.
    the stronger criterion, the purchase is a gemma placebo census, and that is a
    separate experiment, not a parameter here.
 
-   **(c) Two consequences of leaving `success_rule` and `falsifier_rule`
-   untouched.** Both rules are reproduced verbatim; G3 changes neither. That is
-   the conservative choice, and it has two costs the lead should see before
-   signing rather than at resolve.
-   - `falsifier_rule` fires only if A3 fails a **primary** gate. An A3 that
-     clears G1 *non-specifically* would therefore block falsification while not
-     being a real actuation. Amending the falsifier to fire on a G3 failure would
-     make falsification **easier** than it was before the gate was added, and the
-     drafter will not make a change with that direction unilaterally.
-   - `falsifier_rule` clause (ii) reads any D1-D4 G1 pass as "gemma IS actuable".
-     No D arm has a placebo counterpart, so that reading would rest on exactly
-     the evidence G3 exists to demand. Extending P-arms to the four D sites is a
-     cost decision (roughly quadrupling (a)'s estimate), not a drafting one.
+   **(c) `success_rule` and `falsifier_rule`. One CLOSED, one standing as a
+   limitation.**
+   - **`success_rule`: unchanged, and it stays unchanged.** A3 and A5 are
+     descriptive and already sit outside it. G3 cannot make the prediction MET.
+   - **`falsifier_rule`: AMENDED by the lead 2026-07-25.** The drafter registered
+     this as open and declined to decide it, because the amendment runs in the
+     **permissive** direction -- it makes falsification *easier* than the rule
+     originally registered, by adding a second way for A3 to count as failing.
+     The lead's decision, with the lead's reasoning: an A3 that raises hedging no
+     more than a random vector of the same magnitude at the same site on the same
+     rows has not actuated in any sense this program can use, and letting such a
+     result block falsification would preserve the hypothesis on evidence that
+     supports nothing. Taken **before any arm has run and before any placebo draw
+     exists**, so it cannot have been chosen to fit a result.
+     The new clause is bounded, and the bounds are registered with it in
+     `gates.yaml falsifier_rule [A3-CLAUSE]`: G3 must be **ADJUDICATED** (K = 5
+     accepted draws clearing SC1, P1 readback in tolerance) -- a NOT-RUN or
+     unadjudicated G3 is **never** read as a failed G3; PASS-DEGENERATE counts as
+     a pass and does not satisfy the clause; and the clause applies to **A3 only**,
+     leaving A2's limb of the falsifier untouched.
+   - **Standing limitation, not resolved.** `falsifier_rule` clause (ii) reads
+     any D1-D4 G1 pass as "gemma IS actuable", and no D arm has a placebo
+     counterpart. Scope was fixed at hs22/hs24 only, so extending P-arms to the
+     four D sites (roughly quadrupling (a)'s cost) was declined. Any D-arm
+     actuation claim therefore rests on evidence G3 exists to demand, and **must
+     be reported with that caveat attached** rather than as a clean positive.
 
    **Nothing in this item authorizes a run.** `execution.gpu_work_by_this_agent`
    remains `forbidden`; the two standing carve-outs
@@ -1758,7 +1773,17 @@ because at `hidden_dim = 2560` only about a third of raw draws clear it and an
 unscreened draw biases the control *toward* the true direction. Magnitude is
 matched by the `sigma = 1.0` convention and verified by the same readback
 tolerance the true arms carry. G3 passes at `effect_ratio >= 3.0`, denominator
-`max` over draws, transcribed from RR3.
+`max` over the **K = 5** accepted draws, transcribed from RR3.
+
+**One rule was amended, by the lead, in the permissive direction.**
+`falsifier_rule` now lets an A3 that clears G1 while **failing an adjudicated
+G3** count toward falsification (`gates.yaml falsifier_rule [A3-CLAUSE]`). That
+makes falsification *easier* than the rule originally registered, which is why
+the drafter declined to make it and why it is recorded here as the lead's call,
+taken before any arm has run and before any placebo draw exists. Its bounds are
+registered with it: a NOT-RUN or unadjudicated G3 is never read as a failed G3,
+PASS-DEGENERATE counts as a pass, and the clause reaches A3 only. `success_rule`
+is untouched and stays untouched — G3 cannot make the prediction MET.
 
 **Why the fire set is held fixed rather than permuted.** The
 `gate-contribution-factorial` construction permutes the gate indices, which

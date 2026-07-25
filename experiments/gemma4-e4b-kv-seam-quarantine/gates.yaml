@@ -459,21 +459,26 @@ gates:
       pooled with any direction-specific result in this program. It is not
       re-run with a different dose or a different K to chase a pass.
     interaction_with_success_rule: >-
-      NONE, and this is deliberate. A3 and A5 are DESCRIPTIVE and already sit
-      outside success_rule; adding a gate to them cannot change what the
-      experiment's prediction turns on. success_rule and falsifier_rule are
-      reproduced UNCHANGED below. See AMENDMENT.md "Open questions at sign" for
-      the two consequences of leaving them unchanged, both of which are the
-      lead's call and neither of which is resolved here:
-      (1) falsifier_rule requires A3 to fail a PRIMARY gate. An A3 that passes G1
-      non-specifically therefore blocks the falsifier even though it is not a
-      real actuation. Left as written, because amending the falsifier to fire on
-      a G3 failure would make falsification EASIER after the gate was added --
-      the drafter will not make that change unilaterally.
-      (2) falsifier_rule clause (ii) reads a D1-D4 G1 pass as "gemma IS actuable".
-      No D arm has a placebo counterpart, so that reading would rest on exactly
-      the evidence this gate exists to demand. Extending P-arms to the D sites is
-      a cost decision, not a drafting one.
+      NONE. A3 and A5 are DESCRIPTIVE and already sit outside success_rule;
+      adding a gate to them cannot change what the experiment's prediction turns
+      on. success_rule is reproduced UNCHANGED. G3 cannot make the prediction
+      MET.
+    interaction_with_falsifier_rule: >-
+      RESOLVED 2026-07-25 BY THE LEAD, pre-signature, before any arm has run.
+      The drafter registered this as open and declined to decide it. The lead's
+      decision: a G3 failure at A3 DOES count toward the falsifier, via
+      falsifier_rule [A3-CLAUSE] clause (ii). See that rule for the reasoning,
+      the required ADJUDICATED precondition, and the four registered limits --
+      in particular that an unadjudicated or NOT-RUN G3 is never read as a failed
+      G3, and that PASS-DEGENERATE is a pass and does not satisfy the clause.
+      This is recorded as a PERMISSIVE amendment: it makes falsification easier
+      than the originally registered rule.
+      NOT resolved, and standing as a limitation: falsifier_rule clause (ii)
+      reads a D1-D4 G1 pass as "gemma IS actuable", and no D arm has a placebo
+      counterpart. The lead fixed this control's scope at hs22 and hs24 only
+      (cell.yaml k_number_of_draws.scope_of_this_control), so any D-arm actuation
+      claim remains unsupported by a specificity control and must be reported
+      with that caveat attached.
     reporting: >-
       Reported whatever it shows, including when the matched true arm is a
       dose-viability NOT-RUN (in which case its placebo is NOT-RUN too and the
@@ -553,10 +558,39 @@ success_rule: >-
   a D-arm null does not make it FAILED.
 
 falsifier_rule: >-
+  AMENDED 2026-07-25 BY THE LEAD, pre-signature, before any arm has run. The
+  amendment is the single clause marked [A3-CLAUSE] below; every other word is
+  as originally registered. IT IS RECORDED AS A PERMISSIVE CHANGE: it makes
+  falsification EASIER than the rule it replaces, by adding a second way for A3
+  to count as failing. The drafter declined to make it unilaterally for exactly
+  that reason and it is the lead's call, taken with the reasoning stated here --
+  an A3 that raises hedging no more than a random vector of the same magnitude
+  at the same site on the same rows has not actuated in any sense this program
+  can use, and letting such a result block falsification would preserve the
+  hypothesis on evidence that supports nothing. Made before any arm has run and
+  before any placebo draw exists, so it cannot have been chosen to fit a result.
   FALSIFIER: C1 PASSES its criterion, A2's write verifies (readback within
-  tolerance at every dosed cell), A2 fails either primary gate, AND A3 also
-  fails either primary gate => the KV-quarantine explanation of the gemma null
-  is FALSIFIED. The null stands as a property of the model rather than of the
+  tolerance at every dosed cell), A2 fails either primary gate, AND
+  [A3-CLAUSE] A3 either (i) fails either primary gate, or (ii) clears G1 while
+  FAILING g3_direction_specificity on an ADJUDICATED G3
+  => the KV-quarantine explanation of the gemma null is FALSIFIED.
+  [A3-CLAUSE] SCOPE AND LIMITS, registered with the amendment so the permissive
+  direction is bounded:
+  - "ADJUDICATED" is required and is narrow. G3 must have produced an effect
+    ratio from K = 5 accepted draws that cleared SC1, with P1's readback within
+    tolerance. If P1 is a NOT-RUN for any reason -- A3 has no usable dose, the
+    redraw ledger exhausts max_redraws, readback fails -- then G3 is
+    UNADJUDICATED and clause (ii) is UNAVAILABLE. An unadjudicated gate is not a
+    failed gate, and a missing control may never be read as a control that
+    failed.
+  - PASS-DEGENERATE (max placebo lift exactly 0.000, effect ratio undefined) is
+    a G3 PASS per zero_denominator_rule and therefore does NOT satisfy clause
+    (ii).
+  - Clause (ii) applies to A3 ONLY. A2 is unaffected: it has no placebo arm, its
+    limb of the falsifier is untouched, and a G3 result at hs22 says nothing
+    about hs38.
+  - This amendment does NOT enter success_rule. It cannot make the prediction
+    MET; it can only make the negative disposition reachable. The null stands as a property of the model rather than of the
   injection site, and no further seam-relocation attempt on this model is
   warranted.
   The falsifier requires BOTH A2 and A3 to fail, deliberately: a negative A2
