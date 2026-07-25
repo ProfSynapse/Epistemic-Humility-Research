@@ -235,7 +235,12 @@ gates:
           indicator of an intact forward pass. 10% is far above numeric/seed
           noise and far below the multi-fold blowup a genuinely stale-projection
           model would produce.
-        open_for_lead: "10% is the drafter's proposal; a stricter 5% is available. Fix before C1 runs."
+        threshold_frac: 0.10
+        resolved_by_lead: >-
+          FIXED at 10% on 2026-07-25 by the lead, before C1 runs and before any
+          GPU work on this experiment. The drafter offered 10% or a stricter 5%;
+          10% stands as written above. This parameter is now CLOSED and moves
+          for no result.
     on_fail: >-
       A2 and A4 are recorded NOT-RUN with the C1 numbers as the blocker and the
       experiment resolves INCONCLUSIVE on the A1/A2 axis. It does NOT stop: A1,

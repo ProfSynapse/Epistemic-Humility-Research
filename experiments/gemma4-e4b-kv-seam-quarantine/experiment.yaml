@@ -58,6 +58,8 @@ instrument:
   - calibrate_dose.py
   - pipeline.py
   - run_contrast.py
+  - kv_seam_preflight.py
+  - donor_diagnostic.py
   pins: {}
   persistence:
     # INCOMPLETE BY DESIGN. The short-run modules need measured smoke wall-clock
@@ -78,6 +80,27 @@ instrument:
     run_contrast.py:
       persistence: incremental
       checkpoint_path: experiments/gemma4-e4b-kv-seam-quarantine/analysis/runlog/<arm>/<mode>/<site>.jsonl
+    # The two diagnostics below are short-run by nature, not by omission: neither
+    # accumulates state, and re-running either from scratch is cheaper than any
+    # resume logic would be. Their timings are MEASURED, not estimated.
+    kv_seam_preflight.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 6.87
+      measured_on: "2026-07-25, CPU only, no checkpoint download, 6/6 PASS"
+      rationale: >-
+        Builds six independent tiny randomly-initialized models from a fixed
+        seed, one per check, so checks cannot leak state into each other.
+        Resumability would defeat that isolation.
+    donor_diagnostic.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 98.8
+      measured_on: >-
+        2026-07-25, --n-rows 4, bf16 on the local 3090. 92.7s of the 98.8s is
+        the checkpoint load; the forward passes themselves are seconds. Run
+        three times, bit-identical results each time.
+      rationale: >-
+        Forward passes only, no accumulated state. Dominated by model load, so a
+        resume would save nothing.
 # inputs: BLOCKED ON A REAL DEPENDENCY, NOT AN OVERSIGHT.
 # Every input below lives in experiments/j-space-cross-family-layer-contrast/,
 # which exists only on the unmerged worktree branch

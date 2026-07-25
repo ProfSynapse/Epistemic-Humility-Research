@@ -38,6 +38,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
+import kv_seam_patch as kv  # noqa: E402
 from family_config import (  # noqa: E402
     FAMILY_SLUGS, SITE_SETS, hs_to_block, layer_dir_name, load_family,
     resolve_site_set, site_set_artifact,
@@ -131,6 +132,15 @@ def main(argv=None) -> int:
                      help="named site set from families/<family>.yaml "
                           "band_selection. Default 'midband' preserves the "
                           "pre-existing behaviour exactly.")
+    ap.add_argument("--kv-sharing", default=kv.DEFAULT_KV_SHARING,
+                     choices=list(kv.KV_SHARING_CHOICES),
+                     help="KV-sharing condition these directions are fit UNDER. "
+                          "cell.yaml readouts.refit_policy: sharing-OFF arms "
+                          "refit their own u_d/c_hat/controls on the SAME FIT "
+                          "rows, because the OFF residual stream is a different "
+                          "distribution. Reads that condition's anchor extract "
+                          "and writes condition-scoped artifacts; 'on' keeps the "
+                          "historical filenames unchanged.")
     args = ap.parse_args(argv)
 
     family = args.family
@@ -144,13 +154,24 @@ def main(argv=None) -> int:
     committed = HERE / "analysis-committed" / family
     committed.mkdir(parents=True, exist_ok=True)
 
-    extract_manifest_path = analysis / "anchor_extract_manifest.json"
+    extract_manifest_path = analysis / kv.condition_artifact(
+        "anchor_extract_manifest.json", args.kv_sharing)
     split_manifest_path = committed / "split_manifest.json"
-    extract_tensors_path = analysis / "anchor_extract.safetensors"
+    extract_tensors_path = analysis / kv.condition_artifact(
+        "anchor_extract.safetensors", args.kv_sharing)
 
     extract_manifest = json.loads(extract_manifest_path.read_text())
     assert extract_manifest["substrate"] == "bf16"
     assert extract_manifest["family"] == family
+    # Fail closed if the extract was produced under a different condition than
+    # the one being fit. Older manifests predate the field and are treated as
+    # 'on', which is what they are.
+    extract_cond = extract_manifest.get("kv_sharing", "on")
+    if extract_cond != args.kv_sharing:
+        print(f"[build:{family}] extract at {extract_manifest_path.name} was produced "
+              f"under kv_sharing={extract_cond!r}, not {args.kv_sharing!r}",
+              file=sys.stderr)
+        return 1
     hidden_dim = extract_manifest["hidden_size"]
     role_by_key = {rm["row_key"]: rm["role"] for rm in extract_manifest["rows"]}
 
@@ -159,6 +180,12 @@ def main(argv=None) -> int:
 
     from safetensors.numpy import load_file
     fresh = {k: np.asarray(v, dtype=np.float64) for k, v in load_file(str(extract_tensors_path)).items()}
+
+    def cn(name: str) -> str:
+        """Condition-scoped artifact name. Both conditions fit the same sites,
+        so without this an OFF refit would overwrite the ON directions in
+        place. 'on' is a no-op, so the historical filenames are unchanged."""
+        return kv.condition_artifact(name, args.kv_sharing)
 
     def direction_json(vector: np.ndarray, sigma: float, role: str, hs_index: int,
                         extra_prov: dict) -> dict:
@@ -174,6 +201,7 @@ def main(argv=None) -> int:
                 "base_model": cfg["checkpoint"]["repo"],
                 "fit_population": "FIT split only (see split_manifest.json)",
                 "hs_index": hs_index, "decoder_block_index": hs_to_block(hs_index),
+                "kv_sharing": args.kv_sharing,
                 **extra_prov,
             },
         }
@@ -181,6 +209,7 @@ def main(argv=None) -> int:
     report = {
         "family": family, "substrate": "bf16", "base_model": cfg["checkpoint"]["repo"],
         "site_set": args.site_set, "hs_indices": list(hs_list),
+        "kv_sharing": args.kv_sharing,
         "hidden_dim": hidden_dim, "random_state": RANDOM_STATE,
         "reproducibility_verified": bool(args.verify_reproducible),
         "extract_manifest_sha256": _sha256_file(extract_manifest_path),
@@ -232,7 +261,7 @@ def main(argv=None) -> int:
              "layer_label": layer_name, "mu_d_over_fit_pool": mu_d, "sigma_d_over_fit_pool": sigma_d,
              "cos_u_d_u_p": cos_ud_up},
         )
-        (layer_dir / f"u_d_{layer_name}.json").write_text(json.dumps(u_d_json, indent=2))
+        (layer_dir / cn(f"u_d_{layer_name}.json")).write_text(json.dumps(u_d_json, indent=2))
 
         pos_ctrl_json = direction_json(
             caution_dir, 1.0, "positive_control", hs_index,
@@ -241,7 +270,8 @@ def main(argv=None) -> int:
              "layer_label": layer_name, "n_confab_fit": len(confab_fit),
              "n_unknown_refused": len(unknown_refused), **ctrl_fit_info},
         )
-        (source_dir / f"pos_ctrl_{layer_name}.json").write_text(json.dumps(pos_ctrl_json, indent=2))
+        (source_dir / cn(f"pos_ctrl_{layer_name}.json")).write_text(
+            json.dumps(pos_ctrl_json, indent=2))
 
         neg_ctrl_json = direction_json(
             u_p, 1.0, "negative_control", hs_index,
@@ -252,16 +282,19 @@ def main(argv=None) -> int:
              "note": "Not read by this instrument's gate; used for c_hat orthogonalization.",
              **ctrl_fit_info},
         )
-        (source_dir / f"neg_ctrl_{layer_name}.json").write_text(json.dumps(neg_ctrl_json, indent=2))
+        (source_dir / cn(f"neg_ctrl_{layer_name}.json")).write_text(
+            json.dumps(neg_ctrl_json, indent=2))
 
         c_hat_json = direction_json(
             c_hat, sigma_c, "caution_write_c_hat", hs_index,
-            {"orthogonalized_against": [f"u_d_{layer_name}.json", f"source_directions/neg_ctrl_{layer_name}.json"],
-             "source_caution_dir": f"source_directions/pos_ctrl_{layer_name}.json",
+            {"orthogonalized_against": [cn(f"u_d_{layer_name}.json"),
+                                        f"source_directions/{cn(f'neg_ctrl_{layer_name}.json')}"],
+             "source_caution_dir": f"source_directions/{cn(f'pos_ctrl_{layer_name}.json')}",
              "cos_caution_dir_c_hat": cos_caution_chat, "mu_c_over_fit_pool": mu_c,
              "sigma_c_over_fit_pool": sigma_c, "n_fit_pool": len(fit_keys_labeled)},
         )
-        (layer_dir / f"c_hat_{layer_name}.json").write_text(json.dumps(c_hat_json, indent=2))
+        (layer_dir / cn(f"c_hat_{layer_name}.json")).write_text(
+            json.dumps(c_hat_json, indent=2))
 
         report["layers"][layer_name] = {
             "hs_index": hs_index, "decoder_block_index": hs_to_block(hs_index),
@@ -272,7 +305,7 @@ def main(argv=None) -> int:
             "mu_c": mu_c, "sigma_c": sigma_c,
         }
 
-    out_name = site_set_artifact("build_manifest_layers.json", args.site_set)
+    out_name = cn(site_set_artifact("build_manifest_layers.json", args.site_set))
     (committed / out_name).write_text(json.dumps(report, indent=2))
     print(json.dumps(report, indent=2))
     return 0

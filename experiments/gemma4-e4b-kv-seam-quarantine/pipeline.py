@@ -21,6 +21,7 @@ HERE = Path(__file__).resolve().parent
 
 import gen_lib as gl  # noqa: E402
 import grader  # noqa: E402
+import kv_seam_patch as kv  # noqa: E402
 import model_lib as ml  # noqa: E402
 from family_config import (  # noqa: E402
     SITE_SETS, layer_dir_name, load_family, site_set_artifact,
@@ -35,7 +36,8 @@ def load_jsonl(path: Path) -> list[dict]:
     return [json.loads(ln) for ln in path.open(encoding="utf-8") if ln.strip()]
 
 
-def load_roll_up_layer(family: str, stem: str, layer_name: str) -> dict:
+def load_roll_up_layer(family: str, stem: str, layer_name: str,
+                       kv_sharing: str = "on") -> dict:
     """Read one layer's record out of a per-site-set roll-up JSON.
 
     build_directions/gate_fit/calibrate_dose write one roll-up per site set
@@ -45,11 +47,19 @@ def load_roll_up_layer(family: str, stem: str, layer_name: str) -> dict:
     layer sets, so at most one roll-up can contain `layer_name` and the lookup
     is unambiguous. Un-suffixed (midband) is tried first, preserving the
     pre-existing single-file path exactly.
+
+    `kv_sharing` is NOT resolved by content -- it scopes the search. Both
+    conditions fit the same layers, so an ON and an OFF roll-up both contain
+    `layer_name` and content resolution could not tell them apart. Falling back
+    across conditions would violate cell.yaml `readouts.refit_policy`, which
+    requires sharing-OFF arms to use their OWN refit parameters; a missing OFF
+    roll-up is therefore an error, not a reason to read the ON one.
     """
     committed = HERE / "analysis-committed" / family
     tried = []
     for site_set in [None, *sorted(SITE_SETS)]:
         name = stem if site_set is None else site_set_artifact(stem, site_set)
+        name = kv.condition_artifact(name, kv_sharing)
         path = committed / name
         if path in tried or not path.is_file():
             continue
@@ -58,9 +68,10 @@ def load_roll_up_layer(family: str, stem: str, layer_name: str) -> dict:
         if layer_name in layers:
             return layers[layer_name]
     raise FileNotFoundError(
-        f"{family}: no roll-up derived from {stem!r} contains layer {layer_name!r}; "
-        f"searched {[p.name for p in tried] or '(none present)'}. Run the build/fit "
-        f"stage for the site set that includes this layer."
+        f"{family}: no roll-up derived from {stem!r} at kv_sharing={kv_sharing} contains "
+        f"layer {layer_name!r}; searched {[p.name for p in tried] or '(none present)'}. "
+        f"Run the build/fit stage for the site set that includes this layer, under "
+        f"--kv-sharing {kv_sharing}."
     )
 
 
@@ -69,10 +80,19 @@ def load_direction_vector(path: Path) -> np.ndarray:
     return np.asarray(data["vector"], dtype=np.float64)
 
 
-def layer_paths(family: str, hs_index: int) -> dict[str, Path]:
+def layer_paths(family: str, hs_index: int, kv_sharing: str = "on") -> dict[str, Path]:
+    """Per-site fitted direction paths, scoped by KV-sharing condition.
+
+    Both conditions fit the same sites, so the condition has to live in the
+    filename (`u_d_hs38.kv_off.json`) or the OFF refit would overwrite the ON
+    one. `on` keeps the historical names byte-for-byte.
+    """
     layer_name = layer_dir_name(hs_index)
     root = HERE / "analysis-committed" / family / "layers" / layer_name
-    return {"u_d": root / f"u_d_{layer_name}.json", "c_hat": root / f"c_hat_{layer_name}.json"}
+    return {
+        "u_d": root / kv.condition_artifact(f"u_d_{layer_name}.json", kv_sharing),
+        "c_hat": root / kv.condition_artifact(f"c_hat_{layer_name}.json", kv_sharing),
+    }
 
 
 def load_rows(family: str, role: str, split: str) -> list[dict]:
@@ -130,9 +150,32 @@ def _late_gate_params(cfg: dict) -> dict:
     }
 
 
-def compute_gate_decisions(family: str, rows: list[dict], hs_index: int) -> list[dict]:
+def compute_gate_decisions(family: str, rows: list[dict], hs_index: int,
+                           kv_sharing: str = "on") -> list[dict]:
+    """Apply this arm's gate to each row's anchor activation.
+
+    `kv_sharing` scopes BOTH the activations and the gate parameters, per
+    cell.yaml `readouts.refit_policy`: "sharing-OFF arms refit their own
+    directions, tau, and per-site median anchor L2 norm on the SAME FIT rows --
+    the OFF residual stream is a different distribution and ON-fitted
+    parameters are not automatically valid under it." So an OFF run reads the
+    OFF extract (`extract_anchor.py --kv-sharing off`) AND the OFF u_d /
+    mu_d/sigma_d / tau_frozen. Nothing falls back across conditions: a missing
+    OFF artifact raises rather than silently gating on ON parameters the arm
+    never fit.
+
+    The LATE reference arm is the one exception and is not condition-scoped --
+    it reuses doubt-snap's frozen artifacts verbatim (it is a descriptive,
+    non-gating inherited arm, and no OFF late arm is registered in cell.yaml).
+    """
     cfg = load_family(family)
-    extract_tensors = HERE / "analysis" / family / "anchor_extract.safetensors"
+    extract_tensors = (HERE / "analysis" / family
+                       / kv.condition_artifact("anchor_extract.safetensors", kv_sharing))
+    if not extract_tensors.exists():
+        raise FileNotFoundError(
+            f"no anchor extract for kv_sharing={kv_sharing}: {extract_tensors}. "
+            f"Run extract_anchor.py --family {family} --kv-sharing {kv_sharing} first."
+        )
 
     tensors = __import__("safetensors.numpy", fromlist=["load_file"]).load_file(str(extract_tensors))
     fresh = {k: np.asarray(v, dtype=np.float64) for k, v in tensors.items()}
@@ -143,11 +186,12 @@ def compute_gate_decisions(family: str, rows: list[dict], hs_index: int) -> list
         u_d, mu_d, sigma_d, tau = lp["u_d"], lp["mu_d"], lp["sigma_d"], lp["tau"]
     else:
         # MID-BAND candidate: gate fit fresh by this experiment on the reused
-        # FIT split.
+        # FIT split, under this arm's own KV-sharing condition.
         layer_name = layer_dir_name(hs_index)
-        u_d = load_direction_vector(layer_paths(family, hs_index)["u_d"])
-        build = load_roll_up_layer(family, "build_manifest_layers.json", layer_name)
-        gate = load_roll_up_layer(family, "gate_fit_layers.json", layer_name)
+        u_d = load_direction_vector(layer_paths(family, hs_index, kv_sharing)["u_d"])
+        build = load_roll_up_layer(family, "build_manifest_layers.json", layer_name,
+                                   kv_sharing)
+        gate = load_roll_up_layer(family, "gate_fit_layers.json", layer_name, kv_sharing)
         mu_d, sigma_d, tau = build["mu_d"], build["sigma_d"], gate["tau_frozen"]
 
     out = []
@@ -164,19 +208,20 @@ def compute_gate_decisions(family: str, rows: list[dict], hs_index: int) -> list
 
 
 def run_one_row(family: str, model, controller, tokenizer, dev, eos_ids: list[int],
-                 row: dict, strength_if_dosed: float) -> dict:
+                 row: dict, strength_if_dosed: float, cache_factory=None) -> dict:
     prompt = ml.render(family, tokenizer, row)
     enc = tokenizer(prompt, return_tensors="pt").to(dev)
 
     base_out, _rb, base_terminated, base_new = gl.run_pass_fixed(
-        model, controller, enc, "off", 0.0, tokenizer, eos_ids, max_new=MAX_NEW
+        model, controller, enc, "off", 0.0, tokenizer, eos_ids, max_new=MAX_NEW,
+        cache_factory=cache_factory,
     )
     base_text = tokenizer.decode(base_new, skip_special_tokens=True)
 
     if row["fire"]:
         dosed_out, readback, terminated_naturally, dosed_new = gl.run_pass_fixed(
             model, controller, enc, "gen_stream", strength_if_dosed, tokenizer, eos_ids,
-            max_new=MAX_NEW,
+            max_new=MAX_NEW, cache_factory=cache_factory,
         )
         out_text = tokenizer.decode(dosed_new, skip_special_tokens=True)
         n_new = int(dosed_new.shape[0])
@@ -205,8 +250,41 @@ def grade_population(records: list[dict], metric: str) -> dict:
     return {"n": n, "successes": successes, "rate": rate, "wilson_ci_95": [lo, hi]}
 
 
+def kv_condition_context(family: str, model, kv_sharing: str):
+    """(context manager, cache_factory) for one KV condition.
+
+    Implements the CALLER CONTRACT from cell.yaml and
+    `kv_seam_patch.build_full_length_cache`: on a KV-sharing substrate BOTH
+    conditions get a fresh full-length cache per generate() call, so the cache
+    object is a CONSTANT across arms and the ON-vs-OFF contrast varies the
+    sharing flag and nothing else. Supplying it in only one arm would make the
+    primary contrast uninterpretable, and omitting it under OFF raises
+    IndexError on the first shared-layer forward.
+
+    Families without KV sharing get (nullcontext, None) -- the stock path,
+    unchanged. `kv_sharing='off'` on such a family is refused rather than
+    silently ignored: it would be a no-op the caller almost certainly did not
+    intend.
+    """
+    import contextlib
+
+    cfg = load_family(family)
+    shares_kv = bool(cfg.get("architecture", {}).get("kv_sharing")) or family == "gemma4-e4b"
+    if not shares_kv:
+        if kv_sharing != "on":
+            raise ValueError(
+                f"{family}: --kv-sharing {kv_sharing!r} requested but this family has no "
+                "cross-layer KV sharing; the flag would be a silent no-op."
+            )
+        return contextlib.nullcontext(model), None
+
+    kv.verify_architecture(model)  # fail closed if the geometry moved
+    enabled = kv_sharing == "on"
+    return kv.kv_sharing(model, enabled=enabled), (lambda: kv.build_full_length_cache(model))
+
+
 def run_layer(family: str, model, tokenizer, hs_index: int, rows: list[dict],
-              dose_target: float, *, run_log=None) -> dict:
+              dose_target: float, *, run_log=None, kv_sharing: str = "on") -> dict:
     """Run one family+layer's rows through the dosed pass.
 
     If `run_log` is given (a tuner `RunLog` opened by the caller at a
@@ -228,26 +306,35 @@ def run_layer(family: str, model, tokenizer, hs_index: int, rows: list[dict],
         c_hat_path = lp["c_hat_path"]
     else:
         layer_name = layer_dir_name(hs_index)
-        build = load_roll_up_layer(family, "build_manifest_layers.json", layer_name)
+        build = load_roll_up_layer(family, "build_manifest_layers.json", layer_name,
+                                   kv_sharing)
         sigma_c = build["sigma_c"]
-        c_hat_path = layer_paths(family, hs_index)["c_hat"]
+        c_hat_path = layer_paths(family, hs_index, kv_sharing)["c_hat"]
     strength = dose_target / sigma_c
     hook, controller, layer_idx, _sigma, _rec = ml.setup_hook_from_path(c_hat_path)
     dev = next(model.parameters()).device
     eos_ids = ml.resolve_eos_ids(family, tokenizer)
     layer_module = get_decoder_layer(model, layer_idx)
     h_ctrl = layer_module.register_forward_hook(controller)
+    kv_ctx, cache_factory = kv_condition_context(family, model, kv_sharing)
     try:
-        if run_log is not None:
-            pending = list(run_log.iter_pending(rows, key_fn=lambda r: r["row_key"]))
-            for row in pending:
-                rec = run_one_row(family, model, controller, tokenizer, dev, eos_ids, row, strength)
-                run_log.record(row["row_key"], rec)
-            on_disk = {rec["key"]: rec for rec in load_jsonl(run_log.path)}
-            records = [on_disk[row["row_key"]] for row in rows]
-        else:
-            records = [run_one_row(family, model, controller, tokenizer, dev, eos_ids, r, strength)
-                       for r in rows]
+        with kv_ctx:
+            if run_log is not None:
+                pending = list(run_log.iter_pending(rows, key_fn=lambda r: r["row_key"]))
+                for row in pending:
+                    rec = run_one_row(family, model, controller, tokenizer, dev, eos_ids,
+                                      row, strength, cache_factory=cache_factory)
+                    rec["kv_sharing"] = kv_sharing
+                    run_log.record(row["row_key"], rec)
+                on_disk = {rec["key"]: rec for rec in load_jsonl(run_log.path)}
+                records = [on_disk[row["row_key"]] for row in rows]
+            else:
+                records = []
+                for r in rows:
+                    rec = run_one_row(family, model, controller, tokenizer, dev, eos_ids,
+                                      r, strength, cache_factory=cache_factory)
+                    rec["kv_sharing"] = kv_sharing
+                    records.append(rec)
     finally:
         h_ctrl.remove()
         controller.reset()
@@ -257,7 +344,8 @@ def run_layer(family: str, model, tokenizer, hs_index: int, rows: list[dict],
     readbacks = [r["readback_measured"] for r in dosed if r["readback_measured"] is not None]
     within = [abs(rb - dose_target) <= 0.05 * dose_target + 0.5 for rb in readbacks]
     return {
-        "hs_index": hs_index, "n_rows": len(records), "n_fired": len(dosed),
+        "hs_index": hs_index, "kv_sharing": kv_sharing,
+        "n_rows": len(records), "n_fired": len(dosed),
         "readback_mean": float(np.mean(readbacks)) if readbacks else None,
         "frac_readback_within_tol": (sum(within) / len(within)) if within else None,
         "collapse_rate_on_dosed": (

@@ -38,14 +38,32 @@ def run_pass_fixed(
     tokenizer,
     eos_ids: list[int],
     max_new: int = MAX_NEW_CAP,
+    cache_factory=None,
 ):
     """mode: "off" (no write) | "gen_stream" (anchor_onward: edit every decode
     step). Returns (out, readback_measured, terminated_naturally, new_tokens).
     min_new_tokens is 1 (not max_new), so nothing forces the model to keep
     going -- terminated_naturally is True iff the model stopped on its own
-    strictly before the max_new_tokens cap."""
+    strictly before the max_new_tokens cap.
+
+    `cache_factory`: zero-arg callable returning a FRESH `Cache` to pass as
+    `past_key_values=`. This is the single chokepoint the KV-seam CALLER
+    CONTRACT binds (cell.yaml; `kv_seam_patch.build_full_length_cache`): every
+    generate() call in every arm, sharing ON and OFF alike, gets one. It is
+    called HERE rather than by the caller so a fresh object is guaranteed per
+    pass -- a `Cache` is stateful, and reusing one across passes or rows would
+    leak the previous row's K/V into this one.
+
+    `None` (the default) preserves the pre-existing behaviour exactly: no
+    `past_key_values` argument is passed and `generate` builds its own. That
+    path is correct for every non-KV-sharing family and is what the other
+    experiments in this lineage use.
+    """
     controller.hook.last_readback = None
     controller.begin_pass(mode, strength, attention_mask=enc["attention_mask"])
+    gen_kwargs = {}
+    if cache_factory is not None:
+        gen_kwargs["past_key_values"] = cache_factory()
     with torch.no_grad():
         out = model.generate(
             **enc,
@@ -55,6 +73,7 @@ def run_pass_fixed(
             num_beams=1,
             eos_token_id=eos_ids,
             pad_token_id=tokenizer.pad_token_id,
+            **gen_kwargs,
         )
     readback_measured = None
     if controller.hook.last_readback is not None and controller.hook.last_readback.get("measured"):

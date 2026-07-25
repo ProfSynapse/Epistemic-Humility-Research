@@ -2222,7 +2222,9 @@
           "gate_fit.py",
           "calibrate_dose.py",
           "pipeline.py",
-          "run_contrast.py"
+          "run_contrast.py",
+          "kv_seam_preflight.py",
+          "donor_diagnostic.py"
         ],
         "persistence": {
           "build_directions.py": {
@@ -2233,9 +2235,21 @@
             "checkpoint_path": "experiments/gemma4-e4b-kv-seam-quarantine/analysis/runlog/<condition>/calibrate_dose_records.jsonl",
             "persistence": "incremental"
           },
+          "donor_diagnostic.py": {
+            "measured_on": "2026-07-25, --n-rows 4, bf16 on the local 3090. 92.7s of the 98.8s is the checkpoint load; the forward passes themselves are seconds. Run three times, bit-identical results each time.",
+            "measured_smoke_wall_clock_s": 98.8,
+            "persistence": "short-run",
+            "rationale": "Forward passes only, no accumulated state. Dominated by model load, so a resume would save nothing."
+          },
           "extract_anchor.py": {
             "checkpoint_path": "experiments/gemma4-e4b-kv-seam-quarantine/analysis/anchor_extract.safetensors",
             "persistence": "incremental"
+          },
+          "kv_seam_preflight.py": {
+            "measured_on": "2026-07-25, CPU only, no checkpoint download, 6/6 PASS",
+            "measured_smoke_wall_clock_s": 6.87,
+            "persistence": "short-run",
+            "rationale": "Builds six independent tiny randomly-initialized models from a fixed seed, one per check, so checks cannot leak state into each other. Resumability would defeat that isolation."
           },
           "run_contrast.py": {
             "checkpoint_path": "experiments/gemma4-e4b-kv-seam-quarantine/analysis/runlog/<arm>/<mode>/<site>.jsonl",

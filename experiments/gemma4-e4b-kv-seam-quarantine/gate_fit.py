@@ -24,6 +24,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
+import kv_seam_patch as kv  # noqa: E402
 from family_config import (  # noqa: E402
     FAMILY_SLUGS, SITE_SETS, layer_dir_name, load_family, resolve_site_set,
     site_set_artifact,
@@ -79,20 +80,38 @@ def main(argv=None) -> int:
                     help="named site set from families/<family>.yaml "
                          "band_selection. Default 'midband' preserves the "
                          "pre-existing behaviour exactly.")
+    ap.add_argument("--kv-sharing", default=kv.DEFAULT_KV_SHARING,
+                    choices=list(kv.KV_SHARING_CHOICES),
+                    help="KV-sharing condition this gate is fit UNDER. "
+                         "cell.yaml readouts.refit_policy requires sharing-OFF "
+                         "arms to refit their own tau on the SAME FIT rows. "
+                         "Reads that condition's extract, directions and build "
+                         "manifest, and writes a condition-scoped gate roll-up; "
+                         "'on' keeps the historical filenames unchanged.")
     args = ap.parse_args(argv)
 
     from safetensors.numpy import load_file
 
     family = args.family
+
+    def cn(name: str) -> str:
+        return kv.condition_artifact(name, args.kv_sharing)
     # The selected site set only (default: MID-BAND candidates); the late arm's
     # gate (tau_frozen) is reused verbatim from the doubt-snap artifacts and is
     # not refit here.
     hs_list = resolve_site_set(load_family(family), args.site_set)
     analysis = HERE / "analysis" / family
     committed = HERE / "analysis-committed" / family
-    out_path = committed / site_set_artifact("gate_fit_layers.json", args.site_set)
+    out_path = committed / cn(site_set_artifact("gate_fit_layers.json", args.site_set))
 
-    extract_manifest = json.loads((analysis / "anchor_extract_manifest.json").read_text())
+    extract_manifest_path = analysis / cn("anchor_extract_manifest.json")
+    extract_manifest = json.loads(extract_manifest_path.read_text())
+    extract_cond = extract_manifest.get("kv_sharing", "on")
+    if extract_cond != args.kv_sharing:
+        print(f"[gate_fit:{family}] extract at {extract_manifest_path.name} was produced "
+              f"under kv_sharing={extract_cond!r}, not {args.kv_sharing!r}",
+              file=sys.stderr)
+        return 1
     role_by_key = {rm["row_key"]: rm["role"] for rm in extract_manifest["rows"]}
     split_manifest = json.loads((committed / "split_manifest.json").read_text())
     split_by_key = {r["row_key"]: r["split"] for r in split_manifest["rows"]}
@@ -103,15 +122,16 @@ def main(argv=None) -> int:
                  if role == "known_correct_answered" and split_by_key.get(rk) == "fit"]
 
     fresh = {k: np.asarray(v, dtype=np.float64)
-             for k, v in load_file(str(analysis / "anchor_extract.safetensors")).items()}
+             for k, v in load_file(str(analysis / cn("anchor_extract.safetensors"))).items()}
     build_manifest = json.loads(
-        (committed / site_set_artifact("build_manifest_layers.json", args.site_set)).read_text()
+        (committed / cn(site_set_artifact("build_manifest_layers.json", args.site_set))).read_text()
     )
     labels = np.concatenate([np.ones(len(confab_fit)), np.zeros(len(known_fit))]).astype(int)
 
     report = {
         "family": family,
         "site_set": args.site_set, "hs_indices": list(hs_list),
+        "kv_sharing": args.kv_sharing,
         "population": {"positive_class": f"confab FIT (n={len(confab_fit)})",
                        "negative_class": f"known_correct_answered FIT (n={len(known_fit)})"},
         "score_definition": ("neg_z_d = -z_d; z_d clipped to [-2,+2] and standardized with "
@@ -123,7 +143,8 @@ def main(argv=None) -> int:
 
     for hs_index in hs_list:
         layer_name = layer_dir_name(hs_index)
-        u_d = load_direction(committed / "layers" / layer_name / f"u_d_{layer_name}.json")
+        u_d = load_direction(
+            committed / "layers" / layer_name / cn(f"u_d_{layer_name}.json"))
         layer_build = build_manifest["layers"][layer_name]
         mu_d, sigma_d = layer_build["mu_d"], layer_build["sigma_d"]
 

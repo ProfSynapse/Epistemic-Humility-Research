@@ -20,8 +20,10 @@ This exercises the IDENTICAL code paths as the real checkpoint:
 Gemma-4-E4B-specific beyond those four config values, so a pass/fail here is
 evidence about the mechanism, not an artifact of this particular checkpoint.
 
-Four checks, run in order, each rebuilding its own tiny model from the same
-seed so checks cannot leak state into each other:
+Six checks, run in order, each rebuilding its own tiny model from the same
+seed so checks cannot leak state into each other. Checks 5 and 6 implement,
+verbatim, the two criteria of `gates.yaml` gate `g0_kv_seam_instrument_validity`
+that carry those names; 1-4 are the supporting evidence they rest on:
 
   1. GEOMETRY + CRASH.  The tiny config reproduces the real checkpoint's
      donor blocks (22 sliding / 23 full) and shared-block set (24..41), AND
@@ -52,9 +54,24 @@ seed so checks cannot leak state into each other:
      cache (which the OFF arm needs) is itself inert when sharing stays ON,
      so any future A1-vs-A2 difference in the real experiment comes from the
      KV variable and not from the act of patching.
+  5. CACHE GROWTH UNDER OFF (gate criterion `cache_growth_under_off`).  Step
+     the model by hand -- prefill, then two decode steps -- and read
+     `cache_layer_lengths` at each. Every block in 24..41 must be nonzero and
+     grow by the same increment as 0..23 (compared within attention class,
+     sliding vs full, since sliding lengths saturate at `sliding_window`).
+     Check 3's post-hoc uniformity cannot tell "written once at prefill" from
+     "written every step", nor detect a REUSED cache; the zero-length assertion
+     on the fresh object is the cheapest detector of the latter. Also asserts
+     `kv_seam_patch.build_full_length_cache` -- the builder the harness
+     actually ships -- agrees with this file's independent construction.
+  6. CACHE-SUBSTITUTION NO-OP UNDER ON (gate criterion
+     `cache_substitution_noop_under_on`).  Check 4's stronger bit-identity
+     result, widened to the >= 8 fixed prompts the gate requires, at varying
+     lengths. One prompt can miss a length-dependent divergence, and it is this
+     result that licenses passing the full-length cache in the ON arms at all.
 
 Run: `python3 kv_seam_preflight.py` (CPU only; takes a few seconds).
-Exits 0 if all four checks pass, 1 otherwise, with one PASS/FAIL/NULL line
+Exits 0 if all six checks pass, 1 otherwise, with one PASS/FAIL/NULL line
 per check plus a final summary.
 """
 
@@ -72,6 +89,7 @@ from kv_seam_patch import (
     EXPECTED_FIRST_KV_SHARED_LAYER_IDX,
     EXPECTED_NUM_HIDDEN_LAYERS,
     EXPECTED_NUM_KV_SHARED_LAYERS,
+    cache_layer_lengths,
     count_kv_projection_calls,
     kv_sharing,
     verify_architecture,
@@ -122,9 +140,13 @@ def build_full_length_cache(config: Gemma4TextConfig) -> Cache:
     """The companion fix §8.3 of the memo calls for: one real `CacheLayer`
     per block, with NO `num_kv_shared_layers` slicing, so every block
     (including the 18 normally-shared ones) has somewhere to `.update()`
-    into. NOTE: this helper does not exist yet in `kv_seam_patch.py` --
-    the fixed patch needs it (or an equivalent) to be usable at all; see the
-    report back to the lead.
+    into.
+
+    This is deliberately an INDEPENDENT reimplementation, not a call into
+    `kv_seam_patch.build_full_length_cache` (which now exists and is what the
+    harness actually uses). The preflight's job is to check that builder; a
+    preflight that imported it could only ever confirm the builder agrees with
+    itself. Check 5 compares the two objects explicitly.
     """
     layers = []
     for layer_type in config.layer_types:
@@ -300,11 +322,151 @@ def check_4_equivalence_control() -> bool:
     return tokens_equal and logits_equal
 
 
+def check_5_cache_growth_under_off() -> bool:
+    """gates.yaml g0_kv_seam_instrument_validity / cache_growth_under_off.
+
+    Check 3 already shows the 42 layers are non-empty and uniform AFTER a
+    generate(). That is weaker than the registered criterion in two ways it
+    cares about: it cannot distinguish "written once at prefill" from "written
+    at every decode step", and it cannot detect an accidentally REUSED cache,
+    which also ends up non-empty and uniform. So step the model by hand and
+    watch the lengths move.
+
+    Comparison is within attention class (sliding vs full) because sliding
+    layers saturate at sliding_window; at these lengths nothing saturates, but
+    the check is written the way the gate states it so it stays correct if the
+    prompt grows.
+    """
+    import kv_seam_patch as kvp
+
+    model, cfg = build_tiny_model()
+    input_ids, attention_mask = fixed_prompt(cfg)
+    prompt_len = int(input_ids.shape[1])
+
+    # The harness's own builder is what ships; check the two agree before
+    # trusting either. (The preflight's local copy is an independent
+    # reimplementation -- see build_full_length_cache's docstring.)
+    harness_cache = kvp.build_full_length_cache(cfg)
+    local_cache = build_full_length_cache(cfg)
+    same_shape = (len(harness_cache.layers) == len(local_cache.layers)
+                  == EXPECTED_NUM_HIDDEN_LAYERS)
+    same_classes = [type(a) is type(b)
+                    for a, b in zip(harness_cache.layers, local_cache.layers)]
+    print(f"    harness builder vs preflight builder: {len(harness_cache.layers)} vs "
+          f"{len(local_cache.layers)} layers, per-layer class match "
+          f"{sum(same_classes)}/{len(same_classes)}")
+    if not (same_shape and all(same_classes)):
+        print("    FAIL: kv_seam_patch.build_full_length_cache disagrees with the "
+              "preflight's independent construction.")
+        return False
+
+    cache = harness_cache  # exercise the object the harness will actually pass
+    full_idx = [i for i, t in enumerate(cfg.layer_types) if t != "sliding_attention"]
+    slide_idx = [i for i, t in enumerate(cfg.layer_types) if t == "sliding_attention"]
+    shared_idx = list(range(EXPECTED_FIRST_KV_SHARED_LAYER_IDX, EXPECTED_NUM_HIDDEN_LAYERS))
+
+    # A fresh cache must be EMPTY. Non-zero here is the reused-cache signature
+    # the gate asks this check to detect.
+    before = cache_layer_lengths(cache)
+    print(f"    fresh cache lengths: min={min(before)} max={max(before)} (expect 0/0)")
+    if any(n != 0 for n in before):
+        print("    FAIL: cache was not empty before prefill -- reused cache object.")
+        return False
+
+    snapshots = []
+    with kv_sharing(model, enabled=False):
+        with torch.no_grad():
+            model(input_ids=input_ids, attention_mask=attention_mask,
+                  use_cache=True, past_key_values=cache)
+            snapshots.append(cache_layer_lengths(cache))
+            for _ in range(2):  # >= 2 decode steps, per the gate
+                next_id = torch.tensor([[3]])
+                attention_mask = torch.cat(
+                    [attention_mask, torch.ones((1, 1), dtype=attention_mask.dtype)], dim=1)
+                model(input_ids=next_id, attention_mask=attention_mask,
+                      use_cache=True, past_key_values=cache)
+                snapshots.append(cache_layer_lengths(cache))
+
+    ok = True
+    for label, idx in (("full", full_idx), ("sliding", slide_idx)):
+        lens = [[snap[i] for i in idx] for snap in snapshots]
+        traj = [f"{min(s)}-{max(s)}" for s in lens]
+        print(f"    {label:>8} layers, lengths after prefill/step1/step2: {' -> '.join(traj)}")
+        for step, s in enumerate(lens):
+            if len(set(s)) != 1:
+                print(f"    FAIL: {label} layers disagree with each other at step {step}: "
+                      f"min={min(s)} max={max(s)}")
+                ok = False
+        expected = [prompt_len, prompt_len + 1, prompt_len + 2]
+        got = [s[0] for s in lens]
+        if got != expected:
+            print(f"    FAIL: {label} lengths {got} != expected {expected} "
+                  "(prefill then +1 per decode step)")
+            ok = False
+
+    # The point of the whole check: the 18 appended slots are LIVE, not padding.
+    shared_traj = [[snap[i] for i in shared_idx] for snap in snapshots]
+    if any(min(s) == 0 for s in shared_traj):
+        print("    FAIL: at least one of blocks 24..41 has length 0 -- the appended "
+              "slots are inert padding, not live K/V.")
+        ok = False
+    else:
+        print(f"    blocks 24..41 (the 18 appended slots) all live: lengths "
+              f"{[min(s) for s in shared_traj]} -- written at prefill AND at each decode step")
+    return ok
+
+
+N_EQUIVALENCE_PROMPTS = 8
+
+
+def check_6_cache_substitution_noop_multi_prompt() -> bool:
+    """gates.yaml g0_kv_seam_instrument_validity / cache_substitution_noop_under_on.
+
+    Check 4 demonstrates the strong (bit-identical logits) form on ONE prompt.
+    The registered criterion additionally asks for token-identity on >= 8 fixed
+    prompts, because a single prompt can miss a divergence that only shows up
+    at some lengths or on some sampled token paths. This is what licenses
+    passing the full-length cache in the ON arms at all -- without it, A1-vs-A2
+    is sharing-flag PLUS cache-substitution versus neither.
+    """
+    import kv_seam_patch as kvp
+
+    model, cfg = build_tiny_model()
+    g = torch.Generator().manual_seed(SEED + 1)
+    mismatches = []
+    for i in range(N_EQUIVALENCE_PROMPTS):
+        seq_len = 4 + i  # vary length; a fixed length could hide a length-dependent bug
+        input_ids = torch.randint(3, cfg.vocab_size, (1, seq_len), generator=g)
+        attention_mask = torch.ones_like(input_ids)
+        gen_kwargs = dict(max_new_tokens=5, min_new_tokens=1, do_sample=False,
+                          num_beams=1, use_cache=True)
+        with torch.no_grad():
+            out_stock = model.generate(input_ids=input_ids,
+                                       attention_mask=attention_mask, **gen_kwargs)
+        cache = kvp.build_full_length_cache(cfg)  # fresh per call, as the contract requires
+        with kv_sharing(model, enabled=True):  # no-op flip; sharing stays ON
+            with torch.no_grad():
+                out_patched = model.generate(input_ids=input_ids,
+                                             attention_mask=attention_mask,
+                                             past_key_values=cache, **gen_kwargs)
+        if not torch.equal(out_stock, out_patched):
+            mismatches.append((i, seq_len, out_stock.tolist(), out_patched.tolist()))
+
+    print(f"    token-identical on {N_EQUIVALENCE_PROMPTS - len(mismatches)}/"
+          f"{N_EQUIVALENCE_PROMPTS} fixed prompts (lengths 4..{3 + N_EQUIVALENCE_PROMPTS})")
+    for i, seq_len, a, b in mismatches:
+        print(f"    FAIL prompt {i} (len {seq_len}): stock={a} patched-ON={b}")
+    return not mismatches
+
+
 CHECKS = [
     ("1. geometry + crash reproduces", check_1_geometry_and_crash),
     ("2. fix completes", check_2_fix_completes),
     ("3. mechanism actually flipped", check_3_mechanism_flipped),
     ("4. equivalence control (sharing ON, full-length cache, vs stock)", check_4_equivalence_control),
+    ("5. cache growth under OFF (appended slots are live)", check_5_cache_growth_under_off),
+    (f"6. cache-substitution no-op under ON ({N_EQUIVALENCE_PROMPTS} prompts)",
+     check_6_cache_substitution_noop_multi_prompt),
 ]
 
 

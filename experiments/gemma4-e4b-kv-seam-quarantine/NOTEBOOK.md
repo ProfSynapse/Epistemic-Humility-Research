@@ -442,3 +442,114 @@ FIT/HELD-OUT firewall *inside* this experiment is unaffected (this experiment
 produces gemma's first held-out numbers); and an all-null outcome licenses only
 "the null replicates, now on held-out," not "the parent finding was confirmed."
 The same caveat is written into the G2 vacuity assessment in `gates.yaml`.
+
+---
+
+### 2026-07-25 — instrument integration completed (CPU, 6/6 preflight); A1 hs38 contradiction resolved; donor-projection diagnostic run (authorized GPU carve-out) — OFF is a STRONG manipulation
+
+Three things landed. None of them is a result about the hypothesis; all three
+are pre-sign instrument and design work. **The main run is still blocked**
+(`cell.yaml execution.gpu_work_by_this_agent: forbidden`) and **#338 is
+unsigned.**
+
+**1. `--kv-sharing {on,off}` integration is done.** Threaded through
+`extract_anchor.py`, `build_directions.py`, `gate_fit.py`, `calibrate_dose.py`,
+`run_contrast.py` and `pipeline.py`. The last two of those six were *not* in the
+original task list. Reading `cell.yaml readouts.refit_policy` while writing
+`compute_gate_decisions` caught my own docstring asserting the opposite of
+registered protocol — I had written that the direction/mu/sigma/tau are frozen
+ON artifacts reused verbatim in both arms; the policy says sharing-OFF arms
+**refit their own** directions, tau and per-site median anchor L2 norm on the
+same FIT rows, because the OFF residual stream is a different distribution.
+Making that policy actually implementable is what forced the condition axis to
+reach every *fitted* artifact, not just the activations.
+
+Two design choices worth recording:
+
+- **Scoping, not content-resolution, for the condition axis.**
+  `load_roll_up_layer` resolves the *site set* by content — site sets are
+  disjoint layer sets, so at most one file can contain a given layer. That trick
+  cannot work for the condition: both conditions fit the *same* layers, so both
+  files contain the same layer name. The condition therefore scopes the search
+  rather than being inferred from it.
+- **Every cross-condition read is fail-closed.** A missing OFF artifact raises,
+  naming the exact stage and flag that produces it. It never falls back to ON
+  parameters the arm never fit — that would quietly turn A1-vs-A2 into a
+  comparison of an arm against itself.
+
+`kv_sharing=on` is the identity for every artifact name, so historical filenames
+are byte-for-byte unchanged. Verified by a 9-case CPU-only harness (all PASS),
+including that a missing OFF roll-up raises rather than resolving, and that the
+symlink guard fires on the real staged 341.7 MB parent extract.
+
+`kv_seam_preflight.py` now runs **6/6 PASS**, CPU-only, no checkpoint download.
+Checks 5 and 6 implement the two `gates.yaml g0_kv_seam_instrument_validity`
+criteria verbatim: `cache_growth_under_off` (hand-stepped prefill + 2 decode
+steps; all 42 layers 6→7→8, blocks 24..41 live at every step, and a fresh cache
+asserted empty as the reused-cache detector — plus an equality check between
+`kv_seam_patch.build_full_length_cache` and this file's independent
+reimplementation, so the preflight tests the shipped builder rather than
+confirming it agrees with itself) and `cache_substitution_noop_under_on`
+(token-identical on 8 fixed prompts at lengths 4..11).
+
+**2. `cell.yaml` contradicted itself about arm A1, and the lead resolved it.**
+`inputs_reused.frozen_hs38_direction` said A1 reuses the parent's frozen hs38
+direction/gate artifacts; `readouts.method` said every arm fits its own under
+its own KV-sharing condition. Reuse was untenable regardless — those parent
+artifacts are corrupt-derived (`AMENDMENT.md:637`), so reusing them would seat a
+corrupt direction in the very arm A2 is contrasted against. **Resolved in favour
+of `readouts.method`: A1 refits hs38 fresh under ON like every other arm.** A1
+replicates the parent's *site and method*, not its artifacts. No code change;
+`cell.yaml` corrected in two places and the resolution recorded at "Open
+questions at sign" #1.
+
+**3. Donor-projection diagnostic (open question #4) — RUN, and it clears the
+risk it was built to detect.** Authorized by the lead as a scoped carve-out
+(`cell.yaml execution.gpu_carve_outs`) while the main run stays blocked:
+`donor_diagnostic.py`, 4 rows, `google/gemma-4-E4B-it` bf16 on the local 3090,
+forward passes only.
+
+**Every block in 24..41 computes K and V essentially orthogonal to its donor's.**
+Median per-block cosine across 4 rows: **k_proj −0.0024**, **v_proj −0.0051**;
+largest cosine at any block on any row **0.032**. Bit-identical across two
+independent invocations.
+
+The feared outcome was the opposite — a high cosine, meaning the retained
+projections nearly reproduce the donor, OFF is nearly a no-op, and a negative A2
+means almost nothing. That is not the case. A2 is a real manipulation of the KV
+pathway and an A2 null will be informative. This promotes nothing about the
+*direction* of any effect; it removes one specific way the primary contrast
+could have been dead on arrival.
+
+**Read the cosine, not the rel-L2.** `rel_l2_err` came out at 3–14, which looks
+alarming and mostly is not: the hooks sit on the `k_proj`/`v_proj` modules and
+so capture output *before* `k_norm`/`v_norm` (`Gemma4RMSNorm` over `head_dim`).
+Gemma's residual norm grows with depth, blocks 24..41 project a much
+larger-magnitude input than blocks 22/23, and `rel_l2_err` inherits that scale
+gap wholesale — RMSNorm then removes it. Cosine is scale-invariant and is the
+load-bearing number. The caveat is emitted into the JSON as
+`measurement_caveat` so it cannot be separated from the numbers later.
+
+One structural observation to carry forward: the three **full-attention** shared
+blocks (29, 35, 41; donor 23) show markedly lower `rel_l2_err` (2.7–7.4) than
+the fifteen **sliding-attention** ones (5.8–14.6; donor 22). Cosines are equally
+near zero at both, so no conclusion here changes — but it is a scale difference
+between the two donor channels, and **A6** is the arm that would notice it.
+
+**Environment note (not a code change, needed at launch).** `model_lib.render()`
+imports `backends` and `amendment_ah_stage0_extract` by bare module name, and
+neither lives in this experiment. The diagnostic ran with
+`PYTHONPATH=<repo>/experiments/common/knowledge_probe:<repo>/experiments/j-space-cross-family-layer-contrast`
+prepended to the usual `synaptic-tuner` entry — the same two dead-import fixes
+the parent recorded on 2026-07-23. Depending on the parent experiment's
+directory being on `PYTHONPATH` is a cross-experiment dependency that should be
+resolved (vendored shim, or promotion) before signing, not carried as tribal
+knowledge.
+
+**4. C1 NLL threshold CLOSED at 10%** by the lead, before C1 runs and before any
+GPU work. Written into `gates.yaml` as `threshold_frac: 0.10` with a
+`resolved_by_lead` note. Moves for no result.
+
+Still outstanding before `bin/exp sign`: `alin_sweep.py` (Parts 1 and 2), the
+fired-only G2 companion metric, `rollup.py`, and the measured smoke wall-clock
+timings for `instrument.persistence` (`sign` refuses without them).
