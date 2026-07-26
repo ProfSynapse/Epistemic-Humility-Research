@@ -379,14 +379,54 @@ against A3 hold reachability fixed and move depth; A3 against D4 against A5 hold
 depth roughly fixed and move reachability. Together they factor the two variables
 the original pair confounded.
 
-**Why this band specifically, and why it is not fishing.** Relative depth
-0.357-0.548 is where every family that has ever actuated in this program does so:
-no site above **rd 0.607** (llama hs17) has produced a usable dose in any family,
-and gemma's shallowest previously-tested site was **rd 0.810**. Gemma has only
-ever been written to *above* the band where the effect exists elsewhere. The band
-is fixed here, before any dosing, by that prior cross-family operating range —
-not selected from gemma's own read profile, which is saturated (held-out KU AUC
-`>= 0.977` from hs5 to hs42) and supplies no site-selection signal at all.
+**Why this band specifically, and why it is not fishing.** The band is fixed
+here, before any dosing, by the prior cross-family operating range, not selected
+from gemma's own read profile, which is saturated (held-out KU AUC `>= 0.977`
+from hs5 to hs42) and supplies no site-selection signal at all.
+
+Stating that operating range correctly, since an earlier draft of this paragraph
+stated it too narrowly (see the correction note below): every site that has ever
+actuated in this program, as a depth fraction, is
+
+| family | blocks | site | rd | achieved |
+|---|---|---|---|---|
+| mistral-7b-v0.3 | 32 | hs12 | 0.375 | usable dose |
+| mistral-7b-v0.3 | 32 | hs15 | 0.469 | usable dose |
+| llama-3.2-3b | 28 | hs17 | 0.607 | usable dose, held-out G1 PASS 0.7420 |
+| Qwen3.5-4B | 32 | hs20 | 0.625 | promoted held-out actuation result |
+| Qwen3-4B | 36 | hs23 | 0.639 | held-out 0.892 [0.839, 0.929] |
+
+so the cross-family operating range is **rd 0.375-0.639**, and everything tested
+above rd 0.71 has failed. Gemma's four previously-tested sites sit at rd 0.810,
+0.905, 0.952, 1.000: gemma has only ever been written to *above* the range where
+the effect exists elsewhere, which is the point this paragraph exists to make and
+is unaffected by the correction.
+
+**What the correct range implies for gemma specifically, and it is not
+comfortable.** Gemma has 42 blocks with donors at 22/23, so the deepest site that
+still reads both donors is hs24, **rd 0.571**. The upper half of the cross-family
+operating range - rd 0.571-0.639, which is where llama's G1 PASS (0.607) and
+Qwen3.5-4B's promoted result (0.625) both sit - is on gemma **entirely above the
+seam**, at hs25-hs27. On this architecture "quarantined" and "in the productive
+depth band" are largely the same region. That is a confound this design cannot
+remove, and it cuts both ways: it is the reason the quarantine hypothesis is
+worth testing at all, and it is the reason a below-seam null from D1-D4 would
+NOT be clean evidence against actuation-at-depth in gemma, because D1-D4 can only
+reach rd <= 0.548 and no family's best result sits that shallow. Record any
+below-seam null with that limitation attached.
+
+> **Correction, pre-sign.** This paragraph previously read: "Relative depth
+> 0.357-0.548 is where every family that has ever actuated in this program does
+> so: no site above rd 0.607 (llama hs17) has produced a usable dose in any
+> family." Both halves were too narrow. The 0.357-0.548 envelope contains only
+> mistral's two sites; it excludes llama hs17 (0.607) and Qwen3.5-4B hs20
+> (0.625), the latter being the single promoted direction-specific held-out
+> success in the program. Qwen3.5-4B `num_hidden_layers=32` is sourced at
+> `qwen35-4b-midband-doubt-snap/AMENDMENT.md:17,55`. Corrected while this
+> experiment is still `draft` with nothing pinned, per the draft-to-signed
+> lifecycle in `.skills/experiments/SKILL.md`. **The arm set is unchanged** -
+> D1-D4/A3/A5 already tile the below-seam depth range as densely as the donor
+> structure permits, and the corrected upper end is unreachable below the seam.
 
 **No re-extraction is required.** The parent's corrected `use_cache=True`
 extraction already covers hs0-hs42 over all 806 rows, so D1-D4 fit their
@@ -825,8 +865,11 @@ success rule.
 **Registered expectation for the shallow ladder (D1-D4), non-gating:** at least
 one of hs15 / hs18 / hs20 / hs23 finds a usable FIT dose and clears G1 on
 held-out. Recorded because it is the arm set's genuine open question, and
-because relative depth 0.357-0.548 is the band in which every other family in
-this program actuates while gemma has never been written there. Like A3/A5 it is
+because relative depth 0.357-0.548 lies inside the cross-family operating range
+(rd 0.375-0.639, tabulated above) while gemma has never been written anywhere in
+that range, its four prior sites all sitting at rd >= 0.810. Note the limitation
+established above: D1-D4 reach only rd <= 0.548, the shallow half of that range,
+because the donor structure puts the rest above the seam. Like A3/A5 it is
 descriptive: it cannot discriminate the quarantine account from the
 crystallization-gap account, and it does not enter the success rule. It does
 enter the falsifier asymmetrically, below.

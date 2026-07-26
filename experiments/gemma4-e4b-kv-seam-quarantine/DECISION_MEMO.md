@@ -442,3 +442,41 @@ A1/A2 (hs38, rd 0.905); the framing of the parent null as gemma-specific
 the "Standing of this hypothesis" candidate list, which now needs
 `layer_scalar` dilution added and site-selection artifact named as the leading
 account.
+
+---
+
+## Correction note, 2026-07-26 (pre-sign, memo body unchanged)
+
+This memo's statement that "the three usable doses in the entire program sit at
+rd 0.375, 0.469, 0.607" is **correct as scoped**: those are the three
+`dose_is_usable` verdicts produced by the cross-family dose-calibration
+instrument (`midband_selected_doses` in each family's
+`dose_calibration_summary.json`).
+
+What was wrong was generalizing that scoped statement into a cross-family claim
+about where actuation is possible. `AMENDMENT.md` had carried it forward as
+"relative depth 0.357-0.548 is where every family that has ever actuated does
+so: no site above rd 0.607 has produced a usable dose in any family." Two
+substrates actuate above rd 0.607 under a different potency metric, and one of
+them is the program's only promoted result:
+
+| family | blocks | site | rd | achieved |
+|---|---|---|---|---|
+| Qwen3.5-4B | 32 | hs20 | 0.625 | promoted held-out actuation result |
+| Qwen3-4B | 36 | hs23 | 0.639 | held-out 0.892 [0.839, 0.929] |
+
+Qwen3.5-4B `num_hidden_layers=32` is sourced at
+`qwen35-4b-midband-doubt-snap/AMENDMENT.md:17,55`. The corrected cross-family
+operating range is **rd 0.375-0.639**; everything tested above rd 0.71 has
+failed; the 0.64-0.71 edge has never been probed in either direction.
+
+Values are not comparable across the two potency metrics (FIT tighten rate vs
+refusal/well-formedness against registered floors) - only the ordering is. That
+is precisely why the narrow envelope should not have been stated across
+families in the first place.
+
+`AMENDMENT.md` and `experiment.yaml` are corrected; the arm set is unchanged.
+This memo's body is left as written, because it is a dated decision record and
+its own scoped claim was accurate. See
+`.skills/family-atlas/reference/read-actuate-depth.md` for the read/actuate
+depth dissociation this sits inside.
