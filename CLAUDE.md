@@ -19,9 +19,13 @@ often forgotten).
    `find`/`rtk grep`; restate this rule in every search subagent's prompt.
    [`bin_search_guard`: exploratory search blocked; conscious bypass `EHR_SEARCH_OK=1`]
 2. PROTECTED main. Do experiment/feature work on a BRANCH in its own worktree,
-   merged via PR — never `git commit`/`push` on `main`. Only living tracking
-   docs go direct to main, and only via the experiment-wrapup workflow.
-   [`main_protect_guard`: blocked; sanctioned tracking-doc bypass `EHR_MAIN_OK=1`]
+   merged via PR. But a SANCTIONED SET goes direct to main instead (housekeeping
+   records, cross-experiment tracking docs, KG nodes). Do not reason from memory
+   about which is which, and do not treat this line as the list: the
+   authoritative table is `.skills/pr-workflow/SKILL.md` ("What goes where")
+   plus the living-docs split in `.skills/experiment-wrapup/SKILL.md`. Read it
+   before concluding something cannot go direct to main.
+   [`main_protect_guard`: blocked; sanctioned bypass `EHR_MAIN_OK=1`]
 3. CANONICAL CHECKOUT ONLY. Work in `/home/profsynapse/code/Epistemic-Humility-
    Research`; `/mnt/f/...` is a FROZEN read-only backup. `cd` to canonical
    explicitly (the shell may start on /mnt/f). [`path_write_guard`: frozen-backup writes blocked]
@@ -44,15 +48,51 @@ often forgotten).
    After editing an `experiment.yaml`, validate (`bin/validate-experiments`) and
    regen the registry (`bin/exp regen`). [`post_write_reminders`: non-blocking
    nudge; `.githooks/pre-commit` hard-enforces validate + regen at commit]
+8. CHECK THE SKILL BEFORE YOU ASSERT A PROCESS RULE. Any claim about how this
+   repo works (what may be committed where, which tool is canonical, what a
+   command does, whether something is allowed) comes from the skill or script
+   that governs it, not from memory and not from these summaries. `.skills/` is
+   the canonical tree; `bin/search` finds it. Two recurring failures this rule
+   exists to stop: (a) refusing or re-routing work because a remembered rule
+   seemed to forbid it, when the governing skill has an explicit carve-out;
+   (b) trusting a tool whose own docs record that it lies (see the `rtk` gotchas
+   in `bin/sync_skills.py`'s docstring). Verify structurally (sha256,
+   `yaml.safe_load`, `json.load`, explicit file paths) rather than by scraping
+   proxied output or trusting an exit code.
+   (Not hook-enforceable. Re-injected after every compaction.)
 
 ## Purpose
 
 This repository supports research on epistemic humility in language models:
-calibration, abstention, hallucination, sycophancy, uncertainty reporting, and
-the tradeoffs introduced by training and fine-tuning. Treat it as a research
-workspace first and a software project second: claims need provenance, scripts
-need reproducibility, and changes should preserve the line from source evidence
-to paper text to experiment artifacts.
+whether a model's internal representation of its own ignorance can be read
+directly, and wired to behavior.
+
+That sentence is the durable part. EVERYTHING ELSE ABOUT THE RESEARCH CHANGES
+(the architecture under test, what has replicated, which model families and
+sites work, which step is unsolved) and is therefore deliberately NOT written
+here, because a summary in this file goes stale silently and gets believed
+anyway. Bootstrap from the sources below before discussing, summarizing, or
+planning research work. Do not describe the program from memory, from a chat
+summary, or from this file.
+
+| Bootstrap from | For |
+|---|---|
+| `docs/research-trajectory.md` | Current through-line and program state. Canonical entry point; start here. |
+| `papers/paper-5-actuation/manuscript.md` | The actuation half: architecture, gating, per-family actuation results. |
+| `papers/paper-4-two-signal-readout/manuscript.md` | The read half: the readouts and what they discriminate. |
+| `papers/paper-1-taxonomy-framework/`, `paper-2-training-regimen/`, `paper-3-knows-but-doesnt-say/` | Framing and taxonomy, the training comparison, and the internal-versus-stated gap. |
+| `papers/series/plan.md` | How the papers divide the program. |
+| `papers/common/terminology.md` | Governed vocabulary. Binding on committed prose. |
+| `TODO.md` | Live backlog and open lines. |
+| `experiments/<slug>/AMENDMENT.md` | The SOLE source for any experimental fact, design, gate, dose, site, or verdict. See rule 6. |
+
+If one of those sources contradicts another, the more recent one wins and the
+older one is stale: say so rather than silently picking. If a source contradicts
+this file, this file is wrong.
+
+Treat this as a research workspace first and a software project second: claims
+need provenance, scripts need reproducibility, and changes should preserve the
+line from source evidence to paper text to experiment artifacts.
 
 ## Environment
 
