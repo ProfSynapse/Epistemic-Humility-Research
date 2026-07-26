@@ -40,6 +40,12 @@ archive/experiment/phase1/probe/manifests/
 experiments/*/analysis/
 experiments/*/directions/
 
+# Root-level scratch analysis tree (2.2 GB of activations, extractions, and run
+# outputs). Same convention as experiments/*/analysis/: private, regenerable, and
+# it may contain question/eval-row text, which this PUBLIC repo never carries.
+# Anything meant to be committed goes to analysis-committed/ instead.
+/analysis/
+
 # git worktrees (PACT feature isolation)
 .worktrees/
 
