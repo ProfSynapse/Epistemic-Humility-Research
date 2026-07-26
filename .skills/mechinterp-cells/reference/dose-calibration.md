@@ -157,6 +157,51 @@ first coarse pass in this diagnostic did exactly that and produced a retracted
    plumbing check, and cover "does the strongest arm move tokens on THIS
    substrate" with the separate pre-launch bracket probe from rule 4.
 
+## Terminal-site space mismatch (post-final-norm states)
+
+A captured hidden state indexed `hsN`, where `N` equals the model's total
+block count, is NOT block `N-1`'s output. HF's `utils/output_capturing.py`
+collects `[embeddings, block0_out, ..., block(N-1)_out]` and then OVERWRITES
+the final entry with `last_hidden_state` - the state AFTER the model's
+final norm. A capture pipeline that names its N+1 hidden-state slots
+`hs0..hsN` inherits this silently: `hsN` is a different KIND of state than
+every other entry in the same list.
+
+This bites any experiment whose `erase_write` readout or fit site happens to
+land on that final index - and it bites the dose ladder in two independent
+ways, both measured on the same cell (a 42-block model, site `hsN` where
+`N` = block count):
+
+- **Fingerprint.** Post-RMSNorm states sit on the `RMS(h / norm.weight) = 1`
+  manifold; interior states do not. Measured: `1.00004` at the terminal site
+  vs `340 / 355 / 322` at three interior sites on the same checkpoint. Run
+  this as a preflight assertion at every capture site before fitting or
+  dosing - it is a two-line check and it catches the defect before either
+  downstream bug fires.
+- **Space mismatch.** A direction fitted on the post-norm state but WRITTEN
+  into the pre-norm residual (because the write hook addresses "layer N-1's
+  output," the interior convention) writes into a different space than it
+  was fit in, related only by the diagonal `norm.weight`. Measured:
+  `cos(c_hat, unit(norm.weight * c_hat)) = 0.9873` - close to 1, not
+  identical; small but real and not a rounding artifact.
+- **Ladder inflation.** If the dose ladder is scaled to the terminal site's
+  own median activation norm, every dose at that site is inflated relative
+  to the interior sites' true write-site scale, because the post-norm norm
+  and the pre-norm write-site norm are different quantities. Measured:
+  ladder scaled to a post-norm median of 281.34 against a true write-site
+  scale of ~118-126, inflating every dose ~2.38x at that one site - which
+  turned a real onset-ratio gap of ~1.5x between sites into an apparent
+  ~3.6x gap, large enough to read as a distinct terminal-layer phenomenon
+  when it was a ladder artifact.
+
+**Rule.** Before fitting a direction or building a dose ladder at any site,
+run the `RMS(h / norm.weight) ~= 1.0` check at that site. If it fires,
+either drop that site or fit AND write in the same (post-norm) space and
+scale its ladder to that space's own norms - never assume the interior
+convention applies there. The general trigger is a site index equal to the
+model's block count; a family whose chosen sites never coincide with its
+own block count is unaffected and needs no special handling.
+
 ## gen_stream and the `position` field
 
 In `gen_stream` mode the engine edits every decode step at `anchor_onward`
