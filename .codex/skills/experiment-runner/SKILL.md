@@ -34,6 +34,7 @@ Always choose the narrowest reference needed for the task:
 | Prepare/gate hidden-state extraction | [reference/hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
 | Author a NEW steering / extraction / probe-fit / gate-scoring cell (tuner-backed) | the `mechinterp-cells` skill (`.skills/mechinterp-cells/SKILL.md`) |
 | Grade abstention/refusal in a gated harness (detector + blinded adjudication lane) | [reference/abstention-grading.md](reference/abstention-grading.md) |
+| Design or trust a cost/harm gate whose denominator may include unfired/undosed rows | [reference/gate-diagnosticity.md](reference/gate-diagnosticity.md) |
 | Select a generation or hidden-state backend (vLLM-first policy, parity exceptions, structured outputs, bridge smokes) | [reference/batched-generation.md](reference/batched-generation.md) |
 | Plan archived legacy mechinterp causal-pilot sweeps | [reference/legacy-mechinterp-causal-pilot-sweeps.md](reference/legacy-mechinterp-causal-pilot-sweeps.md) |
 | Record durable research-session memory | [reference/research-sessions.md](reference/research-sessions.md) |
@@ -105,6 +106,18 @@ operation, then follow any further routing inside that reference.
   code, and a falsifier that closes the regress (no rescoring lane behind the
   lane). Protocol, rubric, cautionary case, and pre-sign checklist:
   [reference/abstention-grading.md](reference/abstention-grading.md).
+- Cost/harm gate diagnosticity: a cost gate whose denominator is an
+  unconditional population (not filtered to rows the intervention actually
+  fired on) measures baseline properties, not intervention cost, whenever the
+  fired fraction is small — and is vacuous by construction at a fired
+  fraction of exactly zero. Counterintuitively, such a gate gains power as
+  the readout gate's separation gets WORSE, and any Wilson-upper-CI cap has a
+  computable minimum-N floor below which it cannot pass regardless of
+  performance. A locked/registered gate's PASS still stands as registered;
+  the diagnosticity caveat travels forward with the result rather than
+  reopening the verdict. Before trusting any cost gate result, decompose its
+  denominator into fired vs unfired and report the fired fraction alongside
+  the verdict. See [reference/gate-diagnosticity.md](reference/gate-diagnosticity.md).
 - Data-exhaust at build time: every generation harness persists per-sample
   generation text and the full sub-grade dict in its gitignored row-level run
   log; booleans-only logs are a build defect, and the pre-sign review checks

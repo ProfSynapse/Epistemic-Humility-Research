@@ -31,9 +31,11 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 import xml.etree.ElementTree as ET
 
-ARXIV_API = "http://export.arxiv.org/api/query?id_list={id}"
+ARXIV_API = "https://export.arxiv.org/api/query?id_list={id}"
+ABS_URL = "https://arxiv.org/abs/{id}"
 HTML_URL = "https://arxiv.org/html/{id}"
 PDF_URL = "https://arxiv.org/pdf/{id}"
 UA = "Mozilla/5.0 (kg-ingest fetch_paper)"
@@ -75,22 +77,78 @@ def get(url, binary=False, timeout=60):
     return proc.stdout if binary else proc.stdout.decode("utf-8", "replace")
 
 
-def fetch_metadata(arxiv_id):
+def _meta_from_api(arxiv_id):
+    """Metadata via the arXiv Atom API. Raises RuntimeError on transport failure
+    (incl. HTTP 429) so the caller can back off or fall back."""
     xml = get(ARXIV_API.format(id=arxiv_id))
     root = ET.fromstring(xml)
     entry = root.find(f"{ATOM}entry")
     if entry is None or entry.find(f"{ATOM}title") is None:
-        die(f"arXiv API returned no entry for {arxiv_id}")
+        raise RuntimeError(f"arXiv API returned no entry for {arxiv_id}")
     # an error/empty entry has a title but no published date
     published = entry.find(f"{ATOM}published")
     if published is None:
-        die(f"arXiv API returned no metadata for {arxiv_id} (bad id?)")
+        raise RuntimeError(f"arXiv API returned no metadata for {arxiv_id}")
     title = re.sub(r"\s+", " ", entry.find(f"{ATOM}title").text).strip()
     summary = re.sub(r"\s+", " ", entry.find(f"{ATOM}summary").text).strip()
     year = published.text[:4]
     authors = [re.sub(r"\s+", " ", a.find(f"{ATOM}name").text).strip()
                for a in entry.findall(f"{ATOM}author")]
     return {"title": title, "summary": summary, "year": year, "authors": authors}
+
+
+def _meta_from_abs(arxiv_id):
+    """Fallback: scrape the /abs/ page's citation_* meta tags.
+
+    export.arxiv.org (the API host) rate-limits aggressively and is sometimes
+    unreachable when arxiv.org itself is fine, so a batch ingest that would
+    otherwise stall out entirely can still make progress from the abs page.
+    """
+    html = get(ABS_URL.format(id=arxiv_id))
+    def meta(name):
+        m = re.search(rf'<meta name="{name}" content="([^"]*)"', html)
+        return re.sub(r"\s+", " ", m.group(1)).strip() if m else ""
+    title = meta("citation_title")
+    if not title:
+        raise RuntimeError(f"abs page for {arxiv_id} has no citation_title")
+    authors = [re.sub(r"\s+", " ", a).strip() for a in
+               re.findall(r'<meta name="citation_author" content="([^"]*)"', html)]
+    date = meta("citation_date") or meta("citation_online_date")
+    year = re.match(r"(\d{4})", date).group(1) if re.match(r"(\d{4})", date) else "?"
+    m = re.search(r'<blockquote class="abstract[^"]*">(.*?)</blockquote>', html, re.S)
+    summary = ""
+    if m:
+        summary = re.sub(r"<[^>]+>", " ", m.group(1))
+        summary = re.sub(r"^\s*Abstract:\s*", "", re.sub(r"\s+", " ", summary)).strip()
+    return {"title": title, "summary": summary, "year": year, "authors": authors}
+
+
+def fetch_metadata(arxiv_id, retries=3):
+    """API first, with backoff on rate-limiting, then the abs-page fallback.
+
+    NOTE: this endpoint must be https. Over plain http the host returns an empty
+    body, which parses as "no entry" and surfaces as a *bad id* error -- i.e. a
+    transport failure that looks exactly like a fabricated arXiv id. Do not
+    'simplify' the scheme back to http.
+    """
+    last = None
+    for attempt in range(retries):
+        try:
+            return _meta_from_api(arxiv_id)
+        except RuntimeError as e:
+            last = e
+            if "429" in str(e) and attempt < retries - 1:
+                time.sleep(15 * (attempt + 1))
+                continue
+            break
+    try:
+        meta = _meta_from_abs(arxiv_id)
+        print(f"fetch_paper: API unavailable ({last}); used abs-page metadata "
+              f"for {arxiv_id}", file=sys.stderr)
+        return meta
+    except RuntimeError as e:
+        die(f"could not fetch metadata for {arxiv_id}: API said {last}; "
+            f"abs fallback said {e}")
 
 
 def slugify(title, max_words=7):
