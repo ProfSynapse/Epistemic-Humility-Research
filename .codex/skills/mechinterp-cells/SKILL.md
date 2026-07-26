@@ -47,6 +47,11 @@ Read only the reference files needed for the task:
 - [reference/organization.md](reference/organization.md) - experiments-first
   layout, signing pins, directions, shared renders/graders, outputs, and run
   tags.
+- [reference/read-then-actuate.md](reference/read-then-actuate.md) - the
+  end-to-end per-model procedure for standing the pipeline up on a family that
+  has no actuation result yet: mine the pool, fit the KU direction and readout
+  gate, find a write site, calibrate a dose, run the placebo control,
+  adjudicate. Read this before designing an actuation cell for a new family.
 - [reference/dose-calibration.md](reference/dose-calibration.md) - how to find
   the coherent erase-write window before locking a behavioral ladder.
 - [reference/modal-launch.md](reference/modal-launch.md) - local vs Modal lanes
