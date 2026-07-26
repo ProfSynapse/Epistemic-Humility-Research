@@ -14,7 +14,9 @@ question: Gemma-4-E4B was stopped at dose-viability in j-space-cross-family-laye
   and the write still reaches the query path, FFN and residual stream, so the causal
   channel is narrowed, not severed. Is gemma inert above the seam because of that narrowing,
   and does the boundary push actuate at all below the donors, in the relative-depth
-  band 0.357-0.548 where every other family in this program actuates?
+  band 0.357-0.548 - the shallow half of the rd 0.375-0.639 range in which every other
+  family in this program actuates, and the deepest gemma can be written while both
+  donor blocks stay reachable?
 prediction: A2 (hs38, KV sharing OFF) clears BOTH primary gates on held-out -- confab
   clean_tighten >= 0.50 with Wilson 95% lower CI > 0.40, AND known-correct not_well_formed_correct
   <= 0.05 with Wilson 95% upper CI < 0.10 -- while A1 (hs38, sharing ON) does not,

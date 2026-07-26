@@ -141,6 +141,26 @@ arms:
     site_hs: null
     kv_sharing: off
     role: PRECONDITION CONTROL (see gates.yaml g0_c1)
+  # --- Registered 2026-07-25, pre-signature, before any arm has run. ---------
+  # DIRECTION-SPECIFICITY CONTROLS. See placebo_direction_control below and
+  # gates.yaml g3_direction_specificity. These are not new questions bolted on:
+  # without them, a G1 pass at any arm is consistent with "norm injection of this
+  # magnitude at this site makes the model hedge" and carries no evidence that
+  # the KU readout is what is doing the work -- which is the only thing this
+  # program is trying to establish.
+  - id: P1
+    site_hs: 22
+    kv_sharing: on
+    role: >-
+      matched-magnitude random-direction control for A3. Identical site, dose,
+      fired-row set and law; ONLY the written direction differs.
+    conditional_on: "A3 has a usable FIT dose (REALIZED 2026-07-25: yes, ratio=0.361, dose=28.5068)"
+  - id: P2
+    site_hs: 24
+    kv_sharing: on
+    role: >-
+      matched-magnitude random-direction control for A5. Same construction as P1.
+    conditional_on: "A5 has a usable FIT dose (REALIZED 2026-07-25: yes, ratio=0.554, dose=50.5311)"
 
 # Below-seam site selection is by LINEAR ACCESSIBILITY, pre-stated here before
 # any run. Donor reachability admits exactly two below-seam sites (hs22, hs23),
@@ -234,6 +254,122 @@ dose_ladder:
   usable_rule: "frac_readback_within_tol == 1.0 AND collapse_rate_on_dosed == 0.0 AND FIT confab clean_tighten >= 0.5"
   selection_rule: "highest FIT confab tighten, then lower known-correct cost, then lower ratio"
   source: calibrate_dose.py (copied verbatim from the parent)
+
+# ---------------------------------------------------------------------------
+# DIRECTION-SPECIFICITY CONTROL. Registered 2026-07-25, pre-signature, before
+# any arm has run. Adjudicated by gates.yaml g3_direction_specificity.
+# ---------------------------------------------------------------------------
+placebo_direction_control:
+  arms: [P1, P2]
+  why_this_exists: >-
+    As drafted before today, this experiment had NO undosed baseline arm and NO
+    random-direction arm on the dosed sites. Under that design an arm clearing
+    G1 would establish that writing a vector of a particular magnitude at a
+    particular site raises hedging on confabulation rows -- and nothing more. It
+    would not distinguish the KU direction doing work from norm injection of
+    matched size doing the same work. Every actuation claim this program has
+    promoted outside Qwen currently founders on exactly that gap
+    (rr3-corrected-placebo-replication: mistral's random direction lifted
+    +21.8 points, effect ratio 1.87, RG1 FAIL). Adding the control before the
+    run is cheap; discovering afterwards that the run cannot answer the question
+    it was built for is not.
+  what_varies: "the written direction ONLY"
+  held_identical_to_the_matched_true_arm:
+    - site index and hooked module
+    - kv_sharing condition (ON)
+    - law (erase_write) and position (anchor_onward)
+    - the calibrated absolute dose for that site
+    - the exact set of rows that FIRED under the true KU readout gate, and the
+      per-row token positions written
+    - the held-out split, the row ids, decoding config and seed
+  fired_row_matching: >-
+    The random direction is written at EXACTLY the rows and positions where the
+    TRUE gate fired, at the true arm's dose. It is NOT re-gated on a
+    random-direction score, and the gate indices are NOT permuted. Permuting the
+    fire set (the gate-contribution-factorial construction) varies gate AND
+    direction at once and answers a different question -- how much of the lift
+    the gate contributes. The question here is narrower and prior to it: given
+    the rows the readout selected, does it matter WHICH direction is written
+    there. Holding the fire set fixed is what makes that attribution clean.
+  direction_construction:
+    unit_vectors: "r_hat = unit(rng.normal(size=hidden_dim)), hidden_dim = 2560"
+    rng: "np.random.default_rng(SEED_BASE + hidden_dim + hs_index + K_index)"
+    seed_base: 20260725
+    seeds_are_registered_here: "the draw is reproducible from this file alone; no seed is chosen after a result is seen"
+  randomness_quality_bar:
+    id: SC1
+    rule: "|cos(r_hat, c_hat)| <= 0.015 AND |cos(r_hat, u_d)| <= 0.015"
+    source: placebo-seed-distribution-census/sc1_checks.py:52-64
+    why_a_redraw_ledger_is_mandatory: >-
+      At hidden_dim = 2560 the measured per-draw pass rate for this bar is
+      roughly 30-35%. A draw loop without redraw would silently ship directions
+      that overlap c_hat, which biases the control TOWARD the true direction and
+      therefore toward a FAIL of specificity -- a control that fails in the
+      conservative direction is still a broken control.
+    redraw_rule: "redraw_seed(attempt) = seed_base + hidden_dim + hs_index + K + attempt"
+    max_redraws: 300
+    ledger: >-
+      Every draw -- accepted and voided -- is written to
+      analysis-committed/gemma4-e4b/placebo_draw_ledger.<site_set>.json with its
+      seed, both cosines, and the accept/void decision. Exhausting max_redraws
+      without K accepted directions is a NOT-RUN for that arm, not a relaxation
+      of the bar.
+  magnitude_matching:
+    convention: "sigma = 1.0, so the realized gain equals the arm's calibrated absolute dose"
+    verification: >-
+      readback within 5% + 0.5 absolute of the true arm's dose, on EVERY dosed
+      row -- the identical check g0_arm_instrument_validity.readback_verification
+      applies to the true arms. A placebo arm whose readback fails is a NOT-RUN;
+      an unmatched magnitude makes the comparison meaningless in the direction
+      that flatters the true arm.
+    known_defect_not_to_reproduce: >-
+      gate-contribution-factorial/run_factorial.py:270-284 once passed the gain
+      as the sigma argument to build_hook_and_controller, realizing gain**2
+      instead of gain * sigma. test_factorial_smoke.py pins sigma != gain as a
+      regression guard. Any implementation here carries the same assertion.
+  k_number_of_draws:
+    status: CLOSED
+    K: 5
+    resolved_by_lead: >-
+      FIXED at K = 5 on 2026-07-25 by the lead, before any placebo arm runs and
+      before any arm of this experiment has run. The drafter offered 3 (the
+      inherited floor), 5, and 15 (census-matched); 5 stands. Scope was fixed at
+      the same time to hs22 and hs24 ONLY -- the P-arms are NOT extended to the
+      shallow ladder D1-D4. This parameter is now CLOSED and moves for no result.
+    scope_of_this_control: "hs22 (P1) and hs24 (P2). D1-D4 have no placebo counterpart."
+    drafter_recommendation: 5
+    hard_floor: 3
+    floor_source: >-
+      rr3-corrected-placebo-replication/gates_lib.py raises if K < 3. That guard
+      is inherited, not re-derived. K < 3 is not a weaker version of this control;
+      it is not this control.
+  cost_estimate: >-
+    ROUGH, stated so the lead can price the decision rather than discover it.
+    One placebo pass = one dosed generation over that arm's held-out confab pool
+    (168 rows) plus the matched known-correct pass. Extrapolating from the
+    seam_pair dose calibration (24 cells / 8 rows each in 24.1 min) gives order
+    20-30 min per draw per site. K = 5 at two sites is therefore order 3-5 GPU
+    hours, plus one undosed baseline pass per site. Treat the range, not the
+    midpoint, as the estimate.
+  undosed_baseline_required: >-
+    Each of P1/P2's matched true arms (A3, A5) must also run an UNDOSED pass over
+    the same held-out confab rows. This is already required as the non-gating
+    g2 companion metric "undosed_floor"; g3_direction_specificity promotes it to
+    a hard input, because a lift cannot be computed without it. Registering it
+    here means it is not discovered as missing at resolve.
+  what_this_does_not_establish: >-
+    (a) It says nothing about the PRIMARY contrast. A1-vs-A2 at hs38 has no
+    placebo arm registered and gains none from this block; a specificity result
+    at hs22/hs24 does not transfer to hs38, a different site under a different
+    reachability regime.
+    (b) It is not a test of the gate. Holding the fire set fixed is deliberate
+    (see fired_row_matching), and the cost is that this control cannot say how
+    much of any lift is attributable to WHERE the readout chose to write rather
+    than to WHAT was written. The gate-contribution-factorial 2x2 answers that
+    and is not replicated here.
+    (c) A specificity PASS at a site does not make the boundary push safe or
+    selective. G2's denominator is 0 by construction on these sites (roughly 2
+    dosed known-correct rows at hs22), and NOT-ADJUDICABLE stands unchanged.
 
 inputs_reused:
   pool: parent gemma4-e4b fresh-mined evaluation pool (hash-pinned at sign)
