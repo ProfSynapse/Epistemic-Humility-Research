@@ -114,7 +114,8 @@ universal property of the write. At this same overdrive dose (L34, dose 200),
 a separately registered comparison shows an unconditional write damages 60.1%
 of held-out known-correct rows versus 3.1% gated, a 57.0-point gap (McNemar
 p = 4.2e-43): here the gate is the sole source of selectivity. At mid-band
-doses (qwen hs20 dose_abs 12.608; mistral hs16 dose_abs 3.665), a controlled
+doses (qwen hs20 = rd 0.625, dose_abs 12.608; mistral hs16 = rd 0.500,
+dose_abs 3.665), a controlled
 factorial found the
 write itself is already content-selective: a permuted-gate control reaches
 confab abstention 0.550-0.600 against the true gate's 0.689-0.694, and the
@@ -131,7 +132,8 @@ Third, write location matters. A Jacobian-lens diagnostic localized a
 workspace-like J-space band in Qwen3-4B around hs=23-29, peaking at hs=26, while
 the inherited L34 write site maps to hs=34 just after that band. After
 layer-specific dose calibration, held-out mid-band writing beat the late hs34
-reference: hs23 reached 165/185 clean refusals (89.2%) versus hs34 123/185
+reference: hs23 (rd 0.639) reached 165/185 clean refusals (89.2%) versus
+hs34 (rd 0.944) 123/185
 (66.5%), a +22.7 point gain with only +0.78 points known-correct cost. However,
 using the J-lens backward to target natural refusal tokens was not enough to
 improve the controller: a token-target direction was non-inert by itself
@@ -243,6 +245,21 @@ This paper combines several exploratory actuation families. Each was governed by
 a signed amendment or experiment-local AMENDMENT before the relevant run, with
 predictions, falsifiers, gates, and controls frozen before outcome evaluation.
 Appendix A maps every paper claim to its governed source document.
+
+**Reporting convention for write sites.** Write sites are named by their raw
+hidden-state index (`hsN`) because that is how each governing amendment
+registered them, but raw indices are not comparable across families with
+different block counts, and several comparisons in this paper are cross-family.
+We therefore also give relative depth, `rd = layer_idx / num_hidden_layers`,
+wherever a site is compared against a site in another family. Block counts,
+each verified 2026-07-09 from the checkpoint's own `config.json`
+(`experiments/j-space-cross-family-layer-contrast/families/*.yaml`), are:
+Llama-3.2-3B 28, Mistral-7B-Instruct-v0.3 32, Qwen3.5-4B 32 (nested under
+`text_config`), Qwen3-4B 36, Gemma-4-E4B 42 (nested). The convention matters
+here rather than being bookkeeping: llama's `hs20` and Qwen3.5-4B's `hs20` are
+the same integer and not the same depth (rd 0.714 versus rd 0.625), and on
+present evidence they fall on opposite sides of the band in which any family in
+this program has actuated.
 
 ### 3.1 Channels
 
@@ -422,7 +439,7 @@ attribution changes at a different dose regime.
 
 **Robustness update.** Two later registered cells strengthen this headline
 without changing it. A held-out transfer of the same controller design to
-Qwen3.5-4B's mid-band write site (hs20, dose_abs 12.608) reproduced the
+Qwen3.5-4B's mid-band write site (hs20 = rd 0.625, dose_abs 12.608) reproduced the
 decoupling out of sample: fired-confab refused 872/1286 = 0.678 (Wilson
 [0.652, 0.703]), well-formed 1256/1286 = 0.977, and known-correct false
 refusal 14/360 = 0.039, with both placebo legs intact
@@ -461,7 +478,8 @@ The first causal layer sweep at a fixed absolute dose stopped at G0 because dose
 200 collapsed hs23 and hs26. FIT-only dose calibration fixed that: usable
 non-collapsing setpoints were recovered at hs23=25, hs26=75, hs29=125, and
 hs34=175. The held-out contrast then supported the layer-site hypothesis. Over
-443 held-out rows, hs23 achieved 165/185 clean refusals (89.2%) versus hs34
+443 held-out rows, hs23 (rd 0.639) achieved 165/185 clean refusals (89.2%)
+versus hs34 (rd 0.944)
 123/185 (66.5%), a +22.7 point improvement. Known-correct cost rose only from
 7/258 (2.7%) to 9/258 (3.5%), a +0.78 point delta. hs34 remained viable, but it
 was not optimal.
@@ -666,14 +684,15 @@ delta reported from a single seed, anywhere in this paper, should be read.
 null.** RR3 also ran the placebo measurement missing from the family x
 placebo-sign map since the calibration study scoped it out for lack of
 on-disk generation text (Section 4.8): a llama random-direction dose ladder
-at llama's own atlas site (hs20), one fresh seed per rung across the
+at llama's own atlas site (hs20 = rd 0.714), one fresh seed per rung across the
 registered dose grid, on both the confab and known-correct populations. At
 the matched-magnitude reference dose (12 sigma_c), the llama confab lift was
 +0.1 points: null. The ladder stayed flat through 16 sigma_c (-3.1 to +0.9
 points, all inside the +/-8 point descriptive envelope), with a single
 +8.5-point excursion at the top rung (20 sigma_c) that lands marginally
 outside the envelope; known-correct false refusal grew with dose, from 0.3%
-at 2 sigma_c to 6.0% at 20 sigma_c. A parallel mistral dose ladder (hs16, one
+at 2 sigma_c to 6.0% at 20 sigma_c. A parallel mistral dose ladder (hs16 =
+rd 0.500, one
 fresh seed per rung) produced lifts of -3.8 to +4.2 points across the same
 grid, all inside the envelope with no monotone dose-response, reinforcing
 the single-seed-instability finding above. Per RR3's pre-stated
@@ -689,6 +708,22 @@ Predictions scoreboard adjudication). The family x placebo-sign map is now
 complete in sign across all three families: qwen suppresses (-5.13), llama
 is null (+0.1 at matched magnitude), and mistral recruits on average but
 with wide single-seed variance (-7.4 to +21.8).
+
+**Depth caveat on the llama leg.** The llama ladder ran at that family's
+read-selected atlas site, hs20 = rd 0.714. llama's own write site, the one
+that cleared `dose_is_usable` and passed held-out G1 at 0.7420, is hs17 =
+rd 0.607. The two are not interchangeable: read-optimal and actuate-optimal
+depth are separately measured quantities in this program, and rd 0.714 sits
+above the band in which any family here has actuated at all. A null placebo
+is the desired control outcome and nothing about this result is anomalous,
+but the inference the rider draws from it is stronger than the observation
+supports. Reading a null placebo as evidence that placebo response is not
+monotone in baseline hedging presumes the site is one where a direction of
+that magnitude could have moved behavior. At rd 0.714 that presumption is
+untested for llama and false for every other family measured. The sign map
+should be read as complete in sign at the sites actually run, not as a
+depth-controlled comparison; a llama placebo leg at hs17 would be needed to
+make it one.
 
 **Census update (2026-07-15).** A dedicated multi-seed census
 (Section 4.10, `experiments/placebo-seed-distribution-census/AMENDMENT.md`)
@@ -870,8 +905,8 @@ The results form a channel map rather than a single pass/fail story.
 | Reward | Some boundary-preserving behavior | TRUE sensor less congruent than PERMUTED | Reward can train correlates without readout consultation |
 | Unconditional write, overdrive regime (Qwen3-4B, L34, dose 200) | Damages most confabs (77.8%) | Non-selective on knowns: damages 60.1% of known-correct rows vs 3.1% gated (57.0pp, McNemar p = 4.2e-43) | At this dose, the gate is the sole source of selectivity; the write alone is not selective |
 | KU-gated caution snap, overdrive regime (Qwen3-4B, L34, dose 200) | 73.5% clean tighten, 3.1% known cost; held-out and sampled-decode replicated | Release direction remains null | Gate supplies selectivity; snap supplies the refusal action |
-| KU-gated caution snap, mid-band regime (Qwen3.5-4B/mistral, hs20, dose_abs 12.608) | Permuted-gate confab abstention already 0.550 qwen / 0.600 mistral, near the true gate's 0.689 / 0.694: the write is largely self-sorting | True gate's own contribution, Gap_Sel(c_hat), is real but sub-floor (0.148 qwen, 0.129 mistral, vs a 0.20 floor); cost protection sub-floor too (0.008 / 0.034 vs 0.10) | At this dose, the write self-sorts; the gate's role reduces to a modest increment plus cost governance, not the source of selectivity |
-| Mid-band J-space write (layer site, not dose regime) | hs23 beats hs34 by +22.7pp | Needs layer-specific dose; not yet cross-family | Write site matters |
+| KU-gated caution snap, mid-band regime (Qwen3.5-4B hs20 = rd 0.625, mistral hs16 = rd 0.500; dose_abs 12.608 qwen, 3.665 mistral) | Permuted-gate confab abstention already 0.550 qwen / 0.600 mistral, near the true gate's 0.689 / 0.694: the write is largely self-sorting | True gate's own contribution, Gap_Sel(c_hat), is real but sub-floor (0.148 qwen, 0.129 mistral, vs a 0.20 floor); cost protection sub-floor too (0.008 / 0.034 vs 0.10) | At this dose, the write self-sorts; the gate's role reduces to a modest increment plus cost governance, not the source of selectivity |
+| Mid-band J-space write (layer site, not dose regime; Qwen3-4B, 36 blocks) | hs23 = rd 0.639 beats hs34 = rd 0.944 by +22.7pp | Needs layer-specific dose; not yet cross-family | Write site matters |
 | Natural J-token write | Non-inert token-only effect | Redundant with `c_hat` hybrid | Verbalizable token target is not enough |
 | Cross-family gated snap (mistral, bounded negative) | Wide-instrument adjudicated refusal 69.9%, cost pristine (0.52% known-correct); benefit and cost gates reproduce at every re-test | Direction-specificity falsified three times independently, at three sites and doses: RR2's flat 2-point placebo tolerance, RR3's corrected 3x effect-ratio gate (ratio 1.87), and the mid-band factorial's S1 leg (ratio 2.03, K=15 census denominator); the mid-band factorial's own gate-contribution leg is also sub-floor (Gap_Sel 0.129 vs 0.20); the cross-family confirmatory fleet found a true behavioral null at the registered late write site (0/874 clean_tighten at every dose); a 15-seed placebo census (Section 4.10) resolved all three families' matched-magnitude placebo as sign-consistent rather than seed noise (qwen suppresses 14/15, mistral recruits at the 12/15 boundary, llama newly suppresses 12/15), so llama is not a null control | Mistral is readable everywhere the audit looked but not shown actuable by a direction-specific write at any tested site; placebo criteria must be registered against each family's measured per-family null distribution, not a flat tolerance or a single seed; the census (Section 4.10) supplies that distribution at K=15 for percentile-based or sign-opposition criteria |
 
