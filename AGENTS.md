@@ -65,9 +65,15 @@ often forgotten).
    `find`/`rtk grep`; restate this rule in every search subagent's prompt.
    [`bin_search_guard`: exploratory search blocked; conscious bypass `EHR_SEARCH_OK=1`]
 2. PROTECTED main. Do experiment/feature work on a BRANCH in its own worktree,
-   merged via PR — never `git commit`/`push` on `main`. Only living tracking
-   docs go direct to main, and only via the experiment-wrapup workflow.
-   [`main_protect_guard`: blocked; sanctioned tracking-doc bypass `EHR_MAIN_OK=1`]
+   merged via PR. Governed evidence (amendments, `experiments/<slug>/`,
+   `docs/protocols/`), skills, and the submodule are ALWAYS PR-gated.
+   A SHORT list goes direct to main: session notes, `TODO.md`, `docs/ideas/`,
+   backlog edits, the cross-experiment tracking docs, and KG nodes under
+   `library/`. That list is not a paraphrase to reason from; the authoritative
+   table is `.skills/pr-workflow/SKILL.md` ("What goes where") plus the
+   living-docs split in `.skills/experiment-wrapup/SKILL.md`. Read it before
+   concluding something cannot go to main.
+   [`main_protect_guard`: blocked; sanctioned bypass `EHR_MAIN_OK=1`]
 3. CANONICAL CHECKOUT ONLY. Work in `/home/profsynapse/code/Epistemic-Humility-
    Research`; `/mnt/f/...` is a FROZEN read-only backup. `cd` to canonical
    explicitly (the shell may start on /mnt/f). [`path_write_guard`: frozen-backup writes blocked]
@@ -90,15 +96,77 @@ often forgotten).
    After editing an `experiment.yaml`, validate (`bin/validate-experiments`) and
    regen the registry (`bin/exp regen`). [`post_write_reminders`: non-blocking
    nudge; `.githooks/pre-commit` hard-enforces validate + regen at commit]
+8. CHECK THE SKILL BEFORE YOU ASSERT A PROCESS RULE. Any claim about how this
+   repo works (what may be committed where, which tool is canonical, what a
+   command does, whether something is allowed) comes from the skill or script
+   that governs it, not from memory and not from these summaries. `.skills/` is
+   the canonical tree; `bin/search` finds it. Two recurring failures this rule
+   exists to stop: (a) refusing or re-routing work because a remembered rule
+   seemed to forbid it, when the governing skill has an explicit carve-out;
+   (b) trusting a tool whose own docstring records that it lies. `rtk`-proxied
+   `diff` prints a false "Files are identical" banner, and `rtk`-proxied
+   `pytest` on a directory glob reports "No tests collected" with exit 0. Verify
+   structurally (sha256, `yaml.safe_load`, `json.load`, explicit file paths)
+   rather than by scraping proxied output or trusting an exit code.
+   (Not hook-enforceable. Re-injected after every compaction.)
 
 ## Purpose
 
-This repository supports research on epistemic humility in language models:
-calibration, abstention, hallucination, sycophancy, uncertainty reporting, and
-the tradeoffs introduced by training and fine-tuning. Treat it as a research
-workspace first and a software project second: claims need provenance, scripts
-need reproducibility, and changes should preserve the line from source evidence
-to paper text to experiment artifacts.
+This repository supports research on epistemic humility in language models. The
+program has one through-line: small open models represent more about their own
+ignorance than they say, and training moves the policy without reliably wiring
+that internal signal to stated confidence or action. So read the signal directly
+and wire it to behavior instead.
+
+### The architecture under test
+
+A SENSOR feeding a SEPARATE ACTUATOR, in three steps, repeated per model family:
+
+1. READ. Fit a known-unknown (KU) direction from the residual stream and show it
+   discriminates on held-out rows.
+2. ACTUATOR. Fit a refusal/caution direction in that same model, orthogonalized
+   against the KU direction, and find a dose at which pushing it produces a
+   coherent abstention rather than a collapse.
+3. WIRE. Gate the actuator on a threshold applied to the standardized KU
+   readout, so it fires only where the read crosses. Then evaluate held-out.
+
+Two things this frame rules out, both of which have been asserted here by
+mistake and cost real time:
+
+- The read axis and the write axis are NOT the same direction. The actuator is
+  constructed orthogonal to the sensor on purpose. "Read a direction, then push
+  along it" is a wrong description of every gated experiment in this repo.
+- The write site is NOT assumed to be one shared place. It is searched per
+  family. Relative depth is the best predictor found so far and it gives a band,
+  not a site.
+
+### The open question
+
+Whether steps 2 and 3 reduce to a per-model RECIPE, that is, a procedure someone
+can follow to locate and test the actuator in roughly any open-weight model. Not
+a universal site, and not a universal dose. Step 1 already transfers. Choosing
+the write site is the unsolved step, and it is the bottleneck on the whole
+program.
+
+### Where the program is actually stated
+
+Do not restate the mission, the scoreboard, or any per-family status from memory
+or from this file. This section is a pointer, not a source. In freshness order:
+
+- `docs/research-trajectory.md` (current through-line; canonical entry point)
+- `papers/paper-5-actuation/manuscript.md` (the actuation half; the
+  sensor/actuator architecture is section 3.2 "Readouts and directions")
+- `papers/paper-4-two-signal-readout/manuscript.md` (the read half)
+- `papers/series/plan.md` (series roadmap; still uses the retired "doubt"
+  vocabulary that `papers/common/terminology.md` replaced with known-unknown)
+- `TODO.md` (live backlog, including the write-criterion line)
+
+Per-family status, doses, sites, and verdicts live ONLY in
+`experiments/<slug>/AMENDMENT.md`. See operating rule 6.
+
+Treat this as a research workspace first and a software project second: claims
+need provenance, scripts need reproducibility, and changes should preserve the
+line from source evidence to paper text to experiment artifacts.
 
 ## Environment
 
