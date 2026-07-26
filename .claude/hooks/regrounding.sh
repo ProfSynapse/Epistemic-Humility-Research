@@ -39,28 +39,26 @@ cat <<EOF
 ================= EHR OPERATING INVARIANTS (auto re-injected) =================
 $lead
 
-0. WHAT THIS PROGRAM IS. Small open models represent more about their own ignorance
-   than they say. The architecture under test is a SENSOR feeding a SEPARATE
-   ACTUATOR, per model family: (1) READ a known-unknown (KU) direction from the
-   residual stream; (2) fit a refusal/caution ACTUATOR direction, orthogonalized
-   against the KU direction, and find a dose that abstains without collapsing;
-   (3) WIRE them, gating the actuator on a threshold over the standardized KU
-   readout. The read axis and the write axis are NOT the same direction, and the
-   write site is NOT one shared place across families. The open question is
-   whether steps 2 and 3 reduce to a per-model RECIPE. Choosing the write site is
-   the unsolved step. Full statement: AGENTS.md "Purpose". Current state:
-   docs/research-trajectory.md. Never restate status from memory (see 4).
+0. WHAT THIS PROGRAM IS. Research on whether a model's internal representation of
+   its own ignorance can be read directly, and wired to behavior. That one line is
+   the only part that does not change. The architecture under test, what has
+   replicated, which families and sites work, and which step is unsolved ALL move,
+   so they are deliberately not summarized here or in AGENTS.md. Before discussing,
+   summarizing, or planning research work, BOOTSTRAP: read docs/research-trajectory.md
+   (current state) and the relevant manuscript under papers/. Per-experiment facts
+   come only from experiments/<slug>/AMENDMENT.md (see 4). Do not describe this
+   program from memory or from this block.
 
 1. CHECKOUT. Canonical working checkout: /home/profsynapse/code/Epistemic-Humility-Research
    /mnt/f/Code/Epistemic-Humility-Research is a FROZEN read-only backup — never write it.
    The shell may start with cwd on /mnt/f; cd to the canonical checkout explicitly.
 
 2. PROTECTED main. Experiment/feature work goes on a BRANCH in its own worktree,
-   merged via PR. Governed evidence, skills, and the submodule are ALWAYS PR-gated.
-   A short list DOES go direct to main: session notes, TODO.md, docs/ideas/, backlog
-   edits, cross-experiment tracking docs, and KG nodes under library/ (bypass token
-   EHR_MAIN_OK=1). Do not reason from this summary about what is allowed: the
-   authoritative table is .skills/pr-workflow/SKILL.md "What goes where".
+   merged via PR. But a SANCTIONED SET goes direct to main instead (housekeeping
+   records, cross-experiment tracking docs, KG nodes; bypass token EHR_MAIN_OK=1).
+   Do not reason from this block about which is which, and do not treat this line
+   as the list: the authoritative table is .skills/pr-workflow/SKILL.md "What goes
+   where". Read it before concluding something cannot go direct to main.
 
 3. SEARCH FIRST. The typed knowledge graph is the default entry point for ALL
    exploration. Run  bin/search <query> --limit 10  BEFORE any rg/grep/find or a
@@ -86,9 +84,8 @@ $lead
    whether something is allowed) comes from the governing skill under .skills/, not
    from memory and not from this block. This block is a pointer, not a source. Two
    recurring failures: refusing work because a remembered rule seemed to forbid it
-   when the skill has an explicit carve-out; and trusting a tool whose own docstring
-   records that it lies (rtk-proxied diff prints a false "Files are identical";
-   rtk-proxied pytest on a directory glob reports "No tests collected" with exit 0).
+   when the skill has an explicit carve-out; and trusting a tool whose own docs
+   record that it lies (see the rtk gotchas in bin/sync_skills.py's docstring).
    Verify structurally (sha256, yaml.safe_load, json.load), not by scraping proxied
    output or trusting an exit code.
 

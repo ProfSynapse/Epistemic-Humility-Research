@@ -19,14 +19,12 @@ often forgotten).
    `find`/`rtk grep`; restate this rule in every search subagent's prompt.
    [`bin_search_guard`: exploratory search blocked; conscious bypass `EHR_SEARCH_OK=1`]
 2. PROTECTED main. Do experiment/feature work on a BRANCH in its own worktree,
-   merged via PR. Governed evidence (amendments, `experiments/<slug>/`,
-   `docs/protocols/`), skills, and the submodule are ALWAYS PR-gated.
-   A SHORT list goes direct to main: session notes, `TODO.md`, `docs/ideas/`,
-   backlog edits, the cross-experiment tracking docs, and KG nodes under
-   `library/`. That list is not a paraphrase to reason from; the authoritative
-   table is `.skills/pr-workflow/SKILL.md` ("What goes where") plus the
-   living-docs split in `.skills/experiment-wrapup/SKILL.md`. Read it before
-   concluding something cannot go to main.
+   merged via PR. But a SANCTIONED SET goes direct to main instead (housekeeping
+   records, cross-experiment tracking docs, KG nodes). Do not reason from memory
+   about which is which, and do not treat this line as the list: the
+   authoritative table is `.skills/pr-workflow/SKILL.md` ("What goes where")
+   plus the living-docs split in `.skills/experiment-wrapup/SKILL.md`. Read it
+   before concluding something cannot go direct to main.
    [`main_protect_guard`: blocked; sanctioned bypass `EHR_MAIN_OK=1`]
 3. CANONICAL CHECKOUT ONLY. Work in `/home/profsynapse/code/Epistemic-Humility-
    Research`; `/mnt/f/...` is a FROZEN read-only backup. `cd` to canonical
@@ -57,66 +55,40 @@ often forgotten).
    the canonical tree; `bin/search` finds it. Two recurring failures this rule
    exists to stop: (a) refusing or re-routing work because a remembered rule
    seemed to forbid it, when the governing skill has an explicit carve-out;
-   (b) trusting a tool whose own docstring records that it lies. `rtk`-proxied
-   `diff` prints a false "Files are identical" banner, and `rtk`-proxied
-   `pytest` on a directory glob reports "No tests collected" with exit 0. Verify
-   structurally (sha256, `yaml.safe_load`, `json.load`, explicit file paths)
-   rather than by scraping proxied output or trusting an exit code.
+   (b) trusting a tool whose own docs record that it lies (see the `rtk` gotchas
+   in `bin/sync_skills.py`'s docstring). Verify structurally (sha256,
+   `yaml.safe_load`, `json.load`, explicit file paths) rather than by scraping
+   proxied output or trusting an exit code.
    (Not hook-enforceable. Re-injected after every compaction.)
 
 ## Purpose
 
-This repository supports research on epistemic humility in language models. The
-program has one through-line: small open models represent more about their own
-ignorance than they say, and training moves the policy without reliably wiring
-that internal signal to stated confidence or action. So read the signal directly
-and wire it to behavior instead.
+This repository supports research on epistemic humility in language models:
+whether a model's internal representation of its own ignorance can be read
+directly, and wired to behavior.
 
-### The architecture under test
+That sentence is the durable part. EVERYTHING ELSE ABOUT THE RESEARCH CHANGES
+(the architecture under test, what has replicated, which model families and
+sites work, which step is unsolved) and is therefore deliberately NOT written
+here, because a summary in this file goes stale silently and gets believed
+anyway. Bootstrap from the sources below before discussing, summarizing, or
+planning research work. Do not describe the program from memory, from a chat
+summary, or from this file.
 
-A SENSOR feeding a SEPARATE ACTUATOR, in three steps, repeated per model family:
+| Bootstrap from | For |
+|---|---|
+| `docs/research-trajectory.md` | Current through-line and program state. Canonical entry point; start here. |
+| `papers/paper-5-actuation/manuscript.md` | The actuation half: architecture, gating, per-family actuation results. |
+| `papers/paper-4-two-signal-readout/manuscript.md` | The read half: the readouts and what they discriminate. |
+| `papers/paper-1-taxonomy-framework/`, `paper-2-training-regimen/`, `paper-3-knows-but-doesnt-say/` | Framing and taxonomy, the training comparison, and the internal-versus-stated gap. |
+| `papers/series/plan.md` | How the papers divide the program. |
+| `papers/common/terminology.md` | Governed vocabulary. Binding on committed prose. |
+| `TODO.md` | Live backlog and open lines. |
+| `experiments/<slug>/AMENDMENT.md` | The SOLE source for any experimental fact, design, gate, dose, site, or verdict. See rule 6. |
 
-1. READ. Fit a known-unknown (KU) direction from the residual stream and show it
-   discriminates on held-out rows.
-2. ACTUATOR. Fit a refusal/caution direction in that same model, orthogonalized
-   against the KU direction, and find a dose at which pushing it produces a
-   coherent abstention rather than a collapse.
-3. WIRE. Gate the actuator on a threshold applied to the standardized KU
-   readout, so it fires only where the read crosses. Then evaluate held-out.
-
-Two things this frame rules out, both of which have been asserted here by
-mistake and cost real time:
-
-- The read axis and the write axis are NOT the same direction. The actuator is
-  constructed orthogonal to the sensor on purpose. "Read a direction, then push
-  along it" is a wrong description of every gated experiment in this repo.
-- The write site is NOT assumed to be one shared place. It is searched per
-  family. Relative depth is the best predictor found so far and it gives a band,
-  not a site.
-
-### The open question
-
-Whether steps 2 and 3 reduce to a per-model RECIPE, that is, a procedure someone
-can follow to locate and test the actuator in roughly any open-weight model. Not
-a universal site, and not a universal dose. Step 1 already transfers. Choosing
-the write site is the unsolved step, and it is the bottleneck on the whole
-program.
-
-### Where the program is actually stated
-
-Do not restate the mission, the scoreboard, or any per-family status from memory
-or from this file. This section is a pointer, not a source. In freshness order:
-
-- `docs/research-trajectory.md` (current through-line; canonical entry point)
-- `papers/paper-5-actuation/manuscript.md` (the actuation half; the
-  sensor/actuator architecture is section 3.2 "Readouts and directions")
-- `papers/paper-4-two-signal-readout/manuscript.md` (the read half)
-- `papers/series/plan.md` (series roadmap; still uses the retired "doubt"
-  vocabulary that `papers/common/terminology.md` replaced with known-unknown)
-- `TODO.md` (live backlog, including the write-criterion line)
-
-Per-family status, doses, sites, and verdicts live ONLY in
-`experiments/<slug>/AMENDMENT.md`. See operating rule 6.
+If one of those sources contradicts another, the more recent one wins and the
+older one is stale: say so rather than silently picking. If a source contradicts
+this file, this file is wrong.
 
 Treat this as a research workspace first and a software project second: claims
 need provenance, scripts need reproducibility, and changes should preserve the
