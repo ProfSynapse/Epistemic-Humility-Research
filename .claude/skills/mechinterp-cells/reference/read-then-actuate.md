@@ -286,6 +286,16 @@ hs20 = 0.625. The other block counts are the ones already cited in §3.1. The
 gemma decimals in the quoted passage are correct for gemma; it is the
 cross-family generalization that is wrong.)
 
+**Note what the "achieved" column is doing.** The mistral and llama rows are
+`dose_is_usable` verdicts from the cross-family dose-calibration instrument; the
+two qwen rows come from cells scored on refusal rate and well-formedness against
+registered floors. **Values are not comparable across those two metrics - only
+the ordering is.** The original envelope was literally true if you read "usable
+dose" in the narrow instrument sense, and false as the cross-family claim it was
+being used for. That gap between a scoped statistic and the claim it gets
+recruited into is worth watching for generally; it is how the sentence survived
+review.
+
 The honest statement of the prior is wider and weaker: **everything that has
 ever actuated sits between rd ≈ 0.37 and rd ≈ 0.64, and everything tested above
 rd ≈ 0.71 has failed.** That is a band about a quarter of the model deep - 8 or
