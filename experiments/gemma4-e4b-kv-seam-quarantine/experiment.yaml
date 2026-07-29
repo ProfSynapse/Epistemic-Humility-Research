@@ -267,7 +267,15 @@ instrument:
         Resolve-time aggregation over already-written per-arm artifacts, one
         atomic output write, fail-closed on any missing input. Zero
         torch/transformers imports. Re-running from scratch is the cheap path.
-# inputs: BLOCKED ON A REAL DEPENDENCY, NOT AN OVERSIGHT.
+# inputs UNCOMMENTED AND REPOINTED 2026-07-29 (lead, user-approved): the parent
+# merged to main in PR #336 (governed docs consumed at their tracked paths) and
+# the gemma committed-class artifacts were promoted to
+# experiments/common/artifacts/jspace-cross-family-gemma4-e4b/ per the
+# promotion rule (PROVENANCE.md there records the lineage; arch_literature_memo
+# promoted 2026-07-29, sha256-verified against the parent's original).
+# The original blocked-note is retained below for audit.
+#
+# (superseded note:) inputs: BLOCKED ON A REAL DEPENDENCY, NOT AN OVERSIGHT.
 # Every input below lives in experiments/j-space-cross-family-layer-contrast/,
 # which exists only on the unmerged worktree branch
 # exp/j-space-cross-family-layer-contrast (checkout:
@@ -294,6 +302,17 @@ instrument:
 # - experiments/j-space-cross-family-layer-contrast/analysis-committed/gemma4-e4b/build_manifest_layers.json
 # - experiments/j-space-cross-family-layer-contrast/analysis-committed/gemma4-e4b/dose_calibration_summary.json
 # - experiments/j-space-cross-family-layer-contrast/analysis-committed/gemma4-e4b/layer_profile.json
-inputs: []
+inputs:
+- experiments/j-space-cross-family-layer-contrast/AMENDMENT.md
+- experiments/j-space-cross-family-layer-contrast/NOTEBOOK.md
+- experiments/j-space-cross-family-layer-contrast/gates.yaml
+- experiments/j-space-cross-family-layer-contrast/families/gemma4-e4b.yaml
+- experiments/common/artifacts/jspace-cross-family-gemma4-e4b/arch_literature_memo.md
+- experiments/common/artifacts/jspace-cross-family-gemma4-e4b/split_manifest.json
+- experiments/common/artifacts/jspace-cross-family-gemma4-e4b/eval_pool_manifest.json
+- experiments/common/artifacts/jspace-cross-family-gemma4-e4b/gate_fit_layers.json
+- experiments/common/artifacts/jspace-cross-family-gemma4-e4b/build_manifest_layers.json
+- experiments/common/artifacts/jspace-cross-family-gemma4-e4b/dose_calibration_summary.json
+- experiments/common/artifacts/jspace-cross-family-gemma4-e4b/layer_profile.json
 verdict: ''
 kg: []

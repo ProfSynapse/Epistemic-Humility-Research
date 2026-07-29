@@ -1489,14 +1489,27 @@ Registered before any GPU work. Calls do not move after results.
    **site and method**, not its artifacts. No code change was required;
    `cell.yaml` was corrected in two places.
 
-   Still open: this experiment consumes the parent's gemma
+   ~~Still open: this experiment consumes the parent's gemma
    fresh-mined pool and FIT/HELD-OUT split. Under the `experiments` skill promotion rule, the second
    consumer triggers promotion to `experiments/common/`. The drafter did not
    promote anything (no commits authorized, and the parent lives on the
    `exp/j-space-cross-family-layer-contrast` worktree, not on `main`). The lead
    must decide: promote to `experiments/common/` and repoint `inputs:`, or
    consume in place. Either way the parent's branch must be merged or the
-   artifacts made reachable before any path here resolves.
+   artifacts made reachable before any path here resolves.~~
+
+   **CLOSED 2026-07-29 (lead, user-approved): promotion.** The parent merged to
+   main (PR #336) and the gemma committed-class artifacts were promoted to
+   `experiments/common/artifacts/jspace-cross-family-gemma4-e4b/` with a
+   `PROVENANCE.md` (lead resolution of 2026-07-25 recorded there). Completed
+   today: `arch_literature_memo.md` promoted into the same directory
+   (sha256-verified copy of the parent's private-analysis original; content is
+   architecture literature only, no row data), and the manifest `inputs:` list
+   uncommented with the four parent governed docs pointing at the parent's
+   tracked paths on main and the seven artifacts pointing at the promoted
+   copies. This experiment's own `analysis-committed/gemma4-e4b/` already
+   consumes the promoted pool/split via git symlinks (mode 120000), so no
+   in-tree path changes.
 2. **Instrument integration.** *(Largely CLOSED 2026-07-25 — see
    `cell.yaml integration_status.done`. The `instrument.persistence` timings and
    the remaining drivers are still outstanding, so this item does not clear

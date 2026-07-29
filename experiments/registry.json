@@ -2203,7 +2203,19 @@
       },
       "created_at": "2026-07-24T17:44:35Z",
       "falsifier": "If C1 PASSES its pre-stated criterion, and A2's write verifies (readback within tolerance at every dosed cell) and A2 fails either primary gate, AND A3 also fails either primary gate, then the KV-quarantine explanation is FALSIFIED - gemma's inertness stands as a property of the model rather than of the injection site, and no further seam-relocation attempt on this model is warranted. The shallow ladder enters asymmetrically - if all of D1-D4 also fail G1 with verified readback and at least one usable FIT dose, the falsifier is strengthened to a depth-swept negative across the entire donor-reachable band; if any of D1-D4 clears G1 while A1 does not, gemma is actuable and the above-seam null is not a property of the model, which SUPPORTS but does not establish the quarantine account. Subordinate dispositions pre-stated in gates.yaml - VOID if A1 finds a usable FIT dose and clears G1 (no verdict on the KV hypothesis); INCONCLUSIVE if C1 fails (A2/A4 NOT-RUN, A3/A5/D1-D4 still resolve); NULL-RESULT if no arm has a usable dose (the ladder is registered and does not move).",
-      "inputs": [],
+      "inputs": [
+        "experiments/j-space-cross-family-layer-contrast/AMENDMENT.md",
+        "experiments/j-space-cross-family-layer-contrast/NOTEBOOK.md",
+        "experiments/j-space-cross-family-layer-contrast/gates.yaml",
+        "experiments/j-space-cross-family-layer-contrast/families/gemma4-e4b.yaml",
+        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/arch_literature_memo.md",
+        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/split_manifest.json",
+        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/eval_pool_manifest.json",
+        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/gate_fit_layers.json",
+        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/build_manifest_layers.json",
+        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/dose_calibration_summary.json",
+        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/layer_profile.json"
+      ],
       "instrument": {
         "configs": [
           "cell.yaml",
