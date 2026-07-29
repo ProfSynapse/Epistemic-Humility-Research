@@ -808,6 +808,18 @@ three hold:
    "material." Holding the control to the same bar as the thing it protects is
    the minimum defensible choice; a looser control could hide a G2-sized
    artifact.
+   *Method, pinned pre-sign (2026-07-29, lead).* "Wilson interval on the
+   difference" is computed as the Newcombe hybrid score interval (Newcombe
+   1998, method 10): Wilson 95% bounds (l1, u1) for the C1 rate and (l2, u2)
+   for the C0 rate, difference interval
+   [d - sqrt((p1-l1)^2 + (u2-p2)^2), d + sqrt((u1-p1)^2 + (p2-l2)^2)] with
+   d = p1 - p2. Pinned because the criterion as registered named a Wilson
+   interval on a difference without naming the construction, and no method for
+   a two-proportion interval was registered anywhere in this program. The
+   caps (0.05, 0.10) and the direction-of-degradation reading are untouched;
+   this pin completes the registered criterion, it does not alter it.
+   Implemented in `rollup.py` with unit tests including a case where the raw
+   delta passes while the interval fails, proving the interval is operative.
 2. **The OFF model does not hedge on its own.** C1's undosed confab
    `clean_tighten` rate is **<= 0.05**. *Justification:* this is the criterion
    that actually protects the primary. G1's floor is 0.50; capping spontaneous

@@ -71,14 +71,21 @@ instrument:
   - kv_seam_preflight.py
   - donor_diagnostic.py
   - alin_sweep.py
+  # Instrument-build additions 2026-07-29: the placebo direction-specificity
+  # control (P1/P2, gate G3), the fired-only G2 companion, and the resolve-time
+  # rollup. See AMENDMENT.md "Pre-sign record: the direction-specificity
+  # control" and the G2 companion interpretation rule.
+  - placebo_direction.py
+  - g2_companion.py
+  - rollup.py
   pins: {}
   persistence:
-    # INCOMPLETE BY DESIGN. The short-run modules need measured smoke wall-clock
-    # timings, which require a GPU run this drafting agent was not authorized to
-    # perform; `bin/exp sign` refuses until they are filled, which is the correct
-    # gate. `bin/exp validate` only warns. The incremental declarations below are
-    # structural (checkpoint paths under THIS experiment's tree) and are already
-    # correct.
+    # COMPLETE as of 2026-07-29: every entry in instrument.modules has a
+    # declaration below, all timings measured (cold interpreter, three runs,
+    # worst observed value recorded), none estimated. The 2026-07-25 note that
+    # stood here calling this block incomplete-pending-GPU is superseded; the
+    # whole smoke sweep turned out to be CPU. The incremental declarations are
+    # structural (checkpoint paths under THIS experiment's tree).
     extract_anchor.py:
       persistence: incremental
       checkpoint_path: experiments/gemma4-e4b-kv-seam-quarantine/analysis/anchor_extract.safetensors
@@ -91,6 +98,11 @@ instrument:
     run_contrast.py:
       persistence: incremental
       checkpoint_path: experiments/gemma4-e4b-kv-seam-quarantine/analysis/runlog/<arm>/<mode>/<site>.jsonl
+      # Extends to --arm-kind placebo/undosed (2026-07-29): both write per-row
+      # through the same RunLog path scheme. The placebo_draw_ledger.<site_set>
+      # .json is a separate one-shot artifact written whole at screen time,
+      # BEFORE any GPU work; a kill during the run loses no ledger state
+      # because screening precedes dosing.
     # The two vendored render shims below have no run stage at all -- they are
     # import targets that model_lib.render() resolves by bare module name. The
     # declaration is here because `bin/exp sign` requires one for every entry in
@@ -148,6 +160,12 @@ instrument:
         and re-runs in 18s, so there is no state worth checkpointing. Deliberately
         avoids the family loader, whose device_map="auto" would place weights on
         CUDA and break this gate's CPU-only scope.
+        NOTE 2026-07-29: the 18.05s figure covers Part 1 (9 depths x 292 rows).
+        The Part 2 path (1 site x 2 conditions, added 2026-07-29) is
+        synthetic-fixture tested but has no real-data timing yet because no
+        sharing-OFF extraction exists; measure and record a Part 2 smoke number
+        when the OFF extraction first lands, before treating this declaration
+        as covering it.
     # SMOKE RUN 2026-07-25 (lead-authorized). The eight declarations below close
     # the last `bin/exp sign` persistence blocker. All measured, none estimated,
     # and the whole sweep turned out to be CPU -- see NOTEBOOK.md 2026-07-25
@@ -198,8 +216,12 @@ instrument:
         resolves `backends` and `amendment_ah_stage0_extract` by bare module name.
     pipeline.py:
       persistence: short-run
-      measured_smoke_wall_clock_s: 1.75
-      measured_on: "2026-07-25, CPU, cold interpreter, three runs, 1.63-1.75s"
+      measured_smoke_wall_clock_s: 2.22
+      measured_on: >-
+        2026-07-29 re-measure after the summarize_layer_records extraction and
+        run_layer_with_direction addition: CPU, cold interpreter, three runs,
+        1.77-2.22s (torch import dominates; was 1.63-1.75s on 2026-07-25).
+        Worst observed recorded per this block's convention.
       rationale: >-
         Library module: the gate-decision and dosed-row loop imported by
         calibrate_dose.py and run_contrast.py. The stages that CALL it are the
@@ -220,6 +242,31 @@ instrument:
         Writes ONE roll-up per site set in a single atomic write at the end. A
         kill loses nothing partial, and re-running costs 2.7s, so resume logic
         would cost more than the work it saved.
+    # Instrument-build additions 2026-07-29. Same method as the block above:
+    # cold interpreter, three runs, worst observed value recorded.
+    placebo_direction.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.13
+      measured_on: "2026-07-29, CPU (CUDA_VISIBLE_DEVICES=\"\"), cold interpreter, three runs, worst 0.13s"
+      rationale: >-
+        Library module: SC1 draw screening, seed/redraw formulas, ledger
+        writer. Pure numpy, no torch. The ledger it produces is written whole
+        at screen time, before any dosing; nothing accumulates across a run.
+    g2_companion.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.01
+      measured_on: "2026-07-29, CPU, cold interpreter, three runs, worst 0.01s"
+      rationale: >-
+        Library module: fired-only companion metric, undosed floor, N=35
+        adjudicability rule. Pure Python over already-scored rows; no state.
+    rollup.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.04
+      measured_on: "2026-07-29, CPU, cold interpreter, three runs, worst 0.04s"
+      rationale: >-
+        Resolve-time aggregation over already-written per-arm artifacts, one
+        atomic output write, fail-closed on any missing input. Zero
+        torch/transformers imports. Re-running from scratch is the cheap path.
 # inputs: BLOCKED ON A REAL DEPENDENCY, NOT AN OVERSIGHT.
 # Every input below lives in experiments/j-space-cross-family-layer-contrast/,
 # which exists only on the unmerged worktree branch

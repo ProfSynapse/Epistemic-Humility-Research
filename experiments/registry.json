@@ -2227,14 +2227,17 @@
           "run_contrast.py",
           "kv_seam_preflight.py",
           "donor_diagnostic.py",
-          "alin_sweep.py"
+          "alin_sweep.py",
+          "placebo_direction.py",
+          "g2_companion.py",
+          "rollup.py"
         ],
         "persistence": {
           "alin_sweep.py": {
             "measured_on": "2026-07-25, CPU ONLY (CUDA_VISIBLE_DEVICES=\"\"), full G0-ALIN Part 1 over 9 depths x 292 FIT rows, maxRSS 2.6 GB. Run four times, bit-identical output each time (excluding the timestamp field).",
             "measured_smoke_wall_clock_s": 18.05,
             "persistence": "short-run",
-            "rationale": "Loads only the final RMSNorm and the tied unembedding -- not the model -- and re-runs in 18s, so there is no state worth checkpointing. Deliberately avoids the family loader, whose device_map=\"auto\" would place weights on CUDA and break this gate's CPU-only scope."
+            "rationale": "Loads only the final RMSNorm and the tied unembedding -- not the model -- and re-runs in 18s, so there is no state worth checkpointing. Deliberately avoids the family loader, whose device_map=\"auto\" would place weights on CUDA and break this gate's CPU-only scope. NOTE 2026-07-29: the 18.05s figure covers Part 1 (9 depths x 292 rows). The Part 2 path (1 site x 2 conditions, added 2026-07-29) is synthetic-fixture tested but has no real-data timing yet because no sharing-OFF extraction exists; measure and record a Part 2 smoke number when the OFF extraction first lands, before treating this declaration as covering it."
           },
           "amendment_ah_stage0_extract.py": {
             "measured_on": "2026-07-25, CPU, cold interpreter, three runs, 0.02s each. Covers locating the yaml, parsing it, and verifying the frozen prompt sha256.",
@@ -2271,6 +2274,12 @@
             "measured_smoke_wall_clock_s": 0.02,
             "persistence": "short-run",
             "rationale": "Library module: yaml-backed family/site-set resolution. No run stage, no state."
+          },
+          "g2_companion.py": {
+            "measured_on": "2026-07-29, CPU, cold interpreter, three runs, worst 0.01s",
+            "measured_smoke_wall_clock_s": 0.01,
+            "persistence": "short-run",
+            "rationale": "Library module: fired-only companion metric, undosed floor, N=35 adjudicability rule. Pure Python over already-scored rows; no state."
           },
           "gate_fit.py": {
             "measured_on": "2026-07-25, REAL RUN (not an import): `gate_fit.py --family gemma4-e4b --site-set shallow_ladder --kv-sharing on`, CPU only, three cold runs, 2.37-2.67s, maxRSS 1.6 GB. Dominated by loading the anchor extract safetensors. Byte-identical stdout across all three runs, and every AUC, tau and confusion count identical to the previously committed roll-up.",
@@ -2309,10 +2318,22 @@
             "rationale": "Library module: render, hook setup, EOS resolution. This import also exercises the two vendored shims' fail-closed guards, since render() resolves `backends` and `amendment_ah_stage0_extract` by bare module name."
           },
           "pipeline.py": {
-            "measured_on": "2026-07-25, CPU, cold interpreter, three runs, 1.63-1.75s",
-            "measured_smoke_wall_clock_s": 1.75,
+            "measured_on": "2026-07-29 re-measure after the summarize_layer_records extraction and run_layer_with_direction addition: CPU, cold interpreter, three runs, 1.77-2.22s (torch import dominates; was 1.63-1.75s on 2026-07-25). Worst observed recorded per this block's convention.",
+            "measured_smoke_wall_clock_s": 2.22,
             "persistence": "short-run",
             "rationale": "Library module: the gate-decision and dosed-row loop imported by calibrate_dose.py and run_contrast.py. The stages that CALL it are the ones that accumulate state, and they are declared `incremental` above."
+          },
+          "placebo_direction.py": {
+            "measured_on": "2026-07-29, CPU (CUDA_VISIBLE_DEVICES=\"\"), cold interpreter, three runs, worst 0.13s",
+            "measured_smoke_wall_clock_s": 0.13,
+            "persistence": "short-run",
+            "rationale": "Library module: SC1 draw screening, seed/redraw formulas, ledger writer. Pure numpy, no torch. The ledger it produces is written whole at screen time, before any dosing; nothing accumulates across a run."
+          },
+          "rollup.py": {
+            "measured_on": "2026-07-29, CPU, cold interpreter, three runs, worst 0.04s",
+            "measured_smoke_wall_clock_s": 0.04,
+            "persistence": "short-run",
+            "rationale": "Resolve-time aggregation over already-written per-arm artifacts, one atomic output write, fail-closed on any missing input. Zero torch/transformers imports. Re-running from scratch is the cheap path."
           },
           "run_contrast.py": {
             "checkpoint_path": "experiments/gemma4-e4b-kv-seam-quarantine/analysis/runlog/<arm>/<mode>/<site>.jsonl",
