@@ -101,3 +101,17 @@ a91b4be1a2367e09  layers/hs42/source_directions/pos_ctrl_hs42.json
 26de72598dfbe25f  layers/hs42/u_d_hs42.json
 8d2281179ab865be  split_manifest.json
 ```
+
+## Added 2026-07-29: arch_literature_memo.md
+
+Promoted from the parent's private
+`analysis/gemma4-e4b/arch_literature_memo.md` (lead, user-approved, alongside
+the `gemma4-e4b-kv-seam-quarantine` inputs uncommenting). It is a registered
+input of that experiment. Content class: architecture literature memo only
+(published-source claims about the gemma-4 KV-sharing layout, each tagged with
+its source); no row data, no question text, no aliases, no generations.
+sha256-verified byte-identical to the parent worktree original at promotion:
+
+```
+5048ef02227fdda7  arch_literature_memo.md
+```

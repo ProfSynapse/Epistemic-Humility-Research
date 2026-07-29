@@ -87,8 +87,35 @@ informative, but substituting it for the registered statistic would be
 goalpost movement and is refused. See `--emit-selection`.
 
 Usage (CPU-only):
-    python3 alin_sweep.py                     # sweep + report, no selection written
-    python3 alin_sweep.py --emit-selection    # also write the A3/A6 selection record
+    python3 alin_sweep.py                     # PART 1: sweep + report, no selection written
+    python3 alin_sweep.py --emit-selection    # PART 1: also write the A3/A6 selection record
+    python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+                                               # PART 2: A_lin(hs38) under ON and OFF
+                                               # (gates.yaml g0_alin_discrimination_measurement)
+
+## Part 2 (added 2026-07-25, pre-signature)
+
+Implements `gates.yaml g0_alin_discrimination_measurement`: A_lin(hs38) under
+BOTH KV-sharing conditions, "the IDENTICAL logit-lens code path, the IDENTICAL
+FIT row ids, and the IDENTICAL answer-token set; only the source activation
+file differs (anchor_extract.safetensors vs the OFF condition's extraction)".
+`--site`/`--both-conditions` are the interface `cell.yaml pipeline_stages`
+names as still-unimplemented; this is that interface.
+
+Reuses `score_depth`/`build_targets`/`load_head_and_norm` VERBATIM -- those
+functions are already condition-agnostic (they take an open safetensors
+handle and never reference a KV-sharing flag), so Part 2 differs from Part 1
+only in WHICH extraction file(s) `score_depth` is called against and how many
+sites are scored. `targets`/`fit_rows`/`final_norm`/`W_U` are built ONCE, from
+the ON manifest/rows (the eval pool and FIT split are condition-independent),
+and reused unchanged for the OFF read -- this is what makes "only the source
+activation file differs" true by construction rather than by discipline.
+
+The OFF condition requires `extract_anchor.py --family gemma4-e4b --kv-sharing
+off` to have produced `anchor_extract.kv_off.safetensors`
+(`kv_seam_patch.condition_artifact` naming) -- a GPU stage this CPU-only gate
+does not run itself. Missing it is a fail-closed RuntimeError naming the
+missing stage, never a silent skip.
 """
 from __future__ import annotations
 
@@ -102,6 +129,7 @@ from pathlib import Path
 import torch
 from safetensors import safe_open
 
+import kv_seam_patch as kv  # noqa: E402
 import model_lib as ml  # noqa: E402  (vendored render path; see backends.py)
 
 FAMILY = "gemma4-e4b"
@@ -136,6 +164,10 @@ FINAL_IS_POSTNORM_PROVENANCE = (
 # threshold is set to catch a BROKEN lens (which scores ~0.000, as the corrupt
 # extraction did), not to chase the last two rows of CPU/GPU tie-breaking.
 TAUTOLOGY_MIN_TOP1 = 0.98
+
+# Part 2 (gates.yaml g0_alin_discrimination_measurement).
+PART2_SITE = 38                  # registered target: A_lin(hs38)
+DISCRIMINATION_BAND = 0.05       # .discrimination_band; matches the G2 cap and C1 tolerance
 
 
 def _here() -> Path:
@@ -298,6 +330,206 @@ def build_targets(tok, rows: list[dict], rows_meta: dict, gens: dict) -> tuple[d
     return targets, skipped
 
 
+# ---------------------------------------------------------------------------
+# Part 2: A_lin(hs38) under both KV-sharing conditions
+# (gates.yaml g0_alin_discrimination_measurement).
+# ---------------------------------------------------------------------------
+
+
+def load_condition_manifest(analysis_dir: Path, kv_sharing: str) -> tuple[Path, dict]:
+    """Extraction path + parsed manifest for one KV condition.
+
+    Fails closed (naming the missing stage) if the extraction is absent or
+    its provenance does not check out -- never silently falls back to the
+    other condition's file.
+    """
+    extract_path = analysis_dir / kv.condition_artifact("anchor_extract.safetensors", kv_sharing)
+    manifest_path = analysis_dir / kv.condition_artifact("anchor_extract_manifest.json", kv_sharing)
+    if not extract_path.exists() or not manifest_path.exists():
+        raise RuntimeError(
+            f"[alin_sweep part2] missing extraction for kv_sharing={kv_sharing!r}: "
+            f"{extract_path} (or its manifest {manifest_path}). Run "
+            f"`extract_anchor.py --family {FAMILY} --kv-sharing {kv_sharing}` "
+            "first -- a GPU stage this CPU-only gate does not run itself."
+        )
+    manifest = json.loads(manifest_path.read_text())
+    if manifest.get("forward_use_cache") is not True:
+        raise RuntimeError(
+            f"[alin_sweep part2] {extract_path} was produced with "
+            "forward_use_cache != True; a use_cache=False extraction is "
+            "corrupt above the seam (parent finding (6) / Defect 3). Refusing."
+        )
+    manifest_kv = manifest.get("kv_sharing", "on")
+    if manifest_kv != kv_sharing:
+        raise RuntimeError(
+            f"[alin_sweep part2] {manifest_path} records kv_sharing="
+            f"{manifest_kv!r}, expected {kv_sharing!r}."
+        )
+    return extract_path, manifest
+
+
+def compute_alin_single_condition(
+    extract_path: Path, hs_index: int, fit_rows: list[str], targets: dict,
+    final_norm, W_U, softcap, apply_norm: bool, *, chunk: int = 32,
+) -> dict:
+    """A_lin at ONE site from ONE extraction file.
+
+    Calls `score_depth` -- the SAME function Part 1 sweeps with -- so the
+    logit-lens code path is IDENTICAL between Part 1's below-seam sweep and
+    Part 2's ON/OFF discrimination measurement. The caller passes in
+    `fit_rows`/`targets`/`final_norm`/`W_U` built ONCE (from the ON
+    manifest/rows: the eval pool and FIT split are condition-independent),
+    so calling this twice with the ON and OFF `extract_path` and everything
+    else held fixed is exactly "only the source activation file differs"
+    (gates.yaml g0_alin_discrimination_measurement.measurement). Pure
+    function over an extraction path plus already-built lens/target state --
+    directly CPU-testable against a small synthetic safetensors fixture, no
+    network or model download required.
+    """
+    with safe_open(str(extract_path), "pt") as f:
+        ranks, top1s, missing = score_depth(
+            f, hs_index, fit_rows, targets, final_norm, W_U, softcap, apply_norm, chunk
+        )
+    if missing:
+        raise RuntimeError(
+            f"[alin_sweep part2] hs{hs_index}: {missing} FIT rows had no cached "
+            f"tensor in {extract_path}. A partial site would silently change "
+            "the population A_lin is averaged over. Refusing to report."
+        )
+    return summarize(ranks, top1s)
+
+
+def alin_discrimination_verdict(a_lin_on: float, a_lin_off: float,
+                                band: float = DISCRIMINATION_BAND) -> dict:
+    """The raw |delta| measurement and band comparison ONLY.
+
+    gates.yaml's four-outcome `pre_stated_interpretation_rule` also depends
+    on A1/A2's own G1/G2 results, which this CPU-only, activation-level
+    script does not have (that adjudication belongs to `rollup.py`, which
+    reads this measurement alongside run_contrast.py's arm summaries). This
+    function reports the one thing this script CAN establish on its own:
+    whether the site's linear accessibility moved by more than the
+    registered band between conditions.
+    """
+    delta = abs(a_lin_on - a_lin_off)
+    return {
+        "a_lin_on": a_lin_on, "a_lin_off": a_lin_off,
+        "delta_a_lin": round(delta, 6), "band": band,
+        "within_band": bool(delta <= band),
+    }
+
+
+def run_part2(args: argparse.Namespace, head_dtype: torch.dtype) -> int:
+    """CLI driver for Part 2. Builds targets/fit_rows/final_norm/W_U ONCE
+    (from the ON condition's manifest/rows -- the pool and split are
+    condition-independent) and reuses them unchanged for the OFF read."""
+    here = _here()
+    analysis = Path(args.parent_analysis) if args.parent_analysis else here / "analysis" / FAMILY
+    committed = here / "analysis-committed" / FAMILY
+    hs_index = args.site
+
+    extract_on, manifest_on = load_condition_manifest(analysis, "on")
+    rows_meta = {r["row_key"]: r for r in manifest_on["rows"]}
+    rows_path = Path(manifest_on["rows_path"])
+    if not rows_path.exists():
+        raise RuntimeError(
+            f"[alin_sweep part2] the extraction manifest points at {rows_path}, "
+            "which does not exist. The eval rows are restricted data staged "
+            "from the parent experiment; pass --parent-analysis or restore "
+            "the symlink."
+        )
+    rows = load_jsonl(rows_path)
+    gens = {r["row_key"]: r for r in load_jsonl(analysis / "pool_generations.jsonl")}
+
+    split_path = committed / "split_manifest.json"
+    split_manifest = json.loads(split_path.read_text())
+    split_by_key = {r["row_key"]: r["split"] for r in split_manifest["rows"]}
+    fit_keys = {rk for rk, sp in split_by_key.items() if sp == "fit"}
+    if not fit_keys:
+        raise RuntimeError("[alin_sweep part2] split_manifest.json yielded no FIT rows.")
+
+    from huggingface_hub import snapshot_download
+    from transformers import AutoTokenizer
+    snapshot = Path(snapshot_download(
+        "google/gemma-4-E4B-it", revision=PINNED_REVISION,
+        allow_patterns=["config.json", "model.safetensors", "tokenizer*", "chat_template.jinja"],
+    ))
+    cfg = json.loads((snapshot / "config.json").read_text())
+    tcfg = cfg["text_config"]
+    softcap = tcfg.get("final_logit_softcapping")
+    eps = tcfg.get("rms_norm_eps", 1e-6)
+    n_layers = tcfg["num_hidden_layers"]
+    tok = AutoTokenizer.from_pretrained("google/gemma-4-E4B-it", revision=PINNED_REVISION)
+
+    print(f"[alin_sweep part2] building targets from the ON condition "
+          f"(condition-independent pool/split) ...", flush=True)
+    targets, skipped = build_targets(tok, rows, rows_meta, gens)
+    fit_rows = sorted(rk for rk in targets if rk in fit_keys)
+    print(f"[alin_sweep part2] targets={len(targets)}/{len(rows)}  "
+          f"FIT rows with target={len(fit_rows)}  skipped={skipped}", flush=True)
+    if not fit_rows:
+        raise RuntimeError("[alin_sweep part2] no FIT row produced a usable target.")
+    if skipped["prompt_len_mismatch"]:
+        raise RuntimeError(
+            f"[alin_sweep part2] {skipped['prompt_len_mismatch']} rows re-rendered "
+            "to a different prompt_len than the extraction recorded. Refusing."
+        )
+
+    final_norm, W_U = load_head_and_norm(snapshot, eps, head_dtype)
+    apply_norm = not (hs_index == n_layers and FINAL_IS_POSTNORM)
+
+    a_lin_on = compute_alin_single_condition(
+        extract_on, hs_index, fit_rows, targets, final_norm, W_U, softcap,
+        apply_norm, chunk=args.chunk,
+    )
+    print(f"[alin_sweep part2] hs{hs_index} A_lin(ON)  = {a_lin_on['top1_acc']:.4f}  "
+          f"median_rank={a_lin_on['median_rank']}  n={a_lin_on['n']}", flush=True)
+
+    report = {
+        "gate": "g0_alin_discrimination_measurement", "part": "2 of 2",
+        "generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "family": FAMILY, "checkpoint": "google/gemma-4-E4B-it",
+        "revision": PINNED_REVISION, "device": "cpu", "site": f"hs{hs_index}",
+        "band": DISCRIMINATION_BAND, "n_fit_rows_scored": len(fit_rows),
+        "on": a_lin_on,
+    }
+
+    if args.both_conditions:
+        extract_off, _manifest_off = load_condition_manifest(analysis, "off")
+        a_lin_off = compute_alin_single_condition(
+            extract_off, hs_index, fit_rows, targets, final_norm, W_U, softcap,
+            apply_norm, chunk=args.chunk,
+        )
+        print(f"[alin_sweep part2] hs{hs_index} A_lin(OFF) = {a_lin_off['top1_acc']:.4f}  "
+              f"median_rank={a_lin_off['median_rank']}  n={a_lin_off['n']}", flush=True)
+        verdict = alin_discrimination_verdict(a_lin_on["top1_acc"], a_lin_off["top1_acc"])
+        report["off"] = a_lin_off
+        report["discrimination"] = verdict
+        print(f"[alin_sweep part2] |delta A_lin| = {verdict['delta_a_lin']:.6f}  "
+              f"band={verdict['band']}  within_band={verdict['within_band']}", flush=True)
+    else:
+        report["discrimination"] = {
+            "status": "NOT-RUN",
+            "reason": "--both-conditions not passed; only the ON-condition A_lin "
+                      "was measured. Outcome (1) of g0_alin_discrimination_"
+                      "measurement.pre_stated_interpretation_rule is unreachable "
+                      "without the OFF read.",
+        }
+
+    out_dir = here / "analysis" / FAMILY
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "alin_sweep_part2.json").write_text(json.dumps(report, indent=2))
+    print(f"\n[alin_sweep part2] wrote {out_dir / 'alin_sweep_part2.json'}", flush=True)
+
+    if args.emit_selection:
+        committed.mkdir(parents=True, exist_ok=True)
+        # Aggregates and the measurement ONLY -- no row keys, no prompt text.
+        (committed / "alin_part2_discrimination.json").write_text(json.dumps(report, indent=2))
+        print(f"[alin_sweep part2] wrote "
+              f"{committed / 'alin_part2_discrimination.json'}", flush=True)
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--parent-analysis", default=None,
@@ -313,8 +545,26 @@ def main(argv=None) -> int:
     ap.add_argument("--head-dtype", choices=["bf16", "fp32"], default="bf16",
                     help="dtype of the unembedding matmul. Default bf16 = the "
                          "checkpoint's own dtype and the parent harness's path.")
+    ap.add_argument("--site", type=int, default=None,
+                    help="PART 2 (gates.yaml g0_alin_discrimination_measurement): "
+                         "single hs_index to compute A_lin at, under one or both "
+                         "KV-sharing conditions. Registered target is hs38. Omit "
+                         "(the default) for PART 1's below-seam sweep.")
+    ap.add_argument("--both-conditions", action="store_true",
+                    help="PART 2 only. Also compute A_lin(--site) under "
+                         "kv_sharing=off, from the condition-scoped OFF "
+                         "extraction (kv_seam_patch.condition_artifact), with "
+                         "the IDENTICAL logit-lens code path, FIT row ids, and "
+                         "answer-token set as the ON read -- only the source "
+                         "activation file differs. Requires extract_anchor.py "
+                         "--kv-sharing off to have run (GPU stage, not run by "
+                         "this CPU-only gate); fails closed naming that file "
+                         "if it is absent.")
     args = ap.parse_args(argv)
     head_dtype = {"bf16": torch.bfloat16, "fp32": torch.float32}[args.head_dtype]
+
+    if args.site is not None:
+        return run_part2(args, head_dtype)
 
     here = _here()
     analysis = Path(args.parent_analysis) if args.parent_analysis else here / "analysis" / FAMILY
