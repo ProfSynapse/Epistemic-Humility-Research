@@ -537,22 +537,38 @@ an ON run and an OFF run of the same cells can neither collide nor silently
 resume from each other. `run_contrast.py` has not been executed in any mode, so
 its threading is written but **not yet exercised** — that part stays open.
 
-Prerequisite: `synaptic-tuner` at or after commit `7a44eb3`
-(`fix/gemma4-decoder-layer-path`), which added `model.language_model.layers` to
-`MechInterp/intervention/hooks.py::_LAYER_PATHS`. Without it the intervention
-engine cannot locate Gemma-4's decoder blocks at all.
+Prerequisite: the `synaptic-tuner` checkout used for any GPU stage of this
+experiment must contain commit `7a44eb3` ("Add model.language_model.layers to
+decoder-layer path search"), verified STRUCTURALLY, not by version comparison:
 
-**Correction 2026-07-25: `>=` is misleading here and should not be read as a
-version floor.** `7a44eb3` is the head of an *unmerged* remote branch. The
-canonical checkout's submodule sits at `b1ea382`, a later commit on the
-mainline, and does **not** contain the fix — its `_LAYER_PATHS` has
-`language_model.model.layers` but not the `model.language_model.layers` entry
-gemma-4-E4B needs. So "at or after `7a44eb3`" is satisfied by strictly fewer
-checkouts than it appears to be, and anyone running this experiment from the
-canonical checkout gets a tuner that cannot locate the decoder blocks. Every
-stage run so far used the `jspace-cross-family` worktree's submodule, which is
-the only local checkout that actually satisfies the requirement. This wording
-should be replaced with the specific commit-or-branch requirement before sign.
+```
+grep -n "model.language_model.layers" MechInterp/intervention/hooks.py
+```
+
+must match inside `_LAYER_PATHS`. Without that entry the intervention engine
+cannot locate Gemma-4's decoder blocks at all, and every GPU stage of this
+experiment fails at the first hook install. Any stage record for this
+experiment must name the tuner commit it ran under and record that the
+structural check passed on that checkout. The grep is the binding requirement;
+commit ancestry is not, because a squash or cherry-pick landing of the fix
+would carry the entry without carrying `7a44eb3` as an ancestor.
+
+**Why structural verification and not a version floor (recorded 2026-07-25,
+reworded 2026-07-29 pre-sign as the earlier note directed).** `7a44eb3` is the
+head of the unmerged remote branch `fix/gemma4-decoder-layer-path`. Commits
+later in mainline history do NOT imply the fix is present: the canonical
+submodule pin has twice been a mainline commit that postdates the fix and lacks
+it (`b1ea382` at the time of the original note, `901dbe80` as of 2026-07-29;
+both carry `language_model.model.layers` but not the `model.language_model.layers`
+entry gemma-4-E4B needs). So "at or after `7a44eb3`" reads as a version floor
+and is not one, and a checkout that "looks newer" can still be missing the fix.
+As of 2026-07-29 the fix branch is exactly one commit ahead of the mainline pin
+`901dbe80` (a fast-forward), so the standing resolution path is to merge
+`fix/gemma4-decoder-layer-path` into the tuner mainline and bump the submodule
+pin; until that lands, the only satisfying checkouts are ones with the fix
+branch checked out directly. Every stage run so far used the
+`jspace-cross-family` worktree's submodule, which satisfies the structural
+check.
 
 ### Generation contract
 
