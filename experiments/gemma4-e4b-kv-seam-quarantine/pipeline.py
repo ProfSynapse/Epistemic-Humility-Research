@@ -19,12 +19,13 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 
+import g2_companion  # noqa: E402
 import gen_lib as gl  # noqa: E402
 import grader  # noqa: E402
 import kv_seam_patch as kv  # noqa: E402
 import model_lib as ml  # noqa: E402
 from family_config import (  # noqa: E402
-    SITE_SETS, layer_dir_name, load_family, site_set_artifact,
+    SITE_SETS, hs_to_block, layer_dir_name, load_family, site_set_artifact,
     is_late_reference as fc_is_late, reuse_artifact_path as fc_reuse_path,
 )
 from MechInterp.intervention import get_decoder_layer  # noqa: E402
@@ -283,6 +284,111 @@ def kv_condition_context(family: str, model, kv_sharing: str):
     return kv.kv_sharing(model, enabled=enabled), (lambda: kv.build_full_length_cache(model))
 
 
+def summarize_layer_records(records: list[dict], dose_target: float, *,
+                            hs_index: int, kv_sharing: str = "on") -> dict:
+    """Pure aggregation over one layer's completed per-row records.
+
+    Split out of `run_layer` so the aggregation (readback tolerance,
+    collapse rate, G1 confab_tighten, and the G2 three-number block: full-
+    population + fired-only companion + undosed floor, gates.yaml
+    g2_selectivity_cap) is a CPU-testable pure function against synthetic
+    records, independent of any model/generation code. `run_layer` and
+    `run_layer_with_direction` (the placebo driver) both call this so the
+    two arm kinds share one aggregation path.
+
+    The `undosed_floor` companion here is computed on THIS SAME population
+    restricted to rows that did not fire (role == known_correct_answered AND
+    not fire) as a same-pass fallback; the REGISTERED undosed_floor (gates.
+    yaml: "the arm's own undosed pass") is the arm's dedicated undosed run
+    and is assembled by the caller (see run_contrast.py `run_undosed_
+    baseline` / `rollup.py`), which is authoritative wherever both are
+    available. Included here only so `known_correct_cost_control_fired_only`
+    is never reported without SOME undosed reference, even from a
+    smoke/partial run that never performed a dedicated undosed pass.
+    """
+    confab = [r for r in records if r["role"] == "confab"]
+    known = [r for r in records if r["role"] == "known_correct_answered"]
+    dosed = [r for r in records if r["fire"]]
+    readbacks = [r["readback_measured"] for r in dosed if r["readback_measured"] is not None]
+    within = [abs(rb - dose_target) <= 0.05 * dose_target + 0.5 for rb in readbacks]
+    known_fired = [r for r in known if r["fire"]]
+    known_not_fired = [r for r in known if not r["fire"]]
+    full_population_g2 = grade_population(known, "not_well_formed_correct")
+    full_population_pass = bool(
+        full_population_g2["rate"] <= g2_companion.CAP_RATE
+        and full_population_g2["wilson_ci_95"][1] < g2_companion.CAP_WILSON_UPPER
+    )
+    g2_block = g2_companion.g2_three_number_block(
+        full_population=full_population_g2,
+        full_population_pass=full_population_pass,
+        fired_known_records=known_fired,
+        undosed_known_records=known_not_fired,
+    )
+    return {
+        "hs_index": hs_index, "kv_sharing": kv_sharing,
+        "n_rows": len(records), "n_fired": len(dosed),
+        "readback_mean": float(np.mean(readbacks)) if readbacks else None,
+        "frac_readback_within_tol": (sum(within) / len(within)) if within else None,
+        "collapse_rate_on_dosed": (
+            sum(1 for r in dosed if r["grade"]["degenerate"]) / len(dosed) if dosed else None
+        ),
+        "confab_tighten": grade_population(confab, "clean_tighten"),
+        "known_correct_cost_control": full_population_g2,
+        "known_correct_cost_control_fired_only": g2_block["fired_only"],
+        "known_correct_cost_control_g2_block": g2_block,
+    }
+
+
+def run_layer_with_direction(family: str, model, tokenizer, hs_index: int,
+                             rows: list[dict], dose_target: float,
+                             direction_vector, *, sigma: float = 1.0,
+                             run_log=None, kv_sharing: str = "on") -> dict:
+    """Same driver as `run_layer`, but the write direction is a raw vector
+    (a placebo random direction) rather than a fitted `c_hat` loaded from
+    disk -- the P1/P2 direction-specificity control (cell.yaml
+    placebo_direction_control). `sigma` follows the registered `sigma = 1.0`
+    magnitude-matching convention (`placebo_direction.placebo_write_params`);
+    the true arm's own `sigma_c` is deliberately NOT reused here, since the
+    point of the control is to match DOSE, not to reuse the true arm's
+    calibration constant.
+
+    `rows` must already carry the TRUE arm's own `fire` decisions (cell.yaml
+    fired_row_matching: the placebo writes at EXACTLY the rows the true gate
+    fired, never re-gated) -- this function does not gate anything itself.
+    """
+    layer_idx = hs_to_block(hs_index)
+    strength = dose_target / sigma
+    hook, controller, _layer_idx, _sigma = ml.setup_hook_from_vector(
+        direction_vector, sigma, layer_idx)
+    dev = next(model.parameters()).device
+    eos_ids = ml.resolve_eos_ids(family, tokenizer)
+    layer_module = get_decoder_layer(model, layer_idx)
+    h_ctrl = layer_module.register_forward_hook(controller)
+    kv_ctx, cache_factory = kv_condition_context(family, model, kv_sharing)
+    try:
+        with kv_ctx:
+            if run_log is not None:
+                pending = list(run_log.iter_pending(rows, key_fn=lambda r: r["row_key"]))
+                for row in pending:
+                    rec = run_one_row(family, model, controller, tokenizer, dev, eos_ids,
+                                      row, strength, cache_factory=cache_factory)
+                    rec["kv_sharing"] = kv_sharing
+                    run_log.record(row["row_key"], rec)
+                on_disk = {rec["key"]: rec for rec in load_jsonl(run_log.path)}
+                records = [on_disk[row["row_key"]] for row in rows]
+            else:
+                records = []
+                for r in rows:
+                    rec = run_one_row(family, model, controller, tokenizer, dev, eos_ids,
+                                      r, strength, cache_factory=cache_factory)
+                    rec["kv_sharing"] = kv_sharing
+                    records.append(rec)
+    finally:
+        h_ctrl.remove()
+        controller.reset()
+    return summarize_layer_records(records, dose_target, hs_index=hs_index, kv_sharing=kv_sharing)
+
+
 def run_layer(family: str, model, tokenizer, hs_index: int, rows: list[dict],
               dose_target: float, *, run_log=None, kv_sharing: str = "on") -> dict:
     """Run one family+layer's rows through the dosed pass.
@@ -338,19 +444,4 @@ def run_layer(family: str, model, tokenizer, hs_index: int, rows: list[dict],
     finally:
         h_ctrl.remove()
         controller.reset()
-    confab = [r for r in records if r["role"] == "confab"]
-    known = [r for r in records if r["role"] == "known_correct_answered"]
-    dosed = [r for r in records if r["fire"]]
-    readbacks = [r["readback_measured"] for r in dosed if r["readback_measured"] is not None]
-    within = [abs(rb - dose_target) <= 0.05 * dose_target + 0.5 for rb in readbacks]
-    return {
-        "hs_index": hs_index, "kv_sharing": kv_sharing,
-        "n_rows": len(records), "n_fired": len(dosed),
-        "readback_mean": float(np.mean(readbacks)) if readbacks else None,
-        "frac_readback_within_tol": (sum(within) / len(within)) if within else None,
-        "collapse_rate_on_dosed": (
-            sum(1 for r in dosed if r["grade"]["degenerate"]) / len(dosed) if dosed else None
-        ),
-        "confab_tighten": grade_population(confab, "clean_tighten"),
-        "known_correct_cost_control": grade_population(known, "not_well_formed_correct"),
-    }
+    return summarize_layer_records(records, dose_target, hs_index=hs_index, kv_sharing=kv_sharing)

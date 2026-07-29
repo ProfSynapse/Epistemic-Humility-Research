@@ -19,6 +19,27 @@ unaffected.
 
 Ported from `j-space-layer-contrast-replication-qwen3-4b/run_contrast.py` and
 `j-space-midband-write-sweep-qwen3-4b/pipeline.py`, generalized to `--family`.
+
+ARM KINDS (added 2026-07-25, pre-signature). `--arm-kind` defaults to `true`,
+which preserves every existing code path byte-for-byte -- nothing below
+changes the `true`-arm behavior that has been registered since sign-time.
+Two additive arm kinds implement `cell.yaml placebo_direction_control` (the
+P1/P2 direction-specificity control gates.yaml scores as
+`g3_direction_specificity`):
+
+  `placebo` -- writes a random, SC1-screened direction at EXACTLY the rows
+    and dose the matched TRUE arm fired at (read from that arm's own
+    `--mode full` run log, never re-gated: cell.yaml fired_row_matching).
+    Only registered for `--site-set seam_pair` (hs22/hs24 only; cell.yaml
+    k_number_of_draws.scope_of_this_control).
+  `undosed` -- the arm's own undosed pass (no injection anywhere), the hard
+    input G2's `undosed_floor` companion and G3's lift baseline both require
+    (cell.yaml placebo_direction_control.undosed_baseline_required).
+
+`--dry-run` resolves rows, doses, and (for `placebo`) the SC1 draw/screen
+ledger entirely on CPU and prints the plan without loading the model --
+proves the new flags compose with the existing `--kv-sharing` flag before
+any GPU spend.
 """
 
 from __future__ import annotations
@@ -35,6 +56,7 @@ import torch
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
+import family_config  # noqa: E402
 from family_config import (  # noqa: E402
     FAMILY_SLUGS, SITE_SETS, layer_dir_name, load_family,
     resolve_site_set, site_set_artifact,
@@ -43,6 +65,7 @@ from family_config import (  # noqa: E402
 import kv_seam_patch as kv  # noqa: E402
 import model_lib as ml  # noqa: E402
 import pipeline as pl  # noqa: E402
+import placebo_direction  # noqa: E402
 
 
 def pool_counts(family: str) -> dict:
@@ -351,6 +374,209 @@ def run_full(family: str, late_dose: float | None, *, fresh: bool = False,
     return summary
 
 
+# ---------------------------------------------------------------------------
+# ARM KINDS: placebo (P1/P2, cell.yaml placebo_direction_control) and undosed
+# (the baseline pass g2's undosed_floor and g3's lift both require). Both are
+# registered ONLY for --site-set seam_pair (hs22/hs24 -- cell.yaml
+# k_number_of_draws.scope_of_this_control). Neither touches the `true`
+# arm-kind code path above, which stays byte-for-byte as originally signed.
+# ---------------------------------------------------------------------------
+
+#: cell.yaml k_number_of_draws.scope_of_this_control: "hs22 (P1) and hs24
+#: (P2) ONLY -- the P-arms are NOT extended to the shallow ladder D1-D4."
+PLACEBO_REGISTERED_SITE_SET = "seam_pair"
+
+
+def force_undosed(gate_rows: list[dict]) -> list[dict]:
+    """Copy of `gate_rows` with every row's `fire` forced False -- the arm's
+    own undosed pass (no injection anywhere), used verbatim by both G2's
+    `undosed_floor` companion and G3's lift baseline. Does NOT re-gate; the
+    original gate decision is simply not acted on."""
+    return [{**row, "fire": False} for row in gate_rows]
+
+
+def true_arm_run_log_path(root: Path, family: str, hs_index: int, mode: str,
+                          kv_sharing: str) -> Path:
+    layer_name = layer_dir_name(hs_index)
+    return (root / "analysis" / family / "runlog" / mode
+            / kv.condition_artifact(f"{layer_name}.jsonl", kv_sharing))
+
+
+def load_true_arm_fire_flags(root: Path, family: str, hs_index: int, mode: str,
+                             kv_sharing: str) -> dict[str, bool]:
+    """Read the matched TRUE arm's own run log for its per-row fire
+    decisions. cell.yaml fired_row_matching: the placebo writes at EXACTLY
+    the rows the TRUE gate fired; it is NEVER re-gated and the gate indices
+    are NEVER permuted. Fails closed (naming the missing stage) if that
+    arm has not been run yet -- a placebo control cannot invent a fire set
+    of its own."""
+    log_path = true_arm_run_log_path(root, family, hs_index, mode, kv_sharing)
+    if not log_path.is_file():
+        raise FileNotFoundError(
+            f"[placebo] true arm run log not found at {log_path}. The "
+            f"placebo control writes at EXACTLY the rows the TRUE gate "
+            f"fired (cell.yaml fired_row_matching) and cannot construct its "
+            f"own fire set -- run `--arm-kind true --site-set seam_pair "
+            f"--mode {mode} --kv-sharing {kv_sharing}` for hs{hs_index} first."
+        )
+    records = pl.load_jsonl(log_path)
+    return {r["key"]: bool(r["fire"]) for r in records}
+
+
+def run_undosed_baseline(family: str, hs_index: int, dose_target: float, *,
+                         mode: str, n_rows: int, fresh: bool, site_set: str,
+                         kv_sharing: str, dry_run: bool, root: Path = HERE) -> dict:
+    """The arm's own undosed pass over its (mode-scoped) held-out rows.
+    cell.yaml placebo_direction_control.undosed_baseline_required: "Each of
+    P1/P2's matched true arms (A3, A5) must also run an UNDOSED pass over
+    the same held-out confab rows... a lift cannot be computed without it."
+    """
+    rows = selected_rows(family, n_rows if mode == "smoke" else None)
+    gate_rows = pl.compute_gate_decisions(family, rows, hs_index, kv_sharing=kv_sharing)
+    forced_rows = force_undosed(gate_rows)
+    layer_name = layer_dir_name(hs_index)
+
+    if dry_run:
+        return {
+            "family": family, "arm_kind": "undosed", "dry_run": True,
+            "hs_index": hs_index, "layer": layer_name, "site_set": site_set,
+            "kv_sharing": kv_sharing, "mode": mode, "n_rows": len(forced_rows),
+        }
+
+    RunLog, _RunLogError = ml.load_run_log_class()
+    model, tokenizer, _hidden_size, _n_layers = ml.load_model_and_tokenizer(family)
+    try:
+        log_path = (root / "analysis" / family / "runlog" / "undosed" / mode
+                    / kv.condition_artifact(f"{layer_name}.jsonl", kv_sharing))
+        run_log = RunLog(
+            log_path,
+            run_config={
+                "experiment": "gemma4-e4b-kv-seam-quarantine", "family": family,
+                "arm_kind": "undosed", "mode": mode, "layer": layer_name,
+                "hs_index": hs_index, "kv_sharing": kv_sharing,
+            },
+            fresh=fresh,
+        )
+        try:
+            rec = pl.run_layer(family, model, tokenizer, hs_index, forced_rows, dose_target,
+                               run_log=run_log, kv_sharing=kv_sharing)
+        finally:
+            run_log.close()
+    finally:
+        del model
+        gc.collect()
+        torch.cuda.empty_cache()
+
+    summary = {
+        "family": family, "arm_kind": "undosed", "site_set": site_set,
+        "kv_sharing": kv_sharing, "mode": mode, "hs_index": hs_index,
+        "dose_target_of_matched_true_arm": dose_target, "layer": rec,
+    }
+    write_summary(
+        family,
+        kv.condition_artifact(
+            family_config.site_set_artifact(f"undosed_summary.{layer_name}.json", site_set),
+            kv_sharing),
+        summary, commit_public=True,
+    )
+    return summary
+
+
+def run_placebo(family: str, hs_index: int, dose_target: float, k: int, *,
+                mode: str, n_rows: int, fresh: bool, site_set: str,
+                kv_sharing: str, dry_run: bool, root: Path = HERE) -> dict:
+    """P1/P2: K SC1-screened random directions written at exactly the TRUE
+    arm's fired rows and dose (cell.yaml placebo_direction_control). Raises
+    `placebo_direction.PlaceboRedrawExhausted` (caller records NOT-RUN) if
+    SC1 screening cannot find K acceptable directions within max_redraws."""
+    if site_set != PLACEBO_REGISTERED_SITE_SET:
+        raise ValueError(
+            f"[placebo] --site-set {site_set!r} is not registered for the "
+            f"placebo control (cell.yaml k_number_of_draws.scope_of_this_"
+            f"control: hs22/hs24 only, i.e. --site-set "
+            f"{PLACEBO_REGISTERED_SITE_SET!r})"
+        )
+    layer_name = layer_dir_name(hs_index)
+    fire_by_key = load_true_arm_fire_flags(root, family, hs_index, mode, kv_sharing)
+    rows = selected_rows(family, n_rows if mode == "smoke" else None)
+    missing = [row["row_key"] for row in rows if row["row_key"] not in fire_by_key]
+    if missing:
+        raise ValueError(
+            f"[placebo] {len(missing)} row(s) in this arm-kind's population have "
+            f"no fire decision in the true arm's run log (population drift "
+            f"since the true arm ran); first missing key: {missing[0]!r}"
+        )
+    gate_rows = [{**row, "fire": fire_by_key[row["row_key"]]} for row in rows]
+
+    paths = pl.layer_paths(family, hs_index, kv_sharing)
+    c_hat = pl.load_direction_vector(paths["c_hat"])
+    u_d = pl.load_direction_vector(paths["u_d"])
+    hidden_dim = int(c_hat.shape[0])
+
+    accepted, ledger = placebo_direction.screen_k_accepted_directions(
+        hidden_dim, hs_index, c_hat, u_d, k=k)
+    ledger_path = (root / "analysis-committed" / family
+                   / family_config.site_set_artifact("placebo_draw_ledger.json", site_set))
+    placebo_direction.write_ledger(ledger_path, ledger, hs_index=hs_index, hidden_dim=hidden_dim, k=k)
+
+    n_fired = sum(1 for v in fire_by_key.values() if v)
+    if dry_run:
+        return {
+            "family": family, "arm_kind": "placebo", "dry_run": True,
+            "hs_index": hs_index, "layer": layer_name, "site_set": site_set,
+            "kv_sharing": kv_sharing, "mode": mode, "k": k,
+            "n_accepted_directions": len(accepted), "n_ledger_entries": len(ledger),
+            "n_fired_rows": n_fired, "n_rows": len(gate_rows),
+            "ledger_path": str(ledger_path),
+        }
+
+    RunLog, _RunLogError = ml.load_run_log_class()
+    model, tokenizer, _hidden_size, _n_layers = ml.load_model_and_tokenizer(family)
+    per_draw = []
+    try:
+        for k_index, direction in enumerate(accepted):
+            sigma, gain = placebo_direction.placebo_write_params(dose_target)
+            log_path = (root / "analysis" / family / "runlog" / "placebo" / mode
+                        / kv.condition_artifact(f"{layer_name}.k{k_index}.jsonl", kv_sharing))
+            run_log = RunLog(
+                log_path,
+                run_config={
+                    "experiment": "gemma4-e4b-kv-seam-quarantine", "family": family,
+                    "arm_kind": "placebo", "mode": mode, "layer": layer_name,
+                    "hs_index": hs_index, "k_index": k_index, "dose_target": dose_target,
+                    "sigma": sigma, "kv_sharing": kv_sharing,
+                },
+                fresh=fresh,
+            )
+            try:
+                rec = pl.run_layer_with_direction(
+                    family, model, tokenizer, hs_index, gate_rows, dose_target,
+                    direction, sigma=sigma, run_log=run_log, kv_sharing=kv_sharing)
+            finally:
+                run_log.close()
+            rec["k_index"] = k_index
+            per_draw.append(rec)
+    finally:
+        del model
+        gc.collect()
+        torch.cuda.empty_cache()
+
+    summary = {
+        "family": family, "arm_kind": "placebo", "site_set": site_set,
+        "kv_sharing": kv_sharing, "mode": mode, "hs_index": hs_index,
+        "dose_target": dose_target, "k": k, "n_fired_rows": n_fired,
+        "ledger_path": str(ledger_path), "per_draw": per_draw,
+    }
+    write_summary(
+        family,
+        kv.condition_artifact(
+            family_config.site_set_artifact(f"placebo_summary.{layer_name}.json", site_set),
+            kv_sharing),
+        summary, commit_public=True,
+    )
+    return summary
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--family", required=True, choices=FAMILY_SLUGS)
@@ -377,6 +603,29 @@ def main(argv=None) -> int:
              "too, the late arm is SKIPPED and only the primary (mid-band) gates "
              "are evaluated.",
     )
+    parser.add_argument(
+        "--arm-kind", choices=["true", "placebo", "undosed"], default="true",
+        help="'true' (default) is the pre-existing gating/descriptive arm "
+             "path, unchanged. 'placebo' runs the P1/P2 direction-"
+             "specificity control at the matched true arm's site and dose, "
+             "on the SAME fired rows (cell.yaml placebo_direction_control); "
+             "only registered for --site-set seam_pair. 'undosed' runs the "
+             "undosed baseline pass g2's undosed_floor and g3's lift both "
+             "require.",
+    )
+    parser.add_argument(
+        "--placebo-k", type=int, default=placebo_direction.K,
+        help="Number of SC1-screened placebo draws. LOCKED at 5 by the lead "
+             "(cell.yaml k_number_of_draws) -- do not override for a "
+             "registered run; this flag exists for CPU testing only.",
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Resolve rows, doses, and (for --arm-kind placebo) the SC1 "
+             "draw/screen ledger entirely on CPU, print the plan, and exit "
+             "WITHOUT loading the model. No generation occurs. Composes "
+             "with every other flag, including --kv-sharing.",
+    )
     parser.add_argument("--i-know-this-is-the-cross-family-run", action="store_true")
     resume_group = parser.add_mutually_exclusive_group()
     resume_group.add_argument(
@@ -388,6 +637,49 @@ def main(argv=None) -> int:
         help="Discard each layer's existing run log for this family/mode and start over.",
     )
     args = parser.parse_args(argv)
+
+    if args.arm_kind != "true" and args.site_set != PLACEBO_REGISTERED_SITE_SET:
+        print(
+            f"[contrast] --arm-kind {args.arm_kind!r} is only registered for "
+            f"--site-set {PLACEBO_REGISTERED_SITE_SET!r} (cell.yaml "
+            "k_number_of_draws.scope_of_this_control)", file=sys.stderr,
+        )
+        return 2
+
+    if args.arm_kind in ("placebo", "undosed"):
+        cfg = load_family(args.family)
+        hs_list = resolve_site_set(cfg, args.site_set)
+        dose_map = load_midband_selected_doses(args.family, args.site_set, args.kv_sharing)
+        results: dict[str, dict] = {}
+        exit_code = 0
+        for hs_index in hs_list:
+            layer_name = layer_dir_name(hs_index)
+            if layer_name not in dose_map:
+                print(f"[contrast] {layer_name} has no usable FIT dose; its "
+                      f"{args.arm_kind} pass is NOT-RUN (matches the true "
+                      "arm's own dose-viability NOT-RUN)", file=sys.stderr)
+                results[layer_name] = {"status": "NOT-RUN",
+                                       "reason": "true arm has no usable FIT dose"}
+                continue
+            dose_target = dose_map[layer_name]
+            try:
+                if args.arm_kind == "undosed":
+                    results[layer_name] = run_undosed_baseline(
+                        args.family, hs_index, dose_target, mode=args.mode,
+                        n_rows=args.n_rows, fresh=args.fresh, site_set=args.site_set,
+                        kv_sharing=args.kv_sharing, dry_run=args.dry_run)
+                else:
+                    results[layer_name] = run_placebo(
+                        args.family, hs_index, dose_target, args.placebo_k,
+                        mode=args.mode, n_rows=args.n_rows, fresh=args.fresh,
+                        site_set=args.site_set, kv_sharing=args.kv_sharing,
+                        dry_run=args.dry_run)
+            except placebo_direction.PlaceboRedrawExhausted as exc:
+                print(f"[contrast] {layer_name} placebo: {exc}", file=sys.stderr)
+                results[layer_name] = {"status": "NOT-RUN", "reason": str(exc)}
+                exit_code = 4
+        print(json.dumps(results, indent=2, default=str))
+        return exit_code
 
     late_dose = resolve_late_dose(args.family, args.late_dose, args.site_set,
                                   args.kv_sharing)
