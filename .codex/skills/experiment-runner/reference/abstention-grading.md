@@ -43,6 +43,39 @@ detectors calibrated on one family systematically undercount other families'
 abstention idioms. Design for that from the start; do not rediscover it as a
 post-hoc dispute.
 
+## Second cautionary case: pattern batteries fail on open-class constructs
+
+`experiments/write-direction-naming-battery` (resolved falsified 2026-07-30,
+verdict "unnamed write direction (form instrument void)") built a
+fine-grained output-form taxonomy (committed / hedged / non-answerability)
+as a regex pattern battery and registered a blinded 200-row calibration
+before use. It failed at 0.43 disagreement against a 0.05 floor, one-sided:
+79 of 86 misses were hedged or non-answerable texts the patterns classed as
+committed answers. The blinded judge itself was consistent (19/19 decoys),
+so the construct is measurable; the pattern list is what failed. Epistemic
+marking is an open class (modals, non-factive attributions, temporal and
+scope limits, conditional framings do not enumerate), so widening the regex
+list chases an unbounded tail.
+
+Standing rules from this case:
+
+- Deterministic pattern instruments are acceptable only for closed-class
+  screens (degenerate text, exact refusal idioms already validated by their
+  own blinded calibration). Any FINE-GRAINED epistemic-marking classifier
+  (hedging, qualification, partial commitment) must be judge-based: an
+  isolated context-free judge applying a registered rubric, calibrated
+  blind before scored use, with the same two hash-commitment checkpoints as
+  any adjudication lane.
+- Feasibility-check decoy floors at sign time: count candidate decoys from
+  the actual source population before registering a minimum. The naming
+  battery registered a 25-decoy floor over a population that contained 19,
+  forcing a mid-run governed deviation.
+- Register the disagreement-direction breakdown (per ordered label pair) as
+  a reported calibration output; the one-sided miss pattern is the most
+  diagnostic artifact when a calibration fails.
+
+Successor design is scoped in `docs/preparation/form-instrument-v2.md`.
+
 ## Registered rubric (verbatim, reused byte-identical since RR2)
 
 A text counts as an abstention iff it declines to provide the queried answer
