@@ -87,7 +87,7 @@ instrument:
     gate_fit.py: 5caa08f90492d812f3bf5d922b952960947760ca1881caff5e744a7c16c4e62a
     calibrate_dose.py: 5ee1ba7715db2146e1dbaff9d056afa61852bfec09ac93e0d99a3145e9e35b8e
     pipeline.py: 89948aefa32b810cefbad2366647a62c22e5338353f670730d404b8cfd31ebf0
-    run_contrast.py: 83a704050376bca7800eecaab1c3dc6fd74fe9116565dc9ee94c2f8132ed1ecf
+    run_contrast.py: 14687efd8f6a74e815c49f8bedb46acf2e5f7ad93e88a555fed9f5abff178978
     kv_seam_preflight.py: 9040d5ef57b00637c1c15c4fc3771421635aad6c710eb007ec627599007e1f4a
     donor_diagnostic.py: c0611dd16de01656e208619be95af83dcda48e62ca792f1d7409ffadae0138b8
     alin_sweep.py: d9113d19414f75d1c7a322f0650def81534b20b2fa8a5628c2dfe6690c2d8fa5
@@ -233,6 +233,18 @@ instrument:
       rationale: Resolve-time aggregation over already-written per-arm artifacts,
         one atomic output write, fail-closed on any missing input. Zero torch/transformers
         imports. Re-running from scratch is the cheap path.
+  repins:
+  - file: run_contrast.py
+    old_sha256: 83a704050376bca7800eecaab1c3dc6fd74fe9116565dc9ee94c2f8132ed1ecf
+    new_sha256: 14687efd8f6a74e815c49f8bedb46acf2e5f7ad93e88a555fed9f5abff178978
+    date: '2026-07-29T23:58:39Z'
+    reason: 'Crash repair, zero-outcome path: run_placebo built its fired-row-matched
+      rows without stamping hs_index (true/undosed arms get it from compute_gate_decisions,
+      which the placebo path correctly skips per the never-re-gate rule), so pipeline.run_one_row
+      raised KeyError(''hs_index'') on the first placebo row (Stage 4, 2026-07-29
+      23:54Z, before any placebo row executed). One-line fix stamps hs_index alongside
+      the matched fire flag. No gate, threshold, seed, population, or scoring logic
+      touched; P1/P2 had produced no outcomes.'
 inputs:
 - experiments/j-space-cross-family-layer-contrast/AMENDMENT.md
 - experiments/j-space-cross-family-layer-contrast/NOTEBOOK.md

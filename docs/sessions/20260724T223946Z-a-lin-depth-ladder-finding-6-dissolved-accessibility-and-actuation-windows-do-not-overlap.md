@@ -5,7 +5,7 @@ title: 'A_lin depth ladder: finding (6) dissolved; accessibility and actuation w
   do not overlap'
 status: complete
 created_at: '2026-07-24T22:39:46Z'
-updated_at: '2026-07-24T22:40:34Z'
+updated_at: '2026-07-30T14:28:28Z'
 question: Does gemma-4-E4B's logit lens fail on CLEAN activations (finding 6 real),
   or only on the use_cache=False corrupt extraction (finding 6 = Defect 3)?
 tags:
@@ -105,6 +105,116 @@ checkpoints:
   - Adjudicating the G0-ALIN defect belongs to that experiment's own draft, not to
     this notebook entry.
   signals: {}
+- id: 004-checkpoint
+  at: '2026-07-29T16:13:56Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'kv-seam Phase A launch stalled at runtime-provenance boundary. Signed
+    gemma4-e4b-kv-seam-quarantine (22 pins) merged; Phase A approved on local 3090.
+    Three launch blockers resolved in sequence: Docker Desktop two-daemon socket switch,
+    missing accelerate (tuner PR 148), transformers 5.12.1 dropped Gemma4 kv_shared_layer_index
+    which the pinned kv_seam_patch.py reads (user chose align-runtime-to-5.5.0; tuner
+    PR 149 added TRANSFORMERS_VERSION build-arg; mechinterp-runner:tf550 built at
+    15:13Z, digest 479b7ca7891a). ADJUDICATION: smoke_summary.seam_pair.json and runlog/smoke/*
+    written 14:34Z under a pre-tf550 unrecorded runtime are SUPERSEDED validity evidence
+    (g0_smoke_pass true but not citable); Stage 1 re-runs in-image under tf550, and
+    the 2026-07-25 preflight 6/6 PASS is likewise superseded pending in-image re-run.
+    STALL: runner subagent parked at 15:09Z waiting on build-completion/Monitor notifications
+    that never delivered; nothing on GPU/CPU since. sendmessage_idle_guard.sh self-deadlock
+    bug found: a hook-DENIED SendMessage attempt is still recorded in the sender transcript
+    and counted as an outbound, so once one send is blocked no later send can ever
+    pass (agent already idle, will never emit a new idle signal). Awaiting user decision:
+    patch/suspend hook vs stop runner; do not spawn duplicate runners (user directive).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 005-checkpoint
+  at: '2026-07-30T00:04:24Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'kv-seam Phase A through Stage 4 relaunch. Guard hook patched (denied SendMessage
+    no longer counts as outbound; user-approved), runner woken; Stage 1 re-run under
+    tf550 PASSED (identical to superseded pre-tf550 numbers, consistent with preflight
+    ON-bit-identity), preflight 6/6 in-image recorded superseding the 2026-07-25 PASS.
+    Stage 2 full seam_pair ON: A3 hs22 tighten 99/168=0.589 [0.514,0.661] cost 1/270
+    collapse 0; A5 hs24 tighten 123/168=0.732 [0.661,0.793] cost 9/270=0.033 collapse
+    6/176=0.0341; primary block G1/G2 PASS but top-level primary_pass FALSE via g0_smoke_pass
+    zero-collapse conjunct (gates.yaml smoke_no_collapse); fired-only G2 NOT-ADJUDICABLE
+    both sites (n=2, n=9 vs floor 35) with over-cap discrepancy flag raised (hs24
+    fired-only 9/9); disposition deferred to Stage 6. Stage 3 undosed baselines pristine
+    both sites (0/168 tighten, 0/270 cost, 438/438). RunLog complete:false resolved
+    as expected steady state (run_contrast never calls finalize). 529 storm cost ~3h
+    (runner died twice, zero state loss). Stage 4 v1 crashed 58s in: pinned run_placebo
+    omitted hs_index stamp (never-re-gate path skips compute_gate_decisions); zero
+    placebo rows executed; lead REPIN via bin/exp repin, run_contrast.py 83a70405->14687efd,
+    audited reason, one-line stamp fix; runner independently verified hash+audit+validate;
+    convergent independent diagnoses lead/runner. hs22 SC1 ledger snapshot accepted
+    lab-notebook tier (5/5 accepted in 20 draws; hs24 5/5 in 17); shared-ledger-filename
+    clobber wart DEFERRED (placebos do not recur in Phase B; ledger reconstructible
+    from registered seeds). Stage 4 v2 launched 00:02:23Z, first placebo row durably
+    written 00:03:46Z (past prior crash point), ~4380 generations ETA several hours.
+    Remaining: Stage 5a/5b shallow ladder, Stage 6 rollup, then Phase B.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 006-checkpoint
+  at: '2026-07-30T11:57:10Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Paper-program parallel sprint while kv-seam Stage 5a calibrates: six subagent
+    memos delivered and lead-verified (series-plan staleness audit docs/review/series-plan-staleness-audit-2026-07-30.md:
+    33 experiments mapped, paper-5 rewrite preconditions met since 07-13, H6 resolved
+    as h6-genstream-hook-firing-check with neither gen_stream path certified; p3 census
+    integration already merged 07-18, one section-6 ownership edit remains; p1 vocabulary
+    clean, citation currency only; p2-p4 zero numeric contradictions, three precision
+    fixes; figure inventory: 21 figures, legacy numbering, paper-2 raw inputs never
+    committed (containment-correct fix is aggregate snapshots, not raw commits), paper-3
+    hand-typed constants, cross-paper embed bug p3->p2; arXiv pipeline pilot WORKS:
+    paper 4 builds 28pp PDF + arxiv tarball on branch infra/paper-build-pipeline,
+    pandoc 3.10.1 + tectonic 0.17.0 pinned, not pushed). Stage 4 placebo adjudication
+    recorded earlier stands: A3 PASS-DEGENERATE candidate, A5 effect_ratio 1.14 vs
+    3.0 floor. PI discussion on paper 5: confirmed doubt residue lives only in stale
+    plan.md + historical filenames; manuscript already KU-vocabulary with title candidates
+    staged. PI questions logged: does mid-band even need the gate (factorial: permuted-GATE
+    keeps most benefit; gate = margin-tightener at mid-band, essential at overdrive);
+    clarified permuted-gate randomizes ROW SELECTION not direction (random DIRECTIONS
+    still fail at healthy sites, direction-specificity intact); PI wants (a) explicit
+    boxed mid-band recipe in paper 5, (b) possible constructed-direction optimization
+    cell (precedent caution: M4c constructive search lost specificity), (c) small
+    pre-registered naming battery to define the abstention direction empirically instead
+    of vibing (dose-response, negative dose, hard-known vs easy-known cost, output-form
+    at sub-flip doses) rather than keeping the unearned caution label. Stage 5a at
+    hs40 block, near completion.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 007-checkpoint
+  at: '2026-07-30T14:28:28Z'
+  kind: checkpoint
+  title: Pre-restart pause checkpoint
+  summary: 'kv-seam 5b full run finishing (hs15/hs18 438/438 done, hs20 in flight);
+    D4/A6 hs23 adjudicated dose-viability NOT-RUN (zero usable rungs, collapse 0.125
+    on all confab-clearing rungs); hs40 late null expected/skipped. write-direction-naming-battery
+    SIGNED (PR #355 open, merge pending PI approval; all predictors row 4 + O-1; GPU
+    queued behind Phase A/B). Outreach: contact refresh (204 rows), wave-1 tokens
+    (14, verified), LinkedIn 14/14, 5-step HubSpot sequence in docs/preparation/outreach-plan-2026-07-30.md;
+    clock held until papers ship. Runner instructed to HOLD after 5b completes (user
+    machine restart); Stage 6 lead adjudication post-restart.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: j-space read-then-actuate
 ---
 # A_lin depth ladder: finding (6) dissolved; accessibility and actuation windows do not overlap
@@ -153,3 +263,23 @@ _No summary yet._
   - `analysis/crystallization-ladder/alin_report.json; experiments/gemma4-e4b-kv-seam-quarantine/DECISION_MEMO.md; extract_anchor.py:158`
 - next steps:
   - Adjudicating the G0-ALIN defect belongs to that experiment's own draft, not to this notebook entry.
+### 004-checkpoint - Checkpoint
+
+- at: `2026-07-29T16:13:56Z`
+- kind: `checkpoint`
+- summary: kv-seam Phase A launch stalled at runtime-provenance boundary. Signed gemma4-e4b-kv-seam-quarantine (22 pins) merged; Phase A approved on local 3090. Three launch blockers resolved in sequence: Docker Desktop two-daemon socket switch, missing accelerate (tuner PR 148), transformers 5.12.1 dropped Gemma4 kv_shared_layer_index which the pinned kv_seam_patch.py reads (user chose align-runtime-to-5.5.0; tuner PR 149 added TRANSFORMERS_VERSION build-arg; mechinterp-runner:tf550 built at 15:13Z, digest 479b7ca7891a). ADJUDICATION: smoke_summary.seam_pair.json and runlog/smoke/* written 14:34Z under a pre-tf550 unrecorded runtime are SUPERSEDED validity evidence (g0_smoke_pass true but not citable); Stage 1 re-runs in-image under tf550, and the 2026-07-25 preflight 6/6 PASS is likewise superseded pending in-image re-run. STALL: runner subagent parked at 15:09Z waiting on build-completion/Monitor notifications that never delivered; nothing on GPU/CPU since. sendmessage_idle_guard.sh self-deadlock bug found: a hook-DENIED SendMessage attempt is still recorded in the sender transcript and counted as an outbound, so once one send is blocked no later send can ever pass (agent already idle, will never emit a new idle signal). Awaiting user decision: patch/suspend hook vs stop runner; do not spawn duplicate runners (user directive).
+### 005-checkpoint - Checkpoint
+
+- at: `2026-07-30T00:04:24Z`
+- kind: `checkpoint`
+- summary: kv-seam Phase A through Stage 4 relaunch. Guard hook patched (denied SendMessage no longer counts as outbound; user-approved), runner woken; Stage 1 re-run under tf550 PASSED (identical to superseded pre-tf550 numbers, consistent with preflight ON-bit-identity), preflight 6/6 in-image recorded superseding the 2026-07-25 PASS. Stage 2 full seam_pair ON: A3 hs22 tighten 99/168=0.589 [0.514,0.661] cost 1/270 collapse 0; A5 hs24 tighten 123/168=0.732 [0.661,0.793] cost 9/270=0.033 collapse 6/176=0.0341; primary block G1/G2 PASS but top-level primary_pass FALSE via g0_smoke_pass zero-collapse conjunct (gates.yaml smoke_no_collapse); fired-only G2 NOT-ADJUDICABLE both sites (n=2, n=9 vs floor 35) with over-cap discrepancy flag raised (hs24 fired-only 9/9); disposition deferred to Stage 6. Stage 3 undosed baselines pristine both sites (0/168 tighten, 0/270 cost, 438/438). RunLog complete:false resolved as expected steady state (run_contrast never calls finalize). 529 storm cost ~3h (runner died twice, zero state loss). Stage 4 v1 crashed 58s in: pinned run_placebo omitted hs_index stamp (never-re-gate path skips compute_gate_decisions); zero placebo rows executed; lead REPIN via bin/exp repin, run_contrast.py 83a70405->14687efd, audited reason, one-line stamp fix; runner independently verified hash+audit+validate; convergent independent diagnoses lead/runner. hs22 SC1 ledger snapshot accepted lab-notebook tier (5/5 accepted in 20 draws; hs24 5/5 in 17); shared-ledger-filename clobber wart DEFERRED (placebos do not recur in Phase B; ledger reconstructible from registered seeds). Stage 4 v2 launched 00:02:23Z, first placebo row durably written 00:03:46Z (past prior crash point), ~4380 generations ETA several hours. Remaining: Stage 5a/5b shallow ladder, Stage 6 rollup, then Phase B.
+### 006-checkpoint - Checkpoint
+
+- at: `2026-07-30T11:57:10Z`
+- kind: `checkpoint`
+- summary: Paper-program parallel sprint while kv-seam Stage 5a calibrates: six subagent memos delivered and lead-verified (series-plan staleness audit docs/review/series-plan-staleness-audit-2026-07-30.md: 33 experiments mapped, paper-5 rewrite preconditions met since 07-13, H6 resolved as h6-genstream-hook-firing-check with neither gen_stream path certified; p3 census integration already merged 07-18, one section-6 ownership edit remains; p1 vocabulary clean, citation currency only; p2-p4 zero numeric contradictions, three precision fixes; figure inventory: 21 figures, legacy numbering, paper-2 raw inputs never committed (containment-correct fix is aggregate snapshots, not raw commits), paper-3 hand-typed constants, cross-paper embed bug p3->p2; arXiv pipeline pilot WORKS: paper 4 builds 28pp PDF + arxiv tarball on branch infra/paper-build-pipeline, pandoc 3.10.1 + tectonic 0.17.0 pinned, not pushed). Stage 4 placebo adjudication recorded earlier stands: A3 PASS-DEGENERATE candidate, A5 effect_ratio 1.14 vs 3.0 floor. PI discussion on paper 5: confirmed doubt residue lives only in stale plan.md + historical filenames; manuscript already KU-vocabulary with title candidates staged. PI questions logged: does mid-band even need the gate (factorial: permuted-GATE keeps most benefit; gate = margin-tightener at mid-band, essential at overdrive); clarified permuted-gate randomizes ROW SELECTION not direction (random DIRECTIONS still fail at healthy sites, direction-specificity intact); PI wants (a) explicit boxed mid-band recipe in paper 5, (b) possible constructed-direction optimization cell (precedent caution: M4c constructive search lost specificity), (c) small pre-registered naming battery to define the abstention direction empirically instead of vibing (dose-response, negative dose, hard-known vs easy-known cost, output-form at sub-flip doses) rather than keeping the unearned caution label. Stage 5a at hs40 block, near completion.
+### 007-checkpoint - Pre-restart pause checkpoint
+
+- at: `2026-07-30T14:28:28Z`
+- kind: `checkpoint`
+- summary: kv-seam 5b full run finishing (hs15/hs18 438/438 done, hs20 in flight); D4/A6 hs23 adjudicated dose-viability NOT-RUN (zero usable rungs, collapse 0.125 on all confab-clearing rungs); hs40 late null expected/skipped. write-direction-naming-battery SIGNED (PR #355 open, merge pending PI approval; all predictors row 4 + O-1; GPU queued behind Phase A/B). Outreach: contact refresh (204 rows), wave-1 tokens (14, verified), LinkedIn 14/14, 5-step HubSpot sequence in docs/preparation/outreach-plan-2026-07-30.md; clock held until papers ship. Runner instructed to HOLD after 5b completes (user machine restart); Stage 6 lead adjudication post-restart.

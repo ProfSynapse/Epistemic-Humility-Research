@@ -1,0 +1,394 @@
+{
+  "family": "gemma4-e4b",
+  "arm_kind": "placebo",
+  "site_set": "seam_pair",
+  "kv_sharing": "on",
+  "mode": "full",
+  "hs_index": 22,
+  "dose_target": 28.50676604438885,
+  "k": 5,
+  "n_fired_rows": 167,
+  "ledger_path": "/workspace/experiments/gemma4-e4b-kv-seam-quarantine/analysis-committed/gemma4-e4b/placebo_draw_ledger.seam_pair.json",
+  "per_draw": [
+    {
+      "hs_index": 22,
+      "kv_sharing": "on",
+      "n_rows": 438,
+      "n_fired": 167,
+      "readback_mean": 28.49411526421296,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.3592814371257485,
+      "confab_tighten": {
+        "n": 168,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.022354668349868052
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 270,
+        "successes": 2,
+        "rate": 0.007407407407407408,
+        "wilson_ci_95": [
+          0.0020337342875902976,
+          0.02660129729040226
+        ]
+      },
+      "known_correct_cost_control_fired_only": {
+        "n": 2,
+        "successes": 2,
+        "rate": 1.0,
+        "wilson_ci_95": [
+          0.34238022750665303,
+          1.0
+        ],
+        "n_fired_known": 2,
+        "adjudicable_floor": 35,
+        "adjudicable": false,
+        "disposition": "NOT-ADJUDICABLE"
+      },
+      "known_correct_cost_control_g2_block": {
+        "full_population_g2": {
+          "n": 270,
+          "successes": 2,
+          "rate": 0.007407407407407408,
+          "wilson_ci_95": [
+            0.0020337342875902976,
+            0.02660129729040226
+          ]
+        },
+        "full_population_g2_pass": true,
+        "fired_only": {
+          "n": 2,
+          "successes": 2,
+          "rate": 1.0,
+          "wilson_ci_95": [
+            0.34238022750665303,
+            1.0
+          ],
+          "n_fired_known": 2,
+          "adjudicable_floor": 35,
+          "adjudicable": false,
+          "disposition": "NOT-ADJUDICABLE"
+        },
+        "undosed_floor": {
+          "n": 268,
+          "successes": 0,
+          "rate": 0.0,
+          "wilson_ci_95": [
+            0.0,
+            0.01413124707820208
+          ]
+        },
+        "discrepancy_full_pass_but_fired_only_over_cap": true
+      },
+      "k_index": 0
+    },
+    {
+      "hs_index": 22,
+      "kv_sharing": "on",
+      "n_rows": 438,
+      "n_fired": 167,
+      "readback_mean": 28.496861980664097,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.8263473053892215,
+      "confab_tighten": {
+        "n": 168,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.022354668349868052
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 270,
+        "successes": 2,
+        "rate": 0.007407407407407408,
+        "wilson_ci_95": [
+          0.0020337342875902976,
+          0.02660129729040226
+        ]
+      },
+      "known_correct_cost_control_fired_only": {
+        "n": 2,
+        "successes": 2,
+        "rate": 1.0,
+        "wilson_ci_95": [
+          0.34238022750665303,
+          1.0
+        ],
+        "n_fired_known": 2,
+        "adjudicable_floor": 35,
+        "adjudicable": false,
+        "disposition": "NOT-ADJUDICABLE"
+      },
+      "known_correct_cost_control_g2_block": {
+        "full_population_g2": {
+          "n": 270,
+          "successes": 2,
+          "rate": 0.007407407407407408,
+          "wilson_ci_95": [
+            0.0020337342875902976,
+            0.02660129729040226
+          ]
+        },
+        "full_population_g2_pass": true,
+        "fired_only": {
+          "n": 2,
+          "successes": 2,
+          "rate": 1.0,
+          "wilson_ci_95": [
+            0.34238022750665303,
+            1.0
+          ],
+          "n_fired_known": 2,
+          "adjudicable_floor": 35,
+          "adjudicable": false,
+          "disposition": "NOT-ADJUDICABLE"
+        },
+        "undosed_floor": {
+          "n": 268,
+          "successes": 0,
+          "rate": 0.0,
+          "wilson_ci_95": [
+            0.0,
+            0.01413124707820208
+          ]
+        },
+        "discrepancy_full_pass_but_fired_only_over_cap": true
+      },
+      "k_index": 1
+    },
+    {
+      "hs_index": 22,
+      "kv_sharing": "on",
+      "n_rows": 438,
+      "n_fired": 167,
+      "readback_mean": 28.5029832676587,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.9401197604790419,
+      "confab_tighten": {
+        "n": 168,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.022354668349868052
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 270,
+        "successes": 2,
+        "rate": 0.007407407407407408,
+        "wilson_ci_95": [
+          0.0020337342875902976,
+          0.02660129729040226
+        ]
+      },
+      "known_correct_cost_control_fired_only": {
+        "n": 2,
+        "successes": 2,
+        "rate": 1.0,
+        "wilson_ci_95": [
+          0.34238022750665303,
+          1.0
+        ],
+        "n_fired_known": 2,
+        "adjudicable_floor": 35,
+        "adjudicable": false,
+        "disposition": "NOT-ADJUDICABLE"
+      },
+      "known_correct_cost_control_g2_block": {
+        "full_population_g2": {
+          "n": 270,
+          "successes": 2,
+          "rate": 0.007407407407407408,
+          "wilson_ci_95": [
+            0.0020337342875902976,
+            0.02660129729040226
+          ]
+        },
+        "full_population_g2_pass": true,
+        "fired_only": {
+          "n": 2,
+          "successes": 2,
+          "rate": 1.0,
+          "wilson_ci_95": [
+            0.34238022750665303,
+            1.0
+          ],
+          "n_fired_known": 2,
+          "adjudicable_floor": 35,
+          "adjudicable": false,
+          "disposition": "NOT-ADJUDICABLE"
+        },
+        "undosed_floor": {
+          "n": 268,
+          "successes": 0,
+          "rate": 0.0,
+          "wilson_ci_95": [
+            0.0,
+            0.01413124707820208
+          ]
+        },
+        "discrepancy_full_pass_but_fired_only_over_cap": true
+      },
+      "k_index": 2
+    },
+    {
+      "hs_index": 22,
+      "kv_sharing": "on",
+      "n_rows": 438,
+      "n_fired": 167,
+      "readback_mean": 28.50809489895518,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.6526946107784432,
+      "confab_tighten": {
+        "n": 168,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.022354668349868052
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 270,
+        "successes": 2,
+        "rate": 0.007407407407407408,
+        "wilson_ci_95": [
+          0.0020337342875902976,
+          0.02660129729040226
+        ]
+      },
+      "known_correct_cost_control_fired_only": {
+        "n": 2,
+        "successes": 2,
+        "rate": 1.0,
+        "wilson_ci_95": [
+          0.34238022750665303,
+          1.0
+        ],
+        "n_fired_known": 2,
+        "adjudicable_floor": 35,
+        "adjudicable": false,
+        "disposition": "NOT-ADJUDICABLE"
+      },
+      "known_correct_cost_control_g2_block": {
+        "full_population_g2": {
+          "n": 270,
+          "successes": 2,
+          "rate": 0.007407407407407408,
+          "wilson_ci_95": [
+            0.0020337342875902976,
+            0.02660129729040226
+          ]
+        },
+        "full_population_g2_pass": true,
+        "fired_only": {
+          "n": 2,
+          "successes": 2,
+          "rate": 1.0,
+          "wilson_ci_95": [
+            0.34238022750665303,
+            1.0
+          ],
+          "n_fired_known": 2,
+          "adjudicable_floor": 35,
+          "adjudicable": false,
+          "disposition": "NOT-ADJUDICABLE"
+        },
+        "undosed_floor": {
+          "n": 268,
+          "successes": 0,
+          "rate": 0.0,
+          "wilson_ci_95": [
+            0.0,
+            0.01413124707820208
+          ]
+        },
+        "discrepancy_full_pass_but_fired_only_over_cap": true
+      },
+      "k_index": 3
+    },
+    {
+      "hs_index": 22,
+      "kv_sharing": "on",
+      "n_rows": 438,
+      "n_fired": 167,
+      "readback_mean": 28.500807819822697,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.9700598802395209,
+      "confab_tighten": {
+        "n": 168,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.022354668349868052
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 270,
+        "successes": 2,
+        "rate": 0.007407407407407408,
+        "wilson_ci_95": [
+          0.0020337342875902976,
+          0.02660129729040226
+        ]
+      },
+      "known_correct_cost_control_fired_only": {
+        "n": 2,
+        "successes": 2,
+        "rate": 1.0,
+        "wilson_ci_95": [
+          0.34238022750665303,
+          1.0
+        ],
+        "n_fired_known": 2,
+        "adjudicable_floor": 35,
+        "adjudicable": false,
+        "disposition": "NOT-ADJUDICABLE"
+      },
+      "known_correct_cost_control_g2_block": {
+        "full_population_g2": {
+          "n": 270,
+          "successes": 2,
+          "rate": 0.007407407407407408,
+          "wilson_ci_95": [
+            0.0020337342875902976,
+            0.02660129729040226
+          ]
+        },
+        "full_population_g2_pass": true,
+        "fired_only": {
+          "n": 2,
+          "successes": 2,
+          "rate": 1.0,
+          "wilson_ci_95": [
+            0.34238022750665303,
+            1.0
+          ],
+          "n_fired_known": 2,
+          "adjudicable_floor": 35,
+          "adjudicable": false,
+          "disposition": "NOT-ADJUDICABLE"
+        },
+        "undosed_floor": {
+          "n": 268,
+          "successes": 0,
+          "rate": 0.0,
+          "wilson_ci_95": [
+            0.0,
+            0.01413124707820208
+          ]
+        },
+        "discrepancy_full_pass_but_fired_only_over_cap": true
+      },
+      "k_index": 4
+    }
+  ]
+}
