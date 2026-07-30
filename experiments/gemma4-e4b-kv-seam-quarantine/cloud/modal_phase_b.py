@@ -90,6 +90,7 @@ EXP_DIR = f"experiments/{EXPERIMENT_SLUG}"
 POOL_IN_VOLUME = "private-inputs/eval_rows.jsonl"
 ANCHOR_ON_IN_VOLUME = "private-inputs/anchor_extract.safetensors"
 ANCHOR_ON_MANIFEST_IN_VOLUME = "private-inputs/anchor_extract_manifest.json"
+POOL_GENERATIONS_IN_VOLUME = "private-inputs/pool_generations.jsonl"
 RESULT_PREFIX = "phase-b-r1"
 
 HOURS = 60 * 60
@@ -510,6 +511,42 @@ def run_stage(stage: str):
     shutil.copyfile(anchor_manifest_in_vol, anchor_manifest_local)
     print(f"[modal-phaseb:{stage}] copied {anchor_manifest_in_vol} -> "
           f"{anchor_manifest_local}", flush=True)
+    # Restricted parent-experiment generations: alin_sweep part 2 reads
+    # `analysis/<family>/pool_generations.jsonl` to build its targets
+    # (second live b3 halt, 2026-07-30 17:28Z). Copy when staged; absence is
+    # fatal only for b3, so the check is stage-scoped rather than global.
+    pool_gen_in_vol = os.path.join(VOL_MOUNT, POOL_GENERATIONS_IN_VOLUME)
+    if os.path.isfile(pool_gen_in_vol):
+        pool_gen_local = os.path.join(private_dir, "pool_generations.jsonl")
+        shutil.copyfile(pool_gen_in_vol, pool_gen_local)
+        print(f"[modal-phaseb:{stage}] copied {pool_gen_in_vol} -> "
+              f"{pool_gen_local}", flush=True)
+    elif stage == "b3_alin_part2":
+        raise RuntimeError(
+            f"[modal-phaseb:{stage}] {pool_gen_in_vol} not staged; alin_sweep "
+            "part 2 cannot build targets without it. Run "
+            "`python3 cloud/stage_private_inputs.py --execute` from the host."
+        )
+    # Layout shim: the ON extraction manifest records rows_path as the
+    # ABSOLUTE host path of the parent experiment's eval_rows.jsonl (a
+    # machine-local layout that does not exist in this container), and
+    # alin_sweep part 2 fails closed on it. The staged eval_rows.jsonl is
+    # byte-identical to that parent file (sha 7a2784bd, verified on the host
+    # before staging), so materializing the recorded path with the staged
+    # copy reconstructs the exact layout the manifest describes.
+    try:
+        with open(anchor_manifest_local) as fh:
+            recorded_rows_path = json.load(fh).get("rows_path")
+    except Exception as e:  # noqa: BLE001
+        recorded_rows_path = None
+        print(f"[modal-phaseb:{stage}] could not parse rows_path from the ON "
+              f"manifest (non-fatal outside b3): {e}", flush=True)
+    if recorded_rows_path and not os.path.exists(recorded_rows_path):
+        os.makedirs(os.path.dirname(recorded_rows_path), exist_ok=True)
+        shutil.copyfile(rows_local, recorded_rows_path)
+        print(f"[modal-phaseb:{stage}] layout shim: staged eval_rows "
+              f"materialized at manifest rows_path {recorded_rows_path}",
+              flush=True)
 
     # Restore each needs-stage's own analysis/ + analysis-committed/ output
     # from ITS ckpt mirror into this (fresh) container's workspace. Every

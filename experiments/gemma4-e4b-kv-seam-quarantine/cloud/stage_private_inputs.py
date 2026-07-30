@@ -54,6 +54,12 @@ PRIVATE_FILES = {
     # load_condition_manifest and fail closed when either half is absent
     # (first observed live: b3 halt, 2026-07-30 17:21Z).
     "anchor_extract_manifest.json": EXP_ROOT / "analysis" / "gemma4-e4b" / "anchor_extract_manifest.json",
+    # Restricted parent-experiment generations (jspace parent, copied into this
+    # experiment's analysis dir on the host; sha e0d1c1b3...). alin_sweep part 2
+    # builds its targets from these rows (alin_sweep.py run_part2,
+    # `analysis / "pool_generations.jsonl"`); second live b3 halt, 2026-07-30
+    # 17:28Z, after the manifest fix exposed it.
+    "pool_generations.jsonl": EXP_ROOT / "analysis" / "gemma4-e4b" / "pool_generations.jsonl",
 }
 # Must match modal_phase_b.py's `vol` (modal.Volume.from_name(...)) and
 # VOL_MOUNT exactly -- this script and that one address the SAME volume.
@@ -62,6 +68,7 @@ DEST_IN_VOLUME = {
     "eval_rows.jsonl": "private-inputs/eval_rows.jsonl",
     "anchor_extract.safetensors": "private-inputs/anchor_extract.safetensors",
     "anchor_extract_manifest.json": "private-inputs/anchor_extract_manifest.json",
+    "pool_generations.jsonl": "private-inputs/pool_generations.jsonl",
 }
 
 

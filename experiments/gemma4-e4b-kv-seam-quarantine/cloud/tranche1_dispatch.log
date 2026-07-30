@@ -891,3 +891,228 @@ RuntimeError: command failed (1): python3 alin_sweep.py --site 38 --both-conditi
 
 === [2026-07-30T17:21:04Z] b3_alin_part2 exit=1 ===
 TRANCHE1 HALTED at b3_alin_part2 (exit 1); later stages NOT dispatched.
+=== [2026-07-30T17:25:47Z] RESUME from b3_alin_part2 (earlier stages skipped, ckpt provenance stands) ===
+=== [2026-07-30T17:25:47Z] dispatch b3_alin_part2 ===
+Note that running a local entrypoint in detached mode only keeps the last triggered Modal function alive after the parent process has been killed or disconnected.
+✓ Initialized. View run at 
+https://modal.com/apps/synaptic-labs/main/ap-Qhr6LZNv1z5D5LF1U2T7aQ
+✓ Created objects.
+├── 🔨 Created mount 
+│   /home/profsynapse/code/ehr-worktrees/kv-seam-phase-b/experiments/gemma4-e4b-
+│   kv-seam-quarantine/cloud/modal_phase_b.py
+├── 🔨 Created mount 
+│   /home/profsynapse/code/ehr-worktrees/kv-seam-phase-b/synaptic-tuner/docker/m
+│   echinterp-runner
+├── 🔨 Created function run_stage.
+└── 🔨 Created function version_check.
+[modal-phaseb] launching stage=b3_alin_part2 gpu=False on CPU (in pinned image)
+[modal-phaseb] repo@86fc6e424f98 tuner@34c89fc4f9d6 transformers==5.5.0
+[modal-phaseb] spawned function call fc-01KYT0Z6VGJ70NMM8DK312A1CE
+[modal-phaseb] --wait set; blocking on fc-01KYT0Z6VGJ70NMM8DK312A1CE ...
+{"cuda_available": true, "cuda_version": "12.8", "event": "mechinterp_runner_provenance", "image_digest": "unknown (pass IMAGE_DIGEST at `docker run`)", "image_git_revision": "34c89fc4f9d693a6b997422288d820e9c30b4696", "python": "3.10.12", "torch": "2.9.1+cu128", "transformers": "5.5.0"}
+[modal-phaseb:b3_alin_part2] $ git clone https://github.com/ProfSynapse/Epistemic-Humility-Research.git /workspace/ehr
+Cloning into '/workspace/ehr'...
+Updating files:  29% (1476/4979)
+[1AUpdating files:  30% (1494/4979)
+[1AUpdating files:  31% (1544/4979)
+[1AUpdating files:  32% (1594/4979)
+[1AUpdating files:  33% (1644/4979)
+[1AUpdating files:  34% (1693/4979)
+[1AUpdating files:  35% (1743/4979)
+[1AUpdating files:  36% (1793/4979)
+[1AUpdating files:  37% (1843/4979)
+[1AUpdating files:  38% (1893/4979)
+[1AUpdating files:  39% (1942/4979)
+[1AUpdating files:  40% (1992/4979)
+[1AUpdating files:  41% (2042/4979)
+[1AUpdating files:  42% (2092/4979)
+[1AUpdating files:  43% (2141/4979)
+[1AUpdating files:  44% (2191/4979)
+[1AUpdating files:  45% (2241/4979)
+[1AUpdating files:  46% (2291/4979)
+[1AUpdating files:  47% (2341/4979)
+[1AUpdating files:  48% (2390/4979)
+[1AUpdating files:  49% (2440/4979)
+[1AUpdating files:  50% (2490/4979)
+[1AUpdating files:  51% (2540/4979)
+[1AUpdating files:  52% (2590/4979)
+[1AUpdating files:  53% (2639/4979)
+[1AUpdating files:  54% (2689/4979)
+[1AUpdating files:  55% (2739/4979)
+[1AUpdating files:  56% (2789/4979)
+[1AUpdating files:  57% (2839/4979)
+[1AUpdating files:  58% (2888/4979)
+[1AUpdating files:  59% (2938/4979)
+[1AUpdating files:  60% (2988/4979)
+[1AUpdating files:  61% (3038/4979)
+[1AUpdating files:  62% (3087/4979)
+[1AUpdating files:  63% (3137/4979)
+[1AUpdating files:  64% (3187/4979)
+[1AUpdating files:  65% (3237/4979)
+[1AUpdating files:  66% (3287/4979)
+[1AUpdating files:  67% (3336/4979)
+[1AUpdating files:  68% (3386/4979)
+[1AUpdating files:  69% (3436/4979)
+[1AUpdating files:  70% (3486/4979)
+[1AUpdating files:  71% (3536/4979)
+[1AUpdating files:  72% (3585/4979)
+[1AUpdating files:  73% (3635/4979)
+[1AUpdating files:  74% (3685/4979)
+[1AUpdating files:  75% (3735/4979)
+[1AUpdating files:  76% (3785/4979)
+[1AUpdating files:  77% (3834/4979)
+[1AUpdating files:  78% (3884/4979)
+[1AUpdating files:  79% (3934/4979)
+[1AUpdating files:  80% (3984/4979)
+[1AUpdating files:  81% (4033/4979)
+[1AUpdating files:  82% (4083/4979)
+[1AUpdating files:  83% (4133/4979)
+[1AUpdating files:  84% (4183/4979)
+[1AUpdating files:  85% (4233/4979)
+[1AUpdating files:  86% (4282/4979)
+[1AUpdating files:  87% (4332/4979)
+[1AUpdating files:  88% (4382/4979)
+[1AUpdating files:  89% (4432/4979)
+[1AUpdating files:  90% (4482/4979)
+[1AUpdating files:  91% (4531/4979)
+[1AUpdating files:  92% (4581/4979)
+[1AUpdating files:  93% (4631/4979)
+[1AUpdating files:  94% (4681/4979)
+[1AUpdating files:  95% (4731/4979)
+[1AUpdating files:  96% (4780/4979)
+[1AUpdating files:  97% (4830/4979)
+[1AUpdating files:  98% (4880/4979)
+[1AUpdating files:  99% (4930/4979)
+[1AUpdating files: 100% (4979/4979)
+[1AUpdating files: 100% (4979/4979), done.
+[modal-phaseb:b3_alin_part2] $ git fetch --all --tags
+Fetching origin
+[modal-phaseb:b3_alin_part2] $ git checkout 86fc6e424f98e6587d0d8907b9fa90f08997e2e3
+Note: switching to '86fc6e424f98e6587d0d8907b9fa90f08997e2e3'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 86fc6e42 kv-seam Phase B: dispatch wait-mode, needs-restore, C1 NLL ruling applied
+[modal-phaseb:b3_alin_part2] $ git submodule update --init --recursive
+Submodule 'synaptic-tuner' (https://github.com/ProfSynapse/Synaptic-Tuner.git) registered for path 'synaptic-tuner'
+Cloning into '/workspace/ehr/synaptic-tuner'...
+Submodule path 'synaptic-tuner': checked out '34c89fc4f9d693a6b997422288d820e9c30b4696'
+[modal-phaseb:b3_alin_part2] $ git checkout 34c89fc4f9d693a6b997422288d820e9c30b4696
+HEAD is now at 34c89fc Merge pull request #149 from ProfSynapse/fix/mechinterp-runner-transformers-arg
+[modal-phaseb:b3_alin_part2] structural check PASS: 56:    "model.language_model.layers",
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/eval_rows.jsonl -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/eval_rows.jsonl
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/anchor_extract.safetensors -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/anchor_extract_manifest.json -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract_manifest.json
+[modal-phaseb:b3_alin_part2] restored needs-stage 'b1_extract_off_midband' output from /vol/phasebtlogs/ckpt/phase-b-b1_extract_off_midband-r1
+[modal-phaseb:b3_alin_part2] $ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+NVIDIA A100 80GB PCIe, 81920 MiB
+[modal-phaseb:b3_alin_part2] $ python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+Traceback (most recent call last):
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 860, in <module>
+    sys.exit(main())
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 567, in main
+    return run_part2(args, head_dtype)
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 435, in run_part2
+    raise RuntimeError(
+RuntimeError: [alin_sweep part2] the extraction manifest points at /home/profsynapse/code/ehr-worktrees/jspace-cross-family/experiments/j-space-cross-family-layer-contrast/analysis/gemma4-e4b/eval_rows.jsonl, which does not exist. The eval rows are restricted data staged from the parent experiment; pass --parent-analysis or restore the symlink.
+Traceback (most recent call last):
+  File "/pkg/modal/_runtime/container_io_manager.py", line 915, in handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync
+    values = io_context.call_function_sync()
+  File "/pkg/modal/_runtime/container_io_manager.py", line 218, in call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+  File "/root/modal_phase_b.py", line 597, in run_stage
+    sh(spec["cmd"], cwd=exp_dir)
+  File "/root/modal_phase_b.py", line 441, in sh
+    raise RuntimeError(f"command failed ({r.returncode}): {' '.join(cmd)}")
+RuntimeError: command failed (1): python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+
+[modal-phaseb:b3_alin_part2] $ git fetch --all --tags
+Fetching origin
+[modal-phaseb:b3_alin_part2] $ git checkout 86fc6e424f98e6587d0d8907b9fa90f08997e2e3
+HEAD is now at 86fc6e42 kv-seam Phase B: dispatch wait-mode, needs-restore, C1 NLL ruling applied
+[modal-phaseb:b3_alin_part2] $ git submodule update --init --recursive
+[modal-phaseb:b3_alin_part2] $ git checkout 34c89fc4f9d693a6b997422288d820e9c30b4696
+HEAD is now at 34c89fc Merge pull request #149 from ProfSynapse/fix/mechinterp-runner-transformers-arg
+[modal-phaseb:b3_alin_part2] structural check PASS: 56:    "model.language_model.layers",
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/eval_rows.jsonl -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/eval_rows.jsonl
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/anchor_extract.safetensors -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/anchor_extract_manifest.json -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract_manifest.json
+[modal-phaseb:b3_alin_part2] restored needs-stage 'b1_extract_off_midband' output from /vol/phasebtlogs/ckpt/phase-b-b1_extract_off_midband-r1
+[modal-phaseb:b3_alin_part2] $ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+NVIDIA A100 80GB PCIe, 81920 MiB
+[modal-phaseb:b3_alin_part2] $ python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+Traceback (most recent call last):
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 860, in <module>
+    sys.exit(main())
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 567, in main
+    return run_part2(args, head_dtype)
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 435, in run_part2
+    raise RuntimeError(
+RuntimeError: [alin_sweep part2] the extraction manifest points at /home/profsynapse/code/ehr-worktrees/jspace-cross-family/experiments/j-space-cross-family-layer-contrast/analysis/gemma4-e4b/eval_rows.jsonl, which does not exist. The eval rows are restricted data staged from the parent experiment; pass --parent-analysis or restore the symlink.
+Traceback (most recent call last):
+  File "/pkg/modal/_runtime/container_io_manager.py", line 915, in handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync
+    values = io_context.call_function_sync()
+  File "/pkg/modal/_runtime/container_io_manager.py", line 218, in call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+  File "/root/modal_phase_b.py", line 597, in run_stage
+    sh(spec["cmd"], cwd=exp_dir)
+  File "/root/modal_phase_b.py", line 441, in sh
+    raise RuntimeError(f"command failed ({r.returncode}): {' '.join(cmd)}")
+RuntimeError: command failed (1): python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+
+[modal-phaseb:b3_alin_part2] $ git fetch --all --tags
+Fetching origin
+[modal-phaseb:b3_alin_part2] $ git checkout 86fc6e424f98e6587d0d8907b9fa90f08997e2e3
+HEAD is now at 86fc6e42 kv-seam Phase B: dispatch wait-mode, needs-restore, C1 NLL ruling applied
+[modal-phaseb:b3_alin_part2] $ git submodule update --init --recursive
+[modal-phaseb:b3_alin_part2] $ git checkout 34c89fc4f9d693a6b997422288d820e9c30b4696
+HEAD is now at 34c89fc Merge pull request #149 from ProfSynapse/fix/mechinterp-runner-transformers-arg
+[modal-phaseb:b3_alin_part2] structural check PASS: 56:    "model.language_model.layers",
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/eval_rows.jsonl -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/eval_rows.jsonl
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/anchor_extract.safetensors -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/anchor_extract_manifest.json -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract_manifest.json
+[modal-phaseb:b3_alin_part2] restored needs-stage 'b1_extract_off_midband' output from /vol/phasebtlogs/ckpt/phase-b-b1_extract_off_midband-r1
+[modal-phaseb:b3_alin_part2] $ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+NVIDIA A100 80GB PCIe, 81920 MiB
+[modal-phaseb:b3_alin_part2] $ python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+Traceback (most recent call last):
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 860, in <module>
+    sys.exit(main())
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 567, in main
+    return run_part2(args, head_dtype)
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 435, in run_part2
+    raise RuntimeError(
+RuntimeError: [alin_sweep part2] the extraction manifest points at /home/profsynapse/code/ehr-worktrees/jspace-cross-family/experiments/j-space-cross-family-layer-contrast/analysis/gemma4-e4b/eval_rows.jsonl, which does not exist. The eval rows are restricted data staged from the parent experiment; pass --parent-analysis or restore the symlink.
+Traceback (most recent call last):
+[modal-phaseb] stage 'b3_alin_part2' FAILED: command failed (1): python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+  File "/pkg/modal/_runtime/container_io_manager.py", line 915, in handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync
+    values = io_context.call_function_sync()
+  File "/pkg/modal/_runtime/container_io_manager.py", line 218, in call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+  File "/root/modal_phase_b.py", line 597, in run_stage
+    sh(spec["cmd"], cwd=exp_dir)
+  File "/root/modal_phase_b.py", line 441, in sh
+    raise RuntimeError(f"command failed ({r.returncode}): {' '.join(cmd)}")
+RuntimeError: command failed (1): python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+
+=== [2026-07-30T17:28:01Z] b3_alin_part2 exit=1 ===
+TRANCHE1 HALTED at b3_alin_part2 (exit 1); later stages NOT dispatched.
