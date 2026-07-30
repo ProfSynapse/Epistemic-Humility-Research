@@ -347,6 +347,21 @@ STAGES: dict[str, dict] = {
     # companion metric is already embedded in every full_summary.*.json B14/
     # B16/B17/B18a/B18b produce (visible in Phase A's Stage 2 output as the
     # "fired_only" / "undosed_floor" blocks). No dispatchable stage here.
+    "b_c1_precondition": {
+        # Producer for gates.yaml g0_c1_precondition_control, filling the
+        # instrument gap the plan doc calls "Gap 1". Registered by the lead
+        # after review (NOTEBOOK.md 2026-07-30 C1 entry): reference
+        # completion = the row's C0 greedy completion teacher-forced under
+        # BOTH conditions, paired per row; rollup.c1_verdict arithmetic
+        # imported unchanged. Needs no Phase B stage output (FIT split,
+        # undosed, both KV conditions in one process), only the staged
+        # private inputs. Gates tranche 2: b16/b17/b18a/b18b/b20 stay
+        # blocked until this stage's committed summary exists AND passes.
+        "gpu": True,
+        "cmd": ["python3", "c1_precondition.py", "--family", "gemma4-e4b"],
+        "needs": [],
+        "produces": "analysis-committed/gemma4-e4b/c1_precondition_summary.json",
+    },
     "b20_rollup": {
         "gpu": False,
         "cmd": ["python3", "rollup.py"],

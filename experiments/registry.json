@@ -2242,7 +2242,9 @@
           "alin_sweep.py",
           "placebo_direction.py",
           "g2_companion.py",
-          "rollup.py"
+          "rollup.py",
+          "c1_precondition.py",
+          "test_c1_precondition.py"
         ],
         "persistence": {
           "alin_sweep.py": {
@@ -2266,6 +2268,12 @@
           "build_directions.py": {
             "checkpoint_path": "experiments/gemma4-e4b-kv-seam-quarantine/analysis-committed/<condition>/layers/",
             "persistence": "incremental"
+          },
+          "c1_precondition.py": {
+            "measured_on": "2026-07-30, CPU dry-run (--dry-run, no model load), 9.8 s (torch import dominates). The GPU stage itself is single-pass over the FIT split in both KV conditions with ONE atomic summary write at the end; no real-data GPU timing yet -- record the first Modal run's elapsed_sec here before treating this declaration as covering it (same convention as alin_sweep.py's Part 2 note).",
+            "measured_smoke_wall_clock_s": 9.8,
+            "persistence": "short-run",
+            "rationale": "G0-C1 producer: undosed FIT pass under C0/C1 plus paired teacher-forced NLL, one atomic c1_precondition_summary.json write via rollup.c1_verdict. A kill loses only in-memory records; re-running is the cheap, correct path (no partial state is ever on disk)."
           },
           "calibrate_dose.py": {
             "checkpoint_path": "experiments/gemma4-e4b-kv-seam-quarantine/analysis/runlog/<condition>/calibrate_dose_records.jsonl",
@@ -2356,6 +2364,12 @@
             "measured_smoke_wall_clock_s": 0.02,
             "persistence": "short-run",
             "rationale": "Vendored library module (see NOTEBOOK.md 'VENDOR SCORERS'). Pure scoring functions."
+          },
+          "test_c1_precondition.py": {
+            "measured_on": "2026-07-30, CPU, 15 tests in the file, full three-file suite 42 passed in seconds",
+            "measured_smoke_wall_clock_s": 5.0,
+            "persistence": "short-run",
+            "rationale": "Test suite, not a run stage."
           }
         },
         "pins": {
@@ -2363,6 +2377,7 @@
           "amendment_ah_stage0_extract.py": "7f713fa748c8b20bb2697aece41dc63126d2b2ad41bd9d9741002a0675d87ac1",
           "backends.py": "50f1ceb720525de379c078ee8b6d6a00e6c18cc90825d7415f8b2fbf378cae0d",
           "build_directions.py": "e8f9798047e74af6b292272b870a95e7c8f081a8de68c218819749efa9e78113",
+          "c1_precondition.py": "2ee3d6a82b38a8c4e53a76dc979b1b5a360c6eb0a82dd4fe7a0b91384bc26d37",
           "calibrate_dose.py": "5ee1ba7715db2146e1dbaff9d056afa61852bfec09ac93e0d99a3145e9e35b8e",
           "cell.yaml": "634bceec6eab63920b98ccd2422ea8cd8a613fca75eeee204624bc1f48b55dc1",
           "donor_diagnostic.py": "c0611dd16de01656e208619be95af83dcda48e62ca792f1d7409ffadae0138b8",
@@ -2381,7 +2396,8 @@
           "placebo_direction.py": "d28978d6e42acf7629ac15e5cceb8c902629cc9b705abb361e20579bc977fca2",
           "rollup.py": "91d8b9746ec17905476a1c73afcc961a46fd38ef25d47631ec52c558542dd24b",
           "run_contrast.py": "14687efd8f6a74e815c49f8bedb46acf2e5f7ad93e88a555fed9f5abff178978",
-          "scorers.py": "1b3eda5d8d68c9184674f092805278505c5cd2065a21ffe7ec348e9ea5a00c37"
+          "scorers.py": "1b3eda5d8d68c9184674f092805278505c5cd2065a21ffe7ec348e9ea5a00c37",
+          "test_c1_precondition.py": "2da1b5b69619af1711907800154aa9e9840e1ca22bdd6693133f3fc279e84790"
         },
         "repins": [
           {

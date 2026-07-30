@@ -1649,3 +1649,61 @@ KV-shared region, clean actuation degrades in order (weaker G1 at hs18/hs20,
 no viable dose at hs23, non-direction-specific instability at hs24), a
 depth-and-seam profile consistent with the quarantine account and awaiting
 the decisive A1/A2 ON/OFF contrast in Phase B.
+
+## Phase B Modal lane: C1 producer recorded, dispatch incidents, staging completions (LEAD), 2026-07-30
+
+**C1 producer recorded in the instrument.** `c1_precondition.py` (with
+`test_c1_precondition.py`) is added to `instrument.modules` with sha256 pins
+after lead review, filling the gap found during the Modal harness build:
+`rollup.build_rollup()` reads `c1_precondition_summary.json` and gates.yaml
+`g0_c1_precondition_control` registers the measurement, but no producer
+script existed. The module imports `rollup.c1_verdict` and its four caps
+unchanged (arithmetic never reimplemented), forces `fire=False` on every row
+(the arm's registered no-injection scope), and follows the cache contract on
+every forward. Tests: 42 passed across the C1/rollup/pipeline suites, rerun
+independently by the lead. CPU dry-run prints the registered criteria and
+caps and exits clean (9.8 s, torch import dominated).
+
+**Interpretation ruling (lead, pre-run).** gates.yaml's likelihood_preserved
+criterion scores teacher-forced NLL over "the rendered prompt plus reference
+completion" without defining the reference for confab rows (which have no
+gold completion by construction). RULED: the reference completion is the
+row's C0 (sharing ON) greedy completion, teacher-forced under BOTH
+conditions -- identical text, paired per row, mean over rows, then the
+registered 10% relative check via the unchanged `rollup.c1_verdict`.
+Rationale: the singular "reference completion" reads as one text per row;
+scoring each condition's own completion would conflate text change with
+likelihood change and duplicate criterion 1's behavioral coverage; fixed
+text isolates the seam flip, which is the criterion's stated purpose. The
+builder's original own-completion reading is retained per condition as the
+non-gating diagnostic `own_completion_mean_nll` (a generate-vs-forward
+coherence check). C0 therefore runs first and threads its completions into
+C1's NLL pass; C1 fails closed on a missing or empty reference map. This
+ruling was made before any C1 measurement existed; no threshold moved.
+
+**Dispatch incident (operational, $0).** The first tranche-1 dispatch ran
+the per-stage command with neither detach nor wait semantics; the local
+entrypoint spawns and returns, so each ephemeral app stopped on client exit
+and killed its call. All 18 stages "completed" in 26 seconds having run
+nothing (verified: every app stopped with zero tasks, no containers, volume
+unchanged). Fixes committed: a wait mode that blocks on the spawned call and
+exits nonzero when the stage raised; a fail-closed needs-restore that copies
+each dependency's checkpointed analysis subtrees into the fresh container
+and refuses to run when a dependency's provenance file is absent; a resume
+argument on the dispatcher.
+
+**b3 staging halts (both fail-closed, minutes of CPU).** b3 halted twice:
+first on the never-staged ON extraction manifest (staged after verifying
+the safetensors pair byte-identical to the Phase A original, sha
+b7197418/060c3f3b), then on the manifest's recorded rows_path (an absolute
+host path from the parent jspace layout) plus the never-staged parent
+`pool_generations.jsonl` (sha e0d1c1b3). Fixes: both files staged to the
+volume (the pool_generations upload required the PI to execute the volume
+put directly; the agent-side attempt was permission-blocked and surfaced
+rather than worked around), and a layout shim in the stage runner that
+materializes the staged, byte-identical eval_rows at the manifest's
+recorded path when absent. After the fixes b0-b7 pass in sequence on
+A100-80GB (b1 extraction 164 s; the lane runs far under the launch-record
+cost estimate). A `b_c1_precondition` stage entry is registered in the
+Modal harness (needs: none; produces the committed C1 summary); tranche 2
+stays blocked until that stage's summary exists and passes.

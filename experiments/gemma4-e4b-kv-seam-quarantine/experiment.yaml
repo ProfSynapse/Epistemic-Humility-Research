@@ -70,6 +70,8 @@ instrument:
   - placebo_direction.py
   - g2_companion.py
   - rollup.py
+  - c1_precondition.py
+  - test_c1_precondition.py
   pins:
     cell.yaml: 634bceec6eab63920b98ccd2422ea8cd8a613fca75eeee204624bc1f48b55dc1
     gates.yaml: 48bb9bf1666595e29e8593b1fa00a30d2e873037f36d4d4dcedceb625828290f
@@ -94,6 +96,8 @@ instrument:
     placebo_direction.py: d28978d6e42acf7629ac15e5cceb8c902629cc9b705abb361e20579bc977fca2
     g2_companion.py: 65306de719ddbf3313606b9fb7798d8b0409cd8fdbc323557da6dac34ba0a021
     rollup.py: 91d8b9746ec17905476a1c73afcc961a46fd38ef25d47631ec52c558542dd24b
+    c1_precondition.py: 2ee3d6a82b38a8c4e53a76dc979b1b5a360c6eb0a82dd4fe7a0b91384bc26d37
+    test_c1_precondition.py: 2da1b5b69619af1711907800154aa9e9840e1ca22bdd6693133f3fc279e84790
   persistence:
     extract_anchor.py:
       persistence: incremental
@@ -233,6 +237,25 @@ instrument:
       rationale: Resolve-time aggregation over already-written per-arm artifacts,
         one atomic output write, fail-closed on any missing input. Zero torch/transformers
         imports. Re-running from scratch is the cheap path.
+    c1_precondition.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 9.8
+      measured_on: '2026-07-30, CPU dry-run (--dry-run, no model load), 9.8 s
+        (torch import dominates). The GPU stage itself is single-pass over the
+        FIT split in both KV conditions with ONE atomic summary write at the
+        end; no real-data GPU timing yet -- record the first Modal run''s
+        elapsed_sec here before treating this declaration as covering it
+        (same convention as alin_sweep.py''s Part 2 note).'
+      rationale: 'G0-C1 producer: undosed FIT pass under C0/C1 plus paired
+        teacher-forced NLL, one atomic c1_precondition_summary.json write via
+        rollup.c1_verdict. A kill loses only in-memory records; re-running is
+        the cheap, correct path (no partial state is ever on disk).'
+    test_c1_precondition.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 5.0
+      measured_on: '2026-07-30, CPU, 15 tests in the file, full three-file suite
+        42 passed in seconds'
+      rationale: Test suite, not a run stage.
   repins:
   - file: run_contrast.py
     old_sha256: 83a704050376bca7800eecaab1c3dc6fd74fe9116565dc9ee94c2f8132ed1ecf
