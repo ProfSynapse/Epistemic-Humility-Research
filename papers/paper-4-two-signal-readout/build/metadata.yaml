@@ -1,0 +1,14 @@
+# Paper-level pandoc metadata for paper 4 (two-signal readout).
+#
+# Title mirrors the manuscript's H1 (the shift-heading-level-by: -1 in the
+# shared defaults also lifts the H1 into the title; they must stay identical).
+# The abstract is NOT copied here: manuscript-filters.lua lifts the
+# manuscript's "## Abstract" section into the abstract metadata at build time,
+# so the manuscript stays the single source of truth.
+#
+# TODO(author-confirmation): author list taken from the repo's git identity;
+# confirm name/affiliation/ordering before any arXiv submission.
+title: "It's What's on the Inside That Counts: A Training-Free Two-Signal Readout for Epistemic Humility in Small Language Models"
+author:
+  - name: "Joseph Rosenbaum"
+date: ""
