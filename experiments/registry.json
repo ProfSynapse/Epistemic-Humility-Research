@@ -5213,7 +5213,8 @@
           "render.py",
           "steer_lib.py",
           "pipeline.py",
-          "materialize_rows.py"
+          "materialize_rows.py",
+          "run_arm_a_form_pass.py"
         ],
         "persistence": {
           "apply_form_adjudication.py": {
@@ -5281,6 +5282,11 @@
             "persistence": "short-run",
             "rationale": "Library module: chat-template render with WDNB_ env namespacing. No state."
           },
+          "run_arm_a_form_pass.py": {
+            "checkpoint_path": "experiments/write-direction-naming-battery/analysis/runlog_form/<arm_key>.jsonl",
+            "persistence": "incremental",
+            "rationale": "Arm A form-pass driver (instrument completion, NOTEBOOK 2026-07-30 ruling): re-runs the 7 Arm A sub-arms with the full registered three-grader chain over the pinned modules, per-arm resume, redaction preserved, private text sidecar under analysis/form_sidecar/, row-by-row acceptance comparison against the phase 2 runlogs (2800/2800, 0 mismatches on 6 fields)."
+          },
           "steer_lib.py": {
             "checkpoint_path": "experiments/write-direction-naming-battery/analysis/runlog/<arm_key>.jsonl",
             "persistence": "incremental",
@@ -5307,6 +5313,7 @@
           "materialize_rows.py": "fcf1c7be1a30fc836d80fbe1d2d48abc118f3a49103c978c968910a79f898538",
           "pipeline.py": "cce96d9df75877e791e61c115b2028fe359871c77d2a6ec4769a227ce6078614",
           "render.py": "6230655a91b9c94d4b380d710f29304e433d0075aff5ac100d3f3c4e1e5639c7",
+          "run_arm_a_form_pass.py": "fba2e569831c7382cfca74361b47cf7c667f147ebc37ae84ce29f5f643ee4af2",
           "steer_lib.py": "edc25a1721e43c0d8644fa6178439a057fd1da2ba2929d4bc9ab8d782e572890",
           "test_form_taxonomy.py": "1c9c650bbc77da61a9808604236405d47c97fc74685563a2805b77a489a68cd9"
         },

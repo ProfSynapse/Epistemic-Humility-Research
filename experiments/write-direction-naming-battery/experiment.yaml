@@ -40,6 +40,7 @@ instrument:
   - steer_lib.py
   - pipeline.py
   - materialize_rows.py
+  - run_arm_a_form_pass.py
   pins:
     cell.yaml: ec3c438a614a0b1c2a00f74e28ae71274665e58aa40c8fd159cbf96679fbac23
     gates.yaml: e4561a788326cf11065d3ea70b3aaf1f62ba87f2766bf8d8c2e3a166b12fd462
@@ -56,6 +57,7 @@ instrument:
     steer_lib.py: edc25a1721e43c0d8644fa6178439a057fd1da2ba2929d4bc9ab8d782e572890
     pipeline.py: cce96d9df75877e791e61c115b2028fe359871c77d2a6ec4769a227ce6078614
     materialize_rows.py: fcf1c7be1a30fc836d80fbe1d2d48abc118f3a49103c978c968910a79f898538
+    run_arm_a_form_pass.py: fba2e569831c7382cfca74361b47cf7c667f147ebc37ae84ce29f5f643ee4af2
   persistence:
     form_taxonomy.py:
       persistence: short-run
@@ -120,6 +122,14 @@ instrument:
       measured_smoke_wall_clock_s: 1.0
       measured_on: '2026-07-30, single atomic build of analysis/naming_battery_rows.jsonl during phase 1'
       rationale: One-shot row materialization from the committed ID manifests; re-running from scratch is the cheap path.
+    run_arm_a_form_pass.py:
+      persistence: incremental
+      checkpoint_path: experiments/write-direction-naming-battery/analysis/runlog_form/<arm_key>.jsonl
+      rationale: 'Arm A form-pass driver (instrument completion, NOTEBOOK 2026-07-30
+        ruling): re-runs the 7 Arm A sub-arms with the full registered three-grader
+        chain over the pinned modules, per-arm resume, redaction preserved, private
+        text sidecar under analysis/form_sidecar/, row-by-row acceptance comparison
+        against the phase 2 runlogs (2800/2800, 0 mismatches on 6 fields).'
   repins:
   - file: cell.yaml
     old_sha256: 93e931f655f57f10c229b12640b53cca9d62e0ea363340ffaed26f858fc89e00

@@ -6,6 +6,43 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-30 - Arm A form-pass complete, acceptance gate PASS; driver pinned (LEAD)
+
+The Arm A form-pass regeneration authorized in the previous entry is
+complete: all 7 sub-arms at 400/400 (2800 rows), zero duplicate row_keys,
+sidecar at 2800/2800 with only {row_key, answer_value, answer_text},
+elapsed ~38 min. ACCEPTANCE GATE PASS: 2800/2800 rows compared against the
+phase 2 runlogs on semantic_refuse, refused_v2, degenerate, well_formed,
+terminated_naturally, readback_measured (abs tol 1e-6), 0 mismatches
+(16800 field comparisons) - the runner's in-run check, the runner's
+standalone recompute, and a 200-row lead re-derivation all agree, and the
+lead re-derived two arms' full form_class distributions exactly. The
+regeneration is therefore the SAME behavior as phase 2 with form_class
+attached; the phase 2 runlogs remain the evidence of record for all
+non-form fields.
+
+`run_arm_a_form_pass.py` is pinned into instrument.modules after review
+(imports the pinned modules unmodified, 15/15 pins verified intact before
+and after the run). Its acceptance_check initially compared the 8-row
+smoke output against the full 400-row phase 2 file and reported a false
+key-mismatch failure; the comparison was scoped to produced keys and
+re-scored, with the smoke runlog itself untouched - recorded here because
+a false-FAIL that had been rationalized INTO a pass would have been the
+dangerous direction, and this was the reverse.
+
+Form_class distributions are RECORDED (runner report, lead-verified) but
+NOT adjudicated: gates.yaml G2's taxonomy calibration (blinded 200-row
+slice, isolated adjudicator) must pass before any F1/F2/F3 count is
+citable, per on_calibration_failure: axis_G_void. Noted for the record
+without adjudication: the clear-positive decoy source (placebo-arm F2/F3
+hits) totals 19 rows against the registered min_decoys: 25; the pinned
+pool builder runs next and whatever it reports is adjudicated against the
+registered gate text as-is. Pool input path: the pinned builder assumes
+unredacted runlogs carrying form_class; the run's redacted
+runlog_form rows are joined with the private sidecar text into
+analysis/runlog_form_merged/ (private, never committed) and the builder
+consumes that directory via its --runlog-dir argument, unmodified.
+
 ### 2026-07-30 - port-fidelity audit adjudicated; harness pinned; Arm A form-pass regeneration authorized (LEAD)
 
 **Audit result (red-team, delegated).** The three files carrying the
