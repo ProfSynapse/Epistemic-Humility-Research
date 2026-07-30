@@ -1707,3 +1707,42 @@ A100-80GB (b1 extraction 164 s; the lane runs far under the launch-record
 cost estimate). A `b_c1_precondition` stage entry is registered in the
 Modal harness (needs: none; produces the committed C1 summary); tranche 2
 stays blocked until that stage's summary exists and passes.
+
+### b8 dose calibration verdict: no usable sharing-ON mid-band dose (A1 dose-viability NOT-RUN); lane taught to record verdict exits (LEAD), 2026-07-30
+
+b8_dose_a1 ran calibrate_dose.py over the full registered ratio ladder
+(ratios 0.1 to 2.0, 32 cells: hs34/hs38/hs42 mid-band plus hs40 late
+reference, kv-sharing ON). Every rung at every mid-band site failed the
+usable-dose floor: readback and collapse were clean, but confab_tighten
+rates sat near 0.125 against the registered min_confab_rate 0.50, so
+all_midband_have_usable_dose is false and the script exited 1 per its
+pinned semantics. Registered mapping (AMENDMENT.md "Per-arm pass rule"):
+A1 is a dose-viability NOT-RUN, neither pass nor fail. Observation for
+the resolution, not a verdict: the VOID disposition required A1 to FIND
+a usable dose at hs38; it did not, so the parent's gemma write-verified
+null reproduced under the verbatim-copied instrument. Interpretation of
+the A1-vs-A2 contrast waits for A2 (OFF, primary), whose calibration is
+independent and still to run.
+
+Lane incident and fix: run_stage() treated the verdict exit as an infra
+crash, raised before the ckpt mirror step, and the summary artifact
+(written by calibrate_dose.py before exiting) was lost with the
+container; Modal retried 3x (warm-container resumes, near-zero extra GPU
+time) and run_tranche1.sh halted the chain at 18:38Z. Patch (lead-reviewed,
+unpinned lane files only): b8/b9/b10 are marked verdict_exit_ok; on a
+nonzero exit run_stage now requires the produces artifact on disk (fail
+closed if absent), mirrors it with provenance fields verdict_exit and
+verdict_note, and returns status verdict-recorded; the wait-mode
+entrypoint exits 0 with a greppable VERDICT-RECORDED marker; the
+dispatcher scopes its marker grep to the current stage's own output and
+skips only that verdict's dependents (b8 gates b11/b14/b15, b9 gates
+b12, b10 gates b13), each skip echoed into the log. Known accepted gap:
+a resumed invocation starting after a dose stage does not inherit the
+earlier verdict flag and would dispatch the dependent stage, which then
+fails closed remotely in run_contrast.py's own no-usable-dose check.
+
+Redispatch: tranche 1 resumes from b8_dose_a1 to regenerate the lost
+summary artifact (fresh sweep, roughly 40 A100-minutes, inside the
+approved tranche budget), then continues b9 onward with the verdict-aware
+skips active. No registered constant, gate, ladder, or exit semantics
+changed; the pinned calibrate_dose.py is untouched.

@@ -243,6 +243,7 @@ STAGES: dict[str, dict] = {
                 "--site-set", "midband", "--kv-sharing", "on"],
         "needs": ["b7_gatefit_a1"],
         "produces": "analysis-committed/gemma4-e4b/dose_calibration_summary.json",
+        "verdict_exit_ok": True,
     },
     "b9_dose_a2": {
         "gpu": True,
@@ -250,6 +251,7 @@ STAGES: dict[str, dict] = {
                 "--site-set", "midband", "--kv-sharing", "off"],
         "needs": ["b7_gatefit_a2"],
         "produces": "analysis-committed/gemma4-e4b/dose_calibration_summary.kv_off.json",
+        "verdict_exit_ok": True,
     },
     "b10_dose_a4": {
         "gpu": True,
@@ -257,6 +259,7 @@ STAGES: dict[str, dict] = {
                 "--site-set", "seam_pair", "--kv-sharing", "off"],
         "needs": ["b7_gatefit_a4"],
         "produces": "analysis-committed/gemma4-e4b/dose_calibration_summary.seam_pair.kv_off.json",
+        "verdict_exit_ok": True,
     },
     "b11_smoke_a1": {
         "gpu": True,
@@ -645,9 +648,41 @@ def run_stage(stage: str):
     sh(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"],
        check=False)
 
+    # verdict_exit_ok stages (calibrate_dose.py) use their process exit code
+    # to carry a REGISTERED VERDICT, not just crash/success: main() there
+    # `return 0 if summary["all_midband_have_usable_dose"] else 1` -- exit 1
+    # means "ran its full sweep, wrote its summary, found no usable mid-band
+    # dose," which is pinned, pre-registered instrument behavior (see
+    # calibrate_dose.py), not an infra failure. For those stages only, run
+    # with check=False so a nonzero exit does not raise here; the artifact's
+    # actual presence on disk (not the exit code) decides crash vs verdict.
     t0 = time.time()
-    sh(spec["cmd"], cwd=exp_dir)
+    verdict_exit_ok = bool(spec.get("verdict_exit_ok"))
+    rc = sh(spec["cmd"], cwd=exp_dir, check=not verdict_exit_ok)
     t_elapsed = time.time() - t0
+
+    is_verdict_exit = verdict_exit_ok and rc != 0
+    if is_verdict_exit:
+        expected = spec.get("produces")
+        # calibrate_dose.py resolves its own output dir from its own file
+        # location (HERE = Path(__file__).resolve().parent, confirmed by
+        # reading calibrate_dose.py directly), i.e. exp_dir -- the same cwd
+        # this sh() call ran with -- not the repo-root `workspace` the
+        # separate resume-SKIP check below happens to use for its own
+        # (pre-existing, untouched) path.
+        expected_path = os.path.join(exp_dir, expected) if expected else None
+        if not expected_path or not os.path.isfile(expected_path):
+            raise RuntimeError(
+                f"[modal-phaseb:{stage}] command exited {rc} (a "
+                "verdict_exit_ok stage) but its expected produces artifact "
+                f"{expected!r} is missing at {expected_path} -- treating "
+                "this as a real crash, not a registered verdict; refusing "
+                "to silently swallow it."
+            )
+        print(f"[modal-phaseb:{stage}] verdict exit {rc}: {expected} is "
+              "present on disk -- recording as a registered calibration "
+              "verdict (no usable mid-band dose), not an infra failure",
+              flush=True)
 
     provenance = {
         "event": "phase_b_stage_provenance", "stage": stage,
@@ -655,6 +690,12 @@ def run_stage(stage: str):
         "tuner_commit": TUNER_COMMIT, "repo_commit": REPO_COMMIT,
         "gpu": spec["gpu"], "elapsed_sec": round(t_elapsed, 1),
     }
+    if is_verdict_exit:
+        provenance["verdict_exit"] = rc
+        provenance["verdict_note"] = (
+            "calibration verdict exit (no usable mid-band dose); artifact "
+            "recorded, not an infra failure"
+        )
     print(json.dumps(provenance, sort_keys=True), flush=True)
 
     # mirror analysis-committed/ and analysis/ (private, per-stage; volume is
@@ -671,6 +712,9 @@ def run_stage(stage: str):
         json.dump(provenance, fh, indent=2, sort_keys=True)
     vol.commit()
 
+    if is_verdict_exit:
+        return {"status": "verdict-recorded", "stage": stage,
+                "returncode": rc, "elapsed_sec": round(t_elapsed, 1)}
     return {"status": "completed", "stage": stage, "elapsed_sec": round(t_elapsed, 1)}
 
 
@@ -747,3 +791,13 @@ def main(stage: str = "", dry_run: bool = False, wait: bool = False):
         raise SystemExit(1)
     print(f"[modal-phaseb] stage {stage!r} result: "
           f"{json.dumps(result, sort_keys=True)}")
+    if result.get("status") == "verdict-recorded":
+        # A registered calibration verdict (calibrate_dose.py exiting 1 for
+        # "no usable mid-band dose") is DATA, not an infra failure -- the
+        # dispatch itself succeeded (artifact written, ckpt mirrored). Exit 0
+        # (fall through without raising SystemExit) so a sequential caller
+        # (run_tranche1.sh) does not halt the chain on it; the greppable
+        # marker line below lets that caller detect the verdict and skip
+        # downstream stages that depend on a usable dose.
+        print(f"[modal-phaseb] VERDICT-RECORDED stage={stage} "
+              f"exit={result.get('returncode')}", flush=True)
