@@ -1,0 +1,19 @@
+# Shared pandoc defaults for the Epistemic-Humility paper series.
+# Paths (template, filters, metadata) are passed by the shared Makefile include
+# so this file stays location-independent.
+#
+# Manuscripts are GitHub-flavored markdown. smart is enabled so straight quotes
+# become proper LaTeX quotes. Citeproc is intentionally OFF for now: references
+# are hand-written in a "## References" section; wiring citeproc + a .bib file
+# is a follow-up (see papers/common/build/README.md).
+from: gfm+smart
+standalone: true
+# The manuscript convention is: H1 = paper title, H2 = sections, H3 =
+# subsections, H4 = run-in paragraph headings. Shifting by -1 lifts the H1
+# into the document title and makes H2 a proper \section.
+shift-heading-level-by: -1
+# LaTeX numbers sections/subsections; manuscript-filters.lua strips the
+# manuscript's manual "N." / "N.M" heading prefixes so numbering has a single
+# source and stays consistent with in-prose references.
+number-sections: true
+wrap: preserve

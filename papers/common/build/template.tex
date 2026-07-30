@@ -1,0 +1,83 @@
+% Shared pandoc LaTeX template for the Epistemic-Humility paper series.
+% Targets a clean single-column article suitable for arXiv ingestion.
+% Compiled locally with tectonic (XeTeX engine); the iftex branches keep the
+% generated main.tex compilable under arXiv's pdflatex autotex path as well.
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp}
+\fi
+\usepackage{lmodern}
+% Manuscripts are UTF-8 markdown; map the glyphs the series actually uses to
+% math-mode commands so they survive both pdflatex and xetex without fontspec.
+\usepackage{newunicodechar}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{←}{\ensuremath{\leftarrow}}
+\newunicodechar{∧}{\ensuremath{\wedge}}
+\newunicodechar{∨}{\ensuremath{\vee}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{±}{\ensuremath{\pm}}
+\newunicodechar{∈}{\ensuremath{\in}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{∞}{\ensuremath{\infty}}
+\usepackage{longtable,booktabs,array,calc}
+\usepackage{graphicx}
+% Search figure paths from the paper root (arxiv dist layout), from build/out
+% (local tectonic layout), and from the tex file's own directory.
+\graphicspath{{.}{./figures/}{../figures/}{../../figures/}}
+\usepackage{float}
+\usepackage{authblk}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+% xurl (after hyperref) lets \path/\url break anywhere; the shared Lua filter
+% emits long repo paths as \path{} so wide-table cells can wrap.
+\usepackage{xurl}
+\urlstyle{same}
+$if(title-meta)$
+\hypersetup{pdftitle={$title-meta$}$if(author-meta)$, pdfauthor={$author-meta$}$endif$}
+$endif$
+% Let TeX stretch interword space rather than overflow lines that end in
+% unbreakable tokens (arXiv IDs, code spans).
+\setlength{\emergencystretch}{3em}
+% Macros pandoc's LaTeX writer may emit.
+\providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\providecommand{\pandocbounded}[1]{\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{#1}}
+$if(numbersections)$
+\setcounter{secnumdepth}{$if(secnumdepth)$$secnumdepth$$else$2$endif$}
+$else$
+\setcounter{secnumdepth}{-\maxdimen}
+$endif$
+$for(header-includes)$
+$header-includes$
+$endfor$
+\title{$title$}
+$if(author)$
+$for(author)$
+\author{$if(author.name)$$author.name$$else$$author$$endif$}
+$if(author.affiliation)$
+\affil{$author.affiliation$}
+$endif$
+$endfor$
+$else$
+\author{}
+$endif$
+\date{$if(date)$$date$$else$$endif$}
+\begin{document}
+\maketitle
+$if(abstract)$
+\begin{abstract}
+$abstract$
+\end{abstract}
+$endif$
+$body$
+\end{document}
