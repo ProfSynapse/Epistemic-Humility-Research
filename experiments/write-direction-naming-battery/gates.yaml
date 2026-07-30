@@ -1,0 +1,81 @@
+# write-direction-naming-battery - gates (DRAFT, thresholds fixed at sign)
+#
+# Every rate carries a Wilson 95% CI; every difference carries a bootstrap 95%
+# CI at seed cell.yaml surface.seeds.bootstrap. Thresholds below are the ones
+# stated in AMENDMENT.md and do not move after any result is known.
+
+G0_instrument_validity:
+  kind: stop_not_outcome
+  checks:
+    - loader_resolves_pinned_revision: true
+    - transformers_recognizes_model_type: qwen3_5
+    - direction_sha256_matches_committed: [c_hat, random_direction]
+    - standardization_scalars_byte_identical: build_manifest.hs20
+    - population_manifests_committed_before_generation: true
+    - populations_pairwise_disjoint: true
+    - p_confab_disjoint_from_m1_subsample: true
+    - dosed_smoke_readback_positive_target: 12.608187917799976
+    - dosed_smoke_readback_negative_target: -12.608187917799976
+    - runlog_grows_under_namespaced_smoke_path: true
+    - no_question_alias_or_answer_text_under_analysis_committed: true
+
+G1_baseline_reproduction:
+  kind: halt_and_lift
+  p_confab_baseline_refusal_within_of_heldout_baseline: 0.05
+  p_known_baseline_correctness_min: 0.90
+
+G2_axis_G_form_gradedness:
+  arm: A
+  graded_if:
+    f2_plus_f3_share_at_any_intermediate_dose_min: 0.15
+    f2_plus_f3_excess_over_own_baseline_min: 0.10
+    intermediate_doses: [0.25, 0.5, 0.75]
+  taxonomy_calibration:
+    slice_n: 200
+    stratified_across: [arm, dose]
+    pool_hash_committed_before_grading: true
+    graded_hash_committed_before_unblind: true
+    max_disagreement_on_f1_f2_f3_boundary: 0.05
+    min_clear_positive_decoy_agreement: 0.60
+    min_decoys: 25
+  on_calibration_failure: axis_G_void
+
+G3_axis_B_directionality:
+  arm: B
+  bidirectional_requires_all:
+    refusal_reduction_min_absolute: 0.20
+    refusal_reduction_wilson_ci_excludes_zero: true
+    released_row_correctness_min: 0.30
+    placebo_neg_1_refusal_move_max: 0.05
+  else: positive_only
+
+G4_axis_K_content_tracking:
+  arm: C
+  difficulty_tracking_requires_all:
+    rare_minus_popular_loss_of_correctness_min: 0.10
+    bootstrap_ci_excludes_zero: true
+  else: knowledge_state
+  reported_alongside_never_rounded_in:
+    - same_contrast_on_abstention_rate
+    - z_d_internal_ordering_read:
+        source: experiments/qwen35-4b-midband-doubt-snap/analysis/from_modal/heldout_rows_for_steer.jsonl
+        note: adjudicates a distinct question (does the write track the KU readout ordering)
+
+G5_override_O1_silent_wrongness:
+  arm: C
+  dose: 1.0
+  prefix_name_with: answer-corrupting
+  fires_if_ratio_exceeds: 3.0
+  ratio: known_loss_of_correctness_rate / known_abstention_rate
+
+O2_non_specific_release:
+  arm: B
+  fires_if: refusal_reduction >= 0.20 AND (released_row_correctness < 0.30 OR placebo_move >= 0.05)
+  effect: axis_B_read_as_positive_only
+  separate_finding: output-gate suppression, not abstention control
+
+C1_construct:
+  placebo_realized_projection_matched: true
+  degenerate_rate_reported_per_arm_and_dose: true
+  regime_invalid_degenerate_ceiling: 0.20
+  on_regime_invalid: exclude_from_form_scoring_and_commit_exclusion_count
