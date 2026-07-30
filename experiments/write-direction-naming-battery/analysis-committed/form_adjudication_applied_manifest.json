@@ -1,0 +1,58 @@
+{
+  "cell": "write_direction_naming_battery_form_taxonomy",
+  "n_applied_rows": 0,
+  "pooled_verdict": {
+    "decoy_agreement_floor": 0.6,
+    "decoy_agreement_pass": true,
+    "decoy_agreement_rate": 1.0,
+    "decoy_count_pass": false,
+    "disagreement_floor": 0.05,
+    "disagreement_pass": false,
+    "disagreement_rate": 0.43,
+    "min_decoys": 25,
+    "n_core_total": 200,
+    "n_decoy_agree_total": 19,
+    "n_decoy_clear_positive_total": 19,
+    "n_disagree_total": 86,
+    "passed": false,
+    "status": "AXIS_G_VOID"
+  },
+  "shards": {
+    "form_taxonomy_shard_00": {
+      "decoy_agreement_rate": 1.0,
+      "disagreement_rate": 0.42,
+      "n_core": 50,
+      "n_decoy_agree": 5,
+      "n_decoy_clear_positive": 5,
+      "n_disagree": 21,
+      "shard_id": "form_taxonomy_shard_00"
+    },
+    "form_taxonomy_shard_01": {
+      "decoy_agreement_rate": 1.0,
+      "disagreement_rate": 0.36,
+      "n_core": 50,
+      "n_decoy_agree": 5,
+      "n_decoy_clear_positive": 5,
+      "n_disagree": 18,
+      "shard_id": "form_taxonomy_shard_01"
+    },
+    "form_taxonomy_shard_02": {
+      "decoy_agreement_rate": 1.0,
+      "disagreement_rate": 0.56,
+      "n_core": 50,
+      "n_decoy_agree": 5,
+      "n_decoy_clear_positive": 5,
+      "n_disagree": 28,
+      "shard_id": "form_taxonomy_shard_02"
+    },
+    "form_taxonomy_shard_03": {
+      "decoy_agreement_rate": 1.0,
+      "disagreement_rate": 0.38,
+      "n_core": 50,
+      "n_decoy_agree": 4,
+      "n_decoy_clear_positive": 4,
+      "n_disagree": 19,
+      "shard_id": "form_taxonomy_shard_03"
+    }
+  }
+}

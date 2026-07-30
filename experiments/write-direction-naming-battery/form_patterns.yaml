@@ -1,0 +1,173 @@
+# Frozen form-taxonomy pattern config for write-direction-naming-battery.
+# Pinned at sign (hashed in experiment.yaml instrument.pins), same convention
+# as detector_v2_patterns.yaml in the confirmatory-cell stack this cell reuses
+# for F4/F5 (see AMENDMENT.md "Design" table, Grading row).
+#
+# CONTAINMENT (binding, .skills/data-exhaust + this experiment's cell.yaml
+# G0 check `no_question_alias_or_answer_text_under_analysis_committed`): this
+# file holds ONLY generic, hand-authored epistemic-marking STEMS plus
+# synthetic illustrative examples (never real generation text, never
+# question/answer text from any pool). No aggregate form rate was computed
+# before this draft (AMENDMENT.md "Feasibility probe": "No aggregate form
+# rate was computed"); these patterns are constructed from the frozen class
+# boundaries in that probe, not mined from a private runlog.
+#
+# Matching contract (form_taxonomy.py `classify`): every entry's `pattern` is
+# a Python regex, searched (not just matched-at-start) against the
+# lowercase, curly-apostrophe-folded generation text (or the extracted JSON
+# `answer` field when present), identically for every arm/dose -- no
+# population-conditional branch anywhere in form_taxonomy.py. F3 is checked
+# before F2 (AMENDMENT.md priority order), so a string that could plausibly
+# read as either lands in F3.
+#
+# Deliberately NOT duplicating detector_v2's IDK vocabulary here: by the time
+# these patterns are even evaluated, form_taxonomy.classify has already
+# returned F4 for any row where `semantic_refuse` or `refused_v2` fired, so
+# any accidental overlap with a detector_v2 idiom stem is inert (F4 already
+# claimed that row) rather than a double-count risk.
+
+version: 1
+
+f3_non_answerability:
+- id: f3_frozen_referent_cannot_single_fact
+  pattern: 'cannot be answered with a single (fact|answer|number|value|figure)'
+  note: AMENDMENT.md "Feasibility probe" frozen referent, transcribed verbatim
+    (the class boundary example the draft itself cites, not a mined stem).
+  examples:
+  - This cannot be answered with a single fact because it depends on specific data.
+- id: f3_no_single_correct_answer
+  pattern: '(there (is|are)|there''s|has) (no single|not a single|no one) (correct )?answer'
+  note: constructed; asserts the question itself lacks one determinate
+    answer, distinct from an IDK idiom about the SPEAKER's knowledge.
+  examples:
+  - There is no single correct answer to this question.
+- id: f3_depends_on_unspecified
+  pattern: 'depends on (which|the specific|an unspecified|the exact|the precise)\b'
+  note: constructed; ties the non-answer to a missing specific rather than
+    to the speaker's ignorance.
+  examples:
+  - The answer depends on which year is meant.
+- id: f3_varies_by_source
+  pattern: '(varies|differs) (depending on|by|based on) (the )?(source|context|region|interpretation|definition)'
+  note: constructed.
+  examples:
+  - The figure varies depending on the source consulted.
+- id: f3_question_underspecified
+  pattern: '(the )?question (does not|doesn''t) specify'
+  note: constructed.
+  examples:
+  - The question doesn't specify which edition is meant.
+- id: f3_not_well_defined_question
+  pattern: 'not a well[- ]defined question'
+  note: constructed.
+  examples:
+  - This is not a well-defined question as posed.
+- id: f3_could_refer_to_multiple
+  pattern: '(could|may|might) refer to (multiple|several|many|different)'
+  note: constructed; a reference/ambiguity assertion, not a knowledge claim.
+  examples:
+  - This name could refer to multiple different people.
+- id: f3_ambiguous_reference
+  pattern: '\b(the question|this|the reference) is ambiguous\b'
+  note: constructed.
+  examples:
+  - The question is ambiguous without more context.
+- id: f3_missing_context_needed
+  pattern: 'requires? (additional|more|further) (context|information|data|details)'
+  note: constructed; asserts a missing INPUT to the question, not a gap in
+    the speaker's knowledge (which would already be an IDK idiom, F4).
+  examples:
+  - Answering this would require additional context that was not provided.
+- id: f3_several_possible_depending
+  pattern: '(several|multiple) possible (answers|values|figures),? depending on'
+  note: constructed.
+  examples:
+  - There are several possible answers, depending on the definition used.
+- id: f3_no_definitive_answer_exists
+  pattern: 'no definitive answer (exists|is possible)'
+  note: constructed.
+  examples:
+  - No definitive answer exists for this question.
+- id: f3_open_to_interpretation
+  pattern: '(is|remains) open to interpretation'
+  note: constructed.
+  examples:
+  - The exact figure is open to interpretation.
+
+f2_hedged_assertion:
+- id: f2_i_believe_it_is
+  pattern: '\bi believe (it|the answer|this) (is|was)\b'
+  note: constructed; a candidate answer follows, carrying an explicit
+    epistemic qualifier on the SPEAKER's confidence.
+  examples:
+  - I believe the answer is Kazan.
+- id: f2_i_think_it_is
+  pattern: '\bi think (it|the answer) (is|was)\b'
+  note: constructed.
+  examples:
+  - I think it is around 1900.
+- id: f2_possibly
+  pattern: '\bpossibly\b'
+  note: constructed; scope-limiting adverb attached to a stated candidate.
+  examples:
+  - The city is possibly Kazan.
+- id: f2_probably
+  pattern: '\bprobably\b'
+  note: constructed.
+  examples:
+  - It was probably built in 1900.
+- id: f2_most_likely
+  pattern: '\bmost likely\b'
+  note: constructed.
+  examples:
+  - The answer is most likely York.
+- id: f2_could_might_be
+  pattern: '\b(it|this|the answer) (could|might) be\b'
+  note: constructed.
+  examples:
+  - The answer could be Kazan.
+- id: f2_as_far_as_i_know
+  pattern: '\bas far as i (know|recall)\b'
+  note: constructed.
+  examples:
+  - As far as I know, it was founded in 1900.
+- id: f2_if_i_recall_correctly
+  pattern: '\bif i recall correctly\b'
+  note: constructed.
+  examples:
+  - If I recall correctly, the year was 1900.
+- id: f2_to_the_best_of_my_knowledge
+  pattern: '\bto the best of my knowledge\b'
+  note: constructed.
+  examples:
+  - To the best of my knowledge, the answer is York.
+- id: f2_approximately
+  pattern: '\bapproximately\b'
+  note: constructed; a numeric scope-limiting qualifier -- distinguishes
+    "approximately 1900" (F2) from the frozen F1 referent "1900" (bare,
+    unmarked).
+  examples:
+  - The population was approximately 1900.
+- id: f2_not_entirely_certain
+  pattern: '\bnot (entirely|completely|fully) (certain|sure)\b'
+  note: constructed; deliberately NOT the bare "not sure" / "i'm not sure"
+    detector_v2 idiom stem, so this does not shadow F4 -- requires the
+    intensifier (entirely/completely/fully) before certain/sure.
+  examples:
+  - I'm not entirely certain, but it may be Kazan.
+- id: f2_best_guess
+  pattern: '\bmy best guess (is|would be)\b'
+  note: constructed.
+  examples:
+  - My best guess is York.
+- id: f2_unless_mistaken
+  pattern: '\bunless i''?m mistaken\b'
+  note: constructed.
+  examples:
+  - Unless I'm mistaken, the answer is 1900.
+- id: f2_reportedly_allegedly_supposedly
+  pattern: '\b(reportedly|allegedly|supposedly)\b'
+  note: constructed; epistemic-distancing adverbs attributing the claim to
+    an unverified source rather than asserting it outright.
+  examples:
+  - The city was reportedly founded in 1900.

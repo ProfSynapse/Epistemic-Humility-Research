@@ -515,7 +515,65 @@ prefix) and is not a scoreboard slot.
 
 ## Outcome
 
-Filled at resolve. Record the resolved value of each axis with its gate numbers
-and CIs, the assembled table row, whether O-1 and O-2 fired, the taxonomy
-calibration result, the per-arm degenerate rates, and the one-sentence verdict
-that also goes into `verdict:` in the manifest.
+**Resolved 2026-07-30 (lead adjudication, user-approved close-out). Cell
+outcome: unnamed write direction (form instrument void).** The registered
+instrument-void row governs: the Arm A form taxonomy failed its blinded
+calibration slice (core disagreement 86/200 = 0.43 against the 0.05 floor;
+clear-positive decoy agreement 19/19 = 1.00 against the 0.60 floor, over 19
+decoys under a user-approved governed deviation from the registered 25-decoy
+minimum, the placebo arms having produced only 19 such rows). Arms A and D are
+instrument-void; no name is assembled and no Arm A form distribution is
+citable. The mismatch is one-sided (79 of 86 disagreements are automated F1
+read as F2 or F3 by the blinded judge): the pattern battery under-detects
+epistemic marking, and any wider-recall taxonomy is a new instrument for a
+future registration.
+
+Axes B and K are reported separately per the registered rule.
+
+**Axis B: POSITIVE-ONLY via O-2.** Negative dosing clears the release floor
+decisively (refusal 0.969 at baseline falls by 0.760 at -0.5x and 0.948 at
+-1.0x, bootstrap CIs excluding zero) but fails specificity both registered
+ways: released-row correctness 0.094 and 0.105 against the 0.30 floor, and the
+random-direction placebo at -1.0x moves refusal 0.107 against the 0.05
+ceiling. The registered separate finding is recorded: **output-gate
+suppression, not abstention control**. Per-arm C1 degenerate rates: b_baseline
+0.000, b_neg_0p5 0.005, b_neg_1 0.102, b_neg_2 0.898 (regime-invalid over the
+0.20 ceiling; the axis-B read rests on the two valid rungs), b_placebo_neg_1
+0.007.
+
+**Axis K: KNOWLEDGE-STATE.** Rare-minus-popular loss of correctness at 1.0x is
+-0.06 (CI -0.137 to +0.017) against the +0.10-with-CI-excluding-zero
+requirement; the disclosed D-3 difficulty gradient did not replicate on the
+never-dosed pool, itself a registered reportable. Baseline P-KNOWN correctness
+0.992 (G1 pass); C1 degenerate rates c_baseline 0.000, c_dose_1 0.012.
+Reported alongside, never rounded in: the same contrast on abstention rate is
++0.06 (CI 0.020-0.100); the z_d internal-ordering read is
+NOT-COMPUTABLE-AS-REGISTERED (the registered text names no outcome variable,
+dose rung, or statistic; no post-hoc specification made; see NOTEBOOK
+2026-07-30).
+
+**O-1's numeric condition fires** (known-row loss of correctness 0.403 vs
+known-row abstention 0.063, ratio 6.37 against the fires-above-3 line): the
+D-2 dissociation generalizes to the fresh pool, with no earned name to prefix.
+**O-2 fires** as stated under axis B. No assembled table row exists; rows 1-8
+are all unearned.
+
+**The registered prediction (row 4 with the O-1 prefix) is falsified** by two
+independent routes: the assembled outcome is the instrument-void row, and axis
+K resolved KNOWLEDGE-STATE, which excludes row 4 regardless of the void.
+Scoreboard: orchestrator Slot 1 (row 4 + O-1) incorrect; user Slot 1 (row 4 +
+O-1) incorrect; orchestrator Slot 2 correct in full including the committed
+O-2 mechanism (reduction fires, released-row correctness fails the 0.30
+floor); user Slot 2 (bidirectional not earned) correct.
+
+One-sentence verdict for the manifest: **unnamed write direction (form
+instrument void): the taxonomy failed blinded calibration (0.43 vs 0.05) so
+axis G is void; axis B is positive-only via O-2 (output-gate suppression, not
+abstention control); axis K is knowledge-state (no difficulty gradient); O-1's
+dissociation confirmed (6.37:1 wrongness over abstention on knowns).**
+
+Full arithmetic and provenance: NOTEBOOK.md entries of 2026-07-30,
+analysis/axis_bk_arithmetic.json,
+analysis-committed/form_adjudication_applied_manifest.json,
+analysis-committed/form_adjudication_pool_manifest.json,
+analysis-committed/form_adjudication_graded_manifest.json.
