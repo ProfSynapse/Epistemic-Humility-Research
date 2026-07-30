@@ -1,8 +1,29 @@
-# TODO: replace this placeholder with the pinned experiment instrument.
-# Keep this file in the experiment directory unless the runner skill for this
-# experiment type requires a different config layout.
-#
-# Before signing:
-# - fill the actual runner/tuner config
-# - list this file under experiment.yaml instrument.configs
-# - run `bin/exp sign <slug>` to pin the final bytes
+# Pinned instrument config for form-judge-axis-g-rescore (registered at sign,
+# 2026-07-30). CPU-only cell: no GPU, no cloud, no generation. All paths are
+# read-only inputs from the retained naming-battery worktree data mirrored in
+# the canonical checkout's gitignored analysis tree.
+
+substrate:
+  runlog_dir: ../write-direction-naming-battery/analysis/runlog_form_merged
+  c_baseline_runlog: ../write-direction-naming-battery/analysis/runlog/c_baseline.jsonl
+  spent_shards_dir: ../write-direction-naming-battery/analysis/shards
+  arms: [a_baseline, a_dose_0p25, a_dose_0p5, a_dose_0p75, a_dose_1, a_placebo_0p5, a_placebo_1]
+  rows_per_arm: 400
+
+pool:
+  # Registered seed (replaces the harness placeholder per the build ruling).
+  seed: 20260731
+  calibration_slice_n: 200
+  n_decoys_per_type: 25
+  target_shard_size: 55
+
+judge_lane:
+  judge_model_tier: opus            # PI decision 4: opus-tier subagent
+  fresh_instance_per_shard: true
+  prompt_file: judge_prompt.md      # pinned bytes; rendered copy strips only the HTML comment
+  adjudicator_model_tier: opus      # second independently spawned agent, calibration slice only
+  no_rescoring_lane: true
+
+reporting:
+  lead_spot_check_n: 30
+  stability_regrade_shards: 1

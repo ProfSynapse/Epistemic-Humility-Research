@@ -1,6 +1,8 @@
 # Form judge instrument: blinded-lane F1/F2/F3 grading and axis-G rescore of the naming-battery Arm A generations
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: signed 2026-07-30 (PI approval in session; gates registered in
+gates.yaml with the dev measurement disclosed; instrument bytes pinned in
+experiment.yaml).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -200,7 +202,7 @@ with this discipline:
 | Predictor | Call |
 |-----------|------|
 | orchestrator | Instrument validates; axis G BINARY via the failed +0.10-over-baseline leg (judge finds elevated baseline hedging) |
-| user | (to be registered at sign) |
+| user | Aligned with orchestrator (registered at sign, 2026-07-30): instrument validates; axis G BINARY via the failed +0.10-over-baseline leg |
 
 ## Outcome
 
