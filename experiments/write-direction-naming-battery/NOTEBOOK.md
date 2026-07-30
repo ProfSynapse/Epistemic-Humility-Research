@@ -6,6 +6,43 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-30 - Calibration pool built; decoy floor shortfall ruled a governed deviation, proceed at 19 (LEAD + USER)
+
+The pinned pool builder ran over the sidecar-merged rows
+(`--runlog-dir analysis/runlog_form_merged`, pinned file unmodified) and
+wrote 4 blinded shards plus `analysis-committed/form_adjudication_pool_manifest.json`
+(git-committed 2cab5d4c BEFORE any grading, per the registered order). Core
+slice: 200/200 exact, stratified across the five real Arm A sub-arms.
+Clear-positive decoys: 19 against the registered minimum of 25
+(AMENDMENT.md "a minimum of 25 decoys, mirroring M1's C1 floors";
+gates.yaml G2 `min_decoys: 25`).
+
+The shortfall is data-determined, not a builder choice: the decoy source is
+registered as the placebo sub-arms' F2/F3 rows, and the placebo arms
+produced exactly 19 such rows in total (a_placebo_0p5: F2=2 F3=5;
+a_placebo_1: F2=5 F3=7; counts in the pool manifest coverage block). The
+candidate pool is exhausted; no selection rule can reach 25 without
+redefining the decoy source post-data, which would be its own goalpost
+move.
+
+RULING (user, 2026-07-30, on lead escalation): proceed to blinded
+adjudication with all 19 decoys as a RECORDED governed deviation from the
+registered floor. The agreement threshold itself is unchanged: decoy
+agreement >= 0.60 now means at least 12/19 (0.632) with failure at
+11/19 (0.579), i.e. the check runs at reduced statistical power but the
+same bar. The 200-row core disagreement check is unaffected. The lead
+declined to make this call unilaterally (D-3 precedent: weakening a
+registered constraint is rejected); the deviation is user-approved and
+recorded here and in the resolve report. If the calibration fails its
+registered thresholds on this slice, the registered consequence stands
+unweakened: axis G void, Arms A and D instrument-void.
+
+Next: isolated adjudicator (fresh agent, sees only opaque_id and
+generation text, never the id maps or automated labels) grades the 4
+shards three-way {F1, F2, F3}; each graded file's sha256 is committed
+before that shard's id map is read (apply_form_adjudication.py enforces
+this order).
+
 ### 2026-07-30 - Arm A form-pass complete, acceptance gate PASS; driver pinned (LEAD)
 
 The Arm A form-pass regeneration authorized in the previous entry is
