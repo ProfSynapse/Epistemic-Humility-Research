@@ -1,3 +1,49 @@
-# TODO: replace this placeholder with pre-stated gates.
-# Gates must be fixed before launch and should define the pass/fail thresholds
-# and falsifier boundary used by the amendment.
+# Registered gates for form-judge-axis-g-rescore.
+# PROPOSED (pre-sign draft, 2026-07-30). Numbers become binding when the
+# amendment is signed; after sign they never move (no-goalpost rule, and the
+# on-failure closure in AMENDMENT.md "Gates" applies).
+
+g1_calibration_agreement:
+  # Dev-set measurement (disclosed, pre-sign, 2026-07-30): two independent
+  # opus judges, fresh instance per shard, graded the spent 219-row slice
+  # blind under the pinned rubric. Core (n=200) three-way judge-vs-judge
+  # disagreement: 16/200 = 0.080. Binomial SE at that rate and n is ~0.019.
+  dev_judge_vs_judge_disagreement: 0.080
+  dev_n_core: 200
+  # Headroom: ~2 SE above the dev point estimate, rounded to 0.04.
+  registered_headroom: 0.04
+  # Fresh-slice judge-vs-adjudicator three-way disagreement must not exceed:
+  max_disagreement: 0.12
+  fresh_slice_n_core: 200
+  # Reported (non-gating): ordered-label-pair direction breakdown.
+
+g2_decoy_floors:
+  # Candidate populations counted pre-sign (feasibility rule): clear-positive
+  # (F4 screen positives, all 7 sub-arms) 795; clear-negative (c_baseline
+  # correct_v2 rows, held-back population) 595. Floors sized far below both.
+  n_decoy_clear_positive: 25
+  n_decoy_clear_negative: 25
+  # Judge's decoy agreement (the judge is the gated instrument; the
+  # adjudicator's decoy rates are reported, non-gating).
+  min_clear_positive_agreement: 0.92   # judge label is not F1
+  min_clear_negative_agreement: 0.92   # judge label is F1
+  # Dev reference (non-gating): both dev judges 19/19 = 1.00 on the spent
+  # slice's clear-positive decoys.
+
+g3_axis_g_thresholds:
+  # Transcribed unchanged from the naming battery's registration.
+  min_f2_f3_share_intermediate: 0.15   # at >= 1 of doses 0.25x, 0.5x, 0.75x
+  min_share_gain_over_baseline: 0.10
+  # NOT-ADJUDICABLE guard: fewer than 50 screened-in rows at every
+  # intermediate dose. Pre-sign screen counts: 306 / 224 / 178, so the
+  # guard is live but not expected to fire.
+  min_screened_in_rows_per_dose: 50
+
+lead_spot_check:
+  n_rows: 30
+  # Lead reads the sample against the rubric before gate adjudication;
+  # systematic rubric misapplication voids the calibration pre-unblind.
+
+stability_diagnostic:
+  # Reported, non-gating: one shard graded twice by fresh judge instances.
+  n_shards_regraded: 1
