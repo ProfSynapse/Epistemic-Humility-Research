@@ -26,11 +26,46 @@ instrument:
   configs:
   - cell.yaml
   - gates.yaml
-  modules: []
+  modules:
+  - form_taxonomy.py
+  - form_patterns.yaml
+  - build_form_adjudication_pool.py
+  - apply_form_adjudication.py
+  - test_form_taxonomy.py
   pins:
     cell.yaml: ec3c438a614a0b1c2a00f74e28ae71274665e58aa40c8fd159cbf96679fbac23
     gates.yaml: e4561a788326cf11065d3ea70b3aaf1f62ba87f2766bf8d8c2e3a166b12fd462
-  persistence: {}
+    form_taxonomy.py: 27a3ee11d3440ae2e7c0aa0c46b66a8853d2d01a7e8b9a77c5f32de6caa0241f
+    form_patterns.yaml: 839007f90fcbd0f90a8a2ba1b58bc57c197c352be8d8b84052802f35afe257ac
+    build_form_adjudication_pool.py: 18280d2fdc298ec33b287e182a4ac9cd377ad8ee92ac35e8bcd0f521a80a3672
+    apply_form_adjudication.py: d550b5bbe2f7b4022d765dae6cb04050b9fbd738364753c448643686430ecfba
+    test_form_taxonomy.py: 1c9c650bbc77da61a9808604236405d47c97fc74685563a2805b77a489a68cd9
+  persistence:
+    form_taxonomy.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.06
+      measured_on: '2026-07-30, CPU, cold interpreter import; self-check PASS under 1 s'
+      rationale: 'Library module: deterministic per-row form classifier over already-merged grader fields. No state.'
+    form_patterns.yaml:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.01
+      measured_on: '2026-07-30, loaded by form_taxonomy.load_patterns during self-check'
+      rationale: Pattern config consumed read-only by form_taxonomy.py.
+    build_form_adjudication_pool.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.05
+      measured_on: '2026-07-30, CPU, cold interpreter import'
+      rationale: Builds the blinded pool and manifest in one atomic pass over runlogs; re-running from scratch is the cheap path.
+    apply_form_adjudication.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.05
+      measured_on: '2026-07-30, CPU, cold interpreter import'
+      rationale: Joins adjudicator labels back over the committed pool in one atomic pass.
+    test_form_taxonomy.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.15
+      measured_on: '2026-07-30, CPU, cold interpreter import; full suite 36/36 in under 5 s'
+      rationale: Test suite, not a run stage.
   repins:
   - file: cell.yaml
     old_sha256: 93e931f655f57f10c229b12640b53cca9d62e0ea363340ffaed26f858fc89e00
