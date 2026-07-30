@@ -6,6 +6,44 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-30 - Taxonomy calibration FAILED: disagreement 0.43 vs floor 0.05; AXIS_G_VOID fires as registered (LEAD)
+
+The blinded 200-row calibration ran exactly as registered: pool manifest
+git-committed before grading (2cab5d4c), isolated adjudicator (fresh
+agent, opaque_id and text only, id maps untouched, per-row reading with
+no keyword classifier, method report on file), graded-file hashes
+git-committed before unblinding (e880ab87), then the pinned
+apply_form_adjudication.py join.
+
+Result (analysis-committed/form_adjudication_applied_manifest.json,
+verbatim): core disagreement 86/200 = 0.4300 against the registered
+floor 0.05, FAIL. Clear-positive decoy agreement 19/19 = 1.00 against
+the 0.60 floor, PASS; the user-approved 19-vs-25 decoy deviation
+recorded in the previous entry ends up moot, since the failure is
+entirely on the core disagreement check, a fully registered floor with
+no shortfall question. Lead re-derivation from the id maps, graded
+files, and merged runlogs independently reproduces 86/200 and the
+per-shard rates (0.42/0.36/0.56/0.38).
+
+VERDICT: AXIS_G_VOID, exactly as registered (AMENDMENT.md "If the
+taxonomy fails its calibration slice, Arms A and D are instrument-void
+and no name is earned from them"; gates.yaml G2
+on_calibration_failure: axis_G_void). Axis G resolves VOID, not GRADED
+and not BINARY. The Arm A form-pass distributions recorded earlier
+(F4 monotone in dose, F2+F3 flat) are NOT citable: the instrument that
+produced form_class failed its construct check. Arms B and C proceed
+unaffected; they read only existing validated fields.
+
+Diagnostic observation, descriptive only, no goalpost implication: the
+mismatch direction is one-sided. Of the 86 core disagreements, 79 are
+rows the automated taxonomy classed F1_committed_assertion that the
+blinded judge read as F2 (62) or F3 (17); the reverse direction
+(automated F2/F3, judge F1) totals 2. The regex pattern battery
+under-detects hedging and non-answerability relative to careful
+reading. Any wider-recall taxonomy would be a NEW instrument requiring
+its own registration and calibration in a future cell; nothing is
+re-run here.
+
 ### 2026-07-30 - Calibration pool built; decoy floor shortfall ruled a governed deviation, proceed at 19 (LEAD + USER)
 
 The pinned pool builder ran over the sidecar-merged rows
