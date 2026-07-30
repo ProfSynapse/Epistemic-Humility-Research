@@ -1978,13 +1978,22 @@
         "pins": {
           "apply_judge_grades.py": "2c116e498e76f6530506f27c8034e0ab62b491472061099194e9463d457f712d",
           "axis_g_arithmetic.py": "ee252321f6880748ffbfbd1f5596492c86b34c934282c0a66c873829401612e7",
-          "build_judge_pool.py": "e8d91c794740a56630d1634c2f25ed04208a7dae8a96fc4de6bbb9f9d9ce09f3",
+          "build_judge_pool.py": "1847149ba7c7c18e3f13f9da195337b7260ffc484be343fa96a4eb0bdca6dd59",
           "cell.yaml": "38b29587de8cd58d17bfb6949b9e486756a3d3d126bc980e85f144b1de388376",
           "gates.yaml": "67960420052f0cc10ccd0043c268336ac6a306cd9937e170ea8b42b2f141e683",
           "judge_prompt.md": "e03cd7284f3582ef6257140b7e2a7e388d6eeadf7c63b50c88d907f0cb0d3c5d",
           "screen_lib.py": "f4fc7dd625c1a6c7e0a94d863db3ff9fff28e9cf85cfedf48cceabb5639f8833",
           "screen_rows.py": "8f9aea75135f49c6df7681cf38545a74a1d0b6c365cd7a8838cabd3583e6d5bc"
-        }
+        },
+        "repins": [
+          {
+            "date": "2026-07-30T23:20:50Z",
+            "file": "build_judge_pool.py",
+            "new_sha256": "1847149ba7c7c18e3f13f9da195337b7260ffc484be343fa96a4eb0bdca6dd59",
+            "old_sha256": "e8d91c794740a56630d1634c2f25ed04208a7dae8a96fc4de6bbb9f9d9ce09f3",
+            "reason": "Pre-grading defect repair: builder swept all 795+595 decoy candidates into the calibration pool; registered G2 fixes 25 per type. Seeded sample capped at min_decoys. No grading had occurred; pool rebuilt before hash commit."
+          }
+        ]
       },
       "kg": [],
       "prediction": "The instrument validates and axis G resolves BINARY: the judge finds the F2+F3 share clears 0.15 at one or more intermediate doses but fails the +0.10-over-baseline leg, because a calibrated judge also finds substantially more baseline hedging than the voided regexes did; dosed movement remains F1-to-F4 mode switching.",

@@ -396,14 +396,18 @@ def cmd_build(args: argparse.Namespace) -> int:
         rng = random.Random(args.seed)
         core = stratified_sample_core(core_by_arm, args.slice_n, rng)
 
-        # Decoys are the scarce resource (per the CG1 reference's own
-        # rationale, also true of the naming battery's own build): take
-        # every available candidate rather than truncating to min_decoys;
-        # min_decoys is a floor to warn against, not a cap to enforce.
+        # Registered G2 sizes the decoy sets at exactly min_decoys per type
+        # (gates.yaml: 25 + 25), sampled seeded from the counted candidate
+        # populations. min_decoys is also the feasibility floor warned about
+        # above. (The CG1 take-everything rationale applied when decoys were
+        # scarce; here the populations are 795/595 and the registration
+        # fixes the count.)
         decoys_pos_final = list(decoys_pos)
         decoys_neg_final = list(decoys_neg)
         rng.shuffle(decoys_pos_final)
         rng.shuffle(decoys_neg_final)
+        decoys_pos_final = decoys_pos_final[: args.min_decoys]
+        decoys_neg_final = decoys_neg_final[: args.min_decoys]
 
         n_shards = pick_n_shards(len(core), args.target_shard_size)
         shards = build_calibration_shards(core, decoys_pos_final, decoys_neg_final, n_shards, args.seed, salt)
