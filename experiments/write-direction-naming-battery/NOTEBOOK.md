@@ -6,6 +6,65 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-30 - port-fidelity audit adjudicated; harness pinned; Arm A form-pass regeneration authorized (LEAD)
+
+**Audit result (red-team, delegated).** The three files carrying the
+registered byte-for-byte port claim (grader.py, gen_lib.py, detector_v2.py;
+AMENDMENT.md line 235 lineage margin-mapping/harness/) are AST-identical to
+their source after docstring stripping; detector_v2_patterns.yaml is
+byte-identical; render.py is construction-identical to the heldout lineage
+with inert WDNB_ namespacing. Differential execution over 550 real
+margin-mapping exhaust rows: the port and the source produce byte-identical
+grades, and the port's recomputation matches margin-mapping's persisted
+values on all 12 alias-independent fields, zero mismatches. Invariant audit
+over all 6105 rows of this run: zero violations (counts, arm/readout/
+multiplier/dose_abs transcription, readback nullity pattern, grader field
+implications, no redaction leaks). All eight harness files are now pinned in
+instrument.modules; the lead recomputed every sha256 independently before
+pinning and verified the full pin table programmatically (15/15 match).
+
+**Finding F1/F2 adjudication: the first run executed two of the three
+registered graders.** cell.yaml registers the grader chain grader:grade,
+detector_v2:grade_one_v2, form_taxonomy:classify (execution.graders) AND
+registers redact_fields stripping answer_text/answer_value from runlog rows.
+The run wired only the first two graders (the taxonomy module was built
+under a parallel assignment and was not present in the run worktree), so
+runlog rows carry no form_class, and because redaction is applied at write
+time (correctly, per the pinned instrument; audit confirmed zero text
+anywhere in the runlogs), the F1/F2/F3 split cannot be recomputed offline.
+Ruling: complete the registered instrument by REGENERATING ARM A ONLY (the
+only arm form scoring is registered for; gates.yaml G2 arm: A) with the full
+three-grader chain wired, via a NEW standalone driver that imports the
+pinned modules unmodified. The regeneration writes to a namespaced path
+(analysis/runlog_form/), never touching the phase 2 runlogs, and writes a
+PRIVATE adjudication text sidecar under analysis/ (answer text keyed by
+opaque ids, for the registered blinded calibration slice only; gitignored,
+never committed). Acceptance check: greedy decode on the pinned surface is
+deterministic, so every regenerated row must reproduce the phase 2 runlog's
+verdict fields (semantic_refuse, refused_v2, degenerate, well_formed,
+terminated_naturally, readback_measured within float tolerance) row-by-row;
+any mismatch halts the pass and comes back to the lead. This is instrument
+completion under the signed design, not a design change: no gate, threshold,
+population, seed, or arm moves.
+
+**Finding F3 (recorded).** pipeline.py's in-run G1 check compared the wide
+refused_v2 rate (0.040) against the heldout comparator
+baseline.confab.refused rate (0.0), whose key is the narrow detector; the
+mismatch is strict-direction only (wide >= narrow) and the like-for-like
+narrow comparison (0.000 vs 0.0, exact) also passes, so the G1 lift stands
+on both readings, consistent with Ruling 1 of the previous entry.
+
+**Also recorded.** run_summary.json's per-arm refused/correct summary lines
+are vacuous (null) because grade_row never emits bare refused/correct keys;
+axis arithmetic will be computed from the runlogs directly.
+cell.yaml:30 expected_config_sha remains TBD_AT_SIGN and nothing computes
+it; the instrument pins now carry the run-to-code binding that field was
+meant to provide, and filling it retroactively would be a pointless repin
+cycle; recorded as vestigial. materialize_rows.py's default heldout rows
+path points at a gitignored working file in the main checkout; P_CONFAB
+question text is machine-local, consistent with the containment rules, and
+the committed ID manifests remain the reproducibility surface.
+
 ### 2026-07-30 - generation complete; completion-report adjudication; taxonomy instrument pinned (LEAD)
 
 **Generation complete.** All 14 arms at exact plan counts (7x400 Arm A, 5x421

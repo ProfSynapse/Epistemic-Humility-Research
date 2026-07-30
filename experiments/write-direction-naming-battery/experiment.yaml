@@ -32,6 +32,14 @@ instrument:
   - build_form_adjudication_pool.py
   - apply_form_adjudication.py
   - test_form_taxonomy.py
+  - grader.py
+  - gen_lib.py
+  - detector_v2.py
+  - detector_v2_patterns.yaml
+  - render.py
+  - steer_lib.py
+  - pipeline.py
+  - materialize_rows.py
   pins:
     cell.yaml: ec3c438a614a0b1c2a00f74e28ae71274665e58aa40c8fd159cbf96679fbac23
     gates.yaml: e4561a788326cf11065d3ea70b3aaf1f62ba87f2766bf8d8c2e3a166b12fd462
@@ -40,6 +48,14 @@ instrument:
     build_form_adjudication_pool.py: 18280d2fdc298ec33b287e182a4ac9cd377ad8ee92ac35e8bcd0f521a80a3672
     apply_form_adjudication.py: d550b5bbe2f7b4022d765dae6cb04050b9fbd738364753c448643686430ecfba
     test_form_taxonomy.py: 1c9c650bbc77da61a9808604236405d47c97fc74685563a2805b77a489a68cd9
+    grader.py: 920800adb5f7c0b1b957edb19668085c0a2b45792781ba1c768a23b4d728b7a4
+    gen_lib.py: d881b287b8a495f28d30fac0fb9caaf3230fdedf17a04317725a102eb077967f
+    detector_v2.py: 40fc4756fe8d696eb9d2be3ca39f3ec66dbae42965292e13c44e30208a1d1da4
+    detector_v2_patterns.yaml: 36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9
+    render.py: 6230655a91b9c94d4b380d710f29304e433d0075aff5ac100d3f3c4e1e5639c7
+    steer_lib.py: edc25a1721e43c0d8644fa6178439a057fd1da2ba2929d4bc9ab8d782e572890
+    pipeline.py: cce96d9df75877e791e61c115b2028fe359871c77d2a6ec4769a227ce6078614
+    materialize_rows.py: fcf1c7be1a30fc836d80fbe1d2d48abc118f3a49103c978c968910a79f898538
   persistence:
     form_taxonomy.py:
       persistence: short-run
@@ -66,6 +82,44 @@ instrument:
       measured_smoke_wall_clock_s: 0.15
       measured_on: '2026-07-30, CPU, cold interpreter import; full suite 36/36 in under 5 s'
       rationale: Test suite, not a run stage.
+    grader.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.05
+      measured_on: '2026-07-30, exercised over 550 corpus rows in the port-fidelity audit'
+      rationale: 'Library module: narrow grader, AST-identical port of margin-mapping/harness/grader.py. No state.'
+    gen_lib.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.05
+      measured_on: '2026-07-30, exercised over 550 corpus rows in the port-fidelity audit'
+      rationale: 'Library module: row grading and clean_tighten, AST-identical port. No state.'
+    detector_v2.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.05
+      measured_on: '2026-07-30, exercised over 550 corpus rows in the port-fidelity audit'
+      rationale: 'Library module: wide detector, AST-identical port. No state.'
+    detector_v2_patterns.yaml:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.01
+      measured_on: '2026-07-30, byte-identical to margin-mapping/harness copy (diff exit 0)'
+      rationale: Pattern config consumed read-only by detector_v2.py.
+    render.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.1
+      measured_on: '2026-07-30 audit, static; construction unchanged from heldout lineage'
+      rationale: 'Library module: chat-template render with WDNB_ env namespacing. No state.'
+    steer_lib.py:
+      persistence: incremental
+      checkpoint_path: experiments/write-direction-naming-battery/analysis/runlog/<arm_key>.jsonl
+      rationale: Per-arm runlog appender with resume; redacts registered fields at write time (cell.yaml execution.redact_fields).
+    pipeline.py:
+      persistence: incremental
+      checkpoint_path: experiments/write-direction-naming-battery/analysis/runlog/<arm_key>.jsonl
+      rationale: Run driver over the 14 arms with per-arm resume against the runlog line counts.
+    materialize_rows.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.0
+      measured_on: '2026-07-30, single atomic build of analysis/naming_battery_rows.jsonl during phase 1'
+      rationale: One-shot row materialization from the committed ID manifests; re-running from scratch is the cheap path.
   repins:
   - file: cell.yaml
     old_sha256: 93e931f655f57f10c229b12640b53cca9d62e0ea363340ffaed26f858fc89e00
