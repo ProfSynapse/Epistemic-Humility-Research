@@ -379,7 +379,17 @@ STAGES: dict[str, dict] = {
     },
 }
 
-GPU_TYPE = "A100-80GB"
+# GPU is an OPERATOR ARGUMENT, not a hardcoded constant (PI directive,
+# 2026-07-30, .skills/mechinterp-cells/reference/modal-launch.md "GPU sizing
+# rule"): set PHASEB_GPU at dispatch, e.g.
+#   PHASEB_GPU=L40S modal run --detach cloud/modal_phase_b.py --stage ... --wait
+# The default stays A100-80GB for THIS experiment only, for arm-parity: the
+# A1 arm already ran on A100-80GB, and paired arms of one registered contrast
+# stay on identical hardware (rule 4). Future lanes size the default to the
+# model's actual footprint at harness review; an E4B-class model like this
+# one fits an L40S. The resolved value is recorded per stage in provenance
+# (gpu_type) so the executed hardware is auditable.
+GPU_TYPE = os.environ.get("PHASEB_GPU", "A100-80GB")
 
 
 def _run_tag(stage: str) -> str:
@@ -436,7 +446,7 @@ def version_check():
     secrets=[modal.Secret.from_name("hf-token")],
     retries=modal.Retries(max_retries=2, backoff_coefficient=1.0, initial_delay=10.0),
 )
-def run_stage(stage: str):
+def run_stage(stage: str, dispatched_gpu_type: str = ""):
     """Generic per-stage runner. Clones the repo at REPO_COMMIT, checks the
     synaptic-tuner submodule out to TUNER_COMMIT explicitly (overriding
     whatever main's pointer says, in case it has moved since REPO_COMMIT was
@@ -688,7 +698,13 @@ def run_stage(stage: str):
         "event": "phase_b_stage_provenance", "stage": stage,
         "image_transformers": TRANSFORMERS_VERSION,
         "tuner_commit": TUNER_COMMIT, "repo_commit": REPO_COMMIT,
-        "gpu": spec["gpu"], "elapsed_sec": round(t_elapsed, 1),
+        # dispatched_gpu_type is the LOCAL dispatch-side resolution of
+        # PHASEB_GPU, passed as a function argument: the container re-imports
+        # this module, so reading the env here would report the container's
+        # environment, not the operator's choice that actually sized the GPU.
+        "gpu": spec["gpu"],
+        "gpu_type": (dispatched_gpu_type or GPU_TYPE) if spec["gpu"] else None,
+        "elapsed_sec": round(t_elapsed, 1),
     }
     if is_verdict_exit:
         provenance["verdict_exit"] = rc
@@ -756,7 +772,7 @@ def main(stage: str = "", dry_run: bool = False, wait: bool = False):
           f"on {GPU_TYPE if spec['gpu'] else 'CPU (in pinned image)'}")
     print(f"[modal-phaseb] repo@{REPO_COMMIT[:12]} tuner@{TUNER_COMMIT[:12]} "
           f"transformers=={TRANSFORMERS_VERSION}")
-    call = run_stage.spawn(stage)
+    call = run_stage.spawn(stage, dispatched_gpu_type=GPU_TYPE)
     print(f"[modal-phaseb] spawned function call {call.object_id}")
 
     if not wait:
