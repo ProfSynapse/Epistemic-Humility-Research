@@ -6,6 +6,78 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-30 - Axes B and K adjudicated; naming table resolves at the instrument-void row; scoreboard adjudicated (LEAD)
+
+Arithmetic by the results analyst (analysis/axis_bk_arithmetic.json,
+script analysis/compute_axis_bk_arithmetic.py; provenance report on
+file, every threshold line-cited to AMENDMENT.md and gates.yaml; lead
+spot-checked the registered definitions against the doc directly).
+Seeds: bootstrap 48260731 per cell.yaml, 10000 resamples.
+
+AXIS B: POSITIVE-ONLY via O-2. The reduction leg fires hard at both
+C1-valid rungs: refusal drops 0.760 (CI 0.720-0.800) at -0.5x and
+0.948 (CI 0.926-0.969) at -1.0x against baseline refusal 0.969, both
+clearing the registered 0.20 floor with CIs excluding zero. But the
+specificity leg fails BOTH registered ways: released-row correctness is
+0.094 (30/320) at -0.5x and 0.105 (42/399) at -1.0x against the 0.30
+floor (loose-definition robustness variant agrees, 0.093/0.107), AND
+the random_direction placebo at -1.0x is not quiet, moving refusal by
+0.107 (CI 0.074-0.143) against the 0.05 ceiling. O-2 fires on either
+disjunct; the registered separate finding is recorded: output-gate
+suppression, not abstention control. The -2.0x rung is regime-invalid
+under C1 (degenerate 378/421 = 0.898 over the 0.20 ceiling, matching
+the completion-report ruling); the registered exclusion is scoped to
+form scoring, so the rung stays in the axis-B table with an advisory
+flag, and the axis-B read does not depend on it.
+
+AXIS K: KNOWLEDGE-STATE (difficulty-blind). At 1.0x on the never-dosed
+P-KNOWN pool, loss of correctness is rare 0.373 (112/300) vs popular
+0.433 (130/300); rare minus popular is -0.06 with bootstrap CI
+-0.137 to +0.017, failing the registered +0.10-with-CI-excluding-zero
+requirement in both magnitude and sign. The disclosed D-3 difficulty
+gradient did NOT replicate on a never-dosed population, which the
+falsifier section itself flags as reportable. Companion read
+(registered as reported-alongside, never rounded in): the same contrast
+on abstention rate is +0.06 with CI 0.020-0.100 excluding zero, rare
+rows abstaining slightly more. The z_d internal-ordering read is being
+computed as the remaining registered companion item; it gates nothing.
+
+O-1: the numeric condition fires, and how: known-row loss of
+correctness 0.403 (242/600) vs known-row abstention 0.063 (38/600),
+ratio 6.37 against the fires-above-3 line. With no rows-1-8 name
+earned there is nothing to prefix, but the D-2 dissociation
+(wrongness, not abstention, dominates on knowns at the setpoint)
+generalizes to the fresh pool and is recorded as a finding.
+
+NAMING TABLE RESOLUTION: the registered instrument-void row governs.
+Axis G is void (previous entry), so the cell reports UNNAMED WRITE
+DIRECTION (FORM INSTRUMENT VOID) with axes B and K reported
+separately as above. No name is assembled from a partial table, per
+the registered rule.
+
+PREDICTION AND SCOREBOARD ADJUDICATION: the drafter prediction (row 4
+with O-1 prefix) is FALSIFIED. Two independent routes: the assembled
+outcome is the instrument-void row, not row 4; and substantively, axis
+K resolved KNOWLEDGE-STATE, which places any assembled table at rows
+1/3/5/7 and can never reach row 4 regardless of the void. Scoreboard:
+orchestrator Slot 1 (row 4 + O-1) NOT EARNED, incorrect; user Slot 1
+(row 4 + O-1) NOT EARNED, incorrect; orchestrator Slot 2 CORRECT in
+full, including the committed O-2 mechanism (reduction fires,
+released-row correctness fails the 0.30 floor; the placebo
+additionally failing quiet is a second O-2 trigger beyond the
+commitment, not against it); user Slot 2 (bidirectional not earned)
+CORRECT.
+
+Two lead interpretation rulings, recorded before any downstream use:
+(1) gates.yaml G3 names its CI key refusal_reduction_wilson_ci_
+excludes_zero, but a Wilson interval is undefined for a paired rate
+difference; the row-level paired bootstrap CI is the faithful reading,
+with the 0.20 threshold and the CI-excludes-zero requirement
+unchanged. At the observed point estimates every interval convention
+gives the same call. (2) The C1 regime-invalid exclusion is scoped to
+form scoring as registered; axis-B arithmetic keeps the -2.0x rung
+with an advisory flag.
+
 ### 2026-07-30 - Taxonomy calibration FAILED: disagreement 0.43 vs floor 0.05; AXIS_G_VOID fires as registered (LEAD)
 
 The blinded 200-row calibration ran exactly as registered: pool manifest
