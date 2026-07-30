@@ -89,6 +89,7 @@ EXP_DIR = f"experiments/{EXPERIMENT_SLUG}"
 # and this one address the SAME volume.
 POOL_IN_VOLUME = "private-inputs/eval_rows.jsonl"
 ANCHOR_ON_IN_VOLUME = "private-inputs/anchor_extract.safetensors"
+ANCHOR_ON_MANIFEST_IN_VOLUME = "private-inputs/anchor_extract_manifest.json"
 RESULT_PREFIX = "phase-b-r1"
 
 HOURS = 60 * 60
@@ -478,10 +479,13 @@ def run_stage(stage: str):
               f"copy failed (non-fatal): {e}", flush=True)
     pool_in_vol = os.path.join(VOL_MOUNT, POOL_IN_VOLUME)
     anchor_in_vol = os.path.join(VOL_MOUNT, ANCHOR_ON_IN_VOLUME)
-    if not os.path.isfile(pool_in_vol) or not os.path.isfile(anchor_in_vol):
+    anchor_manifest_in_vol = os.path.join(VOL_MOUNT, ANCHOR_ON_MANIFEST_IN_VOLUME)
+    if (not os.path.isfile(pool_in_vol) or not os.path.isfile(anchor_in_vol)
+            or not os.path.isfile(anchor_manifest_in_vol)):
         raise RuntimeError(
             f"[modal-phaseb:{stage}] private inputs not found on the mounted "
-            f"volume ({pool_in_vol}, {anchor_in_vol}). Run "
+            f"volume ({pool_in_vol}, {anchor_in_vol}, "
+            f"{anchor_manifest_in_vol}). Run "
             "`python3 cloud/stage_private_inputs.py --execute` from the host "
             "before dispatching any GPU stage."
         )
@@ -498,6 +502,14 @@ def run_stage(stage: str):
     shutil.copyfile(anchor_in_vol, anchor_local)
     print(f"[modal-phaseb:{stage}] copied {anchor_in_vol} -> {anchor_local}",
           flush=True)
+    # The manifest is the safetensors' inseparable half: ON-condition
+    # consumers (alin_sweep part 2, build_directions --kv-sharing on, ...)
+    # resolve the pair together and fail closed when either is missing
+    # (b3 halt, 2026-07-30 17:21Z, first live run of this path).
+    anchor_manifest_local = os.path.join(private_dir, "anchor_extract_manifest.json")
+    shutil.copyfile(anchor_manifest_in_vol, anchor_manifest_local)
+    print(f"[modal-phaseb:{stage}] copied {anchor_manifest_in_vol} -> "
+          f"{anchor_manifest_local}", flush=True)
 
     # Restore each needs-stage's own analysis/ + analysis-committed/ output
     # from ITS ckpt mirror into this (fresh) container's workspace. Every

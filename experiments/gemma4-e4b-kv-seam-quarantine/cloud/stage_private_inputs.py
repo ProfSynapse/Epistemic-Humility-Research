@@ -49,6 +49,11 @@ EXP_ROOT = HERE.parent
 PRIVATE_FILES = {
     "eval_rows.jsonl": EXP_ROOT / "analysis" / "gemma4-e4b" / "eval_rows.jsonl",
     "anchor_extract.safetensors": EXP_ROOT / "analysis" / "gemma4-e4b" / "anchor_extract.safetensors",
+    # The ON extraction's manifest travels WITH its safetensors: alin_sweep
+    # part 2 and every ON-condition consumer resolve the pair via
+    # load_condition_manifest and fail closed when either half is absent
+    # (first observed live: b3 halt, 2026-07-30 17:21Z).
+    "anchor_extract_manifest.json": EXP_ROOT / "analysis" / "gemma4-e4b" / "anchor_extract_manifest.json",
 }
 # Must match modal_phase_b.py's `vol` (modal.Volume.from_name(...)) and
 # VOL_MOUNT exactly -- this script and that one address the SAME volume.
@@ -56,6 +61,7 @@ VOLUME_NAME = "eh-gemma4-e4b-kv-seam-quarantine-phase-b-logs"
 DEST_IN_VOLUME = {
     "eval_rows.jsonl": "private-inputs/eval_rows.jsonl",
     "anchor_extract.safetensors": "private-inputs/anchor_extract.safetensors",
+    "anchor_extract_manifest.json": "private-inputs/anchor_extract_manifest.json",
 }
 
 

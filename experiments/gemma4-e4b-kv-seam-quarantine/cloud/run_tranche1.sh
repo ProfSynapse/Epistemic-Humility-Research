@@ -45,9 +45,26 @@ STAGES=(
 )
 
 LOG=cloud/tranche1_dispatch.log
-: > "$LOG"
+# Optional resume: `run_tranche1.sh <stage_id>` skips every stage before
+# <stage_id> (their volume ckpt provenance from the earlier run stands; the
+# needs-restore in run_stage() consumes it regardless of which dispatch run
+# produced it). No argument = full sequence with a fresh log.
+START="${1:-}"
+if [ -z "$START" ]; then
+  : > "$LOG"
+fi
+skipping=0
+[ -n "$START" ] && skipping=1
 
 for s in "${STAGES[@]}"; do
+  if [ "$skipping" -eq 1 ]; then
+    if [ "$s" = "$START" ]; then
+      skipping=0
+      echo "=== [$(date -u +%FT%TZ)] RESUME from $s (earlier stages skipped, ckpt provenance stands) ===" | tee -a "$LOG"
+    else
+      continue
+    fi
+  fi
   echo "=== [$(date -u +%FT%TZ)] dispatch $s ===" | tee -a "$LOG"
   modal run --detach cloud/modal_phase_b.py --stage "$s" --wait >>"$LOG" 2>&1
   rc=$?

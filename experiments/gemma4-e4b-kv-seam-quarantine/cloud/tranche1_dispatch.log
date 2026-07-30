@@ -1,0 +1,893 @@
+=== [2026-07-30T17:06:29Z] dispatch b0_g0kv_preflight ===
+Note that running a local entrypoint in detached mode only keeps the last triggered Modal function alive after the parent process has been killed or disconnected.
+✓ Initialized. View run at 
+https://modal.com/apps/synaptic-labs/main/ap-zhlRhTrITsm2QCDARzpNC7
+✓ Created objects.
+├── 🔨 Created mount 
+│   /home/profsynapse/code/ehr-worktrees/kv-seam-phase-b/experiments/gemma4-e4b-
+│   kv-seam-quarantine/cloud/modal_phase_b.py
+├── 🔨 Created mount 
+│   /home/profsynapse/code/ehr-worktrees/kv-seam-phase-b/synaptic-tuner/docker/m
+│   echinterp-runner
+├── 🔨 Created function version_check.
+└── 🔨 Created function run_stage.
+[modal-phaseb] launching stage=b0_g0kv_preflight gpu=False on CPU (in pinned image)
+[modal-phaseb] repo@86fc6e424f98 tuner@34c89fc4f9d6 transformers==5.5.0
+[modal-phaseb] spawned function call fc-01KYSZVV1SZXXZFMSZ44EZ08MS
+[modal-phaseb] --wait set; blocking on fc-01KYSZVV1SZXXZFMSZ44EZ08MS ...
+{"cuda_available": true, "cuda_version": "12.8", "event": "mechinterp_runner_provenance", "image_digest": "unknown (pass IMAGE_DIGEST at `docker run`)", "image_git_revision": "34c89fc4f9d693a6b997422288d820e9c30b4696", "python": "3.10.12", "torch": "2.9.1+cu128", "transformers": "5.5.0"}
+[modal-phaseb:b0_g0kv_preflight] $ git clone https://github.com/ProfSynapse/Epistemic-Humility-Research.git /workspace/ehr
+Cloning into '/workspace/ehr'...
+Updating files:  29% (1476/4979)
+[1AUpdating files:  30% (1494/4979)
+[1AUpdating files:  31% (1544/4979)
+[1AUpdating files:  32% (1594/4979)
+[1AUpdating files:  33% (1644/4979)
+[1AUpdating files:  34% (1693/4979)
+[1AUpdating files:  35% (1743/4979)
+[1AUpdating files:  36% (1793/4979)
+[1AUpdating files:  37% (1843/4979)
+[1AUpdating files:  38% (1893/4979)
+[1AUpdating files:  39% (1942/4979)
+[1AUpdating files:  40% (1992/4979)
+[1AUpdating files:  41% (2042/4979)
+[1AUpdating files:  42% (2092/4979)
+[1AUpdating files:  43% (2141/4979)
+[1AUpdating files:  44% (2191/4979)
+[1AUpdating files:  45% (2241/4979)
+[1AUpdating files:  46% (2291/4979)
+[1AUpdating files:  47% (2341/4979)
+[1AUpdating files:  48% (2390/4979)
+[1AUpdating files:  49% (2440/4979)
+[1AUpdating files:  50% (2490/4979)
+[1AUpdating files:  51% (2540/4979)
+[1AUpdating files:  52% (2590/4979)
+[1AUpdating files:  53% (2639/4979)
+[1AUpdating files:  54% (2689/4979)
+[1AUpdating files:  55% (2739/4979)
+[1AUpdating files:  56% (2789/4979)
+[1AUpdating files:  57% (2839/4979)
+[1AUpdating files:  58% (2888/4979)
+[1AUpdating files:  59% (2938/4979)
+[1AUpdating files:  60% (2988/4979)
+[1AUpdating files:  61% (3038/4979)
+[1AUpdating files:  62% (3087/4979)
+[1AUpdating files:  63% (3137/4979)
+[1AUpdating files:  64% (3187/4979)
+[1AUpdating files:  65% (3237/4979)
+[1AUpdating files:  66% (3287/4979)
+[1AUpdating files:  67% (3336/4979)
+[1AUpdating files:  68% (3386/4979)
+[1AUpdating files:  69% (3436/4979)
+[1AUpdating files:  70% (3486/4979)
+[1AUpdating files:  71% (3536/4979)
+[1AUpdating files:  72% (3585/4979)
+[1AUpdating files:  73% (3635/4979)
+[1AUpdating files:  74% (3685/4979)
+[1AUpdating files:  75% (3735/4979)
+[1AUpdating files:  76% (3785/4979)
+[1AUpdating files:  77% (3834/4979)
+[1AUpdating files:  78% (3884/4979)
+[1AUpdating files:  79% (3934/4979)
+[1AUpdating files:  80% (3984/4979)
+[1AUpdating files:  81% (4033/4979)
+[1AUpdating files:  82% (4083/4979)
+[1AUpdating files:  83% (4133/4979)
+[1AUpdating files:  84% (4183/4979)
+[1AUpdating files:  85% (4233/4979)
+[1AUpdating files:  86% (4282/4979)
+[1AUpdating files:  87% (4332/4979)
+[1AUpdating files:  88% (4382/4979)
+[1AUpdating files:  89% (4432/4979)
+[1AUpdating files:  90% (4482/4979)
+[1AUpdating files:  91% (4531/4979)
+[1AUpdating files:  92% (4581/4979)
+[1AUpdating files:  93% (4631/4979)
+[1AUpdating files:  94% (4681/4979)
+[1AUpdating files:  95% (4731/4979)
+[1AUpdating files:  96% (4780/4979)
+[1AUpdating files:  97% (4830/4979)
+[1AUpdating files:  98% (4880/4979)
+[1AUpdating files:  99% (4930/4979)
+[1AUpdating files: 100% (4979/4979)Updating files: 100% (4979/4979), done.
+[modal-phaseb:b0_g0kv_preflight] $ git fetch --all --tags
+Fetching origin
+[modal-phaseb:b0_g0kv_preflight] $ git checkout 86fc6e424f98e6587d0d8907b9fa90f08997e2e3
+Note: switching to '86fc6e424f98e6587d0d8907b9fa90f08997e2e3'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 86fc6e42 kv-seam Phase B: dispatch wait-mode, needs-restore, C1 NLL ruling applied
+[modal-phaseb:b0_g0kv_preflight] $ git submodule update --init --recursive
+Submodule 'synaptic-tuner' (https://github.com/ProfSynapse/Synaptic-Tuner.git) registered for path 'synaptic-tuner'
+Cloning into '/workspace/ehr/synaptic-tuner'...
+Submodule path 'synaptic-tuner': checked out '34c89fc4f9d693a6b997422288d820e9c30b4696'
+[modal-phaseb:b0_g0kv_preflight] $ git checkout 34c89fc4f9d693a6b997422288d820e9c30b4696
+HEAD is now at 34c89fc Merge pull request #149 from ProfSynapse/fix/mechinterp-runner-transformers-arg
+[modal-phaseb:b0_g0kv_preflight] structural check PASS: 56:    "model.language_model.layers",
+[modal-phaseb:b0_g0kv_preflight] copied /vol/phasebtlogs/private-inputs/eval_rows.jsonl -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/eval_rows.jsonl
+[modal-phaseb:b0_g0kv_preflight] copied /vol/phasebtlogs/private-inputs/anchor_extract.safetensors -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors
+[modal-phaseb:b0_g0kv_preflight] $ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+NVIDIA A100-SXM4-80GB, 81920 MiB
+[modal-phaseb:b0_g0kv_preflight] $ python3 kv_seam_preflight.py
+[1. geometry + crash reproduces]
+    geometry: donors={'sliding_attention': 22, 'full_attention': 23} shared_blocks=[24..41] (expect donors={'full_attention': 23, 'sliding_attention': 22}, first_shared=24)
+    stock auto-cache length: 24 (expect 24 = num_hidden_layers - num_kv_shared_layers)
+    reproduced: IndexError(list index out of range) -- patch-as-drafted crashes under stock generate(), exactly as §8.3 traced.
+    -> PASS
+
+[2. fix completes]
+    full-length cache built: 42 layers (expect 42)
+    generate() completed with no exception, output shape (1, 11)
+    -> PASS
+
+[3. mechanism actually flipped]
+    stock (sharing ON)  k_proj calls on the 18 shared blocks: sum=0 (expect 0)
+    patched (sharing OFF) k_proj calls on the 18 shared blocks: sum=90, min-per-block=5 (expect >0 on every block)
+    all 42 cache layers' seq length after generation: min=10 max=10 (expect uniform and > 0)
+    -> PASS
+
+[4. equivalence control (sharing ON, full-length cache, vs stock)]
+    token sequences identical: True
+    re-scored logits bit-identical: True
+    -> PASS
+
+[5. cache growth under OFF (appended slots are live)]
+    harness builder vs preflight builder: 42 vs 42 layers, per-layer class match 42/42
+    fresh cache lengths: min=0 max=0 (expect 0/0)
+        full layers, lengths after prefill/step1/step2: 6-6 -> 7-7 -> 8-8
+     sliding layers, lengths after prefill/step1/step2: 6-6 -> 7-7 -> 8-8
+    blocks 24..41 (the 18 appended slots) all live: lengths [6, 7, 8] -- written at prefill AND at each decode step
+    -> PASS
+
+[6. cache-substitution no-op under ON (8 prompts)]
+    token-identical on 8/8 fixed prompts (lengths 4..11)
+    -> PASS
+
+=== summary ===
+  [PASS] 1. geometry + crash reproduces
+  [PASS] 2. fix completes
+  [PASS] 3. mechanism actually flipped
+  [PASS] 4. equivalence control (sharing ON, full-length cache, vs stock)
+  [PASS] 5. cache growth under OFF (appended slots are live)
+  [PASS] 6. cache-substitution no-op under ON (8 prompts)
+
+overall: ALL PASS
+{"elapsed_sec": 9.6, "event": "phase_b_stage_provenance", "gpu": false, "image_transformers": "5.5.0", "repo_commit": "86fc6e424f98e6587d0d8907b9fa90f08997e2e3", "stage": "b0_g0kv_preflight", "tuner_commit": "34c89fc4f9d693a6b997422288d820e9c30b4696"}
+[modal-phaseb] stage 'b0_g0kv_preflight' result: {"elapsed_sec": 9.6, "stage": "b0_g0kv_preflight", "status": "completed"}
+✓ App completed. View run at 
+https://modal.com/apps/synaptic-labs/main/ap-zhlRhTrITsm2QCDARzpNC7
+=== [2026-07-30T17:09:48Z] b0_g0kv_preflight exit=0 ===
+=== [2026-07-30T17:09:48Z] dispatch b1_extract_off_midband ===
+Note that running a local entrypoint in detached mode only keeps the last triggered Modal function alive after the parent process has been killed or disconnected.
+✓ Initialized. View run at 
+https://modal.com/apps/synaptic-labs/main/ap-4NJ340bcl23k3imDrumQtG
+✓ Created objects.
+├── 🔨 Created mount 
+│   /home/profsynapse/code/ehr-worktrees/kv-seam-phase-b/experiments/gemma4-e4b-
+│   kv-seam-quarantine/cloud/modal_phase_b.py
+├── 🔨 Created mount 
+│   /home/profsynapse/code/ehr-worktrees/kv-seam-phase-b/synaptic-tuner/docker/m
+│   echinterp-runner
+├── 🔨 Created function version_check.
+└── 🔨 Created function run_stage.
+[modal-phaseb] launching stage=b1_extract_off_midband gpu=True on A100-80GB
+[modal-phaseb] repo@86fc6e424f98 tuner@34c89fc4f9d6 transformers==5.5.0
+[modal-phaseb] spawned function call fc-01KYT01XP1JK8H24NBSZH4CA71
+[modal-phaseb] --wait set; blocking on fc-01KYT01XP1JK8H24NBSZH4CA71 ...
+{"cuda_available": true, "cuda_version": "12.8", "event": "mechinterp_runner_provenance", "image_digest": "unknown (pass IMAGE_DIGEST at `docker run`)", "image_git_revision": "34c89fc4f9d693a6b997422288d820e9c30b4696", "python": "3.10.12", "torch": "2.9.1+cu128", "transformers": "5.5.0"}
+[modal-phaseb:b1_extract_off_midband] $ git clone https://github.com/ProfSynapse/Epistemic-Humility-Research.git /workspace/ehr
+Cloning into '/workspace/ehr'...
+Updating files:  29% (1453/4979)
+[1AUpdating files:  30% (1494/4979)
+[1AUpdating files:  31% (1544/4979)
+[1AUpdating files:  32% (1594/4979)
+[1AUpdating files:  33% (1644/4979)
+[1AUpdating files:  34% (1693/4979)
+[1AUpdating files:  35% (1743/4979)
+[1AUpdating files:  36% (1793/4979)
+[1AUpdating files:  37% (1843/4979)
+[1AUpdating files:  38% (1893/4979)
+[1AUpdating files:  39% (1942/4979)
+[1AUpdating files:  40% (1992/4979)
+[1AUpdating files:  41% (2042/4979)
+[1AUpdating files:  42% (2092/4979)
+[1AUpdating files:  43% (2141/4979)
+[1AUpdating files:  44% (2191/4979)
+[1AUpdating files:  45% (2241/4979)
+[1AUpdating files:  46% (2291/4979)
+[1AUpdating files:  47% (2341/4979)
+[1AUpdating files:  48% (2390/4979)
+[1AUpdating files:  49% (2440/4979)
+[1AUpdating files:  50% (2490/4979)
+[1AUpdating files:  51% (2540/4979)
+[1AUpdating files:  52% (2590/4979)
+[1AUpdating files:  53% (2639/4979)
+[1AUpdating files:  54% (2689/4979)
+[1AUpdating files:  55% (2739/4979)
+[1AUpdating files:  56% (2789/4979)
+[1AUpdating files:  57% (2839/4979)
+[1AUpdating files:  58% (2888/4979)
+[1AUpdating files:  59% (2938/4979)
+[1AUpdating files:  60% (2988/4979)
+[1AUpdating files:  61% (3038/4979)
+[1AUpdating files:  62% (3087/4979)
+[1AUpdating files:  63% (3137/4979)
+[1AUpdating files:  64% (3187/4979)
+[1AUpdating files:  65% (3237/4979)
+[1AUpdating files:  66% (3287/4979)
+[1AUpdating files:  67% (3336/4979)
+[1AUpdating files:  68% (3386/4979)
+[1AUpdating files:  69% (3436/4979)
+[1AUpdating files:  70% (3486/4979)
+[1AUpdating files:  71% (3536/4979)
+[1AUpdating files:  72% (3585/4979)
+[1AUpdating files:  73% (3635/4979)
+[1AUpdating files:  74% (3685/4979)
+[1AUpdating files:  75% (3735/4979)
+[1AUpdating files:  76% (3785/4979)
+[1AUpdating files:  77% (3834/4979)
+[1AUpdating files:  78% (3884/4979)
+[1AUpdating files:  79% (3934/4979)
+[1AUpdating files:  80% (3984/4979)
+[1AUpdating files:  81% (4033/4979)
+[1AUpdating files:  82% (4083/4979)
+[1AUpdating files:  83% (4133/4979)
+[1AUpdating files:  84% (4183/4979)
+[1AUpdating files:  85% (4233/4979)
+[1AUpdating files:  86% (4282/4979)
+[1AUpdating files:  87% (4332/4979)
+[1AUpdating files:  88% (4382/4979)
+[1AUpdating files:  89% (4432/4979)
+[1AUpdating files:  90% (4482/4979)
+[1AUpdating files:  91% (4531/4979)
+[1AUpdating files:  92% (4581/4979)
+[1AUpdating files:  93% (4631/4979)
+[1AUpdating files:  94% (4681/4979)
+[1AUpdating files:  95% (4731/4979)
+[1AUpdating files:  96% (4780/4979)
+[1AUpdating files:  97% (4830/4979)
+[1AUpdating files:  97% (4869/4979)
+[1AUpdating files:  98% (4880/4979)
+[1AUpdating files:  99% (4930/4979)
+[1AUpdating files: 100% (4979/4979)Updating files: 100% (4979/4979), done.
+[modal-phaseb:b1_extract_off_midband] $ git fetch --all --tags
+Fetching origin
+[modal-phaseb:b1_extract_off_midband] $ git checkout 86fc6e424f98e6587d0d8907b9fa90f08997e2e3
+Note: switching to '86fc6e424f98e6587d0d8907b9fa90f08997e2e3'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 86fc6e42 kv-seam Phase B: dispatch wait-mode, needs-restore, C1 NLL ruling applied
+[modal-phaseb:b1_extract_off_midband] $ git submodule update --init --recursive
+Submodule 'synaptic-tuner' (https://github.com/ProfSynapse/Synaptic-Tuner.git) registered for path 'synaptic-tuner'
+Cloning into '/workspace/ehr/synaptic-tuner'...
+Submodule path 'synaptic-tuner': checked out '34c89fc4f9d693a6b997422288d820e9c30b4696'
+[modal-phaseb:b1_extract_off_midband] $ git checkout 34c89fc4f9d693a6b997422288d820e9c30b4696
+HEAD is now at 34c89fc Merge pull request #149 from ProfSynapse/fix/mechinterp-runner-transformers-arg
+[modal-phaseb:b1_extract_off_midband] structural check PASS: 56:    "model.language_model.layers",
+[modal-phaseb:b1_extract_off_midband] copied /vol/phasebtlogs/private-inputs/eval_rows.jsonl -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/eval_rows.jsonl
+[modal-phaseb:b1_extract_off_midband] copied /vol/phasebtlogs/private-inputs/anchor_extract.safetensors -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors
+[modal-phaseb:b1_extract_off_midband] restored needs-stage 'b0_g0kv_preflight' output from /vol/phasebtlogs/ckpt/phase-b-b0_g0kv_preflight-r1
+[modal-phaseb:b1_extract_off_midband] $ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+NVIDIA A100 80GB PCIe, 81920 MiB
+[modal-phaseb:b1_extract_off_midband] $ python3 extract_anchor.py --family gemma4-e4b --site-set midband --kv-sharing off
+[extract-anchor:gemma4-e4b] loading google/gemma-4-E4B-it bf16, hs_indices=[34, 38, 42, 40]
+
+[1ALoading weights:   0%|          | 0/2130 [00:00<?, ?it/s]
+[1ALoading weights:   5%|▍         | 105/2130 [00:00<00:01, 1042.95it/s]
+[1ALoading weights:  10%|▉         | 210/2130 [00:00<00:02, 760.61it/s] 
+[1ALoading weights:  14%|█▎        | 291/2130 [00:00<00:02, 756.64it/s]
+[1ALoading weights:  17%|█▋        | 370/2130 [00:00<00:02, 738.00it/s]
+[1ALoading weights:  21%|██        | 446/2130 [00:00<00:02, 701.48it/s]
+[1ALoading weights:  24%|██▍       | 517/2130 [00:00<00:02, 660.62it/s]
+[1ALoading weights:  28%|██▊       | 588/2130 [00:00<00:02, 674.09it/s]
+[1ALoading weights:  31%|███       | 656/2130 [00:00<00:02, 675.43it/s]
+{"cuda_available": true, "cuda_version": "12.8", "event": "mechinterp_runner_provenance", "image_digest": "unknown (pass IMAGE_DIGEST at `docker run`)", "image_git_revision": "34c89fc4f9d693a6b997422288d820e9c30b4696", "python": "3.10.12", "torch": "2.9.1+cu128", "transformers": "5.5.0"}
+[1ALoading weights:  34%|███▍      | 724/2130 [00:01<00:02, 668.90it/s]
+[1ALoading weights:  37%|███▋      | 792/2130 [00:12<01:09, 19.31it/s] 
+[1ALoading weights:  37%|███▋      | 794/2130 [00:12<01:09, 19.16it/s]
+[1ALoading weights:  39%|███▉      | 841/2130 [00:13<00:52, 24.41it/s]
+[1ALoading weights:  41%|████      | 876/2130 [00:14<00:44, 28.22it/s]
+[1ALoading weights:  42%|████▏     | 902/2130 [00:14<00:39, 30.82it/s]
+[1ALoading weights:  43%|████▎     | 922/2130 [00:14<00:35, 34.03it/s]
+[1ALoading weights:  44%|████▍     | 938/2130 [00:15<00:32, 36.40it/s]
+[1ALoading weights:  45%|████▍     | 951/2130 [00:15<00:30, 38.04it/s]
+[1ALoading weights:  45%|████▌     | 962/2130 [00:15<00:28, 41.12it/s]
+[1ALoading weights:  46%|████▌     | 972/2130 [00:15<00:26, 43.51it/s]
+[1ALoading weights:  46%|████▌     | 981/2130 [00:16<00:28, 40.90it/s]
+[1ALoading weights:  47%|████▋     | 996/2130 [00:16<00:22, 51.11it/s]
+[1ALoading weights:  47%|████▋     | 1005/2130 [00:16<00:22, 49.87it/s]
+[1ALoading weights:  48%|████▊     | 1014/2130 [00:16<00:22, 49.80it/s]
+[1ALoading weights:  48%|████▊     | 1022/2130 [00:16<00:20, 53.68it/s]
+[1ALoading weights:  48%|████▊     | 1030/2130 [00:16<00:18, 58.25it/s]
+[1ALoading weights:  49%|████▊     | 1038/2130 [00:17<00:20, 54.44it/s]
+[1ALoading weights:  49%|████▉     | 1047/2130 [00:17<00:18, 59.68it/s]
+[1ALoading weights:  49%|████▉     | 1054/2130 [00:17<00:20, 53.56it/s]
+[1ALoading weights:  50%|████▉     | 1061/2130 [00:17<00:18, 56.48it/s]
+[1ALoading weights:  50%|█████     | 1068/2130 [00:17<00:24, 43.39it/s]
+[1ALoading weights:  51%|█████     | 1081/2130 [00:17<00:18, 57.48it/s]
+[1ALoading weights:  51%|█████     | 1088/2130 [00:17<00:19, 52.19it/s]
+[1ALoading weights:  52%|█████▏    | 1097/2130 [00:18<00:17, 57.50it/s]
+[1ALoading weights:  52%|█████▏    | 1104/2130 [00:18<00:19, 52.18it/s]
+[1ALoading weights:  52%|█████▏    | 1115/2130 [00:18<00:16, 60.41it/s]
+[1ALoading weights:  53%|█████▎    | 1122/2130 [00:18<00:19, 51.84it/s]
+[1ALoading weights:  53%|█████▎    | 1132/2130 [00:18<00:17, 57.57it/s]
+[1ALoading weights:  53%|█████▎    | 1139/2130 [00:18<00:19, 50.60it/s]
+[1ALoading weights:  54%|█████▍    | 1149/2130 [00:19<00:17, 55.71it/s]
+[1ALoading weights:  54%|█████▍    | 1155/2130 [00:19<00:21, 44.83it/s]
+[1ALoading weights:  55%|█████▍    | 1163/2130 [00:19<00:18, 51.14it/s]
+[1ALoading weights:  55%|█████▍    | 1169/2130 [00:19<00:26, 35.85it/s]
+[1ALoading weights:  56%|█████▌    | 1183/2130 [00:19<00:18, 51.36it/s]
+[1ALoading weights:  56%|█████▌    | 1190/2130 [00:19<00:19, 48.07it/s]
+[1ALoading weights:  56%|█████▋    | 1200/2130 [00:20<00:16, 55.59it/s]
+[1ALoading weights:  57%|█████▋    | 1207/2130 [00:20<00:18, 50.93it/s]
+[1ALoading weights:  57%|█████▋    | 1217/2130 [00:20<00:15, 58.12it/s]
+[1ALoading weights:  57%|█████▋    | 1224/2130 [00:20<00:17, 51.97it/s]
+[1ALoading weights:  58%|█████▊    | 1234/2130 [00:20<00:15, 58.73it/s]
+[1ALoading weights:  58%|█████▊    | 1241/2130 [00:20<00:17, 52.07it/s]
+[1ALoading weights:  59%|█████▊    | 1251/2130 [00:21<00:15, 58.50it/s]
+[1ALoading weights:  59%|█████▉    | 1258/2130 [00:21<00:16, 52.28it/s]
+[1ALoading weights:  60%|█████▉    | 1268/2130 [00:21<00:15, 54.42it/s]
+[1ALoading weights:  60%|█████▉    | 1274/2130 [00:21<00:17, 47.82it/s]
+[1ALoading weights:  60%|██████    | 1285/2130 [00:21<00:14, 57.13it/s]
+[1ALoading weights:  61%|██████    | 1292/2130 [00:21<00:16, 51.39it/s]
+[1ALoading weights:  61%|██████    | 1302/2130 [00:21<00:14, 58.61it/s]
+[1ALoading weights:  61%|██████▏   | 1309/2130 [00:22<00:15, 52.97it/s]
+[1ALoading weights:  62%|██████▏   | 1319/2130 [00:22<00:13, 60.49it/s]
+[1ALoading weights:  62%|██████▏   | 1326/2130 [00:22<00:14, 53.80it/s]
+[1ALoading weights:  63%|██████▎   | 1336/2130 [00:22<00:13, 59.93it/s]
+[1ALoading weights:  63%|██████▎   | 1343/2130 [00:22<00:14, 52.60it/s]
+[1ALoading weights:  64%|██████▎   | 1353/2130 [00:22<00:13, 59.55it/s]
+[1ALoading weights:  64%|██████▍   | 1360/2130 [00:23<00:14, 53.69it/s]
+[1ALoading weights:  64%|██████▍   | 1370/2130 [00:23<00:13, 55.83it/s]
+[1ALoading weights:  65%|██████▍   | 1376/2130 [00:23<00:15, 49.39it/s]
+[1ALoading weights:  65%|██████▌   | 1387/2130 [00:23<00:12, 59.42it/s]
+[1ALoading weights:  65%|██████▌   | 1394/2130 [00:23<00:13, 52.77it/s]
+[1ALoading weights:  66%|██████▌   | 1404/2130 [00:23<00:12, 58.73it/s]
+[1ALoading weights:  66%|██████▌   | 1411/2130 [00:23<00:13, 51.81it/s]
+[1ALoading weights:  67%|██████▋   | 1421/2130 [00:24<00:12, 57.78it/s]
+[1ALoading weights:  67%|██████▋   | 1428/2130 [00:24<00:13, 51.05it/s]
+[1ALoading weights:  68%|██████▊   | 1438/2130 [00:24<00:11, 58.15it/s]
+[1ALoading weights:  68%|██████▊   | 1445/2130 [00:24<00:13, 52.00it/s]
+[1ALoading weights:  68%|██████▊   | 1455/2130 [00:24<00:11, 59.33it/s]
+[1ALoading weights:  69%|██████▊   | 1462/2130 [00:24<00:12, 52.67it/s]
+[1ALoading weights:  69%|██████▉   | 1471/2130 [00:25<00:12, 52.29it/s]
+[1ALoading weights:  73%|███████▎  | 1562/2130 [00:25<00:02, 231.75it/s]
+[1ALoading weights:  78%|███████▊  | 1655/2130 [00:25<00:01, 392.33it/s]
+[1ALoading weights:  83%|████████▎ | 1762/2130 [00:25<00:00, 552.94it/s]
+[1ALoading weights:  87%|████████▋ | 1858/2130 [00:25<00:00, 657.59it/s]
+[1ALoading weights:  92%|█████████▏| 1962/2130 [00:25<00:00, 759.57it/s]
+[1ALoading weights:  97%|█████████▋| 2059/2130 [00:25<00:00, 804.90it/s]
+[1ALoading weights: 100%|██████████| 2130/2130 [00:25<00:00, 82.55it/s] 
+[extract-anchor:gemma4-e4b] 50/806 (extracted 50)
+[extract-anchor:gemma4-e4b] 100/806 (extracted 100)
+[extract-anchor:gemma4-e4b] 150/806 (extracted 150)
+[extract-anchor:gemma4-e4b] 200/806 (extracted 200)
+[extract-anchor:gemma4-e4b] 250/806 (extracted 250)
+[extract-anchor:gemma4-e4b] 300/806 (extracted 300)
+[extract-anchor:gemma4-e4b] 350/806 (extracted 350)
+[extract-anchor:gemma4-e4b] 400/806 (extracted 400)
+[extract-anchor:gemma4-e4b] 450/806 (extracted 450)
+[extract-anchor:gemma4-e4b] 500/806 (extracted 500)
+[extract-anchor:gemma4-e4b] 550/806 (extracted 550)
+[extract-anchor:gemma4-e4b] 600/806 (extracted 600)
+[extract-anchor:gemma4-e4b] 650/806 (extracted 650)
+[extract-anchor:gemma4-e4b] 700/806 (extracted 700)
+[extract-anchor:gemma4-e4b] 750/806 (extracted 750)
+[extract-anchor:gemma4-e4b] 800/806 (extracted 800)
+[extract-anchor:gemma4-e4b] 806/806 (extracted 806)
+{
+  "stage": "j_space_cross_family_layer_contrast_anchor_extract",
+  "family": "gemma4-e4b",
+  "n_rows_extracted": 806,
+  "runtime_sec": 95.0
+}
+{"elapsed_sec": 164.0, "event": "phase_b_stage_provenance", "gpu": true, "image_transformers": "5.5.0", "repo_commit": "86fc6e424f98e6587d0d8907b9fa90f08997e2e3", "stage": "b1_extract_off_midband", "tuner_commit": "34c89fc4f9d693a6b997422288d820e9c30b4696"}
+[modal-phaseb] stage 'b1_extract_off_midband' result: {"elapsed_sec": 164.0, "stage": "b1_extract_off_midband", "status": "completed"}
+✓ App completed. View run at 
+https://modal.com/apps/synaptic-labs/main/ap-4NJ340bcl23k3imDrumQtG
+=== [2026-07-30T17:14:10Z] b1_extract_off_midband exit=0 ===
+=== [2026-07-30T17:14:10Z] dispatch b2_extract_off_seampair ===
+Note that running a local entrypoint in detached mode only keeps the last triggered Modal function alive after the parent process has been killed or disconnected.
+✓ Initialized. View run at 
+https://modal.com/apps/synaptic-labs/main/ap-3vqm0NPc6yd08KV6kyU7dz
+✓ Created objects.
+├── 🔨 Created mount 
+│   /home/profsynapse/code/ehr-worktrees/kv-seam-phase-b/experiments/gemma4-e4b-
+│   kv-seam-quarantine/cloud/modal_phase_b.py
+├── 🔨 Created mount 
+│   /home/profsynapse/code/ehr-worktrees/kv-seam-phase-b/synaptic-tuner/docker/m
+│   echinterp-runner
+├── 🔨 Created function version_check.
+└── 🔨 Created function run_stage.
+[modal-phaseb] launching stage=b2_extract_off_seampair gpu=True on A100-80GB
+[modal-phaseb] repo@86fc6e424f98 tuner@34c89fc4f9d6 transformers==5.5.0
+[modal-phaseb] spawned function call fc-01KYT09XCY5KZ7549926ZBWTVN
+[modal-phaseb] --wait set; blocking on fc-01KYT09XCY5KZ7549926ZBWTVN ...
+{"cuda_available": true, "cuda_version": "12.8", "event": "mechinterp_runner_provenance", "image_digest": "unknown (pass IMAGE_DIGEST at `docker run`)", "image_git_revision": "34c89fc4f9d693a6b997422288d820e9c30b4696", "python": "3.10.12", "torch": "2.9.1+cu128", "transformers": "5.5.0"}
+[modal-phaseb:b2_extract_off_seampair] $ git clone https://github.com/ProfSynapse/Epistemic-Humility-Research.git /workspace/ehr
+Cloning into '/workspace/ehr'...
+Updating files:  29% (1471/4979)
+[1AUpdating files:  30% (1494/4979)
+[1AUpdating files:  31% (1544/4979)
+[1AUpdating files:  32% (1594/4979)
+[1AUpdating files:  33% (1644/4979)
+[1AUpdating files:  34% (1693/4979)
+[1AUpdating files:  35% (1743/4979)
+[1AUpdating files:  36% (1793/4979)
+[1AUpdating files:  37% (1843/4979)
+[1AUpdating files:  38% (1893/4979)
+[1AUpdating files:  39% (1942/4979)
+[1AUpdating files:  40% (1992/4979)
+[1AUpdating files:  41% (2042/4979)
+[1AUpdating files:  42% (2092/4979)
+[1AUpdating files:  43% (2141/4979)
+[1AUpdating files:  44% (2191/4979)
+[1AUpdating files:  45% (2241/4979)
+[1AUpdating files:  46% (2291/4979)
+[1AUpdating files:  47% (2341/4979)
+[1AUpdating files:  48% (2390/4979)
+[1AUpdating files:  49% (2440/4979)
+[1AUpdating files:  50% (2490/4979)
+[1AUpdating files:  51% (2540/4979)
+[1AUpdating files:  52% (2590/4979)
+[1AUpdating files:  53% (2639/4979)
+[1AUpdating files:  54% (2689/4979)
+[1AUpdating files:  55% (2739/4979)
+[1AUpdating files:  56% (2789/4979)
+[1AUpdating files:  57% (2839/4979)
+[1AUpdating files:  58% (2888/4979)
+[1AUpdating files:  59% (2938/4979)
+[1AUpdating files:  60% (2988/4979)
+[1AUpdating files:  61% (3038/4979)
+[1AUpdating files:  62% (3087/4979)
+[1AUpdating files:  63% (3137/4979)
+[1AUpdating files:  64% (3187/4979)
+[1AUpdating files:  65% (3237/4979)
+[1AUpdating files:  66% (3287/4979)
+[1AUpdating files:  67% (3336/4979)
+[1AUpdating files:  68% (3386/4979)
+[1AUpdating files:  69% (3436/4979)
+[1AUpdating files:  70% (3486/4979)
+[1AUpdating files:  71% (3536/4979)
+[1AUpdating files:  72% (3585/4979)
+[1AUpdating files:  73% (3635/4979)
+[1AUpdating files:  74% (3685/4979)
+[1AUpdating files:  75% (3735/4979)
+[1AUpdating files:  76% (3785/4979)
+[1AUpdating files:  77% (3834/4979)
+[1AUpdating files:  78% (3884/4979)
+[1AUpdating files:  79% (3934/4979)
+[1AUpdating files:  80% (3984/4979)
+[1AUpdating files:  81% (4033/4979)
+[1AUpdating files:  82% (4083/4979)
+[1AUpdating files:  83% (4133/4979)
+[1AUpdating files:  84% (4183/4979)
+[1AUpdating files:  85% (4233/4979)
+[1AUpdating files:  86% (4282/4979)
+[1AUpdating files:  87% (4332/4979)
+[1AUpdating files:  88% (4382/4979)
+[1AUpdating files:  89% (4432/4979)
+[1AUpdating files:  90% (4482/4979)
+[1AUpdating files:  91% (4531/4979)
+[1AUpdating files:  92% (4581/4979)
+[1AUpdating files:  93% (4631/4979)
+[1AUpdating files:  94% (4681/4979)
+[1AUpdating files:  95% (4731/4979)
+[1AUpdating files:  96% (4780/4979)
+[1AUpdating files:  97% (4830/4979)
+[1AUpdating files:  97% (4877/4979)
+[1AUpdating files:  98% (4880/4979)
+[1AUpdating files:  99% (4930/4979)
+[1AUpdating files: 100% (4979/4979)
+[1AUpdating files: 100% (4979/4979), done.
+[modal-phaseb:b2_extract_off_seampair] $ git fetch --all --tags
+Fetching origin
+[modal-phaseb:b2_extract_off_seampair] $ git checkout 86fc6e424f98e6587d0d8907b9fa90f08997e2e3
+Note: switching to '86fc6e424f98e6587d0d8907b9fa90f08997e2e3'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 86fc6e42 kv-seam Phase B: dispatch wait-mode, needs-restore, C1 NLL ruling applied
+[modal-phaseb:b2_extract_off_seampair] $ git submodule update --init --recursive
+Submodule 'synaptic-tuner' (https://github.com/ProfSynapse/Synaptic-Tuner.git) registered for path 'synaptic-tuner'
+Cloning into '/workspace/ehr/synaptic-tuner'...
+Submodule path 'synaptic-tuner': checked out '34c89fc4f9d693a6b997422288d820e9c30b4696'
+[modal-phaseb:b2_extract_off_seampair] $ git checkout 34c89fc4f9d693a6b997422288d820e9c30b4696
+HEAD is now at 34c89fc Merge pull request #149 from ProfSynapse/fix/mechinterp-runner-transformers-arg
+[modal-phaseb:b2_extract_off_seampair] structural check PASS: 56:    "model.language_model.layers",
+[modal-phaseb:b2_extract_off_seampair] copied /vol/phasebtlogs/private-inputs/eval_rows.jsonl -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/eval_rows.jsonl
+[modal-phaseb:b2_extract_off_seampair] copied /vol/phasebtlogs/private-inputs/anchor_extract.safetensors -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors
+[modal-phaseb:b2_extract_off_seampair] restored needs-stage 'b0_g0kv_preflight' output from /vol/phasebtlogs/ckpt/phase-b-b0_g0kv_preflight-r1
+[modal-phaseb:b2_extract_off_seampair] $ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+NVIDIA A100-SXM4-80GB, 81920 MiB
+[modal-phaseb:b2_extract_off_seampair] $ python3 extract_anchor.py --family gemma4-e4b --site-set seam_pair --kv-sharing off
+[extract-anchor:gemma4-e4b] loading google/gemma-4-E4B-it bf16, hs_indices=[22, 24, 40]
+
+[1ALoading weights:   0%|          | 0/2130 [00:00<?, ?it/s]
+[1ALoading weights:   5%|▍         | 101/2130 [00:00<00:02, 1005.11it/s]
+[1ALoading weights:   9%|▉         | 202/2130 [00:00<00:02, 689.27it/s] 
+[1ALoading weights:  13%|█▎        | 277/2130 [00:00<00:02, 632.81it/s]
+[1ALoading weights:  16%|█▌        | 344/2130 [00:00<00:02, 608.43it/s]
+[1ALoading weights:  19%|█▉        | 407/2130 [00:00<00:02, 604.53it/s]
+[1ALoading weights:  22%|██▏       | 469/2130 [00:00<00:02, 594.53it/s]
+[1ALoading weights:  25%|██▍       | 529/2130 [00:00<00:02, 593.78it/s]
+[1ALoading weights:  28%|██▊       | 589/2130 [00:00<00:02, 587.71it/s]
+[1ALoading weights:  30%|███       | 649/2130 [00:01<00:02, 588.35it/s]
+[1ALoading weights:  33%|███▎      | 710/2130 [00:01<00:02, 594.62it/s]
+[1ALoading weights:  36%|███▌      | 770/2130 [00:13<01:24, 16.02it/s] 
+[1ALoading weights:  36%|███▋      | 776/2130 [00:13<01:22, 16.35it/s]
+[1ALoading weights:  38%|███▊      | 819/2130 [00:14<01:03, 20.78it/s]
+[1ALoading weights:  40%|███▉      | 851/2130 [00:15<00:52, 24.40it/s]
+[1ALoading weights:  41%|████      | 875/2130 [00:15<00:45, 27.77it/s]
+[1ALoading weights:  42%|████▏     | 894/2130 [00:15<00:41, 30.14it/s]
+[1ALoading weights:  43%|████▎     | 909/2130 [00:16<00:36, 33.27it/s]
+[1ALoading weights:  43%|████▎     | 921/2130 [00:16<00:35, 34.47it/s]
+[1ALoading weights:  44%|████▎     | 931/2130 [00:16<00:34, 34.78it/s]
+[1ALoading weights:  44%|████▍     | 944/2130 [00:16<00:29, 40.81it/s]
+[1ALoading weights:  45%|████▍     | 953/2130 [00:16<00:27, 42.28it/s]
+[1ALoading weights:  45%|████▌     | 962/2130 [00:17<00:26, 44.81it/s]
+[1ALoading weights:  45%|████▌     | 969/2130 [00:17<00:26, 44.19it/s]
+[1ALoading weights:  46%|████▌     | 979/2130 [00:17<00:22, 50.17it/s]
+[1ALoading weights:  46%|████▋     | 986/2130 [00:17<00:24, 46.98it/s]
+[1ALoading weights:  47%|████▋     | 996/2130 [00:17<00:21, 53.28it/s]
+[1ALoading weights:  47%|████▋     | 1003/2130 [00:17<00:22, 49.17it/s]
+[1ALoading weights:  48%|████▊     | 1013/2130 [00:17<00:20, 55.40it/s]
+[1ALoading weights:  48%|████▊     | 1020/2130 [00:18<00:22, 49.62it/s]
+[1ALoading weights:  48%|████▊     | 1030/2130 [00:18<00:19, 55.98it/s]
+[1ALoading weights:  49%|████▊     | 1037/2130 [00:18<00:21, 50.08it/s]
+[1ALoading weights:  49%|████▉     | 1047/2130 [00:18<00:19, 56.03it/s]
+[1ALoading weights:  49%|████▉     | 1053/2130 [00:18<00:22, 48.24it/s]
+[1ALoading weights:  50%|████▉     | 1064/2130 [00:19<00:23, 45.21it/s]
+[1ALoading weights:  50%|█████     | 1074/2130 [00:19<00:19, 53.09it/s]
+[1ALoading weights:  51%|█████     | 1081/2130 [00:19<00:18, 55.51it/s]
+[1ALoading weights:  51%|█████     | 1088/2130 [00:19<00:20, 50.05it/s]
+[1ALoading weights:  52%|█████▏    | 1098/2130 [00:19<00:18, 56.92it/s]
+[1ALoading weights:  52%|█████▏    | 1105/2130 [00:19<00:20, 51.03it/s]
+[1ALoading weights:  52%|█████▏    | 1115/2130 [00:19<00:17, 57.50it/s]
+[1ALoading weights:  53%|█████▎    | 1122/2130 [00:20<00:19, 51.23it/s]
+[1ALoading weights:  53%|█████▎    | 1132/2130 [00:20<00:17, 57.85it/s]
+[1ALoading weights:  53%|█████▎    | 1139/2130 [00:20<00:19, 51.01it/s]
+[1ALoading weights:  54%|█████▍    | 1149/2130 [00:20<00:17, 57.47it/s]
+[1ALoading weights:  54%|█████▍    | 1156/2130 [00:20<00:19, 50.63it/s]
+[1ALoading weights:  55%|█████▍    | 1166/2130 [00:20<00:18, 52.14it/s]
+[1ALoading weights:  55%|█████▌    | 1172/2130 [00:21<00:20, 46.38it/s]
+[1ALoading weights:  56%|█████▌    | 1183/2130 [00:21<00:17, 55.24it/s]
+[1ALoading weights:  56%|█████▌    | 1189/2130 [00:21<00:19, 48.13it/s]
+[1ALoading weights:  56%|█████▋    | 1200/2130 [00:21<00:16, 56.45it/s]
+[1ALoading weights:  57%|█████▋    | 1206/2130 [00:21<00:19, 48.62it/s]
+[1ALoading weights:  57%|█████▋    | 1217/2130 [00:21<00:16, 57.05it/s]
+[1ALoading weights:  57%|█████▋    | 1224/2130 [00:22<00:17, 50.44it/s]
+[1ALoading weights:  58%|█████▊    | 1234/2130 [00:22<00:15, 56.44it/s]
+[1ALoading weights:  58%|█████▊    | 1240/2130 [00:22<00:18, 48.07it/s]
+[1ALoading weights:  59%|█████▊    | 1251/2130 [00:22<00:15, 57.26it/s]
+[1ALoading weights:  59%|█████▉    | 1258/2130 [00:22<00:17, 50.52it/s]
+[1ALoading weights:  60%|█████▉    | 1268/2130 [00:22<00:16, 52.09it/s]
+[1ALoading weights:  60%|█████▉    | 1274/2130 [00:23<00:18, 46.33it/s]
+[1ALoading weights:  60%|██████    | 1285/2130 [00:23<00:15, 54.75it/s]
+[1ALoading weights:  61%|██████    | 1291/2130 [00:23<00:17, 47.48it/s]
+[1ALoading weights:  61%|██████    | 1302/2130 [00:23<00:14, 56.40it/s]
+[1ALoading weights:  61%|██████▏   | 1308/2130 [00:23<00:17, 48.33it/s]
+[1ALoading weights:  62%|██████▏   | 1319/2130 [00:23<00:14, 57.00it/s]
+[1ALoading weights:  62%|██████▏   | 1326/2130 [00:24<00:16, 50.22it/s]
+[1ALoading weights:  63%|██████▎   | 1336/2130 [00:24<00:14, 55.77it/s]
+[1ALoading weights:  63%|██████▎   | 1342/2130 [00:24<00:16, 48.46it/s]
+[1ALoading weights:  64%|██████▎   | 1353/2130 [00:24<00:13, 57.37it/s]
+[1ALoading weights:  64%|██████▍   | 1360/2130 [00:24<00:15, 50.95it/s]
+[1ALoading weights:  64%|██████▍   | 1370/2130 [00:24<00:14, 52.63it/s]
+[1ALoading weights:  65%|██████▍   | 1376/2130 [00:25<00:16, 46.52it/s]
+[1ALoading weights:  65%|██████▌   | 1387/2130 [00:25<00:13, 55.51it/s]
+[1ALoading weights:  65%|██████▌   | 1393/2130 [00:25<00:15, 48.45it/s]
+[1ALoading weights:  66%|██████▌   | 1404/2130 [00:25<00:12, 57.47it/s]
+[1ALoading weights:  66%|██████▌   | 1411/2130 [00:25<00:14, 51.22it/s]
+[1ALoading weights:  67%|██████▋   | 1421/2130 [00:25<00:12, 57.67it/s]
+[1ALoading weights:  67%|██████▋   | 1428/2130 [00:25<00:13, 51.59it/s]
+[1ALoading weights:  68%|██████▊   | 1438/2130 [00:26<00:11, 58.08it/s]
+[1ALoading weights:  68%|██████▊   | 1445/2130 [00:26<00:13, 51.10it/s]
+[1ALoading weights:  68%|██████▊   | 1455/2130 [00:26<00:11, 57.46it/s]
+[1ALoading weights:  69%|██████▊   | 1462/2130 [00:26<00:13, 50.44it/s]
+[1ALoading weights:  69%|██████▉   | 1471/2130 [00:26<00:13, 47.66it/s]
+[1ALoading weights:  72%|███████▏  | 1540/2130 [00:26<00:03, 171.09it/s]
+[1ALoading weights:  77%|███████▋  | 1640/2130 [00:26<00:01, 346.92it/s]
+[1ALoading weights:  81%|████████  | 1730/2130 [00:27<00:00, 471.77it/s]
+[1ALoading weights:  86%|████████▌ | 1823/2130 [00:27<00:00, 584.96it/s]
+[1ALoading weights:  89%|████████▉ | 1905/2130 [00:27<00:00, 644.49it/s]
+[1ALoading weights:  93%|█████████▎| 1978/2130 [00:27<00:00, 663.56it/s]
+[1ALoading weights:  96%|█████████▋| 2055/2130 [00:27<00:00, 686.75it/s]
+[1ALoading weights: 100%|██████████| 2130/2130 [00:27<00:00, 604.42it/s]
+[1ALoading weights: 100%|██████████| 2130/2130 [00:27<00:00, 76.98it/s] 
+[extract-anchor:gemma4-e4b] 50/806 (extracted 50)
+[extract-anchor:gemma4-e4b] 100/806 (extracted 100)
+[extract-anchor:gemma4-e4b] 150/806 (extracted 150)
+[extract-anchor:gemma4-e4b] 200/806 (extracted 200)
+[extract-anchor:gemma4-e4b] 250/806 (extracted 250)
+[extract-anchor:gemma4-e4b] 300/806 (extracted 300)
+[extract-anchor:gemma4-e4b] 350/806 (extracted 350)
+[extract-anchor:gemma4-e4b] 400/806 (extracted 400)
+[extract-anchor:gemma4-e4b] 450/806 (extracted 450)
+[extract-anchor:gemma4-e4b] 500/806 (extracted 500)
+[extract-anchor:gemma4-e4b] 550/806 (extracted 550)
+[extract-anchor:gemma4-e4b] 600/806 (extracted 600)
+[extract-anchor:gemma4-e4b] 650/806 (extracted 650)
+[extract-anchor:gemma4-e4b] 700/806 (extracted 700)
+[extract-anchor:gemma4-e4b] 750/806 (extracted 750)
+[extract-anchor:gemma4-e4b] 800/806 (extracted 800)
+[extract-anchor:gemma4-e4b] 806/806 (extracted 806)
+{
+  "stage": "j_space_cross_family_layer_contrast_anchor_extract",
+  "family": "gemma4-e4b",
+  "n_rows_extracted": 806,
+  "runtime_sec": 110.5
+}
+{"elapsed_sec": 184.4, "event": "phase_b_stage_provenance", "gpu": true, "image_transformers": "5.5.0", "repo_commit": "86fc6e424f98e6587d0d8907b9fa90f08997e2e3", "stage": "b2_extract_off_seampair", "tuner_commit": "34c89fc4f9d693a6b997422288d820e9c30b4696"}
+[modal-phaseb] stage 'b2_extract_off_seampair' result: {"elapsed_sec": 184.4, "stage": "b2_extract_off_seampair", "status": "completed"}
+[modal-client] 2026-07-30T13:19:06-0400 Timed out waiting for final app logs.
+✓ App completed. View run at 
+https://modal.com/apps/synaptic-labs/main/ap-3vqm0NPc6yd08KV6kyU7dz
+=== [2026-07-30T17:19:07Z] b2_extract_off_seampair exit=0 ===
+=== [2026-07-30T17:19:07Z] dispatch b3_alin_part2 ===
+Note that running a local entrypoint in detached mode only keeps the last triggered Modal function alive after the parent process has been killed or disconnected.
+✓ Initialized. View run at 
+https://modal.com/apps/synaptic-labs/main/ap-kCorW5cbzjFvHJruv2IVml
+✓ Created objects.
+├── 🔨 Created mount 
+│   /home/profsynapse/code/ehr-worktrees/kv-seam-phase-b/experiments/gemma4-e4b-
+│   kv-seam-quarantine/cloud/modal_phase_b.py
+├── 🔨 Created mount 
+│   /home/profsynapse/code/ehr-worktrees/kv-seam-phase-b/synaptic-tuner/docker/m
+│   echinterp-runner
+├── 🔨 Created function version_check.
+└── 🔨 Created function run_stage.
+[modal-phaseb] launching stage=b3_alin_part2 gpu=False on CPU (in pinned image)
+[modal-phaseb] repo@86fc6e424f98 tuner@34c89fc4f9d6 transformers==5.5.0
+[modal-phaseb] spawned function call fc-01KYT0JZ4Z62EG53QBFPSFGPHM
+[modal-phaseb] --wait set; blocking on fc-01KYT0JZ4Z62EG53QBFPSFGPHM ...
+{"cuda_available": true, "cuda_version": "12.8", "event": "mechinterp_runner_provenance", "image_digest": "unknown (pass IMAGE_DIGEST at `docker run`)", "image_git_revision": "34c89fc4f9d693a6b997422288d820e9c30b4696", "python": "3.10.12", "torch": "2.9.1+cu128", "transformers": "5.5.0"}
+[modal-phaseb:b3_alin_part2] $ git clone https://github.com/ProfSynapse/Epistemic-Humility-Research.git /workspace/ehr
+Cloning into '/workspace/ehr'...
+Updating files:  29% (1476/4979)
+[1AUpdating files:  30% (1494/4979)
+[1AUpdating files:  31% (1544/4979)
+[1AUpdating files:  32% (1594/4979)
+[1AUpdating files:  33% (1644/4979)
+[1AUpdating files:  34% (1693/4979)
+[1AUpdating files:  35% (1743/4979)
+[1AUpdating files:  36% (1793/4979)
+[1AUpdating files:  37% (1843/4979)
+[1AUpdating files:  38% (1893/4979)
+[1AUpdating files:  39% (1942/4979)
+[1AUpdating files:  40% (1992/4979)
+[1AUpdating files:  41% (2042/4979)
+[1AUpdating files:  42% (2092/4979)
+[1AUpdating files:  43% (2141/4979)
+[1AUpdating files:  44% (2191/4979)
+[1AUpdating files:  45% (2241/4979)
+[1AUpdating files:  46% (2291/4979)
+[1AUpdating files:  47% (2341/4979)
+[1AUpdating files:  48% (2390/4979)
+[1AUpdating files:  49% (2440/4979)
+[1AUpdating files:  50% (2490/4979)
+[1AUpdating files:  51% (2540/4979)
+[1AUpdating files:  52% (2590/4979)
+[1AUpdating files:  53% (2639/4979)
+[1AUpdating files:  54% (2689/4979)
+[1AUpdating files:  55% (2739/4979)
+[1AUpdating files:  56% (2789/4979)
+[1AUpdating files:  57% (2839/4979)
+[1AUpdating files:  58% (2888/4979)
+[1AUpdating files:  59% (2938/4979)
+[1AUpdating files:  60% (2988/4979)
+[1AUpdating files:  61% (3038/4979)
+[1AUpdating files:  62% (3087/4979)
+[1AUpdating files:  63% (3137/4979)
+[1AUpdating files:  64% (3187/4979)
+[1AUpdating files:  65% (3237/4979)
+[1AUpdating files:  66% (3287/4979)
+[1AUpdating files:  67% (3336/4979)
+[1AUpdating files:  68% (3386/4979)
+[1AUpdating files:  69% (3436/4979)
+[1AUpdating files:  70% (3486/4979)
+[1AUpdating files:  71% (3536/4979)
+[1AUpdating files:  72% (3585/4979)
+[1AUpdating files:  73% (3635/4979)
+[1AUpdating files:  74% (3685/4979)
+[1AUpdating files:  75% (3735/4979)
+[1AUpdating files:  76% (3785/4979)
+[1AUpdating files:  77% (3834/4979)
+[1AUpdating files:  78% (3884/4979)
+[1AUpdating files:  79% (3934/4979)
+[1AUpdating files:  80% (3984/4979)
+[1AUpdating files:  81% (4033/4979)
+[1AUpdating files:  82% (4083/4979)
+[1AUpdating files:  83% (4133/4979)
+[1AUpdating files:  84% (4183/4979)
+[1AUpdating files:  85% (4233/4979)
+[1AUpdating files:  86% (4282/4979)
+[1AUpdating files:  87% (4332/4979)
+[1AUpdating files:  88% (4382/4979)
+[1AUpdating files:  89% (4432/4979)
+[1AUpdating files:  90% (4482/4979)
+[1AUpdating files:  91% (4531/4979)
+[1AUpdating files:  92% (4581/4979)
+[1AUpdating files:  93% (4631/4979)
+[1AUpdating files:  94% (4681/4979)
+[1AUpdating files:  95% (4731/4979)
+[1AUpdating files:  96% (4780/4979)
+[1AUpdating files:  97% (4830/4979)
+[1AUpdating files:  98% (4880/4979)
+[1AUpdating files:  99% (4930/4979)
+[1AUpdating files: 100% (4979/4979)Updating files: 100% (4979/4979), done.
+[modal-phaseb:b3_alin_part2] $ git fetch --all --tags
+Fetching origin
+[modal-phaseb:b3_alin_part2] $ git checkout 86fc6e424f98e6587d0d8907b9fa90f08997e2e3
+Note: switching to '86fc6e424f98e6587d0d8907b9fa90f08997e2e3'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 86fc6e42 kv-seam Phase B: dispatch wait-mode, needs-restore, C1 NLL ruling applied
+[modal-phaseb:b3_alin_part2] $ git submodule update --init --recursive
+Submodule 'synaptic-tuner' (https://github.com/ProfSynapse/Synaptic-Tuner.git) registered for path 'synaptic-tuner'
+Cloning into '/workspace/ehr/synaptic-tuner'...
+Submodule path 'synaptic-tuner': checked out '34c89fc4f9d693a6b997422288d820e9c30b4696'
+[modal-phaseb:b3_alin_part2] $ git checkout 34c89fc4f9d693a6b997422288d820e9c30b4696
+HEAD is now at 34c89fc Merge pull request #149 from ProfSynapse/fix/mechinterp-runner-transformers-arg
+[modal-phaseb:b3_alin_part2] structural check PASS: 56:    "model.language_model.layers",
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/eval_rows.jsonl -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/eval_rows.jsonl
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/anchor_extract.safetensors -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors
+[modal-phaseb:b3_alin_part2] restored needs-stage 'b1_extract_off_midband' output from /vol/phasebtlogs/ckpt/phase-b-b1_extract_off_midband-r1
+[modal-phaseb:b3_alin_part2] $ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+NVIDIA A100 80GB PCIe, 81920 MiB
+[modal-phaseb:b3_alin_part2] $ python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+Traceback (most recent call last):
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 860, in <module>
+    sys.exit(main())
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 567, in main
+    return run_part2(args, head_dtype)
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 431, in run_part2
+    extract_on, manifest_on = load_condition_manifest(analysis, "on")
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 349, in load_condition_manifest
+    raise RuntimeError(
+RuntimeError: [alin_sweep part2] missing extraction for kv_sharing='on': /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors (or its manifest /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract_manifest.json). Run `extract_anchor.py --family gemma4-e4b --kv-sharing on` first -- a GPU stage this CPU-only gate does not run itself.
+Traceback (most recent call last):
+  File "/pkg/modal/_runtime/container_io_manager.py", line 915, in handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync
+    values = io_context.call_function_sync()
+  File "/pkg/modal/_runtime/container_io_manager.py", line 218, in call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+  File "/root/modal_phase_b.py", line 585, in run_stage
+    sh(spec["cmd"], cwd=exp_dir)
+  File "/root/modal_phase_b.py", line 440, in sh
+    raise RuntimeError(f"command failed ({r.returncode}): {' '.join(cmd)}")
+RuntimeError: command failed (1): python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+
+[modal-phaseb:b3_alin_part2] $ git fetch --all --tags
+Fetching origin
+[modal-phaseb:b3_alin_part2] $ git checkout 86fc6e424f98e6587d0d8907b9fa90f08997e2e3
+HEAD is now at 86fc6e42 kv-seam Phase B: dispatch wait-mode, needs-restore, C1 NLL ruling applied
+[modal-phaseb:b3_alin_part2] $ git submodule update --init --recursive
+[modal-phaseb:b3_alin_part2] $ git checkout 34c89fc4f9d693a6b997422288d820e9c30b4696
+HEAD is now at 34c89fc Merge pull request #149 from ProfSynapse/fix/mechinterp-runner-transformers-arg
+[modal-phaseb:b3_alin_part2] structural check PASS: 56:    "model.language_model.layers",
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/eval_rows.jsonl -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/eval_rows.jsonl
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/anchor_extract.safetensors -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors
+[modal-phaseb:b3_alin_part2] restored needs-stage 'b1_extract_off_midband' output from /vol/phasebtlogs/ckpt/phase-b-b1_extract_off_midband-r1
+[modal-phaseb:b3_alin_part2] $ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+NVIDIA A100 80GB PCIe, 81920 MiB
+[modal-phaseb:b3_alin_part2] $ python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+Traceback (most recent call last):
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 860, in <module>
+    sys.exit(main())
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 567, in main
+    return run_part2(args, head_dtype)
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 431, in run_part2
+    extract_on, manifest_on = load_condition_manifest(analysis, "on")
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 349, in load_condition_manifest
+    raise RuntimeError(
+RuntimeError: [alin_sweep part2] missing extraction for kv_sharing='on': /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors (or its manifest /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract_manifest.json). Run `extract_anchor.py --family gemma4-e4b --kv-sharing on` first -- a GPU stage this CPU-only gate does not run itself.
+Traceback (most recent call last):
+  File "/pkg/modal/_runtime/container_io_manager.py", line 915, in handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync
+    values = io_context.call_function_sync()
+  File "/pkg/modal/_runtime/container_io_manager.py", line 218, in call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+  File "/root/modal_phase_b.py", line 585, in run_stage
+    sh(spec["cmd"], cwd=exp_dir)
+  File "/root/modal_phase_b.py", line 440, in sh
+    raise RuntimeError(f"command failed ({r.returncode}): {' '.join(cmd)}")
+RuntimeError: command failed (1): python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+
+[modal-phaseb:b3_alin_part2] $ git fetch --all --tags
+Fetching origin
+[modal-phaseb:b3_alin_part2] $ git checkout 86fc6e424f98e6587d0d8907b9fa90f08997e2e3
+HEAD is now at 86fc6e42 kv-seam Phase B: dispatch wait-mode, needs-restore, C1 NLL ruling applied
+[modal-phaseb:b3_alin_part2] $ git submodule update --init --recursive
+[modal-phaseb:b3_alin_part2] $ git checkout 34c89fc4f9d693a6b997422288d820e9c30b4696
+HEAD is now at 34c89fc Merge pull request #149 from ProfSynapse/fix/mechinterp-runner-transformers-arg
+[modal-phaseb:b3_alin_part2] structural check PASS: 56:    "model.language_model.layers",
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/eval_rows.jsonl -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/eval_rows.jsonl
+[modal-phaseb:b3_alin_part2] copied /vol/phasebtlogs/private-inputs/anchor_extract.safetensors -> /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors
+[modal-phaseb:b3_alin_part2] restored needs-stage 'b1_extract_off_midband' output from /vol/phasebtlogs/ckpt/phase-b-b1_extract_off_midband-r1
+[modal-phaseb:b3_alin_part2] $ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+NVIDIA A100 80GB PCIe, 81920 MiB
+[modal-phaseb:b3_alin_part2] $ python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+Traceback (most recent call last):
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 860, in <module>
+    sys.exit(main())
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 567, in main
+    return run_part2(args, head_dtype)
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 431, in run_part2
+    extract_on, manifest_on = load_condition_manifest(analysis, "on")
+  File "/workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/alin_sweep.py", line 349, in load_condition_manifest
+    raise RuntimeError(
+RuntimeError: [alin_sweep part2] missing extraction for kv_sharing='on': /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors (or its manifest /workspace/ehr/experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract_manifest.json). Run `extract_anchor.py --family gemma4-e4b --kv-sharing on` first -- a GPU stage this CPU-only gate does not run itself.
+[modal-phaseb] stage 'b3_alin_part2' FAILED: command failed (1): python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+Traceback (most recent call last):
+  File "/pkg/modal/_runtime/container_io_manager.py", line 915, in handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync
+    values = io_context.call_function_sync()
+  File "/pkg/modal/_runtime/container_io_manager.py", line 218, in call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+  File "/root/modal_phase_b.py", line 585, in run_stage
+    sh(spec["cmd"], cwd=exp_dir)
+  File "/root/modal_phase_b.py", line 440, in sh
+    raise RuntimeError(f"command failed ({r.returncode}): {' '.join(cmd)}")
+RuntimeError: command failed (1): python3 alin_sweep.py --site 38 --both-conditions --emit-selection
+
+=== [2026-07-30T17:21:04Z] b3_alin_part2 exit=1 ===
+TRANCHE1 HALTED at b3_alin_part2 (exit 1); later stages NOT dispatched.
