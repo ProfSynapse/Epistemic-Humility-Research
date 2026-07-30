@@ -245,6 +245,36 @@ Substrate: `google/gemma-4-E4B-it`, raw-base instruct, bf16, no adapter, no 4-bi
 quantization, no task training, snapshot
 `fee6332c1abaafb77f6f9624236c63aa2f1d0187`. Lane: local RTX 3090.
 
+> **Revision 2026-07-30 (lane change for Phase B, PI-approved).** Phase B
+> (sharing-OFF extraction, C0/C1, A_lin Part 2, OFF refits, A1/A2/A4 and
+> rollup) moves to the Modal cloud lane (A100) so it can run in parallel with
+> the write-direction-naming-battery cell occupying the local 3090. Phase A
+> stages 1-6 ran on the registered local lane and are untouched. Conditions
+> binding the new lane: (1) the Modal image reproduces the tf550 environment
+> pins exactly (transformers 5.5.0, accelerate 1.14.0, tuner 34c89fc4), image
+> digest recorded per stage; (2) every registered comparison is same-
+> environment internally -- A1 and A2 both run on Modal, C1 runs entirely on
+> Modal, and the `A_lin` clause's ON side is RE-MEASURED on Modal alongside
+> the OFF side (forward passes only) so the registered |diff| <= 0.05
+> threshold never straddles GPU architectures; the local A_lin Part 1 numbers
+> remain on record but the gate is evaluated on the same-lane pair; (3) no
+> other registered quantity, gate, ladder, or pool changes. Rationale:
+> wall-clock parallelism; the lane is an execution surface, not a scientific
+> one, provided (1)-(2) hold. Approved by the PI in session 2026-07-30.
+>
+> **LAUNCH RECORD (2026-07-30).** PI approved the Modal spend (estimate
+> ~$32-43, ~8-11 A100-hours) in-session. Launch authorized in TWO tranches
+> per the C1 instrument gap found at harness build: tranche 1 = stages
+> B0-B15 (G0-KV re-verify, OFF extractions, A_lin Part 2 with same-lane ON
+> re-measure, fits, dose calibration, smokes, A1 full+undosed) which are not
+> C1-gated; tranche 2 = B16-B18b (A2/A4) and B20 (rollup), gated until the
+> C1 precondition producer (new module implementing gates.yaml
+> g0_c1_precondition_control: FIT-split, no-injection, NLL under both
+> conditions) is built, lead-reviewed, recorded in the instrument, and C1
+> itself passes. Private inputs (eval_rows.jsonl, anchor_extract.safetensors)
+> stage to the Modal volume directly (modal volume put), NOT to any HF
+> repository. App: cloud/modal_phase_b.py; plan: cloud/PHASE_B_MODAL_PLAN.md.
+
 Pool: gemma's OWN fresh-mined evaluation pool and FIT/HELD-OUT split from the
 parent experiment (`mine_eval_pool.py --target-confab 280 --target-known-correct
 450` + `split_fit_heldout.py`, FIT_FRAC=0.40), reused verbatim and hash-pinned.

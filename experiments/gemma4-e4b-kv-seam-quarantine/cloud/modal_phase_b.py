@@ -1,0 +1,544 @@
+"""Modal harness -- Phase B of gemma4-e4b-kv-seam-quarantine.
+
+Pre-registered: experiments/gemma4-e4b-kv-seam-quarantine/AMENDMENT.md,
+"Revision 2026-07-30 (lane change for Phase B, PI-approved)" (Design section).
+Derived stage plan: cloud/PHASE_B_MODAL_PLAN.md -- read that file before
+touching this one; it cites the exact doc lines every stage below implements.
+
+BUILD AND DRY-RUN ONLY as of this writing. No GPU function in this file has
+been launched. `EHR_LAUNCH_OK=gemma4-e4b-kv-seam-quarantine` (this repo's
+launch-guard hook, .claude/hooks/launch_guard.sh) plus the lead's explicit go
+are both required before any stage below actually spawns.
+
+WHY A DOCKERFILE-BUILT IMAGE, not modal.Image.from_registry like the AK/AP/AM
+lineage: those experiments run generic HF models with no exotic modeling-code
+dependency. This one hooks Gemma-4's KV-sharing internals
+(`kv_shared_layer_index`, `DynamicCache` truncation), which are
+version-fragile -- NOTEBOOK.md's 2026-07-29 entry recorded a live crash
+(`AttributeError: 'Gemma4TextAttention' object has no attribute
+'kv_shared_layer_index'`) under transformers==5.12.1, resolved only by
+pinning transformers==5.5.0, the version kv_seam_patch.py / kv_seam_preflight.py
+were actually validated against. The LOCAL lane's answer to this was a
+purpose-built Docker image (synaptic-tuner/docker/mechinterp-runner, tf550
+tag). Revision 2026-07-30 condition (1) requires the Modal image reproduce
+those exact pins. `modal.Image.from_dockerfile` on that same Dockerfile with
+the same build args is the only way to satisfy "exactly" rather than
+"approximately" -- reimplementing the pip list by hand here would be a second,
+driftable copy of the same pin set.
+
+Stage inputs: the pinned .py modules, families/gemma4-e4b.yaml, cell.yaml,
+gates.yaml, and the committed common/experiment artifacts all live in git and
+are cloned at a pinned commit (REPO_COMMIT below), exactly like the AK/AP
+precedent. The two PRIVATE, gitignored inputs (eval_rows.jsonl question/alias
+text, anchor_extract.safetensors) are NOT in git and are staged via
+cloud/stage_private_inputs.py to a private HF dataset repo before any GPU
+stage can run -- see that file's docstring; this script's GPU stages fetch
+from there, never from a local path.
+
+Launch DETACHED so the app survives client death (one stage per invocation;
+see cloud/PHASE_B_MODAL_PLAN.md for the dependency order -- B16/B17 must not
+be launched before B-C1 resolves, and B-C1 itself has NO PRODUCER SCRIPT YET,
+see the plan's "Gap 1"):
+
+    EHR_LAUNCH_OK=gemma4-e4b-kv-seam-quarantine \\
+    modal run --detach cloud/modal_phase_b.py --stage b1_extract_off_midband
+
+Dry-run, no GPU, no launch gate required (this is what this build pass
+actually ran):
+
+    modal run cloud/modal_phase_b.py::version_check
+    python3 cloud/stage_private_inputs.py --dry-run
+"""
+
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+import modal
+
+# --- provenance pins ---------------------------------------------------------
+REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
+# EHR main HEAD at plan time. Already carries synaptic-tuner pinned at
+# TUNER_COMMIT below (git submodule status, verified directly) -- no repin
+# needed to satisfy Revision 2026-07-30 condition (1).
+REPO_COMMIT = "4c49f9b2cf32ce17de527485a71471bc81affbde"
+TUNER_COMMIT = "34c89fc4f9d693a6b997422288d820e9c30b4696"
+TRANSFORMERS_VERSION = "5.5.0"
+EXPERIMENT_SLUG = "gemma4-e4b-kv-seam-quarantine"
+EXP_DIR = f"experiments/{EXPERIMENT_SLUG}"
+
+STAGING_REPO = "professorsynapse/eh-gemma4-kvseam-phaseb-staging"
+POOL_IN_REPO = "phase-b-r1/eval_rows.jsonl"
+ANCHOR_ON_IN_REPO = "phase-b-r1/anchor_extract.safetensors"
+RESULT_PREFIX = "phase-b-r1"
+
+HOURS = 60 * 60
+CKPT_INTERVAL_SEC = 120
+
+# --- the pinned Dockerfile, built with the SAME build args the local tf550
+# image used (NOTEBOOK.md:1026-1034). Path is relative to this repo's root;
+# Modal uploads the Dockerfile's own directory as build context (entrypoint.sh
+# + print_provenance.py live alongside it and are COPYed in by the Dockerfile
+# itself). -----------------------------------------------------------------
+_DOCKERFILE_DIR = (
+    Path(__file__).resolve().parents[2] / "synaptic-tuner" / "docker" / "mechinterp-runner"
+)
+DOCKERFILE_PATH = _DOCKERFILE_DIR / "Dockerfile"
+
+image = modal.Image.from_dockerfile(
+    DOCKERFILE_PATH,
+    build_args={
+        "TRANSFORMERS_VERSION": TRANSFORMERS_VERSION,
+        "MECHINTERP_RUNNER_GIT_REVISION": TUNER_COMMIT,
+    },
+).pip_install("huggingface_hub>=0.34,<1.0")  # for hf_hub_download in-container
+
+app = modal.App(f"eh-{EXPERIMENT_SLUG}-phase-b", image=image)
+
+vol = modal.Volume.from_name(f"eh-{EXPERIMENT_SLUG}-phase-b-logs", create_if_missing=True)
+VOL_MOUNT = "/vol/phasebtlogs"
+
+
+# --- stage registry -----------------------------------------------------------
+# One entry per row of cloud/PHASE_B_MODAL_PLAN.md's derived stage table.
+# `gpu`: False = CPU-only (still runs inside the pinned image for identical
+# library versions, per Revision condition (2) -- "same-environment
+# internally"). `needs`: stage ids that must have a committed output present
+# before this one is meaningful; checked (not enforced) at dispatch so a
+# resume-safe re-run of an already-done stage is cheap, not so an
+# out-of-order launch is silently allowed.
+STAGES: dict[str, dict] = {
+    "b0_g0kv_preflight": {
+        "gpu": False,
+        "cmd": ["python3", "kv_seam_preflight.py"],
+        "needs": [],
+        "produces": None,  # stdout-only PASS/FAIL, not a committed artifact
+    },
+    "b1_extract_off_midband": {
+        "gpu": True,
+        "cmd": ["python3", "extract_anchor.py", "--family", "gemma4-e4b",
+                "--site-set", "midband", "--kv-sharing", "off"],
+        "needs": ["b0_g0kv_preflight"],
+        "produces": "analysis/gemma4-e4b/anchor_extract.kv_off.safetensors",
+    },
+    "b2_extract_off_seampair": {
+        "gpu": True,
+        "cmd": ["python3", "extract_anchor.py", "--family", "gemma4-e4b",
+                "--site-set", "seam_pair", "--kv-sharing", "off"],
+        "needs": ["b0_g0kv_preflight"],
+        "produces": "analysis/gemma4-e4b/anchor_extract.kv_off.safetensors",
+    },
+    "b3_alin_part2": {
+        "gpu": False,
+        "cmd": ["python3", "alin_sweep.py", "--site", "38",
+                "--both-conditions", "--emit-selection"],
+        "needs": ["b1_extract_off_midband"],
+        "produces": "analysis-committed/gemma4-e4b/alin_part2_discrimination.json",
+    },
+    # b-c1 (G0-C1 precondition control) intentionally NOT registered here --
+    # no producer script exists yet (PHASE_B_MODAL_PLAN.md "Gap 1"). Adding a
+    # stub would misrepresent the instrument as complete.
+    "b4_directions_a1": {
+        "gpu": False,
+        "cmd": ["python3", "build_directions.py", "--family", "gemma4-e4b",
+                "--site-set", "midband", "--kv-sharing", "on"],
+        "needs": [],
+        "produces": "analysis-committed/gemma4-e4b/layers/hs38/u_d_hs38.json",
+    },
+    "b5_directions_a2": {
+        "gpu": False,
+        "cmd": ["python3", "build_directions.py", "--family", "gemma4-e4b",
+                "--site-set", "midband", "--kv-sharing", "off"],
+        "needs": ["b1_extract_off_midband"],
+        "produces": "analysis-committed/gemma4-e4b/layers/hs38/u_d_hs38.kv_off.json",
+    },
+    "b6_directions_a4": {
+        "gpu": False,
+        "cmd": ["python3", "build_directions.py", "--family", "gemma4-e4b",
+                "--site-set", "seam_pair", "--kv-sharing", "off"],
+        "needs": ["b2_extract_off_seampair"],
+        "produces": "analysis-committed/gemma4-e4b/layers/hs22/u_d_hs22.kv_off.json",
+    },
+    "b7_gatefit_a1": {
+        "gpu": False,
+        "cmd": ["python3", "gate_fit.py", "--family", "gemma4-e4b",
+                "--site-set", "midband", "--kv-sharing", "on"],
+        "needs": ["b4_directions_a1"],
+        "produces": "analysis-committed/gemma4-e4b/gate_fit_layers.json",
+    },
+    "b7_gatefit_a2": {
+        "gpu": False,
+        "cmd": ["python3", "gate_fit.py", "--family", "gemma4-e4b",
+                "--site-set", "midband", "--kv-sharing", "off"],
+        "needs": ["b5_directions_a2"],
+        "produces": "analysis-committed/gemma4-e4b/gate_fit_layers.kv_off.json",
+    },
+    "b7_gatefit_a4": {
+        "gpu": False,
+        "cmd": ["python3", "gate_fit.py", "--family", "gemma4-e4b",
+                "--site-set", "seam_pair", "--kv-sharing", "off"],
+        "needs": ["b6_directions_a4"],
+        "produces": "analysis-committed/gemma4-e4b/gate_fit_layers.seam_pair.kv_off.json",
+    },
+    "b8_dose_a1": {
+        "gpu": True,
+        "cmd": ["python3", "calibrate_dose.py", "--family", "gemma4-e4b",
+                "--site-set", "midband", "--kv-sharing", "on"],
+        "needs": ["b7_gatefit_a1"],
+        "produces": "analysis-committed/gemma4-e4b/dose_calibration_summary.json",
+    },
+    "b9_dose_a2": {
+        "gpu": True,
+        "cmd": ["python3", "calibrate_dose.py", "--family", "gemma4-e4b",
+                "--site-set", "midband", "--kv-sharing", "off"],
+        "needs": ["b7_gatefit_a2"],
+        "produces": "analysis-committed/gemma4-e4b/dose_calibration_summary.kv_off.json",
+    },
+    "b10_dose_a4": {
+        "gpu": True,
+        "cmd": ["python3", "calibrate_dose.py", "--family", "gemma4-e4b",
+                "--site-set", "seam_pair", "--kv-sharing", "off"],
+        "needs": ["b7_gatefit_a4"],
+        "produces": "analysis-committed/gemma4-e4b/dose_calibration_summary.seam_pair.kv_off.json",
+    },
+    "b11_smoke_a1": {
+        "gpu": True,
+        "cmd": ["python3", "run_contrast.py", "--family", "gemma4-e4b",
+                "--site-set", "midband", "--kv-sharing", "on", "--mode", "smoke",
+                "--n-rows", "8", "--i-know-this-is-the-cross-family-run"],
+        "needs": ["b8_dose_a1"],
+        "produces": "analysis/gemma4-e4b/smoke_summary.json",
+    },
+    "b12_smoke_a2": {
+        "gpu": True,
+        "cmd": ["python3", "run_contrast.py", "--family", "gemma4-e4b",
+                "--site-set", "midband", "--kv-sharing", "off", "--mode", "smoke",
+                "--n-rows", "8", "--i-know-this-is-the-cross-family-run"],
+        "needs": ["b9_dose_a2"],
+        "produces": "analysis/gemma4-e4b/smoke_summary.kv_off.json",
+    },
+    "b13_smoke_a4": {
+        "gpu": True,
+        "cmd": ["python3", "run_contrast.py", "--family", "gemma4-e4b",
+                "--site-set", "seam_pair", "--kv-sharing", "off", "--mode", "smoke",
+                "--n-rows", "8", "--i-know-this-is-the-cross-family-run"],
+        "needs": ["b10_dose_a4"],
+        "produces": "analysis/gemma4-e4b/smoke_summary.seam_pair.kv_off.json",
+    },
+    "b14_full_a1": {
+        "gpu": True,
+        "cmd": ["python3", "run_contrast.py", "--family", "gemma4-e4b",
+                "--site-set", "midband", "--kv-sharing", "on", "--mode", "full",
+                "--i-know-this-is-the-cross-family-run"],
+        "needs": ["b11_smoke_a1"],
+        "produces": "analysis-committed/gemma4-e4b/full_summary.json",
+        "gate_note": "g1_actuation_floor / g2_selectivity_cap. NOT gated by C1 "
+                     "(C1 governs OFF arms only).",
+    },
+    "b15_undosed_a1": {
+        "gpu": True,
+        "cmd": ["python3", "run_contrast.py", "--family", "gemma4-e4b",
+                "--site-set", "midband", "--kv-sharing", "on", "--mode", "full",
+                "--arm-kind", "undosed", "--i-know-this-is-the-cross-family-run"],
+        "needs": ["b14_full_a1"],
+        "produces": "analysis-committed/gemma4-e4b/undosed_summary.hs38.json",
+    },
+    "b16_full_a2": {
+        "gpu": True,
+        "cmd": ["python3", "run_contrast.py", "--family", "gemma4-e4b",
+                "--site-set", "midband", "--kv-sharing", "off", "--mode", "full",
+                "--i-know-this-is-the-cross-family-run"],
+        "needs": ["b12_smoke_a2"],
+        "produces": "analysis-committed/gemma4-e4b/full_summary.kv_off.json",
+        "gate_note": "PRIMARY. gates.yaml g0_c1_precondition_control: if C1 "
+                     "fails, A2 is recorded NOT-RUN instead. DO NOT LAUNCH "
+                     "before b-c1 (no producer script yet) resolves PASS.",
+        "blocked_on_c1": True,
+    },
+    "b17_full_a4": {
+        "gpu": True,
+        "cmd": ["python3", "run_contrast.py", "--family", "gemma4-e4b",
+                "--site-set", "seam_pair", "--kv-sharing", "off", "--mode", "full",
+                "--i-know-this-is-the-cross-family-run"],
+        "needs": ["b13_smoke_a4"],
+        "produces": "analysis-committed/gemma4-e4b/full_summary.seam_pair.kv_off.json",
+        "gate_note": "Same C1 gating as b16 (A4 named explicitly in gates.yaml).",
+        "blocked_on_c1": True,
+    },
+    "b18a_undosed_a2": {
+        "gpu": True,
+        "cmd": ["python3", "run_contrast.py", "--family", "gemma4-e4b",
+                "--site-set", "midband", "--kv-sharing", "off", "--mode", "full",
+                "--arm-kind", "undosed", "--i-know-this-is-the-cross-family-run"],
+        "needs": ["b16_full_a2"],
+        "produces": "analysis-committed/gemma4-e4b/undosed_summary.hs38.kv_off.json",
+        "blocked_on_c1": True,
+    },
+    "b18b_undosed_a4": {
+        "gpu": True,
+        "cmd": ["python3", "run_contrast.py", "--family", "gemma4-e4b",
+                "--site-set", "seam_pair", "--kv-sharing", "off", "--mode", "full",
+                "--arm-kind", "undosed", "--i-know-this-is-the-cross-family-run"],
+        "needs": ["b17_full_a4"],
+        "produces": "analysis-committed/gemma4-e4b/undosed_summary.hs22.seam_pair.kv_off.json",
+        "blocked_on_c1": True,
+    },
+    # b19 (fired-only G2 companion) does NOT exist as a separate stage:
+    # g2_companion.py has no CLI (`python3 g2_companion.py --help` prints
+    # nothing -- confirmed directly, not assumed from its docstring). It is a
+    # pure library module imported by pipeline.py / run_contrast.py, so the
+    # companion metric is already embedded in every full_summary.*.json B14/
+    # B16/B17/B18a/B18b produce (visible in Phase A's Stage 2 output as the
+    # "fired_only" / "undosed_floor" blocks). No dispatchable stage here.
+    "b20_rollup": {
+        "gpu": False,
+        "cmd": ["python3", "rollup.py"],
+        "needs": ["b3_alin_part2", "b14_full_a1", "b15_undosed_a1",
+                  "b16_full_a2", "b17_full_a4", "b18a_undosed_a2",
+                  "b18b_undosed_a4"],
+        "produces": "analysis-committed/gemma4-e4b/rollup_summary.json",
+        "gate_note": "BLOCKED until c1_precondition_summary.json exists "
+                     "(rollup.py:401-408 raises RollupInputMissing before "
+                     "producing anything). Do not dispatch until Gap 1 lands.",
+        "blocked_on_c1": True,
+    },
+}
+
+GPU_TYPE = "A100-80GB"
+
+
+def _run_tag(stage: str) -> str:
+    return f"phase-b-{stage}-r1"
+
+
+@app.function(image=image)
+def version_check():
+    """CPU-only. No GPU, no repo clone, no secret needed. Confirms the image
+    itself carries the pinned versions before anything else is attempted."""
+    import json
+    import subprocess
+    import sys
+
+    out: dict = {"event": "phase_b_version_check"}
+    try:
+        import torch
+        out["torch"] = torch.__version__
+        out["cuda_available"] = bool(torch.cuda.is_available())
+    except Exception as e:  # noqa: BLE001
+        out["torch_error"] = str(e)
+    try:
+        import transformers
+        out["transformers"] = transformers.__version__
+        assert transformers.__version__ == TRANSFORMERS_VERSION, (
+            f"pinned transformers=={TRANSFORMERS_VERSION}, image has "
+            f"{transformers.__version__}"
+        )
+    except Exception as e:  # noqa: BLE001
+        out["transformers_error"] = str(e)
+    try:
+        import accelerate
+        out["accelerate"] = accelerate.__version__
+    except Exception as e:  # noqa: BLE001
+        out["accelerate_error"] = str(e)
+    try:
+        import inspect
+        from transformers.models.gemma4 import modeling_gemma4
+        src = inspect.getsource(modeling_gemma4)
+        out["kv_shared_layer_index_present"] = "kv_shared_layer_index" in src
+    except Exception as e:  # noqa: BLE001
+        out["gemma4_import_error"] = str(e)
+    out["python"] = sys.version.split()[0]
+    out["image_git_revision"] = os.environ.get(
+        "MECHINTERP_RUNNER_GIT_REVISION", "unknown")
+    print(json.dumps(out, sort_keys=True), flush=True)
+    return out
+
+
+@app.function(
+    gpu=GPU_TYPE,
+    timeout=6 * HOURS,
+    volumes={VOL_MOUNT: vol},
+    secrets=[modal.Secret.from_name("hf-token")],
+    retries=modal.Retries(max_retries=2, backoff_coefficient=1.0, initial_delay=10.0),
+)
+def run_stage(stage: str):
+    """Generic per-stage runner. Clones the repo at REPO_COMMIT, checks the
+    synaptic-tuner submodule out to TUNER_COMMIT explicitly (overriding
+    whatever main's pointer says, in case it has moved since REPO_COMMIT was
+    picked), fetches the private staged inputs, runs the stage's pinned CLI
+    invocation unmodified, uploads whatever it produced, and writes a
+    per-stage provenance line."""
+    import json
+    import shutil
+    import subprocess
+    import sys
+    import time
+
+    spec = STAGES.get(stage)
+    if spec is None:
+        raise RuntimeError(f"unknown stage {stage!r}; see STAGES in this file")
+
+    def sh(cmd, cwd=None, check=True):
+        print(f"[modal-phaseb:{stage}] $ {' '.join(cmd)}", flush=True)
+        r = subprocess.run(cmd, cwd=cwd)
+        if check and r.returncode != 0:
+            raise RuntimeError(f"command failed ({r.returncode}): {' '.join(cmd)}")
+        return r.returncode
+
+    workspace = "/workspace/ehr"
+    if not os.path.isdir(os.path.join(workspace, ".git")):
+        sh(["git", "clone", REPO_URL, workspace])
+    sh(["git", "fetch", "--all", "--tags"], cwd=workspace, check=False)
+    sh(["git", "checkout", REPO_COMMIT], cwd=workspace)
+    sh(["git", "submodule", "update", "--init", "--recursive"], cwd=workspace)
+    tuner_dir = os.path.join(workspace, "synaptic-tuner")
+    sh(["git", "checkout", TUNER_COMMIT], cwd=tuner_dir)
+    # structural check this experiment's AMENDMENT.md requires (line 561-563):
+    # the tuner commit must carry the Gemma-4 decoder-layer-path fix,
+    # verified structurally not by version comparison.
+    check = subprocess.run(
+        ["grep", "-n", "model.language_model.layers",
+         os.path.join(tuner_dir, "MechInterp/intervention/hooks.py")],
+        capture_output=True, text=True,
+    )
+    if check.returncode != 0:
+        raise RuntimeError(
+            "structural check FAILED: 'model.language_model.layers' not found "
+            "in synaptic-tuner MechInterp/intervention/hooks.py at "
+            f"{TUNER_COMMIT} -- Gemma-4 decoder blocks unreachable, every GPU "
+            "stage of this experiment would fail at first hook install."
+        )
+    print(f"[modal-phaseb:{stage}] structural check PASS: {check.stdout.strip()}",
+          flush=True)
+
+    exp_dir = os.path.join(workspace, EXP_DIR)
+
+    private_dir = os.path.join(exp_dir, "analysis", "gemma4-e4b")
+    os.makedirs(private_dir, exist_ok=True)
+    from huggingface_hub import hf_hub_download
+    rows_local = os.path.join(private_dir, "eval_rows.jsonl")
+    p = hf_hub_download(repo_id=STAGING_REPO, filename=POOL_IN_REPO,
+                         repo_type="dataset")
+    shutil.copyfile(p, rows_local)
+    print(f"[modal-phaseb:{stage}] fetched {STAGING_REPO}:{POOL_IN_REPO} -> "
+          f"{rows_local}", flush=True)
+    # ON anchor cache is only needed by stages that touch the ON condition
+    # directly (b4, b7_gatefit_a1, b8, b11, b14, b15, b0/b3 read it too via
+    # alin_sweep's default parent-analysis path). Fetch unconditionally --
+    # it's 342MB once per container, cheap next to model weights.
+    anchor_local = os.path.join(private_dir, "anchor_extract.safetensors")
+    p2 = hf_hub_download(repo_id=STAGING_REPO, filename=ANCHOR_ON_IN_REPO,
+                          repo_type="dataset")
+    shutil.copyfile(p2, anchor_local)
+    print(f"[modal-phaseb:{stage}] fetched {STAGING_REPO}:{ANCHOR_ON_IN_REPO} "
+          f"-> {anchor_local}", flush=True)
+
+    # resume-safety: if the stage's expected output already exists in this
+    # container's restored volume mirror of analysis-committed/, skip.
+    run_tag = _run_tag(stage)
+    ckpt = f"{VOL_MOUNT}/ckpt/{run_tag}"
+    committed_dir = os.path.join(exp_dir, "analysis-committed", "gemma4-e4b")
+    if os.path.isdir(ckpt):
+        try:
+            vol.reload()
+        except Exception as e:  # noqa: BLE001
+            print(f"[modal-phaseb:{stage}] vol.reload() failed (non-fatal): {e}",
+                  flush=True)
+        for root, _dirs, files in os.walk(os.path.join(ckpt, "analysis-committed")):
+            rel = os.path.relpath(root, os.path.join(ckpt, "analysis-committed"))
+            tgt = committed_dir if rel == "." else os.path.join(committed_dir, rel)
+            os.makedirs(tgt, exist_ok=True)
+            for fn in files:
+                shutil.copyfile(os.path.join(root, fn), os.path.join(tgt, fn))
+    expected = spec.get("produces")
+    if expected:
+        expected_path = os.path.join(workspace, expected)
+        if os.path.isfile(expected_path):
+            print(f"[modal-phaseb:{stage}] SKIP -- expected output already "
+                  f"present: {expected}", flush=True)
+            return {"status": "skipped-already-done", "stage": stage,
+                    "output": expected}
+
+    if spec.get("blocked_on_c1"):
+        raise RuntimeError(
+            f"stage {stage!r} is gated on the G0-C1 precondition control "
+            "(gates.yaml g0_c1_precondition_control). No producer script "
+            "exists for c1_precondition_summary.json as of this harness's "
+            "build (see cloud/PHASE_B_MODAL_PLAN.md 'Gap 1'). Refusing to "
+            "run rather than silently proceeding as if C1 had passed."
+        )
+
+    sh(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"],
+       check=False)
+
+    t0 = time.time()
+    sh(spec["cmd"], cwd=exp_dir)
+    t_elapsed = time.time() - t0
+
+    provenance = {
+        "event": "phase_b_stage_provenance", "stage": stage,
+        "image_transformers": TRANSFORMERS_VERSION,
+        "tuner_commit": TUNER_COMMIT, "repo_commit": REPO_COMMIT,
+        "gpu": spec["gpu"], "elapsed_sec": round(t_elapsed, 1),
+    }
+    print(json.dumps(provenance, sort_keys=True), flush=True)
+
+    # mirror analysis-committed/ and analysis/ (private, per-stage; volume is
+    # already scoped to this Modal app, not shared outside it) to the
+    # checkpoint volume so a resumed/repeated stage can skip cheaply and so
+    # the lead can pull results without re-running.
+    os.makedirs(ckpt, exist_ok=True)
+    for sub in ("analysis-committed", "analysis"):
+        src = os.path.join(exp_dir, sub)
+        dst = os.path.join(ckpt, sub)
+        if os.path.isdir(src):
+            shutil.copytree(src, dst, dirs_exist_ok=True)
+    with open(os.path.join(ckpt, f"provenance_{stage}.json"), "w") as fh:
+        json.dump(provenance, fh, indent=2, sort_keys=True)
+    vol.commit()
+
+    return {"status": "completed", "stage": stage, "elapsed_sec": round(t_elapsed, 1)}
+
+
+@app.local_entrypoint()
+def main(stage: str = "", dry_run: bool = False):
+    if dry_run or not stage:
+        print("[modal-phaseb] no --stage given (or --dry-run passed); "
+              "listing registered stages and exiting without spawning "
+              "anything:")
+        for sid, spec in STAGES.items():
+            gpu = "GPU" if spec["gpu"] else "cpu"
+            blocked = " [BLOCKED on C1]" if spec.get("blocked_on_c1") else ""
+            print(f"  {sid:24s} {gpu:4s} needs={spec['needs']}{blocked}")
+        print("[modal-phaseb] run `modal run cloud/modal_phase_b.py::version_check` "
+              "for a cost-free image/version dry-run, or pass --stage <id> "
+              "with EHR_LAUNCH_OK set to actually launch a stage.")
+        return
+
+    if stage not in STAGES:
+        raise SystemExit(f"[modal-phaseb] unknown --stage {stage!r}; valid: "
+                          f"{sorted(STAGES)}")
+
+    launch_ok = os.environ.get("EHR_LAUNCH_OK")
+    if launch_ok != EXPERIMENT_SLUG:
+        raise SystemExit(
+            "[modal-phaseb] refusing to launch: set "
+            f"EHR_LAUNCH_OK={EXPERIMENT_SLUG!r} in the environment (relayed "
+            f"lead approval), got EHR_LAUNCH_OK={launch_ok!r}.")
+
+    spec = STAGES[stage]
+    if spec.get("blocked_on_c1"):
+        raise SystemExit(
+            f"[modal-phaseb] refusing to launch {stage!r}: gated on the "
+            "G0-C1 precondition control, which has no producer script yet "
+            "(cloud/PHASE_B_MODAL_PLAN.md 'Gap 1'). This is a lead call, "
+            "not a flag to override.")
+
+    print(f"[modal-phaseb] launching stage={stage} gpu={spec['gpu']} "
+          f"on {GPU_TYPE if spec['gpu'] else 'CPU (in pinned image)'}")
+    print(f"[modal-phaseb] repo@{REPO_COMMIT[:12]} tuner@{TUNER_COMMIT[:12]} "
+          f"transformers=={TRANSFORMERS_VERSION}")
+    call = run_stage.spawn(stage)
+    print(f"[modal-phaseb] spawned function call {call.object_id}; client "
+          "exiting. Monitor: modal app logs / volume ckpt provenance file.")
