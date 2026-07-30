@@ -506,7 +506,11 @@ def run_placebo(family: str, hs_index: int, dose_target: float, k: int, *,
             f"no fire decision in the true arm's run log (population drift "
             f"since the true arm ran); first missing key: {missing[0]!r}"
         )
-    gate_rows = [{**row, "fire": fire_by_key[row["row_key"]]} for row in rows]
+    # hs_index is stamped here because this path deliberately skips
+    # compute_gate_decisions (fired-row matching, never re-gated), but
+    # run_one_row still requires row["hs_index"] like every other arm-kind.
+    gate_rows = [{**row, "hs_index": hs_index, "fire": fire_by_key[row["row_key"]]}
+                 for row in rows]
 
     paths = pl.layer_paths(family, hs_index, kv_sharing)
     c_hat = pl.load_direction_vector(paths["c_hat"])

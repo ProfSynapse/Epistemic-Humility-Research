@@ -1,0 +1,286 @@
+{
+  "family": "gemma4-e4b",
+  "mode": "full",
+  "site_set": "shallow_ladder",
+  "kv_sharing": "on",
+  "layer_doses": {
+    "hs15": 173.65765096701432,
+    "hs18": 85.91323993905378,
+    "hs20": 45.06793785763545
+  },
+  "late_arm_included": false,
+  "pool_counts": {
+    "confab_held_out": 168,
+    "known_correct_answered_held_out": 270
+  },
+  "n_rows": 438,
+  "layers": {
+    "hs15": {
+      "hs_index": 15,
+      "kv_sharing": "on",
+      "n_rows": 438,
+      "n_fired": 171,
+      "readback_mean": 172.985977963728,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.011695906432748537,
+      "confab_tighten": {
+        "n": 168,
+        "successes": 132,
+        "rate": 0.7857142857142857,
+        "wilson_ci_95": [
+          0.7176458742604324,
+          0.8410086009682145
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 270,
+        "successes": 3,
+        "rate": 0.011111111111111112,
+        "wilson_ci_95": [
+          0.003785840092852641,
+          0.03215268748831291
+        ]
+      },
+      "known_correct_cost_control_fired_only": {
+        "n": 4,
+        "successes": 3,
+        "rate": 0.75,
+        "wilson_ci_95": [
+          0.30064184258240184,
+          0.9544127391902995
+        ],
+        "n_fired_known": 4,
+        "adjudicable_floor": 35,
+        "adjudicable": false,
+        "disposition": "NOT-ADJUDICABLE"
+      },
+      "known_correct_cost_control_g2_block": {
+        "full_population_g2": {
+          "n": 270,
+          "successes": 3,
+          "rate": 0.011111111111111112,
+          "wilson_ci_95": [
+            0.003785840092852641,
+            0.03215268748831291
+          ]
+        },
+        "full_population_g2_pass": true,
+        "fired_only": {
+          "n": 4,
+          "successes": 3,
+          "rate": 0.75,
+          "wilson_ci_95": [
+            0.30064184258240184,
+            0.9544127391902995
+          ],
+          "n_fired_known": 4,
+          "adjudicable_floor": 35,
+          "adjudicable": false,
+          "disposition": "NOT-ADJUDICABLE"
+        },
+        "undosed_floor": {
+          "n": 266,
+          "successes": 0,
+          "rate": 0.0,
+          "wilson_ci_95": [
+            0.0,
+            0.014235984483195078
+          ]
+        },
+        "discrepancy_full_pass_but_fired_only_over_cap": true
+      },
+      "dose_target": 173.65765096701432
+    },
+    "hs18": {
+      "hs_index": 18,
+      "kv_sharing": "on",
+      "n_rows": 438,
+      "n_fired": 168,
+      "readback_mean": 86.00655748107006,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.011904761904761904,
+      "confab_tighten": {
+        "n": 168,
+        "successes": 75,
+        "rate": 0.44642857142857145,
+        "wilson_ci_95": [
+          0.3732894383665086,
+          0.5219628475281204
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 270,
+        "successes": 1,
+        "rate": 0.003703703703703704,
+        "wilson_ci_95": [
+          0.0006540941063273003,
+          0.02067744146849227
+        ]
+      },
+      "known_correct_cost_control_fired_only": {
+        "n": 1,
+        "successes": 1,
+        "rate": 1.0,
+        "wilson_ci_95": [
+          0.20654931437723745,
+          1.0
+        ],
+        "n_fired_known": 1,
+        "adjudicable_floor": 35,
+        "adjudicable": false,
+        "disposition": "NOT-ADJUDICABLE"
+      },
+      "known_correct_cost_control_g2_block": {
+        "full_population_g2": {
+          "n": 270,
+          "successes": 1,
+          "rate": 0.003703703703703704,
+          "wilson_ci_95": [
+            0.0006540941063273003,
+            0.02067744146849227
+          ]
+        },
+        "full_population_g2_pass": true,
+        "fired_only": {
+          "n": 1,
+          "successes": 1,
+          "rate": 1.0,
+          "wilson_ci_95": [
+            0.20654931437723745,
+            1.0
+          ],
+          "n_fired_known": 1,
+          "adjudicable_floor": 35,
+          "adjudicable": false,
+          "disposition": "NOT-ADJUDICABLE"
+        },
+        "undosed_floor": {
+          "n": 269,
+          "successes": 0,
+          "rate": 0.0,
+          "wilson_ci_95": [
+            0.0,
+            0.01407945419034962
+          ]
+        },
+        "discrepancy_full_pass_but_fired_only_over_cap": true
+      },
+      "dose_target": 85.91323993905378
+    },
+    "hs20": {
+      "hs_index": 20,
+      "kv_sharing": "on",
+      "n_rows": 438,
+      "n_fired": 169,
+      "readback_mean": 45.24620037970246,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.0,
+      "confab_tighten": {
+        "n": 168,
+        "successes": 68,
+        "rate": 0.40476190476190477,
+        "wilson_ci_95": [
+          0.33347132964277965,
+          0.48031051194767155
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 270,
+        "successes": 1,
+        "rate": 0.003703703703703704,
+        "wilson_ci_95": [
+          0.0006540941063273003,
+          0.02067744146849227
+        ]
+      },
+      "known_correct_cost_control_fired_only": {
+        "n": 2,
+        "successes": 1,
+        "rate": 0.5,
+        "wilson_ci_95": [
+          0.09453120573423074,
+          0.9054687942657693
+        ],
+        "n_fired_known": 2,
+        "adjudicable_floor": 35,
+        "adjudicable": false,
+        "disposition": "NOT-ADJUDICABLE"
+      },
+      "known_correct_cost_control_g2_block": {
+        "full_population_g2": {
+          "n": 270,
+          "successes": 1,
+          "rate": 0.003703703703703704,
+          "wilson_ci_95": [
+            0.0006540941063273003,
+            0.02067744146849227
+          ]
+        },
+        "full_population_g2_pass": true,
+        "fired_only": {
+          "n": 2,
+          "successes": 1,
+          "rate": 0.5,
+          "wilson_ci_95": [
+            0.09453120573423074,
+            0.9054687942657693
+          ],
+          "n_fired_known": 2,
+          "adjudicable_floor": 35,
+          "adjudicable": false,
+          "disposition": "NOT-ADJUDICABLE"
+        },
+        "undosed_floor": {
+          "n": 268,
+          "successes": 0,
+          "rate": 0.0,
+          "wilson_ci_95": [
+            0.0,
+            0.01413124707820208
+          ]
+        },
+        "discrepancy_full_pass_but_fired_only_over_cap": true
+      },
+      "dose_target": 45.06793785763545
+    }
+  },
+  "primary": {
+    "family": "gemma4-e4b",
+    "best_mid_layer": "hs15",
+    "g1_floor_used": {
+      "rate": 0.5,
+      "wilson_lower_ci": 0.4
+    },
+    "g2_cap_used": {
+      "rate": 0.05,
+      "wilson_upper_ci": 0.1
+    },
+    "best_mid_confab_clean_tighten": {
+      "n": 168,
+      "successes": 132,
+      "rate": 0.7857142857142857,
+      "wilson_ci_95": [
+        0.7176458742604324,
+        0.8410086009682145
+      ]
+    },
+    "best_mid_known_correct_cost": {
+      "n": 270,
+      "successes": 3,
+      "rate": 0.011111111111111112,
+      "wilson_ci_95": [
+        0.003785840092852641,
+        0.03215268748831291
+      ]
+    },
+    "g1_midband_actuation_floor_pass": true,
+    "g2_midband_selectivity_cap_pass": true,
+    "primary_pass": true,
+    "late_reference_layer": "hs40",
+    "secondary_late_reference": {
+      "gating": "none",
+      "status": "SKIPPED -- no usable late-arm dose found in fresh calibration (expected per doubt-snap's late-site null); the primary does not depend on the late arm."
+    }
+  },
+  "primary_pass": false
+}

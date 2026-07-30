@@ -949,3 +949,703 @@ reachable through the pre-existing `shallow_ladder` set, so nothing further
 needs registering. Per its `coincides_with` note it runs once and is reported
 under both the A6 and D4 labels.
 
+## 2026-07-29 -- Phase A execution: runtime blockers, resolution, G0-KV re-verification
+
+Dispatched by the lead to execute Phase A (KV-sharing-ON arms) on the local
+3090. Full sequence, in order, because each step's provenance matters for
+what may be cited as validity evidence downstream.
+
+**Docker GPU passthrough was down at dispatch.** `docker run --gpus all`
+failed (`could not select device driver ""`) under both `default` and
+`desktop-linux` contexts; `nvidia-container-toolkit` was not registered as a
+runtime and no passwordless sudo was available to fix it. Root cause (lead
+diagnosed): Docker Desktop was closed. `unix:///var/run/docker.sock` is
+backed by two different daemons depending on whether Docker Desktop is
+running -- with Desktop closed it silently falls back to the WSL-native
+`dockerd` (runc only, no nvidia runtime); with Desktop open the same socket
+path is backed by the Desktop engine (nvidia runtime present). **Before every
+GPU stage from here on: `export DOCKER_HOST=unix:///var/run/docker.sock` and
+verify `docker info` shows `Operating System: Docker Desktop` AND a `nvidia`
+entry under `Runtimes`, before assuming `--gpus all` will work.**
+
+**Incidental fix, no tracked content changed.** `analysis-committed/gemma4-e4b/{split_manifest,eval_pool_manifest}.json`
+are git symlinks (mode 120000) into `experiments/common/artifacts/jspace-cross-family-gemma4-e4b/`,
+but this checkout has `core.symlinks=false`, so they materialized as plain
+files containing the link-target path rather than real symlinks --
+`pipeline.py`'s `json.loads(split_path.read_text())` was reading that path
+string as JSON and throwing `JSONDecodeError`. Did not touch git config
+(hard rule). Recreated both as real symlinks via `ln -sf` to the identical
+target already recorded in the placeholder file; `git status --short`
+confirmed no content change. Flagging in case other experiments hit the same
+pattern.
+
+**Built `mechinterp-runner:local` (first build, digest `sha256:ee17d595b00ead64a701214eec08adbbc9c55a30402314669e41656262e10b0e`,
+tuner `246d412ea3c6dbf88c38eb997b606956fad15812`, `transformers==5.12.1`).**
+Stage 1 smoke (`run_contrast.py --site-set seam_pair --kv-sharing on --mode
+smoke --n-rows 8`) failed at model load: `model_lib.py`'s
+`load_model_and_tokenizer` hardcodes `device_map="auto"`, which needs
+`accelerate`; the pinned image genuinely lacked it. **Did not edit the
+pinned `model_lib.py`.** Reported to lead; lead authorized adding
+`accelerate` to the shared (non-pinned, project-agnostic) `mechinterp-runner`
+Dockerfile rather than `pip install`-ing into a running container (the
+README explicitly names that anti-pattern and rejects it). Synaptic-Tuner PR
+#148 / EHR PR #353 landed `accelerate==1.14.0`.
+
+**Rebuilt `mechinterp-runner:local` (digest `sha256:fe732c8fb4c82ea1a1acd1df3766a6fe854de750f1416d934e3c66231dfff801`,
+tuner `61899a29c11a60edba9d0a0b35c56d0a20b07d75`, still `transformers==5.12.1`).**
+Sanity check passed (`accelerate 1.14.0`, `transformers 5.12.1`). Re-ran
+Stage 1 smoke: model loaded fine this time (~20s, `device_map=auto` via
+accelerate), but crashed immediately inside the **pinned** `kv_seam_patch.py`
+(`kv_sharing()` context manager, line 261):
+`AttributeError: 'Gemma4TextAttention' object has no attribute
+'kv_shared_layer_index'`. Read the installed `transformers==5.12.1`
+`modeling_gemma4.py` source directly (diagnostic only, no edits): confirmed
+`kv_shared_layer_index` does not exist anywhere in that file -- only
+`is_kv_shared_layer` -- differing from what AMENDMENT.md's architecture
+section says was verified against `transformers==5.5.0`. Because the context
+manager reads this attribute unconditionally (before checking
+`enabled`), this blocks **every arm**, ON or OFF alike, not just this smoke.
+This also means the 2026-07-25 `kv_seam_preflight.py` 6/6 PASS cannot have
+run against this exact runtime, since it exercises the same attribute --
+that PASS's runtime was never recorded (no image digest, no environment
+note anywhere in this notebook for the 2026-07-25 pre-sign GPU carve-outs),
+so it cannot be verified either way and is treated as unrecorded rather than
+wrong. **Did not edit the pinned `kv_seam_patch.py`.** Reported to lead.
+
+**Produced pre-tf550 smoke artifacts (now superseded).** The seam_pair
+smoke run that hit the `kv_shared_layer_index` crash was preceded, in the
+same invocation chain, by a first successful write/readback pass whose
+outputs (`smoke_summary.seam_pair.json`, `runlog/smoke/hs22.jsonl`,
+`hs24.jsonl` + `.meta.json`, mtime ~14:34Z) are **SUPERSEDED as validity
+evidence** per lead ruling 2026-07-29 -- produced under the unrecorded,
+now-superseded `local` image before the `transformers` version mismatch was
+understood. Moved intact (not deleted) to
+`analysis/gemma4-e4b/runlog/superseded/pre-tf550-20260729/` with a README
+explaining why. Do not cite.
+
+**Lead decision (user-approved): align the runtime to `transformers==5.5.0`,
+the version the instrument was actually validated against, rather than
+rewrite the pinned `kv_seam_patch.py`.** Synaptic-Tuner PR #149
+parameterized the Dockerfile (`ARG TRANSFORMERS_VERSION`, default unchanged
+at 5.12.1); EHR PR #354 bumped the pin. Built `mechinterp-runner:tf550`
+(distinct tag, coexists with `:local`) with
+`--build-arg TRANSFORMERS_VERSION=5.5.0 --build-arg
+MECHINTERP_RUNNER_GIT_REVISION=34c89fc4f9d693a6b997422288d820e9c30b4696`.
+Digest: `sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8`.
+
+**In-image sanity, 2026-07-29, `mechinterp-runner:tf550`:** `transformers
+5.5.0`, `accelerate 1.14.0`, and `'kv_shared_layer_index' in
+inspect.getsource(transformers.models.gemma4.modeling_gemma4)` -> `True`.
+Confirms the amendment's 5.5.0 architecture claim.
+
+**`kv_seam_preflight.py` re-run inside `mechinterp-runner:tf550`, CPU
+(GPU flag passed but preflight itself is CPU-only per its own persistence
+declaration), wall-clock 6s: 6/6 PASS** (geometry+crash reproduces; fix
+completes; mechanism actually flipped, sharing-OFF k_proj calls sum=90
+min-per-block=5 on the 18 shared blocks vs sum=0 under stock; ON-condition
+equivalence to stock is token- and logit-bit-identical; OFF cache growth
+live at all 18 appended slots across prefill+2 decode steps; ON
+cache-substitution no-op token-identical on 8/8 fixed prompts). **This
+supersedes the 2026-07-25 6/6 PASS as validity evidence** -- that earlier
+run's runtime was never recorded and cannot be confirmed to have exercised
+this same `kv_shared_layer_index` code path; this run is the first G0-KV
+pass with runtime provenance (image digest + `transformers` version) tied to
+the result.
+
+Provenance for every stage from here forward: image `sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8`
+(`mechinterp-runner:tf550`), tuner `34c89fc4f9d693a6b997422288d820e9c30b4696`,
+`transformers==5.5.0`, structural grep (`model.language_model.layers` in
+`hooks.py`) re-verified per stage.
+
+**Stage 1 (seam_pair ON smoke, n=8), `mechinterp-runner:tf550`, wall-clock
+119s -- PASS.** `g0_smoke_pass: true`. hs22: `dose_target=28.5068`,
+`readback_mean=28.5174`, `frac_readback_within_tol=1.0`,
+`collapse_rate_on_dosed=0.0`, `confab_tighten` 3/4 = 0.75 [0.30, 0.95].
+hs24: `dose_target=50.5311`, `readback_mean=50.7748`,
+`frac_readback_within_tol=1.0`, `collapse_rate_on_dosed=0.0`,
+`confab_tighten` 4/4 = 1.0 [0.51, 1.0]. RunLog:
+`analysis/gemma4-e4b/runlog/smoke/{hs22,hs24}.jsonl` + `.meta.json`;
+summary `analysis/gemma4-e4b/smoke_summary.seam_pair.json`.
+
+**Stage 2 (seam_pair ON full mode, A3/A5 true arms on held-out),
+`mechinterp-runner:tf550`, same provenance, n_rows=438 per site (168
+confab_held_out + 270 known_correct_answered_held_out), completed
+2026-07-29 13:36 EDT.** Recorded verbatim from
+`analysis/gemma4-e4b/full_summary.seam_pair.json`, verified independently
+against the raw file (not taken on the lead's word alone):
+
+- **hs22 (A3):** `readback_mean=28.5104`, `frac_readback_within_tol=1.0`,
+  `collapse_rate_on_dosed=0.0`. `confab_tighten` 99/168 = 0.5893
+  [0.5137, 0.6609]. `known_correct_cost_control` (full population, G2 as
+  transcribed) 1/270 = 0.0037 [0.00065, 0.0207] -- `full_population_g2_pass:
+  true`. Fired-only companion: `n_fired_known=2`, 1/2 = 0.5, **NOT-ADJUDICABLE**
+  (floor 35). `discrepancy_full_pass_but_fired_only_over_cap: true` (fired-only
+  0.5 exceeds the 0.05 cap while full-population G2 passes).
+- **hs24 (A5):** `readback_mean=50.7555`, `frac_readback_within_tol=1.0`,
+  `collapse_rate_on_dosed=0.03409090909090909` (6 of 176 fired collapsed).
+  `confab_tighten` 123/168 = 0.7321 [0.6605, 0.7934]. `known_correct_cost_control`
+  9/270 = 0.0333 [0.0176, 0.0621] -- `full_population_g2_pass: true`. Fired-only
+  companion: `n_fired_known=9`, 9/9 = 1.0, **NOT-ADJUDICABLE** (floor 35).
+  `discrepancy_full_pass_but_fired_only_over_cap: true` (fired-only 1.0 far
+  exceeds the 0.05 cap while full-population G2 passes).
+- **Both top-level pass fields, recorded exactly as written, not
+  reconciled or interpreted here:** the `primary` sub-block (`best_mid_layer:
+  "hs24"`, `g1_midband_actuation_floor_pass: true`,
+  `g2_midband_selectivity_cap_pass: true`) reports **`primary_pass: true`**.
+  The top-level summary object separately reports **`primary_pass: false`**.
+  Per the lead: the top-level field is `false` solely because it additionally
+  requires zero collapse on every layer in the site set, and hs24 has
+  `collapse_rate_on_dosed = 0.03409...` (non-zero); the `primary` sub-block's
+  own G1/G2 pass fields do not carry that collapse requirement. Adjudication
+  of what this means for the arm-level and experiment-level dispositions is
+  the lead's, reserved for Stage 6.
+- RunLog: `analysis/gemma4-e4b/runlog/full/{hs22,hs24}.jsonl` (438 rows each,
+  row counts verified against `n_rows` in the summary), `.meta.json` sidecars
+  (both currently record `"complete": false` -- recorded as observed, not
+  interpreted; row counts independently confirm all 438 rows per site are
+  present and match the summary's own `n_rows`). Summary:
+  `analysis/gemma4-e4b/full_summary.seam_pair.json`.
+- Wrapper note: the background shell wrapper around this `docker run` was
+  killed by the harness before its own trailing `echo` lines executed, so no
+  wrapper-level exit code was captured. This does not bear on the run's
+  completeness -- the container's own process ran to completion, printed the
+  full JSON summary to the log, and both RunLogs show exactly 438/438 rows
+  matching the summary. Confirmed independently, not taken on trust.
+
+**Staging.** Both Stage 1 (smoke) and Stage 2 (full) RunLogs and summaries
+copied to the durable exhaust dir:
+`/home/profsynapse/code/ehr-exhaust/gemma4-e4b-kv-seam-quarantine/smoke/`
+(`smoke_summary.seam_pair.json`, `hs22.jsonl`+meta, `hs24.jsonl`+meta) and
+`/home/profsynapse/code/ehr-exhaust/gemma4-e4b-kv-seam-quarantine/full/`
+(`full_summary.seam_pair.json`, `hs22.jsonl`+meta, `hs24.jsonl`+meta).
+
+## Stage 3 -- seam_pair ON undosed baseline (A3/A5), 2026-07-29
+
+Image `mechinterp-runner:tf550`, digest
+`sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8`,
+`transformers==5.5.0`, tuner commit `34c89fc4f9d693a6b997422288d820e9c30b4696`
+(EHR main `860ed97e992cb5cbac8515f169a6c262f628bca8`). Structural check
+re-verified: `grep -n '"model.language_model.layers"'
+synaptic-tuner/MechInterp/intervention/hooks.py` -> line 56, present.
+Docker Desktop guard passed (`Operating System: Docker Desktop`, `nvidia` in
+Runtimes) before launch.
+
+Command:
+```
+python3 run_contrast.py --family gemma4-e4b --site-set seam_pair \
+  --kv-sharing on --mode full --arm-kind undosed \
+  --i-know-this-is-the-cross-family-run
+```
+
+Results, independently verified against the raw JSON (not taken on the
+lead's report):
+
+- **hs22 (A3 undosed baseline):** `n_rows=438`, `n_fired=0` (undosed, as
+  expected -- no dose applied, so `readback_mean`, `frac_readback_within_tol`,
+  `collapse_rate_on_dosed` are all `null`). `confab_tighten` 0/168 = 0.0
+  [0.0, 0.02235]. `known_correct_cost_control` 0/270 = 0.0 [0.0, 0.01403],
+  `full_population_g2_pass: true`. Fired-only companion: `n_fired_known=0`,
+  **NOT-ADJUDICABLE** (floor 35, as expected with n_fired=0).
+  `discrepancy_full_pass_but_fired_only_over_cap: false`.
+- **hs24 (A5 undosed baseline):** identical shape and numbers to hs22:
+  `n_rows=438`, `n_fired=0`, `confab_tighten` 0/168 = 0.0 [0.0, 0.02235],
+  `known_correct_cost_control` 0/270 = 0.0 [0.0, 0.01403],
+  `full_population_g2_pass: true`, fired-only **NOT-ADJUDICABLE**
+  (`n_fired_known=0`), `discrepancy_full_pass_but_fired_only_over_cap: false`.
+  (Both sites' undosed numbers are identical -- consistent with the arm-kind
+  being undosed at both sites, since no per-site dose is applied.)
+- RunLog: `analysis/gemma4-e4b/runlog/undosed/full/{hs22,hs24}.jsonl` (438
+  rows each, row counts independently verified via `wc -l` against
+  `n_rows=438` in each summary). `.meta.json` sidecars both record
+  `"complete": false`. Summaries:
+  `analysis/gemma4-e4b/undosed_summary.hs22.seam_pair.json`,
+  `analysis/gemma4-e4b/undosed_summary.hs24.seam_pair.json`.
+
+**RunLog `complete:false` semantics (lead-verified in code, 2026-07-29):**
+the sidecar is written by the tuner's `RunLog`
+(`synaptic-tuner/.../shared/utilities/run_log.py`), which stamps
+`complete=false` at open and only flips it to `true` inside
+`RunLog.finalize()`. The pinned `run_contrast.py` never calls `finalize()` --
+it uses `run_log.close()` and writes its own summaries via its own
+`write_summary()`. So `complete:false` is the **expected steady state** for
+every RunLog this instrument produces across all stages (Stage 2's full
+RunLogs included), not an interruption marker. Completeness is evidenced by
+runlog line count matching the summary's `n_rows`, which has now been
+independently confirmed at every stage (Stage 1 smoke, Stage 2 full, Stage 3
+undosed). A re-invocation of `run_contrast.py` against an existing RunLog path
+would enter `RunLog`'s resume path and correctly redo nothing already
+recorded.
+
+**Staging.** Copied to
+`/home/profsynapse/code/ehr-exhaust/gemma4-e4b-kv-seam-quarantine/undosed/`:
+`undosed_summary.hs22.seam_pair.json`, `undosed_summary.hs24.seam_pair.json`,
+`hs22.jsonl`+meta, `hs24.jsonl`+meta.
+
+## Stage 4 -- seam_pair ON placebo arms P1/P2, K=5, 2026-07-29 -- STOPPED (pinned-code defect)
+
+Image `mechinterp-runner:tf550`, digest
+`sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8`,
+`transformers==5.5.0`, tuner commit `34c89fc4f9d693a6b997422288d820e9c30b4696`
+(EHR main `860ed97e992cb5cbac8515f169a6c262f628bca8`). Docker Desktop guard
+passed before both the dry-run and the full run.
+
+**CPU dry-run (`--arm-kind placebo --placebo-k 5 --dry-run`), succeeded:**
+both sites cleared SC1 cleanly -- hs22: 5/5 accepted directions in 20 draws
+(15 redraws, well under the 300-redraw ceiling); hs24: 5/5 accepted in 17
+draws (12 redraws). `n_fired_rows` from the Stage 2 fire logs: hs22=167,
+hs24=176 (fail-closed row-population check passed silently). Ledger written
+to `analysis-committed/gemma4-e4b/placebo_draw_ledger.seam_pair.json`.
+
+**Ledger-path finding (not gate-blocking):** that ledger path is scoped to
+`<site_set>` only, not per `hs_index` (`run_contrast.py:518-520`, via
+`family_config.site_set_artifact("placebo_draw_ledger.json", site_set)`), and
+`write_ledger()` overwrites rather than appends. Since a single `--site-set
+seam_pair` invocation processes hs22 then hs24, hs24's write clobbers hs22's
+SC1 audit trail on disk. Confirmed this does NOT affect gate scoring:
+`rollup.py`'s `build_g3_rollup()` reads the per-layer
+`placebo_summary.<layer>.<site_set>.json` (written separately by
+`run_placebo()`'s own `write_summary()` call) for the G3 confab_tighten
+rates, never the shared ledger file. Mitigated without touching any pinned
+file: a background poller watched the live ledger path and copied it the
+instant it showed `hs_index: 22` (there is a wide window -- all of hs22's
+GPU generation -- before hs24's write overwrites it), to
+`analysis/gemma4-e4b/placebo_draw_ledger.seam_pair.hs22.snapshot.json`.
+Captured successfully at 2026-07-29T23:53:37Z UTC, 5/5 accepted, matching the
+dry-run's deterministic seeds. The live (non-snapshot) ledger path holds
+hs24's data at rest, per its site-set-scoped design.
+
+**Full GPU run (`--arm-kind placebo --placebo-k 5`, no `--dry-run`),
+CRASHED:** GPU clear before launch (812 MiB used). Model weights loaded in
+29s (`STAGE4_START` 2026-07-29T23:53:26Z), then crashed on the very first row
+of hs22's first draw:
+```
+Traceback (most recent call last):
+  File ".../run_contrast.py", line 705, in <module>
+    raise SystemExit(main())
+  File ".../run_contrast.py", line 672, in main
+    results[layer_name] = run_placebo(
+  File ".../run_contrast.py", line 552, in run_placebo
+    rec = pl.run_layer_with_direction(
+  File ".../pipeline.py", line 373, in run_layer_with_direction
+    rec = run_one_row(family, model, controller, tokenizer, dev, eos_ids,
+  File ".../pipeline.py", line 238, in run_one_row
+    "hs_index": row["hs_index"], "fire": row["fire"], "readback_measured": readback,
+KeyError: 'hs_index'
+```
+Docker exit code 1, `STAGE4_END` 2026-07-29T23:54:24Z. Under a minute of GPU
+time lost.
+
+**Root cause (read both functions in full, not guessed):** `run_placebo()`
+(`run_contrast.py:501-509`) builds `gate_rows` by hand --
+`rows = selected_rows(family, ...)` (raw rows from `pl.load_rows`, which
+never carry `hs_index`), then
+`gate_rows = [{**row, "fire": fire_by_key[row["row_key"]]} for row in rows]`.
+`hs_index` is only ever added by `compute_gate_decisions()`
+(`pipeline.py:190-208`, `rec.update({"hs_index": hs_index, ...})`), which
+`run_undosed_baseline()` calls (hence Stage 3 ran clean) but `run_placebo()`
+does not. `run_one_row()` (`pipeline.py:236-244`) unconditionally reads
+`row["hs_index"]` for every row regardless of fire status, so this fails
+deterministically on the first row of the first draw, every time. The
+`--dry-run` path returns at `run_contrast.py:523`, before
+`run_layer_with_direction`/`run_one_row` are ever reached, so the dry-run
+could not have caught this. No test exercises the `run_placebo() ->
+run_layer_with_direction() -> run_one_row()` integration (only
+`test_rollup.py` touches placebo code, against a fixture summary). `git log
+--oneline -- run_contrast.py pipeline.py` shows this landed in `93f59380`
+"kv-seam instrument build: placebo arms, G2 companion, rollup, ALIN Part 2" --
+untested new code, not a regression from this invocation. My command matched
+the documented `--help` interface exactly.
+
+**STOPPED per the standing rule** ("any needed pinned-file change... anything
+the governed docs make a lead call"): did not touch `run_contrast.py` or
+`pipeline.py`. Reported full diagnosis (including a candidate minimal fix,
+not applied) to the lead via SendMessage and am holding here -- did not
+proceed to Stage 5. Task #5 left `in_progress`, not completed, not skipped.
+GPU is idle (`docker run --rm` cleaned up on exit, no orphaned container).
+
+**ADJUDICATION (lead, 2026-07-29 23:58:39Z UTC) -- repin, not a tuner PR.**
+Lead independently traced the identical root cause (same crash log, same
+compute_gate_decisions/run_undosed_baseline explanation, same
+test/dry-run-coverage-gap analysis) while my stop report was in flight. Fix
+landed via `bin/exp repin` (this class of change goes through the
+experiment's own repin path, not synaptic-tuner):
+```
+gate_rows = [{**row, "hs_index": hs_index, "fire": fire_by_key[row["row_key"]]}
+             for row in rows]
+```
+Deliberately NOT my candidate (compute_gate_decisions-then-overwrite-fire):
+the lead's fix avoids reloading the extraction file and recomputing
+proj_d/z_d/tau for rows whose gating is immediately discarded --
+`run_one_row` only ever consumes `row_key`/`role`/`category_canon`/`aliases`
+(pool-provided) + `hs_index` + `fire`, nothing else, so stamping only what's
+consumed is the narrower fix and stays closer to the never-re-gate
+registration.
+
+**Independently verified, not taken on the lead's report:**
+- `sha256sum run_contrast.py` -> `14687efd8f6a74e815c49f8bedb46acf2e5f7ad93e88a555fed9f5abff178978`,
+  matches `experiment.yaml instrument.pins.run_contrast.py` exactly.
+- `experiment.yaml instrument.repins` entry present: `old_sha256
+  83a704050376bca7800eecaab1c3dc6fd74fe9116565dc9ee94c2f8132ed1ecf ->
+  new_sha256 14687efd8f6a74e815c49f8bedb46acf2e5f7ad93e88a555fed9f5abff178978`,
+  dated `2026-07-29T23:58:39Z`, reason recorded verbatim (crash repair,
+  zero-outcome path, no gate/threshold/seed/population/scoring logic
+  touched).
+- Read the actual line in the file at `run_contrast.py:508-511` -- matches
+  the lead's description exactly, including a comment explaining why this
+  path skips `compute_gate_decisions`.
+- `bin/exp validate` -> `exp validate: OK (95 experiment(s))`; no
+  warning/error line for `gemma4-e4b-kv-seam-quarantine` (other experiments'
+  unrelated persistence-declaration warnings present, matches the known
+  per-experiment-check gotcha).
+
+**Ledger rulings, recorded per the lead:**
+1. The hs22 ledger snapshot I captured
+   (`analysis/gemma4-e4b/placebo_draw_ledger.seam_pair.hs22.snapshot.json`) is
+   ACCEPTED as lab-notebook-tier audit preservation. Independently
+   re-verified here (not just trusting the lead's re-derivation): `n_draws=20,
+   n_accepted=5, n_voided=15`, first draw seed `20263307`, which equals
+   `SEED_BASE + hidden_dim + hs_index + k_index = 20260725 + 2560 + 22 + 0`
+   exactly.
+2. The shared-ledger-filename wart (`placebo_draw_ledger.<site_set>.json` not
+   scoped per `hs_index`) is DEFERRED to a future instrument generation --
+   placebo arms do not recur in Phase B and the ledger is fully
+   reconstructible from the registered deterministic seeds. No fix PR now.
+
+**RELAUNCHING Stage 4** with the repinned `run_contrast.py`, same command,
+same tf550 image/provenance, Docker Desktop guard first.
+
+## Stage 4 v2 (repinned) -- seam_pair ON placebo arms P1/P2, K=5, COMPLETE, 2026-07-30
+
+Image `mechinterp-runner:tf550`, digest
+`sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8`,
+`transformers==5.5.0`, tuner commit `34c89fc4f9d693a6b997422288d820e9c30b4696`
+(EHR main `860ed97e992cb5cbac8515f169a6c262f628bca8`), `run_contrast.py` at the
+repinned sha `14687efd8f6a74e815c49f8bedb46acf2e5f7ad93e88a555fed9f5abff178978`.
+`STAGE4V2_START` 2026-07-30T00:02:23Z. The wrapper's trailing
+`STAGE4V2_DOCKER_EXIT`/`STAGE4V2_END` echo lines never appeared in the log --
+same wrapper-killed-after-container-exit pattern noted for Stage 2 (the
+container's own process printed its full closing JSON and exited normally;
+only the outer shell's trailing echo didn't fire, most likely at an overnight
+session boundary). Confirmed NOT a failure: all 10 runlogs
+(`analysis/gemma4-e4b/runlog/placebo/full/{hs22,hs24}.k{0-4}.jsonl`) show
+438/438 rows via independent `wc -l`, both `placebo_summary.hs22.seam_pair.json`
+and `placebo_summary.hs24.seam_pair.json` are present and well-formed, GPU
+confirmed idle (761 MiB used, baseline level) and no container running
+(`docker ps -a` empty) when checked afterward.
+
+**Wall clock** (epoch-derived from runlog mtimes vs. `STAGE4V2_START`, not
+eyeballed): hs22 k0-k4 completed at +59, +116, +175, +234, +293 min (each
+draw ~57-59 min); hs24 k0-k4 completed at +330, +377, +418, +462, +505 min
+(each draw ~37-47 min, shorter than hs22's -- not interpreted here). Total
+wall clock start-to-final-summary: **505 min (~8.43 h)**.
+
+**All numbers below independently verified against the raw
+`placebo_summary.*.seam_pair.json` files, not taken on the lead's report.**
+
+**P1 / hs22 (dose_target=28.507, n_fired_rows=167 at every draw, matching
+Stage 2's true-arm fire count):**
+
+| draw | confab_tighten | known_correct_cost_control | fired_only cost | readback tol | collapse_rate_on_dosed |
+|---|---|---|---|---|---|
+| k0 | 0/168 = 0.0 | 2/270 = 0.0074 | 2/2 = 1.0 (NOT-ADJUDICABLE, floor 35) | 1.0 | 0.3593 |
+| k1 | 0/168 = 0.0 | 2/270 = 0.0074 | 2/2 = 1.0 (NOT-ADJUDICABLE) | 1.0 | 0.8263 |
+| k2 | 0/168 = 0.0 | 2/270 = 0.0074 | 2/2 = 1.0 (NOT-ADJUDICABLE) | 1.0 | 0.9401 |
+| k3 | 0/168 = 0.0 | 2/270 = 0.0074 | 2/2 = 1.0 (NOT-ADJUDICABLE) | 1.0 | 0.6527 |
+| k4 | 0/168 = 0.0 | 2/270 = 0.0074 | 2/2 = 1.0 (NOT-ADJUDICABLE) | 1.0 | 0.9701 |
+
+All five draws hit the SAME 2 fired known-correct rows (`n_fired_known=2`
+every draw), `full_population_g2_pass: true` every draw,
+`discrepancy_full_pass_but_fired_only_over_cap: true` every draw (fired-only
+1.0 exceeds the 0.05 cap while full-population G2 passes -- same pattern
+already on record from Stage 2's true arm). `collapse_rate_on_dosed` ranges
+**0.359 to 0.970** across the five draws -- wide, unsmoothed range recorded
+as-is; not interpreted here.
+
+**P2 / hs24 (dose_target=50.531, n_fired_rows=176 at every draw, matching
+Stage 2's true-arm fire count):**
+
+| draw | confab_tighten | known_correct_cost_control | fired_only cost | readback tol | collapse_rate_on_dosed |
+|---|---|---|---|---|---|
+| k0 | 108/168 = 0.6429 | 9/270 = 0.0333 | 9/9 = 1.0 (NOT-ADJUDICABLE) | 1.0 | 0.0284 |
+| k1 | 21/168 = 0.1250 | 7/270 = 0.0259 | 7/9 = 0.7778 (NOT-ADJUDICABLE) | 1.0 | 0.4773 |
+| k2 | 0/168 = 0.0 | 7/270 = 0.0259 | 7/9 = 0.7778 (NOT-ADJUDICABLE) | 1.0 | 0.3125 |
+| k3 | 53/168 = 0.3155 | 7/270 = 0.0259 | 7/9 = 0.7778 (NOT-ADJUDICABLE) | 1.0 | 0.0 |
+| k4 | 28/168 = 0.1667 | 7/270 = 0.0259 | 7/9 = 0.7778 (NOT-ADJUDICABLE) | 1.0 | 0.0057 |
+
+`confab_tighten` across P2's five draws is **wildly heterogeneous** (0.0 to
+0.6429 -- a ~64 percentage-point spread), recorded here without smoothing or
+averaging; this heterogeneity is scientifically notable per the lead and is
+being flagged, not interpreted, at this stage. `full_population_g2_pass:
+true` every draw; `discrepancy_full_pass_but_fired_only_over_cap: true`
+every draw. `collapse_rate_on_dosed` ranges **0.0 to 0.477** across the five
+draws.
+
+**G3 registered inputs (per the lead -- recorded verbatim, formal
+pass/fail/adjudication language is the lead's, not mine, and belongs to
+Stage 6's rollup):** the registered G3 undosed lift baseline
+(`gates.yaml g3_direction_specificity`) is exactly 0.0 at both sites (Stage
+3's undosed `confab_tighten` was 0/168 at both hs22 and hs24). For A3/P1, the
+max-placebo-lift denominator is exactly 0.000 (all five draws at 0.0) --
+per the lead, this is the pre-registered PASS-DEGENERATE disposition (a
+pass with a label, never citable as a large ratio, since the ratio's
+denominator is degenerate). For A5/P2, the lead reports the worst-case
+(highest) placebo denominator is 0.643 (k0), giving `effect_ratio =
+lift_true / max_placebo_lift = 0.732 / 0.643 = 1.14`, below the 3.0 cap. The
+actual ratio arithmetic and disposition sign-off is deferred to Stage 6's
+`rollup.py` run; I am not asserting a verdict here.
+
+**Ledger.** Live ledger path (`analysis-committed/gemma4-e4b/
+placebo_draw_ledger.seam_pair.json`) holds hs24's data at rest (site-set-
+scoped, as designed); hs22's snapshot remains preserved at
+`analysis/gemma4-e4b/placebo_draw_ledger.seam_pair.hs22.snapshot.json` per
+the lead's ruling above.
+
+**Staging.** Copied to
+`/home/profsynapse/code/ehr-exhaust/gemma4-e4b-kv-seam-quarantine/placebo/`:
+`placebo_summary.hs22.seam_pair.json`, `placebo_summary.hs24.seam_pair.json`,
+all 10 `runlog/placebo/full/{hs22,hs24}.k{0-4}.jsonl`+meta, and both ledger
+files (live + hs22 snapshot).
+
+## Stage 5a -- shallow_ladder ON dose calibration, COMPLETE, 2026-07-30
+
+Image `mechinterp-runner:tf550`, digest
+`sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8`,
+`transformers==5.5.0`, tuner commit `34c89fc4f9d693a6b997422288d820e9c30b4696`
+(EHR main `860ed97e992cb5cbac8515f169a6c262f628bca8`). `STAGE5A_START`
+2026-07-30T10:07:10Z. Same missing-trailing-echo pattern as prior stages
+(container completed and wrote its summary; wrapper's own exit/end echo
+lines did not appear in the log) -- confirmed via the completed, well-formed
+`dose_calibration_summary.shallow_ladder.json` (written 07:13) and GPU idle
+with no orphaned containers afterward, not treated as a failure.
+
+Command: `calibrate_dose.py --family gemma4-e4b --site-set shallow_ladder
+--kv-sharing on` (default ratio ladder `[0.1, 0.153, 0.235, 0.361, 0.554,
+0.85, 1.304, 2.0]`, no `--doses` override). Median anchor L2 norms: hs15=
+133.173, hs18=101.074, hs20=81.350, hs23=58.778, hs40=142.347. 40 total
+(layer, ratio) cells (5 sites x 8 ratios): hs15/hs18/hs20/hs23 (the
+registered shallow ladder) plus hs40 (late-reference site, resolved into
+this site set's own calibration scope by the pinned tool -- observed, not
+second-guessed).
+
+**Independently verified against the raw summary JSON, not taken on the
+lead's report** (`has_usable_dose`, `selected`, `selected_dose` fields read
+directly):
+
+| site | has_usable_dose | selected_dose | selected_ratio |
+|---|---|---|---|
+| hs15 | true | 173.65765096701432 | 1.304 |
+| hs18 | true | 85.91323993905378 | 0.85 |
+| hs20 | true | 45.06793785763545 | 0.554 |
+| hs23 | **false** | null | null |
+| hs40 | false | null | null |
+
+**hs23 rung-by-rung (independently re-derived from the per-ratio
+`doses` array, matching the lead's description exactly):** ratios ->
+(confab_tighten rate, collapse_rate_on_dosed): 0.1 -> (0.0, 0.0), 0.153 ->
+(0.0, 0.0), 0.235 -> (0.25, 0.0), 0.361 -> (0.375, 0.0), 0.554 -> (0.375,
+0.0), 0.85 -> (0.625, 0.125), 1.304 -> (0.5, 0.125), 2.0 -> (0.5, 0.125).
+Every rung that clears the `min_confab_rate_for_usable=0.5` floor (the last
+three) carries nonzero collapse (0.125); every zero-collapse rung sits under
+the floor. Zero usable rungs, confirming `has_usable_dose=false`.
+
+**LEAD ADJUDICATION (final for Phase A, per the lead 2026-07-30):** per the
+registered rule in `calibrate_dose.py` (`dose_is_usable`: readback within
+tolerance AND collapse_rate_on_dosed == 0.0 AND confab_tighten rate >= 0.5;
+"zero usable rungs is a dose-viability NOT-RUN, not a tuning invitation"),
+**D4/A6 at hs23 is NOT-RUN.** Do not re-ladder, do not tune, do not
+substitute a nearby ratio -- I have not done any of these. hs40's null
+selected dose is expected (the descriptive, non-gating late-reference site;
+doubt-snap's own frozen late-site null pattern), no action taken. The "zero
+usable doses anywhere" hard-stop condition does NOT trigger (three usable
+mid-band sites: hs15, hs18, hs20).
+
+**Stage 5b scope, per the lead's go-ahead:** smoke (n=8) then full mode at
+hs15/hs18/hs20 ONLY, at the doses above. hs23 (D4/A6) and hs40 excluded
+entirely from the run -- NOT-RUN/SKIPPED, recorded here rather than
+synthesizing an empty summary file for either.
+
+## Stage 5b -- shallow_ladder ON smoke + full, 2026-07-30
+
+Image `mechinterp-runner:tf550`, digest
+`sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8`,
+`transformers==5.5.0`, tuner commit `34c89fc4f9d693a6b997422288d820e9c30b4696`
+(EHR main `860ed97e992cb5cbac8515f169a6c262f628bca8`).
+
+**Smoke (n=8), PASS.** `smoke_summary.shallow_ladder.json`:
+`g0_smoke_pass: true`. `layer_doses` = `{hs15: 173.65765096701432, hs18:
+85.91323993905378, hs20: 45.06793785763545}`, matching Stage 5a's selections
+exactly. `late_arm_included: false`. hs15/hs18/hs20 all `frac_readback_
+within_tol: 1.0`, `collapse_rate_on_dosed: 0.0`. No hs23 key present.
+Independently verified before launching full mode, not taken on the lead's
+report.
+
+**Full mode, COMPLETE.** `STAGE5B_FULL_START` 2026-07-30T12:31:10Z. Verified
+the container was actually up (`docker ps` showed it running) and rows were
+genuinely appending (`hs15.jsonl` non-empty within ~2 min of launch) before
+parking, per the lead's process note. All three runlogs independently
+confirmed 438/438 rows via `wc -l`
+(`analysis/gemma4-e4b/runlog/full/{hs15,hs18,hs20}.jsonl`, mtimes 09:07,
+09:46, 10:24 respectively -- ~39 min/layer). `.meta.json` sidecars all show
+`complete: false` (expected steady state per the established RunLog
+semantics, not an interruption marker). `full_summary.shallow_ladder.json`
+present and well-formed (7415 bytes, mtime 10:24, matching hs20's
+completion). No `STAGE5B_FULL_DOCKER_EXIT`/`STAGE5B_FULL_END` wrapper lines
+in the log -- same wrapper-killed-after-container-exit pattern as prior
+stages; this time the wrapper's own shell process was most likely reaped by
+the user's machine restart, which the lead had flagged in advance. The
+underlying run itself completed cleanly beforehand (all rows written, well-
+formed closing JSON, summary file present) -- treated as complete, not a
+failure, on that evidence.
+
+**Numbers, independently read from the raw `full_summary.shallow_ladder.json`,
+not taken on any report (none was given for this stage -- read directly):**
+
+| site (dose) | n_fired | readback tol | collapse | confab_tighten | known_correct cost | fired_only cost |
+|---|---|---|---|---|---|---|
+| hs15 (173.658) | 171 | 1.0 | 0.0117 | 132/168 = 0.7857 [0.7176, 0.8410] | 3/270 = 0.0111 [0.0038, 0.0322] | 3/4 = 0.75 (NOT-ADJUDICABLE, floor 35) |
+| hs18 (85.913) | 168 | 1.0 | 0.0119 | 75/168 = 0.4464 [0.3733, 0.5220] | 1/270 = 0.0037 [0.0007, 0.0207] | 1/1 = 1.0 (NOT-ADJUDICABLE) |
+| hs20 (45.068) | 169 | 1.0 | 0.0 | 68/168 = 0.4048 [0.3335, 0.4803] | 1/270 = 0.0037 [0.0007, 0.0207] | 1/2 = 0.5 (NOT-ADJUDICABLE) |
+
+All three sites: `full_population_g2_pass: true`,
+`discrepancy_full_pass_but_fired_only_over_cap: true`.
+
+**`primary` sub-block** (`best_mid_layer: "hs15"`):
+`g1_midband_actuation_floor_pass: true` (floor rate 0.5, Wilson-lower 0.4;
+hs15's confab_tighten rate 0.7857 clears it), `g2_midband_selectivity_cap_
+pass: true` (cap rate 0.05, Wilson-upper 0.1), sub-block `primary_pass:
+true`. `late_reference_layer: hs40`, `secondary_late_reference.status:
+"SKIPPED -- no usable late-arm dose found..."` (as expected, non-gating).
+
+**Top-level `primary_pass: false`** -- recorded exactly as written, NOT
+reconciled or interpreted here, matching the same sub-block-vs-top-level
+split already on record for Stage 2 (the top-level field additionally
+requires zero collapse across every layer in the site set; hs15's collapse
+is 0.0117 and hs18's is 0.0119, both non-zero, while hs20 alone is exactly
+0.0). Adjudication of what this means for the arm-level and
+experiment-level dispositions is the lead's, reserved for Stage 6.
+
+**PARKED per the lead's PAUSE directive (2026-07-30):** the user is
+restarting the machine. Confirmed the restart was already underway when I
+checked -- `docker info` produced no output at all after 120s (daemon
+unresponsive), consistent with the lead's warning. Did NOT relaunch anything,
+did NOT proceed to Stage 6. Reporting this result to the lead and parking
+here; resume/Stage-6 scheduling is the lead's call post-restart.
+
+
+---
+
+## Stage 6 -- Phase A gate adjudication and rollup (LEAD), 2026-07-30
+
+Author: lead session (adjudication reserved to lead per the stage plan).
+Mechanical scoring performed by a results-analyst subagent via rollup.py's own
+per-arm functions; every number below re-derived from the raw summary JSONs and
+cross-checked against the Stage 2/5b entries above before adjudication.
+Provenance: all scored artifacts produced under mechinterp-runner:tf550
+(sha256:479b7ca7...45d8), per-stage provenance lines recorded in the stage
+entries above.
+
+**Scope.** This is the PHASE A (sharing-ON) stage-level adjudication. The
+experiment's primary prediction (A1/A2 patch contrast with C1 and the A_lin
+clause) is Phase B work and remains OPEN. The pinned top-level rollup.py driver
+fails closed at arm A1 (fixed arm order, rollup.py:396) until the Phase B arms
+land; that is correct fail-closed behavior, not a defect. No terminal verdict
+is written here.
+
+### Rulings
+
+**R1. G0-arm smoke_no_collapse: PASS at every run arm.** The check is
+registered inside g0_arm_instrument_validity with interpretation
+stop_before_outcome (gates.yaml:252-276): it is a smoke-stage stop gate. Both
+smokes (Stage 1 seam_pair; Stage 5b shallow_ladder) ran at the selected doses
+with collapse_rate_on_dosed == 0 and the arms proceeded. The gate did its job
+before outcomes ran.
+
+**R2. Full-mode collapse is not covered by any registered outcome gate;
+recorded descriptively.** G1/G2 (transcribed verbatim from the parent) do not
+reference collapse. Full-mode rates: hs22 0.0, hs24 0.0341, hs15 0.0117, hs18
+0.0119, hs20 0.0. The top-level `primary_pass: false` in both full summaries
+conjoins the smoke-stage zero-collapse check onto full-mode results -- a
+stricter condition than anything registered. The flag is recorded exactly as
+emitted and is NOT overwritten; the registered per-arm results are the
+G1/G2/G3 bits below. Ruling consistent across both instances of the split
+(Stage 2 seam_pair and Stage 5b shallow_ladder).
+
+**R3. G1/G2 per-arm results (registered gates), held-out:**
+
+| Arm | Site | G1 (floor 0.50 / lower > 0.40) | G2 (cap 0.05 / upper < 0.10) | arm_pass |
+|---|---|---|---|---|
+| A3 | hs22 | 0.5893 [0.5137, 0.6609] PASS | 0.0037, upper 0.0207 PASS | true |
+| A5 | hs24 | 0.7321 [0.6605, 0.7934] PASS | 0.0333, upper 0.0621 PASS | true |
+| D1 | hs15 | 0.7857 [0.7176, 0.8410] PASS | 0.0111, upper 0.0322 PASS | true |
+| D2 | hs18 | 0.4464 [0.3733, 0.5220] FAIL | 0.0037, upper 0.0207 PASS | false |
+| D3 | hs20 | 0.4048 [0.3335, 0.4803] FAIL | 0.0037, upper 0.0207 PASS | false |
+
+Fired-only G2 companion: NOT-ADJUDICABLE at every arm (max 9 fired known rows
+vs the 35 floor) -- a third disposition, not a pass. The
+discrepancy_full_pass_but_fired_only_over_cap flags at hs24 (Stage 2) and all
+three ladder sites (Stage 5b) are recorded; with n_fired_known of 1-9 they
+cannot be adjudicated and are carried as an open instrument limitation, not
+evidence in either direction.
+
+**R4. G3 direction-specificity verdicts (registered arithmetic,
+gates.yaml g3_direction_specificity):**
+
+- **A3/hs22: PASS-DEGENERATE.** lift(true) = 0.5893 - 0.0 = 0.5893. All five
+  accepted placebo draws produced lift exactly 0.0. Zero denominator -> the
+  registered zero_denominator_rule applies: pass WITH the degenerate label.
+  Per the registered rule this result is never citable as a large effect
+  ratio; the citable statement is "five magnitude-matched random directions at
+  the same site produced zero effect while the fitted direction produced
+  0.5893".
+- **A5/hs24: FAIL.** lift(true) = 0.7321; max placebo lift = 0.6429 (draw k0);
+  effect_ratio = 1.139 < 3.0 floor. The apparent actuation at hs24 is NOT
+  direction-specific: the worst single random draw reproduced 88% of the true
+  effect. Combined with hs24 carrying the highest full-mode collapse (0.0341),
+  the A5 "actuation" is adjudicated as seam-region instability that clean
+  gates cannot distinguish from steering, exactly the failure mode the
+  quarantine account predicts for a KV-shared site.
+
+**R5. Registered secondary expectation (A3 vs A5, non-gating): literal form
+NOT met; the separation appears in the specificity control instead.** The
+registered expectation was A3 clears both gates while A5 does not. In fact
+both cleared G1/G2. The registered descriptive report is therefore: raw gate
+clearance does not separate the sites; G3 does, completely (PASS-DEGENERATE
+vs FAIL), and the collapse profile points the same way. Per registration this
+is descriptive only and enters no success rule.
+
+**R6. Ladder registered expectation: MET.** At least one of hs15/18/20/23
+found a usable FIT dose and cleared G1 on held-out: D1/hs15 did both (0.7857).
+Descriptive depth profile: actuation strength falls monotonically toward the
+seam (0.7857 -> 0.4464 -> 0.4048 at per-site calibrated doses), with hs23
+unable to find any collapse-free dose that clears the FIT confab floor.
+Per-site doses differ, so this is a profile, not a controlled contrast.
+
+**R7. hs23 (D4 == A6): dose-viability NOT-RUN.** Zero usable rungs on the
+registered ladder (every rung clearing the FIT confab floor 0.5 -- ratios
+0.850/1.304/2.000 at rates 0.625/0.500/0.500 -- carries collapse 0.125; every
+zero-collapse rung is below the floor). Per the registered rule the ladder
+does not move. Full per-rung table:
+analysis/gemma4-e4b/runlog/calibrate_dose_records_v2.shallow_ladder.jsonl.
+
+**R8. hs40 (late reference): SKIPPED.** No usable late-site dose (collapse
+0.667-1.0 at the three rungs clearing nothing; all confab rates < 0.5) --
+the expected reproduction of the doubt-snap late-site null. Non-gating,
+gates nothing, reported descriptively.
+
+**R9. Falsifier bookkeeping going into Phase B (registered, restated).**
+D1's G1 clearance arms the registered asymmetric falsifier clause: if A1
+(hs38, ON) fails G1 in Phase B while D1 cleared it here, the above-seam null
+is not a property of the model and the quarantine account is SUPPORTED (not
+established -- promotion requires the A1-vs-A2 contrast with the A_lin
+clause). If instead A1 clears G1, the parent null failed to reproduce and the
+experiment is VOID per the pre-stated disposition. Phase B is decisive either
+way.
+
+### Phase A summary sentence (stage-level, not a terminal verdict)
+
+Below the KV seam, gemma4-e4b actuates with perfect direction-specificity
+(hs22, hs15) at low known-answer cost; approaching and entering the
+KV-shared region, clean actuation degrades in order (weaker G1 at hs18/hs20,
+no viable dose at hs23, non-direction-specific instability at hs24), a
+depth-and-seam profile consistent with the quarantine account and awaiting
+the decisive A1/A2 ON/OFF contrast in Phase B.

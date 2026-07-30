@@ -1,0 +1,182 @@
+{
+  "hs_index": 24,
+  "hidden_dim": 2560,
+  "sc1_bar": 0.015,
+  "k": 5,
+  "max_redraws": 300,
+  "n_draws": 17,
+  "n_accepted": 5,
+  "n_voided": 12,
+  "draws": [
+    {
+      "seed": 20263309,
+      "draw_kind": "primary",
+      "k_index": 0,
+      "attempt": null,
+      "cos_c_hat": 0.026004873780428775,
+      "cos_u_d": -0.02098449104716729,
+      "bar": 0.015,
+      "decision": "void"
+    },
+    {
+      "seed": 20263310,
+      "draw_kind": "primary",
+      "k_index": 1,
+      "attempt": null,
+      "cos_c_hat": 0.0019295064152823112,
+      "cos_u_d": 0.00029313193688973964,
+      "bar": 0.015,
+      "decision": "accept"
+    },
+    {
+      "seed": 20263311,
+      "draw_kind": "primary",
+      "k_index": 2,
+      "attempt": null,
+      "cos_c_hat": -0.0069839970276669395,
+      "cos_u_d": 0.030222179131321383,
+      "bar": 0.015,
+      "decision": "void"
+    },
+    {
+      "seed": 20263312,
+      "draw_kind": "primary",
+      "k_index": 3,
+      "attempt": null,
+      "cos_c_hat": 0.006281188665389779,
+      "cos_u_d": 0.03999006666490193,
+      "bar": 0.015,
+      "decision": "void"
+    },
+    {
+      "seed": 20263313,
+      "draw_kind": "primary",
+      "k_index": 4,
+      "attempt": null,
+      "cos_c_hat": -0.039135725587120404,
+      "cos_u_d": 0.018172550289088648,
+      "bar": 0.015,
+      "decision": "void"
+    },
+    {
+      "seed": 20263315,
+      "draw_kind": "redraw",
+      "k_index": null,
+      "attempt": 1,
+      "cos_c_hat": -0.005854119170371391,
+      "cos_u_d": 0.015358117734554304,
+      "bar": 0.015,
+      "decision": "void"
+    },
+    {
+      "seed": 20263316,
+      "draw_kind": "redraw",
+      "k_index": null,
+      "attempt": 2,
+      "cos_c_hat": 0.00048014646776120204,
+      "cos_u_d": -0.016206924271861222,
+      "bar": 0.015,
+      "decision": "void"
+    },
+    {
+      "seed": 20263317,
+      "draw_kind": "redraw",
+      "k_index": null,
+      "attempt": 3,
+      "cos_c_hat": -0.012263682457410156,
+      "cos_u_d": -0.0007457265898610493,
+      "bar": 0.015,
+      "decision": "accept"
+    },
+    {
+      "seed": 20263318,
+      "draw_kind": "redraw",
+      "k_index": null,
+      "attempt": 4,
+      "cos_c_hat": -0.023731783327203448,
+      "cos_u_d": 0.0162435375301293,
+      "bar": 0.015,
+      "decision": "void"
+    },
+    {
+      "seed": 20263319,
+      "draw_kind": "redraw",
+      "k_index": null,
+      "attempt": 5,
+      "cos_c_hat": 0.0027820283268866174,
+      "cos_u_d": 0.03391793520253929,
+      "bar": 0.015,
+      "decision": "void"
+    },
+    {
+      "seed": 20263320,
+      "draw_kind": "redraw",
+      "k_index": null,
+      "attempt": 6,
+      "cos_c_hat": -0.00010292311711155613,
+      "cos_u_d": -0.007796287201779565,
+      "bar": 0.015,
+      "decision": "accept"
+    },
+    {
+      "seed": 20263321,
+      "draw_kind": "redraw",
+      "k_index": null,
+      "attempt": 7,
+      "cos_c_hat": -0.015248603423265866,
+      "cos_u_d": -0.011510527940128941,
+      "bar": 0.015,
+      "decision": "void"
+    },
+    {
+      "seed": 20263322,
+      "draw_kind": "redraw",
+      "k_index": null,
+      "attempt": 8,
+      "cos_c_hat": 0.020573869060068136,
+      "cos_u_d": 0.017800329040029893,
+      "bar": 0.015,
+      "decision": "void"
+    },
+    {
+      "seed": 20263323,
+      "draw_kind": "redraw",
+      "k_index": null,
+      "attempt": 9,
+      "cos_c_hat": 0.014832546941324026,
+      "cos_u_d": 0.004395812011525199,
+      "bar": 0.015,
+      "decision": "accept"
+    },
+    {
+      "seed": 20263324,
+      "draw_kind": "redraw",
+      "k_index": null,
+      "attempt": 10,
+      "cos_c_hat": 0.03385930377439868,
+      "cos_u_d": 0.010470325900243544,
+      "bar": 0.015,
+      "decision": "void"
+    },
+    {
+      "seed": 20263325,
+      "draw_kind": "redraw",
+      "k_index": null,
+      "attempt": 11,
+      "cos_c_hat": 0.023608611392687547,
+      "cos_u_d": -0.04254538767876985,
+      "bar": 0.015,
+      "decision": "void"
+    },
+    {
+      "seed": 20263326,
+      "draw_kind": "redraw",
+      "k_index": null,
+      "attempt": 12,
+      "cos_c_hat": -0.00549085425728431,
+      "cos_u_d": -0.009761888347813144,
+      "bar": 0.015,
+      "decision": "accept"
+    }
+  ]
+}

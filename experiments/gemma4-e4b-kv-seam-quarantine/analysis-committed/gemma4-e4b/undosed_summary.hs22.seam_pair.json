@@ -1,0 +1,84 @@
+{
+  "family": "gemma4-e4b",
+  "arm_kind": "undosed",
+  "site_set": "seam_pair",
+  "kv_sharing": "on",
+  "mode": "full",
+  "hs_index": 22,
+  "dose_target_of_matched_true_arm": 28.50676604438885,
+  "layer": {
+    "hs_index": 22,
+    "kv_sharing": "on",
+    "n_rows": 438,
+    "n_fired": 0,
+    "readback_mean": null,
+    "frac_readback_within_tol": null,
+    "collapse_rate_on_dosed": null,
+    "confab_tighten": {
+      "n": 168,
+      "successes": 0,
+      "rate": 0.0,
+      "wilson_ci_95": [
+        0.0,
+        0.022354668349868052
+      ]
+    },
+    "known_correct_cost_control": {
+      "n": 270,
+      "successes": 0,
+      "rate": 0.0,
+      "wilson_ci_95": [
+        0.0,
+        0.014028039571646583
+      ]
+    },
+    "known_correct_cost_control_fired_only": {
+      "n": 0,
+      "successes": 0,
+      "rate": 0.0,
+      "wilson_ci_95": [
+        0.0,
+        0.0
+      ],
+      "n_fired_known": 0,
+      "adjudicable_floor": 35,
+      "adjudicable": false,
+      "disposition": "NOT-ADJUDICABLE"
+    },
+    "known_correct_cost_control_g2_block": {
+      "full_population_g2": {
+        "n": 270,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.014028039571646583
+        ]
+      },
+      "full_population_g2_pass": true,
+      "fired_only": {
+        "n": 0,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.0
+        ],
+        "n_fired_known": 0,
+        "adjudicable_floor": 35,
+        "adjudicable": false,
+        "disposition": "NOT-ADJUDICABLE"
+      },
+      "undosed_floor": {
+        "n": 270,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.014028039571646583
+        ]
+      },
+      "discrepancy_full_pass_but_fired_only_over_cap": false
+    }
+  }
+}

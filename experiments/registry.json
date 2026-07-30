@@ -2380,9 +2380,18 @@
           "pipeline.py": "89948aefa32b810cefbad2366647a62c22e5338353f670730d404b8cfd31ebf0",
           "placebo_direction.py": "d28978d6e42acf7629ac15e5cceb8c902629cc9b705abb361e20579bc977fca2",
           "rollup.py": "91d8b9746ec17905476a1c73afcc961a46fd38ef25d47631ec52c558542dd24b",
-          "run_contrast.py": "83a704050376bca7800eecaab1c3dc6fd74fe9116565dc9ee94c2f8132ed1ecf",
+          "run_contrast.py": "14687efd8f6a74e815c49f8bedb46acf2e5f7ad93e88a555fed9f5abff178978",
           "scorers.py": "1b3eda5d8d68c9184674f092805278505c5cd2065a21ffe7ec348e9ea5a00c37"
-        }
+        },
+        "repins": [
+          {
+            "date": "2026-07-29T23:58:39Z",
+            "file": "run_contrast.py",
+            "new_sha256": "14687efd8f6a74e815c49f8bedb46acf2e5f7ad93e88a555fed9f5abff178978",
+            "old_sha256": "83a704050376bca7800eecaab1c3dc6fd74fe9116565dc9ee94c2f8132ed1ecf",
+            "reason": "Crash repair, zero-outcome path: run_placebo built its fired-row-matched rows without stamping hs_index (true/undosed arms get it from compute_gate_decisions, which the placebo path correctly skips per the never-re-gate rule), so pipeline.run_one_row raised KeyError('hs_index') on the first placebo row (Stage 4, 2026-07-29 23:54Z, before any placebo row executed). One-line fix stamps hs_index alongside the matched fire flag. No gate, threshold, seed, population, or scoring logic touched; P1/P2 had produced no outcomes."
+          }
+        ]
       },
       "kg": [],
       "prediction": "A2 (hs38, KV sharing OFF) clears BOTH primary gates on held-out -- confab clean_tighten >= 0.50 with Wilson 95% lower CI > 0.40, AND known-correct not_well_formed_correct <= 0.05 with Wilson 95% upper CI < 0.10 -- while A1 (hs38, sharing ON) does not, with C1 having passed its precondition criterion and |A_lin(hs38,OFF) - A_lin(hs38,ON)| <= 0.05. Registered non-gating expectations - on the unmodified model A3 (hs22, donors reachable) clears both gates while A5 (hs24, quarantined) does not, and at least one shallow-ladder arm D1-D4 (hs15/hs18/hs20/hs23) finds a usable FIT dose and clears G1. The fired-only selectivity companion is expected NOT-ADJUDICABLE at every arm (projected 2-22 dosed known-correct rows against a computed Wilson floor of 35).",
