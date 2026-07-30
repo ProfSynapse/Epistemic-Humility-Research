@@ -31,9 +31,10 @@ gates.yaml, and the committed common/experiment artifacts all live in git and
 are cloned at a pinned commit (REPO_COMMIT below), exactly like the AK/AP
 precedent. The two PRIVATE, gitignored inputs (eval_rows.jsonl question/alias
 text, anchor_extract.safetensors) are NOT in git and are staged via
-cloud/stage_private_inputs.py to a private HF dataset repo before any GPU
-stage can run -- see that file's docstring; this script's GPU stages fetch
-from there, never from a local path.
+cloud/stage_private_inputs.py directly onto this app's own Modal Volume
+(`modal volume put`, under `private-inputs/`) before any GPU stage can run --
+see that file's docstring; this script's GPU stages copy them out of the
+mounted volume, never from a local path or a third-party host.
 
 Launch DETACHED so the app survives client death (one stage per invocation;
 see cloud/PHASE_B_MODAL_PLAN.md for the dependency order -- B16/B17 must not
@@ -59,18 +60,25 @@ import modal
 
 # --- provenance pins ---------------------------------------------------------
 REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
-# EHR main HEAD at plan time. Already carries synaptic-tuner pinned at
-# TUNER_COMMIT below (git submodule status, verified directly) -- no repin
-# needed to satisfy Revision 2026-07-30 condition (1).
-REPO_COMMIT = "4c49f9b2cf32ce17de527485a71471bc81affbde"
+# exp/kv-seam-phase-b branch HEAD at tranche-1 launch time (2026-07-30) --
+# the commit carrying the lead's LAUNCH RECORD in AMENDMENT.md, pushed and
+# confirmed as origin/exp/kv-seam-phase-b's tip. Its immediate parent
+# (4c49f9b2, "EHR main HEAD at plan time" -- this pin's prior value) already
+# carried everything Phase A produced and synaptic-tuner pinned at
+# TUNER_COMMIT below (git submodule status, verified directly); this bump is
+# ONLY to pick up the launch record itself, so the in-container checkout is
+# never running ahead of what the governing doc says is authorized.
+REPO_COMMIT = "c21a0439574022ff7ff8ac4fd3506e6a9d1cdc2b"
 TUNER_COMMIT = "34c89fc4f9d693a6b997422288d820e9c30b4696"
 TRANSFORMERS_VERSION = "5.5.0"
 EXPERIMENT_SLUG = "gemma4-e4b-kv-seam-quarantine"
 EXP_DIR = f"experiments/{EXPERIMENT_SLUG}"
 
-STAGING_REPO = "professorsynapse/eh-gemma4-kvseam-phaseb-staging"
-POOL_IN_REPO = "phase-b-r1/eval_rows.jsonl"
-ANCHOR_ON_IN_REPO = "phase-b-r1/anchor_extract.safetensors"
+# Private-inputs paths within the mounted Volume (VOL_MOUNT below). Must
+# match cloud/stage_private_inputs.py's DEST_IN_VOLUME exactly -- that script
+# and this one address the SAME volume.
+POOL_IN_VOLUME = "private-inputs/eval_rows.jsonl"
+ANCHOR_ON_IN_VOLUME = "private-inputs/anchor_extract.safetensors"
 RESULT_PREFIX = "phase-b-r1"
 
 HOURS = 60 * 60
@@ -81,18 +89,54 @@ CKPT_INTERVAL_SEC = 120
 # Modal uploads the Dockerfile's own directory as build context (entrypoint.sh
 # + print_provenance.py live alongside it and are COPYed in by the Dockerfile
 # itself). -----------------------------------------------------------------
+#
+# This whole module gets re-imported a SECOND time inside the container to
+# resolve function references (Modal copies just this script to a shallow
+# path, e.g. /root/modal_phase_b.py -- confirmed directly from a crash-loop
+# traceback, 2026-07-30). `Path(__file__).resolve().parents[3]` is only
+# meaningful for the FIRST (local, `modal run`) import, where this file sits
+# 3 levels under the repo root; inside the container `.parents` has only 1-2
+# entries and a bare `[3]` raises IndexError before any function body ever
+# runs -- version_check crash-loops with no chance to print anything. The
+# resolved value is never used once the image is already built (the
+# in-container import doesn't rebuild it), so this only needs to not crash
+# there, not be correct there.
+_here_parents = Path(__file__).resolve().parents
 _DOCKERFILE_DIR = (
-    Path(__file__).resolve().parents[2] / "synaptic-tuner" / "docker" / "mechinterp-runner"
+    _here_parents[3] / "synaptic-tuner" / "docker" / "mechinterp-runner"
+    if len(_here_parents) > 3 else Path("/nonexistent-not-needed-in-container")
 )
 DOCKERFILE_PATH = _DOCKERFILE_DIR / "Dockerfile"
 
 image = modal.Image.from_dockerfile(
     DOCKERFILE_PATH,
+    # Both Dockerfile COPY sources (entrypoint.sh, print_provenance.py) are
+    # relative to the Dockerfile's OWN directory, not the caller's cwd --
+    # from_dockerfile's default context_dir is the process cwd (matching
+    # `docker build -f path/to/Dockerfile .`), which is
+    # experiments/gemma4-e4b-kv-seam-quarantine when this script is invoked
+    # per its own docstring's example, not synaptic-tuner/docker/
+    # mechinterp-runner/. Without this the build fails at the COPY step
+    # with "source path does not exist" (hit and confirmed on the first
+    # real version_check run, 2026-07-30).
+    context_dir=_DOCKERFILE_DIR,
     build_args={
         "TRANSFORMERS_VERSION": TRANSFORMERS_VERSION,
         "MECHINTERP_RUNNER_GIT_REVISION": TUNER_COMMIT,
     },
-).pip_install("huggingface_hub>=0.34,<1.0")  # for hf_hub_download in-container
+)
+# NOTE: do NOT append a `.pip_install("huggingface_hub...")` layer here. The
+# Dockerfile already pins huggingface_hub==1.23.0, chosen (with the rest of
+# the pin set) to match transformers==5.5.0's expectations. An earlier draft
+# of this file added `.pip_install("huggingface_hub>=0.34,<1.0")` on top --
+# a leftover from the original hf_hub_download-based private-input-staging
+# design (superseded by the Modal-Volume staging above) -- which SILENTLY
+# DOWNGRADED huggingface_hub below 1.0 after the Dockerfile's own pin.
+# Confirmed broken directly: version_check's first real run (2026-07-30)
+# came back with `"transformers_error": "cannot import name 'is_offline_mode'
+# from 'huggingface_hub'"` -- transformers 5.5.0 does not import cleanly
+# against the downgraded huggingface_hub. Removed; huggingface_hub stays at
+# the Dockerfile's pinned 1.23.0 exactly.
 
 app = modal.App(f"eh-{EXPERIMENT_SLUG}-phase-b", image=image)
 
@@ -366,9 +410,9 @@ def run_stage(stage: str):
     """Generic per-stage runner. Clones the repo at REPO_COMMIT, checks the
     synaptic-tuner submodule out to TUNER_COMMIT explicitly (overriding
     whatever main's pointer says, in case it has moved since REPO_COMMIT was
-    picked), fetches the private staged inputs, runs the stage's pinned CLI
-    invocation unmodified, uploads whatever it produced, and writes a
-    per-stage provenance line."""
+    picked), copies the private staged inputs out of the mounted Volume, runs
+    the stage's pinned CLI invocation unmodified, uploads whatever it
+    produced, and writes a per-stage provenance line."""
     import json
     import shutil
     import subprocess
@@ -416,23 +460,34 @@ def run_stage(stage: str):
 
     private_dir = os.path.join(exp_dir, "analysis", "gemma4-e4b")
     os.makedirs(private_dir, exist_ok=True)
-    from huggingface_hub import hf_hub_download
+    try:
+        vol.reload()  # pick up files `modal volume put` wrote from the host,
+                       # outside this container's own writes
+    except Exception as e:  # noqa: BLE001
+        print(f"[modal-phaseb:{stage}] vol.reload() before private-input "
+              f"copy failed (non-fatal): {e}", flush=True)
+    pool_in_vol = os.path.join(VOL_MOUNT, POOL_IN_VOLUME)
+    anchor_in_vol = os.path.join(VOL_MOUNT, ANCHOR_ON_IN_VOLUME)
+    if not os.path.isfile(pool_in_vol) or not os.path.isfile(anchor_in_vol):
+        raise RuntimeError(
+            f"[modal-phaseb:{stage}] private inputs not found on the mounted "
+            f"volume ({pool_in_vol}, {anchor_in_vol}). Run "
+            "`python3 cloud/stage_private_inputs.py --execute` from the host "
+            "before dispatching any GPU stage."
+        )
     rows_local = os.path.join(private_dir, "eval_rows.jsonl")
-    p = hf_hub_download(repo_id=STAGING_REPO, filename=POOL_IN_REPO,
-                         repo_type="dataset")
-    shutil.copyfile(p, rows_local)
-    print(f"[modal-phaseb:{stage}] fetched {STAGING_REPO}:{POOL_IN_REPO} -> "
-          f"{rows_local}", flush=True)
+    shutil.copyfile(pool_in_vol, rows_local)
+    print(f"[modal-phaseb:{stage}] copied {pool_in_vol} -> {rows_local}",
+          flush=True)
     # ON anchor cache is only needed by stages that touch the ON condition
     # directly (b4, b7_gatefit_a1, b8, b11, b14, b15, b0/b3 read it too via
-    # alin_sweep's default parent-analysis path). Fetch unconditionally --
-    # it's 342MB once per container, cheap next to model weights.
+    # alin_sweep's default parent-analysis path). Copy unconditionally --
+    # it's 342MB once per container, cheap next to model weights, and reading
+    # from the mounted volume (not a network fetch) is effectively free.
     anchor_local = os.path.join(private_dir, "anchor_extract.safetensors")
-    p2 = hf_hub_download(repo_id=STAGING_REPO, filename=ANCHOR_ON_IN_REPO,
-                          repo_type="dataset")
-    shutil.copyfile(p2, anchor_local)
-    print(f"[modal-phaseb:{stage}] fetched {STAGING_REPO}:{ANCHOR_ON_IN_REPO} "
-          f"-> {anchor_local}", flush=True)
+    shutil.copyfile(anchor_in_vol, anchor_local)
+    print(f"[modal-phaseb:{stage}] copied {anchor_in_vol} -> {anchor_local}",
+          flush=True)
 
     # resume-safety: if the stage's expected output already exists in this
     # container's restored volume mirror of analysis-committed/, skip.

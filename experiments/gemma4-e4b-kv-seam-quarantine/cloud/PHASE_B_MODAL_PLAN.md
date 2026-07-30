@@ -76,6 +76,20 @@ producer script lands (repin, not this agent's call). Because
 missing, **the terminal `rollup.py` stage is also blocked** until this
 lands, even though A1/A3/A5/D1-D4 already have or will have real numbers.
 
+**UPDATE 2026-07-30 (lead decision, tranche-1 authorization message):** the
+lead explicitly authorized writing this producer as a NEW module,
+`c1_precondition.py`, implementing `gates.yaml g0_c1_precondition_control`
+exactly (FIT split, no injection, both conditions, teacher-forced NLL),
+without modifying `rollup.py`/`cell.yaml`/`gates.yaml`. That module (plus
+`test_c1_precondition.py`, a CPU-only self-test) now exists and all 10 new +
+27 pre-existing pipeline/rollup tests pass locally. It is **NOT YET
+lead-reviewed or run** -- `modal_phase_b.py`'s `blocked_on_c1` gating on
+B16/B17/B18a/B18b/B20 stays exactly as built, unchanged, pending that review
+and an actual passing C1 run. See `c1_precondition.py`'s module docstring for
+the one interpretation choice flagged for lead confirmation (what "reference
+completion" means for the NLL criterion, since neither AMENDMENT.md nor
+gates.yaml defines it).
+
 **Gap 2 (resolved, not actually a gap) — G0-ALIN Part 2.** `cell.yaml`'s own
 `integration_status.missing` (line 458) still says "alin_sweep.py
 --both-conditions ... NOT YET IMPLEMENTED", but reading `alin_sweep.py
@@ -150,19 +164,21 @@ confirms both are deliberately **not** promoted/committed and must stay
 private. Everything else Phase B needs (pinned `.py` modules, `families/`,
 `cell.yaml`, `gates.yaml`, the promoted `split_manifest.json`/
 `eval_pool_manifest.json`, and Phase A's committed `analysis-committed/`
-artifacts, ~4 MB total) is already tracked in git at the current EHR `main`
-HEAD (`4c49f9b2cf32ce17de527485a71471bc81affbde`, submodule
-`synaptic-tuner @ 34c89fc4f9d693a6b997422288d820e9c30b4696` — already the
-pin this experiment needs, no repin required) and is cloned straight into
-the container, matching the AK/AP precedent pattern.
+artifacts, ~4 MB total) is already tracked in git and is cloned straight into
+the container at `REPO_COMMIT` (`modal_phase_b.py`), matching the AK/AP
+precedent pattern.
 
-**Not staged by this agent.** Uploading `eval_rows.jsonl` (question text +
-aliases) and `anchor_extract.safetensors` to even a *private* HF staging
-repo is data leaving the local machine — containment-adjacent and
-irreversible-ish (a private repo can still be over-shared or leaked). The
-upload helper is written (`cloud/stage_private_inputs.py`) but not invoked;
-it is a lead-authorized step at launch time, same posture as the GPU launch
-itself.
+**UPDATE 2026-07-30 (lead decision #3, tranche-1 authorization message):**
+staging switched from the private-HF-dataset-repo design above to uploading
+DIRECTLY to this app's own Modal Volume (`eh-gemma4-e4b-kv-seam-quarantine-
+phase-b-logs`, under `private-inputs/`) via `modal volume put` --
+`cloud/stage_private_inputs.py` was rewritten accordingly and **has now been
+run with `--execute`**: both files uploaded and hash-verified in-volume
+(round-tripped through `modal volume get` and re-hashed; both matched their
+local sha256 exactly, see the two hashes in the table above).
+`modal_phase_b.py`'s `run_stage()` was updated to copy the private inputs out
+of the mounted volume instead of `hf_hub_download`; no HF dataset repo is
+used anywhere in this harness.
 
 ## Falsifier/disposition bookkeeping this run resolves (restated, not reinterpreted)
 
