@@ -1,0 +1,37 @@
+slug: form-judge-axis-g-rescore
+title: 'Form judge instrument: blinded-lane F1/F2/F3 grading and axis-G rescore of
+  the naming-battery Arm A generations'
+type: eval
+status: draft
+registered: true
+created_at: '2026-07-30T22:29:48Z'
+question: 'With the standing blinded-adjudication lane promoted to primary
+  instrument for the open-class F1/F2/F3 boundary (single opus-subagent judge,
+  validated on a fresh calibration slice with dual decoy types), does the
+  naming battery''s open axis-G question resolve GRADED or BINARY over the
+  frozen Arm A generations, under the original registered thresholds (F2+F3
+  share above 0.15 at an intermediate dose AND at least +0.10 over baseline)?'
+prediction: 'The instrument validates and axis G resolves BINARY: the judge
+  finds the F2+F3 share clears 0.15 at one or more intermediate doses but
+  fails the +0.10-over-baseline leg, because a calibrated judge also finds
+  substantially more baseline hedging than the voided regexes did; dosed
+  movement remains F1-to-F4 mode switching.'
+falsifier: 'Axis G resolves GRADED (both legs clear: F2+F3 share above 0.15
+  at an intermediate dose AND at least +0.10 over baseline). Named
+  alternatives that are neither prediction nor falsifier: instrument-failed
+  (judge lane misses its registered calibration floors; axis G stays open)
+  and screen-dominated NOT-ADJUDICABLE (fewer than 50 screened-in rows at
+  every intermediate dose).'
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+  persistence: {}
+inputs:
+- experiments/write-direction-naming-battery/analysis/runlog_form_merged
+- experiments/write-direction-naming-battery/analysis-committed/form_adjudication_pool_manifest.json
+verdict: ''
+kg: []
