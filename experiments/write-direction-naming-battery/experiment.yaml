@@ -183,4 +183,9 @@ verdict: 'unnamed write direction (form instrument void): the taxonomy failed bl
   calibration (0.43 vs 0.05) so axis G is void; axis B is positive-only via O-2 (output-gate
   suppression, not abstention control); axis K is knowledge-state (no difficulty gradient);
   O-1''s dissociation confirmed (6.37:1 wrongness over abstention on knowns).'
-kg: []
+kg:
+- experiment:write-direction-naming-battery
+- mechanism:form-taxonomy-pattern-battery-underdetects-epistemic-marking
+- mechanism:midband-negative-dose-suppresses-refusal-without-restoring-answer
+- mechanism:midband-write-on-knowns-is-difficulty-blind
+- mechanism:midband-write-corrupts-known-answers-more-than-it-produces-abstention

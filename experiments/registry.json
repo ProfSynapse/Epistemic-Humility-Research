@@ -5334,7 +5334,13 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:write-direction-naming-battery",
+        "mechanism:form-taxonomy-pattern-battery-underdetects-epistemic-marking",
+        "mechanism:midband-negative-dose-suppresses-refusal-without-restoring-answer",
+        "mechanism:midband-write-on-knowns-is-difficulty-blind",
+        "mechanism:midband-write-corrupts-known-answers-more-than-it-produces-abstention"
+      ],
       "prediction": "Graded form, positive-only, difficulty-tracking, with the silent-wrongness override firing: naming table row 4 with the O-1 prefix, \"answer-corrupting retrieval-suppression gradient\". Neither \"caution\" nor an abstention-actuator name is earned.",
       "question": "What is the mid-band hs20 c_hat write behaviorally, and which name does that behavior earn? Three axes decide it: whether the intermediate-dose output form is epistemically marked (hedged / non-answerability) or merely degraded; whether a negative dose releases natural over-refusal with answer-level specificity; and whether positive dosing on known-correct rows tracks retrieval difficulty or is difficulty-blind. The deliverable is a pre-stated, exhaustive outcome-to-name mapping table.",
       "registered": true,
