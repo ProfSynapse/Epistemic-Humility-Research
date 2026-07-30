@@ -78,7 +78,7 @@ REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
 # TUNER_COMMIT below (git submodule status, verified directly); this bump is
 # ONLY to pick up the launch record itself, so the in-container checkout is
 # never running ahead of what the governing doc says is authorized.
-REPO_COMMIT = "c21a0439574022ff7ff8ac4fd3506e6a9d1cdc2b"
+REPO_COMMIT = "86fc6e424f98e6587d0d8907b9fa90f08997e2e3"
 TUNER_COMMIT = "34c89fc4f9d693a6b997422288d820e9c30b4696"
 TRANSFORMERS_VERSION = "5.5.0"
 EXPERIMENT_SLUG = "gemma4-e4b-kv-seam-quarantine"
