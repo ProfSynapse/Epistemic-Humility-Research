@@ -45,7 +45,10 @@ this work is its own CPU-only cell.
   one-sided disagreement direction. That slice is the DEV SET here: it informs
   rubric wording, judge-prompt drafting, and the judge-vs-judge floor
   measurement below, and it is excluded from every scored surface and from the
-  fresh calibration slice of this cell.
+  fresh calibration slice of this cell. The operative spent-row source is the
+  naming battery's gitignored `analysis/shards/*_id_map.jsonl` files (219
+  (row_key, arm) pairs; already unblinded per this disclosure), not its
+  committed pool manifest, which carries only opaque ids by design.
 - D-2: the lead has seen the voided regex form_class distributions on all Arm A
   sub-arms (F4 rising monotonically with dose; regex-F2+F3 flat and low). Those
   numbers are void as measurements but were seen; the prediction below is
@@ -132,6 +135,26 @@ registration. The spent dev slice is never regraded for score.
 Instrument configs to pin at sign: cell.yaml, gates.yaml, the judge prompt
 file, the rubric file, the pool builder, the apply/join tool, the screen
 script, and the axis arithmetic script.
+
+Build-time rulings (lead, 2026-07-30, recorded pre-sign):
+
+- Spent-slice exclusion is scoped to exact (row_key, arm) pairs, not bare
+  row_key: the unblinding exposure is per-generation (same prompt at a
+  different dose yields a different, unseen text), and the id_map is the
+  operative record of exactly what was seen. 219 pairs excluded.
+- The full-pool payload shards every screened-in row, INCLUDING the ~200
+  core rows of this cell's fresh calibration slice. The payload's axis-G
+  arithmetic uses only payload-lane grades, uniformly produced; calibration
+  grades are never spliced into the payload table. The double grading of
+  those rows is accepted for lane uniformity.
+- G2 decoy floors gate the JUDGE's decoy agreement only; the judge is the
+  instrument under validation. The calibration adjudicator's decoy rates
+  are computed and reported but carry no gate.
+- The judge prompt does not claim explicit-IDK texts were screened out of
+  the pool: clear-positive decoys ARE explicit-IDK texts, and the rubric's
+  F3 covers them (no candidate answer supplied).
+- The pool-builder seed in the draft harness is a placeholder; the
+  registered seed is pinned in cell.yaml at sign.
 
 ## Prediction
 
