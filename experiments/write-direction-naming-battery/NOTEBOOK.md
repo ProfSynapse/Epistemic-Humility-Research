@@ -6,6 +6,29 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-30 - z_d companion read ruled NOT-COMPUTABLE-AS-REGISTERED; no post-hoc specification (LEAD)
+
+The G4 reported-alongside z_d internal-ordering read (AMENDMENT.md
+G4; gates.yaml z_d_internal_ordering_read) is underspecified on three
+independent points, any one of which blocks a single computation: the
+registered text names no outcome variable ("tracks the write" against
+what), no dose rung, and no statistic or report form. The analyst
+verified the provenance facts the registration cites (the doubt-snap
+heldout file exists with 360/360 known-row coverage over the M1
+baseline, fields inventoried, no dosed-outcome field of its own) and
+found no existing convention elsewhere in this cell or margin-mapping
+that the text could be invoking; the full record is appended under
+axis_K.z_d_internal_ordering_read in analysis/axis_bk_arithmetic.json.
+
+RULING: recorded as NOT-COMPUTABLE-AS-REGISTERED. Specifying the
+missing pieces now, with all outcomes in view, would be a post-hoc
+instrument addition of the class already rejected in this cell's
+taxonomy judgment call 4 (adding unregistered checks post-sign is
+goalpost movement in either direction). The read gates nothing and is
+never rounded into axis K, so nothing in the naming-table resolution
+or scoreboard changes. If the KU-ordering question is wanted, it gets
+a fully specified registration in a future cell.
+
 ### 2026-07-30 - Axes B and K adjudicated; naming table resolves at the instrument-void row; scoreboard adjudicated (LEAD)
 
 Arithmetic by the results analyst (analysis/axis_bk_arithmetic.json,
