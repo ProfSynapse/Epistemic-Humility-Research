@@ -5203,9 +5203,25 @@
         "modules": [],
         "persistence": {},
         "pins": {
-          "cell.yaml": "93e931f655f57f10c229b12640b53cca9d62e0ea363340ffaed26f858fc89e00",
+          "cell.yaml": "ec3c438a614a0b1c2a00f74e28ae71274665e58aa40c8fd159cbf96679fbac23",
           "gates.yaml": "e4561a788326cf11065d3ea70b3aaf1f62ba87f2766bf8d8c2e3a166b12fd462"
-        }
+        },
+        "repins": [
+          {
+            "date": "2026-07-30T15:13:41Z",
+            "file": "cell.yaml",
+            "new_sha256": "fe86e97c56ca36fcc831c7d44d33cf025aa4c31ebd770f11deff962d6f9cf940",
+            "old_sha256": "93e931f655f57f10c229b12640b53cca9d62e0ea363340ffaed26f858fc89e00",
+            "reason": "G0 disjointness check found a 22-row collision between P-KNOWN and M1's dosed D-3 PopQA set. The AMENDMENT registers P-KNOWN as never-dosed and disjoint from the D-3 133; cell.yaml's draw prose omitted the exclusion step, so the pinned instrument contradicted the signed design. Repin (lead, 2026-07-30): (1) P_KNOWN.draw now excludes the 133 D-3 row_keys before the median/stratify/permute steps (pool 2744 -> 2611, median recomputed over post-exclusion pool); (2) filled the two TBD_AT_SIGN direction sha256 fields with the computed values verified by the G0 check (c_hat 937d1bff..., random_direction db8b930d...). expected_config_sha stays TBD until first run emits it. Adjudication: option (b) (treating the amendment's disjointness clause as soft because gates.yaml's checklist omitted it) rejected as post-hoc weakening of a registered constraint."
+          },
+          {
+            "date": "2026-07-30T15:18:26Z",
+            "file": "cell.yaml",
+            "new_sha256": "ec3c438a614a0b1c2a00f74e28ae71274665e58aa40c8fd159cbf96679fbac23",
+            "old_sha256": "fe86e97c56ca36fcc831c7d44d33cf025aa4c31ebd770f11deff962d6f9cf940",
+            "reason": "Corrective micro-repin (lead, 2026-07-30): the previous repin's draw prose stated a 2611-row post-exclusion pool, assuming all 133 D-3 ids were members of the 2744 census correct pool. Rebuild found only 131 present: popqa:1990787 and popqa:3027836 are confab_on_answerable in the worldknown census despite M1 scoring them known_correct_answered (cross-harness scoring divergence, verified independently by lead). Actual pool 2613, frozen median s_pop 5284, strata 1306/1307. Prose corrected; no change to the draw algorithm, seed, or registered constraints; the divergence is recorded in the manifest (d3_133_absent_from_pool_row_keys) and here."
+          }
+        ]
       },
       "kg": [],
       "prediction": "Graded form, positive-only, difficulty-tracking, with the silent-wrongness override firing: naming table row 4 with the O-1 prefix, \"answer-corrupting retrieval-suppression gradient\". Neither \"caution\" nor an abstention-actuator name is earned.",
