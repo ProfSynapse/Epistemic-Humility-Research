@@ -13,6 +13,34 @@ lane.
   exact pushed Synaptic Tuner commit. New surfaces can use Modal A10G-style
   lanes when approved; parity-locked cells remain on the registered substrate.
 
+## GPU sizing rule (PI directive, 2026-07-30)
+
+Never hard-code a GPU type into a cloud harness. The GPU is an ARGUMENT the
+operator provides at dispatch (env var or CLI flag with an explicit default),
+and the choice is made from the model actually being run, at harness-review
+time, with the arithmetic recorded in the launch record:
+
+1. Estimate the footprint: weights (params x dtype bytes) + KV/activation
+   headroom for the largest stage (extraction and teacher-forced sweeps are
+   the usual peak, not generation) + roughly 20% margin.
+2. Pick the SMALLEST tier that fits: A10G (24 GB) for models up to roughly
+   7B bf16 with modest batches; L40S (48 GB) for up to roughly 20B bf16 or
+   smaller models with heavy activation caching; A100-80GB / H100 only when
+   the arithmetic demands it, never as a default.
+3. The harness reads the GPU type from its argument and records it in every
+   stage's provenance so the executed hardware is auditable per stage.
+   "A100 because that is what the last lane used" is not a justification.
+4. Within one experiment, keep the GPU FIXED across arms of the same
+   registered contrast once any arm has run: provenance uniformity between
+   paired arms outranks the saving from switching mid-run.
+
+Cautionary case: the gemma4-e4b kv-seam Phase B lane hard-coded A100-80GB
+for a model whose stages fit an L40S; the two 85-minute dose calibrations
+cost roughly double what they needed to. Caught by the PI mid-tranche
+(2026-07-30); that lane kept A100 for arm-parity per rule 4, its harness
+was converted to take the GPU as an argument, and this rule exists so the
+next lane sizes correctly from the start.
+
 ### Local GPU runs execute in a pinned container
 
 **Binding invariant (standing directive, 2026-07-10):** every local-3090
