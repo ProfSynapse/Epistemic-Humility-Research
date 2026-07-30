@@ -112,14 +112,35 @@ the v2 judge and its calibration adjudicator read identical words.
   instrument, including the paper-3 caution-direction comparisons and any
   fine-grained abstention-form claims in papers 4-5.
 
-## Open questions for the PI (decide at sign, not here)
+## This is the existing protocol, applied as the instrument
 
-1. Single judge or a small panel with majority vote (cost vs stability).
-2. Whether the v2 calibration adjudicator should be human (the PI) rather
-   than a second model agent, given the construct's subtlety.
-3. Whether axis-G re-scoring is its own cell or rides as an arm of the next
-   steering cell.
-4. Judge model choice: same family as the steered model is cheapest to
-   reason about contamination-wise, but a stronger external judge likely
-   calibrates better. Evidence either way can come from the dev set at
-   build time.
+PI correction (2026-07-30), folded in: the program already owns the grading
+protocol this draft needs. The frozen-detector + blinded-adjudication lane
+in `.skills/experiment-runner/reference/abstention-grading.md` (validated
+across `abstention-wide-instrument-calibration`, RR2, RR3, and the naming
+battery's own calibration slice) is the procedure: sharded context-free
+model graders, registered rubric verbatim, salted opaque ids, pool hash
+committed before grading, graded hash committed before unblinding, decoys,
+positional join, no rescoring lane. v2 does not invent a grading method; it
+promotes that lane from calibration-check to PRIMARY instrument for the
+open-class F1/F2/F3 boundary. The only genuinely new elements at sign time
+are: the three-way label in place of the boolean, the scale (grading all
+scored rows rather than a 200-row slice), and the axis-G gates the graded
+labels feed. Everything mechanical ports from the reference implementations
+named in that skill file.
+
+## Decisions (PI, 2026-07-30)
+
+Recorded from the PI's answers; bind at sign unless revisited:
+
+1. **Single judge.** One context-free judge per shard, per the standing
+   protocol; no panel.
+2. **Model adjudicator, lead spot-check at the end.** The judge is a model
+   agent; validity comes from the standing decoy floors plus an
+   independent-model agreement slice, and the LEAD spot-checks a sample at
+   the end before adjudication. No PI hand-grading pass.
+3. **Own cell.** Axis-G re-scoring is its own CPU-only cell over the
+   retained Arm A generations; it does not ride on the next steering cell.
+4. **Judge model: Opus, as a subagent.** No external API judge and no
+   same-family (Qwen) judge; an opus-tier subagent serves as the grader,
+   matching how the naming battery's calibration adjudicator was run.
