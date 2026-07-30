@@ -29,21 +29,26 @@ three criteria it transcribes (gates.yaml g0_c1_precondition_control.pass_if_all
      over the FIT rows, C1 vs C0, within 10% relative
      (rollup.C1_NLL_REL_TOLERANCE).
 
-INTERPRETATION FLAG for lead review (not asserted as registered fact):
-gates.yaml's likelihood_preserved criterion scores NLL "over the FIT rows'
-rendered prompt plus reference completion" without defining "reference
-completion" anywhere in AMENDMENT.md / gates.yaml / cell.yaml. Confab rows
-have no ground-truth answer by construction (that is their premise), so a
-single canonical gold completion does not exist for the whole FIT population.
-This script teacher-forces each row's OWN model-generated completion from
-this run's undosed pass (the same `base_text` used for clean_tighten /
-well_formed_correct grading), scored under a SEPARATE single-shot forward
-with `labels=`. That checks generate()-vs-forward() consistency under the
-KV-seam patch -- exactly what gates.yaml's own justification names ("the
-sharpest cheap indicator of an intact forward pass" / "a model can keep its
-answer rates while its attention routing is subtly wrong") -- but it is a
-reading, not a registered definition, and should be confirmed or corrected
-before this module is recorded in the instrument.
+C1 NLL INTERPRETATION -- RULED by lead 2026-07-30 (supersedes this module's
+original interpretation flag; will be recorded in NOTEBOOK.md when the module
+is registered in the instrument). gates.yaml's likelihood_preserved criterion
+scores NLL "over the FIT rows' rendered prompt plus reference completion"
+without defining "reference completion" in AMENDMENT.md / gates.yaml /
+cell.yaml. RULING: "reference completion" is singular -- one text per row --
+so it is the row's C0 (sharing ON) greedy completion, teacher-forced under
+BOTH conditions (identical text, paired per row, mean over rows, then the
+unchanged rollup.c1_verdict 10% relative check). Rationale: scoring each
+condition's OWN completion (this module's original design) conflates a text
+change with a likelihood change and overlaps criterion 1's job; a FIXED
+reference text isolates the seam flip, matching gates.yaml's own
+justification ("keep its answer rates while its attention routing is subtly
+wrong"). Ordering: C0 runs first and generates the reference; its per-row
+completion tokens are threaded into C1's NLL pass (`build_summary` /
+`run_condition`'s `reference_completions` parameter). The original
+own-completion NLL design is RETAINED per condition as a descriptive,
+NON-GATING diagnostic field (`own_completion_mean_nll`) -- a fine
+generate()-vs-forward() coherence check, just not the registered criterion;
+`c1_verdict` is fed only the paired reference-completion `mean_nll`.
 
 CACHE CONTRACT (cell.yaml cache_contract.applies_to: "ALL arms and ALL
 conditions (A1-A6, C0, C1; dosed and undosed)"): every forward pass in this
@@ -87,8 +92,16 @@ Reuses (does not reimplement):
 Writes `analysis-committed/<family>/c1_precondition_summary.json` in exactly
 the shape `rollup.build_rollup()` reads (rollup.py ~401-408):
     {"c0": {"known_correct_cost_control": {...}, "confab_tighten": {...},
-            "mean_nll": float, ...},
-     "c1": {same three keys, ...}}
+            "mean_nll": float,  # paired reference-completion NLL (== C0's
+                                 # own-completion NLL, since C0 IS the
+                                 # reference), fed to c1_verdict
+            "own_completion_mean_nll": float,  # diagnostic only, unused by
+                                                 # c1_verdict
+            ...},
+     "c1": {same keys; "mean_nll" is C0's reference text teacher-forced
+            under C1's KV condition (paired per row), "own_completion_mean_nll"
+            is C1's own generated completion teacher-forced under C1 --
+            descriptive only, ...}}
 """
 
 from __future__ import annotations
@@ -163,12 +176,58 @@ def _teacher_forced_nll(model, dev, enc: dict, new_tokens: torch.Tensor,
     return float(out.loss.item())
 
 
+def _validate_reference_completions(kv_sharing: str,
+                                    reference_completions: dict | None) -> None:
+    """C1 NLL interpretation ruling (lead, 2026-07-30): the registered
+    "reference completion" is C0's own greedy completion, teacher-forced
+    under BOTH conditions. C0 (kv_sharing == 'on') generates that reference
+    itself and must not be handed one (it would be scoring C0 against some
+    OTHER condition's text, which is not the ruling). C1 (kv_sharing ==
+    'off') cannot compute the paired/gating NLL without it."""
+    if kv_sharing == "on":
+        if reference_completions is not None:
+            raise ValueError(
+                "kv_sharing='on' (C0) generates its own reference completion; "
+                "reference_completions must be None"
+            )
+    elif kv_sharing == "off":
+        if not reference_completions:
+            raise ValueError(
+                "kv_sharing='off' (C1) requires reference_completions from "
+                "the prior C0 run (lead ruling 2026-07-30: reference "
+                "completion = C0's greedy completion, teacher-forced under "
+                "both conditions, paired per row) -- run C0 first via "
+                "build_summary"
+            )
+    else:
+        raise ValueError(f"unknown kv_sharing {kv_sharing!r}")
+
+
 def run_condition(family: str, model, tokenizer, rows: list[dict], *,
-                  kv_sharing: str, dev, eos_ids: list[int]) -> dict:
+                  kv_sharing: str, dev, eos_ids: list[int],
+                  reference_completions: dict[str, torch.Tensor] | None = None,
+                  ) -> tuple[dict, dict[str, torch.Tensor]]:
     """One KV condition's full undosed pass + teacher-forced NLL over `rows`
-    (already both roles, FIT split). Returns the per-condition block
-    `c1_precondition_summary.json` needs (confab_tighten,
-    known_correct_cost_control, mean_nll, plus provenance).
+    (already both roles, FIT split). Returns `(summary, completions)`:
+    `summary` is the per-condition block `c1_precondition_summary.json`
+    needs (confab_tighten, known_correct_cost_control, mean_nll,
+    own_completion_mean_nll, plus provenance); `completions` is this
+    condition's own row_key -> greedy-completion-token map, always returned
+    so the caller (`build_summary`) can thread C0's completions into the
+    following C1 call as `reference_completions`.
+
+    C1 NLL INTERPRETATION (lead ruling 2026-07-30, module docstring
+    "C1 NLL INTERPRETATION" has the full rationale): `mean_nll` -- the value
+    `verdict_from_summary` feeds to `rollup.c1_verdict` -- is the PAIRED
+    reference-completion NLL: C0's own greedy text, teacher-forced under
+    EACH condition's own forward pass. For C0 that is a single forward per
+    row (C0 IS the reference, so its own-completion NLL and its reference
+    NLL are the same number by construction). For C1 it is a SECOND forward
+    per row using `reference_completions[row_key]` -- C1 still generates its
+    OWN completion first (needed for this condition's own clean_tighten /
+    well_formed_correct grading, which must reflect what C1 actually says),
+    but that generation's NLL is kept only as the non-gating
+    `own_completion_mean_nll` diagnostic.
 
     Does not call `pl.run_one_row` / `pl.run_layer_with_direction` directly:
     both hide the raw generated tokens behind grade-only return dicts, and
@@ -179,6 +238,7 @@ def run_condition(family: str, model, tokenizer, rows: list[dict], *,
     `pl.summarize_layer_records` -- the SAME LOCKED aggregation
     `run_layer_with_direction` itself calls -- unchanged.
     """
+    _validate_reference_completions(kv_sharing, reference_completions)
     layer_idx = hs_to_block(INERT_HOOK_HS_INDEX)
     vector = _inert_direction_vector(model.config.get_text_config().hidden_size
                                      if hasattr(model.config, "get_text_config")
@@ -190,11 +250,20 @@ def run_condition(family: str, model, tokenizer, rows: list[dict], *,
     kv_ctx, cache_factory = pl.kv_condition_context(family, model, kv_sharing)
 
     records: list[dict] = []
-    nlls: list[float] = []
+    completions: dict[str, torch.Tensor] = {}
+    own_nlls: list[float] = []
+    ref_nlls: list[float] = []
     try:
         with kv_ctx:
             for row in rows:
                 assert row["fire"] is False, "C0/C1 scope: no injection in either condition"
+                if kv_sharing == "off" and row["row_key"] not in reference_completions:
+                    raise KeyError(
+                        f"reference_completions missing row_key "
+                        f"{row['row_key']!r} -- C0 and C1 must run over the "
+                        "IDENTICAL row set (same _force_off(confab + known) "
+                        "list) for the paired NLL to be well-defined"
+                    )
                 prompt = ml.render(family, tokenizer, row)
                 enc = tokenizer(prompt, return_tensors="pt").to(dev)
                 _out, _rb, terminated_naturally, new_tokens = gl.run_pass_fixed(
@@ -216,17 +285,27 @@ def run_condition(family: str, model, tokenizer, rows: list[dict], *,
                     "not_well_formed_correct": not og["well_formed_correct"],
                     "grade": ct, "old_grade": og, "kv_sharing": kv_sharing,
                 })
-                nlls.append(_teacher_forced_nll(model, dev, enc, new_tokens, cache_factory))
+                completions[row["row_key"]] = new_tokens
+                own_nll = _teacher_forced_nll(model, dev, enc, new_tokens, cache_factory)
+                own_nlls.append(own_nll)
+                if kv_sharing == "on":
+                    # C0 is its own reference: no second forward needed.
+                    ref_nlls.append(own_nll)
+                else:
+                    ref_tokens = reference_completions[row["row_key"]]
+                    ref_nlls.append(
+                        _teacher_forced_nll(model, dev, enc, ref_tokens, cache_factory))
     finally:
         h_ctrl.remove()
         controller.reset()
 
     summary = pl.summarize_layer_records(
         records, 0.0, hs_index=INERT_HOOK_HS_INDEX, kv_sharing=kv_sharing)
-    summary["mean_nll"] = float(np.mean(nlls)) if nlls else None
-    summary["n_nll_rows"] = len(nlls)
+    summary["mean_nll"] = float(np.mean(ref_nlls)) if ref_nlls else None
+    summary["n_nll_rows"] = len(ref_nlls)
+    summary["own_completion_mean_nll"] = float(np.mean(own_nlls)) if own_nlls else None
     summary["inert_hook_hs_index"] = INERT_HOOK_HS_INDEX
-    return summary
+    return summary, completions
 
 
 def build_summary(family: str, *, n_rows: int | None, dev, model=None, tokenizer=None,
@@ -244,10 +323,15 @@ def build_summary(family: str, *, n_rows: int | None, dev, model=None, tokenizer
 
     out = {"family": family, "split": "fit", "n_confab": len(confab),
           "n_known_correct_answered": len(known)}
-    for kv_sharing in ("on", "off"):
-        cond = run_condition(family, model, tokenizer, rows, kv_sharing=kv_sharing,
-                             dev=dev, eos_ids=eos_ids)
-        out["c0" if kv_sharing == "on" else "c1"] = cond
+    # ORDER MATTERS (lead ruling 2026-07-30): C0 must run first -- it
+    # generates the reference completions C1's paired NLL teacher-forces.
+    c0_summary, c0_completions = run_condition(
+        family, model, tokenizer, rows, kv_sharing="on", dev=dev, eos_ids=eos_ids)
+    out["c0"] = c0_summary
+    c1_summary, _c1_completions = run_condition(
+        family, model, tokenizer, rows, kv_sharing="off", dev=dev, eos_ids=eos_ids,
+        reference_completions=c0_completions)
+    out["c1"] = c1_summary
     return out
 
 

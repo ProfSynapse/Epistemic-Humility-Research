@@ -73,6 +73,39 @@ def test_inert_direction_vector_reproducible():
 
 
 # ---------------------------------------------------------------------------
+# _validate_reference_completions -- the guard for the C1 NLL interpretation
+# ruling (lead, 2026-07-30): C0 generates its own reference and must not be
+# handed one; C1 cannot compute the paired/gating NLL without C0's per-row
+# completion tokens. Pure-python guard, no model needed to test it.
+# ---------------------------------------------------------------------------
+
+
+def test_validate_reference_completions_on_accepts_none():
+    c1p._validate_reference_completions("on", None)  # must not raise
+
+
+def test_validate_reference_completions_on_rejects_provided_map():
+    with pytest.raises(ValueError, match="kv_sharing='on'"):
+        c1p._validate_reference_completions("on", {"row1": object()})
+
+
+def test_validate_reference_completions_off_requires_nonempty_map():
+    with pytest.raises(ValueError, match="kv_sharing='off'"):
+        c1p._validate_reference_completions("off", None)
+    with pytest.raises(ValueError, match="kv_sharing='off'"):
+        c1p._validate_reference_completions("off", {})
+
+
+def test_validate_reference_completions_off_accepts_nonempty_map():
+    c1p._validate_reference_completions("off", {"row1": object()})  # must not raise
+
+
+def test_validate_reference_completions_rejects_unknown_kv_sharing():
+    with pytest.raises(ValueError, match="unknown kv_sharing"):
+        c1p._validate_reference_completions("bogus", {"row1": object()})
+
+
+# ---------------------------------------------------------------------------
 # verdict_from_summary -- transcribes gates.yaml g0_c1_precondition_control.
 # pass_if_all via rollup.c1_verdict (imported, not reimplemented). These
 # three cases mirror test_rollup.py's own test_c1_verdict_pass /

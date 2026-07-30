@@ -36,13 +36,23 @@ cloud/stage_private_inputs.py directly onto this app's own Modal Volume
 see that file's docstring; this script's GPU stages copy them out of the
 mounted volume, never from a local path or a third-party host.
 
-Launch DETACHED so the app survives client death (one stage per invocation;
-see cloud/PHASE_B_MODAL_PLAN.md for the dependency order -- B16/B17 must not
-be launched before B-C1 resolves, and B-C1 itself has NO PRODUCER SCRIPT YET,
-see the plan's "Gap 1"):
+Launch with BOTH --detach and --wait (one stage per invocation; see
+cloud/PHASE_B_MODAL_PLAN.md for the dependency order -- B16/B17 must not be
+launched before B-C1 resolves, and B-C1 itself has NO PRODUCER SCRIPT YET,
+see the plan's "Gap 1"). --detach keeps the spawned `run_stage` call alive on
+Modal's side even if this local client disconnects; --wait makes `main()`
+block on the call's result and exit nonzero on failure, which is what makes
+a SEQUENTIAL dispatch (cloud/run_tranche1.sh) actually enforce ordering.
+Neither flag alone is enough: --wait without --detach still blocks correctly
+under normal conditions but risks the call dying if the local network drops;
+--detach without --wait returns immediately after `.spawn()` and, without a
+long-lived client, tears the ephemeral App down before the call runs at all
+-- confirmed directly, see `main()`'s `if not wait:` branch for the incident
+this fixed (2026-07-30, all 18 tranche-1 stages "completed" in 26 seconds
+having done nothing):
 
     EHR_LAUNCH_OK=gemma4-e4b-kv-seam-quarantine \\
-    modal run --detach cloud/modal_phase_b.py --stage b1_extract_off_midband
+    modal run --detach cloud/modal_phase_b.py --stage b1_extract_off_midband --wait
 
 Dry-run, no GPU, no launch gate required (this is what this build pass
 actually ran):
@@ -489,6 +499,50 @@ def run_stage(stage: str):
     print(f"[modal-phaseb:{stage}] copied {anchor_in_vol} -> {anchor_local}",
           flush=True)
 
+    # Restore each needs-stage's own analysis/ + analysis-committed/ output
+    # from ITS ckpt mirror into this (fresh) container's workspace. Every
+    # container starts from a clean `git clone` at the FIXED REPO_COMMIT, so
+    # nothing a Phase B stage produces during this tranche is visible to a
+    # later stage any other way: the resume-safety block below only restores
+    # THIS stage's own prior partial run, never a different stage's, and
+    # `stage_private_inputs.py` only stages the two upstream pool/anchor
+    # inputs, not per-stage outputs. Confirmed as a real gap by TRACING the
+    # actual consumer, not assuming from `produces`: build_directions.py
+    # --kv-sharing off (b5/b6) reads `analysis/gemma4-e4b/
+    # anchor_extract.kv_off.safetensors` AND `anchor_extract_manifest.
+    # kv_off.json` via `kv_seam_patch.condition_artifact` (build_directions.py
+    # ~157-161) -- both written by b1/b2 to their PRIVATE analysis/ dir, and
+    # the manifest specifically was invisible to the `produces` field
+    # entirely (only the .safetensors file is tracked there). Every stage
+    # with a nonempty `needs` list is affected the same way (extractions ->
+    # direction fits -> gate fits -> dose calibration -> smoke -> full),
+    # since ALL of those artifacts are Phase-B-fresh and none are in git at
+    # REPO_COMMIT. Restoring the WHOLE subtree (not just the one `produces`
+    # path) rather than enumerating every side-artifact each script writes.
+    for needed in spec.get("needs", []):
+        needed_ckpt = f"{VOL_MOUNT}/ckpt/{_run_tag(needed)}"
+        prov_path = os.path.join(needed_ckpt, f"provenance_{needed}.json")
+        try:
+            vol.reload()
+        except Exception as e:  # noqa: BLE001
+            print(f"[modal-phaseb:{stage}] vol.reload() before needs-restore "
+                  f"of {needed!r} failed (non-fatal): {e}", flush=True)
+        if not os.path.isfile(prov_path):
+            raise RuntimeError(
+                f"[modal-phaseb:{stage}] needs-stage {needed!r} has no "
+                f"provenance file at {prov_path} -- it has not completed on "
+                "Modal yet (or the volume has not synced). Dispatch "
+                f"{needed!r} first; refusing to run {stage!r} against "
+                "missing/unverified upstream output."
+            )
+        for sub in ("analysis-committed", "analysis"):
+            src = os.path.join(needed_ckpt, sub)
+            dst = os.path.join(exp_dir, sub)
+            if os.path.isdir(src):
+                shutil.copytree(src, dst, dirs_exist_ok=True)
+        print(f"[modal-phaseb:{stage}] restored needs-stage {needed!r} "
+              f"output from {needed_ckpt}", flush=True)
+
     # resume-safety: if the stage's expected output already exists in this
     # container's restored volume mirror of analysis-committed/, skip.
     run_tag = _run_tag(stage)
@@ -557,7 +611,7 @@ def run_stage(stage: str):
 
 
 @app.local_entrypoint()
-def main(stage: str = "", dry_run: bool = False):
+def main(stage: str = "", dry_run: bool = False, wait: bool = False):
     if dry_run or not stage:
         print("[modal-phaseb] no --stage given (or --dry-run passed); "
               "listing registered stages and exiting without spawning "
@@ -595,5 +649,37 @@ def main(stage: str = "", dry_run: bool = False):
     print(f"[modal-phaseb] repo@{REPO_COMMIT[:12]} tuner@{TUNER_COMMIT[:12]} "
           f"transformers=={TRANSFORMERS_VERSION}")
     call = run_stage.spawn(stage)
-    print(f"[modal-phaseb] spawned function call {call.object_id}; client "
-          "exiting. Monitor: modal app logs / volume ckpt provenance file.")
+    print(f"[modal-phaseb] spawned function call {call.object_id}")
+
+    if not wait:
+        # DANGEROUS without --detach: `run_stage.spawn()` returns immediately,
+        # so a plain `modal run` (no --detach) tears down this ephemeral App
+        # the moment `main()` returns below -- killing the just-spawned call
+        # before it does anything. Confirmed directly: the first tranche-1
+        # dispatch (2026-07-30, cloud/run_tranche1.sh without --detach or
+        # --wait) "completed" all 18 stages in 26 seconds, `modal app list`
+        # showed every one of those apps stopped with Tasks: 0, and the
+        # volume had no stage output beyond private-inputs/ -- nothing had
+        # actually run. Always pass --detach (survive a dropped client) AND
+        # --wait (block here so ordering/failure is enforced) together for a
+        # real dispatch; this fire-and-forget path is for interactive,
+        # single-stage use only, monitored by hand afterward.
+        print("[modal-phaseb] --wait not set; client exiting WITHOUT waiting "
+              "for the stage to finish. Pass --detach --wait for a real "
+              "dispatch (required for a sequential chain -- see "
+              "cloud/run_tranche1.sh). Monitor: modal app logs / volume ckpt "
+              "provenance file.")
+        return
+
+    import json
+
+    print(f"[modal-phaseb] --wait set; blocking on {call.object_id} ...")
+    try:
+        result = call.get()
+    except Exception as e:  # noqa: BLE001 -- deliberately broad: any remote
+        # failure (gate raise, crashed stage, timeout) must halt a sequential
+        # dispatch, not just ones of a particular exception type.
+        print(f"[modal-phaseb] stage {stage!r} FAILED: {e}", flush=True)
+        raise SystemExit(1)
+    print(f"[modal-phaseb] stage {stage!r} result: "
+          f"{json.dumps(result, sort_keys=True)}")
