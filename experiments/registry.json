@@ -5339,10 +5339,10 @@
       "question": "What is the mid-band hs20 c_hat write behaviorally, and which name does that behavior earn? Three axes decide it: whether the intermediate-dose output form is epistemically marked (hedged / non-answerability) or merely degraded; whether a negative dose releases natural over-refusal with answer-level specificity; and whether positive dosing on known-correct rows tracks retrieval difficulty or is difficulty-blind. The deliverable is a pre-stated, exhaustive outcome-to-name mapping table.",
       "registered": true,
       "slug": "write-direction-naming-battery",
-      "status": "signed",
+      "status": "falsified",
       "title": "Write-direction naming battery: what is the mid-band c_hat write, behaviorally?",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "unnamed write direction (form instrument void): the taxonomy failed blinded calibration (0.43 vs 0.05) so axis G is void; axis B is positive-only via O-2 (output-gate suppression, not abstention control); axis K is knowledge-state (no difficulty gradient); O-1's dissociation confirmed (6.37:1 wrongness over abstention on knowns)."
     },
     {
       "checkpoint": {

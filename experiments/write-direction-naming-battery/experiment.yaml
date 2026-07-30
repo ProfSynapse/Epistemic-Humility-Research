@@ -1,7 +1,7 @@
 slug: write-direction-naming-battery
 title: 'Write-direction naming battery: what is the mid-band c_hat write, behaviorally?'
 type: steer-cell
-status: signed
+status: falsified
 registered: true
 created_at: '2026-07-30T12:35:56Z'
 question: 'What is the mid-band hs20 c_hat write behaviorally, and which name does
@@ -62,66 +62,82 @@ instrument:
     form_taxonomy.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.06
-      measured_on: '2026-07-30, CPU, cold interpreter import; self-check PASS under 1 s'
-      rationale: 'Library module: deterministic per-row form classifier over already-merged grader fields. No state.'
+      measured_on: 2026-07-30, CPU, cold interpreter import; self-check PASS under
+        1 s
+      rationale: 'Library module: deterministic per-row form classifier over already-merged
+        grader fields. No state.'
     form_patterns.yaml:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.01
-      measured_on: '2026-07-30, loaded by form_taxonomy.load_patterns during self-check'
+      measured_on: 2026-07-30, loaded by form_taxonomy.load_patterns during self-check
       rationale: Pattern config consumed read-only by form_taxonomy.py.
     build_form_adjudication_pool.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.05
-      measured_on: '2026-07-30, CPU, cold interpreter import'
-      rationale: Builds the blinded pool and manifest in one atomic pass over runlogs; re-running from scratch is the cheap path.
+      measured_on: 2026-07-30, CPU, cold interpreter import
+      rationale: Builds the blinded pool and manifest in one atomic pass over runlogs;
+        re-running from scratch is the cheap path.
     apply_form_adjudication.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.05
-      measured_on: '2026-07-30, CPU, cold interpreter import'
-      rationale: Joins adjudicator labels back over the committed pool in one atomic pass.
+      measured_on: 2026-07-30, CPU, cold interpreter import
+      rationale: Joins adjudicator labels back over the committed pool in one atomic
+        pass.
     test_form_taxonomy.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.15
-      measured_on: '2026-07-30, CPU, cold interpreter import; full suite 36/36 in under 5 s'
+      measured_on: 2026-07-30, CPU, cold interpreter import; full suite 36/36 in under
+        5 s
       rationale: Test suite, not a run stage.
     grader.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.05
-      measured_on: '2026-07-30, exercised over 550 corpus rows in the port-fidelity audit'
-      rationale: 'Library module: narrow grader, AST-identical port of margin-mapping/harness/grader.py. No state.'
+      measured_on: 2026-07-30, exercised over 550 corpus rows in the port-fidelity
+        audit
+      rationale: 'Library module: narrow grader, AST-identical port of margin-mapping/harness/grader.py.
+        No state.'
     gen_lib.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.05
-      measured_on: '2026-07-30, exercised over 550 corpus rows in the port-fidelity audit'
-      rationale: 'Library module: row grading and clean_tighten, AST-identical port. No state.'
+      measured_on: 2026-07-30, exercised over 550 corpus rows in the port-fidelity
+        audit
+      rationale: 'Library module: row grading and clean_tighten, AST-identical port.
+        No state.'
     detector_v2.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.05
-      measured_on: '2026-07-30, exercised over 550 corpus rows in the port-fidelity audit'
+      measured_on: 2026-07-30, exercised over 550 corpus rows in the port-fidelity
+        audit
       rationale: 'Library module: wide detector, AST-identical port. No state.'
     detector_v2_patterns.yaml:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.01
-      measured_on: '2026-07-30, byte-identical to margin-mapping/harness copy (diff exit 0)'
+      measured_on: 2026-07-30, byte-identical to margin-mapping/harness copy (diff
+        exit 0)
       rationale: Pattern config consumed read-only by detector_v2.py.
     render.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.1
-      measured_on: '2026-07-30 audit, static; construction unchanged from heldout lineage'
-      rationale: 'Library module: chat-template render with WDNB_ env namespacing. No state.'
+      measured_on: 2026-07-30 audit, static; construction unchanged from heldout lineage
+      rationale: 'Library module: chat-template render with WDNB_ env namespacing.
+        No state.'
     steer_lib.py:
       persistence: incremental
       checkpoint_path: experiments/write-direction-naming-battery/analysis/runlog/<arm_key>.jsonl
-      rationale: Per-arm runlog appender with resume; redacts registered fields at write time (cell.yaml execution.redact_fields).
+      rationale: Per-arm runlog appender with resume; redacts registered fields at
+        write time (cell.yaml execution.redact_fields).
     pipeline.py:
       persistence: incremental
       checkpoint_path: experiments/write-direction-naming-battery/analysis/runlog/<arm_key>.jsonl
-      rationale: Run driver over the 14 arms with per-arm resume against the runlog line counts.
+      rationale: Run driver over the 14 arms with per-arm resume against the runlog
+        line counts.
     materialize_rows.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 1.0
-      measured_on: '2026-07-30, single atomic build of analysis/naming_battery_rows.jsonl during phase 1'
-      rationale: One-shot row materialization from the committed ID manifests; re-running from scratch is the cheap path.
+      measured_on: 2026-07-30, single atomic build of analysis/naming_battery_rows.jsonl
+        during phase 1
+      rationale: One-shot row materialization from the committed ID manifests; re-running
+        from scratch is the cheap path.
     run_arm_a_form_pass.py:
       persistence: incremental
       checkpoint_path: experiments/write-direction-naming-battery/analysis/runlog_form/<arm_key>.jsonl
@@ -163,5 +179,8 @@ inputs:
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json
 - experiments/margin-evidence-responsiveness-worldknown/analysis-committed/census/qwen35_4b_worldknown_census.jsonl
 - datasets/popqa/test.jsonl
-verdict: ''
+verdict: 'unnamed write direction (form instrument void): the taxonomy failed blinded
+  calibration (0.43 vs 0.05) so axis G is void; axis B is positive-only via O-2 (output-gate
+  suppression, not abstention control); axis K is knowledge-state (no difficulty gradient);
+  O-1''s dissociation confirmed (6.37:1 wrongness over abstention on knowns).'
 kg: []
