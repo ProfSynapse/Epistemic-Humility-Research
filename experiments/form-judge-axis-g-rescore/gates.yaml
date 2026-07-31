@@ -1,0 +1,53 @@
+# Registered gates for form-judge-axis-g-rescore.
+# PROPOSED (pre-sign draft, 2026-07-30). Numbers become binding when the
+# amendment is signed; after sign they never move (no-goalpost rule, and the
+# on-failure closure in AMENDMENT.md "Gates" applies).
+
+g1_calibration_agreement:
+  # Dev-set measurement (disclosed, pre-sign, 2026-07-30): two independent
+  # opus judges, fresh instance per shard, graded the spent 219-row slice
+  # blind under the pinned rubric. Core (n=200) three-way judge-vs-judge
+  # disagreement: 16/200 = 0.080. Binomial SE at that rate and n is ~0.019.
+  dev_judge_vs_judge_disagreement: 0.080
+  dev_n_core: 200
+  # Headroom: ~2 SE above the dev point estimate, rounded to 0.04.
+  registered_headroom: 0.04
+  # Fresh-slice judge-vs-adjudicator three-way disagreement must not exceed:
+  max_disagreement: 0.12
+  fresh_slice_n_core: 200
+  # Reported (non-gating): ordered-label-pair direction breakdown.
+
+g2_decoy_floors:
+  # GOVERNED DEVIATION (PI-approved 2026-07-30, recorded in NOTEBOOK.md):
+  # the registered clear-negative source (Arm C baseline correct_v2 rows)
+  # retains no generation text anywhere on disk (metrics-only runlog; the
+  # pre-sign feasibility count of 595 verified rows, not text bytes).
+  # Calibration attempt 1, whose 25 clear-negative decoys were silently
+  # empty strings, was voided at the lead spot-check pre-unblind. G2 now
+  # gates clear-positive decoys only. Mitigations on record: both dev
+  # judges labeled roughly half of core rows F1 (no away-from-F1 collapse),
+  # and G1's independent-agreement gate catches any label collapse.
+  n_decoy_clear_positive: 25
+  # Judge's decoy agreement (the judge is the gated instrument; the
+  # adjudicator's decoy rates are reported, non-gating).
+  min_clear_positive_agreement: 0.92   # judge label is not F1
+  # Dev reference (non-gating): both dev judges 19/19 = 1.00 on the spent
+  # slice's clear-positive decoys.
+
+g3_axis_g_thresholds:
+  # Transcribed unchanged from the naming battery's registration.
+  min_f2_f3_share_intermediate: 0.15   # at >= 1 of doses 0.25x, 0.5x, 0.75x
+  min_share_gain_over_baseline: 0.10
+  # NOT-ADJUDICABLE guard: fewer than 50 screened-in rows at every
+  # intermediate dose. Pre-sign screen counts: 306 / 224 / 178, so the
+  # guard is live but not expected to fire.
+  min_screened_in_rows_per_dose: 50
+
+lead_spot_check:
+  n_rows: 30
+  # Lead reads the sample against the rubric before gate adjudication;
+  # systematic rubric misapplication voids the calibration pre-unblind.
+
+stability_diagnostic:
+  # Reported, non-gating: one shard graded twice by fresh judge instances.
+  n_shards_regraded: 1
