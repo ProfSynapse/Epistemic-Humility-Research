@@ -1,0 +1,58 @@
+[
+  {
+    "committed_at": "2026-07-31T00:29:20.130532+00:00",
+    "file_name": "form_judge_calib_shard_00_graded.jsonl",
+    "role": "judge",
+    "sha256": "93f769e62753b58c0f8a6c0a29151a2947d90c09f3ade8931b12050ae80f3966",
+    "shard_id": "form_judge_calib_shard_00"
+  },
+  {
+    "committed_at": "2026-07-31T00:29:20.177368+00:00",
+    "file_name": "form_judge_calib_shard_00_graded.jsonl",
+    "role": "adjudicator",
+    "sha256": "58216f131b2e80a24f014c0b3c65adb7c65f37721719de8948553c5f58a9599b",
+    "shard_id": "form_judge_calib_shard_00"
+  },
+  {
+    "committed_at": "2026-07-31T00:29:20.222085+00:00",
+    "file_name": "form_judge_calib_shard_01_graded.jsonl",
+    "role": "judge",
+    "sha256": "5aa97f13f4e2fdb1e2a4826be1790fa4df92bfcda9decd1734db29118f15fcc0",
+    "shard_id": "form_judge_calib_shard_01"
+  },
+  {
+    "committed_at": "2026-07-31T00:29:20.269204+00:00",
+    "file_name": "form_judge_calib_shard_01_graded.jsonl",
+    "role": "adjudicator",
+    "sha256": "5aa97f13f4e2fdb1e2a4826be1790fa4df92bfcda9decd1734db29118f15fcc0",
+    "shard_id": "form_judge_calib_shard_01"
+  },
+  {
+    "committed_at": "2026-07-31T00:29:20.315923+00:00",
+    "file_name": "form_judge_calib_shard_02_graded.jsonl",
+    "role": "judge",
+    "sha256": "390bf1b4cde835e81ff905d5aa1af15bcde7ccf801b8806f6fc98f6b06017b82",
+    "shard_id": "form_judge_calib_shard_02"
+  },
+  {
+    "committed_at": "2026-07-31T00:29:20.362514+00:00",
+    "file_name": "form_judge_calib_shard_02_graded.jsonl",
+    "role": "adjudicator",
+    "sha256": "0be678dd4709b9067149fbc916518fc042f1ab133eb0778d613dcae9debd5c0e",
+    "shard_id": "form_judge_calib_shard_02"
+  },
+  {
+    "committed_at": "2026-07-31T00:29:20.407868+00:00",
+    "file_name": "form_judge_calib_shard_03_graded.jsonl",
+    "role": "judge",
+    "sha256": "25ee42d7cfdbd3d843be08b658d4a3dfeaf8a26e3f4e3afb55c7c6109c78953c",
+    "shard_id": "form_judge_calib_shard_03"
+  },
+  {
+    "committed_at": "2026-07-31T00:29:20.453820+00:00",
+    "file_name": "form_judge_calib_shard_03_graded.jsonl",
+    "role": "adjudicator",
+    "sha256": "25ee42d7cfdbd3d843be08b658d4a3dfeaf8a26e3f4e3afb55c7c6109c78953c",
+    "shard_id": "form_judge_calib_shard_03"
+  }
+]
