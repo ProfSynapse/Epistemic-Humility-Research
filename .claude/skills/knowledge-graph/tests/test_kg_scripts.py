@@ -17,7 +17,7 @@ from kg_common import NoteIndex, collect_graph_notes, collect_triples, load_onto
 from kg_feedback import record_feedback  # noqa: E402
 from kg_index import connect, dangling_references, index_root, iter_source_files  # noqa: E402
 from kg_search import main as kg_search_main  # noqa: E402
-from kg_search import lane_weights_from_feedback, search  # noqa: E402
+from kg_search import format_results, lane_weights_from_feedback, search  # noqa: E402
 from kg_validate_repo import validate as validate_kg_repo  # noqa: E402
 from validate_kg_relationships import validate_note  # noqa: E402
 
@@ -461,6 +461,111 @@ def unrelated():
 
             self.assertEqual(0, rc)
             self.assertIn("KG search results for: alpha beta", stdout.getvalue())
+
+    def test_frontmatter_title_and_aliases_are_searchable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            db = root / ".kg" / "index.sqlite"
+            # Headings are the point: section chunks start at the first heading,
+            # so without an identity chunk the whole frontmatter is unsearchable.
+            (root / "widget.md").write_text(
+                """---
+title: "Widget Switch"
+aliases:
+  - flangebolt regulator (earned name, see other-note.md)
+tags:
+  - kg/term
+kg:
+  id: term:widget-switch
+  type: term
+  status: canonical
+---
+
+## Summary
+
+Body text that never mentions the alias.
+""",
+                encoding="utf-8",
+            )
+            index_root(root, db)
+
+            conn = connect(db)
+            try:
+                rows = conn.execute(
+                    "SELECT symbol, title, text FROM chunks WHERE path = ? AND symbol_type = 'frontmatter'",
+                    ("widget.md",),
+                ).fetchall()
+            finally:
+                conn.close()
+            self.assertEqual(1, len(rows), "expected exactly one frontmatter identity chunk")
+            identity = rows[0]
+
+            self.assertEqual("Widget Switch", identity["title"])
+            self.assertIn("flangebolt regulator", identity["symbol"])
+            self.assertNotIn(
+                "other-note",
+                identity["symbol"],
+                "parenthetical annotations must not reach the name surface",
+            )
+            self.assertNotIn("kg/term", identity["text"], "boilerplate tags must not be indexed")
+            self.assertIn("term:widget-switch", identity["text"])
+
+            hits = [item.path for item in search(db, "flangebolt regulator", limit=5)]
+            self.assertIn("widget.md", hits, "an alias-only query must reach the note")
+
+    def test_deprecated_note_routes_to_its_successor(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            db = root / ".kg" / "index.sqlite"
+            (root / "old.md").write_text(
+                """---
+title: "Old Widget Note"
+kg:
+  id: term:old-widget
+  type: term
+  status: deprecated
+  deprecated_by: term:new-widget
+---
+
+# Old Widget Note
+
+The widget frobnicator marker lives here.
+""",
+                encoding="utf-8",
+            )
+            (root / "new.md").write_text(
+                """---
+title: "New Widget Note"
+kg:
+  id: term:new-widget
+  type: term
+  status: canonical
+---
+
+# New Widget Note
+
+The current account of the widget.
+""",
+                encoding="utf-8",
+            )
+            index_root(root, db)
+
+            default_paths = [item.path for item in search(db, "frobnicator marker", limit=10)]
+            self.assertNotIn("old.md", default_paths)
+            self.assertIn(
+                "new.md",
+                default_paths,
+                "successor must inherit the superseded note's score, not vanish with it",
+            )
+
+            with_deprecated = search(db, "frobnicator marker", limit=10, include_deprecated=True)
+            stale = next(item for item in with_deprecated if item.path == "old.md")
+            self.assertEqual("deprecated", stale.status)
+            self.assertEqual("term:new-widget", stale.deprecated_by)
+            self.assertEqual("new.md", stale.deprecated_by_path)
+
+            rendered = format_results(with_deprecated, "frobnicator marker")
+            self.assertIn("DEPRECATED superseded by term:new-widget (new.md)", rendered)
 
     def test_kg_repo_validator_source_invariants_pass(self) -> None:
         repo_root = find_repo_root(SCRIPT_DIR)
