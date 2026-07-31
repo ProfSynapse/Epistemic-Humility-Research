@@ -53,3 +53,16 @@ lead verifies, then --mode full (Stage 2, held-out G1/G2/G3);
 pocket_rollup.py. cell.yaml surface.expected_config_sha is hand-filled
 from the tuner's printed config_sha after the first run, per the sign
 output reminder.
+
+### 2026-07-31 -- Staging correction: split_manifest destination
+
+First build_directions attempt failed fail-closed on a lead staging
+placement error: split_manifest.json had been copied into analysis/
+instead of its registered destination analysis-committed/gemma4-e4b/
+(experiment.yaml instrument.staging). Moved to the registered
+destination, sha256 re-verified at the new path (8d228117... exact
+match), no other staged file affected, no stage produced any output
+before the fail-closed stop. Side note: the failed container run left
+analysis-committed/gemma4-e4b root-owned; ownership restored to the
+host user via the pinned container before the move. Relaunching the
+FIT stages.
