@@ -232,3 +232,15 @@ Per the registered claim rule the name IDK switch is EARNED for this
 actuator at the pinned hs20 operating point. Stability regrade
 (non-gating) in flight; resolution package goes to the PI for approval
 before Outcome/resolve/PR.
+
+### 2026-07-31 -- Stability regrade (non-gating): 4/56 = 0.0714
+
+isnc_fullpool_shard_04 regraded by a second fresh context-free
+opus-tier judge (graded-file sha256 committed before the join,
+role stability). Per-row label flip rate 4/56 = 0.0714, reported
+non-gating per the registered stability_diagnostic. Consistent with
+the F1/F2 borderline density the lead saw in the spot-check; no
+systematic direction to the flips at this rate. Judge lane is now
+fully closed out: all registered lane steps (pool hash commit,
+21-shard grading, graded-hash commit, unblind, decoy gate, spot-check,
+stability) executed in the registered order.
