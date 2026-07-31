@@ -102,6 +102,76 @@ page:
 6. Numbers live in sentences, not just tables. A table holds the grid; the
    prose says what the one number that matters is and why.
 
+## No meta commentary
+
+Meta commentary is prose that narrates the document instead of delivering
+content: announcing what a section is about to do, commenting on the paper's
+own claims, or describing the reporting choices mid-report. It is banned.
+
+- No roadmap sentences ("each family is stated in full as a subheading
+  below", "we take these up in order").
+- No self-annotation of claims ("the plain-language version of this claim
+  is", "the headline is stated to match it", "we report the distinction
+  rather than pooling across it"). Say the thing in plain language the first
+  time; make the reporting choice silently and let the labels on the numbers
+  show it.
+- No throat-clearing before content and no "this appendix/section describes"
+  openers. Open with the content.
+
+The test: if a sentence would survive with "this paper" or "we report" as its
+subject and no number, definition, or claim in its predicate, cut it. This is
+different from teaching voice, which guides the reader through the LOGIC of an
+argument; that stays. Guiding the reader through the DOCUMENT goes.
+
+## Teach, do not just report
+
+The papers are accessible research: the reader is guided through the
+reasoning, not handed conclusions to trust.
+
+- Every acronym is spelled out at first use (best-of-n sampling, hindsight
+  instruction relabeling), and every benchmark or dataset gets one clause of
+  description before its name carries weight (what it measures, roughly what
+  is in it).
+- The paper's most important inferential steps are walked through explicitly,
+  premise to conclusion, one step per sentence, so a reader outside the
+  subfield can follow why the conclusion lands. The two or three paragraphs
+  the whole paper turns on get the most patient writing in the paper, not the
+  most compressed.
+- A reader joining mid-conversation is a writing failure. Section openings
+  give enough context that the section makes sense read cold.
+
+## Series discipline
+
+- Each paper stands alone. A reader of paper N needs no other paper in the
+  series to follow the argument. Whatever context another program paper
+  would supply is restated in a sentence or two where needed, with the
+  citation; it is never delegated ("see the companion paper") for anything
+  the current argument depends on.
+- Back-citation only. Published or earlier-released program papers may be
+  cited where genuinely needed, sparingly: over-citing our own prior work
+  reads as marketing and breaks standalone reading. Unpublished or
+  later-numbered program papers are never mentioned, teased, or cited.
+  Future work is described as future work, without naming a manuscript.
+- No repeated openings. Each paper's abstract and introduction are written
+  fresh; reusing another program paper's framing sentence or first paragraph
+  is banned, even paraphrased. Same rule for epigraphs: one distinct,
+  well-attested quote per paper, chosen for that paper's thesis.
+- Rolling dates, not frozen ones. Searches and evidence sweeps are dated "as
+  of this writing" with the update practice stated once, not pinned to a
+  single month that will read stale.
+
+## GitHub rendering (hard)
+
+The manuscripts are read on GitHub before anywhere else. Everything must
+render there.
+
+- Figures use standard markdown image syntax, `![alt text](figures/name.png)`
+  with a relative path, followed by a bold "**Figure N.** caption" paragraph.
+  Never Obsidian embeds (`![[...]]`).
+- Math stays inside the macro set GitHub's LaTeX renderer supports. No
+  `\operatorname` (use `\mathrm`), and any new macro gets checked against a
+  rendered preview before merge.
+
 ## Vocabulary and punctuation rules (hard)
 
 - No em dashes. Use commas, colons, parentheses, or a new sentence.
