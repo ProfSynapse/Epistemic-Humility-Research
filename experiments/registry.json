@@ -2926,7 +2926,7 @@
           "steer_lib.py": "9eb68e988e861127a541ec8b5a6059c7c5d5c8ad60864b5adbed4518566231c0",
           "test_idk_switch_smoke.py": "dfee4882a3721e2ce54d267bb973e5cd8cf563b446745032ef2cceacf62893bb"
         },
-        "runtime_image_digest": "sha256:0421dc9cf32691bd0f093eb153b9e900f2be418cdd466f341d598415a92657ee"
+        "runtime_image_digest": "sha256:fe732c8fb4c82ea1a1acd1df3766a6fe854de750f1416d934e3c66231dfff801"
       },
       "kg": [],
       "prediction": "All three name-earning gates pass on the fresh generations: F4 endpoint jump over baseline, hedged share never rising 0.10 over baseline at any dose, placebo F4 within its registered band; the name IDK switch is earned.",
