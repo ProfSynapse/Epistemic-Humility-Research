@@ -579,7 +579,7 @@ rows or a different instrument.
 | Mistral-7B-v0.3 (hs15) | G1 **FAIL** - 0.4893 [0.4624, 0.5164] vs 0.50 floor | - | FAIL |
 | Llama-3.2-3B (hs17) | G1 **PASS** - 0.7420 [0.7119, 0.7699]; G2 0.0120 but **non-diagnostic (0/334)** | **never tested** | not promotable; null control broken |
 | Qwen3-4B (hs23) | 0.892 [0.839, 0.929], cost 0.035 (9/258) | no census, no S1 | not carried through modern specificity |
-| Gemma-4-E4B | **NOT RUN** - instrument invalid, then re-scoped | none | open |
+| Gemma-4-E4B (hs15) | G1 PASS - 0.7857 [0.7176, 0.8410] at rd 0.357 (kv-seam D-ladder, resolved 2026-07-31) | G3 PASS-DEGENERATE only; near-seam hs24 G3 **FAIL** | not promotable; pocket ladder hs25-27 registered |
 
 The cross-family experiment itself resolves **VERDICT INCONCLUSIVE** (signed
 2026-07-24) because fewer than three families ran past G0.

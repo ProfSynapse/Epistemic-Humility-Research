@@ -779,7 +779,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (491)
+## Mechanisms (cause -> effect) (494)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -923,6 +923,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[format-induced-reasoning-trace-collapse]] : The format used to represent missing reasoning traces in fine-tuning data (empty-think: empty <think> block included; no-think: reasoning tags omitted entirely)
 - [[full-sft-on-noncompliance-data-causes-over-refusal]] : Full continued SFT of an instruction-tuned model on a noncompliance-only dataset (CoCoNot) without a contrastive compliance signal **enables** Model over-genera
 - [[functional-cooccurrence-drives-spatial-clustering]] : SAE features that tend to fire together within documents (functional co-occurrence, measured by phi-coefficient-cooccurrence) share semantic content **enables**
+- [[gemma-actuation-localizes-shallow-of-kv-seam]] : A dosed known-unknown direction is written into Gemma-4-E4B-it at shallow relative depth below its KV-sharing seam (D1/hs15, relative depth 0.357, both donor bl
 - [[gender-bias-spans-many-directions]] : Gender information encoded in glove-word-embeddings **enables** Single-direction projection (e.g. he-she) leaves substantial residual linear gender signal; full
 - [[gender-erasure-reduces-tpr-gap]] : Applying leace to remove gender information from BERT CLS embeddings **decreases** TPR-Gap drops from 0.198 to 0.084 in a downstream profession classifier while
 - [[generation-time-computation-loads-off-the-epistemic-plane]] : Autoregressive generation of an answer to an unanswerable question on a clean-SFT to GRPO-v2 checkpoint, measured as the hidden-state displacement from the pre-
@@ -983,6 +984,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[knowledge-surgery-enables-targeted-fact-update]] : Directly modifying FFN value-slot weight vectors for approximately 4 identified knowledge neurons per fact **enables** Fact update success rate of 34.4% with mi
 - [[kuq-fit-direction-reverses-on-world-known-confident-wrongness]] : In margin-evidence-responsiveness-worldknown (M4-WK), the KUQ-fit c_hat direction (fit on answered-vs-refused known-unknown rows, the direction the framework's 
 - [[kv-memorization-gates-truth-encoding]] : Phase 1 of training: rapid key-value-associative-memory|key-value memorisation of subject-attribute associations within approximately 1000 batches, reaching abo
+- [[kv-sharing-off-ablation-breaks-baseline-substrate]] : Gemma-4-E4B-it's cross-layer KV-sharing (blocks 24-41 reading frozen K/V from donor blocks 22 and 23 through the cache object) is disabled with a registered, pr
 - [[l1-l2-ratio-enables-k-robustness]] : Penalizing the L1/L2-norm ratio of activations before Top-k selection, concentrating the code onto fewer effective units **enables** Reconstruction quality beco
 - [[l2-logistic-bootstrap-svd-cannot-resolve-multidim-discriminative-subspace]] : Estimating a rank-k>1 discriminative subspace as the top-k right singular vectors of B=200 balanced-bootstrap L2-regularized logistic-regression (saga) separati
 - [[lacie-listener-aware-calibration-transfers-to-humans]] : DPO finetuning with a simulated LLM listener scoring speaker answer acceptance (LACIE training) **enables** Human annotators accept 47% fewer incorrect answers 
@@ -1186,6 +1188,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[scaling-fails-on-long-tail-knowledge]] : Increasing LM parameter count **mediates** Negligible accuracy gain on low-popularity factual questions; GPT-Neo 6B to GPT-3 davinci-003 accuracy on 4,000 least
 - [[score-rep-subspace-encodes-concept]] : Training a score-based generative model on data whose high-level concepts are causal-separability|causally separable factors in the data-generating process **en
 - [[se-supervision-improves-ood-probe-generalization]] : Training a hidden-state probe with semantic entropy labels instead of ground-truth accuracy labels **increases** The probe generalizes better to held-out tasks,
+- [[seam-adjacent-gate-clearance-is-non-direction-specific]] : At Gemma-4-E4B-it's first fully KV-quarantined site (A5/hs24, immediately downstream of both donor blocks 22 and 23, sharing ON, unmodified model), a fitted kno
 - [[second-half-layers-refine-without-composing]] : a layer's position in the second half of a deep transformer's stack, past the midpoint contribution drop. **limits** skipping the layer leaves later layers' con
 - [[self-ask-induces-overconfidence]] : 'self-ask-prompting, which asks the model to answer first before classifying a question as known/unknown' **decreases** Reduced classification accuracy on the k
 - [[self-consistency-elicitation-reduces-correctness-annotation-need]] : Large-scale training on self-consistency confidence targets (Stage 1) that teaches the model to externalize its internal consistency signal before any correctne
