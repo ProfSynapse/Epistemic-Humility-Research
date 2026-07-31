@@ -1,0 +1,110 @@
+"""Generation-side grading helpers for idk-switch-naming-confirmatory.
+
+Byte-for-byte port (logic, not import) of
+`experiments/write-direction-naming-battery/gen_lib.py` (source sha256
+d881b287b8a495f28d30fac0fb9caaf3230fdedf17a04317725a102eb077967f, matching
+that file's own pin), which is itself byte-identical LOGIC to
+`margin-mapping/harness/gen_lib.py`. `grade_row` merges the clean_tighten
+sub-grade (well_formed via the plain JSON-parse rule, semantic_refuse via the
+narrow literal-"i don't know" check) with the detector_v2 sub-grade
+(refused_v2 via the wide diverse-idiom detector, correct_v2 via alias match).
+This is the naming battery's pinned operating point's own grading schema
+(`execution.graders`: `grader:grade` + `detector_v2:grade_one_v2`), reused
+here unchanged so the F4/F5 screens computed on this cell's fresh generations
+are directly comparable to the naming battery's own screens.
+
+NOTE (deviation from the naming battery, documented, not silent): this cell's
+`steer_lib.run_rows` does NOT redact `answer_text`/`answer_value` from the
+persisted runlog record (see steer_lib.py module docstring "Deviation from
+the naming-battery reference"). `grade_row` is unaffected either way -- it
+always grades the full un-redacted text, before any redaction a caller might
+apply.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+from typing import Optional
+
+import detector_v2
+import grader
+
+MAX_NEW_CAP = 200
+
+_ANSWER_KEY_RE = re.compile(r'"answer"\s*:')
+
+
+def resolve_eos_ids(tokenizer) -> list[int]:
+    ids = set()
+    if tokenizer.eos_token_id is not None:
+        ids.add(int(tokenizer.eos_token_id))
+    im_end = tokenizer.convert_tokens_to_ids("<|im_end|>")
+    if im_end is not None and im_end != getattr(tokenizer, "unk_token_id", None):
+        ids.add(int(im_end))
+    return sorted(ids)
+
+
+def _find_first_json_object(text: str):
+    start = text.find("{")
+    if start == -1:
+        return None, None
+    dec = json.JSONDecoder()
+    try:
+        obj, end = dec.raw_decode(text, start)
+    except (json.JSONDecodeError, ValueError):
+        return None, None
+    return obj, end
+
+
+def grade_clean_tighten(raw_text: str, terminated_naturally: bool) -> dict:
+    text = raw_text or ""
+    obj, end = _find_first_json_object(text)
+    n_answer_keys = len(_ANSWER_KEY_RE.findall(text))
+
+    well_formed = isinstance(obj, dict) and "answer" in obj
+    if well_formed:
+        answer_value: Optional[str] = str(obj["answer"])
+        trailing = text[end:]
+        trailing_clean = trailing.strip() == ""
+    else:
+        m = grader._ANSWER_FIELD_RE.search(text)
+        answer_value = grader._ANSWER_FIELD_TRAILING_RE.sub("", m.group(1)) if m else None
+        trailing_clean = False
+
+    single_answer_key = n_answer_keys == 1
+    semantic_refuse = bool(answer_value) and ("i don't know" in answer_value.lower())
+    degenerate = grader.is_degenerate(text)
+
+    clean_tighten = bool(
+        semantic_refuse
+        and terminated_naturally
+        and well_formed
+        and single_answer_key
+        and trailing_clean
+        and not degenerate
+    )
+    return {
+        "well_formed": well_formed,
+        "n_answer_keys": n_answer_keys,
+        "single_answer_key": single_answer_key,
+        "trailing_clean": trailing_clean,
+        "answer_value": answer_value,
+        "semantic_refuse": semantic_refuse,
+        "degenerate": degenerate,
+        "clean_tighten": clean_tighten,
+    }
+
+
+def grade_row(text: str, terminated_naturally: bool, aliases: Optional[list[str]]) -> dict:
+    """One dict per row (data-exhaust rule): clean_tighten sub-grade +
+    detector_v2 sub-grade. Carries `answer_value` (from clean_tighten); this
+    cell's `steer_lib.run_rows` does NOT redact it before persisting (see
+    steer_lib.py), unlike the naming battery's own runlog."""
+    clean = grade_clean_tighten(text, terminated_naturally)
+    v2 = detector_v2.grade_one_v2(text, aliases)
+    return {
+        "terminated_naturally": terminated_naturally,
+        **clean,
+        **v2,
+    }
