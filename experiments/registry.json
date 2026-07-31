@@ -2521,7 +2521,8 @@
         "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/PROVENANCE.md",
         "experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors",
         "experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract_manifest.json",
-        "experiments/gemma4-e4b-kv-seam-quarantine/analysis-committed/gemma4-e4b/split_manifest.json"
+        "experiments/gemma4-e4b-kv-seam-quarantine/analysis-committed/gemma4-e4b/split_manifest.json",
+        "experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/eval_rows.jsonl"
       ],
       "instrument": {
         "configs": [
@@ -2678,9 +2679,16 @@
             "read_by": "build_directions.py:159",
             "sha256": "8d2281179ab865bea8fd7918c0ee14b33db7113c4ed375ff0740c36cee2f1d87",
             "source": "experiments/gemma4-e4b-kv-seam-quarantine/analysis-committed/gemma4-e4b/split_manifest.json"
+          },
+          {
+            "artifact": "eval_rows.jsonl",
+            "destination": "experiments/gemma4-e4b-pocket-ladder/analysis/gemma4-e4b/eval_rows.jsonl",
+            "note": "205.4 KB, gitignored (analysis/), never committed. Added 2026-07-31, closing a gap this remediation found but did not initially cover -- the B3 finding as first given scoped only to build_directions.py:153-161 and calibrate_dose.py:74. Carries question/aliases row text, so like anchor_extract.safetensors it stages into this cell's own gitignored analysis/ ONLY, never analysis-committed/ (containment rule, cell.yaml surface.containment.committed_row_text: forbidden).",
+            "read_by": "pipeline.py:104 (load_rows, called by run_contrast.py's selected_rows)",
+            "sha256": "7a2784bd883ed622fa138956e722db0353c8a3f96ed7f914a144908d01ddecc7",
+            "source": "experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/eval_rows.jsonl"
           }
         ],
-        "known_gap_not_covered_by_this_contract": "run_contrast.py's own row population (selected_rows -> pipeline.load_rows) reads eval_rows.jsonl from analysis/<family>/, a private row-text file under the quarantine cell's own gitignored analysis/, which is NOT staged by this contract -- the B3 finding as given scoped only to build_directions.py:153-161 and calibrate_dose.py:74. Flagged here as an additional gap found during remediation, not yet resolved: run_contrast.py cannot run end to end until eval_rows.jsonl (and its sha256) are added to this staging block.",
         "note": "NOT executed by the drafting agent (no GPU/docker work authorized at draft). Registers path + hash + a verification step that must run before any staged file is read, per AMENDMENT.md \"Staged inputs\" (B3 remediation). Symlink or copy are both acceptable mechanisms; the contract below binds whichever is used at sign/run time.",
         "verification_step": "Before any of build_directions.py/calibrate_dose.py/run_contrast.py reads a staged file, recompute its sha256 and compare against the value recorded above; refuse to proceed on a mismatch rather than silently reading a different extraction than the one this cell is registered against."
       },

@@ -94,15 +94,31 @@ def redraw_seed(hidden_dim: int, hs_index: int, attempt: int, k: int = K,
                 seed_base: int = SEED_BASE) -> int:
     """Seed for the `attempt`-th (1-based) redraw at this site.
 
-    cell.yaml randomness_quality_bar.redraw_rule: "redraw_seed(attempt) =
-    seed_base + hidden_dim + hs_index + K + attempt". Offsetting by `k`
-    (the fixed K, not a running k_index) keeps every redraw seed clear of the
-    K primary-draw seeds (which occupy k_index in [0, K)), mirroring
-    placebo-seed-distribution-census/sc1_checks.py's own redraw_seed pattern.
+    INSTRUMENT DELTA from the quarantine cell this file was copied from
+    (disclosed deviation, AMENDMENT.md "Instrument deltas from the
+    quarantine cell", W4 remediation, closed 2026-07-31). The original
+    formula was `seed_base + hidden_dim + hs_index + k + attempt`, the same
+    narrow-stride `hs_index` term `draw_seed` had, and it carried the same
+    cross-site collision defect: verified, hs25 and hs26's redraw-attempt
+    pools overlapped at 8 of 9 checked values. Widened the `hs_index` term's
+    stride to 1000, mirroring `draw_seed`'s fix, so every site's redraw pool
+    is separated from every other site's cleanly. The `+ k` offset (the
+    fixed K, not a running k_index) is UNCHANGED and is intentionally kept:
+    it is the parent cell's own accepted intra-site structure, keeping every
+    redraw seed clear of that same site's K primary-draw seeds (which occupy
+    k_index in [0, K)), mirroring
+    placebo-seed-distribution-census/sc1_checks.py's own redraw_seed
+    pattern -- only the cross-site collision was the defect being fixed
+    here, not the intra-site aliasing.
+
+    cell.yaml randomness_quality_bar.redraw_rule (AS AMENDED here):
+    "redraw_seed(attempt) = seed_base + hidden_dim + 1000*hs_index + K +
+    attempt". Original rule, for provenance: "seed_base + hidden_dim +
+    hs_index + K + attempt".
     """
     if attempt < 1:
         raise ValueError("attempt is 1-based; the first redraw is attempt=1")
-    return seed_base + hidden_dim + hs_index + k + attempt
+    return seed_base + hidden_dim + 1000 * hs_index + k + attempt
 
 
 def sc1_screen(direction: np.ndarray, c_hat: np.ndarray, u_d: np.ndarray,

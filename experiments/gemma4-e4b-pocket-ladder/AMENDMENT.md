@@ -146,20 +146,36 @@ Python modules are byte-identical).** Confirmed by direct `diff` against
      guard, and the `--arm-kind` help text.
   3. One stale example string in an error message (`--site-set seam_pair`
      in the "run the true arm first" hint) updated to `--site-set pocket`.
-- **`placebo_direction.py`, drifted (one delta, W4 remediation):**
-  `draw_seed`'s formula changed from `seed_base + hidden_dim + hs_index +
-  k_index` to `seed_base + hidden_dim + 1000*hs_index + k_index`. The
-  original formula collides across adjacent sites: verified directly (K=5,
-  hidden_dim=2560), hs25/hs26/hs27's 15 draws span only 7 distinct seeds,
-  and hs25's draws overlap the quarantine cell's own hs24/P2 draws at 4 of
-  5 values. The corrected formula was verified to produce 20 distinct
-  seeds with zero collisions across hs24/25/26/27. `redraw_seed` was
-  **NOT** changed (out of the lead's explicit ruling scope) and still uses
-  the un-widened stride -- it retains a residual collision risk across
-  adjacent sites' REDRAW pools specifically (verified: hs25 and hs26's
-  redraw-attempt pools overlap at 8 of 9 checked values), which only
-  matters if the redraw ledger is exercised (an SC1 screening failure on a
-  primary draw). Flagged for the lead rather than silently also changed.
+- **`placebo_direction.py`, drifted (two deltas, both W4 remediation, both
+  closed 2026-07-31):**
+  1. `draw_seed`'s formula changed from `seed_base + hidden_dim + hs_index +
+     k_index` to `seed_base + hidden_dim + 1000*hs_index + k_index`. The
+     original formula collides across adjacent sites: verified directly
+     (K=5, hidden_dim=2560), hs25/hs26/hs27's 15 draws span only 7 distinct
+     seeds, and hs25's draws overlap the quarantine cell's own hs24/P2
+     draws at 4 of 5 values.
+  2. `redraw_seed`'s formula changed from `seed_base + hidden_dim +
+     hs_index + k + attempt` to `seed_base + hidden_dim + 1000*hs_index + k
+     + attempt`, the same widening applied to the same defect: verified,
+     hs25 and hs26's redraw-attempt pools overlapped at 8 of 9 checked
+     values under the original formula. The `+ k` offset itself is
+     unchanged and intentionally kept -- it is the parent cell's own
+     accepted intra-site structure (separating a site's redraw seeds from
+     its own K primary-draw seeds), not part of the cross-site collision
+     defect being fixed.
+
+  Re-verified numerically after both fixes, exhaustively over the full
+  registered draw and redraw space (`K=5` primary draws plus all
+  `MAX_REDRAWS=300` redraw attempts per site, `hidden_dim=2560`,
+  `SEED_BASE=20260725`): **zero collisions** among the 915 seed values
+  spanning E1/E2/E3 (hs25/26/27, 305 slots each), and **zero collisions**
+  between that pocket-cell pool and the quarantine cell's own unchanged
+  hs24/P2 pool (its `draw_seed`/`redraw_seed` still use the original,
+  un-widened formula, since that file was not touched). For contrast, the
+  ORIGINAL (pre-fix) formula applied to just hs24-hs27's draw-plus-9-redraw-
+  attempts pools (56 seed-slots total, the four sites this program's
+  quarantined-region arms occupy) produced only 18 distinct values -- 38
+  collisions among 56 slots.
 - **`family_config.py`, drifted (additive registration, not a behavior
   change to any existing site set):** added `pocket_hs_indices()` and a
   `SITE_SETS["pocket"]` entry, mirroring the existing `shallow_ladder_hs_
@@ -191,13 +207,14 @@ Python modules are byte-identical).** Confirmed by direct `diff` against
 
 **Staged inputs (registered contract; not executed at draft -- see the
 "Staged inputs" subsection below, under Design, for the full
-path/hash/verification record).** `build_directions.py` and
-`calibrate_dose.py` read three files this experiment directory does not
-itself contain: the FIT anchor extraction safetensors, its manifest, and the
-FIT/HELD-OUT split manifest. These must be staged (symlinked or copied) from
-their source location before any of those three scripts can run;
-`experiment.yaml instrument.staging` records source path, destination path,
-and sha256 for each.
+path/hash/verification record).** `build_directions.py`,
+`calibrate_dose.py`, and `run_contrast.py` read four files this experiment
+directory does not itself contain: the FIT anchor extraction safetensors,
+its manifest, the FIT/HELD-OUT split manifest, and the row-text pool
+`eval_rows.jsonl`. These must be staged (symlinked or copied) from their
+source location before any of those three scripts can run; `experiment.yaml
+instrument.staging` records source path, destination path, and sha256 for
+each.
 
 **Extraction provenance, corrected 2026-07-31 (pre-sign red-team finding
 B2; the earlier draft named the wrong artifact).** E1/E2/E3 do NOT read
@@ -231,21 +248,22 @@ the quarantine cell's own D1-D4 did (`gemma4-e4b-kv-seam-quarantine/AMENDMENT.md
 
 ### Staged inputs (pre-sign red-team finding B3)
 
-This experiment directory does not itself contain an activation cache. It is
-registered against the correct artifact named above, but that artifact lives
-in the sibling `gemma4-e4b-kv-seam-quarantine` directory and must be staged
-(symlinked or copied) into this experiment's own `analysis/` /
-`analysis-committed/` tree before `build_directions.py` or `calibrate_dose.py`
-can read it. **Not executed by the drafting agent** -- no GPU/docker work is
-authorized at draft; this section registers the contract, not a completed
-action. The full machine-readable record is `experiment.yaml
-instrument.staging`; the same three files, transcribed here:
+This experiment directory does not itself contain an activation cache or a
+row-text pool. It is registered against the correct artifacts named above,
+but they live in the sibling `gemma4-e4b-kv-seam-quarantine` directory and
+must be staged (symlinked or copied) into this experiment's own `analysis/`
+/ `analysis-committed/` tree before `build_directions.py`, `calibrate_dose.py`,
+or `run_contrast.py` can read them. **Not executed by the drafting agent** --
+no GPU/docker work is authorized at draft; this section registers the
+contract, not a completed action. The full machine-readable record is
+`experiment.yaml instrument.staging`; the same four files, transcribed here:
 
 | artifact | source | sha256 | read by |
 |---|---|---|---|
 | `anchor_extract.safetensors` | `gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors` | `b7197418476208a3657f98026932fbf5e2c5aa4306a82844040ab50d99fbe7bf` | `build_directions.py:159-161`, `calibrate_dose.py:74-75` |
 | `anchor_extract_manifest.json` | `gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract_manifest.json` | `060c3f3b225fc4bca59a5b6bb91a6c91bf13d4798f14a4e3a84bd8dd09158b01` | `build_directions.py:157-158` |
 | `split_manifest.json` | `gemma4-e4b-kv-seam-quarantine/analysis-committed/gemma4-e4b/split_manifest.json` | `8d2281179ab865bea8fd7918c0ee14b33db7113c4ed375ff0740c36cee2f1d87` | `build_directions.py:159` |
+| `eval_rows.jsonl` | `gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/eval_rows.jsonl` | `7a2784bd883ed622fa138956e722db0353c8a3f96ed7f914a144908d01ddecc7` | `pipeline.py:104` (`load_rows`, called by `run_contrast.py`'s `selected_rows`) |
 
 `anchor_extract.safetensors` is 341.7 MB, gitignored, never committed to the
 repo. `split_manifest.json` is git-tracked and byte-identical (same sha256,
@@ -255,22 +273,20 @@ independently verified) to
 `use_cache=False` corruption (`PROVENANCE.md` "A caution specific to these
 files"), unlike the activation cache itself, so its presence in that
 directory is not a reason to source the activation cache from there too (see
-"Extraction provenance" above).
+"Extraction provenance" above). `eval_rows.jsonl` is 205.4 KB, gitignored,
+never committed -- added 2026-07-31, closing a gap this remediation found but
+had not initially covered (`run_contrast.py`'s own row population reads it
+via `pipeline.load_rows`, which was outside the staging contract's first
+scope of `build_directions.py:153-161` and `calibrate_dose.py:74`). It
+carries question/aliases row text, so like `anchor_extract.safetensors` it
+stages into this cell's own gitignored `analysis/` **only**, never
+`analysis-committed/` (containment rule, `cell.yaml
+surface.containment.committed_row_text: forbidden`).
 
 **Verification step, registered before any staged file is read.** Recompute
 each file's sha256 at staging time and compare against the value above;
 refuse to proceed on a mismatch rather than silently reading a different
 extraction than the one this cell is registered against.
-
-**Known gap not covered by this contract, found during remediation.**
-`run_contrast.py`'s own row population (`selected_rows` ->
-`pipeline.load_rows`) reads `eval_rows.jsonl` from the quarantine cell's own
-gitignored `analysis/<family>/`, a private row-text file. That file is NOT
-staged by the contract above -- B3's scope as given covered only
-`build_directions.py:153-161` and `calibrate_dose.py:74`. `run_contrast.py`
-cannot run end to end until `eval_rows.jsonl` (and its sha256) are added to
-this staging contract; this is flagged here as an additional gap this
-remediation found but did not resolve, not as something already covered.
 
 ### Seam geometry (transcribed, not re-derived)
 
