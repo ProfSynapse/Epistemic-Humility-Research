@@ -2510,7 +2510,7 @@
         "revision": "fee6332c1abaafb77f6f9624236c63aa2f1d0187"
       },
       "created_at": "2026-07-31T10:32:02Z",
-      "falsifier": "An ADJUDICATED G3 result (K=5 accepted draws clearing the SC1 randomness bar, placebo readback in tolerance) with effect_ratio >= 3.0, or PASS-DEGENERATE under the transcribed zero_denominator_rule, at ANY of E1/E2/E3, jointly with that same arm clearing BOTH G1 (held-out confab clean_tighten >= 0.50, Wilson lower > 0.40) AND G2 (held-out known-correct not_well_formed_correct <= 0.05, Wilson upper < 0.10) - falsifies the prediction. Subordinate - if no arm finds a usable FIT dose, NULL-RESULT (dose-viability), consistent with D4/hs23 NOT-RUN one site upstream. If an arm clears G1/G2 but G3 is NOT-RUN or UNADJUDICATED at every such arm, the experiment resolves INCONCLUSIVE on the direction-specificity question rather than being read either way. A failing ADJUDICATED G3 at an arm that cleared G1/G2 does NOT falsify - it is the predicted hs24-pattern outcome.",
+      "falsifier": "An ADJUDICATED G3 result (K=5 accepted draws clearing the SC1 randomness bar, placebo readback in tolerance) with effect_ratio >= 3.0, or PASS-DEGENERATE under the transcribed zero_denominator_rule (reported WITH the degenerate label, never as flat direction-specific actuation), at ANY of E1/E2/E3, jointly with that same arm clearing BOTH G1 (held-out confab clean_tighten >= 0.50, Wilson lower > 0.40) AND G2 (held-out known-correct not_well_formed_correct <= 0.05, Wilson upper < 0.10) - falsifies the prediction. Because the falsifier fires on any of three correlated arms sharing one instrument and one extraction, a single-arm triple PASS is registered as exploratory evidence subject to the standing promotion rule (confirmatory replication before any claim), not as a standalone confirmatory result. Subordinate - if no arm finds a usable FIT dose, NULL-RESULT (dose-viability), consistent with D4/hs23 NOT-RUN one site upstream. If an arm clears G1/G2 but G3 is NOT-RUN or UNADJUDICATED at every such arm, the experiment resolves INCONCLUSIVE on the direction-specificity question rather than being read either way. A failing ADJUDICATED G3 at an arm that cleared G1/G2 does NOT falsify - it is the predicted hs24-pattern outcome.",
       "inputs": [
         "experiments/gemma4-e4b-kv-seam-quarantine/AMENDMENT.md",
         "experiments/gemma4-e4b-kv-seam-quarantine/NOTEBOOK.md",
@@ -2518,11 +2518,10 @@
         "experiments/gemma4-e4b-kv-seam-quarantine/cell.yaml",
         "experiments/gemma4-e4b-kv-seam-quarantine/families/gemma4-e4b.yaml",
         "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/arch_literature_memo.md",
-        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/split_manifest.json",
-        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/eval_pool_manifest.json",
-        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/build_manifest_layers.json",
-        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/dose_calibration_summary.json",
-        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/layer_profile.json"
+        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/PROVENANCE.md",
+        "experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors",
+        "experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract_manifest.json",
+        "experiments/gemma4-e4b-kv-seam-quarantine/analysis-committed/gemma4-e4b/split_manifest.json"
       ],
       "instrument": {
         "configs": [
@@ -2547,16 +2546,144 @@
           "run_contrast.py",
           "placebo_direction.py",
           "g2_companion.py",
-          "rollup.py"
+          "pocket_rollup.py"
         ],
-        "persistence": {},
+        "persistence": {
+          "amendment_ah_stage0_extract.py": {
+            "measured_on": "2026-07-31, CPU, cold interpreter, three runs (0.06/0.05/0.04s), worst reported.",
+            "measured_smoke_wall_clock_s": 0.06,
+            "persistence": "short-run",
+            "rationale": "Import-restoration shim, not a run stage. Same reasoning as backends.py."
+          },
+          "backends.py": {
+            "measured_on": "2026-07-31, CPU, cold interpreter, `python3 -c \"import backends\"`, three runs (0.05/0.04/0.05s), worst reported.",
+            "measured_smoke_wall_clock_s": 0.05,
+            "persistence": "short-run",
+            "rationale": "Import-restoration shim, not a run stage. Stateless and sub-second; resume logic would cost more than the work it saved."
+          },
+          "build_directions.py": {
+            "checkpoint_path": "experiments/gemma4-e4b-pocket-ladder/analysis-committed/gemma4-e4b/layers/hs{N}/ (per-layer; N in 25,26,27)",
+            "persistence": "incremental"
+          },
+          "calibrate_dose.py": {
+            "checkpoint_path": "experiments/gemma4-e4b-pocket-ladder/analysis/gemma4-e4b/runlog/calibrate_dose_records_v2.pocket.jsonl",
+            "persistence": "incremental"
+          },
+          "family_config.py": {
+            "measured_on": "2026-07-31, CPU, cold interpreter, three runs (0.05/0.04/0.04s), worst reported.",
+            "measured_smoke_wall_clock_s": 0.05,
+            "persistence": "short-run",
+            "rationale": "Library module: yaml-backed family/site-set resolution. No run stage, no state."
+          },
+          "g2_companion.py": {
+            "measured_on": "2026-07-31, CPU, cold interpreter, three runs (0.01/0.02/0.01s), worst reported.",
+            "measured_smoke_wall_clock_s": 0.02,
+            "persistence": "short-run",
+            "rationale": "Library module: fired-only companion metric, undosed floor, N=35 adjudicability rule. Pure Python over already-scored rows; no state."
+          },
+          "gate_fit.py": {
+            "measured_on": "2026-07-31, CPU, cold interpreter, three runs (1.16/1.18/1.24s), worst reported. IMPORT-ONLY, unlike the quarantine cell's own real-data measurement of this byte-identical script: this experiment has not yet staged the FIT anchor extract locally (staging is a registered contract, AMENDMENT.md \"Staged inputs\", not yet executed pre-sign), so a real `gate_fit.py --site-set pocket` invocation could not be run here. Flagged rather than silently substituted with the quarantine cell's own real-run number.",
+            "measured_smoke_wall_clock_s": 1.24,
+            "persistence": "short-run",
+            "rationale": "Writes ONE roll-up per site set in a single atomic write at the end. A kill loses nothing partial, and re-running is cheap, so resume logic would cost more than the work it saved."
+          },
+          "gen_lib.py": {
+            "measured_on": "2026-07-31, CPU, cold interpreter, three runs (1.13/1.13/1.17s), worst reported (torch import dominates).",
+            "measured_smoke_wall_clock_s": 1.17,
+            "persistence": "short-run",
+            "rationale": "Library module: the fixed-budget generation pass. No state."
+          },
+          "grader.py": {
+            "measured_on": "2026-07-31, CPU, cold interpreter, three runs (0.04/0.04/0.04s), worst reported.",
+            "measured_smoke_wall_clock_s": 0.04,
+            "persistence": "short-run",
+            "rationale": "Library module: alias-matched grading. Its __main__ is a self-test, not a run stage."
+          },
+          "kv_seam_patch.py": {
+            "measured_on": "2026-07-31, CPU, cold interpreter, three runs (5.03/1.10/1.21s; first run pays a filesystem-cache-cold torch import, worst reported).",
+            "measured_smoke_wall_clock_s": 5.03,
+            "persistence": "short-run",
+            "rationale": "Library module: the sharing toggle, the cache builder and the architecture verifier. Imports torch, which dominates cost; the module's own body is trivial. No state."
+          },
+          "kv_seam_preflight.py": {
+            "measured_on": "2026-07-31, REAL RUN (not an import): `python3 kv_seam_preflight.py`, CPU only, no checkpoint download, three runs (11.57/6.95/7.16s; first run cold, worst reported), 6/6 checks PASS every run.",
+            "measured_smoke_wall_clock_s": 11.57,
+            "persistence": "short-run",
+            "rationale": "Builds six independent tiny randomly-initialized models from a fixed seed, one per check, so checks cannot leak state into each other. Resumability would defeat that isolation."
+          },
+          "model_lib.py": {
+            "measured_on": "2026-07-31, CPU, cold interpreter, three runs (1.21/1.16/1.13s), worst reported (torch import dominates).",
+            "measured_smoke_wall_clock_s": 1.21,
+            "persistence": "short-run",
+            "rationale": "Library module: render, hook setup, EOS resolution."
+          },
+          "pipeline.py": {
+            "measured_on": "2026-07-31, CPU, cold interpreter, three runs (1.17/1.11/1.11s), worst reported (torch import dominates).",
+            "measured_smoke_wall_clock_s": 1.17,
+            "persistence": "short-run",
+            "rationale": "Library module: the gate-decision and dosed-row loop imported by calibrate_dose.py and run_contrast.py. The stages that CALL it accumulate state and are declared incremental below."
+          },
+          "placebo_direction.py": {
+            "measured_on": "2026-07-31, CPU (no CUDA touched), cold interpreter, three runs (0.10/0.10/0.11s), worst reported.",
+            "measured_smoke_wall_clock_s": 0.11,
+            "persistence": "short-run",
+            "rationale": "Library module: SC1 draw screening, seed/redraw formulas, ledger writer. Pure numpy, no torch. The ledger it produces is written whole at screen time, before any dosing; nothing accumulates across a run."
+          },
+          "pocket_rollup.py": {
+            "measured_on": "2026-07-31, CPU, cold interpreter, three runs (0.03/0.03/0.04s), worst reported; also exercised end-to-end against synthetic per-row aggregates (g1_verdict, g2_full_population_verdict, g3_verdict PASS-DEGENERATE path, actuation_claim_verdict with g3=None) with correct dispositions returned.",
+            "measured_smoke_wall_clock_s": 0.04,
+            "persistence": "short-run",
+            "rationale": "Resolve-time aggregation over already-written per-arm artifacts, one atomic output write, fail-closed (RollupInputMissing) on any missing TRUE-arm input; a missing G3 input is a registered disposition, not an error (see module docstring). Zero torch/transformers imports. Re-running from scratch is the cheap path."
+          },
+          "run_contrast.py": {
+            "checkpoint_path": "experiments/gemma4-e4b-pocket-ladder/analysis/gemma4-e4b/runlog/<arm-kind>/<mode>/hs{25,26,27}[.k{0..4}].jsonl",
+            "persistence": "incremental"
+          },
+          "scorers.py": {
+            "measured_on": "2026-07-31, CPU, cold interpreter, three runs (0.06/0.04/0.04s), worst reported.",
+            "measured_smoke_wall_clock_s": 0.06,
+            "persistence": "short-run",
+            "rationale": "Vendored library module. Pure scoring functions."
+          }
+        },
         "pins": {}
       },
       "kg": [],
-      "prediction": "None of E1 (hs25), E2 (hs26), or E3 (hs27) produces an ADJUDICATED G3 PASS (effect_ratio >= 3.0, or PASS-DEGENERATE) jointly with a G1/G2 PASS on held-out. Basis - the quarantine cell's measured below-seam ladder falls monotonically toward the seam (D1/hs15 0.7857, D2/hs18 0.4464, D3/hs20 0.4048), and its one measured quarantined-region site, A5/hs24, cleared G1 (0.7321) and G2 (0.0333) but failed G3 outright at effect_ratio 1.139 (worst placebo draw reproduced 88% of the true effect) - NOTEBOOK.md:1573-1606, Stage 6 Ruling R3/R4. E1/E2/E3 sit deeper into the same quarantined region than hs24.",
+      "prediction": "None of E1 (hs25), E2 (hs26), or E3 (hs27) produces an ADJUDICATED G3 PASS (effect_ratio >= 3.0, or PASS-DEGENERATE) jointly with a G1/G2 PASS on held-out. Basis - the quarantine cell's measured below-seam ladder falls monotonically toward the seam (D1/hs15 0.7857, D2/hs18 0.4464, D3/hs20 0.4048; a per-site-dose PROFILE, not a controlled contrast, NOTEBOOK.md:1621), and its one measured quarantined-region site, A5/hs24, cleared G1 (0.7321) and G2 (0.0333) but failed G3 outright at effect_ratio 1.139 (worst placebo draw reproduced 88% of the true effect) - NOTEBOOK.md:1573-1606, Stage 6 Ruling R3/R4. E1/E2/E3 sit deeper into the same quarantined region than hs24.",
       "question": "The cross-family operating range across every family that has actuated in this program is rd 0.375-0.639 (gemma4-e4b-kv-seam-quarantine/AMENDMENT.md:391-399). On gemma4-e4b (42 blocks, KV-sharing donors at blocks 22/23), the upper half of that range - rd 0.571-0.639 - falls entirely inside the KV-quarantined region, at hs25/hs26/hs27 (same doc, AMENDMENT.md:405-411). That band has never been written to on this substrate - the sibling gemma4-e4b-kv-seam-quarantine cell's own ladder stops at A5/hs24 on the above-seam side. Does gemma actuate, direction-specifically, anywhere in that pocket?",
       "registered": true,
       "slug": "gemma4-e4b-pocket-ladder",
+      "staging": {
+        "files": [
+          {
+            "artifact": "anchor_extract.safetensors",
+            "destination": "experiments/gemma4-e4b-pocket-ladder/analysis/gemma4-e4b/anchor_extract.safetensors",
+            "note": "341.7 MB, gitignored (analysis/), never committed to the repo. NOT the promoted experiments/common/artifacts/jspace-cross-family-gemma4-e4b/ copy -- that directory holds no activation cache at all (B2 finding).",
+            "read_by": "build_directions.py:159-161, calibrate_dose.py:74-75",
+            "sha256": "b7197418476208a3657f98026932fbf5e2c5aa4306a82844040ab50d99fbe7bf",
+            "source": "experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors"
+          },
+          {
+            "artifact": "anchor_extract_manifest.json",
+            "destination": "experiments/gemma4-e4b-pocket-ladder/analysis/gemma4-e4b/anchor_extract_manifest.json",
+            "note": "forward_use_cache=True, layer_labels hs0-hs42 (43 entries), n_rows_extracted=806, complete=True -- verified fields (B2). Matches the extract_manifest_sha256 recorded independently in the quarantine cell's own build_manifest_layers.seam_pair.json.",
+            "read_by": "build_directions.py:157-158",
+            "sha256": "060c3f3b225fc4bca59a5b6bb91a6c91bf13d4798f14a4e3a84bd8dd09158b01",
+            "source": "experiments/gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract_manifest.json"
+          },
+          {
+            "artifact": "split_manifest.json",
+            "destination": "experiments/gemma4-e4b-pocket-ladder/analysis-committed/gemma4-e4b/split_manifest.json",
+            "note": "git-tracked (analysis-committed/), safe to copy verbatim. Byte-identical to experiments/common/artifacts/jspace-cross-family-gemma4-e4b/split_manifest.json (same sha256, verified) -- an ID-only row manifest, unaffected by the use_cache=False corruption (PROVENANCE.md \"A caution specific to these files\").",
+            "read_by": "build_directions.py:159",
+            "sha256": "8d2281179ab865bea8fd7918c0ee14b33db7113c4ed375ff0740c36cee2f1d87",
+            "source": "experiments/gemma4-e4b-kv-seam-quarantine/analysis-committed/gemma4-e4b/split_manifest.json"
+          }
+        ],
+        "known_gap_not_covered_by_this_contract": "run_contrast.py's own row population (selected_rows -> pipeline.load_rows) reads eval_rows.jsonl from analysis/<family>/, a private row-text file under the quarantine cell's own gitignored analysis/, which is NOT staged by this contract -- the B3 finding as given scoped only to build_directions.py:153-161 and calibrate_dose.py:74. Flagged here as an additional gap found during remediation, not yet resolved: run_contrast.py cannot run end to end until eval_rows.jsonl (and its sha256) are added to this staging block.",
+        "note": "NOT executed by the drafting agent (no GPU/docker work authorized at draft). Registers path + hash + a verification step that must run before any staged file is read, per AMENDMENT.md \"Staged inputs\" (B3 remediation). Symlink or copy are both acceptable mechanisms; the contract below binds whichever is used at sign/run time.",
+        "verification_step": "Before any of build_directions.py/calibrate_dose.py/run_contrast.py reads a staged file, recompute its sha256 and compare against the value recorded above; refuse to proceed on a mismatch rather than silently reading a different extraction than the one this cell is registered against."
+      },
       "status": "draft",
       "title": "Gemma-4-E4B pocket ladder: hs25/hs26/hs27, sharing ON",
       "type": "steer-cell",

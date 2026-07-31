@@ -66,12 +66,28 @@ def draw_seed(hidden_dim: int, hs_index: int, k_index: int,
               seed_base: int = SEED_BASE) -> int:
     """Seed for the `k_index`-th (0-based) PRIMARY draw at this site.
 
-    cell.yaml direction_construction.rng: "SEED_BASE + hidden_dim + hs_index
-    + K_index".
+    INSTRUMENT DELTA from the quarantine cell this file was copied from
+    (disclosed deviation, AMENDMENT.md "Instrument deltas from the
+    quarantine cell", W4 remediation). The original formula was
+    `seed_base + hidden_dim + hs_index + k_index`. At hidden_dim=2560,
+    K=5, and three adjacent sites (hs25/hs26/hs27, one block apart), that
+    formula collides badly: the three sites' 15 draws span only 7 distinct
+    seed values (each site's 5-seed run overlaps its neighbor's by 4 of 5),
+    and E1's (hs25) seed set overlaps the quarantine cell's own hs24/P2
+    seed set at 4 of 5 values too -- the "independent" random-direction
+    controls for adjacent sites, and even for a DIFFERENT experiment's
+    adjacent site, would not be independent draws at all. Widening the
+    hs_index term's stride to 1000 (hidden_dim=2560 << 1000, so k_index
+    additionally never collides with the next site's block) separates
+    every site's seed range from every other's cleanly.
+
+    cell.yaml direction_construction.rng (AS AMENDED here): "SEED_BASE +
+    hidden_dim + 1000*hs_index + K_index". Original rule, for provenance:
+    "SEED_BASE + hidden_dim + hs_index + K_index".
     """
     if k_index < 0:
         raise ValueError("k_index is 0-based; first primary draw is k_index=0")
-    return seed_base + hidden_dim + hs_index + k_index
+    return seed_base + hidden_dim + 1000 * hs_index + k_index
 
 
 def redraw_seed(hidden_dim: int, hs_index: int, attempt: int, k: int = K,

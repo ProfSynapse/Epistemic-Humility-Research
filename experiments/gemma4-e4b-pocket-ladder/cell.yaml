@@ -37,9 +37,18 @@ surface:
 # pinned checkpoint config. kv_seam_patch.verify_architecture asserts the
 # architecture-identity subset of this at runtime (G0-KV item 1); the
 # donor-reachability entries below are NOT independently re-measured for
-# hs25/26/27 -- they follow deterministically from `hs_N` being downstream of
-# both donor blocks whenever N-1 >= 24, the same construction that classifies
-# hs34/hs38/hs40/hs42 in the parent cell. See AMENDMENT.md "Seam geometry".
+# hs25/26/27 -- they follow deterministically from `hs_N` (the input to block
+# N) being quarantined from both donor blocks whenever N >= 24, since donor
+# blocks 22 and 23 have both already executed by the time block 24 runs (a
+# write at hs_N reaches block N and everything downstream of it, so it is
+# quarantined from a donor block iff N is strictly greater than that donor's
+# index; the binding donor is 23, so quarantined iff N >= 24). Corrected
+# 2026-07-31 (pre-sign red-team finding W1): an earlier draft of this
+# criterion stated "N - 1 >= 24, i.e. N >= 25", which is off by one -- hs24
+# itself (N=24) is already quarantined under the correct construction, since
+# block 23 has already run by the time block 24's input is perturbed. This
+# is the same construction that classifies hs34/hs38/hs40/hs42 in the parent
+# cell. See AMENDMENT.md "Seam geometry".
 kv_seam:
   num_hidden_layers: 42
   num_kv_shared_layers: 18
@@ -65,6 +74,16 @@ kv_seam:
 # footing as gemma4-e4b-kv-seam-quarantine's D1-D4, not a mechanism-toggling
 # design. There are no OFF arms.
 site_set: pocket
+# The site set(s) run_contrast.py's --arm-kind placebo/undosed are registered
+# to run against. Read at call time by run_contrast.registered_control_site_sets()
+# -- NOT a hardcoded module constant, unlike the quarantine cell this file's
+# instrument was copied from (whose run_contrast.py hardcoded
+# PLACEBO_REGISTERED_SITE_SET = "seam_pair"). Listing "pocket" here is what
+# makes C0/P1/P2/P3 runnable at all under this experiment's site set; without
+# it the hardcoded original would refuse every placebo and undosed call. See
+# AMENDMENT.md "Instrument deltas from the quarantine cell".
+registered_control_site_sets:
+  - pocket
 arms:
   - id: E1
     site_hs: 25
@@ -106,8 +125,12 @@ arms:
 # ---- Dose calibration: two-stage, same shape as the parent cell's shallow
 # ladder (D1-D4). Stage 1 (FIT, usable-dose criterion) then Stage 2 (held-out,
 # G1/G2/G3). No re-extraction: E1/E2/E3 fit their directions and gates from the
-# already-promoted clean use_cache=True extraction covering hs0-hs42 over all
-# 806 rows (experiments/common/artifacts/jspace-cross-family-gemma4-e4b/). ----
+# already-extracted clean use_cache=True cache covering hs0-hs42 over all 806
+# rows, at gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.
+# safetensors (STAGED into this experiment's own analysis/ tree, not read from
+# experiments/common/artifacts/jspace-cross-family-gemma4-e4b/, which holds no
+# activation cache at all -- corrected 2026-07-31, pre-sign red-team finding
+# B2; see AMENDMENT.md "Extraction provenance" and "Staged inputs"). ----
 dose_calibration:
   ladder_source: families/gemma4-e4b.yaml doses.ladder (the registered 8-rung RATIO_LADDER, transcribed unchanged)
   usable_dose_rule: >-
@@ -144,8 +167,18 @@ placebo_direction_control:
 
 inputs_reused:
   pool: parent gemma4-e4b fresh-mined evaluation pool (hash-pinned at sign), same as gemma4-e4b-kv-seam-quarantine
-  split: same FIT/HELD-OUT split as gemma4-e4b-kv-seam-quarantine, promoted to experiments/common/artifacts/jspace-cross-family-gemma4-e4b/
-  activation_cache: same clean use_cache=True extraction (hs0-hs42, all 806 rows), no re-extraction required
+  split: >-
+    same FIT/HELD-OUT split as gemma4-e4b-kv-seam-quarantine, staged from
+    gemma4-e4b-kv-seam-quarantine/analysis-committed/gemma4-e4b/split_manifest.json
+    (git-tracked; corrected 2026-07-31, pre-sign red-team finding B2 -- NOT
+    read from experiments/common/artifacts/jspace-cross-family-gemma4-e4b/,
+    which holds no activation cache; see AMENDMENT.md "Staged inputs")
+  activation_cache: >-
+    same clean use_cache=True extraction (hs0-hs42, all 806 rows), staged
+    from gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors
+    plus its anchor_extract_manifest.json (both gitignored, local-only); no
+    re-extraction required, see experiment.yaml instrument.staging for the
+    path/sha256/verification contract
 
 prerequisites:
   synaptic_tuner: ">= 7a44eb3 (fix/gemma4-decoder-layer-path) -- adds model.language_model.layers to _LAYER_PATHS (transcribed from the parent cell)"

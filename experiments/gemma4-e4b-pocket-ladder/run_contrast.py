@@ -30,8 +30,12 @@ P1/P2 direction-specificity control gates.yaml scores as
   `placebo` -- writes a random, SC1-screened direction at EXACTLY the rows
     and dose the matched TRUE arm fired at (read from that arm's own
     `--mode full` run log, never re-gated: cell.yaml fired_row_matching).
-    Only registered for `--site-set seam_pair` (hs22/hs24 only; cell.yaml
-    k_number_of_draws.scope_of_this_control).
+    Only registered for the site set(s) listed in cell.yaml
+    `registered_control_site_sets` (resolved at call time, not hardcoded --
+    see `registered_control_site_sets()` below; this experiment's cell.yaml
+    lists `["pocket"]`, an INSTRUMENT DELTA from the seam-quarantine
+    original this file was copied from, which hardcoded `"seam_pair"`. See
+    AMENDMENT.md "Instrument deltas from the quarantine cell").
   `undosed` -- the arm's own undosed pass (no injection anywhere), the hard
     input G2's `undosed_floor` companion and G3's lift baseline both require
     (cell.yaml placebo_direction_control.undosed_baseline_required).
@@ -375,16 +379,40 @@ def run_full(family: str, late_dose: float | None, *, fresh: bool = False,
 
 
 # ---------------------------------------------------------------------------
-# ARM KINDS: placebo (P1/P2, cell.yaml placebo_direction_control) and undosed
-# (the baseline pass g2's undosed_floor and g3's lift both require). Both are
-# registered ONLY for --site-set seam_pair (hs22/hs24 -- cell.yaml
-# k_number_of_draws.scope_of_this_control). Neither touches the `true`
-# arm-kind code path above, which stays byte-for-byte as originally signed.
+# ARM KINDS: placebo (P1/P2/P3, cell.yaml placebo_direction_control) and
+# undosed (the baseline pass g2's undosed_floor and g3's lift both require).
+# Both are registered ONLY for the site set(s) cell.yaml
+# `registered_control_site_sets` lists. Neither touches the `true` arm-kind
+# code path above, which stays byte-for-byte as originally signed.
+#
+# INSTRUMENT DELTA from the quarantine cell this file was copied from: the
+# original hardcoded a module-level `PLACEBO_REGISTERED_SITE_SET = "seam_pair"`
+# constant. This experiment's arms (E1/E2/E3 at hs25/hs26/hs27) live under
+# `--site-set pocket`, which the hardcoded constant would refuse outright, so
+# both G3 and the undosed baseline would be unexecutable. Resolving the
+# registered set from cell.yaml instead keeps the refusal behavior for any
+# site set NOT listed there -- this is a generalization of the check, not a
+# removal of it. Registered here rather than re-hardcoded to "pocket" so a
+# future copy of this file does not have to repeat the same fix.
 # ---------------------------------------------------------------------------
 
-#: cell.yaml k_number_of_draws.scope_of_this_control: "hs22 (P1) and hs24
-#: (P2) ONLY -- the P-arms are NOT extended to the shallow ladder D1-D4."
-PLACEBO_REGISTERED_SITE_SET = "seam_pair"
+def registered_control_site_sets(root: Path = HERE) -> list[str]:
+    """The site set(s) `--arm-kind placebo`/`undosed` are registered for,
+    read from this experiment's own `cell.yaml registered_control_site_sets`
+    key. Raises if the key is missing or empty rather than falling back to
+    any default, so an unregistered cell.yaml fails closed the same way an
+    unregistered site set does."""
+    import yaml
+    cell_path = root / "cell.yaml"
+    data = yaml.safe_load(cell_path.read_text(encoding="utf-8"))
+    values = data.get("registered_control_site_sets")
+    if not values:
+        raise ValueError(
+            f"{cell_path}: registered_control_site_sets not present or empty "
+            "-- --arm-kind placebo/undosed have no registered site set to run "
+            "against and must not silently default to one."
+        )
+    return list(values)
 
 
 def force_undosed(gate_rows: list[dict]) -> list[dict]:
@@ -416,7 +444,7 @@ def load_true_arm_fire_flags(root: Path, family: str, hs_index: int, mode: str,
             f"[placebo] true arm run log not found at {log_path}. The "
             f"placebo control writes at EXACTLY the rows the TRUE gate "
             f"fired (cell.yaml fired_row_matching) and cannot construct its "
-            f"own fire set -- run `--arm-kind true --site-set seam_pair "
+            f"own fire set -- run `--arm-kind true --site-set pocket "
             f"--mode {mode} --kv-sharing {kv_sharing}` for hs{hs_index} first."
         )
     records = pl.load_jsonl(log_path)
@@ -485,16 +513,16 @@ def run_undosed_baseline(family: str, hs_index: int, dose_target: float, *,
 def run_placebo(family: str, hs_index: int, dose_target: float, k: int, *,
                 mode: str, n_rows: int, fresh: bool, site_set: str,
                 kv_sharing: str, dry_run: bool, root: Path = HERE) -> dict:
-    """P1/P2: K SC1-screened random directions written at exactly the TRUE
+    """P1/P2/P3: K SC1-screened random directions written at exactly the TRUE
     arm's fired rows and dose (cell.yaml placebo_direction_control). Raises
     `placebo_direction.PlaceboRedrawExhausted` (caller records NOT-RUN) if
     SC1 screening cannot find K acceptable directions within max_redraws."""
-    if site_set != PLACEBO_REGISTERED_SITE_SET:
+    registered = registered_control_site_sets(root)
+    if site_set not in registered:
         raise ValueError(
             f"[placebo] --site-set {site_set!r} is not registered for the "
-            f"placebo control (cell.yaml k_number_of_draws.scope_of_this_"
-            f"control: hs22/hs24 only, i.e. --site-set "
-            f"{PLACEBO_REGISTERED_SITE_SET!r})"
+            f"placebo control (cell.yaml registered_control_site_sets: "
+            f"{registered!r})"
         )
     layer_name = layer_dir_name(hs_index)
     fire_by_key = load_true_arm_fire_flags(root, family, hs_index, mode, kv_sharing)
@@ -610,12 +638,12 @@ def main(argv=None) -> int:
     parser.add_argument(
         "--arm-kind", choices=["true", "placebo", "undosed"], default="true",
         help="'true' (default) is the pre-existing gating/descriptive arm "
-             "path, unchanged. 'placebo' runs the P1/P2 direction-"
+             "path, unchanged. 'placebo' runs the P1/P2/P3 direction-"
              "specificity control at the matched true arm's site and dose, "
              "on the SAME fired rows (cell.yaml placebo_direction_control); "
-             "only registered for --site-set seam_pair. 'undosed' runs the "
-             "undosed baseline pass g2's undosed_floor and g3's lift both "
-             "require.",
+             "only registered for the site set(s) in cell.yaml "
+             "registered_control_site_sets. 'undosed' runs the undosed "
+             "baseline pass g2's undosed_floor and g3's lift both require.",
     )
     parser.add_argument(
         "--placebo-k", type=int, default=placebo_direction.K,
@@ -642,13 +670,15 @@ def main(argv=None) -> int:
     )
     args = parser.parse_args(argv)
 
-    if args.arm_kind != "true" and args.site_set != PLACEBO_REGISTERED_SITE_SET:
-        print(
-            f"[contrast] --arm-kind {args.arm_kind!r} is only registered for "
-            f"--site-set {PLACEBO_REGISTERED_SITE_SET!r} (cell.yaml "
-            "k_number_of_draws.scope_of_this_control)", file=sys.stderr,
-        )
-        return 2
+    if args.arm_kind != "true":
+        registered = registered_control_site_sets()
+        if args.site_set not in registered:
+            print(
+                f"[contrast] --arm-kind {args.arm_kind!r} is only registered "
+                f"for --site-set in {registered!r} (cell.yaml "
+                "registered_control_site_sets)", file=sys.stderr,
+            )
+            return 2
 
     if args.arm_kind in ("placebo", "undosed"):
         cfg = load_family(args.family)

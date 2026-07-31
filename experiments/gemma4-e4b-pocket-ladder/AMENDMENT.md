@@ -45,9 +45,14 @@ three sites registered here,
 | E2 | hs26 | 25 | 0.619 |
 | E3 | hs27 | 26 | 0.643 |
 
-sit at the **top** of that range and have never been written to on gemma. The
-quarantine cell's own AMENDMENT.md already names this exact band and these
-exact sites, without registering an arm there:
+sit at or just past the **top** of that range -- E1 and E2 fall inside it
+(0.595, 0.619 against a 0.639 ceiling), and E3's 0.643 sits fractionally
+**above** the 0.639 ceiling rather than at it (softened 2026-07-31, pre-sign
+red-team finding H7: an earlier draft said all three "sit at the top of that
+range," which overstated E3's position) -- and none of the three has ever
+been written to on gemma. The quarantine cell's own AMENDMENT.md already
+names this exact band and these exact sites, without registering an arm
+there:
 
 > "The upper half of the cross-family operating range - rd 0.571-0.639, which is
 > where llama's G1 PASS (0.607) and Qwen3.5-4B's promoted result (0.625) both
@@ -70,6 +75,29 @@ same descriptive footing as that cell's D1-D4 and A3/A5 arms: a positive,
 G3-adjudicated result here is evidence that gemma can actuate in this band; a
 negative result cannot by itself decide why.
 
+**The confound cuts both ways, restored here (pre-sign red-team finding
+W5).** The quarantine cell's own AMENDMENT.md states this plainly for
+gemma's whole upper depth band, not only for a below-seam null: "The upper
+half of the cross-family operating range - rd 0.571-0.639... is on gemma
+entirely above the seam, at hs25-hs27. On this architecture 'quarantined'
+and 'in the productive depth band' are largely the same region. That is a
+confound this design cannot remove, and it cuts both ways: it is the reason
+the quarantine hypothesis is worth testing at all, and it is the reason a
+below-seam null from D1-D4 would NOT be clean evidence against
+actuation-at-depth in gemma"
+(`gemma4-e4b-kv-seam-quarantine/AMENDMENT.md:405-414`). The same confound
+binds a POSITIVE result here just as much as a negative one: because rd and
+KV-quarantine status are perfectly correlated across E1/E2/E3 (every site in
+this pocket is both "the productive depth band by cross-family analogy" and
+"fully quarantined"), a G3-adjudicated PASS at any of them cannot by itself
+distinguish "gemma actuates in this band because it is the right depth,
+quarantine does not matter" from "gemma actuates despite quarantine, the
+quarantine hypothesis is wrong at this site" from "the effect and the
+quarantine region simply coincide here for an unrelated reason." A positive
+result is evidence that gemma CAN actuate in this band; it is not, by
+itself, evidence about why, and must not be reported or interpreted as
+resolving the quarantine hypothesis in either direction.
+
 ## Design
 
 ### Substrate and instrument
@@ -78,26 +106,171 @@ Same checkpoint, substrate, and instrument as `gemma4-e4b-kv-seam-quarantine`:
 `google/gemma-4-E4B-it`, `bf16`, no adapter, no quantization, pinned revision
 `fee6332c1abaafb77f6f9624236c63aa2f1d0187`. Injection method, direction-fit
 method, ratio ladder, usability rule, generation contract, and graders are that
-cell's, copied verbatim into this experiment directory (`build_directions.py`,
+cell's, copied into this experiment directory (`build_directions.py`,
 `gate_fit.py`, `calibrate_dose.py`, `pipeline.py`, `run_contrast.py`,
 `kv_seam_patch.py`, `kv_seam_preflight.py`, `model_lib.py`, `gen_lib.py`,
 `grader.py`, `scorers.py`, `backends.py`, `amendment_ah_stage0_extract.py`,
-`placebo_direction.py`, `g2_companion.py`, `rollup.py`,
-`families/gemma4-e4b.yaml`). Two copied files carried a hardcoded
-self-identifying string, `"experiment": "gemma4-e4b-kv-seam-quarantine"`, in the
-provenance metadata `run_contrast.py` writes into its own run logs
-(`run_contrast.py:454,548` in the source cell); both were corrected to
-`"gemma4-e4b-pocket-ladder"` in this copy so any future run's provenance
-records the correct owning experiment. No other functional change was made to
-any copied module.
+`placebo_direction.py`, `g2_companion.py`, `family_config.py`,
+`families/gemma4-e4b.yaml`), plus one module that has no original to copy
+from, `pocket_rollup.py` (new, see "Instrument deltas" below and "Dose
+calibration"). Every module in this list is enumerated, drifted or
+identical, in "Instrument deltas from the quarantine cell" immediately
+below (pre-sign red-team findings H2/H3: `family_config.py` was drifted and
+omitted from this sentence in an earlier draft).
 
-**No re-extraction is required.** The parent `j-space-cross-family-layer-contrast`
-extraction, promoted to
-`experiments/common/artifacts/jspace-cross-family-gemma4-e4b/`, already covers
-hs0-hs42 over all 806 rows under `use_cache=True` (the corrected, clean
-extraction the quarantine cell's own D1-D4 fit from,
-`gemma4-e4b-kv-seam-quarantine/AMENDMENT.md:431-435`). E1/E2/E3 fit their
-directions and gates from that same existing activation cache.
+**Instrument deltas from the quarantine cell, complete list (re-diffed
+2026-07-31 against the quarantine cell's originals, file by file; 13 of 17
+Python modules are byte-identical).** Confirmed by direct `diff` against
+`gemma4-e4b-kv-seam-quarantine/`, not asserted from memory:
+
+- **IDENTICAL (13 modules, no drift):** `kv_seam_patch.py`, `kv_seam_preflight.py`,
+  `model_lib.py`, `gen_lib.py`, `grader.py`, `scorers.py`, `backends.py`,
+  `amendment_ah_stage0_extract.py`, `build_directions.py`, `gate_fit.py`,
+  `calibrate_dose.py`, `pipeline.py`, `g2_companion.py`.
+- **`run_contrast.py`, drifted (three deltas, one file, not "two copied
+  files"):**
+  1. Two provenance-metadata call sites (`:454` and `:548` in the source
+     cell) hardcoded `"experiment": "gemma4-e4b-kv-seam-quarantine"` in the
+     `run_config` dict each writes into its own run log. Both corrected to
+     `"gemma4-e4b-pocket-ladder"` so any future run's provenance names the
+     correct owning experiment.
+  2. The source cell's `PLACEBO_REGISTERED_SITE_SET = "seam_pair"` module
+     constant hardcoded the one site set `--arm-kind placebo`/`undosed`
+     would accept, which would refuse every C0/P1/P2/P3 call under this
+     cell's `--site-set pocket` and make G3 unexecutable outright. Replaced
+     with a `registered_control_site_sets()` function that reads the
+     registered set from THIS experiment's own `cell.yaml
+     registered_control_site_sets` key at call time, generalizing the check
+     (still refuses any unlisted site set) rather than removing it. Three
+     call sites updated: `run_placebo`'s guard, the CLI's `--arm-kind`
+     guard, and the `--arm-kind` help text.
+  3. One stale example string in an error message (`--site-set seam_pair`
+     in the "run the true arm first" hint) updated to `--site-set pocket`.
+- **`placebo_direction.py`, drifted (one delta, W4 remediation):**
+  `draw_seed`'s formula changed from `seed_base + hidden_dim + hs_index +
+  k_index` to `seed_base + hidden_dim + 1000*hs_index + k_index`. The
+  original formula collides across adjacent sites: verified directly (K=5,
+  hidden_dim=2560), hs25/hs26/hs27's 15 draws span only 7 distinct seeds,
+  and hs25's draws overlap the quarantine cell's own hs24/P2 draws at 4 of
+  5 values. The corrected formula was verified to produce 20 distinct
+  seeds with zero collisions across hs24/25/26/27. `redraw_seed` was
+  **NOT** changed (out of the lead's explicit ruling scope) and still uses
+  the un-widened stride -- it retains a residual collision risk across
+  adjacent sites' REDRAW pools specifically (verified: hs25 and hs26's
+  redraw-attempt pools overlap at 8 of 9 checked values), which only
+  matters if the redraw ledger is exercised (an SC1 screening failure on a
+  primary draw). Flagged for the lead rather than silently also changed.
+- **`family_config.py`, drifted (additive registration, not a behavior
+  change to any existing site set):** added `pocket_hs_indices()` and a
+  `SITE_SETS["pocket"]` entry, mirroring the existing `shallow_ladder_hs_
+  indices`/`seam_pair_hs_indices` pattern. Without this, no stage
+  (`build_directions.py`/`gate_fit.py`/`calibrate_dose.py`/`run_contrast.py`,
+  all of which select sites through `--site-set`) could address hs25/26/27
+  at all -- the same failure mode the quarantine cell itself hit before its
+  own `seam_pair` set existed (that cell's own `AMENDMENT.md` "Open
+  questions at sign" records it). This edits ONLY this cell's own unsigned
+  copy of `family_config.py`; the quarantine cell's signed copy is
+  untouched.
+- **`families/gemma4-e4b.yaml`, drifted (additive registration):** added a
+  `pocket_hs: [25, 26, 27]` key under `band_selection`, read by the new
+  `pocket_hs_indices()` above. Same "this cell's own unsigned copy only"
+  scope note as `family_config.py`.
+- **`rollup.py` DROPPED entirely, replaced by a new `pocket_rollup.py`**
+  (not a diff against an original -- see "Dose calibration" below and B4 in
+  the remediation record). `rollup.py`'s `ARM_REGISTRY` hardcodes
+  `A1`-`A6`/`D1`-`D4` and its `build_rollup()` unconditionally loads a
+  `g0_alin_discrimination_measurement` artifact and a
+  `c1_precondition_summary.json`, both from stages this cell does not have
+  (no A_lin site-selection step, no OFF arms, no C1). Carrying it into this
+  cell's pin surface would ship dead code for artifacts that can never
+  exist here.
+- **`cell.yaml`** (config, not a Python module, so outside the module diff
+  above but part of the same delta set): added `registered_control_site_sets:
+  [pocket]`, which is what `run_contrast.py`'s new
+  `registered_control_site_sets()` reads.
+
+**Staged inputs (registered contract; not executed at draft -- see the
+"Staged inputs" subsection below, under Design, for the full
+path/hash/verification record).** `build_directions.py` and
+`calibrate_dose.py` read three files this experiment directory does not
+itself contain: the FIT anchor extraction safetensors, its manifest, and the
+FIT/HELD-OUT split manifest. These must be staged (symlinked or copied) from
+their source location before any of those three scripts can run;
+`experiment.yaml instrument.staging` records source path, destination path,
+and sha256 for each.
+
+**Extraction provenance, corrected 2026-07-31 (pre-sign red-team finding
+B2; the earlier draft named the wrong artifact).** E1/E2/E3 do NOT read
+from `experiments/common/artifacts/jspace-cross-family-gemma4-e4b/`. That
+directory holds no activation cache at all -- only the corrupt-derived
+mid-band artifacts (`build_manifest_layers.json`, `gate_fit_layers.json`,
+`dose_calibration_summary.json`, `layer_profile.json`, and the
+`layers/hs{34,38,42}/` direction files), fit on the withdrawn
+`use_cache=False` extraction. Its own `PROVENANCE.md` "A caution specific
+to these files" states plainly that "hs25 onward decay (cos 0.732 at hs25
+to 0.075 at hs42)" under that corrupted run -- hs25 is arm E1's own site,
+so treating that directory as an activation source for this cell would
+have staged exactly the corrupted data this cell exists to avoid.
+
+The correct artifact is
+`gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors`
+plus its `anchor_extract_manifest.json` (both gitignored, local-only,
+341.7 MB for the safetensors) and
+`gemma4-e4b-kv-seam-quarantine/analysis-committed/gemma4-e4b/split_manifest.json`
+(git-tracked). Verified directly from the manifest, not assumed:
+`forward_use_cache: true`, `layer_labels` covering `hs0`-`hs42` (43
+entries), `n_rows_extracted: 806`, `complete: true`. This is the corrected,
+clean `use_cache=True` extraction, corroborated by
+`gemma4-e4b-kv-seam-quarantine/NOTEBOOK.md:682-684`: "The manifest records
+`forward_use_cache: True`, so these are the *corrected* clean activations,
+not the withdrawn `use_cache=False` ones that made blocks >= hs25
+meaningless." **No re-extraction is required** -- this cache already covers
+hs0-hs42 over all 806 rows, which is what licenses E1/E2/E3 fitting their
+directions and gates from it without a new GPU extraction pass, exactly as
+the quarantine cell's own D1-D4 did (`gemma4-e4b-kv-seam-quarantine/AMENDMENT.md:431-435`).
+
+### Staged inputs (pre-sign red-team finding B3)
+
+This experiment directory does not itself contain an activation cache. It is
+registered against the correct artifact named above, but that artifact lives
+in the sibling `gemma4-e4b-kv-seam-quarantine` directory and must be staged
+(symlinked or copied) into this experiment's own `analysis/` /
+`analysis-committed/` tree before `build_directions.py` or `calibrate_dose.py`
+can read it. **Not executed by the drafting agent** -- no GPU/docker work is
+authorized at draft; this section registers the contract, not a completed
+action. The full machine-readable record is `experiment.yaml
+instrument.staging`; the same three files, transcribed here:
+
+| artifact | source | sha256 | read by |
+|---|---|---|---|
+| `anchor_extract.safetensors` | `gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract.safetensors` | `b7197418476208a3657f98026932fbf5e2c5aa4306a82844040ab50d99fbe7bf` | `build_directions.py:159-161`, `calibrate_dose.py:74-75` |
+| `anchor_extract_manifest.json` | `gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/anchor_extract_manifest.json` | `060c3f3b225fc4bca59a5b6bb91a6c91bf13d4798f14a4e3a84bd8dd09158b01` | `build_directions.py:157-158` |
+| `split_manifest.json` | `gemma4-e4b-kv-seam-quarantine/analysis-committed/gemma4-e4b/split_manifest.json` | `8d2281179ab865bea8fd7918c0ee14b33db7113c4ed375ff0740c36cee2f1d87` | `build_directions.py:159` |
+
+`anchor_extract.safetensors` is 341.7 MB, gitignored, never committed to the
+repo. `split_manifest.json` is git-tracked and byte-identical (same sha256,
+independently verified) to
+`experiments/common/artifacts/jspace-cross-family-gemma4-e4b/split_manifest.json`
+-- it is an ID-only row manifest and was never affected by the
+`use_cache=False` corruption (`PROVENANCE.md` "A caution specific to these
+files"), unlike the activation cache itself, so its presence in that
+directory is not a reason to source the activation cache from there too (see
+"Extraction provenance" above).
+
+**Verification step, registered before any staged file is read.** Recompute
+each file's sha256 at staging time and compare against the value above;
+refuse to proceed on a mismatch rather than silently reading a different
+extraction than the one this cell is registered against.
+
+**Known gap not covered by this contract, found during remediation.**
+`run_contrast.py`'s own row population (`selected_rows` ->
+`pipeline.load_rows`) reads `eval_rows.jsonl` from the quarantine cell's own
+gitignored `analysis/<family>/`, a private row-text file. That file is NOT
+staged by the contract above -- B3's scope as given covered only
+`build_directions.py:153-161` and `calibrate_dose.py:74`. `run_contrast.py`
+cannot run end to end until `eval_rows.jsonl` (and its sha256) are added to
+this staging contract; this is flagged here as an additional gap this
+remediation found but did not resolve, not as something already covered.
 
 ### Seam geometry (transcribed, not re-derived)
 
@@ -115,11 +288,20 @@ store_full_length_kv       = True at blocks 22 and 23 ONLY
 site_convention            = "hs_N = output of decoder block N-1 = input to block N"
 ```
 
-hs_N is quarantined (neither donor block sees the write) whenever `N - 1 >= 24`,
-i.e. `N >= 25`. E1 (hs25), E2 (hs26), and E3 (hs27) are outputs of blocks 24,
-25, and 26 respectively, all strictly downstream of both donor blocks 22 and 23
-by the same construction that classifies hs34/hs38/hs40/hs42 as quarantined in
-the parent's seam table (`gemma4-e4b-kv-seam-quarantine/AMENDMENT.md:223-228`).
+hs_N is the input to block N; a write there is seen by block N and everything
+downstream of it. The binding donor is block 23 (the later of the two donors),
+so hs_N is quarantined (neither donor block sees the write) whenever `N >= 24`
+-- by the time block 24 runs, both donor blocks 22 and 23 have already executed
+and stored their KV. E1 (hs25), E2 (hs26), and E3 (hs27) are all `N >= 24`, so
+all three are quarantined by the same construction that classifies
+hs34/hs38/hs40/hs42 as quarantined in the parent's seam table
+(`gemma4-e4b-kv-seam-quarantine/AMENDMENT.md:223-228`). **Corrected 2026-07-31
+(pre-sign red-team finding W1):** an earlier draft of this criterion stated
+"hs_N is quarantined whenever `N - 1 >= 24`, i.e. `N >= 25`", which is off by
+one -- it would have wrongly classified hs24 itself as donor-reachable. The
+arm classifications in this document were unaffected (E1/E2/E3 all satisfy
+both the old and the corrected criterion), but the stated criterion itself was
+wrong and is fixed here and in `cell.yaml`'s `donor_reachability` comment.
 This classification is **deterministic from the architecture**, not measured
 per-site: the parent's G0-KV donor-reachability assertion (item 4,
 `AMENDMENT.md:636-648`) verified the bit-identical-donor-keys signature at
@@ -246,13 +428,31 @@ G3 is mandatory at all three).
 
 **G0-KV, inherited (architecture identity only).** `verify_architecture(model)`
 must pass before any dosed arm is scored: 42 hidden layers, 18 KV-shared,
-`first_kv_shared_layer_idx == 24`, donors `{full: 23, sliding: 22}`. Fail-closed,
-transcribed from `gemma4-e4b-kv-seam-quarantine/AMENDMENT.md:588-592`. The OFF-
+`first_kv_shared_layer_idx == 24`, donors `{full: 23, sliding: 22}`, **and the
+set of blocks reporting `is_kv_shared_layer == True` is exactly `{24..41}`**
+(restored 2026-07-31, pre-sign red-team finding H4; an earlier draft of this
+item dropped the `is_kv_shared_layer` clause). Any mismatch voids the
+registered site indices and the experiment stops. Fail-closed, transcribed
+from `gemma4-e4b-kv-seam-quarantine/AMENDMENT.md:588-592` item 1. The OFF-
 condition checks in that cell's G0-KV (items 2 and 3: projection-execution
 assertion under OFF, cache integrity under OFF) do not apply here -- this
-experiment has no OFF arms and never builds a sharing-OFF forward pass. Item 4
-(donor-reachability assertion) is inherited as an architectural fact rather than
-re-measured per-site, per "Seam geometry" above.
+experiment has no OFF arms and never builds a sharing-OFF forward pass.
+
+**Item 4 (donor-reachability assertion), reworded as a pre-run registration,
+not a carried-over executed result (pre-sign red-team finding H5).** In the
+quarantine cell, item 4 is an actually-executed check: four forward passes
+with a fixed injected delta at hs22/hs23/hs24/hs38, comparing captured donor
+keys against a no-injection run (`AMENDMENT.md:636-648` there). That
+four-forward-pass measurement is **not** re-run here for hs25/hs26/hs27
+specifically, and this document does not claim it was. What IS carried over
+is the deterministic architectural relationship those four measurements
+established the premise for -- that a write at `hs_N` reaches a donor block
+iff the donor's index is `>= N` (see "Seam geometry" above, corrected for
+finding W1) -- registered here, before any run, as the basis for classifying
+E1/E2/E3 as quarantined. If G0-KV item 1 above ever fails for this
+checkpoint revision, that architectural relationship is void along with it,
+and neither the "Seam geometry" classification nor any arm here may be
+scored.
 
 ## Prediction
 
@@ -270,14 +470,20 @@ direction specificity) rather than establishing a new effect.
 **Basis (the honest prior, stated before any GPU work).** The quarantine cell's
 own measured shallow ladder falls monotonically toward the seam: D1/hs15 0.7857,
 D2/hs18 0.4464, D3/hs20 0.4048 (`NOTEBOOK.md:1616-1621`, Ruling R6), with D4/hs23
-finding no usable collapse-free dose at all (Ruling R7). The one site inside the
-quarantined region that has actually been measured, A5/hs24, cleared G1/G2 but
-failed G3 outright, at an effect ratio of 1.139 against a floor of 3.0 -- the
-worst random draw reproduced 88% of the fitted direction's effect
-(`NOTEBOOK.md:1600-1606`). E1/E2/E3 sit deeper into the same quarantined region
-than hs24. The drafter's prior is therefore that this pocket sits below the
-gate that actually discriminates a specific effect, even in the branches where
-G1/G2 happen to clear.
+finding no usable collapse-free dose at all (Ruling R7). **That D1-D4 falloff is
+a per-site-dose PROFILE, not a controlled contrast** (`NOTEBOOK.md:1621`, and
+pre-sign red-team findings H6/H8): each site's dose was independently calibrated
+and the three points are read as a trend across sites, not as arms of one
+shared-dose comparison. The falloff is cited here as descriptive support for the
+prior, not as a statistically controlled trend line, and this Prediction should
+not be read as implying otherwise. The one site inside the quarantined region
+that has actually been measured, A5/hs24, cleared G1/G2 but failed G3 outright,
+at an effect ratio of 1.139 against a floor of 3.0 -- the worst random draw
+reproduced 88% of the fitted direction's effect (`NOTEBOOK.md:1600-1606`).
+E1/E2/E3 sit deeper into the same quarantined region than hs24. The drafter's
+prior is therefore that this pocket sits below the gate that actually
+discriminates a specific effect, even in the branches where G1/G2 happen to
+clear.
 
 **This prediction is the drafter's call only.** The orchestrator and user calls
 are pre-stated placeholders below and MUST be entered before this amendment is
@@ -293,6 +499,30 @@ That result would be a direction-specific actuation finding at a site the seam
 geometry classifies as fully quarantined -- gemma actuating specifically inside
 the region the KV-quarantine hypothesis (`gemma4-e4b-kv-seam-quarantine`,
 Motivation) predicts should be inert to a narrowed causal channel.
+
+**PASS-DEGENERATE reporting restriction (pre-sign red-team finding W2).** The
+transcribed `zero_denominator_rule` (`gates.yaml:433-439` in the quarantine
+cell) fires only when `max_k |lift(placebo_k)| == 0.000` exactly -- every one
+of the K=5 accepted placebo draws produced literally zero lift, which is a
+degenerate denominator, not evidence of a large or well-separated effect. A
+PASS-DEGENERATE falsifying result MUST be reported WITH the degenerate label
+attached and the raw per-draw placebo rates alongside it, and MUST NOT be
+cited, summarized, or pooled elsewhere in this program as a flat
+"direction-specific actuation" or as a large effect ratio. This restriction
+applies everywhere PASS-DEGENERATE is mentioned in this document (Design "G3
+direction-specificity is MANDATORY here", this Falsifier section, and
+Outcome), not only here.
+
+**Multiplicity note (pre-sign red-team finding W3).** The falsifier as stated
+fires on any one of three arms (E1/E2/E3) that share one instrument, one
+extraction, one checkpoint revision, and one set of registered gates -- they
+are correlated draws from the same instrument, not three independent trials.
+A single-arm triple PASS (one of E1/E2/E3 falsifying while the other two do
+not) is therefore registered here as **exploratory evidence**, subject to this
+program's standing promotion rule (a confirmatory replication on fresh seeds,
+a larger model, or a held-out site, registered before running it, is required
+before any claim), and is **not** to be treated or reported as a standalone
+confirmatory result on its own.
 
 **Subordinate dispositions, pre-stated:**
 
