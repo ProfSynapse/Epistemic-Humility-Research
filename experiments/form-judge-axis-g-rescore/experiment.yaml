@@ -2,7 +2,7 @@ slug: form-judge-axis-g-rescore
 title: 'Form judge instrument: blinded-lane F1/F2/F3 grading and axis-G rescore of
   the naming-battery Arm A generations'
 type: eval
-status: signed
+status: resolved
 registered: true
 created_at: '2026-07-30T22:29:48Z'
 question: With the standing blinded-adjudication lane promoted to primary instrument
@@ -97,5 +97,8 @@ instrument:
 inputs:
 - experiments/write-direction-naming-battery/analysis/runlog_form_merged
 - experiments/write-direction-naming-battery/analysis-committed/form_adjudication_pool_manifest.json
-verdict: ''
+verdict: 'Judge-lane instrument validated (G1 0.035, G2 25/25) and axis G resolved
+  BINARY: the caution write converts prose to explicit IDK wholesale (baseline hedged
+  share 0.431 falling monotonically with dose) rather than producing graded epistemic
+  marking.'
 kg: []

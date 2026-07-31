@@ -2021,10 +2021,10 @@
       "question": "With the standing blinded-adjudication lane promoted to primary instrument for the open-class F1/F2/F3 boundary (single opus-subagent judge, validated on a fresh calibration slice with dual decoy types), does the naming battery's open axis-G question resolve GRADED or BINARY over the frozen Arm A generations, under the original registered thresholds (F2+F3 share above 0.15 at an intermediate dose AND at least +0.10 over baseline)?",
       "registered": true,
       "slug": "form-judge-axis-g-rescore",
-      "status": "signed",
+      "status": "resolved",
       "title": "Form judge instrument: blinded-lane F1/F2/F3 grading and axis-G rescore of the naming-battery Arm A generations",
       "type": "eval",
-      "verdict": ""
+      "verdict": "Judge-lane instrument validated (G1 0.035, G2 25/25) and axis G resolved BINARY: the caution write converts prose to explicit IDK wholesale (baseline hedged share 0.431 falling monotonically with dose) rather than producing graded epistemic marking."
     },
     {
       "checkpoint": {

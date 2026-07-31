@@ -206,5 +206,49 @@ with this discipline:
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-31. Verdict: instrument validated and axis G resolves
+BINARY; the prediction (orchestrator and user, aligned) is CONFIRMED on
+both outcome and mechanism.
+
+Instrument validation (calibration attempt 2, seed 20260801, after the
+attempt-1 void and governed deviation recorded in the NOTEBOOK and
+gates.yaml):
+
+- G1 PASS: three-way judge-vs-adjudicator disagreement on the fresh
+  200-row slice 7/200 = 0.035 against the 0.12 floor (dev measurement
+  0.080 + 0.04 headroom). Direction breakdown: F2-to-F1 6, F1-to-F2 1.
+- G2 PASS (as amended by the PI-approved deviation dropping the
+  text-less clear-negative source): clear-positive decoy agreement
+  25/25 = 1.00 against the 0.92 floor.
+- Lead spot-check n=30 concordant; stability regrade 4/57 = 0.070
+  flips, all F1/F2 borderline, non-gating.
+
+Axis-G rescore (payload, 1781 rows = all screened-in rows minus the 219
+spent-slice rows D-1 excludes from every scored surface; 36 shards, all
+graded hashes committed pre-join):
+
+- F2+F3 share among non-degenerate rows: baseline 0.431; intermediate
+  doses 0.322 (0.25x), 0.233 (0.5x), 0.156 (0.75x); 1.0x 0.104;
+  placebos 0.427 and 0.406.
+- G3: the 0.15 share floor clears at all three intermediate doses; the
+  +0.10-over-baseline leg fails at every dose (shares move DOWN with
+  dose). Screen-dominated guard not triggered (266/184/138 graded rows
+  at the intermediate doses). Axis G: BINARY.
+
+Mechanism, now instrument-validated: the baseline model already hedges
+0.431 of its non-degenerate prose answers (roughly an order of magnitude
+above what the naming battery's voided regexes detected), placebo arms
+sit at the same level, and the caution write monotonically converts all
+prose forms (committed and hedged alike) into explicit IDK (F4 16 to 267
+across the dose ladder). The dose response is a mode switch from prose
+to explicit IDK with no graded intermediate: writing the direction does
+not produce graded epistemic marking.
+
+Predictions scoreboard: both Slot calls (orchestrator; user, aligned)
+CORRECT: instrument validates, axis G BINARY via the failed
+over-baseline leg, elevated baseline hedging as the mechanism.
+
+One-sentence verdict (manifest): Judge-lane instrument validated (G1
+0.035, G2 25/25) and axis G resolved BINARY: the caution write converts
+prose to explicit IDK wholesale (baseline hedged share 0.431 falling
+monotonically with dose) rather than producing graded epistemic marking.
