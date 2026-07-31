@@ -118,3 +118,17 @@ their P2/P3 controls do not run. This matches the pre-registered
 scoreboard expectation of dose-viability NOT-RUN deepening the D4/hs23
 pattern at the deeper sites, with E1 as the only arm shallow enough to
 carry a usable dose.
+
+### 2026-07-31 -- Stage 2 smoke verified; full run launched
+
+run_contrast.py --mode smoke completed exit 0 in the pinned tf550
+container. Lead verification from
+analysis/gemma4-e4b/smoke_summary.pocket.json: arms restricted to
+E1/hs25 exactly as the Stage 1 adjudication requires (late arm
+excluded), injected dose 81.615 with readback mean 81.492 and
+frac_readback_within_tol 1.0, collapse_rate_on_dosed 0.0, confab_tighten
+4/4 on the 8-row smoke slice, held-out pools present (confab 168,
+known_correct_answered 270), g0_smoke_pass true. The fired-only
+NOT-ADJUDICABLE disposition at n=4 is a smoke-slice artifact of the 35
+floor and is non-gating. Proceeding to --mode full (held-out G1/G2/G3
+for E1 with P1 and C0) per the registered sequence.
