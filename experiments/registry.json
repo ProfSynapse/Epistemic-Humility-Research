@@ -2935,7 +2935,7 @@
             "reason": "load_directions read directions from the naming battery's analysis-committed tree, which never contained a directions/ dir (build-time ruling 5 corrected cell.yaml and experiment.yaml inputs but missed this hardcoded constant); repointed to qwen35-4b-midband-doubt-snap/analysis-committed, the registered source. Surfaced by the first GPU smoke; no generation had run."
           }
         ],
-        "runtime_image_digest": "sha256:894cb31b87d87092b249ef6abfb00791e5b3b824dff6c5bd61cdbecfb04887a7"
+        "runtime_image_digest": "sha256:a4076961bef8ece2d2aaadedd5a855a7bcfd3e4821cbbc1b8815dbaa83ced15e"
       },
       "kg": [],
       "prediction": "All three name-earning gates pass on the fresh generations: F4 endpoint jump over baseline, hedged share never rising 0.10 over baseline at any dose, placebo F4 within its registered band; the name IDK switch is earned.",

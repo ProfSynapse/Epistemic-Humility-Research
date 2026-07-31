@@ -100,3 +100,21 @@ repointed; no other logic touched. CPU suite 30/30 after the change.
 Repinned via bin/exp repin (pipeline.py fc4b7d93 -> 211e6f23, reason
 recorded in instrument.repins). No generation has run; all three failed
 smokes died before model load or at artifact load, touching no rows.
+
+### 2026-07-31 -- Third runtime digest repin: gcc for triton JIT
+
+Smoke attempt 4 (analysis/runlog/) failed inside fla's l2norm kernel with
+triton "RuntimeError: Failed to find C compiler": triton JIT-compiles its
+CUDA driver utils and the flash-linear-attention kernels for Qwen3.5's
+gated-deltanet layers at first use, and the runner image carried no C
+compiler. This never surfaced in the parent because the naming battery
+ran on the local base conda stack, not in the container (parent
+AMENDMENT runtime provenance). Fix is in the image, not the instrument:
+gcc and libc6-dev added to the runner Dockerfile on the same
+Synaptic-Tuner PR #150 branch as the pydantic fix (tuner rev 879c0d0).
+Rebuild verified in-image: gcc 11.4.0, pydantic 2.12.4, transformers
+5.12.1. Daemon preflight at capture: Operating System: Docker Desktop,
+nvidia runtime present. instrument.runtime_image_digest repinned
+sha256:894cb31b... -> sha256:a4076961bef8ece2d2aaadedd5a855a7bcfd3e48
+21cbbc1b8815dbaa83ced15e. No generation row has ever been produced; all
+failures were pre-model-load or pre-first-token instrument validation.
