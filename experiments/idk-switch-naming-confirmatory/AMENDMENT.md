@@ -159,5 +159,49 @@ adjudicated).
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+**Verdict (2026-07-31): all three name-earning gates PASS on the fresh
+generations; the name IDK switch is EARNED for this actuator at the pinned
+Qwen3.5-4B hs20 operating point.**
+
+Run: 1600/1600 fresh generations (4 arms x 400 rows, sampled decode
+temperature 0.7 top_p 0.9, generation_sampling_seed 20260802, image
+sha256:45847a60...), no resume gaps, F5 degenerate 1/1600.
+
+Gate results, adjudicated by the lead against the floors pinned in
+gates.yaml at sign:
+
+- N1 (IDK endpoint jump) PASS: a_dose_1 F4 explicit-IDK 260/400 = 0.6500
+  vs fresh a_baseline 15/400 = 0.0375; diff +0.6125; primary paired
+  bootstrap 95% CI [0.5650, 0.6600]; Newcombe cross-check
+  [0.5591, 0.6599]. CI lower bound clears the 0.15 floor by 3.8x. The
+  naming battery's exploratory +0.6275 replicates at +0.6125 under fresh
+  sampling seeds and sampled decode.
+- N2 (no graded intermediate) PASS: judged F2+F3 hedged share among
+  non-degenerate rows, baseline 0.4150; a_dose_0p5 0.2600 (delta -0.1550),
+  a_dose_1 0.1629 (delta -0.2521). Neither gated arm rises 0.10 over
+  baseline; the hedged share falls monotonically with dose, the registered
+  mode-switching signature. NOT-ADJUDICABLE guard clear (graded non-F4
+  rows 237 and 139, both >= 50). Non-gating: a_placebo_1 share 0.4000
+  (delta -0.0150).
+- N3 (placebo band) PASS: |a_placebo_1 F4 0.0150 - a_baseline 0.0375| =
+  0.0225, inside the 0.05 band. Non-gating bootstrap diff CI
+  [-0.0425, -0.0025].
+
+Judge-lane validity (all registered steps in registered order): pool
+hashes committed before grading (21 shards, 1155 core + 25 embedded
+clear-positive decoys); 21 fresh context-free opus-tier judges;
+graded-file hashes committed before unblind; in-run decoy agreement
+25/25 = 1.0000 (floor 0.92); lead spot-check 30/30 before gate
+arithmetic; stability regrade shard (isnc_fullpool_shard_04) flip rate
+4/56 = 0.0714, non-gating.
+
+Neither named falsifier alternative fired: the judge lane was valid
+(decoys perfect, so not instrument-failed) and the fresh generations
+passed acceptance (no resume gaps, 1 degenerate row, so not
+generation-failed).
+
+One-sentence summary (manifest `verdict:`): fresh-seed sampled-decode
+replication passes all three registered name-earning gates (N1 endpoint
+jump +0.6125 CI lower 0.5650 vs floor 0.15; N2 hedged share falls at
+both dosed arms; N3 placebo inside band); the name IDK switch is EARNED
+at the Qwen3.5-4B hs20 operating point.

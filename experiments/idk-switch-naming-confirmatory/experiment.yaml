@@ -1,7 +1,7 @@
 slug: idk-switch-naming-confirmatory
 title: idk-switch-naming-confirmatory
 type: steer-cell
-status: signed
+status: resolved
 registered: true
 created_at: '2026-07-31T01:35:18Z'
 question: 'Does a fresh-sampling-seed replication of the caution write at the pinned
@@ -175,5 +175,8 @@ inputs:
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/random_direction.json
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json
 - experiments/form-judge-axis-g-rescore/judge_prompt.md
-verdict: ''
+verdict: Fresh-seed sampled-decode replication passes all three registered name-earning
+  gates (N1 endpoint jump +0.6125, paired-bootstrap CI lower bound 0.5650 vs floor
+  0.15; N2 hedged share falls at both dosed arms; N3 placebo inside the 0.05 band);
+  the name IDK switch is EARNED at the Qwen3.5-4B hs20 operating point.
 kg: []
