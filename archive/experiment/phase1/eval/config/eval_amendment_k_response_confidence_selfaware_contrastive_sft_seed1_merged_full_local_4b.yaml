@@ -8,7 +8,7 @@
 
 model_tag: qwen3-4b-contrastive-schema-sft-merged-seed1
 model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_contrastive_seed1_full/20260627_203232/Qwen3-4B-bnb-4bit/merged-16bit
-gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_amendment_k_response_confidence_selfaware_contrastive_sft_seed1_merged_full_4b
 
 prompt:
@@ -55,4 +55,4 @@ arms:
 eval_sets:
   selfaware:
     type: ood
-    path: ../../../datasets/selfaware/SelfAware.json
+    path: ../../../../datasets/selfaware/SelfAware.json

@@ -18,7 +18,7 @@ from statistics import mean
 from typing import Iterable
 
 
-ROOT = Path(__file__).resolve().parents[5]
+ROOT = Path(__file__).resolve().parents[6]
 ROW_PATTERN_ARTIFACT_ROOT = ROOT / "papers" / "paper-2-training-regimen" / "analysis" / "row-pattern"
 DEFAULT_LABELS_PATH = (
     ROW_PATTERN_ARTIFACT_ROOT / "unknown_question_labels" / "llm_labeled_unknown_answered_questions_v3.csv"

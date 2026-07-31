@@ -19,7 +19,7 @@
 
 model_tag: qwen3-4b-probe-distilled-schema-sft-merged-seed1
 model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_probe_distilled_seed1_full/FILL_TIMESTAMP/Qwen3-4B-bnb-4bit/merged-16bit
-gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_amendment_m_response_confidence_selfaware_probe_distilled_sft_seed1_merged_full_4b
 
 prompt:
@@ -66,4 +66,4 @@ arms:
 eval_sets:
   selfaware:
     type: ood
-    path: ../../../datasets/selfaware/SelfAware.json
+    path: ../../../../datasets/selfaware/SelfAware.json

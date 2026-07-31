@@ -6,7 +6,7 @@ from pathlib import Path
 import importlib.util
 import sys
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[5]
 TARGET_DIR = ROOT / "experiments/common/mechinterp"
 TARGET = TARGET_DIR / "residual_caution_direction.py"
 

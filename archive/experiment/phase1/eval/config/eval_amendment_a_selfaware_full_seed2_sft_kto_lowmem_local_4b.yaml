@@ -6,7 +6,7 @@
 
 model_tag: qwen3-4b-sft-merged-seed2-lowmem
 model_name: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed2/20260615_090734/Qwen3-4B-bnb-4bit/merged-16bit-lowmem-20260616
-gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b
 
 generation:
@@ -41,4 +41,4 @@ arms:
 eval_sets:
   selfaware:
     type: ood
-    path: ../../../datasets/selfaware/SelfAware.json
+    path: ../../../../datasets/selfaware/SelfAware.json

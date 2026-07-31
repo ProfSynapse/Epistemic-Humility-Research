@@ -11,7 +11,7 @@
 
 model_tag: qwen3-4b-instruct
 model_name: unsloth/Qwen3-4B-bnb-4bit
-gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results
 
 # Eval generation sampling (honored by VLLMGenerator at real-run time).
@@ -79,23 +79,23 @@ arms:
 # carry probe labels. type=ood routes to ood.py loaders.
 eval_sets:
   in_domain:
-    path: ../../../experiment/phase1/eval/fixtures/in_domain_records.json
+    path: ../../../../archive/experiment/phase1/eval/fixtures/in_domain_records.json
     label_from_target: false
   kuq:
     type: ood
-    path: ../../../datasets/kuq/knowns_unknowns.jsonl
+    path: ../../../../datasets/kuq/knowns_unknowns.jsonl
   coconot:
     type: ood
-    path: ../../../datasets/coconot/contrast_test.jsonl
+    path: ../../../../datasets/coconot/contrast_test.jsonl
   popqa:
     type: ood
-    path: ../../../datasets/popqa/test.jsonl
+    path: ../../../../datasets/popqa/test.jsonl
   selfaware:
     type: ood
-    path: ../../../datasets/selfaware/SelfAware.json
+    path: ../../../../datasets/selfaware/SelfAware.json
   truthfulqa:
     type: ood
-    path: ../../../datasets/truthfulqa/TruthfulQA.csv
+    path: ../../../../datasets/truthfulqa/TruthfulQA.csv
   mmlu:
     type: ood
-    path: ../../../datasets/mmlu/test.jsonl
+    path: ../../../../datasets/mmlu/test.jsonl

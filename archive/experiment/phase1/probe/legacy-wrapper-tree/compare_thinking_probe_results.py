@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 import runpy
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[5]
 runpy.run_path(
     str(ROOT / "experiments/thinking-enabled-parallel-arm/compare_thinking_probe_results.py"),
     run_name="__main__",
