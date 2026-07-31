@@ -162,3 +162,17 @@ the judge lane now proceeds LEAD-RUN: pool build with embedded decoys,
 pool hash committed before any grading, isolated context-free
 opus-tier judges per shard, grade application by hash, then the
 N1/N2/N3 arithmetic and gate adjudication.
+
+### 2026-07-31 -- Judge pool built; pool hashes committed BEFORE grading
+
+build_judge_pool.py (full-pool mode, seed 20260803): 21 shards, 55-56
+rows each, n_core_total 1155 (equals the screened-in total exactly),
+25 embedded clear-positive decoys (target 25), opaque ids salted
+(id_salt_sha256 committed, salt itself gitignored). Per the blinded
+discipline the full manifest of per-shard pool_sha256 hashes is copied
+to analysis-committed/full_pool_manifest.json and committed NOW, before
+any judge sees any shard. Containment verified: manifest carries ids,
+hashes, and counts only, no text. Shard files and id maps remain under
+gitignored analysis/shards/. Judges are dispatched next: one fresh,
+context-free opus-tier agent per shard, each receiving the rendered
+rubric and bare {opaque_id, text} rows only.
