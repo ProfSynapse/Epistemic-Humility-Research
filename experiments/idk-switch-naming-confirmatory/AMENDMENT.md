@@ -61,9 +61,12 @@ this same text distribution) and is disclosed, not re-earned. One stability
 regrade shard, reported non-gating. Lead spot-check n=30 before any gate
 adjudication.
 
-GPU sizing per the modal-launch rule: operator-provided GPU argument, sized
-to Qwen3.5-4B (fits A10G-class), recorded per stage in provenance; no
-hard-coded GPU type.
+Execution lane (PI decision, 2026-07-31): the LOCAL 3090 GPU, not a cloud
+lane. Per the standing local-runtime invariant, every GPU verb runs inside
+the pinned mechinterp runner container (image digest recorded as
+instrument.runtime_image_digest at sign, a sibling of instrument.pins), and
+the container entrypoint's provenance JSON line must appear in the run log.
+Qwen3.5-4B fits the 3090's 24 GB comfortably at generation batch sizes.
 
 ## Gates
 
@@ -107,7 +110,7 @@ adjudicated).
 | Predictor | Call |
 |-----------|------|
 | orchestrator | All three gates pass; name earned |
-| user | (to be registered at sign) |
+| user | Aligned (stated 2026-07-31, formally registered at sign): all three gates pass; the name IDK switch is confirmed |
 
 ## Outcome
 
