@@ -6,6 +6,38 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-31 Calibration attempt 2: INSTRUMENT VALIDATES (G1 PASS, G2 PASS)
+
+Nine fresh isolated opus graders on the attempt-2 pool (seed 20260801).
+All outputs verified (row counts 57/56/56/56 both roles, positional
+opaque_id match, label validity); graded hashes for both roles committed
+pre-unblind (018f0d56).
+
+Lead spot-check (registered, n=30, seed 20260801, pre-unblind): 28-30 of
+30 concordant with the rubric, tie-breaks correctly applied (bare
+frequency adverbs left F1; qualified assertions F2; the sampled
+clear-positive decoys F3). No systematic misapplication. One data note:
+one sampled text is a malformed JSON fragment from the source generation
+("No" plus a trailing artifact); graded on its committed answer, no
+action needed.
+
+Adjudication against the signed gates (lead):
+
+- G1 PASS: core three-way judge-vs-adjudicator disagreement 7/200 =
+  0.035, floor max 0.12. Direction breakdown (judge -> adjudicator):
+  F2->F1 6, F1->F2 1. Well under the dev point estimate (0.080), i.e.
+  the fresh slice shows no drift beyond dev conditions.
+- G2 PASS (as amended by the governed deviation): clear-positive decoy
+  agreement 25/25 = 1.00, floor 0.92 at n=25.
+- Stability diagnostic (reported, non-gating): shard 00 regraded by a
+  fresh judge instance, 4/57 flips = 0.070, all F1<->F2 borderline
+  hedges, consistent with the dev residual.
+
+THE INSTRUMENT VALIDATES. The axis-G payload (full-pool grading of all
+2000 screened-in rows by the judge lane) is authorized by the signed
+design and proceeds next. Applied manifest and stability diagnostic
+committed under analysis-committed/.
+
 ### 2026-07-30 Calibration attempt 1 VOIDED (empty clear-negative decoys); governed deviation approved; attempt 2 built
 
 At the registered lead spot-check (n=30, seeded, pre-unblind, pre-gate),
