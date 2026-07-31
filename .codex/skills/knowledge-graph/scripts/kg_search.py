@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sqlite3
 import sys
@@ -13,6 +14,10 @@ from pathlib import Path
 from kg_index import DEFAULT_DB, REPO_ROOT, connect, index_root
 
 TOKEN_RE = re.compile(r"[A-Za-z0-9_]{2,}")
+# Node files and headings are kebab/snake-cased; queries are spaced. Without
+# folding the separators, "margin theory framework" never matches
+# margin-theory-framework.md and the phrase boost silently never fires.
+SEPARATOR_RE = re.compile(r"[-_/.\s]+")
 STOPWORDS = {
     "about",
     "is",
@@ -70,6 +75,7 @@ class SearchResult:
     memory_types: list[str]
     status: str = ""
     deprecated_by: str = ""
+    deprecated_by_path: str = ""
 
 
 EDGE_WEIGHTS = {
@@ -90,6 +96,20 @@ EDGE_WEIGHTS = {
     "superseded_by": 2.5,
     "supersedes": 2.5,
 }
+# Graph proximity is a secondary signal, never a substitute for matching the
+# query. A neighbour carries only this fraction of the score it inherited, so
+# each hop away from a lexical hit costs real points instead of ~1.
+GRAPH_HOP_DAMPING = 0.45
+# ...and a node that fans out to many neighbours spreads the same budget over
+# all of them. Without this a single densely-linked hub injects its whole
+# cluster at one identical score, which is what "flooding" looks like.
+GRAPH_FANOUT_DAMPING = 1.0
+# A ten-slot result list is worthless if one experiment directory owns seven of
+# the slots, or if the same file appears three times at different line numbers.
+# Take at most this many hits per path and per directory group first, then
+# backfill any slots that are still empty from what was held back.
+RESULTS_PER_PATH = 1
+RESULTS_PER_GROUP = 3
 MEMORY_LANES = (
     "semantic",
     "procedural",
@@ -201,6 +221,10 @@ def lane_rank_adjustment(conn: sqlite3.Connection, path: str, lane_weights: dict
     return boost
 
 
+def fold_separators(value: str) -> str:
+    return SEPARATOR_RE.sub(" ", value.casefold()).strip()
+
+
 def exact_boost(row: sqlite3.Row, query: str) -> float:
     q = query.casefold()
     tokens = TOKEN_RE.findall(q)
@@ -213,11 +237,12 @@ def exact_boost(row: sqlite3.Row, query: str) -> float:
     path = haystacks[0]
     title = haystacks[1]
     symbol = haystacks[2]
-    if q and q in symbol:
+    folded_q = fold_separators(query)
+    if q and (q in symbol or (folded_q and folded_q in fold_separators(symbol))):
         boost += 14.0
-    elif q and q in title:
+    elif q and (q in title or (folded_q and folded_q in fold_separators(title))):
         boost += 10.0
-    elif q and q in path:
+    elif q and (q in path or (folded_q and folded_q in fold_separators(path))):
         boost += 8.0
     for token in tokens:
         if token == symbol or symbol.endswith("." + token):
@@ -292,6 +317,67 @@ def deprecation_by_path(conn: sqlite3.Connection) -> dict[str, tuple[str, str]]:
     return {str(row["path"]): (str(row["status"]), str(row["deprecated_by"])) for row in rows}
 
 
+def result_group(path: str) -> str:
+    """Cluster key for result diversity: one experiment/notes directory."""
+    parts = Path(path).parts
+    return "/".join(parts[:2]) if len(parts) > 1 else path
+
+
+def diversify(rows: list[sqlite3.Row], scores: dict[int, float], limit: int) -> list[sqlite3.Row]:
+    ordered = sorted(rows, key=lambda row: scores[int(row["id"])], reverse=True)
+    picked: list[sqlite3.Row] = []
+    held_back: list[sqlite3.Row] = []
+    path_counts: dict[str, int] = {}
+    group_counts: dict[str, int] = {}
+    for row in ordered:
+        if len(picked) >= limit:
+            break
+        path = str(row["path"])
+        group = result_group(path)
+        if path_counts.get(path, 0) >= RESULTS_PER_PATH or group_counts.get(group, 0) >= RESULTS_PER_GROUP:
+            held_back.append(row)
+            continue
+        path_counts[path] = path_counts.get(path, 0) + 1
+        group_counts[group] = group_counts.get(group, 0) + 1
+        picked.append(row)
+    for row in held_back:
+        if len(picked) >= limit:
+            break
+        picked.append(row)
+    return picked[:limit]
+
+
+def route_deprecated_successors(
+    conn: sqlite3.Connection,
+    query: str,
+    candidates: dict[int, sqlite3.Row],
+    scores: dict[int, float],
+    deprecated: dict[str, tuple[str, str]],
+) -> None:
+    """Hand a superseded note's score to the node that replaced it.
+
+    Deprecated notes are hidden from default results, so without this a query
+    that lands squarely on stale material returns nothing useful. Passing the
+    score to the successor means the current note surfaces in its place.
+    """
+    for rowid, row in list(candidates.items()):
+        path = str(row["path"])
+        _status, deprecated_by = deprecated.get(path, ("", ""))
+        if not deprecated_by:
+            continue
+        successor = path_for_node(conn, deprecated_by)
+        if not successor or successor == path:
+            continue
+        successor_row = best_chunk_for_path(conn, successor, query)
+        if successor_row is None:
+            continue
+        successor_id = int(successor_row["id"])
+        inherited = scores.get(rowid, 0.0)
+        if scores.get(successor_id, float("-inf")) < inherited:
+            scores[successor_id] = inherited
+            candidates[successor_id] = successor_row
+
+
 def graph_neighbors(conn: sqlite3.Connection, path: str, limit: int = 8) -> list[str]:
     node_rows = conn.execute("SELECT node_id FROM nodes WHERE path = ? LIMIT 20", (path,)).fetchall()
     node_ids = [row["node_id"] for row in node_rows]
@@ -359,7 +445,10 @@ def expand_graph(
                 continue
             frontier[row["node_id"]] = max(frontier.get(row["node_id"], 0.0), score)
 
-    path_scores: dict[str, float] = dict(seed_paths)
+    # Propagated proximity only. Seed paths already carry their own lexical
+    # score in `search`; re-adding it here double-counted it, which let a
+    # non-matching neighbour outrank the note the query actually names.
+    path_scores: dict[str, float] = {}
     seen = set(frontier)
     for step in range(max(0, depth)):
         if not frontier:
@@ -373,12 +462,25 @@ def expand_graph(
             """,
             [*frontier, *frontier],
         ).fetchall()
-        next_frontier: dict[str, float] = {}
-        decay = 1.0 / (step + 2)
+
+        # Count each frontier node's fan-out first so a hub's contribution can
+        # be divided across the cluster it would otherwise flood.
+        fanout: dict[str, int] = {}
+        origins: list[str] = []
         for row in rows:
             src = row["source_id"]
             dst = row["target_id"]
-            base = max(frontier.get(src, 0.0), frontier.get(dst, 0.0))
+            origin = src if frontier.get(src, 0.0) >= frontier.get(dst, 0.0) else dst
+            origins.append(origin)
+            fanout[origin] = fanout.get(origin, 0) + 1
+
+        next_frontier: dict[str, float] = {}
+        decay = 1.0 / (step + 2)
+        for row, origin in zip(rows, origins):
+            src = row["source_id"]
+            dst = row["target_id"]
+            spread = 1.0 + GRAPH_FANOUT_DAMPING * math.log(fanout.get(origin, 1))
+            base = frontier.get(origin, 0.0) * GRAPH_HOP_DAMPING / spread
             score = base + EDGE_WEIGHTS.get(row["edge_type"], 0.75) * decay
             for node_id in (src, dst):
                 path = path_for_node(conn, node_id)
@@ -509,22 +611,29 @@ def search(
             if row is None:
                 continue
             rowid = int(row["id"])
-            score = scores.get(
+            # A graph-only row is scored on the same structural terms a lexical
+            # hit gets (minus bm25), so a note whose own title/path matches the
+            # query beats one that merely neighbours a match. Graph proximity is
+            # then added once, to both kinds of row alike.
+            own_score = scores.get(
                 rowid,
-                graph_score
+                exact_boost(row, query)
                 + final_rank_adjustment(row, query)
                 + lane_rank_adjustment(conn, str(row["path"]), lane_weights),
-            ) + graph_score
+            )
+            score = own_score + graph_score
             if rowid not in scores or score > scores[rowid]:
                 scores[rowid] = score
                 candidates[rowid] = row
+
+        route_deprecated_successors(conn, query, candidates, scores, deprecated)
 
         visible = [
             row
             for row in candidates.values()
             if include_deprecated or str(row["path"]) not in deprecated
         ]
-        ranked = sorted(visible, key=lambda row: scores[int(row["id"])], reverse=True)[:limit]
+        ranked = diversify(visible, scores, limit)
         results = []
         for row in ranked:
             status, deprecated_by = deprecated.get(str(row["path"]), ("", ""))
@@ -543,6 +652,7 @@ def search(
                     memory_types=memory_types_for_path(conn, row["path"]),
                     status=status,
                     deprecated_by=deprecated_by,
+                    deprecated_by_path=(path_for_node(conn, deprecated_by) or "") if deprecated_by else "",
                 )
             )
         conn.execute(
@@ -570,7 +680,11 @@ def format_results(results: list[SearchResult], query: str) -> str:
         lanes = ",".join(item.memory_types) if item.memory_types else "unlabeled"
         lines.append(f"{idx}. {loc} [{item.kind}/{item.symbol_type}; {lanes}] score={item.score}")
         if item.status == "deprecated" or item.deprecated_by:
-            successor = f" -> {item.deprecated_by}" if item.deprecated_by else ""
+            successor = ""
+            if item.deprecated_by:
+                successor = f" superseded by {item.deprecated_by}"
+                if item.deprecated_by_path:
+                    successor += f" ({item.deprecated_by_path})"
             lines.append(f"   DEPRECATED{successor}")
         lines.append(f"   {item.title}")
         if item.snippet:
