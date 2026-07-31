@@ -10,6 +10,10 @@ every figure is in Appendix A.*
 
 ---
 
+> *"Look within. Within is the fountain of good, and it will ever bubble up, if thou wilt ever dig."*
+>
+> Marcus Aurelius, *Meditations* 7.59
+
 ## Abstract
 
 Small language models routinely answer questions they cannot answer, and state a flat,

@@ -90,6 +90,10 @@ filenames.*
 
 ---
 
+> *"What I cannot create, I do not understand."*
+>
+> Richard Feynman
+
 ## Abstract
 
 Prior papers in this series show that small language models internally represent
