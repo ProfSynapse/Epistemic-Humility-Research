@@ -146,3 +146,19 @@ registered launch sequence (launch-authorization entry), the lead now
 dispatches pipeline.py generate: 4 arms x 400 rows, sampled decode,
 seed 20260802, per-arm runlog resume, hard-halt before the judge lane
 per the registered governance boundary.
+
+### 2026-07-31 -- Generation sweep and screen complete; judge lane opens
+
+Generation: 1600/1600 rows (4 arms x 400), sampled decode temperature
+0.7 top_p 0.9, generation_sampling_seed 20260802, elapsed 1252.8s,
+image sha256:45847a60..., per-arm runlogs 400/400/400/400. Screen
+(deterministic F5/F4, last automated stage): F5 degenerate 1/1600
+(a_dose_1). F4 explicit-IDK per arm: a_baseline 15/400, a_dose_0p5
+163/400, a_dose_1 260/400, a_placebo_1 6/400. Screened-in for the
+judge pool: 385/237/139/394. No gate is adjudicated by these raw
+counts; N1/N2/N3 fire only from the registered arithmetic after the
+blinded judge lane. Pipeline emitted its registered governance halt;
+the judge lane now proceeds LEAD-RUN: pool build with embedded decoys,
+pool hash committed before any grading, isolated context-free
+opus-tier judges per shard, grade application by hash, then the
+N1/N2/N3 arithmetic and gate adjudication.
