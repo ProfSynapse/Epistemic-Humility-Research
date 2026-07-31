@@ -32,9 +32,9 @@ Synaptic Labs
 
 *Draft v2. Not for distribution.*
 
-> *"It is likely that neither of us knows anything worthwhile, but he thinks he knows something when he does not, whereas I, as I do not know, do not think I know either."*
+> *"When you know a thing, to hold that you know it; and when you do not know a thing, to allow that you do not know it: this is knowledge."*
 >
-> Plato, *Apology* 21d
+> Confucius, *Analects* 2.17
 
 ## Abstract
 
