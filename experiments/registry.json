@@ -2701,7 +2701,10 @@
         ],
         "runtime_image_digest": "sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8"
       },
-      "kg": [],
+      "kg": [
+        "experiment:gemma4-e4b-pocket-ladder",
+        "mechanism:gemma-quarantined-pocket-shows-no-direction-specific-actuation"
+      ],
       "prediction": "None of E1 (hs25), E2 (hs26), or E3 (hs27) produces an ADJUDICATED G3 PASS (effect_ratio >= 3.0, or PASS-DEGENERATE) jointly with a G1/G2 PASS on held-out. Basis - the quarantine cell's measured below-seam ladder falls monotonically toward the seam (D1/hs15 0.7857, D2/hs18 0.4464, D3/hs20 0.4048; a per-site-dose PROFILE, not a controlled contrast, NOTEBOOK.md:1621), and its one measured quarantined-region site, A5/hs24, cleared G1 (0.7321) and G2 (0.0333) but failed G3 outright at effect_ratio 1.139 (worst placebo draw reproduced 88% of the true effect) - NOTEBOOK.md:1573-1606, Stage 6 Ruling R3/R4. E1/E2/E3 sit deeper into the same quarantined region than hs24.",
       "question": "The cross-family operating range across every family that has actuated in this program is rd 0.375-0.639 (gemma4-e4b-kv-seam-quarantine/AMENDMENT.md:391-399). On gemma4-e4b (42 blocks, KV-sharing donors at blocks 22/23), the upper half of that range - rd 0.571-0.639 - falls entirely inside the KV-quarantined region, at hs25/hs26/hs27 (same doc, AMENDMENT.md:405-411). That band has never been written to on this substrate - the sibling gemma4-e4b-kv-seam-quarantine cell's own ladder stops at A5/hs24 on the above-seam side. Does gemma actuate, direction-specifically, anywhere in that pocket?",
       "registered": true,

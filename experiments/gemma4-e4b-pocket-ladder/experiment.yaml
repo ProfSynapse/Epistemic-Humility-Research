@@ -282,4 +282,6 @@ verdict: 'No direction-specific actuation in the pocket: E1/hs25 cleared G1/G2 o
   NOT-RUN. All three registered predictions MET. Closes the last untested above-seam
   band of the cross-family operating range on gemma4-e4b; does not by itself resolve
   the quarantine hypothesis (registered confound fence).'
-kg: []
+kg:
+- experiment:gemma4-e4b-pocket-ladder
+- mechanism:gemma-quarantined-pocket-shows-no-direction-specific-actuation

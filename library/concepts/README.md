@@ -572,7 +572,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[stable-diffusion]] : Stable Diffusion is a large-scale text-to-image latent diffusion model that generates images by running an iterative denoising process in a 
 - [[unifiedqa]] : A T5-based question-answering model finetuned by Khashabi et al. on a diverse collection of NLP QA datasets (including SQuAD, NaturalQuestio
 
-## Terms (204)
+## Terms (205)
 
 - [[abstain-qa]] : AbstainQA is a task formulation in which a model is given a question and must
 - [[abstention]] : Abstention is the behavior of an LLM deliberately declining to provide a
@@ -652,6 +652,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[hedged-prediction]] : A hedged prediction is the loss-minimizing default output that a finetuned LLM
 - [[human-aware-loss-functions]] : Human-Aware Loss Functions (HALOs) are alignment objectives that implicitly encode prospect-theory biases (particularly loss aversion) about
 - [[hydra-effect]] : The Hydra effect is a form of adaptive computation observed in autoregressive
+- [[idk-switch]] : IDK switch is the earned name for the frozen Qwen3.5-4B hs20 `c_hat`
 - [[ik-threshold]] : The Ik threshold is a hyperparameter in [0, 1] that sets the minimum per-question
 - [[imitative-falsehood]] : A false answer that a language model produces because it has high likelihood on the model's training distribution, not because the model fai
 - [[implicit-attention-bias]] : An implicit attention bias is a constant, input-independent additive term the
@@ -779,7 +780,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (494)
+## Mechanisms (cause -> effect) (496)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -830,6 +831,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[caution-encoding-read-actuate-dissociation-across-families]] : In doubt-snap-cross-family-confirmatory's lead-verified c_hat validity audit (CPU, over existing captures across the four launched cells: qwen35_4b, qwen35_9b, 
 - [[caution-readout-is-low-rank-on-collinear-carriers]] : Recomputing direction-removal robustness in a label-agnostic randomized PCA-128 basis instead of the raw 2,560-dimensional activation space. **mediates** The ca
 - [[caution-residual-ablation-relaxes-overrefusal-asymmetrically]] : Ablating the caution residual direction (activation steering at inference) in a small instruction-tuned model that over-refuses known questions. **decreases** O
+- [[caution-write-idk-jump-replicates-under-fresh-sampled-decode-seeds]] : Dosing the frozen Qwen3.5-4B hs20 c_hat write direction to 1.0x over the naming battery's registered 400-row P_CONFAB population, regenerated under a FRESH samp
 - [[caution-write-mode-switches-prose-to-explicit-idk]] : Dosing along the frozen mid-band hs20 c_hat write direction across the naming battery's 7 Arm A sub-arms (baseline, three intermediate doses, 1.0x, two placebo 
 - [[caution-write-selectivity-is-content-dependent-not-gate-created]] : In qwen35-4b-midband-doubt-snap's permuted-gate control at hs20 dose 8 x sigma_c on Qwen/Qwen3.5-4B, randomly selecting which held-out-population rows receive t
 - [[circular-features-causally-compute-modular-arithmetic]] : intervening on only the 2D circular subspace encoding days or months. **enables** nearly matches patching the entire layer, showing the ring is causally suffici
@@ -924,6 +926,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[full-sft-on-noncompliance-data-causes-over-refusal]] : Full continued SFT of an instruction-tuned model on a noncompliance-only dataset (CoCoNot) without a contrastive compliance signal **enables** Model over-genera
 - [[functional-cooccurrence-drives-spatial-clustering]] : SAE features that tend to fire together within documents (functional co-occurrence, measured by phi-coefficient-cooccurrence) share semantic content **enables**
 - [[gemma-actuation-localizes-shallow-of-kv-seam]] : A dosed known-unknown direction is written into Gemma-4-E4B-it at shallow relative depth below its KV-sharing seam (D1/hs15, relative depth 0.357, both donor bl
+- [[gemma-quarantined-pocket-shows-no-direction-specific-actuation]] : A fitted known-unknown direction is dosed into Gemma-4-E4B-it at each of three sites one to three blocks deeper into the KV-sharing seam's quarantined region th
 - [[gender-bias-spans-many-directions]] : Gender information encoded in glove-word-embeddings **enables** Single-direction projection (e.g. he-she) leaves substantial residual linear gender signal; full
 - [[gender-erasure-reduces-tpr-gap]] : Applying leace to remove gender information from BERT CLS embeddings **decreases** TPR-Gap drops from 0.198 to 0.084 in a downstream profession classifier while
 - [[generation-time-computation-loads-off-the-epistemic-plane]] : Autoregressive generation of an answer to an unanswerable question on a clean-SFT to GRPO-v2 checkpoint, measured as the hidden-state displacement from the pre-
