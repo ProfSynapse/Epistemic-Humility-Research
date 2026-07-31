@@ -179,4 +179,7 @@ verdict: Fresh-seed sampled-decode replication passes all three registered name-
   gates (N1 endpoint jump +0.6125, paired-bootstrap CI lower bound 0.5650 vs floor
   0.15; N2 hedged share falls at both dosed arms; N3 placebo inside the 0.05 band);
   the name IDK switch is EARNED at the Qwen3.5-4B hs20 operating point.
-kg: []
+kg:
+- experiment:idk-switch-naming-confirmatory
+- mechanism:caution-write-idk-jump-replicates-under-fresh-sampled-decode-seeds
+- term:idk-switch

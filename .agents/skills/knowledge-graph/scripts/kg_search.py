@@ -15,6 +15,7 @@ from kg_index import DEFAULT_DB, REPO_ROOT, connect, index_root
 TOKEN_RE = re.compile(r"[A-Za-z0-9_]{2,}")
 STOPWORDS = {
     "about",
+    "is",
     "can",
     "could",
     "do",

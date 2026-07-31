@@ -20,7 +20,26 @@ related:
 - '[[form-taxonomy-pattern-battery-underdetects-epistemic-marking]]'
 - '[[blinded-judge-lane-validates-open-class-form-grading]]'
 - '[[caution-write-mode-switches-prose-to-explicit-idk]]'
+- '[[idk-switch-naming-confirmatory]]'
+- '[[idk-switch]]'
 relationships:
+- type: built_on_by
+  target: '[[idk-switch-naming-confirmatory]]'
+  target_id: experiment:idk-switch-naming-confirmatory
+  confidence: high
+  evidence:
+  - experiments/idk-switch-naming-confirmatory/AMENDMENT.md (Design; Instruments;
+    reuses this experiment's validated blinded judge lane and pinned judge
+    prompt bytes on fresh sampled-decode generations, disclosing rather than
+    re-earning its construct validation)
+- type: related_to
+  target: '[[idk-switch]]'
+  target_id: term:idk-switch
+  confidence: medium
+  evidence:
+  - experiments/idk-switch-naming-confirmatory/AMENDMENT.md#outcome (the name
+    IDK switch is EARNED once this experiment's mode-switch mechanism
+    replicates on fresh seeds)
 - type: builds_on
   target: '[[write-direction-naming-battery]]'
   target_id: experiment:write-direction-naming-battery
