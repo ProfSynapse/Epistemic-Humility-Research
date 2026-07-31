@@ -1,0 +1,202 @@
+# Gemma-4-E4B pocket ladder: hs25/hs26/hs27, sharing ON notebook
+
+Running log for this experiment. Newest entry first. This is a lab notebook, not
+a claims surface; the signed prose lives in `AMENDMENT.md` and the machine state
+in `experiment.yaml`.
+
+## Entries
+
+- (add dated entries as the experiment progresses)
+
+### 2026-07-31 -- Signed; runtime digest recorded
+
+Signed 2026-07-31 with both scoreboard calls entered beforehand
+(orchestrator and PI, both: no direction-specific actuation; the PI call
+recorded from an explicit same-day selection). Lead addition immediately
+post-sign, before any run: instrument.runtime_image_digest set to
+mechinterp-runner:tf550
+sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8,
+the transformers==5.5.0 image every gemma kv-seam-adjacent GPU verb runs
+in (kv-seam NOTEBOOK 2026-07-29 build record; same image that ran C1).
+Recorded per the local-runtime invariant (digest is a sibling of pins,
+captured with the Desktop-engine preflight passing). No launch is
+authorized by this entry; the cell awaits its own launch approval after
+the IDK-switch sweep completes.
+
+### 2026-07-31 -- LAUNCH AUTHORIZATION (user-approved) and staging execution
+
+The PI approved launch 2026-07-31 ("launch it docker is up") after the
+IDK-switch sweep resolved and merged. Docker Desktop preflight to be
+verified immediately before the first GPU verb; every GPU verb runs in
+the pinned mechinterp-runner:tf550 image
+(sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8,
+recorded in instrument.runtime_image_digest at fbd16834), IMAGE_DIGEST
+env passed at docker run.
+
+Staging contract EXECUTED per AMENDMENT.md "Staged inputs": all four
+artifacts copied from the canonical checkout's harvested
+gemma4-e4b-kv-seam-quarantine tree into this cell's gitignored
+analysis/gemma4-e4b/, and every sha256 recomputed at staging time
+matches the registered value exactly (anchor_extract.safetensors
+b7197418..., anchor_extract_manifest.json 060c3f3b...,
+split_manifest.json 8d228117..., eval_rows.jsonl 7a2784bd...). The two
+row-text-bearing files live in analysis/ only, never
+analysis-committed/. Worktree submodule initialized at the branch's
+recorded gitlink (34c89fc4, the tuner rev Phase A and C1 validated).
+
+Registered run sequence, transcribed from the design (G0-KV item 1
+fail-closed inside each stage): build_directions.py --family gemma4-e4b
+--site-set pocket; gate_fit.py --site-set pocket (FIT); calibrate_dose.py
+--site-set pocket (Stage 1, FIT usable-dose rule, NOT-RUN on zero usable
+rungs, no re-laddering); run_contrast.py --site-set pocket --mode smoke,
+lead verifies, then --mode full (Stage 2, held-out G1/G2/G3);
+pocket_rollup.py. cell.yaml surface.expected_config_sha is hand-filled
+from the tuner's printed config_sha after the first run, per the sign
+output reminder.
+
+### 2026-07-31 -- Staging correction: split_manifest destination
+
+First build_directions attempt failed fail-closed on a lead staging
+placement error: split_manifest.json had been copied into analysis/
+instead of its registered destination analysis-committed/gemma4-e4b/
+(experiment.yaml instrument.staging). Moved to the registered
+destination, sha256 re-verified at the new path (8d228117... exact
+match), no other staged file affected, no stage produced any output
+before the fail-closed stop. Side note: the failed container run left
+analysis-committed/gemma4-e4b root-owned; ownership restored to the
+host user via the pinned container before the move. Relaunching the
+FIT stages.
+
+### 2026-07-31 -- Stage 1 (FIT dose calibration) lead adjudication
+
+FIT stages completed in the pinned tf550 container: build_directions,
+gate_fit, calibrate_dose all ran --family gemma4-e4b --site-set pocket.
+calibrate_dose exited 1; that exit is the tool's designed signal
+(calibrate_dose.py:391-394 gates exit status on the mid-band arm set
+only) and the summary artifact
+analysis/gemma4-e4b/dose_calibration_summary.pocket.json is complete.
+Adjudication is from the artifact, not the exit code.
+
+Per-arm ruling under the registered Stage 1 rule (collapse-free rung,
+FIT confab-tighten rate >= 0.5 floor, readback within tol):
+
+- **E1/hs25: usable dose found; proceeds to Stage 2.** Four rungs clear
+  the floor collapse-free (0.361 and 0.554 at rate 0.500, 0.85 and
+  1.304 at rate 0.750; all cost 0.000, readback 1.000; 2.0 collapses at
+  0.429). The tool selected ratio 0.85, dose 81.615.
+- **E2/hs26: dose-viability NOT-RUN.** Max confab-tighten rate 0.375 at
+  ratio 0.85, below the 0.5 floor at every rung. Neither a pass nor a
+  fail; no re-laddering, no tuning, per the registered rule.
+- **E3/hs27: dose-viability NOT-RUN.** Max rate 0.250 at ratio 0.85;
+  collapse onset already at 1.304 (0.286). Same ruling.
+- **hs40 (late reference): null as expected.** Max rate 0.250 with
+  collapse from 0.85 up (0.667 to 1.000), matching the doubt-snap
+  late-site expectation. Non-gating.
+
+Selection-rule note, recorded so the ruling is accurate about what the
+instrument did: the amendment's prose transcription reads "selects the
+first collapse-free rung whose FIT clean_tighten rate clears the same
+0.5 floor". The pinned tool's choose_dose() (calibrate_dose.py:99)
+actually orders usable rungs by highest confab-tighten rate, then
+lowest known-correct cost, then lower ratio as tie-break, with the
+in-code comment "ratified selection rule". At hs25 this picks 0.85
+(0.750 rate) over the first floor-clearing rung 0.361 (0.500), with
+0.85 beating 1.304 on the lower-ratio tie-break. The script is
+byte-identical (sha256 match verified today) to the parent quarantine
+cell's pinned calibrate_dose.py, so the "transcribed rule, unchanged"
+clause binds to the parent instrument's actual behavior; the prose
+"first" is an imprecise paraphrase, and the tool's selection stands,
+observed and not second-guessed, exactly as in the parent cell. The
+usable/NOT-RUN determinations, which are the gating part of Stage 1,
+are unaffected by this discrepancy: both readings agree on which arms
+have a usable dose.
+
+Consequences under the registered design: Stage 2 (run_contrast smoke,
+lead verify, then full held-out G1/G2/G3) runs for E1/hs25 only, with
+P1 active (conditional on E1's usable dose) and C0 baseline; E2/E3 and
+their P2/P3 controls do not run. This matches the pre-registered
+scoreboard expectation of dose-viability NOT-RUN deepening the D4/hs23
+pattern at the deeper sites, with E1 as the only arm shallow enough to
+carry a usable dose.
+
+### 2026-07-31 -- Stage 2 smoke verified; full run launched
+
+run_contrast.py --mode smoke completed exit 0 in the pinned tf550
+container. Lead verification from
+analysis/gemma4-e4b/smoke_summary.pocket.json: arms restricted to
+E1/hs25 exactly as the Stage 1 adjudication requires (late arm
+excluded), injected dose 81.615 with readback mean 81.492 and
+frac_readback_within_tol 1.0, collapse_rate_on_dosed 0.0, confab_tighten
+4/4 on the 8-row smoke slice, held-out pools present (confab 168,
+known_correct_answered 270), g0_smoke_pass true. The fired-only
+NOT-ADJUDICABLE disposition at n=4 is a smoke-slice artifact of the 35
+floor and is non-gating. Proceeding to --mode full (held-out G1/G2/G3
+for E1 with P1 and C0) per the registered sequence.
+
+### 2026-07-31 -- Stage 2 true arm (E1/hs25) complete; lead verification
+
+run_contrast.py --mode full completed exit 0 (41 min) after one designed
+refusal without the --i-know-this-is-the-cross-family-run interlock flag,
+relaunched with the flag under the same standing authorization. Lead
+verification from analysis-committed/gemma4-e4b/full_summary.pocket.json:
+
+- **G1 actuation floor: PASS.** Held-out confab clean_tighten 133/168 =
+  0.7917, Wilson 95% CI [0.7241, 0.8462], against floor rate 0.5 with
+  Wilson-lower requirement 0.4.
+- **G2 selectivity cap: PASS on the gating full-population number.**
+  Known-correct cost 9/270 = 0.0333, Wilson CI [0.0176, 0.0621], against
+  cap 0.05 with Wilson-upper requirement 0.10. The three companion
+  numbers are reported together per the registered G2 section:
+  G2-as-transcribed 0.0333 (gating, PASS); fired-only companion 9/9 =
+  1.0 at n_fired_known = 9, below the N = 35 adjudicable floor, so
+  NOT-ADJUDICABLE, exactly the non-gating disposition the amendment's
+  "G2 diagnosticity, inherited caveat" pre-registers for this cell; and
+  undosed floor 0/261 = 0.0. The tool's
+  discrepancy_full_pass_but_fired_only_over_cap flag surfaces this
+  anticipated pattern and does not gate.
+- Dose fidelity: readback mean 81.485 vs target 81.615,
+  frac_readback_within_tol 1.0, collapse_rate_on_dosed 0.0, n_fired
+  175/438.
+- Late reference correctly SKIPPED (no usable late dose; primary does
+  not depend on the late arm). primary_pass true.
+
+No arm is reported as actuation on G1/G2 alone; G3 is mandatory.
+Control arms launched: --arm-kind undosed (G3 lift baseline and G2
+undosed companion) then --arm-kind placebo (P1, 5 SC1-accepted draws,
+22-entry ledger, matched to the true arm's 175 fired rows at dose
+81.615; P2/P3 NOT-RUN mirroring their arms' dose-viability status).
+The placebo plan was validated first with the CPU --dry-run before GPU
+spend. G3 adjudication follows once both arms land: effect_ratio =
+lift(true)/max|lift(placebo_k)| against the transcribed >= 3.0 floor.
+
+### 2026-07-31 — Stage 2 control arms landed; G3 adjudicated: FAIL (lead ruling)
+
+- kind: adjudication
+- Arms: undosed and placebo (P1, hs25) completed on GPU
+  (`analysis/runlog/contrast_control_arms_20260731T165218Z.log`, ARM undosed
+  DONE 17:32:34Z, ARM placebo DONE 22:13:33Z). Artifacts:
+  `analysis-committed/gemma4-e4b/undosed_summary.hs25.pocket.json`,
+  `placebo_summary.hs25.pocket.json` (5 draws, k=5, n_fired_rows 175,
+  matching the 22-entry ledger).
+- Undosed floor is clean: 0/438 fired, confab-tighten 0/168 = 0.0 (Wilson
+  upper 0.0224), known-correct cost 0/270 = 0.0. Lift baseline is therefore
+  the raw placebo/true confab-tighten rates.
+- Placebo draws (confab-tighten, n=168 each): k0 104/168 = 0.6190,
+  k1 22/168 = 0.1310, k2 28/168 = 0.1667, k3 19/168 = 0.1131,
+  k4 15/168 = 0.0893. All collapse-free (max collapse_rate_on_dosed 0.0114),
+  readback within tolerance.
+- G3 (transcribed rule, mandatory for this cell): effect_ratio =
+  lift(true) / max|lift(placebo_k)| = 0.7917 / 0.6190 = 1.279 < 3.0 floor.
+  **G3 FAIL.** Re-derived by the lead directly from the committed artifacts.
+- Ruling: E1/hs25 is adjudicated **"actuates, not direction-specific"**, the
+  exact hs24 disposition (parent cell Ruling R4): a single random draw (k0)
+  reproduced 78% of the true effect. Per the registered rule this result may
+  NOT be cited as evidence of a specific effect and may NOT be pooled with
+  any direction-specific result in this program. Note the draw distribution
+  is heavy-tailed (one near-effect draw, four small), the same shape hs24
+  showed (its k0 = 0.6429); consistent with a broad subspace at these
+  quarantined sites in which many directions tighten confabulation. Per the
+  amendment's "confound cuts both ways" clause, this is evidence about the
+  band's instability, not a resolution of the quarantine hypothesis.
+- E2/hs26, E3/hs27: NOT-RUN (no usable FIT dose); P2/P3 NOT-RUN mirroring.
+- Next: pocket rollup, Outcome section, `bin/exp resolve`, PR.

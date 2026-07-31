@@ -1,0 +1,159 @@
+{
+  "family": "gemma4-e4b",
+  "arms": {
+    "E1": {
+      "arm": "E1",
+      "site_hs": 25,
+      "kv_sharing": "on",
+      "g1": {
+        "metric": {
+          "n": 168,
+          "successes": 133,
+          "rate": 0.7916666666666666,
+          "wilson_ci_95": [
+            0.724077088671775,
+            0.8462160214574687
+          ]
+        },
+        "floor": {
+          "rate": 0.5,
+          "wilson_lower_ci": 0.4
+        },
+        "pass": true
+      },
+      "g2_full_population": {
+        "metric": {
+          "n": 270,
+          "successes": 9,
+          "rate": 0.03333333333333333,
+          "wilson_ci_95": [
+            0.017634073497074663,
+            0.06212543010312882
+          ]
+        },
+        "cap": {
+          "rate": 0.05,
+          "wilson_upper_ci": 0.1
+        },
+        "pass": true
+      },
+      "g2_three_number_block": {
+        "full_population_g2": {
+          "n": 270,
+          "successes": 9,
+          "rate": 0.03333333333333333,
+          "wilson_ci_95": [
+            0.017634073497074663,
+            0.06212543010312882
+          ]
+        },
+        "full_population_g2_pass": true,
+        "fired_only": {
+          "n": 9,
+          "successes": 9,
+          "rate": 1.0,
+          "wilson_ci_95": [
+            0.7008549515804559,
+            1.0
+          ],
+          "n_fired_known": 9,
+          "adjudicable_floor": 35,
+          "adjudicable": false,
+          "disposition": "NOT-ADJUDICABLE"
+        },
+        "undosed_floor": {
+          "n": 261,
+          "successes": 0,
+          "rate": 0.0,
+          "wilson_ci_95": [
+            0.0,
+            0.01450474875723635
+          ]
+        },
+        "discrepancy_full_pass_but_fired_only_over_cap": true
+      },
+      "arm_pass": true
+    },
+    "E2": {
+      "arm": "E2",
+      "site_hs": 26,
+      "kv_sharing": "on",
+      "status": "NOT-RUN",
+      "reason": "dose-viability: no usable FIT rung at this site (Stage-1 has_usable_dose false); neither a pass nor a fail (transcribed rule)."
+    },
+    "E3": {
+      "arm": "E3",
+      "site_hs": 27,
+      "kv_sharing": "on",
+      "status": "NOT-RUN",
+      "reason": "dose-viability: no usable FIT rung at this site (Stage-1 has_usable_dose false); neither a pass nor a fail (transcribed rule)."
+    }
+  },
+  "g3": {
+    "P1": {
+      "placebo_arm": "P1",
+      "matched_true_arm": "E1",
+      "lift_true": 0.7916666666666666,
+      "max_placebo_lift": 0.6190476190476191,
+      "k": 5,
+      "per_draw_lift": [
+        0.6190476190476191,
+        0.13095238095238096,
+        0.16666666666666666,
+        0.1130952380952381,
+        0.08928571428571429
+      ],
+      "effect_ratio": 1.2788461538461537,
+      "floor": 3.0,
+      "disposition": "FAIL",
+      "readback_adjudicated": true
+    },
+    "P2": {
+      "placebo_arm": "P2",
+      "matched_true_arm": "E2",
+      "status": "NOT-RUN",
+      "reason": "mirrors the true arm's dose-viability NOT-RUN."
+    },
+    "P3": {
+      "placebo_arm": "P3",
+      "matched_true_arm": "E3",
+      "status": "NOT-RUN",
+      "reason": "mirrors the true arm's dose-viability NOT-RUN."
+    }
+  },
+  "actuation_claims": {
+    "E1": {
+      "arm": "E1",
+      "claim": "actuates_not_direction_specific",
+      "g3": {
+        "placebo_arm": "P1",
+        "matched_true_arm": "E1",
+        "lift_true": 0.7916666666666666,
+        "max_placebo_lift": 0.6190476190476191,
+        "k": 5,
+        "per_draw_lift": [
+          0.6190476190476191,
+          0.13095238095238096,
+          0.16666666666666666,
+          0.1130952380952381,
+          0.08928571428571429
+        ],
+        "effect_ratio": 1.2788461538461537,
+        "floor": 3.0,
+        "disposition": "FAIL",
+        "readback_adjudicated": true
+      },
+      "reason": "G1 and G2 passed; ADJUDICATED G3 FAILED (effect_ratio < 3.0). Reproduces the hs24 pattern (NOTEBOOK.md:1600-1606 in the quarantine cell); may NOT be cited as evidence of a specific effect."
+    },
+    "E2": {
+      "arm": "E2",
+      "claim": "not_run",
+      "reason": "dose-viability NOT-RUN at Stage 1; no gate was evaluated (registered disposition)."
+    },
+    "E3": {
+      "arm": "E3",
+      "claim": "not_run",
+      "reason": "dose-viability NOT-RUN at Stage 1; no gate was evaluated (registered disposition)."
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "family": "gemma4-e4b",
+  "site_set": "pocket",
+  "hs_indices": [
+    25,
+    26,
+    27
+  ],
+  "kv_sharing": "on",
+  "population": {
+    "positive_class": "confab FIT (n=112)",
+    "negative_class": "known_correct_answered FIT (n=180)"
+  },
+  "score_definition": "neg_z_d = -z_d; z_d clipped to [-2,+2] and standardized with each layer's FIT-pool mu_d/sigma_d",
+  "sign_convention": "confab rows have LOW doubt; fire iff neg_z_d >= tau, equivalently z_d <= -tau",
+  "tau_frozen_method": "youden_j",
+  "g0_auc_floor": 0.9,
+  "layers": {
+    "hs25": {
+      "hs_index": 25,
+      "auc_neg_z_d_on_fit": 0.9943948412698412,
+      "auc_raw_z_d_on_fit": 0.005605158730158726,
+      "youden_tau": {
+        "tau": -0.08056691128628914,
+        "stats": {
+          "tpr_confab_caught": 0.9821428571428571,
+          "fpr_known_correct_flagged": 0.03888888888888889,
+          "tp": 110,
+          "fn": 2,
+          "fp": 7,
+          "tn": 173,
+          "youden_j": 0.9432539682539682
+        }
+      },
+      "tau_frozen": -0.08056691128628914,
+      "g0_auc_pass": true
+    },
+    "hs26": {
+      "hs_index": 26,
+      "auc_neg_z_d_on_fit": 0.9896825396825397,
+      "auc_raw_z_d_on_fit": 0.010317460317460314,
+      "youden_tau": {
+        "tau": -0.26715753831798017,
+        "stats": {
+          "tpr_confab_caught": 0.9910714285714286,
+          "fpr_known_correct_flagged": 0.09444444444444444,
+          "tp": 111,
+          "fn": 1,
+          "fp": 17,
+          "tn": 163,
+          "youden_j": 0.8966269841269842
+        }
+      },
+      "tau_frozen": -0.26715753831798017,
+      "g0_auc_pass": true
+    },
+    "hs27": {
+      "hs_index": 27,
+      "auc_neg_z_d_on_fit": 0.9856150793650793,
+      "auc_raw_z_d_on_fit": 0.014384920634920625,
+      "youden_tau": {
+        "tau": -0.26787916333494066,
+        "stats": {
+          "tpr_confab_caught": 0.9732142857142857,
+          "fpr_known_correct_flagged": 0.09444444444444444,
+          "tp": 109,
+          "fn": 3,
+          "fp": 17,
+          "tn": 163,
+          "youden_j": 0.8787698412698413
+        }
+      },
+      "tau_frozen": -0.26787916333494066,
+      "g0_auc_pass": true
+    }
+  }
+}
