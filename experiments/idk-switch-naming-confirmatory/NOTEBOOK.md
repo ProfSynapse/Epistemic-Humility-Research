@@ -134,3 +134,15 @@ repinned sha256:a4076961... -> sha256:45847a60a08b3684818c5974d5412c8a
 9d4bafd8d7f441c29b091ee580694434. Still no generation row ever
 produced; the failure fired inside the first forward pass before any
 token was sampled.
+
+### 2026-07-31 -- Smoke PASSED (attempt 6); generation sweep dispatched
+
+Smoke attempt 6 in the rebuilt image (digest sha256:45847a60...,
+python3.10-dev headers) PASSED: 8/8 positive rows, readback target
+12.608188, mean measured 12.628116, max abs err 0.0230 within
+tolerance, parity ok, offtarget_abs_max 0.0, PIPELINE_EXIT=0. Lead
+verified the printed verdict block directly from the run log. Per the
+registered launch sequence (launch-authorization entry), the lead now
+dispatches pipeline.py generate: 4 arms x 400 rows, sampled decode,
+seed 20260802, per-arm runlog resume, hard-halt before the judge lane
+per the registered governance boundary.
