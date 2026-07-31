@@ -625,12 +625,13 @@ Registered before any GPU work. Calls do not move after results.
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | **(orchestrator call: to be entered at sign)** |
-| user | **(user call: to be entered at sign)** |
+| orchestrator | Entered at sign, 2026-07-31: no direction-specific actuation at any of E1/E2/E3. Expected shape: dose-viability NOT-RUN deepening the D4/hs23 pattern, or the hs24 signature (G1/G2 clearance with G3 FAIL). A triple PASS at any site would be the most informative result on the board and is not expected. |
+| user | Entered at sign, 2026-07-31 (PI, recorded from the explicit selection "No direction-specific actuation"): no site produces an adjudicated G3 PASS jointly with G1/G2. The experiment is run to close the last untested band of the cross-family operating range on this substrate, not because a positive is expected. |
 | drafter | See "Prediction" above: neither E1, E2, nor E3 produces an ADJUDICATED G3 PASS jointly with G1/G2 PASS. Basis: the monotonic below-seam falloff (hs15 0.7857 -> hs20 0.4048) and the hs24 gate-clearance-without-specificity result (effect_ratio 1.139), both transcribed from `gemma4-e4b-kv-seam-quarantine/NOTEBOOK.md`. |
 
 **This amendment MUST NOT be signed with the orchestrator and user placeholders
-above still present.** Per the lead's explicit direction at drafting time, a
+above still present.** (Satisfied 2026-07-31: both calls entered before
+`bin/exp sign`, the user's from their explicit same-day selection.) Per the lead's explicit direction at drafting time, a
 predictor call left unfilled at sign is a recorded governance defect in this
 program (cited by the lead as having occurred in a Phase B registration; this
 drafter did not independently verify that citation against a specific doc and

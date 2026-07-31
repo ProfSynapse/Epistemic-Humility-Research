@@ -2647,7 +2647,28 @@
             "rationale": "Vendored library module. Pure scoring functions."
           }
         },
-        "pins": {}
+        "pins": {
+          "amendment_ah_stage0_extract.py": "7f713fa748c8b20bb2697aece41dc63126d2b2ad41bd9d9741002a0675d87ac1",
+          "backends.py": "50f1ceb720525de379c078ee8b6d6a00e6c18cc90825d7415f8b2fbf378cae0d",
+          "build_directions.py": "e8f9798047e74af6b292272b870a95e7c8f081a8de68c218819749efa9e78113",
+          "calibrate_dose.py": "5ee1ba7715db2146e1dbaff9d056afa61852bfec09ac93e0d99a3145e9e35b8e",
+          "cell.yaml": "e17ba9207ad050631edb5ce856b3f4741a02a0ce45075afa9256b2e2566df973",
+          "families/gemma4-e4b.yaml": "fe16edfa190028b734a94ef9fee30879ac2f47334dbd01c912d8a5a6d5ef6dec",
+          "family_config.py": "905749eeafc8ffd5d991fa72e21e5548e511ca54d5d768fa3dfdf69061e3dcfe",
+          "g2_companion.py": "65306de719ddbf3313606b9fb7798d8b0409cd8fdbc323557da6dac34ba0a021",
+          "gate_fit.py": "5caa08f90492d812f3bf5d922b952960947760ca1881caff5e744a7c16c4e62a",
+          "gates.yaml": "e4bc65ede254330036238b3241c054bfde990b96e9f3cf4929e2c886082729f8",
+          "gen_lib.py": "51237576b7c81291fb2deebb193f51f2fa732a9159c449a721a58905cc29c697",
+          "grader.py": "35dfbaf9d4932471c1da43087b03e5c81921af2c998ce167e7fceb1539fb48b5",
+          "kv_seam_patch.py": "2814368f48baaf7ae135fe3b3176e88ea42cd6ddfda32508893a2c70150ebadc",
+          "kv_seam_preflight.py": "9040d5ef57b00637c1c15c4fc3771421635aad6c710eb007ec627599007e1f4a",
+          "model_lib.py": "b5e7239f0ba25ce42e7df624e0706d421beaba23bbff9bc2dd421f55ee2681ce",
+          "pipeline.py": "89948aefa32b810cefbad2366647a62c22e5338353f670730d404b8cfd31ebf0",
+          "placebo_direction.py": "cb738382866e2dba1289096de76ffac46b72541234c7e3828181c7489d357e84",
+          "pocket_rollup.py": "fcb1c753dedc77c0a2602917819723fe19486a03599f2b376ee59bab2c7151bc",
+          "run_contrast.py": "89ea37110e8154422e1e962b624c602fa59c040129bd8d15fa20205e776589ed",
+          "scorers.py": "1b3eda5d8d68c9184674f092805278505c5cd2065a21ffe7ec348e9ea5a00c37"
+        }
       },
       "kg": [],
       "prediction": "None of E1 (hs25), E2 (hs26), or E3 (hs27) produces an ADJUDICATED G3 PASS (effect_ratio >= 3.0, or PASS-DEGENERATE) jointly with a G1/G2 PASS on held-out. Basis - the quarantine cell's measured below-seam ladder falls monotonically toward the seam (D1/hs15 0.7857, D2/hs18 0.4464, D3/hs20 0.4048; a per-site-dose PROFILE, not a controlled contrast, NOTEBOOK.md:1621), and its one measured quarantined-region site, A5/hs24, cleared G1 (0.7321) and G2 (0.0333) but failed G3 outright at effect_ratio 1.139 (worst placebo draw reproduced 88% of the true effect) - NOTEBOOK.md:1573-1606, Stage 6 Ruling R3/R4. E1/E2/E3 sit deeper into the same quarantined region than hs24.",
@@ -2692,7 +2713,7 @@
         "note": "NOT executed by the drafting agent (no GPU/docker work authorized at draft). Registers path + hash + a verification step that must run before any staged file is read, per AMENDMENT.md \"Staged inputs\" (B3 remediation). Symlink or copy are both acceptable mechanisms; the contract below binds whichever is used at sign/run time.",
         "verification_step": "Before any of build_directions.py/calibrate_dose.py/run_contrast.py reads a staged file, recompute its sha256 and compare against the value recorded above; refuse to proceed on a mismatch rather than silently reading a different extraction than the one this cell is registered against."
       },
-      "status": "draft",
+      "status": "signed",
       "title": "Gemma-4-E4B pocket ladder: hs25/hs26/hs27, sharing ON",
       "type": "steer-cell",
       "verdict": ""
