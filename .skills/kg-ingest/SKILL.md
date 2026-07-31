@@ -304,6 +304,60 @@ prints dangling links; ignore ones that predate your change (confirm with
 The graph format and analysis tooling are owned by the vendored `knowledge-graph`
 skill; `library/SCHEMA.md` is the domain overlay (namespaces + research edges).
 
+## Move 4e: Retrieval verification (mandatory)
+
+Passing validation only proves the graph is well-formed; it does not prove a
+future session can find what you just wrote. Do this for every ingest, with
+special force when the ingest is an experimental result or resolution:
+
+1. Write 2-3 `bin/search` queries phrased the way a FUTURE session would
+   naturally ask the question this ingest answers ("does `<family>` actuate",
+   "`<family>` `<site>` result", "`<slug>` verdict"), not queries built from
+   the new note's own title words. A query that just echoes the filename tests
+   nothing.
+2. Run them: `bin/search <query terms> --limit 10`. Confirm the new note (or
+   its mechanism/claim) appears in the top hits.
+3. If it does not surface, fix it before declaring the ingest done: add a
+   missing edge, broaden `aliases`, or re-check indexing (`kg_index.py` only
+   sees git-tracked files; stage the note first per Move 4d). Do not ship an
+   ingest whose result cannot be found by the query a reader would actually
+   type.
+
+**Superseding-edge rule.** When this ingest overturns, corrects, or revises an
+earlier claim (a null result overturned, a verdict reversed, a stale reading
+corrected), do not just add the new node: mark the old one deprecated and
+point it at the successor, per the Supersession convention in
+`references/relationship-schema.md` (owned by the `knowledge-graph` skill):
+
+```yaml
+kg:
+  id: <old-node-id>
+  type: <type>
+  status: deprecated
+  deprecated_by: <successor-node-id>
+```
+
+A stale claim with no forward pointer is how the graph tells a future reader a
+false thing: default `bin/search` already hides deprecated notes and surfaces
+the successor via graph expansion, but only once the pointer exists. After
+adding it, rerun the retrieval-verification queries above and confirm the
+successor ranks at or above where the stale node used to rank; if the stale
+node still shows without the pointer, the supersession edge is the thing that
+was missing.
+
+*Worked example (2026-07-31, gemma kv-seam quarantine cell):* a parent
+experiment's stale null note ("gemma never actuated") stayed indexed after a
+Phase A shallow-ladder result showed gemma's first actuation (hs15 held-out G1
+PASS, 0.786). Nobody added a deprecation pointer from the null note to the new
+result, and nobody tested retrieval, so a later session ran
+`bin/search gemma actuation usable dose`, got the stale null ranked above the
+successor, stopped at the default limit, and told the user gemma never
+actuated. A sharper query (`bin/search gemma hs15 G1 pass shallow ladder`)
+would have surfaced the right artifact immediately, but the real fix is
+upstream of query skill: the ingest that produced the successor result should
+have deprecated the stale node and self-tested retrieval before being called
+done.
+
 ---
 
 ## Enriching existing notes (cluster backfill)

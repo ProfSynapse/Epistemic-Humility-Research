@@ -160,6 +160,23 @@ The search index is local state under `.kg/`. It is rebuilt lazily by
 `kg_search.py`, so it should not be committed. Dot-directories are skipped by
 default except `.skills/`, which is indexed as procedural memory.
 
+## Reading the graph to answer an existence question
+
+When adjudicating "has X ever happened / actuated / passed", do not stop at
+the default `--limit 10` and the first query you typed. Widen the limit and
+vary the query terms (paraphrase the question a few different ways) before
+concluding absence: a top hit ranked above the real answer, or a query that
+happens to match the wrong node's title, produces a confident wrong answer
+that reads identically to a correctly-exhausted search. Passing
+`--include-deprecated` is sometimes the difference: a stale claim can still
+outrank its successor if the successor's supersession edge was never added
+(see Supersession above). The knowledge graph is a navigation aid, not the
+citable record: for experimental facts (a cell's result, a verdict, a gate
+outcome) the governed doc is the only citable surface. See "Citing
+experimental facts: where the truth lives at each lifecycle stage" in
+`.skills/experiment-runner/reference/amendment-vs-lab-notebook.md` for which
+section of that doc to cite at which lifecycle stage.
+
 Windows gotcha: when validating a repo-local vault from outside the vault root,
 prefer an absolute `--root` path such as
 `python .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py --root F:\Code\Epistemic-Humility-Research\library`.
