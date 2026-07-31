@@ -1,0 +1,156 @@
+# Gemma-4-E4B pocket ladder: hs25/hs26/hs27, sharing ON. DRAFT until `bin/exp sign`.
+#
+# Descriptive run-shape config, same convention as
+# gemma4-e4b-kv-seam-quarantine/cell.yaml (documents the run shape rather than
+# literally parsing against the tuner's SteerCellConfig six-block schema).
+# Per-model checkpoint/loader/render facts live in families/gemma4-e4b.yaml,
+# copied verbatim from gemma4-e4b-kv-seam-quarantine and extended here with a
+# new `pocket_hs` band_selection entry (see that file). This experiment does
+# not modify, extend, or re-adjudicate gemma4-e4b-kv-seam-quarantine's own
+# signed arm set; it is a standalone registration sharing the same instrument
+# and the same promoted activation cache.
+
+seed: 20260709
+
+surface:
+  substrate: bf16
+  adapter: none
+  quantization: none
+  family: gemma4-e4b
+  family_config: families/gemma4-e4b.yaml
+  generation:
+    max_new_tokens: 200
+    min_new_tokens: 1
+    do_sample: false
+    num_beams: 1
+    enable_thinking: false
+    eos_resolution: model_lib.resolve_eos_ids (see families/gemma4-e4b.yaml eos block)
+  containment:
+    committed_row_text: forbidden
+    committed_aliases: forbidden
+    committed_generations: forbidden
+    committed_outputs: aggregate_and_id_manifest_only
+
+# ---- The seam geometry every site index in this experiment depends on ----
+# Transcribed verbatim from gemma4-e4b-kv-seam-quarantine/cell.yaml. Verified
+# there against transformers==5.5.0 models/gemma4/modeling_gemma4.py and the
+# pinned checkpoint config. kv_seam_patch.verify_architecture asserts the
+# architecture-identity subset of this at runtime (G0-KV item 1); the
+# donor-reachability entries below are NOT independently re-measured for
+# hs25/26/27 -- they follow deterministically from `hs_N` being downstream of
+# both donor blocks whenever N-1 >= 24, the same construction that classifies
+# hs34/hs38/hs40/hs42 in the parent cell. See AMENDMENT.md "Seam geometry".
+kv_seam:
+  num_hidden_layers: 42
+  num_kv_shared_layers: 18
+  first_kv_shared_layer_idx: 24        # blocks 24..41 are KV-shared
+  donor_blocks:
+    full_attention: 23
+    sliding_attention: 22
+  store_full_length_kv_blocks: [22, 23]
+  site_convention: "hs_N = residual stream at the OUTPUT of decoder block N-1 = input to block N"
+  donor_reachability:
+    hs25: quarantined        # write at output of block 24; neither donor sees it
+    hs26: quarantined        # write at output of block 25
+    hs27: quarantined        # write at output of block 26
+  note: >-
+    All three registered sites in this experiment sit inside the KV-quarantined
+    region, by construction. This is deliberate -- see AMENDMENT.md Motivation:
+    this is the one part of the cross-family operating range (rd 0.375-0.639)
+    that has never been written to on this substrate, and it happens to fall
+    entirely above the seam here.
+
+# ---- Arms ----
+# No primary_contrast: this is a descriptive sharing-ON ladder, on the same
+# footing as gemma4-e4b-kv-seam-quarantine's D1-D4, not a mechanism-toggling
+# design. There are no OFF arms.
+site_set: pocket
+arms:
+  - id: E1
+    site_hs: 25
+    kv_sharing: on
+    role: pocket ladder, rd 0.595, quarantined
+  - id: E2
+    site_hs: 26
+    kv_sharing: on
+    role: pocket ladder, rd 0.619, quarantined
+  - id: E3
+    site_hs: 27
+    kv_sharing: on
+    role: pocket ladder, rd 0.643, quarantined
+  - id: C0
+    site_hs: null
+    kv_sharing: on
+    role: no-injection baseline (reused convention from gemma4-e4b-kv-seam-quarantine's C0)
+  # ---- Direction-specificity controls. MANDATORY here (see AMENDMENT.md "G3
+  # direction-specificity is MANDATORY here, not optional"), unlike the parent
+  # cell where P1/P2 covered only two of nine arms. ----
+  - id: P1
+    site_hs: 25
+    kv_sharing: on
+    role: >-
+      matched-magnitude random-direction control for E1. Identical site, dose,
+      fired-row set and law; ONLY the written direction differs.
+    conditional_on: "E1 has a usable FIT dose"
+  - id: P2
+    site_hs: 26
+    kv_sharing: on
+    role: matched-magnitude random-direction control for E2. Same construction as P1.
+    conditional_on: "E2 has a usable FIT dose"
+  - id: P3
+    site_hs: 27
+    kv_sharing: on
+    role: matched-magnitude random-direction control for E3. Same construction as P1.
+    conditional_on: "E3 has a usable FIT dose"
+
+# ---- Dose calibration: two-stage, same shape as the parent cell's shallow
+# ladder (D1-D4). Stage 1 (FIT, usable-dose criterion) then Stage 2 (held-out,
+# G1/G2/G3). No re-extraction: E1/E2/E3 fit their directions and gates from the
+# already-promoted clean use_cache=True extraction covering hs0-hs42 over all
+# 806 rows (experiments/common/artifacts/jspace-cross-family-gemma4-e4b/). ----
+dose_calibration:
+  ladder_source: families/gemma4-e4b.yaml doses.ladder (the registered 8-rung RATIO_LADDER, transcribed unchanged)
+  usable_dose_rule: >-
+    First collapse-free rung (collapse_rate_on_dosed == 0.0) whose FIT
+    clean_tighten rate clears the 0.5 floor, per calibrate_dose.py, unchanged
+    from the parent cell's D1-D4 rule. An arm with no such rung is
+    dose-viability NOT-RUN.
+  fit_split: reused (see inputs_reused below)
+  held_out_split: reused (see inputs_reused below)
+
+# ---- Direction-specificity control construction, transcribed unchanged from
+# gemma4-e4b-kv-seam-quarantine/cell.yaml placebo_direction_control. ----
+placebo_direction_control:
+  k_number_of_draws: 5
+  randomness_quality_bar: SC1 (|cos| <= 0.015 against both c_hat and u_d)
+  magnitude_matching: sigma = 1.0 convention, verified by the true arm's readback tolerance
+  fired_row_matching: >-
+    Same fired rows as the matched true arm, held fixed rather than permuted --
+    the question is whether it matters which direction is written at the rows
+    the readout selected, not how much the gate itself contributes. Transcribed
+    from the parent cell's rationale (AMENDMENT.md "Pre-sign record").
+  undosed_baseline_required: >-
+    Each of E1/E2/E3's held-out confab rows also needs an UNDOSED pass; lift
+    cannot be computed without it. Registered here so it is not discovered as
+    missing at resolve, same as the parent cell.
+  what_this_does_not_establish: >-
+    (a) A specificity PASS at one pocket site does not transfer to another site
+    or to a different reachability regime. (b) Not a test of the gate itself --
+    holding the fire set fixed means this cannot say how much of any lift is
+    attributable to WHERE the readout wrote versus WHAT was written. (c) A PASS
+    does not make the write safe or selective; G2's dosed known-correct
+    denominator is expected NOT-ADJUDICABLE at every arm here, same as the
+    parent cell's deep sites.
+
+inputs_reused:
+  pool: parent gemma4-e4b fresh-mined evaluation pool (hash-pinned at sign), same as gemma4-e4b-kv-seam-quarantine
+  split: same FIT/HELD-OUT split as gemma4-e4b-kv-seam-quarantine, promoted to experiments/common/artifacts/jspace-cross-family-gemma4-e4b/
+  activation_cache: same clean use_cache=True extraction (hs0-hs42, all 806 rows), no re-extraction required
+
+prerequisites:
+  synaptic_tuner: ">= 7a44eb3 (fix/gemma4-decoder-layer-path) -- adds model.language_model.layers to _LAYER_PATHS (transcribed from the parent cell)"
+
+execution:
+  lane: local_3090
+  gpu_work_by_this_agent: forbidden (draft scaffold only; unsigned)
+  gpu_carve_outs: []

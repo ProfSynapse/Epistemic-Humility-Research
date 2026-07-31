@@ -1,0 +1,255 @@
+family: gemma4-e4b
+risk_order: 4
+checkpoint:
+  repo: google/gemma-4-E4B-it
+  fallback_repo: null
+  revision: raw-base (Apache-2.0, ungated, no adapter, no 4-bit quantization)
+  scale_params_b: 4
+  effective_params_note: E4B = ~4B effective parameters (Gemma4 conditional-gen architecture)
+  hf_token_required: false
+loader:
+  model_classes:
+  - AutoModelForCausalLM
+  - AutoModelForImageTextToText
+  - AutoModelForVision2Seq
+  hidden_size_field: hidden_size
+  num_layers_field: num_hidden_layers
+  nested_text_config: true
+  dtype: bf16
+  notes: 'Gemma4 conditional-gen (multimodal) class; per Amendment Z this is a LOADER risk
+    only (not a gating/license risk). J-lens''s eager-attention requirement (see qwen35-4b.yaml
+    note) applies here too and is unverified for the Gemma4 wrapper class. VERIFIED 2026-07-09
+    against google/gemma-4-E4B-it''s config.json/tokenizer_config.json/ chat_template.jinja/generation_config.json
+    (JSON/text config files only, no weights downloaded; special_tokens_map.json is ABSENT
+    from this repo -- 404/not-found, not a gating error): config.json "architectures" == ["Gemma4ForConditionalGeneration"]
+    (model_type "gemma4"). CORRECTION to the "multimodal" framing: this checkpoint''s config.json
+    also carries a full "audio_config" block (gemma4_audio, 12 layers, hidden_size=1024) IN
+    ADDITION TO "vision_config" -- Gemma4- E4B is TRIMODAL (text+vision+audio), not just vision-multimodal
+    as "conditional-gen (multimodal)" implies. hidden_size=2560 and num_hidden_layers=42 are
+    BOTH nested under config.text_config (confirming nested_text_config: true), reachable
+    via `config.get_text_config()` (checked directly, transformers 5.5.0, no weights). ADDITIONAL
+    FINDING (CPU-only, meta-device model construction, no weights downloaded, no GPU): UNLIKE
+    Qwen3.5-4B, `AutoModelForCausalLM.from_config(cfg)` on the raw top-level Gemma4Config
+    SUCCEEDS without error here -- but it resolves to `Gemma4ForConditionalGeneration` (the
+    SAME full trimodal class `AutoModelForImageTextToText.from_config(cfg)` resolves to),
+    not a distinct text-only causal class. So for Gemma4 the model_classes fallback chain''s
+    first entry does not error out, but it also does not give a lighter-weight text-only load
+    -- both entries land on the same full trimodal module graph, meaning a real (non-meta)
+    load materializes vision AND audio tower parameters regardless of which Auto* class is
+    tried first. This firms up (does not resolve the GB number for) this family''s own flagged
+    VRAM risk below. `attn_implementation="eager"` was passed to AutoModelForImageTextToText.from_config
+    and accepted cleanly at construction time, propagating to both the top-level and nested
+    text-config `_attn_implementation` fields (meta-device construction only; NOT verified
+    for an actual forward/backward pass, which needs a GPU and is out of this task''s scope).'
+render:
+  fn: backends:render_probe_prompt
+  enable_thinking_equivalent: 'Gemma chat templates have no native thinking-toggle kwarg (Gemma
+    models are not "thinking" models in this project''s sense); enable_thinking=False is expected
+    to be a no-op tried first by render_probe_prompt''s mode-discovery loop, matching Llama/Mistral''s
+    posture. CORRECTED 2026-07-09: this guess is WRONG for google/gemma-4-E4B-it specifically,
+    verified by reading chat_template.jinja directly. The template DOES have a native enable_thinking
+    kwarg: `{%- if (enable_thinking is defined and enable_thinking) or tools or messages[0][''role'']
+    in [''system'', ''developer''] -%}` gates a system-turn block, and inside it `{%- if enable_thinking
+    is defined and enable_thinking -%}` injects a literal `<|think|>\n` token at the top of
+    the first system turn. Gemma4-E4B is a reasoning-capable checkpoint in this project''s
+    sense, unlike the older Gemma 2/3 lineage the draft''s guess was implicitly reasoning
+    from -- render_probe_prompt''s enable_thinking=False call is no longer a guaranteed no-op
+    for this family and should be exercised (not assumed inert) at extraction time. The template
+    also handles `reasoning`/`reasoning_content` message fields into a `<|channel>thought\n...\n<channel|>`
+    block, mirroring a thinking-model turn structure.'
+  system_prompt_source: Same baseline system prompt string as the Qwen3-4B AH-A0 arm, reused
+    verbatim (see llama-3.2-3b.yaml's identical note).
+  system_role_support: 'RESOLVED 2026-07-09 (previously an open LAUNCH-PLAN decision point):
+    verified by reading chat_template.jinja directly (no AutoTokenizer/ vocab load needed)
+    that google/gemma-4-E4B-it''s template DOES give system its own dedicated turn, contrary
+    to the "some Gemma templates fold system into the first user turn" concern this file previously
+    flagged. The template checks `messages[0][''role''] in [''system'', ''developer'']` and
+    renders it inside a `<|turn>system\n...<turn|>\n` block (see the eos section below for
+    why this is `<|turn>`/`<turn|>` and not `<start_of_turn>`/ `<end_of_turn>`), separate
+    from the first user turn. render_probe_prompt''s discovery/fallback loop will not need
+    to fall back off system-role for this checkpoint.'
+eos:
+  include_tokenizer_eos: true
+  additional_end_of_turn_tokens:
+  - <turn|>
+  notes: 'Gemma chat models use <end_of_turn> as their turn-end marker (Gemma lineage convention);
+    confirm it resolves via tokenizer.convert_tokens_to_ids on this checkpoint before assuming
+    it is present, mirroring gen_lib.py''s existing im_end lookup pattern. CORRECTED 2026-07-09:
+    this guess is WRONG for google/gemma-4-E4B-it. Verified against its tokenizer_config.json
+    (special_tokens_map.json is ABSENT from this repo -- 404/not-found, not a gating error)
+    and chat_template.jinja (JSON/text only, no weights): the classic Gemma 2/3 `<start_of_turn>`/`<end_of_turn>`
+    token strings do NOT appear anywhere in this checkpoint''s chat_template.jinja (grepped,
+    zero matches). Gemma4 uses a DIFFERENT turn-delimiter scheme entirely: the template hardcodes
+    literal `<|turn>ROLE\n` ... `<turn|>\n` markers, and tokenizer_config.json has its own
+    dedicated "eot_token" field whose value is literally "<turn|>" (paired with a "sot_token"
+    field ="<|turn>"), confirming this as the checkpoint''s own declared end-of-turn special
+    token, not a scheme this drafting pass could have inferred from general Gemma-lineage
+    knowledge. Separately, config.json''s top-level eos_token_id=[1, 106], generation_config.json''s
+    is [1, 106, 50], and tokenizer_config.json''s own "eos_token" field is "<eos>" (id 1,
+    standard Gemma SentencePiece numbering where 0=pad, 1=eos, 2=bos). Ids 106 and 50 could
+    NOT be resolved to literal token strings from the files this task is scoped to fetch (no
+    added_tokens_decoder entry in tokenizer_config.json for this checkpoint, and special_tokens_map.json
+    / the full tokenizer.json vocab are either absent or out of the authorized file list)
+    -- id 106 is plausibly the legacy Gemma 2/3 `<end_of_turn>` id repurposed or left vestigial
+    in this vocab, but that is NOT confirmed here and should not be assumed; id 50 is entirely
+    unresolved. What IS confirmed is that the LIVE chat template''s actual end-of-turn marker
+    is the literal string "<turn|>", not "<end_of_turn>" -- use that string (not an assumed
+    token id) as this family''s additional_end_of_turn_tokens entry, and resolve its id via
+    tokenizer.convert_tokens_to_ids at extraction time as the notes above already recommend.'
+band_selection:
+  status: resolved
+  method: Same j-lens layer_profile() method as llama-3.2-3b.yaml. Resolve this family's own
+    band from its own profile run; do not assume any transfer from the other three families
+    or from Qwen3-4B.
+  n_hidden_layers: 42
+  late_reference_depth_fraction_target: 0.9444
+  late_reference_hs_estimate: round(0.9444 * 42) = 40. n_hidden_layers=42 VERIFIED 2026-07-09
+    from google/gemma-4-E4B-it's config.json config.text_config.num_hidden_layers (nested;
+    text_config.hidden_size=2560). This estimate is still an ESTIMATE for the profile stage
+    to confirm/select against, only the input layer count is now config-verified rather than
+    assumed. Note text_config.layer_types alternates sliding_attention/full_attention (full_attention
+    every 6th layer, sliding_window=512) -- the profile stage's depth sweep should be aware
+    layers are not architecturally uniform.
+  midband_candidates_hs:
+  - 34
+  - 38
+  - 42
+  late_reference_hs: 40
+  effective_dim_peak_hs: 38
+  # DESCRIPTIVE shallow ladder, arms D1-D4. Registered 2026-07-24 in
+  # gates.yaml `descriptive_shallow_ladder` and cell.yaml `arms`; added here
+  # 2026-07-25 so the site set is resolved from a hash-pinned config rather
+  # than from the command line. Selected with `--site-set shallow_ladder`.
+  #
+  # NOT folded into midband_candidates_hs on purpose: these sites are at
+  # relative depth 0.357-0.548 and "midband" for this family means 0.810-1.000,
+  # and midband_candidates_hs has other consumers whose swept site set must not
+  # change silently. See family_config.shallow_ladder_hs_indices.
+  #
+  # hs = residual stream at the OUTPUT of decoder block hs-1. Donors are blocks
+  # 22 (sliding) and 23 (full), so hs15/18/20 reach BOTH donors and hs23 reaches
+  # the full donor only -- all four are below the KV-sharing seam. Held-out KU
+  # readout AUC at these sites is 0.9996-0.9999 on the clean use_cache=True
+  # extract, so a null here cannot be attributed to the readout failing.
+  shallow_ladder_hs:
+  - 15
+  - 18
+  - 20
+  - 23
+  # The two sites straddling the KV donor seam, resolved by G0-ALIN Part 1
+  # 2026-07-25: A3 = hs22 (donors 22 and 23 reachable) and A5 = hs24 (quarantined,
+  # reads K/V from the donors rather than from its own block). Registered as ONE
+  # set because A3-vs-A5 is a contrast and is fit in a single pass, so "identical
+  # code path" is structural rather than checked after the fact. NOT folded into
+  # shallow_ladder_hs: that set's registered story is the donor-reachable band and
+  # hs24 is precisely the site it excludes. See gates.yaml seam_pair_site_set.
+  seam_pair_hs:
+    - 22
+    - 24
+  # The pocket ladder, arms E1-E3. Registered 2026-07-31 for
+  # gemma4-e4b-pocket-ladder (a separate experiment from the one this file was
+  # first written for; copied here per that experiment's own convention).
+  # Selected with `--site-set pocket`.
+  #
+  # hs = residual stream at the OUTPUT of decoder block hs-1. Donors are blocks
+  # 22 (sliding) and 23 (full); hs25/26/27 are outputs of blocks 24/25/26, all
+  # strictly downstream of both donors, so all three are quarantined by the
+  # same construction as hs24/hs34/hs38/hs42 above -- NOT donor-reachable.
+  # These are the rd 0.595/0.619/0.643 sites, the top of the cross-family
+  # operating range rd 0.375-0.639 and the one part of it never written to on
+  # this substrate. NOT folded into seam_pair_hs (that set is a fixed A3/A5
+  # contrast pair resolved by G0-ALIN, not a ladder) or shallow_ladder_hs (that
+  # set's registered story is the donor-reachable band, which these sites are
+  # not part of). See family_config.pocket_hs_indices.
+  pocket_hs:
+    - 25
+    - 26
+    - 27
+doses:
+  status: not_yet_calibrated
+  ladder:
+  - 25
+  - 50
+  - 75
+  - 100
+  - 125
+  - 150
+  - 175
+  - 200
+  selected: {}
+reuse:
+  doubt_snap:
+    experiment: doubt-snap-cross-family-confirmatory
+    cell: gemma4_e4b_it
+    committed_dir: experiments/doubt-snap-cross-family-confirmatory/analysis-committed/gemma4_e4b_it
+    modal_volume: eh-doubt-snap-cross-family
+    modal_path_prefix: doubt-snap-cross-family-r1/gemma4_e4b_it/analysis
+    revision: fee6332c1abaafb77f6f9624236c63aa2f1d0187
+    hidden_dim: 2560
+    never_behaviorally_launched: true
+    pool_provenance: fresh_mine
+    late_site:
+      block: 39
+      hs_index: 40
+      tau_frozen: -0.7486986370767261
+      gate_auc_on_fit: 0.9472222222222222
+      mu_d: 19.29316831084325
+      sigma_d: 9.043972161828101
+      mu_c: -33.7951705282407
+      sigma_c: 7.199407284469439
+      doubt_snap_selected_dose: null
+      doubt_snap_fit_peak_clean_tighten: null
+    pool_counts:
+      confab_fit: 840
+      known_correct_answered_fit: 168
+      confab_held_out: 1263
+      known_correct_answered_held_out: 251
+    artifacts:
+      split_manifest:
+        path: split_manifest.json
+        sha256: 2aace2691d5193fb22f82e91db379de4edd3527eb4d8e5128161a9f0e65f28aa
+      build_manifest:
+        path: build_manifest.json
+        sha256: c72b2fd0f61159d03f7fd77a5b3b536667f3be4083651827b2bd020cc03e9a82
+      c_hat:
+        path: c_hat.json
+        sha256: 56ad3101fc27c0e1c2cbb93cf1b574e0d423215ebae1c1d0756d9b3726b50496
+      u_d:
+        path: u_d.json
+        sha256: 0558800d8ed606653b59cc194b5a7c9da355c4f25459dbe7105f5812ba651086
+      random_direction:
+        path: random_direction.json
+        sha256: d09e652389bfb876e307dc9704398bfecbf597091eca625e1a887d868fac84f1
+      gate_fit:
+        path: gate_fit.json
+        sha256: 90b05243efac1bf771ac7af442ef55f76b85b3a693518832738ff134ba2a1f07
+      dose_fit: null
+      g0_prep_summary:
+        path: g0_prep_summary.json
+        sha256: 5e9175f1a896f489343b7eb00606b5df203c6158b79e7a3c134d440dd8caea13
+primary_gate:
+  g1_midband_clean_tighten_floor:
+    rate: 0.5
+    wilson_lower_ci: 0.4
+  g2_midband_known_correct_cost_cap:
+    rate: 0.05
+    wilson_upper_ci: 0.1
+vram:
+  bf16_weights_estimate_gb: ~8-9GB at ~4B effective params, TIGHT if the multimodal loader
+    also materializes a vision tower
+  feasibility_note: 'FLAGGED (per the lead''s instruction): the E4B multimodal architecture
+    may load a vision encoder even for text-only prompts, which could push combined weights
+    + activations + KV cache + steering hook overhead close to the RTX 3090''s 24GB ceiling,
+    especially during the J-lens profile stage (double-backward JVP needs extra activation
+    memory for the second derivative). This is the run order''s highest-risk family on BOTH
+    loader compatibility and VRAM headroom; run last per Amendment Z''s order, and budget
+    a possible OOM/loader-blocker as a real outcome, not a rare edge case. PARTIALLY ANSWERED
+    2026-07-09 (config/class-registration check only, no GPU, no actual weight load; see loader.notes
+    above): the resolved loader class (either Auto* entry tried) is Gemma4ForConditionalGeneration,
+    whose module graph structurally includes BOTH a vision tower (vision_config, hidden_size=768,
+    depth=16) AND an audio tower (audio_config, hidden_size=1024, 12 layers) -- this checkpoint
+    is trimodal, not just vision-multimodal as previously framed, so a real load''s non-text
+    parameter overhead is larger than "a vision encoder" alone. The actual GB delta is not
+    measured here (would need a real weight load); the VRAM floor number itself remains the
+    lead''s open decision, this only firms up (and raises) the "how much non-text weight gets
+    pulled in" half of the question.'

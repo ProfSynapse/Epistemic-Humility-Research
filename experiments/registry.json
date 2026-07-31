@@ -2506,6 +2506,64 @@
     },
     {
       "checkpoint": {
+        "repo": "google/gemma-4-E4B-it",
+        "revision": "fee6332c1abaafb77f6f9624236c63aa2f1d0187"
+      },
+      "created_at": "2026-07-31T10:32:02Z",
+      "falsifier": "An ADJUDICATED G3 result (K=5 accepted draws clearing the SC1 randomness bar, placebo readback in tolerance) with effect_ratio >= 3.0, or PASS-DEGENERATE under the transcribed zero_denominator_rule, at ANY of E1/E2/E3, jointly with that same arm clearing BOTH G1 (held-out confab clean_tighten >= 0.50, Wilson lower > 0.40) AND G2 (held-out known-correct not_well_formed_correct <= 0.05, Wilson upper < 0.10) - falsifies the prediction. Subordinate - if no arm finds a usable FIT dose, NULL-RESULT (dose-viability), consistent with D4/hs23 NOT-RUN one site upstream. If an arm clears G1/G2 but G3 is NOT-RUN or UNADJUDICATED at every such arm, the experiment resolves INCONCLUSIVE on the direction-specificity question rather than being read either way. A failing ADJUDICATED G3 at an arm that cleared G1/G2 does NOT falsify - it is the predicted hs24-pattern outcome.",
+      "inputs": [
+        "experiments/gemma4-e4b-kv-seam-quarantine/AMENDMENT.md",
+        "experiments/gemma4-e4b-kv-seam-quarantine/NOTEBOOK.md",
+        "experiments/gemma4-e4b-kv-seam-quarantine/gates.yaml",
+        "experiments/gemma4-e4b-kv-seam-quarantine/cell.yaml",
+        "experiments/gemma4-e4b-kv-seam-quarantine/families/gemma4-e4b.yaml",
+        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/arch_literature_memo.md",
+        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/split_manifest.json",
+        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/eval_pool_manifest.json",
+        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/build_manifest_layers.json",
+        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/dose_calibration_summary.json",
+        "experiments/common/artifacts/jspace-cross-family-gemma4-e4b/layer_profile.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "families/gemma4-e4b.yaml"
+        ],
+        "modules": [
+          "kv_seam_patch.py",
+          "kv_seam_preflight.py",
+          "family_config.py",
+          "model_lib.py",
+          "gen_lib.py",
+          "grader.py",
+          "scorers.py",
+          "backends.py",
+          "amendment_ah_stage0_extract.py",
+          "build_directions.py",
+          "gate_fit.py",
+          "calibrate_dose.py",
+          "pipeline.py",
+          "run_contrast.py",
+          "placebo_direction.py",
+          "g2_companion.py",
+          "rollup.py"
+        ],
+        "persistence": {},
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "None of E1 (hs25), E2 (hs26), or E3 (hs27) produces an ADJUDICATED G3 PASS (effect_ratio >= 3.0, or PASS-DEGENERATE) jointly with a G1/G2 PASS on held-out. Basis - the quarantine cell's measured below-seam ladder falls monotonically toward the seam (D1/hs15 0.7857, D2/hs18 0.4464, D3/hs20 0.4048), and its one measured quarantined-region site, A5/hs24, cleared G1 (0.7321) and G2 (0.0333) but failed G3 outright at effect_ratio 1.139 (worst placebo draw reproduced 88% of the true effect) - NOTEBOOK.md:1573-1606, Stage 6 Ruling R3/R4. E1/E2/E3 sit deeper into the same quarantined region than hs24.",
+      "question": "The cross-family operating range across every family that has actuated in this program is rd 0.375-0.639 (gemma4-e4b-kv-seam-quarantine/AMENDMENT.md:391-399). On gemma4-e4b (42 blocks, KV-sharing donors at blocks 22/23), the upper half of that range - rd 0.571-0.639 - falls entirely inside the KV-quarantined region, at hs25/hs26/hs27 (same doc, AMENDMENT.md:405-411). That band has never been written to on this substrate - the sibling gemma4-e4b-kv-seam-quarantine cell's own ladder stops at A5/hs24 on the above-seam side. Does gemma actuate, direction-specifically, anywhere in that pocket?",
+      "registered": true,
+      "slug": "gemma4-e4b-pocket-ladder",
+      "status": "draft",
+      "title": "Gemma-4-E4B pocket ladder: hs25/hs26/hs27, sharing ON",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },

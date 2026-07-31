@@ -1,0 +1,178 @@
+# Gemma-4-E4B pocket ladder: hs25/hs26/hs27, sharing ON. DRAFT until `bin/exp sign`.
+#
+# G1 and G2 are TRANSCRIBED VERBATIM from
+# experiments/gemma4-e4b-kv-seam-quarantine/gates.yaml (itself transcribed from
+# j-space-cross-family-layer-contrast/gates.yaml, adjudicated lead+user
+# 2026-07-23). They are NOT re-derived, re-tuned, or re-adjudicated here.
+# Applied PER ARM on that arm's held-out split.
+#
+# G3 is also transcribed verbatim in its ARITHMETIC from the same source, but
+# its SCOPE differs deliberately: there, g3_direction_specificity applied to
+# only two of nine arms (A3/A5) and D1-D4 ran with no placebo counterpart at
+# all, an accepted limitation. Here every one of E1/E2/E3 has a registered
+# placebo counterpart and G3 is MANDATORY -- see actuation_claim_rule below and
+# AMENDMENT.md "G3 direction-specificity is MANDATORY here, not optional" for
+# why: the parent cell's own A5/hs24 result showed a raw G1/G2 clearance in
+# this exact quarantined region that failed G3 outright (effect_ratio 1.139,
+# NOTEBOOK.md:1600-1606), and this ladder sits deeper into the same region.
+#
+# Everything below is pre-stated before any GPU work. No threshold in this file
+# moves after a result is seen.
+
+seed: 20260709
+alpha: 0.05
+
+gates:
+  # ---------------------------------------------------------------- G0-KV ----
+  - name: g0_kv_seam_instrument_validity
+    interpretation: stop_before_outcome
+    scope: runs before ANY dosed arm is scored on held-out
+    checks:
+      - id: architecture_identity
+        assertion: >-
+          verify_architecture(model) passes: 42 hidden layers, 18 KV-shared,
+          first_kv_shared_layer_idx == 24, donors {full: 23, sliding: 22}.
+          TRANSCRIBED from gemma4-e4b-kv-seam-quarantine/gates.yaml
+          g0_kv_seam_instrument_validity item 1. Any mismatch voids the
+          registered site indices and the experiment stops.
+      - id: donor_reachability_by_construction
+        assertion: >-
+          hs25, hs26, hs27 are each the output of a block with index >= 24,
+          strictly downstream of both donor blocks (22, 23). This is asserted
+          from the architecture-identity check above plus the site_convention
+          in cell.yaml kv_seam, NOT independently re-measured per site with
+          capture_donor_keys the way the parent cell measured hs22/hs23/hs24/
+          hs38 directly. If a future re-run wants the direct measurement
+          instead of the construction argument, that is a registered-surface
+          edit to make before signing, not a silent addition at run time.
+    note: >-
+      The parent cell's G0-KV items 2 and 3 (projection-execution assertion
+      under OFF; cache-integrity under OFF) do NOT apply here -- this
+      experiment has no OFF arms and never builds a sharing-OFF forward pass.
+
+  # ---------------------------------------------------------------- G1/G2 ----
+  - name: g1_actuation_floor
+    role: primary
+    primitive: rate_over_population
+    population: confab_held_out
+    metric: confab_tighten.rate (clean_tighten)
+    scope: per arm, on that arm's held-out split, at its selected dose
+    pass_if_rate: ">= 0.50"
+    pass_if_wilson_lower_ci: "> 0.40"
+    source: "TRANSCRIBED VERBATIM from gemma4-e4b-kv-seam-quarantine/gates.yaml g1_actuation_floor. Not re-derived here."
+
+  - name: g2_selectivity_cap
+    role: primary
+    primitive: rate_over_population
+    population: known_correct_answered_held_out
+    metric: known_correct_cost_control.rate (not_well_formed_correct)
+    scope: same arm, same selected dose
+    pass_if_rate: "<= 0.05"
+    pass_if_wilson_upper_ci: "< 0.10"
+    source: "TRANSCRIBED VERBATIM from gemma4-e4b-kv-seam-quarantine/gates.yaml g2_selectivity_cap. Not re-derived here."
+    fired_only_companion: >-
+      Non-gating, reported always, same three-number reporting convention as
+      the parent cell (G2-as-transcribed, fired-only companion with its own N,
+      undosed floor). Wilson-95%-upper floor for the < 0.10 cap is N = 35
+      (parent cell, AMENDMENT.md:1040-1045); this is a property of the cap and
+      sample size, not of the site, so it transfers unchanged. Expected
+      disposition here: NOT-ADJUDICABLE at every arm, same as every site the
+      parent cell measured.
+
+  - name: g0_c_arm_instrument_validity
+    interpretation: stop_before_outcome
+    scope: per arm, before its outcome is scored
+    checks:
+      - id: readback_verification
+        assertion: >-
+          frac_readback_within_tol == 1.0 at the selected dose. TRANSCRIBED
+          from the parent cell's g0_arm_instrument_validity /
+          readback_verification. A failed readback voids that arm's outcome;
+          it is not silently dropped and not re-run at a different dose to
+          force a pass.
+
+  # ------------------------------------------------------------------ G3 ----
+  - name: g3_direction_specificity
+    role: specificity
+    scope: >-
+      ALL of E1, E2, E3 -- MANDATORY, unlike the parent cell's scoping to
+      A3/A5 only. See file header.
+    primitive: effect_ratio_over_matched_placebo
+    definition: >-
+      lift(arm) = held-out confab clean_tighten rate at that arm's selected
+      dose MINUS the same rate on the SAME held-out confab rows with no
+      injection. effect_ratio = lift(true) / max over the K accepted placebo
+      draws of |lift(placebo_k)|.
+    pass_if: "effect_ratio >= 3.0"
+    effect_ratio_floor_source: >-
+      rr3-corrected-placebo-replication/gates_lib.py:32
+      RG1_EFFECT_RATIO_FLOOR = 3.0, with K >= 3 and a max-over-seeds
+      denominator. TRANSCRIBED via gemma4-e4b-kv-seam-quarantine/gates.yaml,
+      not re-derived and not re-tuned for this substrate or this site band.
+    denominator_is_max_not_mean: >-
+      Deliberate and inherited, unchanged from the parent cell: the max is the
+      worst case the random-direction family actually produced, the honest
+      denominator for a claim of specificity.
+    zero_denominator_rule: >-
+      If max_k |lift(placebo_k)| == 0.000 exactly, effect_ratio is undefined,
+      NOT infinite. Disposition is PASS-DEGENERATE: reported as a pass with the
+      label attached and the raw per-draw rates in the table. Not citable as a
+      large effect ratio. Transcribed unchanged from the parent cell.
+    why_not_the_factorial_s1_criterion: >-
+      Transcribed reasoning from the parent cell: S1's denominator is a
+      per-family census null and gemma has no census. RG1 is self-contained --
+      it computes its own denominator from the same run, at the same site, on
+      the same rows. That is a real weakening (K=5 is a worse tail estimate
+      than K=15) and is recorded as a limitation, not presented as equivalent.
+    what_a_failure_means: >-
+      An arm that clears G1 and G2 and fails G3 (adjudicated) ACTUATED but did
+      so non-specifically. Reported as "actuates, not direction-specific"; may
+      NOT be cited as evidence the KU readout drives the behavior; may not be
+      pooled with any direction-specific result in this program. Not re-run
+      with a different dose or K to chase a pass.
+    interaction_with_actuation_claim_rule: >-
+      DIRECT, not none -- this is the scope difference from the parent cell.
+      See actuation_claim_rule below: an arm cannot be reported as actuation on
+      G1/G2 alone here.
+
+descriptive_pocket_ladder:
+  registered_expectation: >-
+    Prior (drafter): none of E1/E2/E3 produces an ADJUDICATED G3 PASS jointly
+    with a G1/G2 PASS. Non-binding on the arithmetic above; recorded for
+    comparison against the outcome only.
+  expected_fired_only_n_range: "2-22, by analogy to the deep sites the parent cell actually measured (hs24: 6/270, hs34: 22/270, hs38: 19/270, hs42: 13/270); not separately projected for hs25/26/27, which have not been measured."
+  expected_fired_only_disposition: NOT-ADJUDICABLE
+
+actuation_claim_rule: >-
+  An arm among E1/E2/E3 may be reported as a direction-specific actuation
+  result IFF it clears G1 AND G2 on held-out AND its G3 is ADJUDICATED PASS
+  (including PASS-DEGENERATE under zero_denominator_rule). G1+G2 PASS with G3
+  ADJUDICATED FAIL is reported as "actuates, not direction-specific"
+  (g3_direction_specificity what_a_failure_means) -- NOT as actuation and NOT
+  pooled with any direction-specific result. G1+G2 PASS with G3 NOT-RUN or
+  UNADJUDICATED is reported as an unresolved gate-clearance -- NOT as
+  actuation and NOT as a failed control (a missing control is never read as a
+  control that failed). This rule has no analogue in the parent cell, whose
+  D1-D4 had no placebo arms at all and whose standing limitation notes that any
+  D-arm actuation claim "rests on evidence G3 exists to demand" without G3
+  itself being registered for those arms. Here G3 IS registered for every arm,
+  so its absence blocks the claim rather than merely qualifying it.
+
+falsifier_rule: >-
+  FALSIFIER: an arm among E1/E2/E3 satisfies actuation_claim_rule above (G1
+  PASS, G2 PASS, G3 ADJUDICATED PASS or PASS-DEGENERATE). Registered before any
+  arm has run and before any placebo draw exists, so it cannot have been chosen
+  to fit a result.
+  SUBORDINATE DISPOSITIONS (pre-stated, do not move after a result):
+  - If none of E1/E2/E3 finds a usable FIT dose: NULL-RESULT (dose-viability),
+    the ladder does not move, consistent with the parent cell's D4/hs23
+    NOT-RUN one site upstream.
+  - If an arm clears G1/G2 but every such arm's G3 resolves NOT-RUN or
+    UNADJUDICATED (no usable placebo dose, redraw ledger exhausted before K=5
+    accepted draws, or placebo readback out of tolerance): INCONCLUSIVE on the
+    direction-specificity question. Not read as falsification and not read as
+    a null; reported plainly as unresolved.
+  - A G1/G2 PASS with an ADJUDICATED G3 FAIL (effect_ratio < 3.0) does NOT
+    falsify and does NOT count as NULL-RESULT -- it is the registered
+    expected pattern (descriptive_pocket_ladder), reported as "actuates, not
+    direction-specific" per g3_direction_specificity.
