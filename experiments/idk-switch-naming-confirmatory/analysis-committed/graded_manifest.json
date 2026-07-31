@@ -145,5 +145,12 @@
     "role": "judge",
     "sha256": "d761fab79d0bf8a70a8249f688f92ab8e9531ae98002a7c19f0870ede7fe6c2a",
     "shard_id": "isnc_fullpool_shard_20"
+  },
+  {
+    "committed_at": "2026-07-31T13:54:59.652755+00:00",
+    "file_name": "shard_04_stability_graded.jsonl",
+    "role": "stability",
+    "sha256": "25cb72c9268feb25e0c792e439f17c358153fd26347fec7644f55f46d5b956b6",
+    "shard_id": "isnc_fullpool_shard_04"
   }
 ]
