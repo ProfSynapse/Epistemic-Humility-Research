@@ -1746,3 +1746,171 @@ summary artifact (fresh sweep, roughly 40 A100-minutes, inside the
 approved tranche budget), then continues b9 onward with the verdict-aware
 skips active. No registered constant, gate, ladder, or exit semantics
 changed; the pinned calibrate_dose.py is untouched.
+
+## 2026-07-31 -- C1 precondition control: red-team review adjudicated, local lane authorized
+
+Context: Phase B tranche 1 recorded no usable mid-band dose in all three
+OFF-relevant calibration cells (b8/b9/b10), with every OFF calibration
+showing undosed known-correct cost 8/8. The registered
+g0_c1_precondition_control is exactly the instrument that decides whether
+the OFF substrate is intact at baseline; the PI re-lifted the earlier
+skip-C1 decision (approval voided as premised on a wrong actuation
+picture, see the session record) and directed C1 to RUN, on the LOCAL
+3090 rather than Modal ("Let's run c1 locally", 2026-07-31). This entry
+records the lane deviation: C1 was planned in cloud/PHASE_B_MODAL_PLAN.md
+as stage B-C1; running it locally in the pinned container is a
+PI-directed execution-lane change only. No gate, cap, split, or metric
+changes.
+
+Red-team review (independent reviewer, delivered 2026-07-31): GO, no
+invalidating findings. Fidelity of c1_precondition.py to the registered
+spec confirmed leg by leg (FIT split row counts 112/180 verified against
+split_manifest.json; caps 0.05/0.10/0.05/0.10 byte-match; verdict
+arithmetic imported from the registered rollup.py, not reimplemented;
+inert vector provably inert via the mode="off" short-circuit in the tuner
+hook). Fail path is fail-closed: no route from thin data to a PASS, and
+at the real n a preserved substrate would pass (Newcombe upper bound
+0.069 at p1=p2=0.125, n=180; lead re-derived independently, 0.0694).
+Pins re-verified byte-exact by the lead (c1_precondition.py 2ee3d6a8...,
+test_c1_precondition.py 2da1b5b6...). CPU suite 15/15 passed (explicit
+file path, rtk bypassed).
+
+Lead rulings on the reviewer's pre-run items:
+
+1. NO edits to pinned code, NO repin. The two suggested hardening edits
+   (smoke-artifact marker in the summary dict; write-before-verdict
+   ordering) are declined in favor of procedural mitigation, to keep the
+   signed bytes untouched: the GPU smoke's canonical
+   analysis-committed/gemma4-e4b/c1_precondition_summary.json artifact
+   will be DELETED and its absence verified before the real run is
+   dispatched, and the small post-run crash window (verdict arithmetic on
+   plain floats after both passes complete) is accepted as recorded risk.
+2. GPU smoke (--smoke 8) runs FIRST. It is the only path that has ever
+   exercised the teacher-forced model(..., labels=...) forward in this
+   experiment; no test covers it.
+3. Provenance recorded by hand in this NOTEBOOK per the 2026-07-29
+   standard: image mechinterp-runner:tf550
+   sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8,
+   transformers 5.5.0, repo commit and elapsed seconds appended with each
+   run's results. Preflight passed before launch (docker info shows
+   Operating System: Docker Desktop and an nvidia runtime; digest
+   re-inspected and matching).
+4. Registered write-up constraints, binding at Outcome time: the NLL leg
+   (criterion 3) scores both conditions on C0's own greedy completion, so
+   its delta is confounded with text divergence and is reported ONLY as
+   "C1 assigns lower likelihood to C0's output", never as standalone
+   evidence of a degraded forward pass; criterion 2 passes vacuously on a
+   substrate that cannot emit well-formed JSON and its true is not read
+   as "the OFF model behaves"; if C1 FAILS, the failure is attributed to
+   criterion 1, which is expected to fail decisively on its own numbers
+   (committed calibration floors: ON undosed known-correct cost 1/8 per
+   site vs OFF 6/6 and 7/7). Positive control on landing: C0
+   known_correct_cost_control near 0.125 and C0 confab_tighten in the
+   0.125-0.375 band (the committed ON undosed floors); a C0 far outside
+   that band indicts the harness, not the substrate.
+
+Launch authorization: PI approval 2026-07-31 ("Let's run c1 locally and
+queue up idk for after it"). Sequence: containerized GPU smoke n=8,
+verify, delete smoke artifact, then the real run (292 rows x 2
+conditions), results appended here.
+
+2026-07-31 addendum, GPU smoke n=8 (pre-real-run check per ruling 2):
+completed exit 0 inside mechinterp-runner:tf550 (provenance line in run
+log, digest sha256:479b7ca..., transformers 5.5.0, torch 2.9.1+cu128,
+tuner 34c89fc4). The teacher-forced labels= forward executed for the
+first time in this experiment without error. Smoke verdict shape (n=8,
+NOT adjudicable, recorded only as harness evidence): known_correct_delta
+1.0, nll_rel_delta 2.538, c1_confab_clean_tighten_rate 0.0, pass false.
+Smoke artifact at the canonical analysis-committed path DELETED and
+absence verified before the real run, per ruling 1. Run log:
+analysis/gemma4-e4b/c1_logs/. Real run dispatched next.
+
+2026-07-31 addendum, C1 real run COMPLETE; adjudication HELD pending the
+C0 positive-control check.
+
+Provenance (per the 2026-07-29 standard): image mechinterp-runner:tf550
+sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8,
+transformers 5.5.0, torch 2.9.1+cu128, tuner 34c89fc4, provenance line
+present in run log analysis/gemma4-e4b/c1_logs/c1_real_20260731T062802.log;
+repo worktree commit 7201a809; started 06:28:02 EDT, artifact written
+07:46:16 EDT, elapsed approx 4694 s. Full FIT population confirmed in the
+artifact (smoke_n null, n_confab 112, n_known_correct_answered 180).
+
+Raw verdict block, transcribed from
+analysis-committed/gemma4-e4b/c1_precondition_summary.json (the canonical
+artifact, not the exit code): known_correct_preserved false
+(known_correct_delta 1.0, C0 0/180 vs C1 180/180, Newcombe CI
+[0.9704, 1.0] against the 0.05 cap / 0.10 CI bound);
+off_model_does_not_hedge true (C1 confab clean_tighten 0/112; per the
+registered write-up constraint this is vacuous on a substrate that cannot
+emit well-formed JSON and is not read as "the OFF model behaves");
+likelihood_preserved false (mean NLL C0 3.5342 vs C1 12.3303, rel delta
+2.4889; per the registered constraint reported only as "C1 assigns lower
+likelihood to C0's output", never as standalone forward-pass evidence);
+overall pass false.
+
+HOLD: the registered positive control expected C0 known-correct cost near
+0.125 and C0 confab_tighten in the 0.125-0.375 band (the committed ON
+dose-calibration undosed floors at n=8). C0 measured 0/180 and 0/112,
+statistically incompatible with those point estimates if the measurements
+are the same quantity under the same conditions. Per the pre-launch ruling
+("a C0 far outside that band indicts the harness, not the substrate"), the
+C1 FAIL is NOT adjudicated into any gate or disposition until an
+independent analysis resolves whether the discrepancy indicts the harness
+or the band transfer. Analysis dispatched 2026-07-31 (row populations,
+decode configs, graders, execution substrate, compatibility arithmetic).
+
+## 2026-07-31 -- C1 adjudication: hold lifted, FAIL stands; positive-control band ruled invalid as registered
+
+Independent analysis (dispatched at the hold, delivered 2026-07-31)
+resolved the C0 discrepancy as BAND-TRANSFER-INVALID, and the lead
+re-verified its central claims directly against the committed artifacts:
+
+1. The "undosed confab band 0.125-0.375" cited in the pre-launch ruling
+   was never an undosed measurement. dose_calibration_summary.json's
+   lowest rung (ratio 0.1) carries n_fired 6/6/7 of 8 confab rows at
+   hs34/hs38/hs42 (lead re-read the JSON directly): those rows were
+   DOSED at every rung, and no dedicated ON-midband undosed confab run
+   exists in committed artifacts (A1 stalled at dose-viability, so
+   run_undosed_baseline never executed for midband). The band was
+   dosed-cell data mislabeled as a floor in the pre-launch ruling. C0's
+   0/112 has no valid same-quantity comparator and stands unindicted.
+2. The known-correct leg IS a same-quantity comparison (same rows via
+   the same deterministic stratified_subset, same greedy decode path
+   through gl.run_pass_fixed, same graders, same transformers 5.5.0;
+   only the GPU differs), but the floor is a single n=8 draw (Wilson CI
+   [0.022, 0.471]) reused verbatim across the three layer records. The
+   correctly specified test (hypergeometric: one pooled success in 188
+   rows landing in the 8-row subsample) gives one-sided p = 8/188 =
+   0.043: borderline, not an indictment.
+3. Robustness, decisive for the adjudication: criterion 1's FAIL does
+   not depend on which C0 is right. Even at the calibration point
+   estimate C0 = 0.125, the delta against C1's 180/180 = 1.0 would be
+   0.875 against the 0.05 cap and 0.10 CI bound. The FAIL survives the
+   entire disputed C0 range.
+
+RULING (lead): the hold is lifted. g0_c1_precondition_control resolves
+FAIL on its registered criteria (criterion 1 decisive; criterion 3
+consistent under its registered interpretive constraint; criterion 2
+vacuous as pre-stated). The registered INCONCLUSIVE (C1 fails)
+disposition fires: A2 and A4 are NOT-RUN, the primary falsifier cannot
+fire on them, and the KV-quarantine hypothesis is left open on the
+A1/A2 axis. The pre-launch ruling's positive-control band is recorded
+as a defective transfer (its confab leg cited dosed-cell numbers as an
+undosed floor); a genuine ON-midband undosed floor was never measured
+in this cell and no registered gate depended on one.
+
+Corollary recorded for the resolution text: the D-ladder falsifier leg
+(AMENDMENT.md "If any of D1-D4 clears G1 on held-out while A1 (hs38,
+ON) does not"). The VOID disposition defines A1's positive case as
+"finds a usable FIT dose AND clears G1"; its complement, including
+dose-viability NOT-RUN (which is what b8 recorded, the parent null
+reproducing), is therefore "does not". D1/hs15 cleared G1 on held-out
+(0.7857, Ruling R3) with A1 not clearing, so the leg fires as
+registered: SUPPORTING the quarantine account, explicitly NOT
+establishing it, with the registered depth-confound caveat carried
+verbatim ("D1-D4 cannot separate the quarantine mechanism from a
+generic shallow-band-only effect"). Promotion beyond "supported"
+required the A1-vs-A2 patch contrast, which the C1 FAIL forecloses in
+this cell. Final wording lifted to the PI with this recommendation
+before the Outcome is written.

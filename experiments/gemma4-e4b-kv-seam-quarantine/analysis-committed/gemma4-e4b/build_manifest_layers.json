@@ -1,0 +1,64 @@
+{
+  "family": "gemma4-e4b",
+  "substrate": "bf16",
+  "base_model": "google/gemma-4-E4B-it",
+  "site_set": "midband",
+  "hs_indices": [
+    34,
+    38,
+    42
+  ],
+  "kv_sharing": "on",
+  "hidden_dim": 2560,
+  "random_state": 20260707,
+  "reproducibility_verified": false,
+  "extract_manifest_sha256": "060c3f3b225fc4bca59a5b6bb91a6c91bf13d4798f14a4e3a84bd8dd09158b01",
+  "split_manifest_sha256": "8d2281179ab865bea8fd7918c0ee14b33db7113c4ed375ff0740c36cee2f1d87",
+  "layers": {
+    "hs34": {
+      "hs_index": 34,
+      "decoder_block_index": 33,
+      "n_known_correct_answered_fit": 180,
+      "n_confab_fit": 112,
+      "n_unknown_refused": 76,
+      "cos_u_d_u_p": 0.12674972543884547,
+      "cos_caution_dir_c_hat": 0.6335443490777763,
+      "mu_d": 23.716023910976567,
+      "sigma_d": 6.663154091834177,
+      "mu_p": 1.1095182428180992,
+      "sigma_p": 0.4478657031964209,
+      "mu_c": -30.88134374090754,
+      "sigma_c": 5.5217082172395076
+    },
+    "hs38": {
+      "hs_index": 38,
+      "decoder_block_index": 37,
+      "n_known_correct_answered_fit": 180,
+      "n_confab_fit": 112,
+      "n_unknown_refused": 76,
+      "cos_u_d_u_p": 0.13143591283251252,
+      "cos_caution_dir_c_hat": 0.6611850575958407,
+      "mu_d": 24.87330332993479,
+      "sigma_d": 9.186352943327744,
+      "mu_p": 3.6549726074167306,
+      "sigma_p": 0.5927328972112275,
+      "mu_c": -39.040852548630625,
+      "sigma_c": 8.23255727864282
+    },
+    "hs42": {
+      "hs_index": 42,
+      "decoder_block_index": 41,
+      "n_known_correct_answered_fit": 180,
+      "n_confab_fit": 112,
+      "n_unknown_refused": 76,
+      "cos_u_d_u_p": 0.03983283524170843,
+      "cos_caution_dir_c_hat": 0.7048948107765871,
+      "mu_d": 68.88381043024839,
+      "sigma_d": 32.605089120425006,
+      "mu_p": -3.340361046906625,
+      "sigma_p": 0.6079059972994735,
+      "mu_c": 73.5933827995106,
+      "sigma_c": 25.748698007854323
+    }
+  }
+}

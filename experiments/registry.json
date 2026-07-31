@@ -2414,10 +2414,10 @@
       "question": "Gemma-4-E4B was stopped at dose-viability in j-space-cross-family-layer-contrast, but that stop is uninterpretable rather than negative - every site it used (hs34, hs38, hs40, hs42) lies above the KV-sharing seam, and the extraction that produced its write directions, gate standardization and dose targets ran with use_cache=False, which starves exactly those layers (parent AMENDMENT.md:637). Two things are open at once. Blocks 24-41 read K/V from donor blocks 22/23, so a write above the seam cannot change what later layers attend over - though q_proj still runs unconditionally and the write still reaches the query path, FFN and residual stream, so the causal channel is narrowed, not severed. Is gemma inert above the seam because of that narrowing, and does the boundary push actuate at all below the donors, in the relative-depth band 0.357-0.548 - the shallow half of the rd 0.375-0.639 range in which every other family in this program actuates, and the deepest gemma can be written while both donor blocks stay reachable?",
       "registered": true,
       "slug": "gemma4-e4b-kv-seam-quarantine",
-      "status": "signed",
+      "status": "resolved",
       "title": "Gemma-4-E4B KV-sharing seam: is the mid-band null a quarantine artifact?",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "C1 FAIL: sharing-OFF substrate broken at baseline, A2/A4 INCONCLUSIVE as registered; D-ladder fires the supporting leg (D1 0.786 vs A1 no-usable-dose): KV-quarantine SUPPORTED-not-established, confounded with depth as registered; hs24 clearance adjudicated non-specific."
     },
     {
       "checkpoint": {

@@ -1,0 +1,177 @@
+{
+  "family": "gemma4-e4b",
+  "split": "fit",
+  "n_confab": 112,
+  "n_known_correct_answered": 180,
+  "c0": {
+    "hs_index": 22,
+    "kv_sharing": "on",
+    "n_rows": 292,
+    "n_fired": 0,
+    "readback_mean": null,
+    "frac_readback_within_tol": null,
+    "collapse_rate_on_dosed": null,
+    "confab_tighten": {
+      "n": 112,
+      "successes": 0,
+      "rate": 0.0,
+      "wilson_ci_95": [
+        3.469446951953614e-18,
+        0.033161347066943875
+      ]
+    },
+    "known_correct_cost_control": {
+      "n": 180,
+      "successes": 0,
+      "rate": 0.0,
+      "wilson_ci_95": [
+        0.0,
+        0.02089549792161305
+      ]
+    },
+    "known_correct_cost_control_fired_only": {
+      "n": 0,
+      "successes": 0,
+      "rate": 0.0,
+      "wilson_ci_95": [
+        0.0,
+        0.0
+      ],
+      "n_fired_known": 0,
+      "adjudicable_floor": 35,
+      "adjudicable": false,
+      "disposition": "NOT-ADJUDICABLE"
+    },
+    "known_correct_cost_control_g2_block": {
+      "full_population_g2": {
+        "n": 180,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.02089549792161305
+        ]
+      },
+      "full_population_g2_pass": true,
+      "fired_only": {
+        "n": 0,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.0
+        ],
+        "n_fired_known": 0,
+        "adjudicable_floor": 35,
+        "adjudicable": false,
+        "disposition": "NOT-ADJUDICABLE"
+      },
+      "undosed_floor": {
+        "n": 180,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.02089549792161305
+        ]
+      },
+      "discrepancy_full_pass_but_fired_only_over_cap": false
+    },
+    "mean_nll": 3.5341857532932335,
+    "n_nll_rows": 292,
+    "own_completion_mean_nll": 3.5341857532932335,
+    "inert_hook_hs_index": 22
+  },
+  "c1": {
+    "hs_index": 22,
+    "kv_sharing": "off",
+    "n_rows": 292,
+    "n_fired": 0,
+    "readback_mean": null,
+    "frac_readback_within_tol": null,
+    "collapse_rate_on_dosed": null,
+    "confab_tighten": {
+      "n": 112,
+      "successes": 0,
+      "rate": 0.0,
+      "wilson_ci_95": [
+        3.469446951953614e-18,
+        0.033161347066943875
+      ]
+    },
+    "known_correct_cost_control": {
+      "n": 180,
+      "successes": 180,
+      "rate": 1.0,
+      "wilson_ci_95": [
+        0.9791045020783868,
+        1.0
+      ]
+    },
+    "known_correct_cost_control_fired_only": {
+      "n": 0,
+      "successes": 0,
+      "rate": 0.0,
+      "wilson_ci_95": [
+        0.0,
+        0.0
+      ],
+      "n_fired_known": 0,
+      "adjudicable_floor": 35,
+      "adjudicable": false,
+      "disposition": "NOT-ADJUDICABLE"
+    },
+    "known_correct_cost_control_g2_block": {
+      "full_population_g2": {
+        "n": 180,
+        "successes": 180,
+        "rate": 1.0,
+        "wilson_ci_95": [
+          0.9791045020783868,
+          1.0
+        ]
+      },
+      "full_population_g2_pass": false,
+      "fired_only": {
+        "n": 0,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.0
+        ],
+        "n_fired_known": 0,
+        "adjudicable_floor": 35,
+        "adjudicable": false,
+        "disposition": "NOT-ADJUDICABLE"
+      },
+      "undosed_floor": {
+        "n": 180,
+        "successes": 180,
+        "rate": 1.0,
+        "wilson_ci_95": [
+          0.9791045020783868,
+          1.0
+        ]
+      },
+      "discrepancy_full_pass_but_fired_only_over_cap": false
+    },
+    "mean_nll": 12.330313963432834,
+    "n_nll_rows": 292,
+    "own_completion_mean_nll": 6.135725401852229,
+    "inert_hook_hs_index": 22
+  },
+  "verdict": {
+    "known_correct_preserved": false,
+    "known_correct_delta": 1.0,
+    "known_correct_diff_wilson_ci_95": [
+      0.9704493034467159,
+      1.0
+    ],
+    "off_model_does_not_hedge": true,
+    "c1_confab_clean_tighten_rate": 0.0,
+    "likelihood_preserved": false,
+    "nll_rel_delta": 2.4888698059922776,
+    "pass": false
+  }
+}

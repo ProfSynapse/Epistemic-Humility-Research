@@ -1,7 +1,7 @@
 slug: gemma4-e4b-kv-seam-quarantine
 title: 'Gemma-4-E4B KV-sharing seam: is the mid-band null a quarantine artifact?'
 type: steer-cell
-status: signed
+status: resolved
 registered: true
 created_at: '2026-07-24T17:44:35Z'
 question: Gemma-4-E4B was stopped at dose-viability in j-space-cross-family-layer-contrast,
@@ -240,21 +240,21 @@ instrument:
     c1_precondition.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 9.8
-      measured_on: '2026-07-30, CPU dry-run (--dry-run, no model load), 9.8 s
-        (torch import dominates). The GPU stage itself is single-pass over the
-        FIT split in both KV conditions with ONE atomic summary write at the
-        end; no real-data GPU timing yet -- record the first Modal run''s
-        elapsed_sec here before treating this declaration as covering it
-        (same convention as alin_sweep.py''s Part 2 note).'
-      rationale: 'G0-C1 producer: undosed FIT pass under C0/C1 plus paired
-        teacher-forced NLL, one atomic c1_precondition_summary.json write via
-        rollup.c1_verdict. A kill loses only in-memory records; re-running is
-        the cheap, correct path (no partial state is ever on disk).'
+      measured_on: 2026-07-30, CPU dry-run (--dry-run, no model load), 9.8 s (torch
+        import dominates). The GPU stage itself is single-pass over the FIT split
+        in both KV conditions with ONE atomic summary write at the end; no real-data
+        GPU timing yet -- record the first Modal run's elapsed_sec here before treating
+        this declaration as covering it (same convention as alin_sweep.py's Part 2
+        note).
+      rationale: 'G0-C1 producer: undosed FIT pass under C0/C1 plus paired teacher-forced
+        NLL, one atomic c1_precondition_summary.json write via rollup.c1_verdict.
+        A kill loses only in-memory records; re-running is the cheap, correct path
+        (no partial state is ever on disk).'
     test_c1_precondition.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 5.0
-      measured_on: '2026-07-30, CPU, 15 tests in the file, full three-file suite
-        42 passed in seconds'
+      measured_on: 2026-07-30, CPU, 15 tests in the file, full three-file suite 42
+        passed in seconds
       rationale: Test suite, not a run stage.
   repins:
   - file: run_contrast.py
@@ -280,5 +280,8 @@ inputs:
 - experiments/common/artifacts/jspace-cross-family-gemma4-e4b/build_manifest_layers.json
 - experiments/common/artifacts/jspace-cross-family-gemma4-e4b/dose_calibration_summary.json
 - experiments/common/artifacts/jspace-cross-family-gemma4-e4b/layer_profile.json
-verdict: ''
+verdict: 'C1 FAIL: sharing-OFF substrate broken at baseline, A2/A4 INCONCLUSIVE as
+  registered; D-ladder fires the supporting leg (D1 0.786 vs A1 no-usable-dose): KV-quarantine
+  SUPPORTED-not-established, confounded with depth as registered; hs24 clearance adjudicated
+  non-specific.'
 kg: []

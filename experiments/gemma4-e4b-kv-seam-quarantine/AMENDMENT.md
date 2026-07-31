@@ -1918,13 +1918,65 @@ is roughly 2 rows at these sites and stands NOT-ADJUDICABLE either way.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the per-arm G1/G2 results with Wilson CIs,
-the primary contrast, every secondary contrast, the G0-KV preflight record, the
-C1 numbers, and the one-sentence summary that also goes into `verdict:` in the
-manifest.
+Resolved 2026-07-31, PI approval on record (falsifier-leg reading and verdict
+approved same day). Adjudication detail lives in NOTEBOOK.md Stage 6 (Phase A,
+rulings R1-R9, 2026-07-30) and the 2026-07-31 C1 entries; this section records
+the terminal dispositions.
 
-**No arm has run.** The GPU work done to date is confined to the two carve-outs
-recorded in `cell.yaml execution.gpu_carve_outs` — the donor projection
-diagnostic and the `seam_pair` dose calibration above. Both are pre-sign
-instrument work on the FIT split. `run_contrast.py` has not been executed in any
-mode, no held-out row has been touched, and no gate has been adjudicated.
+**Verdict (manifest one-liner).** C1 FAIL: sharing-OFF substrate broken at
+baseline, A2/A4 INCONCLUSIVE as registered; D-ladder fires the supporting leg
+(D1 0.786 vs A1 no-usable-dose): KV-quarantine SUPPORTED-not-established,
+confounded with depth as registered; hs24 clearance adjudicated non-specific.
+
+**Phase A (sharing ON), held-out, from the Stage 6 rulings and
+analysis-committed summaries:**
+
+- D1/hs15: G1 PASS 0.7857 [0.7180, 0.8413], G2 PASS 0.011. Best site,
+  shallowest tested.
+- D2/hs18: G1 FAIL 0.4464. D3/hs20: G1 FAIL 0.4048. D4/hs23: dose-viability
+  NOT-RUN.
+- A3/hs22: G1 PASS 0.5893, G2 PASS, G3 PASS-DEGENERATE (all five accepted
+  placebo draws produced zero lift; reported with the degenerate label, never
+  as a large effect ratio).
+- A5/hs24: G1 PASS 0.7321, G2 PASS 0.0333, G3 FAIL (effect_ratio 1.139; worst
+  random draw reproduced 88% of the true effect). Adjudicated seam-region
+  instability, not direction-specific actuation (Ruling R4).
+- Gemma is therefore actuable, shallow-band-localized, with strength falling
+  monotonically toward the seam. The program-level "gemma never actuates"
+  reputation is dead: it was a depth-coverage artifact.
+
+**Phase B (sharing OFF) and C1:**
+
+- Tranche 1 dose calibrations b8/b9/b10 (A1 midband ON, A2 midband OFF, A4
+  seam-pair OFF): no usable mid-band dose in any cell (VERDICT-RECORDED
+  markers in the dispatch log; dependents correctly skipped).
+- A1 dose-viability NOT-RUN means the parent's above-seam null REPRODUCED, so
+  the VOID disposition does not fire.
+- C1 precondition control (local pinned-container run, full FIT population,
+  2026-07-31): FAIL. C1 known-correct cost 180/180 = 1.0 vs C0 0/180
+  (Newcombe CI [0.9704, 1.0] against the 0.05 cap); NLL 3.5342 vs 12.3303
+  (rel delta 2.4889, reported under its registered constraint as "C1 assigns
+  lower likelihood to C0's output" only); hedge criterion vacuously true and
+  not read as substrate health. The C0 positive-control discrepancy raised at
+  the hold was adjudicated BAND-TRANSFER-INVALID (the cited undosed confab
+  band was dosed-cell data; no genuine ON-midband undosed floor was ever
+  measured); the FAIL is robust to the entire disputed C0 range.
+- Registered INCONCLUSIVE (C1 fails) disposition: A2 and A4 are NOT-RUN, the
+  primary A1-vs-A2 contrast cannot fire, and the KV-quarantine hypothesis is
+  left open on that axis. Corollary instrument finding: the kv_seam_patch
+  sharing-OFF surgery as-built destroys baseline behavior; any successor
+  quarantine test needs a gentler ablation.
+
+**Falsifier adjudication.** The D-ladder supporting leg fires as registered:
+D1 clears G1 on held-out while A1 does not (the VOID disposition defines A1's
+positive case as usable-dose AND G1-clear; its complement includes
+dose-viability NOT-RUN). Recorded as SUPPORTING the quarantine account,
+explicitly NOT establishing it, with the registered depth-confound caveat
+carried verbatim: D1-D4 cannot separate the quarantine mechanism from a
+generic shallow-band-only effect, and promotion beyond "supported" required
+the A1-vs-A2 contrast this cell's C1 FAIL forecloses.
+
+**Predictions scoreboard accounting.** The drafter's PARTIAL call is the
+closest recorded call. The orchestrator and user rows were never entered
+before sign; that gap is recorded as a governance defect (now guarded in
+successor registrations, e.g. gemma4-e4b-pocket-ladder's must-not-sign rule).
