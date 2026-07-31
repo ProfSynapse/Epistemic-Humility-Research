@@ -181,7 +181,7 @@ distribution shift. The mapping exercise below shows this axis is almost
 entirely unmeasured in the training literature; measuring it is the first
 item of the agenda in Section 6.
 
-A scope note. The taxonomy is stated over a model's expressed epistemic state,
+The taxonomy is stated over a model's expressed epistemic state,
 and nothing in the four depths or the coherence axis is specific to text.
 Every study synthesized in this paper is a language-model study, and we keep
 the paper's claims to that evidence base, but the same questions arise
@@ -209,12 +209,10 @@ error bars in any retrieved material from the twelve calibration studies in
 our primary searches), we synthesize by vote counting with exact binomial sign
 tests and descriptive normalization rather than formal pooling, following the
 SWiM reporting guideline (Campbell et al., 2020) and the Cochrane Handbook's
-sanctioned direction-based vote count (McKenzie & Brennan, 2023). The full
-apparatus travels with this paper: the search protocol, inclusion criteria,
-and flow accounting are Appendix B; the extraction schema, verification
-protocol, and AI-assistance disclosure are Appendix C; the sensitivity
-analyses and data audits are Appendix D. The files those appendices describe
-are committed in this paper's own directory: the [extracted evidence
+sanctioned direction-based vote count (McKenzie & Brennan, 2023). Appendix B gives the search protocol, inclusion criteria, and flow accounting;
+Appendix C the extraction schema, verification protocol, and AI-assistance
+disclosure; Appendix D the sensitivity analyses and data audits. The
+underlying files are committed in this paper's own directory: the [extracted evidence
 table](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/papers/paper-1-taxonomy-framework/evidence/effects.csv)
 (one row per effect), the [method-reanalysis
 table](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/papers/paper-1-taxonomy-framework/evidence/idk-method-reanalysis.csv),
@@ -233,16 +231,10 @@ five claim families below rest partly on them.
 
 ## 4. Five claim families
 
-The synthesis organizes its results as five claim families: statements about
-the direction of an effect, each backed by counting the extracted rows that
-support or contradict it, with an exact binomial sign test where the count
-permits. We label them C1 through C5 (for Claim 1 through Claim 5) and use those shorthands for cross-reference in the rest of the paper. The
-first family is about what standard
-post-training breaks, the next two about what preference optimization buys
-and what it merely trades, the fourth about what scale fails to provide, and
-the fifth about what targeted training reliably delivers. Read together they
-produce the tension, stated at the end of the section, that motivates the
-rest of the paper.
+A claim family is a statement about the direction of an effect, backed by
+counting the extracted rows that support or contradict it, with an exact
+binomial sign test where the count permits. Five families, labeled C1 through
+C5, survive the corpus.
 
 ### Claim 1 (C1): Instruction tuning and RLHF degrade token-probability calibration
 
@@ -268,8 +260,7 @@ abstention method builds *model-specific* training splits.
 
 ### Claim 2 (C2): A preference stage added after SFT beats SFT alone on abstention/truthfulness quality
 
-The comparison structure matters here, and the headline is stated to match
-it: in nearly every extracted comparison, the preference method is not an
+In nearly every extracted comparison, the preference method is not an
 alternative to SFT but a stage applied *after* it, scored against the SFT
 model it started from. Every such within-lineage comparison is positive except one (identity
 preference optimization, IPO, underperforms SFT by 5.4% (Saeidi et al.,
@@ -327,9 +318,9 @@ on Llama-2-7b-chat (our reanalysis of Cheng et al.'s released outputs,
 $n = 11{,}313$).** Higher refusal recall on unknown questions comes paired
 with higher over-refusal on known questions; no method reaches the ideal
 top-left corner. The preference methods (DPO, BoN, PPO) and the SFT-family
-methods (SFT, HIR) occupy two ends of the same frontier rather than one
-dominating the other. Our second reanalysis bounds
-the claim: on the Tulu-3 ladder, where SFT is general-purpose rather than
+methods (SFT, HIR) occupy two ends of the same frontier rather than one dominating the other.
+
+Our second reanalysis bounds the claim: on the Tulu-3 ladder, where SFT is general-purpose rather than
 abstention-targeted, there is no over-refusal deficit to repair, so
 SFT-induced over-refusal is a property of abstention-targeted SFT data, not of
 SFT per se (the same data-dependence appears in safety tuning, where added
@@ -382,8 +373,7 @@ approaches teach the model to verbalize its own uncertainty (Xu et al., 2024;
 Liu et al., 2024). Many different levers move the same construct, which is
 what makes the signal credible. The catch is coverage: each study measures the
 one behavior it trained, so the corpus never learns what any of these
-interventions did to the humility behaviors it was not aimed at. That blind
-spot becomes the tension below.
+interventions did to the humility behaviors it was not aimed at.
 
 ### What the families do not yet cover: verifiable-RL abstention
 
@@ -497,9 +487,8 @@ We use "epistemic signal" here as a working simplification: nothing below
 requires it to be a single one-dimensional object, and whether it is one
 signal or several is itself an empirical question the agenda leaves open.
 
-The value of the two-object distinction is that it turns the five claim
-families from a list of separate findings into one story. Walk through them in
-order.
+Restated in these terms, the five claim families stop being separate findings
+and become one story.
 
 Start with C1, the calibration damage. Kadavath et al. (2022) supply the
 mechanism: RLHF concentrates probability mass on high-reward outputs, so the
@@ -536,7 +525,7 @@ measurement: how well do the policy's outputs track the signal? That question,
 almost entirely unmeasured in the literature, is what the propositions below
 make precise.
 
-We state the picture as four propositions, each falsifiable:
+The picture reduces to four propositions, each falsifiable:
 
 - **P1 (locus).** A model's expressed epistemic character (its calibration,
   abstention, and capitulation behavior) is predominantly set by
@@ -619,9 +608,9 @@ original quantitative training-intervention study on these outcomes published
 only outside English-language venues, consistent with this subfield
 publishing on arXiv in English regardless of lab origin; non-archival
 native-language theses and proceedings remain unscreened. The reanalyses
-cover three studies' artifacts, not the corpus. The propositions of Section 6
-are a reading of observational syntheses, not established results: P2, P3, and P4 in particular are stated to be tested, and this program's empirical work
-treats them as hypotheses with pre-registered falsifiers, not as conclusions.
+cover three studies' artifacts, not the corpus. The propositions of Section 6 are a reading of observational syntheses, not
+established results: this program's empirical work treats P2, P3, and P4 as
+hypotheses with pre-registered falsifiers, not as conclusions.
 
 Finally, reflexivity, disclosed in the spirit of the paper's subject: this
 synthesis was produced with a large language model in the loop at nearly
@@ -906,9 +895,9 @@ below. Appendices B, C, and D state the protocols these files record.
 
 ## Appendix B: Search protocol and corpus construction
 
-This appendix states how the corpus was assembled: what was searched, what
-was admitted, and what the funnel from query to extracted row looks like.
-Every count below is recomputable from the files in Appendix A.
+How the corpus was assembled: what was searched, what was admitted, and the
+funnel from query to extracted row. Every count below is recomputable from the
+files in Appendix A.
 
 **The six structured searches.** Evidence was gathered in June 2026 through
 five structured fan-out searches, one per evidence area, executed by
@@ -1010,10 +999,10 @@ study, leaving 78 rows from 39 studies.
 ## Appendix C: Extraction schema and verification
 
 Every quantitative claim in this paper was extracted into one table before it
-was written about. This appendix gives that table's schema, the normalization
-rules applied to it, how rows were verified, what verification caught, and
-how the work was divided between the human author and the LLM agents that
-executed the pipeline.
+was written about. Below: that table's schema, the normalization rules applied
+to it, how rows were verified, what verification caught, and how the work was
+divided between the human author and the LLM agents that executed the
+pipeline.
 
 **Schema.** `evidence/effects.csv` holds one row per (study, metric,
 comparison) triple, in 22 columns: `study`, the arXiv ID or stable key;
