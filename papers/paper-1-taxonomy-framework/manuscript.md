@@ -1,19 +1,19 @@
 ---
 title: "The Depths of Ignorance: A Taxonomy, Systematic Evidence Synthesis, and Research Agenda for Epistemic Humility in Language Models"
 author: "Joseph Rosenbaum (Synaptic Labs)"
-status: draft-v0 (created 2026-07-01 by splitting papers/paper-2-training-regimen/manuscript.md Part I back out as the standalone framing paper)
+status: draft v0 (created 2026-07-01 by splitting papers/paper-2-training-regimen/manuscript.md Part I back out as the standalone framing paper)
 date: 2026-07-01
 repository: https://github.com/ProfSynapse/Epistemic-Humility-Research
 target: arXiv (cs.CL / cs.AI)
-evidence_base: meta-analysis/evidence/effects.csv (78 rows, 39 studies), meta-analysis/evidence/idk-method-reanalysis.csv
+evidence_base: evidence/effects.csv (78 rows, 39 studies), evidence/idk-method-reanalysis.csv
 notes: >
-  Numbers discipline: every quantitative claim traces to
-  meta-analysis/evidence/effects.csv (78 rows, 39 studies) or the reanalysis
-  scripts under meta-analysis/analysis/. The full synthesis apparatus (search
-  protocol, PRISMA-style flow accounting, extraction schema, per-family
-  sensitivity analyses, data audits, complete bibliography) is the source of
-  record at meta-analysis/paper/draft-v0.md; this paper is the reader-facing
-  text built on it, extended with the taxonomy and the theoretical framework.
+  Numbers discipline: every quantitative claim traces to evidence/effects.csv
+  (78 rows, 39 studies) or to the reanalysis and synthesis scripts under
+  analysis/, both held in this paper's own directory alongside the raw search
+  reports (evidence/raw-reports/). This paper is the source of record for the
+  synthesis: the search protocol and flow accounting are Appendix B; the
+  extraction schema, verification protocol, and AI-assistance disclosure are
+  Appendix C; the sensitivity analyses and data audits are Appendix D.
   Math is set in LaTeX (inline $...$, pandoc-compatible). Citations are
   author-year; the References section is one-to-one with in-text citations.
 ---
@@ -54,10 +54,9 @@ does not produce humility; and targeted interventions reliably do ($p = 0.001$,
 median |effect| 40%). The families combine into an unreconciled tension, one
 that no study in the corpus measures within a single run: the methods that
 best teach a model to *say* "I don't know" are the documented destroyers of
-the signal that *knows*. We formalize this as a policy-versus-signal framework
-with three testable propositions, verify six specific experiments the field
-has not run, and set the agenda that the empirical papers of this program
-execute.
+the signal that *knows*. We formalize this as a policy-versus-signal framework with four testable
+propositions, verify six specific experiments the field has not run, and set
+the agenda those propositions generate.
 
 ## 1. Introduction
 
@@ -84,8 +83,8 @@ causal locus of the expressed failures.
 post-training breaks the readout.** The GPT-4 technical report measures an
 expected calibration error (ECE, the average gap between the probability a
 model assigns to its answers and the rate at which those answers are actually
-correct, so 0 is perfect and higher is worse) of 0.007 for the pretrained
-base model on a subset of MMLU; after reinforcement learning from human feedback (RLHF), ECE on
+correct, so 0 is perfect and higher is worse) of 0.007 for the pretrained base model on a subset of MMLU (a broad multiple-
+choice knowledge exam); after reinforcement learning from human feedback (RLHF), ECE on
 the same subset rises tenfold to 0.074 (OpenAI, 2023). Kadavath et al. (2022)
 identify the mechanism (RLHF concentrates probability mass on high-reward
 outputs, sharpening every distribution whether or not the model's knowledge
@@ -132,8 +131,8 @@ Contributions:
    searches and re-verified by targeted spot-checks as this paper was
    finalized, with no closures found (Section 5).
 5. **A theoretical framework** (expression policy over a fixed epistemic
-   signal) stated as three testable propositions, with the research agenda
-   they generate (Section 6).
+   signal) stated as four testable propositions, with the research agenda they generate
+(Section 6).
 
 ## 2. The Depths of Ignorance: a taxonomy
 
@@ -197,7 +196,8 @@ paper's scope.
 
 Evidence gathering began in 2026 with six structured searches (110
 documented queries) plus a backward-citation pass over the full bibliography
-(~4,000 referenced works ranked via the Semantic Scholar Graph API), and the
+(~4,000 referenced works ranked via the Semantic Scholar Graph API,
+Appendix B), and the
 corpus has been re-checked and updated on a rolling basis since, a necessity
 given the speed at which this literature moves. The
 corpus holds 78 effect rows from 39 studies (2021 to 2026) spanning calibration
@@ -210,23 +210,24 @@ our primary searches), we synthesize by vote counting with exact binomial sign
 tests and descriptive normalization rather than formal pooling, following the
 SWiM reporting guideline (Campbell et al., 2020) and the Cochrane Handbook's
 sanctioned direction-based vote count (McKenzie & Brennan, 2023). The full
-apparatus lives in the project repository alongside this paper: the [search
-protocol, inclusion criteria, extraction schema, verification protocol, flow
-accounting, and AI-assistance
-disclosure](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/meta-analysis/paper/draft-v0.md),
-the [extracted evidence
-table](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/meta-analysis/evidence/effects.csv)
+apparatus travels with this paper: the search protocol, inclusion criteria,
+and flow accounting are Appendix B; the extraction schema, verification
+protocol, and AI-assistance disclosure are Appendix C; the sensitivity
+analyses and data audits are Appendix D. The files those appendices describe
+are committed in this paper's own directory: the [extracted evidence
+table](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/papers/paper-1-taxonomy-framework/evidence/effects.csv)
 (one row per effect), the [method-reanalysis
-table](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/meta-analysis/evidence/idk-method-reanalysis.csv),
+table](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/papers/paper-1-taxonomy-framework/evidence/idk-method-reanalysis.csv),
 and the [analysis
-scripts](https://github.com/ProfSynapse/Epistemic-Humility-Research/tree/main/meta-analysis/analysis)
+scripts](https://github.com/ProfSynapse/Epistemic-Humility-Research/tree/main/papers/paper-1-taxonomy-framework/analysis)
 that regenerate every number reported here.
 
 Three studies' released artifacts were additionally *reanalyzed* rather than
 merely extracted: the released per-output files of the model-specific IDK
 tournament of Cheng et al. (2024) ($n = 11{,}313$ outputs), the released
-results of AbstentionBench (Kirichenko et al., 2025), and the alignment-method
-comparison of Saeidi et al. (2024). The reanalyses matter because they expose
+results of AbstentionBench (Kirichenko et al., 2025), and the released
+generations behind FActScore (Min et al., 2023), reanalyzed descriptively for
+the audit reported in Appendix D. The reanalyses matter because they expose
 exactly the quantities the papers' aggregate metrics obscure, and two of the
 five claim families below rest partly on them.
 
@@ -235,9 +236,8 @@ five claim families below rest partly on them.
 The synthesis organizes its results as five claim families: statements about
 the direction of an effect, each backed by counting the extracted rows that
 support or contradict it, with an exact binomial sign test where the count
-permits. We label them C1 through C5 (for Claim 1 through Claim 5) and use
-those shorthands for cross-reference in the rest of the paper; each family is
-stated in full as a subheading below. The first family is about what standard
+permits. We label them C1 through C5 (for Claim 1 through Claim 5) and use those shorthands for cross-reference in the rest of the paper. The
+first family is about what standard
 post-training breaks, the next two about what preference optimization buys
 and what it merely trades, the fourth about what scale fails to provide, and
 the fifth about what targeted training reliably delivers. Read together they
@@ -246,11 +246,16 @@ rest of the paper.
 
 ### Claim 1 (C1): Instruction tuning and RLHF degrade token-probability calibration
 
-Two extracted head-to-head rows support, none contradict; magnitudes 176.9%
-and 957.1% relative. GPT-4's ECE rises 0.007 to 0.074 after RLHF on the same
-MMLU subset (OpenAI, 2023); the same-base Pythia-7B to Dolly-v2-7B
-comparison rises 0.13 to 0.36 while predictive entropy falls
-(Lithgow-Serrano et al., 2025). Three further studies corroborate the
+The cleanest evidence for this claim comes from before-and-after pairs: take
+one base model, measure its token-probability calibration, apply standard
+post-training, and measure again. The corpus contains exactly two such head-
+to-head pairs; both support the claim, and the damage is large. GPT-4's ECE
+rises from 0.007 to 0.074, a 957% relative increase, after RLHF on the same
+MMLU subset (OpenAI, 2023). The open-model pair tells the same story:
+instruction tuning Pythia-7B into Dolly-v2-7B raises ECE from 0.13 to 0.36, a
+177% increase, while predictive entropy falls, the signature of a model
+growing more decisive without growing more correct (Lithgow-Serrano et al.,
+2025). Three further studies corroborate the
 direction without extractable pairs (Zhu et al., 2023; He et al., 2023;
 Ye et al., 2024). The mechanism-level finding that matters most for training
 design: what does the damage is the relationship between the tuning data and
@@ -266,19 +271,29 @@ abstention method builds *model-specific* training splits.
 The comparison structure matters here, and the headline is stated to match
 it: in nearly every extracted comparison, the preference method is not an
 alternative to SFT but a stage applied *after* it, scored against the SFT
-model it started from. Every such within-lineage comparison is positive
-except one (the IPO variant underperforms by 5.4% (Saeidi et al., 2024)).
-The anchor is the only within-paper tournament on model-specific IDK data,
-where the preference arms build on the Idk-SFT stage: on Llama-2-7b-chat
-truthful rate, Idk-Prompting 66.93 < Idk-SFT 74.75 < Idk-HIR 75.91 < Idk-PPO
-76.47 < Idk-DPO 77.89 < Idk-BoN 78.96 (Cheng et al., 2024). Our reanalysis
-of AbstentionBench's released results adds an independent lineage with the
-same staged structure: on the Tulu-3 ladder, where DPO is the stage that
-follows SFT, DPO beats SFT on abstention recall by a paired median of +0.08
-at 8B ($p = 5.5 \times 10^{-4}$) (Kirichenko et al., 2025; our reanalysis).
+model it started from. Every such within-lineage comparison is positive except one (identity
+preference optimization, IPO, underperforms SFT by 5.4% (Saeidi et al.,
+2024)).
+The anchor is the only within-paper tournament on model-specific IDK data.
+Cheng et al. (2024) build their training set by first testing which questions
+the model itself can answer, labeling those known and the rest unknown, so the
+dataset is specific to the model being trained. They then train
+Llama-2-7b-chat with five methods and score truthful rate, the fraction of
+questions the model handles correctly by either answering what it knows or
+admitting what it does not. The preference arms build on the Idk-SFT stage,
+and the ranking runs Idk-Prompting (simply instructing the model to refuse
+when unsure) 66.93 < Idk-SFT 74.75 < Idk-HIR (hindsight instruction
+relabeling) 75.91 < Idk-PPO 76.47 < Idk-DPO 77.89 < Idk-BoN (best-of-n
+sampling against a reward model) 78.96. Our reanalysis of AbstentionBench (a benchmark suite that scores whether
+models abstain on unanswerable questions; Kirichenko et al., 2025) adds an
+independent lineage with the same staged structure. The Tulu-3 project
+releases the intermediate checkpoints of its post-training pipeline, so
+consecutive stages of one lineage can be compared directly: DPO is the stage
+that follows SFT there, and it beats SFT on abstention recall by a paired
+median of +0.08 at 8B ($p = 5.5 \times 10^{-4}$, our reanalysis).
 The corpus contains exactly one comparison in which a preference method
-skips SFT entirely: KTO applied directly to the pretrained base beats the
-SFT model on TruthfulQA by +9.3 points, versus +2.2 for KTO applied on top
+skips SFT entirely: KTO applied directly to the pretrained base beats the SFT model on TruthfulQA
+(a benchmark of questions people commonly answer falsely) by +9.3 points, versus +2.2 for KTO applied on top
 of SFT (Saeidi et al., 2024), a suggestive but solitary data point. So the
 evidence establishes that a preference stage *adds to* SFT; whether
 preference optimization can *replace* SFT on this problem is measured once
@@ -305,7 +320,7 @@ refusal recall on genuinely unknown questions falls 84.06 to 71.19. Preference
 optimization moves the operating point along a refusal ROC curve; it does not
 obviously improve the underlying discrimination.
 
-![[figures/fig-c3-tradeoff.png]]
+![Scatter plot of refusal recall versus over-refusal for five IDK training methods](figures/fig-c3-tradeoff.png)
 
 **Figure 1. The recall/over-refusal trade across five IDK training methods
 on Llama-2-7b-chat (our reanalysis of Cheng et al.'s released outputs,
@@ -327,9 +342,9 @@ $\rho = -0.05$), and model-specific known/unknown labels are themselves noisy
 
 ### Claim 4 (C4): Scale alone does not produce epistemic humility
 
-The plain-language version of this claim: making a model bigger does not, by
-itself, make it better at knowing and saying what it does not know. Four
-studies support, none contradict. Larger models are not more truthful: the
+Making a model bigger does not, by itself, make it better at knowing and
+saying what it does not know. Four studies support this and none contradict
+it. Larger models are not more truthful: the
 best GPT-3 model is truthful on 58% of TruthfulQA against a 94% human
 baseline, and within a model family the larger variants are *less* truthful
 (inverse scaling; Lin et al., 2021). Even frontier scale leaves a clear gap
@@ -344,7 +359,7 @@ while a single DPO training stage on the smaller model moves it 0.08, four
 times as much. The practical consequence: waiting for the next model
 generation does not solve this problem; training design does or does not.
 
-![[figures/fig-c4-scale-vs-training.png]]
+![Bar chart comparing abstention recall movement from scale versus one DPO stage](figures/fig-c4-scale-vs-training.png)
 
 **Figure 2. Scale versus training on abstention recall (our AbstentionBench
 reanalysis).** Multiplying Llama 3.1 Instruct's parameters 50-fold (8B to
@@ -353,34 +368,48 @@ Tulu-3 8B model moves it +0.08, four times as much.
 
 ### Claim 5 (C5): Targeted training interventions improve humility metrics
 
-Eleven
-studies supporting, none contradicting, the corpus's only conventionally
-significant sign test ($p = 0.001$); median |relative change| 40.1%. The
-supporting set spans intervention types (refusal-aware SFT (Zhang et al.,
-2023), honesty-targeted SFT (Yang et al., 2023), factuality DPO
-(Tian et al., 2023b), listener-aware DPO (Stengel-Eskin et al., 2024),
-calibrated-reward PPO (Leng et al., 2024), self-reflective confidence training
-(Xu et al., 2024), self-trained uncertainty expression (Liu et al., 2024), and
-others), which is what makes the signal credible; what it is *not* is
-evaluated on more than a slice of the humility construct per study.
+When training aims directly at a humility behavior, it works. Eleven studies
+in the corpus report a targeted training intervention, and all eleven moved
+their chosen metric in the intended direction; none moved it the wrong way.
+That eleven-for-eleven count is the corpus's only conventionally significant
+sign test ($p = 0.001$), and the effects are not small: the median reported
+change is 40.1%. Nor are the eleven interventions variations on one idea. SFT
+variants teach refusal (Zhang et al., 2023) and honesty (Yang et al., 2023);
+DPO variants target factuality (Tian et al., 2023b) and what a listener
+actually takes away from the answer (Stengel-Eskin et al., 2024); PPO with a
+calibrated reward tames overconfidence (Leng et al., 2024); and self-training
+approaches teach the model to verbalize its own uncertainty (Xu et al., 2024;
+Liu et al., 2024). Many different levers move the same construct, which is
+what makes the signal credible. The catch is coverage: each study measures the
+one behavior it trained, so the corpus never learns what any of these
+interventions did to the humility behaviors it was not aimed at. That blind
+spot becomes the tension below.
 
 ### What the families do not yet cover: verifiable-RL abstention
 
-A sixth family cannot yet be stated. A rapidly growing cluster trains
-abstention with RL against verifiable rewards, GRPO-style: TruthRL's ternary
-reward (Wei et al., 2025), Abstain-R1 (Zhai et al., 2026), reinforced
-hesitation (Mohamadi et al., 2025), the correctness-minus-Brier reward of
-RLCR (Damani et al., 2025), and 2026 entries including an RLVR ternary
-abstention reward (Jha et al., 2026) and trajectory-informed advantage
-reweighting (Pan et al., 2026). These works demonstrate that the approach
-functions, but the cluster yields no extractable head-to-head rows against
-the SFT and preference families on shared data, so no direction-of-effect
-claim about it survives our inclusion rules. It enters the synthesis as an
-absence (Gap 3, Section 5), and any credible version of the missing
-comparison in Section 6 must now include a verifiable-RL arm alongside SFT
-and the preference methods, and must ask the same question of it that C2/C3
-ask of preference optimization: new operating point, or better
-discrimination?
+A sixth family cannot yet be stated, and not for lack of results. A rapidly
+growing cluster trains abstention with RL against verifiable rewards, GRPO-
+style, and its individual numbers are striking. TruthRL's ternary reward
+(answer right, abstain, answer wrong, scored +1/0/-1) cuts hallucination from
+43.5% to 19.4% and lifts truthfulness from 5.3% to 37.2% on a retrieval-
+augmented QA benchmark, measured against its own prompting baseline (Wei et
+al., 2025). RLCR's correctness-minus-Brier reward reports calibration-error
+reductions of up to roughly 90% versus binary-reward RL at preserved accuracy
+(Damani et al., 2025). Abstain-R1 pairs an SFT cold-start with GRPO and even
+runs an SFT-only ablation arm (Zhai et al., 2026); reinforced hesitation
+(Mohamadi et al., 2025) and newer 2026 entries (an RLVR ternary abstention
+reward, Jha et al., 2026; trajectory-informed advantage reweighting, Pan et
+al., 2026) extend the family. What keeps all of this out of the claim families
+is comparison structure, not quality: every result above is measured against
+its own prompting or cold-start baseline, on its own dataset, and none against
+the SFT and preference families on shared data (the Abstain-R1 ablation comes
+closest and still has no preference arm). Standalone wins on disjoint
+benchmarks cannot be vote-counted the way C1 through C5's within-lineage rows
+can, so the cluster enters the synthesis as an absence (Gap 3, Section 5), and
+any credible version of the missing comparison in Section 6 must now include a
+verifiable-RL arm alongside SFT and the preference methods, and must ask the
+same question of it that C2/C3 ask of preference optimization: new operating
+point, or better discrimination?
 
 ### The unifying tension
 
@@ -414,8 +443,8 @@ closed. Six were verified:
   damage than an unnecessary abstention).
 - **Gap 2: No SFT vs. DPO vs. KTO three-way comparison exists on the same
   abstention dataset** (high confidence). Cheng et al. (2024) compare five
-  methods but not KTO; the one SFT/DPO/KTO comparison that exists uses generic
-  benchmarks, not abstention training. Every component of the experiment
+  methods but not KTO; the one SFT/DPO/KTO comparison that exists uses generic benchmarks, not
+abstention training (Saeidi et al., 2024). Every component of the experiment
   exists in print; no study assembles them.
 - **Gap 3: GRPO-for-abstention exists, but no controlled comparison against
   SFT/DPO/KTO does.** The verifiable-RL cluster surveyed at the end of
@@ -452,7 +481,7 @@ closed. Six were verified:
   in-distribution; whether the methods transfer down-scale and out of
   distribution is asserted rather than measured.
 
-## 6. A framework, three propositions, and the agenda
+## 6. A framework, four propositions, and the agenda
 
 The five families and six gaps compress into a single conceptual picture.
 Distinguish two objects inside a trained model:
@@ -468,18 +497,46 @@ We use "epistemic signal" here as a working simplification: nothing below
 requires it to be a single one-dimensional object, and whether it is one
 signal or several is itself an empirical question the agenda leaves open.
 
-The value of the two-object distinction is that each claim family can be
-restated as a claim about *which object the intervention touched*. C1's
-mechanism (Kadavath et al., 2022) says RLHF damages the readout while the
-signal survives: a single temperature adjustment largely restores
-calibration, which could not happen if the signal itself had been destroyed.
-C2/C3's trades move operating points without improving discrimination, which
-is what changing the policy over a fixed signal looks like. C4 says growing
-the signal with scale does not deliver the policy. C5's wins are policy
-installations. And the coherence axis of Section 2 is exactly the question
-of how well the policy's outputs track the signal.
+The value of the two-object distinction is that it turns the five claim
+families from a list of separate findings into one story. Walk through them in
+order.
 
-We state the picture as three propositions, each falsifiable:
+Start with C1, the calibration damage. Kadavath et al. (2022) supply the
+mechanism: RLHF concentrates probability mass on high-reward outputs, so the
+model's stated probabilities come out overconfident everywhere. But a single
+temperature adjustment, one scalar applied at inference time with no
+retraining, largely restores calibration. That repair is the telling fact. If
+post-training had destroyed the model's internal sense of what it knows, no
+one-parameter correction could bring it back: information that is gone cannot
+be recovered by rescaling. So what RLHF damaged is the readout, the mapping
+from internal signal to expressed confidence. The signal itself survived.
+
+Now C2 and C3, the preference-stage gains. A preference stage makes the model
+abstain more where it should and over-refuse less, which sounds like the model
+got better at knowing its limits. Figure 1 shows what actually happened: the
+methods slide along a shared frontier, trading refusal recall against over-
+refusal, and none of them moves the frontier itself. A model that had
+genuinely become better at telling what it knows from what it does not would
+improve both numbers at once. Sliding along a fixed curve is what it looks
+like to change the policy while the signal stays put.
+
+C4 fits the same picture from the other side. Making the model bigger
+plausibly grows the signal: larger models know more, and their internals
+encode more. Yet abstention behavior barely moves with scale. A larger signal
+with no policy to express it produces no visible humility. And C5 completes
+the story: when training targets a humility behavior directly, it reliably
+works, because installing an expression policy is exactly the thing output-
+side training is good at.
+
+Read this way, the families converge on one claim: everything post-training
+does here, the gains and the damage alike, happens to the expression policy,
+and nothing in the corpus demonstrates any training intervention improving the
+signal itself. The coherence axis of Section 2 becomes the natural
+measurement: how well do the policy's outputs track the signal? That question,
+almost entirely unmeasured in the literature, is what the propositions below
+make precise.
+
+We state the picture as four propositions, each falsifiable:
 
 - **P1 (locus).** A model's expressed epistemic character (its calibration,
   abstention, and capitulation behavior) is predominantly set by
@@ -499,8 +556,20 @@ We state the picture as three propositions, each falsifiable:
   rather than training the output channel harder, is the productive
   engineering target. *(Motivated by the temperature-repair result and the
   probing literature; falsified if the internal signal proves weak,
-  incoherent across estimators (Gani et al., 2026), or non-transferable
-  across the error populations a deployed model actually faces.)*
+  incoherent across estimators (Gani et al., 2026), or non-transferable across the error populations a deployed model actually faces.)*
+- **P4 (control without training).** If P1 through P3 hold, improving
+  epistemic humility should not require further training at all. The signal
+  is already in the model, and the binding constraint is the readout, so
+  reading the internal state directly and coupling behavior to what is read
+  (answer when the signal says known, abstain when it says unknown, state
+  confidence in proportion) should recover from a frozen model the benefits
+  that targeted training installs. The strong form adds the write direction:
+  a state that can be read should also be settable, so that expression
+  follows internal state in both directions rather than merely reporting it.
+  *(The constructive consequence of P2 and P3; falsified if a training-free
+  readout cannot reach the operating points that targeted training reaches
+  under C5, or if the state can be read but behavior cannot be coupled to
+  it.)*
 
 The propositions generate a concrete agenda, ordered by the gaps:
 
@@ -514,7 +583,7 @@ The propositions generate a concrete agenda, ordered by the gaps:
 2. **Measure the coherence axis directly** (Gap 4): quantify the gap between
    internal and stated confidence on identical rows, and test whether any
    training regimen closes it.
-3. **Test the readout constructively** (P3): if the signal is present and the
+3. **Test the readout constructively** (P3 and P4): if the signal is present and the
    channel is the problem, a training-free readout should recover calibrated
    gating and trust from frozen models, and the test of the claim is whether
    that readout transfers across datasets, scales, and model families. The
@@ -537,7 +606,8 @@ scalar.
 ## 7. Limitations
 
 This synthesis inherits the limitations of its corpus. Extraction was
-single-pass with a ~14% first-pass correction rate caught by verification;
+single-pass with a ~14% first-pass correction rate caught by verification
+(Appendix C);
 vote-count synthesis was forced by a variance-free literature (zero error bars
 in any retrieved material from the twelve calibration studies in our primary
 searches); and the claim families were articulated after seeing the raw
@@ -550,8 +620,7 @@ only outside English-language venues, consistent with this subfield
 publishing on arXiv in English regardless of lab origin; non-archival
 native-language theses and proceedings remain unscreened. The reanalyses
 cover three studies' artifacts, not the corpus. The propositions of Section 6
-are a reading of observational syntheses, not established results: P2 and P3
-in particular are stated to be tested, and this program's empirical work
+are a reading of observational syntheses, not established results: P2, P3, and P4 in particular are stated to be tested, and this program's empirical work
 treats them as hypotheses with pre-registered falsifiers, not as conclusions.
 
 Finally, reflexivity, disclosed in the spirit of the paper's subject: this
@@ -568,8 +637,9 @@ page images after two text-extraction misreads. The prose was AI-drafted
 under human editorial control. Every number traces to a named artifact, the
 audit trail of corrections is preserved in the evidence store, and the ~14%
 first-pass correction rate is reported here rather than smoothed over. The
-full disclosure is Section 4.6 of the [synthesis
-document](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/meta-analysis/paper/draft-v0.md).
+procedural version of this disclosure is Appendix C, and the corrections
+themselves are logged with the [evidence
+tables](https://github.com/ProfSynapse/Epistemic-Humility-Research/tree/main/papers/paper-1-taxonomy-framework/evidence).
 
 ## 8. Conclusion
 
@@ -582,8 +652,7 @@ calibrated humility, because no study measures both in the same run. The
 Depths of Ignorance taxonomy locates nearly all of this work at the
 shallowest depth, with the coherence between what a model knows and what it
 says almost entirely unmeasured. We propose treating the trained model as an
-expression policy over a fixed epistemic signal, offer three falsifiable
-propositions, and derive the experiments that decide them. Running those
+expression policy over a fixed epistemic signal, offer four falsifiable propositions, and derive the experiments that decide them. Running those
 experiments is the work of this research program.
 
 ## References
@@ -596,6 +665,11 @@ Bianchi, F., Suzgun, M., Attanasio, G., Röttger, P., Jurafsky, D.,
 Hashimoto, T., & Zou, J. (2023). *Safety-Tuned LLaMAs: Lessons From Improving
 the Safety of Large Language Models that Follow Instructions*.
 arXiv:2309.07875.
+
+Buscemi, N., Hartling, L., Vandermeer, B., Tjosvold, L., & Klassen, T. P.
+(2006). *Single data extraction generated more errors than double data
+extraction in systematic reviews*. Journal of Clinical Epidemiology, 59(7),
+697–703.
 
 Campbell, M., McKenzie, J. E., Sowden, A., Katikireddi, S. V., Brennan,
 S. E., Ellis, S., Hartmann-Boyce, J., Ryan, R., Shepperd, S., Thomas, J.,
@@ -647,6 +721,12 @@ arXiv:2207.05221.
 Kalai, A. T., Nachum, O., Vempala, S. S., & Zhang, E. (2025). *Why Language
 Models Hallucinate*. arXiv:2509.04664.
 
+Khraisha, Q., et al. (2024).
+*Can large language models replace humans in systematic reviews? Evaluating
+GPT-4's efficacy in screening and extracting data from peer-reviewed and grey
+literature in multiple languages*. Research Synthesis Methods.
+doi:10.1002/jrsm.1715.
+
 Kirichenko, P., Ibrahim, M., Chaudhuri, K., & Bell, S. J. (2025).
 *AbstentionBench: Reasoning LLMs Fail on Unanswerable Questions*.
 arXiv:2506.09038.
@@ -677,6 +757,11 @@ findings using other methods*. In J. P. T. Higgins, J. Thomas, J. Chandler,
 M. Cumpston, T. Li, M. J. Page, & V. A. Welch (Eds.), *Cochrane Handbook for
 Systematic Reviews of Interventions* (version 6.4, chapter 12). Cochrane.
 
+Min, S., Krishna, K., Lyu, X., Lewis, M., Yih, W.-t., Koh, P. W., Iyyer, M.,
+Zettlemoyer, L., & Hajishirzi, H. (2023). *FActScore: Fine-grained Atomic
+Evaluation of Factual Precision in Long Form Text Generation*.
+arXiv:2305.14251.
+
 Mohamadi, M. A., Wang, T., & Li, Z. (2025). *Honesty over Accuracy:
 Trustworthy Language Models through Reinforced Hesitation*. arXiv:2511.11500.
 
@@ -684,6 +769,10 @@ OpenAI (2023). *GPT-4 Technical Report*. arXiv:2303.08774.
 
 Ouyang, L., et al. (2022). *Training language models to follow instructions
 with human feedback*. arXiv:2203.02155.
+
+Page, M. J., McKenzie, J. E., Bossuyt, P. M., et al. (2021). *The PRISMA 2020
+statement: an updated guideline for reporting systematic reviews*. BMJ, 372,
+n71.
 
 Pan, M., et al. (2026). *TIAR: Trajectory-Informed Advantage Reweighting for
 LLM Abstention Learning*. arXiv:2605.25850.
@@ -698,21 +787,6 @@ G. M. A. Grube, in *Plato: Complete Works*, ed. J. M. Cooper, Hackett, 1997.
 Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C. D., & Finn, C.
 (2023). *Direct Preference Optimization: Your Language Model is Secretly a
 Reward Model*. arXiv:2305.18290.
-
-Rosenbaum, J. (2026). *Knows but Doesn't Say: A Training-Resistant Gap
-Between Internal and Stated Confidence in a Small Language Model*. Companion
-draft, this repository:
-[papers/paper-3-knows-but-doesnt-say/manuscript.md](../paper-3-knows-but-doesnt-say/manuscript.md).
-
-Rosenbaum, J. (2026). *Teaching Small Language Models to Say I Don't Know: A
-Controlled Comparison of SFT, DPO, KTO, and GRPO on Model-Specific Abstention
-Data*. Companion draft, this repository:
-[papers/paper-2-training-regimen/manuscript.md](../paper-2-training-regimen/manuscript.md).
-
-Rosenbaum, J. (2026). *It's What's on the Inside That Counts: A Training-Free
-Two-Signal Readout for Epistemic Humility in Small Language Models*.
-Companion draft, this repository:
-[papers/paper-4-two-signal-readout/manuscript.md](../paper-4-two-signal-readout/manuscript.md).
 
 Saeidi, A., Verma, S., Uddin, M. N., & Baral, C. (2024). *Insights into
 Alignment: Evaluating DPO and its Variants Across Multiple Tasks*.
@@ -788,46 +862,337 @@ of Large Language Models and Alignment*. arXiv:2311.13240.
 
 ## Appendix A: The synthesis apparatus, file by file
 
-The full systematic synthesis this paper condenses is maintained in the
-project repository, and every number in Sections 3–5 traces to one of the
-artifacts below.
+The apparatus this paper describes is committed with it, one directory per
+kind of artifact, and every number in Sections 3–5 traces to one of the files
+below. Appendices B, C, and D state the protocols these files record.
 
-- [The synthesis
-  document](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/meta-analysis/paper/draft-v0.md):
-  the source of record. Search protocol (six structured searches, 110
-  documented queries), inclusion criteria, extraction schema, verification
-  protocol, per-family sensitivity analyses, the FActScore and
-  reward-calibration data audits, the L1-clustering analysis, the
-  AI-assistance disclosure (its Section 4.6), and the complete bibliography.
 - [The evidence
-  table](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/meta-analysis/evidence/effects.csv):
+  table](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/papers/paper-1-taxonomy-framework/evidence/effects.csv):
   78 extracted effect rows from 39 studies, one row per effect, with
   comparison structure, baseline and treatment conditions, and per-row
-  verification status.
+  verification status. Schema in Appendix C.
 - [The IDK method
-  reanalysis](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/meta-analysis/evidence/idk-method-reanalysis.csv):
+  reanalysis](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/papers/paper-1-taxonomy-framework/evidence/idk-method-reanalysis.csv):
   output-level reanalysis of Cheng et al.'s (2024) released outputs
   ($n = 11{,}313$), the refusal-recall and over-refusal decomposition behind
   C3.
 - [The AbstentionBench
-  reanalysis](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/meta-analysis/evidence/abstentionbench-reanalysis.md):
+  reanalysis](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/papers/paper-1-taxonomy-framework/evidence/abstentionbench-reanalysis.md):
   the Tulu-3 post-training ladder, the scale sweep behind C4, and the
   recall/precision decoupling.
 - [The FActScore
-  reanalysis](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/meta-analysis/evidence/factscore-reanalysis.md):
+  reanalysis](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/papers/paper-1-taxonomy-framework/evidence/factscore-reanalysis.md):
   operating points, the fact-rarity curve, and label-agreement reliability
-  across 12 models.
+  across 12 models (Appendix D).
+- [The reward-calibration contamination
+  audit](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/papers/paper-1-taxonomy-framework/evidence/rewardcal-contamination-audit.md):
+  the template inventory and pre-existing-hedging rates of the released
+  calibration preference mixture (Appendix D).
 - [Flow
-  accounting](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/meta-analysis/evidence/prisma-flow.md):
-  PRISMA 2020 flow, the deduplication log, and per-paper exclusion
-  rationale.
+  accounting](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/papers/paper-1-taxonomy-framework/evidence/prisma-flow.md):
+  the PRISMA-style funnel condensed in Appendix B, plus the deduplication
+  log, the per-paper exclusion rationale, and the revision-candidate list.
 - [Analysis
-  scripts](https://github.com/ProfSynapse/Epistemic-Humility-Research/tree/main/meta-analysis/analysis):
+  scripts](https://github.com/ProfSynapse/Epistemic-Humility-Research/tree/main/papers/paper-1-taxonomy-framework/analysis):
   deterministic scripts that regenerate every reported number:
-  `synthesize.py` (vote counts and sign tests), the three reanalysis
-  scripts, and the reward-calibration contamination audit, plus the
-  generated figures and summary tables.
+  `synthesize.py` (vote counts and sign tests, emitting
+  `synthesis-summary.md`), the three reanalysis scripts, and the
+  reward-calibration contamination audit, plus the generated figures and
+  summary tables.
 - [Raw search
-  reports](https://github.com/ProfSynapse/Epistemic-Humility-Research/tree/main/meta-analysis/evidence/raw-reports):
+  reports](https://github.com/ProfSynapse/Epistemic-Humility-Research/tree/main/papers/paper-1-taxonomy-framework/evidence/raw-reports):
   the six structured searches' raw outputs, preserved as the audit trail
   from query to inclusion decision.
+
+## Appendix B: Search protocol and corpus construction
+
+This appendix states how the corpus was assembled: what was searched, what
+was admitted, and what the funnel from query to extracted row looks like.
+Every count below is recomputable from the files in Appendix A.
+
+**The six structured searches.** Evidence was gathered in June 2026 through
+five structured fan-out searches, one per evidence area, executed by
+independent LLM search agents, plus a sixth follow-up search covering the
+mechanistic-interpretability, probing, and verifiable-RL literature for the
+coherence axis. Per-search query counts are recorded in each raw report's
+frontmatter: calibration versus RLHF (15 queries), abstention and IDK
+fine-tuning (16), hallucination and dataset inventory (15), sycophancy (12),
+SFT versus preference methods plus the gap analysis (24), and the probing and
+GRPO follow-up (28), for 110 documented queries. Each search produced a raw
+evidence report of per-paper structured entries (model, intervention, metric,
+numbers, quotes, URLs) with an explicit provenance flag on every number. The
+corpus has been re-checked on a rolling basis since.
+
+**Three retrieval passes.** Initial extraction drew on official paper
+repositories treated as primary artifacts, on datasets and model outputs
+downloaded into the local evidence store, and on search-snippet extraction
+from arXiv and ACL pages, the last flagged unverified until checked. A
+verification pass then checked every quoted value against the primary PDFs
+(Appendix C). A third pass ran backward citation checking over the completed
+bibliography: the reference lists of all 69 cited arXiv papers were retrieved
+from the Semantic Scholar Graph API (about 4,000 referenced works),
+aggregated, and ranked by how many of our cited sources cite them, yielding
+143 candidates cited by at least three sources. Topically relevant candidates
+absent from the bibliography were screened against the criteria below, six of
+them by full-PDF screening agents. Four were admitted as effect studies
+(8 rows) and 19 as context citations; two were screened in full and held out
+with logged rationales, a pre-LLM dialogue-model result not commensurable
+with this corpus and a synthetic deception-reward study cited instead as
+methodological context in Gap 3.
+
+**Inclusion criteria.** A study was included if it (i) reports a quantitative
+effect of a training condition (pretraining versus instruction tuning versus
+RLHF or preference optimization, or a deliberate humility-targeted fine-tune)
+on a calibration, abstention, hallucination, factuality, or sycophancy
+metric; or (ii) supplies benchmark evidence needed to interpret such effects,
+such as scale studies and knowledge-boundary benchmarks; or (iii) is a
+method-comparison study (SFT versus DPO, KTO, or PPO) whose outcome metrics
+are humility-adjacent. Pure prompting studies entered only where they
+establish a property of trained models that the training studies rely on,
+such as verbalized-confidence overconfidence.
+
+**Gray-literature exceptions.** Three admissions, each flagged where cited: a
+production postmortem of a deployed sycophancy regression; a blog-published
+replication of the Perez sycophancy evaluations on base models, admitted
+because it is the only same-evaluation base-versus-feedback-tuned comparison
+found and because it reports confidence intervals, which are rarer in this
+literature than one would hope; and three provider system and model cards,
+cited as evidence about frontier measurement practice rather than as effect
+rows. The blog replication is one of the corpus's two unverified rows and is
+excluded from headline claims and family votes.
+
+**Language and venue probes.** A five-language probe (Chinese, Japanese,
+Korean, French, German) found surveys, detection methods, and inference-time
+mitigation work in native-language venues, but no original quantitative
+training-intervention study on these outcomes published only outside
+English-language venues; CNKI and Wanfang theses and non-archival Japanese
+NLP Society proceedings could not be searched directly and remain unscreened.
+A parallel venue probe (ACL Anthology, OpenReview, clinical journals,
+Nature-family journals, HCI venues) confirmed that an arXiv-centric pipeline
+leaks a small identifiable set of in-scope studies, concentrated in Anthology
+papers from groups that do not post preprints and in journal-first clinical
+informatics work; those cases are logged as revision candidates in the flow
+accounting rather than folded in silently.
+
+**Flow accounting.** The search agents logged queries and per-paper entries
+but not snippet-level hit counts, so the earliest auditable stage is
+structured assessment rather than the records-identified stage the PRISMA
+2020 flow standard expects (Page et al., 2021), a disclosed deviation forced
+by the agentic search design.
+
+| Stage | Count |
+|---|---|
+| Structured searches | 6 (5 area searches, 1 follow-up) |
+| Documented queries | 110 (15 + 16 + 15 + 12 + 24 + 28) |
+| Snippet-level records identified | not logged |
+| Structured per-paper entries across the reports | 93 |
+| Unique arXiv IDs surfaced | 114 |
+| Non-arXiv records admitted | 8 |
+| Admitted to the project library after deduplication and screening | 97 |
+| Surfaced but not admitted | 21 |
+| Studies with extracted effect rows | 39 studies, 78 rows |
+| Library papers cited as context or framework only | 60 |
+| Rows excluded after verification | 1 |
+| Rows verified against a primary artifact | 76 of 78 |
+
+The 21 surfaced-but-not-admitted arXiv IDs break down as 13 peripheral
+mentions never deeply extracted, 4 papers deeply extracted in the follow-up
+search but arriving after the extraction freeze (logged as revision
+candidates), and 4 artifacts of ID disambiguation. The corpus reached its
+current size in four steps: 67 rows from 35 studies at the extraction freeze;
+the backward-citation pass adding 8 rows from 4 studies; the removal of one
+row excluded as a citation mis-attribution, its full record preserved in the
+exclusion log, together with the extraction of one further within-paper
+comparison arm (the IPO arm of the alignment-method comparison, promoted from
+a notes field); and a later admission of three verified rows from one further
+study, leaving 78 rows from 39 studies.
+
+## Appendix C: Extraction schema and verification
+
+Every quantitative claim in this paper was extracted into one table before it
+was written about. This appendix gives that table's schema, the normalization
+rules applied to it, how rows were verified, what verification caught, and
+how the work was divided between the human author and the LLM agents that
+executed the pipeline.
+
+**Schema.** `evidence/effects.csv` holds one row per (study, metric,
+comparison) triple, in 22 columns: `study`, the arXiv ID or stable key;
+`paper`, its short title; `year`; `area`, one of calibration, abstention,
+hallucination, knowledge-boundary, sycophancy, methods, or capability;
+`model`, the model or family evaluated; `size_b`, parameters in billions
+where stated; `comparison`, the contrast the row encodes, such as
+`pretrain_vs_rlhf`, `sft_vs_pref`, or `scale_inverse`; `method`, one of SFT,
+DPO, KTO, PPO, RLHF, RL, prompting, or none; `metric`, the reported measure;
+`direction`, whether lower or higher is better; `dataset`, the evaluation
+set; `baseline_cond` and `baseline`, the reference condition and its value;
+`treatment_cond` and `treatment`, the compared condition and its value;
+`delta`, their difference in the metric's own units; `rel_change_pct`, that
+difference as a percentage of the baseline; `n_eval`, evaluation sample size
+where reported, which is rare; `variance_reported`, a boolean that is
+almost uniformly false; `verified`, whether the value was confirmed against a
+primary artifact rather than a search snippet; `source`, the raw report or
+analysis script the row traces to; and free-text `notes` carrying the
+per-row audit trail.
+
+**Units and normalization.** Metric units are the study's own and are never
+rescaled; `direction` carries the polarity, so no improvement is inferred
+from the sign of a delta alone. Magnitude is normalized only descriptively,
+as relative percent change against the baseline, and only where a baseline
+exists. We compute no pooled effect sizes, no weights, and no heterogeneity
+statistics, because only six rows in the corpus carry any variance
+information at all. Sign tests are exact two-sided binomials over independent
+studies: a study contributing several rows casts one vote, and rows with zero
+change are dropped as uninformative ties. Votes count verified rows only;
+unverified rows are reported alongside their family and never counted.
+Magnitude medians are computed over rows rather than studies, restricted to
+rows with a computable relative change, so the vote and magnitude statistics
+have different denominators and each family reports its own. No GRADE-style
+certainty ratings are assigned: against that standard every family here would
+sit at low or very low certainty given the unreported variances and the
+single-pass extraction, which we state once rather than repeat per family.
+Headline claims rest on verified rows alone.
+
+**Verification protocol.** A row is verified only if its value was reproduced
+from a primary artifact under our control: the authors' released outputs
+re-scored by our own script, an official repository table fetched directly,
+or a dataset held locally in the evidence store and recomputable.
+Snippet-derived values, however well corroborated across search extractions,
+were held unverified until checked against the primary PDF. Of 78 rows, 76
+are verified. Twelve are our own computed reanalysis rows, born verified; the
+eight backward-citation rows, the review-extracted IPO row, and the three
+rows from the later admission were taken from primary PDFs or HTML at
+admission; the remaining 49 were retrospectively checked. Figure-only values
+were confirmed visually from rendered page images, a step added after two
+text-extraction misreads showed that a PDF's text layer is not a sufficient
+source when the number lives in a figure. The two rows that remain unverified
+(the blog replication and a journal article with no accessible PDF) are
+flagged where cited and excluded from headline claims and family votes. In
+the vocabulary of the literature under review, the verified flag is this
+paper's abstention mechanism.
+
+**What verification caught.** Seven of the 49 retrospectively checked rows
+changed, a first-pass correction rate of about 14%. Six were corrections: an
+R-Tuning metric relabeled from accuracy to AP score; a sycophancy effect
+re-attributed from Flan-PaLM-62B to the 8B model; the calibrated-reward-model
+row re-anchored from the paper's abstract to its Table 1; the
+honesty-alignment baseline re-identified as the unaligned condition at 50.06;
+a KTO gain corrected once the circulating 17.5-point figure proved to belong
+to a different setting; and a TruthfulQA scaling claim reinterpreted as a
+generation-task comparison between the largest model in a family and one
+about 60 times smaller. The seventh was an exclusion: a dose-response row
+whose claim turned out to belong to a different paper was removed from the
+corpus, its record preserved in the exclusion log, and the surviving
+qualitative claim re-cited to its true source (Bianchi et al., 2023). Single
+extraction is known to produce more errors than dual extraction (Buscemi et
+al., 2006), and LLM-assisted review extraction has been benchmarked at
+roughly 80% accuracy (Khraisha et al., 2024), which is why verification
+status is carried per row rather than asserted for the corpus as a whole.
+
+**Division of labor.** The search, extraction, verification, and drafting
+pipeline ran inside an agentic LLM environment. LLM agents executed the six
+structured searches, wrote the extraction and the synthesis code (vote
+counting, sign tests, figures, and the reanalyses), carried out the PDF
+verification pass, and drafted the prose. The human author directed the
+program: framing the research questions and the taxonomy, setting the
+inclusion criteria and the provenance rules, adjudicating disputed items, and
+reviewing and editing all output. The safeguards are built so as not to
+require trusting the model: every number traces to a named artifact (a CSV
+row, a repository table, released model outputs, or a PDF page), every
+statistic is recomputable from the committed files, the correction audit
+trail is preserved, and the correction rate above is reported rather than
+smoothed over. Section 7 states the reflexive version of the same disclosure.
+
+## Appendix D: Sensitivity analyses and audits
+
+Three kinds of check sit behind Section 4: a sensitivity analysis on where
+the claim-family boundaries were drawn, two audits of released study data
+that produced no effect rows but discipline how the corpus is read, and the
+mapping of the corpus onto the taxonomy of Section 2. All are regenerable
+from the scripts in `analysis/`.
+
+**Per-family votes and boundary sensitivity.** `analysis/synthesize.py`
+regenerates `analysis/synthesis-summary.md`, which carries each family's vote
+count, its exact sign-test $p$-value, and the median and range of relative
+change over the rows with a computable one:
+
+| Family | Supporting / contradicting studies | Sign test | Median absolute relative change | Range |
+|---|---|---|---|---|
+| C1 | 2 / 0 | $p = 0.50$ | 567.0% | 176.9% to 957.1% |
+| C2 | 2 / 1 | $p = 1.00$ | 5.0% | -5.4% to 21.2% |
+| C3 | 1 / 0 | $p = 1.00$ | 40.0% | -45.5% to -27.7% |
+| C4 | 4 / 0 | $p = 0.125$ | 41.5% | -44.8% to 80.0% |
+| C5 | 11 / 0 | $p = 0.001$ | 40.1% | -80.6% to 122.1% |
+
+The tallies are near-unanimous partly because of where the family boundaries
+fall, so the same summary lists every corpus row that matches no family.
+Five of those unmatched rows run in the harm direction: reasoning fine-tuning
+degrading abstention recall by 24%, satisfaction-targeted RLHF raising
+deception, instruction tuning increasing sycophancy, a verbalized-uncertainty
+method worsening under one distribution shift, and recipe-dependent
+factuality degradation. Each sits outside its nearest family for a stated
+reason (C5 is scoped to humility-targeted training, C2 to
+preference-versus-SFT comparisons on shared data and metrics). The
+sensitivity check admits the two nearest harms to C5, the reasoning-RL and
+the satisfaction-RLHF rows, as training interventions: the family then
+carries two contradicting votes, so its direction survives while its
+unanimity does not.
+
+**The FActScore audit.** The authors of FActScore released 500 biography
+generations for each of 12 models spanning post-training recipes, abstentions
+included, plus 183 human-labeled generations for three of them
+(`evidence/factscore-reanalysis.md`, recomputable from
+`analysis/factscore_reanalysis.py`). Three patterns the original paper does
+not analyze. The humility operating point belongs to the newer RLHF models:
+GPT-4 responds on 88.2% of prompts at 61.2% atomic-fact precision and ChatGPT
+on 84.2% at 60.5%, while InstructGPT, also RLHF-trained, responds on 99.8% at
+41.5%, so the RLHF label alone does not buy the operating point. Abstention
+tracks the knowledge frontier only for the newer models: ChatGPT's abstention
+rate falls from 46.0% on very-rare biography subjects to 0.0% on very-frequent
+ones and GPT-4's from 35.0% to 0.0%, while Alpaca, Dolly, and Pythia abstain
+on 0.0% of subjects at every rarity tier even though factual error rises
+steeply with rarity for every model measured; the weakly tuned
+StableLM-alpha abstains the most (33.4% overall) at the lowest precision
+(15.8%), abstention volume without knowledge selectivity. And the release's
+two automatic judges agree on only 79.8% of 37,654 atomic-fact labels, a
+single-judge reliability floor. We register no effect rows from this audit:
+the 12 models differ in scale, corpus, and vendor as well as post-training
+stage, so the cross-model contrasts are not attributable interventions.
+
+**The reward-calibration data audit.** The remaining audit looks at released
+training data rather than model outputs: the calibrated-reward-modeling mixture
+behind PPO-M (`evidence/rewardcal-contamination-audit.md`, recomputable from
+`analysis/rewardcal_audit.py`). Every confidence-augmented variant in the
+released 25,524-pair dataset is the base response plus one fixed suffix,
+"Confidence: N.", with N drawn from 7 to 10 for high confidence and 0 to 3
+for low; the template inventory has size one, with zero paraphrase diversity,
+verified mechanically across all 102,096 variant responses with no
+exceptions. Because some base responses already carry verbalized confidence
+(1.9% of chosen responses overall, 10.8% in the UltraFeedback slice), 1.7% of
+the augmented records stack two confidence statements; 326 base responses,
+all of them from the UltraFeedback slice, already end in one, so their
+augmented low-confidence variants read "Confidence: 95%" followed by
+"Confidence: 2." A reward model trained on this contrast can
+satisfy its objective by attending to a single literal token pattern, which
+is this paper's central concern about buying stated humility cheaply, visible
+here in a corpus study's training data rather than in a trained model. The
+audit is regex-based, so its percentages are bounds rather than point
+estimates.
+
+**The L1-clustering mapping.** Mapping the 78 rows onto the depths of
+Section 2 yields the synthesis's simplest descriptive finding: the
+literature's quantitative measurements live almost entirely at L1. Every
+calibration row is L1 by definition; every abstention row formalizes "I don't
+know" as a flat binary scored against a knowledge split, which is
+L1-adjacent behavior with no gap structure; the sycophancy rows measure
+capitulation, or in two rows belief-claim divergence, an L1-coherence hybrid
+at best. L2 contributes training results from a single 2026 paper (Sahoo,
+2026), L3 contributes diagnostic machinery but no training intervention at
+all (Islah et al., 2026), and L4 contributes one result in an RL setting not
+yet connected to any humility benchmark (GX-Chen et al., 2026). The
+explanation is unflattering but practical: L1 is where the metrics are. ECE
+and refusal rates are cheap, while gap-naming quality, failure-shape
+prediction, and reward-distribution calibration need evaluation
+infrastructure that mostly does not exist. The risk is a streetlight effect
+at field scale, since a model that always emitted the same refusal template
+would score well on every L1 abstention metric while having learned the form
+of ignorance without the substance.

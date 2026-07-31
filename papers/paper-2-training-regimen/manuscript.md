@@ -18,7 +18,7 @@ notes: >
   results table, or calibration-gap JSON named in Appendix A; background
   claims from the evidence synthesis trace through
   papers/paper-1-taxonomy-framework/manuscript.md to
-  meta-analysis/evidence/effects.csv. Reader-facing prose carries no internal
+  papers/paper-1-taxonomy-framework/evidence/effects.csv. Reader-facing prose carries no internal
   amendment labels; the label-to-artifact map lives only in Appendix A. Math
   is set in LaTeX (inline $...$ / display $$...$$, pandoc-compatible).
   Citations are author-year; the References section is complete and
@@ -726,7 +726,8 @@ repository.
 The systematic evidence synthesis this experiment is designed against is
 the program's companion synthesis paper, [*The Depths of
 Ignorance*](../paper-1-taxonomy-framework/manuscript.md) (taxonomy, claim families
-C1–C5, and the six-gap analysis), whose source-of-record apparatus lives at
-`meta-analysis/paper/draft-v0.md` with evidence tables under
-`meta-analysis/evidence/` and analysis scripts under
-`meta-analysis/analysis/`.
+C1–C5, and the six-gap analysis), whose evidence tables live under
+`papers/paper-1-taxonomy-framework/evidence/` and analysis scripts under
+`papers/paper-1-taxonomy-framework/analysis/`. The superseded standalone
+draft is retained for provenance only at
+`archive/meta-analysis/paper/draft-v0.md`.

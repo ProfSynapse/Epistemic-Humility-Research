@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Generate first-pass manuscript-level figures and compact tables.
 
-Inputs are restricted to the existing meta-analysis evidence table. The
+Inputs are restricted to the existing paper-1 evidence table. The
 mapping assumptions used for the schematic figures are deliberately explicit
 below and are also written to tables/figure_manifest.*.
 
 Run from repo root:
-    python meta-analysis/analysis/manuscript_artifacts.py
+    python papers/paper-1-taxonomy-framework/analysis/manuscript_artifacts.py
 """
 
 from __future__ import annotations

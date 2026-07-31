@@ -4,8 +4,8 @@ training) for paper 1 (taxonomy/synthesis paper).
 
 Data sources (verified against these files before plotting; see the
 build report for exact source line numbers):
-  - meta-analysis/evidence/idk-method-reanalysis.csv
-  - meta-analysis/evidence/abstentionbench-reanalysis.md
+  - papers/paper-1-taxonomy-framework/evidence/idk-method-reanalysis.csv
+  - papers/paper-1-taxonomy-framework/evidence/abstentionbench-reanalysis.md
 
 Deterministic: no randomness, fixed rcParams, matplotlib only (no seaborn).
 """
@@ -20,9 +20,8 @@ import matplotlib.pyplot as plt
 
 matplotlib.use("Agg")
 
-REPO_ROOT = Path("/home/profsynapse/code/Epistemic-Humility-Research")
-EVIDENCE_DIR = REPO_ROOT / "meta-analysis" / "evidence"
 HERE = Path(__file__).resolve().parent
+EVIDENCE_DIR = HERE.parent / "evidence"
 FIG_DIR = HERE.parent / "figures"
 
 # Colorblind-safe categorical palette (dataviz skill reference palette,

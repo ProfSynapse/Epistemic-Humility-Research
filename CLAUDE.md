@@ -122,8 +122,10 @@ Use artifact type to choose where to look:
 
 - Orientation and contribution norms: root docs such as `README.md`,
   `CONTRIBUTING.md`, and nearby architecture notes.
-- Research synthesis: `meta-analysis/`, especially evidence tables, analysis
-  scripts, and source-of-record synthesis apparatus.
+- Research synthesis: `papers/paper-1-taxonomy-framework/`, especially its
+  `evidence/` tables, `evidence/raw-reports/` search reports, and `analysis/`
+  scripts. The superseded standalone draft is kept for provenance only under
+  `archive/meta-analysis/`.
 - Paper production: `papers/`, organized one directory per paper with
   `manuscript.md`, `analysis/`, `figures/`, `scripts/`, and paper-specific
   `notes/`. Shared writing conventions live in `papers/common/`; series-level

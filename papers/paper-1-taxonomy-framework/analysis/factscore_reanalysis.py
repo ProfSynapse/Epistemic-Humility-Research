@@ -21,7 +21,7 @@ lowercased / abbreviated names. "alpaca.jsonl" is Alpaca-65B by elimination
 (alpaca-7B.jsonl and alpaca-13B.jsonl cover the other two; all three Alpacas
 respond 500/500 per the FActScore paper, consistent with this mapping).
 
-Post-training type (from the meta-analysis brief):
+Post-training type (from the evidence-synthesis brief):
   RLHF      : GPT-4, ChatGPT, InstructGPT
   SFT-only  : Alpaca-7B/13B/65B, Vicuna-7B/13B, MPT-Chat-7B, Dolly-12B
   base/weak : Pythia-12B, Stablelm-alpha-7B
@@ -55,9 +55,9 @@ points, C4 scale alone):
      limitation.
 
 Output (deterministic, recomputable; this script is the provenance):
-  meta-analysis/evidence/factscore-reanalysis.md
-  meta-analysis/analysis/figures/factscore_respond_precision.png
-  meta-analysis/analysis/figures/factscore_rarity.png
+  papers/paper-1-taxonomy-framework/evidence/factscore-reanalysis.md
+  papers/paper-1-taxonomy-framework/analysis/figures/factscore_respond_precision.png
+  papers/paper-1-taxonomy-framework/analysis/figures/factscore_rarity.png
 
 Run: python3 factscore_reanalysis.py
 """
@@ -67,7 +67,8 @@ import re
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-DATA = HERE.parent.parent / "datasets" / "factscore-data"
+ROOT = HERE.parents[2]  # repo root
+DATA = ROOT / "datasets" / "factscore-data"
 OUT = HERE.parent / "evidence" / "factscore-reanalysis.md"
 FIGDIR = HERE / "figures"
 
@@ -516,7 +517,7 @@ def main():
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text("\n".join(L))
-    print(f"wrote {OUT.relative_to(HERE.parent.parent)}")
+    print(f"wrote {OUT.relative_to(ROOT)}")
 
     # ===================== figures =====================
     import matplotlib

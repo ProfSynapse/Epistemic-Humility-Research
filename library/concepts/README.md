@@ -1278,4 +1278,4 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 
 ## Gaps (verified literature absences) (1)
 
-- [[gap-4-probe-transfer]] : Gap 4 (meta-analysis draft-v0 §6.3): no probe-transfer study tests whether
+- [[gap-4-probe-transfer]] : Gap 4 (archive/meta-analysis/paper/draft-v0.md §6.3): no probe-transfer study tests whether
