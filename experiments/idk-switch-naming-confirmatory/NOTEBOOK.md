@@ -45,3 +45,43 @@ image the signed prose already describes, not a substitution of runtimes
 after the fact: no generation stage has run yet (only the CPU row
 materialization), so nothing has executed in either image under this
 registration.
+
+### 2026-07-31 -- Launch: smoke then full generation sweep, local 3090
+
+PI launch authorization on record 2026-07-31 ("Let's run c1 locally and
+queue up idk for after it"); C1 completed and the kv-seam cell resolved
+(PR #365) the same day, so the queue condition is met. Preflight passed
+immediately before launch per the one-socket-two-daemons rule: docker
+info shows Operating System: Docker Desktop with an nvidia runtime, and
+mechinterp-runner:local inspects to the signed (repinned) digest
+sha256:fe732c8f... Sequence: pipeline.py smoke (instrument validation,
+tiny row set), lead verifies the smoke artifact, then pipeline.py
+generate (4 arms x 400 rows, sampled decode, seed 20260802), which
+hard-halts before the judge lane per the registered governance boundary.
+Run logs under analysis/runlog/; provenance line required in each log.
+
+### 2026-07-31 -- Lead ruling: second runtime_image_digest repin (dependency repair)
+
+`instrument.runtime_image_digest` repinned from `sha256:fe732c8f...` to
+`sha256:894cb31b87d87092b249ef6abfb00791e5b3b824dff6c5bd61cdbecfb04887a7`.
+
+Why: the first in-container smoke attempt failed at
+`from MechInterp.config import ...` with `ModuleNotFoundError: pydantic`
+(run log analysis/runlog/, two attempts: the first also surfaced the
+uninitialized synaptic-tuner submodule in this worktree, since checked
+out at the recorded gitlink 34c89fc4). The shared runner image never
+carried pydantic; every earlier consumer of MechInterp.cell ran under
+the naming battery's documented base-conda deviation
+(write-direction-naming-battery AMENDMENT.md:272-273), which had it.
+Fix follows the accelerate precedent exactly (kv-seam NOTEBOOK
+2026-07-29): pydantic==2.12.4 added to the shared, project-agnostic
+Dockerfile (Synaptic-Tuner PR #150, commit 49cebc2b), image rebuilt
+with that revision as build-arg, in-image verification `pydantic
+2.12.4`. No pip-install-into-running-container (the README's named
+anti-pattern). Preflight before the digest capture per the
+one-socket-two-daemons rule: docker info showed Operating System:
+Docker Desktop with the nvidia runtime.
+
+Scope: manifest field only, same as the first repin; all 17 instrument
+pins untouched; no generation stage has run (both smoke attempts died
+at import, before model load).
