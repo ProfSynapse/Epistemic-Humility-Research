@@ -18,15 +18,19 @@ g1_calibration_agreement:
   # Reported (non-gating): ordered-label-pair direction breakdown.
 
 g2_decoy_floors:
-  # Candidate populations counted pre-sign (feasibility rule): clear-positive
-  # (F4 screen positives, all 7 sub-arms) 795; clear-negative (c_baseline
-  # correct_v2 rows, held-back population) 595. Floors sized far below both.
+  # GOVERNED DEVIATION (PI-approved 2026-07-30, recorded in NOTEBOOK.md):
+  # the registered clear-negative source (Arm C baseline correct_v2 rows)
+  # retains no generation text anywhere on disk (metrics-only runlog; the
+  # pre-sign feasibility count of 595 verified rows, not text bytes).
+  # Calibration attempt 1, whose 25 clear-negative decoys were silently
+  # empty strings, was voided at the lead spot-check pre-unblind. G2 now
+  # gates clear-positive decoys only. Mitigations on record: both dev
+  # judges labeled roughly half of core rows F1 (no away-from-F1 collapse),
+  # and G1's independent-agreement gate catches any label collapse.
   n_decoy_clear_positive: 25
-  n_decoy_clear_negative: 25
   # Judge's decoy agreement (the judge is the gated instrument; the
   # adjudicator's decoy rates are reported, non-gating).
   min_clear_positive_agreement: 0.92   # judge label is not F1
-  min_clear_negative_agreement: 0.92   # judge label is F1
   # Dev reference (non-gating): both dev judges 19/19 = 1.00 on the spent
   # slice's clear-positive decoys.
 

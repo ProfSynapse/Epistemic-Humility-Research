@@ -142,6 +142,7 @@ def load_spent_row_arm_pairs(spent_shards_dir: Path) -> set[tuple[str, str]]:
 
 def build_candidate_populations(
     runlog_dir: Path, c_baseline_runlog: Path, spent_shards_dir: Path,
+    extra_spent_dirs: list[Path] | None = None,
 ) -> tuple[dict[str, list[dict[str, Any]]], list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     """Returns (core_by_arm, clear_positive_candidates, clear_negative_candidates, report).
 
@@ -154,6 +155,10 @@ def build_candidate_populations(
     `report`: feasibility counts, ID-free.
     """
     spent = load_spent_row_arm_pairs(spent_shards_dir)
+    # Additional spent sets (e.g. a voided calibration attempt's id maps):
+    # rows the lead has partially seen are excluded from any fresh draw.
+    for extra_dir in (extra_spent_dirs or []):
+        spent |= load_spent_row_arm_pairs(extra_dir)
     screened, coverage = screen_lib.load_and_screen(runlog_dir)
 
     core_by_arm: dict[str, list[dict[str, Any]]] = {}
@@ -184,22 +189,17 @@ def build_candidate_populations(
         clear_positive_candidates.extend(f4_rows)
         per_arm_f4_counts[arm] = len(f4_rows)
 
+    # Clear-negative lane REMOVED (governed deviation, PI-approved 2026-07-30,
+    # recorded in NOTEBOOK.md and gates.yaml): the registered source (Arm C
+    # baseline correct_v2 rows) retains no generation text anywhere on disk;
+    # the c_baseline runlog is metrics-only. The first build silently
+    # substituted empty strings for all 25 clear-negative decoys, voiding
+    # calibration attempt 1 at the lead spot-check. G2 now gates
+    # clear-positive decoys only.
     clear_negative_candidates: list[dict[str, Any]] = []
     n_c_baseline_rows = 0
     n_c_baseline_correct = 0
     n_decoy_neg_excluded_spent = 0
-    for row in load_jsonl(c_baseline_runlog):
-        n_c_baseline_rows += 1
-        if row.get("correct_v2") is not True:
-            continue
-        n_c_baseline_correct += 1
-        row_key, arm = row.get("row_key"), row.get("arm")
-        if (row_key, arm) in spent:
-            n_decoy_neg_excluded_spent += 1
-            continue
-        clear_negative_candidates.append({
-            "row_key": row_key, "arm": arm, "text": screen_lib.scan_text(row),
-        })
 
     report = {
         "coverage": coverage,
@@ -340,6 +340,16 @@ def build_full_pool_shards(all_rows: list[dict[str, Any]], n_shards: int, seed: 
 
 
 def write_shards(shards: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    # Fail-closed guard (added after calibration attempt 1 was voided): a
+    # blinded pool row with empty/whitespace text means an upstream join or
+    # source bug; grading empty bytes tests nothing. Refuse to write.
+    for shard in shards:
+        for row in shard["blinded_pool"]:
+            if not str(row.get("text", "")).strip():
+                raise SystemExit(
+                    f"[build_judge_pool] FATAL: empty text in {shard['shard_id']} "
+                    f"(opaque_id {row.get('opaque_id')}); refusing to write any shard."
+                )
     SHARDS_DIR.mkdir(parents=True, exist_ok=True)
     entries = []
     for shard in shards:
@@ -366,7 +376,10 @@ def cmd_build(args: argparse.Namespace) -> int:
     c_baseline_runlog = Path(args.c_baseline_runlog) if args.c_baseline_runlog else DEFAULT_C_BASELINE_RUNLOG
     spent_shards_dir = Path(args.spent_shards_dir) if args.spent_shards_dir else DEFAULT_SPENT_SHARDS_DIR
 
-    core_by_arm, decoys_pos, decoys_neg, report = build_candidate_populations(runlog_dir, c_baseline_runlog, spent_shards_dir)
+    core_by_arm, decoys_pos, decoys_neg, report = build_candidate_populations(
+        runlog_dir, c_baseline_runlog, spent_shards_dir,
+        extra_spent_dirs=[Path(p) for p in args.extra_spent_dirs],
+    )
     print(f"[build_judge_pool] feasibility report:\n{json.dumps(report, indent=2, default=str)}", flush=True)
 
     if args.mode == "calibration":
@@ -479,6 +492,7 @@ def main() -> int:
     ap.add_argument("--salt", default=None, help="override the random id salt (test hook; omit for a fresh random salt)")
     ap.add_argument("--slice-n", type=int, default=DEFAULT_SLICE_N, help="calibration mode only")
     ap.add_argument("--min-decoys", type=int, default=25, help="calibration mode only; warn-floor, not a cap")
+    ap.add_argument("--extra-spent-dirs", nargs="*", default=[], help="additional directories of *_id_map.jsonl whose (row_key, arm) pairs join the spent-exclusion set (e.g. a voided attempt's shards)")
     ap.add_argument("--target-shard-size", type=int, default=DEFAULT_TARGET_SHARD_SIZE)
     ap.add_argument("--count-only", action="store_true", help="report feasibility counts only; write no pool, no shards, no text")
     ap.set_defaults(func=cmd_build)

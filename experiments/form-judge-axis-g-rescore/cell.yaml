@@ -11,10 +11,15 @@ substrate:
   rows_per_arm: 400
 
 pool:
-  # Registered seed (replaces the harness placeholder per the build ruling).
-  seed: 20260731
+  # Attempt-2 seed (attempt 1, seed 20260731, voided at the lead spot-check
+  # for empty clear-negative decoy texts; its core rows join the spent
+  # exclusion set so the fresh draw is disjoint from everything the lead
+  # partially saw).
+  seed: 20260801
   calibration_slice_n: 200
-  n_decoys_per_type: 25
+  # Clear-positive only, per the PI-approved governed deviation recorded in
+  # gates.yaml and NOTEBOOK.md (clear-negative source retains no text).
+  n_decoys_clear_positive: 25
   target_shard_size: 55
 
 judge_lane:

@@ -145,14 +145,21 @@ def test_decoy_sourcing_populations(tmp_path: Path):
     assert "core-row" not in {r["row_key"] for r in clear_pos}
     assert "degenerate-row" not in {r["row_key"] for r in clear_pos}
 
-    # clear-negative decoys: c_baseline correct_v2 == True only (not False, not None).
-    assert {r["row_key"] for r in clear_neg} == {"c-correct"}
+    # clear-negative lane REMOVED (governed deviation, PI-approved
+    # 2026-07-30): the registered Arm C source retains no generation text
+    # (metrics-only runlog; the original synthetic fixture here gave it an
+    # answer_text field the real data never had, which is how the empty-text
+    # bug slipped past this suite). The builder must return NO clear-negative
+    # candidates even when the runlog rows carry text.
+    assert clear_neg == []
 
     # core candidates: the screened-in remainder, neither F4 nor F5.
     assert {r["row_key"] for r in core_by_arm["a_baseline"]} == {"core-row"}
 
-    assert report["n_c_baseline_rows_total"] == 3
-    assert report["n_c_baseline_correct_v2_true"] == 1
+    # Counters are inert now the lane is removed; kept in the report shape
+    # for manifest continuity, always zero.
+    assert report["n_c_baseline_rows_total"] == 0
+    assert report["n_c_baseline_correct_v2_true"] == 0
 
 
 # ---------------------------------------------------------------------------
@@ -355,3 +362,51 @@ def test_axis_g_screen_dominated_not_adjudicable():
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, "-v"]))
+
+
+# ---------------------------------------------------------------------------
+# Post-void additions: empty-text fail-closed guard; voided-attempt exclusion
+# ---------------------------------------------------------------------------
+
+def test_write_shards_refuses_empty_text(tmp_path, monkeypatch):
+    """The guard added after calibration attempt 1: any blinded-pool row with
+    empty/whitespace text aborts the whole write, no shard files created."""
+    import pytest
+    monkeypatch.setattr(build_judge_pool, "SHARDS_DIR", tmp_path / "shards")
+    shards = [{
+        "shard_id": "s00",
+        "blinded_pool": [
+            {"opaque_id": "aa", "text": "a real answer"},
+            {"opaque_id": "bb", "text": "   "},
+        ],
+        "id_map": [], "n_core": 2,
+        "n_decoy_clear_positive": 0, "n_decoy_clear_negative": 0,
+    }]
+    with pytest.raises(SystemExit):
+        build_judge_pool.write_shards(shards)
+    assert not (tmp_path / "shards").exists()
+
+
+def test_extra_spent_dirs_exclude_voided_attempt(tmp_path):
+    """(row_key, arm) pairs from --extra-spent-dirs id maps join the spent set."""
+    runlog_dir = tmp_path / "runlog_form_merged"
+    runlog_dir.mkdir()
+    spent_dir = tmp_path / "spent_empty"
+    spent_dir.mkdir()
+    voided_dir = tmp_path / "voided_shards"
+    voided_dir.mkdir()
+    c_baseline = tmp_path / "c_baseline.jsonl"
+    write_jsonl(c_baseline, [])
+    write_jsonl(runlog_dir / "a_baseline.jsonl", [
+        {"row_key": "seen-in-attempt1", "arm": "a_baseline", "answer_text": "x",
+         "degenerate": False, "semantic_refuse": False, "refused_v2": False},
+        {"row_key": "never-seen", "arm": "a_baseline", "answer_text": "y",
+         "degenerate": False, "semantic_refuse": False, "refused_v2": False},
+    ])
+    write_jsonl(voided_dir / "form_judge_calib_shard_00_id_map.jsonl", [
+        {"opaque_id": "zz", "row_key": "seen-in-attempt1", "arm": "a_baseline",
+         "is_decoy": False, "decoy_type": None},
+    ])
+    core_by_arm, _, _, report = build_judge_pool.build_candidate_populations(
+        runlog_dir, c_baseline, spent_dir, extra_spent_dirs=[voided_dir])
+    assert {r["row_key"] for r in core_by_arm["a_baseline"]} == {"never-seen"}

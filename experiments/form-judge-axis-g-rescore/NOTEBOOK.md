@@ -6,6 +6,50 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-30 Calibration attempt 1 VOIDED (empty clear-negative decoys); governed deviation approved; attempt 2 built
+
+At the registered lead spot-check (n=30, seeded, pre-unblind, pre-gate),
+5 sampled rows were empty texts labeled F3. Trace: ALL 25 clear-negative
+decoys in the attempt-1 pool were empty strings. Root cause: the
+registered clear-negative source (Arm C baseline rows with correct_v2 ==
+True) retains no generation text anywhere on disk; the c_baseline runlog
+is metrics-only (text was only ever retained for Arm A via the form
+sidecar), and the builder silently substituted empty strings. The
+pre-sign feasibility count verified 595 ROWS existed, not text bytes.
+Core rows were unaffected (0 empties) and judge labels on the 25
+readable spot-check rows tracked the rubric well.
+
+Lead ruling: attempt 1 is VOID for pool nonconformance (an empty string
+is not the registered decoy object), discovered by the spot-check whose
+registered function is to void a calibration pre-unblind. No gate was
+computed, nothing was unblinded, and the attempt-1 grades are never
+used. Not an instrument failure: grading empty bytes tests nothing
+about the judge.
+
+Alternative-source search (PI-requested before ruling): RR2/RR3/CG1
+analysis trees are deleted from disk; the public data-exhaust datasets
+are aggregate-only by containment design; Arm B and dosed Arm C runlogs
+are metrics-only; naming_battery_rows.jsonl holds questions and gold
+aliases, not generations. No conforming committed-answer text source
+exists anywhere.
+
+GOVERNED DEVIATION (PI-approved 2026-07-30): clear-negative decoys
+dropped; G2 gates clear-positive only (25 at 0.92). Mitigations: both
+dev judges labeled roughly half of core rows F1 (no away-from-F1
+collapse mode in evidence), and G1's independent judge-vs-adjudicator
+agreement gate catches any label collapse.
+
+Remediation: builder's clear-negative lane removed; fail-closed guard
+added (any empty pool text aborts the write; the smoke suite's original
+fixture had given c_baseline a text field the real data never had, which
+is how the bug passed 15 tests); --extra-spent-dirs added so a voided
+attempt's rows join the spent exclusion; 17 tests pass. Attempt-1
+artifacts archived under analysis/*_attempt1_void. Attempt 2 built with
+fresh seed 20260801: 200 core rows disjoint from the dev slice AND from
+attempt 1's cores (28-29 per arm), 25 clear-positive decoys, 0 empty
+texts. gates.yaml, cell.yaml, and build_judge_pool.py repinned with
+reasons. Attempt-1 committed manifests renamed *_attempt1_void.json.
+
 ### 2026-07-30 Dev-set judge-vs-judge measurement (pre-sign, spent slice)
 
 Eight isolated opus graders (two independent roles A and B, one fresh

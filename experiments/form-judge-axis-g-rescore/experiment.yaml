@@ -35,12 +35,12 @@ instrument:
   - apply_judge_grades.py
   - axis_g_arithmetic.py
   pins:
-    cell.yaml: 38b29587de8cd58d17bfb6949b9e486756a3d3d126bc980e85f144b1de388376
-    gates.yaml: 67960420052f0cc10ccd0043c268336ac6a306cd9937e170ea8b42b2f141e683
+    cell.yaml: 7da49c6d257a952e48cab879743109930c0fa3cb42e9e57766dcd33f0b501bb3
+    gates.yaml: 26da0e53d143adb68940a66425d20e0e34035c5efc25ab58643cde3adfd0cdc2
     judge_prompt.md: e03cd7284f3582ef6257140b7e2a7e388d6eeadf7c63b50c88d907f0cb0d3c5d
     screen_lib.py: f4fc7dd625c1a6c7e0a94d863db3ff9fff28e9cf85cfedf48cceabb5639f8833
     screen_rows.py: 8f9aea75135f49c6df7681cf38545a74a1d0b6c365cd7a8838cabd3583e6d5bc
-    build_judge_pool.py: 1847149ba7c7c18e3f13f9da195337b7260ffc484be343fa96a4eb0bdca6dd59
+    build_judge_pool.py: fdcdb6f8675382ea554f1496d4ceed7e1dd681d0a013c14751d78fb92c1d9f73
     apply_judge_grades.py: 2c116e498e76f6530506f27c8034e0ab62b491472061099194e9463d457f712d
     axis_g_arithmetic.py: ee252321f6880748ffbfbd1f5596492c86b34c934282c0a66c873829401612e7
   persistence:
@@ -67,6 +67,33 @@ instrument:
     reason: 'Pre-grading defect repair: builder swept all 795+595 decoy candidates
       into the calibration pool; registered G2 fixes 25 per type. Seeded sample capped
       at min_decoys. No grading had occurred; pool rebuilt before hash commit.'
+  - file: build_judge_pool.py
+    old_sha256: 1847149ba7c7c18e3f13f9da195337b7260ffc484be343fa96a4eb0bdca6dd59
+    new_sha256: fdcdb6f8675382ea554f1496d4ceed7e1dd681d0a013c14751d78fb92c1d9f73
+    date: '2026-07-31T00:23:40Z'
+    reason: 'Governed deviation, PI-approved 2026-07-30: clear-negative decoy source
+      (Arm C correct_v2 rows) retains no generation text; attempt 1 voided at lead
+      spot-check for empty decoy texts. Clear-negative lane removed, G2 gates clear-positive
+      only, fail-closed empty-text guard added, attempt-2 seed 20260801 with attempt-1
+      cores excluded.'
+  - file: gates.yaml
+    old_sha256: 67960420052f0cc10ccd0043c268336ac6a306cd9937e170ea8b42b2f141e683
+    new_sha256: 26da0e53d143adb68940a66425d20e0e34035c5efc25ab58643cde3adfd0cdc2
+    date: '2026-07-31T00:23:40Z'
+    reason: 'Governed deviation, PI-approved 2026-07-30: clear-negative decoy source
+      (Arm C correct_v2 rows) retains no generation text; attempt 1 voided at lead
+      spot-check for empty decoy texts. Clear-negative lane removed, G2 gates clear-positive
+      only, fail-closed empty-text guard added, attempt-2 seed 20260801 with attempt-1
+      cores excluded.'
+  - file: cell.yaml
+    old_sha256: 38b29587de8cd58d17bfb6949b9e486756a3d3d126bc980e85f144b1de388376
+    new_sha256: 7da49c6d257a952e48cab879743109930c0fa3cb42e9e57766dcd33f0b501bb3
+    date: '2026-07-31T00:23:40Z'
+    reason: 'Governed deviation, PI-approved 2026-07-30: clear-negative decoy source
+      (Arm C correct_v2 rows) retains no generation text; attempt 1 voided at lead
+      spot-check for empty decoy texts. Clear-negative lane removed, G2 gates clear-positive
+      only, fail-closed empty-text guard added, attempt-2 seed 20260801 with attempt-1
+      cores excluded.'
 inputs:
 - experiments/write-direction-naming-battery/analysis/runlog_form_merged
 - experiments/write-direction-naming-battery/analysis-committed/form_adjudication_pool_manifest.json
