@@ -1,7 +1,7 @@
 slug: gemma4-e4b-pocket-ladder
 title: 'Gemma-4-E4B pocket ladder: hs25/hs26/hs27, sharing ON'
 type: steer-cell
-status: signed
+status: resolved
 registered: true
 created_at: '2026-07-31T10:32:02Z'
 question: The cross-family operating range across every family that has actuated in
@@ -83,7 +83,7 @@ instrument:
     run_contrast.py: 89ea37110e8154422e1e962b624c602fa59c040129bd8d15fa20205e776589ed
     placebo_direction.py: cb738382866e2dba1289096de76ffac46b72541234c7e3828181c7489d357e84
     g2_companion.py: 65306de719ddbf3313606b9fb7798d8b0409cd8fdbc323557da6dac34ba0a021
-    pocket_rollup.py: fcb1c753dedc77c0a2602917819723fe19486a03599f2b376ee59bab2c7151bc
+    pocket_rollup.py: eb990aa8699cfa6c9933e682f9b86c1e4e9f69109cce4144f93f9a3b11c0bac9
   persistence:
     backends.py:
       persistence: short-run
@@ -205,6 +205,18 @@ instrument:
     run_contrast.py:
       persistence: incremental
       checkpoint_path: experiments/gemma4-e4b-pocket-ladder/analysis/gemma4-e4b/runlog/<arm-kind>/<mode>/hs{25,26,27}[.k{0..4}].jsonl
+  repins:
+  - file: pocket_rollup.py
+    old_sha256: fcb1c753dedc77c0a2602917819723fe19486a03599f2b376ee59bab2c7151bc
+    new_sha256: eb990aa8699cfa6c9933e682f9b86c1e4e9f69109cce4144f93f9a3b11c0bac9
+    date: '2026-07-31T22:21:12Z'
+    reason: 'Post-sign instrument repair, lead-ruled: build_rollup failed closed on
+      E2/E3 because it could not represent the pre-registered dose-viability NOT-RUN
+      disposition (transcribed rule: an arm with no usable FIT rung is NOT-RUN, neither
+      pass nor fail). Added load_dose_viability keyed off the committed Stage-1 has_usable_dose
+      field and NOT-RUN entries for such arms plus mirrored P-arm/claim dispositions.
+      No gate logic, thresholds, or E1 scoring touched; E1 G3 verdict identical before/after
+      (effect_ratio 1.2788, FAIL).'
 inputs:
 - experiments/gemma4-e4b-kv-seam-quarantine/AMENDMENT.md
 - experiments/gemma4-e4b-kv-seam-quarantine/NOTEBOOK.md
@@ -264,5 +276,10 @@ staging:
     reads a staged file, recompute its sha256 and compare against the value recorded
     above; refuse to proceed on a mismatch rather than silently reading a different
     extraction than the one this cell is registered against.
-verdict: ''
+verdict: 'No direction-specific actuation in the pocket: E1/hs25 cleared G1/G2 on
+  held-out but failed mandatory G3 (effect_ratio 1.279 < 3.0, the hs24 signature:
+  worst random draw reproduced 78% of the true effect); E2/hs26 and E3/hs27 dose-viability
+  NOT-RUN. All three registered predictions MET. Closes the last untested above-seam
+  band of the cross-family operating range on gemma4-e4b; does not by itself resolve
+  the quarantine hypothesis (registered confound fence).'
 kg: []

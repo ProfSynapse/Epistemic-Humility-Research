@@ -2665,10 +2665,19 @@
           "model_lib.py": "b5e7239f0ba25ce42e7df624e0706d421beaba23bbff9bc2dd421f55ee2681ce",
           "pipeline.py": "89948aefa32b810cefbad2366647a62c22e5338353f670730d404b8cfd31ebf0",
           "placebo_direction.py": "cb738382866e2dba1289096de76ffac46b72541234c7e3828181c7489d357e84",
-          "pocket_rollup.py": "fcb1c753dedc77c0a2602917819723fe19486a03599f2b376ee59bab2c7151bc",
+          "pocket_rollup.py": "eb990aa8699cfa6c9933e682f9b86c1e4e9f69109cce4144f93f9a3b11c0bac9",
           "run_contrast.py": "89ea37110e8154422e1e962b624c602fa59c040129bd8d15fa20205e776589ed",
           "scorers.py": "1b3eda5d8d68c9184674f092805278505c5cd2065a21ffe7ec348e9ea5a00c37"
         },
+        "repins": [
+          {
+            "date": "2026-07-31T22:21:12Z",
+            "file": "pocket_rollup.py",
+            "new_sha256": "eb990aa8699cfa6c9933e682f9b86c1e4e9f69109cce4144f93f9a3b11c0bac9",
+            "old_sha256": "fcb1c753dedc77c0a2602917819723fe19486a03599f2b376ee59bab2c7151bc",
+            "reason": "Post-sign instrument repair, lead-ruled: build_rollup failed closed on E2/E3 because it could not represent the pre-registered dose-viability NOT-RUN disposition (transcribed rule: an arm with no usable FIT rung is NOT-RUN, neither pass nor fail). Added load_dose_viability keyed off the committed Stage-1 has_usable_dose field and NOT-RUN entries for such arms plus mirrored P-arm/claim dispositions. No gate logic, thresholds, or E1 scoring touched; E1 G3 verdict identical before/after (effect_ratio 1.2788, FAIL)."
+          }
+        ],
         "runtime_image_digest": "sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8"
       },
       "kg": [],
@@ -2714,10 +2723,10 @@
         "note": "NOT executed by the drafting agent (no GPU/docker work authorized at draft). Registers path + hash + a verification step that must run before any staged file is read, per AMENDMENT.md \"Staged inputs\" (B3 remediation). Symlink or copy are both acceptable mechanisms; the contract below binds whichever is used at sign/run time.",
         "verification_step": "Before any of build_directions.py/calibrate_dose.py/run_contrast.py reads a staged file, recompute its sha256 and compare against the value recorded above; refuse to proceed on a mismatch rather than silently reading a different extraction than the one this cell is registered against."
       },
-      "status": "signed",
+      "status": "resolved",
       "title": "Gemma-4-E4B pocket ladder: hs25/hs26/hs27, sharing ON",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "No direction-specific actuation in the pocket: E1/hs25 cleared G1/G2 on held-out but failed mandatory G3 (effect_ratio 1.279 < 3.0, the hs24 signature: worst random draw reproduced 78% of the true effect); E2/hs26 and E3/hs27 dose-viability NOT-RUN. All three registered predictions MET. Closes the last untested above-seam band of the cross-family operating range on gemma4-e4b; does not by itself resolve the quarantine hypothesis (registered confound fence)."
     },
     {
       "checkpoint": {

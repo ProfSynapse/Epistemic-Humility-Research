@@ -643,10 +643,50 @@ experiment.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the per-arm G1/G2/G3 results with Wilson
-CIs and effect ratios, the dose-viability outcome at each of E1/E2/E3, whether
-G3 was ADJUDICATED/NOT-RUN/UNADJUDICATED at each arm that cleared G1/G2, and the
-one-sentence summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-31 (lead adjudication; all numbers re-derived from the
+committed artifacts and confirmed by the pinned `pocket_rollup.py`, which is
+the machine-readable record at
+`analysis-committed/gemma4-e4b/pocket_rollup.json`).
 
-**No arm has run.** This experiment is draft; `execution.gpu_work_by_this_agent`
-is `forbidden` and nothing in this document authorizes a run.
+**Verdict: no direction-specific actuation anywhere in the pocket. E1/hs25
+cleared G1 and G2 on held-out but FAILED the mandatory G3
+(effect_ratio 1.279 < 3.0), the exact hs24 signature; E2/hs26 and E3/hs27
+were dose-viability NOT-RUN. All three registered predictions MET
+(sub-case (b) at E1, sub-case (a) at E2/E3).**
+
+Per-arm record:
+
+- **E1/hs25 (dose 81.615, ratio 0.85):** G1 PASS: confab-tighten 133/168 =
+  0.7917, Wilson CI [0.7241, 0.8462] vs floor 0.5 / lower 0.4. G2 PASS
+  (full population): known-correct cost 9/270 = 0.0333, Wilson CI
+  [0.0176, 0.0621] vs cap 0.05 / upper 0.10; fired-only companion 9/9 at
+  n_fired_known 9 < 35 floor, NOT-ADJUDICABLE per the pre-registered
+  non-gating disposition; undosed floor 0/261. Dose fidelity: readback mean
+  81.485, frac within tol 1.0, collapse 0.0, n_fired 175/438. **G3
+  ADJUDICATED FAIL:** undosed confab floor 0/168 = 0.0; placebo draws
+  (confab-tighten, n=168 each) k0 0.6190, k1 0.1310, k2 0.1667, k3 0.1131,
+  k4 0.0893, all collapse-free, readback adjudicated; effect_ratio =
+  0.7917 / 0.6190 = **1.279** < 3.0. Claim (registered rule):
+  **actuates_not_direction_specific** -- the worst single random draw
+  reproduced 78% of the fitted direction's effect. May NOT be cited as a
+  specific effect and may NOT be pooled with direction-specific results.
+- **E2/hs26:** dose-viability NOT-RUN (Stage 1: max FIT confab-tighten 0.375
+  < 0.5 usability floor; `has_usable_dose` false). P2 NOT-RUN mirroring.
+- **E3/hs27:** dose-viability NOT-RUN (Stage 1: max FIT confab-tighten
+  0.250; `has_usable_dose` false). P3 NOT-RUN mirroring.
+
+Interpretation stays inside the registered fence: per the amendment's
+"confound cuts both ways" clause, this result is evidence that the pocket
+band shows hs24-style instability (a broad subspace in which many directions
+tighten confabulation), and it does not by itself resolve the quarantine
+hypothesis in either direction. The heavy-tailed placebo draw distribution
+(one near-effect draw, four small) matches hs24's shape (its k0 reproduced
+88%). With this cell resolved, every site of the cross-family operating
+range on gemma4-e4b above the seam has now been measured: hs24 (parent,
+G3 FAIL at 1.139), hs25 (G3 FAIL at 1.279), hs26/hs27 (no usable dose).
+
+**Registered launch record.** Stage 1 FIT, the Stage 2 true arm, and the
+undosed + placebo control arms all ran on the local RTX 3090 in the pinned
+mechinterp-runner image (digest in `instrument.runtime_image_digest`),
+2026-07-31, per the sign-time launch approval; run logs under
+`analysis/runlog/`.

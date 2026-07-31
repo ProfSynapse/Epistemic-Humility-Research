@@ -320,16 +320,61 @@ def build_g3_rollup(committed: Path, placebo_arm: str) -> dict | None:
     return {"placebo_arm": placebo_arm, "matched_true_arm": true_arm, **verdict}
 
 
+def load_dose_viability(committed: Path, arm: str) -> bool:
+    """Read `has_usable_dose` for the arm's site from the committed Stage-1
+    dose-calibration artifact. An arm with no usable FIT rung is
+    dose-viability NOT-RUN (AMENDMENT.md, transcribed rule: "neither a pass
+    nor a fail"); the rollup must represent that registered disposition
+    rather than failing closed on the missing full_summary layer."""
+    spec = ARM_REGISTRY[arm]
+    name = _condition_artifact(
+        _site_set_artifact("dose_calibration_summary.json", spec["site_set"]),
+        spec["kv_sharing"])
+    data = _load_json(committed / name, stage=f"arm {arm} dose calibration ({name})")
+    layer_name = f"hs{spec['site_hs']}"
+    blk = data.get("layers", {}).get(layer_name) or data.get(layer_name)
+    if blk is None or "has_usable_dose" not in blk:
+        raise RollupInputMissing(
+            f"[pocket_rollup] arm {arm}: {committed / name} has no "
+            f"'has_usable_dose' record for {layer_name!r}."
+        )
+    return bool(blk["has_usable_dose"])
+
+
 def build_rollup(family: str = "gemma4-e4b", *, root: Path = HERE) -> dict:
     """Top-level driver. Raises RollupInputMissing (never a silent default)
     if a TRUE arm's own artifact is absent; a missing G3 input is instead
-    folded into that arm's `actuation_claim` disposition."""
+    folded into that arm's `actuation_claim` disposition. Arms whose site has
+    no usable FIT dose (Stage-1 `has_usable_dose` false) are reported as the
+    registered dose-viability NOT-RUN disposition, not as errors."""
     committed = root / "analysis-committed" / family
 
     out: dict[str, Any] = {"family": family, "arms": {}, "g3": {}, "actuation_claims": {}}
     for arm in ("E1", "E2", "E3"):
-        out["arms"][arm] = build_arm_rollup(committed, arm)
+        if load_dose_viability(committed, arm):
+            out["arms"][arm] = build_arm_rollup(committed, arm)
+        else:
+            out["arms"][arm] = {
+                "arm": arm, "site_hs": ARM_REGISTRY[arm]["site_hs"],
+                "kv_sharing": ARM_REGISTRY[arm]["kv_sharing"],
+                "status": "NOT-RUN",
+                "reason": "dose-viability: no usable FIT rung at this site "
+                          "(Stage-1 has_usable_dose false); neither a pass "
+                          "nor a fail (transcribed rule).",
+            }
     for placebo_arm, true_arm in PLACEBO_MATCH.items():
+        if out["arms"][true_arm].get("status") == "NOT-RUN":
+            out["g3"][placebo_arm] = {
+                "placebo_arm": placebo_arm, "matched_true_arm": true_arm,
+                "status": "NOT-RUN",
+                "reason": "mirrors the true arm's dose-viability NOT-RUN.",
+            }
+            out["actuation_claims"][true_arm] = {
+                "arm": true_arm, "claim": "not_run",
+                "reason": "dose-viability NOT-RUN at Stage 1; no gate was "
+                          "evaluated (registered disposition).",
+            }
+            continue
         out["g3"][placebo_arm] = build_g3_rollup(committed, placebo_arm)
         out["actuation_claims"][true_arm] = actuation_claim_verdict(
             arm=true_arm, arm_pass=out["arms"][true_arm]["arm_pass"],

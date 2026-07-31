@@ -168,3 +168,35 @@ undosed companion) then --arm-kind placebo (P1, 5 SC1-accepted draws,
 The placebo plan was validated first with the CPU --dry-run before GPU
 spend. G3 adjudication follows once both arms land: effect_ratio =
 lift(true)/max|lift(placebo_k)| against the transcribed >= 3.0 floor.
+
+### 2026-07-31 — Stage 2 control arms landed; G3 adjudicated: FAIL (lead ruling)
+
+- kind: adjudication
+- Arms: undosed and placebo (P1, hs25) completed on GPU
+  (`analysis/runlog/contrast_control_arms_20260731T165218Z.log`, ARM undosed
+  DONE 17:32:34Z, ARM placebo DONE 22:13:33Z). Artifacts:
+  `analysis-committed/gemma4-e4b/undosed_summary.hs25.pocket.json`,
+  `placebo_summary.hs25.pocket.json` (5 draws, k=5, n_fired_rows 175,
+  matching the 22-entry ledger).
+- Undosed floor is clean: 0/438 fired, confab-tighten 0/168 = 0.0 (Wilson
+  upper 0.0224), known-correct cost 0/270 = 0.0. Lift baseline is therefore
+  the raw placebo/true confab-tighten rates.
+- Placebo draws (confab-tighten, n=168 each): k0 104/168 = 0.6190,
+  k1 22/168 = 0.1310, k2 28/168 = 0.1667, k3 19/168 = 0.1131,
+  k4 15/168 = 0.0893. All collapse-free (max collapse_rate_on_dosed 0.0114),
+  readback within tolerance.
+- G3 (transcribed rule, mandatory for this cell): effect_ratio =
+  lift(true) / max|lift(placebo_k)| = 0.7917 / 0.6190 = 1.279 < 3.0 floor.
+  **G3 FAIL.** Re-derived by the lead directly from the committed artifacts.
+- Ruling: E1/hs25 is adjudicated **"actuates, not direction-specific"**, the
+  exact hs24 disposition (parent cell Ruling R4): a single random draw (k0)
+  reproduced 78% of the true effect. Per the registered rule this result may
+  NOT be cited as evidence of a specific effect and may NOT be pooled with
+  any direction-specific result in this program. Note the draw distribution
+  is heavy-tailed (one near-effect draw, four small), the same shape hs24
+  showed (its k0 = 0.6429); consistent with a broad subspace at these
+  quarantined sites in which many directions tighten confabulation. Per the
+  amendment's "confound cuts both ways" clause, this is evidence about the
+  band's instability, not a resolution of the quarantine hypothesis.
+- E2/hs26, E3/hs27: NOT-RUN (no usable FIT dose); P2/P3 NOT-RUN mirroring.
+- Next: pocket rollup, Outcome section, `bin/exp resolve`, PR.
