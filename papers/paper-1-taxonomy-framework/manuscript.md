@@ -425,7 +425,12 @@ closed. Six were verified:
 
 - **Gap 1: KTO has never been applied to abstention, honesty, or calibration
   training** (high confidence; zero hits across targeted searches, and the KTO
-  paper's own application list contains none). The gap matters because KTO's
+  paper's own application list contains none). The KTO results in C2 do not
+  close this gap, and the distinction is worth being precise about: Saeidi et
+  al. (2024) train KTO on general-purpose alignment data and then evaluate on
+  TruthfulQA, and evaluating on a truthfulness benchmark is not the same as
+  training on abstention, honesty, or calibration data. Those results sit
+  adjacent to the gap, not inside it. The gap matters because KTO's
   structure fits the problem unusually well: it consumes exactly the unpaired
   binary desirable/undesirable labels a known/unknown split naturally
   produces, and its prospect-theoretic loss weights losses asymmetrically, as
