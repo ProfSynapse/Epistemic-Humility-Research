@@ -205,3 +205,30 @@ rubric's precedence of the qualified core claim, and the lead does not
 overturn any. Stability regrade shard selected deterministically
 (seed 20260803 -> shard index 4, isnc_fullpool_shard_04); a fresh
 context-free opus judge is regrading it now, reported non-gating.
+
+### 2026-07-31 -- Gate adjudication (lead)
+
+Preconditions: judge-lane in-run validity 25/25 = 1.0000 >= 0.92 floor;
+lead spot-check 30/30 completed before this adjudication; N2
+NOT-ADJUDICABLE guard clear (graded non-F4 rows 237 and 139, both >= 50).
+
+N1 (IDK endpoint jump): a_dose_1 F4 260/400 = 0.6500 vs a_baseline
+15/400 = 0.0375; diff +0.6125; primary paired bootstrap 95% CI
+[0.5650, 0.6600]; lead-re-derived Newcombe cross-check [0.5591, 0.6599].
+CI lower bound 0.5650 > registered floor 0.15. N1 PASS.
+
+N2 (no graded intermediate): baseline F2+F3 share 0.4150. Gated arms:
+a_dose_0p5 share 0.2600 (delta -0.1550), a_dose_1 share 0.1629 (delta
+-0.2521). Neither rises 0.10 over baseline; the hedged share FALLS
+monotonically with dose, the registered mode-switching signature.
+N2 PASS. Non-gating report: a_placebo_1 share 0.4000 (delta -0.0150).
+
+N3 (placebo band): |a_placebo_1 F4 0.0150 - a_baseline 0.0375| =
+0.0225 <= 0.05 band. N3 PASS. Non-gating bootstrap diff CI
+[-0.0425, -0.0025].
+
+All three registered name-earning gates PASS on the fresh generations.
+Per the registered claim rule the name IDK switch is EARNED for this
+actuator at the pinned hs20 operating point. Stability regrade
+(non-gating) in flight; resolution package goes to the PI for approval
+before Outcome/resolve/PR.
