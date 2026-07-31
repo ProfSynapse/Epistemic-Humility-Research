@@ -2919,13 +2919,22 @@
           "grader.py": "86978b6a532cff055dc3b4559019f08ea5bf311e66a35588c8db32d07d87d66d",
           "judge_prompt.md": "e507a3a9bed677cb28edd6a2924538ca5753eac8bac7e247c916759293179aa2",
           "materialize_rows.py": "269fa2535c2f8bbd67e5fafe8fadf179554f0e7749aa4b7383e4297bfe4d8171",
-          "pipeline.py": "fc4b7d932080834e0dcf83ed0c882e6024b99c09b1fa6663c0118deadfcfcdf9",
+          "pipeline.py": "211e6f23e8f5e8af0453efaba1fc1abb7a8e987f886f036739c9a65f1b7c15ec",
           "render.py": "cc41ce522d36d008b0d9953ecc63875fcd85c0995cdad182b7aa30f7a0665544",
           "screen_lib.py": "8d87bff75cbb8405e2d84bfc9fd9aafd996ddebe8b1c4d1917281396edcbc62b",
           "stats_lib.py": "2c08552212cebb068739a5378bdc0cc72a2518332f6fa3ce172e48b6f97a8b55",
           "steer_lib.py": "9eb68e988e861127a541ec8b5a6059c7c5d5c8ad60864b5adbed4518566231c0",
           "test_idk_switch_smoke.py": "dfee4882a3721e2ce54d267bb973e5cd8cf563b446745032ef2cceacf62893bb"
         },
+        "repins": [
+          {
+            "date": "2026-07-31T12:23:00Z",
+            "file": "pipeline.py",
+            "new_sha256": "211e6f23e8f5e8af0453efaba1fc1abb7a8e987f886f036739c9a65f1b7c15ec",
+            "old_sha256": "fc4b7d932080834e0dcf83ed0c882e6024b99c09b1fa6663c0118deadfcfcdf9",
+            "reason": "load_directions read directions from the naming battery's analysis-committed tree, which never contained a directions/ dir (build-time ruling 5 corrected cell.yaml and experiment.yaml inputs but missed this hardcoded constant); repointed to qwen35-4b-midband-doubt-snap/analysis-committed, the registered source. Surfaced by the first GPU smoke; no generation had run."
+          }
+        ],
         "runtime_image_digest": "sha256:894cb31b87d87092b249ef6abfb00791e5b3b824dff6c5bd61cdbecfb04887a7"
       },
       "kg": [],

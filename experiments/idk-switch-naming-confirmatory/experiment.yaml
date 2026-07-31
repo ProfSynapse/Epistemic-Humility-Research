@@ -51,7 +51,7 @@ instrument:
     detector_v2_patterns.yaml: e81a2f33cc986bf8b1e5b198b2c5026f7b713249298a422fdb6b604e299a7d69
     gen_lib.py: e12fc49666bb1fc1da2787d7d381e2fcd5a6c08a34e337b20e9ba3cd396e68ab
     steer_lib.py: 9eb68e988e861127a541ec8b5a6059c7c5d5c8ad60864b5adbed4518566231c0
-    pipeline.py: fc4b7d932080834e0dcf83ed0c882e6024b99c09b1fa6663c0118deadfcfcdf9
+    pipeline.py: 211e6f23e8f5e8af0453efaba1fc1abb7a8e987f886f036739c9a65f1b7c15ec
     screen_lib.py: 8d87bff75cbb8405e2d84bfc9fd9aafd996ddebe8b1c4d1917281396edcbc62b
     build_judge_pool.py: 51c3e55cd0ee9e0ce923f04e1914169f110a93db973475ebac38e659491574c9
     apply_judge_grades.py: 1dcf744678aeb63c714e945172803f516ba7aa2e31d4b42c8d035ed1c5ca4bbb
@@ -159,6 +159,16 @@ instrument:
       measured_smoke_wall_clock_s: 0.11
       measured_on: 2026-07-31, CPU, full suite 29/29 in 0.11s (harness-build)
       rationale: Test suite, not a run stage.
+  repins:
+  - file: pipeline.py
+    old_sha256: fc4b7d932080834e0dcf83ed0c882e6024b99c09b1fa6663c0118deadfcfcdf9
+    new_sha256: 211e6f23e8f5e8af0453efaba1fc1abb7a8e987f886f036739c9a65f1b7c15ec
+    date: '2026-07-31T12:23:00Z'
+    reason: load_directions read directions from the naming battery's analysis-committed
+      tree, which never contained a directions/ dir (build-time ruling 5 corrected
+      cell.yaml and experiment.yaml inputs but missed this hardcoded constant); repointed
+      to qwen35-4b-midband-doubt-snap/analysis-committed, the registered source. Surfaced
+      by the first GPU smoke; no generation had run.
 inputs:
 - experiments/write-direction-naming-battery/analysis-committed/populations/p_confab_ids.json
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json

@@ -59,6 +59,10 @@ import yaml
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
 NAMING_BATTERY_COMMITTED = REPO_ROOT / "experiments" / "write-direction-naming-battery" / "analysis-committed"
+# Directions live in the cell that actually committed them (build-time ruling
+# 5 in AMENDMENT.md: the naming battery never committed a directions/ tree;
+# registered paths in cell.yaml direction_readout and experiment.yaml inputs).
+DOUBT_SNAP_COMMITTED = REPO_ROOT / "experiments" / "qwen35-4b-midband-doubt-snap" / "analysis-committed"
 for _p in (str(REPO_ROOT / "synaptic-tuner"), str(HERE)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
@@ -264,7 +268,7 @@ def load_rows() -> dict[str, list[dict]]:
 
 
 def load_directions() -> dict[str, Any]:
-    directions_dir = NAMING_BATTERY_COMMITTED / "directions" / "hs20"
+    directions_dir = DOUBT_SNAP_COMMITTED / "directions" / "hs20"
     c_hat = np.asarray(json.loads((directions_dir / "c_hat.json").read_text())["vector"], dtype=np.float64)
     random_dir = np.asarray(json.loads((directions_dir / "random_direction.json").read_text())["vector"], dtype=np.float64)
     return {"c_hat": c_hat, "random_direction": random_dir}

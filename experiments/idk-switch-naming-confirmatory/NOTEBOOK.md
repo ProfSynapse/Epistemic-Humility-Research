@@ -85,3 +85,18 @@ Docker Desktop with the nvidia runtime.
 Scope: manifest field only, same as the first repin; all 17 instrument
 pins untouched; no generation stage has run (both smoke attempts died
 at import, before model load).
+
+### 2026-07-31 -- Repin: pipeline.py directions path (bin/exp repin, audit-trailed)
+
+Third smoke attempt failed at load_directions:
+FileNotFoundError on write-direction-naming-battery/analysis-committed/
+directions/hs20/c_hat.json. Build-time ruling 5 established at sign that
+the naming battery never committed a directions/ tree and corrected
+cell.yaml and experiment.yaml inputs to the committing cell
+(qwen35-4b-midband-doubt-snap), but pipeline.py's hardcoded
+directions_dir constant was missed by that correction and by the lead's
+pre-sign review. Fix: DOUBT_SNAP_COMMITTED constant, directions_dir
+repointed; no other logic touched. CPU suite 30/30 after the change.
+Repinned via bin/exp repin (pipeline.py fc4b7d93 -> 211e6f23, reason
+recorded in instrument.repins). No generation has run; all three failed
+smokes died before model load or at artifact load, touching no rows.
