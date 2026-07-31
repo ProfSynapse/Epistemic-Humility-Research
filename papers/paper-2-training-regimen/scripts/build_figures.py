@@ -19,14 +19,56 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 REPO = Path(__file__).resolve().parents[3]
+# Live archive location, checked first. Most raw eval result dirs from before the
+# 2026-07-10 archive move only exist under EVAL_ROOT_FALLBACK on a given machine
+# (a gitignored, machine-local mirror); see _resolve_eval_path / _glob_eval_dirs.
 EVAL_ROOT = REPO / "archive" / "experiment" / "phase1" / "eval"
+EVAL_ROOT_FALLBACK = REPO / "archive" / "experiment" / "phase1-data" / "eval"
 PAPER_ROOT = REPO / "papers" / "paper-2-training-regimen"
 DEFAULT_OUT = PAPER_ROOT / "analysis"
 DEFAULT_FIGURES = PAPER_ROOT / "figures"
-AMENDMENT_B_REPORT = (
-    REPO / "archive" / "experiment" / "phase1" / "eval" / "analysis" / "amendment_b_sequential_results_report.md"
-)
+AMENDMENT_B_REPORT_RELATIVE = "analysis/amendment_b_sequential_results_report.md"
 AMENDMENT_B_SEQ_PREFIX = "results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq"
+
+
+def _resolve_eval_path(relative: str) -> Path:
+    """Resolve a path relative to an eval root, preferring the live archive
+    location (EVAL_ROOT) and falling back to the machine-local phase1-data
+    mirror (EVAL_ROOT_FALLBACK). Fails loudly, listing every root checked, if
+    the relative path exists under neither."""
+
+    candidates = [EVAL_ROOT / relative, EVAL_ROOT_FALLBACK / relative]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    raise FileNotFoundError(
+        f"Could not resolve eval artifact {relative!r} under any known eval root: "
+        + ", ".join(str(candidate) for candidate in candidates)
+    )
+
+
+def _resolve_eval_path_optional(relative: str) -> Path | None:
+    """Like _resolve_eval_path, but returns None instead of raising when the
+    relative path is missing under every root (for genuinely optional inputs)."""
+
+    for candidate in (EVAL_ROOT / relative, EVAL_ROOT_FALLBACK / relative):
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def _glob_eval_dirs(pattern: str) -> list[Path]:
+    """Glob `pattern` under every known eval root and merge the results,
+    de-duplicating by directory name (live root wins ties) so a caller sees the
+    union of what each root has on disk."""
+
+    by_name: dict[str, Path] = {}
+    for root in (EVAL_ROOT, EVAL_ROOT_FALLBACK):
+        if not root.exists():
+            continue
+        for path in root.glob(pattern):
+            by_name.setdefault(path.name, path)
+    return [by_name[name] for name in sorted(by_name)]
 T_975_DF2 = 4.302652729911275
 COLORS = {
     "sft": "#2f6f4e",
@@ -47,37 +89,33 @@ PNG_COLORS = {
     "panel": (255, 255, 255),
 }
 
-SELF_AWARE_SEED_DIRS = {
-    1: EVAL_ROOT / "results_selfaware_full_seed1_all_arms_4b_20260615_2148",
-    2: EVAL_ROOT / "results_selfaware_full_seed2_all_arms_4b_20260615_2148",
-    3: EVAL_ROOT / "results_selfaware_full_seed3_all_arms_4b_20260616_0615",
+SELF_AWARE_SEED_NAMES = {
+    1: "results_selfaware_full_seed1_all_arms_4b_20260615_2148",
+    2: "results_selfaware_full_seed2_all_arms_4b_20260615_2148",
+    3: "results_selfaware_full_seed3_all_arms_4b_20260616_0615",
 }
+
+
+def _selfaware_seed_dir(seed: int) -> Path:
+    return _resolve_eval_path(SELF_AWARE_SEED_NAMES[seed])
+
 
 AMENDMENT_A_SUMMARY_TABLES = [
     (
         "seed1_all",
-        EVAL_ROOT / "results_amendment_a_selfaware_full_local_4b" / "comparisons" / "summary_table.csv",
+        "results_amendment_a_selfaware_full_local_4b/comparisons/summary_table.csv",
     ),
     (
         "seed2_dpo_clean",
-        EVAL_ROOT
-        / "results_amendment_a_selfaware_full_seed2_sft_dpo_lowmem_local_4b"
-        / "comparisons"
-        / "summary_table.csv",
+        "results_amendment_a_selfaware_full_seed2_sft_dpo_lowmem_local_4b/comparisons/summary_table.csv",
     ),
     (
         "seed2_kto_clean",
-        EVAL_ROOT
-        / "results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b"
-        / "comparisons"
-        / "summary_table.csv",
+        "results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b/comparisons/summary_table.csv",
     ),
     (
         "seed3_dpo",
-        EVAL_ROOT
-        / "results_amendment_a_selfaware_full_seed3_sft_dpo_local_4b"
-        / "comparisons"
-        / "summary_table.csv",
+        "results_amendment_a_selfaware_full_seed3_sft_dpo_local_4b/comparisons/summary_table.csv",
     ),
     (
         "seed3_kto",
@@ -122,7 +160,8 @@ def _read_summary_csv(path: Path) -> list[dict[str, str]]:
 
 def load_selfaware_seed_metrics() -> list[SeedMetricRow]:
     rows: list[SeedMetricRow] = []
-    for seed, result_dir in SELF_AWARE_SEED_DIRS.items():
+    for seed in SELF_AWARE_SEED_NAMES:
+        result_dir = _selfaware_seed_dir(seed)
         csv_path = result_dir / "comparisons" / "summary_table.csv"
         for row in _read_summary_csv(csv_path):
             arm = row["arm"].split("_seed", 1)[0]
@@ -171,7 +210,7 @@ def seed_summary(rows: list[SeedMetricRow]) -> list[dict[str, object]]:
 
 
 def _read_scored_rows(seed: int, arm: str) -> dict[tuple[str, int], dict[str, object]]:
-    result_dir = SELF_AWARE_SEED_DIRS[seed]
+    result_dir = _selfaware_seed_dir(seed)
     candidates = list(result_dir.glob(f"{arm}_seed{seed}__selfaware/scored_rows.jsonl"))
     if len(candidates) != 1:
         raise FileNotFoundError(f"Expected one scored_rows.jsonl for seed={seed} arm={arm}")
@@ -216,7 +255,7 @@ def exact_mcnemar_p(discordant_a_not_b: int, discordant_b_not_a: int) -> float:
 
 def paired_transitions() -> list[dict[str, object]]:
     out: list[dict[str, object]] = []
-    for seed in sorted(SELF_AWARE_SEED_DIRS):
+    for seed in sorted(SELF_AWARE_SEED_NAMES):
         scored = {arm: _read_scored_rows(seed, arm) for arm in ("sft", "dpo", "kto")}
         for arm_a, arm_b in (("sft", "dpo"), ("sft", "kto"), ("dpo", "kto")):
             rows_a = scored[arm_a]
@@ -289,7 +328,8 @@ def paired_transitions() -> list[dict[str, object]]:
 
 def amendment_a_summary() -> list[dict[str, object]]:
     out: list[dict[str, object]] = []
-    for source_label, csv_path in AMENDMENT_A_SUMMARY_TABLES:
+    for source_label, csv_relative in AMENDMENT_A_SUMMARY_TABLES:
+        csv_path = _resolve_eval_path(csv_relative)
         for row in _read_summary_csv(csv_path):
             out.append(
                 {
@@ -312,11 +352,14 @@ def amendment_a_summary() -> list[dict[str, object]]:
 def amendment_b_stated_confidence_summary() -> list[dict[str, object]]:
     metrics_paths = sorted(
         path
-        for result_dir in EVAL_ROOT.glob(f"{AMENDMENT_B_SEQ_PREFIX}*")
+        for result_dir in _glob_eval_dirs(f"{AMENDMENT_B_SEQ_PREFIX}*")
         for path in result_dir.glob("*__selfaware/metrics.json")
     )
     if not metrics_paths:
-        raise FileNotFoundError(f"No Amendment B sequential metrics found under {EVAL_ROOT}")
+        raise FileNotFoundError(
+            "No Amendment B sequential metrics found (pattern="
+            f"{AMENDMENT_B_SEQ_PREFIX}*) under any known eval root: {EVAL_ROOT}, {EVAL_ROOT_FALLBACK}"
+        )
 
     by_family: dict[str, list[dict[str, float]]] = {"merged SFT": [], "SFT -> DPO": [], "SFT -> KTO": []}
     for path in metrics_paths:
@@ -343,9 +386,10 @@ def amendment_b_stated_confidence_summary() -> list[dict[str, object]]:
         )
 
     report_rows_by_arm = {}
-    if AMENDMENT_B_REPORT.exists():
+    amendment_b_report = _resolve_eval_path_optional(AMENDMENT_B_REPORT_RELATIVE)
+    if amendment_b_report is not None:
         in_table = False
-        for line in AMENDMENT_B_REPORT.read_text(encoding="utf-8").splitlines():
+        for line in amendment_b_report.read_text(encoding="utf-8").splitlines():
             if line.startswith("| Arm | Refusal recall |"):
                 in_table = True
                 continue
@@ -392,11 +436,17 @@ def amendment_b_stated_confidence_summary() -> list[dict[str, object]]:
 
 
 def _amendment_b_scored_paths() -> list[Path]:
-    return sorted(
+    paths = sorted(
         path
-        for result_dir in EVAL_ROOT.glob(f"{AMENDMENT_B_SEQ_PREFIX}*")
+        for result_dir in _glob_eval_dirs(f"{AMENDMENT_B_SEQ_PREFIX}*")
         for path in result_dir.glob("*__selfaware/scored_rows.jsonl")
     )
+    if not paths:
+        raise FileNotFoundError(
+            "No Amendment B sequential scored_rows.jsonl found (pattern="
+            f"{AMENDMENT_B_SEQ_PREFIX}*) under any known eval root: {EVAL_ROOT}, {EVAL_ROOT_FALLBACK}"
+        )
+    return paths
 
 
 def _amendment_b_family(arm: str) -> str:
