@@ -2577,6 +2577,44 @@
     },
     {
       "checkpoint": {
+        "repo": "Qwen3-4B-bnb-4bit",
+        "revision": "4-bit foundation model; every seed rebuilds its own clean-SFT lineage from it (no seed-1 artifact is reused as a training source)"
+      },
+      "created_at": "2026-07-31T19:57:57Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/probe-scaled-response-confidence/AMENDMENT.md",
+        "experiments/grpo-centered-stacking/AMENDMENT.md",
+        "experiments/best-stack-replication-scale-gate/AMENDMENT.md",
+        "experiments/schema-response-confidence/AMENDMENT.md",
+        "archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md",
+        "archive/experiment/phase1/grpo/build_schema_response_confidence_datasets.py",
+        "archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv",
+        "archive/docs/protocols/phase1/PROTOCOL.md",
+        "docs/sessions/20260623T093654Z-probe-scaled-response-confidence-retrain.md",
+        "docs/sessions/20260624T183052Z-grpo-centered-stacking-plan.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "persistence": {},
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "",
+      "question": "Do the seed-1 GRPO effects in the clean response-confidence lineage - GRPO's abstention shift and the post-GRPO preference recovery - replicate at two fresh seeds, so that every GRPO arm in paper 2 carries a three-seed interval like its DPO and KTO siblings?",
+      "registered": true,
+      "slug": "grpo-three-seed-confirmatory",
+      "status": "draft",
+      "title": "GRPO Three-Seed Confirmatory Block",
+      "type": "training-run",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
