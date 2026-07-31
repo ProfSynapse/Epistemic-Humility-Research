@@ -40,7 +40,7 @@ instrument:
   - axis_n1n2n3_arithmetic.py
   - judge_prompt.md
   - test_idk_switch_smoke.py
-  runtime_image_digest: sha256:0421dc9cf32691bd0f093eb153b9e900f2be418cdd466f341d598415a92657ee
+  runtime_image_digest: sha256:fe732c8fb4c82ea1a1acd1df3766a6fe854de750f1416d934e3c66231dfff801
   pins:
     cell.yaml: db49e6d462a18ab064ea48e2674fea61c4da5d12c2f01e372a2cca19f67e8112
     gates.yaml: e5139ed134b89811496c3328081d395005b2661592f78749b9873650d1153221
