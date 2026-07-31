@@ -55,7 +55,31 @@
       "capacity_features": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed3\\20260617_070334\\capacity_features.json",
       "training_lineage": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed3\\20260617_070334\\training_lineage.json"
     },
-    "record_correction": "2026-07-31: outcome block corrected from stale 'launched/unverified' to completed, from on-disk training_lineage.json and train_end log event; training finished 2026-06-18T08:02:47Z but the record was never updated. Eval pending."
+    "record_correction": "2026-07-31: outcome block corrected from stale 'launched/unverified' to completed, from on-disk training_lineage.json and train_end log event; training finished 2026-06-18T08:02:47Z but the record was never updated. Eval pending at the time of that correction; eval completed 2026-07-31T22:54:19Z (pinned unsloth container, --user root), eval_summary added 2026-07-31.",
+    "eval_summary": {
+      "status": "completed",
+      "completed_at": "2026-07-31T22:54:19Z",
+      "config": "archive/experiment/phase1/eval/config/eval_amendment_a_selfaware_full_seed3_sft_kto_local_4b.yaml",
+      "results_dir": "archive/experiment/phase1/eval/results_amendment_a_selfaware_full_seed3_sft_kto_local_4b",
+      "metrics_path": "archive/experiment/phase1/eval/results_amendment_a_selfaware_full_seed3_sft_kto_local_4b/sft_kto_seed3__selfaware/metrics.json",
+      "config_sha": "0a569e25c4e9f97e",
+      "path_note": "repo-relative paths from the canonical checkout; earlier seed records carry pre-archive-move F:\\ absolute paths",
+      "contamination_scan": {
+        "pattern": "<think>|</think>|reasoning_content",
+        "matches": 0
+      },
+      "selfaware": {
+        "n": 3369,
+        "n_unknown_labeled": 1032,
+        "n_known_labeled": 2337,
+        "refusal_recall_pct": 78.88,
+        "answer_on_unknown_pct": 21.12,
+        "over_refusal_pct": 43.3,
+        "refusal_rate_pct": 54.2,
+        "correct_on_known_pct": 35.4,
+        "truthful_pct": 38.08
+      }
+    }
   },
   "launch_notes": {
     "direct_docker_launch": true,
