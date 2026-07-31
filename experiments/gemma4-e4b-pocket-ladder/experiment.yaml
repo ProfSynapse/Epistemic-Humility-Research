@@ -62,6 +62,7 @@ instrument:
   - placebo_direction.py
   - g2_companion.py
   - pocket_rollup.py
+  runtime_image_digest: sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8
   pins:
     cell.yaml: e17ba9207ad050631edb5ce856b3f4741a02a0ce45075afa9256b2e2566df973
     gates.yaml: e4bc65ede254330036238b3241c054bfde990b96e9f3cf4929e2c886082729f8

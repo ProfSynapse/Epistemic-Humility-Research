@@ -2668,7 +2668,8 @@
           "pocket_rollup.py": "fcb1c753dedc77c0a2602917819723fe19486a03599f2b376ee59bab2c7151bc",
           "run_contrast.py": "89ea37110e8154422e1e962b624c602fa59c040129bd8d15fa20205e776589ed",
           "scorers.py": "1b3eda5d8d68c9184674f092805278505c5cd2065a21ffe7ec348e9ea5a00c37"
-        }
+        },
+        "runtime_image_digest": "sha256:479b7ca7891ab328ce7f04adffb949ef8086e3cf0d87676a3577d1d76cd845c8"
       },
       "kg": [],
       "prediction": "None of E1 (hs25), E2 (hs26), or E3 (hs27) produces an ADJUDICATED G3 PASS (effect_ratio >= 3.0, or PASS-DEGENERATE) jointly with a G1/G2 PASS on held-out. Basis - the quarantine cell's measured below-seam ladder falls monotonically toward the seam (D1/hs15 0.7857, D2/hs18 0.4464, D3/hs20 0.4048; a per-site-dose PROFILE, not a controlled contrast, NOTEBOOK.md:1621), and its one measured quarantined-region site, A5/hs24, cleared G1 (0.7321) and G2 (0.0333) but failed G3 outright at effect_ratio 1.139 (worst placebo draw reproduced 88% of the true effect) - NOTEBOOK.md:1573-1606, Stage 6 Ruling R3/R4. E1/E2/E3 sit deeper into the same quarantined region than hs24.",
