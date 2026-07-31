@@ -678,7 +678,7 @@ def test_local_4b_ood_slice_config_is_diagnostic_bounded_base_sft_dpo_only():
     assert cfg["model_tag"] == "qwen3-4b-instruct"
     assert cfg["model_name"] == "unsloth/Qwen3-4B-bnb-4bit"
     assert cfg["gold_path"] == (
-        "../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl"
+        "../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl"
     )
     assert cfg["results_dir"] == "results_ood_slice_local_4b"
     assert cfg["generation"]["n_samples"] == 1
@@ -730,7 +730,7 @@ def test_local_4b_selfaware_evidence_slice_config_is_bounded_base_sft_dpo_only()
     assert cfg["model_tag"] == "qwen3-4b-instruct"
     assert cfg["model_name"] == "unsloth/Qwen3-4B-bnb-4bit"
     assert cfg["gold_path"] == (
-        "../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl"
+        "../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl"
     )
     assert cfg["results_dir"] == "results_selfaware_evidence_2240_192_local_4b"
     assert cfg["generation"]["enable_thinking"] is False
@@ -751,7 +751,7 @@ def test_local_4b_selfaware_evidence_slice_config_is_bounded_base_sft_dpo_only()
     selfaware = cfg["eval_sets"]["selfaware"]
     assert selfaware == {
         "type": "ood",
-        "path": "../../../datasets/selfaware/SelfAware.json",
+        "path": "../../../../datasets/selfaware/SelfAware.json",
         "offset": 2240,
         "limit": 192,
     }
@@ -764,7 +764,7 @@ def test_local_4b_selfaware_full_config_is_base_sft_dpo_only():
     assert cfg["model_tag"] == "qwen3-4b-instruct"
     assert cfg["model_name"] == "unsloth/Qwen3-4B-bnb-4bit"
     assert cfg["gold_path"] == (
-        "../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl"
+        "../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl"
     )
     assert cfg["results_dir"] == "results_selfaware_full_local_4b"
     assert cfg["generation"]["enable_thinking"] is False
@@ -784,7 +784,7 @@ def test_local_4b_selfaware_full_config_is_base_sft_dpo_only():
     assert cfg["eval_sets"] == {
         "selfaware": {
             "type": "ood",
-            "path": "../../../datasets/selfaware/SelfAware.json",
+            "path": "../../../../datasets/selfaware/SelfAware.json",
         }
     }
 
@@ -814,25 +814,25 @@ def test_local_4b_broader_ood_evidence_config_is_base_sft_dpo_only():
     assert cfg["eval_sets"] == {
         "kuq": {
             "type": "ood",
-            "path": "../../../datasets/kuq/knowns_unknowns.jsonl",
+            "path": "../../../../datasets/kuq/knowns_unknowns.jsonl",
             "offset": 3245,
             "limit": 384,
         },
         "coconot": {
             "type": "ood",
-            "path": "../../../datasets/coconot/contrast_test.jsonl",
+            "path": "../../../../datasets/coconot/contrast_test.jsonl",
             "offset": 0,
             "limit": 379,
         },
         "truthfulqa": {
             "type": "ood",
-            "path": "../../../datasets/truthfulqa/TruthfulQA.csv",
+            "path": "../../../../datasets/truthfulqa/TruthfulQA.csv",
             "offset": 0,
             "limit": 256,
         },
         "popqa": {
             "type": "ood",
-            "path": "../../../datasets/popqa/test.jsonl",
+            "path": "../../../../datasets/popqa/test.jsonl",
             "offset": 0,
             "limit": 256,
         },

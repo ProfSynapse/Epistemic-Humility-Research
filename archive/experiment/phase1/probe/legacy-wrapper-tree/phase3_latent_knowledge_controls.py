@@ -6,7 +6,7 @@ from pathlib import Path
 import importlib.util
 import sys
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[5]
 TARGET_DIR = ROOT / "experiments/selfaware-latent-knowledge-controls"
 TARGET = TARGET_DIR / "phase3_latent_knowledge_controls.py"
 

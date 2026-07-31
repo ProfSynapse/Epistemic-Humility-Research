@@ -14,8 +14,8 @@ from pathlib import Path
 import yaml
 
 
-REPO = Path(__file__).resolve().parents[4]
-EVAL_DIR = REPO / "experiment" / "phase1" / "eval"
+REPO = Path(__file__).resolve().parents[5]
+EVAL_DIR = REPO / "archive" / "experiment" / "phase1" / "eval"
 CONFIG_DIR = EVAL_DIR / "config"
 DEFAULT_LOG_DIR = EVAL_DIR / "logs" / "thinking_eval_batch"
 CONTAINER_REPO = "/workspace/repo"
@@ -49,7 +49,7 @@ def summary_exists(config_path: Path) -> bool:
 
 def docker_command(config_path: Path, *, image: str) -> list[str]:
     container_config = (
-        f"{CONTAINER_REPO}/experiment/phase1/eval/config/{config_path.name}"
+        f"{CONTAINER_REPO}/archive/experiment/phase1/eval/config/{config_path.name}"
     )
     return [
         "docker",
@@ -69,7 +69,7 @@ def docker_command(config_path: Path, *, image: str) -> list[str]:
         "-w",
         CONTAINER_REPO,
         image,
-        "experiment/phase1/eval/run_eval.py",
+        "archive/experiment/phase1/eval/run_eval.py",
         "--config",
         container_config,
         "--live-vllm",

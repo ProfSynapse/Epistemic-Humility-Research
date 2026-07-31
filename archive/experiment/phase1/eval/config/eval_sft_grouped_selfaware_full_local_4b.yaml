@@ -6,7 +6,7 @@
 
 model_tag: qwen3-4b-instruct
 model_name: unsloth/Qwen3-4B-bnb-4bit
-gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_sft_grouped_selfaware_full_local_4b
 
 generation:
@@ -40,4 +40,4 @@ arms:
 eval_sets:
   selfaware:
     type: ood
-    path: ../../../datasets/selfaware/SelfAware.json
+    path: ../../../../datasets/selfaware/SelfAware.json

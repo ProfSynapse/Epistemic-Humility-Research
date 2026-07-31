@@ -5,7 +5,7 @@
 
 model_tag: qwen3-4b-instruct
 model_name: unsloth/Qwen3-4B-bnb-4bit
-gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_ood_slice_local_4b
 
 generation:
@@ -47,16 +47,16 @@ arms:
 eval_sets:
   coconot:
     type: ood
-    path: ../../../datasets/coconot/contrast_test.jsonl
+    path: ../../../../datasets/coconot/contrast_test.jsonl
     offset: 0
     limit: 64
   truthfulqa:
     type: ood
-    path: ../../../datasets/truthfulqa/TruthfulQA.csv
+    path: ../../../../datasets/truthfulqa/TruthfulQA.csv
     offset: 0
     limit: 64
   selfaware:
     type: ood
-    path: ../../../datasets/selfaware/SelfAware.json
+    path: ../../../../datasets/selfaware/SelfAware.json
     offset: 0
     limit: 64

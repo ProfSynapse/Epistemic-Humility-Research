@@ -29,10 +29,12 @@ from scorers import (  # noqa: E402  (sys.path set in conftest.py)
 
 # Real on-disk locations (NOT the stale docs/epistemic-humility/ paths the
 # read-only source hardcodes; those predate the repo split).
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[5]
 CHENG_OUTPUTS = REPO / "datasets" / "say-i-dont-know-outputs"
 GOLD = REPO / "datasets" / "triviaqa-rc-nocontext" / "cheng_test_gold.jsonl"
-EVIDENCE_CSV = REPO / "meta-analysis" / "evidence" / "idk-method-reanalysis.csv"
+EVIDENCE_CSV = (
+    REPO / "papers" / "paper-1-taxonomy-framework" / "evidence" / "idk-method-reanalysis.csv"
+)
 
 METHODS = ["sft", "dpo", "ppo", "bon", "hir"]
 
