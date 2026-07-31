@@ -6,6 +6,43 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-31 Payload graded; axis G adjudicated BINARY (prediction correct)
+
+All 36 full-pool shards graded by fresh isolated opus judges (batches of
+12), every output verified (row counts, positional opaque_id match, label
+validity), all 36 graded hashes committed before the join. 1781 rows
+applied (the 2000 screened-in minus the 219 spent-slice rows D-1 excludes
+from every scored surface; the arithmetic module's screened-vs-graded
+mismatch warning is exactly this registered exclusion).
+
+Per-arm judge labels (F1 / F2 / F3, with the deterministic F4 screen
+count and the F2+F3 share among non-degenerate rows):
+
+- a_baseline: 189 / 142 / 13, F4 16, share 0.431
+- a_dose_0p25: 150 / 100 / 16, F4 94, share 0.322
+- a_dose_0p5: 100 / 72 / 12, F4 176, share 0.233
+- a_dose_0p75: 82 / 46 / 10, F4 221, share 0.156
+- a_dose_1: 53 / 24 / 13, F4 267, share 0.104
+- a_placebo_0p5: 213 / 154 / 14, F4 12, share 0.427
+- a_placebo_1: 221 / 147 / 10, F4 9, share 0.406
+
+Axis-G adjudication (lead, against G3 transcribed unchanged): the 0.15
+share floor clears at all three intermediate doses (0.322 / 0.233 /
+0.156), but the +0.10-over-baseline leg fails at every dose; the
+baseline share is 0.431 and dose MONOTONICALLY REDUCES the hedged share.
+Verdict: BINARY. Screen-dominated guard not triggered (graded rows per
+intermediate dose 266 / 184 / 138, all above 50).
+
+Reading: the validated judge finds the baseline model already hedges
+43 percent of its non-degenerate answers, an order of magnitude more
+than the voided regexes detected, and the placebo arms sit at the same
+level (0.427 / 0.406), so the direction-specific dose effect is a
+monotone conversion of ALL prose forms (committed and hedged alike)
+into explicit IDK: F1-to-F4 mode switching with no graded intermediate.
+Both scoreboard calls (orchestrator and user, aligned) are CORRECT:
+instrument validates, axis G BINARY via the failed over-baseline leg,
+elevated baseline hedging as the mechanism.
+
 ### 2026-07-31 Calibration attempt 2: INSTRUMENT VALIDATES (G1 PASS, G2 PASS)
 
 Nine fresh isolated opus graders on the attempt-2 pool (seed 20260801).
