@@ -132,3 +132,39 @@ known_correct_answered 270), g0_smoke_pass true. The fired-only
 NOT-ADJUDICABLE disposition at n=4 is a smoke-slice artifact of the 35
 floor and is non-gating. Proceeding to --mode full (held-out G1/G2/G3
 for E1 with P1 and C0) per the registered sequence.
+
+### 2026-07-31 -- Stage 2 true arm (E1/hs25) complete; lead verification
+
+run_contrast.py --mode full completed exit 0 (41 min) after one designed
+refusal without the --i-know-this-is-the-cross-family-run interlock flag,
+relaunched with the flag under the same standing authorization. Lead
+verification from analysis-committed/gemma4-e4b/full_summary.pocket.json:
+
+- **G1 actuation floor: PASS.** Held-out confab clean_tighten 133/168 =
+  0.7917, Wilson 95% CI [0.7241, 0.8462], against floor rate 0.5 with
+  Wilson-lower requirement 0.4.
+- **G2 selectivity cap: PASS on the gating full-population number.**
+  Known-correct cost 9/270 = 0.0333, Wilson CI [0.0176, 0.0621], against
+  cap 0.05 with Wilson-upper requirement 0.10. The three companion
+  numbers are reported together per the registered G2 section:
+  G2-as-transcribed 0.0333 (gating, PASS); fired-only companion 9/9 =
+  1.0 at n_fired_known = 9, below the N = 35 adjudicable floor, so
+  NOT-ADJUDICABLE, exactly the non-gating disposition the amendment's
+  "G2 diagnosticity, inherited caveat" pre-registers for this cell; and
+  undosed floor 0/261 = 0.0. The tool's
+  discrepancy_full_pass_but_fired_only_over_cap flag surfaces this
+  anticipated pattern and does not gate.
+- Dose fidelity: readback mean 81.485 vs target 81.615,
+  frac_readback_within_tol 1.0, collapse_rate_on_dosed 0.0, n_fired
+  175/438.
+- Late reference correctly SKIPPED (no usable late dose; primary does
+  not depend on the late arm). primary_pass true.
+
+No arm is reported as actuation on G1/G2 alone; G3 is mandatory.
+Control arms launched: --arm-kind undosed (G3 lift baseline and G2
+undosed companion) then --arm-kind placebo (P1, 5 SC1-accepted draws,
+22-entry ledger, matched to the true arm's 175 fired rows at dose
+81.615; P2/P3 NOT-RUN mirroring their arms' dose-viability status).
+The placebo plan was validated first with the CPU --dry-run before GPU
+spend. G3 adjudication follows once both arms land: effect_ratio =
+lift(true)/max|lift(placebo_k)| against the transcribed >= 3.0 floor.
