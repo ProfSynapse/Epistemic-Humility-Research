@@ -118,3 +118,19 @@ nvidia runtime present. instrument.runtime_image_digest repinned
 sha256:894cb31b... -> sha256:a4076961bef8ece2d2aaadedd5a855a7bcfd3e48
 21cbbc1b8815dbaa83ced15e. No generation row has ever been produced; all
 failures were pre-model-load or pre-first-token instrument validation.
+
+### 2026-07-31 -- Fourth runtime digest repin: python3.10-dev headers
+
+Smoke attempt 5 cleared every earlier blocker (correct daemon, correct
+digest, pydantic, gcc; full 426-shard Qwen3.5-4B weight load) and then
+failed in triton's cuda_utils stub compile with "Python.h: No such file
+or directory": triton invokes gcc with -I/usr/include/python3.10, which
+exists only with the python3.10-dev headers; libc6-dev alone is not
+sufficient. Fix on the same Synaptic-Tuner PR #150 branch (tuner rev
+1dab1f3). Rebuild verified in-image: /usr/include/python3.10/Python.h
+present, gcc 11.4.0, pydantic 2.12.4. Daemon preflight at capture:
+Docker Desktop, nvidia runtime. instrument.runtime_image_digest
+repinned sha256:a4076961... -> sha256:45847a60a08b3684818c5974d5412c8a
+9d4bafd8d7f441c29b091ee580694434. Still no generation row ever
+produced; the failure fired inside the first forward pass before any
+token was sampled.
