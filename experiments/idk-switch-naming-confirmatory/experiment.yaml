@@ -1,23 +1,22 @@
 slug: idk-switch-naming-confirmatory
 title: idk-switch-naming-confirmatory
 type: steer-cell
-status: draft
+status: signed
 registered: true
 created_at: '2026-07-31T01:35:18Z'
-question: 'Does a fresh-sampling-seed replication of the caution write at the
-  pinned Qwen3.5-4B hs20 operating point (reduced ladder over the registered
-  P_CONFAB rows, deterministic F4/F5 screens plus the validated blinded judge
-  lane) reproduce the explicit-IDK mode switch and thereby earn the name "IDK
-  switch" under three pre-registered claims: endpoint F4 jump (N1), no graded
-  hedged intermediate (N2), placebo flatness (N3)?'
-prediction: 'All three name-earning gates pass on the fresh generations: F4
-  endpoint jump over baseline, hedged share never rising 0.10 over baseline at
-  any dose, placebo F4 within its registered band; the name IDK switch is
-  earned.'
-falsifier: 'Any name-earning gate fails on the fresh generations. Named
-  alternatives: instrument-failed (judge decoy floors missed; N2 unadjudicable,
-  N1/N3 still reported from deterministic screens) and generation-failed
-  (fresh generations fail acceptance; nothing adjudicated).'
+question: 'Does a fresh-sampling-seed replication of the caution write at the pinned
+  Qwen3.5-4B hs20 operating point (reduced ladder over the registered P_CONFAB rows,
+  deterministic F4/F5 screens plus the validated blinded judge lane) reproduce the
+  explicit-IDK mode switch and thereby earn the name "IDK switch" under three pre-registered
+  claims: endpoint F4 jump (N1), no graded hedged intermediate (N2), placebo flatness
+  (N3)?'
+prediction: 'All three name-earning gates pass on the fresh generations: F4 endpoint
+  jump over baseline, hedged share never rising 0.10 over baseline at any dose, placebo
+  F4 within its registered band; the name IDK switch is earned.'
+falsifier: 'Any name-earning gate fails on the fresh generations. Named alternatives:
+  instrument-failed (judge decoy floors missed; N2 unadjudicable, N1/N3 still reported
+  from deterministic screens) and generation-failed (fresh generations fail acceptance;
+  nothing adjudicated).'
 checkpoint:
   repo: Qwen/Qwen3.5-4B
   revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
@@ -41,43 +40,56 @@ instrument:
   - axis_n1n2n3_arithmetic.py
   - judge_prompt.md
   - test_idk_switch_smoke.py
-  # pins filled by `bin/exp sign`. runtime_image_digest (sibling of pins,
-  # not a pins entry -- see .skills/mechinterp-cells/reference/
-  # modal-launch.md) is captured by the lead at sign, not by this build.
-  pins: {}
+  runtime_image_digest: sha256:0421dc9cf32691bd0f093eb153b9e900f2be418cdd466f341d598415a92657ee
+  pins:
+    cell.yaml: db49e6d462a18ab064ea48e2674fea61c4da5d12c2f01e372a2cca19f67e8112
+    gates.yaml: e5139ed134b89811496c3328081d395005b2661592f78749b9873650d1153221
+    materialize_rows.py: 269fa2535c2f8bbd67e5fafe8fadf179554f0e7749aa4b7383e4297bfe4d8171
+    render.py: cc41ce522d36d008b0d9953ecc63875fcd85c0995cdad182b7aa30f7a0665544
+    grader.py: 86978b6a532cff055dc3b4559019f08ea5bf311e66a35588c8db32d07d87d66d
+    detector_v2.py: f0452b3a366cce2e54ba8af9d48bf31beae3f118933ebe4bdb8ef0632643c6f7
+    detector_v2_patterns.yaml: e81a2f33cc986bf8b1e5b198b2c5026f7b713249298a422fdb6b604e299a7d69
+    gen_lib.py: e12fc49666bb1fc1da2787d7d381e2fcd5a6c08a34e337b20e9ba3cd396e68ab
+    steer_lib.py: 9eb68e988e861127a541ec8b5a6059c7c5d5c8ad60864b5adbed4518566231c0
+    pipeline.py: fc4b7d932080834e0dcf83ed0c882e6024b99c09b1fa6663c0118deadfcfcdf9
+    screen_lib.py: 8d87bff75cbb8405e2d84bfc9fd9aafd996ddebe8b1c4d1917281396edcbc62b
+    build_judge_pool.py: 51c3e55cd0ee9e0ce923f04e1914169f110a93db973475ebac38e659491574c9
+    apply_judge_grades.py: 1dcf744678aeb63c714e945172803f516ba7aa2e31d4b42c8d035ed1c5ca4bbb
+    stats_lib.py: 2c08552212cebb068739a5378bdc0cc72a2518332f6fa3ce172e48b6f97a8b55
+    axis_n1n2n3_arithmetic.py: 9040e008c734d694e7a46265f6b7116672c3472c1994a02e305aaf538e86e1d7
+    judge_prompt.md: e507a3a9bed677cb28edd6a2924538ca5753eac8bac7e247c916759293179aa2
+    test_idk_switch_smoke.py: dfee4882a3721e2ce54d267bb973e5cd8cf563b446745032ef2cceacf62893bb
   persistence:
     materialize_rows.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.03
-      measured_on: 2026-07-31, CPU, cold interpreter import (harness-build); the
-        real 400-row P_CONFAB join is a single small dict lookup pass, same order
-        of magnitude as write-direction-naming-battery's own materialize_rows.py
-        (1.0s at 1421 rows across 3 populations)
-      rationale: One-shot row materialization from the committed ID manifest;
-        re-running from scratch is the cheap path.
+      measured_on: 2026-07-31, CPU, cold interpreter import (harness-build); the real
+        400-row P_CONFAB join is a single small dict lookup pass, same order of magnitude
+        as write-direction-naming-battery's own materialize_rows.py (1.0s at 1421
+        rows across 3 populations)
+      rationale: One-shot row materialization from the committed ID manifest; re-running
+        from scratch is the cheap path.
     render.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.01
       measured_on: 2026-07-31, CPU, cold interpreter import (harness-build)
-      rationale: 'Library module: chat-template render, ISNC_ env namespacing.
-        No state.'
+      rationale: 'Library module: chat-template render, ISNC_ env namespacing. No
+        state.'
     grader.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.02
-      measured_on: 2026-07-31, CPU, cold interpreter import; self-check PASS
-        (harness-build)
+      measured_on: 2026-07-31, CPU, cold interpreter import; self-check PASS (harness-build)
       rationale: 'Library module: narrow grader, byte-for-byte copy. No state.'
     detector_v2.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.04
-      measured_on: 2026-07-31, CPU, cold interpreter import; self-check PASS
-        (harness-build)
+      measured_on: 2026-07-31, CPU, cold interpreter import; self-check PASS (harness-build)
       rationale: 'Library module: wide detector, byte-for-byte port. No state.'
     detector_v2_patterns.yaml:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.01
-      measured_on: 2026-07-31, loaded by detector_v2.load_patterns during
-        self-check (harness-build)
+      measured_on: 2026-07-31, loaded by detector_v2.load_patterns during self-check
+        (harness-build)
       rationale: Pattern config consumed read-only by detector_v2.py.
     gen_lib.py:
       persistence: short-run
@@ -94,56 +106,54 @@ instrument:
     pipeline.py:
       persistence: incremental
       checkpoint_path: experiments/idk-switch-naming-confirmatory/analysis/runlog/<arm_key>.jsonl
-      rationale: Run driver over the 4 arms with per-arm resume against the
-        runlog line counts; hard-halts before the judge lane (governance
-        boundary), never auto-continues past it.
+      rationale: Run driver over the 4 arms with per-arm resume against the runlog
+        line counts; hard-halts before the judge lane (governance boundary), never
+        auto-continues past it.
     screen_lib.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.03
       measured_on: 2026-07-31, CPU, cold interpreter import (harness-build)
-      rationale: 'Library module: deterministic F5/F4 priority screen over
-        already-graded runlog fields. No state; the 4-arm x 400-row screen pass
-        (pipeline.py cmd_screen) is a single dict-bucketing loop, same order of
-        magnitude as form-judge''s own screen_rows.py (0.06s at 2800 rows).'
+      rationale: 'Library module: deterministic F5/F4 priority screen over already-graded
+        runlog fields. No state; the 4-arm x 400-row screen pass (pipeline.py cmd_screen)
+        is a single dict-bucketing loop, same order of magnitude as form-judge''s
+        own screen_rows.py (0.06s at 2800 rows).'
     build_judge_pool.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.03
-      measured_on: 2026-07-31, CPU, cold interpreter import (harness-build);
-        real-scale projection from form-judge's own build_judge_pool.py
-        (0.07s full-pool build over ~1800 candidate rows)
-      rationale: Builds the blinded full-pool shards (core + embedded decoys)
-        and manifest in one atomic pass; re-running from scratch is the cheap
-        path.
+      measured_on: 2026-07-31, CPU, cold interpreter import (harness-build); real-scale
+        projection from form-judge's own build_judge_pool.py (0.07s full-pool build
+        over ~1800 candidate rows)
+      rationale: Builds the blinded full-pool shards (core + embedded decoys) and
+        manifest in one atomic pass; re-running from scratch is the cheap path.
     apply_judge_grades.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.05
-      measured_on: 2026-07-31, CPU, cold interpreter import (harness-build);
-        real-scale projection from form-judge's own apply_judge_grades.py
-        (0.42s over ~2000 graded rows)
-      rationale: Joins committed judge grading back over the committed pool in
-        one atomic pass; the one registered stability regrade is a single extra
-        shard-scale join.
+      measured_on: 2026-07-31, CPU, cold interpreter import (harness-build); real-scale
+        projection from form-judge's own apply_judge_grades.py (0.42s over ~2000 graded
+        rows)
+      rationale: Joins committed judge grading back over the committed pool in one
+        atomic pass; the one registered stability regrade is a single extra shard-scale
+        join.
     stats_lib.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.02
-      measured_on: 2026-07-31, CPU, cold interpreter import; 10000-resample
-        bootstrap over 400 paired rows measured well under 1s in the smoke
-        test suite (harness-build)
-      rationale: 'Pure-function Wilson/bootstrap CI library. No state.'
+      measured_on: 2026-07-31, CPU, cold interpreter import; 10000-resample bootstrap
+        over 400 paired rows measured well under 1s in the smoke test suite (harness-build)
+      rationale: Pure-function Wilson/bootstrap CI library. No state.
     axis_n1n2n3_arithmetic.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.03
       measured_on: 2026-07-31, CPU, cold interpreter import (harness-build)
-      rationale: Reads screen flags + graded payload, computes N1/N2/N3
-        quantities in one pass over at most 1600 rows; no pass/fail
-        adjudication (no gate floors set by this build).
+      rationale: Reads screen flags + graded payload, computes N1/N2/N3 quantities
+        in one pass over at most 1600 rows; no pass/fail adjudication (no gate floors
+        set by this build).
     judge_prompt.md:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.0
-      measured_on: 2026-07-31, static text file, byte-for-byte copy of
-        form-judge's own pinned prompt (harness-build)
-      rationale: Instrument artifact consumed read-only by the judge dispatch;
-        no execution.
+      measured_on: 2026-07-31, static text file, byte-for-byte copy of form-judge's
+        own pinned prompt (harness-build)
+      rationale: Instrument artifact consumed read-only by the judge dispatch; no
+        execution.
     test_idk_switch_smoke.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.11
