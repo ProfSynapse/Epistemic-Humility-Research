@@ -101,4 +101,7 @@ verdict: 'Judge-lane instrument validated (G1 0.035, G2 25/25) and axis G resolv
   BINARY: the caution write converts prose to explicit IDK wholesale (baseline hedged
   share 0.431 falling monotonically with dose) rather than producing graded epistemic
   marking.'
-kg: []
+kg:
+- experiment:form-judge-axis-g-rescore
+- mechanism:blinded-judge-lane-validates-open-class-form-grading
+- mechanism:caution-write-mode-switches-prose-to-explicit-idk

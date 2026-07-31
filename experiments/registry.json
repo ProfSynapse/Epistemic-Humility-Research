@@ -2016,7 +2016,11 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:form-judge-axis-g-rescore",
+        "mechanism:blinded-judge-lane-validates-open-class-form-grading",
+        "mechanism:caution-write-mode-switches-prose-to-explicit-idk"
+      ],
       "prediction": "The instrument validates and axis G resolves BINARY: the judge finds the F2+F3 share clears 0.15 at one or more intermediate doses but fails the +0.10-over-baseline leg, because a calibrated judge also finds substantially more baseline hedging than the voided regexes did; dosed movement remains F1-to-F4 mode switching.",
       "question": "With the standing blinded-adjudication lane promoted to primary instrument for the open-class F1/F2/F3 boundary (single opus-subagent judge, validated on a fresh calibration slice with dual decoy types), does the naming battery's open axis-G question resolve GRADED or BINARY over the frozen Arm A generations, under the original registered thresholds (F2+F3 share above 0.15 at an intermediate dose AND at least +0.10 over baseline)?",
       "registered": true,

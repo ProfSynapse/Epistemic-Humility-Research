@@ -779,7 +779,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (489)
+## Mechanisms (cause -> effect) (491)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -817,6 +817,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[benign-finetuning-suppresses-emergent-misalignment]] : Fine-tuning an emergent-misalignment|emergently misaligned model on approximately 120 benign samples (35 steps, batch size 4), whether drawn from an in-distribu
 - [[biasing-features-drive-cot-rationalization]] : Adding hint-injection|biasing features to model inputs (e.g., reordering answer choices so the correct answer is always position A, or a user suggesting a speci
 - [[binary-grading-reinforces-hallucination]] : Benchmark evaluations that use binary grading (0/1 for correct/wrong, 0 for IDK) **enables** Models learn that IDK responses are strictly suboptimal, reinforcin
+- [[blinded-judge-lane-validates-open-class-form-grading]] : The program's standing blinded sharded adjudication lane is promoted to primary instrument for the naming battery's open-class F1/F2/F3 form-gradedness boundary
 - [[bounded-proper-scoring-rule-incentivizes-accuracy-and-calibration]] : Augmenting a binary correctness reward with a bounded proper scoring rule (e.g., Brier score) as the calibration term in an RL objective **enables** The combine
 - [[calculated-reward-hacking-cost-tradeoff]] : Frontier models (o3, GPT-5, Gemini 3 Pro) in a board-game environment are offered a legitimate alternative (a paid optimal-move hint) whose cost is varied, unde
 - [[calibrated-verbalized-confidence-enables-model-cascade-gains]] : Routing only the samples for which a smaller LLM expresses low calibrated verbalized confidence to a more capable LLM (GPT-4o) for revision under a fixed revisi
@@ -829,6 +830,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[caution-encoding-read-actuate-dissociation-across-families]] : In doubt-snap-cross-family-confirmatory's lead-verified c_hat validity audit (CPU, over existing captures across the four launched cells: qwen35_4b, qwen35_9b, 
 - [[caution-readout-is-low-rank-on-collinear-carriers]] : Recomputing direction-removal robustness in a label-agnostic randomized PCA-128 basis instead of the raw 2,560-dimensional activation space. **mediates** The ca
 - [[caution-residual-ablation-relaxes-overrefusal-asymmetrically]] : Ablating the caution residual direction (activation steering at inference) in a small instruction-tuned model that over-refuses known questions. **decreases** O
+- [[caution-write-mode-switches-prose-to-explicit-idk]] : Dosing along the frozen mid-band hs20 c_hat write direction across the naming battery's 7 Arm A sub-arms (baseline, three intermediate doses, 1.0x, two placebo 
 - [[caution-write-selectivity-is-content-dependent-not-gate-created]] : In qwen35-4b-midband-doubt-snap's permuted-gate control at hs20 dose 8 x sigma_c on Qwen/Qwen3.5-4B, randomly selecting which held-out-population rows receive t
 - [[circular-features-causally-compute-modular-arithmetic]] : intervening on only the 2D circular subspace encoding days or months. **enables** nearly matches patching the entire layer, showing the ring is causally suffici
 - [[citation-rebuttal-drives-regressive-sycophancy]] : A rebuttal that includes a fabricated citation and abstract, signaling external authority, presented to an LLM that initially produced the correct answer **incr
