@@ -341,9 +341,9 @@ as arms `clean_sft_grpo_dpo_seed2` and `clean_sft_grpo_dpo_seed3` (§3, :62-69).
 This experiment is a strict **superset**: same two seeds, same lineage-rebuild
 rule, same metrics, but all four stacks plus all three stage-2 arms instead of
 one stack. The two registrations cannot both be signed as written — they would
-authorize the same GPU work twice under different gates. Proposed disposition,
-for the lead: **sign this one; mark Amendment G superseded-before-signing for its
-seed-replication half.** G's *other* half — the 8B scale gate and the Hugging
+authorize the same GPU work twice under different gates. Disposition, ruled by the
+lead at sign (2026-07-31): **this one is signed; Amendment G is marked
+superseded-before-signing for its seed-replication half.** G's *other* half — the 8B scale gate and the Hugging
 Face publication gate (§3, :71-76) — is not covered here and should survive as a
 separate downstream registration. This draft claims **no** authority over 8B or
 publication.
@@ -355,19 +355,24 @@ modifies it. The §3.4 lane question above is flagged, not resolved.
 
 ## Prediction
 
-> **EMPTY — filled by the PI at sign time. A drafting agent must not fill this.**
+PI (2026-07-31, at sign): Both gates confirm. The GRPO abstention shift and the
+post-GRPO preference recovery both reproduce in seeds 2 and 3.
 
 ## Orchestrator prediction
 
-> **EMPTY — filled by the lead at sign time. A drafting agent must not fill this.**
+Orchestrator (2026-07-31, at sign): G1 confirms in both seeds; the seed-1 shift
+(6.39 pp on both metrics) is a direct reward-driven effect with double the
+gate's floor as margin. G2 also confirms, but it is the likelier of the two to
+drop a seed: its seed-1 effect is only -2.99 pp over-refusal, and effects that
+small flip sign across seeds. If anything fails, it is G2's over-refusal
+direction on one seed, not G1.
 
-Both slots are also empty in `experiment.yaml` (`prediction:`) and in the
-scoreboard below. `bin/exp sign` refuses to sign while `prediction` or
-`falsifier` is empty, so the tooling enforces this.
+Both slots were filled at sign (2026-07-31) with user approval in session;
+`experiment.yaml` carries the same prediction and falsifier.
 
 ## Falsifier
 
-> **PROPOSED — for lead adjudication at sign time.**
+Adjudicated and adopted at sign (2026-07-31):
 
 If G1 does not confirm — that is, if the seed-1 GRPO abstention shift fails to
 reproduce in direction at seed 2 or at seed 3 — then the seed-1 GRPO layer is a
