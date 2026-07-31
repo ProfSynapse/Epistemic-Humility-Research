@@ -48,6 +48,10 @@ notes: >
 
 # Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model
 
+> *"We can know more than we can tell."*
+>
+> Michael Polanyi, *The Tacit Dimension*
+
 ## Abstract
 
 A model that says "I don't know" appropriately may still be performing humility
