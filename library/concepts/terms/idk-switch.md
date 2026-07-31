@@ -2,6 +2,7 @@
 title: IDK switch
 aliases:
 - IDK switch (earned actuator name)
+- abstention actuator (Qwen3.5-4B hs20)
 - caution write (earned name, formerly working label)
 - named caution-write actuator at Qwen3.5-4B hs20
 tags:
