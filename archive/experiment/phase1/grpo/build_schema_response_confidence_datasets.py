@@ -1161,12 +1161,12 @@ def build_all(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--sft-input", type=Path, default=Path("experiment/phase1/data/qwen3-4b-instruct/sft_train.jsonl"))
-    parser.add_argument("--dpo-input", type=Path, default=Path("experiment/phase1/data/qwen3-4b-instruct/dpo_train.jsonl"))
-    parser.add_argument("--kto-input", type=Path, default=Path("experiment/phase1/data/qwen3-4b-instruct/kto_congruence_train.jsonl"))
+    parser.add_argument("--sft-input", type=Path, default=Path("archive/experiment/phase1-data/data/qwen3-4b-instruct/sft_train.jsonl"))
+    parser.add_argument("--dpo-input", type=Path, default=Path("archive/experiment/phase1-data/data/qwen3-4b-instruct/dpo_train.jsonl"))
+    parser.add_argument("--kto-input", type=Path, default=Path("archive/experiment/phase1-data/data/qwen3-4b-instruct/kto_congruence_train.jsonl"))
     parser.add_argument("--output-dir", type=Path, default=Path("scratch/schema_response_confidence/qwen3-4b-instruct"))
-    parser.add_argument("--probe-results", type=Path, default=Path("experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl"))
-    parser.add_argument("--questions-frozen", type=Path, default=Path("experiment/phase1/data/qwen3-4b-instruct/questions_frozen.json"))
+    parser.add_argument("--probe-results", type=Path, default=Path("archive/experiment/phase1-data/probe/qwen3-4b-instruct/probe_results.jsonl"))
+    parser.add_argument("--questions-frozen", type=Path, default=Path("archive/experiment/phase1/data/qwen3-4b-instruct/questions_frozen.json"))
     parser.add_argument("--include-ambiguous-middle", action="store_true")
     parser.add_argument("--limit", type=int, help="Optional first-N row limit per dataset.")
     args = parser.parse_args(argv)

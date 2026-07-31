@@ -2577,6 +2577,47 @@
     },
     {
       "checkpoint": {
+        "repo": "Qwen3-4B-bnb-4bit",
+        "revision": "4-bit foundation model; every seed rebuilds its own clean-SFT lineage from it (no seed-1 artifact is reused as a training source)"
+      },
+      "created_at": "2026-07-31T19:57:57Z",
+      "falsifier": "If G1 does not confirm (the seed-1 GRPO abstention shift fails to reproduce in direction with the 3.0 pp floor at seed 2 or seed 3), the seed-1 GRPO layer is a seed artifact: no GRPO effect may be reported in paper 2 as a stable finding, the layer is reported as seed-1-only exploratory evidence with an explicit non-replication note, and downstream GRPO work (8B, publication) is blocked pending a mechanism explanation.",
+      "inputs": [
+        "experiments/probe-scaled-response-confidence/AMENDMENT.md",
+        "experiments/grpo-centered-stacking/AMENDMENT.md",
+        "experiments/best-stack-replication-scale-gate/AMENDMENT.md",
+        "experiments/schema-response-confidence/AMENDMENT.md",
+        "archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md",
+        "archive/experiment/phase1/grpo/build_schema_response_confidence_datasets.py",
+        "archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv",
+        "archive/docs/protocols/phase1/PROTOCOL.md",
+        "docs/sessions/20260623T093654Z-probe-scaled-response-confidence-retrain.md",
+        "docs/sessions/20260624T183052Z-grpo-centered-stacking-plan.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "c3026109d42c8fe13755b30466d7f482885d56c50de6836e92558fdb4070a864",
+          "gates.yaml": "7c79a41894a1fc64df01f07bbb197f8c25239d8625e3d9f3d8bbc97d3e51c0fa"
+        }
+      },
+      "kg": [],
+      "prediction": "PI: both gates confirm; the GRPO abstention shift and the post-GRPO preference recovery both reproduce in seeds 2 and 3. Orchestrator: G1 confirms in both seeds; G2 also confirms but is the likelier to drop a seed (seed-1 effect only -2.99 pp over-refusal); if anything fails it is G2's over-refusal direction on one seed, not G1.",
+      "question": "Do the seed-1 GRPO effects in the clean response-confidence lineage - GRPO's abstention shift and the post-GRPO preference recovery - replicate at two fresh seeds, so that every GRPO arm in paper 2 carries a three-seed interval like its DPO and KTO siblings?",
+      "registered": true,
+      "slug": "grpo-three-seed-confirmatory",
+      "status": "signed",
+      "title": "GRPO Three-Seed Confirmatory Block",
+      "type": "training-run",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },

@@ -13,14 +13,24 @@ predictions:
       Predates the dual-prediction practice (adopted 2026-07-03 at AH
       signing); no separately recorded user prediction.
 outcome: >-
-  DRAFT / NOT SIGNED; governs seed-2/3 replication and a narrow 8B/publication
-  scale gate, pending explicit launch approval.
+  DRAFT / NOT SIGNED; seed-2/3 replication half SUPERSEDED before signing by
+  the signed grpo-three-seed-confirmatory amendment (2026-07-31), which
+  registers the same two seeds across the full GRPO layer under pre-stated
+  gates. The 8B scale gate and HF publication gate remain this draft's live
+  scope, pending their own registration and explicit launch approval.
 scoreboard: null
 ---
 
 # Protocol Amendment G: Best-Stack Replication And Scale Gate
 
-**Status:** DRAFT / NOT SIGNED
+**Status:** DRAFT / NOT SIGNED. Seed-replication half (arms
+`clean_sft_grpo_dpo_seed2`/`clean_sft_grpo_dpo_seed3`, §3) superseded before
+signing on 2026-07-31 by `experiments/grpo-three-seed-confirmatory/`, a signed
+strict superset (same seeds, same lineage-rebuild rule, all four stacks plus
+the stage-2 arms, pre-stated gates). Ruled by the lead with user sign-off in
+session; rationale: two registrations must not authorize the same GPU work
+under different gates. The 8B scale gate and HF publication gate (§3) are NOT
+superseded and remain this draft's live scope.
 
 **Short name:** Amendment G / best-stack replication and scale gate
 
