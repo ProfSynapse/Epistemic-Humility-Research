@@ -189,3 +189,19 @@ analysis-committed/graded_manifest.json and committed NOW, before
 apply-full-pool reads any id map (registered unblinding-order
 guarantee). Graded files themselves remain under gitignored
 analysis/judge_grades/.
+
+### 2026-07-31 -- Unblind, decoy gate, lead spot-check
+
+apply-full-pool: 1155 core payload rows applied; in-run clear-positive
+decoy agreement 25/25 = 1.0000, clearing the registered
+min_clear_positive_agreement 0.92 floor (cell.yaml judge_lane). Lead
+spot-check per the registered n=30: sample drawn with seed 20260803
+over the unblinded pool, lead re-graded all 30 against the pinned
+rubric text: 30/30 agreement with the judge labels. Three rows (a
+leading-Yes with an "often considered" qualifier, a leading-No with an
+"unlikely to completely" qualifier, a committed-Yes with a "generally"
+tail) sit near the F1/F2 line; in each the judge's call follows the
+rubric's precedence of the qualified core claim, and the lead does not
+overturn any. Stability regrade shard selected deterministically
+(seed 20260803 -> shard index 4, isnc_fullpool_shard_04); a fresh
+context-free opus judge is regrading it now, reported non-gating.
