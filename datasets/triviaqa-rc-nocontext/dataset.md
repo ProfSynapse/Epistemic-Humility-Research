@@ -21,8 +21,8 @@ documents — only question + answer fields, which is all we need.
 ## Role in our experiment
 
 1. **Unlocked the exact truthful-rate recomputation** (done 2026-06-10) in
-   `meta-analysis/analysis/reanalyze_idk_outputs.py`. Discovery: Cheng et
-   al.'s (2401.13275) 11,313-question "test" set is exactly TriviaQA
+   `papers/paper-1-taxonomy-framework/analysis/reanalyze_idk_outputs.py`.
+   Discovery: Cheng et al.'s (2401.13275) 11,313-question "test" set is exactly TriviaQA
    **unfiltered.nocontext/validation** (100% normalized-question match;
    their integer question_ids are a re-index). `cheng_test_gold.jsonl`
    carries the matched gold aliases; built by

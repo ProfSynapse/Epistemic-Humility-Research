@@ -33,10 +33,10 @@ Analyses:
      intersection, Spearman rho across models, scatter figure.
 
 Output (deterministic, recomputable; this script is the provenance):
-  meta-analysis/evidence/abstentionbench-reanalysis.md
-  meta-analysis/analysis/figures/abstentionbench_frontier.png
-  meta-analysis/analysis/figures/abstentionbench_ladder.png
-  meta-analysis/analysis/figures/abstentionbench_scale.png
+  papers/paper-1-taxonomy-framework/evidence/abstentionbench-reanalysis.md
+  papers/paper-1-taxonomy-framework/analysis/figures/abstentionbench_frontier.png
+  papers/paper-1-taxonomy-framework/analysis/figures/abstentionbench_ladder.png
+  papers/paper-1-taxonomy-framework/analysis/figures/abstentionbench_scale.png
 
 Run: python3 abstentionbench_reanalysis.py
 """
@@ -48,7 +48,8 @@ from pathlib import Path
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
-CSV = HERE.parent.parent / "datasets" / "abstentionbench-results" / "abstention_performance.csv"
+ROOT = HERE.parents[2]  # repo root
+CSV = ROOT / "datasets" / "abstentionbench-results" / "abstention_performance.csv"
 OUT = HERE.parent / "evidence" / "abstentionbench-reanalysis.md"
 FIGDIR = HERE / "figures"
 
@@ -345,7 +346,7 @@ def main() -> None:
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text("\n".join(lines))
-    print(f"wrote {OUT.relative_to(HERE.parent.parent)}")
+    print(f"wrote {OUT.relative_to(ROOT)}")
 
     # ---------------- figures ----------------
     import matplotlib

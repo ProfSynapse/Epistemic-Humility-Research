@@ -39,8 +39,9 @@ import re
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-DATA = HERE.parent.parent / "datasets" / "say-i-dont-know-outputs"
-GOLD = HERE.parent.parent / "datasets" / "triviaqa-rc-nocontext" / "cheng_test_gold.jsonl"
+ROOT = HERE.parents[2]  # repo root
+DATA = ROOT / "datasets" / "say-i-dont-know-outputs"
+GOLD = ROOT / "datasets" / "triviaqa-rc-nocontext" / "cheng_test_gold.jsonl"
 OUT = HERE.parent / "evidence" / "idk-method-reanalysis.csv"
 
 METHODS = ["sft", "dpo", "ppo", "bon", "hir"]
@@ -143,7 +144,7 @@ def main() -> None:
     for r in rows:
         print(f"{r['method']:<10}{r[cols[1]]:>11}{r[cols[2]]:>11}{r[cols[3]]:>9}{r[cols[4]]:>9}{r[cols[5]]:>11}{r[cols[6]]:>9}{r[cols[7]]:>9}")
     print(f"\nn={rows[0]['n']} ({rows[0]['n_unknown_labeled']} unknown-labeled / {rows[0]['n_known_labeled']} known-labeled)")
-    print(f"wrote {OUT.relative_to(HERE.parent.parent)}")
+    print(f"wrote {OUT.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

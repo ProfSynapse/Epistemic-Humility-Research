@@ -6,7 +6,7 @@ Generates publication figures into papers/paper-3-knows-but-doesnt-say/figures/ 
 muted-academic palette (build_paper1_figures.py COLORS).
 
 Every constant below is a summary value with its provenance in a comment, in the
-style of meta-analysis/analysis/prisma_figure.py. Regenerate with:
+style of papers/paper-1-taxonomy-framework/analysis/prisma_figure.py. Regenerate with:
 
     python3 papers/paper-3-knows-but-doesnt-say/scripts/build_figures.py
 """

@@ -1,7 +1,7 @@
 ---
 title: "Epistemic Humility in Large Language Models: A Systematic Evidence Synthesis of Training Effects, Interventions, and Open Gaps"
 author: "Joseph Rosenbaum (Synaptic Labs)"
-status: source-of-record for Paper 1 (papers/paper-1-taxonomy-framework/manuscript.md, 2026-07-01); un-archived when the program moved to the five-paper line
+status: DEPRECATED 2026-07-31; superseded by papers/paper-1-taxonomy-framework/manuscript.md (which absorbed the apparatus as its Appendices B-D); was source-of-record for Paper 1 from 2026-07-01 to 2026-07-31
 date: 2026-06-10
 target: arXiv (cs.CL / cs.AI)
 evidence_base: meta-analysis/evidence/effects.csv (78 rows, 39 studies), meta-analysis/evidence/idk-method-reanalysis.csv
@@ -19,19 +19,28 @@ notes: >
   claims.
 ---
 
+<!-- DEPRECATED 2026-07-31: superseded by papers/paper-1-taxonomy-framework/manuscript.md.
+     Retained for provenance only. Do not cite as a live artifact. -->
+
+**DEPRECATED (2026-07-31).** This draft is superseded by
+`papers/paper-1-taxonomy-framework/manuscript.md`, which is the sole source of
+record for the synthesis. The evidence tables and analysis scripts now live
+under `papers/paper-1-taxonomy-framework/` (`evidence/`, `evidence/raw-reports/`,
+and `analysis/`). This file is retained for provenance only.
+
 # Epistemic Humility in Large Language Models: A Systematic Evidence Synthesis of Training Effects, Interventions, and Open Gaps
 
 **Joseph Rosenbaum** · Synaptic Labs · connect2synapse@gmail.com
 
 *Draft v0. Not for distribution.*
 
-> **SOURCE OF RECORD FOR PAPER 1 (2026-07-01).** The program's reader-facing
-> framing paper is `papers/paper-1-taxonomy-framework/manuscript.md`
-> (Paper 1: taxonomy, evidence synthesis, and theoretical framework), built
-> on this document. This file remains the provenance source of record for
-> every synthesis number (search protocol, flow accounting, extraction
-> schema, sensitivity analyses, full bibliography). Do not edit the claims
-> here without a matching update to Paper 1.
+> **Historical note.** From 2026-07-01 to 2026-07-31 this file served as the
+> provenance source of record for Paper 1's synthesis numbers. On 2026-07-31
+> that role ended: Paper 1 absorbed the apparatus (search protocol, flow
+> accounting, extraction schema, verification protocol, sensitivity analyses,
+> audits) into its own Appendices B-D, and the evidence tables and analysis
+> scripts moved to `papers/paper-1-taxonomy-framework/`. Nothing here should
+> be cited or edited; see the DEPRECATED banner above.
 
 > *"It is likely that neither of us knows anything worthwhile, but he thinks he knows something when he does not, whereas I, as I do not know, do not think I know either."*
 >

@@ -163,7 +163,7 @@ Paper 3 = this two-signal readout; Paper 4 = steering.)*
   *"It's What's on the Inside That Counts: A Training-Free Two-Signal Readout for Epistemic
   Humility in Small Language Models."* Drafted at
   `papers/paper-4-two-signal-readout/manuscript.md`; this doc is its seed.
-- **Paper 1 (training regimen; review from meta-analysis/paper/draft-v0.md + the
+- **Paper 1 (training regimen; review from archive/meta-analysis/paper/draft-v0.md + the
   experiment in paper1-training-regimen-draft-v1.md).** M4 (training sharpens not
   creates) and M5 (channel bottleneck) connect to the review's "coherence axis is
   unmeasured" thesis; cite the trajectory as the empirical instantiation.

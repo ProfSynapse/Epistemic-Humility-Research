@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""PRISMA-style flow figure for the epistemic-humility meta-analysis.
+"""PRISMA-style flow figure for the epistemic-humility evidence synthesis.
 
 Counts are the reconstructed funnel documented in evidence/prisma-flow.md;
 each constant cites its recomputation source. Regenerate with:
-    python3 meta-analysis/analysis/prisma_figure.py
+    python3 papers/paper-1-taxonomy-framework/analysis/prisma_figure.py
 """
 
 from pathlib import Path

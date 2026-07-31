@@ -46,7 +46,7 @@ failure (with split-mismatch diagnostics) and does NOT write the CSV.
 
 Outputs
 -------
-- meta-analysis/evidence/sycophancy-cheng-join.md (always)
+- papers/paper-1-taxonomy-framework/evidence/sycophancy-cheng-join.md (always)
 - datasets/sycophancy-cheng-join.csv (only if overlap >= MIN_OVERLAP)
 
 Deterministic: pure file reads, sorted iteration, no sampling, no network.
@@ -59,12 +59,12 @@ from collections import Counter
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parent.parent  # docs/epistemic-humility
+ROOT = HERE.parents[2]  # repo root
 SYC = ROOT / "datasets" / "sycophancy-eval" / "answer.jsonl"
 IDK_DIR = ROOT / "datasets" / "say-i-dont-know-outputs"
 GOLD = ROOT / "datasets" / "triviaqa-rc-nocontext" / "cheng_test_gold.jsonl"
 RC_VAL = ROOT / "datasets" / "triviaqa-rc-nocontext" / "validation.jsonl"
-OUT_MD = ROOT / "meta-analysis" / "evidence" / "sycophancy-cheng-join.md"
+OUT_MD = HERE.parent / "evidence" / "sycophancy-cheng-join.md"
 OUT_CSV = ROOT / "datasets" / "sycophancy-cheng-join.csv"
 
 METHODS = ["sft", "dpo", "ppo", "bon", "hir"]

@@ -18,7 +18,7 @@ The monitor must not modify `archive/docs/protocols/phase1/PROTOCOL.md`, hypothe
 #### Research Needed
 
 - [ ] Finalize source scope: arXiv-only for v1, or arXiv plus OpenAlex, Semantic Scholar, Crossref, and/or PubMed.
-- [ ] Define the initial research trajectory profile from `docs/research-trajectory.md`, `archive/docs/protocols/phase1/PROTOCOL.md`, `meta-analysis/paper/draft-v0.md`, and `library/manifest.yaml`.
+- [ ] Define the initial research trajectory profile from `docs/research-trajectory.md`, `archive/docs/protocols/phase1/PROTOCOL.md`, `papers/paper-1-taxonomy-framework/manuscript.md`, and `library/manifest.yaml`.
 - [ ] Confirm source terms for storing abstracts, raw payloads, and links.
 - [ ] Decide whether health/clinical literature should be in scope for this repo monitor.
 
@@ -27,7 +27,7 @@ The monitor must not modify `archive/docs/protocols/phase1/PROTOCOL.md`, hypothe
 - Existing library lifecycle in `library/manifest.yaml`: `candidate -> stubbed -> fetched -> extracted -> verified`.
 - Existing enrichment pattern in `library/scripts/fetch_library.py`.
 - Locked protocol constraints in `archive/docs/protocols/phase1/PROTOCOL.md`.
-- Existing PRISMA/search accounting precedent in `meta-analysis/evidence/prisma-flow.md`.
+- Existing PRISMA/search accounting precedent in `papers/paper-1-taxonomy-framework/evidence/prisma-flow.md`.
 - External API documentation:
   - arXiv API manual: https://info.arxiv.org/help/api/user-manual.html
   - Semantic Scholar API: https://www.semanticscholar.org/product/api
