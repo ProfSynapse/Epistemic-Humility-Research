@@ -1,8 +1,222 @@
-# TODO: replace this placeholder with the pinned experiment instrument.
-# Keep this file in the experiment directory unless the runner skill for this
-# experiment type requires a different config layout.
+# idk-switch-naming-confirmatory -- steer cell (DRAFT, not pinned; do not
+# launch as confirmatory evidence until `bin/exp sign` fills instrument.pins
+# and the PI/user has approved the launch per AMENDMENT.md).
 #
-# Before signing:
-# - fill the actual runner/tuner config
-# - list this file under experiment.yaml instrument.configs
-# - run `bin/exp sign <slug>` to pin the final bytes
+# Frozen operating point carried BYTE-IDENTICALLY from the resolved
+# write-direction-naming-battery cell (AMENDMENT.md "Design": "Substrate:
+# Qwen3.5-4B at the naming battery's pinned operating point (frozen mid-band
+# hs20 c_hat write direction, same dose calibration)"). Nothing here refits a
+# direction, refits a gate, or recomputes a standardization scalar; every
+# `surface`/`readouts`/`law` value below is transcribed from
+# `experiments/write-direction-naming-battery/cell.yaml` (source sha256
+# ec3c438a614a0b1c2a00f74e28ae71274665e58aa40c8fd159cbf96679fbac23, its own
+# pinned value at resolution), not re-derived.
+#
+# Validate config load (CPU, no GPU):
+#   python -c "import yaml; yaml.safe_load(open('cell.yaml'))"
+
+surface:
+  base_model: Qwen/Qwen3.5-4B
+  revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+  dtype: bfloat16
+  adapter: null
+  quantization: null
+  render:
+    module: render.py            # port of write-direction-naming-battery/render.py
+    system_prompt: BASELINE_SYSTEM_PROMPT
+    chat_template: true
+    enable_thinking: false
+    anchor: prompt_len_minus_1
+  generation:
+    # AMBIGUITY FLAGGED FOR SIGN (see harness-build report): the naming
+    # battery's own pinned operating point generates GREEDILY
+    # (do_sample=false; write-direction-naming-battery/cell.yaml
+    # surface.generation.decode: greedy). Under greedy decoding, generation is
+    # a deterministic function of (model, prompt, direction, dose) with no
+    # random draw for a "sampling seed" to vary -- re-running the SAME 400
+    # rows at the SAME operating point under greedy decode would reproduce
+    # the naming battery's own dosed outputs byte-for-byte (up to bf16/CUDA
+    # matmul nondeterminism across hardware/batch composition), which is not
+    # a "fresh sampling seed replication" in the sense AMENDMENT.md
+    # "Motivation and posture" describes ("the replication axis is FRESH
+    # SAMPLING SEEDS"). `decode_mode` is therefore left as an explicit
+    # REGISTERED_AT_SIGN choice between the two options below rather than
+    # silently defaulted; pipeline.py hard-refuses to run until this is
+    # resolved to a concrete literal. See harness-build report "Underspecified
+    # by the AMENDMENT" for the full writeup and the one in-program precedent
+    # (`experiments/snap-seed-sampled-decode-replication/`, which switched an
+    # analogous fresh-seed hardening item from greedy to
+    # do_sample=true/temperature=0.7/top_p=0.9, citing
+    # `experiments/sampled-decode-seed-robustness/AMENDMENT.md` as the
+    # program's registered sampled-decode config).
+    # LEAD RULING (2026-07-31, PROPOSED pre-sign; binding at sign): sampled
+    # decode per the program's registered sampled-decode standard,
+    # experiments/sampled-decode-seed-robustness/AMENDMENT.md "Seeds and
+    # decode (LOCKED)" lines 94-103 (do_sample=True, temperature=0.7,
+    # top_p=0.9, num_beams=1, RNG seeded per run), the same standard
+    # snap-seed-sampled-decode-replication adopted for its fresh-seed
+    # hardening arm. Rationale recorded in AMENDMENT.md "Build-time rulings":
+    # under greedy decode a fresh sampling seed is a no-op, so the registered
+    # replication axis REQUIRES sampled decode; the actuator operating point
+    # (direction, layer, dose law) is unchanged, and the decode change is a
+    # disclosed deviation from the naming battery's greedy generation.
+    decode_mode: sampled
+    do_sample: true
+    temperature: 0.7
+    top_p: 0.9
+    num_beams: 1
+    min_new_tokens: 1
+    max_new_tokens: 200
+    eos_include_im_end: true
+    batch_size: 8
+  seeds:
+    # AMENDMENT.md "Design": "regenerating with a FRESH registered sampling
+    # seed (pinned in cell.yaml at sign, distinct from every seed the naming
+    # battery used)." `generation_sampling_seed` is the seed this clause
+    # refers to; it is a hard placeholder pipeline.py refuses to run on
+    # (unset, or a member of NAMING_BATTERY_EXCLUDED_SEEDS in pipeline.py).
+    # LEAD PROPOSAL (2026-07-31; binding at sign): 20260802. Not in
+    # naming_battery_excluded_seeds below; also distinct (hygiene, not a
+    # registered requirement) from form-judge's grading seeds
+    # (20260730/20260731/20260801) and the SR/snap generation seeds
+    # (20260701-03, 20260710-14).
+    generation_sampling_seed: 20260802
+  # Every seed value the naming battery's own cell.yaml registered (its
+  # `surface.seeds` block; write-direction-naming-battery/cell.yaml lines
+  # 26-29, source sha256 above): population_permutation 48260730, bootstrap
+  # 48260731, calibration_slice 48260732. None of these are generation seeds
+  # (the naming battery generated greedily, so it registered no generation
+  # seed at all) but the exclusion is scoped to "every seed the naming
+  # battery used", not just its generation seeds, per the harness-build
+  # instruction. The form-judge cell's own seeds (20260730 placeholder,
+  # 20260731 voided attempt, 20260801 registered) are a DIFFERENT instrument
+  # (grading, not generation) built by a different cell and are NOT in this
+  # exclusion list; see harness-build report for this scoping call, flagged
+  # rather than silently assumed.
+  naming_battery_excluded_seeds: [48260730, 48260731, 48260732]
+  expected_config_sha: TBD_AT_SIGN
+
+readouts:
+  # Corrected path: these are committed under qwen35-4b-midband-doubt-snap
+  # (the cell that fit hs20 c_hat/random_direction), not under
+  # write-direction-naming-battery (which only committed populations/, and
+  # itself consumed these directions by reading them from the doubt-snap
+  # cell). sha256 values verified unchanged; only the path was wrong.
+  c_hat:
+    path: experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
+    format: mechinterp-direction/v1
+    dim: 2560
+    layer_index: 19
+    sha256: 937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f
+  random_direction:
+    path: experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/random_direction.json
+    format: mechinterp-direction/v1
+    dim: 2560
+    layer_index: 19
+    sha256: db8b930d79d98f52417566d9a87c876470f6b820684ee9456a58f7213d33cafa
+
+law:
+  kind: erase_write
+  readout: c_hat
+  layer: hs20
+  position: anchor_onward
+  generation_mode: anchor
+  standardization:
+    mu_c: -4.031343053353048
+    sigma_c: 1.576023489724997
+    source: experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json
+  reference_dose_abs: 12.608187917799976   # 8 x sigma_c
+
+# No gate anywhere: every row in every arm is dosed, same convention as the
+# naming battery (AMENDMENT.md there: "The gate's role is deployment
+# targeting ... gating here would censor exactly the rows the naming
+# question needs"). This cell inherits that convention unchanged.
+
+populations:
+  P_CONFAB:
+    n: 400
+    role: confab
+    source: kuq_unknowns_all
+    draw: >-
+      NOT RE-DRAWN. Read verbatim from the naming battery's own committed,
+      disjointness-checked ID manifest (see id_manifest path below); this
+      cell's AMENDMENT.md "Design" is explicit that these are "the same 400
+      registered P_CONFAB rows ... disclosed as spent for exploratory
+      purposes". materialize_rows.py asserts the loaded row_key set matches
+      this manifest exactly (count and set-equality) before writing any row
+      text.
+    id_manifest: ../write-direction-naming-battery/analysis-committed/populations/p_confab_ids.json
+
+arms:
+  # Reduced ladder (AMENDMENT.md "Design": "Arms (reduced ladder, 4 x 400 =
+  # 1600 generations): a_baseline, a_dose_0p5, a_dose_1, a_placebo_1"). Same
+  # multiplier/readout convention as the naming battery: multiplier == 0.0 is
+  # a TRUE no-hook baseline pass, never a zero-gain hook call.
+  a_baseline:    {population: P_CONFAB, readout: c_hat,            multiplier: 0.0}
+  a_dose_0p5:    {population: P_CONFAB, readout: c_hat,            multiplier: 0.5}
+  a_dose_1:      {population: P_CONFAB, readout: c_hat,            multiplier: 1.0}
+  a_placebo_1:   {population: P_CONFAB, readout: random_direction, multiplier: 1.0}
+
+execution:
+  # Local-runtime invariant (.skills/mechinterp-cells/reference/modal-launch.md
+  # "Local GPU runs execute in a pinned container"): every GPU verb here runs
+  # inside the pinned mechinterp-runner image, never a bare shared conda
+  # environment -- unlike the naming battery's own cell.yaml, this harness
+  # does NOT hard-code a conda python path. `pipeline.py` invokes whatever
+  # `python3` the pinned container provides on PATH.
+  lane: local_rtx3090_pinned_container
+  runtime_container: synaptic-tuner/docker/mechinterp-runner   # image digest recorded at sign as instrument.runtime_image_digest (sibling of instrument.pins), not here
+  output_path: analysis/runlog
+  resume: true
+  graders:
+    - grader:grade                    # per-cell port; narrow semantic_refuse + correctness
+    - detector_v2:grade_one_v2        # wide diverse-idiom detector
+  # DEVIATION FROM THE NAMING BATTERY (documented, not silent -- see
+  # harness-build report). The naming battery redacted
+  # [question, aliases, answer_text, answer_value] from its persisted runlog
+  # even under gitignored analysis/, then had to rebuild a private text
+  # sidecar (run_arm_a_form_pass.py, analysis/form_sidecar/) post-hoc when
+  # form-judge needed the generation text for grading. This cell KNOWS
+  # up front that its judge lane needs generation text (AMENDMENT.md
+  # "Instruments": "the form-judge cell's validated blinded judge lane"), so
+  # `steer_lib.run_rows` here does NOT redact any field -- the full row
+  # (including question/aliases/answer_text/answer_value) stays in the
+  # gitignored analysis/runlog/*.jsonl, satisfying data containment (nothing
+  # non-gitignored ever carries this text) without a sidecar-rebuild step.
+  redact_fields: []
+  total_generations_planned: 1600
+
+smoke:
+  n_rows: 8
+  write_rel_tol: 0.02
+  write_abs_floor: 0.05
+  readback_targets:
+    positive: 12.608187917799976
+  runlog_namespace: analysis/runlog_smoke   # never share a path with the full run
+
+judge_lane:
+  # AMENDMENT.md "Instruments": construct validation carries over from
+  # form-judge (G1 0.035 on this same text distribution) and is disclosed,
+  # not re-earned; this cell only gates in-run clear-positive decoy
+  # agreement, sized to counted candidates from THIS run's own F4 screen
+  # positives. No fresh calibration slice, no clear-negative lane (per the
+  # harness-build instruction, matching form-judge's own governed deviation
+  # dropping the text-less clear-negative source).
+  # LEAD PROPOSAL (2026-07-31; binding at sign): 25 decoys at 0.92, matching
+  # the form-judge cell's validated clear-positive setup. Sizing rule: decoys
+  # are drawn from THIS run's own F4 screen positives across all four arms
+  # (exploratory reference: baseline alone had 16, the dosed arms hundreds);
+  # if fewer than 25 candidates exist, the judge lane records the registered
+  # instrument-failed alternative (N2 unadjudicable; N1/N3 still adjudicated
+  # from the deterministic screens) rather than shrinking the floor post-sign.
+  n_decoys_clear_positive: 25
+  min_clear_positive_agreement: 0.92
+  # Judge-pool build seed (shuffle/salt), registered at sign. Distinct from
+  # the generation seed and from form-judge's own pool seeds.
+  pool_seed: 20260803
+  target_shard_size: 55   # matches form-judge's full-pool convention; not a registered gate number
+  judge_model_tier: opus            # per form-judge PI decision, carried over
+  fresh_instance_per_shard: true
+  prompt_file: judge_prompt.md      # local byte-for-byte copy of form-judge-axis-g-rescore/judge_prompt.md, see its header
+  stability_regrade_shards: 1       # AMENDMENT.md: "One stability regrade shard, reported non-gating"
+  lead_spot_check_n: 30             # AMENDMENT.md: "Lead spot-check n=30 before any gate adjudication"

@@ -80,15 +80,60 @@ fresh generations:
   but above noise).
 - N2 (switch, no graded intermediate): the judged F2+F3 hedged share among
   non-degenerate rows does not rise above the fresh baseline share by 0.10
-  or more at ANY dosed arm (the naming battery's own axis-G leg, reused as
-  an upper bound), i.e. the dose response remains mode switching, not graded
-  marking.
+  or more at ANY c_hat-dosed arm (a_dose_0p5, a_dose_1; the naming battery's
+  own axis-G leg, reused as an upper bound), i.e. the dose response remains
+  mode switching, not graded marking. The placebo arm's share comparison is
+  reported non-gating (build-time ruling 2, below): it doses a random
+  direction, not the actuator, and its registered claim is N3.
 - N3 (direction specificity): the placebo arm's F4 rate stays within a
   registered band of the fresh baseline rate.
 
 All three pass: the name IDK switch is EARNED for this actuator at this
 operating point, recorded in the KG as a named actuator node. Any gate
 fails: name not earned, resolution records which claim broke.
+
+## Build-time rulings (lead, 2026-07-31, pre-sign)
+
+Recorded here so no ruling lives only in code comments or a subagent report.
+
+1. Decode mode: SAMPLED, at the program's registered sampled-decode standard
+   (do_sample=true, temperature=0.7, top_p=0.9, num_beams=1, RNG seeded per
+   run), read from `experiments/sampled-decode-seed-robustness/AMENDMENT.md`
+   "Seeds and decode (LOCKED)" and previously adopted by
+   `snap-seed-sampled-decode-replication` for exactly this genre of
+   fresh-seed hardening. Rationale: the naming battery generated greedily,
+   and under greedy decode a fresh sampling seed is a no-op, so the
+   registered replication axis (fresh sampling seeds) REQUIRES sampled
+   decode. The actuator operating point (direction, layer, dose law,
+   standardization) is unchanged; the decode change is a disclosed deviation
+   from the naming battery's generation config, and all gates are set on the
+   fresh sampled generations only (the fresh a_baseline arm is the
+   comparator everywhere, so no greedy-vs-sampled comparison is ever gated).
+2. N2 scope: gated arms are the c_hat-dosed arms only (a_dose_0p5,
+   a_dose_1). The placebo arm's share-vs-baseline comparison is computed and
+   reported, non-gating.
+3. Container provenance: captured by re-invoking the runner image's own
+   `print_provenance.py` (its documented downstream pattern), hard-failing
+   unless the reported image digest is a real sha256 equal to
+   `instrument.runtime_image_digest` pinned at sign. The builder's original
+   best-effort env-var/file probe was replaced after the lead read the real
+   entrypoint contract (`synaptic-tuner/docker/mechinterp-runner/`).
+4. Runlog redaction: `redact_fields: []` (full rows retained in gitignored
+   `analysis/runlog/`). Deviation from the naming battery's
+   redact-then-rebuild-sidecar pattern, accepted because this cell knows up
+   front its judge lane needs generation text; containment is satisfied by
+   the gitignore boundary, and nothing text-bearing is ever committed.
+5. Direction paths: `cell.yaml` readout paths corrected to the committing
+   cell (`qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/`);
+   the naming battery never committed a `directions/` tree. The sha256 pins
+   were already correct and are unchanged (lead re-verified both).
+6. Seeds: proposed generation_sampling_seed 20260802 and judge-pool seed
+   20260803, binding at sign. The naming battery's registered seeds
+   (48260730/48260731/48260732) are hard-excluded fail-closed in
+   `pipeline.py`; form-judge's grading seeds are a different instrument and
+   are avoided as hygiene, not registered exclusion. The builder's original
+   pool-seed placeholder (20260731, form-judge's VOIDED attempt-1 seed) was
+   replaced by the lead.
 
 ## Prediction
 

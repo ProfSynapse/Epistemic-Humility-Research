@@ -1,0 +1,160 @@
+# Frozen detector-v2 pattern config, byte-for-byte copy of
+# experiments/write-direction-naming-battery/detector_v2_patterns.yaml
+# (source sha256 36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9,
+# matching that file's own pin), itself carried unchanged from
+# rr2-mistral-adjudicated-refusal-confirm per this repo's copy-not-import
+# convention. Pinned at sign (hashed in this experiment's experiment.yaml
+# instrument.pins). Original header below retained for provenance.
+#
+# CONTAINMENT (binding, .skills/data-exhaust + this experiment's cell.yaml):
+# this file holds ONLY short, generic abstention idiom STEMS. It must NEVER
+# contain question text, answer values, aliases, category text, or any full
+# generation text. Every stem below was validated at build time either as a
+# generic idiom stem (no source text) or via a mined-idiom count check run
+# against RR's private mistral runlog (not committed; see NOTEBOOK.md) --
+# the count is recorded per stem group below for provenance, never the text.
+#
+# Matching contract (detector_v2.py): `canonical` entries are RR's locked
+# 3-phrase detector (grader.py._STATED_CONFIDENCE_REFUSAL_PATTERNS), reused
+# verbatim as compiled regex so refused_v2 >= refused_v1 always (detector_v2
+# is canonical OR diverse_idioms, never a subset). `diverse_idioms` entries
+# are matched as a lowercase substring after apostrophe normalization
+# (curly quotes folded to straight), applied identically to both the
+# fired-confab (benefit) and known-correct (cost) populations -- the same
+# deterministic function, no population-conditional logic anywhere.
+
+version: 1
+canonical:
+- id: canonical_i_do_not_know
+  note: grader.py _STATED_CONFIDENCE_REFUSAL_PATTERNS[0], reused verbatim (regex,
+    matched via grader._is_stated_confidence_refusal)
+- id: canonical_i_dont_know
+  note: grader.py _STATED_CONFIDENCE_REFUSAL_PATTERNS[1], reused verbatim
+- id: canonical_abstain
+  note: grader.py _STATED_CONFIDENCE_REFUSAL_PATTERNS[2], reused verbatim
+diverse_idioms:
+- id: mined_it_is_impossible_to_predict
+  pattern: it is impossible to predict
+  source: mined
+  mined_match_count_peak_rung: 34
+- id: mined_i_dont_have_the_ability_to
+  pattern: i don't have the ability to
+  source: mined
+  mined_match_count_peak_rung: 13
+- id: mined_it_is_not_possible_to_predict
+  pattern: it is not possible to predict
+  source: mined
+  mined_match_count_peak_rung: 11
+- id: mined_i_dont_have_the_information
+  pattern: i don't have the information
+  source: mined
+  mined_match_count_peak_rung: 7
+- id: mined_it_is_uncertain_whether
+  pattern: it is uncertain whether
+  source: mined
+  mined_match_count_peak_rung: 6
+- id: mined_it_is_not_possible_to_definitively
+  pattern: it is not possible to definitively
+  source: mined
+  mined_match_count_peak_rung: 5
+- id: mined_it_is_impossible_to_determine
+  pattern: it is impossible to determine
+  source: mined
+  mined_match_count_peak_rung: 4
+- id: mined_i_cannot_predict
+  pattern: i cannot predict
+  source: mined
+  mined_match_count_peak_rung: 4
+- id: mined_im_sorry,_i_dont_have
+  pattern: i'm sorry, i don't have
+  source: mined
+  mined_match_count_peak_rung: 4
+- id: mined_it_is_not_possible_to_determine
+  pattern: it is not possible to determine
+  source: mined
+  mined_match_count_peak_rung: 4
+- id: mined_it_is_impossible_to_definitively
+  pattern: it is impossible to definitively
+  source: mined
+  mined_match_count_peak_rung: 3
+- id: mined_cannot_be_predicted
+  pattern: cannot be predicted
+  source: mined
+  mined_match_count_peak_rung: 2
+- id: mined_i_cannot_determine
+  pattern: i cannot determine
+  source: mined
+  mined_match_count_peak_rung: 1
+- id: mined_it_is_difficult_to_predict
+  pattern: it is difficult to predict
+  source: mined
+  mined_match_count_peak_rung: 1
+- id: published_i_do_not_have_the_ability_to
+  pattern: i do not have the ability to
+  source: published
+- id: published_i_do_not_have_the_information
+  pattern: i do not have the information
+  source: published
+- id: published_i_dont_have_enough_information
+  pattern: i don't have enough information
+  source: published
+- id: published_i_do_not_have_enough_information
+  pattern: i do not have enough information
+  source: published
+- id: published_i_can_not_determine
+  pattern: i can not determine
+  source: published
+- id: published_there_is_no_way_to_know
+  pattern: there is no way to know
+  source: published
+- id: published_there_is_no_way_to_determine
+  pattern: there is no way to determine
+  source: published
+- id: published_im_not_sure
+  pattern: i'm not sure
+  source: published
+- id: published_i_am_not_sure
+  pattern: i am not sure
+  source: published
+- id: published_it_is_difficult_to_determine
+  pattern: it is difficult to determine
+  source: published
+- id: published_cannot_be_determined
+  pattern: cannot be determined
+  source: published
+- id: published_unable_to_determine
+  pattern: unable to determine
+  source: published
+- id: published_unable_to_predict
+  pattern: unable to predict
+  source: published
+- id: published_i_have_no_information
+  pattern: i have no information
+  source: published
+- id: published_i_do_not_have_access_to
+  pattern: i do not have access to
+  source: published
+- id: published_i_dont_have_access_to
+  pattern: i don't have access to
+  source: published
+- id: published_no_way_to_verify
+  pattern: no way to verify
+  source: published
+- id: published_i_have_no_way_of_knowing
+  pattern: i have no way of knowing
+  source: published
+- id: published_i_cant_say_for_certain
+  pattern: i can't say for certain
+  source: published
+- id: published_its_hard_to_say
+  pattern: it's hard to say
+  source: published
+- id: published_beyond_my_knowledge
+  pattern: beyond my knowledge
+  source: published
+- id: published_outside_my_knowledge
+  pattern: outside my knowledge
+  source: published
+- id: published_not_something_i_can_determine
+  pattern: not something i can determine
+  source: published
