@@ -284,4 +284,8 @@ verdict: 'C1 FAIL: sharing-OFF substrate broken at baseline, A2/A4 INCONCLUSIVE 
   registered; D-ladder fires the supporting leg (D1 0.786 vs A1 no-usable-dose): KV-quarantine
   SUPPORTED-not-established, confounded with depth as registered; hs24 clearance adjudicated
   non-specific.'
-kg: []
+kg:
+- experiment:gemma4-e4b-kv-seam-quarantine
+- mechanism:gemma-actuation-localizes-shallow-of-kv-seam
+- mechanism:kv-sharing-off-ablation-breaks-baseline-substrate
+- mechanism:seam-adjacent-gate-clearance-is-non-direction-specific

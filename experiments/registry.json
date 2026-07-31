@@ -2510,7 +2510,12 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:gemma4-e4b-kv-seam-quarantine",
+        "mechanism:gemma-actuation-localizes-shallow-of-kv-seam",
+        "mechanism:kv-sharing-off-ablation-breaks-baseline-substrate",
+        "mechanism:seam-adjacent-gate-clearance-is-non-direction-specific"
+      ],
       "prediction": "A2 (hs38, KV sharing OFF) clears BOTH primary gates on held-out -- confab clean_tighten >= 0.50 with Wilson 95% lower CI > 0.40, AND known-correct not_well_formed_correct <= 0.05 with Wilson 95% upper CI < 0.10 -- while A1 (hs38, sharing ON) does not, with C1 having passed its precondition criterion and |A_lin(hs38,OFF) - A_lin(hs38,ON)| <= 0.05. Registered non-gating expectations - on the unmodified model A3 (hs22, donors reachable) clears both gates while A5 (hs24, quarantined) does not, and at least one shallow-ladder arm D1-D4 (hs15/hs18/hs20/hs23) finds a usable FIT dose and clears G1. The fired-only selectivity companion is expected NOT-ADJUDICABLE at every arm (projected 2-22 dosed known-correct rows against a computed Wilson floor of 35).",
       "question": "Gemma-4-E4B was stopped at dose-viability in j-space-cross-family-layer-contrast, but that stop is uninterpretable rather than negative - every site it used (hs34, hs38, hs40, hs42) lies above the KV-sharing seam, and the extraction that produced its write directions, gate standardization and dose targets ran with use_cache=False, which starves exactly those layers (parent AMENDMENT.md:637). Two things are open at once. Blocks 24-41 read K/V from donor blocks 22/23, so a write above the seam cannot change what later layers attend over - though q_proj still runs unconditionally and the write still reaches the query path, FFN and residual stream, so the causal channel is narrowed, not severed. Is gemma inert above the seam because of that narrowing, and does the boundary push actuate at all below the donors, in the relative-depth band 0.357-0.548 - the shallow half of the rd 0.375-0.639 range in which every other family in this program actuates, and the deepest gemma can be written while both donor blocks stay reachable?",
       "registered": true,
