@@ -1,8 +1,11 @@
 # GRPO Three-Seed Confirmatory Block
 
-Status: **DRAFT — NOT SIGNED. Do not launch.** Signing requires the PI's explicit
-approval and is performed by the lead. Nothing in this document authorizes a GPU
-launch, a commit of results, or a publication.
+Status: **SIGNED 2026-07-31** (`bin/exp sign`, PI approval "Sign as drafted" in
+session; merged to main in PR #379). Launch authorized per the NOTEBOOK launch
+record of 2026-07-31. Machine state in `experiment.yaml` is authoritative for
+signed status; this banner was corrected on 2026-07-31 after the sign tooling
+left the drafting text in place (bookkeeping correction, recorded in
+NOTEBOOK.md; no design content changed).
 
 Machine state lives in `experiment.yaml`; the pre-stated thresholds live in
 `gates.yaml`; the per-seed matrix lives in `cell.yaml`. Nothing is duplicated
@@ -593,8 +596,12 @@ approvals and are **out of scope**.
 
 | Predictor | Call |
 |-----------|------|
-| PI (user) | *(empty — filled at sign time)* |
-| orchestrator (lead) | *(empty — filled at sign time)* |
+| PI (user) | Both gates confirm; the GRPO abstention shift and the post-GRPO preference recovery both reproduce in seeds 2 and 3 |
+| orchestrator (lead) | G1 confirms in both seeds; G2 also confirms but is the likelier to drop a seed (seed-1 effect only -2.99 pp over-refusal); if anything fails it is G2's over-refusal direction on one seed, not G1 |
+
+Recorded at sign time in `experiment.yaml` (authoritative); this table was
+backfilled from the manifest on 2026-07-31 after the sign tooling left the
+placeholders in place.
 
 ## Outcome
 
