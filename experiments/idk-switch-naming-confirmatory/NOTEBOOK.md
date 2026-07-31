@@ -176,3 +176,16 @@ hashes, and counts only, no text. Shard files and id maps remain under
 gitignored analysis/shards/. Judges are dispatched next: one fresh,
 context-free opus-tier agent per shard, each receiving the rendered
 rubric and bare {opaque_id, text} rows only.
+
+### 2026-07-31 -- Judge grading complete; graded hashes committed BEFORE unblind
+
+21/21 fresh context-free opus-tier judges returned graded files. Lead
+batch verification over every shard: row count equals input count,
+positional opaque_id join exact, labels restricted to F1/F2/F3, no
+extra keys. Pooled over 1180 rows (1155 core + 25 decoys): F1 660,
+F2 410, F3 110. apply_judge_grades.py commit-hash run for all 21
+shards (role judge); the graded-file sha256 manifest is copied to
+analysis-committed/graded_manifest.json and committed NOW, before
+apply-full-pool reads any id map (registered unblinding-order
+guarantee). Graded files themselves remain under gitignored
+analysis/judge_grades/.
