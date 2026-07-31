@@ -27,8 +27,9 @@ notes: >
   reported as such. Companion papers: the program's taxonomy and
   evidence-synthesis paper, [*The Depths of Ignorance: A Taxonomy, Systematic
   Evidence Synthesis, and Research Agenda for Epistemic Humility in Language
-  Models*](../paper-1-taxonomy-framework/manuscript.md) (source of record
-  meta-analysis/paper/draft-v0.md), defines the coherence axis this paper
+  Models*](../paper-1-taxonomy-framework/manuscript.md) (superseded source
+  draft retained at archive/meta-analysis/paper/draft-v0.md), defines the
+  coherence axis this paper
   measures; the SFT/DPO/KTO/GRPO regimen experiment, [*Teaching Small Language
   Models to Say I Don't Know: A Controlled Comparison of SFT, DPO, KTO, and
   GRPO on Model-Specific Abstention Data*](../paper-2-training-regimen/manuscript.md),
@@ -46,6 +47,10 @@ notes: >
 ---
 
 # Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model
+
+> *"We can know more than we can tell."*
+>
+> Michael Polanyi, *The Tacit Dimension*
 
 ## Abstract
 

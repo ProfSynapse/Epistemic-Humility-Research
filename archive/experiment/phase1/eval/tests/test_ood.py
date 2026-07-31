@@ -13,7 +13,7 @@ import pytest
 
 import ood
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[5]
 DATA = REPO / "datasets"
 
 

@@ -5,7 +5,7 @@
 
 model_tag: qwen3-4b-schema-sft-merged-seed1
 model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_seed1_full/20260622_141511/Qwen3-4B-bnb-4bit/merged-16bit
-gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_amendment_d_response_confidence_selfaware_schema_sft_dpo_seed1_smoke_4b
 
 prompt:
@@ -52,6 +52,6 @@ arms:
 eval_sets:
   selfaware:
     type: ood
-    path: ../../../datasets/selfaware/SelfAware.json
+    path: ../../../../datasets/selfaware/SelfAware.json
     offset: 2240
     limit: 192

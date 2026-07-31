@@ -1,0 +1,165 @@
+# GRPO three-seed confirmatory block - per-seed training/eval matrix.
+#
+# DRAFT until `bin/exp sign grpo-three-seed-confirmatory`. Nothing here
+# authorizes a launch. The prose design, the frozen-input list, and the
+# relationship to Amendments E/F/G live in AMENDMENT.md; the pass/fail
+# thresholds live in gates.yaml. This file is the machine-readable matrix only.
+#
+# Every hyperparameter below is CARRIED FROM SEED-1 EVIDENCE, not chosen here.
+# Provenance for each is in AMENDMENT.md "Frozen inputs" item 15.
+
+lane: local-3090-docker-serial
+model_family: qwen3-4b
+foundation_model: Qwen3-4B-bnb-4bit
+seeds: [2, 3]                 # seed 1 exists (Amendments E/F); reused as data, never re-run
+eval_population: selfaware-full-3369
+smoke_population: selfaware-mixed-192
+
+# Docker launch pattern, from the clean-mainline runbook
+# (archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md:62-75).
+launch:
+  image: unsloth/unsloth:latest
+  workdir: /workspace/repo
+  mount: <REPO_ROOT>:/workspace/repo
+  train_flags: [--no-dashboard, --quiet]
+  eval_entrypoint: run_eval.py
+  eval_flags: [--live-vllm]
+
+# Seed-independent. Rebuilt from the builder before launch; the audit must match
+# the frozen Amendment E numbers exactly (AMENDMENT.md "Datasets").
+datasets:
+  builder: archive/experiment/phase1/grpo/build_schema_response_confidence_datasets.py
+  builder_flags: [--include-ambiguous-middle]
+  sft_clean: scratch/schema_response_confidence/qwen3-4b-instruct/sft_response_confidence_train_clean.jsonl
+  dpo: scratch/schema_response_confidence/qwen3-4b-instruct/dpo_response_confidence_train.jsonl
+  kto: scratch/schema_response_confidence/qwen3-4b-instruct/kto_response_confidence_train.jsonl
+  grpo: scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train.jsonl
+  frozen_audit:                # Amendment E §3.3 (:199-206); mismatch is a hard stop
+    clean_sft_rows: 14943
+    known_appropriate: 7981
+    unknown_appropriate: 6414
+    ambiguous_middle: 548
+    unique_confidence_targets: 2489
+    target_range: [0.3508, 0.90]
+
+# LoRA settings common to every stage, per the seed-1 runbook invocations.
+lora:
+  r: 32
+  alpha: 64
+  dropout: 0.05
+
+# Eight cells per seed, three stages. `source` names the MERGED model each cell
+# trains from - never an adapter, never the foundation model except at stage 1.
+# This merge-first rule is Amendment F §4 (:88-97), frozen input 10.
+arms:
+  - id: clean_sft
+    stage: 1
+    source: foundation
+    trainer: synaptic-tuner/Trainers/sft/train_sft.py
+    dataset: sft_clean
+    terminal: false            # base/comparator; still fully evaluated (G1 denominator)
+    num_epochs: 1
+
+  - id: clean_sft_dpo
+    stage: 2
+    source: merged(clean_sft)
+    trainer: synaptic-tuner/Trainers/dpo/train_dpo.py
+    dataset: dpo
+    terminal: true
+    num_epochs: 1
+    batch_size: 2              # runbook :109-111: batch 4/accum 2 hit critical VRAM at seed 1
+    gradient_accumulation: 4
+    learning_rate: 5.0e-6
+    beta: 0.1
+
+  - id: clean_sft_kto
+    stage: 2
+    source: merged(clean_sft)
+    trainer: synaptic-tuner/Trainers/kto/train_kto.py
+    dataset: kto
+    terminal: true
+    num_epochs: 1
+    batch_size: 12             # runbook :130-133; recheck at step 250, fall back to 8
+    gradient_accumulation: 1
+    learning_rate: 1.0e-6
+    beta: 0.1
+    capacity_watch: "peaked 89.22% reserved VRAM at seed 1 (F note :706-709): workable, not roomy"
+
+  - id: clean_sft_grpo_v2
+    stage: 2
+    source: merged(clean_sft)
+    trainer: synaptic-tuner/Trainers/grpo/train_grpo.py
+    dataset: grpo
+    reward_variant: v2         # frozen input 9: Amendment F §3 :82-84, §8 :171-172
+    terminal: true             # this IS the plain SFT->GRPO arm; a paper-2 number
+    per_device_train_batch_size: 32
+    num_generations: 4
+
+  - id: clean_sft_dpo_grpo
+    stage: 3
+    source: merged(clean_sft_dpo)
+    trainer: synaptic-tuner/Trainers/grpo/train_grpo.py
+    dataset: grpo
+    reward_variant: v2
+    terminal: true
+    per_device_train_batch_size: 32
+    num_generations: 4
+
+  - id: clean_sft_kto_grpo
+    stage: 3
+    source: merged(clean_sft_kto)
+    trainer: synaptic-tuner/Trainers/grpo/train_grpo.py
+    dataset: grpo
+    reward_variant: v2
+    terminal: true
+    per_device_train_batch_size: 32
+    num_generations: 4
+
+  - id: clean_sft_grpo_dpo
+    stage: 3
+    source: merged(clean_sft_grpo_v2)
+    trainer: synaptic-tuner/Trainers/dpo/train_dpo.py
+    dataset: dpo
+    terminal: true
+    num_epochs: 1
+    batch_size: 2
+    gradient_accumulation: 4
+    learning_rate: 5.0e-6
+    beta: 0.1
+
+  - id: clean_sft_grpo_kto
+    stage: 3
+    source: merged(clean_sft_grpo_v2)
+    trainer: synaptic-tuner/Trainers/kto/train_kto.py
+    dataset: kto
+    terminal: true
+    num_epochs: 1
+    batch_size: 12
+    gradient_accumulation: 1
+    learning_rate: 1.0e-6
+    beta: 0.1
+
+# Serial order per seed. Stage 3 cannot start before its stage-2 source has
+# merged and passed its bounded smoke (G0).
+launch_order: [clean_sft, clean_sft_dpo, clean_sft_kto, clean_sft_grpo_v2,
+               clean_sft_dpo_grpo, clean_sft_kto_grpo, clean_sft_grpo_dpo,
+               clean_sft_grpo_kto]
+
+# PROPOSED, for lead adjudication at sign time (AMENDMENT.md "Eval plan").
+eval_plan:
+  bounded_smoke_after_every_merge: true     # frozen by Amendment F §8 (:176-178); not discretionary
+  full_eval_on_stage1_base: true            # G1 denominator
+  full_eval_on_stage2_arms: true            # these are terminal arms, not intermediates
+  full_eval_on_stage3_stacks: true
+
+# Metric set frozen by Amendment E §5 / F §5 (frozen inputs 7 and 13).
+metrics:
+  behavioral: [truthful_pct, refusal_recall_pct, answer_on_unknown_pct,
+               over_refusal_pct, correct_on_known_pct, refusal_rate_pct]
+  confidence: [confidence_coverage_pct, unique_confidence_values, mean_confidence,
+               brier_vs_response_appropriateness, mae_vs_response_appropriateness]
+  excluded_from_gating: [balanced_behavior_score]   # exploratory summary only (F §5 :127-130)
+
+aggregation:
+  seeds_in_interval: [1, 2, 3]   # seed 1 from Amendments E/F, seeds 2-3 from this block
+  interval: bootstrap-95

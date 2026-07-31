@@ -43,7 +43,7 @@ NOTE_TEMPLATE = """\
 
 ## Extracted numbers
 
-<!-- rows feeding meta-analysis/evidence/*.csv; cite table/figure of origin -->
+<!-- rows feeding papers/paper-1-taxonomy-framework/evidence/*.csv; cite table/figure of origin -->
 
 ## Relevance to experiment
 

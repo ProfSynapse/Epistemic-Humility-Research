@@ -1,0 +1,181 @@
+# GRPO three-seed confirmatory block - pre-stated gates.
+#
+# STATUS: PROPOSED / DRAFT. Every threshold below is a DRAFTING PROPOSAL awaiting
+# lead adjudication at sign time. Nothing is settled until
+# `bin/exp sign grpo-three-seed-confirmatory` pins this file.
+#
+# Once signed, NO GATE MOVES after results are seen. An ambiguous result is
+# reported as ambiguous; it is not rescued by retuning a threshold. Derivations
+# for every number are in AMENDMENT.md "Gates" - they come from the measured
+# seed-1 effect sizes, not from convenient round numbers.
+#
+# Seed-1 reference (archive/experiment/phase1/eval/analysis/
+# selfaware_full_run_comparison_grouped.csv), the numbers these gates test:
+#   clean_sft_merged   : answer_on_unknown 12.98  refusal_recall 87.02  over_refusal 57.51
+#   clean_sft_grpo_v2  : answer_on_unknown  6.59  refusal_recall 93.41  over_refusal 66.62
+#   clean_sft_grpo_dpo : answer_on_unknown  6.69  refusal_recall 93.31  over_refusal 63.63
+
+status: proposed
+adjudicated_by: null            # lead + PI at sign time
+adjudicated_date: null
+alpha: 0.05
+seeds_under_test: [2, 3]
+eval_population: selfaware-full-3369
+
+gates:
+
+  - id: g0_instrument_and_lineage_validity
+    kind: stop_before_outcome
+    scope: per_seed_per_cell
+    gating: true
+    interpretation: >-
+      Not a claim gate. A failure STOPS the cell before any outcome is read, and
+      the cell is relaunched after repair rather than reported.
+    checks:
+      - id: merge_first_lineage
+        pass_if: >-
+          the next-stage training config points at the MERGED source model, not
+          the foundation model and not an adapter path (Amendment F §4 step 4,
+          experiments/grpo-centered-stacking/AMENDMENT.md:88-97)
+      - id: bounded_smoke_coverage
+        pass_if: >-
+          the 192-row bounded mixed SelfAware smoke returns 100% JSON
+          answer + response_confidence coverage and 0 thinking-tag hits
+      - id: training_completed_clean
+        pass_if: >-
+          training exits 0 with final adapter artifacts and training_lineage.json
+          present in the run directory
+      - id: dataset_audit_matches_frozen
+        pass_if: >-
+          the rebuilt clean-SFT audit matches Amendment E §3.3 exactly - 14943
+          rows, 7981 known / 6414 unknown / 548 ambiguous, 2489 unique targets,
+          range [0.3508, 0.90] - and the derivative datasets match the counts
+          this amendment freezes: DPO 14943, KTO 29886, GRPO train 14888,
+          GRPO dev 1655. A mismatch is a hard stop, not a knob.
+      - id: containment
+        pass_if: >-
+          no model weights, scratch datasets, generation text, scored rows, or
+          question/prompt/alias/gold-answer text are staged for commit; committed
+          analysis is aggregate or ID-only (AMENDMENT.md "Data containment")
+
+  - id: g1_grpo_abstention_shift_replicates
+    kind: primary
+    gating: true
+    is_falsifier_gate: true
+    comparison: clean_sft_grpo_v2 vs same-seed clean_sft_merged
+    requires_same_seed_denominator: true
+    conditions:
+      - metric: answer_on_unknown_pct
+        direction: decrease
+        min_magnitude_pp: 3.0
+      - metric: refusal_recall_pct
+        direction: increase
+        min_magnitude_pp: 3.0
+    pass_if: both conditions hold in BOTH seed 2 and seed 3
+    not_confirmed_if: >-
+      either seed shows a sign flip on either metric, or a movement smaller than
+      3.0 pp on either metric
+    derivation: >-
+      Seed-1 effect is -6.39 pp answer-on-unknown and +6.39 pp refusal recall.
+      The 3.0 pp floor is roughly half the seed-1 magnitude: large enough to
+      exclude noise, loose enough that a genuine but attenuated effect is not
+      scored as failure. This is a direction-plus-floor test, NOT a
+      magnitude-equivalence test; a two-seed replication cannot support the
+      latter.
+
+  - id: g2_post_grpo_preference_recovery_replicates
+    kind: primary
+    gating: true
+    comparison: clean_sft_grpo_dpo vs same-seed clean_sft_grpo_v2
+    requires_same_seed_denominator: true
+    conditions:
+      - metric: over_refusal_pct
+        direction: decrease
+        min_magnitude_pp: null      # deliberately unset; see derivation
+      - metric: answer_on_unknown_pct
+        constraint: must_not_increase_by_more_than_pp
+        threshold_pp: 2.0
+    pass_if: both conditions hold in BOTH seed 2 and seed 3
+    not_confirmed_if: >-
+      either seed shows an over-refusal INCREASE, or unknown answering reopening
+      by more than +2.0 pp
+    derivation: >-
+      Seed-1 effect is -2.99 pp over-refusal at +0.10 pp unknown answering. No
+      magnitude floor is set: at -2.99 pp the effect is too small for a two-seed
+      block to bound, and Amendment G §1 itself calls the gain "useful but
+      small". A magnitude bar here would invent precision the instrument does not
+      have. The +2.0 pp reopening cap encodes Amendment F's frozen rule that a
+      post-GRPO preference stage is useful only if it recovers known answers
+      without materially reopening unknown answering
+      (experiments/grpo-centered-stacking/AMENDMENT.md:139-140).
+
+  - id: g3_three_seed_intervals_reported
+    kind: deliverable
+    gating: false
+    interpretation: >-
+      Descriptive; cannot pass or fail. This is the reason the block exists.
+    requires: >-
+      every GRPO-touching arm reports mean and 95% bootstrap CI across seeds
+      1/2/3 on truthful_pct, refusal_recall_pct, answer_on_unknown_pct,
+      over_refusal_pct, correct_on_known_pct, refusal_rate_pct
+
+  - id: g4_confidence_non_recovery_check
+    kind: descriptive_guard
+    gating: false
+    interpretation: >-
+      Pre-stated so that a surprise cannot be retrofitted as a success. Stated
+      confidence is expected to stay collapsed and behavior-insensitive; this
+      block does not try to fix it.
+    trigger_if: >-
+      any seed-2 or seed-3 arm shows MORE than 200 distinct response_confidence
+      values over 3369 rows AND Brier vs response-appropriateness BELOW 0.35
+    on_trigger: >-
+      route to a NEW exploratory registration. It is not a confirmation of
+      anything in this block and must not be reported as one.
+    seed1_reference:
+      distinct_confidence_values: {clean_sft_dpo_grpo: 70, clean_sft_kto_grpo: 5,
+                                   clean_sft_grpo_dpo: 38, clean_sft_grpo_kto: 6}
+      brier_range: [0.403, 0.449]
+
+  - id: g5_stage_ordering_comparison
+    kind: secondary_descriptive
+    gating: false
+    comparisons:
+      - clean_sft_grpo_dpo vs clean_sft_dpo_grpo    # seed-1 over_refusal delta -1.67 pp
+      - clean_sft_grpo_kto vs clean_sft_kto_grpo    # seed-1 over_refusal delta -5.78 pp
+    interpretation: >-
+      Reported as over-refusal deltas per seed with three-seed intervals, as a
+      descriptive pattern only. Explicitly NOT adjudicated: the seed-1 DPO-pair
+      margin (-1.67 pp) is below what two added seeds can resolve. Never reported
+      as a finding.
+
+falsifier:
+  status: proposed
+  gate: g1_grpo_abstention_shift_replicates
+  statement: >-
+    If G1 does not confirm - the seed-1 GRPO abstention shift fails to reproduce
+    in direction at seed 2 or at seed 3 - then the seed-1 GRPO layer is a seed
+    artifact. No GRPO effect may then be reported in paper 2 as a stable finding;
+    the GRPO layer is reported as seed-1-only exploratory evidence carrying an
+    explicit non-replication note, and downstream GRPO work (8B, publication) is
+    blocked pending a mechanism explanation.
+  why_g1_and_not_g2: >-
+    G1 is the load-bearing claim: if GRPO does not reliably shift abstention, the
+    stacks built on it have nothing to stack. G2 failing alone falsifies the
+    narrower "a preference stage recovers known answers after GRPO" claim and
+    retires the clean_sft_grpo_dpo publication candidate, but does not kill the
+    GRPO layer itself.
+
+reporting:
+  tier: 2                        # exploratory amendment cell, NOT the confirmatory headline
+  label: "GRPO three-seed confirmatory / response-confidence track, exploratory"
+  never_pooled_with: [protocol-v0.3-headline, amendment-a, amendment-b,
+                      amendment-c, amendment-d]
+  permitted_phrasing: "replicated across three seeds within the exploratory response-confidence track"
+  forbidden_phrasing: "confirmed (tier-1 sense)"
+  null_results: >-
+    A NOT-CONFIRMED result is reported straight, in the same place and with the
+    same prominence a pass would have received.
+  standing_limitation: >-
+    Confidence collapse is reported as a limitation in every table that reports
+    these arms, whatever the behavioral gates do.

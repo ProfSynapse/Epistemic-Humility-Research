@@ -6,7 +6,7 @@
 model_tag: qwen3-4b-clean-schema-sft-merged-seed1
 # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit @ ac361232c001af0ed5b0386b06dafc35d5cd31ea
 model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
-gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_4b
 
 prompt:
@@ -53,4 +53,4 @@ arms:
 eval_sets:
   selfaware:
     type: ood
-    path: ../../../datasets/selfaware/SelfAware.json
+    path: ../../../../datasets/selfaware/SelfAware.json

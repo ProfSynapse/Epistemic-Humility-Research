@@ -19,7 +19,25 @@ related:
 - '[[j-space-layer-contrast-rep2-multisource]]'
 - '[[qwen35-4b-midband-write-decouples-refusal-from-format-collapse]]'
 - '[[caution-write-selectivity-is-content-dependent-not-gate-created]]'
+- '[[idk-switch-naming-confirmatory]]'
+- '[[idk-switch]]'
 relationships:
+- type: built_on_by
+  target: '[[idk-switch-naming-confirmatory]]'
+  target_id: experiment:idk-switch-naming-confirmatory
+  confidence: high
+  evidence:
+  - experiments/idk-switch-naming-confirmatory/AMENDMENT.md (Design; c_hat and
+    random_direction loaded byte-identical from this experiment's committed
+    directions/hs20/ tree, no direction refit)
+- type: related_to
+  target: '[[idk-switch]]'
+  target_id: term:idk-switch
+  confidence: high
+  evidence:
+  - experiments/idk-switch-naming-confirmatory/AMENDMENT.md#outcome (the name
+    IDK switch is EARNED for the c_hat write/dose law at this experiment's
+    hs20 operating point)
 - type: tests
   target: '[[j-space-mediated-actuation-fragility]]'
   target_id: mechanism:j-space-mediated-actuation-fragility

@@ -44,8 +44,10 @@ evidence_base: >
   experiments/margin-evidence-responsiveness-worldknown/AMENDMENT.md,
   experiments/evidence-response-direction-search/AMENDMENT.md,
   experiments/placebo-signflip-question-type-analysis/AMENDMENT.md,
-  experiments/correctness-direction-rotation/AMENDMENT.md, and
-  experiments/correctness-subspace-overlap/AMENDMENT.md.
+  experiments/correctness-direction-rotation/AMENDMENT.md,
+  experiments/correctness-subspace-overlap/AMENDMENT.md,
+  experiments/gemma4-e4b-kv-seam-quarantine/AMENDMENT.md, and
+  experiments/gemma4-e4b-pocket-ladder/AMENDMENT.md (registered, unresolved).
 notes: >
   Draft v0 is a synthesis scaffold, not submission-ready. It deliberately
   separates reader-facing claims from amendment traceability. The core results
@@ -57,14 +59,19 @@ notes: >
   folded in as Section 4.9, and a multi-seed placebo seed-distribution census
   that measures each family's matched-magnitude random-direction null across 15
   fresh seeds is folded in as Section 4.10; all remain exploratory and
-  pre-headline. The next planned step is a larger cross-model / cross-family
-  actuation study registered against the per-family placebo null distribution
-  the census measured (Section 4.10). Section 6.5 now also cites two
-  companion-paper null results (a direct cross-checkpoint measurement of the
-  correctness direction's own rotation, and a follow-up asking whether a
-  shared subspace explains its partial transfer) as motivation, not evidence,
-  for treating the correctness axis as a harder cross-family generalization
-  problem than the answerability axis this paper actuates on.
+  pre-headline. Section 4.11 folds in a fourth family's cross-family arc: a
+  depth-coverage resolution of Gemma-4-E4B's long-standing inert reputation,
+  plus the still-open question of whether its KV-sharing seam specifically
+  bounds the write, per the changelog in
+  `papers/paper-5-actuation/notes/kv-seam-integration-changelog-2026-07-31.md`.
+  The next planned step is a larger cross-model / cross-family actuation study
+  registered against the per-family placebo null distribution the census
+  measured (Section 4.10). Section 6.5 now also cites two companion-paper null
+  results (a direct cross-checkpoint measurement of the correctness
+  direction's own rotation, and a follow-up asking whether a shared subspace
+  explains its partial transfer) as motivation, not evidence, for treating the
+  correctness axis as a harder cross-family generalization problem than the
+  answerability axis this paper actuates on.
 ---
 
 # Readable Is Not Writable: Channel, Gate, and Workspace Constraints on Actuating Known-Unknown State in Small Language Models
@@ -82,6 +89,10 @@ instead, retiring "doubt" from running prose except in quotations and governed
 filenames.*
 
 ---
+
+> *"What I cannot create, I do not understand."*
+>
+> Richard Feynman
 
 ## Abstract
 
@@ -892,6 +903,77 @@ family's own nonspecific-perturbation response) against a measured null rather
 than a point estimate or a small-K maximum
 (`experiments/placebo-seed-distribution-census/AMENDMENT.md`).
 
+### 4.11 Gemma's inertness was a depth-coverage artifact, not a family-specific null
+
+Was Gemma-4-E4B a fourth family that simply does not actuate, or a family that
+had never been written to in the band where every other family does? Every
+prior write attempt on this substrate in the program's cross-family line sat at
+relative depth 0.81 or deeper, on an architecture whose upper 18 blocks read
+their key and value tensors from two frozen donor blocks rather than computing
+their own. Nothing had ever been written into the shallow half of the model.
+
+A depth ladder run on the unmodified model, KV-sharing left on, answers the
+question. At relative depth 0.357, the fitted known-unknown direction cleared
+both held-out gates with the widest margin recorded anywhere in the cell: 78.6%
+clean tightening (Wilson 95% CI [71.8, 84.1]) against a 1.1% known-correct
+false-refusal cost. The depth-ladder arms carried the clean-tightening and
+cost gates only, with no placebo control at this site, so this is the cell's
+strongest behavioral gate clearance, not a demonstrated direction-specific
+actuation. Two
+intermediate sites, relative depth 0.429 and 0.476, failed the clean-tightening
+floor outright (44.6% and 40.5%). A fourth site, relative depth 0.524, passed
+both gates again (58.9% clean tightening, cost within the registered floor);
+its placebo control is recorded as a degenerate pass, all five accepted
+random draws producing zero lift, which the design requires reporting under
+the degenerate label rather than as a large specificity ratio. Gemma clears
+held-out behavioral gates, unevenly across this narrow band, and its cross-family reputation as
+the one family that does not actuate was built entirely on sites past the
+depth where any family in this program has ever produced a usable write.
+
+That finding sharpens rather than closes the question the experiment was built
+to answer: whether the deep-site failure is specifically because the
+KV-sharing seam blocks a write from reaching anything later blocks attend to.
+The one site immediately downstream of both donor blocks, relative depth
+0.571, still cleared the clean-tightening and cost floors (73.2%, cost 3.3%),
+but failed its own placebo control: the single worst magnitude-matched random
+direction reproduced 88% of the fitted direction's effect, short of the
+registered three-fold margin the design required. That reads as seam-region
+instability, not a continuation of the shallow band's clean pass down to the
+boundary.
+
+The direct test of the seam mechanism, the same kind of write with KV-sharing
+switched off, could not run as designed. A precondition check, undosed
+sharing-off against undosed sharing-on, found that turning sharing off breaks
+the model before any write is applied: known-correct rows that were perfectly
+well-formed under sharing on (0/180) became entirely malformed under sharing
+off (180/180, Newcombe 95% CI on the difference [0.970, 1.0], against a
+registered 0.05 cap), and mean per-token negative log-likelihood on the
+reference completions rose from 3.53 to 12.33, a 3.5-fold increase. Because
+that precondition failed, the sharing-on/sharing-off contrast this experiment
+was built around never ran, and this ablation cannot isolate the seam variable
+on this model; a gentler one is needed. A parallel calibration sweep at the
+original above-seam site found no usable dose in either sharing condition, so
+the deep-site null this section opened by questioning was itself reproduced,
+unchanged, alongside the new shallow-band result.
+
+The quarantine hypothesis is therefore left resting entirely on the depth
+ladder run under the unmodified model: a below-seam site that actuates
+cleanly, set against an above-seam site that reproduces the original null.
+That pattern is registered as supporting the quarantine hypothesis, and
+explicitly not establishing it. Gemma's falloff with depth could equally be
+the same generic decay every other family in this paper shows past its own
+productive band, with no seam mechanism required. A separate cell, registered
+but not yet run, targets three sites at the very top of the cross-family
+operating range (relative depth 0.595 to 0.643, the same neighborhood as
+Qwen3.5-4B's promoted site and Llama-3.2-3B's held-out pass), which on
+gemma's architecture sit entirely above the seam. That cell is explicit that
+it cannot discriminate the quarantine account from a depth-only account
+either: on gemma, relative depth and KV-sharing status are the same variable
+at those three sites, so a positive result there would show gemma actuates
+that deep without saying why. Isolating the seam mechanism directly still
+requires a working sharing-on/sharing-off contrast, and the one built for this
+experiment broke the model before any write could be tested.
+
 ---
 
 ## 5. Synthesis: The Actuation Map
@@ -909,6 +991,7 @@ The results form a channel map rather than a single pass/fail story.
 | Mid-band J-space write (layer site, not dose regime; Qwen3-4B, 36 blocks) | hs23 = rd 0.639 beats hs34 = rd 0.944 by +22.7pp | Needs layer-specific dose; not yet cross-family | Write site matters |
 | Natural J-token write | Non-inert token-only effect | Redundant with `c_hat` hybrid | Verbalizable token target is not enough |
 | Cross-family gated snap (mistral, bounded negative) | Wide-instrument adjudicated refusal 69.9%, cost pristine (0.52% known-correct); benefit and cost gates reproduce at every re-test | Direction-specificity falsified three times independently, at three sites and doses: RR2's flat 2-point placebo tolerance, RR3's corrected 3x effect-ratio gate (ratio 1.87), and the mid-band factorial's S1 leg (ratio 2.03, K=15 census denominator); the mid-band factorial's own gate-contribution leg is also sub-floor (Gap_Sel 0.129 vs 0.20); the cross-family confirmatory fleet found a true behavioral null at the registered late write site (0/874 clean_tighten at every dose); a 15-seed placebo census (Section 4.10) resolved all three families' matched-magnitude placebo as sign-consistent rather than seed noise (qwen suppresses 14/15, mistral recruits at the 12/15 boundary, llama newly suppresses 12/15), so llama is not a null control | Mistral is readable everywhere the audit looked but not shown actuable by a direction-specific write at any tested site; placebo criteria must be registered against each family's measured per-family null distribution, not a flat tolerance or a single seed; the census (Section 4.10) supplies that distribution at K=15 for percentile-based or sign-opposition criteria |
+| Depth-ladder write, KV-sharing seam (gemma, formerly reputed inert) | Two below-seam sites (relative depth 0.357, 0.524) clear held-out clean-tightening and known-correct cost with zero-lift placebo controls; the reputation that this family does not actuate is overturned | The seam-adjacent site (relative depth 0.571) clears the same two gates but fails direction-specificity (worst placebo draw reproduces 88% of the effect); the sharing-on/sharing-off contrast meant to isolate the seam mechanism could not run because turning sharing off broke the model outright (known-correct well-formedness 0% to 100% malformed, NLL 3.53 to 12.33) | Four families deep, no family in this program has ever been shown to be architecturally inert: gemma's null was a depth-coverage artifact of testing only relative depth >= 0.81. Whether its below-seam actuation and above-seam failure trace to the KV-sharing seam specifically, or to the same depth falloff every family shows, remains open; the ablation built to answer that broke the substrate it was meant to probe |
 
 The practical controller that emerges is not "make the model introspect." It is:
 
@@ -1111,10 +1194,19 @@ Recommended escalation:
    site does it work," which the family atlas (Section 6.3) already answers
    for llama and mistral. Per-family atlas-sited retests are queued work, not
    a blocker for this paper's claims.
-5. **Dense-token screen.** Separately screen abstract or multilingual token
+5. **Gemma's KV-sharing seam.** A below-seam depth ladder overturned gemma's
+   inert reputation (Section 4.11): the model actuates cleanly at two shallow
+   sites and loses direction-specificity only at the site immediately
+   adjacent to its KV-sharing boundary. Whether that boundary is the cause,
+   rather than the same depth decay every other family shows, could not be
+   settled here, because the sharing-on/sharing-off ablation broke the
+   model's baseline behavior before any write was tested. A gentler ablation,
+   and resolution of three registered-but-unrun sites at the top of gemma's
+   cross-family operating band, are both still open.
+6. **Dense-token screen.** Separately screen abstract or multilingual token
    bundles before any causal hybrid run. Do not alter the natural-token result
    post hoc.
-6. **Generic tuner support.** Promote compound multi-readout writes into the
+7. **Generic tuner support.** Promote compound multi-readout writes into the
    Synaptic Tuner config surface so future runs are config-driven, resumable, and
    comparable across models.
 
@@ -1182,6 +1274,8 @@ provenance appendix or supplement.
 | Within-kuq subtype breakdown: question type does not explain the cross-family placebo sign difference at the family level, but one subtype (future-unknown) carries qwen's entire suppression (-24.7pp) and is also mistral's largest recruitment delta (+11.8pp) | `experiments/placebo-signflip-question-type-analysis/AMENDMENT.md` Outcome | Resolved; subtype-inert reading falsified for qwen |
 | Criterion (d) (evidence-responsiveness) is not licensed on the world-known error class for the named KU direction (primary transfer void, population reversal) or for a world-known-specific refit (specificity leg passes, collapse leg fails); a coherence/saturation ceiling limits refusal to 12.75% of world-known confabs before generation degenerates | `experiments/margin-evidence-responsiveness-worldknown/AMENDMENT.md` Outcome | Null result; retires mentalistic naming with a completed (d) adjudication |
 | A constructive search for a specific evidence-response axis (d_ev) fires at baseline but is indistinguishable from covariance-shaped random directions and weaker than the native ignorance-fit direction; it reconstructs retrieval-family geometry, not a specific evidence-responsive axis | `experiments/evidence-response-direction-search/AMENDMENT.md` Outcome | Null result; strengthens the fragmentation reading |
+| Gemma's cross-family inert reputation was a depth-coverage artifact: below-seam sites at relative depth 0.357 and 0.524 clear held-out clean-tightening and known-correct cost floors with direction-specific placebo controls (zero lift on 5 draws each); the seam-adjacent site (relative depth 0.571) clears the same floors but fails direction-specificity (worst placebo draw reproduces 88% of the effect); a sharing-off precondition control broke the model's own baseline (known-correct well-formedness 0% to 100% malformed, NLL 3.53 to 12.33) before the sharing-on/sharing-off contrast could run, leaving the KV-quarantine account supported but not established | `experiments/gemma4-e4b-kv-seam-quarantine/AMENDMENT.md` Outcome | Exploratory, resolved; quarantine hypothesis open |
+| Three sites at the top of gemma's cross-family operating band (relative depth 0.595-0.643) are registered to test whether gemma actuates in the same depth neighborhood as Qwen3.5-4B's promoted result and Llama-3.2-3B's held-out pass; by its own registration this cell cannot discriminate the KV-quarantine account from a depth-only account | `experiments/gemma4-e4b-pocket-ladder/AMENDMENT.md` (branch `exp/gemma-pocket-ladder`, not yet merged) | Registered draft, not yet run |
 
 ## Appendix B. Figure Plan
 

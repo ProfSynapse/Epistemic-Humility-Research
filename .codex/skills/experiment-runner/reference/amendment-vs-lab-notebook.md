@@ -124,6 +124,48 @@ amendment:
 The pre-commit hook validates every manifest and keeps `experiments/REGISTRY.md`
 current. See the `experiments` skill for the full schema and lifecycle.
 
+## Citing experimental facts: where the truth lives at each lifecycle stage
+
+READ BEFORE YOU CITE names the governed doc as the source of truth for
+experimental facts. This section makes that rule precise, because the governed
+doc has *sections with different tenses*, and citing the wrong section produces
+confident, wrong answers. Two real failures motivated it (2026-07-31, gemma
+kv-seam): a lead reported a stage as "found usable doses" from an in-flight log
+fragment when the stage's verdict artifact said the opposite, and then answered
+"has X ever actuated?" from a pre-sign motivation table while the same cell's
+Phase A NOTEBOOK adjudication recorded three actuation PASSes.
+
+**Rule 1 — the experiment's status selects the citable surface:**
+
+| Status | Citable surface for "what happened" |
+|---|---|
+| `draft` | Nothing. No result exists; the design text is a proposal. |
+| `signed`, in flight | NOTEBOOK adjudication/ruling entries plus `analysis-committed/` artifacts. The AMENDMENT's Outcome is still empty, and for multi-phase cells the interim adjudicated facts live ONLY in the NOTEBOOK rulings. Reading the AMENDMENT alone is NOT sufficient for an unresolved cell. |
+| `resolved` / `null-result` / `falsified` | AMENDMENT Outcome (primary), with NOTEBOOK rulings as supporting detail. |
+
+**Rule 2 — design-time text freezes at sign.** Motivation and Design sections
+(including any "every X that has ever Y" survey table) describe the world *as of
+drafting*. The moment the cell runs, those tables are stale by construction:
+they cannot contain the cell's own results. Never cite a Motivation/Design
+table as the current state of the program; treat it as a dated snapshot and
+check the program's outcome surfaces (Outcome sections, NOTEBOOK rulings,
+`analysis-committed/`) for anything that post-dates it.
+
+**Rule 3 — mid-run stage results come only from verdict artifacts.** An exit
+code, a progress line, or a log fragment is not a result. Report a stage's
+outcome only after opening the artifact the stage writes (its summary JSON /
+verdict marker), and label anything else explicitly as an unverified in-flight
+impression. A dispatcher can exit 0 while the stage records a negative verdict;
+the artifact, not the exit status, is the result.
+
+**Rule 4 — a user's contradicting recollection is a defect signal, not a
+debate.** When the user says "I thought we got X" and your answer says
+otherwise, do not re-read the same design sections harder. Enumerate the
+outcome surfaces first: `ls analysis-committed/` in every plausibly relevant
+cell, grep NOTEBOOK files for adjudication rulings, and only then answer. If
+the user's memory and your reading still disagree, present both with the
+artifact paths rather than asserting yours.
+
 ## Promotion: exploration → claim
 
 A successful exploratory amendment cell **does not become a claim on its own.**

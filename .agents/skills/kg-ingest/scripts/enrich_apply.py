@@ -31,7 +31,7 @@ DIR_FOR_TYPE = {"method": "methods", "metric": "metrics", "dataset": "datasets",
                 "model": "models", "term": "terms", "mechanism": "mechanisms"}
 
 STUB_SUMMARY = "## Summary\n\n<!-- filled during extraction -->"
-STUB_NUMBERS = "## Extracted numbers\n\n<!-- rows feeding meta-analysis/evidence/*.csv; cite table/figure of origin -->"
+STUB_NUMBERS = "## Extracted numbers\n\n<!-- rows feeding papers/paper-1-taxonomy-framework/evidence/*.csv; cite table/figure of origin -->"
 STUB_RELEVANCE = "## Relevance to experiment\n\n<!-- how this informs the Synaptic Tuner experiment design -->"
 
 

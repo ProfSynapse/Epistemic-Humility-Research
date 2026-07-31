@@ -22,7 +22,7 @@ from typing import Any
 import yaml
 
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[4]
 GRPO_TRAINER_DIR = REPO_ROOT / "synaptic-tuner" / "Trainers" / "grpo"
 sys.path.insert(0, str(GRPO_TRAINER_DIR / "src"))
 sys.path.insert(0, str(GRPO_TRAINER_DIR.parent.parent))

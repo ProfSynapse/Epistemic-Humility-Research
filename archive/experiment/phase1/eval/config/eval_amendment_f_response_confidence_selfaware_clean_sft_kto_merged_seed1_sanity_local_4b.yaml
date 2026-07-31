@@ -4,7 +4,7 @@
 
 model_tag: qwen3-4b-clean-sft-kto-merged-seed1
 model_name: /workspace/repo/scratch/schema_response_confidence/runs/schema_clean_sft_kto_seed1_full/20260623_200200/Qwen3-4B-clean-sft-kto/merged-16bit
-gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_amendment_f_response_confidence_selfaware_clean_sft_kto_merged_seed1_sanity_4b
 
 prompt:
@@ -50,6 +50,6 @@ arms:
 eval_sets:
   selfaware:
     type: ood
-    path: ../../../datasets/selfaware/SelfAware.json
+    path: ../../../../datasets/selfaware/SelfAware.json
     offset: 2240
     limit: 192

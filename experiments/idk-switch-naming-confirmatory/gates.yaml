@@ -1,0 +1,78 @@
+# Registered gates for idk-switch-naming-confirmatory.
+# PROPOSED (pre-sign draft, lead-computed 2026-07-31). Numbers become binding
+# when the amendment is signed; after sign they never move (no-goalpost rule,
+# and the on-failure closure in AMENDMENT.md "Gates" applies: any failure
+# means the name is not earned, with no rescoring or gate softening).
+#
+# All rates are computed on the FRESH generations only (n=400 per arm). All
+# exploratory reference numbers below are disclosed context, never gated.
+
+n1_idk_endpoint:
+  # Claim: the F4 explicit-IDK rate at a_dose_1 exceeds the fresh a_baseline
+  # F4 rate by a margin whose CI excludes the floor.
+  # Exploratory reference (form-judge-axis-g-rescore, disclosed): baseline
+  # 16/400 = 0.040, dose_1 267/400 = 0.6675, jump +0.6275 with Newcombe 95%
+  # CI [0.574, 0.674].
+  # Floor sizing (lead, 2026-07-31): 0.15 demands roughly a quarter-strength
+  # replication or better (a fresh 79/400-vs-16/400 run yields diff 0.158,
+  # CI [0.114, 0.202], which fails), while sitting an order of magnitude
+  # above two-proportion noise at these rates and n (2 x SE ~ 0.028).
+  min_f4_rate_gain_dose1_over_baseline: 0.15
+  # Adjudication: the 95% CI lower bound of (F4 rate at a_dose_1 minus F4
+  # rate at a_baseline) must exceed the floor. Primary CI: paired bootstrap
+  # over row indices (all arms dose the SAME 400 rows); the unpaired
+  # Newcombe/Wilson difference CI is reported alongside as a cross-check.
+  ci_method_primary: paired_bootstrap_95
+  ci_method_reported: newcombe_wilson_95
+
+n2_no_graded_intermediate:
+  # Claim: the dose response is mode switching, not graded marking. The
+  # judged F2+F3 hedged share among non-degenerate rows does not rise above
+  # the fresh a_baseline share by 0.10 or more at any c_hat-dosed arm.
+  # Transcribed unchanged from AMENDMENT.md "Gates" (itself reusing the
+  # naming battery's axis-G over-baseline leg as an upper bound).
+  max_share_gain_over_baseline: 0.10
+  # Scope (lead build-time ruling, 2026-07-31, recorded in AMENDMENT.md):
+  # gated arms are the c_hat-dosed arms only. The placebo arm doses a random
+  # direction, not the actuator, so it is not a "dosed arm" in the sense of
+  # this claim; its share-vs-baseline comparison is reported non-gating
+  # (placebo behavior is N3's registered claim).
+  gated_arms: [a_dose_0p5, a_dose_1]
+  reported_arms: [a_placebo_1]
+  # NOT-ADJUDICABLE guard, transcribed from the naming battery's convention:
+  # fewer than 50 screened-in (judge-graded, non-degenerate, non-F4) rows at
+  # a gated arm makes N2 not adjudicable at that arm (instrument-failed
+  # alternative in AMENDMENT.md "Falsifier"; NOT-ADJUDICABLE is never PASS).
+  min_screened_in_rows_per_gated_arm: 50
+
+n3_placebo_band:
+  # Claim: direction specificity. The a_placebo_1 F4 rate stays within a
+  # registered band of the fresh a_baseline F4 rate.
+  # Exploratory reference (disclosed): placebo-minus-baseline differences
+  # -0.010 (12/400 vs 16/400) and -0.018 (9/400 vs 16/400), both well inside
+  # +/- 0.05. Band sizing (lead, 2026-07-31): 0.05 is ~3.6 x the
+  # two-proportion SE at these rates and n (SE ~ 0.014), and an order of
+  # magnitude below the N1 floor's implied endpoint effect.
+  max_abs_f4_rate_diff_placebo_vs_baseline: 0.05
+  # Adjudication: point estimate |placebo F4 rate - baseline F4 rate| must
+  # not exceed the band; the paired-bootstrap 95% CI of the difference is
+  # reported alongside (non-gating).
+
+judge_lane_in_run_validity:
+  # In-run clear-positive decoy floor (construct validation carries over
+  # from form-judge G1 0.035, disclosed, not re-earned). Decoys drawn from
+  # THIS run's own F4 screen positives (cell.yaml judge_lane sizing rule).
+  n_decoy_clear_positive: 25
+  min_clear_positive_agreement: 0.92   # judge label is not F1
+  # If fewer than 25 F4-positive candidates exist across arms, the judge
+  # lane records the registered instrument-failed alternative (N2
+  # unadjudicable; N1/N3 still adjudicated from the deterministic screens).
+
+lead_spot_check:
+  n_rows: 30
+  # Lead reads the sample against the rubric before gate adjudication;
+  # systematic rubric misapplication voids the grading pre-unblind.
+
+stability_diagnostic:
+  # Reported, non-gating: one shard graded twice by fresh judge instances.
+  n_shards_regraded: 1

@@ -53,6 +53,41 @@ lesson was first established on Qwen3-4B. Values are not comparable across
 these metrics; the ORDERING is, and the ordering is consistent in all four
 substrates.
 
+A fourth family, gemma4-E4B (`num_hidden_layers=42`, shared-KV seam in the
+mid-band), confirms the rule after carrying a false "never actuates" reputation
+for weeks: its first-registered candidate sites all sat at relative depth
+0.81 or deeper, past every other family's actuation floor, and produced no
+usable dose in either KV condition. The shallow ladder registered afterwards
+(kv-seam quarantine cell, Phase A, sharing ON, held-out G1 confab-tighten
+rate; source of record
+`experiments/gemma4-e4b-kv-seam-quarantine/NOTEBOOK.md` Stage 6 adjudication
+and `analysis-committed/gemma4-e4b/full_summary.shallow_ladder.json`):
+
+| relative depth | tighten rate | note |
+|---|---|---|
+| 0.357 (hs15) | 0.786 | G1 PASS, G2 PASS; best site, shallowest tested |
+| 0.429 (hs18) | 0.446 | below G1 floor |
+| 0.476 (hs20) | 0.405 | below G1 floor |
+| 0.524 (hs22) | 0.589 | G1/G2 PASS; G3 pass-degenerate (placebo draws inert) |
+| 0.548 (hs23) | - | dose viability NOT-RUN (no usable dose) |
+| 0.571 (hs24) | 0.732 | G1/G2 PASS but G3 FAIL: one magnitude-matched random direction reproduced 88% of the effect (seam-region instability, not actuation) |
+| 0.81-1.0 (hs34/38/40/42) | 0.000 | no usable dose, either KV condition |
+
+Gemma's best site is again the SHALLOWEST tested, strength falls monotonically
+toward the seam, and the deep band is dead: the fourth tighten-rate family to
+confirm shallowest-is-best. Two gemma-specific lessons generalize:
+
+- **Near a KV-sharing seam, raw gate clearance is not actuation.** hs24
+  cleared G1/G2 handily and then failed direction specificity outright.
+  Adjudicate a G3 placebo-draw control before citing any near-seam site as
+  actuable.
+- **A family-level "does not actuate" claim is only as good as its depth
+  coverage.** Nothing had been written into gemma below relative depth 0.81
+  when the inert reputation formed. Before recording a family as
+  non-actuable, confirm the tested sites cover the ~0.35-0.65 band where
+  every actuating family actually actuates (rule 3 below; gemma is now the
+  worked example of that rule firing).
+
 Two selector failures are worth naming explicitly, because both look like
 reasonable write criteria and neither is:
 

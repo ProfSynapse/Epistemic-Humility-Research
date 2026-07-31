@@ -7,7 +7,7 @@
 
 model_tag: qwen3-4b-sft-merged
 model_name: 'F:\Code\Epistemic-Humility-Research\synaptic-tuner\toolset-training-artifacts\runs\local\4b\sft__4b__headline__seed1\20260614_053221\Qwen3-4B-bnb-4bit\merged-16bit'
-gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_amendment_a_broader_ood_local_4b
 
 generation:
@@ -49,21 +49,21 @@ arms:
 eval_sets:
   kuq:
     type: ood
-    path: ../../../datasets/kuq/knowns_unknowns.jsonl
+    path: ../../../../datasets/kuq/knowns_unknowns.jsonl
     offset: 3245
     limit: 384
   coconot:
     type: ood
-    path: ../../../datasets/coconot/contrast_test.jsonl
+    path: ../../../../datasets/coconot/contrast_test.jsonl
     offset: 0
     limit: 379
   truthfulqa:
     type: ood
-    path: ../../../datasets/truthfulqa/TruthfulQA.csv
+    path: ../../../../datasets/truthfulqa/TruthfulQA.csv
     offset: 0
     limit: 256
   popqa:
     type: ood
-    path: ../../../datasets/popqa/test.jsonl
+    path: ../../../../datasets/popqa/test.jsonl
     offset: 0
     limit: 256

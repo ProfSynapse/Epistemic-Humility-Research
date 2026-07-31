@@ -19,7 +19,25 @@ related:
 - '[[form-taxonomy-pattern-battery-underdetects-epistemic-marking]]'
 - '[[midband-write-corrupts-known-answers-more-than-it-produces-abstention]]'
 - '[[write-direction-naming-battery]]'
+- '[[caution-write-idk-jump-replicates-under-fresh-sampled-decode-seeds]]'
+- '[[idk-switch]]'
 relationships:
+- type: related_to
+  target: '[[caution-write-idk-jump-replicates-under-fresh-sampled-decode-seeds]]'
+  target_id: mechanism:caution-write-idk-jump-replicates-under-fresh-sampled-decode-seeds
+  confidence: high
+  evidence:
+  - experiments/idk-switch-naming-confirmatory/AMENDMENT.md#outcome (N2 PASS;
+    confirmatory fresh-seed sampled-decode replication of this mode-switch
+    finding, adding an endpoint-magnitude CI and a placebo-specificity leg)
+- type: related_to
+  target: '[[idk-switch]]'
+  target_id: term:idk-switch
+  confidence: high
+  evidence:
+  - experiments/idk-switch-naming-confirmatory/AMENDMENT.md#outcome (this
+    mechanism's mode switch is what earns the name IDK switch once it
+    replicates on fresh seeds)
 - type: supported_by
   target: '[[form-judge-axis-g-rescore]]'
   target_id: experiment:form-judge-axis-g-rescore

@@ -86,6 +86,39 @@ to parity.
   Docker Desktop over an npipe) and is not the home for this invariant; it
   carries a pointer back here instead of duplicating this section.
 
+### One socket, two Docker daemons: Docker Desktop must be OPEN
+
+`unix:///var/run/docker.sock` inside the WSL distro is backed by TWO
+different daemons depending on whether Docker Desktop is running. With
+Desktop open, the socket is served by the Desktop engine (`docker info`
+shows `Operating System: Docker Desktop`, an `nvidia` entry under
+`Runtimes`, and the image store that holds the program's validated
+`mechinterp-runner` builds). With Desktop closed, the same path silently
+falls back to the WSL-native `dockerd` (runc only, no nvidia runtime, a
+separate and unrelated image store). Nothing errors on the switch; commands
+just answer from a different daemon. This has bitten twice (kv-seam Phase A
+dispatch, 2026-07-29; idk-switch digest capture, 2026-07-31), so:
+
+1. **If GPU-in-container fails, the first hypothesis is that Docker Desktop
+   is not open.** The signature is `docker run --gpus all` failing with
+   `could not select device driver "" with capabilities: [[gpu]]`. Do NOT
+   work around it (no `nvidia-container-toolkit` install, no engine
+   switching, no image rebuilds): ask the user to open Docker Desktop, then
+   re-run the preflight below (PI directive, 2026-07-31).
+2. **Preflight before every local GPU verb AND before every digest
+   capture:** `export DOCKER_HOST=unix:///var/run/docker.sock`, then confirm
+   `docker info` shows `Operating System: Docker Desktop` and `nvidia`
+   under `Runtimes`. Only then trust `--gpus all` or any image query.
+3. **Digest-capture corollary:** `docker image inspect <tag>` answers from
+   whichever daemon currently owns the socket, so a
+   `runtime_image_digest` recorded without the preflight can silently pin
+   an image from the wrong store. Worked failure: the
+   idk-switch-naming-confirmatory sign captured its runtime digest from the
+   native store while Desktop was closed, pinning an unrecorded image
+   instead of the Phase A validated build; repaired by a recorded lead
+   repin. When a provenance digest check fails, ask "which daemon am I
+   talking to?" before assuming the image is wrong.
+
 Before any paid run, walk the wrapper-authoring checklist in the
 experiment-runner skill:
 

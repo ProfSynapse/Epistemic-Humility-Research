@@ -27,7 +27,7 @@
 
 model_tag: __FILL_MODEL_TAG__          # e.g. qwen3-4b-amendment-r-a0-merged
 model_name: __FILL_MERGED_16BIT_DIR__  # Windows host path to <run>/Qwen3-4B-bnb-4bit/merged-16bit
-gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: __FILL_RESULTS_DIR__      # e.g. results_amendment_r_response_confidence_selfaware_a0_full_4b
 
 prompt:
@@ -74,4 +74,4 @@ arms:
 eval_sets:
   selfaware:
     type: ood
-    path: ../../../datasets/selfaware/SelfAware.json
+    path: ../../../../datasets/selfaware/SelfAware.json

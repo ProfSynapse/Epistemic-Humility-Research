@@ -25,7 +25,29 @@ related:
 - '[[midband-write-on-knowns-is-difficulty-blind]]'
 - '[[midband-write-corrupts-known-answers-more-than-it-produces-abstention]]'
 - '[[known-unknown-direction]]'
+- '[[idk-switch-naming-confirmatory]]'
+- '[[idk-switch]]'
 relationships:
+- type: built_on_by
+  target: '[[idk-switch-naming-confirmatory]]'
+  target_id: experiment:idk-switch-naming-confirmatory
+  confidence: high
+  evidence:
+  - experiments/idk-switch-naming-confirmatory/AMENDMENT.md (Motivation and
+    posture; confirmatory fresh-seed sampled-decode replication regenerating
+    this experiment's registered P_CONFAB population at its frozen operating
+    point, run after form-judge-axis-g-rescore answered this experiment's own
+    instrument-void axis-G question; this experiment's own outcome is
+    unchanged and not reopened)
+- type: related_to
+  target: '[[idk-switch]]'
+  target_id: term:idk-switch
+  confidence: medium
+  evidence:
+  - experiments/idk-switch-naming-confirmatory/AMENDMENT.md (Motivation and
+    posture; the PI's working label for this experiment's mid-band c_hat
+    write, promoted to an earned name only by the later confirmatory
+    replication, not by this experiment's own falsified outcome)
 - type: builds_on
   target: '[[qwen35-4b-midband-doubt-snap]]'
   target_id: experiment:qwen35-4b-midband-doubt-snap

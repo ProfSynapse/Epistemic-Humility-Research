@@ -9,8 +9,8 @@ ground rules that keep the research auditable.
 
 ### Evidence corrections (highest value)
 
-The meta-analysis lives or dies on the accuracy of
-`meta-analysis/evidence/effects.csv`. Every row carries a source, exact
+The evidence synthesis lives or dies on the accuracy of
+`papers/paper-1-taxonomy-framework/evidence/effects.csv`. Every row carries a source, exact
 metric, model, method, URL, and a `verified` flag. If you find a row that
 misstates its primary source:
 
@@ -19,8 +19,9 @@ misstates its primary source:
 3. Say what the row currently claims and what it should say.
 
 Rows that fail verification get corrected or dropped from pooled
-statistics; the raw reports under `meta-analysis/evidence/raw-reports/`
-keep the audit trail either way.
+statistics; the raw reports under
+`papers/paper-1-taxonomy-framework/evidence/raw-reports/` keep the audit
+trail either way.
 
 ### Missed studies
 
@@ -28,7 +29,8 @@ If you know a paper on calibration, abstention/IDK training,
 fine-tuning-induced hallucination, sycophancy under preference training, or
 knowledge-boundary self-awareness that the search missed, open an issue
 with the citation. Inclusion criteria are in the paper's methods section
-and the search trail is in `meta-analysis/evidence/prisma-flow.md`. Note
+and the search trail is in
+`papers/paper-1-taxonomy-framework/evidence/prisma-flow.md`. Note
 that admission of new studies into the corpus is versioned (the corpus is
 frozen per paper revision), so a valid candidate may be queued for the next
 revision rather than merged immediately.
