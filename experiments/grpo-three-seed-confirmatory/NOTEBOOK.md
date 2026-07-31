@@ -6,6 +6,36 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-31 — LAUNCH: seed-2 serial chain begins (signed block, user-approved)
+
+Launch record written BEFORE any launch verb, per the launch-order rule.
+
+Authority: amendment signed 2026-07-31 (`bin/exp sign`, merged to main in PR
+#379); user approved the direction ("worth finishing this off so we can make
+this paper neat and symmetrical"), scope ("Full symmetry"), and signing ("Sign
+as drafted"). GPU freed 2026-07-31 ~22:54 UTC when the KTO seed-3 eval
+container exited 0.
+
+What launches now: the seed-2 serial chain in `cell.yaml` `launch_order`
+(clean_sft -> clean_sft_dpo -> clean_sft_kto -> clean_sft_grpo_v2 -> four
+stage-3 stacks), then the identical seed-3 chain. Every training/eval verb runs
+inside the pinned container lane: `unsloth/unsloth:latest`, digest
+`sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`
+(re-verified 2026-07-31: Docker Hub `latest` last pushed 2026-05-31, byte-
+identical to the June seed-1 runtime), launched `--user root` from the
+canonical checkout.
+
+G0 stop-before-outcome discipline: dataset audit already re-verified against
+the frozen Amendment E §3.3 numbers on 2026-07-31 (byte-identical deterministic
+rebuild, all six numbers exact); merged-source check + 192-row bounded smoke
+after every merge; any G0 failure is a hard stop and a report, never a retune.
+
+Execution is delegated to a background harness agent under a report-only
+contract: it launches, watches, records each step here, and adjudicates
+NOTHING. G1/G2 adjudication is lead-only after both seeds' terminal evals
+exist. Budget guardrails from the signed amendment: pause and report if the
+seed-2 block exceeds ~42 h or the total exceeds ~83 h.
+
 ### 2026-07-31 — draft scaffolded, gates proposed, NOT signed
 
 Drafting pass only. Nothing signed, nothing committed, nothing launched.
