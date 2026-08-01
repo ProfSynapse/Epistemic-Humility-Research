@@ -36,11 +36,53 @@
     "--yes"
   ],
   "outcome": {
-    "status": "launched",
+    "status": "completed",
     "job_handle": null,
-    "adapter_path": null,
-    "metrics_path": null,
-    "verified": false
+    "completed_at": "2026-06-16T00:41:39Z",
+    "adapter_path": "synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed2/20260615_142046_logging_patch/final_model",
+    "metrics_path": "synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed2/20260615_142046_logging_patch/logs/training_20260615_182318.jsonl",
+    "artifact_root": "synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed2/20260615_142046_logging_patch",
+    "verified": true,
+    "path_note": "repo-relative paths from the canonical checkout; the pre-existing fields in this record carry pre-archive-move F:\\ absolute paths",
+    "training_summary": {
+      "final_step": 3599,
+      "total_steps": 3599,
+      "total_epochs": 1.0,
+      "final_loss": 0.298560797522286,
+      "train_runtime_seconds": 22532.0,
+      "train_end_event_runtime_seconds": 22528.359,
+      "train_end_event_at": "2026-06-16T00:41:38Z",
+      "peak_gpu_memory_reserved_gb": 4.393,
+      "oom_risk_level": "low",
+      "gpu_name": "NVIDIA GeForce RTX 3090",
+      "adapter_safetensors_bytes": 264308896,
+      "adapter_written_at": "2026-06-16T00:41:39Z",
+      "capacity_features": "synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed2/20260615_142046_logging_patch/capacity_features.json",
+      "training_lineage": "synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed2/20260615_142046_logging_patch/training_lineage.json"
+    },
+    "record_correction": "2026-08-01: outcome block corrected from stale 'launched/unverified' to completed. Training finished 2026-06 and the full SelfAware eval was scored 2026-06-16, but this record was never updated. Corrected from on-disk artifacts only -- training facts from training_lineage.json (runtime.status/finished_at, results.*) cross-checked against the trainer log train_end event and the final_model adapter mtime/size; eval facts from the arm's metrics.json under the results tree named by the eval config's results_dir. Repaired as part of the paper-2 adapter public-release gate.",
+    "eval_summary": {
+      "status": "completed",
+      "completed_at": "2026-06-16T13:47:48Z",
+      "config": ".tmp/eval_selfaware_full_seed2_all_arms_4b.yaml",
+      "results_dir": "archive/experiment/phase1-data/eval/results_selfaware_full_seed2_all_arms_4b_20260615_2148",
+      "metrics_path": "archive/experiment/phase1-data/eval/results_selfaware_full_seed2_all_arms_4b_20260615_2148/kto_seed2__selfaware/metrics.json",
+      "config_sha": "336f99d85d5da159",
+      "eval_arm": "kto_seed2",
+      "path_note": "repo-relative paths from the canonical checkout. Eval outputs now live under archive/experiment/phase1-data/eval/ per the 2026-07-12 phase1-outputs migration (docs/migrations/phase1-outputs-migration-20260712.md); the paper analysis CSV papers/paper-2-training-regimen/analysis/selfaware_seed_metrics.csv still cites the pre-migration archive/experiment/phase1/eval/ path for the same artifacts. The eval config is the disposable .tmp/ config used for this local run and is gitignored, as is the results tree.",
+      "selfaware": {
+        "n": 3369,
+        "n_unknown_labeled": 1032,
+        "n_known_labeled": 2337,
+        "refusal_recall_pct": 0.0,
+        "answer_on_unknown_pct": 100.0,
+        "over_refusal_pct": 0.17,
+        "refusal_rate_pct": 0.12,
+        "correct_on_known_pct": 26.62,
+        "correct_on_unknown_pct": 0.0,
+        "truthful_pct": 18.43
+      }
+    }
   },
   "materialized_recipe": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\kto__4b__headline__seed2.yaml"
 }

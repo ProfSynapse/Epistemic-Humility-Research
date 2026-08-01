@@ -629,6 +629,22 @@ on the contract. GRPO conclusions are conditional on the reward family
 tested (appropriateness-dominant with confidence shaping); a reward designed
 around a different decomposition could behave differently.
 
+The three cold-start preference seeds were not all trained on the same file. A
+mid-study fix to the dataset builder made the held-out dev split group by
+normalized question text, so that duplicate source rows carrying identical
+prompts could no longer land on opposite sides of the split. The fix also
+resampled where the train and dev boundary falls. Seed 1 of both preference arms
+predates it; seeds 2 and 3 postdate it and are identical to each other. The
+question budget, the known set, and the unknown set are the same in both builds,
+so no question was added or removed, but 1,460 of the 14,395 training questions,
+10.1% of them, swapped sides. The consequence is bounded and worth stating: the
+three-seed intervals reported for cold-start DPO and KTO span one pre-fix run and
+two post-fix runs, so part of their spread may be the dataset version rather than
+training-seed variation. The three SFT seeds are unaffected, all three having
+trained on the corrected build. A rerun of the two affected seed-1 runs on the
+corrected build is pre-registered and queued; until it lands, those two intervals
+are the widest-scoped numbers in the paper.
+
 Model-specific known/unknown labels are noisy (the synthesis measured 42.9
 to 51.3% of "unknown" answers being correct in released artifacts of the
 lineage we follow), which flattens all recall/over-refusal numbers toward
@@ -776,6 +792,60 @@ with the internal label it carries in the repository.
   and [per-run records](https://github.com/ProfSynapse/Epistemic-Humility-Research/tree/main/archive/experiment/phase1/run_records):
   the objective configurations, seeds, and run provenance for every arm in
   Section 3.3.
+- [The release record](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/docs/public-artifacts.md)
+  and [the checkpoint staging registry](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/docs/checkpoint-staging.md):
+  which checkpoints are public, at which revision, and the mapping from each
+  published repository back to the local run directory that produced it. The
+  adapter weights behind Sections 4.1, 4.2, and 4.3 are released on the Hugging
+  Face Hub at the revisions listed below. Pin the revision, because a
+  repository's head commit also carries its model card, and each card states the
+  same status label the governance notes below assign.
+- Cold-start adapters, the pre-registered headline surface of Section 4.1.
+  Internal label: headline matrix.
+  - [`eh-qwen3-4b-headline-sft-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-sft-seed1-lora) at `535dfabec0365b80663df618880ac2ad0976eb51`
+  - [`eh-qwen3-4b-headline-sft-seed2-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-sft-seed2-lora) at `23ae0043bd794be8ede1122effd9ccfecb9d85aa`
+  - [`eh-qwen3-4b-headline-sft-seed3-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-sft-seed3-lora) at `b3efd6e7aa133c8ad17d35ec569335b6a858d423`
+  - [`eh-qwen3-4b-headline-dpo-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-dpo-seed1-lora) at `9d503e1937d361c97abae6480ecafaac19a0668f`
+  - [`eh-qwen3-4b-headline-dpo-seed2-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-dpo-seed2-lora) at `21326cbcd8a975ca3b89f8552f053392281af23e`
+  - [`eh-qwen3-4b-headline-dpo-seed3-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-dpo-seed3-lora) at `dc95b05729a9b45e9335d3ac5ed84cc55f84ac81`
+  - [`eh-qwen3-4b-headline-kto-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-kto-seed1-lora) at `ebfa75363afe9a92c97b7032acd608359b2026f6`
+  - [`eh-qwen3-4b-headline-kto-seed2-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-kto-seed2-lora) at `5153f05b96f70314dab796d79b006ee5236680db`
+  - [`eh-qwen3-4b-headline-kto-seed3-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-kto-seed3-lora) at `ce68f04723cd9cad30ff58d8037a8629a6adb486`
+- SFT-warmed sequential adapters, the operating points of Section 4.2. Each one
+  trains on a 16-bit merge of its own seed's cold-start SFT adapter above. That
+  merge is not itself published; each card gives the rebuild recipe. Internal
+  label: Amendment A.
+  - [`eh-qwen3-4b-seq-sft-dpo-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-seq-sft-dpo-seed1-lora) at `45138e73be9d28fcf9537a9d2de49d90ebf8601b`
+  - [`eh-qwen3-4b-seq-sft-dpo-seed2-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-seq-sft-dpo-seed2-lora) at `62c2cf65d93509ee86bdedb257512f9055a4ff1a`
+  - [`eh-qwen3-4b-seq-sft-dpo-seed3-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-seq-sft-dpo-seed3-lora) at `9cdd0d292c1b0309c3ced096c057697c8fc969d9`
+  - [`eh-qwen3-4b-seq-sft-kto-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-seq-sft-kto-seed1-lora) at `2ccb2ec3883bf004feb545fb555ea3846e8c39fb`
+  - [`eh-qwen3-4b-seq-sft-kto-seed2-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-seq-sft-kto-seed2-lora) at `c9b38352ba852f427e0c3ed802d038f94ebf9997`
+  - [`eh-qwen3-4b-seq-sft-kto-seed3-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-seq-sft-kto-seed3-lora) at `cb6c246e0e566908f7a4e4844a892d811667cf2d`
+- Response-confidence checkpoints, the reinforcement-learning arm of Section 4.3
+  and the emitted-confidence figures of Section 5. The adapter loads on the
+  merged base below, not on the foundation model. Internal label: Amendment E
+  clean mainline.
+  - [`eh-qwen3-4b-clean-sft-seed1-merged-16bit`](https://huggingface.co/professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit) at `ac361232c001af0ed5b0386b06dafc35d5cd31ea`
+  - [`eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora) at `8914081dfcec4f1f025f2dbe4195d4f7aa8d210e`
+
+Dataset-version note for the cold-start preference seeds. The dev-split fix
+described in Section 7 is commit
+[`3dc58e9b`](https://github.com/ProfSynapse/Epistemic-Humility-Research/commit/3dc58e9bfc5bbe1ade318f698936236edcd2112e),
+2026-06-14, which made the builder group the dev split by
+`norm_question(question)` and regenerated the frozen question split. The audit
+that prompted it found 188 normalized prompt texts on both the train and the dev
+side under different source row keys, all carrying the same known or unknown
+label on both sides; the re-audit after the rebuild found zero. Comparing
+`questions_frozen.json` across that commit, the budget of 15,995 distinct
+questions and the known and unknown sets are unchanged, 1,460 of 14,395 train
+questions were replaced, and the dev split retains 140 of its 1,600. The
+post-fix training files are `sft_train.jsonl` at `714577a8ce6d32ac...`,
+`dpo_train.jsonl` at `39e2ba8c9bc1b41e...`, and `kto_congruence_train.jsonl` at
+`9cb291ee45c8dd58...`; the run record for each arm records the SHA its run
+consumed, and the two preference seed-1 runs consumed the pre-fix builds
+`22669d2c8c0b19df...` and `4d79fa505f5ae424...` respectively. All three SFT seeds
+consumed the post-fix build. The rerun of the two affected seed-1 runs is
+registered separately.
 
 Governance notes: the three-seed cold-start block is the pre-registered
 headline surface (PROTOCOL v0.3, signed 2026-06-10); Amendments A/B are signed
