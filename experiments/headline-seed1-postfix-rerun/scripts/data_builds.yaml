@@ -1,0 +1,55 @@
+# Dataset-build SHA table for audit_data_provenance.py.
+#
+# One entry per known training-file build sha256. `build` names the build,
+# `blocking: true` marks a build whose consumption is a provenance defect worth
+# failing an audit over. Extend this table rather than editing the script.
+#
+# Every sha below was byte-verified against the staged files under
+# synaptic-tuner/scratch/eh_staging/ on 2026-08-01.
+#
+# The dividing line is commit 3dc58e9bfc5bbe1ade318f698936236edcd2112e
+# ("Fix phase1 dev split grouping", 2026-06-14), which regrouped the train/dev
+# split by normalized question text.
+
+fix_commit: 3dc58e9bfc5bbe1ade318f698936236edcd2112e
+audited_on: '2026-08-01'
+
+builds:
+
+  22669d2c8c0b19df5fd8b76a86bf7fb8d6403770c8e11759562be13f3bc734a8:
+    build: phase1-dpo-pre-dev-split-fix
+    arm: dpo
+    blocking: true
+    note: >-
+      DPO train build predating the dev-split grouping fix; consumed only by
+      dpo__4b__headline__seed1, which is the cell headline-seed1-postfix-rerun
+      exists to rerun.
+
+  39e2ba8c9bc1b41ef1b7e797f80637c276ba150c97055962bbc4e2b550bd17b5:
+    build: phase1-dpo-post-dev-split-fix
+    arm: dpo
+    blocking: false
+    note: Corrected DPO train build; consumed by headline seeds 2 and 3.
+
+  4d79fa505f5ae424e1fbd92f9fa5092b1006fc72858cca98579aa33e790f766e:
+    build: phase1-kto-pre-dev-split-fix
+    arm: kto
+    blocking: true
+    note: >-
+      KTO congruence train build predating the dev-split grouping fix; consumed
+      only by kto__4b__headline__seed1.
+
+  9cb291ee45c8dd5893b150abe033386127d0eedce9fa16faa2309e31a1a70e15:
+    build: phase1-kto-post-dev-split-fix
+    arm: kto
+    blocking: false
+    note: Corrected KTO congruence train build; consumed by headline seeds 2 and 3.
+
+  714577a8ce6d32ace422df519690b0a96adde3985f36cab0a24404e0a92d558b:
+    build: phase1-sft-post-dev-split-fix
+    arm: sft
+    blocking: false
+    note: >-
+      SFT train build shared by all three headline seeds. SFT seed 1 was launched
+      2026-06-14T09:29:14Z, after the fix, so the SFT arm carries no
+      dataset-version confound.

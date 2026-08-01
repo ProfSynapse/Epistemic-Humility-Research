@@ -1,0 +1,50 @@
+slug: headline-seed1-postfix-rerun
+title: Headline DPO/KTO seed-1 rerun on post-fix dataset build
+type: training-run
+status: draft
+registered: true
+created_at: '2026-08-01T09:06:11Z'
+question: Does the locked headline seed-1 result for cold-start DPO and cold-start
+  KTO at 4B replicate when seed 1 is trained on the corrected dataset build that seeds
+  2 and 3 already consumed, so that the three-seed headline interval for these two
+  arms no longer mixes two dataset versions?
+# prediction and falsifier are INTENTIONALLY EMPTY. They are filled by the PI and
+# the lead at sign time, from AMENDMENT.md sections 7 and 8. `bin/exp sign` refuses
+# to sign while either is empty, which is the enforcement this draft relies on.
+prediction: ''
+falsifier: ''
+checkpoint:
+  repo: unsloth/Qwen3-4B-bnb-4bit
+  revision: 4-bit foundation model; both cells train cold-start from it, exactly as
+    the original seed-1 headline cells did
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - scripts/audit_data_provenance.py
+  - scripts/data_builds.yaml
+  pins: {}
+  persistence:
+    scripts/audit_data_provenance.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.2
+    scripts/data_builds.yaml:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.2
+inputs:
+- archive/docs/protocols/phase1/PROTOCOL.md
+- archive/experiment/phase1/run_records/dpo__4b__headline__seed1.json
+- archive/experiment/phase1/run_records/kto__4b__headline__seed1.json
+- archive/experiment/phase1/run_records/dpo__4b__headline__seed2.json
+- archive/experiment/phase1/run_records/dpo__4b__headline__seed3.json
+- archive/experiment/phase1/run_records/kto__4b__headline__seed2.json
+- archive/experiment/phase1/run_records/kto__4b__headline__seed3.json
+- archive/experiment/phase1/run_records/materialized_recipes/dpo__4b__headline__seed1.yaml
+- archive/experiment/phase1/run_records/materialized_recipes/kto__4b__headline__seed1.yaml
+- archive/experiment/phase1/data/build_datasets.py
+- archive/experiment/phase1/eval/run_eval.py
+- archive/experiment/phase1/eval/config/eval_selfaware_full_local_4b.yaml
+- papers/paper-2-training-regimen/analysis/selfaware_seed_metrics.csv
+verdict: ''
+kg: []

@@ -1,0 +1,214 @@
+# Headline DPO/KTO seed-1 rerun on the post-fix dataset build - two-cell matrix.
+#
+# DRAFT until `bin/exp sign headline-seed1-postfix-rerun`. Nothing here
+# authorizes a launch. The prose design, the frozen-input list, and the
+# relationship to the locked PROTOCOL v0.3 headline matrix live in AMENDMENT.md;
+# the pass/fail thresholds live in gates.yaml. This file is the machine-readable
+# matrix only.
+#
+# EVERY hyperparameter below is CARRIED from the ORIGINAL seed-1 materialized
+# recipes. Nothing is chosen here. Provenance per field is in AMENDMENT.md
+# "Frozen inputs".
+#   DPO: archive/experiment/phase1/run_records/materialized_recipes/dpo__4b__headline__seed1.yaml
+#   KTO: archive/experiment/phase1/run_records/materialized_recipes/kto__4b__headline__seed1.yaml
+#
+# The ONE intended difference from the originals is the training data file: each
+# cell consumes the POST-FIX build (the one seeds 2 and 3 consumed) instead of
+# the pre-fix build. See `data_change` below.
+
+lane: local-3090-docker-serial
+matrix_version: phase1-v0.3
+cell_type: headline-replacement-candidate   # NOT a locked-matrix cell; see AMENDMENT.md section 3
+model_family: qwen3-4b
+foundation_model: unsloth/Qwen3-4B-bnb-4bit
+eval_population: selfaware-full-3369
+
+# Container. The originals recorded only the MUTABLE tag `unsloth/unsloth:latest`
+# in their recipes; the digest below is the one recorded for the 2026-06-13 local
+# pull in .skills/experiment-runner/reference/local-runtime.md:82-86, which is the
+# pull that served the KTO seed-1 original. It is pinned here so the rerun is
+# reproducible in a way the originals were not. See AMENDMENT.md "Open questions"
+# item 2: whether to pin this digest or re-pull latest is a sign-time decision.
+launch:
+  image: unsloth/unsloth:latest
+  image_digest: sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772
+  provider: local_docker
+  pull_policy: missing
+  transfer: auto
+  workdir: /workspace/repo
+  setup_pip:
+    - trl==0.22.2
+    - git+https://github.com/unslothai/unsloth_zoo.git
+    - git+https://github.com/unslothai/unsloth.git
+
+# The single intended change relative to the originals.
+data_change:
+  rationale: >-
+    The original seed-1 DPO and KTO cells consumed a dataset build predating the
+    dev-split grouping fix (commit 3dc58e9b, 2026-06-14). Seeds 2 and 3 consumed
+    the corrected build. This rerun puts seed 1 on the SAME build as seeds 2 and
+    3 so the three-seed interval is not confounded by dataset version.
+  fix_commit: 3dc58e9bfc5bbe1ade318f698936236edcd2112e
+  # Measured, not asserted: both builds draw from a byte-identical row pool; the
+  # fix reassigned the train/dev boundary only. Verified 2026-08-01 by set
+  # comparison of the staged files (AMENDMENT.md "Frozen inputs" item 4).
+  measured_churn:
+    dpo:
+      train_rows_pre: 14363
+      train_rows_post: 14357
+      rows_moved_train_to_dev: 1457
+      rows_moved_dev_to_train: 1460
+      pre_fix_train_rows_absent_from_post_fix_pct: 10.14
+      union_train_dev_pool_identical: true
+    kto:
+      train_rows_pre: 27942
+      train_rows_post: 27845
+      rows_moved_train_to_dev: 2836
+      rows_moved_dev_to_train: 2915
+      pre_fix_train_rows_absent_from_post_fix_pct: 10.15
+      union_train_dev_pool_identical: true
+
+# Two cells. Nothing else is rerun. SFT headline cells are NOT in scope: all
+# three SFT seeds already share data sha 714577a8ce6d32ac... (verified), so they
+# carry no dataset-version confound.
+arms:
+  - id: dpo__4b__headline__seed1__postfix
+    replacement_candidate_for: dpo__4b__headline__seed1
+    method: dpo
+    trainer: Trainers/dpo/train_dpo.py
+    source_recipe: experiment/phase1/recipes/eh_phase1_qwen3_4b_dpo.yaml
+    original_materialized_recipe_sha: c301df87c81dcbc41ce0dcf87332cbe907610ebf36bcf2eab6570466df659f21
+    model:
+      name: unsloth/Qwen3-4B-bnb-4bit
+      max_seq_length: 2048
+      load_in_4bit: true
+    training:
+      batch_size: 2
+      gradient_accumulation: 4
+      learning_rate: 5.0e-06
+      num_epochs: 1
+      seed: 1                 # TRAINING seed stays 1; only the data build changes
+      # beta is NOT written in the original materialized recipe; it comes from the
+      # trainer's shipped default, which PROTOCOL v0.3 section 3.1a records as 0.1
+      # (loss_type sigmoid) for DPO. Recorded here as an explicit expectation so a
+      # trainer-default drift cannot silently change it. See AMENDMENT.md
+      # "Open questions" item 3.
+      beta_expected: 0.1
+      beta_source: trainer-shipped-default (PROTOCOL v0.3 section 3.1a table)
+    lora:
+      r: 32
+      alpha: 64
+      dropout: 0.05
+      target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    dataset:
+      # Content contract is the SHA, not the path. The file is already on disk;
+      # staging copies it to this cell's own staging dir before launch.
+      train_sha256: 39e2ba8c9bc1b41ef1b7e797f80637c276ba150c97055962bbc4e2b550bd17b5
+      dev_sha256: 24a8a89281395e2449be158660b70c17e6d3b6c9c313fc2cbf99dbea9e3917da
+      train_rows: 14395        # physical lines; 14357 distinct (see measured_churn)
+      dev_rows: 1600           # physical lines; 1596 distinct
+      source_on_disk: synaptic-tuner/scratch/eh_staging/dpo__4b__headline__seed2/dpo_train.jsonl
+      staged_target: scratch/eh_staging/dpo__4b__headline__seed1_postfix/dpo_train.jsonl
+      superseded_pre_fix_sha256: 22669d2c8c0b19df5fd8b76a86bf7fb8d6403770c8e11759562be13f3bc734a8
+    artifacts:
+      output_root: toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed1_postfix
+    budget:
+      # From the ORIGINAL seed-1 run record wall clock: launched
+      # 2026-06-12T01:14:29Z, completed 2026-06-12T02:25:45Z = 1h11m16s.
+      expected_train_wall_clock_h: 1.19
+      evidence: archive/experiment/phase1/run_records/dpo__4b__headline__seed1.json
+
+  - id: kto__4b__headline__seed1__postfix
+    replacement_candidate_for: kto__4b__headline__seed1
+    method: kto
+    trainer: Trainers/kto/train_kto.py
+    source_recipe: experiment/phase1/recipes/eh_phase1_qwen3_4b_kto_congruence.yaml
+    original_materialized_recipe_sha: c1b699af1b8d576bae52452f6a855ff0fbf0ff42173825894231db59430c4b66
+    model:
+      name: unsloth/Qwen3-4B-bnb-4bit
+      max_seq_length: 2048
+      load_in_4bit: true
+    training:
+      batch_size: 2
+      gradient_accumulation: 4
+      learning_rate: 1.0e-06
+      num_epochs: 1
+      seed: 1
+      beta_expected: 0.1
+      beta_source: trainer-shipped-default (PROTOCOL v0.3 section 3.1a table)
+    lora:
+      r: 32
+      alpha: 64
+      dropout: 0.05
+      target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    dataset:
+      train_sha256: 9cb291ee45c8dd5893b150abe033386127d0eedce9fa16faa2309e31a1a70e15
+      dev_sha256: 7965ee94fb6d2838753d6f278045eed1be871949c3e8cdf9a195b1fcd9c73bb2
+      train_rows: 28790        # physical lines; 27845 distinct (see measured_churn)
+      dev_rows: 3200           # physical lines; 3101 distinct
+      source_on_disk: synaptic-tuner/scratch/eh_staging/kto__4b__headline__seed2/kto_congruence_train.jsonl
+      staged_target: scratch/eh_staging/kto__4b__headline__seed1_postfix/kto_congruence_train.jsonl
+      superseded_pre_fix_sha256: 4d79fa505f5ae424e1fbd92f9fa5092b1006fc72858cca98579aa33e790f766e
+    artifacts:
+      output_root: toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1_postfix
+    budget:
+      # From the ORIGINAL seed-1 run record: launched 2026-06-13T19:13:37Z,
+      # completed 2026-06-14T01:01:18Z = 5h47m41s wall; the record's own
+      # verification_summary reports 5h43m4s for 3599/3599 steps.
+      expected_train_wall_clock_h: 5.80
+      evidence: archive/experiment/phase1/run_records/kto__4b__headline__seed1.json
+
+# Eval. Same shape as the eval that produced the locked seed-1/2/3 headline rows,
+# so the rerun numbers land on the same measurement surface as the cohort they
+# are compared against.
+eval:
+  entrypoint: archive/experiment/phase1/eval/run_eval.py
+  flags: [--live-vllm]
+  # The eval that produced the committed headline metrics ran from a DISPOSABLE
+  # config under .tmp/ (gitignored), not from a committed config. See
+  # AMENDMENT.md "Open questions" item 1: this rerun should write its eval config
+  # into the experiment directory so the measurement surface is itself pinned.
+  pattern_reference: .tmp/eval_selfaware_full_seed1_all_arms_4b.yaml
+  committed_analogue: archive/experiment/phase1/eval/config/eval_selfaware_full_local_4b.yaml
+  config_target: experiments/headline-seed1-postfix-rerun/eval_selfaware_seed1_postfix_4b.yaml
+  generation:
+    enable_thinking: false
+    seed: 20240601
+    temperature: 0.0
+    max_new_tokens: 64
+    n_samples: 1
+  confidence:
+    signal: self_consistency
+    n_samples: 1
+  bootstrap:
+    n_resamples: 200
+    level: 0.95
+    seed: 12345
+  vllm:
+    dtype: auto
+    gpu_memory_utilization: 0.35
+    max_lora_rank: 32
+    max_model_len: 2048
+  eval_sets:
+    selfaware:
+      type: ood
+      path: datasets/selfaware/SelfAware.json
+      rows_expected: 3369
+      n_unknown: 1032
+      n_known: 2337
+  gold_path: datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+  budget:
+    # NOT doc-verified. The eval queue log
+    # (.tmp/full_selfaware_seed_eval_queue_20260615_2148.log) records RUN_BEGIN
+    # but no RUN_END, so no measured per-arm eval wall clock exists in the
+    # record. Carried as the orchestrator's estimate pending sign-time input.
+    estimated_wall_clock_min_per_arm: 40
+    evidence: orchestrator-estimate-unverified
+
+# Serial execution on the single RTX 3090, after the grpo-three-seed-confirmatory
+# chain releases the GPU. No launch is authorized by this draft.
+schedule:
+  order: [dpo__4b__headline__seed1__postfix, kto__4b__headline__seed1__postfix]
+  blocked_on: grpo-three-seed-confirmatory
+  total_estimated_h: 8.3       # 1.19 + 5.80 train + about 1.33 eval
+  launch_authorized: false
