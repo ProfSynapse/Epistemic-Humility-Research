@@ -25,14 +25,75 @@ Use lowercase, queryable names. Record the exact HF revision after every upload.
 | Doubt-snap cross-family confirmatory exhaust | [`professorsynapse/eh-doubt-snap-cross-family-confirmatory`](https://huggingface.co/datasets/professorsynapse/eh-doubt-snap-cross-family-confirmatory) | published (user-approved 2026-07-14) | `experiments/doubt-snap-cross-family-confirmatory/analysis-committed/` via `scratch/exhaust-backfill-v2/doubt-snap-cross-family-confirmatory/` (copy-everything builder, PR #292) | 36 payload files / ~3.8 MB across 4 family dirs (qwen35_4b, qwen35_9b, mistral7b_instruct_v03, llama32_3b_instruct): direction vectors (u_d, c_hat, random_direction), dose/gate fits, split/build manifests, modal_status, prep summaries. Aggregate/ID-manifest shape only: no question text, generation text, or hidden states. Supersedes the incomplete v1 card (missing modal_status.json per cell). |
 | Llama wide-retest aggregate exhaust | [`professorsynapse/eh-llama-atlas-gated-wide-instrument-retest`](https://huggingface.co/datasets/professorsynapse/eh-llama-atlas-gated-wide-instrument-retest) | published (user-approved 2026-07-19) | `f53beaccc8fc0719130b2510af374b7282977b92` | `experiments/llama-atlas-gated-wide-instrument-retest/analysis-committed/` (repo commit `86f33204`) | 15 files / ~1.4 MB copy-everything mirror: pre/post-adjudication wide tables, family + dose-ladder reports, FIT build manifests, adjudication pool/graded/applied manifests. No row text; zero exclusions. |
 | Llama wide-retest row-level exhaust | [`professorsynapse/eh-llama-atlas-gated-wide-instrument-retest-rows`](https://huggingface.co/datasets/professorsynapse/eh-llama-atlas-gated-wide-instrument-retest-rows) | published (user-approved 2026-07-19) | `2b46d055c71378cde8dd566e6a6f4bf5c1deff33` | staged from `/home/profsynapse/code/ehr-exhaust/llama-atlas-gated-wide-instrument-retest/runlog/` (30 dosed RunLogs + 8 graded adjudication shards) | 23,510 dosed rows / ~31 MB, single cell `llama` (unsloth/Llama-3.2-3B-Instruct @ `006f5dcd`): 17,294 KUQ rows full text (MIT), 6,216 TriviaQA+PopQA rows text-free per license gate, zero excluded; narrow + detector_v2 grades plus `is_abstention_adjudicated` joined from the blinded lane (19,230 rows). No opaque_ids, no baseline rows (baseline aggregates live in the aggregate repo). |
-| Deployed clean-SFT to GRPO-v2 adapter (seed 1) | `professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora` | staged private (2026-07-05) | `8914081dfcec4f1f025f2dbe4195d4f7aa8d210e` | `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model` | LoRA adapter staged private so cloud cells can reference it by repo + revision. Uploaded excluding the auto-generated `README.md` (its `base_model:` YAML carries a local path and fails Hub validation) and `training_args.bin`; consumers pass the base model explicitly. Not a public release. |
+| Deployed clean-SFT to GRPO-v2 adapter (seed 1) | [`professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora) | published (user-approved 2026-08-01) | `8914081dfcec4f1f025f2dbe4195d4f7aa8d210e` (weights) | `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model` | Released as part of the Paper 2 adapter set; see that section below for the card and the post-upload revision. Staged private 2026-07-05 so cloud cells could reference it by repo + revision. |
+| Paper 2 adapter set (17 Qwen3-4B checkpoints) | see the per-repo table below | published (user-approved 2026-08-01) | per repo, in the section below | `archive/experiment/phase1/run_records/` and `docs/checkpoint-staging.md` | 9 pre-registered headline adapters, 6 sequential-extension adapters, the deployed GRPO-v2 adapter, and the merged 16-bit base it loads on. Cards live in `docs/hf-cards/<repo>/README.md`. |
+
+## Paper 2 Adapter Set (public release 2026-08-01)
+
+The 17 Qwen3-4B checkpoints behind the training-regimen paper, released from
+private staging on 2026-08-01 under a single user approval. Base model for every
+adapter in the set is `unsloth/Qwen3-4B-bnb-4bit` (Apache-2.0); the adapters
+carry weights only (no tokenizer, no `training_args.bin`).
+
+Each repo's card is generated in this repository at
+`docs/hf-cards/<repo>/README.md` and uploaded as the repo's `README.md` by
+`scripts/release/flip_paper2_adapter_set_public.py`, which then flips visibility.
+
+Two revisions matter per repo and they are not the same commit. The **weights
+revision** is the staged upload recorded in
+[docs/checkpoint-staging.md](checkpoint-staging.md); it is what the card
+describes and what a consumer should pin. The **head revision** is the commit
+created by the card upload, recorded after the flip script runs.
+
+| HF repo | Weights revision | Head revision (after card upload) | Backs | Status label on card |
+|---|---|---|---|---|
+| [`eh-qwen3-4b-headline-sft-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-sft-seed1-lora) | `535dfabec0365b80663df618880ac2ad0976eb51` | TBD | PROTOCOL v0.3 headline SFT seed 1 | pre-registered headline result |
+| [`eh-qwen3-4b-headline-sft-seed2-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-sft-seed2-lora) | `23ae0043bd794be8ede1122effd9ccfecb9d85aa` | TBD | PROTOCOL v0.3 headline SFT seed 2 | pre-registered headline result |
+| [`eh-qwen3-4b-headline-sft-seed3-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-sft-seed3-lora) | `b3efd6e7aa133c8ad17d35ec569335b6a858d423` | TBD | PROTOCOL v0.3 headline SFT seed 3 | pre-registered headline result |
+| [`eh-qwen3-4b-headline-dpo-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-dpo-seed1-lora) | `9d503e1937d361c97abae6480ecafaac19a0668f` | TBD | PROTOCOL v0.3 headline DPO seed 1 | pre-registered headline result |
+| [`eh-qwen3-4b-headline-dpo-seed2-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-dpo-seed2-lora) | `21326cbcd8a975ca3b89f8552f053392281af23e` | TBD | PROTOCOL v0.3 headline DPO seed 2 | pre-registered headline result |
+| [`eh-qwen3-4b-headline-dpo-seed3-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-dpo-seed3-lora) | `dc95b05729a9b45e9335d3ac5ed84cc55f84ac81` | TBD | PROTOCOL v0.3 headline DPO seed 3 | pre-registered headline result |
+| [`eh-qwen3-4b-headline-kto-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-kto-seed1-lora) | `ebfa75363afe9a92c97b7032acd608359b2026f6` | TBD | PROTOCOL v0.3 headline KTO seed 1 | pre-registered headline result |
+| [`eh-qwen3-4b-headline-kto-seed2-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-kto-seed2-lora) | `5153f05b96f70314dab796d79b006ee5236680db` | TBD | PROTOCOL v0.3 headline KTO seed 2 | pre-registered headline result |
+| [`eh-qwen3-4b-headline-kto-seed3-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-kto-seed3-lora) | `ce68f04723cd9cad30ff58d8037a8629a6adb486` | TBD | PROTOCOL v0.3 headline KTO seed 3 | pre-registered headline result |
+| [`eh-qwen3-4b-seq-sft-dpo-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-seq-sft-dpo-seed1-lora) | `45138e73be9d28fcf9537a9d2de49d90ebf8601b` | TBD | Amendment A / v0.4 sequential SFT to DPO seed 1 | pre-registered extension, reported separately |
+| [`eh-qwen3-4b-seq-sft-dpo-seed2-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-seq-sft-dpo-seed2-lora) | `62c2cf65d93509ee86bdedb257512f9055a4ff1a` | TBD | Amendment A / v0.4 sequential SFT to DPO seed 2 | pre-registered extension, reported separately |
+| [`eh-qwen3-4b-seq-sft-dpo-seed3-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-seq-sft-dpo-seed3-lora) | `9cdd0d292c1b0309c3ced096c057697c8fc969d9` | TBD | Amendment A / v0.4 sequential SFT to DPO seed 3 | pre-registered extension, reported separately |
+| [`eh-qwen3-4b-seq-sft-kto-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-seq-sft-kto-seed1-lora) | `2ccb2ec3883bf004feb545fb555ea3846e8c39fb` | TBD | Amendment A / v0.4 sequential SFT to KTO seed 1 | pre-registered extension, reported separately |
+| [`eh-qwen3-4b-seq-sft-kto-seed2-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-seq-sft-kto-seed2-lora) | `c9b38352ba852f427e0c3ed802d038f94ebf9997` | TBD | Amendment A / v0.4 sequential SFT to KTO seed 2 | pre-registered extension, reported separately |
+| [`eh-qwen3-4b-seq-sft-kto-seed3-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-seq-sft-kto-seed3-lora) | `cb6c246e0e566908f7a4e4844a892d811667cf2d` | TBD | Amendment A / v0.4 sequential SFT to KTO seed 3 | pre-registered extension, reported separately |
+| [`eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora) | `8914081dfcec4f1f025f2dbe4195d4f7aa8d210e` | TBD | deployed clean-SFT to GRPO-v2 seed 1 (cloud cells, mech-interp lineage) | exploratory seed 1; confirmatory replication registered at `experiments/grpo-three-seed-confirmatory` |
+| [`eh-qwen3-4b-clean-sft-seed1-merged-16bit`](https://huggingface.co/professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit) | `ac361232c001af0ed5b0386b06dafc35d5cd31ea` | TBD | merged 16-bit clean schema-SFT seed 1; the base the GRPO-v2 adapter loads on | exploratory seed 1; confirmatory replication registered |
+
+Notes on this release:
+
+- The six sequential-extension adapters were trained on a local 16-bit merge of
+  the same-seed headline SFT adapter. That merge is not published; each card
+  gives the rebuild recipe (foundation model plus the published same-seed SFT
+  adapter, merged) and states that the rebuild is not guaranteed bit-identical
+  to the local artifact.
+- The GRPO-v2 adapter loads on the merged 16-bit base in this same set, not on
+  `unsloth/Qwen3-4B-bnb-4bit`. Both are released together for that reason.
+- Headline and extension numbers are never pooled. Card status labels carry the
+  distinction so a reader of one repo page cannot mistake an extension arm for a
+  headline cell.
+- Training data for the set is the already-published
+  [`professorsynapse/epistemic-humility-phase1`](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1)
+  dataset; no new data is released here.
+- The six headline DPO and KTO cards carry a data-provenance caveat: seed 1 of
+  each arm consumed the dataset build predating the dev-split fix of 2026-06-14
+  (commit `3dc58e9b`), seeds 2 and 3 consumed the corrected build, and the cards
+  state that the arm's three-seed interval therefore spans two dataset versions.
+  The three SFT cards carry no caveat because all three SFT seeds consumed the
+  corrected build. A rerun of the two affected seed-1 runs is registered
+  separately.
 
 ## Pending HF Repos
 
 | Artifact family | Proposed HF repo | Status | Local provenance | Notes |
 |---|---|---|---|---|
 | Hidden-state tensors | `professorsynapse/eh-hidden-states-<family>` | planned (wave 2d) | extraction dirs under `archive/experiment/phase1/probe/` | ~2 GB per model; Z families first. Y cloud cells discard extraction dirs by design — publishing Y tensors would need the upload knob flipped in `hf_jobs_cell.sh` for future cells. |
-| Adapter repos | one repo per evaluated adapter | private-staged (2026-07-05) | run record + `training_lineage.json` + exact eval result path | 33 Qwen3-4B LoRA/merged checkpoints are now PRIVATELY staged on HF; the master mapping (HF repo @ revision <-> local source run dir <-> amendment/paper it backs) is [docs/checkpoint-staging.md](checkpoint-staging.md). Public release of any of these remains a separate per-release user approval and would be recorded as its own row here. |
+| Adapter repos | one repo per evaluated adapter | 17 released 2026-08-01; the remainder private-staged (2026-07-05) | run record + `training_lineage.json` + exact eval result path | 33 Qwen3-4B LoRA/merged checkpoints are staged on HF; the master mapping (HF repo @ revision <-> local source run dir <-> amendment/paper it backs) is [docs/checkpoint-staging.md](checkpoint-staging.md). The 17 Paper 2 repos are now public (see the Paper 2 adapter set section above). Public release of any remaining repo is a separate per-release user approval and would be recorded as its own row. |
 
 ## Adapter Naming
 
