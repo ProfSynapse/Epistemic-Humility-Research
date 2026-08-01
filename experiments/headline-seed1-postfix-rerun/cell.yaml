@@ -82,19 +82,28 @@ arms:
       name: unsloth/Qwen3-4B-bnb-4bit
       max_seq_length: 2048
       load_in_4bit: true
+    # Trainer commit RESOLVED by user/PI adjudication 2026-08-01 (AMENDMENT.md
+    # section 10 item 4 / section 5 item 9): pin the commit used by cohort seeds
+    # 2 and 3 so seed 1 is commensurate with its cohort on the trainer axis as
+    # well as the dataset axis. The original seed-1 DPO cell ran at
+    # `superseded_synaptic_tuner_commit` below; that vintage is retired for this
+    # rerun.
+    synaptic_tuner_commit: 089fa9b7
+    superseded_synaptic_tuner_commit: 3a3d7a26
     training:
       batch_size: 2
       gradient_accumulation: 4
       learning_rate: 5.0e-06
       num_epochs: 1
       seed: 1                 # TRAINING seed stays 1; only the data build changes
-      # beta is NOT written in the original materialized recipe; it comes from the
-      # trainer's shipped default, which PROTOCOL v0.3 section 3.1a records as 0.1
-      # (loss_type sigmoid) for DPO. Recorded here as an explicit expectation so a
-      # trainer-default drift cannot silently change it. See AMENDMENT.md
-      # "Open questions" item 3.
-      beta_expected: 0.1
-      beta_source: trainer-shipped-default (PROTOCOL v0.3 section 3.1a table)
+      # Beta RESOLVED by lead adjudication 2026-08-01 (AMENDMENT.md section 10
+      # item 3): lead verified at commit 089fa9b7 that DPO beta flows only from
+      # this config file (Trainers/dpo/train_dpo.py line 576), with no hidden
+      # trainer default, so beta must be written explicitly rather than relied
+      # on implicitly. 0.1 matches PROTOCOL v0.3 section 3.1a and the original
+      # seed-1 materialized recipe's effective value.
+      beta: 0.1
+      beta_source: explicit-per-config (resolved 2026-08-01; was trainer-shipped-default in the original materialized recipe, PROTOCOL v0.3 section 3.1a table)
     lora:
       r: 32
       alpha: 64
@@ -128,14 +137,28 @@ arms:
       name: unsloth/Qwen3-4B-bnb-4bit
       max_seq_length: 2048
       load_in_4bit: true
+    # Trainer commit RESOLVED by user/PI adjudication 2026-08-01 (AMENDMENT.md
+    # section 10 item 4 / section 5 item 9): pin the commit used by cohort seeds
+    # 2 and 3 so seed 1 is commensurate with its cohort on the trainer axis as
+    # well as the dataset axis. The original seed-1 KTO cell ran at
+    # `superseded_synaptic_tuner_commit` below; that vintage is retired for this
+    # rerun.
+    synaptic_tuner_commit: 089fa9b7
+    superseded_synaptic_tuner_commit: 04005402
     training:
       batch_size: 2
       gradient_accumulation: 4
       learning_rate: 1.0e-06
       num_epochs: 1
       seed: 1
-      beta_expected: 0.1
-      beta_source: trainer-shipped-default (PROTOCOL v0.3 section 3.1a table)
+      # Beta RESOLVED by lead adjudication 2026-08-01 (AMENDMENT.md section 10
+      # item 3): lead verified at commit 089fa9b7 that KTO beta flows only from
+      # this config file (Trainers/kto/train_kto.py line 729), with no hidden
+      # trainer default, so beta must be written explicitly rather than relied
+      # on implicitly. 0.1 matches PROTOCOL v0.3 section 3.1a and the original
+      # seed-1 materialized recipe's effective value.
+      beta: 0.1
+      beta_source: explicit-per-config (resolved 2026-08-01; was trainer-shipped-default in the original materialized recipe, PROTOCOL v0.3 section 3.1a table)
     lora:
       r: 32
       alpha: 64
@@ -164,13 +187,15 @@ arms:
 eval:
   entrypoint: archive/experiment/phase1/eval/run_eval.py
   flags: [--live-vllm]
-  # The eval that produced the committed headline metrics ran from a DISPOSABLE
-  # config under .tmp/ (gitignored), not from a committed config. See
-  # AMENDMENT.md "Open questions" item 1: this rerun should write its eval config
-  # into the experiment directory so the measurement surface is itself pinned.
+  # RESOLVED 2026-08-01 (AMENDMENT.md section 10 item 1): the eval that produced
+  # the committed headline metrics ran from a DISPOSABLE config under .tmp/
+  # (gitignored), not from a committed config. This rerun's eval config is now
+  # committed at `config_target`, modeled structurally on `pattern_reference`
+  # but scoped to only the two rerun arms, with adapter paths left as
+  # placeholders to be filled once the rerun adapters exist.
   pattern_reference: .tmp/eval_selfaware_full_seed1_all_arms_4b.yaml
   committed_analogue: archive/experiment/phase1/eval/config/eval_selfaware_full_local_4b.yaml
-  config_target: experiments/headline-seed1-postfix-rerun/eval_selfaware_seed1_postfix_4b.yaml
+  config_target: experiments/headline-seed1-postfix-rerun/configs/eval_selfaware_full_seed1_rerun_4b.yaml
   generation:
     enable_thinking: false
     seed: 20240601

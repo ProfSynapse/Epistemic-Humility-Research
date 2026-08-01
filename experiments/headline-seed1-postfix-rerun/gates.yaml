@@ -84,10 +84,10 @@ gates:
 
       - id: trainer_commit_declared
         pass_if: >-
-          the run record names the synaptic-tuner commit actually used, and it is
-          the commit the lead pinned at sign time. See AMENDMENT.md "Open
-          questions" item 4: the originals and the seeds-2/3 cohort did NOT share
-          a trainer commit, so this choice is a design decision, not a lookup.
+          the run record names the synaptic-tuner commit actually used, and it
+          is 089fa9b7, the cohort commit pinned at resolution (user/PI,
+          2026-08-01; AMENDMENT.md section 10 item 1). Any other commit in the
+          run record fails this check.
 
       - id: training_completed_clean
         pass_if: >-
@@ -223,5 +223,8 @@ gates:
           commensurate with seeds 2 and 3, but it can no longer attribute any
           observed change to the dataset alone. If it uses the original per-arm
           commit it isolates the dataset variable but leaves seed 1 non
-          commensurate with its cohort on the trainer axis. This is a genuine
-          design fork for sign-time adjudication; the drafter did not pick one.
+          commensurate with its cohort on the trainer axis. RESOLVED (user/PI,
+          2026-08-01): the rerun pins the cohort commit 089fa9b7 for both arms,
+          removing both confounds at once; the rerun is a commensurability
+          check against the cohort bands, not a single-variable attribution of
+          the dataset change. See AMENDMENT.md section 10 item 1.

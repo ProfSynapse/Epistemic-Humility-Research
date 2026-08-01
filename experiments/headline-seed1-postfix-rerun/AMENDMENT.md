@@ -1,6 +1,9 @@
 # Headline DPO/KTO seed-1 rerun on post-fix dataset build
 
-Status: DRAFT (not signed; do not launch as confirmatory evidence).
+Status: **SIGNED 2026-08-01** (`bin/exp sign`, PI approval "Sign as drafted"
+in session; pins recorded in `experiment.yaml`). Launch authorized once the
+GPU frees after the GRPO three-seed chain; digest mismatch at launch is a
+hard stop.
 
 This document is the prose home for the experiment. Machine state lives in
 `experiment.yaml`, the matrix in `cell.yaml`, the thresholds in `gates.yaml`, and
@@ -126,7 +129,13 @@ without introducing any content absent from the corpus.
    is NOT recorded in the `grpo-three-seed-confirmatory` experiment; that
    experiment's `cell.yaml:21` pins only the mutable tag `unsloth/unsloth:latest`.
    The runtime reference is the only place in the repo carrying the digest.
-9. Trainer commit: DELIBERATELY NOT FROZEN HERE. See section 10, item 4.
+9. Trainer commit, RESOLVED by user/PI adjudication 2026-08-01 (section 10, item
+   4): both cells pin synaptic-tuner commit `089fa9b7`, the commit used by
+   cohort seeds 2 and 3, whose rows derive the G1 bands. The rerun is compared
+   against the cohort, so it must match the cohort's trainer vintage; this
+   fixes both the data-build confound and the trainer-vintage confound in one
+   rerun. The original seed-1 commits are superseded vintages, not used in this
+   rerun: DPO seed 1 ran at `3a3d7a26`, KTO seed 1 ran at `04005402`.
 
 ## 6. Budget
 
@@ -155,15 +164,25 @@ backfilled records once they land on main.
 
 ## 7. Prediction
 
-<!-- INTENTIONALLY EMPTY. To be filled by PI and lead at sign time.
-     `bin/exp sign` refuses to sign while `prediction:` is empty in
-     experiment.yaml. Do not fill this from the drafter's expectations. -->
+Proposed by lead 2026-08-01; APPROVED by PI 2026-08-01 ("Sign as drafted" in session). Mirrored in
+`experiment.yaml:prediction`. This is proposed text, not a ratified prediction;
+the PI can still change it at sign time.
+
+Both rerun arms land inside all eight cohort-derived G1 bands, with both arms
+remaining at the abstention floor observed across the cohort; the
+dev-split-fix confound is provenance-only and headline conclusions are
+unchanged.
 
 ## 8. Falsifier
 
-<!-- INTENTIONALLY EMPTY. To be filled by PI and lead at sign time.
-     `bin/exp sign` refuses to sign while `falsifier:` is empty in
-     experiment.yaml. -->
+Proposed by lead 2026-08-01; APPROVED by PI 2026-08-01 ("Sign as drafted" in session). Mirrored in
+`experiment.yaml:falsifier`. This is proposed text, not a ratified falsifier;
+the PI can still change it at sign time.
+
+Any rerun metric outside its G1 band falsifies the provenance-only reading for
+that arm; the affected pre-fix seed-1 row is retired as a comparator and
+paper-2 numbers for that arm are recomputed from the rerun row, with the
+published caveat escalated accordingly.
 
 ## 9. Gates
 
@@ -209,39 +228,68 @@ design change to make at sign time, not after seeing the result.
 
 ## 10. Open questions for sign-time adjudication
 
-1. **The headline eval config was never committed.** The eval that produced the
-   locked seed-1/2/3 headline metrics ran from
-   `.tmp/eval_selfaware_full_seed1_all_arms_4b.yaml`, whose own header calls it
-   "Disposable ... Not a headline/protocol aggregation artifact", and `.tmp/` is
-   gitignored (`.gitignore:10`). The committed
+Items 1-4 RESOLVED 2026-08-01. Item 5 proposed 2026-08-01 and APPROVED by PI
+2026-08-01 ("Sign as drafted" in session). The section 7/8 prediction and
+falsifier were likewise proposed by lead and APPROVED by PI 2026-08-01 in the
+same sign-off.
+
+1. **The headline eval config was never committed.** RESOLVED, ruled by lead,
+   2026-08-01. The eval that produced the locked seed-1/2/3 headline metrics
+   ran from `.tmp/eval_selfaware_full_seed1_all_arms_4b.yaml`, whose own header
+   calls it "Disposable ... Not a headline/protocol aggregation artifact", and
+   `.tmp/` is gitignored (`.gitignore:10`). The committed
    `archive/experiment/phase1/eval/config/eval_selfaware_full_local_4b.yaml` is a
-   different, earlier config covering base/SFT/DPO only. `cell.yaml` proposes
-   writing this rerun's eval config into the experiment directory so the
-   measurement surface is pinned by `exp sign`, but the lead should decide
-   whether that is in scope here or a separate provenance repair.
-2. **Container pin or re-pull.** The originals recorded only the mutable tag
-   `unsloth/unsloth:latest`. Pinning the 2026-06-13 digest makes the rerun
+   different, earlier config covering base/SFT/DPO only. This rerun's eval
+   config is now committed at
+   `experiments/headline-seed1-postfix-rerun/configs/eval_selfaware_full_seed1_rerun_4b.yaml`,
+   modeled structurally on the disposable `.tmp/` config but scoped to only the
+   two rerun arms, with adapter paths left as clearly-marked placeholders to be
+   filled once the rerun adapters exist. Same eval dataset reference and
+   scoring settings as the original. `cell.yaml:eval.config_target` points at
+   this file.
+2. **Container pin or re-pull.** RESOLVED, ruled by lead, 2026-08-01. Pin
+   `sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`, the
+   phase-1 lane digest recorded in
+   `.skills/experiment-runner/reference/local-runtime.md:82-86` (verified
+   character for character against that file at resolution time). This is the
+   same pinned container as the cohort-era lane and the currently running GRPO
+   chain; a digest mismatch at launch is a hard stop, not a silent
+   substitution. The originals recorded only the mutable tag
+   `unsloth/unsloth:latest`; pinning the 2026-06-13 digest makes the rerun
    reproducible but not necessarily identical to the DPO seed-1 original, which
-   ran 2026-06-11 and may have been served by an earlier pull. There is no record
-   of the digest in force on 2026-06-11.
-3. **Beta is implicit.** Neither materialized recipe writes `beta`; both rely on
-   the trainer's shipped default, which PROTOCOL section 3.1a records as 0.1 for
-   both arms. `cell.yaml` records `beta_expected: 0.1` so a trainer-default drift
-   cannot change it silently, but the lead should confirm the pinned trainer
-   commit still ships 0.1.
-4. **A second confound the brief did not mention.** The originals and the
-   seeds-2/3 cohort were not run at the same tuner commit. From the run records:
-   DPO seed 1 at submodule `3a3d7a26`, KTO seed 1 at `04005402`, and seeds 2 and 3
-   for both arms at `089fa9b7`. So the seed-1 cells differ from their cohort on
-   the trainer axis as well as the dataset axis, and the two seed-1 cells differ
-   from each other. Using `089fa9b7` removes both confounds and makes seed 1 fully
-   commensurate with seeds 2 and 3, at the cost of no longer attributing any
-   observed change to the dataset alone; using the original per-arm commit
-   isolates the dataset variable but leaves seed 1 non-commensurate on the trainer
-   axis. The drafter did not choose. This is a real design fork.
-5. **Whether a single out-of-band metric is a FAIL.** `gates.yaml` proposes
-   reporting it as PARTIAL and lifting to the lead; the alternative is to call the
-   arm failed. Decide before signing.
+   ran 2026-06-11 and may have been served by an earlier pull. There is no
+   record of the digest in force on 2026-06-11; this residual gap is accepted
+   as part of the resolution.
+3. **Beta is implicit.** RESOLVED, ruled by lead, 2026-08-01. Neither original
+   materialized recipe writes `beta`; both relied on the trainer's shipped
+   default, which PROTOCOL section 3.1a records as 0.1 for both arms. Lead
+   verified at commit `089fa9b7` that DPO/KTO beta flows only from the config
+   file (`Trainers/dpo/train_dpo.py` line 576, `Trainers/kto/train_kto.py` line
+   729), with no hidden trainer default; a `--beta` CLI override exists but will
+   not be used. Both cell configs now state `beta: 0.1` explicitly rather than
+   relying on an implicit default, matching PROTOCOL 3.1a and the original
+   materialized recipes' effective value.
+4. **A second confound the brief did not mention.** RESOLVED, ruled by
+   user/PI, 2026-08-01. The originals and the seeds-2/3 cohort were not run at
+   the same tuner commit. From the run records: DPO seed 1 at submodule
+   `3a3d7a26`, KTO seed 1 at `04005402`, and seeds 2 and 3 for both arms at
+   `089fa9b7`. So the seed-1 cells differed from their cohort on the trainer
+   axis as well as the dataset axis, and the two seed-1 cells differed from
+   each other. Ruling: both cells pin `089fa9b7`, the cohort's commit. This
+   removes both confounds and makes seed 1 fully commensurate with seeds 2 and
+   3, at the cost of no longer attributing any observed change to the dataset
+   alone; the rerun is a joint dataset-and-trainer-vintage replication, not a
+   dataset-only isolation. See section 5, item 9.
+5. **Whether a single out-of-band metric is a FAIL.** Proposed by lead
+   2026-08-01, APPROVED by PI 2026-08-01 ("Sign as drafted" in session).
+   Each cell adjudicates independently against its own
+   four G1 bands. Both cells within bands: PASS for the pair (the pre-fix rows
+   are confirmed as valid bounded comparators; the confound is provenance-only).
+   Exactly one cell outside any band: PARTIAL (the failing arm's pre-fix
+   seed-1 row is retired as a comparator; paper-2 numbers for that arm
+   recompute from the rerun row; the published caveat escalates). Both cells
+   outside any band: FAIL (same retirement applies to both arms). No pooling
+   across arms in any of the three outcomes.
 
 ## Predictions scoreboard
 
