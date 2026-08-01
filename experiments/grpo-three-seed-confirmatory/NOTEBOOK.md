@@ -6,6 +6,143 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-01 — TAKEOVER: predecessor harness stalled after seed-2 clean_sft training completed; verified and resumed at merge step
+
+The prior execution harness wedged sometime after the seed-2 `clean_sft`
+training container reached a clean exit and was terminated by the lead; this
+harness resumes the chain from recorded state, per dispatch. No G0 implication
+from the stall itself — it is a harness/watch-loop failure, not an instrument
+or data problem, and it burned zero extra GPU time (verified below).
+
+Re-verified from artifacts rather than trusting the predecessor's own record:
+- `docker inspect eh-grpo3seed-2-clean_sft-20260731T232235Z` ->
+  `Status: exited, ExitCode: 0`, `StartedAt: 2026-07-31T23:22:35Z`,
+  `FinishedAt: 2026-07-31T23:49:14Z` (26m39s wall, consistent with the
+  `training_lineage.json` `training_time_seconds: 1526.8`).
+- Run dir
+  `scratch/schema_response_confidence/runs/sft_schema_clean_seed2_full/20260731_232307/`
+  contains `final_model/adapter_model.safetensors` (252.1M),
+  `final_model/adapter_config.json`, `training_lineage.json` (`stage:
+  training`, `runtime.status: completed`, `final_step: 1495`, `final_loss:
+  0.4281`), and `capacity_features.json`. G0 `training_completed_clean`: PASS.
+- `nvidia-smi`: RTX 3090, 0MiB/24576MiB, 0% util, idle at takeover time
+  (2026-08-01T09:12Z) — GPU was sitting idle the whole stall, not stuck
+  mid-job. Zero GPU time lost to the stall itself.
+- `docker images --digests unsloth/unsloth` ->
+  `sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`,
+  still exact match to the pinned digest.
+
+Wall-clock accounting against the signed budget guardrails (seed-2 block
+~42h from the 2026-07-31T23:22Z launch, ~83h total): stage-1 train+merge+smoke
+for seed 1 measured 2.4h. From launch (23:22Z) to takeover (09:12Z) is ~9h50m
+elapsed, of which only ~27m was GPU training time — the remaining ~9h23m
+(23:49Z training-end to 09:12Z takeover) is dead stall time with the GPU idle,
+not additional work. Recorded honestly against budget rather than absorbed
+silently; still well inside the ~42h seed-2 guardrail even counting the full
+stall.
+
+Resumed at the next un-done step per `launch_order`: merge. No merge script
+exists as a standalone CLI (`tuner/handlers/merge_handler.py`'s `MergeHandler`
+is interactive-menu-only, not scriptable headless); confirmed the seed-1
+mechanism instead via `synaptic-tuner/shared/model_loading/merge.py`
+(`merge_lora_checkpoint(lora_path, output_path, max_seq_length=2048,
+load_in_4bit=True)`, family defaults to `causal_lm`) and the output-path
+convention from `merge_handler.py:169` (`run_path / get_base_model_name(lora_path)
+/ "merged-16bit"`), which matches the seed-1 artifact path exactly
+(`.../sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit`).
+
+Launched: container `eh-grpo3seed-2-clean_sft-merge-20260801T091239Z`, pinned
+image digest re-verified before launch
+(`sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`),
+`--user root --gpus all --ipc=host --entrypoint python3`, `PYTHONPATH=
+/workspace/repo/synaptic-tuner` (mirrors how `train_sft.py` inserts
+`synaptic-tuner/` onto `sys.path` at import time), running:
+
+```python
+from pathlib import Path
+from shared.model_loading.merge import merge_lora_checkpoint
+lora_path = Path("scratch/schema_response_confidence/runs/sft_schema_clean_seed2_full/20260731_232307/final_model")
+output_path = Path("scratch/schema_response_confidence/runs/sft_schema_clean_seed2_full/20260731_232307/Qwen3-4B-bnb-4bit/merged-16bit")
+merge_lora_checkpoint(lora_path, output_path, max_seq_length=2048, load_in_4bit=True)
+```
+
+`docker wait` running in background; will record merge result, then launch the
+192-row bounded smoke (G0 `bounded_smoke_coverage`) before the stage-1 entry
+is considered complete.
+
+### 2026-07-31 — Seed-2 clean_sft (stage 1) LAUNCHED, after a launch-mechanism fix
+
+Preflights re-confirmed after the lead's ruling: `git pull` in this worktree
+showed the ruling commit already local (worktree and lead share the same local
+repo; the ruling reached me via the local branch, not a remote fetch —
+confirmed `d49bc6b2` present, no conflicts with my hard-stop entry above it).
+`nvidia-smi` re-checked idle (0MiB/24576MiB, 0% util) immediately before
+launch.
+
+Built
+`experiments/grpo-three-seed-confirmatory/configs/sft_schema_clean_response_confidence_seed2_full.yaml`,
+a seed-2 clone of the archived
+`sft_schema_clean_response_confidence_seed1_full.yaml`, all values unchanged
+except `seed: 2` and `lora.random_state: 2` (lead ruling). Launched via
+`docker run -d --user root --gpus all --ipc=host --entrypoint python3
+... unsloth/unsloth:latest synaptic-tuner/Trainers/sft/train_sft.py --config
+<that yaml> --no-dashboard --quiet`. Container
+`eh-grpo3seed-2-clean_sft-20260731T231802Z` exited 1 immediately:
+`AttributeError: 'NoneType' object has no attribute 'loader'` in
+`train_sft.py:590-597` — `importlib.util.spec_from_file_location` cannot build
+a loader for a non-Python file, because `--config` in `train_sft.py` has
+**always** meant "import this file as a Python module and call `Config()`",
+never a YAML loader. Confirmed via `git log -p` on `train_sft.py`: this
+`spec_from_file_location(...)` branch is unchanged across the file's entire
+history. The `.yaml` file I built from carries a header comment claiming
+"Auto-converted ... for config-format uniformity (YAML, like the GRPO
+trainer) ... Verified to load byte-identically ... Consumed by: train_sft.py
+--config <this>.yaml" — that claim does not hold against the current trainer
+code.
+
+Cross-checked the REAL seed-1 invocation against the actual session notes
+(`docs/sessions/20260623T093654Z-probe-scaled-response-confidence-retrain.md:500-504`),
+not the archived runbook (which is itself headed "Status: prepared, not
+launched" — a template, not a verified record). The real seed-1 launch used
+`--config archive/experiment/phase1/grpo/configs/
+sft_schema_clean_response_confidence_seed1_full_config.py` — a `.py` file.
+That file no longer exists on disk: `git log --all --full-history
+--diff-filter=A` traced it to commit `aa11b49e` ("Amendment J: GRPO-v3
+proper-scoring confidence reward", an unrelated PR), which batch-deleted the
+working `_config.py` files across this entire SFT-config family and replaced
+them with the untested `.yaml` "auto-converted" versions in the same commit.
+This is a repo-wide gap: every schema-response-confidence SFT `.yaml` config
+under `archive/experiment/phase1/grpo/configs/` is currently unusable via
+train_sft.py's `--config` flag, not just this one.
+
+Fix: restored the exact original file via `git show
+aa11b49e^:experiment/phase1/grpo/configs/
+sft_schema_clean_response_confidence_seed1_full_config.py`. Diffed its values
+against my `.yaml` attempt field-by-field — identical (model_name, dataset
+path, batch_size 10 / grad_accum 1, learning_rate 2e-4, lora r=32/alpha=64/
+dropout=0.05, num_epochs 1, chat_template_kwargs enable_thinking=false, etc.),
+confirming the earlier `.yaml` conversion was faithful in content, only broken
+in format/loading mechanism. Wrote
+`experiments/grpo-three-seed-confirmatory/configs/sft_schema_clean_response_confidence_seed2_full_config.py`
+as a `Config()` Python module, identical to the restored seed-1 file except
+`training.output_dir` -> `.../sft_schema_clean_seed2_full`, `lora.random_state:
+2`, `seed: 2`. No cell.yaml/gates.yaml pinned value touched; no hyperparameter
+changed; only the config-delivery file format was fixed to match what
+train_sft.py's `--config` flag has always actually required.
+
+Relaunched: container `eh-grpo3seed-2-clean_sft-20260731T232235Z`, image digest
+`sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`
+(re-verified before launch). Confirmed via logs: config loaded, run directory
+`scratch/schema_response_confidence/runs/sft_schema_clean_seed2_full/20260731_232307`
+created, model loading started (Unsloth 2026.5.9, Qwen3-4B-bnb-4bit, RTX 3090,
+bf16, 4-bit). Training in progress at time of writing; `docker wait` running in
+background. Seed-1 measured wall-clock for this stage (train+merge+smoke) was
+2.4h (E note :488->:535); will record actual duration and artifact path/size
+when it completes.
+
+Elapsed against budget guardrails: essentially zero training time burned
+before this entry (the two failed-fast attempts cost seconds, not compute).
+
 ### 2026-07-31 — LEAD RULING: lora.random_state mirrors the seed number; chain unblocked
 
 Adjudication of the hard stop below. Ruling made BEFORE any outcome data
