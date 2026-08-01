@@ -54,7 +54,7 @@ essentially nothing, falsifying the natural hypothesis that KTO's unpaired
 binary format makes it a native abstention trainer. Applied after an SFT
 warm-up, preference optimization *repositions* the boundary along a
 recall/over-refusal trade-off (DPO aggressively toward answering, KTO
-conservatively; three seeds for DPO, two for KTO), and GRPO under an appropriateness reward
+conservatively; three seeds each), and GRPO under an appropriateness reward
 *amplifies* the routine to near-ceiling recall and the study's best
 truthfulness (a half-point margin) while re-inflating over-refusal (single
 seed, exploratory). No
@@ -249,7 +249,7 @@ The study has three evidence layers:
 1. Cold-start comparison (three seeds, confirmatory): SFT, DPO, and KTO
    trained from the base model, with seed-level intervals and exact paired row
    tests. Answers whether each objective can *induce* abstention.
-2. SFT-warmed comparison (three seeds for DPO, two for KTO, confirmatory):
+2. SFT-warmed comparison (three seeds for DPO and KTO, confirmatory):
    preference optimization applied after SFT, with the same intervals and
    paired tests. Answers whether the preference objectives can *reposition* an
    existing boundary, which is the sequential reading the published
@@ -423,8 +423,8 @@ stays near the merged-SFT abstention policy. Neither arm improves
 discrimination between the two kinds of question.
 
 Across the available seeds the pattern is stable (three-seed SFT-DPO means:
-recall 52.81%, over-refusal 14.59%, truthfulness 31.18%; two-seed SFT-KTO:
-77.18%, 46.88%, 37.55%). This is the published trade-off of Section 2
+recall 52.81%, over-refusal 14.59%, truthfulness 31.18%; three-seed SFT-KTO:
+77.75%, 45.68%, 37.72%). This is the published trade-off of Section 2
 reproduced at 4B on an independent model family, with the two preference
 objectives landing on opposite ends of it. DPO buys back usefulness at the
 cost of abstention; KTO keeps the abstention and most of the tax. Neither
@@ -618,8 +618,7 @@ the model will tell you.
 
 This is a small-model, single-family study: Qwen3-4B with low-rank adaptation
 recipes, evaluated centrally on SelfAware. The cold-start and SFT-warmed
-layers carry three seeds (descriptive t-intervals; SFT-warmed KTO has two
-plain-answer seeds); the GRPO layer, its stacks, and the stated-confidence
+layers carry three seeds (descriptive t-intervals); the GRPO layer, its stacks, and the stated-confidence
 observations of Section 5 are single-seed and exploratory, and are labeled
 as such wherever they appear. Negative cold-start DPO/KTO results are claims
 about this setting and recipe family, not contradictions of sequential
