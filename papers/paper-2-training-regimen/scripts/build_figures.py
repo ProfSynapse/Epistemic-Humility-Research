@@ -119,10 +119,7 @@ AMENDMENT_A_SUMMARY_TABLES = [
     ),
     (
         "seed3_kto",
-        EVAL_ROOT
-        / "results_amendment_a_selfaware_full_seed3_sft_kto_local_4b"
-        / "comparisons"
-        / "summary_table.csv",
+        "results_amendment_a_selfaware_full_seed3_sft_kto_local_4b/comparisons/summary_table.csv",
     ),
 ]
 
