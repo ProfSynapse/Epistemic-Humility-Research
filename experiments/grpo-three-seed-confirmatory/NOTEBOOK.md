@@ -6,6 +6,75 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-01 — Seed-2 clean_sft_dpo (stage 2) LAUNCHED
+
+Container `eh-grpo3seed-2-clean_sft_dpo-20260801T183028Z`, launched 18:30:28Z,
+pinned digest re-verified before launch. Lead re-derived the launch args from
+`docker inspect` of the running container: `--model-name` points at the seed-2
+MERGED checkpoint
+(`.../sft_schema_clean_seed2_full/20260731_232307/Qwen3-4B-bnb-4bit/merged-16bit`,
+satisfying G0 `merge_first_lineage`), `--beta 0.1`, `--seed 2`,
+`--learning-rate 5e-6`, batch 2 / grad-accum 4, LoRA r32/a64/d0.05, 1 epoch,
+training file the frozen `dpo_response_confidence_train.jsonl` (14,943 rows,
+matches the frozen G0 audit constant). Output root
+`scratch/schema_response_confidence/runs/schema_clean_sft_dpo_seed2_full`,
+run-timestamp `20260801_183028`. Note carried from seed-1 precedent: the
+DPO/KTO trainers expose no `--lora-random-state` flag, so LoRA init uses the
+trainer baseline (3407) for these stages; the seed-mirroring ruling applies
+only where a config file carries `lora.random_state` (SFT/GRPO). Seed-1
+behaved identically, so this is not a new degree of freedom.
+
+### 2026-08-01 — Seed-2 clean_sft (stage 1) COMPLETE: train + merge + bounded smoke, G0 PASS
+
+Closes out stage 1 for seed 2. Two watch-discipline stalls occurred during
+this stage (recorded honestly, no GPU time lost either time — both times the
+GPU sat idle 0MiB/0% while this harness was mid-turn or between turns, not
+stuck mid-job): the predecessor harness wedged after training finished
+(recovered at takeover, entry above), and this harness itself then let a
+completed `docker wait` go unactioned for roughly 8 hours after the merge
+step before the lead's status check prompted resumption. New standing rule
+adopted going forward: check `docker inspect` on every watched container
+before ending any turn, and act immediately if it has already exited rather
+than waiting on the wake notification.
+
+**Merge.** Container `eh-grpo3seed-2-clean_sft-merge-20260801T091239Z`
+(launched 09:12:39Z, exited 0 at 09:14:07Z), pinned digest re-verified before
+launch (`sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`).
+Ran `shared.model_loading.merge.merge_lora_checkpoint(lora_path=.../final_model,
+output_path=.../Qwen3-4B-bnb-4bit/merged-16bit, max_seq_length=2048,
+load_in_4bit=True)` inside the container (mechanism and output-path
+convention reconstructed from `synaptic-tuner/shared/model_loading/merge.py`
+and `tuner/handlers/merge_handler.py:169`, since no standalone scriptable
+merge CLI exists — `MergeHandler` is interactive-menu-only). Log confirms
+`Unsloth: Merge process complete.` Output at
+`scratch/schema_response_confidence/runs/sft_schema_clean_seed2_full/20260731_232307/Qwen3-4B-bnb-4bit/merged-16bit/`:
+`config.json` present (valid merged model, not an adapter), 2 safetensors
+shards, 7.6G total — same shard-count/size pattern as the seed-1 merge.
+
+**Bounded smoke (G0 `bounded_smoke_coverage`).** Config
+`experiments/grpo-three-seed-confirmatory/configs/eval_grpo3seed_response_confidence_selfaware_clean_sft_seed2_merged_smoke_local_4b.yaml`,
+cloned from the seed-1 merged-smoke config
+(`archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_smoke_local_4b.yaml`)
+with only `model_tag`/`model_name`/`results_dir` changed to the seed-2 merged
+path; `offset: 2240` / `limit: 192` (selfaware-mixed-192 per cell.yaml) and
+all prompt/generation/vllm settings carried unchanged. Container
+`eh-grpo3seed-2-clean_sft-smoke-20260801T103120Z`, digest re-verified
+immediately before launch (same pinned digest as above), `--live-vllm`,
+exited 0 at 10:33:47Z. Results:
+`archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_seed2_merged_smoke_4b/`.
+
+Lead-verified numbers (n=192, 97 known / 95 unknown): 192/192 rows scored,
+192/192 `generated_answer` + `stated_confidence` coverage, 0 retry-exhausted,
+0 thinking-tag hits, `enable_thinking` uniformly false.
+`refusal_recall_pct` 89.47, `answer_on_unknown_pct` 10.53, `over_refusal_pct`
+68.04, `refusal_rate_pct` 78.65, `correct_on_known_pct` 45.16, `truthful_pct`
+51.56.
+
+G0 `bounded_smoke_coverage`: PASS (lead-adjudicated). G0
+`training_completed_clean` and `merge_first_lineage`: PASS (verified above and
+in the takeover entry). Stage 1 for seed 2 is complete; proceeding to stage 2,
+`clean_sft_dpo`, sourced from this merged checkpoint per `merge_first_lineage`.
+
 ### 2026-08-01 — TAKEOVER: predecessor harness stalled after seed-2 clean_sft training completed; verified and resumed at merge step
 
 The prior execution harness wedged sometime after the seed-2 `clean_sft`
