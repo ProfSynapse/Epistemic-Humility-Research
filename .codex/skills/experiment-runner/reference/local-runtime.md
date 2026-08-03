@@ -85,6 +85,31 @@ does not exist: scratch\...`.
   and `docker run --rm --gpus all --entrypoint nvidia-smi
   unsloth/unsloth:latest` saw the RTX 3090.
 
+- Teammate watch discipline for long containers (added after four silent
+  stalls across three executor agents, 2026-07-31 to 2026-08-03; stalls of
+  1.5h/8h/10h/1h idle GPU): a spawned teammate agent is NOT reliably
+  re-invoked when its own background `docker wait` completes — the wake was
+  observed to drop both when the completion landed mid-turn (notification
+  swallowed, not queued) and when the agent was properly idle. Lead-session
+  background-task notifications ARE reliable. This is harness plumbing, not
+  agent discipline; swapping executors does not fix it. Binding architecture
+  for any teammate-driven container chain:
+  1. SHORT operations (merges, bounded smokes, anything under ~10 min) run
+     FOREGROUND inside the teammate's turn with an explicit timeout —
+     foreground work cannot stall (zero stalls since adopting this).
+  2. LONG containers: teammate reports the exact container name via
+     SendMessage IMMEDIATELY at launch; the LEAD holds a bare background
+     `docker wait <name>` as the PRIMARY wake. The teammate's own watch is
+     best-effort redundancy only.
+  3. When the lead watch fires: verify artifacts on disk, then IMMEDIATELY
+     SendMessage the teammate the verified numbers plus an explicit proceed
+     order — never wait for the teammate's own report. If the idle-guard
+     blocks the send, the teammate is genuinely mid-turn and will handle it;
+     resend at its next idle notification.
+  4. The teammate must `docker inspect` every launched-but-unclosed container
+     at the START of every turn, regardless of any wake, and act on exited
+     ones in the same turn instead of idling.
+
 - Storage hygiene (added after the 2026-08-02 disk-full crash truncated a
   merge shard mid-write): run `scripts/ops/prune_runtime.sh stage` at every
   stage boundary (prunes stopped containers and dangling images only) and
