@@ -6,6 +6,357 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-03 — HANDOFF STATUS for successor harness: queue items 1-3 COMPLETE, HOLDING before item 4 (grpo_v2 launch) for WSL maintenance window
+
+**This harness will be terminated by a user-initiated `wsl --shutdown` and will
+not be resumed.** A successor harness picks up from this NOTEBOOK. This entry
+is the self-contained summary; the entries below it give full raw detail with
+container names, timestamps, and file paths for re-verification if needed.
+
+**What is DONE (seed 2, this block):**
+- Stage 1 (`clean_sft`) and its merge/smoke: complete, G0 PASS (see the
+  2026-08-01 entries below).
+- Stage 2 `clean_sft_dpo`: training complete, merge REDONE this session
+  (crash-recovery redo), bounded smoke G0 PASS, **full 3,369-row eval
+  COMPLETE**.
+- Stage 2 `clean_sft_kto`: training complete, merge REDONE this session,
+  bounded smoke G0 PASS, **full 3,369-row eval COMPLETE**.
+- Stage-1 base (`clean_sft_merged`) **full 3,369-row eval COMPLETE** (this is
+  the G1 same-seed denominator).
+
+**Full-eval numbers, all lead-verified (not re-derived by this harness), seed
+2, n=3369 each:**
+
+| Arm | refusal_recall_pct | answer_on_unknown_pct | over_refusal_pct | truthful_pct |
+|---|---:|---:|---:|---:|
+| `clean_schema_sft_merged_seed2` (base) | 89.92 | 10.08 | 58.24 | 41.17 |
+| `clean_schema_sft_dpo_seed2` | 89.34 | 10.66 | 55.97 | 41.32 |
+| `clean_schema_sft_kto_seed2` | 85.66 | 14.34 | 54.00 | 40.31 |
+
+Result paths: `archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_{seed2_merged,dpo_seed2,kto_seed2}_full_4b/.../metrics.json`
+(exact directory names in the entries below).
+
+**G1/G2 NOT yet computable.** Both gates require `clean_sft_grpo_v2` (G1) and
+`clean_sft_grpo_dpo` (G2), neither of which exists for seed 2 yet — queue item
+4 (launch `clean_sft_grpo_v2` training, source = the stage-1 merged model at
+`scratch/schema_response_confidence/runs/sft_schema_clean_seed2_full/20260731_232307/Qwen3-4B-bnb-4bit/merged-16bit`,
+hyperparameters per `cell.yaml` `arms: clean_sft_grpo_v2` —
+`per_device_train_batch_size: 32`, `num_generations: 4`, reward_variant v2) is
+the next step. **Do not compute or report G1/G2 from partial data.**
+
+**HOLD — no launches of any kind** until the lead explicitly releases queue
+item 4. The user is running (or about to run) a WSL disk-compaction
+maintenance window (`wsl --shutdown`), which terminates all running
+containers and this harness itself. Before resuming item 4, a successor must
+independently re-verify (do not trust this doc blindly): `docker images
+--digests unsloth/unsloth` matches
+`sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`
+(retag from digest if the tag is missing, do not re-pull needlessly); `docker
+run --rm --gpus all --entrypoint nvidia-smi unsloth/unsloth:latest` sees the
+RTX 3090 (the nvidia container runtime has already been lost and restored
+once this session, via a Docker Desktop restart — no toolkit install
+needed); `df -h /` free space; `nvidia-smi` idle; `docker ps -a` for any
+leftover containers from before the shutdown.
+
+**Environment notes for the successor (verified this session, not
+assumptions):**
+- All `scratch/` and experiment-config artifacts for this chain live under the
+  CANONICAL checkout (`/home/profsynapse/code/Epistemic-Humility-Research/`),
+  not the worktree (`/home/profsynapse/code/ehr-worktrees/grpo-run/`).
+  Docker bind-mounts should continue to target canonical
+  (`-v /home/profsynapse/code/Epistemic-Humility-Research:/workspace/repo`).
+  NOTEBOOK/config-file edits go in the worktree per this harness's contract,
+  then are copied (not symlinked) into canonical for container consumption —
+  see the config paths listed in the entries below for the exact pattern to
+  repeat for the `clean_sft_grpo_v2` config.
+- The `docker-wait` background-watch wake notification on this host has been
+  unreliable for long (>20min) containers even though the underlying job
+  completes cleanly — this is a notification-plumbing issue, not a stalled
+  GPU. **Always `docker inspect <name> --format '{{.State.Status}} exit=... started=... finished=...'`
+  explicitly at the start of every turn**, regardless of whether a wake
+  arrived, before deciding a container is still running.
+- A non-GPU container `cc-test-pg` (postgres:17-alpine) has been running from
+  elsewhere in the session throughout; it is not part of this chain and does
+  not use the GPU.
+- Merge output-path naming convention (not auto-derived by any handler,
+  verified by hand against seed-1 session-note precedent): `<run_path>/Qwen3-4B-clean-sft-<stage>/merged-16bit`
+  for DPO/KTO merges, `<run_path>/Qwen3-4B-bnb-4bit/merged-16bit` for the
+  stage-1 (foundation) merge.
+- Full-eval configs for DPO/KTO arms load the merged **clean-SFT base**, not
+  the merged-DPO/merged-KTO checkpoint, with the DPO/KTO LoRA as
+  `arms[].adapter` — the merged-DPO/merged-KTO checkpoints built this session
+  exist solely as GRPO-stage (stage-3) training sources, never as their own
+  eval target.
+
+Ran `scripts/ops/prune_runtime.sh stage` after the KTO full eval (3 containers
+removed, 516.2MB reclaimed). `docker ps -a` clean of this chain's containers
+at handoff (one unrelated `cc-test-pg` still running).
+
+### 2026-08-03 — KTO full eval COMPLETE (lead-verified); queue item 3 done, HOLDING
+
+`eh-grpo3seed-2-clean_sft_kto-full_eval-20260803T153224Z` exited 0 at
+16:00:50Z (started 15:32:31Z, ~28m); re-confirmed via `docker inspect`
+independently before recording. Lead-verified numbers, not re-derived:
+
+Results at
+`archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_seed2_full_4b/clean_schema_sft_kto_seed2__selfaware/`
+(re-confirmed present: `metrics.json` 1.4K, `scored_rows.jsonl` 2.6M,
+`bootstrap_ci.json` 227B). n=3369, `refusal_recall_pct` 85.66,
+`answer_on_unknown_pct` 14.34, `over_refusal_pct` 54.00, `truthful_pct` 40.31.
+
+Queue item 3 (full evals: stage-1 base, DPO, KTO) is complete. Ran
+`scripts/ops/prune_runtime.sh stage` (3 containers removed, 516.2MB
+reclaimed). Per lead instruction: finalizing this NOTEBOOK draft as a
+self-contained handoff (see the entry above), then reporting draft-final to
+the lead, then **HOLDING completely — no launches of any kind** — for the
+user's WSL disk-compaction maintenance window. This harness will be
+terminated by that window and will not be resumed; a successor picks up
+queue item 4 (`clean_sft_grpo_v2` launch) after the lead releases it.
+
+### 2026-08-03 — DPO full eval COMPLETE (lead-verified); KTO full eval LAUNCHED
+
+`eh-grpo3seed-2-clean_sft_dpo-full_eval-20260803T150428Z` exited 0 at
+15:31:31Z (started 15:04:36Z, ~27m); re-confirmed via `docker inspect`
+independently before recording. Lead-verified numbers, not re-derived:
+
+Results at
+`archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_seed2_full_4b/clean_schema_sft_dpo_seed2__selfaware/`
+(re-confirmed present: `metrics.json` 1.4K, `scored_rows.jsonl` 2.6M,
+`bootstrap_ci.json` 227B). n=3369, `refusal_recall_pct` 89.34,
+`answer_on_unknown_pct` 10.66, `over_refusal_pct` 55.97, `truthful_pct` 41.32.
+
+Launched KTO full eval immediately per lead instruction:
+`eh-grpo3seed-2-clean_sft_kto-full_eval-20260803T153224Z`, started
+~15:32:24Z, config
+`experiments/grpo-three-seed-confirmatory/configs/eval_grpo3seed_response_confidence_selfaware_clean_sft_kto_seed2_full_local_4b.yaml`.
+Preflight: digest matched, disk 233G free, GPU idle. After this completes and
+is verified: report + HOLD, no `clean_sft_grpo_v2` launch, pending the user's
+WSL disk-compaction maintenance window (`wsl --shutdown` will kill everything
+running).
+
+### 2026-08-03 — Stage-1 base full eval COMPLETE (G1 denominator, lead-verified); DPO full eval LAUNCHED
+
+`eh-grpo3seed-2-clean_sft-full_eval-20260803T133950Z` exited 0 at 14:02:05Z
+(started 13:40:00Z, ~22m). This harness's own `docker wait` background watch
+was slow to wake (known host issue, not a stall — GPU was not stuck, the
+notification mechanism itself lagged); the lead's independent watch caught
+completion and verified results directly, so the numbers below are
+lead-verified, not re-derived by this harness:
+
+Results at
+`archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_seed2_merged_full_4b/clean_schema_sft_merged_seed2__selfaware/`
+(re-confirmed present on disk by this harness: `metrics.json` 1.4K,
+`scored_rows.jsonl` 2.7M, `bootstrap_ci.json` 230B). n=3369.
+**G1 same-seed denominator (seed 2):** `refusal_recall_pct` 89.92,
+`answer_on_unknown_pct` 10.08, `over_refusal_pct` 58.24, `truthful_pct` 41.17.
+
+Standing host note: the docker-wait wake mechanism on this host is
+unreliable for long containers even when GPU work itself completes cleanly.
+Going forward: always `docker inspect` the container explicitly at the start
+of the next turn regardless of whether a wake notification arrived, per lead
+instruction.
+
+Launched DPO full eval immediately per lead instruction (revised queue order:
+DPO full eval -> KTO full eval -> report + HOLD before grpo_v2, because a user
+WSL disk-compaction maintenance window (`wsl --shutdown`) is coming at that
+boundary and nothing may be in flight when it starts).
+
+### 2026-08-03 — Queue item 3 (full evals) LAUNCHED: stage-1 base first
+
+Both stage-2 G0 bounded smokes passed (entries below). Built three full
+3,369-row eval configs, cloned from the seed-1 precedents found via
+`bin/search` (KG-search-first, per project rule) rather than guessed:
+
+- Stage-1 base: `experiments/grpo-three-seed-confirmatory/configs/eval_grpo3seed_response_confidence_selfaware_clean_sft_seed2_merged_full_local_4b.yaml`,
+  cloned from
+  `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_local_4b.yaml`.
+- DPO: `experiments/grpo-three-seed-confirmatory/configs/eval_grpo3seed_response_confidence_selfaware_clean_sft_dpo_seed2_full_local_4b.yaml`,
+  cloned from
+  `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_full_local_4b.yaml`.
+- KTO: `experiments/grpo-three-seed-confirmatory/configs/eval_grpo3seed_response_confidence_selfaware_clean_sft_kto_seed2_full_local_4b.yaml`,
+  cloned from
+  `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_full_local_4b.yaml`.
+
+Important lineage detail carried from the seed-1 precedent (not invented):
+the DPO/KTO full-eval configs load the merged CLEAN-SFT base
+(`sft_schema_clean_seed2_full/20260731_232307/.../merged-16bit`) with the
+DPO/KTO LoRA as `arms[].adapter` — they do NOT evaluate the merged-DPO/
+merged-KTO checkpoints built in the two entries above. Those merges exist
+solely as GRPO-stage (queue item 4/stage-3) training sources. All three
+configs written to worktree + canonical, no offset/limit override (full
+3,369-row file per cell.yaml `eval_population: selfaware-full-3369`).
+
+Preflight: digest match, `df -h /` 233G free, GPU idle. One unrelated non-GPU
+container (`cc-test-pg`, postgres) running from elsewhere in the session —
+not mine, no GPU use, no interference.
+
+**Launched (LONG container, lead notified immediately per contract):**
+`eh-grpo3seed-2-clean_sft-full_eval-20260803T133950Z`, started ~13:39:50Z,
+stage-1 base config above. Expected ~41min per seed-1 precedent (E note
+`:1613->:1648`). Background `docker wait` watch set; lead holds an
+independent watch.
+
+### 2026-08-03 — Seed-2 clean_sft_kto merge REDONE, bounded smoke G0 PASS
+
+**Merge.** Container `eh-grpo3seed-2-clean_sft_kto-merge-20260803T133138Z`,
+started 13:31:45Z, finished 13:34:23Z (2m38s), exit 0. Same merge mechanism as
+DPO above, naming convention confirmed against seed-1 precedent
+(`docs/sessions/20260624T183052Z-grpo-centered-stacking-plan.md:224`). Output
+at
+`scratch/schema_response_confidence/runs/schema_clean_sft_kto_seed2_full/20260801_213332/Qwen3-4B-clean-sft-kto/merged-16bit/`:
+`config.json` present, 2 safetensors shards (4737.1M + 2935.2M = 7.6G total).
+Disk 240G -> 233G free.
+
+**Bounded smoke.** Config
+`experiments/grpo-three-seed-confirmatory/configs/eval_grpo3seed_response_confidence_selfaware_clean_sft_kto_seed2_merged_smoke_local_4b.yaml`,
+cloned from the seed-1 KTO-merged sanity config
+(`archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_kto_merged_seed1_sanity_local_4b.yaml`),
+offset 2240 / limit 192 unchanged, written to worktree + canonical. Container
+`eh-grpo3seed-2-clean_sft_kto-smoke-20260803T133456Z`, started 13:35:02Z,
+finished 13:37:31Z (2m29s), exit 0, 0 errors / 1 benign NCCL-teardown warning.
+Results:
+`archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_seed2_merged_smoke_4b/`.
+
+Verified numbers (n=192, 97 known / 95 unknown): 192/192 coverage
+(`n_with_confidence` 192, `n_missing_confidence` 0), `enable_thinking`
+uniformly `False`, thinking-tag-substring hits = 0,
+`stated_confidence_retry_exhausted` count 0. Behavioral: `refusal_recall_pct`
+86.32, `answer_on_unknown_pct` 13.68, `over_refusal_pct` 62.89, `truthful_pct`
+50.52, `mean_stated_confidence` 0.8240, `brier_vs_response_appropriateness`
+0.3510.
+
+G0 `bounded_smoke_coverage`: PASS for both stage-2 arms now (lead-adjudicated).
+Ran `scripts/ops/prune_runtime.sh stage` (2 containers removed, 322MB).
+Proceeding to queue item 3: full 3,369-row evals (stage-1 base, clean_sft_dpo,
+clean_sft_kto).
+
+### 2026-08-03 — GO signal received; seed-2 clean_sft_dpo merge REDONE, bounded smoke G0 PASS
+
+Lead verified the nvidia Docker runtime restored (user restarted Docker
+Desktop; fresh backend re-pulled the pinned image by digest and retagged it;
+lead confirmed `docker run --rm --gpus all --entrypoint nvidia-smi
+unsloth/unsloth:latest` sees the RTX 3090). Note for future recovery: the
+image store did not survive the Docker Desktop restart, so an "Unable to find
+image" mid-chain recovers via pull-by-digest + retag, never trust `:latest`
+from the registry alone.
+
+Preflight re-confirmed independently before launch: digest
+`sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`
+matches; `nvidia-smi` idle 0MiB/24576MiB; `df -h /` 248G free; `docker ps -a`
+0 running.
+
+**Merge.** Container `eh-grpo3seed-2-clean_sft_dpo-merge-20260803T132341Z`,
+started 13:23:50Z, finished 13:25:38Z (1m48s), exit 0. Same
+`merge_lora_checkpoint(lora_path=.../final_model, output_path=.../Qwen3-4B-clean-sft-dpo/merged-16bit,
+max_seq_length=2048, load_in_4bit=True)` mechanism as stage 1, run inside the
+pinned container (`--user root --gpus all --ipc=host --entrypoint python3`,
+`PYTHONPATH=/workspace/repo/synaptic-tuner`). Output-path naming convention
+(`Qwen3-4B-clean-sft-dpo/merged-16bit`) confirmed against the seed-1 precedent
+(`docs/sessions/20260624T183052Z-grpo-centered-stacking-plan.md:104`), not
+guessed. Output at
+`scratch/schema_response_confidence/runs/schema_clean_sft_dpo_seed2_full/20260801_183028/Qwen3-4B-clean-sft-dpo/merged-16bit/`:
+`config.json` present, 2 safetensors shards (4737.1M + 2935.2M = 7.6G total).
+Disk 248G -> 240G free (~8G, matches budget estimate). One benign Triton
+kernel import warning in logs, non-fatal.
+
+**Bounded smoke (G0 `bounded_smoke_coverage`).** Config
+`experiments/grpo-three-seed-confirmatory/configs/eval_grpo3seed_response_confidence_selfaware_clean_sft_dpo_seed2_merged_smoke_local_4b.yaml`,
+cloned from the seed-1 DPO-merged sanity config
+(`archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_dpo_merged_seed1_sanity_local_4b.yaml`)
+with only `model_tag`/`model_name`/`results_dir`/`arms` changed; offset 2240 /
+limit 192 unchanged. Written to both the worktree and canonical (bind-mount
+root). Container `eh-grpo3seed-2-clean_sft_dpo-smoke-20260803T132727Z`, started
+13:27:35Z, finished 13:30:01Z (2m26s), exit 0, 0 errors / 1 benign NCCL-teardown
+warning. Results:
+`archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_seed2_merged_smoke_4b/`.
+
+Verified numbers (n=192, 97 known / 95 unknown): 192/192 rows scored, 192/192
+coverage (`n_with_confidence` 192, `n_missing_confidence` 0), `enable_thinking`
+uniformly `False`, thinking-tag-substring hits in `generated_answer` = 0 (field
+counted directly, no content read/copied per data containment),
+`stated_confidence_retry_exhausted` count 0. Behavioral: `refusal_recall_pct`
+88.42, `answer_on_unknown_pct` 11.58, `over_refusal_pct` 63.92, `truthful_pct`
+50.52, `mean_stated_confidence` 0.7838, `brier_vs_response_appropriateness`
+0.3192.
+
+G0 `bounded_smoke_coverage`: PASS (lead-adjudicated, numbers above). G0
+`merge_first_lineage` and `training_completed_clean`: PASS (re-verified from
+`training_lineage.json` before the merge — see prior entry). Ran
+`scripts/ops/prune_runtime.sh stage` after this boundary (2 stopped containers
+removed, 322MB reclaimed). Proceeding to queue item 2: KTO merge redo + bounded
+smoke.
+
+### 2026-08-03 — Fourth executor: state re-verification, image-tag fix, nvidia Docker runtime blocker (HOLD, lead-confirmed)
+
+Fourth execution harness takeover. Read AMENDMENT.md, cell.yaml, gates.yaml,
+NOTEBOOK.md, and the clean-mainline runbook per dispatch before touching
+anything. Zero GPU compute burned this entry.
+
+**Re-verified from artifacts (not trusting predecessor record):**
+- `clean_sft_dpo` seed-2 `final_model/` intact:
+  `adapter_model.safetensors` 252.1M; `training_lineage.json` confirms
+  `base_model` = seed-2 merged source
+  (`.../sft_schema_clean_seed2_full/20260731_232307/Qwen3-4B-bnb-4bit/merged-16bit`,
+  satisfying G0 `merge_first_lineage`), batch_size 2 / grad_accum 4 / lr 5e-6 /
+  beta 0.1 / seed 2, final_step 1868, final_loss 0.0462, training_time 4947.2s
+  (1h22m27s), `runtime.status: completed`.
+- `clean_sft_kto` seed-2 `final_model/` intact: `adapter_model.safetensors`
+  252.1M; lineage confirms same merged source, batch_size 12 / grad_accum 1 /
+  lr 1e-6 / beta 0.1 / seed 2, final_step 2491, final_loss 0.0877,
+  training_time 6036.9s (1h40m37s), `runtime.status: completed`. Capacity note:
+  `peak_gpu_memory_reserved_pct` 95.92% (23.02GB/24GB), `oom_risk_level: high`
+  logged, min headroom 0.98GB — tighter than seed-1's 89.22% at the same
+  batch-12 config, but completed with no OOM and no fallback to batch 8 was
+  needed.
+- Stage-1 merged source
+  (`.../sft_schema_clean_seed2_full/20260731_232307/Qwen3-4B-bnb-4bit/merged-16bit/`):
+  intact, `config.json` present, 2 safetensors shards, 7.6G total.
+- No leftover truncated DPO merge directory — confirms the crash-truncated
+  merge was deleted as the entry below states.
+- `df -h /`: 248G free / 1007G (above the 50G precheck floor). `nvidia-smi`:
+  idle, 0MiB/24576MiB. `docker ps -a`: 0 running before this entry.
+- Environment note: all scratch/config artifacts for this chain live under the
+  CANONICAL checkout (`/home/profsynapse/code/Epistemic-Humility-Research/scratch/schema_response_confidence/`),
+  not the worktree — confirmed via `training_lineage.json` `run_directory`
+  fields resolving to canonical, and the worktree has no `scratch/` at all
+  (fresh, as AMENDMENT.md predicts). Continuing to bind-mount Docker at
+  canonical for GPU work (matches all existing artifact paths, avoids copying
+  8GB+ near a disk that just overflowed); NOTEBOOK drafting stays confined to
+  the worktree, uncommitted, per this harness's contract. Lead-confirmed
+  correct.
+
+**Image-tag fix (lead-endorsed):** first merge launch attempt failed —
+`unsloth/unsloth:latest` had lost its tag pointer, present only by digest/
+IMAGE ID `f21629b9ae4e` (`docker images --digests` showed `<none>` for TAG).
+Digest re-verified byte-identical to the pinned reference
+(`.skills/experiment-runner/reference/local-runtime.md:82-86`):
+`sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`.
+Retagged the existing image (`docker tag f21629b9ae4e unsloth/unsloth:latest`)
+rather than re-pulling 41.7GB; digest confirmed unchanged after retag.
+
+**BLOCKER — HOLD, per lead instruction 2026-08-03:** second merge launch
+attempt failed at container-create with `could not select device driver ""
+with capabilities: [[gpu]]`. `docker info` shows `Runtimes: io.containerd.runc.v2
+runc` — no `nvidia` runtime registered. `nvidia-ctk` binary absent, no
+`nvidia-container-toolkit` in `dpkg -l`, no `/etc/docker/daemon.json`.
+`docker.service` shows `dockerd` restarted 2026-08-02 09:14:18 EDT (inside the
+crash-cleanup window below) and the image was re-pulled at 13:11:18 that same
+day — the daemon came up fresh post-crash without the nvidia container
+runtime ever being re-registered. Host `nvidia-smi` still works fine (driver/
+GPU healthy); this is purely the Docker-level GPU integration. Zero GPU compute
+burned — the container never started (exit 128 at driver-select, not a
+training step).
+
+Escalated to the lead rather than installing `nvidia-container-toolkit` and
+restarting the Docker daemon myself: that is a host-wide change (affects any
+container on the box) and needs the user's sudo. Lead confirmed: tag-restore
+endorsed; disk-surveyor (another active agent this session) is idle and not
+working this; the nvidia-runtime loss is crash fallout from the same window
+recorded below; do not install packages or restart the daemon — escalated to
+the user. **HOLDING** until the lead sends a go signal after the runtime is
+restored and GPU visibility is verified inside the pinned container, then
+resume the queue from item 1 (DPO merge redo).
+
 ### 2026-08-03 — Disk-full crash, runtime restore, and wall-clock guardrail re-baseline (LEAD RULING, user-approved)
 
 The root volume hit 100% on 2026-08-02 while the third execution harness was
