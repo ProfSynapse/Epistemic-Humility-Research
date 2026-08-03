@@ -6,6 +6,38 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-03 — Disk-full crash, runtime restore, and wall-clock guardrail re-baseline (LEAD RULING, user-approved)
+
+The root volume hit 100% on 2026-08-02 while the third execution harness was
+merging the seed-2 clean_sft_dpo checkpoint. Consequences, all now remediated:
+
+- The in-progress merge output was truncated (shard 2 short by ~555MB against
+  the reference shard size) and has been deleted; the merge will be redone
+  from the intact `final_model/` adapter. Training artifacts for both stage-2
+  arms (adapters, lineage, logs, checkpoints) were verified intact.
+- The crash cleanup removed ALL docker containers and the pinned
+  `unsloth/unsloth` training image. The image was re-pulled BY DIGEST and
+  verified: `sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`,
+  restoring the exact registered runtime. Container history (docker inspect
+  provenance for completed containers) is lost; the NOTEBOOK entries above and
+  on-disk lineage files remain the record.
+- ~162G reclaimed in a lead-supervised cleanup (registry-verified regenerable
+  merges and re-downloadable caches only; no chain artifacts, eval results, or
+  probe data touched). A standing storage-hygiene policy and prune script
+  landed as PR #386, including a free-space precheck before any merge or
+  training launch.
+
+GUARDRAIL RE-BASELINE (ruled by lead, approved by user 2026-08-03): the
+registered seed-2 pause threshold of 42h was written against wall-clock. Actual
+GPU compute through stage 2 training is ~3.5h; the overrun is entirely harness
+stalls (two executor wake failures, ~18h idle) plus the crash outage, not
+runaway compute. The threshold's intent was to catch runaway compute, so the
+budget is re-baselined to GPU-COMPUTE-HOURS with the SAME ceilings: pause if
+seed-2 compute exceeds 42h or total chain compute exceeds 83h. Wall-clock is
+no longer a pause trigger; stall time is tracked and reported but does not
+count against the budget. Ruled before any further results are seen; no
+outcome gate (G0/G1/G2) is affected.
+
 ### 2026-08-01 — Seed-2 clean_sft_dpo (stage 2) LAUNCHED
 
 Container `eh-grpo3seed-2-clean_sft_dpo-20260801T183028Z`, launched 18:30:28Z,
