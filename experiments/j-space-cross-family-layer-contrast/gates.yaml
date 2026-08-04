@@ -1,0 +1,134 @@
+# Cross-family J-space layer contrast gates. DRAFT until `bin/exp sign`.
+#
+# REFRAMED 2026-07-23 (sign-time revision, lead-directed, user-approved):
+# the PRIMARY per-family endpoint is now ABSOLUTE mid-band actuation, not a
+# relative mid-vs-late contrast. The late-reference arm is demoted to a
+# SECONDARY DESCRIPTIVE comparator that reuses doubt-snap-cross-family-
+# confirmatory's frozen per-family late-site direction/gate verbatim and
+# gates NOTHING. See AMENDMENT.md "Design" / "Gates" and LAUNCH-PLAN.md
+# "Decision points for the lead".
+#
+# The gate NUMBERS below were ADJUDICATED by lead+user 2026-07-23 (conservative
+# option chosen): G1 mid-band actuation floor = clean_tighten >= 0.50 point /
+# Wilson 95% lower CI > 0.40; G2 mid-band selectivity cap =
+# not_well_formed_correct <= 0.05 point / Wilson 95% upper CI < 0.10. The
+# derivation from the predecessor operating points is in AMENDMENT.md
+# "Gates -> derivation". Still DRAFT until `bin/exp sign`.
+
+seed: 20260709
+alpha: 0.05
+
+per_family_gates:
+  - name: g0_instrument_validity
+    interpretation: stop_before_outcome
+    checks:
+      - id: family_loader_compat
+        pass_if: "the family's checkpoint loads via model_lib.load_model_and_tokenizer and yields a hidden_states tuple of length n_hidden_layers+1"
+      - id: reused_rows_integrity
+        pass_if: >-
+          every pinned reuse artifact this family actually consumes hashes
+          byte-identical to its sha256 in families/<slug>.yaml reuse.doubt_snap
+          (family_config.integrity_artifact_names is the authority). REUSED-POOL
+          families (llama-3.2-3b, mistral-7b-v03, qwen35-4b): the committed
+          split_manifest.json AND the frozen late-site direction/gate artifacts
+          (c_hat.json, u_d.json, random_direction.json, gate_fit.json,
+          build_manifest.json). FRESH-MINE family (gemma4-e4b,
+          reuse.doubt_snap.pool_provenance: fresh_mine, lead-authorized
+          2026-07-23): ONLY the frozen late-site direction/gate artifacts
+          (c_hat.json, u_d.json, random_direction.json, gate_fit.json,
+          build_manifest.json) -- gemma mines its own pool/split, so its
+          split_manifest / g0_prep_summary are reference-only and NOT
+          hash-checked here. Nothing about the reused rows or the late arm is
+          refit at any family.
+      - id: reused_pool_powered
+        pass_if: >-
+          REUSED-POOL families (llama-3.2-3b, mistral-7b-v03, qwen35-4b): the
+          reused doubt-snap pool has at least 150 held-out confab rows AND at
+          least 250 held-out known_correct_answered rows (doubt-snap's own
+          registered held-out power bar, inherited verbatim). FRESH-MINE family
+          (gemma4-e4b): the SAME bar (>=150 held-out confab, >=250 held-out
+          known_correct_answered) applies to gemma's OWN fresh mine + split, not
+          to doubt-snap's reference counts (reuse.pool_counts for gemma is
+          reference-only). The primary is scored on the held-out partition in
+          both cases.
+      - id: containment
+        pass_if: "no question text, aliases, raw generations, or row-level outputs are committed for this family (only ID-only manifests + aggregate JSON)"
+      - id: band_selection_resolved
+        pass_if: "families/<slug>.yaml band_selection.status == resolved before extract_anchor.py runs (mid-band candidates localized by J-lens for THIS family)"
+      - id: midband_direction_refit_reproducible
+        pass_if: "build_directions.py --verify-reproducible passes for every MID-BAND candidate layer (the late arm is not refit; it is loaded frozen from the reuse block)"
+      - id: midband_gate_auc_floor
+        pass_if: "gate_fit.py AUC (neg_z_d, FIT confab vs FIT known_correct_answered) >= 0.90 at every MID-BAND candidate layer"
+      - id: smoke_write_readback
+        pass_if: "all dosed smoke rows read back within 5% + 0.5 absolute of each layer's calibrated dose (mid-band candidates and the late arm)"
+      - id: smoke_no_collapse
+        pass_if: "collapse rate on dosed smoke rows is 0 for every mid-band candidate layer and the late arm at its resolved dose"
+
+  # ---- PRIMARY endpoint: absolute mid-band actuation (per family) ----
+  - name: g1_midband_actuation_floor
+    role: primary
+    primitive: rate_over_population
+    population: confab_held_out
+    metric: confab_tighten.rate (clean_tighten)
+    site: best mid-band candidate (highest held-out confab clean_tighten, ties broken by lower known-correct cost)
+    pass_if_rate: ">= 0.50   # adjudicated lead+user 2026-07-23"
+    pass_if_wilson_lower_ci: "> 0.40   # adjudicated lead+user 2026-07-23"
+    derivation_ref: "AMENDMENT.md 'Gates -> derivation' (same-lineage mid-band held-out operating points 0.66 Qwen3.5-4B / 0.89 Qwen3-4B; observed dead/weak late-site region <= 0.33)"
+
+  - name: g2_midband_selectivity_cap
+    role: primary
+    primitive: rate_over_population
+    population: known_correct_answered_held_out
+    metric: known_correct_cost_control.rate (not_well_formed_correct)
+    site: same best mid-band candidate selected for G1
+    pass_if_rate: "<= 0.05   # adjudicated lead+user 2026-07-23"
+    pass_if_wilson_upper_ci: "< 0.10   # adjudicated lead+user 2026-07-23"
+    derivation_ref: "AMENDMENT.md 'Gates -> derivation' (qwen35-4b-midband-heldout cost gate; observed mid-band costs 0.035 Qwen3-4B / 0.039 Qwen3.5-4B)"
+
+  per_family_primary_pass_rule: "a family PASSES the primary iff G1 AND G2 both pass on its held-out pool."
+
+  # ---- SECONDARY: late-reference arm (descriptive only, gates NOTHING) ----
+  - name: secondary_late_reference
+    role: secondary_descriptive
+    gating: none
+    site: >-
+      doubt-snap-cross-family-confirmatory's frozen per-family late site
+      (decoder block = reuse.doubt_snap.late_site.block, hs_index = block + 1),
+      reusing that experiment's frozen c_hat / u_d / tau / standardization
+      VERBATIM (hash-pinned). Expected weak or dead per doubt-snap's resolved
+      verdict (observed FIT peak clean_tighten: llama 0.184, mistral 0.000,
+      qwen35-4b 0.326; gemma never dose-swept).
+    reports:
+      - late-arm held-out confab clean_tighten (rate + Wilson CI)
+      - late-arm held-out known-correct not_well_formed_correct cost (rate + Wilson CI)
+      - best-mid-band MINUS late delta on both metrics (descriptive context, not a gate)
+    dose_resolution: "OPEN QUESTION for the lead -- doubt-snap selected NO late-site dose for any cell (all G0 dose-viability stops); see AMENDMENT.md 'Open questions at sign' and LAUNCH-PLAN.md decision point 1."
+
+per_family_disposition:
+  g0_fail: >-
+    A family that fails G0 after bounded debugging (including a Gemma-4-E4B
+    G0 that OOMs both locally and on the pre-authorized Modal fallback) is
+    recorded as NOT-RUN with the explicit blocker and excluded from the
+    cross-family denominator -- neither a primary PASS nor a FALSIFIER hit
+    for that family. Never silently substituted with a different checkpoint
+    or dtype. Matches Amendment Z's / doubt-snap's INELIGIBLE disposition.
+
+cross_family_success_rule: >-
+  CROSS-FAMILY SUCCESS = the PRIMARY (G1 AND G2) passes in >= 3 of the
+  families that run past G0. If a family did not run (G0 stop), the
+  denominator is "the families that ran"; if fewer than 3 families ran at
+  all, the experiment is INCONCLUSIVE, not a pass.
+
+falsifier_rule: >-
+  FALSIFIER: the PRIMARY passes in <= 1 of the families that run past G0 =>
+  mid-band actuation does NOT generalize across families (the Qwen3-lineage
+  mid-band actuation is family-specific or an artifact). Exactly 2 of the run
+  families passing => MIXED, no claim promoted either way.
+
+summary_rule: >-
+  This experiment promotes "the mid-band write site achieves useful,
+  selective confab actuation across model families (not just Qwen3 lineage)"
+  ONLY if the cross-family success rule is met on the ABSOLUTE primary. The
+  secondary late-reference arm is reported for descriptive contrast with
+  doubt-snap's resolved late-site null; it gates nothing and a dead late arm
+  is expected, not disqualifying.

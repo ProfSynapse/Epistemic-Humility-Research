@@ -1,0 +1,2624 @@
+{
+  "family": "gemma4-e4b",
+  "mode": "fit_dose_calibration",
+  "calibration_split": "fit",
+  "site_set": "midband",
+  "kv_sharing": "on",
+  "dose_mode": "ratio_normalized",
+  "ratio_ladder": [
+    0.1,
+    0.153,
+    0.235,
+    0.361,
+    0.554,
+    0.85,
+    1.304,
+    2.0
+  ],
+  "absolute_doses_arg": null,
+  "median_norms": {
+    "hs34": 154.07586988699313,
+    "hs38": 156.06283703388755,
+    "hs42": 236.35095815105285,
+    "hs40": 142.34735752194405
+  },
+  "min_confab_rate_for_usable": 0.5,
+  "midband_hs_indices": [
+    34,
+    38,
+    42
+  ],
+  "late_reference_hs": 40,
+  "layers": {
+    "hs34": {
+      "hs_index": 34,
+      "role": "midband",
+      "n_confab_fit_rows": 8,
+      "n_known_fit_rows": 8,
+      "median_norm": 154.07586988699313,
+      "doses": [
+        {
+          "hs_index": 34,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 15.510454514684776,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 15.407586988699315,
+          "ratio": 0.1,
+          "median_norm": 154.07586988699313,
+          "usable": false
+        },
+        {
+          "hs_index": 34,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 23.675031008058188,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 23.57360809270995,
+          "ratio": 0.153,
+          "median_norm": 154.07586988699313,
+          "usable": false
+        },
+        {
+          "hs_index": 34,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 36.180768366597476,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 36.207829423443386,
+          "ratio": 0.235,
+          "median_norm": 154.07586988699313,
+          "usable": false
+        },
+        {
+          "hs_index": 34,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 55.38258155091171,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 2,
+            "rate": 0.25,
+            "wilson_ci_95": [
+              0.071479212752109,
+              0.5907245696898311
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 55.62138902920452,
+          "ratio": 0.361,
+          "median_norm": 154.07586988699313,
+          "usable": false
+        },
+        {
+          "hs_index": 34,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 84.93812077470163,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.5,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 85.3580319173942,
+          "ratio": 0.554,
+          "median_norm": 154.07586988699313,
+          "usable": false
+        },
+        {
+          "hs_index": 34,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 130.94294310814198,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 130.96448940394416,
+          "ratio": 0.85,
+          "median_norm": 154.07586988699313,
+          "usable": false
+        },
+        {
+          "hs_index": 34,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 201.95480230848383,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 200.91493433263906,
+          "ratio": 1.304,
+          "median_norm": 154.07586988699313,
+          "usable": false
+        },
+        {
+          "hs_index": 34,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 307.92961395204475,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 308.15173977398626,
+          "ratio": 2.0,
+          "median_norm": 154.07586988699313,
+          "usable": false
+        }
+      ],
+      "selected_dose": null,
+      "selected_ratio": null,
+      "selected": null,
+      "has_usable_dose": false
+    },
+    "hs38": {
+      "hs_index": 38,
+      "role": "midband",
+      "n_confab_fit_rows": 8,
+      "n_known_fit_rows": 8,
+      "median_norm": 156.06283703388755,
+      "doses": [
+        {
+          "hs_index": 38,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 15.579480076979356,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.16666666666666666,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 3,
+            "rate": 0.375,
+            "wilson_ci_95": [
+              0.13684428582359742,
+              0.6942576053973727
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 15.606283703388755,
+          "ratio": 0.1,
+          "median_norm": 156.06283703388755,
+          "usable": false
+        },
+        {
+          "hs_index": 38,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 23.787137174111802,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.3333333333333333,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 3,
+            "rate": 0.375,
+            "wilson_ci_95": [
+              0.13684428582359742,
+              0.6942576053973727
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 23.877614066184794,
+          "ratio": 0.153,
+          "median_norm": 156.06283703388755,
+          "usable": false
+        },
+        {
+          "hs_index": 38,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 36.76175017524656,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.5,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 3,
+            "rate": 0.375,
+            "wilson_ci_95": [
+              0.13684428582359742,
+              0.6942576053973727
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 36.67476670296357,
+          "ratio": 0.235,
+          "median_norm": 156.06283703388755,
+          "usable": false
+        },
+        {
+          "hs_index": 38,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 56.09396324361296,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.3333333333333333,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 3,
+            "rate": 0.375,
+            "wilson_ci_95": [
+              0.13684428582359742,
+              0.6942576053973727
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 56.3386841692334,
+          "ratio": 0.361,
+          "median_norm": 156.06283703388755,
+          "usable": false
+        },
+        {
+          "hs_index": 38,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 86.52530270936404,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.6666666666666666,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 86.45881171677371,
+          "ratio": 0.554,
+          "median_norm": 156.06283703388755,
+          "usable": false
+        },
+        {
+          "hs_index": 38,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 133.03526072616418,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.8333333333333334,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 132.6534114788044,
+          "ratio": 0.85,
+          "median_norm": 156.06283703388755,
+          "usable": false
+        },
+        {
+          "hs_index": 38,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 203.98398230124198,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 203.50593949218936,
+          "ratio": 1.304,
+          "median_norm": 156.06283703388755,
+          "usable": false
+        },
+        {
+          "hs_index": 38,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 312.0602661276013,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 312.1256740677751,
+          "ratio": 2.0,
+          "median_norm": 156.06283703388755,
+          "usable": false
+        }
+      ],
+      "selected_dose": null,
+      "selected_ratio": null,
+      "selected": null,
+      "has_usable_dose": false
+    },
+    "hs42": {
+      "hs_index": 42,
+      "role": "midband",
+      "n_confab_fit_rows": 8,
+      "n_known_fit_rows": 8,
+      "median_norm": 236.35095815105285,
+      "doses": [
+        {
+          "hs_index": 42,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 7,
+          "readback_mean": 23.61826400179416,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 2,
+            "rate": 0.25,
+            "wilson_ci_95": [
+              0.071479212752109,
+              0.5907245696898311
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 23.635095815105288,
+          "ratio": 0.1,
+          "median_norm": 236.35095815105285,
+          "usable": false
+        },
+        {
+          "hs_index": 42,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 7,
+          "readback_mean": 36.23741815548107,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.14285714285714285,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 5,
+            "rate": 0.625,
+            "wilson_ci_95": [
+              0.30574239460262737,
+              0.8631557141764026
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 36.16169659711109,
+          "ratio": 0.153,
+          "median_norm": 236.35095815105285,
+          "usable": false
+        },
+        {
+          "hs_index": 42,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 7,
+          "readback_mean": 55.50511431689457,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.42857142857142855,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 55.542475165497414,
+          "ratio": 0.235,
+          "median_norm": 236.35095815105285,
+          "usable": false
+        },
+        {
+          "hs_index": 42,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 7,
+          "readback_mean": 85.49521505430208,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 85.32269589253008,
+          "ratio": 0.361,
+          "median_norm": 236.35095815105285,
+          "usable": false
+        },
+        {
+          "hs_index": 42,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 7,
+          "readback_mean": 130.99089524033064,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 130.9384308156833,
+          "ratio": 0.554,
+          "median_norm": 236.35095815105285,
+          "usable": false
+        },
+        {
+          "hs_index": 42,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 7,
+          "readback_mean": 201.043155962198,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 200.8983144283949,
+          "ratio": 0.85,
+          "median_norm": 236.35095815105285,
+          "usable": false
+        },
+        {
+          "hs_index": 42,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 7,
+          "readback_mean": 308.07836600316557,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 308.2016494289729,
+          "ratio": 1.304,
+          "median_norm": 236.35095815105285,
+          "usable": false
+        },
+        {
+          "hs_index": 42,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 7,
+          "readback_mean": 474.14379548392026,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 472.7019163021057,
+          "ratio": 2.0,
+          "median_norm": 236.35095815105285,
+          "usable": false
+        }
+      ],
+      "selected_dose": null,
+      "selected_ratio": null,
+      "selected": null,
+      "has_usable_dose": false
+    },
+    "hs40": {
+      "hs_index": 40,
+      "role": "late_reference_descriptive",
+      "n_confab_fit_rows": 8,
+      "n_known_fit_rows": 8,
+      "median_norm": 142.34735752194405,
+      "doses": [
+        {
+          "hs_index": 40,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 14.300160400326908,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 14.234735752194405,
+          "ratio": 0.1,
+          "median_norm": 142.34735752194405,
+          "usable": false
+        },
+        {
+          "hs_index": 40,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 21.82868101128406,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 21.779145700857438,
+          "ratio": 0.153,
+          "median_norm": 142.34735752194405,
+          "usable": false
+        },
+        {
+          "hs_index": 40,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 33.5164553964593,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 33.45162901765685,
+          "ratio": 0.235,
+          "median_norm": 142.34735752194405,
+          "usable": false
+        },
+        {
+          "hs_index": 40,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 51.22301329495773,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 51.3873960654218,
+          "ratio": 0.361,
+          "median_norm": 142.34735752194405,
+          "usable": false
+        },
+        {
+          "hs_index": 40,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 78.43093339462696,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 2,
+            "rate": 0.25,
+            "wilson_ci_95": [
+              0.071479212752109,
+              0.5907245696898311
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 78.86043606715701,
+          "ratio": 0.554,
+          "median_norm": 142.34735752194405,
+          "usable": false
+        },
+        {
+          "hs_index": 40,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 120.52911317927403,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.6666666666666666,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 120.99525389365243,
+          "ratio": 0.85,
+          "median_norm": 142.34735752194405,
+          "usable": false
+        },
+        {
+          "hs_index": 40,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 184.97945570282172,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 185.62095420861505,
+          "ratio": 1.304,
+          "median_norm": 142.34735752194405,
+          "usable": false
+        },
+        {
+          "hs_index": 40,
+          "kv_sharing": "on",
+          "n_rows": 16,
+          "n_fired": 6,
+          "readback_mean": 284.02458542962387,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.0
+            ],
+            "n_fired_known": 0,
+            "adjudicable_floor": 35,
+            "adjudicable": false,
+            "disposition": "NOT-ADJUDICABLE"
+          },
+          "known_correct_cost_control_g2_block": {
+            "full_population_g2": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "full_population_g2_pass": false,
+            "fired_only": {
+              "n": 0,
+              "successes": 0,
+              "rate": 0.0,
+              "wilson_ci_95": [
+                0.0,
+                0.0
+              ],
+              "n_fired_known": 0,
+              "adjudicable_floor": 35,
+              "adjudicable": false,
+              "disposition": "NOT-ADJUDICABLE"
+            },
+            "undosed_floor": {
+              "n": 8,
+              "successes": 1,
+              "rate": 0.125,
+              "wilson_ci_95": [
+                0.02241749145005667,
+                0.4708881822128535
+              ]
+            },
+            "discrepancy_full_pass_but_fired_only_over_cap": false
+          },
+          "dose_target": 284.6947150438881,
+          "ratio": 2.0,
+          "median_norm": 142.34735752194405,
+          "usable": false
+        }
+      ],
+      "selected_dose": null,
+      "selected_ratio": null,
+      "selected": null,
+      "has_usable_dose": false
+    }
+  },
+  "selected_doses": {},
+  "midband_selected_doses": {},
+  "late_reference_selected_dose": {
+    "layer": "hs40",
+    "hs_index": 40,
+    "selected_dose": null,
+    "note": "late arm calibrated fresh with the mid-band ladder (option B, non-gating descriptive); frozen late-site direction/gate reused verbatim. A null selected_dose means no usable late-site dose was found -- expected per doubt-snap's late-site null -- and the late arm is then SKIPPED without affecting the primary."
+  },
+  "all_midband_have_usable_dose": false,
+  "all_layers_have_usable_dose": false
+}

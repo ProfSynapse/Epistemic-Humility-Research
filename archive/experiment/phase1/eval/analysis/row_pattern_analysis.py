@@ -71,7 +71,7 @@ QUESTION_TAGS = [
 
 
 def repo_root() -> Path:
-    return Path(__file__).resolve().parents[4]
+    return Path(__file__).resolve().parents[5]
 
 
 def default_artifact_root() -> Path:

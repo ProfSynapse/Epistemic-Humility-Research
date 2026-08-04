@@ -1,0 +1,12 @@
+{
+  "failure_manifest_sha256": "85a9dd50bf5ef4ca25bfe7c7301dcd9935359d0ce019d8ab1eeb5fddba1b7e61",
+  "model_id": "gemma4_e4b_it",
+  "n_parity_failures": 0,
+  "n_predecessor_strict_valid": 5189,
+  "n_prior_failures_repaired": 11,
+  "n_rows": 5200,
+  "predecessor_completions_sha256": "adb53c0b3024ae32c816ba19912d4215605e42c7e1a11d85914622513f7aee8b",
+  "private_evidence_sha256": "2d2de6e7d2cd66a2c3a5dc8ae0baed88fca249568fab4cc66f63f0dbd6ef782e",
+  "schema_version": 1,
+  "status": "pass"
+}

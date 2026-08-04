@@ -1,0 +1,37 @@
+{
+  "gate": "g0_alin_discrimination_measurement",
+  "part": "2 of 2",
+  "generated": "2026-07-30T17:45:22Z",
+  "family": "gemma4-e4b",
+  "checkpoint": "google/gemma-4-E4B-it",
+  "revision": "fee6332c1abaafb77f6f9624236c63aa2f1d0187",
+  "device": "cpu",
+  "site": "hs38",
+  "band": 0.05,
+  "n_fit_rows_scored": 292,
+  "on": {
+    "n": 292,
+    "top1_acc": 0.976,
+    "median_rank": 1,
+    "mean_rank": 1.0,
+    "p90_rank": 1,
+    "min_rank": 1,
+    "max_rank": 3
+  },
+  "off": {
+    "n": 292,
+    "top1_acc": 0.0,
+    "median_rank": 206639,
+    "mean_rank": 197027.3,
+    "p90_rank": 227774,
+    "min_rank": 1212,
+    "max_rank": 241638
+  },
+  "discrimination": {
+    "a_lin_on": 0.976,
+    "a_lin_off": 0.0,
+    "delta_a_lin": 0.976,
+    "band": 0.05,
+    "within_band": false
+  }
+}

@@ -1,0 +1,559 @@
+# Gemma-4-E4B KV-sharing seam quarantine test. DRAFT until `bin/exp sign`.
+#
+# Descriptive run-shape config, same convention as the parent
+# j-space-cross-family-layer-contrast/cell.yaml (documents the run shape rather
+# than literally parsing against the tuner's SteerCellConfig six-block schema).
+# Per-model checkpoint/loader/render facts live in families/gemma4-e4b.yaml,
+# copied verbatim from the parent. This file holds what is identical across
+# every arm.
+
+seed: 20260709
+
+surface:
+  substrate: bf16
+  adapter: none
+  quantization: none
+  family: gemma4-e4b
+  family_config: families/gemma4-e4b.yaml
+  generation:
+    max_new_tokens: 200
+    min_new_tokens: 1
+    do_sample: false
+    num_beams: 1
+    enable_thinking: false
+    eos_resolution: model_lib.resolve_eos_ids (see families/gemma4-e4b.yaml eos block)
+  containment:
+    committed_row_text: forbidden
+    committed_aliases: forbidden
+    committed_generations: forbidden
+    committed_outputs: aggregate_and_id_manifest_only
+
+# ---- The seam geometry every site index in this experiment depends on ----
+# Verified against transformers==5.5.0 models/gemma4/modeling_gemma4.py and the
+# pinned checkpoint config. kv_seam_patch.verify_architecture asserts all of it
+# at runtime and the experiment stops if any value differs.
+kv_seam:
+  num_hidden_layers: 42
+  num_kv_shared_layers: 18
+  first_kv_shared_layer_idx: 24        # blocks 24..41 are KV-shared
+  donor_blocks:
+    full_attention: 23
+    sliding_attention: 22
+  store_full_length_kv_blocks: [22, 23]
+  site_convention: "hs_N = residual stream at the OUTPUT of decoder block N-1 = input to block N"
+  donor_reachability:
+    hs15: both_donors        # write at output of block 14; blocks 22 and 23 both still to run
+    hs18: both_donors        # write at output of block 17
+    hs20: both_donors        # write at output of block 19
+    hs22: both_donors        # write at output of block 21; blocks 22 and 23 both see it
+    hs23: full_donor_only    # write at output of block 22; only block 23 still to run
+    hs24: quarantined        # write at output of block 23; NEITHER donor sees it
+    hs38: quarantined        # the parent's site
+  note: >-
+    "Below the seam" is donor reachability, NOT block index < 24. hs24 is the
+    output of block 23 and is fully quarantined. Any site list derived from the
+    block index would misclassify it. See AMENDMENT.md "The seam is not where
+    'block index < 24' puts it".
+
+# ---- Arms ----
+# primary_contrast is pre-stated and does not move after any result.
+primary_contrast: A2_vs_A1
+# The primary contrast is NOT discriminating on its own. Both live hypotheses
+# (KV quarantine; crystallization gap / A_lin) predict the parent's mid-band
+# observations identically. They diverge only on the JOINT outcome
+# (behavioral delta, A_lin delta) at hs38 across A1/A2 -- because holding the
+# site INDEX fixed does not hold the site's REPRESENTATION fixed (hs38 is the
+# output of block 37, a KV-SHARED block, so OFF changes blocks 24-37 upstream of
+# it; that is the same fact that forces the OFF refits below). The four-outcome
+# interpretation rule is pre-stated in gates.yaml
+# g0_alin_discrimination_measurement and AMENDMENT.md "The divergence".
+primary_contrast_requires: gates.yaml g0_alin_discrimination_measurement
+arms:
+  - id: A1
+    site_hs: 38
+    kv_sharing: on
+    role: above-seam null replication (parent's site, parent's condition)
+  - id: A2
+    site_hs: 38
+    kv_sharing: off
+    role: PRIMARY -- same site, mechanism toggled
+  - id: A3
+    site_hs: 22                   # RESOLVED 2026-07-25 by below_seam_site_selection.RESOLVED (tie -> tie_break -> hs22)
+    kv_sharing: on
+    role: below-seam, donor-reachable, unmodified model
+  - id: A4
+    site_hs: SAME_AS_A3
+    kv_sharing: off
+    role: 2x2 completion
+  - id: A5
+    site_hs: 24
+    kv_sharing: on
+    role: seam-adjacent quarantine control (one or two blocks from A3, unmodified model)
+  - id: A6
+    site_hs: 23                   # RESOLVED 2026-07-25: A3 took hs22, so A6 is hs23
+    kv_sharing: on
+    role: the other donor-reachability regime (both donors vs full donor only)
+    conditional_on: "A3 has a usable FIT dose"
+    coincides_with: >-
+      D4. REALIZED 2026-07-25: A3 took hs22, so A6 is hs23, which is D4's
+      registered site under the same condition (ON). Per D4's pre-stated note,
+      ONE arm is run and reported under BOTH labels with the coincidence stated
+      -- never run twice, never reported as two independent observations. Note
+      the two labels ask different questions of the same cell: D4 asks where in
+      the depth ladder actuation appears, A6 asks whether the full-donor-only
+      regime behaves like the both-donors regime. One measurement can answer
+      both; it cannot be counted twice.
+  # ---- Descriptive shallow ladder. Registered 2026-07-24 (lead), pre-signature,
+  # before any GPU work. NON-GATING: D1-D4 do not enter success_rule and enter
+  # falsifier_rule only asymmetrically (gates.yaml descriptive_shallow_ladder).
+  # Sites are FIXED by registration, not selected by A_lin. No re-extraction:
+  # the clean use_cache=True extract already stores all 43 hidden states.
+  - id: D1
+    site_hs: 15
+    kv_sharing: on
+    role: shallow ladder, rd 0.357, both donors reachable
+  - id: D2
+    site_hs: 18
+    kv_sharing: on
+    role: shallow ladder, rd 0.429, both donors reachable
+  - id: D3
+    site_hs: 20
+    kv_sharing: on
+    role: shallow ladder, rd 0.476, both donors reachable
+  - id: D4
+    site_hs: 23
+    kv_sharing: on
+    role: shallow ladder, rd 0.548, full donor only
+    note: >-
+      hs23 is also A6's site if A3 takes hs22. If the two coincide, ONE arm is
+      run and reported under BOTH labels with that fact stated -- never run twice
+      and never reported as two independent observations.
+      REALIZED 2026-07-25: A3 took hs22 (G0-ALIN Part 1 tie-break), so this
+      condition is now live and D4 == A6 is a single cell. A6 additionally
+      carries conditional_on "A3 has a usable FIT dose"; D4 does NOT and is
+      unconditional, so the cell RUNS as D4 regardless and is additionally
+      READ as A6 only when A6's condition is met.
+  - id: C0
+    site_hs: null
+    kv_sharing: on
+    role: no-injection baseline
+  - id: C1
+    site_hs: null
+    kv_sharing: off
+    role: PRECONDITION CONTROL (see gates.yaml g0_c1)
+  # --- Registered 2026-07-25, pre-signature, before any arm has run. ---------
+  # DIRECTION-SPECIFICITY CONTROLS. See placebo_direction_control below and
+  # gates.yaml g3_direction_specificity. These are not new questions bolted on:
+  # without them, a G1 pass at any arm is consistent with "norm injection of this
+  # magnitude at this site makes the model hedge" and carries no evidence that
+  # the KU readout is what is doing the work -- which is the only thing this
+  # program is trying to establish.
+  - id: P1
+    site_hs: 22
+    kv_sharing: on
+    role: >-
+      matched-magnitude random-direction control for A3. Identical site, dose,
+      fired-row set and law; ONLY the written direction differs.
+    conditional_on: "A3 has a usable FIT dose (REALIZED 2026-07-25: yes, ratio=0.361, dose=28.5068)"
+  - id: P2
+    site_hs: 24
+    kv_sharing: on
+    role: >-
+      matched-magnitude random-direction control for A5. Same construction as P1.
+    conditional_on: "A5 has a usable FIT dose (REALIZED 2026-07-25: yes, ratio=0.554, dose=50.5311)"
+
+# Below-seam site selection is by LINEAR ACCESSIBILITY, pre-stated here before
+# any run. Donor reachability admits exactly two below-seam sites (hs22, hs23),
+# so there is no free depth parameter -- A_lin only decides which of the two
+# becomes A3. The parent's eff_dim-peak rule is NOT used: gemma's profile is flat
+# (0.0046-0.0058 over 9 of 10 sweep points, peak std 0.00141 overlapping every
+# interior point) and cannot select a site.
+below_seam_site_selection:
+  rule: "A3 = whichever of hs22/hs23 has the HIGHER A_lin; the other becomes A6"
+  tie_break: "|delta A_lin| < 0.01 -> hs22 (the site with broader donor reach)"
+  measured_by: gates.yaml g0_alin_site_selection (CPU-only, recommended pre-sign)
+  RESOLVED:
+    run: "2026-07-25, alin_sweep.py, CPU-only, 292 FIT rows, 18.05s. Report: analysis-committed/gemma4-e4b/alin_part1_selection.json"
+    a_lin_hs22: 0.0000
+    a_lin_hs23: 0.0000
+    delta: 0.0
+    outcome: "TIE (|delta| = 0.0 < 0.01) -> tie_break fires -> A3 = hs22, A6 = hs23"
+    A3: hs22
+    A6: hs23
+    A5: hs24
+    confound_declaration: "NOT declared. |A_lin(A3) - A_lin(A5)| = |0.0 - 0.0| = 0.0, well inside the 0.10 band."
+    note_on_the_floor: >-
+      A_lin is EXACTLY 0.0000 at every below-seam site (hs15/18/20/22/23/24), so
+      the registered statistic carries no selection signal and the outcome is
+      decided entirely by the pre-stated tie-break. This is the condition flagged
+      as a blocker in the parent's session record (2026-07-24, "G0-ALIN as
+      pre-registered cannot discriminate hs22 from hs23"). It is not a defect in
+      the rule: the tie-break exists precisely for this case and resolves to hs22
+      on a stated principle (broader donor reach), not to noise.
+    corroboration: >-
+      The tie-break's choice is INDEPENDENTLY corroborated by median rank, which
+      is not at the floor and was NOT used for selection: hs22 ranks the true
+      token 83008 vs hs23's 238571 -- hs22 is better by ~3x, and hs23 is the
+      worst site measured at any depth (vocab is 262144, so hs23 sits near the
+      bottom of it). Had the finer statistic been the registered one it would
+      have chosen hs22 too, so the selection does not turn on which statistic
+      was locked. Recorded as an OBSERVATION; substituting rank for the
+      registered top-1 accuracy would be goalpost movement and was refused.
+  hs38_retained_for_A1_A2_because: "it is the site the parent actually ran, so A1 replicates the parent's site and method rather than choosing a new one. A1 refits its own hs38 direction under ON -- it does NOT reuse the parent's corrupt-derived hs38 artifacts; see inputs_reused.frozen_hs38_direction"
+
+descriptive_contrast:           # NON-GATING; cannot discriminate; not in success_rule
+  id: A3_vs_A5
+  status: descriptive
+  rationale: >-
+    Both on the unmodified on-distribution model, one or two blocks apart,
+    differing in donor reachability. Immune to every patch artifact, which is its
+    only value: if the patch's validity is questioned it still says whether the
+    boundary push actuates below the seam.
+  why_it_cannot_discriminate: >-
+    It is NOT immune to the site-property explanations. Two blocks of computation
+    can move A_lin, so the crystallization-gap account predicts an A3-yes/A5-no
+    pattern as readily as quarantine does. Controlling DEPTH tightly (2 blocks of
+    42) does not control LINEAR ACCESSIBILITY. No configuration of A3/A4/A5/A6
+    discriminates the two hypotheses. Excluded from success_rule; retained in the
+    falsifier only as a conservatism (see gates.yaml falsifier_rule).
+  confound_declaration: >-
+    Reported with measured A_lin at BOTH sites. If |A_lin(A3) - A_lin(A5)| > 0.10
+    the contrast is ADDITIONALLY declared confounded with the crystallization gap
+    (Regime 2) rather than merely non-discriminating. Threshold fixed here,
+    before the sweep runs.
+
+other_descriptive_contrasts:    # gate nothing, reported regardless
+  - A3_vs_A1                    # does the boundary push actuate anywhere in this model -- CONFOUNDED WITH DEPTH OUTRIGHT (16 blocks)
+  - A4_vs_A3                    # does sharing-OFF add anything below the seam
+  - A6                          # sliding vs full donor channel
+  - D1_D2_D3_A3                 # depth sweep rd 0.357 -> 0.524 at CONSTANT donor reachability (both donors); the one contrast in this design that varies depth alone
+  - D4_vs_A5                    # full-donor-only (hs23) vs quarantined (hs24): one block apart, reachability flips
+
+readouts:
+  method: >-
+    Per arm and per condition: u_d (known-unknown / KU direction), pos_ctrl and
+    neg_ctrl, c_hat (orthogonalized boundary-push write direction), fit on this
+    experiment's FIT split at that arm's site UNDER THAT ARM'S OWN KV-sharing
+    condition. Same fit method and same pinned random_state=20260707 as the
+    parent's build_directions.py, which is copied here verbatim.
+  refit_policy: >-
+    Sharing-OFF arms refit their own directions, tau, and per-site median anchor
+    L2 norm on the SAME FIT rows -- the OFF residual stream is a different
+    distribution and ON-fitted parameters are not automatically valid under it.
+    Doses are matched BY RATIO RUNG, not by absolute magnitude. A non-gating
+    ON-fit vs OFF-fit cosine similarity of c_hat and u_d at hs38 is recorded.
+  fire_rule: "score_neg_z_d >= tau_frozen"
+  write_direction: c_hat
+  law: erase_write
+  position: anchor_onward
+
+dose_ladder:
+  kind: norm_scaled_ratio        # parent R2 revision, inherited verbatim
+  ratios: [0.100, 0.153, 0.235, 0.361, 0.554, 0.850, 1.304, 2.000]
+  dose_rule: "dose = ratio x that site's own median anchor L2 norm, computed under that arm's own condition"
+  usable_rule: "frac_readback_within_tol == 1.0 AND collapse_rate_on_dosed == 0.0 AND FIT confab clean_tighten >= 0.5"
+  selection_rule: "highest FIT confab tighten, then lower known-correct cost, then lower ratio"
+  source: calibrate_dose.py (copied verbatim from the parent)
+
+# ---------------------------------------------------------------------------
+# DIRECTION-SPECIFICITY CONTROL. Registered 2026-07-25, pre-signature, before
+# any arm has run. Adjudicated by gates.yaml g3_direction_specificity.
+# ---------------------------------------------------------------------------
+placebo_direction_control:
+  arms: [P1, P2]
+  why_this_exists: >-
+    As drafted before today, this experiment had NO undosed baseline arm and NO
+    random-direction arm on the dosed sites. Under that design an arm clearing
+    G1 would establish that writing a vector of a particular magnitude at a
+    particular site raises hedging on confabulation rows -- and nothing more. It
+    would not distinguish the KU direction doing work from norm injection of
+    matched size doing the same work. Every actuation claim this program has
+    promoted outside Qwen currently founders on exactly that gap
+    (rr3-corrected-placebo-replication: mistral's random direction lifted
+    +21.8 points, effect ratio 1.87, RG1 FAIL). Adding the control before the
+    run is cheap; discovering afterwards that the run cannot answer the question
+    it was built for is not.
+  what_varies: "the written direction ONLY"
+  held_identical_to_the_matched_true_arm:
+    - site index and hooked module
+    - kv_sharing condition (ON)
+    - law (erase_write) and position (anchor_onward)
+    - the calibrated absolute dose for that site
+    - the exact set of rows that FIRED under the true KU readout gate, and the
+      per-row token positions written
+    - the held-out split, the row ids, decoding config and seed
+  fired_row_matching: >-
+    The random direction is written at EXACTLY the rows and positions where the
+    TRUE gate fired, at the true arm's dose. It is NOT re-gated on a
+    random-direction score, and the gate indices are NOT permuted. Permuting the
+    fire set (the gate-contribution-factorial construction) varies gate AND
+    direction at once and answers a different question -- how much of the lift
+    the gate contributes. The question here is narrower and prior to it: given
+    the rows the readout selected, does it matter WHICH direction is written
+    there. Holding the fire set fixed is what makes that attribution clean.
+  direction_construction:
+    unit_vectors: "r_hat = unit(rng.normal(size=hidden_dim)), hidden_dim = 2560"
+    rng: "np.random.default_rng(SEED_BASE + hidden_dim + hs_index + K_index)"
+    seed_base: 20260725
+    seeds_are_registered_here: "the draw is reproducible from this file alone; no seed is chosen after a result is seen"
+  randomness_quality_bar:
+    id: SC1
+    rule: "|cos(r_hat, c_hat)| <= 0.015 AND |cos(r_hat, u_d)| <= 0.015"
+    source: placebo-seed-distribution-census/sc1_checks.py:52-64
+    why_a_redraw_ledger_is_mandatory: >-
+      At hidden_dim = 2560 the measured per-draw pass rate for this bar is
+      roughly 30-35%. A draw loop without redraw would silently ship directions
+      that overlap c_hat, which biases the control TOWARD the true direction and
+      therefore toward a FAIL of specificity -- a control that fails in the
+      conservative direction is still a broken control.
+    redraw_rule: "redraw_seed(attempt) = seed_base + hidden_dim + hs_index + K + attempt"
+    max_redraws: 300
+    ledger: >-
+      Every draw -- accepted and voided -- is written to
+      analysis-committed/gemma4-e4b/placebo_draw_ledger.<site_set>.json with its
+      seed, both cosines, and the accept/void decision. Exhausting max_redraws
+      without K accepted directions is a NOT-RUN for that arm, not a relaxation
+      of the bar.
+  magnitude_matching:
+    convention: "sigma = 1.0, so the realized gain equals the arm's calibrated absolute dose"
+    verification: >-
+      readback within 5% + 0.5 absolute of the true arm's dose, on EVERY dosed
+      row -- the identical check g0_arm_instrument_validity.readback_verification
+      applies to the true arms. A placebo arm whose readback fails is a NOT-RUN;
+      an unmatched magnitude makes the comparison meaningless in the direction
+      that flatters the true arm.
+    known_defect_not_to_reproduce: >-
+      gate-contribution-factorial/run_factorial.py:270-284 once passed the gain
+      as the sigma argument to build_hook_and_controller, realizing gain**2
+      instead of gain * sigma. test_factorial_smoke.py pins sigma != gain as a
+      regression guard. Any implementation here carries the same assertion.
+  k_number_of_draws:
+    status: CLOSED
+    K: 5
+    resolved_by_lead: >-
+      FIXED at K = 5 on 2026-07-25 by the lead, before any placebo arm runs and
+      before any arm of this experiment has run. The drafter offered 3 (the
+      inherited floor), 5, and 15 (census-matched); 5 stands. Scope was fixed at
+      the same time to hs22 and hs24 ONLY -- the P-arms are NOT extended to the
+      shallow ladder D1-D4. This parameter is now CLOSED and moves for no result.
+    scope_of_this_control: "hs22 (P1) and hs24 (P2). D1-D4 have no placebo counterpart."
+    drafter_recommendation: 5
+    hard_floor: 3
+    floor_source: >-
+      rr3-corrected-placebo-replication/gates_lib.py raises if K < 3. That guard
+      is inherited, not re-derived. K < 3 is not a weaker version of this control;
+      it is not this control.
+  cost_estimate: >-
+    ROUGH, stated so the lead can price the decision rather than discover it.
+    One placebo pass = one dosed generation over that arm's held-out confab pool
+    (168 rows) plus the matched known-correct pass. Extrapolating from the
+    seam_pair dose calibration (24 cells / 8 rows each in 24.1 min) gives order
+    20-30 min per draw per site. K = 5 at two sites is therefore order 3-5 GPU
+    hours, plus one undosed baseline pass per site. Treat the range, not the
+    midpoint, as the estimate.
+  undosed_baseline_required: >-
+    Each of P1/P2's matched true arms (A3, A5) must also run an UNDOSED pass over
+    the same held-out confab rows. This is already required as the non-gating
+    g2 companion metric "undosed_floor"; g3_direction_specificity promotes it to
+    a hard input, because a lift cannot be computed without it. Registering it
+    here means it is not discovered as missing at resolve.
+  what_this_does_not_establish: >-
+    (a) It says nothing about the PRIMARY contrast. A1-vs-A2 at hs38 has no
+    placebo arm registered and gains none from this block; a specificity result
+    at hs22/hs24 does not transfer to hs38, a different site under a different
+    reachability regime.
+    (b) It is not a test of the gate. Holding the fire set fixed is deliberate
+    (see fired_row_matching), and the cost is that this control cannot say how
+    much of any lift is attributable to WHERE the readout chose to write rather
+    than to WHAT was written. The gate-contribution-factorial 2x2 answers that
+    and is not replicated here.
+    (c) A specificity PASS at a site does not make the boundary push safe or
+    selective. G2's denominator is 0 by construction on these sites (roughly 2
+    dosed known-correct rows at hs22), and NOT-ADJUDICABLE stands unchanged.
+
+inputs_reused:
+  pool: parent gemma4-e4b fresh-mined evaluation pool (hash-pinned at sign)
+  split: parent FIT/HELD-OUT split, FIT_FRAC=0.40 (hash-pinned at sign)
+  frozen_hs38_direction: >-
+    NOT REUSED. Resolved by the lead on 2026-07-25, before any GPU work on this
+    experiment. This key previously read "parent's frozen hs38 direction/gate
+    artifacts (A1 only)", which contradicted readouts.method -- and the parent's
+    hs34/hs38/hs42 artifacts are corrupt-derived anyway: they were fit on
+    use_cache=False activations, which PROVENANCE.md and the parent's
+    AMENDMENT.md:637 record as "uninterpretable, not negative". Reusing them
+    would seat a corrupt direction in the very arm that A2 is contrasted
+    against (primary_contrast: A2_vs_A1). A1 therefore refits hs38 fresh on
+    this experiment's FIT split under sharing ON, exactly like every other arm,
+    via `build_directions.py --site-set midband --kv-sharing on`. A1 is a
+    replication of the parent's SITE AND METHOD, not of its artifacts.
+  note: >-
+    Promotion decision OPEN for the lead -- this is the second consumer of the
+    parent's POOL and SPLIT (the two keys above; the direction artifacts are no
+    longer consumed). See AMENDMENT.md "Open questions at sign" #1.
+
+# CALLER CONTRACT -- applies to EVERY arm, ON and OFF alike. Flipping the sharing
+# flag alone CRASHES: transformers builds a 24-entry cache for this config
+# (cache_utils.py:1218-1220 truncates by num_kv_shared_layers), so a patched
+# shared block calling past_key_values.update(..., 24) raises IndexError on its
+# first forward. Reproduced live and fixed by kv_seam_preflight.py (4/4 PASS).
+# The fix object is built as Cache(layers=[...]) -- one CacheLayer per block, NO
+# slicing. NOT DynamicCache(layers=...): DynamicCache.__init__ takes only
+# config= and would re-apply the slice.
+# WHY BOTH ARMS, not just OFF: if the two conditions construct the cache
+# differently, the A1-vs-A2 difference is sharing-flag PLUS cache-substitution
+# versus neither, and the primary contrast is uninterpretable. Preflight check 4
+# licenses this -- under sharing ON the 42-entry cache is token-identical AND
+# torch.equal logit-bit-identical to stock, so using it everywhere costs nothing.
+# Fresh PER CALL -- a Cache is stateful and reuse would leak the previous row's
+# K/V. use_cache=False is REJECTED as the toggle (global not local, numerical
+# drift, O(T x S_avg) cost). See AMENDMENT.md "The core manipulation".
+cache_contract:
+  applies_to: ALL arms and ALL conditions (A1-A6, C0, C1; dosed and undosed)
+  builder: kv_seam_patch.build_full_length_cache
+  api: "Cache(layers=[DynamicLayer | DynamicSlidingWindowLayer per config.layer_types])"
+  passed_as: "generate(past_key_values=...)"
+  freshness: per generate() call, never reused across rows
+  verified_by: >-
+    gates.yaml g0_kv_seam_instrument_validity --
+    cache_construction_identical_in_both_arms, cache_shape,
+    cache_growth_under_off, cache_substitution_noop_under_on
+
+# CORRECTED 2026-07-25 against the actual argparse of every script. This list is
+# the runbook someone follows to reproduce the cell, so a flag that does not
+# exist is a reproducibility defect, not a typo. Four lines were wrong: the
+# preflight was named backwards AND marked unwritten when it is written and
+# passing; `run_contrast.py --arm` does not exist (it selects by --site-set,
+# which is what makes A3+A5 one invocation); `alin_sweep.py --site/--both-
+# conditions` are Part 2's interface and are still unimplemented; and alin_sweep
+# was marked NOT YET WRITTEN after it had been written and run. Sites are
+# selected by NAMED SITE SET everywhere -- never by a bare --site, which no
+# stage accepts -- so a typo cannot silently sweep an unregistered band.
+pipeline_stages:
+  - kv_seam_preflight.py                                                        # G0-KV; see gates.yaml. WRITTEN, 6/6 PASS, CPU-only, no checkpoint download.
+  - alin_sweep.py [--emit-selection]                                            # G0-ALIN PART 1 (site selection). CPU-only over the parent's cached ON activations. RUN 2026-07-25 -> A3=hs22, A5=hs24, A6=hs23.
+  - build_directions.py --family <f> --site-set seam_pair --kv-sharing on       # CPU. A3/A5 directions. RUN 2026-07-25.
+  - gate_fit.py --family <f> --site-set seam_pair --kv-sharing on               # CPU, no checkpoint load. RUN 2026-07-25: hs22 AUC 0.9997, hs24 AUC 0.9976, both clear the G0 0.90 floor.
+  - calibrate_dose.py --family <f> --site-set seam_pair --kv-sharing on         # GPU. Also recalibrates the late reference hs40 (hs_list = site set + late site, by design).
+  - run_contrast.py --family <f> --site-set seam_pair --kv-sharing on --mode smoke --n-rows 8
+  - run_contrast.py --family <f> --site-set seam_pair --kv-sharing on --mode full
+  # ---- the OFF condition, all still blocked on the OFF extraction ----
+  - extract_anchor.py --family <f> --site-set <set> --kv-sharing off            # GPU. No OFF activation cache exists anywhere -- the OFF model has never been run. Feeds BOTH the OFF direction fits and G0-ALIN Part 2.
+  - alin_sweep.py <Part 2 interface, NOT YET IMPLEMENTED>                       # G0-ALIN PART 2 (discrimination measurement). Same script pointed at the OFF extraction: identical logit-lens path / FIT row ids / answer-token set, only the activation file differs. LOAD-BEARING: without it the primary contrast discriminates nothing. The --site/--both-conditions flags this line used to name do not exist yet.
+  - build_directions.py / gate_fit.py / calibrate_dose.py --kv-sharing off      # readouts.refit_policy: OFF arms refit their OWN directions, tau and median anchor norms on the SAME FIT rows.
+  - run_contrast.py --site-set midband --kv-sharing {on,off} --mode full        # A1 vs A2, the primary contrast.
+  - rollup.py                                                                   # per-arm tables + contrasts. NOT YET WRITTEN.
+
+integration_status:
+  state: NOT_READY_TO_SIGN
+  done:
+    - "--kv-sharing {on,off} flag threaded through extract_anchor.py, build_directions.py, gate_fit.py, calibrate_dose.py, run_contrast.py and pipeline.py. build_directions.py and gate_fit.py were NOT on the original list; readouts.refit_policy requires the OFF arms to refit their own directions/tau/median anchor norms, so the condition axis has to reach every fitted artifact, not just the activations."
+    - "fresh build_full_length_cache(model) passed as past_key_values= on EVERY generate() call in EVERY arm, ON and OFF alike (OFF raises IndexError without it; ON needs it so the two conditions do not differ in cache construction). Extended to extract_anchor.py's plain forward as well: the CALLER CONTRACT's letter covers generate() only, but its intent -- identical cache construction across conditions -- covers any forward that builds a cache."
+    - "harness call-site instrumentation counting build_full_length_cache() vs generate()/forward() invocations per arm, for gates.yaml cache_construction_identical_in_both_arms"
+    - "condition field (kv_sharing) written into every output record and manifest, and every artifact filename condition-scoped via kv_seam_patch.condition_artifact. kv_sharing=on is the identity, so historical filenames are byte-for-byte unchanged. Every cross-condition read is fail-closed: a missing OFF artifact RAISES, naming the stage that produces it, rather than silently falling back to ON parameters the arm never fit -- which would make A1-vs-A2 a comparison of an arm against itself."
+    - "kv_seam_preflight.py driver for the G0-KV checks, including cache-growth and cache-substitution-no-op (checks 5 and 6, implementing those two gate criteria verbatim). 6/6 PASS, CPU-only, no checkpoint download."
+    - "vendored shims for model_lib.render()'s bare-module imports of `backends` and `amendment_ah_stage0_extract`, both now living in this experiment directory. The cross-experiment PYTHONPATH dependency is GONE: the render path resolves with only synaptic-tuner on the path, verified 2026-07-25. backends.py is a RE-EXPORT of the live experiments/common/knowledge_probe/backends.py (resolved repo-root-relative), deliberately not a copy -- copying would fork the render at the moment of copying and let this experiment drift from the convention its inputs were produced under. Both shims are fail-closed: backends.py freezes a sha256 over the render path only (NOT the whole file, which also carries an untouched vLLM backend) plus render_probe_prompt's exact signature; amendment_ah_stage0_extract.py keeps the parent's byte-identical prompt sha256 freeze. Both guards were verified to actually fire. One deliberate change from the parent's copy: absolute paths became repo-root-relative walks, because an absolute path silently binds a worktree run to the canonical checkout's copy of the prompt rather than the one under review."
+    - "alin_sweep.py for G0-ALIN Part 1. RUN 2026-07-25, CPU-only, 18.05s, no CUDA. A_lin is exactly 0.0000 at every below-seam site, so selection falls to the pre-stated tie-break: A3 = hs22, A6 = hs23, A5 = hs24, no confound declared. The arm table no longer has a hole in it. Harness validated by the terminal-layer tautology (hs42 = 0.9966, median rank 1, every miss a rank-2 near-tie against the parent's GPU 1.0000) plus a distinct-storage vacuity guard; FIT-only numbers reproduce the parent's all-rows ladder at every shared depth. See below_seam_site_selection.RESOLVED."
+    - "measured smoke wall-clock timings for ALL of instrument.persistence, closing the last mechanical bin/exp sign blocker. Smoke run 2026-07-25, lead-authorized, CPU ONLY -- no GPU was needed or used. Seven library modules declared short-run from measured cold-interpreter import time (0.02s-1.75s, worst of three runs recorded); gate_fit.py declared short-run from a REAL run (2.67s, maxRSS 1.6 GB, three cold runs, byte-identical stdout), because it fits tau on the already-cached anchor activations with numpy and never loads the checkpoint -- it had been wrongly carried as GPU-blocked. bin/validate-experiments now reports zero warnings for this experiment, down from eight. Re-running gate_fit.py reproduced every AUC, tau and confusion count in the committed shallow_ladder roll-up exactly, and added the kv_sharing provenance field the committed copy predated; the regenerated file is committed."
+  missing:
+    - "alin_sweep.py --both-conditions for G0-ALIN Part 2 (GPU; the primary contrast discriminates nothing without it). The Part 1 code path is now written and validated, so Part 2 is the SAME script pointed at the OFF extraction -- which is what the gate's 'identical logit-lens code path' requirement demands."
+    - "fired-only G2 companion metric (n_fired_known + Wilson) and the undosed floor, per gates.yaml g2 companion_metrics_reported_always"
+    - "rollup.py for the per-arm tables and the pre-stated contrasts"
+    - "a site set covering hs22 and hs24 in families/gemma4-e4b.yaml band_selection. BLOCKS A3 AND A5. G0-ALIN Part 1 resolved A3=hs22 and A5=hs24, but band_selection registers only midband [34,38,42] and shallow_ladder [15,18,20,23], and build_directions.py / gate_fit.py / calibrate_dose.py all select sites through --site-set. hs22 and hs24 are addressable by NO stage, so the two arms carrying this experiment's registered non-gating expectation have no path to a direction, a tau or a dose. Verified 2026-07-25 by calling resolve_site_set directly. band_selection is status: resolved, so adding the set is a registered-surface edit and is the lead's call, not this agent's."
+
+prerequisites:
+  synaptic_tuner: ">= 7a44eb3 (fix/gemma4-decoder-layer-path) -- adds model.language_model.layers to _LAYER_PATHS"
+
+execution:
+  lane: local_3090
+  gpu_work_by_this_agent: forbidden (draft scaffold only; unsigned)
+  gpu_carve_outs:
+    - id: donor_projection_diagnostic
+      authorized_by: lead, explicitly, 2026-07-25
+      scope: >-
+        Load google/gemma-4-E4B-it and run donor_diagnostic.py ONLY -- forward
+        passes for kv_seam_patch.donor_projection_diagnostic(). No dosing, no
+        generation, no arm executes, nothing written to analysis-committed/.
+      rationale: >-
+        This diagnostic exists to de-risk the design BEFORE signing, so running
+        it after signing would invert its purpose. The main run stays blocked by
+        gpu_work_by_this_agent above; this carve-out does not lift that.
+      status: >-
+        RUN 2026-07-25, 4 rows, bf16 on the local 3090. Result: median per-block
+        cosine k_proj -0.0024, v_proj -0.0051; largest cosine at any block on any
+        row 0.032. Bit-identical across two invocations. The sharing-OFF
+        manipulation is STRONG -- the weak-manipulation risk this diagnostic was
+        built to detect did NOT materialize, so an A2 null will be informative
+        rather than vacuous. Record:
+        analysis/gemma4-e4b/donor_projection_diagnostic.json (private).
+        AMENDMENT.md "Open questions at sign" #4 is CLOSED.
+    - id: seam_pair_dose_calibration
+      authorized_by: >-
+        lead, explicitly, 2026-07-25, in answer to a question that named this
+        exact stage and its cost ("Through dose calibration (GPU)"). The same
+        answer authorized the seam_pair site set that makes the stage runnable.
+      scope: >-
+        Load google/gemma-4-E4B-it and run calibrate_dose.py --site-set
+        seam_pair --kv-sharing on ONLY: the registered 8-rung RATIO_LADDER,
+        8 confab + 8 known rows per cell, sharing ON. No arm executes, no
+        held-out row is touched, and no gate is adjudicated.
+      sites_actually_calibrated: >-
+        THREE, not two. CORRECTED 2026-07-25 mid-run, after the launch log
+        showed 24 pending cells rather than the 16 this entry originally
+        implied. calibrate_dose.py sets `hs_list = <selected site set> +
+        [late_reference_hs]` unconditionally (line 167), so EVERY site set also
+        recalibrates the late reference hs40 -- by design and documented at
+        lines 150-157: the late arm's frozen direction and gate are reused
+        verbatim, but its scalar DOSE is recalibrated fresh against whichever
+        ladder is running, because a dose calibrated under a different ladder
+        would not be comparable. The original wording here said "at hs22 and
+        hs24" and was narrower than what actually runs. Recording the
+        correction rather than quietly widening the scope: the extra site is
+        the script's registered behaviour, not an expansion of the authorized
+        work, and hs40 is a non-gating descriptive arm either way.
+      writes_to_analysis_committed: >-
+        YES, and this is the difference from the donor_projection_diagnostic
+        carve-out above, which wrote nothing there. This stage writes
+        dose_calibration_summary.seam_pair.json plus a private per-cell runlog.
+        That is the stage's normal output and is what makes A3/A5 runnable; it
+        is recorded here so the carve-out is not read as narrower than it is.
+      rationale: >-
+        A3 and A5 could not be fit at all before the seam_pair site set existed,
+        so their dose calibration is the last artifact standing between the
+        resolved arm table and a runnable experiment. Doing it pre-sign is the
+        same argument as the donor diagnostic: it de-risks the design while the
+        design can still change.
+      does_not_lift: >-
+        gpu_work_by_this_agent above still stands. This carve-out covers dose
+        CALIBRATION on the FIT split only. It does NOT authorize run_contrast.py
+        in any mode, held-out evaluation, or any arm.
+      status: >-
+        RUN AND COMPLETE, 2026-07-25. Exit 0, all 24 (site, rung) cells, ~24 min
+        on the local 3090. Report:
+        analysis-committed/gemma4-e4b/dose_calibration_summary.seam_pair.json;
+        per-cell runlog analysis/gemma4-e4b/runlog/
+        calibrate_dose_records_v2.seam_pair.jsonl (private).
+      result: >-
+        BOTH mid-band sites found a usable dose --
+        all_midband_have_usable_dose: true. hs22 (A3) selected ratio 0.361
+        (dose 28.5068, tighten 0.500); hs24 (A5) selected ratio 0.554 (dose
+        50.5311, tighten 0.750). The late reference hs40 selected NOTHING
+        (null), which is the expected and precedented outcome -- it is null in
+        both prior families -- and the late arm is skipped without touching the
+        primary. Readback stayed within tolerance (1.00) at all 24 cells, and
+        known-correct cost control was 0.000 at every cell.
+      what_this_does_not_establish: >-
+        A5 actuating at least as well as A3 is NOT a refutation of the
+        quarantine account and must not be reported as one. This stage ran
+        sharing ON only, on the FIT split, with 8 fired rows per cell -- it is
+        not the ON/OFF contrast, which is the only measurement registered as
+        able to discriminate. AMENDMENT.md Threats (c) already registers
+        A3-vs-A5 as descriptive and non-discriminating REGARDLESS of what it
+        shows. What the result does do is make the tidy version of the
+        quarantine story less likely, and remove the possibility of reading an
+        A5 null as confirmation -- there is no A5 null to read.
+      consequence_for_A6: >-
+        A6 is registered conditional_on "A3 has a usable FIT dose". A3 has one
+        (ratio 0.361), so A6 is UNLOCKED. A6 is hs23, already addressable via
+        the pre-existing shallow_ladder set, so no further registration is
+        needed. Per its coincides_with note it runs ONCE and is reported under
+        both the A6 and D4 labels.

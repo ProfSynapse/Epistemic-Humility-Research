@@ -6,7 +6,7 @@ import runpy
 from pathlib import Path
 
 TARGET = (
-    Path(__file__).resolve().parents[4]
+    Path(__file__).resolve().parents[6]
     / "experiments"
     / "radial-anti-propensity-steering"
     / "cloud"

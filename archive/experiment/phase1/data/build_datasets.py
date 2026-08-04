@@ -752,8 +752,12 @@ def main(argv=None) -> int:
     if args.repo_root:
         repo_root = Path(args.repo_root).resolve()
     else:
-        # experiment/phase1/data/build_datasets.py -> repo root is 3 parents up.
-        repo_root = Path(__file__).resolve().parents[3]
+        # archive/experiment/phase1/data/build_datasets.py -> repo root is 4
+        # parents up (the file gained one directory level in the 2026-07-10
+        # archive move; this only fixes THIS file's own root computation, it
+        # does not repair the "experiment/phase1/..." templates hardcoded in
+        # config/build.yaml, which is a separate, pre-registered artifact).
+        repo_root = Path(__file__).resolve().parents[4]
     paths = _resolve_paths(config, args, repo_root)
     try:
         manifest = build_all(config, args.model_tag, paths)

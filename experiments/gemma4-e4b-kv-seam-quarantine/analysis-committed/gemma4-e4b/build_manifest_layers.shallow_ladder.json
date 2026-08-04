@@ -1,0 +1,79 @@
+{
+  "family": "gemma4-e4b",
+  "substrate": "bf16",
+  "base_model": "google/gemma-4-E4B-it",
+  "site_set": "shallow_ladder",
+  "hs_indices": [
+    15,
+    18,
+    20,
+    23
+  ],
+  "hidden_dim": 2560,
+  "random_state": 20260707,
+  "reproducibility_verified": true,
+  "extract_manifest_sha256": "060c3f3b225fc4bca59a5b6bb91a6c91bf13d4798f14a4e3a84bd8dd09158b01",
+  "split_manifest_sha256": "8d2281179ab865bea8fd7918c0ee14b33db7113c4ed375ff0740c36cee2f1d87",
+  "layers": {
+    "hs15": {
+      "hs_index": 15,
+      "decoder_block_index": 14,
+      "n_known_correct_answered_fit": 180,
+      "n_confab_fit": 112,
+      "n_unknown_refused": 76,
+      "cos_u_d_u_p": 0.026096076689096505,
+      "cos_caution_dir_c_hat": 0.9914934440678862,
+      "mu_d": -0.11896213286993144,
+      "sigma_d": 8.547397897670562,
+      "mu_p": 1.0660549017777199,
+      "sigma_p": 0.28634379481190547,
+      "mu_c": 28.54587191461937,
+      "sigma_c": 7.304377873323031
+    },
+    "hs18": {
+      "hs_index": 18,
+      "decoder_block_index": 17,
+      "n_known_correct_answered_fit": 180,
+      "n_confab_fit": 112,
+      "n_unknown_refused": 76,
+      "cos_u_d_u_p": 0.021433566438710278,
+      "cos_caution_dir_c_hat": 0.9982150925092372,
+      "mu_d": 4.647316714641637,
+      "sigma_d": 11.859793315857212,
+      "mu_p": 1.1037378193034675,
+      "sigma_p": 0.17123568133991238,
+      "mu_c": 6.360899442476472,
+      "sigma_c": 11.986189436820231
+    },
+    "hs20": {
+      "hs_index": 20,
+      "decoder_block_index": 19,
+      "n_known_correct_answered_fit": 180,
+      "n_confab_fit": 112,
+      "n_unknown_refused": 76,
+      "cos_u_d_u_p": 0.01148581774105571,
+      "cos_caution_dir_c_hat": 0.986076849553441,
+      "mu_d": 8.13390376485697,
+      "sigma_d": 11.635860379376444,
+      "mu_p": 0.44156153989415553,
+      "sigma_p": 0.06485939709005753,
+      "mu_c": 6.963899255000263,
+      "sigma_c": 11.125114016152676
+    },
+    "hs23": {
+      "hs_index": 23,
+      "decoder_block_index": 22,
+      "n_known_correct_answered_fit": 180,
+      "n_confab_fit": 112,
+      "n_unknown_refused": 76,
+      "cos_u_d_u_p": 0.01667688963034723,
+      "cos_caution_dir_c_hat": 0.9794927686279385,
+      "mu_d": 1.564426465982282,
+      "sigma_d": 10.062961760497602,
+      "mu_p": 0.39985450783345,
+      "sigma_p": 0.08216055894837739,
+      "mu_c": -0.7393694218298632,
+      "sigma_c": 9.878628612894063
+    }
+  }
+}

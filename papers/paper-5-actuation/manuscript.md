@@ -12,7 +12,7 @@ Working title below is candidate 1, chosen for continuity with existing cross-re
 title: "Readable Is Not Writable: Channel, Gate, and Workspace Constraints on Actuating Known-Unknown State in Small Language Models"
 author: "Joseph Rosenbaum (Synaptic Labs)"
 status: draft-v0
-date: 2026-07-08
+date: 2026-07-31
 repository: https://github.com/ProfSynapse/Epistemic-Humility-Research
 target: arXiv (cs.CL / cs.AI / mechanistic interpretability)
 evidence_base: >
@@ -44,8 +44,10 @@ evidence_base: >
   experiments/margin-evidence-responsiveness-worldknown/AMENDMENT.md,
   experiments/evidence-response-direction-search/AMENDMENT.md,
   experiments/placebo-signflip-question-type-analysis/AMENDMENT.md,
-  experiments/correctness-direction-rotation/AMENDMENT.md, and
-  experiments/correctness-subspace-overlap/AMENDMENT.md.
+  experiments/correctness-direction-rotation/AMENDMENT.md,
+  experiments/correctness-subspace-overlap/AMENDMENT.md,
+  experiments/gemma4-e4b-kv-seam-quarantine/AMENDMENT.md, and
+  experiments/gemma4-e4b-pocket-ladder/AMENDMENT.md.
 notes: >
   Draft v0 is a synthesis scaffold, not submission-ready. It deliberately
   separates reader-facing claims from amendment traceability. The core results
@@ -57,14 +59,21 @@ notes: >
   folded in as Section 4.9, and a multi-seed placebo seed-distribution census
   that measures each family's matched-magnitude random-direction null across 15
   fresh seeds is folded in as Section 4.10; all remain exploratory and
-  pre-headline. The next planned step is a larger cross-model / cross-family
-  actuation study registered against the per-family placebo null distribution
-  the census measured (Section 4.10). Section 6.5 now also cites two
-  companion-paper null results (a direct cross-checkpoint measurement of the
-  correctness direction's own rotation, and a follow-up asking whether a
-  shared subspace explains its partial transfer) as motivation, not evidence,
-  for treating the correctness axis as a harder cross-family generalization
-  problem than the answerability axis this paper actuates on.
+  pre-headline. Section 4.11 folds in a fourth family's cross-family arc: a
+  depth-coverage resolution of Gemma-4-E4B's long-standing inert reputation,
+  a follow-up ladder completing the measurement of every above-seam site in
+  the cross-family operating range on that substrate, and the still-open
+  question of whether its KV-sharing seam specifically bounds the write, per
+  the changelog in
+  `papers/paper-5-actuation/notes/kv-seam-integration-changelog-2026-07-31.md`.
+  The next planned step is a larger cross-model / cross-family actuation study
+  registered against the per-family placebo null distribution the census
+  measured (Section 4.10). Section 6.5 now also cites two companion-paper null
+  results (a direct cross-checkpoint measurement of the correctness
+  direction's own rotation, and a follow-up asking whether a shared subspace
+  explains its partial transfer) as motivation, not evidence, for treating the
+  correctness axis as a harder cross-family generalization problem than the
+  answerability axis this paper actuates on.
 ---
 
 # Readable Is Not Writable: Channel, Gate, and Workspace Constraints on Actuating Known-Unknown State in Small Language Models
@@ -72,25 +81,29 @@ notes: >
 *Draft v0. Companion to [*Knows but Doesn't Say*](../paper-3-knows-but-doesnt-say/manuscript.md)
 and [*It's What's on the Inside That Counts*](../paper-4-two-signal-readout/manuscript.md).*
 
-*Scope note on "epistemic state": throughout this paper the phrase names what a
-linear readout of the hidden state reports about answerability and caution, not
-a claim that the model represents its own doubt as a mental state. Where the
-program previously used mentalistic names for these readouts (the doubt
-direction, the doubt gate, doubt-coupling), this paper follows
-`papers/common/terminology.md` and uses the known-unknown (KU) vocabulary
-instead, retiring "doubt" from running prose except in quotations and governed
-filenames.*
+*Scope note on "epistemic state": throughout, the phrase names what a linear
+readout of the hidden state reports about answerability and caution, not a
+claim that the model represents its own doubt as a mental state. Earlier work
+in this program named these readouts mentalistically (the doubt direction, the
+doubt gate, doubt-coupling); the vocabulary here is known-unknown (KU), which
+describes how the readout was fit rather than what the model is supposed to
+feel.*
 
 ---
 
+> *"What I cannot create, I do not understand."*
+>
+> Richard Feynman
+
 ## Abstract
 
-Prior papers in this series show that small language models internally represent
-what they know, even when they do not say it. A frozen base model carries a
-near-perfect answerability readout before generation, a separate correctness
-readout after generation, and a veto signal that ranks confabulated answers as
-low trust. This paper asks the next question: can those readable signals be
-written back into the model to make it act epistemically humble?
+A frozen small language model carries a near-perfect answerability readout in
+its hidden state before it generates, a separate correctness readout after, and
+a veto signal that ranks confabulations (fluent, specific answers to questions
+the model has no basis to answer) as low trust. Earlier work in this program
+established all three by reading the model from outside. Reading is not
+writing. Can those signals be written back into the model to make it act
+epistemically humble?
 
 Across a sequence of pre-stated exploratory cells, the answer is mixed and
 mechanistically sharp. First, naive "turn the probe around" strategies mostly
@@ -112,9 +125,10 @@ and permuted-gate controls did not reproduce the result. Which component
 supplies that selectivity, however, is operating-point-dependent rather than a
 universal property of the write. At this same overdrive dose (L34, dose 200),
 a separately registered comparison shows an unconditional write damages 60.1%
-of held-out known-correct rows versus 3.1% gated, a 57.0-point gap (McNemar
-p = 4.2e-43): here the gate is the sole source of selectivity. At mid-band
-doses (qwen hs20 dose_abs 12.608; mistral hs16 dose_abs 3.665), a controlled
+of held-out known-correct rows versus 3.1% gated, a 57.0-point gap (McNemar's
+paired test, p = 4.2e-43): here the gate is the sole source of selectivity. At
+mid-band doses (qwen hs20, relative depth 0.625 of the stack, dose_abs 12.608;
+mistral hs16, relative depth 0.500, dose_abs 3.665), a controlled
 factorial found the
 write itself is already content-selective: a permuted-gate control reaches
 confab abstention 0.550-0.600 against the true gate's 0.689-0.694, and the
@@ -131,7 +145,8 @@ Third, write location matters. A Jacobian-lens diagnostic localized a
 workspace-like J-space band in Qwen3-4B around hs=23-29, peaking at hs=26, while
 the inherited L34 write site maps to hs=34 just after that band. After
 layer-specific dose calibration, held-out mid-band writing beat the late hs34
-reference: hs23 reached 165/185 clean refusals (89.2%) versus hs34 123/185
+reference: hs23 (rd 0.639) reached 165/185 clean refusals (89.2%) versus
+hs34 (rd 0.944) 123/185
 (66.5%), a +22.7 point gain with only +0.78 points known-correct cost. However,
 using the J-lens backward to target natural refusal tokens was not enough to
 improve the controller: a token-target direction was non-inert by itself
@@ -147,9 +162,9 @@ channel, the right gate, and the right write site.
 
 ## 1. Introduction
 
-The first half of this program established a gap. A small language model can
-represent what it knows internally while failing to verbalize or act on that
-state. The companion diagnosis, [*Knows but Doesn't Say*](../paper-3-knows-but-doesnt-say/manuscript.md),
+A small language model can represent what it knows internally while failing to
+verbalize or act on that state. That gap is where this program started. The
+companion diagnosis, [*Knows but Doesn't Say*](../paper-3-knows-but-doesnt-say/manuscript.md),
 showed that answerability is linearly readable from hidden states at near-ceiling
 accuracy while stated confidence remains flat and training-resistant. The
 follow-up, [*It's What's on the Inside That Counts*](../paper-4-two-signal-readout/manuscript.md),
@@ -157,21 +172,27 @@ showed that two readable signals, answerability before generation and answer
 correctness after generation, compose into a training-free trust pipeline that
 generalizes across sizes, families, and sampled-decode seeds.
 
-Those papers are about reading. This paper is about writing. If a model already
-contains a faithful epistemic signal, can we make its generation policy consult
-that signal? Can we steer the residual stream, inject the signal in text, reward
+Those results are about reading. Actuation runs the other direction. If a model
+already contains a faithful epistemic signal, can we make its generation policy
+consult that signal? Can we steer the residual stream, inject the signal in text, reward
 agreement with it, or write into the workspace-like layer band where reportable
 representations live?
 
 This is not a trivial extension of probing. A linear probe can be useful even if
 the model's policy never uses the direction it reads. Conversely, a direction can
-be behaviorally causal without being a faithful self-readout. The central claim
-of this paper is therefore deliberately conservative:
+be behaviorally causal without being a faithful self-readout. The claim the
+evidence supports is correspondingly narrow:
 
 > **Readable is not writable.** Epistemic directions can be strong, portable
 > readouts while remaining weak, channel-dependent, or non-selective actuators.
 
-The results refine that claim into three engineering rules.
+That thesis had an obvious way to be wrong. If writing a readable direction
+back into the residual stream at the layer where it reads best had moved
+behavior selectively, there would be no gap between reading and writing to
+report. Four cells tested exactly that, across activation writes, text
+injection, system prompts, and reward, and none of them produced it.
+
+The results refine the claim into three engineering rules.
 
 1. **Do not assume text carries the readout.** Within-generation text injection
    and first-person confidence prose fail to open the channel. System-prompt
@@ -186,16 +207,17 @@ The results refine that claim into three engineering rules.
    snap is already content-selective on its own; the gate's contribution
    there is a modest, sub-floor increment plus cost governance, not the
    source of selectivity.
-3. **Write near the workspace band.** A J-lens localization suggests that the
-   inherited late write layer was past the most verbalizable workspace-like band.
+3. **Write near the workspace band.** A Jacobian-lens localization, which
+   estimates how a hidden state at a given layer would verbalize into tokens,
+   places the inherited late write layer just past the workspace-like band.
    After calibration, mid-band writes outperform the late reference on held-out
    confab tightening.
 
-The evidence remains exploratory. Most cells are single-model, single-seed, or
-surface-local. We write this paper now because the pattern is stable enough to
-organize the next study: larger, cross-model replication of the successful gated
-workspace-band actuator, plus sharper tests of whether denser token targets or
-different model families change the write/read relationship.
+The evidence remains exploratory: most cells are single-model, single-seed, or
+surface-local. The pattern is stable enough to organize the next study, a
+larger cross-model replication of the gated workspace-band actuator plus
+sharper tests of whether denser token targets or different model families
+change the write/read relationship.
 
 ---
 
@@ -203,13 +225,17 @@ different model families change the write/read relationship.
 
 ### 2.1 The prior readout result
 
-Paper 3 separated three surfaces: the internal state, the stated confidence
-token, and the generated behavior. On Qwen3-4B, an internal answerability axis
-separated known from unknown items at about AUROC 0.997, while stated confidence
-was nearly flat. Paper 4 then split the internal state into two deployable
-readouts: an answerability **gate** before generation and a correctness **dial**
-after generation. The gate/dial/veto pipeline is useful because it reads the
-model from outside rather than asking the model to faithfully report itself.
+[*Knows but Doesn't Say*](../paper-3-knows-but-doesnt-say/manuscript.md)
+separated three surfaces: the internal state, the stated confidence token, and
+the generated behavior. On Qwen3-4B, an internal answerability axis separated
+known from unknown items at about AUROC 0.997 (area under the receiver
+operating characteristic curve, where 0.5 is chance and 1.0 is perfect
+separation), while stated confidence was nearly flat.
+[*It's What's on the Inside That Counts*](../paper-4-two-signal-readout/manuscript.md)
+then split the internal state into two deployable readouts: an answerability
+**gate** before generation and a correctness **dial** after generation. The
+gate/dial/veto pipeline is useful because it reads the model from outside
+rather than asking the model to faithfully report itself.
 
 That distinction motivates the present study. External reading can support a
 classifier, a monitor, or an abstention wrapper, but it does not prove the model's
@@ -239,18 +265,35 @@ behavioral move.
 
 ## 3. Methods Overview
 
-This paper combines several exploratory actuation families. Each was governed by
-a signed amendment or experiment-local AMENDMENT before the relevant run, with
-predictions, falsifiers, gates, and controls frozen before outcome evaluation.
-Appendix A maps every paper claim to its governed source document.
+Every cell reported below was registered before it ran, with its predictions,
+falsifiers, gates, and controls frozen before any outcome was evaluated.
+Appendix A maps each claim to the governed document that registered it.
+
+**Reporting convention for write sites.** Write sites are named by their raw
+hidden-state index (`hsN`) because that is how each governing amendment
+registered them, but raw indices are not comparable across families with
+different block counts, and several comparisons in this paper are cross-family.
+We therefore also give relative depth, `rd = layer_idx / num_hidden_layers`,
+wherever a site is compared against a site in another family. Block counts,
+each verified 2026-07-09 from the checkpoint's own `config.json`
+(`experiments/j-space-cross-family-layer-contrast/families/*.yaml`), are:
+Llama-3.2-3B 28, Mistral-7B-Instruct-v0.3 32, Qwen3.5-4B 32 (nested under
+`text_config`), Qwen3-4B 36, Gemma-4-E4B 42 (nested). The convention matters
+here rather than being bookkeeping: llama's `hs20` and Qwen3.5-4B's `hs20` are
+the same integer and not the same depth (rd 0.714 versus rd 0.625), and on
+present evidence they fall on opposite sides of the band in which any family in
+this program has actuated.
 
 ### 3.1 Channels
 
 We tested four ways to route an epistemic readout into behavior.
 
-**Activation writes.** Additive or erase-write interventions modify the residual
-stream along a fitted direction at a specified layer and token scope. These are
-the closest analogue to "turning the probe around."
+**Activation writes.** Interventions that modify the residual stream along a
+fitted direction at a specified layer and token scope, either by adding a
+scaled copy of the direction or, in the erase-write form used by most cells
+here, by removing the state's existing component along that direction and
+writing a fixed setpoint in its place. These are the closest analogue to
+"turning the probe around."
 
 **Within-generation text injection.** Probe scores are rendered into a thinking
 or revision trace as text, either as terse telemetry or as first-person prose
@@ -363,16 +406,19 @@ own knowledge.
 ### 4.3 Rewarding the readout also fails to train consultation
 
 If prompting does not make the model consult its readout, perhaps training can.
-The probe-as-reward cell trained two clean-SFT starting checkpoints with the same
-GRPO recipe. In the TRUE arm, reward agreement was computed from a frozen probe
-read from the policy's own pre-generation state. In the PERMUTED arm, the sensor
-was permuted within class. The primary held-out metric was congruence between the
+The probe-as-reward cell took two checkpoints that had been supervised
+fine-tuned on clean data and trained both with the same reinforcement-learning
+recipe (group-relative policy optimization, which scores a group of sampled
+completions against each other rather than against a learned value model). In
+the TRUE arm, reward agreement was computed from a frozen probe read from the
+policy's own pre-generation state. In the PERMUTED arm, the sensor was
+permuted within class. The primary held-out metric was congruence between the
 final policy behavior and the arm's own freshly refit eval probe.
 
 The instrument was valid: both arms completed all 2934 scheduled steps, no
 tripwire halted, and fresh probes on the final checkpoints still read gold at
-OOF AUROC 0.9948 and 0.9946. But the result went the wrong way. TRUE congruence
-was 59.75% versus PERMUTED 76.75%, a -17.0 point differential with CI
+out-of-fold AUROC 0.9948 and 0.9946. But the result went the wrong way. TRUE
+congruence was 59.75% versus PERMUTED 76.75%, a -17.0 point differential with CI
 [-21.5, -12.5]. The TRUE arm preserved some useful behavior, such as fewer
 unknown hallucinations than the control, but on the registered question it did
 not learn to consult its own readout.
@@ -395,7 +441,8 @@ controller separates them:
 At this write site (Qwen3-4B, L34) and dose (200), a registered comparison
 later established why this separation matters: an unconditional write damages
 60.1% of held-out known-correct rows versus 3.1% gated, a 57.0-point gap
-(McNemar p = 4.2e-43, `ungated-vs-gated-dose-matched` Outcome), while the gate
+(McNemar's test for paired binary outcomes, p = 4.2e-43,
+`ungated-vs-gated-dose-matched` Outcome), while the gate
 costs the controller only 4.3 points of confab conversion (77.8% ungated
 versus 73.5% gated). The 60.1% figure is not a refusal rate; it decomposes as
 55.8 points clean false-refusal, 3.9 points answered-wrong, and 0.4 points
@@ -406,7 +453,8 @@ known-correct rows.
 
 On the held-out signed run, the raw-base Qwen3-4B controller passed all gates.
 The KU readout gate's FIT AUC was 0.9955. On held-out rows, gated clean
-tightening was 136/185 = 73.5%, Wilson CI [66.7, 79.3], clearing the >=60%
+tightening was 136/185 = 73.5%, Wilson 95% confidence interval [66.7, 79.3]
+(the interval used for every binomial rate in this paper), clearing the >=60%
 floor and the lower CI >50% requirement. Known-correct false refusal was
 8/258 = 3.1%, CI [1.6, 6.0], clearing the <=5% point floor and <10% upper CI
 requirement. A random-direction write on the same fired rows produced only
@@ -422,7 +470,7 @@ attribution changes at a different dose regime.
 
 **Robustness update.** Two later registered cells strengthen this headline
 without changing it. A held-out transfer of the same controller design to
-Qwen3.5-4B's mid-band write site (hs20, dose_abs 12.608) reproduced the
+Qwen3.5-4B's mid-band write site (hs20 = rd 0.625, dose_abs 12.608) reproduced the
 decoupling out of sample: fired-confab refused 872/1286 = 0.678 (Wilson
 [0.652, 0.703]), well-formed 1256/1286 = 0.977, and known-correct false
 refusal 14/360 = 0.039, with both placebo legs intact
@@ -431,9 +479,7 @@ headline itself survives a decode-robustness check: under temperature-0.7
 sampled decoding with majority-vote aggregation across 5 pre-registered
 seeds, pooled confab clean-tighten conversion is 643/925 = 69.5%, above the
 63.5% floor in every individual seed, with known-correct cost at 60/1290 =
-4.65% (`snap-seed-sampled-decode-replication` Outcome). Both results
-supersede the corresponding held-out and decode-robustness items in the
-2026-07-10 audit, which had flagged both as open.
+4.65% (`snap-seed-sampled-decode-replication` Outcome).
 
 ### 4.5 J-space localizes a better write site
 
@@ -447,21 +493,21 @@ matched the direct unembed baseline over 1000 prompts, with mean cosine 0.9811,
 mean top-10 overlap 0.82, and top-1 match 3/5 over five random directions. The
 H1 read then found that caution-like directions verbalized as first-person,
 absence, error, and impossibility tokens, while the known-unknown direction
-verbalized more as answer/reply tokens. In hindsight this observation is
-prescient corroboration of a later naming finding: a direction that
-verbalizes toward answer/reply tokens is consistent with tracking
-answerability rather than a self-directed uncertainty state, which is exactly
-how `margin-evidence-responsiveness-worldknown` (Outcome) later characterizes
-this direction on an out-of-population error class: closer to unanswerability
-recognition than to self-directed uncertainty. The layer profile localized a workspace-like band
-to hs=23-29, peaking at hs=26. The inherited L34 direction corresponds to hs=34,
-just after that band.
+verbalized more as answer/reply tokens. That readout says something about what
+the direction is: a direction that verbalizes toward answer/reply tokens is
+tracking answerability, not a self-directed uncertainty state, and a later cell
+on an out-of-population error class characterizes it the same way, closer to
+unanswerability recognition than to self-directed doubt
+(`margin-evidence-responsiveness-worldknown` Outcome). The layer profile
+localized a workspace-like band to hs=23-29, peaking at hs=26. The inherited
+L34 direction corresponds to hs=34, just after that band.
 
 The first causal layer sweep at a fixed absolute dose stopped at G0 because dose
 200 collapsed hs23 and hs26. FIT-only dose calibration fixed that: usable
 non-collapsing setpoints were recovered at hs23=25, hs26=75, hs29=125, and
 hs34=175. The held-out contrast then supported the layer-site hypothesis. Over
-443 held-out rows, hs23 achieved 165/185 clean refusals (89.2%) versus hs34
+443 held-out rows, hs23 (rd 0.639) achieved 165/185 clean refusals (89.2%)
+versus hs34 (rd 0.944)
 123/185 (66.5%), a +22.7 point improvement. Known-correct cost rose only from
 7/258 (2.7%) to 9/258 (3.5%), a +0.78 point delta. hs34 remained viable, but it
 was not optimal.
@@ -508,10 +554,8 @@ A separate answer-sycophancy readout, still an unsigned interim pilot rather
 than a governed result, found a readable L24 direction on Qwen3-4B where the
 actuator failed to beat a matched control: the write path fired and a neutral
 guardrail passed, but the anti-sycophancy-vs-control gate failed with diff 0.
-Reported here only as an unsigned pilot reading, not as evidence with the
-same evidential status as the amendments elsewhere in this paper, it is
-consistent with the broader lesson: readable behavioral directions do not
-automatically become clean actuators.
+The pilot points the same way as the governed cells: readable behavioral
+directions do not automatically become clean actuators.
 
 ### 4.8 Cross-family replication surfaces an instrument problem, not (yet) a mechanism problem
 
@@ -595,10 +639,10 @@ against each family's measured K = 15 null distribution, from which
 percentile-based or sign-opposition criteria are available (Section 4.10;
 `experiments/placebo-seed-distribution-census/AMENDMENT.md`).
 
-This also qualifies how the narrow-detector-graded random-direction and
-permuted-gate controls elsewhere in this paper should be read. The Qwen3-4B
-raw-base gate-and-snap result in Section 4.4 (random-direction control:
-13/185 clean tighten; permuted-gate control: 59/258 known-correct cost) and
+A qualification follows for every control graded under the older, narrower
+instrument. The Qwen3-4B raw-base gate-and-snap result in Section 4.4
+(random-direction control: 13/185 clean tighten; permuted-gate control:
+59/258 known-correct cost) and
 the mid-band layer-site contrast in Section 4.5 were graded under the
 program's original narrow detector, not the wide two-instrument stack
 introduced here, and neither experiment has been re-scored under it. Given
@@ -659,21 +703,22 @@ Section 4.8) are each a single draw from that distribution. RR3's Outcome
 states this directly: "the calibration's family-signed placebo map should be
 read with per-seed variance in mind"
 (`experiments/rr3-corrected-placebo-replication/AMENDMENT.md`, "What the
-falsification means"). This is now a standing constraint on how any placebo
-delta reported from a single seed, anywhere in this paper, should be read.
+falsification means"). Any placebo delta measured from a single seed is one
+draw from a wide distribution, not a family constant.
 
 **Rider: the llama placebo leg completes the three-family sign map at
 null.** RR3 also ran the placebo measurement missing from the family x
 placebo-sign map since the calibration study scoped it out for lack of
 on-disk generation text (Section 4.8): a llama random-direction dose ladder
-at llama's own atlas site (hs20), one fresh seed per rung across the
+at llama's own atlas site (hs20 = rd 0.714), one fresh seed per rung across the
 registered dose grid, on both the confab and known-correct populations. At
 the matched-magnitude reference dose (12 sigma_c), the llama confab lift was
 +0.1 points: null. The ladder stayed flat through 16 sigma_c (-3.1 to +0.9
 points, all inside the +/-8 point descriptive envelope), with a single
 +8.5-point excursion at the top rung (20 sigma_c) that lands marginally
 outside the envelope; known-correct false refusal grew with dose, from 0.3%
-at 2 sigma_c to 6.0% at 20 sigma_c. A parallel mistral dose ladder (hs16, one
+at 2 sigma_c to 6.0% at 20 sigma_c. A parallel mistral dose ladder (hs16 =
+rd 0.500, one
 fresh seed per rung) produced lifts of -3.8 to +4.2 points across the same
 grid, all inside the envelope with no monotone dose-response, reinforcing
 the single-seed-instability finding above. Per RR3's pre-stated
@@ -690,7 +735,23 @@ complete in sign across all three families: qwen suppresses (-5.13), llama
 is null (+0.1 at matched magnitude), and mistral recruits on average but
 with wide single-seed variance (-7.4 to +21.8).
 
-**Census update (2026-07-15).** A dedicated multi-seed census
+**Depth caveat on the llama leg.** The llama ladder ran at that family's
+read-selected atlas site, hs20 = rd 0.714. llama's own write site, the one
+that cleared `dose_is_usable` and passed held-out G1 at 0.7420, is hs17 =
+rd 0.607. The two are not interchangeable: read-optimal and actuate-optimal
+depth are separately measured quantities in this program, and rd 0.714 sits
+above the band in which any family here has actuated at all. A null placebo
+is the desired control outcome and nothing about this result is anomalous,
+but the inference the rider draws from it is stronger than the observation
+supports. Reading a null placebo as evidence that placebo response is not
+monotone in baseline hedging presumes the site is one where a direction of
+that magnitude could have moved behavior. At rd 0.714 that presumption is
+untested for llama and false for every other family measured. The sign map
+should be read as complete in sign at the sites actually run, not as a
+depth-controlled comparison; a llama placebo leg at hs17 would be needed to
+make it one.
+
+**Census update.** A dedicated multi-seed census
 (Section 4.10, `experiments/placebo-seed-distribution-census/AMENDMENT.md`)
 later measured llama's matched-magnitude placebo across 15 fresh seeds and
 found the single +0.1 reading above to be an unrepresentative draw: it lies
@@ -835,9 +896,9 @@ paper's claims.
   with a specificity margin referenced to the family's own measured placebo
   null, not to zero.
 
-A within-kuq subtype breakdown of the same placebo response
-(`placebo-signflip-question-type-analysis` Outcome) shows the family-level
-sign is not evenly distributed across question types: one subtype,
+Breaking the same placebo response down by question type within the
+known-unknown pool (`placebo-signflip-question-type-analysis` Outcome) shows
+the family-level sign is not evenly distributed: one subtype,
 future-unknown items, carries qwen's entire suppression (-24.7 points against
 -2.8 or smaller elsewhere) and is also mistral's single largest recruitment
 delta (+11.8 points), the extreme mover in both families but in opposite
@@ -857,11 +918,103 @@ family's own nonspecific-perturbation response) against a measured null rather
 than a point estimate or a small-K maximum
 (`experiments/placebo-seed-distribution-census/AMENDMENT.md`).
 
+### 4.11 Gemma's inertness was a depth-coverage artifact, not a family-specific null
+
+Was Gemma-4-E4B a fourth family that simply does not actuate, or a family that
+had never been written to in the band where every other family does? Every
+prior write attempt on this substrate in the program's cross-family line sat at
+relative depth 0.81 or deeper, on an architecture whose upper 18 blocks read
+their key and value tensors from two frozen donor blocks rather than computing
+their own. Nothing had ever been written into the shallow half of the model.
+
+A depth ladder run on the unmodified model, KV-sharing left on, answers the
+question. At relative depth 0.357, the fitted known-unknown direction cleared
+both held-out gates with the widest margin recorded anywhere in the cell: 78.6%
+clean tightening (Wilson 95% CI [71.8, 84.1]) against a 1.1% known-correct
+false-refusal cost. The depth-ladder arms carried the clean-tightening and
+cost gates only, with no placebo control at this site, so this is the cell's
+strongest behavioral gate clearance, not a demonstrated direction-specific
+actuation. Two intermediate sites, relative depth 0.429 and 0.476, failed the
+clean-tightening floor outright (44.6% and 40.5%). A fourth site, relative
+depth 0.524, passed both gates again (58.9% clean tightening, cost within the registered floor);
+its placebo control is recorded as a degenerate pass, all five accepted
+random draws producing zero lift, which the design requires reporting under
+the degenerate label rather than as a large specificity ratio. Gemma clears
+held-out behavioral gates, unevenly across this narrow band, and its
+cross-family reputation as the one family that does not actuate was built
+entirely on sites past the depth where any family in this program has ever
+produced a usable write.
+
+That finding sharpens rather than closes the question the experiment was built
+to answer: whether the deep-site failure is specifically because the
+KV-sharing seam blocks a write from reaching anything later blocks attend to.
+The one site immediately downstream of both donor blocks, relative depth
+0.571, still cleared the clean-tightening and cost floors (73.2%, cost 3.3%),
+but failed its own placebo control: the single worst magnitude-matched random
+direction reproduced 88% of the fitted direction's effect, short of the
+registered three-fold margin the design required. That reads as seam-region
+instability, not a continuation of the shallow band's clean pass down to the
+boundary.
+
+The direct test of the seam mechanism, the same kind of write with KV-sharing
+switched off, could not run as designed. A precondition check, undosed
+sharing-off against undosed sharing-on, found that turning sharing off breaks
+the model before any write is applied: known-correct rows that were perfectly
+well-formed under sharing on (0/180) became entirely malformed under sharing
+off (180/180, Newcombe 95% CI on the difference between the two proportions
+[0.970, 1.0], against a registered 0.05 cap), and mean per-token negative
+log-likelihood on the reference completions rose from 3.53 to 12.33, roughly
+3.5 times its baseline value. Because
+that precondition failed, the sharing-on/sharing-off contrast this experiment
+was built around never ran, and this ablation cannot isolate the seam variable
+on this model; a gentler one is needed. A parallel calibration sweep at the
+original above-seam site found no usable dose in either sharing condition, so
+the deep-site null that gave gemma its inert reputation was itself reproduced,
+unchanged, alongside the new shallow-band result.
+
+The quarantine hypothesis is therefore left resting entirely on the depth
+ladder run under the unmodified model: a below-seam site that clears the
+behavioral gates, set against an above-seam site that reproduces the original
+null. That pattern is registered as supporting the quarantine hypothesis, and
+explicitly not establishing it. Gemma's falloff with depth could equally be
+the same generic decay every other family in this paper shows past its own
+productive band, with no seam mechanism required.
+
+A second ladder then closed the last unmeasured band. It wrote to the three
+sites at the very top of the cross-family operating range, relative depth
+0.595, 0.619, and 0.643, the neighborhood in which Qwen3.5-4B's promoted
+result and Llama-3.2-3B's held-out pass both sit, and which on gemma's
+architecture lie entirely above the seam. Its design made the placebo control
+mandatory at every site rather than optional, precisely because the
+seam-adjacent site had already shown that the two behavioral gates can clear
+without the write being direction-specific. No arm produced direction-specific
+actuation. At relative depth 0.595 the fitted direction cleared both gates on
+held-out rows, 79.2% clean tightening (Wilson 95% CI [72.4, 84.6]) at a 3.3%
+known-correct false-refusal cost (CI [1.8, 6.2]), and then failed the placebo
+gate exactly as the seam-adjacent site one block shallower had: the worst of five
+magnitude-matched random draws reproduced 78% of the fitted direction's
+effect, an effect ratio of 1.279 against the registered three-fold floor. The
+two deeper sites never reached a usable dose at all, their best fit-split
+tightening rates topping out at 37.5% and 25.0% against a 50% usability floor,
+so the falloff that began below the seam simply continues through them. Every
+prediction registered for that ladder before the run was met.
+
+Every site of the cross-family operating range that sits above gemma's seam
+has now been measured: relative depth 0.571 and 0.595 clear the behavioral
+gates and fail direction-specificity, 0.619 and 0.643 have no usable dose.
+That closes the coverage question and leaves the mechanism question exactly
+where it was, for a structural reason rather than a want of data. Across that
+whole band, relative depth and KV-sharing status are the same variable on this
+architecture, so no result there, positive or negative, can say which of the
+two produced it. Isolating the seam mechanism still requires a working
+sharing-on/sharing-off contrast, and the one built for this experiment broke
+the model before any write could be tested.
+
 ---
 
 ## 5. Synthesis: The Actuation Map
 
-The results form a channel map rather than a single pass/fail story.
+Taken together, the channels sort by how far each one gets before it breaks.
 
 | Channel | What worked | What failed | Lesson |
 |---|---|---|---|
@@ -870,10 +1023,11 @@ The results form a channel map rather than a single pass/fail story.
 | Reward | Some boundary-preserving behavior | TRUE sensor less congruent than PERMUTED | Reward can train correlates without readout consultation |
 | Unconditional write, overdrive regime (Qwen3-4B, L34, dose 200) | Damages most confabs (77.8%) | Non-selective on knowns: damages 60.1% of known-correct rows vs 3.1% gated (57.0pp, McNemar p = 4.2e-43) | At this dose, the gate is the sole source of selectivity; the write alone is not selective |
 | KU-gated caution snap, overdrive regime (Qwen3-4B, L34, dose 200) | 73.5% clean tighten, 3.1% known cost; held-out and sampled-decode replicated | Release direction remains null | Gate supplies selectivity; snap supplies the refusal action |
-| KU-gated caution snap, mid-band regime (Qwen3.5-4B/mistral, hs20, dose_abs 12.608) | Permuted-gate confab abstention already 0.550 qwen / 0.600 mistral, near the true gate's 0.689 / 0.694: the write is largely self-sorting | True gate's own contribution, Gap_Sel(c_hat), is real but sub-floor (0.148 qwen, 0.129 mistral, vs a 0.20 floor); cost protection sub-floor too (0.008 / 0.034 vs 0.10) | At this dose, the write self-sorts; the gate's role reduces to a modest increment plus cost governance, not the source of selectivity |
-| Mid-band J-space write (layer site, not dose regime) | hs23 beats hs34 by +22.7pp | Needs layer-specific dose; not yet cross-family | Write site matters |
+| KU-gated caution snap, mid-band regime (Qwen3.5-4B hs20 = rd 0.625, mistral hs16 = rd 0.500; dose_abs 12.608 qwen, 3.665 mistral) | Permuted-gate confab abstention already 0.550 qwen / 0.600 mistral, near the true gate's 0.689 / 0.694: the write is largely self-sorting | True gate's own contribution, Gap_Sel(c_hat), is real but sub-floor (0.148 qwen, 0.129 mistral, vs a 0.20 floor); cost protection sub-floor too (0.008 / 0.034 vs 0.10) | At this dose, the write self-sorts; the gate's role reduces to a modest increment plus cost governance, not the source of selectivity |
+| Mid-band J-space write (layer site, not dose regime; Qwen3-4B, 36 blocks) | hs23 = rd 0.639 beats hs34 = rd 0.944 by +22.7pp | Needs layer-specific dose; not yet cross-family | Write site matters |
 | Natural J-token write | Non-inert token-only effect | Redundant with `c_hat` hybrid | Verbalizable token target is not enough |
 | Cross-family gated snap (mistral, bounded negative) | Wide-instrument adjudicated refusal 69.9%, cost pristine (0.52% known-correct); benefit and cost gates reproduce at every re-test | Direction-specificity falsified three times independently, at three sites and doses: RR2's flat 2-point placebo tolerance, RR3's corrected 3x effect-ratio gate (ratio 1.87), and the mid-band factorial's S1 leg (ratio 2.03, K=15 census denominator); the mid-band factorial's own gate-contribution leg is also sub-floor (Gap_Sel 0.129 vs 0.20); the cross-family confirmatory fleet found a true behavioral null at the registered late write site (0/874 clean_tighten at every dose); a 15-seed placebo census (Section 4.10) resolved all three families' matched-magnitude placebo as sign-consistent rather than seed noise (qwen suppresses 14/15, mistral recruits at the 12/15 boundary, llama newly suppresses 12/15), so llama is not a null control | Mistral is readable everywhere the audit looked but not shown actuable by a direction-specific write at any tested site; placebo criteria must be registered against each family's measured per-family null distribution, not a flat tolerance or a single seed; the census (Section 4.10) supplies that distribution at K=15 for percentile-based or sign-opposition criteria |
+| Depth-ladder write, KV-sharing seam (gemma, formerly reputed inert) | Two below-seam sites (relative depth 0.357, 0.524) clear held-out clean-tightening and known-correct cost floors, overturning the reputation that this family does not actuate; the shallower of the two carried no placebo arm, and at 0.524 all five accepted random draws produced zero lift, a degenerate pass reported under that label rather than a large specificity margin | Direction-specificity fails everywhere above the seam it has been tested: relative depth 0.571 clears both gates and fails it (worst placebo draw reproduces 88% of the effect, ratio 1.139), 0.595 does the same (78%, ratio 1.279), and 0.619 and 0.643 never reach a usable dose (best fit-split tightening 0.375 and 0.250 against a 0.50 floor); the sharing-on/sharing-off contrast meant to isolate the seam mechanism could not run because turning sharing off broke the model outright (known-correct well-formedness 0% to 100% malformed, NLL 3.53 to 12.33) | Four families deep, no family in this program has ever been shown to be architecturally inert: gemma's null was a depth-coverage artifact of testing only relative depth >= 0.81. Every above-seam site of the cross-family operating range has now been measured and none produced adjudicated direction-specific actuation, but relative depth and KV-sharing status are the same variable across that band, so whether the failure traces to the seam or to the depth falloff every family shows remains open; the ablation built to answer that broke the substrate it was meant to probe |
 
 The practical controller that emerges is not "make the model introspect." It is:
 
@@ -991,19 +1145,20 @@ not population effect-size estimates. Key limits:
   overdrive headline in Section 4.4 shows the same ceiling on this
   population is untested.
 
-The margin-theory account that motivates this paper's operating-point framing
-(`docs/research/margin-theory-framework.md`) is developed further in a
-successor paper on the geometry of these margins; this paper carries no
-margin-cell numbers of its own and defers that account to the successor.
+The margin account that motivates the operating-point framing used here, that
+each row has a commitment margin and that a dose lands above or below it, is
+used qualitatively only. No margin measurements of our own appear anywhere in
+these results, and the geometry of those margins is future work.
 
 ### 6.5 Next study: the amped-up replication and model sweep
 
 One asymmetry should shape how that next study is designed. The known-unknown
 (answerability) axis this paper's gated write is built on reads at near-ceiling
-accuracy on Qwen3-4B and, in the companion readout paper, transfers across four
-model families at AUROC 0.997 to 0.998 with no per-family refitting. The
-correctness axis a sibling paper reads at the answer token does not carry the
-same portability, even within one model's own training trajectory. A direct
+accuracy on Qwen3-4B and, in the companion readout paper that established the
+gate/dial pipeline, transfers across four model families at AUROC 0.997 to
+0.998 with no per-family refitting. The correctness axis that same paper reads
+at the answer token does not carry the same portability, even within one
+model's own training trajectory. A direct
 measurement of its cross-checkpoint rotation found none of the answerability
 axis's single-rotation-then-stable pattern: cosines of 0.19, 0.45, and 0.33
 across the three training transitions, none reaching the 0.85 stability the
@@ -1025,8 +1180,8 @@ harder generalization problem, not assumed to inherit the answerability axis's
 portability. That is a hypothesis for the next study to test, not a result it
 can yet report.
 
-The next study should be designed before running, not inferred from this draft.
-Recommended escalation:
+The next study should be designed and registered before it runs. Recommended
+escalation:
 
 1. **Same-model replication.** Re-run the gated hs23/hs29 versus hs34 layer-site
    contrast on a fresh held-out split or newly staged rows for Qwen3-4B bf16.
@@ -1076,10 +1231,23 @@ Recommended escalation:
    site does it work," which the family atlas (Section 6.3) already answers
    for llama and mistral. Per-family atlas-sited retests are queued work, not
    a blocker for this paper's claims.
-5. **Dense-token screen.** Separately screen abstract or multilingual token
+5. **Gemma's KV-sharing seam.** A below-seam depth ladder overturned gemma's
+   inert reputation (Section 4.11): the model clears the held-out behavioral
+   gates at two shallow sites, and fails direction-specificity at both
+   above-seam sites where a usable dose existed at all, starting with the one
+   immediately adjacent to its KV-sharing boundary. A second ladder has since
+   measured the rest of that band, relative depth 0.595 to 0.643, and found no
+   direction-specific actuation there either, so the coverage question is
+   closed. What is not closed is whether the boundary is the cause, rather
+   than the same depth decay every other family shows. That cannot be settled
+   by writing to more above-seam sites, because relative depth and sharing
+   status are the same variable across all of them; it needs an ablation that
+   suppresses key and value sharing without breaking the model, which the one
+   built here did not manage.
+6. **Dense-token screen.** Separately screen abstract or multilingual token
    bundles before any causal hybrid run. Do not alter the natural-token result
    post hoc.
-6. **Generic tuner support.** Promote compound multi-readout writes into the
+7. **Generic tuner support.** Promote compound multi-readout writes into the
    Synaptic Tuner config surface so future runs are config-driven, resumable, and
    comparable across models.
 
@@ -1113,9 +1281,8 @@ itself.
 
 ## Appendix A. Traceability Map
 
-This appendix intentionally names internal amendment/experiment labels so the
-draft can be audited. Reader-facing prose should eventually move most labels to a
-provenance appendix or supplement.
+Each reader-facing claim above, with the governed document that registered it
+and its adjudicated status.
 
 | Paper claim | Governed source | Status |
 |---|---|---|
@@ -1147,6 +1314,8 @@ provenance appendix or supplement.
 | Within-kuq subtype breakdown: question type does not explain the cross-family placebo sign difference at the family level, but one subtype (future-unknown) carries qwen's entire suppression (-24.7pp) and is also mistral's largest recruitment delta (+11.8pp) | `experiments/placebo-signflip-question-type-analysis/AMENDMENT.md` Outcome | Resolved; subtype-inert reading falsified for qwen |
 | Criterion (d) (evidence-responsiveness) is not licensed on the world-known error class for the named KU direction (primary transfer void, population reversal) or for a world-known-specific refit (specificity leg passes, collapse leg fails); a coherence/saturation ceiling limits refusal to 12.75% of world-known confabs before generation degenerates | `experiments/margin-evidence-responsiveness-worldknown/AMENDMENT.md` Outcome | Null result; retires mentalistic naming with a completed (d) adjudication |
 | A constructive search for a specific evidence-response axis (d_ev) fires at baseline but is indistinguishable from covariance-shaped random directions and weaker than the native ignorance-fit direction; it reconstructs retrieval-family geometry, not a specific evidence-responsive axis | `experiments/evidence-response-direction-search/AMENDMENT.md` Outcome | Null result; strengthens the fragmentation reading |
+| Gemma's cross-family inert reputation was a depth-coverage artifact: below-seam sites at relative depth 0.357 and 0.524 clear held-out clean-tightening and known-correct cost floors, the former with no placebo arm registered and the latter with a degenerate placebo pass (all 5 accepted draws produced zero lift, reported under the degenerate label and never as a large specificity ratio); the seam-adjacent site (relative depth 0.571) clears the same floors but fails direction-specificity (worst placebo draw reproduces 88% of the effect); a sharing-off precondition control broke the model's own baseline (known-correct well-formedness 0% to 100% malformed, NLL 3.53 to 12.33) before the sharing-on/sharing-off contrast could run, leaving the KV-quarantine account supported but not established | `experiments/gemma4-e4b-kv-seam-quarantine/AMENDMENT.md` Outcome | Exploratory, resolved; quarantine hypothesis open |
+| The three sites at the top of gemma's cross-family operating band (relative depth 0.595, 0.619, 0.643), all above the seam, produced no direction-specific actuation under a mandatory-placebo design: 0.595 cleared both held-out gates (79.2% clean tightening, Wilson CI [72.4, 84.6]; known-correct cost 3.3%, CI [1.8, 6.2]) then failed direction-specificity at effect ratio 1.279 against the 3.0 floor (worst of 5 random draws reproduced 78% of the effect), reproducing the seam-adjacent signature one block shallower (1.139); 0.619 and 0.643 were dose-viability NOT-RUN (best FIT clean-tightening 0.375 and 0.250 against the 0.50 usability floor). All three registered predictions met. Relative depth and KV-sharing status are the same variable across this band, so the result does not resolve the KV-quarantine hypothesis in either direction | `experiments/gemma4-e4b-pocket-ladder/AMENDMENT.md` Outcome | Exploratory, resolved |
 
 ## Appendix B. Figure Plan
 

@@ -1,0 +1,974 @@
+{
+  "family": "llama-3.2-3b",
+  "mode": "fit_dose_calibration",
+  "calibration_split": "fit",
+  "doses": [
+    25.0,
+    50.0,
+    75.0,
+    100.0,
+    125.0,
+    150.0,
+    175.0,
+    200.0
+  ],
+  "min_confab_rate_for_usable": 0.5,
+  "midband_hs_indices": [
+    17,
+    20,
+    23
+  ],
+  "late_reference_hs": 26,
+  "layers": {
+    "hs17": {
+      "hs_index": 17,
+      "role": "midband",
+      "n_confab_fit_rows": 8,
+      "n_known_fit_rows": 8,
+      "doses": [
+        {
+          "hs_index": 17,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 25.003453060133324,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 25.0,
+          "usable": false
+        },
+        {
+          "hs_index": 17,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 50.004380249010865,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 50.0,
+          "usable": false
+        },
+        {
+          "hs_index": 17,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 74.99859609809027,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 75.0,
+          "usable": false
+        },
+        {
+          "hs_index": 17,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 100.00558648060041,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 100.0,
+          "usable": false
+        },
+        {
+          "hs_index": 17,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 124.48877157994866,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 125.0,
+          "usable": false
+        },
+        {
+          "hs_index": 17,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 149.99219789772178,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 150.0,
+          "usable": false
+        },
+        {
+          "hs_index": 17,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 175.00735967890068,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 175.0,
+          "usable": false
+        },
+        {
+          "hs_index": 17,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 200.0038983063132,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 200.0,
+          "usable": false
+        }
+      ],
+      "selected_dose": null,
+      "selected": null,
+      "has_usable_dose": false
+    },
+    "hs20": {
+      "hs_index": 20,
+      "role": "midband",
+      "n_confab_fit_rows": 8,
+      "n_known_fit_rows": 8,
+      "doses": [
+        {
+          "hs_index": 20,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 24.998647359117967,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 25.0,
+          "usable": false
+        },
+        {
+          "hs_index": 20,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 49.99591254567713,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 50.0,
+          "usable": false
+        },
+        {
+          "hs_index": 20,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 74.98727893142132,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 75.0,
+          "usable": false
+        },
+        {
+          "hs_index": 20,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 99.98984743227084,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 100.0,
+          "usable": false
+        },
+        {
+          "hs_index": 20,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 124.46986061319876,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 125.0,
+          "usable": false
+        },
+        {
+          "hs_index": 20,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 149.97490867136185,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 150.0,
+          "usable": false
+        },
+        {
+          "hs_index": 20,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 174.99275394136384,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 175.0,
+          "usable": false
+        },
+        {
+          "hs_index": 20,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 199.98097232775217,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 200.0,
+          "usable": false
+        }
+      ],
+      "selected_dose": null,
+      "selected": null,
+      "has_usable_dose": false
+    },
+    "hs23": {
+      "hs_index": 23,
+      "role": "midband",
+      "n_confab_fit_rows": 8,
+      "n_known_fit_rows": 8,
+      "doses": [
+        {
+          "hs_index": 23,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 25.002021336427788,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.125,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 1,
+            "rate": 0.125,
+            "wilson_ci_95": [
+              0.02241749145005667,
+              0.4708881822128535
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 25.0,
+          "usable": false
+        },
+        {
+          "hs_index": 23,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 50.004163029758274,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 50.0,
+          "usable": false
+        },
+        {
+          "hs_index": 23,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 74.99227357414202,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 75.0,
+          "usable": false
+        },
+        {
+          "hs_index": 23,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 100.00666429625926,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 100.0,
+          "usable": false
+        },
+        {
+          "hs_index": 23,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 125.00831998457579,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 125.0,
+          "usable": false
+        },
+        {
+          "hs_index": 23,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 149.99167594152823,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 150.0,
+          "usable": false
+        },
+        {
+          "hs_index": 23,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 174.99333598701924,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 175.0,
+          "usable": false
+        },
+        {
+          "hs_index": 23,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 200.01335440360708,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 200.0,
+          "usable": false
+        }
+      ],
+      "selected_dose": null,
+      "selected": null,
+      "has_usable_dose": false
+    },
+    "hs26": {
+      "hs_index": 26,
+      "role": "late_reference_descriptive",
+      "n_confab_fit_rows": 8,
+      "n_known_fit_rows": 8,
+      "doses": [
+        {
+          "hs_index": 26,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 25.003729053065683,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 0.25,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 25.0,
+          "usable": false
+        },
+        {
+          "hs_index": 26,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 50.00271214470558,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 50.0,
+          "usable": false
+        },
+        {
+          "hs_index": 26,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 74.99585702493823,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 75.0,
+          "usable": false
+        },
+        {
+          "hs_index": 26,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 100.0044701036104,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 100.0,
+          "usable": false
+        },
+        {
+          "hs_index": 26,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 125.00967814764135,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 125.0,
+          "usable": false
+        },
+        {
+          "hs_index": 26,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 149.9765419824953,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 150.0,
+          "usable": false
+        },
+        {
+          "hs_index": 26,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 174.99756661481206,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 175.0,
+          "usable": false
+        },
+        {
+          "hs_index": 26,
+          "n_rows": 16,
+          "n_fired": 8,
+          "readback_mean": 199.9985501622641,
+          "frac_readback_within_tol": 1.0,
+          "collapse_rate_on_dosed": 1.0,
+          "confab_tighten": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 8,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "dose_target": 200.0,
+          "usable": false
+        }
+      ],
+      "selected_dose": null,
+      "selected": null,
+      "has_usable_dose": false
+    }
+  },
+  "selected_doses": {},
+  "midband_selected_doses": {},
+  "late_reference_selected_dose": {
+    "layer": "hs26",
+    "hs_index": 26,
+    "selected_dose": null,
+    "note": "late arm calibrated fresh with the mid-band ladder (option B, non-gating descriptive); frozen late-site direction/gate reused verbatim. A null selected_dose means no usable late-site dose was found -- expected per doubt-snap's late-site null -- and the late arm is then SKIPPED without affecting the primary."
+  },
+  "all_midband_have_usable_dose": false,
+  "all_layers_have_usable_dose": false
+}

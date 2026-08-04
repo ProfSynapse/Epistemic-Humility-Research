@@ -5,3 +5,4 @@ seed1_all,sft_kto,3369,1032,2337,36.95,75.68,48.22,38.35,62388c69b67bbc43,archiv
 seed2_dpo_clean,sft_dpo_seed2_lowmem,3369,1032,2337,34.82,65.89,18.36,25.84,dd3585c939108136,archive/experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_dpo_lowmem_local_4b/comparisons/summary_table.csv
 seed2_kto_clean,sft_kto_seed2_lowmem,3369,1032,2337,38.14,78.68,45.53,37.16,b18d66c711bc62bd,archive/experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b/comparisons/summary_table.csv
 seed3_dpo,sft_dpo_seed3,3369,1032,2337,28.55,43.7,11.42,24.69,8ea042deeaef115e,archive/experiment/phase1/eval/results_amendment_a_selfaware_full_seed3_sft_dpo_local_4b/comparisons/summary_table.csv
+seed3_kto,sft_kto_seed3,3369,1032,2337,38.08,78.88,43.3,35.4,0a569e25c4e9f97e,archive/experiment/phase1/eval/results_amendment_a_selfaware_full_seed3_sft_kto_local_4b/comparisons/summary_table.csv

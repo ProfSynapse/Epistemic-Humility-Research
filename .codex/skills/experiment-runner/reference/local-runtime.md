@@ -85,6 +85,21 @@ does not exist: scratch\...`.
   and `docker run --rm --gpus all --entrypoint nvidia-smi
   unsloth/unsloth:latest` saw the RTX 3090.
 
+- Storage hygiene (added after the 2026-08-02 disk-full crash truncated a
+  merge shard mid-write): run `scripts/ops/prune_runtime.sh stage` at every
+  stage boundary (prunes stopped containers and dangling images only) and
+  `scripts/ops/prune_runtime.sh scan` monthly or below ~200G free (report-only
+  inventory of HF cache, merged-16bit dirs, and checkpoint rotations against
+  the retention policy in the script header). Two hard rules: never
+  `docker image prune -a` (the pinned image above was lost exactly that way
+  once and had to be re-pulled by digest:
+  `docker pull unsloth/unsloth@sha256:f21629b9...`), and check free space
+  covers the artifact you are about to write (a 16-bit 4B merge needs ~8G)
+  before launching any merge or training container. If the pull hits
+  `docker-credential-desktop.exe: exec format error` under WSL, point
+  `DOCKER_CONFIG` at a dir holding a bare `{}` config.json for the pull (the
+  image is public; the broken Windows credential helper is only in the way).
+
 - Redirect Hugging Face caches to repo-local `.cache/hf` during local runs to
   avoid Windows permission failures under `C:\Users\Joseph\.cache\huggingface`.
 

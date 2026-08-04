@@ -313,7 +313,7 @@ def main(argv=None) -> int:
     config_path = Path(args.config)
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     inputs = config["inputs"]
-    repo_root = Path(__file__).resolve().parents[3]
+    repo_root = Path(__file__).resolve().parents[4]
 
     def resolve(template: str) -> Path:
         return (repo_root / template.format(model_tag=args.model_tag)).resolve()
@@ -322,7 +322,7 @@ def main(argv=None) -> int:
     frozen_questions = (
         Path(args.frozen_questions)
         if args.frozen_questions
-        else resolve("experiment/phase1/data/{model_tag}/questions_frozen.json")
+        else resolve("archive/experiment/phase1/data/{model_tag}/questions_frozen.json")
     )
     triviaqa_train = (
         Path(args.triviaqa_train)
@@ -332,7 +332,7 @@ def main(argv=None) -> int:
     output_dir = (
         Path(args.output_dir)
         if args.output_dir
-        else resolve("experiment/phase1/data/{model_tag}")
+        else resolve("archive/experiment/phase1/data/{model_tag}")
     )
 
     manifest = build_grpo_projection(

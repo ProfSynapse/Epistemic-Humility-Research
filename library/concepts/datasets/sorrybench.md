@@ -1,5 +1,6 @@
 ---
 aliases:
+- SORRY-Bench
 - SorryBench
 - Sorry-Bench
 - sorry bench
@@ -21,8 +22,8 @@ relationships:
   confidence: high
 ---
 
-SorryBench is a harmful-request refusal benchmark spanning many harm categories and measuring whether a model refuses unsafe prompts. In Faithfulness to Refusal, it is used as a transfer check after CAST-calibrated row masks are applied.
+SorryBench is a fine-grained safety-refusal benchmark that organizes unsafe requests into a detailed taxonomy of topics and instruction styles, including paraphrases, persuasion techniques, and encodings. It provides a higher-resolution measurement of refusal behavior than single-score safety benchmarks.
 
-**Why it matters here:** SorryBench helps separate a mask that merely overfits CAST wording from a mask that transfers to broader harmful-request refusal behavior.
+**Why it matters here:** It is used alongside XSTest and AdvBench to measure how interventions affect safety behavior across request styles. In Faithfulness to Refusal, it also serves as a transfer check after CAST-calibrated row masks are applied, helping distinguish a mask that transfers from one that merely overfits CAST wording.
 
-**Lineage:** used as an external refusal-transfer benchmark in [[2607.05355--faithfulness-refusal-causal-audit-neuron-selectors]].
+**Lineage:** Used as an external refusal-transfer benchmark in [[2607.05355--faithfulness-refusal-causal-audit-neuron-selectors]].

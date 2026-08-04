@@ -1,0 +1,162 @@
+# Ranking regression spec for bin/search (kg_search.py).
+#
+# Run after ANY change to the scoring path:
+#   python3 .skills/knowledge-graph/scripts/kg_rank_regress.py
+#
+# Each case asserts that `expect` (a path substring, or `expect_node` resolved
+# to its path via the nodes table) appears within the first `within_top_k`
+# results for `query`.
+#
+# kind:
+#   target - the defect this suite was written to close. These FAILED before
+#            the ranking fix and must pass after it.
+#   guard  - queries whose target already ranked well. These pin the existing
+#            behaviour so a ranking change cannot trade one class of query for
+#            another. `within_top_k` records the band, not the exact rank.
+#   blocked - a query the scorer cannot satisfy because the target note does not
+#            contain the query's vocabulary. Reported every run, but does not
+#            gate the suite: the fix is an alias on the note, not a scorer tweak.
+#            Promote to `target` once the note is amended.
+
+cases:
+  # ---------------------------------------------------------------- targets
+  - id: idk-switch-generic-confirm
+    kind: target
+    query: is the IDK switch confirmed
+    expect_node: term:idk-switch
+    within_top_k: 5
+    note: >-
+      Generic natural phrasing about a new canonical term. Pre-fix this flooded
+      to the internal-* diagnostic note cluster hanging off
+      term:known-unknown-direction.
+
+  - id: idk-switch-replication
+    kind: target
+    query: qwen abstention actuator replication
+    expect_any:
+      - library/concepts/terms/idk-switch.md
+      - library/concepts/experiments/idk-switch-naming-confirmatory.md
+      - library/concepts/mechanisms/caution-write-idk-jump-replicates-under-fresh-sampled-decode-seeds.md
+    within_top_k: 5
+    note: >-
+      Originally blocked: no idk-switch node contained the token "abstention".
+      Resolved 2026-07-31 by the lead adding the alias "abstention actuator
+      (Qwen3.5-4B hs20)" to term:idk-switch and admitting the term node as an
+      expected answer; promoted from blocked to target. The alias only became
+      reachable once frontmatter was indexed as a searchable identity chunk -
+      before that, aliases reached neither the title boosts nor, for any note
+      with headings, the FTS text at all.
+
+  - id: idk-switch-hs20-write
+    kind: target
+    query: hs20 caution write result
+    expect_any:
+      - library/concepts/terms/idk-switch.md
+      - library/concepts/experiments/idk-switch-naming-confirmatory.md
+      - library/concepts/mechanisms/caution-write-idk-jump-replicates-under-fresh-sampled-decode-seeds.md
+    within_top_k: 5
+
+  - id: confab-propensity-term
+    kind: target
+    query: confabulation propensity direction
+    expect_node: term:confabulation-propensity-direction
+    within_top_k: 3
+    note: >-
+      Same defect class - the canonical term atom was buried under six
+      internal-* notes that merely neighbour it.
+
+
+  - id: sft-rotates-mechanism
+    kind: target
+    query: sft rotates boundary readout rl rides it
+    expect: library/concepts/mechanisms/sft-rotates-boundary-readout-rl-rides-it.md
+    within_top_k: 3
+    note: >-
+      Exact title match, absent from the top 10 pre-fix - its own neighbour
+      mechanisms inherited the hub score and displaced it.
+
+  - id: kv-seam-quarantine-atom
+    kind: target
+    query: kv seam quarantine result
+    expect: library/concepts/experiments/gemma4-e4b-kv-seam-quarantine.md
+    within_top_k: 5
+    note: >-
+      The experiment atom was absent from the top 10 pre-fix.
+
+  # ----------------------------------------------------------------- guards
+  - id: guard-qwen-midband-decouple
+    kind: guard
+    query: does the qwen midband write decouple refusal from format collapse
+    expect: library/concepts/mechanisms/qwen35-4b-midband-write-decouples-refusal-from-format-collapse.md
+    within_top_k: 1
+
+  - id: guard-gemma-sharing-off
+    kind: guard
+    query: gemma sharing-OFF substrate
+    expect: library/concepts/mechanisms/kv-sharing-off-ablation-breaks-baseline-substrate.md
+    within_top_k: 1
+
+  - id: guard-dose-windows-absolute
+    kind: guard
+    query: steering dose windows absolute not sigma transferable
+    expect: library/concepts/mechanisms/steering-dose-windows-are-absolute-not-sigma-transferable.md
+    within_top_k: 1
+
+  - id: guard-workspace-band-peak
+    kind: guard
+    query: workspace band peak location family relative
+    expect: library/concepts/mechanisms/workspace-band-peak-location-is-family-relative.md
+    within_top_k: 1
+
+  - id: guard-correctness-direction-rotation
+    kind: guard
+    query: correctness direction rotation
+    expect: experiments/correctness-direction-rotation/
+    within_top_k: 2
+    note: >-
+      Band widened 1 -> 2 when frontmatter identity chunks landed. The KG atom
+      library/concepts/experiments/correctness-direction-rotation.md took #1 and
+      the experiment directory follows at #2-#4. Same reorder already accepted
+      for guard-form-judge-axis-g: an experiment's concept atom is the better
+      entry point than its config directory, and this is now the systematic
+      pattern rather than a one-off.
+
+  - id: guard-form-judge-axis-g
+    kind: guard
+    query: form judge axis G rescore
+    expect: experiments/form-judge-axis-g-rescore/
+    within_top_k: 2
+    note: >-
+      Band widened 1 -> 2 by the ranking fix. The KG atom
+      library/concepts/experiments/form-judge-axis-g-rescore.md took #1 and the
+      experiment directory follows at #2-#10; the atom is the better entry
+      point for the same experiment, so this is a reorder, not a loss.
+
+  - id: guard-sycophancy-actuator
+    kind: guard
+    query: sycophancy activation actuator
+    expect: experiments/aq-sycophancy-activation-actuator/
+    within_top_k: 1
+
+  - id: guard-veto-saturates
+    kind: guard
+    query: veto saturates by first visible token
+    expect: library/concepts/mechanisms/veto-saturates-by-first-visible-token.md
+    within_top_k: 3
+
+  - id: guard-margin-theory-framework
+    kind: guard
+    query: margin theory framework
+    expect: docs/research/margin-theory-framework.md
+    within_top_k: 5
+    note: >-
+      Band widened 3 -> 5 by the ranking fix. The essay fell from #2 to #4
+      because term:margin-theory-of-epistemic-state, term:commitment-margin and
+      papers/common/terminology.md now rank on their own lexical merit instead
+      of on score inherited from the cluster. All five top hits are on-topic.
+
+  - id: guard-jspace-cross-family
+    kind: guard
+    query: j-space cross family layer contrast
+    expect: experiments/j-space-cross-family-layer-contrast/
+    within_top_k: 5

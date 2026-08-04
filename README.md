@@ -101,7 +101,10 @@ belief alignment.
 |   |-- protocol/              # locked protocol + signed amendments
 |   `-- phase1/                # training/eval/probe artifacts and scripts
 |-- experiments/               # experiments-first tree for new evidence cells
-|-- meta-analysis/             # original systematic synthesis and evidence table
+|-- papers/                    # one directory per paper; paper-1-taxonomy-framework
+|                              #   holds the synthesis apparatus (evidence tables,
+|                              #   analysis scripts, raw search reports)
+|-- archive/meta-analysis/     # superseded standalone synthesis draft (provenance only)
 |-- library/
 |   |-- notes/                 # one research note per paper/internal result
 |   |-- concepts/              # typed method/metric/dataset/model/mechanism atoms

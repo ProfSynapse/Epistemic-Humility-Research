@@ -1,0 +1,223 @@
+# Family config: Alibaba Qwen3.5-4B. DRAFT until `bin/exp sign`.
+#
+# Checkpoint and risk notes are transcribed verbatim from Amendment Z
+# (experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md, "Models" table
+# and "Run order"). This is Amendment Z's run-order position 3.
+#
+# NOTE: Qwen3.5-4B is a DIFFERENT checkpoint from this project's usual
+# unsloth/Qwen3-4B raw-base surface (all the predecessor J-space experiments
+# ran on unsloth/Qwen3-4B). It is in-lineage but not the same model; do not
+# conflate "same family" with "same checkpoint" when reading results.
+
+family: qwen35-4b
+risk_order: 3
+
+checkpoint:
+  repo: Qwen/Qwen3.5-4B
+  fallback_repo: null
+  revision: raw-base (ungated, no adapter, no 4-bit quantization)
+  scale_params_b: 4
+  hf_token_required: false
+
+loader:
+  # Amendment Z flags Qwen3.5-4B as "ungated + multimodal (native) -- loader
+  # risk; cross-GENERATION control within Qwen". Amendment Z's
+  # load_model_and_config() tries AutoModelForCausalLM first, then
+  # AutoModelForImageTextToText / AutoModelForVision2Seq, and reads
+  # num_hidden_layers/hidden_size from config.text_config when the
+  # top-level config lacks them (multimodal configs nest LM hyperparams
+  # there). Port that fallback chain verbatim; do not write a
+  # Qwen3.5-specific loader.
+  model_classes: [AutoModelForCausalLM, AutoModelForImageTextToText, AutoModelForVision2Seq]
+  hidden_size_field: hidden_size
+  num_layers_field: num_hidden_layers
+  nested_text_config: true
+  dtype: bf16
+  notes: >-
+    Multimodal (native) loader risk per Amendment Z; the J-lens's
+    double-backward JVP machinery (jlens.py) additionally requires
+    attn_implementation="eager" for any non-final layer -- confirm the
+    multimodal wrapper class still accepts that kwarg before profiling.
+    VERIFIED 2026-07-09 against Qwen/Qwen3.5-4B's config.json/
+    tokenizer_config.json/chat_template.jinja/generation_config.json
+    (JSON/text config files only, no weights downloaded; special_tokens_map.json
+    and generation_config.json are ABSENT from this repo -- 404/not-found,
+    not a gating error): config.json "architectures" ==
+    ["Qwen3_5ForConditionalGeneration"] (model_type "qwen3_5"), confirming
+    this is a conditional-generation multimodal wrapper, not a plain
+    causal-LM class -- structurally the same category of risk flagged for
+    Ministral-3's Mistral3ForConditionalGeneration, though this experiment
+    already anticipated it via the 3-class fallback chain below.
+    hidden_size=2560, num_hidden_layers=32 are BOTH nested under
+    config.text_config (confirming nested_text_config: true), reachable at
+    runtime via transformers' own `config.get_text_config()` helper
+    (checked directly with AutoConfig + transformers 5.5.0, no weights).
+    ADDITIONAL FINDING (CPU-only, meta-device model construction, no
+    weights downloaded, no GPU): `AutoModelForCausalLM.from_config(cfg)`
+    on the raw top-level Qwen3_5Config FAILS with
+    `AttributeError: 'Qwen3_5Config' object has no attribute 'vocab_size'`
+    (its resolved class, Qwen3_5ForCausalLM, expects a flat/text config,
+    not the nested multimodal one) -- so the model_classes fallback chain
+    below is NOT just defensive, it is REQUIRED for this checkpoint: the
+    first class in the list will always error and fall through.
+    `AutoModelForImageTextToText.from_config(cfg)` on the same top-level
+    config SUCCEEDS and resolves to `Qwen3_5ForConditionalGeneration`
+    (the full multimodal class, vision tower included in the module
+    graph) -- meaning a real (non-meta) load will materialize vision-tower
+    parameters even for a text-only prompt, resolving this family's open
+    VRAM question in the affirmative (the vision tower IS part of what
+    gets loaded). `attn_implementation="eager"` was passed to
+    AutoModelForImageTextToText.from_config and accepted cleanly at
+    construction time, propagating to both the top-level and nested
+    text-config `_attn_implementation` fields (meta-device construction
+    only; NOT verified for an actual forward/backward pass, which needs a
+    GPU and is out of this task's scope).
+
+render:
+  fn: "backends:render_probe_prompt"
+  enable_thinking_equivalent: >-
+    Qwen3.5's chat template is expected to carry forward Qwen3's native
+    enable_thinking kwarg (same lineage as unsloth/Qwen3-4B); render_probe_prompt's
+    enable_thinking=False path and its no-think-scaffolding self-check should
+    apply directly. Confirm at extraction time rather than assuming template
+    parity with Qwen3-4B given this is a different generation/checkpoint.
+    VERIFIED 2026-07-09 by reading chat_template.jinja directly: CONFIRMED,
+    the template has `{%- if enable_thinking is defined and enable_thinking
+    is false %}` guarding a `<think>\n\n</think>\n\n` empty-think-block
+    injection at the assistant generation prompt, else it opens an
+    unterminated `<think>\n` block (thinking mode default-on). The kwarg
+    name and semantics match Qwen3-4B's lineage exactly.
+  system_prompt_source: >-
+    Same baseline system prompt string as the Qwen3-4B AH-A0 arm, reused
+    verbatim (see llama-3.2-3b.yaml's identical note).
+  system_role_support: >-
+    VERIFIED 2026-07-09 by reading chat_template.jinja directly: system
+    role is natively supported and rendered as its own
+    `<|im_start|>system\n...<|im_end|>\n` turn (both the tools-defined and
+    no-tools branches check `messages[0].role == 'system'` and emit this
+    block), matching the tokenizer_config.json declared tokenizer_class
+    "Qwen2Tokenizer".
+
+eos:
+  include_tokenizer_eos: true
+  additional_end_of_turn_tokens: ["<|im_end|>"]
+  notes: >-
+    Same <|im_end|> convention as unsloth/Qwen3-4B (Qwen lineage), but
+    confirm the token still resolves via tokenizer.convert_tokens_to_ids on
+    THIS checkpoint's tokenizer rather than assuming identity with Qwen3-4B.
+    VERIFIED 2026-07-09 against Qwen/Qwen3.5-4B's tokenizer_config.json
+    (JSON only, no weights; special_tokens_map.json is absent from this
+    repo so tokenizer_config.json's own added_tokens_decoder is the source
+    of truth here): "<|im_end|>" is a real added special token, id 248046
+    (tokenizer_class "Qwen2Tokenizer"). CONFIRMED, and more precisely:
+    tokenizer_config.json's own top-level "eos_token" field is ALREADY
+    "<|im_end|>" (not "<|endoftext|>"), so include_tokenizer_eos: true
+    alone already covers it via tokenizer.eos_token_id -- it is not purely
+    "additional". Separately, config.json's (and its text_config's)
+    eos_token_id=248044 resolves to "<|endoftext|>" (a different token,
+    used as the base sequence-end id, id 248044 per
+    added_tokens_decoder) -- both ids are legitimate stop candidates for
+    model.generate(), but <|im_end|> (248046) is the one that actually
+    terminates a chat turn per the rendered template.
+
+band_selection:
+  status: not_yet_run
+  method: >-
+    Same j-lens layer_profile() method as llama-3.2-3b.yaml. Qwen3-4B's own
+    localization result (hs23-29 band, peak hs26, L34 late reference) is
+    NOT assumed to transfer to Qwen3.5-4B even within the same lineage --
+    different checkpoint, possibly different depth/width and pretraining.
+    Resolve this family's own band from its own profile run.
+  n_hidden_layers: 32
+  late_reference_depth_fraction_target: 0.9444
+  late_reference_hs_estimate: >-
+    round(0.9444 * 32) = 30. n_hidden_layers=32 VERIFIED 2026-07-09 from
+    Qwen/Qwen3.5-4B's config.json config.text_config.num_hidden_layers
+    (nested; text_config.hidden_size=2560). This estimate is still an
+    ESTIMATE for the profile stage to confirm/select against, only the
+    input layer count is now config-verified rather than assumed. Note
+    text_config.layer_types alternates linear_attention/full_attention
+    (a hybrid linear-attention architecture, full_attention every 4th
+    layer) -- the profile stage's depth sweep should be aware layers are
+    not architecturally uniform.
+  midband_candidates_hs: null
+  late_reference_hs: null
+  effective_dim_peak_hs: null
+
+doses:
+  status: not_yet_calibrated
+  ladder: [25, 50, 75, 100, 125, 150, 175, 200]
+  selected: {}
+
+reuse:
+  # CONSUMED from the resolved doubt-snap-cross-family-confirmatory experiment
+  # (resolved 2026-07-12; confirmatory NOT promoted). Reuse of this cell's
+  # mined pool + FIT/HELD-OUT split + frozen late-site direction/gate,
+  # hash-pinned. NOTE: this is the ONE family whose mid-band actuation is
+  # ALREADY separately established on held-out (experiments/
+  # qwen35-4b-midband-heldout, resolved 2026-07-13, hs20 PROMOTED) -- that
+  # result reused this SAME doubt-snap qwen35_4b pool/split, so this family's
+  # primary is effectively a re-derivation on the same substrate and should be
+  # read as a coherence check, not fresh cross-family evidence. See AMENDMENT.md
+  # "Consumed doubt-snap artifacts".
+  doubt_snap:
+    experiment: doubt-snap-cross-family-confirmatory
+    cell: qwen35_4b
+    committed_dir: experiments/doubt-snap-cross-family-confirmatory/analysis-committed/qwen35_4b
+    modal_volume: eh-doubt-snap-cross-family
+    modal_path_prefix: doubt-snap-cross-family-r1/qwen35_4b/analysis
+    revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+    hidden_dim: 2560
+    late_site:
+      block: 29
+      hs_index: 30
+      tau_frozen: -0.5531870382129124
+      gate_auc_on_fit: 0.995988350244269
+      mu_d: -4.534379808215027
+      sigma_d: 4.328826424430434
+      mu_c: -7.37191478870769
+      sigma_c: 2.800614474339479
+      # doubt-snap selected NO late dose (G0 dose-viability stop). FIT sweep
+      # peaks at clean_tighten 0.326 @ dose 40 (cost 0.0292), below its 0.60
+      # floor. Late-arm dose OPEN QUESTION at sign; late arm gates nothing.
+      doubt_snap_selected_dose: null
+      doubt_snap_fit_peak_clean_tighten: {rate: 0.3258, dose: 40.0, known_cost: 0.0292}
+    pool_counts:
+      confab_fit: 887
+      known_correct_answered_fit: 240
+      confab_held_out: 1332
+      known_correct_answered_held_out: 360
+    artifacts:
+      split_manifest: {path: split_manifest.json, sha256: 2f622f5abe110349216207424bdbd919775e93f6d92f334b99f6424505f21e5c}
+      build_manifest: {path: build_manifest.json, sha256: 8954b8263019ae415692d84ea87c42d7dd851f9d22d222df1e3e8196e3508e63}
+      c_hat: {path: c_hat.json, sha256: fe6baf61e58635d4f2c4db68d04be3ce2378954a892da4652cd9397f4d5b3795}
+      u_d: {path: u_d.json, sha256: aa4b63e2dde99b6282207e8974ee6ea34881162e126aea61fdf4b4ea0e358580}
+      random_direction: {path: random_direction.json, sha256: 02d72ba87c45065b8546ac6ce526c9d7bdcf6a84301dd82cf3edc00591c51604}
+      gate_fit: {path: gate_fit.json, sha256: a34bd876028aded806a8a5f5f90c99871932dd545c2afa23ea2bdea2c67ad3d3}
+      dose_fit: {path: dose_fit.json, sha256: f83ed17ccb7cdef3da5308990d01e026753aaea8e609b9d701e93bad1b16a99c}
+      g0_prep_summary: {path: g0_prep_summary.json, sha256: 02dfdbc0fd436ff65190a8b9bc0f7be95aab6548a26aaeef1086966fbba99737}
+
+primary_gate:
+  # ADJUDICATED by lead+user 2026-07-23 (conservative option chosen) --
+  # ABSOLUTE mid-band actuation; same numbers across families; derivation in
+  # AMENDMENT.md "Gates -> derivation". Supersedes and DROPS the draft's
+  # g3_late_reference_floor (late arm now non-gating).
+  g1_midband_clean_tighten_floor: {rate: 0.50, wilson_lower_ci: 0.40}
+  g2_midband_known_correct_cost_cap: {rate: 0.05, wilson_upper_ci: 0.10}
+
+vram:
+  bf16_weights_estimate_gb: "~8GB at 4B params, plus multimodal tower overhead if the vision encoder loads even for a text-only run"
+  feasibility_note: >-
+    Should fit a single RTX 3090 (24GB) for the text path; verify whether
+    the multimodal loader path pulls in the vision tower's weights even
+    when only text prompts are used, since that adds to the VRAM floor.
+    PARTIALLY ANSWERED 2026-07-09 (config/class-registration check only, no
+    GPU, no actual weight load): the resolved loader class is
+    Qwen3_5ForConditionalGeneration (see loader.notes), whose module graph
+    structurally includes the vision tower (config.vision_config,
+    hidden_size=1024, depth=24) -- so a real `.from_pretrained()` load DOES
+    materialize vision-tower parameters, this is not merely a config
+    artifact. The actual GB delta this adds is not measured here (would
+    need a real weight load); the VRAM floor number itself remains the
+    lead's open decision, this only firms up the "does it load the tower"
+    half of the question.

@@ -27,7 +27,7 @@ the cited doc first.
 | mistral | `mistralai/Mistral-7B-Instruct-v0.3` @ `c170c708c41dac9275d15a8fff4eca08d52bab71` | 32 | `experiments/jspace-family-atlas` (resolved) | layer 3 of 32 (0.09 depth) | layers 7-27 | ~L15-17 | 1.00 (confounded, see note) / 0.91 (L17) / 0.925 (L17) | `experiments/jspace-family-atlas/AMENDMENT.md`, resolved 2026-07-12 |
 | qwen3 | `unsloth/Qwen3-4B` @ `64033659d5caf1b8ed7f929b29de705e93a4d468` | 36 (hs_index 0-36 incl. embedding state) | `experiments/qwen3-4b-family-atlas` (resolved) | hs 5 of 36 (0.139 depth) | hs 22-36 contiguous; interior portion (strict 20-85% depth) hs 22-30 | hs 22-30 (clean-control interior set; avoid hs 24/32/36 where the doubt control spikes, see note) | 1.000 (confounded, see note) / 0.913 (hs30) / 0.975 (hs32-34) | `experiments/qwen3-4b-family-atlas/AMENDMENT.md`, resolved 2026-07-21 |
 | qwen3 (prior lab-diagnostic, different instrument) | `unsloth/Qwen3-4B` (bf16 sibling; no revision pin recorded) | 36 | `experiments/j-space-localization-qwen3-4b` (resolved, lab-diagnostic) | J-lens hs=26 (peak), band hs23-29 (0.64-0.81 depth) | not measured (different instrument) | not measured | not measured | `experiments/j-space-localization-qwen3-4b/AMENDMENT.md`, resolved 2026-07-07; superseded for the eff_dim_frac profile + read panel by the family-atlas row above, retained as the J-lens comparator (see comparability note) |
-| qwen3.5 | `Qwen/Qwen3.5-4B` @ `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` | 32 (hybrid linear-attention) | `experiments/qwen35-4b-midband-doubt-snap` (**pending** -- draft, not signed; Stage C dose ladder not executed) | -- | -- | -- | -- | `experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md`, status draft as of this table's writing; do not cite numbers from it until it resolves |
+| qwen3.5 (steer-cell evidence, not an atlas cell) | `Qwen/Qwen3.5-4B` @ `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` | 32 (hybrid linear-attention) | `experiments/qwen35-4b-midband-doubt-snap` (resolved) + `experiments/qwen35-4b-midband-heldout` (resolved) | not measured (no atlas-standard eff_dim_frac profile has run for this family) | not measured | hs20 behaviorally established as a WRITE site: unique cell in the locked 4-layer x 7-dose grid clearing both primary floors (FIT refused 0.684, well_formed 0.980, false refusal 0.042 at dose 8 x sigma_c); frozen operating point transfers to held-out (refused 0.678, well-formed 0.977, false refusal 0.039, placebo specificity intact) | not measured (read panel never run; this row is causal write evidence, not read-axis evidence) | `experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md` (resolved 2026-07-12) and `experiments/qwen35-4b-midband-heldout/experiment.yaml` verdict (resolved 2026-07-13; that AMENDMENT's Outcome section was never backfilled -- manifest verdict is the governed number source). Family still owes a standard family-atlas cell before any read-panel-based layer decision. |
 | gemma | `google/gemma-4-E4B-it` @ `fee6332c1abaafb77f6f9624236c63aa2f1d0187` | 42 blocks (hs_index 0-42 incl. embedding state) | `experiments/gemma-4-e4b-family-atlas` (resolved) | hs 4 of 42 (0.095 depth) | hs 13-42 contiguous (hs 4-6 clear marginally, broken by a raw_refusal dip at hs 7-12); interior portion hs 13-35 | hs 14-18 and hs 36-40 (clean-control set; see note) | 0.9949 / 0.9223 / 0.9272 (all at hs 40, clean control 0.592; naive per-axis maxima 1.00 / 0.9305 / 0.9345 at hs 21/25/26 are control-confounded, see note) | `experiments/gemma-4-e4b-family-atlas/AMENDMENT.md`, resolved 2026-07-20 |
 
 Vocabulary note (2026-07-20): running prose in this file uses the renamed
@@ -36,7 +36,7 @@ column headers (`doubt` / `caution` / `raw_refusal`) are artifact keys from
 `atlas_summary.json` and keep their names verbatim under that file's usage
 rule 1. In prose, `doubt` is the known-unknown (KU, answerability) axis.
 
-## Cross-family pattern (standing summary, updated 2026-07-21)
+## Cross-family pattern (standing summary, updated 2026-07-23)
 
 Four families measured with the same instrument now show the same shape,
 and the registered interior-workspace prediction has failed in all four
@@ -80,10 +80,16 @@ winsorizing, a rank-based spectral-entropy estimator, and a 50% subsample
 guard; margin over the best interior candidate compresses 1.53x -> 1.12x
 but the peak never relocates -- see
 `experiments/gemma-4-e4b-family-atlas/analysis-committed/gemma4_e4b_it/anisotropy_control/`
-and that cell's NOTEBOOK.md, lab-notebook tier); pool-composition
-(surface-diversity) artifact UNTESTED; small-N coincidence now weaker as a
-concern with the qwen3-4b replication (4 of 4 families, resolved
-2026-07-21) but not formally tested.
+and that cell's NOTEBOOK.md, lab-notebook tier); **registered linear
+pool-composition and prompt-surface account TESTED AND SURVIVED 2026-07-23**
+on Gemma and Qwen. Cross-fitted residualization removed a measurable
+surface-predictable activation component, passed planted-signal and permutation
+controls, and left the required peaks at Gemma hs4 (0.095 depth) and Qwen hs5
+(0.139) in both full and 50% profiles. This closes the registered linear
+surface-diversity alternative, not every nonlinear raw-token surface encoding;
+see `experiments/family-atlas-surface-residualization-control/AMENDMENT.md`.
+Small-N coincidence is now weaker as a concern with the qwen3-4b replication
+(4 of 4 families, resolved 2026-07-21) but not formally tested.
 
 ## Comparability notes
 

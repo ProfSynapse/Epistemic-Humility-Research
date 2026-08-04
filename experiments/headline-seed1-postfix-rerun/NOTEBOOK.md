@@ -1,0 +1,53 @@
+# Headline DPO/KTO seed-1 rerun on post-fix dataset build notebook
+
+Running log for this experiment. Newest entry first. This is a lab notebook, not
+a claims surface; the signed prose lives in `AMENDMENT.md` and the machine state
+in `experiment.yaml`.
+
+## Entries
+
+### 2026-08-01 - draft scaffolded, provenance verified from source
+
+Drafted only. Not signed, not launched, nothing committed.
+
+Verified rather than carried over from the commissioning brief:
+
+- All six headline train-build SHAs byte-verified against the files still on disk
+  under `synaptic-tuner/scratch/eh_staging/`. The seed-1 DPO and KTO cells consumed
+  pre-fix builds; seeds 2 and 3 consumed one corrected build each.
+- SFT is genuinely unaffected: all three SFT seeds record train sha
+  `714577a8ce6d32ac...` and SFT seed 1 launched 2026-06-14T09:29:14Z, after the fix.
+- What the fix did to the data, measured not assumed: the union of train and dev is
+  a byte-identical row set across both builds for both arms (DPO pool 15953, KTO
+  pool 30946), so the rebuild reassigned the train/dev boundary and changed no
+  content. DPO 1457 rows moved train to dev and 1460 dev to train (10.14% of pre-fix
+  train rows absent from post-fix); KTO 2836 and 2915 (10.15%).
+
+Three corrections to the commissioning brief, all carried into `AMENDMENT.md`:
+
+1. The container digest is NOT recorded in `experiments/grpo-three-seed-confirmatory`
+   (its `cell.yaml:21` pins only the mutable tag `unsloth/unsloth:latest`). The digest
+   lives in `.skills/experiment-runner/reference/local-runtime.md:82-86` and the
+   correct value is `sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`.
+   The value in the brief was missing one character.
+2. The backfilled seed-2/3 run records are not on this branch; the records readable
+   here still show `"status": "launched"`. Budget figures were therefore taken from
+   the seed-1 records, which do carry completion timestamps: DPO 1h11m16s, KTO
+   5h47m41s.
+3. The seed-1 cells differ from the seeds-2/3 cohort on the TRAINER axis as well as
+   the dataset axis (DPO seed 1 at submodule `3a3d7a26`, KTO seed 1 at `04005402`,
+   seeds 2 and 3 both at `089fa9b7`). This second confound is unresolved and is
+   raised as a design fork in `AMENDMENT.md` section 10 item 4.
+
+Gate-drafting note: the `[min, max]` cohort band the brief proposed is degenerate
+here because both arms sit on the abstention floor (`refusal_recall` is exactly 0.00
+at seeds 2 and 3 for both). `gates.yaml` proposes a resolution-floored tolerance and
+discloses, at pre-registration, that the resulting G1 passes 8 of 8 metric-arm
+combinations when applied to the original pre-fix rows. G1 is a low-power
+confirmation gate, not a discovery gate.
+
+Tooling note: `scripts/audit_data_provenance.py` reproduces the hand audit and flags
+exactly the two seed-1 cells across all 23 phase1 run records. Its first draft used
+`str.splitlines()` for JSONL row splitting, which also breaks on U+0085; one row of
+the DPO build carries a raw U+0085, so the row counts came out one too high. Fixed to
+split on newlines only, and the corrected output now matches the figures above.

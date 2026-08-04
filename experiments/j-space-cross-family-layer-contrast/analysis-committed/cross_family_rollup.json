@@ -1,0 +1,48 @@
+{
+  "cross_family_success_rule": ">=3 of the run families clear the primary (mid-band G1 AND G2)",
+  "falsifier_rule": "<=1 of the run families clear the primary (Qwen-lineage-specific/artifact)",
+  "mixed_rule": "exactly 2 of the run families clear the primary (no claim promoted)",
+  "inconclusive_rule": "fewer than 3 families ran at all",
+  "n_families_run": 2,
+  "n_families_passed_primary": 1,
+  "per_family": {
+    "llama-3.2-3b": {
+      "status": "run",
+      "g0_smoke_pass": true,
+      "g1_midband_actuation_floor_pass": true,
+      "g2_midband_selectivity_cap_pass": true,
+      "primary_pass": true,
+      "best_mid_layer": "hs17",
+      "best_mid_confab_clean_tighten": 0.7419724770642202,
+      "best_mid_known_correct_cost": 0.011976047904191617,
+      "late_reference_layer": "hs26",
+      "secondary_late_reference": {
+        "gating": "none",
+        "status": "SKIPPED -- no usable late-arm dose found in fresh calibration (expected per doubt-snap's late-site null); the primary does not depend on the late arm."
+      }
+    },
+    "mistral-7b-v03": {
+      "status": "run",
+      "g0_smoke_pass": true,
+      "g1_midband_actuation_floor_pass": false,
+      "g2_midband_selectivity_cap_pass": true,
+      "primary_pass": false,
+      "best_mid_layer": "hs15",
+      "best_mid_confab_clean_tighten": 0.4893292682926829,
+      "best_mid_known_correct_cost": 0.005235602094240838,
+      "late_reference_layer": "hs30",
+      "secondary_late_reference": {
+        "gating": "none",
+        "status": "SKIPPED -- no usable late-arm dose found in fresh calibration (expected per doubt-snap's late-site null); the primary does not depend on the late arm."
+      }
+    },
+    "qwen35-4b": {
+      "status": "not_run"
+    },
+    "gemma4-e4b": {
+      "status": "not_run"
+    }
+  },
+  "verdict": "inconclusive",
+  "summary": "Only 2 families ran; per the design, fewer than 3 run families is inconclusive, not a pass or a falsifier."
+}

@@ -1,0 +1,715 @@
+# Gemma-4-E4B KV-sharing seam quarantine test. DRAFT until `bin/exp sign`.
+#
+# G1 and G2 are TRANSCRIBED VERBATIM from
+# experiments/j-space-cross-family-layer-contrast/gates.yaml (adjudicated
+# lead+user 2026-07-23). They are NOT re-derived, re-tuned, or re-adjudicated
+# here. Applied PER ARM on that arm's condition-matched HELD-OUT split.
+#
+# Everything below is pre-stated before any GPU work. No threshold in this file
+# moves after a result is seen.
+
+seed: 20260709
+alpha: 0.05
+
+gates:
+  # ---------------------------------------------------------------- G0-KV ----
+  - name: g0_kv_seam_instrument_validity
+    interpretation: stop_before_outcome
+    scope: runs before ANY dosed arm is scored on held-out
+    checks:
+      - id: architecture_identity
+        pass_if: >-
+          kv_seam_patch.verify_architecture passes: num_hidden_layers == 42,
+          num_kv_shared_layers == 18, first_kv_shared_layer_idx == 24, donors ==
+          {full_attention: 23, sliding_attention: 22}, and the set of blocks with
+          is_kv_shared_layer True is exactly {24..41}. Any mismatch voids every
+          registered site index and the experiment stops.
+      - id: projection_execution_both_directions
+        pass_if: >-
+          Over one prefill AND at least one decode step, with
+          kv_seam_patch.count_kv_projection_calls -- OFF condition: k_proj and
+          v_proj call counts >= 1 for EVERY block in 24..41 (a single block at
+          zero fails). ON condition: those same counts are EXACTLY 0 for every
+          block in 24..41 and >= 1 for every block in 0..23. Asserting only OFF
+          would pass a no-op patch; asserting only ON would pass a patch that
+          changed something unrelated.
+      - id: cache_attribute_state_under_off
+        pass_if: >-
+          is_kv_shared_layer is False and kv_shared_layer_index is None for
+          blocks 24..41.
+      - id: cache_construction_identical_in_both_arms
+        pass_if: >-
+          EVERY generate() call in EVERY arm -- ON and OFF alike, dosed and
+          undosed, C0 and C1 -- receives a FRESH cache from the single call
+          kv_seam_patch.build_full_length_cache(model). No arm may fall back to
+          the stock auto-built cache. Verified by instrumenting the harness call
+          site: the count of build_full_length_cache() invocations equals the
+          count of generate() invocations, per arm, and no generate() call in any
+          arm is made with past_key_values=None. THIS IS THE INTERPRETABILITY
+          CONTRACT, not a convenience: if the two conditions construct the cache
+          differently, the A1-vs-A2 difference is sharing-flag PLUS
+          cache-substitution versus neither, and the primary contrast is
+          uninterpretable. Failure is a STOP.
+      - id: cache_shape
+        pass_if: >-
+          The object the harness passes as past_key_values satisfies
+          len(cache.layers) == 42 and cache.layer_class_to_replicate is None
+          (both asserted inside kv_seam_patch.build_full_length_cache and
+          re-asserted here on the object actually handed to generate), in BOTH
+          conditions. A 24-entry cache reaching an OFF arm is a STOP, not a
+          warning: it raises IndexError on the first shared-layer forward, and a
+          caught-and-swallowed IndexError anywhere in the harness would silently
+          drop rows.
+      - id: cache_growth_under_off
+        pass_if: >-
+          Using kv_seam_patch.cache_layer_lengths after prefill and after >= 2
+          decode steps, every index in 24..41 has nonzero length that INCREASES at
+          each decode step by the same increment as indices 0..23 (sliding-window
+          layers compared against sliding-window layers, since length saturates at
+          sliding_window=512; full layers against full layers). This is the
+          positive evidence that the 18 appended slots are live and being written
+          rather than inert padding. It is also the cheapest detector of an
+          accidentally reused cache -- lengths nonzero at prefill. Asserted under
+          OFF because that is where the 18 slots are supposed to be written; the
+          ON condition is covered by cache_substitution_noop_under_on instead.
+      - id: cache_substitution_noop_under_on
+        pass_if: >-
+          With sharing ON (stock mechanism), greedy generation given a
+          build_full_length_cache(model) object is TOKEN-IDENTICAL to stock
+          generation with no past_key_values supplied, on >= 8 fixed prompts.
+          Stronger form, already demonstrated by kv_seam_preflight.py check 4 on a
+          tiny randomly-initialized model with the exact seam geometry: logits
+          torch.equal bit-identical. Isolates the confound the crash fix
+          introduces: proves the 42-entry cache BY ITSELF changes nothing, which
+          is what licenses using it in the ON arms as
+          cache_construction_identical_in_both_arms requires.
+      - id: donor_reachability
+        pass_if: >-
+          Under sharing ON, with kv_seam_patch.capture_donor_keys on blocks 22
+          and 23, injecting a fixed random unit delta (seed 20260707) scaled to
+          the site's median anchor norm and comparing against a no-injection
+          forward -- write at hs24: donor keys at blocks 22 AND 23 BIT-IDENTICAL;
+          write at hs38: same, bit-identical; write at hs22: donor keys at block
+          22 AND block 23 DIFFER; write at hs23: block 23's keys DIFFER and block
+          22's are IDENTICAL. Any failure means the quarantine premise is wrong
+          as stated and the experiment is VOID before any behavioral arm runs.
+      - id: shared_projection_weight_liveness
+        gating: none
+        record: >-
+          Frobenius norms of k_proj/v_proj for all 42 blocks with the depth trend
+          and the full_attention-block elevation, written to NOTEBOOK.md.
+          Pre-registered as an OBSERVATION, deliberately NOT a gate: there is no
+          principled threshold separating "trained" from "trained then made
+          vestigial". Bears on AMENDMENT.md Threats (b).
+
+  # -------------------------------------------------------------- G0-ALIN ----
+  - name: g0_alin_site_selection
+    interpretation: site_selection_input
+    part: 1 of 2
+    scope: >-
+      PART 1 ONLY (site selection for the DESCRIPTIVE below-seam arm). CPU-only
+      over the parent's already-cached gemma activations
+      (anchor_extract.safetensors); loads no weights to CUDA. RECOMMENDED as a
+      PRE-SIGN deliverable so the arm table is complete at signature. If the lead
+      signs first, the rule below binds and the sweep is the run's first step.
+      Part 2 (A_lin under both KV conditions) is a SEPARATE gate below and is NOT
+      a pre-sign CPU deliverable.
+    definition: >-
+      A_lin(hs_N) = top-1 accuracy of applying the model's final RMSNorm and
+      unembedding W_U to the cached hidden state at hs_N, argmax over the KU
+      contrast's answer tokens. Training-free logit lens; the Linear
+      Accessibility Profile of 2604.15557 (parent null_literature_review.md
+      Thread D).
+    recorded_for: [hs15, hs18, hs20, hs22, hs23, hs24, hs34, hs38, hs42]
+    recorded_for_note: >-
+      hs15/hs18/hs20 added 2026-07-24 with the descriptive shallow ladder. They
+      are RECORDED ONLY and take no part in selection_rule -- D1-D4's sites are
+      fixed by registration, not chosen by A_lin. Recording them makes the
+      accessibility profile across the whole donor-reachable band available when
+      the ladder's outcome is interpreted, rather than reconstructible only after
+      the fact.
+    split: FIT only
+    selection_rule: >-
+      A3 is whichever of hs22/hs23 has the HIGHER A_lin. Ties (|delta A_lin| <
+      0.01) break to hs22, the site that reaches BOTH donors. A5 is hs24
+      regardless -- fixed by the geometry as the first quarantined block. The
+      eff_dim-peak rule is NOT used: gemma's profile is flat (0.0046-0.0058, peak
+      std 0.00141 overlapping every interior point) and cannot select a site.
+    confound_declaration_rule: >-
+      If |A_lin(A3) - A_lin(A5)| > 0.10, the A3-vs-A5 DESCRIPTIVE contrast is
+      DECLARED CONFOUNDED BY LINEAR ACCESSIBILITY at registration time and is
+      reported as such whatever it shows. It does not stop the arm and does not
+      touch the primary. NOTE: A3-vs-A5 is non-discriminating REGARDLESS of this
+      number (AMENDMENT.md Threats (c)) -- two blocks of computation can move
+      A_lin, so the crystallization-gap account predicts an A3-yes/A5-no pattern
+      as readily as quarantine does. This declaration marks only the stronger
+      case where the confound is measurably large. Declared from the pre-sign
+      number, NEVER after seeing a behavioral result.
+    reporting: >-
+      A_lin at all six sites, the resulting A3 selection, and the |delta| result
+      are reported whatever the arms show -- including if the experiment resolves
+      NOT-RUN.
+
+  # ------------------------------------------------------- G0-ALIN Part 2 ----
+  - name: g0_alin_discrimination_measurement
+    interpretation: discrimination_precondition
+    part: 2 of 2
+    scope: >-
+      GPU. Requires extract_anchor.py --kv-sharing off, because no activation
+      cache exists anywhere on disk for the sharing-OFF model -- it has never been
+      run. Ordered BEFORE the OFF arms' direction fits, which consume the same
+      extraction. Adds a logit-lens pass over an extraction the design already
+      required; it does not add an extraction.
+    measurement: >-
+      A_lin(hs38) computed under BOTH conditions with the IDENTICAL logit-lens
+      code path, the IDENTICAL FIT row ids, and the IDENTICAL answer-token set;
+      only the source activation file differs (anchor_extract.safetensors vs
+      anchor_extract_kvoff.safetensors).
+    discrimination_band: 0.05
+    band_justification: >-
+      Matches the G2 cap and the C1 criterion-1 tolerance already used in this
+      design, so "materially unchanged" means the same magnitude everywhere
+      rather than being tuned per use.
+    why_it_is_load_bearing: >-
+      Both live hypotheses predict the parent's mid-band observations
+      IDENTICALLY (see AMENDMENT.md "Competing explanations"). They diverge only
+      here: the crystallization-gap account makes actuation a function of linear
+      accessibility AT THE WRITE POINT (if A_lin is unchanged, behavior is
+      unchanged), while KV quarantine makes it a function of K/V reachability
+      INDEPENDENTLY of A_lin. Holding the site INDEX fixed does not hold the
+      site's REPRESENTATION fixed: hs38 is the output of block 37, a KV-shared
+      block, so OFF changes blocks 24-37 upstream of it. Without this measurement
+      the primary contrast discriminates nothing.
+    pre_stated_interpretation_rule: >-
+      Four outcomes, registered before any run, no other reading permitted:
+      (1) A2 clears both gates and A1 does not, with |delta A_lin| <= 0.05 --
+      DISCRIMINATING: the crystallization-gap account is disconfirmed at this
+      site, and KV quarantine is promoted as an EXPLORATORY lead requiring
+      confirmatory replication.
+      (2) A2 clears both gates and A1 does not, with |delta A_lin| > 0.05 --
+      NOT DISCRIMINATING: jointly explained by both accounts. Reported as a raw
+      actuation finding. Promotes NOTHING about KV quarantine.
+      (3) Neither A2 nor A1 clears -- KV quarantine is disconfirmed at this site,
+      subject to the stale-projection caveat (Threats (b)) and the weak-negative
+      asymmetry (Threats (f)); the crystallization-gap account is untouched.
+      (4) A1 clears -- VOID: the parent's null did not replicate and this
+      experiment's premise is gone.
+    if_not_run: >-
+      If Part 2 is not run, outcome (1) is unreachable by construction and the
+      best available result is outcome (2). The drafter's recorded position is
+      that the experiment is not worth running without Part 2; the lead decides
+      at sign (AMENDMENT.md "Open questions at sign" #5).
+
+  # ---------------------------------------------------------------- G0-C1 ----
+  - name: g0_c1_precondition_control
+    interpretation: stop_before_outcome
+    scope: >-
+      Governs the SHARING-OFF arms ONLY (A2, A4). Measured on the FIT split,
+      C0 vs C1, no injection in either. Evaluated and written to NOTEBOOK.md
+      BEFORE any OFF arm is scored on held-out, so it can never be reached for
+      after the fact to excuse an inconvenient A2 result.
+    pass_if_all:
+      - id: known_correct_preserved
+        pass_if: >-
+          Undosed not_well_formed_correct on FIT known_correct_answered rows
+          moves <= 0.05 absolute between C0 and C1, AND the 95% Wilson interval
+          on the C1-minus-C0 difference excludes a degradation larger than 0.10.
+        justification: >-
+          0.05 is exactly the G2 cap inherited from the parent. Holding the
+          control to the same bar as the thing it protects is the minimum
+          defensible choice; a looser control could hide a G2-sized artifact.
+      - id: off_model_does_not_hedge
+        pass_if: "C1 undosed confab clean_tighten rate <= 0.05 (C0's value reported alongside)"
+        justification: >-
+          This is the criterion that actually protects the primary. G1's floor is
+          0.50, so capping spontaneous abstention at 0.05 puts it a factor of ten
+          below -- no sharing-OFF-induced tendency to abstain could manufacture a
+          G1 pass.
+      - id: likelihood_preserved
+        pass_if: >-
+          Teacher-forced mean per-token NLL over the FIT rows' rendered prompt
+          plus reference completion is within 10% of C0's.
+        justification: >-
+          Base-rate equality is a weak test -- a model can keep its answer rates
+          while its attention routing is subtly wrong. NLL is the sharpest cheap
+          indicator of an intact forward pass. 10% is far above numeric/seed
+          noise and far below the multi-fold blowup a genuinely stale-projection
+          model would produce.
+        threshold_frac: 0.10
+        resolved_by_lead: >-
+          FIXED at 10% on 2026-07-25 by the lead, before C1 runs and before any
+          GPU work on this experiment. The drafter offered 10% or a stricter 5%;
+          10% stands as written above. This parameter is now CLOSED and moves
+          for no result.
+    on_fail: >-
+      A2 and A4 are recorded NOT-RUN with the C1 numbers as the blocker and the
+      experiment resolves INCONCLUSIVE on the A1/A2 axis. It does NOT stop: A1,
+      A3, A5, and A6 run on the unmodified model and a C1 failure has no bearing
+      on them. (Deliberate departure from the design brief's "the experiment
+      stops there" -- see AMENDMENT.md "Drafter's note".)
+
+  # --------------------------------------------------------------- G0-arm ----
+  - name: g0_arm_instrument_validity
+    interpretation: stop_before_outcome
+    scope: per arm; inherited from the parent and transcribed
+    checks:
+      - id: ku_readout_gate_floor
+        pass_if: >-
+          gate_fit.py AUC on neg_z_d (FIT confab vs FIT known_correct_answered)
+          >= 0.90 at that arm's site under that arm's condition.
+        note: >-
+          If the KU direction does not read at a below-seam site, that arm is a
+          NOT-RUN with the reason recorded -- itself an informative result about
+          where the known-unknown signal lives, not a failure.
+      - id: refit_reproducible
+        pass_if: "build_directions.py --verify-reproducible byte-identical, random_state=20260707, at every site and condition"
+      - id: dose_viability
+        pass_if: >-
+          At least one rung of the registered ratio ladder is usable
+          (frac_readback_within_tol == 1.0 AND collapse_rate_on_dosed == 0.0 AND
+          FIT confab clean_tighten >= 0.5). Zero usable rungs = that arm is a
+          dose-viability NOT-RUN, reported with its full per-rung table. The
+          ladder is registered and DOES NOT MOVE.
+      - id: readback_verification
+        pass_if: "all dosed rows read back within 5% + 0.5 absolute of that site's calibrated dose"
+      - id: smoke_no_collapse
+        pass_if: "collapse_rate_on_dosed == 0 at the selected dose"
+      - id: pool_powered
+        pass_if: ">= 150 held-out confab rows AND >= 250 held-out known_correct_answered rows"
+      - id: containment
+        pass_if: "no question text, aliases, or raw generations committed (ID-only manifests + aggregate JSON)"
+
+  # ------------------------------------------------- PRIMARY (transcribed) ----
+  - name: g1_actuation_floor
+    role: primary
+    primitive: rate_over_population
+    population: confab_held_out
+    metric: confab_tighten.rate (clean_tighten)
+    scope: per arm, on that arm's condition-matched held-out split, at its selected dose
+    pass_if_rate: ">= 0.50"
+    pass_if_wilson_lower_ci: "> 0.40"
+    source: "TRANSCRIBED VERBATIM from j-space-cross-family-layer-contrast/gates.yaml g1_midband_actuation_floor (adjudicated lead+user 2026-07-23). Not re-derived here."
+
+  - name: g2_selectivity_cap
+    role: primary
+    primitive: rate_over_population
+    population: known_correct_answered_held_out
+    metric: known_correct_cost_control.rate (not_well_formed_correct)
+    scope: same arm, same selected dose
+    pass_if_rate: "<= 0.05"
+    pass_if_wilson_upper_ci: "< 0.10"
+    source: "TRANSCRIBED VERBATIM from j-space-cross-family-layer-contrast/gates.yaml g2_midband_selectivity_cap (adjudicated lead+user 2026-07-23). Not re-derived here."
+    population_note: >-
+      The population is role == known_correct_answered UNFILTERED BY fire
+      (pipeline.py:229, inherited verbatim from the Qwen3-4B predecessor
+      j-space-midband-write-sweep-qwen3-4b/pipeline.py:188). Non-firing rows are
+      never dosed (pipeline.py:149), so they contribute UNDOSED behavior. Where
+      the KU readout gate almost never fires on known-correct rows, G2 reports a
+      base rate and a pass is near-vacuous. The population is deliberately NOT
+      restricted to fired rows here: changing it would silently redefine a gate
+      transcribed verbatim from the parent and break comparability with every
+      prior family.
+    vacuity_assessment_for_this_substrate: >-
+      REVISED 2026-07-24 by the lead, BEFORE signature and before any GPU work.
+      The prior text here concluded "Gemma is the family where G2 is MOST
+      diagnostic in this lineage, not least". That conclusion is WITHDRAWN. It was
+      computed from analysis-committed/gemma4-e4b/gate_fit_layers.json, which was
+      fit on the use_cache=False extraction that starves every layer >= hs25
+      (parent AMENDMENT.md:637). The withdrawn figures were FIT-pool
+      fpr_known_correct_flagged 0.0889 / 0.0889 / 0.0944 and AUC 0.9779 / 0.9815 /
+      0.9772 at hs34 / hs38 / hs42. They are recorded here so the withdrawal is
+      auditable; they may not be propagated.
+      UNAFFECTED, and therefore still standing: the cross-family comparators.
+      Neither llama-3.2-3b nor mistral-7b-v03 shares K/V across layers, so
+      use_cache=False did not corrupt their extractions. From the parent's
+      analysis/mistral-7b-v03/cost_control_forensics.md (CPU-only recomputation,
+      verdict BENIGN): mistral fires 0/8 known-correct FIT rows at all four
+      calibrated layers; llama fires 0/334 known-correct held-out rows at hs17
+      (reproducing committed n_fired 870 exactly); llama's frozen-tau
+      false-positive rate is 3/255 = 1.18% (hs12) and 2/255 = 0.78% (hs15). The
+      Qwen3-4B predecessor, where G2 was genuinely diagnostic, ran at 0.035
+      (9/258) and 0.039 (14/360).
+      CORRECTED gemma operating point, recomputed on the clean use_cache=True
+      extract and reported on HELD-OUT (known_held = 270, confab_held = 168) --
+      analysis/gemma4-e4b/read_profile_full_depth.json, gitignored-private:
+      fpr_known_correct_flagged = 0.0074 (2/270) at hs15, hs18, hs20, hs22 and
+      hs23 (held-out AUC 0.9996-0.9999); 0.0222 (6/270) at hs24 (AUC 0.9980);
+      0.0815 (22/270) at hs34 (AUC 0.9804); 0.0704 (19/270) at hs38 (AUC 0.9770);
+      0.0481 (13/270) at hs42 (AUC 0.9891). These supersede the FIT-scale figures
+      in every respect: clean provenance, held-out split, and the caveat about
+      gemma having no held-out numbers is thereby also retired.
+      WHAT SURVIVES the withdrawal: gemma still fires on known-correct rows far
+      more often than llama (0/334) or mistral (0/8), so the llama/mistral vacuity
+      argument does not transfer to this substrate, and at the deep sites G2's
+      denominator does contain genuinely dosed rows.
+      WHAT DOES NOT SURVIVE: "more than a family that fires zero times" is not the
+      same as "enough". Per
+      .skills/experiment-runner/reference/gate-diagnosticity.md, a
+      Wilson-95%-upper cap is arithmetically unsatisfiable below the smallest N
+      with wilson_upper(0, N) < cap. Verified independently for this gate's
+      pass_if_wilson_upper_ci of < 0.10: the floor is N = 35
+      (wilson_upper(0, 35) = 0.0989; at N = 34 it is 0.1015). EVERY site in this
+      experiment sits below that floor -- the best is hs34 at 22 dosed
+      known-correct rows, and the shallow ladder D1-D4 sits at 2. The fired-only
+      companion is therefore pre-registered as NOT-ADJUDICABLE at every arm rather
+      than being discovered as such at resolve.
+      This is the expected cost of a near-perfect readout gate, not a defect in
+      it: the better the KU direction separates, the fewer known-correct rows are
+      ever dosed, and the less there is for a cost metric to measure. It is stated
+      here so that no arm's G2 pass is later read as evidence the boundary push is
+      harmless on the rows it actually reached.
+      SCOPE OF THIS REVISION: it changes no threshold. The gating full-population
+      G2 above (rate <= 0.05, Wilson upper < 0.10, population unfiltered by fire)
+      is transcribed verbatim from the parent and is untouched. What changes is
+      what this file claims the number MEANS. See AMENDMENT.md "What G2 measures
+      here" and Threats (h).
+    companion_metrics_reported_always:
+      - id: fired_only_cost
+        gating: none
+        definition: >-
+          not_well_formed_correct restricted to known-correct rows that actually
+          FIRED, with n_fired_known and a Wilson 95% interval. This is the number
+          that says whether dosing hurt the rows it reached.
+      - id: undosed_floor
+        gating: none
+        definition: >-
+          The same metric on the arm's own undosed pass (and on C0 for the OFF
+          arms), so the dosed value is read against the base rate rather than
+          against zero.
+    pre_stated_interpretation_rule: >-
+      REVISED 2026-07-24 (lead), pre-signature. The prior threshold was
+      "n_fired_known < 10 => FLOOR-CHECK ONLY". The 10 was never derived; it is
+      replaced by the arithmetic floor computed for this gate's own cap.
+      THREE DISPOSITIONS, and NOT-ADJUDICABLE is distinct from both PASS and FAIL:
+      (a) n_fired_known >= 35 -- the fired-only companion is ADJUDICABLE and is
+      reported with its Wilson 95% interval against the 0.05 / 0.10 cap.
+      (b) n_fired_known < 35 -- the fired-only companion is NOT-ADJUDICABLE:
+      wilson_upper(0, n) >= 0.10 for every n < 35, so even a flawless 0/n cannot
+      clear the cap and no observation at that n can distinguish harmless from
+      harmful. It is labeled NOT-ADJUDICABLE in the results table with its n, it
+      is NOT recorded as a pass, it is NOT recorded as a fail, and it may NOT be
+      cited as evidence the intervention is harmless. Reporting it as a pass would
+      be reporting the arithmetic of the denominator as a property of the
+      intervention.
+      (c) Regardless of (a) or (b): if the fired-only rate exceeds the 0.05 cap
+      while full-population G2 passes, that discrepancy goes in the arm's headline
+      summary, not buried in a table. It means dosing did cost the rows it reached
+      and the full-population denominator diluted it. A rate can be alarming at an
+      n too small to adjudicate; NOT-ADJUDICABLE silences the pass claim, never
+      the warning.
+      PROJECTED, so that the disposition is registered rather than discovered:
+      from the clean held-out fire rates above, every arm in this experiment is
+      expected to land in (b) -- roughly 22 dosed known-correct rows at hs34, 19
+      at hs38, 13 at hs42, 6 at hs24, and 2 at hs15/18/20/22/23. If any arm
+      unexpectedly reaches 35, (a) applies without further adjudication.
+      This rule governs the NON-GATING fired-only companion only. The gating
+      full-population G2 is unchanged and is adjudicated exactly as transcribed.
+
+  # ------------------------------------------------------------------ G3 ----
+  # Registered 2026-07-25, pre-signature, before any arm has run. This ADDS a
+  # gate; it moves no threshold in this file. G1 and G2 are untouched.
+  - name: g3_direction_specificity
+    role: specificity
+    scope: >-
+      Arms with a registered placebo counterpart ONLY -- currently A3 (P1) and
+      A5 (P2). NOT the primary. A1, A2, A4 and the shallow ladder D1-D4 have no
+      placebo arm registered and this gate does not apply to them.
+    primitive: effect_ratio_over_matched_placebo
+    definition: >-
+      lift(arm) = held-out confab clean_tighten rate at that arm's selected dose
+      MINUS the same rate on the SAME held-out confab rows with no injection.
+      effect_ratio = lift(true) / max over the K accepted placebo draws of
+      |lift(placebo_k)|.
+    pass_if: "effect_ratio >= 3.0"
+    effect_ratio_floor_source: >-
+      rr3-corrected-placebo-replication/gates_lib.py:32
+      RG1_EFFECT_RATIO_FLOOR = 3.0, with K >= 3 and a max-over-seeds denominator.
+      TRANSCRIBED, not re-derived and not re-tuned for this substrate.
+    denominator_is_max_not_mean: >-
+      Deliberate and inherited. A mean over K draws lets one benign draw dilute
+      one large one; the max is the worst case the random-direction family
+      actually produced, which is the honest denominator for a claim of
+      specificity.
+    zero_denominator_rule: >-
+      If max_k |lift(placebo_k)| == 0.000 exactly, effect_ratio is undefined,
+      NOT infinite. The disposition is PASS-DEGENERATE: reported as a pass with
+      the label attached and with K and the raw per-draw rates in the table. It
+      may not be cited as a large effect ratio. This is the failure mode that
+      let qwen35-4b-midband-heldout G3(i) pass on a narrow baseline of 0.000 and
+      it is named here so it cannot be reported as a clean win.
+    why_not_the_factorial_s1_criterion: >-
+      gate-contribution-factorial/gates.yaml:106-115 S1 is the program's current
+      state of the art and its line 108 explicitly SUPERSEDES both RR2's flat
+      +/-2-point symmetric band and RR3's K=3 max. S1 is nonetheless NOT used
+      here, for one reason: its denominator is a per-family census null
+      (max over K=15 seeds, qwen 0.0833, mistral 0.2033) and GEMMA HAS NO CENSUS.
+      Borrowing qwen's 0.0833 would import another family's random-direction
+      sensitivity as if it were gemma's, which is exactly the substitution this
+      program refuses elsewhere. RG1 is used instead BECAUSE it is
+      self-contained: it computes its own denominator from the same run, at the
+      same site, on the same rows. That is a real weakening -- K = 3-5 draws is a
+      worse estimate of the tail than K = 15 -- and it is recorded as a
+      limitation, not presented as equivalent.
+      The RR2 flat +/-2-point band is NOT used, is NOT an alternative, and may
+      not be substituted at resolve. RR3 forbids it explicitly.
+    what_a_failure_means: >-
+      An arm that clears G1 and fails G3 ACTUATED but did so non-specifically.
+      It is reported as "actuates, not direction-specific", it may NOT be cited
+      as evidence that the KU readout drives the behavior, and it may not be
+      pooled with any direction-specific result in this program. It is not
+      re-run with a different dose or a different K to chase a pass.
+    interaction_with_success_rule: >-
+      NONE. A3 and A5 are DESCRIPTIVE and already sit outside success_rule;
+      adding a gate to them cannot change what the experiment's prediction turns
+      on. success_rule is reproduced UNCHANGED. G3 cannot make the prediction
+      MET.
+    interaction_with_falsifier_rule: >-
+      RESOLVED 2026-07-25 BY THE LEAD, pre-signature, before any arm has run.
+      The drafter registered this as open and declined to decide it. The lead's
+      decision: a G3 failure at A3 DOES count toward the falsifier, via
+      falsifier_rule [A3-CLAUSE] clause (ii). See that rule for the reasoning,
+      the required ADJUDICATED precondition, and the four registered limits --
+      in particular that an unadjudicated or NOT-RUN G3 is never read as a failed
+      G3, and that PASS-DEGENERATE is a pass and does not satisfy the clause.
+      This is recorded as a PERMISSIVE amendment: it makes falsification easier
+      than the originally registered rule.
+      NOT resolved, and standing as a limitation: falsifier_rule clause (ii)
+      reads a D1-D4 G1 pass as "gemma IS actuable", and no D arm has a placebo
+      counterpart. The lead fixed this control's scope at hs22 and hs24 only
+      (cell.yaml k_number_of_draws.scope_of_this_control), so any D-arm actuation
+      claim remains unsupported by a specificity control and must be reported
+      with that caveat attached.
+    reporting: >-
+      Reported whatever it shows, including when the matched true arm is a
+      dose-viability NOT-RUN (in which case its placebo is NOT-RUN too and the
+      pair is reported as such). The full per-draw table -- seed, both SC1
+      cosines, accept/void, readback, tighten rate -- is committed alongside the
+      arm result, not summarized away.
+
+per_arm_pass_rule: >-
+  An arm PASSES iff G1 AND G2 both pass on its condition-matched held-out split
+  at its selected dose. An arm with no usable FIT dose is NOT-RUN, which is
+  neither a pass nor a fail.
+
+# The parent's cross-family roll-up rule does NOT apply: this is a single-model
+# experiment with no denominator over families.
+
+# ------------------------------------------- DESCRIPTIVE SHALLOW LADDER ----
+# Registered 2026-07-24 (lead), pre-signature, before any GPU work.
+descriptive_shallow_ladder:
+  arms:
+    - {id: D1, site: hs15, relative_depth: 0.357, hooks_output_of_block: 14, donors_reachable: "22 and 23"}
+    - {id: D2, site: hs18, relative_depth: 0.429, hooks_output_of_block: 17, donors_reachable: "22 and 23"}
+    - {id: D3, site: hs20, relative_depth: 0.476, hooks_output_of_block: 19, donors_reachable: "22 and 23"}
+    - {id: D4, site: hs23, relative_depth: 0.548, hooks_output_of_block: 22, donors_reachable: "23 only"}
+  condition: sharing ON (unmodified model), dosed
+  gating: >-
+    NONE. D1-D4 are DESCRIPTIVE. They cannot make or break the prediction and do
+    not enter success_rule. They enter falsifier_rule only asymmetrically, in the
+    direction that WEAKENS a negative result -- never in the direction that
+    manufactures a pass.
+  why_these_sites: >-
+    Not a fishing expedition. Two reasons, both registered in advance.
+    (1) DEPTH. Every site the parent tested on gemma sat at relative depth >=
+    0.810. No site above rd 0.607 has produced a usable dose in ANY family in
+    this program, and the shallow band rd 0.357-0.548 is where llama, mistral and
+    qwen all actuate. Gemma has never been asked the question at the depth where
+    the effect is known to live in every other family.
+    (2) CONFOUND FACTORING. A3 (hs22) vs A5 (hs24) varies donor reachability AND
+    two blocks of computation at once, which is exactly why that contrast
+    discriminates nothing (AMENDMENT.md Threats (c)). D1-D3 hold donor
+    reachability CONSTANT at "both donors reachable" while sweeping depth from rd
+    0.357 to 0.476. A depth trend across D1-D3-A3 at fixed reachability is
+    attributable to depth alone.
+  read_quality_at_these_sites: >-
+    Held-out AUC 0.9996-0.9999 at all four, on the clean extract. The KU direction
+    reads at least as well here as anywhere deeper, so a null at these sites
+    cannot be attributed to the readout failing.
+  no_re_extraction_required: >-
+    The clean use_cache=True extract already stores all 43 hidden states. D1-D4
+    consume existing activations; they add direction fits, dose calibrations and
+    dosed generation, not an extraction.
+  dose_ladder: >-
+    The registered ratio ladder, unchanged. Zero usable rungs at a site = that D
+    arm is a dose-viability NOT-RUN with its full per-rung table. The ladder DOES
+    NOT MOVE.
+  expected_fired_only_n: 2
+  expected_fired_only_disposition: NOT-ADJUDICABLE
+  d4_a6_collision: >-
+    D4's site (hs23) is also A6's site if below_seam_site_selection sends A3 to
+    hs22. If they coincide, ONE arm is run and reported under BOTH labels with
+    that fact stated. It is never run twice and never reported as two
+    independent observations.
+
+success_rule: >-
+  The prediction is MET iff C1 passed, A2 PASSES (G1 and G2 both) while A1 does
+  NOT, AND |A_lin(hs38, OFF) - A_lin(hs38, ON)| <= 0.05 per
+  g0_alin_discrimination_measurement. The A_lin clause is part of the success
+  rule, not a caveat on it: a behavioral A2-yes/A1-no with |delta A_lin| > 0.05
+  is outcome (2) -- jointly explained, prediction NOT met, promotes nothing.
+  A3, A5, and the shallow ladder D1-D4 are DESCRIPTIVE and do NOT enter this
+  rule. They are reported whatever they show; they cannot make or break the
+  prediction. For A3-vs-A5 the reason is that a below-seam site differs from a
+  quarantined one in linear accessibility as well as in donor reachability
+  (AMENDMENT.md Threats (c)). For D1-D4 the reason is that they test a DIFFERENT
+  question -- whether gemma actuates at all in the band where every other family
+  does -- and no D-arm outcome can substitute for the A1-vs-A2 contrast that the
+  KV hypothesis actually turns on. A D-arm pass does not make the prediction MET;
+  a D-arm null does not make it FAILED.
+
+falsifier_rule: >-
+  AMENDED 2026-07-25 BY THE LEAD, pre-signature, before any arm has run. The
+  amendment is the single clause marked [A3-CLAUSE] below; every other word is
+  as originally registered. IT IS RECORDED AS A PERMISSIVE CHANGE: it makes
+  falsification EASIER than the rule it replaces, by adding a second way for A3
+  to count as failing. The drafter declined to make it unilaterally for exactly
+  that reason and it is the lead's call, taken with the reasoning stated here --
+  an A3 that raises hedging no more than a random vector of the same magnitude
+  at the same site on the same rows has not actuated in any sense this program
+  can use, and letting such a result block falsification would preserve the
+  hypothesis on evidence that supports nothing. Made before any arm has run and
+  before any placebo draw exists, so it cannot have been chosen to fit a result.
+  FALSIFIER: C1 PASSES its criterion, A2's write verifies (readback within
+  tolerance at every dosed cell), A2 fails either primary gate, AND
+  [A3-CLAUSE] A3 either (i) fails either primary gate, or (ii) clears G1 while
+  FAILING g3_direction_specificity on an ADJUDICATED G3
+  => the KV-quarantine explanation of the gemma null is FALSIFIED.
+  [A3-CLAUSE] SCOPE AND LIMITS, registered with the amendment so the permissive
+  direction is bounded:
+  - "ADJUDICATED" is required and is narrow. G3 must have produced an effect
+    ratio from K = 5 accepted draws that cleared SC1, with P1's readback within
+    tolerance. If P1 is a NOT-RUN for any reason -- A3 has no usable dose, the
+    redraw ledger exhausts max_redraws, readback fails -- then G3 is
+    UNADJUDICATED and clause (ii) is UNAVAILABLE. An unadjudicated gate is not a
+    failed gate, and a missing control may never be read as a control that
+    failed.
+  - PASS-DEGENERATE (max placebo lift exactly 0.000, effect ratio undefined) is
+    a G3 PASS per zero_denominator_rule and therefore does NOT satisfy clause
+    (ii).
+  - Clause (ii) applies to A3 ONLY. A2 is unaffected: it has no placebo arm, its
+    limb of the falsifier is untouched, and a G3 result at hs22 says nothing
+    about hs38.
+  - This amendment does NOT enter success_rule. It cannot make the prediction
+    MET; it can only make the negative disposition reachable. The null stands as a property of the model rather than of the
+  injection site, and no further seam-relocation attempt on this model is
+  warranted.
+  The falsifier requires BOTH A2 and A3 to fail, deliberately: a negative A2
+  alone is jointly explained by "quarantine is not the cause" and by "the OFF
+  model's retained projections do not do the job the trained shared path did"
+  (AMENDMENT.md Threats (f)). This two-arm requirement is a CONSERVATISM, not an
+  inference: A3 cannot supply positive evidence for the hypothesis, but requiring
+  a second independent failure guards against killing a true hypothesis on one
+  weak negative. Falsification removes KV quarantine from the candidate list; it
+  does NOT select among the remaining accounts.
+  THE SHALLOW LADDER ENTERS ASYMMETRICALLY (registered 2026-07-24, pre-run). It
+  can strengthen or qualify the falsifier; it can never trigger it and never
+  block it.
+  (i) If the falsifier fires AND all of D1-D4 also fail G1 with verified readback
+  and at least one usable FIT dose each, the falsification is STRENGTHENED to a
+  depth-swept negative across the entire donor-reachable band rd 0.357-0.548 --
+  gemma does not actuate anywhere the effect lives in other families, and the
+  quarantine account loses its last refuge.
+  (ii) If ANY of D1-D4 clears G1 while A1 does not, gemma IS actuable and the
+  above-seam null is not a property of the model. That SUPPORTS the quarantine
+  account but does not establish it: a shallow site differs from a quarantined
+  one in depth and linear accessibility as well as in donor reachability. It is
+  reported as a positive actuation finding for gemma in its own right, which is
+  the more valuable result either way.
+  (iii) If all of D1-D4 resolve NOT-RUN (no usable FIT dose at any rung), they
+  contribute NOTHING in either direction and the falsifier is adjudicated exactly
+  as written above, on A2 and A3 alone. A NOT-RUN ladder is not a negative
+  ladder.
+
+subordinate_dispositions:
+  void_parent_null_not_reproduced: >-
+    If A1 finds a usable FIT dose at hs38 and clears G1 on held-out, the parent's
+    gemma write-verified null did not reproduce under a verbatim-copied
+    instrument on the same pool and split. NO VERDICT on the KV hypothesis; the
+    A1-vs-parent discrepancy must be diagnosed first. A void is not a null and
+    not a falsification.
+  inconclusive_c1_fail: >-
+    C1 fails => A2 and A4 NOT-RUN, the falsifier cannot fire on them, A3/A5 still
+    report their descriptive contrast (which discriminates nothing), hypothesis
+    left open on the A1/A2 axis.
+  null_result_no_usable_dose: >-
+    Every arm a dose-viability NOT-RUN -- including the shallow ladder D1-D4 --
+    => the boundary push does not actuate anywhere in this model at any
+    registered site in either condition, across relative depths 0.357 to 1.000.
+    Written up as a null result, NOT retried with a wider ladder. The ladder is
+    registered here and does not move after a result is seen.
+
+multiplicity_note: >-
+  Ten dosed arms (A1-A6 plus the descriptive shallow ladder D1-D4) against a
+  two-part gate. Only A2 can bear the pre-stated primary; every other contrast is
+  descriptive and labeled as such before any run, and none of them can
+  discriminate the two live hypotheses. The ladder does not inflate the primary's
+  error rate, because no D arm can make the prediction MET -- see success_rule
+  and the asymmetric clauses in falsifier_rule. Every arm is reported regardless
+  of outcome, including NOT-RUN arms with their full per-rung FIT tables and
+  explicit blocker. No arm may be added, dropped, or re-labeled after any result
+  is seen; A6's conditionality is registered in advance with its trigger (A3 has
+  a usable FIT dose), and D1-D4 are registered unconditionally.
+  P1 and P2 (added 2026-07-25, pre-signature) do not change this count. They are
+  CONTROLS, not additional tests: neither bears G1 or G2, neither can pass or
+  fail the prediction, and each exists only to supply the denominator for
+  g3_direction_specificity at its matched arm. A placebo arm cannot be reported
+  as a finding in its own right.
+
+summary_rule: >-
+  This experiment promotes at most an EXPLORATORY LEAD -- "the gemma null is
+  site-structural, not model-intrinsic" -- which requires a registered
+  confirmatory replication (fresh seeds, and ideally a second KV-sharing
+  checkpoint such as Gemma-4-E2B whose different sharing ratio puts its seam at a
+  different depth) before any claim. Nothing here is pooled with the headline
+  matrix or with the parent experiment.
+
+# ---------------------------------------------------------------------------
+# Registered 2026-07-25, after G0-ALIN Part 1. family_config.SITE_SETS requires
+# any new named site set to be registered here before it is run.
+# ---------------------------------------------------------------------------
+seam_pair_site_set:
+  name: seam_pair
+  sites:
+    - id: A3
+      site: hs22
+      relative_depth: 0.524
+      hooks_output_of_block: 21
+      donors_reachable: "22 and 23"
+    - id: A5
+      site: hs24
+      relative_depth: 0.571
+      hooks_output_of_block: 23
+      donors_reachable: "NONE -- quarantined; block 24 is the first that reads K/V from the donors"
+  condition: "sharing ON (unmodified model), dosed"
+  gating: >-
+    NONE beyond what cell.yaml already registers. This entry adds no gate and
+    changes no threshold. A3 and A5 carry the experiment's registered NON-GATING
+    expectation (experiment.yaml prediction: "on the unmodified model A3 clears
+    both gates while A5 does not"); they do not enter success_rule.
+  why_one_set_and_not_two: >-
+    A3-vs-A5 is read as a contrast, so any difference in HOW the two directions
+    or thresholds were fit lands directly on that comparison. One set means one
+    invocation of build_directions.py, gate_fit.py and calibrate_dose.py over
+    both sites, which makes the identical-code-path requirement structural
+    rather than an after-the-fact check.
+  why_not_folded_into_shallow_ladder: >-
+    shallow_ladder's registered definition is the donor-REACHABLE band
+    (descriptive_shallow_ladder.why_these_sites, holding reachability constant
+    at "both donors" while sweeping depth). hs24 is the quarantined site and is
+    exactly what that definition excludes. Folding it in would also make D1-D4's
+    already-committed roll-ups stale.
+  what_this_set_does_not_fix: >-
+    Registering the sites makes them addressable. It does NOT change the
+    confound already recorded at AMENDMENT.md Threats (c): A3-vs-A5 varies donor
+    reachability AND two blocks of computation at once, so that contrast alone
+    discriminates nothing. D1-D3 hold reachability constant and are what make a
+    depth trend attributable to depth. Nothing here weakens that reading.
+  no_re_extraction_required: >-
+    The clean use_cache=True extract already stores all 43 hidden states,
+    including hs22 and hs24 (both are in G0-ALIN's RECORDED_FOR). These arms
+    consume existing activations; they add direction fits, dose calibrations and
+    dosed generation, not an extraction.
+  dose_ladder: >-
+    The registered ratio ladder, unchanged. Zero usable rungs at a site = that
+    arm is a dose-viability NOT-RUN with its full per-rung table. The ladder
+    DOES NOT MOVE.

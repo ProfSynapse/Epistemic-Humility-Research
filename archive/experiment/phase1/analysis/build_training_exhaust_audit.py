@@ -16,17 +16,18 @@ from pathlib import Path
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[4]
 SCRATCH_RUNS = ROOT / "scratch" / "schema_response_confidence" / "runs"
 EVAL_GROUPED = (
     ROOT
+    / "archive"
     / "experiment"
     / "phase1"
     / "eval"
     / "analysis"
     / "selfaware_full_run_comparison_grouped.csv"
 )
-OUT_DIR = ROOT / "experiment" / "phase1" / "analysis"
+OUT_DIR = ROOT / "archive" / "experiment" / "phase1" / "analysis"
 
 
 SUMMARY_FIELDS = [

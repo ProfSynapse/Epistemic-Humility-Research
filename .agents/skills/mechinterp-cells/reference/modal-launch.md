@@ -13,6 +13,34 @@ lane.
   exact pushed Synaptic Tuner commit. New surfaces can use Modal A10G-style
   lanes when approved; parity-locked cells remain on the registered substrate.
 
+## GPU sizing rule (PI directive, 2026-07-30)
+
+Never hard-code a GPU type into a cloud harness. The GPU is an ARGUMENT the
+operator provides at dispatch (env var or CLI flag with an explicit default),
+and the choice is made from the model actually being run, at harness-review
+time, with the arithmetic recorded in the launch record:
+
+1. Estimate the footprint: weights (params x dtype bytes) + KV/activation
+   headroom for the largest stage (extraction and teacher-forced sweeps are
+   the usual peak, not generation) + roughly 20% margin.
+2. Pick the SMALLEST tier that fits: A10G (24 GB) for models up to roughly
+   7B bf16 with modest batches; L40S (48 GB) for up to roughly 20B bf16 or
+   smaller models with heavy activation caching; A100-80GB / H100 only when
+   the arithmetic demands it, never as a default.
+3. The harness reads the GPU type from its argument and records it in every
+   stage's provenance so the executed hardware is auditable per stage.
+   "A100 because that is what the last lane used" is not a justification.
+4. Within one experiment, keep the GPU FIXED across arms of the same
+   registered contrast once any arm has run: provenance uniformity between
+   paired arms outranks the saving from switching mid-run.
+
+Cautionary case: the gemma4-e4b kv-seam Phase B lane hard-coded A100-80GB
+for a model whose stages fit an L40S; the two 85-minute dose calibrations
+cost roughly double what they needed to. Caught by the PI mid-tranche
+(2026-07-30); that lane kept A100 for arm-parity per rule 4, its harness
+was converted to take the GPU as an argument, and this rule exists so the
+next lane sizes correctly from the start.
+
 ### Local GPU runs execute in a pinned container
 
 **Binding invariant (standing directive, 2026-07-10):** every local-3090
@@ -57,6 +85,39 @@ to parity.
   Docker lane (`tuner.py local-run` training jobs launched from Windows via
   Docker Desktop over an npipe) and is not the home for this invariant; it
   carries a pointer back here instead of duplicating this section.
+
+### One socket, two Docker daemons: Docker Desktop must be OPEN
+
+`unix:///var/run/docker.sock` inside the WSL distro is backed by TWO
+different daemons depending on whether Docker Desktop is running. With
+Desktop open, the socket is served by the Desktop engine (`docker info`
+shows `Operating System: Docker Desktop`, an `nvidia` entry under
+`Runtimes`, and the image store that holds the program's validated
+`mechinterp-runner` builds). With Desktop closed, the same path silently
+falls back to the WSL-native `dockerd` (runc only, no nvidia runtime, a
+separate and unrelated image store). Nothing errors on the switch; commands
+just answer from a different daemon. This has bitten twice (kv-seam Phase A
+dispatch, 2026-07-29; idk-switch digest capture, 2026-07-31), so:
+
+1. **If GPU-in-container fails, the first hypothesis is that Docker Desktop
+   is not open.** The signature is `docker run --gpus all` failing with
+   `could not select device driver "" with capabilities: [[gpu]]`. Do NOT
+   work around it (no `nvidia-container-toolkit` install, no engine
+   switching, no image rebuilds): ask the user to open Docker Desktop, then
+   re-run the preflight below (PI directive, 2026-07-31).
+2. **Preflight before every local GPU verb AND before every digest
+   capture:** `export DOCKER_HOST=unix:///var/run/docker.sock`, then confirm
+   `docker info` shows `Operating System: Docker Desktop` and `nvidia`
+   under `Runtimes`. Only then trust `--gpus all` or any image query.
+3. **Digest-capture corollary:** `docker image inspect <tag>` answers from
+   whichever daemon currently owns the socket, so a
+   `runtime_image_digest` recorded without the preflight can silently pin
+   an image from the wrong store. Worked failure: the
+   idk-switch-naming-confirmatory sign captured its runtime digest from the
+   native store while Desktop was closed, pinning an unrecorded image
+   instead of the Phase A validated build; repaired by a recorded lead
+   repin. When a provenance digest check fails, ask "which daemon am I
+   talking to?" before assuming the image is wrong.
 
 Before any paid run, walk the wrapper-authoring checklist in the
 experiment-runner skill:

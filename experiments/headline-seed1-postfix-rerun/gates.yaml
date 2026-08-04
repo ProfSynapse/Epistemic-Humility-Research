@@ -1,0 +1,230 @@
+# Headline DPO/KTO seed-1 post-fix rerun - pre-stated gates.
+#
+# STATUS: PROPOSED / DRAFT. Every threshold below is a DRAFTING PROPOSAL awaiting
+# lead adjudication at sign time. Nothing is settled until
+# `bin/exp sign headline-seed1-postfix-rerun` pins this file.
+#
+# Once signed, NO GATE MOVES after results are seen. An ambiguous result is
+# reported as ambiguous; it is not rescued by retuning a threshold.
+#
+# These gates test the RERUN's numbers. They do not adjudicate the locked
+# headline matrix. Whatever G1 returns, the ORIGINAL seed-1 cells remain the
+# locked headline record unless and until a signed PROTOCOL revision adopts the
+# rerun numbers. See AMENDMENT.md section 3.
+#
+# ---------------------------------------------------------------------------
+# COHORT REFERENCE (the numbers these gates are derived from)
+# Source: papers/paper-2-training-regimen/analysis/selfaware_seed_metrics.csv
+# Post-fix cohort = seeds 2 and 3 (both consumed the corrected build).
+# n = 3369 scored SelfAware rows; n_unknown = 1032; n_known = 2337.
+#
+#   arm  seed  truthful  refusal_recall  over_refusal  correct_on_known
+#   dpo    2     16.68        0.00           0.04           24.06        (CSV row 5)
+#   dpo    3     15.08        0.00           0.17           21.77        (CSV row 8)
+#   kto    2     18.43        0.00           0.17           26.62        (CSV row 6)
+#   kto    3     18.85        0.00           0.09           27.19        (CSV row 9)
+#
+# The ORIGINAL (pre-fix) seed-1 rows, which the rerun is being compared against:
+#   dpo    1     15.26        0.10           0.09           21.97        (CSV row 2)
+#   kto    1     18.73        0.00           0.17           27.05        (CSV row 3)
+# ---------------------------------------------------------------------------
+
+status: proposed
+adjudicated_by: null            # lead + PI at sign time
+adjudicated_date: null
+eval_population: selfaware-full-3369
+cohort_under_comparison: [2, 3]
+cell_under_test: seed 1, post-fix build
+
+gates:
+
+  - id: g0_stop_before_outcome
+    kind: stop_before_outcome
+    scope: per_cell
+    gating: true
+    interpretation: >-
+      Not a claim gate. A failure STOPS the cell before any metric is read, and
+      the cell is repaired and relaunched rather than reported. G0 exists because
+      the entire value of this rerun is provenance: a rerun that silently differs
+      from the original in anything other than the dataset build proves nothing
+      about the dataset build.
+    checks:
+
+      - id: data_sha_matches_post_fix_build
+        pass_if: >-
+          the staged training file's sha256 equals the post-fix build sha recorded
+          in cell.yaml for that arm - dpo
+          39e2ba8c9bc1b41ef1b7e797f80637c276ba150c97055962bbc4e2b550bd17b5, kto
+          9cb291ee45c8dd5893b150abe033386127d0eedce9fa16faa2309e31a1a70e15 - and
+          does NOT equal that arm's superseded pre-fix sha.
+        verify_with: experiments/headline-seed1-postfix-rerun/scripts/audit_data_provenance.py
+
+      - id: config_identity_vs_original
+        pass_if: >-
+          the rerun's materialized recipe differs from the original seed-1
+          materialized recipe in the dataset path/staging fields and the run
+          name/output-root fields ONLY. Every training and lora field
+          (batch_size 2, gradient_accumulation 4, learning_rate 5.0e-06 for dpo /
+          1.0e-06 for kto, num_epochs 1, seed 1, r 32, alpha 64, dropout 0.05,
+          the seven target modules, max_seq_length 2048, load_in_4bit true) is
+          byte-identical. Any other diff is a hard stop.
+        reference:
+          dpo: archive/experiment/phase1/run_records/materialized_recipes/dpo__4b__headline__seed1.yaml
+          kto: archive/experiment/phase1/run_records/materialized_recipes/kto__4b__headline__seed1.yaml
+
+      - id: container_digest_match
+        pass_if: >-
+          the training container resolves to digest
+          sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772
+          (the 2026-06-13 local pull recorded in
+          .skills/experiment-runner/reference/local-runtime.md:82-86). If the
+          local daemon can no longer resolve that digest, this is a STOP and a
+          sign-time-adjudicated decision, not a silent substitution with
+          whatever `latest` currently points at.
+
+      - id: trainer_commit_declared
+        pass_if: >-
+          the run record names the synaptic-tuner commit actually used, and it
+          is 089fa9b7, the cohort commit pinned at resolution (user/PI,
+          2026-08-01; AMENDMENT.md section 10 item 1). Any other commit in the
+          run record fails this check.
+
+      - id: training_completed_clean
+        pass_if: >-
+          training exits 0, final_model plus training_lineage.json are present on
+          the host, and the metrics log ends with train_end.
+
+      - id: eval_surface_identity
+        pass_if: >-
+          the eval scores 3369 SelfAware rows (1032 unknown / 2337 known) with
+          enable_thinking false, temperature 0.0, generation seed 20240601, and
+          the contamination scan for `<think>`, `</think>`, and
+          `reasoning_content` returns zero matches - the same surface that
+          produced the cohort rows in selfaware_seed_metrics.csv.
+
+  - id: g1_replication_band
+    kind: claim
+    scope: per_arm
+    gating: false
+    status: proposed
+    interpretation: >-
+      G1 asks a NARROW question: did moving seed 1 onto the corrected dataset
+      build change the seed-1 result by more than the run-to-run variation the
+      post-fix cohort already shows? PASS means the dataset-version confound has
+      no effect detectable at this instrument's resolution, and the three-seed
+      interval can be reported without a dataset-version caveat. FAIL means the
+      confound is real and the seed-1 headline row is contaminated.
+    band_rule: >-
+      For each arm and each of the four metrics, the rerun value must fall inside
+      [min(seed2, seed3) - tol, max(seed2, seed3) + tol], where
+      tol = max(|seed2 - seed3|, 3 x one-question resolution) and one-question
+      resolution = 100 / (metric denominator). Bands are clamped at 0.
+    band_rule_rationale: >-
+      A plain [min, max] band over a two-point cohort is DEGENERATE wherever the
+      two seeds agree exactly. Both arms sit on the abstention floor:
+      refusal_recall is 0.00 at seed 2 AND seed 3 for both dpo and kto, so a bare
+      [min, max] band has zero width and would fail on a single differently
+      answered question. The 3-question floor (3 x 100/denominator) keeps the gate
+      from turning eval discreteness into a replication failure. Denominators:
+      refusal_recall 1032 (0.0969 pp/question), over_refusal and correct_on_known
+      2337 (0.0428 pp/question), truthful 3369 (0.0297 pp/question).
+
+    bands:
+      dpo__4b__headline__seed1__postfix:
+        refusal_recall_pct:
+          cohort: [0.00, 0.00]
+          seed2_seed3_spread: 0.000
+          one_question_resolution_pp: 0.0969
+          tol: 0.291            # floor-driven; cohort spread is 0
+          band: [0.00, 0.29]
+        over_refusal_pct:
+          cohort: [0.04, 0.17]
+          seed2_seed3_spread: 0.130
+          one_question_resolution_pp: 0.0428
+          tol: 0.130            # spread-driven (0.130 > 3 x 0.0428 = 0.128)
+          band: [0.00, 0.30]
+        truthful_pct:
+          cohort: [15.08, 16.68]
+          seed2_seed3_spread: 1.600
+          one_question_resolution_pp: 0.0297
+          tol: 1.600            # spread-driven
+          band: [13.48, 18.28]
+        correct_on_known_pct:
+          cohort: [21.77, 24.06]
+          seed2_seed3_spread: 2.290
+          one_question_resolution_pp: 0.0428
+          tol: 2.290            # spread-driven
+          band: [19.48, 26.35]
+
+      kto__4b__headline__seed1__postfix:
+        refusal_recall_pct:
+          cohort: [0.00, 0.00]
+          seed2_seed3_spread: 0.000
+          one_question_resolution_pp: 0.0969
+          tol: 0.291            # floor-driven
+          band: [0.00, 0.29]
+        over_refusal_pct:
+          cohort: [0.09, 0.17]
+          seed2_seed3_spread: 0.080
+          one_question_resolution_pp: 0.0428
+          tol: 0.128            # floor-driven (3 x 0.0428 > spread 0.080)
+          band: [0.00, 0.30]
+        truthful_pct:
+          cohort: [18.43, 18.85]
+          seed2_seed3_spread: 0.420
+          one_question_resolution_pp: 0.0297
+          tol: 0.420            # spread-driven
+          band: [18.01, 19.27]
+        correct_on_known_pct:
+          cohort: [26.62, 27.19]
+          seed2_seed3_spread: 0.570
+          one_question_resolution_pp: 0.0428
+          tol: 0.570            # spread-driven
+          band: [26.05, 27.76]
+
+    decision_rule: >-
+      PROPOSED: an arm PASSES G1 when all four metrics land inside their bands.
+      An arm with one metric outside its band is reported as PARTIAL and lifted
+      to the lead; two or more outside is a FAIL for that arm. Whether a single
+      out-of-band metric should count as a failure is a sign-time decision.
+
+    power_disclosure: >-
+      READ THIS BEFORE ADJUDICATING. This gate has LOW POWER to detect a
+      dataset-version effect, and the drafter is stating so before the run rather
+      than after. Applying the bands above to the ORIGINAL PRE-FIX seed-1 rows -
+      the very rows suspected of contamination - passes all 8 of 8 metric-arm
+      combinations (dpo 15.26/0.10/0.09/21.97 and kto 18.73/0.00/0.17/27.05 all
+      land inside). Both arms are pinned at the abstention floor, so there is
+      very little dynamic range in which a dataset effect could show up. A G1
+      PASS should therefore be read as "no effect detectable at this instrument's
+      resolution", NOT as "the dataset version demonstrably did not matter". The
+      honest value of this rerun is provenance hygiene: it removes a known
+      confound from the record. It is not a sensitive test for one.
+
+  - id: g2_confound_isolation
+    kind: interpretive
+    scope: experiment
+    gating: false
+    status: proposed
+    interpretation: >-
+      A bookkeeping gate, proposed because the drafter found a SECOND confound
+      the brief did not mention. It records whether the rerun actually isolated
+      the dataset variable.
+    checks:
+      - id: single_variable_changed
+        pass_if: >-
+          the rerun differs from the original seed-1 cells in the dataset build
+          and in nothing else that the lead did not explicitly pin at sign time.
+        note: >-
+          The original seed-1 cells and the seeds-2/3 cohort were NOT run at the
+          same synaptic-tuner commit (dpo seed1 3a3d7a26, kto seed1 04005402,
+          seeds 2/3 both 089fa9b7 - from the run records). If the rerun uses
+          089fa9b7 it removes BOTH confounds at once and makes seed 1 fully
+          commensurate with seeds 2 and 3, but it can no longer attribute any
+          observed change to the dataset alone. If it uses the original per-arm
+          commit it isolates the dataset variable but leaves seed 1 non
+          commensurate with its cohort on the trainer axis. RESOLVED (user/PI,
+          2026-08-01): the rerun pins the cohort commit 089fa9b7 for both arms,
+          removing both confounds at once; the rerun is a commensurability
+          check against the cohort bands, not a single-variable attribution of
+          the dataset change. See AMENDMENT.md section 10 item 1.

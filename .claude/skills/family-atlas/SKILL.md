@@ -137,6 +137,14 @@ cited governed doc instead.
   float32 capture is the expensive-looking but actually cheap part; the
   profile and read panel are CPU-only and effectively free. Budget
   accordingly before asking for spend approval.
+- **A read-optimal layer is not thereby a good write site** - see
+  `reference/read-actuate-depth.md`. Actuability (does a dosed write at a
+  site change behavior at all) decays steeply with RELATIVE depth
+  (`layer_idx / num_hidden_layers`) in every family measured so far,
+  independent of this atlas's own read-panel band. Convert every site to a
+  depth fraction before comparing across families, and before attributing a
+  family's actuation null to its architecture, check whether that family was
+  even tested at the depth band where other families still actuate.
 - **A vLLM layer ID is not automatically an atlas hidden-state index.** Native
   extraction can return selected intermediate layers, but the atlas requires
   embeddings at index 0 and every block output through N under the same
@@ -188,3 +196,7 @@ second source of experimental fact.
 - `templates/render_example.py` -- reference pattern for the per-experiment
   render module `capture_family_atlas_cell.py --render-module` loads;
   always ported and adapted per source experiment, never shared verbatim.
+- `reference/read-actuate-depth.md` -- the read/actuate depth dissociation:
+  why a read-panel peak is not thereby a good write site, and how to control
+  for the resulting depth confound before attributing an actuation null to
+  architecture.

@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[3]
+    return Path(__file__).resolve().parents[5]
 
 
 def _archive_dir() -> Path:

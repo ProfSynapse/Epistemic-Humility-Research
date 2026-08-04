@@ -1,0 +1,70 @@
+{
+  "family": "llama-3.2-3b",
+  "population": {
+    "positive_class": "confab FIT (n=581)",
+    "negative_class": "known_correct_answered FIT (n=222)"
+  },
+  "score_definition": "neg_z_d = -z_d; z_d clipped to [-2,+2] and standardized with each layer's FIT-pool mu_d/sigma_d",
+  "sign_convention": "confab rows have LOW doubt; fire iff neg_z_d >= tau, equivalently z_d <= -tau",
+  "tau_frozen_method": "youden_j",
+  "g0_auc_floor": 0.9,
+  "layers": {
+    "hs17": {
+      "hs_index": 17,
+      "auc_neg_z_d_on_fit": 0.9992867221782884,
+      "auc_raw_z_d_on_fit": 0.0007132778217115559,
+      "youden_tau": {
+        "tau": -0.375527803214078,
+        "stats": {
+          "tpr_confab_caught": 0.9931153184165232,
+          "fpr_known_correct_flagged": 0.009009009009009009,
+          "tp": 577,
+          "fn": 4,
+          "fp": 2,
+          "tn": 220,
+          "youden_j": 0.9841063094075142
+        }
+      },
+      "tau_frozen": -0.375527803214078,
+      "g0_auc_pass": true
+    },
+    "hs20": {
+      "hs_index": 20,
+      "auc_neg_z_d_on_fit": 0.9991394148020655,
+      "auc_raw_z_d_on_fit": 0.0008605851979345943,
+      "youden_tau": {
+        "tau": -0.3400716046414741,
+        "stats": {
+          "tpr_confab_caught": 0.9931153184165232,
+          "fpr_known_correct_flagged": 0.009009009009009009,
+          "tp": 577,
+          "fn": 4,
+          "fp": 2,
+          "tn": 220,
+          "youden_j": 0.9841063094075142
+        }
+      },
+      "tau_frozen": -0.3400716046414741,
+      "g0_auc_pass": true
+    },
+    "hs23": {
+      "hs_index": 23,
+      "auc_neg_z_d_on_fit": 0.9989921074258424,
+      "auc_raw_z_d_on_fit": 0.001007892574157634,
+      "youden_tau": {
+        "tau": -0.2667102293245115,
+        "stats": {
+          "tpr_confab_caught": 0.9913941480206541,
+          "fpr_known_correct_flagged": 0.009009009009009009,
+          "tp": 576,
+          "fn": 5,
+          "fp": 2,
+          "tn": 220,
+          "youden_j": 0.982385139011645
+        }
+      },
+      "tau_frozen": -0.2667102293245115,
+      "g0_auc_pass": true
+    }
+  }
+}

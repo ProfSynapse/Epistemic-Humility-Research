@@ -77,8 +77,13 @@ IGNORED_PARTS = {
     ".worktrees",
 }
 INDEXED_DOT_DIRS = {".skills"}
+# The ranking regression spec pairs search queries with the paths they must
+# return. Indexing it lets the instrument answer its own measurement, so it is
+# kept out of the corpus.
+IGNORED_PATHS = {".skills/knowledge-graph/tests/ranking_regressions.yaml"}
 PATH_RE = re.compile(r"^[A-Za-z0-9_./-]+\.(?:py|md|json|ya?ml|jsonl|txt|csv|png|html)$")
 FRONTMATTER_RE = re.compile(r"\A---[ \t]*\r?\n(?P<body>.*?)\r?\n---(?:\r?\n|\Z)", re.S)
+ALIAS_ANNOTATION_RE = re.compile(r"\([^)]*\)")
 ARXIV_ID_RE = re.compile(r"(?P<id>\d{4}\.\d{4,5})(?:v\d+)?")
 HTML_TAG_RE = re.compile(r"<[^>]+>")
 HTML_SCRIPT_STYLE_RE = re.compile(r"<(script|style)\b.*?</\1>", re.I | re.S)
@@ -141,6 +146,8 @@ def repo_relative(path: Path, root: Path) -> str:
 
 
 def should_ignore(rel: str) -> bool:
+    if rel in IGNORED_PATHS:
+        return True
     parts = rel.split("/")
     if any(part.startswith(".") and part not in INDEXED_DOT_DIRS for part in parts):
         return True
@@ -768,6 +775,60 @@ def parse_frontmatter_kg(rel: str, text: str) -> tuple[list[Node], list[Edge]]:
     return nodes, edges
 
 
+def frontmatter_identity_chunk(rel: str, kind: str, text: str) -> Chunk | None:
+    """A short chunk carrying a note's frontmatter title, aliases and tags.
+
+    Section chunks start at the first heading, so for any note with headings the
+    whole frontmatter block -- including the aliases the vault convention relies
+    on for retrieval -- was in no chunk at all and could not be searched. Even
+    for heading-less notes the identity was unreachable to the title/symbol
+    boosts, because those carry the file path rather than the human title.
+
+    Keeping it short and separate is deliberate: bm25 rewards a match in a small
+    field, so an alias hit outranks the same word buried in a long body.
+    """
+    if yaml is None:
+        return None
+    match = FRONTMATTER_RE.match(text)
+    if not match:
+        return None
+    try:
+        fm = yaml.safe_load(match.group("body")) or {}
+    except Exception:
+        return None
+    if not isinstance(fm, dict):
+        return None
+
+    title = str(fm.get("title") or "").strip()
+    aliases = [str(item).strip() for item in (fm.get("aliases") or []) if str(item).strip()]
+    kg = fm.get("kg") if isinstance(fm.get("kg"), dict) else {}
+    node_id = str(kg.get("id") or "").strip()
+    if not (title or aliases or node_id):
+        return None
+
+    # Tags are deliberately excluded. They are a coarse topical grouping shared
+    # by dozens of notes, and in a chunk this short bm25 weights them as heavily
+    # as a title, so a tag like `margin-theory` pulls every note carrying it
+    # above the note the query actually names. Identity only: title, aliases, id.
+    label = title or Path(rel).stem
+    body = [label, *aliases]
+    if node_id:
+        body.append(node_id)
+    end_line = text[: match.end()].count("\n") + 1
+    # An alias is an alternative title, so it belongs on the symbol surface the
+    # title/phrase boosts read -- not only in the body text bm25 sees. `title`
+    # stays the clean label because that is what gets printed.
+    #
+    # Parentheticals are dropped from that surface: the vault writes them as
+    # annotations about the alias ("doubt direction (retired name, see
+    # margin-theory-framework.md)"), not as part of the name, and matching a
+    # cross-reference inside one lets an unrelated note claim the phrase boost.
+    # The full alias stays in the body text, so the words remain searchable.
+    names = [ALIAS_ANNOTATION_RE.sub(" ", alias).strip() for alias in aliases]
+    symbol = " | ".join([label, *(name for name in names if name)])
+    return Chunk(rel, kind, symbol, "frontmatter", label, 1, end_line, "\n".join(body)[:6000])
+
+
 def parse_markdown(rel: str, text: str) -> ParsedFile:
     kind = "markdown"
     file_id = f"file:{rel}"
@@ -776,6 +837,9 @@ def parse_markdown(rel: str, text: str) -> ParsedFile:
     nodes.extend(kg_nodes)
     edges = kg_edges
     chunks: list[Chunk] = []
+    identity = frontmatter_identity_chunk(rel, kind, text)
+    if identity is not None:
+        chunks.append(identity)
     lines = text.splitlines()
     headings: list[tuple[int, str]] = []
     for idx, line in enumerate(lines, start=1):

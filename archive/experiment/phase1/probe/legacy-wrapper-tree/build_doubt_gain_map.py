@@ -6,7 +6,7 @@ from pathlib import Path
 import importlib.util
 import sys
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[5]
 TARGET_DIR = ROOT / "experiments/doubt-regulated-caution"
 TARGET = TARGET_DIR / "build_doubt_gain_map.py"
 

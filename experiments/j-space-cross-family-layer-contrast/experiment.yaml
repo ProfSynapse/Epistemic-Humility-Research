@@ -1,0 +1,263 @@
+slug: j-space-cross-family-layer-contrast
+type: steer-cell
+status: signed
+registered: true
+question: Does useful, selective J-space mid-band actuation (calibrated mid-band gated
+  caution snap achieving held-out confab clean_tighten above a floor at low known-correct
+  cost) generalize across model families, or is it specific to Qwen3 lineage?
+prediction: For at least 3 of the families that run past G0, that family's own best
+  calibrated mid-band write site clears BOTH primary gates on held-out -- confab clean_tighten
+  at or above the G1 floor (>=0.50, Wilson lower >0.40) AND known-correct not_well_formed_correct
+  cost at or below the G2 cap (<=0.05, Wilson upper <0.10; both adjudicated lead+user
+  2026-07-23). The frozen late-reference arm is a non-gating descriptive comparator,
+  expected weak or dead per doubt-snap-cross-family-confirmatory.
+falsifier: If at most 1 of the families that run past G0 clears both primary gates,
+  mid-band actuation is Qwen-lineage-specific or an artifact - FALSIFIED. If exactly
+  2 clear both, the result is MIXED and no claim is promoted.
+checkpoint:
+  repo: cross-family (4 checkpoints; see families/*.yaml and AMENDMENT.md "Family
+    table")
+  revision: raw-base bf16 instruct, no adapter, no 4-bit quantization, no task training,
+    per family
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  - families/llama-3.2-3b.yaml
+  - families/mistral-7b-v03.yaml
+  - families/qwen35-4b.yaml
+  - families/gemma4-e4b.yaml
+  modules:
+  - family_config.py
+  - model_lib.py
+  - gen_lib.py
+  - grader.py
+  - scorers.py
+  - materialize_reused_rows.py
+  - mine_eval_pool.py
+  - split_fit_heldout.py
+  - jlens_profile.py
+  - extract_anchor.py
+  - build_directions.py
+  - gate_fit.py
+  - calibrate_dose.py
+  - pipeline.py
+  - run_contrast.py
+  - cross_family_rollup.py
+  persistence:
+    family_config.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.023
+    model_lib.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.196
+    gen_lib.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.826
+    grader.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.023
+    scorers.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.022
+    pipeline.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.236
+    materialize_reused_rows.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.07
+    split_fit_heldout.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.005
+    gate_fit.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.523
+    cross_family_rollup.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.001
+    mine_eval_pool.py:
+      persistence: incremental
+      checkpoint_path: experiments/j-space-cross-family-layer-contrast/analysis/<family>/pool_generations.jsonl
+    extract_anchor.py:
+      persistence: incremental
+      checkpoint_path: experiments/j-space-cross-family-layer-contrast/analysis/<family>/anchor_extract.safetensors
+    calibrate_dose.py:
+      persistence: incremental
+      checkpoint_path: experiments/j-space-cross-family-layer-contrast/analysis/<family>/runlog/calibrate_dose_records.jsonl
+    run_contrast.py:
+      persistence: incremental
+      checkpoint_path: experiments/j-space-cross-family-layer-contrast/analysis/<family>/runlog/<mode>/<layer>.jsonl
+    jlens_profile.py:
+      persistence: incremental
+      checkpoint_path: experiments/j-space-cross-family-layer-contrast/analysis-committed/<family>/layer_profile.json
+    build_directions.py:
+      persistence: incremental
+      checkpoint_path: experiments/j-space-cross-family-layer-contrast/analysis-committed/<family>/layers/
+  pins:
+    cell.yaml: be93520fc9a1c3ce14f4c8fe94f177e253fd0cd9357bc9ed9474b49fb253d306
+    gates.yaml: f220d45d4bd2447b21bbbe125de03adff3bbc0495cc8e0c956438c8093ec0406
+    families/llama-3.2-3b.yaml: 942be30a2826b231725b18cb4529595ea506165cc4dfa98cb373337a91d2ae41
+    families/mistral-7b-v03.yaml: af3891ca6a6c92b7375b92ae241edcdf1d8331c0bae88d37effc52b77ef3426c
+    families/qwen35-4b.yaml: d726633f7e7c2cd387aed3fd61763beaf5a6ca144c7cc0cc0d5f0ddbfad5ea33
+    families/gemma4-e4b.yaml: 646d12a775e70f071ef1f58d6878f4cebd1fb81928a5cd6142feae5584fc12e5
+    family_config.py: 9da242fee0450e5beedea3ad73fc3cfae6312efcbd86ca446813b342547b31b3
+    model_lib.py: b5e7239f0ba25ce42e7df624e0706d421beaba23bbff9bc2dd421f55ee2681ce
+    gen_lib.py: d2ad45da8ac021a1aec250048ba604c7969e60cbd422927f9883cf3c8a8817a7
+    grader.py: 35dfbaf9d4932471c1da43087b03e5c81921af2c998ce167e7fceb1539fb48b5
+    scorers.py: 1b3eda5d8d68c9184674f092805278505c5cd2065a21ffe7ec348e9ea5a00c37
+    materialize_reused_rows.py: 0e18237650492b7b1597ef8fb6e56f1d813314f2407eaca1329f1bb5ab5c53b5
+    mine_eval_pool.py: 2e6dbeb1eddf5cb1926fe61e6cf8eb620de052670f6421c56dee02d94cd7dc0b
+    split_fit_heldout.py: ead418c1b8b075993f0510e92c1c5ddd8fe5fcb09f27e02321efc45209173ec3
+    jlens_profile.py: fde1e2a622d95f3ef050c8c5b8e1ad7c139f0933042c68e5c758d97129854c6e
+    extract_anchor.py: 448e10fb67f48753e9ad8540ede44ea9b41b0fb283b4603bb44df7e9555e5c8d
+    build_directions.py: 833528a619ae6e0c57fbdfac4c2b5645455bf40eb0254f10cc36dbb0ec988b77
+    gate_fit.py: b4e11ccb604813dd1bf2f8a2be6db6d4808cf6df7a0634d72cef3bc6c0e12b1f
+    calibrate_dose.py: a3ed05621739ef7e2cec9875cfbe81a53cd00aca523e64e40df5bd3b5a353e46
+    pipeline.py: b404a152099632f59286ab6f89dc7e64ad0988fbc97202e18be5f2a35b759357
+    run_contrast.py: 456d309fa0f301b99b9fc5ae291c65ca3b9f1f070d3684c1d55b52677c2773ad
+    cross_family_rollup.py: 918949481e7f357c2e374fb7bccf9148c456c8f98f0c500ebffbeaf0473d98c9
+  repins:
+  - file: families/llama-3.2-3b.yaml
+    old_sha256: 457a019e9a69f55226cc00ed533453196c97451c0fdf31ea47cd9691e9ee64bf
+    new_sha256: 942be30a2826b231725b18cb4529595ea506165cc4dfa98cb373337a91d2ae41
+    date: '2026-07-24T00:26:21Z'
+    reason: 'Pre-registered profile-stage write-back: jlens_profile.py resolved llama''s
+      band_selection (mid-band candidates hs17/20/23, late ref hs26) into the family
+      YAML per the signed design (''writes the resolved band back into families/<slug>.yaml
+      in place''); no gate or threshold changed'
+  - file: calibrate_dose.py
+    old_sha256: b817c12f901d33ea0510f7e6eabdc880e3a8ff21711b66effba70a1603bff5a1
+    new_sha256: 0579f52891b1bc14522e157b1f546cb3826bda9587b5ea704ac7027fe4f36ab0
+    date: '2026-07-24T00:59:10Z'
+    reason: 'calibrate_dose.py authoring omission: --fresh referenced at runtime (line
+      123) but never added to argparse; every invocation crashed with AttributeError
+      before GPU work. One-line add_argument(''--fresh'', action=''store_true'') matching
+      the script''s own documented resume/--fresh contract and run_contrast.py''s
+      precedent. No behavioral change to the dose ladder, gates, or resume logic.'
+  - file: families/mistral-7b-v03.yaml
+    old_sha256: db3d5645748fb20af5510c5b39b6f2a4ad8d4eaa3e9c46f11600fe90dd437c7c
+    new_sha256: af3891ca6a6c92b7375b92ae241edcdf1d8331c0bae88d37effc52b77ef3426c
+    date: '2026-07-24T02:34:49Z'
+    reason: 'Pre-registered band_selection write-back after mistral-7b-v03 jlens_profile
+      resolved: mid-band candidates hs12/15/19 (effective-dim peak hs15), late reference
+      hs30, status resolved. Same pre-registered mutation class as the llama-3.2-3b
+      repin.'
+  - file: mine_eval_pool.py
+    old_sha256: 3cc24dc80f46767e4301dbb380787a6e2ea846184617febc0f0774e725396906
+    new_sha256: 2e6dbeb1eddf5cb1926fe61e6cf8eb620de052670f6421c56dee02d94cd7dc0b
+    date: '2026-07-24T09:08:23Z'
+    reason: 'Archived-path repoint (4th instance of the phase1-reorg breakage class
+      this session): EXPANSION_CANDIDATES hardcoded the retired experiment/phase1/probe/.../expansion_candidates.jsonl
+      path, which no longer exists; the identical corpus (13496 rows, 10000 known
+      / 3496 unknown, triviaqa 6000 / popqa 4000 / kuq_ku_unknown_x 3496, sha256 2886a602a2d8eca90bec2346ba21dc33...)
+      now lives under experiments/divergent-pool-own-readout/analysis/phase1-migrated/,
+      whose sidecar manifest still declares the old path as canonical origin. One
+      constant repointed; no logic changed. Unblocks gemma4-e4b fresh-mine.'
+  - file: calibrate_dose.py
+    old_sha256: 0579f52891b1bc14522e157b1f546cb3826bda9587b5ea704ac7027fe4f36ab0
+    new_sha256: 43aeaecb6f92c0e1cd13a73fbe1ff4af931bc789595f7dbe7a119971c63b6c4f
+    date: '2026-07-24T09:44:58Z'
+    reason: 'Revision R2 (user-ratified 2026-07-24): dose ladder respecified as normalized
+      RATIO_LADDER [0.100..2.000] x per-layer median anchor L2 norm computed at runtime
+      from the family''s own frozen anchor_extract.safetensors. Derived from recovered
+      Qwen3-4B reference norms (selected doses 0.37-0.60x, usable band 0.20-1.00x,
+      failure evidence bracketing both sides); sanity check passed (normalized ladder
+      recovers Qwen3-4B''s four selected doses within one rung). Usability/selection
+      rules unchanged; v2 checkpoints isolated (calibrate_dose_records_v2.jsonl +
+      namespaced resume keys); --doses absolute escape hatch reproduces v1 exactly.
+      CPU-validated against real llama/mistral extractions reproducing the ratified
+      translation tables. Applies to llama/mistral re-calibration and gemma''s first
+      calibration; qwen3.5 deferred.'
+  - file: calibrate_dose.py
+    old_sha256: 43aeaecb6f92c0e1cd13a73fbe1ff4af931bc789595f7dbe7a119971c63b6c4f
+    new_sha256: a3ed05621739ef7e2cec9875cfbe81a53cd00aca523e64e40df5bd3b5a353e46
+    date: '2026-07-24T09:45:36Z'
+    reason: 'R2 provenance correction: two comment lines misdated the normalized-ladder
+      revision as sign-time 2026-07-23; corrected to mid-run R2 user-ratified 2026-07-24
+      (after the llama/mistral v1 G0 stops). Comments only; zero code change from
+      43aeaecb.'
+  - file: jlens_profile.py
+    old_sha256: 260cf29e1db4cf23b3becb82c5d54e32473be3a9e2a573bedbc66cb16536ce56
+    new_sha256: 0e642d81a613ad384c3c193921f6a897403f4fd78c61eeba043e9150acfef83a
+    date: '2026-07-24T11:37:34Z'
+    reason: 'Nested-config crash fix (3rd pinned-instrument repair this run, same
+      family-generic pattern as model_lib.py lines 108-114): run() read model.config.num_hidden_layers
+      directly, which AttributeErrors on Gemma4Config (num_hidden_layers nests under
+      config.text_config and is not forwarded top-level, unlike Qwen3_5Config which
+      tolerated the naive read). Fix resolves text_cfg via the family YAML''s own
+      loader.nested_text_config/num_layers_field fields, mirroring the established
+      model_lib.py pattern used successfully by mine_eval_pool/materialize for this
+      same family. No other logic changed.'
+  - file: jlens_profile.py
+    old_sha256: 0e642d81a613ad384c3c193921f6a897403f4fd78c61eeba043e9150acfef83a
+    new_sha256: fde1e2a622d95f3ef050c8c5b8e1ad7c139f0933042c68e5c758d97129854c6e
+    date: '2026-07-24T11:50:30Z'
+    reason: 'Second nested-config crash in gemma relaunch: imported jlens.py (do-not-modify,
+      shared with j-space-localization-qwen3-4b) reads model.config.hidden_size at
+      layer_profile() line 370, absent on Gemma4Config top-level. Fix mirrors num_layers_field
+      + hidden_size_field from config.text_config onto model.config (set only when
+      absent) inside jlens_profile.py''s existing nested-config block — zero bytes
+      changed in jlens.py, family-generic via families/<slug>.yaml loader fields.
+      Same bug class as repin 0e642d81 (num_hidden_layers).'
+  - file: families/gemma4-e4b.yaml
+    old_sha256: 5ffc121302f28e5655a9d0ccdd5acb043c099b4e38663232bdf742848c6199f2
+    new_sha256: 646d12a775e70f071ef1f58d6878f4cebd1fb81928a5cd6142feae5584fc12e5
+    date: '2026-07-24T14:50:35Z'
+    reason: 'Pre-registered profile-stage write-back: jlens_profile.py resolved gemma4-e4b''s
+      band_selection from its own completed 10-point depth sweep (repin-fixed instrument
+      fde1e2a6). Mechanical LOCKED rule output: effective_dim_peak_hs=38, midband_candidates_hs=[34,38,42],
+      late_reference_hs=40. CAVEAT recorded at adjudication: profile is near-flat
+      (eff_dim_frac 0.0046-0.0058 across hs1-38, peak hs38 std 0.00141 overlaps all
+      interior points; hs42 collapses to 0.0010), peak sits at 90% depth so the ''mid-band''
+      candidates are late-region for this family and bracket the frozen late reference
+      hs40. Rule applied as registered, no post-hoc modification; degeneracy reported
+      as interpretive limitation, not adjudicated away.'
+  - file: run_contrast.py
+    old_sha256: fc7dabd96348293b87da9e96ef3bc42ea9c3bb1776fcc7f184bbb5c6aa597456
+    new_sha256: 456d309fa0f301b99b9fc5ae291c65ca3b9f1f070d3684c1d55b52677c2773ad
+    date: '2026-07-24T16:56:16Z'
+    reason: 'User-approved 2026-07-24: permit partial mid-band dose coverage in load_midband_selected_doses/_layer_dose_map,
+      implementing R2''s registered roll-up semantics (''a family runs past G0 if
+      its v2 calibration finds a usable dose and G0 passes'' — singular). The original
+      all-midband precondition was sign-time code written under the qwen3-4b assumption
+      that every candidate would be usable; llama-3.2-3b v2 found a usable dose at
+      hs17 only and the pinned check blocked its registered G0/held-out run. Change
+      is plumbing-only: undosed layers are never dosed downstream, zero-usable remains
+      a hard stop (dose-viability NOT-RUN), gates/selection/metrics/thresholds untouched.
+      evaluate_primary already tolerated partial sets.'
+inputs:
+- experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md
+- experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json
+- experiments/j-space-layer-contrast-replication-qwen3-4b/AMENDMENT.md
+- experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md
+- experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json
+- experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md
+- experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json
+- experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json
+- experiments/j-space-localization-qwen3-4b/AMENDMENT.md
+- experiments/j-space-localization-qwen3-4b/NOTEBOOK.md
+- experiments/doubt-gated-caution-tighten/AMENDMENT.md
+- experiments/cross-family-confirmatory/AMENDMENT.md
+- experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md
+- experiments/doubt-snap-cross-family-confirmatory/analysis-committed/llama32_3b_instruct
+- experiments/doubt-snap-cross-family-confirmatory/analysis-committed/mistral7b_instruct_v03
+- experiments/doubt-snap-cross-family-confirmatory/analysis-committed/qwen35_4b
+- experiments/doubt-snap-cross-family-confirmatory/analysis-committed/gemma4_e4b_it
+- experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md
+- experiments/qwen35-4b-midband-heldout/AMENDMENT.md
+verdict: 'INCONCLUSIVE (interim, 2026-07-24): only 2 of 4 registered families ran
+  past G0, below the minimum denominator of 3, so the cross-family question is
+  unanswered in either direction. Of the 2 that ran, llama-3.2-3b cleared G1 at
+  hs17 (647/872 = 0.7420, Wilson [0.7119, 0.7699]) and mistral-7b-v03 missed the
+  0.50 floor marginally at hs15 (642/1312 = 0.4893, Wilson [0.4624, 0.5164],
+  interval straddles the floor). G2 PASSED on both as registered and those
+  passes stand, but are non-diagnostic: the dosed known-correct denominator is 0
+  by construction (fired 0/334 and 0/382), so they are evidence about baseline
+  malformedness only and must not be read as write selectivity. gemma4-e4b is a G0 stop
+  (use_cache=False corrupted hs25+ via KV sharing), so its 0/176 write null is
+  uninterpretable rather than negative. qwen35-4b is being run to reach the
+  registered denominator; this Outcome will be re-adjudicated on
+  cross_family_rollup.py at that point. See AMENDMENT.md "Outcome" for the three
+  registered-instrument defects found at resolve, including a conflict between
+  this file''s falsifier: field and AMENDMENT.md''s roll-up rule.'
+kg: []

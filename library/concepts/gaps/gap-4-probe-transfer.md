@@ -40,7 +40,7 @@ relationships:
   confidence: medium
 ---
 
-**Gap 4 (meta-analysis draft-v0 §6.3): no probe-transfer study tests whether
+**Gap 4 (archive/meta-analysis/paper/draft-v0.md §6.3): no probe-transfer study tests whether
 humility fine-tuning changes representations or only behavior.** No paper trains
 epistemic probes on a base model, applies honesty-targeted fine-tuning, and
 re-reads the probes to ask whether the internal signal moved with the behavior.

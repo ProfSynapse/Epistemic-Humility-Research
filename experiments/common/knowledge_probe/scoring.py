@@ -4,9 +4,9 @@ Location: experiments/common/knowledge_probe/scoring.py
 Used by:  experiments/common/knowledge_probe/probe.py to compute P_correct per question.
 
 These primitives are RE-IMPLEMENTED (not imported) from the read-only
-meta-analysis/analysis/reanalyze_idk_outputs.py so that the probe carries no
-dependency on the meta-analysis package and the paper-1 source stays
-untouched. The normalization and word-bounded alias-membership logic match
+papers/paper-1-taxonomy-framework/analysis/reanalyze_idk_outputs.py so that the
+probe carries no dependency on the paper-1 analysis package and the paper-1
+source stays untouched. The normalization and word-bounded alias-membership logic match
 that source exactly so the probe's correctness labels are comparable to the
 Cheng-validated scorer used downstream by the WS-4 eval harness.
 

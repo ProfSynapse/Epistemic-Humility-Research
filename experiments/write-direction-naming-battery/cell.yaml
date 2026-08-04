@@ -1,0 +1,140 @@
+# write-direction-naming-battery - steer cell (DRAFT, not pinned)
+#
+# Frozen operating point carried byte-identically from the resolved doubt-snap
+# ladder, exactly as qwen35-4b-midband-heldout did. Nothing is refit here.
+# The harness is written under a separate assignment gated on review of this
+# draft; expected_config_sha and the sha256 pins are filled by `bin/exp sign`.
+
+surface:
+  base_model: Qwen/Qwen3.5-4B
+  revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+  dtype: bfloat16
+  adapter: null
+  quantization: null
+  render:
+    module: render.py            # port of doubt-snap-cross-family-confirmatory/render.py
+    system_prompt: BASELINE_SYSTEM_PROMPT
+    chat_template: true
+    enable_thinking: false
+    anchor: prompt_len_minus_1
+  generation:
+    decode: greedy
+    min_new_tokens: 1
+    max_new_tokens: 200
+    eos_include_im_end: true
+    batch_size: 8
+  seeds:
+    population_permutation: 48260730
+    bootstrap: 48260731
+    calibration_slice: 48260732
+  expected_config_sha: TBD_AT_SIGN
+
+readouts:
+  c_hat:
+    path: experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
+    format: mechinterp-direction/v1
+    dim: 2560
+    layer_index: 19
+    sha256: 937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f
+  random_direction:
+    path: experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/random_direction.json
+    format: mechinterp-direction/v1
+    dim: 2560
+    layer_index: 19
+    sha256: db8b930d79d98f52417566d9a87c876470f6b820684ee9456a58f7213d33cafa
+
+law:
+  kind: erase_write
+  readout: c_hat
+  layer: hs20
+  position: anchor_onward
+  generation_mode: anchor
+  standardization:
+    mu_c: -4.031343053353048
+    sigma_c: 1.576023489724997
+    source: experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json
+  reference_dose_abs: 12.608187917799976   # 8 x sigma_c
+
+# No gate anywhere: every row in every arm is dosed. The KU readout gate is a
+# deployment-targeting device (doubt-snap Outcome, binding scope statement 3);
+# gating here would censor exactly the rows the naming question needs.
+
+populations:
+  P_CONFAB:
+    n: 400
+    role: confab
+    source: kuq_unknowns_all
+    draw: >-
+      seeded permutation over the 932 held-out confabs scored by
+      qwen35-4b-midband-heldout but NOT subsampled by margin-mapping
+      (1332 held-out minus M1's 400-row subsample)
+    id_manifest: analysis-committed/populations/p_confab_ids.json
+  P_REFUSE:
+    n: 421
+    role: refused_on_answerable
+    source: popqa
+    draw: >-
+      all rows with role == refused_on_answerable in the committed world-known
+      census
+    id_manifest: analysis-committed/populations/p_refuse_ids.json
+  P_KNOWN:
+    n: 600
+    role: correct_on_answerable
+    source: popqa
+    draw: >-
+      seeded permutation over the correct_on_answerable census rows AFTER
+      excluding the 133 PopQA row_keys present in M1's dosed known set
+      (margin-mapping runlog rung rows with source==popqa; disclosure D-3),
+      leaving a 2613-row pool (131 of the 133 are present in the census
+      correct pool; popqa:1990787 and popqa:3027836 are confab_on_answerable
+      in this census despite M1 scoring them known-correct, a recorded
+      cross-harness scoring divergence); stratified 300/300 by median s_pop
+      computed
+      over that post-exclusion pool and frozen before any generation; s_pop
+      joined from datasets/popqa/test.jsonl by numeric id. The exclusion
+      implements the amendment's registered population definition (never
+      dosed by any cell; disjoint from the D-3 133) which the original draw
+      prose omitted; repinned 2026-07-30 after G0 disjointness found a
+      22-row collision.
+    id_manifest: analysis-committed/populations/p_known_ids.json
+    strata_manifest: analysis-committed/populations/p_known_spop_split.json
+
+arms:
+  # Arm A - form ladder on fresh held-out confabs
+  a_baseline:       {population: P_CONFAB, readout: c_hat,            multiplier: 0.0}
+  a_dose_0p25:      {population: P_CONFAB, readout: c_hat,            multiplier: 0.25}
+  a_dose_0p5:       {population: P_CONFAB, readout: c_hat,            multiplier: 0.5}
+  a_dose_0p75:      {population: P_CONFAB, readout: c_hat,            multiplier: 0.75}
+  a_dose_1:         {population: P_CONFAB, readout: c_hat,            multiplier: 1.0}
+  a_placebo_0p5:    {population: P_CONFAB, readout: random_direction, multiplier: 0.5}
+  a_placebo_1:      {population: P_CONFAB, readout: random_direction, multiplier: 1.0}
+  # Arm B - negative dose on a natural refusing population
+  b_baseline:       {population: P_REFUSE, readout: c_hat,            multiplier: 0.0}
+  b_neg_0p5:        {population: P_REFUSE, readout: c_hat,            multiplier: -0.5}
+  b_neg_1:          {population: P_REFUSE, readout: c_hat,            multiplier: -1.0}
+  b_neg_2:          {population: P_REFUSE, readout: c_hat,            multiplier: -2.0}
+  b_placebo_neg_1:  {population: P_REFUSE, readout: random_direction, multiplier: -1.0}
+  # Arm C - difficulty split on fresh knowns
+  c_baseline:       {population: P_KNOWN,  readout: c_hat,            multiplier: 0.0}
+  c_dose_1:         {population: P_KNOWN,  readout: c_hat,            multiplier: 1.0}
+
+execution:
+  lane: local_rtx3090
+  python: /home/profsynapse/miniconda3/bin/python3   # qwen3_5 loader needs transformers >= 5.x
+  output_path: analysis/runlog
+  resume: true
+  graders:
+    - grader:grade                    # per-cell port; narrow semantic_refuse + correctness
+    - detector_v2:grade_one_v2        # wide diverse-idiom detector
+    - form_taxonomy:classify          # NEW module, built under the harness assignment
+  redact_fields: [question, aliases, answer_text, answer_value]
+  total_generations_planned: 6105
+
+smoke:
+  n_rows: 8
+  write_rel_tol: 0.02
+  write_abs_floor: 0.05
+  readback_targets:
+    positive: 12.608187917799976
+    negative: -12.608187917799976
+  runlog_namespace: analysis/runlog_smoke   # never share a path with the full run

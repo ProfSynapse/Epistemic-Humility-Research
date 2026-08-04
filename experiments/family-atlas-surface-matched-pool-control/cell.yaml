@@ -1,0 +1,278 @@
+schema_version: 1
+seed: 20260721
+
+posture:
+  tier: 2
+  shape: fresh_surface_matched_pool
+  confirmatory: false
+  tested_families: [gemma, qwen3]
+
+source:
+  name: UMWP
+  official_url: https://raw.githubusercontent.com/Yuki-Asuuna/UMWP/refs/heads/main/data/StandardDataset.jsonl
+  license: CC-BY-SA-4.0
+  raw_sha256: e8840e8383357238a08e9c5028e4758ceceb369e1db31c64678b0f851c9c9e73
+  expected_rows: 5200
+  expected_answerable: 2600
+  expected_unanswerable: 2600
+  native_source_counts:
+    ASDiv: {answerable: 100, unanswerable: 100}
+    GSM8K: {answerable: 1700, unanswerable: 1700}
+    MultiArith: {answerable: 300, unanswerable: 300}
+    SVAMP: {answerable: 500, unanswerable: 500}
+  answerable_nonempty_answer_count: 2600
+  unanswerable_same_source_single_relevant_id_count: 2600
+  unanswerable_nonnull_bookkeeping_answer_ids: [2613, 4258]
+  consume_unanswerable_answer: false
+
+models:
+  gemma4_e4b_it:
+    repo: google/gemma-4-E4B-it
+    revision: fee6332c1abaafb77f6f9624236c63aa2f1d0187
+    num_hidden_layers: 42
+    n_hidden_states: 43
+    hidden_size: 2560
+    planted_hs_index: 21
+    render_contract: experiments/family-atlas-surface-matched-pool-control/render_gemma.py:render_with_tokenizer
+    anchor_rule: len(token_ids) - 1 with add_special_tokens=true
+    prior_atlas_pool:
+      source_experiment: doubt-snap-cross-family-confirmatory/gemma4_e4b_it
+      local_artifact: /home/profsynapse/code/ehr-worktrees/gemma-atlas/experiments/doubt-snap-cross-family-confirmatory/analysis/gemma4_e4b_it/split_rows_private.jsonl
+      sha256: c207b245919932928c5f4b35edf5dd01d8d3bf29336868436d59b71ed05de4cd
+  qwen3_4b_raw_base:
+    repo: unsloth/Qwen3-4B
+    revision: 64033659d5caf1b8ed7f929b29de705e93a4d468
+    num_hidden_layers: 36
+    n_hidden_states: 37
+    hidden_size: 2560
+    planted_hs_index: 18
+    render_contract: experiments/family-atlas-surface-matched-pool-control/render_qwen.py:render_with_tokenizer
+    anchor_rule: len(token_ids) - 1 with add_special_tokens=true
+    prior_atlas_pool:
+      source_experiment: qwen3-4b-family-atlas
+      local_artifact: /home/profsynapse/code/ehr-worktrees/qwen3-atlas/experiments/qwen3-4b-family-atlas/analysis/rows_with_text.jsonl
+      sha256: d1e7154481c8e5265e9701ada6e7aaffd7d7dba4d589002330a45b12eb56af98
+
+generation:
+  decode: greedy
+  do_sample: false
+  max_new_tokens: 200
+  min_new_tokens: 1
+  batch_size: 1
+  num_beams: 1
+  eos_ids: tokenizer_eos_plus_im_end_or_end_of_turn_when_present
+  grader_contract:
+    base: program_standard_degeneracy_refusal_alias_correctness
+    answerable_alias_conversion: canonical_string_from_numeric_umwp_answer
+    unanswerable_answers_consumed: false
+    required_fixture_classes: [integer, negative, decimal, numeric_boundary, refusal, malformed, degenerate, wrong_answer]
+  role_labels: [confab, known_correct_answered, unknown_refused]
+  exclude_ambiguous_grade: true
+  answerable_reference_answers_only: true
+  fresh_exclusion:
+    normalization: unicode_normalize_casefold_whitespace_collapse
+    against_each_models_prior_atlas_pool: true
+    commit_hashes: false
+
+surface_basis:
+  scalar_features:
+  - rendered_prompt_token_count
+  - question_char_count
+  - question_word_count
+  - question_line_count
+  - digit_count_and_fraction
+  - punctuation_count_and_fraction
+  - newline_count_and_fraction
+  - uppercase_count_and_fraction
+  lexical:
+    word_ngram_range: [1, 2]
+    char_ngram_range: [3, 5]
+    hash_features_word: 65536
+    hash_features_char: 65536
+    alternate_sign: false
+    tfidf_sublinear_tf: true
+    svd_components_word: 64
+    svd_components_char: 64
+    svd_seed: 20260721
+    scaling: standard
+  block_by: native_source
+  forbidden_features:
+  - role
+  - answer_text
+  - alias_text
+  - UMWP_category
+  - model_generation
+  - model_grade
+  - activation
+  - completion_length
+
+matching:
+  ratio: "1:1:1"
+  roles: [known_correct_answered, confab, unknown_refused]
+  method: deterministic_two_pass_hungarian
+  pass_1:
+    sides: [confab, unknown_refused]
+    within: [native_source, UMWP_category]
+    quota: smaller_role_count_per_source_category
+  pass_2:
+    left: mean_surface_vector_of_matched_unknown_pair
+    right: known_correct_answered
+    within: native_source
+  cost: squared_euclidean_standardized_scalar_and_lexical_svd
+  within: native_source
+  without_replacement: true
+  cross_original: true
+  forbidden_edge_cost: infinity
+  tie_break: lexicographic_role_ordered_umwp_ids
+  category_use: balance_confab_vs_unknown_refused_and_report_only
+  partition:
+    unit: intact_triad
+    stratify_by: native_source
+    seed: 20260721
+  minimum_fit_triads: 64
+  minimum_held_out_triads: 64
+
+surface_classifier:
+  feature_basis: full_hashed_lexical_plus_scalars
+  comparisons: all_pairwise_one_vs_one
+  folds: 5
+  grouped_by: intact_triad
+  metric: maximum_pairwise_best_orientation_held_out_auroc
+  max_auroc: 0.60
+  max_pairwise_scalar_abs_smd: 0.10
+  positive_control_tag: three_column_one_hot_role
+  positive_control_min_each_pairwise_auroc: 0.90
+
+capture:
+  layers: all
+  position: final_prompt_token
+  persist_dtype: float32
+  no_steering_hooks: true
+  profile_population: matched_fit_intact_triads
+
+profile:
+  metric: eff_dim_frac
+  estimator: participation_ratio_over_n_rows
+  depth_formula: hs_index / (n_hidden_states - 1)
+  early_exterior_max_depth: 0.20
+  primary_invariant: peak_location
+  margin_decision_use: descriptive_only
+  require_unique_real_peak: true
+  subsample:
+    fraction: 0.50
+    unit: intact_triad
+    stratify_by: native_source
+    seed: 20260721
+
+read_panel:
+  held_out: true
+  axes: [doubt, caution, raw_refusal]
+  minimum_auroc: 0.80
+  strict_interior_depth: [0.20, 0.85]
+  require_joint_layer: true
+  bootstrap_resamples: 2000
+  bootstrap_seed: 20260707
+  random_direction_seed: 20260707
+
+planted_location_control:
+  seed: 20260722
+  distribution: centered_high_rank_gaussian_row_space_noise
+  rms_scale_grid: [0.25, 0.5, 1, 2, 4, 8, 16]
+  require_unique_peak: true
+  min_peak_to_runner_up_ratio: 1.05
+
+secondary_sensitivities:
+  exact_original_pairs:
+    decision_use: descriptive_only
+    split_by_unanswerable_behavior: true
+
+runtime:
+  image_digest: sha256:d445632098cd2c70c115fe84d5343ff98286ac3f510a2d4c9cb488b550a3d23c
+  wsl_docker_host: unix:///var/run/docker.sock
+  forbid_cpu_model_load_wsl2: true
+  detached_after_minutes: 15
+  detached_launcher: experiments/common/launch_detached.sh
+  approvals:
+  - stage_a_gemma_baseline_generation
+  - stage_a_qwen_baseline_generation
+  - stage_b_gemma_full_depth_capture
+  - stage_b_qwen_full_depth_capture
+  stage_b_requires: [g1_pass, g2_pass, fresh_pi_approval]
+
+containment:
+  private_root: experiments/family-atlas-surface-matched-pool-control/analysis
+  committed_root: experiments/family-atlas-surface-matched-pool-control/analysis-committed
+  committed_row_manifest_fields: [row_id, role, split, native_source]
+  prohibited_committed_fields:
+  - question
+  - answer
+  - aliases
+  - generation
+  - token_ids
+  - normalized_text_hash
+  committed_outputs: id_only_manifests_and_aggregates_only
+
+data_exhaust:
+  generation_runlog:
+    persistence: incremental
+    resumable: true
+    stable_row_key: "umwp:<id>"
+    required_private_fields:
+    - row_key
+    - source
+    - native_source
+    - original_pair_id
+    - category_canon
+    - model
+    - model_revision
+    - renderer_id
+    - seed
+    - generation_text
+    - answer_value
+    - terminated_naturally
+    - n_new_tokens
+    - full_grader_dict
+    - role
+    - split
+    - triad_id
+    schema_smoke_before_sign: true
+    kill_resume_smoke_before_sign: true
+  activations:
+    private_root: analysis/exhaust/activations
+    format: safetensors_sharded
+    persistence: incremental
+    index_fields:
+    - row_key
+    - hs_index
+    - shard_key
+    - dtype
+    - shape
+    - anchor_index
+    - token_ids_sha256
+    - model
+    - model_revision
+    - tensor_sha256
+    - instrument_fingerprint
+    - capture_content_digest
+    retain_private_surface_scalars: true
+    retain_private_lexical_pc_coordinates: true
+    public_token_ids: false
+    public_raw_hashed_lexical_features: false
+  terminal_packages:
+    aggregate: required
+    row_level_generations: required_after_license_gate
+    activation_bundle_private_staging: required
+    public_activation_bundle: separate_source_and_model_license_audit
+  row_level_license:
+    source_key: umwp
+    current_data_exhaust_disposition: pending_audit
+    upstream_declared_data_license: CC-BY-SA-4.0
+    constituent_source_terms_audit_required: true
+    require_canonical_license_gate_entry: true
+    full_text_requires_attribution_and_share_alike_disclosure: true
+    fallback_disposition: license_gate_decides_text_free_or_excluded
+  publication:
+    terminal_status_required: true
+    verification_required: true
+    exact_upload_pi_approval_required: true
+    live_upload_before_terminal: false

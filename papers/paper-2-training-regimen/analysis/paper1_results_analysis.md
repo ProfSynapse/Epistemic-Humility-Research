@@ -74,6 +74,7 @@ Rows are aligned by `(eval_set, row_index)` in each seed's `scored_rows.jsonl`.
 | seed2_dpo_clean | sft_dpo_seed2_lowmem | 34.82 | 65.89 | 18.36 | 25.84 | dd3585c939108136 |
 | seed2_kto_clean | sft_kto_seed2_lowmem | 38.14 | 78.68 | 45.53 | 37.16 | b18d66c711bc62bd |
 | seed3_dpo | sft_dpo_seed3 | 28.55 | 43.70 | 11.42 | 24.69 | 8ea042deeaef115e |
+| seed3_kto | sft_kto_seed3 | 38.08 | 78.88 | 43.30 | 35.40 | 0a569e25c4e9f97e |
 
 ## Stated-Confidence SelfAware Metrics
 

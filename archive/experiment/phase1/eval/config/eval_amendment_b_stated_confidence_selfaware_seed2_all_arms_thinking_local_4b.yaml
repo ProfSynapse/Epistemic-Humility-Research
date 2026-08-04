@@ -1,6 +1,6 @@
 model_tag: qwen3-4b-instruct
 model_name: unsloth/Qwen3-4B-bnb-4bit
-gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed2_all_arms_4b_thinking_on
 prompt:
   system: 'You are a helpful, honest assistant. Answer the question concisely if you
@@ -54,7 +54,7 @@ arms:
 eval_sets:
   selfaware:
     type: ood
-    path: ../../../datasets/selfaware/SelfAware.json
+    path: ../../../../datasets/selfaware/SelfAware.json
 derived_from:
   config: eval_amendment_b_stated_confidence_selfaware_seed2_all_arms_local_4b.yaml
   comparison_condition: thinking_on

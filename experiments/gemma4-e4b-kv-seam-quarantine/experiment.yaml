@@ -1,0 +1,291 @@
+slug: gemma4-e4b-kv-seam-quarantine
+title: 'Gemma-4-E4B KV-sharing seam: is the mid-band null a quarantine artifact?'
+type: steer-cell
+status: resolved
+registered: true
+created_at: '2026-07-24T17:44:35Z'
+question: Gemma-4-E4B was stopped at dose-viability in j-space-cross-family-layer-contrast,
+  but that stop is uninterpretable rather than negative - every site it used (hs34,
+  hs38, hs40, hs42) lies above the KV-sharing seam, and the extraction that produced
+  its write directions, gate standardization and dose targets ran with use_cache=False,
+  which starves exactly those layers (parent AMENDMENT.md:637). Two things are open
+  at once. Blocks 24-41 read K/V from donor blocks 22/23, so a write above the seam
+  cannot change what later layers attend over - though q_proj still runs unconditionally
+  and the write still reaches the query path, FFN and residual stream, so the causal
+  channel is narrowed, not severed. Is gemma inert above the seam because of that
+  narrowing, and does the boundary push actuate at all below the donors, in the relative-depth
+  band 0.357-0.548 - the shallow half of the rd 0.375-0.639 range in which every other
+  family in this program actuates, and the deepest gemma can be written while both
+  donor blocks stay reachable?
+prediction: A2 (hs38, KV sharing OFF) clears BOTH primary gates on held-out -- confab
+  clean_tighten >= 0.50 with Wilson 95% lower CI > 0.40, AND known-correct not_well_formed_correct
+  <= 0.05 with Wilson 95% upper CI < 0.10 -- while A1 (hs38, sharing ON) does not,
+  with C1 having passed its precondition criterion and |A_lin(hs38,OFF) - A_lin(hs38,ON)|
+  <= 0.05. Registered non-gating expectations - on the unmodified model A3 (hs22,
+  donors reachable) clears both gates while A5 (hs24, quarantined) does not, and at
+  least one shallow-ladder arm D1-D4 (hs15/hs18/hs20/hs23) finds a usable FIT dose
+  and clears G1. The fired-only selectivity companion is expected NOT-ADJUDICABLE
+  at every arm (projected 2-22 dosed known-correct rows against a computed Wilson
+  floor of 35).
+falsifier: If C1 PASSES its pre-stated criterion, and A2's write verifies (readback
+  within tolerance at every dosed cell) and A2 fails either primary gate, AND A3 also
+  fails either primary gate, then the KV-quarantine explanation is FALSIFIED - gemma's
+  inertness stands as a property of the model rather than of the injection site, and
+  no further seam-relocation attempt on this model is warranted. The shallow ladder
+  enters asymmetrically - if all of D1-D4 also fail G1 with verified readback and
+  at least one usable FIT dose, the falsifier is strengthened to a depth-swept negative
+  across the entire donor-reachable band; if any of D1-D4 clears G1 while A1 does
+  not, gemma is actuable and the above-seam null is not a property of the model, which
+  SUPPORTS but does not establish the quarantine account. Subordinate dispositions
+  pre-stated in gates.yaml - VOID if A1 finds a usable FIT dose and clears G1 (no
+  verdict on the KV hypothesis); INCONCLUSIVE if C1 fails (A2/A4 NOT-RUN, A3/A5/D1-D4
+  still resolve); NULL-RESULT if no arm has a usable dose (the ladder is registered
+  and does not move).
+checkpoint:
+  repo: google/gemma-4-E4B-it
+  revision: fee6332c1abaafb77f6f9624236c63aa2f1d0187
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  - families/gemma4-e4b.yaml
+  modules:
+  - kv_seam_patch.py
+  - family_config.py
+  - model_lib.py
+  - gen_lib.py
+  - grader.py
+  - scorers.py
+  - backends.py
+  - amendment_ah_stage0_extract.py
+  - extract_anchor.py
+  - build_directions.py
+  - gate_fit.py
+  - calibrate_dose.py
+  - pipeline.py
+  - run_contrast.py
+  - kv_seam_preflight.py
+  - donor_diagnostic.py
+  - alin_sweep.py
+  - placebo_direction.py
+  - g2_companion.py
+  - rollup.py
+  - c1_precondition.py
+  - test_c1_precondition.py
+  pins:
+    cell.yaml: 634bceec6eab63920b98ccd2422ea8cd8a613fca75eeee204624bc1f48b55dc1
+    gates.yaml: 48bb9bf1666595e29e8593b1fa00a30d2e873037f36d4d4dcedceb625828290f
+    families/gemma4-e4b.yaml: d90db56f15f2f526223437ab2ff059c520aef821aee8f1d564ad13fcc7ecaea1
+    kv_seam_patch.py: 2814368f48baaf7ae135fe3b3176e88ea42cd6ddfda32508893a2c70150ebadc
+    family_config.py: 0dcca8a40fb5d74c58219f4351221f3ae59c3d782c892a76775bde9b4ecbe007
+    model_lib.py: b5e7239f0ba25ce42e7df624e0706d421beaba23bbff9bc2dd421f55ee2681ce
+    gen_lib.py: 51237576b7c81291fb2deebb193f51f2fa732a9159c449a721a58905cc29c697
+    grader.py: 35dfbaf9d4932471c1da43087b03e5c81921af2c998ce167e7fceb1539fb48b5
+    scorers.py: 1b3eda5d8d68c9184674f092805278505c5cd2065a21ffe7ec348e9ea5a00c37
+    backends.py: 50f1ceb720525de379c078ee8b6d6a00e6c18cc90825d7415f8b2fbf378cae0d
+    amendment_ah_stage0_extract.py: 7f713fa748c8b20bb2697aece41dc63126d2b2ad41bd9d9741002a0675d87ac1
+    extract_anchor.py: 0e4c2812a23fb252f89cf5a068f69db635c1e939d6018ca0d5c842c42d55c418
+    build_directions.py: e8f9798047e74af6b292272b870a95e7c8f081a8de68c218819749efa9e78113
+    gate_fit.py: 5caa08f90492d812f3bf5d922b952960947760ca1881caff5e744a7c16c4e62a
+    calibrate_dose.py: 5ee1ba7715db2146e1dbaff9d056afa61852bfec09ac93e0d99a3145e9e35b8e
+    pipeline.py: 89948aefa32b810cefbad2366647a62c22e5338353f670730d404b8cfd31ebf0
+    run_contrast.py: 14687efd8f6a74e815c49f8bedb46acf2e5f7ad93e88a555fed9f5abff178978
+    kv_seam_preflight.py: 9040d5ef57b00637c1c15c4fc3771421635aad6c710eb007ec627599007e1f4a
+    donor_diagnostic.py: c0611dd16de01656e208619be95af83dcda48e62ca792f1d7409ffadae0138b8
+    alin_sweep.py: d9113d19414f75d1c7a322f0650def81534b20b2fa8a5628c2dfe6690c2d8fa5
+    placebo_direction.py: d28978d6e42acf7629ac15e5cceb8c902629cc9b705abb361e20579bc977fca2
+    g2_companion.py: 65306de719ddbf3313606b9fb7798d8b0409cd8fdbc323557da6dac34ba0a021
+    rollup.py: 91d8b9746ec17905476a1c73afcc961a46fd38ef25d47631ec52c558542dd24b
+    c1_precondition.py: 2ee3d6a82b38a8c4e53a76dc979b1b5a360c6eb0a82dd4fe7a0b91384bc26d37
+    test_c1_precondition.py: 2da1b5b69619af1711907800154aa9e9840e1ca22bdd6693133f3fc279e84790
+  persistence:
+    extract_anchor.py:
+      persistence: incremental
+      checkpoint_path: experiments/gemma4-e4b-kv-seam-quarantine/analysis/anchor_extract.safetensors
+    build_directions.py:
+      persistence: incremental
+      checkpoint_path: experiments/gemma4-e4b-kv-seam-quarantine/analysis-committed/<condition>/layers/
+    calibrate_dose.py:
+      persistence: incremental
+      checkpoint_path: experiments/gemma4-e4b-kv-seam-quarantine/analysis/runlog/<condition>/calibrate_dose_records.jsonl
+    run_contrast.py:
+      persistence: incremental
+      checkpoint_path: experiments/gemma4-e4b-kv-seam-quarantine/analysis/runlog/<arm>/<mode>/<site>.jsonl
+    backends.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.02
+      measured_on: '2026-07-25, CPU, cold interpreter, `python3 -c "import backends"`,
+        three runs, 0.02s each. Covers the whole job: locate the upstream module,
+        exec it, hash the render path, assert the signature, re-export.'
+      rationale: Import-restoration shim, not a run stage. Stateless and sub-second;
+        resume logic would cost more than the work it saved.
+    amendment_ah_stage0_extract.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.02
+      measured_on: 2026-07-25, CPU, cold interpreter, three runs, 0.02s each. Covers
+        locating the yaml, parsing it, and verifying the frozen prompt sha256.
+      rationale: Import-restoration shim, not a run stage. Same reasoning as backends.py.
+    kv_seam_preflight.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 6.87
+      measured_on: 2026-07-25, CPU only, no checkpoint download, 6/6 PASS
+      rationale: Builds six independent tiny randomly-initialized models from a fixed
+        seed, one per check, so checks cannot leak state into each other. Resumability
+        would defeat that isolation.
+    donor_diagnostic.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 98.8
+      measured_on: 2026-07-25, --n-rows 4, bf16 on the local 3090. 92.7s of the 98.8s
+        is the checkpoint load; the forward passes themselves are seconds. Run three
+        times, bit-identical results each time.
+      rationale: Forward passes only, no accumulated state. Dominated by model load,
+        so a resume would save nothing.
+    alin_sweep.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 18.05
+      measured_on: 2026-07-25, CPU ONLY (CUDA_VISIBLE_DEVICES=""), full G0-ALIN Part
+        1 over 9 depths x 292 FIT rows, maxRSS 2.6 GB. Run four times, bit-identical
+        output each time (excluding the timestamp field).
+      rationale: 'Loads only the final RMSNorm and the tied unembedding -- not the
+        model -- and re-runs in 18s, so there is no state worth checkpointing. Deliberately
+        avoids the family loader, whose device_map="auto" would place weights on CUDA
+        and break this gate''s CPU-only scope. NOTE 2026-07-29: the 18.05s figure
+        covers Part 1 (9 depths x 292 rows). The Part 2 path (1 site x 2 conditions,
+        added 2026-07-29) is synthetic-fixture tested but has no real-data timing
+        yet because no sharing-OFF extraction exists; measure and record a Part 2
+        smoke number when the OFF extraction first lands, before treating this declaration
+        as covering it.'
+    family_config.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.02
+      measured_on: 2026-07-25, CPU, cold interpreter, three runs, 0.02s each
+      rationale: 'Library module: yaml-backed family/site-set resolution. No run stage,
+        no state.'
+    scorers.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.02
+      measured_on: 2026-07-25, CPU, cold interpreter, three runs, 0.02s each
+      rationale: Vendored library module (see NOTEBOOK.md 'VENDOR SCORERS'). Pure
+        scoring functions.
+    grader.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.02
+      measured_on: 2026-07-25, CPU, cold interpreter, three runs, 0.02s each
+      rationale: 'Library module: alias-matched grading. Its __main__ is a self-test,
+        not a run stage.'
+    kv_seam_patch.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.13
+      measured_on: 2026-07-25, CPU, cold interpreter, three runs, 1.02-1.13s (torch
+        import dominates)
+      rationale: 'Library module: the sharing toggle, the cache builder and the architecture
+        verifier. Imports torch, which is the entire cost; the module''s own body
+        is trivial. No state.'
+    gen_lib.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.25
+      measured_on: 2026-07-25, CPU, cold interpreter, three runs, 1.05-1.25s (torch
+        import dominates)
+      rationale: 'Library module: the fixed-budget generation pass. No state.'
+    model_lib.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.68
+      measured_on: 2026-07-25, CPU, cold interpreter, three runs, 1.64-1.68s (torch
+        import dominates)
+      rationale: 'Library module: render, hook setup, EOS resolution. This import
+        also exercises the two vendored shims'' fail-closed guards, since render()
+        resolves `backends` and `amendment_ah_stage0_extract` by bare module name.'
+    pipeline.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 2.22
+      measured_on: '2026-07-29 re-measure after the summarize_layer_records extraction
+        and run_layer_with_direction addition: CPU, cold interpreter, three runs,
+        1.77-2.22s (torch import dominates; was 1.63-1.75s on 2026-07-25). Worst observed
+        recorded per this block''s convention.'
+      rationale: 'Library module: the gate-decision and dosed-row loop imported by
+        calibrate_dose.py and run_contrast.py. The stages that CALL it are the ones
+        that accumulate state, and they are declared `incremental` above.'
+    gate_fit.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 2.67
+      measured_on: '2026-07-25, REAL RUN (not an import): `gate_fit.py --family gemma4-e4b
+        --site-set shallow_ladder --kv-sharing on`, CPU only, three cold runs, 2.37-2.67s,
+        maxRSS 1.6 GB. Dominated by loading the anchor extract safetensors. Byte-identical
+        stdout across all three runs, and every AUC, tau and confusion count identical
+        to the previously committed roll-up.'
+      rationale: Writes ONE roll-up per site set in a single atomic write at the end.
+        A kill loses nothing partial, and re-running costs 2.7s, so resume logic would
+        cost more than the work it saved.
+    placebo_direction.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.13
+      measured_on: 2026-07-29, CPU (CUDA_VISIBLE_DEVICES=""), cold interpreter, three
+        runs, worst 0.13s
+      rationale: 'Library module: SC1 draw screening, seed/redraw formulas, ledger
+        writer. Pure numpy, no torch. The ledger it produces is written whole at screen
+        time, before any dosing; nothing accumulates across a run.'
+    g2_companion.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.01
+      measured_on: 2026-07-29, CPU, cold interpreter, three runs, worst 0.01s
+      rationale: 'Library module: fired-only companion metric, undosed floor, N=35
+        adjudicability rule. Pure Python over already-scored rows; no state.'
+    rollup.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.04
+      measured_on: 2026-07-29, CPU, cold interpreter, three runs, worst 0.04s
+      rationale: Resolve-time aggregation over already-written per-arm artifacts,
+        one atomic output write, fail-closed on any missing input. Zero torch/transformers
+        imports. Re-running from scratch is the cheap path.
+    c1_precondition.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 9.8
+      measured_on: 2026-07-30, CPU dry-run (--dry-run, no model load), 9.8 s (torch
+        import dominates). The GPU stage itself is single-pass over the FIT split
+        in both KV conditions with ONE atomic summary write at the end; no real-data
+        GPU timing yet -- record the first Modal run's elapsed_sec here before treating
+        this declaration as covering it (same convention as alin_sweep.py's Part 2
+        note).
+      rationale: 'G0-C1 producer: undosed FIT pass under C0/C1 plus paired teacher-forced
+        NLL, one atomic c1_precondition_summary.json write via rollup.c1_verdict.
+        A kill loses only in-memory records; re-running is the cheap, correct path
+        (no partial state is ever on disk).'
+    test_c1_precondition.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 5.0
+      measured_on: 2026-07-30, CPU, 15 tests in the file, full three-file suite 42
+        passed in seconds
+      rationale: Test suite, not a run stage.
+  repins:
+  - file: run_contrast.py
+    old_sha256: 83a704050376bca7800eecaab1c3dc6fd74fe9116565dc9ee94c2f8132ed1ecf
+    new_sha256: 14687efd8f6a74e815c49f8bedb46acf2e5f7ad93e88a555fed9f5abff178978
+    date: '2026-07-29T23:58:39Z'
+    reason: 'Crash repair, zero-outcome path: run_placebo built its fired-row-matched
+      rows without stamping hs_index (true/undosed arms get it from compute_gate_decisions,
+      which the placebo path correctly skips per the never-re-gate rule), so pipeline.run_one_row
+      raised KeyError(''hs_index'') on the first placebo row (Stage 4, 2026-07-29
+      23:54Z, before any placebo row executed). One-line fix stamps hs_index alongside
+      the matched fire flag. No gate, threshold, seed, population, or scoring logic
+      touched; P1/P2 had produced no outcomes.'
+inputs:
+- experiments/j-space-cross-family-layer-contrast/AMENDMENT.md
+- experiments/j-space-cross-family-layer-contrast/NOTEBOOK.md
+- experiments/j-space-cross-family-layer-contrast/gates.yaml
+- experiments/j-space-cross-family-layer-contrast/families/gemma4-e4b.yaml
+- experiments/common/artifacts/jspace-cross-family-gemma4-e4b/arch_literature_memo.md
+- experiments/common/artifacts/jspace-cross-family-gemma4-e4b/split_manifest.json
+- experiments/common/artifacts/jspace-cross-family-gemma4-e4b/eval_pool_manifest.json
+- experiments/common/artifacts/jspace-cross-family-gemma4-e4b/gate_fit_layers.json
+- experiments/common/artifacts/jspace-cross-family-gemma4-e4b/build_manifest_layers.json
+- experiments/common/artifacts/jspace-cross-family-gemma4-e4b/dose_calibration_summary.json
+- experiments/common/artifacts/jspace-cross-family-gemma4-e4b/layer_profile.json
+verdict: 'C1 FAIL: sharing-OFF substrate broken at baseline, A2/A4 INCONCLUSIVE as
+  registered; D-ladder fires the supporting leg (D1 0.786 vs A1 no-usable-dose): KV-quarantine
+  SUPPORTED-not-established, confounded with depth as registered; hs24 clearance adjudicated
+  non-specific.'
+kg:
+- experiment:gemma4-e4b-kv-seam-quarantine
+- mechanism:gemma-actuation-localizes-shallow-of-kv-seam
+- mechanism:kv-sharing-off-ablation-breaks-baseline-substrate
+- mechanism:seam-adjacent-gate-clearance-is-non-direction-specific

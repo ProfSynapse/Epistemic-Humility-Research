@@ -1,0 +1,117 @@
+{
+  "cell": "form_judge_axis_g_rescore",
+  "screen_counts_source": "/home/profsynapse/code/ehr-worktrees/form-judge/experiments/form-judge-axis-g-rescore/analysis/screen_counts.json",
+  "graded_source": "/home/profsynapse/code/ehr-worktrees/form-judge/experiments/form-judge-axis-g-rescore/analysis/form_judge_full_pool_applied.jsonl",
+  "per_arm": {
+    "a_baseline": {
+      "n_f1": 189,
+      "n_f2": 142,
+      "n_f3": 13,
+      "n_f4_explicit_idk": 16,
+      "n_f5_degenerate": 0,
+      "n_screened_in_expected": 384,
+      "n_graded_total": 344,
+      "screened_vs_graded_mismatch": true,
+      "n_non_degenerate": 360,
+      "f2_f3_share": 0.4305555555555556
+    },
+    "a_dose_0p25": {
+      "n_f1": 150,
+      "n_f2": 100,
+      "n_f3": 16,
+      "n_f4_explicit_idk": 94,
+      "n_f5_degenerate": 0,
+      "n_screened_in_expected": 306,
+      "n_graded_total": 266,
+      "screened_vs_graded_mismatch": true,
+      "n_non_degenerate": 360,
+      "f2_f3_share": 0.32222222222222224
+    },
+    "a_dose_0p5": {
+      "n_f1": 100,
+      "n_f2": 72,
+      "n_f3": 12,
+      "n_f4_explicit_idk": 176,
+      "n_f5_degenerate": 0,
+      "n_screened_in_expected": 224,
+      "n_graded_total": 184,
+      "screened_vs_graded_mismatch": true,
+      "n_non_degenerate": 360,
+      "f2_f3_share": 0.23333333333333334
+    },
+    "a_dose_0p75": {
+      "n_f1": 82,
+      "n_f2": 46,
+      "n_f3": 10,
+      "n_f4_explicit_idk": 221,
+      "n_f5_degenerate": 1,
+      "n_screened_in_expected": 178,
+      "n_graded_total": 138,
+      "screened_vs_graded_mismatch": true,
+      "n_non_degenerate": 359,
+      "f2_f3_share": 0.15598885793871867
+    },
+    "a_dose_1": {
+      "n_f1": 53,
+      "n_f2": 24,
+      "n_f3": 13,
+      "n_f4_explicit_idk": 267,
+      "n_f5_degenerate": 3,
+      "n_screened_in_expected": 130,
+      "n_graded_total": 90,
+      "screened_vs_graded_mismatch": true,
+      "n_non_degenerate": 357,
+      "f2_f3_share": 0.10364145658263306
+    },
+    "a_placebo_0p5": {
+      "n_f1": 213,
+      "n_f2": 154,
+      "n_f3": 14,
+      "n_f4_explicit_idk": 12,
+      "n_f5_degenerate": 0,
+      "n_screened_in_expected": 388,
+      "n_graded_total": 381,
+      "screened_vs_graded_mismatch": true,
+      "n_non_degenerate": 393,
+      "f2_f3_share": 0.42748091603053434
+    },
+    "a_placebo_1": {
+      "n_f1": 221,
+      "n_f2": 147,
+      "n_f3": 10,
+      "n_f4_explicit_idk": 9,
+      "n_f5_degenerate": 1,
+      "n_screened_in_expected": 390,
+      "n_graded_total": 378,
+      "screened_vs_graded_mismatch": true,
+      "n_non_degenerate": 387,
+      "f2_f3_share": 0.40568475452196384
+    }
+  },
+  "axis_g": {
+    "verdict": "BINARY",
+    "baseline_share": 0.4305555555555556,
+    "per_dose": {
+      "a_dose_0p25": {
+        "share": 0.32222222222222224,
+        "clears_floor": true,
+        "clears_over_baseline": false,
+        "both_legs": false
+      },
+      "a_dose_0p5": {
+        "share": 0.23333333333333334,
+        "clears_floor": true,
+        "clears_over_baseline": false,
+        "both_legs": false
+      },
+      "a_dose_0p75": {
+        "share": 0.15598885793871867,
+        "clears_floor": true,
+        "clears_over_baseline": false,
+        "both_legs": false
+      }
+    },
+    "share_floor": 0.15,
+    "min_over_baseline": 0.1
+  }
+}

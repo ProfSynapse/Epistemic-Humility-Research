@@ -160,6 +160,78 @@ The search index is local state under `.kg/`. It is rebuilt lazily by
 `kg_search.py`, so it should not be committed. Dot-directories are skipped by
 default except `.skills/`, which is indexed as procedural memory.
 
+Every markdown note with frontmatter also gets a short **identity chunk**
+(`symbol_type = "frontmatter"`) carrying its `title`, its `aliases` and its
+`kg.id`. Section chunks begin at the first heading, so without it the whole
+frontmatter block — including the aliases the vault's retrieval convention
+depends on — sits in no chunk and cannot be found at all. Consequences worth
+knowing when you write a note:
+
+- **Aliases are retrieval surface.** An alias is how a future session will
+  phrase the query. Write the names people will actually type, including the
+  vault's usual synonym for the concept.
+- **A parenthetical in an alias is treated as annotation, not name.** Writing
+  `doubt direction (retired name, see other.md)` indexes `doubt direction` as
+  the name; the rest stays searchable as body text but cannot claim a title
+  match. This stops a cross-reference inside an alias from hijacking the phrase
+  boost belonging to the note it points at.
+- **Tags are deliberately not in the identity chunk.** They are a coarse
+  grouping shared by dozens of notes, and in a chunk this short bm25 would
+  weight a tag as heavily as a title. Put anything you want found into `title`
+  or `aliases`.
+
+## Ranking Changes Are Gated By The Regression Suite
+
+Any edit to the scoring path in `kg_search.py` — bm25 handling, `exact_boost`,
+`final_rank_adjustment`, `expand_graph`, the lane adapter, `diversify` — must be
+run against the ranking regression suite before and after:
+
+```bash
+python3 .skills/knowledge-graph/scripts/kg_rank_regress.py --save /tmp/before.json
+# ...make the change, then:
+python3 bin/sync_skills.py --write
+python3 .skills/knowledge-graph/scripts/kg_rank_regress.py --compare /tmp/before.json
+```
+
+Cases live in `.skills/knowledge-graph/tests/ranking_regressions.yaml`, one per
+query, asserting a note lands within a top-k band. Three kinds:
+
+- `target` — the defect a fix was written to close. Must pass afterwards.
+- `guard` — a query that already ranked well. Pins existing behaviour so a fix
+  for one class of query cannot quietly break another.
+- `blocked` — the ranker cannot reach the target because the note lacks the
+  query's vocabulary. Reported every run but does not gate the suite; the fix is
+  an alias on the note, not a scorer tweak.
+
+Rules that keep the suite honest:
+
+- Add a `target` case with its BEFORE rank recorded before changing any scoring
+  code, never after the fact.
+- Widening a `guard` band is allowed only with a `note:` saying what displaced
+  the target and why the new ordering is better. Silent band widening is how a
+  ranking suite stops meaning anything.
+- The spec file is excluded from the index (`IGNORED_PATHS` in `kg_index.py`)
+  because it holds the queries and their answers together.
+- The runner probes at `--limit 10`, matching `bin/search`. The FTS seed set is
+  sized off the limit, so a different limit measures a ranking nobody sees.
+
+## Reading the graph to answer an existence question
+
+When adjudicating "has X ever happened / actuated / passed", do not stop at
+the default `--limit 10` and the first query you typed. Widen the limit and
+vary the query terms (paraphrase the question a few different ways) before
+concluding absence: a top hit ranked above the real answer, or a query that
+happens to match the wrong node's title, produces a confident wrong answer
+that reads identically to a correctly-exhausted search. Passing
+`--include-deprecated` is sometimes the difference: a stale claim can still
+outrank its successor if the successor's supersession edge was never added
+(see Supersession above). The knowledge graph is a navigation aid, not the
+citable record: for experimental facts (a cell's result, a verdict, a gate
+outcome) the governed doc is the only citable surface. See "Citing
+experimental facts: where the truth lives at each lifecycle stage" in
+`.skills/experiment-runner/reference/amendment-vs-lab-notebook.md` for which
+section of that doc to cite at which lifecycle stage.
+
 Windows gotcha: when validating a repo-local vault from outside the vault root,
 prefer an absolute `--root` path such as
 `python .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py --root F:\Code\Epistemic-Humility-Research\library`.

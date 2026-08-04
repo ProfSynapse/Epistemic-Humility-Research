@@ -40,6 +40,8 @@
 <text x="343.8" y="136.6" font-family="Arial, sans-serif" font-size="10" text-anchor="start" fill="#202020">seed2_kto_clean</text>
 <circle cx="154.4" cy="267.0" r="8" fill="#4f78a8" stroke="#202020" opacity="0.85"/>
 <text x="166.4" y="259.0" font-family="Arial, sans-serif" font-size="10" text-anchor="start" fill="#202020">seed3_dpo</text>
+<circle cx="320.2" cy="143.9" r="8" fill="#b85c38" stroke="#202020" opacity="0.85"/>
+<text x="332.2" y="135.9" font-family="Arial, sans-serif" font-size="10" text-anchor="start" fill="#202020">seed3_kto</text>
 <circle cx="648" cy="110" r="7" fill="#6f5f9f" stroke="#202020"/>
 <text x="664.0" y="114.0" font-family="Arial, sans-serif" font-size="12" text-anchor="start" fill="#202020">Merged SFT</text>
 <circle cx="648" cy="138" r="7" fill="#4f78a8" stroke="#202020"/>

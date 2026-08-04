@@ -1,0 +1,76 @@
+{
+  "cell": "form_judge_axis_g_rescore",
+  "count_only": false,
+  "coverage": {
+    "arms_found": {
+      "a_baseline": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/write-direction-naming-battery/analysis/runlog_form_merged/a_baseline.jsonl",
+      "a_dose_0p25": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/write-direction-naming-battery/analysis/runlog_form_merged/a_dose_0p25.jsonl",
+      "a_dose_0p5": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/write-direction-naming-battery/analysis/runlog_form_merged/a_dose_0p5.jsonl",
+      "a_dose_0p75": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/write-direction-naming-battery/analysis/runlog_form_merged/a_dose_0p75.jsonl",
+      "a_dose_1": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/write-direction-naming-battery/analysis/runlog_form_merged/a_dose_1.jsonl",
+      "a_placebo_0p5": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/write-direction-naming-battery/analysis/runlog_form_merged/a_placebo_0p5.jsonl",
+      "a_placebo_1": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/write-direction-naming-battery/analysis/runlog_form_merged/a_placebo_1.jsonl"
+    },
+    "arms_missing": [],
+    "n_rows_by_arm": {
+      "a_baseline": 400,
+      "a_dose_0p25": 400,
+      "a_dose_0p5": 400,
+      "a_dose_0p75": 400,
+      "a_dose_1": 400,
+      "a_placebo_0p5": 400,
+      "a_placebo_1": 400
+    }
+  },
+  "per_arm": {
+    "a_baseline": {
+      "n_f4_explicit_idk": 16,
+      "n_f5_degenerate": 0,
+      "n_screened_in": 384,
+      "n_total": 400
+    },
+    "a_dose_0p25": {
+      "n_f4_explicit_idk": 94,
+      "n_f5_degenerate": 0,
+      "n_screened_in": 306,
+      "n_total": 400
+    },
+    "a_dose_0p5": {
+      "n_f4_explicit_idk": 176,
+      "n_f5_degenerate": 0,
+      "n_screened_in": 224,
+      "n_total": 400
+    },
+    "a_dose_0p75": {
+      "n_f4_explicit_idk": 221,
+      "n_f5_degenerate": 1,
+      "n_screened_in": 178,
+      "n_total": 400
+    },
+    "a_dose_1": {
+      "n_f4_explicit_idk": 267,
+      "n_f5_degenerate": 3,
+      "n_screened_in": 130,
+      "n_total": 400
+    },
+    "a_placebo_0p5": {
+      "n_f4_explicit_idk": 12,
+      "n_f5_degenerate": 0,
+      "n_screened_in": 388,
+      "n_total": 400
+    },
+    "a_placebo_1": {
+      "n_f4_explicit_idk": 9,
+      "n_f5_degenerate": 1,
+      "n_screened_in": 390,
+      "n_total": 400
+    }
+  },
+  "runlog_dir": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/write-direction-naming-battery/analysis/runlog_form_merged",
+  "totals": {
+    "n_f4_explicit_idk": 795,
+    "n_f5_degenerate": 5,
+    "n_screened_in": 2000,
+    "n_total": 2800
+  }
+}
