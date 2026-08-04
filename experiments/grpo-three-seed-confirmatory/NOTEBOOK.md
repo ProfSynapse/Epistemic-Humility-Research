@@ -6,6 +6,245 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-04 — grpo_v2 seed-2 training COMPLETE (lead-verified); merge + bounded smoke G0 PASS; full eval LAUNCHED
+
+Lead confirmed training exited 0 at 21:21:38Z (lead-verified, not re-derived by
+this harness): 1861 steps, final epoch 0.9941 at last reward log, final_loss
+0.0768, final reward 0.9071 at step ~1850 (well above seed-1's final 0.617 —
+recorded plainly, no interpretation), `final_model/` 268M with
+`adapter_model.safetensors`, run dir `20260804_131151`, wall ~8h10m (measured
+`train_runtime_seconds` 29359.363 = 8.155h) against the 7.22h estimate — counted
+against budget below. This harness independently re-verified the same evidence
+from artifacts: `final_model/adapter_model.safetensors` 264,308,896 bytes
+present; `training_lineage.json` shows `final_step: 1861`, `final_loss: 0.0768`,
+`train_examples: 14888`, `seed: 2`; log tail confirms `train_end` at step 1861
+and `rewards/combined_reward/mean: 0.9071195...` at the last logged step. Note:
+this GRPO run's `training_lineage.json` carries no top-level `runtime` key at
+all (unlike SFT/DPO/KTO's `runtime.status`/`runtime.time` fields) — a trainer
+format difference, not missing data; completion evidence is exit 0 + artifacts
++ log `train_end` event instead.
+
+**Merge.** Container `eh-grpo3seed-2-clean_sft_grpo_v2-merge-20260804T212326Z`,
+exit 0. Mechanism identical to every prior merge in this chain
+(`shared.model_loading.merge.merge_lora_checkpoint`, `max_seq_length=2048,
+load_in_4bit=True`). Output-path naming convention confirmed against the
+seed-1 precedent
+(`archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_v2_merged_seed1_sanity_local_4b.yaml:5`):
+`<run_path>/Qwen3-4B-clean-sft-grpo-v2/merged-16bit`. Output at
+`scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed2_full/20260804_131151/Qwen3-4B-clean-sft-grpo-v2/merged-16bit/`:
+`config.json` present, 2 safetensors shards (4967215360 + 3077766632 bytes =
+7.6G total). Disk 231G -> 224G free. Ran `scripts/ops/prune_runtime.sh stage`
+after (319.4MB reclaimed; also removed the long-idle unrelated `cc-test-pg`
+postgres container, already exited before the prune ran — not part of this
+chain, no interference).
+
+**Bounded smoke (G0 `bounded_smoke_coverage`).** Config
+`experiments/grpo-three-seed-confirmatory/configs/eval_grpo3seed_response_confidence_selfaware_clean_sft_grpo_v2_seed2_merged_smoke_local_4b.yaml`,
+cloned from the seed-1 GRPO-v2-merged sanity config (path above) — evaluates
+the merged GRPO v2 checkpoint directly (no adapter), same pattern as the
+DPO/KTO merged-smoke sanity checks earlier in this chain; offset 2240 / limit
+192 unchanged. Written to worktree + canonical. Container
+`eh-grpo3seed-2-clean_sft_grpo_v2-smoke-20260804T212816Z`, exit 0. Results:
+`archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_v2_seed2_merged_smoke_4b/clean_sft_grpo_v2_merged_seed2_smoke__selfaware/`
+(`metrics.json`, `scored_rows.jsonl` 192 lines, `bootstrap_ci.json` all
+present).
+
+Verified numbers (n=192, 97 known / 95 unknown): 192/192 rows scored, 192/192
+stated-confidence coverage (`n_with_confidence` 192, `n_missing_confidence` 0),
+`enable_thinking` uniformly `False` (all 192 rows checked), 0 thinking-tag-
+substring hits in `generated_answer` (field-checked only, no content read, per
+data containment). Behavioral: `refusal_recall_pct` 93.68,
+`answer_on_unknown_pct` 6.32, `over_refusal_pct` 75.26, `refusal_rate_pct`
+84.38, `correct_on_known_pct` 50.0, `truthful_pct` 52.6. Confidence:
+`mean_stated_confidence` 0.818065, `brier_vs_response_appropriateness`
+0.329849.
+
+G0 `bounded_smoke_coverage`: PASS (raw numbers reported; adjudication is
+lead-only). Ran `scripts/ops/prune_runtime.sh stage` again (168.9MB reclaimed).
+
+**Full eval config written** (worktree + canonical, byte-identical):
+`experiments/grpo-three-seed-confirmatory/configs/eval_grpo3seed_response_confidence_selfaware_clean_sft_grpo_v2_seed2_full_local_4b.yaml`,
+cloned from the seed-1 "corrected_base_full" precedent
+(`archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml`)
+— confirmed via that precedent that `clean_sft_grpo_v2`'s terminal/paper-2
+number is the GRPO v2 LoRA evaluated on the merged **clean-SFT base**
+(`sft_schema_clean_seed2_full/20260731_232307/.../merged-16bit`), with the
+GRPO v2 adapter at `arms[].adapter` pointing at
+`.../schema_clean_sft_grpo_v2_seed2_full/20260804_131151/final_model` — NOT
+the merged-GRPO-v2 checkpoint above, which exists solely as the bounded-smoke
+sanity target and the stage-3 training source. Full file, no offset/limit
+override, per cell.yaml `eval_population: selfaware-full-3369`.
+
+Preflight before launch: digest match, `df -h /` 224G free, GPU idle, `docker
+ps -a` clean of chain containers.
+
+**Launched (LONG container, lead notified immediately per contract):**
+`eh-grpo3seed-2-clean_sft_grpo_v2-full_eval-20260804T213111Z`, started
+2026-08-04T21:31:11Z. Expected ~41min per seed-1 precedent (E note
+`:1613->:1648`). Background `docker wait` watch set; lead holds an independent
+watch. **HOLDING** after this completes and is verified — stage-3 stacks
+remain unreleased until the lead adjudicates G1.
+
+**Full eval COMPLETE (lead-verified, independently re-confirmed by this
+harness from `metrics.json` before recording):**
+`eh-grpo3seed-2-clean_sft_grpo_v2-full_eval-20260804T213111Z` exited 0 at
+22:00:21Z (started 21:31:11Z, ~29m). Results at
+`archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_v2_seed2_full_4b/clean_schema_sft_grpo_v2_seed2__selfaware/`
+(`metrics.json`, `scored_rows.jsonl` 3369 lines, `bootstrap_ci.json` all
+present). n=3369 (2337 known / 1032 unknown), 100% stated-confidence coverage.
+`refusal_recall_pct` 94.28, `answer_on_unknown_pct` 5.72, `over_refusal_pct`
+66.75, `refusal_rate_pct` 75.19, `correct_on_known_pct` 54.05, `truthful_pct`
+41.35. Confidence: `mean_stated_confidence` 0.819148,
+`brier_vs_response_appropriateness` 0.405945.
+
+**LEAD ADJUDICATION (recorded verbatim, this harness does not adjudicate):**
+G1 seed-2 leg PASS — `answer_on_unknown_pct` 10.08 -> 5.72 (−4.36pp, floor
+3.0pp) and `refusal_recall_pct` 89.92 -> 94.28 (+4.36pp, floor 3.0pp), both
+conditions met vs the same-seed base (`clean_schema_sft_merged_seed2`).
+Overall G1 remains **OPEN** pending seed 3 per the registered two-seed
+requirement. Seed-1 comparison effect was ±6.39pp; this seed's ±4.36pp is
+attenuation within the direction-plus-floor design, not a design violation.
+
+Queue item 4 (grpo_v2 seed-2: train + merge + smoke + full eval) is now fully
+closed. Ran `scripts/ops/prune_runtime.sh stage` after merge and after smoke
+(see entries above). **STAGE-3 STACKS RELEASED** by the lead, serial per
+cell.yaml `launch_order`: `clean_sft_dpo_grpo`, `clean_sft_kto_grpo`,
+`clean_sft_grpo_dpo`, `clean_sft_grpo_kto`. Sources per cell.yaml (read
+directly, not from memory): `clean_sft_dpo_grpo` from merged `clean_sft_dpo`;
+`clean_sft_kto_grpo` from merged `clean_sft_kto`; `clean_sft_grpo_dpo` and
+`clean_sft_grpo_kto` both from merged `clean_sft_grpo_v2` (the checkpoint
+merged above). Seed-2 merged DPO/KTO sources re-verified intact on disk before
+building new configs:
+`scratch/schema_response_confidence/runs/schema_clean_sft_dpo_seed2_full/20260801_183028/Qwen3-4B-clean-sft-dpo/merged-16bit/`
+and
+`scratch/schema_response_confidence/runs/schema_clean_sft_kto_seed2_full/20260801_213332/Qwen3-4B-clean-sft-kto/merged-16bit/`.
+
+Wrote seed-2 configs for the first two stacks (worktree + canonical,
+byte-identical), cloned from the seed-1 precedents
+(`archive/experiment/phase1/grpo/configs/grpo_clean_sft_dpo_grpo_seed1_full.yaml`,
+`grpo_clean_sft_kto_grpo_seed1_full.yaml`) with the same three changes as the
+grpo_v2 seed-2 config: seed-2 merged source model_name, `lora.random_state: 2`,
+and the corrected absolute reward-file path (same stale-path bug, same fix,
+confirmed present in both seed-1 templates before writing):
+`experiments/grpo-three-seed-confirmatory/configs/grpo_clean_sft_dpo_grpo_seed2_full.yaml`
+and `grpo_clean_sft_kto_grpo_seed2_full.yaml`.
+
+**Stack 1 — `clean_sft_dpo_grpo`.** `--dry-run` validated cleanly before
+launch: model loaded from the seed-2 DPO merged source, reward
+`epistemic_humility_reward` loaded, 14888-example dataset formatted, LoRA
+66,060,288 trainable params, batch 32x1 / num_generations 4 / LR 5e-6 matched
+cell.yaml. **Launched (LONG container, lead notified immediately):**
+`eh-grpo3seed-2-clean_sft_dpo_grpo-train-20260804T220342Z`, started
+2026-08-04T22:03:43Z, running. Expected ~4.94h per seed-1 measured precedent (F
+note :350->:373). Background `docker wait` watch set; lead holds an
+independent watch.
+
+This NOTEBOOK draft is final through the grpo_v2 closeout above (everything
+above this line and up through the "grpo_v2 seed-2 training COMPLETE" heading)
+— confirmed to the lead for commit.
+
+### 2026-08-04 — Fifth executor: queue item 4 (clean_sft_grpo_v2 seed-2 training) LAUNCHED, HOLDING (stage-3 stacks not released)
+
+Fifth execution harness. Read NOTEBOOK.md, AMENDMENT.md, cell.yaml, gates.yaml
+per dispatch before touching anything.
+
+**Independent state re-verification (not trusted from handoff):** digest
+`sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772` matched
+exactly via `docker images --digests` and inside-container `nvidia-smi` (RTX
+3090, 0MiB/24576MiB); `df -h /` 233G free; host `nvidia-smi` idle; `docker ps -a`
+showed 0 running chain containers (one unrelated `cc-test-pg`, itself exited by
+this point). Seed-2 stage-1 merged source
+(`scratch/schema_response_confidence/runs/sft_schema_clean_seed2_full/20260731_232307/Qwen3-4B-bnb-4bit/merged-16bit`)
+re-confirmed intact: `config.json` + 2 safetensors shards. GRPO dataset row
+counts re-verified with newline-only byte counting (not `str.splitlines`):
+`grpo_train.jsonl` 14888, `grpo_dev.jsonl` 1655 — both match cell.yaml
+`frozen_audit` exactly.
+
+**Bug found and fixed before launch (lead notified in full detail via
+SendMessage):** the seed-1 GRPO v2 config template
+(`archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_full.yaml`)
+carries a stale pre-archive-move relative path for `rewards.custom.file`
+(`"../../../experiment/phase1/grpo/humility_reward_v2.py"`). `base_dir` for
+that field resolves as `Path(train_grpo.py).parent` =
+`synaptic-tuner/Trainers/grpo`, so the relative path resolves to
+`<repo>/experiment/phase1/grpo/humility_reward_v2.py`, which is missing
+post-move; only `archive/experiment/phase1/grpo/humility_reward_v2.py` exists.
+Same bug class as the five stale argparse defaults already fixed in the
+dataset builder on this branch (2026-07-31 entry below). Confirmed via
+`synaptic-tuner/Trainers/grpo/src/rewards.py:609-613`: an unresolved file
+leaves `components` empty and raises `ValueError("No reward components
+loaded")` at trainer startup — a loud fail, not silent corruption, but would
+have blocked this launch had it not been caught first. All four seed-1 GRPO
+configs on disk carry the same stale path; only relevant to new seed-2/3
+configs since seed-1 outputs are frozen historical data, never re-run.
+
+Also confirmed (not previously stated anywhere in this chain's docs):
+`train_grpo.py`'s argparse does **not** accept `--no-dashboard`/`--quiet`
+(only `--config`/`--dry-run`/`--resume-from-checkpoint`/`--model-name`/
+`--dataset-name`/`--dataset-file`/`--local-file`/`--use-gspo`/
+`--pivot-profile-only`). cell.yaml's generic `train_flags: [--no-dashboard,
+--quiet]` does not apply to the GRPO trainer; launched with `--config` only,
+matching the exact seed-1 launch precedent in the E session note
+(`eh-clean-sft-grpo-v2-full-20260624a ... train_grpo.py --config
+.../grpo_schema_clean_sft_merged_seed1_v2_full.yaml`).
+
+**Config written** (worktree + canonical, byte-identical):
+`experiments/grpo-three-seed-confirmatory/configs/grpo_schema_clean_sft_merged_seed2_v2_full.yaml`,
+a seed-2 clone of the seed-1 template with exactly three changes, none
+touching a cell.yaml/gates.yaml pinned value: (1) `model.model_name` points at
+the seed-2 merged source above, (2) `lora.random_state: 2` per the standing
+lead ruling (2026-07-31 entry below) that random_state mirrors seed, (3)
+`rewards.custom.file` corrected to the absolute in-container path
+`/workspace/repo/archive/experiment/phase1/grpo/humility_reward_v2.py` — same
+unmodified reward file (`epistemic_humility_reward` confirmed defined at that
+path), only the path corrected. All other fields (LoRA r32/alpha64/dropout0.05,
+batch 32 / grad-accum 1 / num_generations 4 / max_prompt 512 / max_completion
+128 / temperature 1.35 / LR 5e-6 / beta 0.1 / 1 epoch / bf16 / adamw_8bit)
+copied verbatim from the seed-1 precedent, matching cell.yaml `arms:
+clean_sft_grpo_v2`.
+
+**Validation before real launch.** Ran `--dry-run` (full model + LoRA + reward
++ dataset load, no training step, ~90s, negligible GPU compute) to verify the
+path fix actually resolves before committing ~7h of GPU time: passed clean —
+printed `custom: epistemic_humility_reward (weight=1.0)`, dataset loaded 14888
+examples, LoRA 66,060,288 trainable params (2.91%), batch 32x1 / num_generations
+4 / LR 5e-6 all matched cell.yaml. This created an empty root-owned run dir at
+`scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed2_full/20260804_131028/`
+(empty `checkpoints/`/`logs/` only, no `training_lineage.json` or adapter) that
+this harness's own permission system denied `rm` on (not a filesystem
+permission issue — root owns it, harness declined the delete) — harmless, has
+no real artifacts, flagged so it is not confused with the real run's
+timestamped directory.
+
+**Launched (LONG container, lead notified immediately with the exact name
+before any other action, per contract):**
+`eh-grpo3seed-2-clean_sft_grpo_v2-train-20260804T131127Z`, started
+2026-08-04T13:11:27Z, running at time of writing. Expected ~7.22h per seed-1
+measured precedent (E note `train_runtime_seconds: 25983.384`). Command:
+
+```
+docker run -d --name eh-grpo3seed-2-clean_sft_grpo_v2-train-20260804T131127Z \
+  --user root --gpus all --ipc=host \
+  -e HF_HOME=/workspace/repo/.cache/hf \
+  -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub \
+  -v /home/profsynapse/code/Epistemic-Humility-Research:/workspace/repo \
+  -w /workspace/repo \
+  --entrypoint python3 \
+  unsloth/unsloth:latest \
+  synaptic-tuner/Trainers/grpo/train_grpo.py \
+  --config experiments/grpo-three-seed-confirmatory/configs/grpo_schema_clean_sft_merged_seed2_v2_full.yaml
+```
+
+Background `docker wait` watch set as best-effort redundancy; lead holds the
+primary watch. `docker inspect` will be checked explicitly at the start of
+every turn regardless of wake, per the standing host note above (docker-wait
+wake unreliable for long containers on this host).
+
+Cumulative GPU-compute-hours: ~4.5h carried from handoff + dry-run (~90s,
+negligible) + this training run in progress (budgeted 7.22h). **HOLDING per
+dispatch** — this is queue item 4; the four stage-3 stacks remain unreleased
+until the lead instructs.
+
 ### 2026-08-03 — HANDOFF STATUS for successor harness: queue items 1-3 COMPLETE, HOLDING before item 4 (grpo_v2 launch) for WSL maintenance window
 
 **This harness will be terminated by a user-initiated `wsl --shutdown` and will
