@@ -1079,3 +1079,19 @@ Correction to the prior entry (5f59b127): the DPO trainer DOES have a `--dry-run
 Closeout released to executor6: stage prune + precheck, merge, 192-row bounded smoke on the merged checkpoint, full 3,369-row eval with the adapter on the seed-2 grpo_v2 merged base per lineage convention. Full eval lead-watched.
 
 Remaining after stack 3: grpo_kto (KTO on the same grpo_v2 merged source, registered bs12/ga1/lr1e-6/beta0.1), then seed-2 chain complete: G2 becomes computable and seed 3 begins.
+
+## 2026-08-05 ~13:45Z — Stack 3 (clean_sft_grpo_dpo, seed 2) CLOSED; stack 4 (grpo_kto) released
+
+Full eval container `eh-grpo3seed-2-clean_sft_grpo_dpo-full_eval-20260805T103907Z` exited 0 at ~10:45Z. **Lead watch notification arrived ~3h late** (container had exited 3 hours before the wake fired); GPU sat idle in that window. Recorded as a wake-latency instance against the watch architecture (`.skills/experiment-runner/reference/local-runtime.md`): lead-side `docker wait` remains the most reliable primary signal available, but it is not latency-bounded. Idle time does not count against the compute-hours guardrail; no artifact impact.
+
+Lead verified from `results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_dpo_seed2_full_4b`:
+
+- n=3369 (2337 known / 1032 unknown), answer coverage 3369/3369, stated-confidence 3369/3369, thinking-tag hits 0. Row `model` field uniformly `qwen3-4b-clean-sft-grpo-v2-merged-seed2` — correct lineage (adapter on seed-2 grpo_v2 merged base).
+- Headline: refusal_recall 94.67, answer_on_unknown 5.33, over_refusal 65.98, truthful 41.53, correct_on_known 53.08, refusal_rate 74.77.
+- Bounded smoke on the newly-merged checkpoint: 192/192 answer, 192/192 confidence, 0 thinking-tag hits, enable_thinking uniformly False, lead re-derived independently. G0 bounded-smoke leg PASS.
+
+G0 for this cell: PASS (coverage + lineage + frozen count 14943 per training_lineage.json).
+
+Navigation note for G2 (NOT an adjudication — G2 is adjudicated only when all four stacks close, from the gates.yaml criteria): at seed 2, `grpo_dpo` (94.67 / 5.33 / over-refusal 65.98) does not reproduce the seed-1 over-refusal relief relative to same-seed `grpo_v2` (94.28 / 5.72 / 66.75) — the over-refusal delta is −0.77pp here. Seed-1 Amendment G recorded a larger relief on that comparison. All five seed-2 GRPO-terminal arms now sit in a 93.3-94.7 recall band with over-refusal 64.2-66.8, i.e. a tight cluster regardless of stage order. Whether that constitutes a G2 PASS/FAIL is deferred to the gate criteria after stack 4.
+
+Stack 4 released to executor6: clean_sft_grpo_kto — KTO on the seed-2 grpo_v2 merged source, registered values bs12 / ga1 / lr1e-6 / beta0.1 with the authorized step-250 VRAM recheck and batch-8 fallback. Dry-run first per the endorsed standing practice. Expected ~1h40m per the seed-2 KTO precedent. Lead holds the training watch.
