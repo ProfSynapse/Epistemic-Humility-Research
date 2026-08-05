@@ -3115,7 +3115,7 @@
         "pins": {
           "cell.yaml": "a934232054281fda8ba060045a369c22227bea1fe90df4795d204d0dbe5c421c",
           "configs/eval_selfaware_full_seed1_rerun_4b.yaml": "68d86a0f47bf5b3ed97695c6450697e536d115b7939402c53598446df506089f",
-          "gates.yaml": "70f6665b3aabdd77ee3154c36909acbd43c2992f7ed8c483d2033d6654b9b979",
+          "gates.yaml": "93d1ff8c05b31cd5fa496a2503c3db48f96e1200b5711d135bbd4307207eecea",
           "scripts/audit_data_provenance.py": "c5ceb60042750c4aabc590d4be8e4af443fd4785f734bbfa84370d36eb4009d7",
           "scripts/data_builds.yaml": "74dfde53eb66fd462b94657686b40307ac071ec69874cb647c870f6022d6dad6"
         },
@@ -3126,6 +3126,13 @@
             "new_sha256": "70f6665b3aabdd77ee3154c36909acbd43c2992f7ed8c483d2033d6654b9b979",
             "old_sha256": "44013bc932270b3b747d9ff30064d7e0408f3eddce934124e9d8b4d91fd8d50e",
             "reason": "Governed housekeeping, PI-authorized 2026-08-05: gates.yaml still declared 'status: proposed' with null adjudicated_by/adjudicated_date after being signed 2026-08-01, so the file read as unsettled to anyone opening it directly. Corrected the sign-time metadata and header prose ONLY - no threshold, band, tolerance, condition, or decision rule was altered (verified by diff). Also recorded, deliberately left unresolved in the file: this gates.yaml decision_rule and AMENDMENT.md section 10 item 5 disagree on whether a single out-of-band METRIC puts a CELL outside; that needs a governed revision before adjudication. Experiment is pre-run with zero artifacts, which is repin's intended window."
+          },
+          {
+            "date": "2026-08-05T15:07:55Z",
+            "file": "gates.yaml",
+            "new_sha256": "93d1ff8c05b31cd5fa496a2503c3db48f96e1200b5711d135bbd4307207eecea",
+            "old_sha256": "70f6665b3aabdd77ee3154c36909acbd43c2992f7ed8c483d2033d6654b9b979",
+            "reason": "Governed revision, PI-approved 2026-08-05 ('thats fine for the amendment text governing'): g1_replication_band decision_rule conflicted with AMENDMENT.md section 10 item 5 on whether a single out-of-band METRIC puts a CELL outside. The file's rule counted metrics within an arm and explicitly deferred the question as 'a sign-time decision' never closed; the amendment text was adjudicated and PI-approved 2026-08-01. Amendment text now governs: a cell is outside when ANY ONE of its four metrics is outside its band. decision_rule restated to match, decision_rule_revision_note added recording what was superseded, per-gate status proposed->signed, header open-item note replaced with the resolution. NO band, tol, cohort value, one-question resolution, metric, denominator, or G0/G2 check was altered (verified by diff: zero changed band/tol/cohort lines). Resolved BEFORE launch with zero rerun artifacts in existence, so no result informed the choice; this is the stricter of the two readings."
           }
         ]
       },
