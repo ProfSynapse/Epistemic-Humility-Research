@@ -1279,3 +1279,15 @@ The DPO trainer's defaults DO equal the registered values, so the pattern establ
 Verification to perform at closeout: confirm this run's `training_lineage.json` lora block reads rank 32 / alpha 64 / dropout 0.05, not the trainer default.
 
 Step-250 VRAM recheck (authorized batch-8 fallback) is lead-watched via a single-fire JSONL watch; the fallback will be reported and decided, never taken silently.
+
+## 2026-08-05 ~20:08Z — Seed-3 KTO step-250 capacity recheck: LEAD RULING, fallback NOT taken
+
+The `clean_sft_kto` arm carries a pre-registered `capacity_watch` in cell.yaml: at a step-250 recheck, if VRAM pins, fall back to batch 8. That recheck is now due and adjudicated.
+
+Reading at step 250 (from the run's own JSONL, `schema_clean_sft_kto_seed3_full/20260805_195738`): **gpu_memory_reserved 17.398 GB, 72.49% reserved, `oom_risk_level: low`**, loss 0.4624, 606 s elapsed.
+
+Seed-2 precedent for the same arm: 12.055 GB / 50.23% at step 300 with `oom_risk_level: moderate`, and a whole-run peak of **95.92%** — that run completed clean at batch 12.
+
+**RULING: the fallback is NOT taken. Training continues at the registered batch 12.** The trigger condition is VRAM *pinning*, and 72.49% reserved with the profiler reporting low OOM risk is not pinning. The seed-2 run reached 95.92% on this same arm and finished, so the registered batch is demonstrably viable here. Taking a pre-registered fallback that the condition does not call for would be an unforced divergence from the registered value, not a safety measure.
+
+Recorded honestly: seed 3 is running HIGHER at this point in the run than seed 2 was (72.49% at step 250 vs 50.23% at step 300). If the trajectory scales similarly it will exceed seed-2's 95.92% peak, and the neighbouring stage-3 arm `clean_sft_grpo_kto` already peaked at 99.2% at seed 2. So an OOM later in this run is a live possibility. That does not change the step-250 ruling, which is made on the step-250 condition as registered. If the run does OOM, that is a G0 `training_completed_clean` failure handled the same way as the seed-3 stage-1 CUDA crash: instrument stop, diagnose, relaunch — and at THAT point the batch-8 fallback becomes the appropriate pre-registered repair, because the condition would then have actually been met.
