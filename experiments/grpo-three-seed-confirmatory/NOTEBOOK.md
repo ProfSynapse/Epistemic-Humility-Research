@@ -1165,3 +1165,32 @@ G0 PASS on all eight cells. Gate status: **G1 seed-2 leg PASS**, **G2 seed-2 leg
 Training across the 8 arms: **24.37 GPU-hours** (grpo_v2 8.16, kto_grpo 5.01, dpo_grpo 4.66, kto 1.71, grpo_kto 1.67, dpo 1.40, grpo_dpo 1.34, clean_sft 0.43), computed from run-record timestamps because stage-boundary pruning removes the containers. With merges, smokes and eight full evals, seed 2 lands near 29-30 h against its 42 h allowance. Projecting seed 3 at the same shape puts the block near 60 h of the 83 h total.
 
 **Seed 3 is PI-green-lit (2026-08-05) and dispatched next.** Stage-1 config pre-staged and lead-verified: `configs/sft_schema_clean_response_confidence_seed3_full_config.py`, AST-compared against the seed-2 config across 48 assignment keys with exactly three changed (`config.seed` 2->3, `config.lora.random_state` 2->3, `config.training.output_dir` path). Foundation base present in the pinned cache (2.5 G).
+
+## 2026-08-05 ~16:39Z — Seed-3 stage-1 CRASHED (CUDA fault). G0 instrument STOP, relaunch authorized.
+
+First seed-3 launch `eh-grpo3seed-3-clean_sft-train-20260805T161221Z` **exited 139 (SIGSEGV)** at step 975/1495, ~16 min in. No `final_model`, no `training_lineage.json`. Run dir `sft_schema_clean_seed3_full/20260805_161250` holds only `logs/` and `checkpoints/checkpoint-500`.
+
+**This is a G0 `training_completed_clean` FAILURE** (gates.yaml: "training exits 0 with final adapter artifacts and training_lineage.json present"). Per G0's registered interpretation it is a stop_before_outcome: the cell is repaired and relaunched, NOT reported. No outcome number from this container is read, retained, or compared to anything.
+
+**Watch-reading correction, recorded so it is not repeated.** The lead's background `docker wait` task reported "exit code 0", which is the exit status of the *wait command*, not of the container. The container's exit code is written to the watch's stdout (here `139`). **Always read the watch output file, never infer container success from the task's own exit status.** This nearly caused a crashed run to be treated as complete.
+
+### Diagnosis
+
+Failure signature is `torch.AcceleratorError: CUDA error: unknown error` (`cudaErrorUnknown`) raised from `currentStreamCaptureStatusMayInitCtx`, then `terminate called after throwing an instance of 'c10::AcceleratorError'`. This is a driver/context-level fault, not an allocator failure; an OOM reports as OOM.
+
+Capacity was ruled OUT as the cause by direct comparison against the seed-2 run of the byte-identical config (only seed, lora.random_state and output_dir differ, AST-verified across 48 assignment keys):
+
+| run | gpu_memory_gb max | gpu_memory_gb last | system_ram_used max | outcome |
+| --- | --- | --- | --- | --- |
+| seed-2 SFT | 32.64 | 24.67 @ step 1495 | 4.38 | completed clean |
+| seed-3 SFT | 27.71 | 27.71 @ step 975 | 6.63 | SIGSEGV |
+
+Seed 2 ran HIGHER on the same metric and finished. (Values above the 24 GB physical card confirm this counter includes WSL shared/spill memory, which is normal for this workload on this host.) Capacity is therefore not the differentiator, and no registered value is implicated.
+
+Post-crash environment verified healthy before authorizing relaunch: GPU idle at 0% / 0 MiB / 46 C; the pinned image resolves to digest `sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772` and `nvidia-smi` runs inside it against the card; disk 187 G free. Consistent with the transient WSL2 GPU-passthrough instability this host has shown before (see the 2026-08-02 crash entry and the nvidia-runtime loss recorded in `local-runtime.md`).
+
+### Disposition
+
+Relaunch stage 1 FROM SCRATCH, not resumed from `checkpoint-500`. Resuming would give seed 3 a training trajectory produced differently from seeds 1 and 2 (both single uninterrupted runs), and nothing in the signed instrument authorizes resume-from-checkpoint as equivalent for a confirmatory replicate. The crashed run directory is retained as evidence for now and is prunable at the next stage boundary.
+
+No change to any registered value. Same config file, same pinned digest, same procedure.
