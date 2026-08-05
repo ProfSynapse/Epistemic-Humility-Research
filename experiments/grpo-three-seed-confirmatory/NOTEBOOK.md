@@ -1238,3 +1238,24 @@ Config-construction note: the DPO trainer takes CLI flags rather than a config f
 Containment note: the DPO trainer's stock dry-run banner prints two raw dataset rows to container stdout via its own `print_dataset_samples`. This is built-in trainer behavior, not introduced by this chain; the row text was not copied, repeated, or persisted anywhere, and nothing row-level entered a tracked path. Flagged so the behavior is on record for a public repo.
 
 Closeout released: merge, 192-row bounded smoke, then full 3,369-row eval with the ADAPTER on the seed-3 merged base per the lineage convention.
+
+## 2026-08-05 ~20:02Z — Seed-3 stage-2 DPO CLOSED (G0 PASS); KTO released
+
+Full eval `eh-grpo3seed-3-clean_sft_dpo-fulleval-20260805T192517Z` exit 0. Lead-verified from `results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_seed3_full_4b`: n=3369 (2337 known / 1032 unknown), answer coverage 3369/3369, stated-confidence 3369/3369, thinking-tag hits 0, row `model` field uniformly `qwen3-4b-clean-schema-sft-merged-seed3` (correct: adapter on the seed-3 SFT merged base, not the newly merged DPO checkpoint). Bounded smoke 192/192/192/0 with model field `qwen3-4b-clean-sft-dpo-merged-seed3`, lead re-derived. Merged shard bytes independently confirmed at 4,967,215,360 + 3,077,766,632. **G0 for this cell: PASS.**
+
+Headline: refusal_recall 85.27, answer_on_unknown 14.73, over_refusal 54.64, truthful 40.19, correct_on_known 44.72.
+
+DPO across seeds (descriptive, no gate involves this arm alone):
+
+| | seed 2 | seed 3 |
+| --- | --- | --- |
+| recall | 89.34 | 85.27 |
+| ans-on-unknown | 10.66 | 14.73 |
+| over-refusal | 55.97 | 54.64 |
+| truthful | 41.32 | 40.19 |
+
+Both seeds show the same qualitative pattern relative to their own base: DPO moves abstention slightly the WRONG way (base 89.92 -> 89.34 at seed 2; base 88.28 -> 85.27 at seed 3) while buying an over-refusal reduction. The seed-3 movement is larger in both directions than seed-2's. This is the contrast the block exists to set up against GRPO, and it is reported descriptively; no registered gate compares stage-2 DPO to its base.
+
+Operational record from this closeout, both executor6's own invocation errors and both caught and reported by it rather than retried silently: (1) the merge must run with `-w /workspace/repo/synaptic-tuner` because `shared/` lives under the submodule, not the repo root; running from repo root fails with `ModuleNotFoundError: No module named 'shared'`. (2) `merge_lora_checkpoint` types `lora_path`/`output_path` as `Path`, so raw strings fail with `AttributeError: 'str' object has no attribute 'mkdir'`. Both failed before writing any output; no partial artifact was produced, verified. Worth folding into `local-runtime.md` at the next skill pass, together with the observation that the polling backup monitor reports `gone` when a container is pruned before its next poll (the primary `docker wait` remains authoritative for exit codes).
+
+Stage 2 arm 2 released: `clean_sft_kto` from the seed-3 merged base, registered bs12 / ga1 / lr1e-6 / beta0.1, dry-run first, with the authorized step-250 batch-8 fallback to be reported rather than taken silently.
