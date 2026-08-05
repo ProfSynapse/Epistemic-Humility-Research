@@ -1053,3 +1053,16 @@ Lead primary watch fired on `eh-grpo3seed-2-clean_sft_kto_grpo-train-20260805T03
 Closeout released to executor6: stage prune + free-space precheck, merge to merged-16bit, 192-row bounded smoke on the merged checkpoint, full 3,369-row eval with the adapter on the seed-2 KTO merged base per the lineage convention (eval configs to be cloned from the stack-1 pair executor6 authored, lineage verified against training_lineage.json before launch). Full eval lead-watched.
 
 Remaining after stack 2: grpo_dpo and grpo_kto (both source from the seed-2 grpo_v2 merged checkpoint), then seed-2 chain complete and seed 3 begins.
+
+## 2026-08-05 ~09:12Z — Stack 2 (clean_sft_kto_grpo, seed 2) CLOSED; stack 3 (grpo_dpo) released
+
+Full eval container `eh-grpo3seed-2-clean_sft_kto_grpo-full_eval-20260805T083704Z` exited 0 (~35m). Lead verified from `results_grpo3seed_response_confidence_selfaware_clean_sft_kto_grpo_seed2_full_4b` artifacts (coverage re-derived from scored_rows.jsonl):
+
+- n=3369 (2337 known / 1032 unknown), answer coverage 3369/3369, stated-confidence 3369/3369, thinking-tag hits 0. Row `model` field uniformly `qwen3-4b-clean-sft-kto-merged-seed2` — correct lineage (adapter on seed-2 KTO merged base).
+- Headline: refusal_recall 93.31, answer_on_unknown 6.69, over_refusal 64.23, truthful 41.26, correct_on_known 51.08, refusal_rate 73.14.
+- Same-seed comparisons (navigation only, G2 deferred): vs KTO parent (85.66/14.34) the GRPO stage moves answer-on-unknown −7.65pp — the largest stage-3 shift this seed, from the most answer-prone parent; endpoint lands in the same band as grpo_v2 (94.28/5.72) and dpo_grpo (94.38/5.62). All three GRPO-terminal endpoints sit in a 93.3–94.4 recall band despite parents spanning 85.7–89.9.
+- Bounded smoke on the newly-merged checkpoint: 192/192 answer, 192/192 confidence, 0 thinking-tag hits, enable_thinking uniformly False, lead re-derived independently. G0 bounded-smoke leg PASS.
+
+G0 for this cell: PASS (coverage + lineage + frozen count 14888 per training_lineage.json).
+
+Stack 3 released to executor6: clean_sft_grpo_dpo — a DPO training run (registered values: batch 2 / grad-accum 4 / lr 5e-6 / beta 0.1, frozen DPO dataset count 14,943) whose source is the seed-2 grpo_v2 merged checkpoint (`schema_clean_sft_grpo_v2_seed2_full/20260804_131151/.../merged-16bit`). Training config to be cloned from the seed-2 clean_sft_dpo config with model_name swapped to the grpo_v2 merged source; no reward-path concern (GRPO-only issue); DPO trainer has no lora random-state flag (baseline 3407, seed-1 precedent). Expected ~1.5h per the seed-2 DPO precedent. Lead holds the training watch.
