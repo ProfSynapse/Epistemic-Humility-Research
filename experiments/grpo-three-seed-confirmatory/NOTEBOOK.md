@@ -1206,3 +1206,23 @@ Provenance note on `lora.random_state`: the SFT `training_lineage.json` lora blo
 Descriptive observation, not a gate matter: final SFT loss is 0.4281 (seed 1), 0.4281 (seed 2), 0.4282 (seed 3). The clean-SFT stage converges to essentially the same point at every seed. The seed-1/seed-2 identity was previously checked and found to be coincidence at the step level (57 of 59 logged steps differ); seed 3 landing one ten-thousandth away is consistent with that reading rather than with any config collision.
 
 Released to executor6: merge stage-1 to merged-16bit, 192-row bounded smoke, then the FULL 3,369-row eval on the merged base. That base full eval is the **G1 denominator for seed 3** and gates everything downstream, so it runs before any stage-2 arm launches. Stage-2 arms (dpo, kto, grpo_v2, all from merged(clean_sft)) follow serially per launch_order once the base is closed.
+
+## 2026-08-05 ~17:56Z — Seed-3 stage-1 base CLOSED; G1 denominator for seed 3 established; stage 2 released
+
+Base full eval `eh-grpo3seed-3-clean_sft-fulleval-20260805T171811Z` exit 0 (read from watch stdout; backup monitor independently `exited|0`). Lead-verified from `results_grpo3seed_response_confidence_selfaware_clean_sft_seed3_merged_full_4b`: n=3369 (2337 known / 1032 unknown), answer coverage 3369/3369, stated-confidence 3369/3369, thinking-tag hits 0, row `model` field uniformly `qwen3-4b-clean-schema-sft-merged-seed3` (correct: seed-3 merged base evaluated directly, `adapter: null`). Bounded smoke on the same checkpoint was 192/192/192/0, lead re-derived. **G0 for this cell: PASS.**
+
+### Seed-3 G1 denominator (registered comparator for `clean_sft_grpo_v2` at this seed)
+
+| metric | seed 3 base | seed 2 base | seed 1 base |
+| --- | --- | --- | --- |
+| refusal_recall_pct | 88.28 | 89.92 | 87.02 |
+| answer_on_unknown_pct | 11.72 | 10.08 | 12.98 |
+| over_refusal_pct | 59.01 | 58.24 | 57.51 |
+| truthful_pct | 40.55 | 41.17 | - |
+| correct_on_known_pct | 47.49 | 47.03 | - |
+
+The three clean-SFT bases span 87.02-89.92 recall / 10.08-12.98 answer-on-unknown. Seed 3 sits between seeds 1 and 2 on both, so the denominator is unremarkable and in-family; no base anomaly to flag before the GRPO comparison.
+
+**What G1 now requires of this seed.** G1 is a direction-plus-floor test against this same-seed base: `answer_on_unknown_pct` must DECREASE by >= 3.0 pp and `refusal_recall_pct` must INCREASE by >= 3.0 pp. Against the seed-3 base that means `clean_sft_grpo_v2` at seed 3 must reach **answer-on-unknown <= 8.72** and **refusal recall >= 91.28**. Recording these thresholds NOW, before the arm is trained, so the comparison cannot drift after the number is seen. Seed-1 reference effect was +-6.39 pp; seed-2 leg passed at +-4.36 pp.
+
+Stage 2 released to executor6, serial per launch_order: `clean_sft_dpo`, then `clean_sft_kto`, then `clean_sft_grpo_v2`, each from merged(clean_sft) seed 3, each train -> merge -> smoke -> full eval before the next launches. Registered values unchanged from seed 2 (DPO bs2/ga4/lr5e-6/beta0.1; KTO bs12/ga1/lr1e-6/beta0.1 with the authorized step-250 batch-8 fallback; GRPO per_device 32 / num_generations 4 / reward v2, and the GRPO config must carry the ABSOLUTE in-container reward path).
