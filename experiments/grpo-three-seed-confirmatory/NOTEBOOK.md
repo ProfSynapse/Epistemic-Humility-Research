@@ -1041,3 +1041,15 @@ Full eval container `eh-grpo3seed-2-clean_sft_dpo_grpo-full_eval-20260805T025548
 G0 for this cell: PASS (coverage + lineage + frozen dataset counts per training_lineage.json train_examples 14888).
 
 Stack 2 released to executor6: clean_sft_kto_grpo training from the seed-2 KTO merged source, pre-staged config `configs/grpo_clean_sft_kto_grpo_seed2_full.yaml`, dry-run before launch, lead holds the primary watch.
+
+## 2026-08-05 ~08:10Z — Stack 2 (clean_sft_kto_grpo, seed 2) training COMPLETE; closeout released
+
+Lead primary watch fired on `eh-grpo3seed-2-clean_sft_kto_grpo-train-20260805T032622Z` (exit 0; 03:26Z → ~08:07Z, ~4h41m, consistent with the dpo_grpo precedent). Lead-verified from run dir `clean_sft_kto_grpo_seed2_full/20260805_032645`:
+
+- `training_lineage.json` base_model = seed-2 KTO merged-16bit (`schema_clean_sft_kto_seed2_full/20260801_213332/.../merged-16bit`) — correct stage-3 source; seed 2; batch 32 / num_generations 4 / lr 5e-6 matching registered cell.yaml values; train_examples 14888 (frozen count).
+- 1861 steps, final loss 0.0846, final logged reward 1.134 @ step 1850 (reward endpoint ordering this seed: clean-SFT base 0.9071 < DPO base 1.0998 < KTO base 1.134).
+- `final_model` adapter present (268M).
+
+Closeout released to executor6: stage prune + free-space precheck, merge to merged-16bit, 192-row bounded smoke on the merged checkpoint, full 3,369-row eval with the adapter on the seed-2 KTO merged base per the lineage convention (eval configs to be cloned from the stack-1 pair executor6 authored, lineage verified against training_lineage.json before launch). Full eval lead-watched.
+
+Remaining after stack 2: grpo_dpo and grpo_kto (both source from the seed-2 grpo_v2 merged checkpoint), then seed-2 chain complete and seed 3 begins.
