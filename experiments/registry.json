@@ -3115,10 +3115,19 @@
         "pins": {
           "cell.yaml": "a934232054281fda8ba060045a369c22227bea1fe90df4795d204d0dbe5c421c",
           "configs/eval_selfaware_full_seed1_rerun_4b.yaml": "68d86a0f47bf5b3ed97695c6450697e536d115b7939402c53598446df506089f",
-          "gates.yaml": "44013bc932270b3b747d9ff30064d7e0408f3eddce934124e9d8b4d91fd8d50e",
+          "gates.yaml": "70f6665b3aabdd77ee3154c36909acbd43c2992f7ed8c483d2033d6654b9b979",
           "scripts/audit_data_provenance.py": "c5ceb60042750c4aabc590d4be8e4af443fd4785f734bbfa84370d36eb4009d7",
           "scripts/data_builds.yaml": "74dfde53eb66fd462b94657686b40307ac071ec69874cb647c870f6022d6dad6"
-        }
+        },
+        "repins": [
+          {
+            "date": "2026-08-05T14:25:53Z",
+            "file": "gates.yaml",
+            "new_sha256": "70f6665b3aabdd77ee3154c36909acbd43c2992f7ed8c483d2033d6654b9b979",
+            "old_sha256": "44013bc932270b3b747d9ff30064d7e0408f3eddce934124e9d8b4d91fd8d50e",
+            "reason": "Governed housekeeping, PI-authorized 2026-08-05: gates.yaml still declared 'status: proposed' with null adjudicated_by/adjudicated_date after being signed 2026-08-01, so the file read as unsettled to anyone opening it directly. Corrected the sign-time metadata and header prose ONLY - no threshold, band, tolerance, condition, or decision rule was altered (verified by diff). Also recorded, deliberately left unresolved in the file: this gates.yaml decision_rule and AMENDMENT.md section 10 item 5 disagree on whether a single out-of-band METRIC puts a CELL outside; that needs a governed revision before adjudication. Experiment is pre-run with zero artifacts, which is repin's intended window."
+          }
+        ]
       },
       "kg": [],
       "prediction": "Both rerun arms land inside all eight cohort-derived G1 bands, with both arms remaining at the abstention floor observed across the cohort; the dev-split-fix confound is provenance-only and headline conclusions are unchanged.",
