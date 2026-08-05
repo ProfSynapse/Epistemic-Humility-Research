@@ -1066,3 +1066,16 @@ Full eval container `eh-grpo3seed-2-clean_sft_kto_grpo-full_eval-20260805T083704
 G0 for this cell: PASS (coverage + lineage + frozen count 14888 per training_lineage.json).
 
 Stack 3 released to executor6: clean_sft_grpo_dpo — a DPO training run (registered values: batch 2 / grad-accum 4 / lr 5e-6 / beta 0.1, frozen DPO dataset count 14,943) whose source is the seed-2 grpo_v2 merged checkpoint (`schema_clean_sft_grpo_v2_seed2_full/20260804_131151/.../merged-16bit`). Training config to be cloned from the seed-2 clean_sft_dpo config with model_name swapped to the grpo_v2 merged source; no reward-path concern (GRPO-only issue); DPO trainer has no lora random-state flag (baseline 3407, seed-1 precedent). Expected ~1.5h per the seed-2 DPO precedent. Lead holds the training watch.
+
+## 2026-08-05 ~10:45Z — Stack 3 (clean_sft_grpo_dpo, seed 2) training COMPLETE; closeout released
+
+Lead primary watch fired on `eh-grpo3seed-2-clean_sft_grpo_dpo-train-20260805T090846Z` (exit 0; 09:08Z → ~10:42Z, ~1h34m, consistent with the seed-2 DPO precedent). Lead-verified from run dir `clean_sft_grpo_dpo_seed2_full/20260805_090909`:
+
+- `training_lineage.json`: training_type DPO, base_model = seed-2 grpo_v2 merged-16bit (`schema_clean_sft_grpo_v2_seed2_full/20260804_131151/Qwen3-4B-clean-sft-grpo-v2/merged-16bit`) — correct stage-3 source; seed 2; batch 2 / grad-accum 4 / lr 5e-6 / beta 0.1 matching registered cell.yaml values; train_examples 14943 (frozen count).
+- 1868 steps, final loss 0.0419. `final_model` adapter present (268M).
+
+Correction to the prior entry (5f59b127): the DPO trainer DOES have a `--dry-run` flag (train_dpo.py argparse line 261; exits before model load). Executor6 read the trainer source, caught the lead's erroneous "no dry-run flag" claim, and ran the free dry-run before launch (exit 0, ~15s; banner matched cell.yaml exactly). Endorsed as standing practice: dry-run or equivalent pre-model-load validation before every multi-hour launch in this chain, all trainer types.
+
+Closeout released to executor6: stage prune + precheck, merge, 192-row bounded smoke on the merged checkpoint, full 3,369-row eval with the adapter on the seed-2 grpo_v2 merged base per lineage convention. Full eval lead-watched.
+
+Remaining after stack 3: grpo_kto (KTO on the same grpo_v2 merged source, registered bs12/ga1/lr1e-6/beta0.1), then seed-2 chain complete: G2 becomes computable and seed 3 begins.
