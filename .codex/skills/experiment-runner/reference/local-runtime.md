@@ -345,3 +345,58 @@ does not exist: scratch\...`.
 - `git submodule status` can fail if Git Unix helpers such as `basename` or
   `sed` are missing. Verify the submodule SHA with the gitlink plus
   `git -C synaptic-tuner rev-parse HEAD`.
+
+## Observing a detached training container
+
+Learned across the GRPO three-seed chain (2026-08-04/05), where every long
+training job ran detached under `docker run -d`.
+
+- **`docker logs` on a detached container is block-buffered and will look
+  frozen.** Python's stdout is not line-buffered when it is not a TTY, so the
+  log can sit unchanged at the last flushed block for many minutes while the
+  job is healthily training. Observed repeatedly: a container stuck at 27 log
+  lines while `nvidia-smi` showed 16.9 GB used and 100% utilization. **A static
+  log is not evidence of a stall, and is not evidence of progress either.**
+- **Use the trainer's own run-directory JSONL as the progress signal.** Every
+  trainer in this program writes `<run_dir>/logs/training_<timestamp>.jsonl`
+  (plus a `training_latest.jsonl`) with per-interval records carrying `step`,
+  `epoch`, `loss`, `elapsed_seconds`, and a full GPU/RAM capacity block. This
+  file is written directly, bypasses stdout entirely, and is the reliable way to
+  read live progress. Parse it with newline-only splits, never
+  `str.splitlines()`.
+- Corollary for liveness checks: `docker inspect` status plus `nvidia-smi`
+  utilization prove the process is alive; only the JSONL proves it is making
+  *training* progress. Prefer the JSONL; fall back to the other two.
+- If you genuinely need the literal printed banner from a detached run, it
+  flushes at the first logging checkpoint or at process exit. Do not block on
+  it: the banner is deterministic given the config file, so a dry-run against
+  the byte-identical config establishes the same values before launch.
+- `rtk`-proxied `docker logs` returns a filtered "Log Summary" that omits the
+  actual output. Use `rtk proxy docker logs` to see raw container output.
+
+## Dry-run cost by trainer (verify before budgeting a pre-launch check)
+
+Dry-run before every multi-hour launch is standing practice in this program.
+The cost is not uniform, because the trainers put their `--dry-run` early exit
+in different places. Read the source rather than assuming:
+
+| Trainer | `--dry-run` exits | Cost |
+| --- | --- | --- |
+| `Trainers/dpo/train_dpo.py` | BEFORE `load_model_and_tokenizer` | free, ~15 s |
+| `Trainers/kto/train_kto.py` | AFTER model load + LoRA apply | ~1 min |
+| `Trainers/sft/train_sft.py` | AFTER model load + LoRA apply | ~35 s |
+| `Trainers/grpo/train_grpo.py` | after model load | ~90 s |
+
+All four are cheap against a 1-8 h run; run the dry-run regardless. The point of
+the table is that only DPO's is genuinely free, so do not assume a "quick check"
+costs nothing on the others when the GPU is contended.
+
+## Compute accounting after stage-boundary pruning
+
+`prune_runtime.sh stage` removes stopped containers, so `docker inspect` cannot
+reconstruct GPU hours after the fact — a whole seed's containers will report
+zero. **Compute GPU-hours from the run records instead**: the run directory name
+encodes the start timestamp (`YYYYMMDD_HHMMSS`) and `training_lineage.json`
+carries the end `timestamp`, so the duration is the difference. Several trainers
+also record `training_time_seconds` directly in the lineage file; prefer that
+when present. This is the durable source and survives pruning.
