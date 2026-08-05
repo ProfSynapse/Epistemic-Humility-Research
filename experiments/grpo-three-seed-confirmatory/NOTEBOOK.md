@@ -1466,3 +1466,22 @@ So the file actually passed to the actually-running pinned image carries the see
 Minor, recorded so it is not mistaken later for the real run: the dry-run left an empty run directory at `schema_clean_sft_grpo_v2_seed3_full/20260805_221623` containing only empty `checkpoints/` and `logs/` subdirs. The real run is `20260805_221744`.
 
 Dual watches armed. Expect a long run; the seed-1 GRPO precedent in the archive notes ran roughly 6.8h. No result is adjudicable until the full eval, and the G1 band stands as pre-stated: PASS iff `answer_on_unknown_pct` <= 8.72 AND `refusal_recall_pct` >= 91.28.
+
+## 2026-08-05 ~22:30Z — Containment audit: training-container stdout carries row text (ALL FOUR trainers), repo clean
+
+Follow-up to the launch note above, and a correction to it. I recorded the sample-printing behavior as a GRPO property. It is not. Verified at the source: four SEPARATE per-trainer `print_dataset_samples` implementations, each called on that trainer's real training path with `num_samples=2`:
+
+| trainer | defined | called |
+|---|---|---|
+| SFT | `Trainers/sft/src/data_loader.py:240` | `train_sft.py:965` |
+| KTO | `Trainers/kto/src/data_loader.py:340` | `train_kto.py:678` |
+| DPO | `Trainers/dpo/src/data_loader.py:157` | `train_dpo.py:477` |
+| GRPO | `Trainers/grpo/src/data_loader.py:93` | `train_grpo.py:337` |
+
+All four call sites verified verbatim by the lead. So every training container in this block, including the seed-3 SFT, DPO, and KTO runs already completed, has question text in its `docker logs`. A fifth unused copy exists in the `mlx_sft_mac` lane with no call site.
+
+**Audit result: the repo is CLEAN.** No pasted trainer stdout exists in any tracked file on `main` or on `exp/grpo-three-seed-run`. The distinctive markers (`Dataset samples`, `ground_truth_args_json`, sample-block headers) return zero hits. Nothing needs remediation.
+
+The rule is now written into `.skills/experiment-runner/reference/local-runtime.md` (PR #392): never paste `docker logs` from ANY training container into the repo, a commit message, a PR body, an issue, or an agent report; never redirect that stdout to a tracked path; evidence a launch with `docker inspect` plus `training_lineage.json`, which carry no row text. That is what was done for this launch, before the hazard was known, which is luck rather than discipline and is exactly why it is now written down.
+
+**Lead process error in the audit itself, recorded because it is the same class of mistake.** My first audit pass grepped the whole tree for loose patterns including `chosen:` and `rejected:`, which matched the tracked `datasets/sycophancy-eval/*.jsonl` files and pulled a large volume of question text into the session context. Nothing was written anywhere and those files are pre-existing tracked public eval data, so there is no leak. But the correct audit is scoped to docs and notebooks using only the distinctive trainer-output markers. Searching broadly for row text is itself a way to spread row text, and a public repo makes the blast radius of a careless grep larger than it looks.
