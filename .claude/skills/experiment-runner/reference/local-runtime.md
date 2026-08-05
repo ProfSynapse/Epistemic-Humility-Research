@@ -374,6 +374,52 @@ training job ran detached under `docker run -d`.
 - `rtk`-proxied `docker logs` returns a filtered "Log Summary" that omits the
   actual output. Use `rtk proxy docker logs` to see raw container output.
 
+## Training container stdout contains dataset row text (all trainers)
+
+Found during the GRPO `grpo_v2` launch (2026-08-05), then checked against the
+other three trainers: this is not a GRPO-specific behavior. SFT, DPO, KTO, and
+GRPO each carry their own independent copy of a `print_dataset_samples`
+function (not shared code, four separate implementations) and each calls it
+with `num_samples=2` right before model loading, so every trainer's stdout
+(and therefore `docker logs` for every trainer's container) opens with two
+real dataset rows:
+
+- SFT: defined `Trainers/sft/src/data_loader.py:240`, called at
+  `Trainers/sft/train_sft.py:965`. Prints per-message role/content previews
+  (first 100 chars) for conversational rows, or a truncated text/completion
+  field (first 200 chars), plus `label` if present.
+- KTO: defined `Trainers/kto/src/data_loader.py:340`, called at
+  `Trainers/kto/train_kto.py:678`. Prints `label`, and `prompt`/`completion`
+  each truncated to 200 chars.
+- DPO: defined `Trainers/dpo/src/data_loader.py:157`, called at
+  `Trainers/dpo/train_dpo.py:477`. Prints `prompt`/`chosen`/`rejected` message
+  content each truncated to 160 chars.
+- GRPO: defined `Trainers/grpo/src/data_loader.py:93`, called at
+  `Trainers/grpo/train_grpo.py:337`. Prints row `keys`, `prompt` (truncated to
+  200 chars, or the first 2 messages for message-list prompts),
+  `ground_truth_tool`, and `ground_truth_args_json` (truncated to 200 chars).
+
+A fifth copy exists at `Trainers/mlx_sft_mac/src/data_loader.py:301`, but
+nothing in `Trainers/mlx_sft_mac/train_sft.py` calls it, so that lane does not
+currently print row samples.
+
+This repo is public. Quoting container logs is the natural way to demonstrate
+that a run started correctly, and for any of these four trainers that habit
+publishes real dataset content (question/prompt text, and for KTO/DPO also
+completion/chosen/rejected text) into whatever it gets pasted into.
+
+Rule:
+- Never paste `docker logs` output from a training container (any trainer,
+  not just GRPO) into the repo, a commit message, a PR body, an issue, or any
+  agent report.
+- Never redirect that stdout to a tracked path.
+- To evidence a correct launch, use `docker inspect` (image digest,
+  `Config.Cmd`, container state) and the run's own artifacts
+  (`training_lineage.json`, metrics logs), none of which carry row text.
+- If log inspection is genuinely needed for debugging, keep it in the
+  terminal and quote only the specific non-row lines required, never the
+  `Dataset samples:` block itself.
+
 ## Dry-run cost by trainer (verify before budgeting a pre-launch check)
 
 Dry-run before every multi-hour launch is standing practice in this program.
