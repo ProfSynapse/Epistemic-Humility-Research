@@ -1410,3 +1410,38 @@ Both are merged-16bit directories, not adapter paths and not the SFT base, satis
 Reward file `archive/experiment/phase1/grpo/humility_reward_v2.py` present in both, defining `epistemic_humility_reward` at :197, matching the `functions.name` entry in each config. The stale-reward-path bug recorded for the seed-1 templates did NOT recur: both inherited the corrected absolute in-container path from the seed-2 precedent.
 
 Both files launch-ready with no placeholders. Launch order unchanged and still held: `grpo_v2` first (G1's deciding leg), then these.
+
+## 2026-08-05 22:12Z — Seed-3 `clean_sft_kto` full eval COMPLETE; cell CLOSED
+
+Container `eh-grpo3seed-3-clean_sft_kto-fulleval-20260805T214718Z` exited **0** at 22:12:30Z, read from the docker-wait output file. Artifacts present: `metrics.json` (1426 B), `scored_rows.jsonl` (2,673,254 B), `bootstrap_ci.json`, `summary_table.csv`.
+
+Lead-read from the artifact, n=**3369**:
+
+| metric | value |
+|---|---|
+| `refusal_recall_pct` | 83.24 |
+| `answer_on_unknown_pct` | 16.76 |
+| `over_refusal_pct` | 53.87 |
+| `truthful_pct` | 39.74 |
+| `correct_on_known_pct` | 44.53 |
+
+Confidence coverage 100.0%, 0 missing. Complementarity holds again: 83.24 + 16.76 = 100.00.
+
+This cell is CLOSED with G0 PASS (adjudicated earlier from the smoke and training artifacts). `clean_sft_kto` is not a term in G1 or G2; it enters the block as a stage-2 arm of the descriptive G3 matrix and as the source for `clean_sft_kto_grpo`. No gate is adjudicable from this number and none is claimed.
+
+Seed-3 progress: 3 of 8 arms complete (`clean_sft`, `clean_sft_dpo`, `clean_sft_kto`).
+
+## 2026-08-05 ~22:15Z — `clean_sft_grpo_v2` seed 3 CLEARED FOR LAUNCH (G1 deciding leg)
+
+Recorded BEFORE the launch verb, per the launch guard.
+
+Preconditions checked: GPU free (KTO full eval terminated, exit 0, artifacts verified); config `grpo_schema_clean_sft_merged_seed3_v2_full.yaml` prepared and lead-verified (63 keys, 4 seed-scoped differences, registered values intact, base checkpoint on disk); datasets verified 14888 / 1655 against three agreeing sources; reward file resolves. User green-light for the seed-3 chain stands.
+
+**What this run decides.** G1 is the primary falsifier gate and requires both conditions in BOTH seeds. Seed 2 passed (base 89.92 / 10.08 vs grpo_v2 94.28 / 5.72, a 4.36 pp movement). Seed 3 therefore decides G1 outright. The band was pre-stated at ~21:55Z, before this run existed, against the seed-3 denominator 88.28 / 11.72:
+
+- PASS requires `answer_on_unknown_pct` <= **8.72** AND `refusal_recall_pct` >= **91.28**.
+- Anything strictly inside that band is `not_confirmed`, and under a falsifier gate that is a reportable result, not a prompt to reconsider the threshold.
+
+Since the two G1 metrics are exact complements on this instrument (verified across 21 runs), these two criteria are one test, and they will pass or fail together. The verdict will be written that way.
+
+No goalpost may move from here in either direction. The threshold is fixed, the denominator is fixed, and both were fixed before the deciding data existed.
