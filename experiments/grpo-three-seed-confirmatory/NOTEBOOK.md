@@ -1384,3 +1384,29 @@ For completeness, the GRPO trainer's baked-in defaults are r32 / alpha64 / dropo
 **Known limitation, honestly flagged rather than papered over.** The two eval configs cannot be fully resolved yet: both need the run-directory timestamp the GRPO trainer generates at launch. They were written with every other field resolved and an explicit `<SEED3_GRPO_V2_TIMESTAMP>` placeholder plus a notice block, rather than a guessed timestamp. They get finalized after training and merge, exactly as the DPO and KTO eval configs did. The full-eval `model_name` (seed-3 SFT merged base) IS fully resolved, since that checkpoint exists; only the adapter path carries the placeholder.
 
 Launch is HELD pending: KTO full eval completing (one GPU job at a time), and lead clearance.
+
+## 2026-08-05 ~22:05Z — Seed-3 stage-3 configs PREPARED for `clean_sft_dpo_grpo` and `clean_sft_kto_grpo` (pre-launch)
+
+CPU-only prep during the KTO full eval. Nothing launched. Scope deliberately excluded `clean_sft_grpo_dpo` and `clean_sft_grpo_kto`, which train from merged(`grpo_v2`) and therefore cannot have resolved configs yet; leaving placeholder-bearing TRAINING configs on disk for unlaunchable arms is an invitation to launch one by mistake.
+
+Registered spec read at cell.yaml :98-115 and AMENDMENT.md :128-129, which confirm stage 3, terminal true, sources merged(`clean_sft_dpo`) and merged(`clean_sft_kto`) respectively, trainer `train_grpo.py`, dataset grpo, reward_variant v2, batch 32, num_generations 4.
+
+**Lead-re-derived diffs**, both arms, `yaml.safe_load` + flatten:
+
+| arm | keys | keyset diff | differing keys |
+|---|---|---|---|
+| `clean_sft_dpo_grpo` | 63 / 63 | none | 4, all seed-scoped |
+| `clean_sft_kto_grpo` | 63 / 63 | none | 4, all seed-scoped |
+
+Both carry `lora.r` 32, `lora_alpha` 64, `lora_dropout` 0.05, `lora.random_state` 3, batch 32, num_generations 4.
+
+**The check that mattered here was lineage, and it holds.** These two arms have DIFFERENT sources from each other and from `grpo_v2`, so a cross-wire would be the easy mistake and would be nearly invisible downstream: the run would train and evaluate cleanly while measuring the wrong stack. Verified separately, each pointing where it should and each existing on disk with `config.json` present:
+
+- `clean_sft_dpo_grpo` -> `schema_clean_sft_dpo_seed3_full/20260805_174834/Qwen3-4B-clean-sft-dpo/merged-16bit`
+- `clean_sft_kto_grpo` -> `schema_clean_sft_kto_seed3_full/20260805_195738/Qwen3-4B-clean-sft-kto/merged-16bit`
+
+Both are merged-16bit directories, not adapter paths and not the SFT base, satisfying G0 `merge_first_lineage` in advance. The KTO source is the checkpoint merged at 21:40Z earlier today.
+
+Reward file `archive/experiment/phase1/grpo/humility_reward_v2.py` present in both, defining `epistemic_humility_reward` at :197, matching the `functions.name` entry in each config. The stale-reward-path bug recorded for the seed-1 templates did NOT recur: both inherited the corrected absolute in-container path from the seed-2 precedent.
+
+Both files launch-ready with no placeholders. Launch order unchanged and still held: `grpo_v2` first (G1's deciding leg), then these.
