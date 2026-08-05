@@ -391,6 +391,89 @@ All four are cheap against a 1-8 h run; run the dry-run regardless. The point of
 the table is that only DPO's is genuinely free, so do not assume a "quick check"
 costs nothing on the others when the GPU is contended.
 
+## LoRA hyperparameters are per-trainer, not inherited from a trainer's defaults
+
+A trainer's own config file ships baked-in LoRA defaults. Those defaults are
+per-trainer and are not the registered adapter spec, even when one trainer's
+defaults happen to line up with it.
+
+Confirmed by reading the configs: `synaptic-tuner/Trainers/kto/configs/config.yaml:7-9`
+defaults to `r: 64`, `lora_alpha: 128`, `lora_dropout: 0.05`, double the
+registered adapter rank and alpha for the current experiment arms (r=32,
+alpha=64, dropout=0.05). `synaptic-tuner/Trainers/dpo/configs/config.yaml:7-9`
+defaults to `r: 32`, `lora_alpha: 64`, `lora_dropout: 0.05`, which already
+matches the registered spec, but that match is a property of that one
+trainer's config file, not something that propagates to other trainers. A
+"defaults already match, so pass no LoRA flags" habit formed against DPO does
+not generalize to KTO; carried over, it silently trains at double adapter
+capacity while every other precheck still passes.
+
+Rule: never infer LoRA hyperparameters from a trainer's defaults, and never
+carry a "defaults match" finding from one trainer to another. Pass
+`--lora-r`, `--lora-alpha`, `--lora-dropout` explicitly on every launch. Both
+trainers accept them (`synaptic-tuner/Trainers/kto/train_kto.py:390-392`,
+`synaptic-tuner/Trainers/dpo/train_dpo.py:241-243`) and both use `is not None`
+checks so the override always wins over the config default. Confirm the
+resolved values in the dry-run banner before the real launch (`Rank:` /
+`Alpha:` / `Dropout:` lines at `train_dpo.py:500-502` and
+`train_kto.py:785-787`), and verify them again at closeout in the run's
+`training_lineage.json`, which carries a top-level `"lora"` block built from
+the same `config.lora.r` / `lora_alpha` / `lora_dropout` values
+(`synaptic-tuner/shared/training_utils.py:147-196`, `build_base_lineage`).
+
+See also the "Before launching a one-off KTO cell" bullet earlier in this
+file, which recorded a near-miss with these exact numbers (a stale handoff
+summary carrying `lr=5e-6`, LoRA r64/alpha128 instead of the runbook's
+`lr=1e-6`, r32/alpha64). That bullet is about trusting a stale summary over
+the checked-in runbook; this section is the more general rule: don't infer
+LoRA values from ANY trainer's built-in config defaults, for any trainer.
+
+## Merge step invocation
+
+Two invocation failures when calling `merge_lora_checkpoint`
+(`synaptic-tuner/shared/model_loading/merge.py:162`) directly from a
+standalone script rather than through the tuner's merge handler:
+
+- **cwd must be inside `synaptic-tuner/`.** The `shared` package that holds
+  the merge helper lives at `synaptic-tuner/shared/`, not at the research
+  repo root (there is no `shared/` directory at the repo root; the module is
+  imported elsewhere as `from shared.model_loading import merge`, e.g.
+  `synaptic-tuner/tests/trainers/embedding/test_merge_seam_behavior_preservation.py:40`).
+  Running the merge with cwd at the repo root fails with
+  `ModuleNotFoundError: No module named 'shared'`.
+- **Wrap `lora_path` / `output_path` in `Path(...)`.** The function signature
+  types both as `pathlib.Path`
+  (`merge_lora_checkpoint(lora_path: Path, output_path: Path, ...)` at
+  `merge.py:162-168`), and the implementation calls
+  `output_path.mkdir(parents=True, exist_ok=True)` internally
+  (`merge.py:105` for the causal-LM path, `merge.py:136` for embedding).
+  Passing raw strings fails with `AttributeError: 'str' object has no
+  attribute 'mkdir'`.
+
+The CLI-level entrypoint (`synaptic-tuner/tuner/handlers/merge_handler.py`)
+already gets both of these right; the failure mode is specific to calling
+`merge_lora_checkpoint` directly.
+
+## Interpreting a backup polling monitor's terminal report
+
+When a training container is watched by a polling loop as a backup to
+`docker wait` (see "Teammate watch discipline for long containers" above),
+and the container is pruned between polls (e.g. by `prune_runtime.sh stage`,
+see "Compute accounting after stage-boundary pruning" below), the poller
+reports the container as gone from the daemon rather than reporting an exit
+code. That "gone" reading is a TERMINAL state (stop polling), but it is not
+evidence of failure, and it is not evidence of success either: it only says
+the daemon no longer has a record for that container ID.
+
+The authoritative exit code comes from the `docker wait` watch's output file,
+not from the poller. This is the same distinction as the rule that a
+background wait task's own reported exit status is the status of the WAIT
+command, not of the container. The poller's "container gone" report is
+similarly a statement about the daemon lookup, not about training outcome.
+Verify success or failure from the `docker wait` output file plus host
+artifacts (`final_model`, `training_lineage.json`, metrics logs), never from
+the poller's terminal state alone.
+
 ## Compute accounting after stage-boundary pruning
 
 `prune_runtime.sh stage` removes stopped containers, so `docker inspect` cannot
