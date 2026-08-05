@@ -1,11 +1,26 @@
 # Headline DPO/KTO seed-1 post-fix rerun - pre-stated gates.
 #
-# STATUS: PROPOSED / DRAFT. Every threshold below is a DRAFTING PROPOSAL awaiting
-# lead adjudication at sign time. Nothing is settled until
-# `bin/exp sign headline-seed1-postfix-rerun` pins this file.
+# STATUS: SIGNED 2026-08-01 (`bin/exp sign headline-seed1-postfix-rerun`; PI
+# approval "Sign as drafted", recorded in AMENDMENT.md section 10). Every
+# threshold below is FROZEN and binding.
 #
-# Once signed, NO GATE MOVES after results are seen. An ambiguous result is
-# reported as ambiguous; it is not rescued by retuning a threshold.
+# NO GATE MOVES after results are seen - in EITHER direction. Tightening a
+# threshold once a result is in hand is the same violation as loosening one, and
+# a condition whose magnitude floor is deliberately unset is judged on direction
+# alone, never against a magnitude bar invented at adjudication time. An
+# ambiguous result is reported as ambiguous; it is not rescued by retuning.
+#
+# OPEN ITEM, deliberately left visible (see the per-gate `status: proposed` on
+# g1_replication_band and its decision_rule below): the decision_rule here and
+# AMENDMENT.md section 10 item 5 do not agree on granularity. This file's rule
+# counts METRICS within an arm (one metric out = PARTIAL for that arm, two or
+# more = FAIL for that arm); the amendment's approved rule counts CELLS within
+# the pair (a cell outside ANY band makes that cell outside; one cell outside =
+# PARTIAL, both = FAIL). Whether a single out-of-band metric puts a cell
+# "outside" is therefore still genuinely unsettled. This must be resolved by a
+# governed revision BEFORE the rerun is adjudicated - never after seeing the
+# numbers. The rerun has not launched, so there is still time to settle it
+# honestly.
 #
 # These gates test the RERUN's numbers. They do not adjudicate the locked
 # headline matrix. Whatever G1 returns, the ORIGINAL seed-1 cells remain the
@@ -29,9 +44,9 @@
 #   kto    1     18.73        0.00           0.17           27.05        (CSV row 3)
 # ---------------------------------------------------------------------------
 
-status: proposed
-adjudicated_by: null            # lead + PI at sign time
-adjudicated_date: null
+status: signed
+adjudicated_by: lead + PI       # PI approval "Sign as drafted" (AMENDMENT.md section 10)
+adjudicated_date: 2026-08-01
 eval_population: selfaware-full-3369
 cohort_under_comparison: [2, 3]
 cell_under_test: seed 1, post-fix build
