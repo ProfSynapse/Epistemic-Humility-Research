@@ -1116,3 +1116,16 @@ Neither `not_confirmed_if` clause fires: over-refusal did not increase, and unkn
 Standing status after this entry: G0 PASS on every seed-2 cell closed so far; G1 seed-2 leg PASS; G2 seed-2 leg PASS; both G1 and G2 OPEN overall pending seed 3. G3 is a descriptive deliverable, computable only after all three seeds land.
 
 **Governance defect noted, NOT edited:** `gates.yaml` internally still carries `status: proposed`, `adjudicated_by: null`, `adjudicated_date: null` and a "DRAFTING PROPOSAL" header, even though the file is hash-pinned into a signed `experiment.yaml` (the same stale-banner class of defect the AMENDMENT banner records at line 6). The hash pin is authoritative and the thresholds are binding as written. The file was deliberately NOT edited: any byte change breaks the signed pin. Flagged to the PI for a governed housekeeping revision.
+
+## 2026-08-05 ~15:31Z — Stack 4 (clean_sft_grpo_kto, seed 2) training COMPLETE; closeout released
+
+Lead primary watch fired on `eh-grpo3seed-2-clean_sft_grpo_kto-train-20260805T135033Z` (exit 0; 13:50Z → 15:31Z, ~1h41m, matching the seed-2 KTO precedent). Backup polling monitor was armed in parallel after the stack-3 wake-latency instance; the primary fired on time this cycle. Lead-verified from run dir `clean_sft_grpo_kto_seed2_full/20260805_135100`:
+
+- `training_lineage.json`: training_type KTO, base_model = seed-2 grpo_v2 merged-16bit (`schema_clean_sft_grpo_v2_seed2_full/20260804_131151/Qwen3-4B-clean-sft-grpo-v2/merged-16bit`) — correct stage-3 source, same source stack 3 used; seed 2; batch 12 / grad-accum 1 / lr 1e-6 / beta 0.1 matching registered cell.yaml values; train_examples 29886 (frozen count, 1.00:1 True/False balance confirmed at dry-run).
+- 2491 steps, final loss 0.0884. `final_model` adapter present (268M).
+
+**Capacity note, recorded not adjudicated.** Peak GPU memory reserved 99.2%, `oom_risk_level: critical`. The run nonetheless completed clean at the registered batch 12, so the pre-registered batch-8 fallback (cell.yaml `capacity_watch`, step-250 recheck) was NOT taken and no divergence occurred. For comparison the stage-2 seed-2 KTO run peaked at 95.92%; stacking KTO on the grpo_v2 merged source costs roughly 3 points of headroom. This is a live risk for the seed-3 replicate of this same arm: 99.2% leaves almost no margin, and a marginally different allocation could OOM mid-run. Flagged for the seed-3 launch decision, where invoking the authorized batch-8 fallback at the step-250 recheck is a pre-registered option the lead may take on the observation rather than a change to registered values.
+
+Closeout released to executor6: stage prune + precheck, merge, 192-row bounded smoke on the merged checkpoint, full 3,369-row eval with the adapter on the seed-2 grpo_v2 merged base per lineage convention. Full eval lead-watched.
+
+This is the FINAL seed-2 arm. On its closeout the seed-2 chain is complete (8/8 arms) and seed 3 is green-lit by the PI (2026-08-05) to begin.
