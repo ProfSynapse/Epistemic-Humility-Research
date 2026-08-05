@@ -1129,3 +1129,39 @@ Lead primary watch fired on `eh-grpo3seed-2-clean_sft_grpo_kto-train-20260805T13
 Closeout released to executor6: stage prune + precheck, merge, 192-row bounded smoke on the merged checkpoint, full 3,369-row eval with the adapter on the seed-2 grpo_v2 merged base per lineage convention. Full eval lead-watched.
 
 This is the FINAL seed-2 arm. On its closeout the seed-2 chain is complete (8/8 arms) and seed 3 is green-lit by the PI (2026-08-05) to begin.
+
+## 2026-08-05 ~16:20Z — SEED-2 CHAIN COMPLETE (8/8 arms); stack 4 closed, G0 PASS
+
+Final full eval container `eh-grpo3seed-2-clean_sft_grpo_kto-full_eval-20260805T154134Z` exited 0. Lead verified from `results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_kto_seed2_full_4b`: n=3369 (2337 known / 1032 unknown), answer coverage 3369/3369, stated-confidence 3369/3369, thinking-tag hits 0, row `model` field uniformly `qwen3-4b-clean-sft-grpo-v2-merged-seed2` (correct lineage: adapter on the grpo_v2 merged base). Frozen count 29886 per training_lineage.json. **G0 for this cell: PASS.**
+
+### Seed-2 full-eval matrix, all eight arms (n=3369, values read from each arm's metrics.json at closeout)
+
+| arm | stage | recall | ans-on-unk | over-refusal | truthful | correct-on-known |
+| --- | --- | --- | --- | --- | --- | --- |
+| clean_sft (base) | 1 | 89.92 | 10.08 | 58.24 | 41.17 | 47.03 |
+| clean_sft_dpo | 2 | 89.34 | 10.66 | 55.97 | 41.32 | 45.68 |
+| clean_sft_kto | 2 | 85.66 | 14.34 | 54.00 | 40.31 | 44.09 |
+| clean_sft_grpo_v2 | 2 | 94.28 | 5.72 | 66.75 | 41.35 | 54.05 |
+| clean_sft_dpo_grpo | 3 | 94.38 | 5.62 | 65.81 | 41.50 | 53.07 |
+| clean_sft_kto_grpo | 3 | 93.31 | 6.69 | 64.23 | 41.26 | 51.08 |
+| clean_sft_grpo_dpo | 3 | 94.67 | 5.33 | 65.98 | 41.53 | 53.08 |
+| clean_sft_grpo_kto | 3 | 91.76 | 8.24 | 61.10 | 41.32 | 48.95 |
+
+G0 PASS on all eight cells. Gate status: **G1 seed-2 leg PASS**, **G2 seed-2 leg PASS** (both adjudicated in the entries above), both OPEN overall pending seed 3. G3 is descriptive and computable only after all three seeds land.
+
+### Descriptive observations, explicitly NOT gate adjudications
+
+1. **GRPO-first arms converge.** The three arms whose terminal stage is GRPO (grpo_v2, dpo_grpo, kto_grpo) land in a 93.3-94.4 recall band with answer-on-unknown 5.62-6.69, despite parents spanning 85.66-89.92 recall. At this seed the preceding preference stage barely moves where GRPO arrives.
+2. **`grpo_kto` is the outlier of the whole matrix and deserves attention at seed 3.** Running KTO after GRPO reopens unknown answering to 8.24 (+2.52 pp vs same-seed grpo_v2's 5.72) while delivering the largest over-refusal relief in the block (61.10, -5.65 pp vs grpo_v2). It is the only stage-3 arm that materially gives back GRPO's abstention gain. NOTE CAREFULLY: G2's registered comparison is `clean_sft_grpo_dpo` vs `clean_sft_grpo_v2` ONLY (gates.yaml `g2_post_grpo_preference_recovery_replicates`). `grpo_kto` is NOT a G2 comparison and is not adjudicated by that gate. The observation that its +2.52 pp reopening would exceed the +2.0 pp cap G2 applies to the DPO analogue is reported here as a DESCRIPTIVE parallel only — applying a registered gate to an unregistered comparison after seeing the number would be inventing a gate, and is not done.
+3. **Truthful is flat across every arm except stage-2 KTO** (41.17-41.53 for seven of eight; kto 40.31). Whatever these stages move, it is the abstention/over-refusal tradeoff, not aggregate truthfulness.
+4. **Over-refusal is the standing cost.** Every GRPO-touching arm sits at 61.1-66.8 against the base's 58.24. No stage-3 ordering recovered it to baseline at this seed.
+
+### Capacity record for seed-3 planning
+
+`clean_sft_grpo_kto` peaked at 99.2% GPU reserved (oom_risk critical) yet completed clean at registered batch 12; the pre-registered batch-8 fallback was not taken and no divergence occurred. Its stage-2 counterpart peaked at 95.92%. Seed 3 replicates this arm with almost no headroom; the authorized step-250 fallback is available as a pre-registered lead call on the observation.
+
+### Seed-2 compute accounting
+
+Training across the 8 arms: **24.37 GPU-hours** (grpo_v2 8.16, kto_grpo 5.01, dpo_grpo 4.66, kto 1.71, grpo_kto 1.67, dpo 1.40, grpo_dpo 1.34, clean_sft 0.43), computed from run-record timestamps because stage-boundary pruning removes the containers. With merges, smokes and eight full evals, seed 2 lands near 29-30 h against its 42 h allowance. Projecting seed 3 at the same shape puts the block near 60 h of the 83 h total.
+
+**Seed 3 is PI-green-lit (2026-08-05) and dispatched next.** Stage-1 config pre-staged and lead-verified: `configs/sft_schema_clean_response_confidence_seed3_full_config.py`, AST-compared against the seed-2 config across 48 assignment keys with exactly three changed (`config.seed` 2->3, `config.lora.random_state` 2->3, `config.training.output_dir` path). Foundation base present in the pinned cache (2.5 G).
