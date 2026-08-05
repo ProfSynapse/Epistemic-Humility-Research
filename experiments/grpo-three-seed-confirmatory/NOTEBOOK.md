@@ -1293,3 +1293,23 @@ Seed-2 precedent for the same arm: 12.055 GB / 50.23% at step 300 with `oom_risk
 Recorded honestly: seed 3 is running HIGHER at this point in the run than seed 2 was (72.49% at step 250 vs 50.23% at step 300). If the trajectory scales similarly it will exceed seed-2's 95.92% peak, and the neighbouring stage-3 arm `clean_sft_grpo_kto` already peaked at 99.2% at seed 2. So an OOM later in this run is a live possibility. That does not change the step-250 ruling, which is made on the step-250 condition as registered. If the run does OOM, that is a G0 `training_completed_clean` failure handled the same way as the seed-3 stage-1 CUDA crash: instrument stop, diagnose, relaunch — and at THAT point the batch-8 fallback becomes the appropriate pre-registered repair, because the condition would then have actually been met.
 
 **Addendum, step 430 (~20:15Z):** the concern flagged above does not materialize. `max_gpu_memory_reserved_pct` (the trainer's own running high-water mark) still reads **72.49%** at step 430 of 2491, i.e. the step-250 value WAS the peak and has not been exceeded in the following 180 steps; the instantaneous reading at 425 had fallen to 54.53%. So the step-250 number was a transient allocation spike tied to batch content length, not the start of a rising trajectory toward seed-2's 95.92%. No OOM concern, no fallback, no change to the plan. Pace 2.54 s/step, projecting KTO training completion around 21:35Z.
+
+## 2026-08-05 21:39Z — Seed-3 stage-2 KTO training COMPLETE, clean
+
+Container `eh-grpo3seed-3-clean_sft_kto-train-20260805T195707Z` exited **0** at 21:39:05Z. Read from the docker-wait OUTPUT FILE, per the standing rule that a background wait task's own reported exit status is the status of the wait command and not of the container.
+
+Training facts, verified directly from artifacts rather than from the executor's report:
+
+- `results.final_step` 2491 of 2491, `total_epochs` 1.0, `final_loss` 0.0896, `training_time` 1h 39m 56s, `runtime.status` "completed".
+- `final_model/` carries `adapter_model.safetensors` + `adapter_config.json` + tokenizer files; `training_lineage.json` present. G0 `training_completed_clean` satisfied for this cell.
+- `model.base_model` points at the seed-3 stage-1 merged-16bit (`sft_schema_clean_seed3_full/20260805_163620/.../merged-16bit`), so merge-first lineage holds.
+- `dataset.train_examples` **29886**, matching the frozen KTO count in the audit.
+- `training.seed` 3, `batch_size` 12, `learning_rate` 1e-06, `beta` 0.1, desirable/undesirable weight 1.0/1.0.
+
+**The near-miss check clears.** `training_lineage.json` `lora` reads **rank 32, alpha 64, dropout 0.05**, and `final_model/adapter_config.json` independently reads `r: 32, lora_alpha: 64, lora_dropout: 0.05`. The KTO trainer's baked-in defaults of r64/alpha128 did NOT leak through. The explicit `--lora-r 32 --lora-alpha 64 --lora-dropout 0.05` flags did their job. Two independent artifacts agree, which is the standard this check should be held to going forward, since the lineage file and the adapter config are written by different code paths.
+
+**Replication health.** Seed-3 loss tracks seed-2 closely across the run: step 250 0.4624 vs 0.4693, step 425 0.2307 vs 0.2334, step 500 0.1280 vs 0.1050, step 750 0.0269 vs 0.0401, step 890 0.0116 vs 0.0089. Both runs report the same 2491 total steps, which independently confirms the frozen dataset and step budget resolved identically across seeds.
+
+**Capacity, closing the thread opened at step 250.** Final peak was **92.25%**, against seed-2's 95.92% on the same arm. So the late spike I speculated about DID occur: the 72.49% plateau that held flat from step 250 through step 890 was not the whole story, and KTO's high-water mark on this arm arrives late in the run. My step-250 ruling was correct on its own terms and the fallback was correctly not taken, but the intermediate reassurance I recorded at step 430 (reading the flat plateau as evidence the peak was already in) was reasoning past the evidence. A flat high-water mark over 640 steps bounds what has happened, not what will. The useful generalization for this arm type: judge KTO capacity risk against the seed-2 whole-run peak, not against any mid-run plateau.
+
+Dispatched to executor6 for closeout (merge, 192-row smoke, full eval on the source merged base per the terminal-arm lineage convention). Nothing about G0 beyond `training_completed_clean` is adjudicable for this cell until smoke lands.
