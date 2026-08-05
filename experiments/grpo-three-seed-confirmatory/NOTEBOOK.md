@@ -1313,3 +1313,25 @@ Training facts, verified directly from artifacts rather than from the executor's
 **Capacity, closing the thread opened at step 250.** Final peak was **92.25%**, against seed-2's 95.92% on the same arm. So the late spike I speculated about DID occur: the 72.49% plateau that held flat from step 250 through step 890 was not the whole story, and KTO's high-water mark on this arm arrives late in the run. My step-250 ruling was correct on its own terms and the fallback was correctly not taken, but the intermediate reassurance I recorded at step 430 (reading the flat plateau as evidence the peak was already in) was reasoning past the evidence. A flat high-water mark over 640 steps bounds what has happened, not what will. The useful generalization for this arm type: judge KTO capacity risk against the seed-2 whole-run peak, not against any mid-run plateau.
 
 Dispatched to executor6 for closeout (merge, 192-row smoke, full eval on the source merged base per the terminal-arm lineage convention). Nothing about G0 beyond `training_completed_clean` is adjudicable for this cell until smoke lands.
+
+## 2026-08-05 ~21:50Z — G0 ADJUDICATED **PASS**: seed 3, cell `clean_sft_kto`
+
+Adjudicated against `gates.yaml` read at adjudication time, sha256 `7c79a41894a1fc64df01f07bbb197f8c25239d8625e3d9f3d8bbc97d3e51c0fa`, byte-identical to the signed `experiment.yaml` pin. All five checks verified by the lead from artifacts, not relayed from the executor's report.
+
+| check | verdict | evidence |
+|---|---|---|
+| `merge_first_lineage` | PASS | `training_lineage.json` `model.base_model` = `sft_schema_clean_seed3_full/20260805_163620/.../merged-16bit`, a merged source model, not the foundation and not an adapter path |
+| `bounded_smoke_coverage` | PASS | 192 rows: `generated_answer` present 192/192, `stated_confidence` present 192/192 (`coverage_pct` 100.0, `n_missing_confidence` 0), thinking-tag hits **0** on a substring scan for `<think>` / `</think>` / `reasoning_content`, `enable_thinking` uniformly False |
+| `training_completed_clean` | PASS | exit 0, `runtime.status` "completed", `final_step` 2491/2491, `final_model/adapter_model.safetensors` + `adapter_config.json` present, `training_lineage.json` present |
+| `dataset_audit_matches_frozen` | PASS | `dataset.train_examples` **29886**, matching the KTO count this amendment freezes |
+| `containment` | PASS | nothing staged; untracked files in the worktree are eval configs and the seed-3 SFT config only. Weights, merged checkpoints, and scored rows all confirmed gitignored |
+
+Merge verified independently: shard bytes **4,967,215,360** and **3,077,766,632**, exact match to the standard merged-16bit sizes.
+
+Containment note worth recording, because the first probe looked alarming. `git check-ignore` initially reported the not-yet-created full-eval results directory as NOT ignored, which would have been a real hole on a public repo. It is not one. The rule is `archive/experiment/phase1/eval/.gitignore:9: results_*/`, and the trailing slash means the pattern needs a directory to match; probing a path that does not exist yet cannot confirm directory-ness, so the rule silently fails to fire. Probing a hypothetical file INSIDE that directory matches the rule correctly. The generalizable lesson: when checking containment for an output path that has not materialized yet, probe a hypothetical file inside it, never the bare directory, or a trailing-slash ignore rule will read as absent.
+
+**Not read as outcome.** The smoke run also emits outcome-shaped metrics (`refusal_recall_pct` 80.0, `over_refusal_pct` 58.76, `answer_on_unknown_pct` 20.0, `truthful_pct` 46.88 at n=192). G0 is `stop_before_outcome`, and 192 rows is an instrument check, not an outcome sample. These numbers are recorded as instrument telemetry only and are NOT evidence toward G1 or G2, which read the 3,369-row full eval.
+
+Full eval launched detached at 21:47Z, container `eh-grpo3seed-3-clean_sft_kto-fulleval-20260805T214718Z`, adapter-on-source-base per the terminal-arm lineage convention (verified: eval `model_name` equals this run's `training_lineage.json` `model.base_model`; `adapter` = the KTO `final_model`). Dual watches armed.
+
+Lead error corrected for the record: my closeout dispatch told the executor to dry-run the eval launch. `run_eval.py` exposes no `--dry-run`; that flag exists only on the SFT/DPO/KTO/GRPO trainers. The executor flagged it rather than improvising a substitute, which is the correct handling.
