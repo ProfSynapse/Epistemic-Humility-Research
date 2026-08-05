@@ -291,6 +291,22 @@ same sign-off.
    outside any band: FAIL (same retirement applies to both arms). No pooling
    across arms in any of the three outcomes.
 
+   **Governed revision 2026-08-05.** `gates.yaml`'s `g1_replication_band`
+   `decision_rule` did not match this item: it counted METRICS within an arm
+   (one metric out = PARTIAL for that arm, two or more = FAIL for that arm) and
+   left the question open, calling it "a sign-time decision" that was never
+   closed in that file. The two therefore disagreed on whether a single
+   out-of-band metric puts a cell "outside". Found 2026-08-05 while correcting
+   that file's stale sign-time metadata, surfaced rather than silently
+   harmonized, and resolved by the PI the same day in favour of THIS text: a
+   cell is outside when ANY ONE of its four metrics is outside its band.
+   `gates.yaml` was revised to restate it and repinned (audit entry in
+   `experiment.yaml` `instrument.repins`). Resolved BEFORE launch, so no rerun
+   number informed the choice. Note this is the STRICTER reading and, given the
+   narrow floor-driven bands described in `power_disclosure`, makes a PARTIAL
+   comparatively easy to trigger on eval discreteness alone; that cost was
+   accepted knowingly.
+
 ## Predictions scoreboard
 
 | Predictor | Call |

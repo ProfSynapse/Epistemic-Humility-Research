@@ -10,17 +10,13 @@
 # alone, never against a magnitude bar invented at adjudication time. An
 # ambiguous result is reported as ambiguous; it is not rescued by retuning.
 #
-# OPEN ITEM, deliberately left visible (see the per-gate `status: proposed` on
-# g1_replication_band and its decision_rule below): the decision_rule here and
-# AMENDMENT.md section 10 item 5 do not agree on granularity. This file's rule
-# counts METRICS within an arm (one metric out = PARTIAL for that arm, two or
-# more = FAIL for that arm); the amendment's approved rule counts CELLS within
-# the pair (a cell outside ANY band makes that cell outside; one cell outside =
-# PARTIAL, both = FAIL). Whether a single out-of-band metric puts a cell
-# "outside" is therefore still genuinely unsettled. This must be resolved by a
-# governed revision BEFORE the rerun is adjudicated - never after seeing the
-# numbers. The rerun has not launched, so there is still time to settle it
-# honestly.
+# RESOLVED 2026-08-05 by governed revision, before launch and before any rerun
+# number existed. This file's decision_rule previously counted METRICS within an
+# arm while AMENDMENT.md section 10 item 5 counted CELLS within the pair, and
+# the two disagreed on whether one out-of-band metric puts a cell "outside". The
+# amendment text GOVERNS (PI, 2026-08-05); g1_replication_band's decision_rule
+# now restates it verbatim in effect, and its revision note records what was
+# superseded and why. Nothing else about the gate moved.
 #
 # These gates test the RERUN's numbers. They do not adjudicate the locked
 # headline matrix. Whatever G1 returns, the ORIGINAL seed-1 cells remain the
@@ -121,7 +117,7 @@ gates:
     kind: claim
     scope: per_arm
     gating: false
-    status: proposed
+    status: signed
     interpretation: >-
       G1 asks a NARROW question: did moving seed 1 onto the corrected dataset
       build change the seed-1 result by more than the run-to-run variation the
@@ -198,10 +194,34 @@ gates:
           band: [26.05, 27.76]
 
     decision_rule: >-
-      PROPOSED: an arm PASSES G1 when all four metrics land inside their bands.
-      An arm with one metric outside its band is reported as PARTIAL and lifted
-      to the lead; two or more outside is a FAIL for that arm. Whether a single
-      out-of-band metric should count as a failure is a sign-time decision.
+      RESOLVED 2026-08-05 by governed revision (PI: "thats fine for the
+      amendment text governing"). AMENDMENT.md section 10 item 5 GOVERNS, and
+      this rule is restated to match it exactly. A CELL (arm) is "outside" when
+      ANY ONE of its four metrics lands outside that metric's band - a single
+      out-of-band metric is sufficient. Each cell adjudicates independently
+      against its own four bands. Both cells inside: PASS for the pair (the
+      pre-fix seed-1 rows are confirmed as valid bounded comparators; the
+      confound is provenance-only). Exactly one cell outside: PARTIAL (that
+      arm's pre-fix seed-1 row is retired as a comparator, paper-2 numbers for
+      that arm recompute from the rerun row, and the published caveat
+      escalates). Both cells outside: FAIL (same retirement applies to both
+      arms). No pooling across arms in any of the three outcomes.
+    decision_rule_revision_note: >-
+      The superseded text counted METRICS within an arm (one metric out =
+      PARTIAL for that arm, two or more = FAIL for that arm) and explicitly
+      deferred the question, calling it "a sign-time decision". That deferral
+      was never closed in this file, so the file and AMENDMENT.md section 10
+      item 5 - which WAS adjudicated and PI-approved on 2026-08-01 - disagreed
+      on whether one out-of-band metric puts a cell outside. The conflict was
+      found on 2026-08-05 while correcting this file's stale sign-time metadata,
+      surfaced rather than silently harmonized, and resolved here in favour of
+      the approved amendment text. Resolved BEFORE the rerun launched and
+      therefore before any rerun number existed: no result informed this choice.
+      Read with power_disclosure below - these bands are narrow and
+      floor-driven, so this is the STRICTER of the two readings and a PARTIAL is
+      correspondingly easy to trigger on eval discreteness alone. That cost was
+      accepted knowingly in exchange for the rule matching the text the PI
+      actually approved.
 
     power_disclosure: >-
       READ THIS BEFORE ADJUDICATING. This gate has LOW POWER to detect a
