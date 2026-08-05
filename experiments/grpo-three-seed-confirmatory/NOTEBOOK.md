@@ -1095,3 +1095,24 @@ G0 for this cell: PASS (coverage + lineage + frozen count 14943 per training_lin
 Navigation note for G2 (NOT an adjudication — G2 is adjudicated only when all four stacks close, from the gates.yaml criteria): at seed 2, `grpo_dpo` (94.67 / 5.33 / over-refusal 65.98) does not reproduce the seed-1 over-refusal relief relative to same-seed `grpo_v2` (94.28 / 5.72 / 66.75) — the over-refusal delta is −0.77pp here. Seed-1 Amendment G recorded a larger relief on that comparison. All five seed-2 GRPO-terminal arms now sit in a 93.3-94.7 recall band with over-refusal 64.2-66.8, i.e. a tight cluster regardless of stage order. Whether that constitutes a G2 PASS/FAIL is deferred to the gate criteria after stack 4.
 
 Stack 4 released to executor6: clean_sft_grpo_kto — KTO on the seed-2 grpo_v2 merged source, registered values bs12 / ga1 / lr1e-6 / beta0.1 with the authorized step-250 VRAM recheck and batch-8 fallback. Dry-run first per the endorsed standing practice. Expected ~1h40m per the seed-2 KTO precedent. Lead holds the training watch.
+
+## 2026-08-05 ~14:00Z — G2 seed-2 leg ADJUDICATED: PASS (lead correction of a prior mischaracterization)
+
+Read `gates.yaml` as the binding criteria before adjudicating. Integrity check: `sha256sum gates.yaml` = 7c79a41894a1fc64df01f07bbb197f8c25239d8625e3d9f3d8bbc97d3e51c0fa, byte-identical to the pin recorded in the signed `experiment.yaml`. These thresholds are the signed criteria.
+
+**G2 (`g2_post_grpo_preference_recovery_replicates`), seed-2 leg.** Comparison as registered: `clean_sft_grpo_dpo` vs same-seed `clean_sft_grpo_v2`. Both values re-read from full-eval `metrics.json` at adjudication time:
+
+| metric | grpo_v2 (denominator) | grpo_dpo | delta | registered condition | result |
+| --- | --- | --- | --- | --- | --- |
+| over_refusal_pct | 66.75 | 65.98 | −0.77 pp | direction `decrease`, `min_magnitude_pp: null` (deliberately unset) | MET |
+| answer_on_unknown_pct | 5.72 | 5.33 | −0.39 pp | `must_not_increase_by_more_than_pp: 2.0` | MET (no reopening at all) |
+
+Neither `not_confirmed_if` clause fires: over-refusal did not increase, and unknown answering did not reopen. **G2 seed-2 leg: PASS.** Overall G2 remains OPEN pending the seed-3 leg (`pass_if: both conditions hold in BOTH seed 2 and seed 3`).
+
+**Lead correction, recorded deliberately.** The prior entry (b0df73a9) and the lead's report to the PI framed this arm as failing to replicate seed 1 and as "a real replication concern for the stacking claim," reasoning from the shrunken effect size (−0.77 pp here vs −2.99 pp at seed 1). That framing applied a magnitude standard the signed gate explicitly declines to set. The gate's own derivation says why: "No magnitude floor is set: at −2.99 pp the effect is too small for a two-seed block to bound ... A magnitude bar here would invent precision the instrument does not have." Judging the arm against an unregistered magnitude bar is goalpost movement in the strict direction, and it is as much a protocol violation as loosening a threshold would be. The gate text governs; the earlier prose does not. The attenuation is still worth REPORTING as a descriptive observation (and G3 three-seed intervals will quantify it properly), but it is not a gate failure and must not be written up as one.
+
+**Second correction:** the prior entry and the lead's PI report said G2 "becomes computable when all four stacks close." That is wrong. G2's registered comparison involves only `clean_sft_grpo_dpo` and `clean_sft_grpo_v2`, both of which closed before stack 4 launched; the seed-2 leg was adjudicable at stack-3 closeout. `clean_sft_grpo_kto` is required for chain completeness and for G3's per-arm three-seed intervals, not for G2.
+
+Standing status after this entry: G0 PASS on every seed-2 cell closed so far; G1 seed-2 leg PASS; G2 seed-2 leg PASS; both G1 and G2 OPEN overall pending seed 3. G3 is a descriptive deliverable, computable only after all three seeds land.
+
+**Governance defect noted, NOT edited:** `gates.yaml` internally still carries `status: proposed`, `adjudicated_by: null`, `adjudicated_date: null` and a "DRAFTING PROPOSAL" header, even though the file is hash-pinned into a signed `experiment.yaml` (the same stale-banner class of defect the AMENDMENT banner records at line 6). The hash pin is authoritative and the thresholds are binding as written. The file was deliberately NOT edited: any byte change breaks the signed pin. Flagged to the PI for a governed housekeeping revision.
