@@ -1359,3 +1359,28 @@ The consequence for reading G1: its two conditions are not two independent piece
 This is recorded as interpretation, and it changes NOTHING about the gate. The comparison, the 3.0 pp floor, the both-seeds requirement, and the pass/not-confirmed rule all stand exactly as signed, and the seed-3 band above is computed from them as written. The reason to record it is that when the verdict is written up, G1 should not be described as two corroborating findings; describing it that way would overstate the evidence. It also means the seed-1 derivation in the gate text ("-6.39 pp answer-on-unknown and +6.39 pp refusal recall") is one effect reported twice, which is consistent with the identical magnitudes.
 
 Flagging for the red-team pass at resolve time rather than acting on it now.
+
+## 2026-08-05 ~22:05Z — Seed-3 `clean_sft_grpo_v2` config PREPARED and lead-verified (pre-launch, not yet launched)
+
+CPU-only prep while the KTO full eval held the GPU. Nothing launched. Recorded before the launch verb, per the launch guard.
+
+**Structured diff re-derived by the lead**, not accepted from the report: `yaml.safe_load` + flattened key comparison of the seed-3 config against seed 2. 63 keys on both sides, symmetric difference of the key sets EMPTY, exactly **4** differing values, all seed-scoped:
+
+| key | seed 2 | seed 3 |
+|---|---|---|
+| `seed` | 2 | 3 |
+| `lora.random_state` | 2 | 3 |
+| `model.model_name` | `sft_schema_clean_seed2_full/20260731_232307/.../merged-16bit` | `sft_schema_clean_seed3_full/20260805_163620/.../merged-16bit` |
+| `training.output_dir` | `schema_clean_sft_grpo_v2_seed2_full` | `schema_clean_sft_grpo_v2_seed3_full` |
+
+Registered values confirmed intact in the seed-3 file: `lora.r` 32, `lora.lora_alpha` 64, `lora.lora_dropout` 0.05, `per_device_train_batch_size` 32, `num_generations` 4 (cell.yaml :88-96; AMENDMENT.md frozen input 15 :305-309). Base checkpoint exists on disk. GRPO datasets verified from three independent sources that agree: `grpo_train.jsonl` 14888 lines, `grpo_dev.jsonl` 1655 lines, and `grpo_manifest.json` stating train_rows 14888 / dev_rows 1655, all matching the amendment-frozen counts. Reward file `humility_reward_v2.py` present at the config's resolved path.
+
+**`lora.random_state: 3` verified against the record, not assumed.** The 2026-07-31 LEAD RULING entry ("lora.random_state mirrors the seed number") is present in this NOTEBOOK, and a later entry sharpens it: the DPO/KTO trainers expose no `--lora-random-state` flag, so those stages use the trainer baseline 3407, and the seed-mirroring ruling applies only where a config file carries `lora.random_state`, namely SFT and GRPO. The GRPO config does carry it, so 3 is correct here, and the DPO/KTO 3407 baseline already used this seed is also correct. Two different conventions, both intentional.
+
+**Lead instruction error, third this cycle, corrected by the executor.** My prep dispatch told it to pass `--lora-r / --lora-alpha / --lora-dropout` explicitly, generalizing the KTO fix. That is not applicable: `train_grpo.py` is YAML-driven, and its entire CLI surface is `--config / --dry-run / --resume-from-checkpoint / --model-name / --dataset-name / --dataset-file / --local-file / --use-gspo / --pivot-profile-only` (:156-168). There are no LoRA, seed, batch, or LR flags to pass; every hyperparameter lives in the YAML. So the correct safety check for GRPO is not "pass explicit flags" but "read the resolved values in the YAML", which is what was done. Noting the pattern: the anti-defaults lesson from KTO is real, but its MECHANISM is trainer-specific, and I twice tried to port a mechanism rather than the principle. The portable principle is "verify resolved hyperparameters against the registered spec by whatever route that trainer exposes."
+
+For completeness, the GRPO trainer's baked-in defaults are r32 / alpha64 / dropout 0.05, which happen to match the registered spec (unlike KTO's r64/alpha128). Moot here, since the YAML sets every value explicitly.
+
+**Known limitation, honestly flagged rather than papered over.** The two eval configs cannot be fully resolved yet: both need the run-directory timestamp the GRPO trainer generates at launch. They were written with every other field resolved and an explicit `<SEED3_GRPO_V2_TIMESTAMP>` placeholder plus a notice block, rather than a guessed timestamp. They get finalized after training and merge, exactly as the DPO and KTO eval configs did. The full-eval `model_name` (seed-3 SFT merged base) IS fully resolved, since that checkpoint exists; only the adapter path carries the placeholder.
+
+Launch is HELD pending: KTO full eval completing (one GPU job at a time), and lead clearance.
