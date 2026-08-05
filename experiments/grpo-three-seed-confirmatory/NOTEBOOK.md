@@ -1027,3 +1027,17 @@ Lead primary watch fired on `eh-grpo3seed-2-clean_sft_dpo_grpo-train-20260804T22
 Executor5 unreachable after lead-session compaction (same severance mode as earlier successions). Executor6 spawned with the standing closeout spec: stage prune + free-space precheck, merge, 192-row smoke on merged, full eval (adapter on source merged base per lineage convention), pinned-digest check before every launch, short ops foreground, long eval lead-watched.
 
 Next after stack-1 closeout: stack 2 kto_grpo (config pre-staged: `configs/grpo_clean_sft_kto_grpo_seed2_full.yaml`).
+
+## 2026-08-05 ~03:30Z — Stack 1 (clean_sft_dpo_grpo, seed 2) CLOSED; stack 2 (kto_grpo) released
+
+Full eval container `eh-grpo3seed-2-clean_sft_dpo_grpo-full_eval-20260805T025548Z` exited 0. Lead verified from `results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_grpo_seed2_full_4b` artifacts (coverage re-derived from scored_rows.jsonl, newline-only split):
+
+- n=3369 (2337 known / 1032 unknown), answer coverage 3369/3369, stated-confidence coverage 3369/3369, thinking-tag hits 0. Row `model` field uniformly `qwen3-4b-clean-sft-dpo-merged-seed2` — correct lineage (adapter on seed-2 DPO merged base).
+- Headline: refusal_recall 94.38, answer_on_unknown 5.62, over_refusal 65.81, truthful 41.50, correct_on_known 53.07, refusal_rate 74.56.
+- Same-seed comparisons (navigation, G2 adjudication deferred until all stacks close): vs DPO parent (89.34/10.66) the GRPO stage moves answer-on-unknown −5.04pp; vs base (89.92/10.08) −4.46pp; endpoint nearly coincides with same-seed grpo_v2 (94.28/5.72, over_refusal 66.75 vs 65.81).
+- Bounded smoke on the newly-merged checkpoint (earlier this cycle): 192/192 answer, 192/192 confidence, 0 thinking-tag hits, enable_thinking uniformly False — G0 bounded-smoke leg PASS, lead re-derived independently.
+- Training record (prior entry): 1861 steps, final loss 0.0962, final reward 1.0998.
+
+G0 for this cell: PASS (coverage + lineage + frozen dataset counts per training_lineage.json train_examples 14888).
+
+Stack 2 released to executor6: clean_sft_kto_grpo training from the seed-2 KTO merged source, pre-staged config `configs/grpo_clean_sft_kto_grpo_seed2_full.yaml`, dry-run before launch, lead holds the primary watch.
