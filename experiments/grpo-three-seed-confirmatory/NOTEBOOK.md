@@ -1335,3 +1335,27 @@ Containment note worth recording, because the first probe looked alarming. `git 
 Full eval launched detached at 21:47Z, container `eh-grpo3seed-3-clean_sft_kto-fulleval-20260805T214718Z`, adapter-on-source-base per the terminal-arm lineage convention (verified: eval `model_name` equals this run's `training_lineage.json` `model.base_model`; `adapter` = the KTO `final_model`). Dual watches armed.
 
 Lead error corrected for the record: my closeout dispatch told the executor to dry-run the eval launch. `run_eval.py` exposes no `--dry-run`; that flag exists only on the SFT/DPO/KTO/GRPO trainers. The executor flagged it rather than improvising a substitute, which is the correct handling.
+
+## 2026-08-05 ~21:55Z — G1 seed-3 thresholds PRE-STATED (recorded before the deciding result exists)
+
+Written while `clean_sft_grpo_v2` seed 3 has not been trained, let alone evaluated. The point of recording now is that a threshold stated after seeing the number is not a threshold.
+
+G1 text, read verbatim from `gates.yaml` at sha256 `7c79a41894a1fc64df01f07bbb197f8c25239d8625e3d9f3d8bbc97d3e51c0fa`: comparison `clean_sft_grpo_v2` vs same-seed `clean_sft_merged`, `requires_same_seed_denominator: true`, conditions `answer_on_unknown_pct` decrease >= 3.0 pp AND `refusal_recall_pct` increase >= 3.0 pp, `pass_if` both hold in BOTH seeds, `not_confirmed_if` either seed shows a sign flip or a movement smaller than 3.0 pp on either metric.
+
+**Seed-3 denominator**, read from the artifact rather than from prose: `results_grpo3seed_..._clean_sft_seed3_merged_full_4b/clean_schema_sft_merged_seed3__selfaware/metrics.json`, n=3369, `refusal_recall_pct` **88.28**, `answer_on_unknown_pct` **11.72**.
+
+**Therefore the seed-3 G1 leg passes if and only if, at n=3369:**
+- `answer_on_unknown_pct` <= **8.72** (11.72 minus the 3.0 pp floor), AND
+- `refusal_recall_pct` >= **91.28** (88.28 plus the 3.0 pp floor).
+
+Any value strictly inside that band is `not_confirmed`, which under a falsifier gate is a real result and gets reported as one. Seed 2 for reference already cleared its own band: base 89.92 / 10.08 against grpo_v2 94.28 / 5.72, a movement of 4.36 pp on both metrics.
+
+### The two G1 conditions are one measurement stated twice
+
+Checked across all 21 eval runs in this block, smoke and full: `refusal_recall_pct + answer_on_unknown_pct = 100.00` exactly, in every single run, with no exceptions. On unknown-labelled questions the instrument admits exactly two outcomes, refuse or answer, so the two rates are exact complements by construction.
+
+The consequence for reading G1: its two conditions are not two independent pieces of evidence. A 3.0 pp fall in unknown answering IS a 3.0 pp rise in refusal recall, necessarily, on the same rows. The gate cannot fail one condition and pass the other, and the "both conditions" phrasing conveys no more confirmatory weight than either condition alone. G1 is, in substance, a single-condition direction-plus-floor test on one quantity.
+
+This is recorded as interpretation, and it changes NOTHING about the gate. The comparison, the 3.0 pp floor, the both-seeds requirement, and the pass/not-confirmed rule all stand exactly as signed, and the seed-3 band above is computed from them as written. The reason to record it is that when the verdict is written up, G1 should not be described as two corroborating findings; describing it that way would overstate the evidence. It also means the seed-1 derivation in the gate text ("-6.39 pp answer-on-unknown and +6.39 pp refusal recall") is one effect reported twice, which is consistent with the identical magnitudes.
+
+Flagging for the red-team pass at resolve time rather than acting on it now.
