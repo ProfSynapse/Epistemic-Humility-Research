@@ -1445,3 +1445,24 @@ Preconditions checked: GPU free (KTO full eval terminated, exit 0, artifacts ver
 Since the two G1 metrics are exact complements on this instrument (verified across 21 runs), these two criteria are one test, and they will pass or fail together. The verdict will be written that way.
 
 No goalpost may move from here in either direction. The threshold is fixed, the denominator is fixed, and both were fixed before the deciding data existed.
+
+## 2026-08-05 22:17:19Z — `clean_sft_grpo_v2` seed 3 LAUNCHED (G1 deciding leg)
+
+Container `eh-grpo3seed-3-clean_sft_grpo_v2-train-20260805T221719Z`, started 22:17:19Z, run directory `schema_clean_sft_grpo_v2_seed3_full/20260805_221744`.
+
+Preflight passed twice (before dry-run and before the real launch): pinned digest matched char-for-char, GPU idle 0MiB/0%, 160G free.
+
+Dry-run resolved values, reported from the trainer's banner: model = the seed-3 SFT merged base, LoRA rank 32 / alpha 64 / dropout 0.05 across q,k,v,o,gate,up,down_proj, reward `epistemic_humility_reward` weight 1.0 loaded, dataset **14888** examples formatted 14888/14888 matching the frozen count, batch 32 x grad-accum 1, 4 generations per prompt, max prompt 512, max completion 128, LR 5e-6.
+
+**A gap the executor flagged rather than papered over, now closed by the lead.** The GRPO trainer's dry-run banner does not print `seed` or `lora.random_state` at all; the executor said so explicitly instead of implying it had confirmed them, which is the correct handling and is worth recording as such. Its reasoning that the values are correct by construction (GRPO is YAML-driven, the trainer exposes no `--seed` or LoRA flags, so the config file is the only route those values can reach the trainer) is sound but is an argument, not an observation. Closed with direct observation:
+
+- `docker inspect` of the RUNNING container: image is `sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`, identical to the pin, and `Config.Cmd` is `["train_grpo.py","--config","/workspace/repo/experiments/grpo-three-seed-confirmatory/configs/grpo_schema_clean_sft_merged_seed3_v2_full.yaml"]`.
+- That host path, read directly: `seed: 3`, `lora.random_state: 3`, `r: 32`, `lora_alpha: 64`, `lora_dropout: 0.05`, model = seed-3 SFT merged base, output_dir = the seed-3 grpo_v2 run root.
+
+So the file actually passed to the actually-running pinned image carries the seed-scoped values. Re-verify at closeout against `training_lineage.json`, which is written from the resolved config and is the artifact of record.
+
+**Containment note worth carrying forward.** The GRPO trainer calls `print_dataset_samples` and prints two full raw dataset rows (prompt, id, label) to stdout as stock behavior. That means this container's `docker logs` output CONTAINS question text. The repo is public. Consequence: never paste `docker logs` for a GRPO container into the repo, a report, a commit message, or an issue, and never redirect that stdout to a tracked path. Nothing was persisted here. Candidate for the local-runtime skill at the next doc pass.
+
+Minor, recorded so it is not mistaken later for the real run: the dry-run left an empty run directory at `schema_clean_sft_grpo_v2_seed3_full/20260805_221623` containing only empty `checkpoints/` and `logs/` subdirs. The real run is `20260805_221744`.
+
+Dual watches armed. Expect a long run; the seed-1 GRPO precedent in the archive notes ran roughly 6.8h. No result is adjudicable until the full eval, and the G1 band stands as pre-stated: PASS iff `answer_on_unknown_pct` <= 8.72 AND `refusal_recall_pct` >= 91.28.
