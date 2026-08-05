@@ -327,6 +327,41 @@ def _module_persistence_problems(instrument: dict) -> list[str]:
     return problems
 
 
+def _stale_gate_status_problems(exp_dir: Path, data: dict) -> list[str]:
+    """Flag a signed-or-later experiment whose gates.yaml still reads as a draft.
+
+    Returns human-readable problems (empty = ok). Checked only at `signed` and
+    beyond: a draft experiment SHOULD carry `status: proposed` in its gates file.
+    """
+    if data.get("status") not in SIGNED_PLUS:
+        return []
+    gates_path = exp_dir / "gates.yaml"
+    if not gates_path.is_file():
+        return []
+    try:
+        gates = yaml.safe_load(gates_path.read_text(encoding="utf-8"))
+    except Exception:
+        return []  # malformed gates files are another check's problem
+    if not isinstance(gates, dict):
+        return []
+
+    problems: list[str] = []
+    if gates.get("status") == "proposed":
+        problems.append(
+            "gates.yaml declares `status: proposed` but the experiment is "
+            f"{data.get('status')!r}; the pinned thresholds are binding. Correct "
+            "the gates file via `bin/exp repin` (pre-run only) or a governed "
+            "revision -- never by editing a pinned file in place."
+        )
+    for field in ("adjudicated_by", "adjudicated_date"):
+        if field in gates and gates.get(field) is None:
+            problems.append(
+                f"gates.yaml leaves {field} null on a {data.get('status')!r} "
+                "experiment; record who signed the thresholds and when."
+            )
+    return problems
+
+
 def _is_untracked_data_input(rel: str) -> bool:
     """True when an input path lives under an experiment's gitignored data dir.
 
@@ -407,6 +442,18 @@ def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[s
     # exploratory cell) never starts failing validate retroactively; nothing
     # here can move a manifest's goalposts after the fact.
     for p in _module_persistence_problems(instrument):
+        print(f"exp validate: warning: {slug}: {p}", file=sys.stderr)
+
+    # A signed experiment whose gates.yaml still declares itself `proposed` (or
+    # leaves the sign-time adjudication fields null) reads as unsettled to anyone
+    # who opens the gates file directly, even though the hash pin in this
+    # manifest is what actually binds. That ambiguity is dangerous in exactly one
+    # direction: it invites a reader to treat a frozen threshold as still
+    # negotiable at adjudication time. Warning-only, and deliberately NOT
+    # auto-repaired -- the file is hash-pinned, so any byte change must go
+    # through `bin/exp repin` (pre-run) or a governed revision, never a silent
+    # rewrite. See the grpo-three-seed-confirmatory NOTEBOOK entry of 2026-08-05.
+    for p in _stale_gate_status_problems(mpath.parent, data):
         print(f"exp validate: warning: {slug}: {p}", file=sys.stderr)
 
     inputs = data.get("inputs", []) or []
