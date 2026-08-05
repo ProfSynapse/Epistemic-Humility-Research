@@ -1015,3 +1015,15 @@ is a hard stop.
 - Budget correction. Measured seed-1 full-eval wall-clock is 21–41 minutes per
   arm, not ~4 h; ~4 h is the total across all eight evals in a seed. The ~24 h
   training figure per seed holds (measured 26.2 h).
+
+## 2026-08-05 ~02:45Z — Stack 1 (clean_sft_dpo_grpo, seed 2) training COMPLETE; executor succession 5→6
+
+Lead primary watch fired on `eh-grpo3seed-2-clean_sft_dpo_grpo-train-20260804T220342Z` (exit 0). Lead-verified:
+
+- Run dir `scratch/schema_response_confidence/runs/clean_sft_dpo_grpo_seed2_full/20260804_220407`: 1,861 steps, 1.0 epoch, final loss 0.0962, final logged reward 1.0998 @ step 1850 (grpo_v2-from-clean-SFT comparison: 0.9071 — DPO-first lineage starts closer to the reward target).
+- `training_lineage.json` base_model = seed-2 DPO merged-16bit (`schema_clean_sft_dpo_seed2_full/20260801_183028/.../merged-16bit`) — correct stage-3 source; seed 2; batch 32 / num_generations 4 / lr 5e-6, all matching registered cell.yaml values.
+- `final_model` adapter present (268M); capacity profile peak reserved 82.6%, OOM risk low.
+
+Executor5 unreachable after lead-session compaction (same severance mode as earlier successions). Executor6 spawned with the standing closeout spec: stage prune + free-space precheck, merge, 192-row smoke on merged, full eval (adapter on source merged base per lineage convention), pinned-digest check before every launch, short ops foreground, long eval lead-watched.
+
+Next after stack-1 closeout: stack 2 kto_grpo (config pre-staged: `configs/grpo_clean_sft_kto_grpo_seed2_full.yaml`).
