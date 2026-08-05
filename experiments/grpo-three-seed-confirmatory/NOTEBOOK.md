@@ -1194,3 +1194,15 @@ Post-crash environment verified healthy before authorizing relaunch: GPU idle at
 Relaunch stage 1 FROM SCRATCH, not resumed from `checkpoint-500`. Resuming would give seed 3 a training trajectory produced differently from seeds 1 and 2 (both single uninterrupted runs), and nothing in the signed instrument authorizes resume-from-checkpoint as equivalent for a confirmatory replicate. The crashed run directory is retained as evidence for now and is prunable at the next stage boundary.
 
 No change to any registered value. Same config file, same pinned digest, same procedure.
+
+## 2026-08-05 ~17:02Z — Seed-3 stage 1 (clean_sft) COMPLETE on relaunch; merge + base-eval released
+
+Relaunch `eh-grpo3seed-3-clean_sft-train-20260805T163548Z` **exited 0** (container exit code read from the watch stdout, per the correction recorded above; backup monitor independently reported `exited|0`). Run dir `sft_schema_clean_seed3_full/20260805_163620`, ~25 min, matching the seed-2 anchor.
+
+Lead-verified: training_type SFT; base_model `unsloth/Qwen3-4B-bnb-4bit` (FOUNDATION, correct — seed 3 rebuilds its own lineage and takes no seed-2 checkpoint); seed 3; batch 10 / accum 1 / lr 2e-4 / 1 epoch; train_examples 14943 (frozen count); 1495 steps; final loss 0.4282; `final_model` present (253 M) and `training_lineage.json` present. **G0 `training_completed_clean`: PASS.**
+
+Provenance note on `lora.random_state`: the SFT `training_lineage.json` lora block records rank/alpha/dropout/target_modules/bias and does NOT record `random_state` — verified identical in the seed-2 lineage, so this is how the trainer writes the file, not a seed-3 anomaly. The config-level evidence stands as the provenance record: an AST comparison of all 48 assignment keys between the seed-2 and seed-3 config files showed exactly three changed (`config.seed` 2->3, `config.lora.random_state` 2->3, `config.training.output_dir`).
+
+Descriptive observation, not a gate matter: final SFT loss is 0.4281 (seed 1), 0.4281 (seed 2), 0.4282 (seed 3). The clean-SFT stage converges to essentially the same point at every seed. The seed-1/seed-2 identity was previously checked and found to be coincidence at the step level (57 of 59 logged steps differ); seed 3 landing one ten-thousandth away is consistent with that reading rather than with any config collision.
+
+Released to executor6: merge stage-1 to merged-16bit, 192-row bounded smoke, then the FULL 3,369-row eval on the merged base. That base full eval is the **G1 denominator for seed 3** and gates everything downstream, so it runs before any stage-2 arm launches. Stage-2 arms (dpo, kto, grpo_v2, all from merged(clean_sft)) follow serially per launch_order once the base is closed.
