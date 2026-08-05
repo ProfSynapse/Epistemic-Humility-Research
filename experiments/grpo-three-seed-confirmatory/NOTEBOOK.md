@@ -1259,3 +1259,23 @@ Both seeds show the same qualitative pattern relative to their own base: DPO mov
 Operational record from this closeout, both executor6's own invocation errors and both caught and reported by it rather than retried silently: (1) the merge must run with `-w /workspace/repo/synaptic-tuner` because `shared/` lives under the submodule, not the repo root; running from repo root fails with `ModuleNotFoundError: No module named 'shared'`. (2) `merge_lora_checkpoint` types `lora_path`/`output_path` as `Path`, so raw strings fail with `AttributeError: 'str' object has no attribute 'mkdir'`. Both failed before writing any output; no partial artifact was produced, verified. Worth folding into `local-runtime.md` at the next skill pass, together with the observation that the polling backup monitor reports `gone` when a container is pruned before its next poll (the primary `docker wait` remains authoritative for exit codes).
 
 Stage 2 arm 2 released: `clean_sft_kto` from the seed-3 merged base, registered bs12 / ga1 / lr1e-6 / beta0.1, dry-run first, with the authorized step-250 batch-8 fallback to be reported rather than taken silently.
+
+## 2026-08-05 ~19:58Z — Seed-3 stage-2 KTO launched; LoRA-default divergence CAUGHT before launch
+
+`eh-grpo3seed-3-clean_sft_kto-train-20260805T195707Z` launched from the seed-3 merged base. Registered values per cell.yaml `clean_sft_kto`: batch 12 / accum 1 / lr 1e-6 / beta 0.1, 1 epoch. Dataset verified 29,886 rows at exactly 14,943 / 14,943 desirable/undesirable (1.00:1).
+
+**Near-miss worth recording in full.** Executor6 found that the KTO trainer's baked-in LoRA defaults do NOT match this program's registered values, unlike DPO's. Lead-verified independently:
+
+| source | rank | alpha | dropout |
+| --- | --- | --- | --- |
+| `Trainers/kto/configs/config.yaml` baked-in default | **64** | **128** | 0.05 |
+| seed-2 KTO `training_lineage.json` (the precedent) | 32 | 64 | 0.05 |
+| seed-2 DPO `training_lineage.json` | 32 | 64 | 0.05 |
+
+The DPO trainer's defaults DO equal the registered values, so the pattern established one arm earlier ("defaults already match, pass no LoRA flags") would have been wrong here. Carrying it over would have trained seed-3 KTO at rank 64 / alpha 128 — double the adapter capacity, an unregistered divergence that would have silently invalidated this arm and the `clean_sft_kto_grpo` stack built on it, while every other check (dataset counts, batch, LR, beta, seed, source model) still passed. Executor6 instead inferred that the seed-2 launch must have passed explicit `--lora-r 32 --lora-alpha 64 --lora-dropout 0.05`, did the same, and confirmed rank 32 / alpha 64 / dropout 0.05 in the dry-run banner before the real launch. `random_state` left at the trainer baseline 3407, matching precedent.
+
+**Durable lesson: trainer defaults are not a substitute for registered values, and a default that matched on one trainer says nothing about the next.** Verify each trainer's effective LoRA configuration against the same-arm lineage precedent every time, and confirm it in the dry-run banner before the real launch. This is exactly the failure mode a dry-run is for. To be folded into `local-runtime.md` at the next skill pass, alongside the merge cwd/Path gotchas.
+
+Verification to perform at closeout: confirm this run's `training_lineage.json` lora block reads rank 32 / alpha 64 / dropout 0.05, not the trainer default.
+
+Step-250 VRAM recheck (authorized batch-8 fallback) is lead-watched via a single-fire JSONL watch; the fallback will be reported and decided, never taken silently.
