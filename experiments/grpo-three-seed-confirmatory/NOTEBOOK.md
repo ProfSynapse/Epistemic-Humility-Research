@@ -1517,3 +1517,38 @@ Second and more serious, the dry-run had left an empty directory at `20260805_22
 Full eval launched 10:25:00Z, container `eh-grpo3seed-3-clean_sft_grpo_v2-fulleval-20260806T102500Z`. Lead-verified before recording: running image digest matches the pin, `Config.Cmd` names the intended config, `model_name` = the seed-3 SFT merged base (adapter-on-source-base per the terminal-arm convention), adapter = the real `20260805_221744/final_model`. Dual watches armed.
 
 **No G1 verdict is available yet and none is implied.** The band stands exactly as pre-stated on 2026-08-05 at ~21:55Z, corroborated today by AMENDMENT.md:412 which states the same rule independently of gates.yaml: PASS iff `answer_on_unknown_pct` <= **8.72** AND `refusal_recall_pct` >= **91.28**.
+
+## 2026-08-06 10:55Z — **G1 ADJUDICATED: PASS** (primary falsifier gate survives; replication confirmed)
+
+Full eval `eh-grpo3seed-3-clean_sft_grpo_v2-fulleval-20260806T102500Z` exited **0** at 10:55:23Z, both watches agreeing. n=**3369**, confidence coverage 100.0%.
+
+Adjudicated against the band pre-stated 2026-08-05 ~21:55Z, before this run existed, and corroborated by AMENDMENT.md:412 stating the same rule independently of gates.yaml.
+
+| seed | metric | base | grpo_v2 | delta | required | verdict |
+|---|---|---|---|---|---|---|
+| 2 | `answer_on_unknown_pct` | 10.08 | 5.72 | **-4.36** | <= -3.00 | PASS |
+| 2 | `refusal_recall_pct` | 89.92 | 94.28 | **+4.36** | >= +3.00 | PASS |
+| 3 | `answer_on_unknown_pct` | 11.72 | 4.94 | **-6.78** | <= -3.00 | PASS |
+| 3 | `refusal_recall_pct` | 88.28 | 95.06 | **+6.78** | >= +3.00 | PASS |
+
+`pass_if` is "both conditions hold in BOTH seed 2 and seed 3". Both hold in both. **G1 PASSES.** The falsifier did not fire; the seed-1 GRPO abstention shift replicates.
+
+Seed-3 magnitude (6.78 pp) is close to seed 1 (6.39 pp); seed 2 (4.36 pp) is the weaker leg. All three clear the 3.0 pp floor. Consistent with the gate's own framing as a direction-plus-floor test, NOT a magnitude-equivalence test.
+
+### How this must and must not be written up
+
+**Not two findings.** Per the complementarity note recorded BEFORE this result, `refusal_recall_pct` and `answer_on_unknown_pct` sum to exactly 100.00 in all 21 runs of this block; they are exact complements on unknown-labelled rows. The identical +/-4.36 and +/-6.78 deltas above are that identity, not corroboration. G1 is one direction-plus-floor test on one quantity, passed in two seeds. Two seeds is the replication; two metrics is not.
+
+**The pass has a cost, and reporting the pass without it would mislead.** Neither of these is a G1 term, and neither changes the verdict, but both are real and consistent across seeds:
+
+| metric | seed 2 | seed 3 |
+|---|---|---|
+| `over_refusal_pct` | 58.24 -> 66.75 (**+8.51**) | 59.01 -> 68.68 (**+9.67**) |
+| `correct_on_known_pct` | 47.03 -> 54.05 (+7.02) | 47.49 -> 55.05 (+7.56) |
+| `truthful_pct` | 41.17 -> 41.35 (+0.18) | 40.55 -> 41.08 (+0.53) |
+
+GRPO buys the abstention gain by refusing substantially more overall: over-refusal rises by MORE than the unknown-answering improvement in both seeds. And `truthful_pct` is essentially flat (+0.18, +0.53 pp). So on this instrument the abstention shift is a redistribution of the refuse/answer tradeoff rather than a net truthfulness gain. That is precisely the tension G2 exists to test, and it is why the block does not stop here.
+
+**One instrument question to resolve before any write-up, flagged not assumed.** `over_refusal_pct` and `correct_on_known_pct` both RISE together, which is counterintuitive if both are rates over all known-labelled rows. A plausible explanation is that `correct_on_known_pct` is computed over ANSWERED known rows, so refusing the hard knowns mechanically raises accuracy on what remains. I have NOT verified that, and it materially changes how the +7 pp accuracy figure should be described. Resolve from the scorer source before any of these numbers appear in prose. Do not cite the accuracy gain until then.
+
+Seed 3 is now 5 of 8 arms complete. G2 remains open and needs `clean_sft_grpo_dpo` on seed 3.
