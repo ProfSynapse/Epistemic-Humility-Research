@@ -61,6 +61,49 @@ correct run at step 4). Mitigations, all three:
   directory before concluding anything: an idle notification with the GPU at
   70% means the background job is fine and the runner's turn simply ended.
 
+## Delegation prompts: specify the invariant, not the mechanism
+
+A distinct failure from the messaging problems above, from four of the
+lead's own errors in one work cycle: after learning a verification
+mechanism for one tool, the lead repeatedly told a subagent to apply that
+SAME mechanism to a different tool that does not expose it.
+
+1. Told the executor to `--dry-run` an eval launch; the eval harness
+   (`run_eval.py`) has only `--config` and `--live-vllm`, no `--dry-run`
+   flag. The trainers have `--dry-run` (e.g. the GRPO trainer,
+   `Trainers/grpo/train_grpo.py:159`); the eval harness does not.
+2. After a KTO LoRA-defaults near-miss, told it to pass explicit
+   `--lora-r`/`--lora-alpha`/`--lora-dropout` to the GRPO trainer. KTO and
+   DPO accept those flags; the GRPO trainer's argument parser has none of
+   them (its only overrides are `--config`, `--dry-run`,
+   `--resume-from-checkpoint`, `--model-name`, `--dataset-name`,
+   `--dataset-file`, `--local-file`, `--use-gspo`, `--pivot-profile-only`).
+   GRPO's LoRA values come only from its YAML config.
+3. Scoped a stdout data-leak hazard to the GRPO trainer specifically; all
+   four production trainers (SFT, DPO, KTO, GRPO) do it, each via its own
+   independent `print_dataset_samples` implementation.
+4. Asked for "config files" and a structured diff for DPO/KTO-trainer arms.
+   DPO and KTO have no `--config` argument at all, only CLI-flag overrides
+   on a fixed baked-in `configs/config.yaml`, so there is no per-run config
+   file to diff for either. GRPO does take `--config <path>`, and that YAML
+   can carry a `rewards.custom.file` reward-file path; that mechanism is
+   GRPO-only.
+
+Every one of these was caught only because the subagent reported the
+mismatch instead of silently complying. Had it complied: a fabricated
+config file, a diff of nothing, or a verification step that silently
+checked nothing while appearing to pass.
+
+Rule: state the INVARIANT to establish, not the command to run, and require
+the agent to report which route it used. Do not write "pass `--lora-r 32`
+and confirm in the dry-run banner"; write "confirm the resolved LoRA rank
+matches the registered value by whatever route this trainer exposes, and
+report which route you used and what it showed." Corollary: when a
+subagent reports that an instruction does not apply to the tool in front of
+it, that is a successful verification result, not a failure to follow
+instructions, and should be recorded as such rather than treated as
+friction.
+
 ## Practical cadence for a long GPU pass
 
 1. Lead pushes the branch and sends ONE self-contained launch order
