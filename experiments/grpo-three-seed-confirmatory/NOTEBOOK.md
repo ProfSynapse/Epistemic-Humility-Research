@@ -1560,3 +1560,32 @@ Recorded before the launch verb.
 Considered and REJECTED: reordering the remaining stage-3 arms to run `clean_sft_grpo_dpo` first, which would resolve G2 roughly 24h sooner since G2's open leg is `grpo_dpo` vs `grpo_v2` on seed 3. Rejected because `launch_order` is a REGISTERED field in the signed cell.yaml, listing `clean_sft`, `clean_sft_dpo`, `clean_sft_kto`, `clean_sft_grpo_v2`, `clean_sft_dpo_grpo`, `clean_sft_kto_grpo`, `clean_sft_grpo_dpo`, `clean_sft_grpo_kto`. Run order cannot affect any result here (each arm trains from a fixed merged checkpoint with a fixed seed on frozen data, so the arms are independent given their sources), which means deviating buys no scientific benefit while creating a divergence from a signed value. Getting an answer sooner is not a reason to edit a registered field. Flagged to the user as an available option if they want to authorize the deviation explicitly; proceeding in registered order absent that.
 
 Next arm is therefore `clean_sft_dpo_grpo`, whose config was prepared and lead-verified on 2026-08-05 (63 keys, 4 seed-scoped differences, source = seed-3 DPO merged at `20260805_174834`, verified on disk). Preconditions: GPU free (grpo_v2 full eval exited 0), G0 PASS on its source cell, user green-light for the seed-3 chain stands.
+
+## 2026-08-06 11:13Z — `clean_sft_dpo_grpo` seed 3 LAUNCHED; last two arms specified
+
+Container `eh-grpo3seed-3-clean_sft_dpo_grpo-train-20260806T111330Z`, started 11:13:30Z, run dir `clean_sft_dpo_grpo_seed3_full/20260806_111355`. Lead-verified from the running container: image digest matches the pin, `Config.Cmd` names `grpo_clean_sft_dpo_grpo_seed3_full.yaml`, and that file carries `seed: 3`, `lora.random_state: 3`, source = seed-3 DPO merged at `20260805_174834`. Dry-run confirmed r32/alpha64/dropout 0.05, reward `epistemic_humility_reward`, 14888 examples. Dual watches armed. Dry-run leftover empty dir at `20260806_111245`; the real run is `20260806_111355`.
+
+### Final two arms specified (no config files exist to write, and that is correct)
+
+Registered specs read by the lead from cell.yaml:
+
+| arm | trainer | batch | grad-accum | LR | beta | epochs | source |
+|---|---|---|---|---|---|---|---|
+| `clean_sft_grpo_dpo` | `Trainers/dpo/train_dpo.py` | 2 | 4 | 5e-6 | 0.1 | 1 | merged(`clean_sft_grpo_v2`) |
+| `clean_sft_grpo_kto` | `Trainers/kto/train_kto.py` | 12 | 1 | 1e-6 | 0.1 | 1 | merged(`clean_sft_grpo_v2`) |
+
+Both take the same seed-3 grpo_v2 merged source, verified on disk with `config.json` and standard shard bytes. Datasets re-counted: DPO 14943, KTO 29886, both matching the frozen counts. Planned invocations match the registered values exactly.
+
+Trainer-specific handling confirmed correct for both:
+- KTO defaults are r64/alpha128, so `clean_sft_grpo_kto` MUST pass `--lora-r 32 --lora-alpha 64 --lora-dropout 0.05` explicitly. DPO defaults already match, so `clean_sft_grpo_dpo` needs no LoRA flags.
+- Neither trainer exposes a random_state flag, so both use the 3407 baseline. The seed-mirroring convention does NOT apply here and must not be "corrected" to 3. This is the split convention recorded on 2026-07-31 and refined later.
+
+### Lead instruction error, FOURTH of the same class this cycle
+
+I asked for "config files" and a "structured diff" for these two arms, and for a reward file path and function name. None of that applies: the DPO and KTO trainers are CLI-flag-driven with no persisted YAML, and the reward-file mechanism is GRPO-only (`rewards.custom`). The executor said so plainly rather than fabricating a config file, inventing a diff, or silently dropping the reward question.
+
+The pattern across all four instances this cycle is identical, and it is now clear enough to name: I keep porting the MECHANISM of a check from the trainer I last dealt with, instead of stating the GOAL and letting the executor pick the mechanism the current trainer actually exposes. Instances: (1) `--dry-run` demanded of `run_eval.py`, which has none; (2) explicit LoRA flags demanded of GRPO, which is YAML-driven; (3) the stdout containment hazard scoped to GRPO when all four trainers do it; (4) config files and reward paths demanded of the CLI-driven DPO/KTO arms.
+
+Durable fix for delegation prompts: specify the INVARIANT to establish ("the resolved hyperparameters must match the registered spec; confirm by whatever route this trainer exposes and tell me which route you used"), never the command to run. Every one of these was caught only because the executor pushed back instead of complying. Carry to the subagent-orchestration skill at the next doc pass.
+
+Launch order for the remainder, registered and unchanged: `clean_sft_kto_grpo`, then `clean_sft_grpo_dpo` (G2's open leg), then `clean_sft_grpo_kto`.
