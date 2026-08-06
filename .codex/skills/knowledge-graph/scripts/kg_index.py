@@ -726,7 +726,14 @@ def parse_config(root: Path, path: Path, rel: str, text: str) -> ParsedFile:
         if not key:
             continue
         node_id = f"config:{rel}:{key}"
-        rendered = json.dumps(value, ensure_ascii=False, sort_keys=True) if not isinstance(value, str) else value
+        # YAML scalars are not all JSON types: an unquoted ISO date parses to a
+        # datetime.date, which json.dumps rejects. default=str renders those
+        # instead of raising, so one exotic scalar cannot abort the whole index.
+        rendered = (
+            json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
+            if not isinstance(value, str)
+            else value
+        )
         nodes.append(Node(node_id, rel, kind, key, "config_key", 1))
         edges.append(Edge(file_id, node_id, "contains_key", rel, key))
         summary.append(f"{key}: {rendered}")
