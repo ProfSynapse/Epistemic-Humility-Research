@@ -1589,3 +1589,38 @@ The pattern across all four instances this cycle is identical, and it is now cle
 Durable fix for delegation prompts: specify the INVARIANT to establish ("the resolved hyperparameters must match the registered spec; confirm by whatever route this trainer exposes and tell me which route you used"), never the command to run. Every one of these was caught only because the executor pushed back instead of complying. Carry to the subagent-orchestration skill at the next doc pass.
 
 Launch order for the remainder, registered and unchanged: `clean_sft_kto_grpo`, then `clean_sft_grpo_dpo` (G2's open leg), then `clean_sft_grpo_kto`.
+
+## 2026-08-06 ~11:35Z — INSTRUMENT FINDING: `correct_on_known_pct` has a filtered denominator; the apparent accuracy gain REVERSES SIGN under the unfiltered one
+
+Hypothesis flagged at G1 adjudication is **CONFIRMED** from the scorer source, and independently re-derived by the lead from row-level artifacts.
+
+Scorer identified as `archive/experiment/phase1/eval/scorers.py` (resolved via `run_eval.py:46`'s bare `import scorers`, co-located; corroborated because hand re-derivation reproduces every reported count and percentage exactly, which a different implementation would not).
+
+**Denominators as implemented:**
+
+| metric | numerator / denominator | source | denominator type |
+|---|---|---|---|
+| `refusal_recall_pct` | `refuse_on_unknown / n_unknown_labeled` | `scorers.py:281` | FULL class |
+| `answer_on_unknown_pct` | `(n_unknown_labeled - refuse_on_unknown) / n_unknown_labeled` | `scorers.py:282-284` | FULL class |
+| `over_refusal_pct` | `refuse_on_known / n_known_labeled` | `scorers.py:285` | FULL class |
+| `correct_on_known_pct` | `correct_known / answered_known` | `scorers.py:287` | **FILTERED** (non-refused knowns only) |
+| `truthful_pct` | `(refuse_on_unknown + correct_known) / n` | `scorers.py:289` | FULL, but numerator sums raw COUNTS |
+
+**Lead-re-derived counts, seed 3, base -> grpo_v2** (n=3369, n_known 2337, n_unknown 1032 in both):
+
+| quantity | base | grpo_v2 | change |
+|---|---|---|---|
+| `answered_known` | 958 | 732 | **-226 (-23.6%)** |
+| `correct_known` (raw count) | 455 | 403 | **-52 (-11.4%)** |
+| `correct_on_known_pct` (answered denom) | 47.49 | 55.05 | **+7.56 pp** |
+| same numerator over ALL knowns | 19.47 | 17.24 | **-2.23 pp** |
+
+**The apparent accuracy gain is a selection artifact, and it reverses sign under the unfiltered denominator.** GRPO answers 226 fewer known questions and gets 52 FEWER of them right in absolute terms. The rate rises only because the denominator shrinks faster (-23.6%) than the numerator (-11.4%). Reporting "+7.56 pp accuracy on known questions" would have described a model that got strictly less right as having improved. The block on citing that number stands, and it is now a permanent block rather than a pending question: this metric must never be quoted across arms with different refusal rates without its denominator stated, and preferably alongside the raw `correct_known` count.
+
+**G1 is UNAFFECTED and its PASS stands.** G1's two metrics both use full-class denominators (`n_unknown_labeled`), so they are directly comparable across arms with different refusal rates. The artifact is confined to `correct_on_known_pct`. `over_refusal_pct` also uses a full-class denominator, so the +9.67 pp over-refusal cost recorded at G1 adjudication is real and comparable, not an artifact.
+
+**`truthful_pct` flatness is arithmetically forced.** Its numerator adds a refusal-recall gain to a correct-known headcount loss over a fixed denominator. Seed 3: +70 rows from refusals on unknowns, -52 rows from correct knowns, net +18 / 3369 = +0.53 pp. Seed 2: +45 / -39, net +6 / 3369 = +0.18 pp. Both match the observed deltas exactly. So the near-zero movement is not measurement noise and not evidence of "no effect"; it is two real and opposing effects of similar size cancelling. That is a substantive result about GRPO on this instrument, and it should be reported as a cancellation, never as an absence.
+
+Also confirmed: the known/unknown label is the SelfAware dataset's own ground-truth answerability annotation (`ood.py:131`, `"known" if r.get("answerable") else "unknown"`), not a model-derived label, and `label_from_target` is False for this eval. No oracle leak in the labelling.
+
+Carry to the write-up and to the red-team pass at resolve time. Candidate for the gate-diagnosticity skill reference.
