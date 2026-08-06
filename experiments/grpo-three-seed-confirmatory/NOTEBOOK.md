@@ -1678,3 +1678,9 @@ Full eval, n=3369, lead-read from metrics.json: `refusal_recall_pct` **92.54**, 
 ## 2026-08-06 ~21:05Z — `clean_sft_kto_grpo` seed 3 CLEARED FOR LAUNCH
 
 Recorded before the launch verb. Next in registered launch_order. Config `grpo_clean_sft_kto_grpo_seed3_full.yaml` prepared and lead-verified 2026-08-05 (63 keys, 4 seed-scoped diffs, source = seed-3 KTO merged at `20260805_195738`, verified on disk). GPU free, standing seed-3 green light. GRPO trainer, ~6-7h expected.
+
+## 2026-08-06 20:06Z — `clean_sft_kto_grpo` seed 3 LAUNCHED
+
+Container `eh-grpo3seed-3-clean_sft_kto_grpo-train-20260806T200639Z`, started 20:06:39Z, run dir `clean_sft_kto_grpo_seed3_full/20260806_200708`. Lead-verified from the running container: pinned digest exact, `Config.Entrypoint=["python3"]` explicit (post-gotcha discipline holding), `Config.Cmd` names the verified config, which carries seed 3 / random_state 3 / source = seed-3 KTO merged (`20260805_195738`). Dry-run passed first (named container, exit 0, r32/alpha64/d0.05, reward loads, 14888 examples); its leftover dir is `20260806_200515`, no final_model. Dual watches armed. Expect ~1861 steps, ~6-7h, closing ~02:30Z.
+
+Minor env note from the executor, no action needed: its shell had no DOCKER_HOST set and the default local socket worked for all verbs; it correctly declined to guess a value. The lead's shells set it explicitly; both routes reach the same daemon.
