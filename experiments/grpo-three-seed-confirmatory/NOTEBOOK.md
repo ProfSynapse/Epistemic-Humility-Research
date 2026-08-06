@@ -1646,3 +1646,11 @@ Exception raised from currentStreamCaptureStatusMayInitCtx at c10/cuda/CUDAGraph
 **Relaunching from scratch, NOT resuming from the step-150 checkpoint.** The trainer exposes `--resume-from-checkpoint` and using it would save 35 minutes, but a resumed optimizer trajectory is not the trajectory that produced seeds 1 and 2, and this arm feeds the descriptive G3 matrix where cross-seed comparability is the entire point. Thirty-five minutes is not worth a silently non-comparable arm. Same reasoning and same call as the stage-1 crash.
 
 Nothing about the config changes; it was verified before the first launch and the crash is not attributable to it. Relaunch cleared under the standing seed-3 green light.
+
+## 2026-08-06 13:10Z — `clean_sft_dpo_grpo` seed 3 RELAUNCHED after dropped-task gap
+
+Container `eh-grpo3seed-3-clean_sft_dpo_grpo-train-20260806T131003Z`, started 13:10:03Z. Lead-verified from the running container: digest matches the pin, `Config.Cmd` names the unchanged `grpo_clean_sft_dpo_grpo_seed3_full.yaml`, launched WITHOUT `--resume-from-checkpoint` per the from-scratch ruling. Dual watches armed.
+
+Recorded honestly: between the 11:48Z crash and this relaunch the GPU sat idle roughly 65 minutes beyond the diagnosis time. The relaunch dispatch was sent at ~11:52Z; the executor ran the dry-run at 11:53:56Z and its turn ended without launching the training container or reporting that it had not. The lead treated the in-flight dry-run as evidence the launch would follow and stopped watching; the gap surfaced only because the user asked for progress. Two mitigations now in place: (1) executors are asked to name dry-run containers on-convention (done on this relaunch: `...-dryrun-20260806T130229Z`) and to state explicitly when a turn ends mid-task; (2) the lead now arms a LAUNCH-side watch (container-appears-or-stall-warning) in addition to the exit-side watches, closing the failure mode where a never-started container is indistinguishable from a running one. The launch-side watch confirmed this relaunch at 13:11:00Z.
+
+Compute accounting: the crashed attempt burned ~35 min of training (step 150/1861); the idle gap cost ~65 min of wall-clock but no training compute.
