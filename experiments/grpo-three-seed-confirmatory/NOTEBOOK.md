@@ -1624,3 +1624,25 @@ Scorer identified as `archive/experiment/phase1/eval/scorers.py` (resolved via `
 Also confirmed: the known/unknown label is the SelfAware dataset's own ground-truth answerability annotation (`ood.py:131`, `"known" if r.get("answerable") else "unknown"`), not a model-derived label, and `label_from_target` is False for this eval. No oracle leak in the labelling.
 
 Carry to the write-up and to the red-team pass at resolve time. Candidate for the gate-diagnosticity skill reference.
+
+## 2026-08-06 11:48Z — `clean_sft_dpo_grpo` seed 3 CRASHED (exit 139); G0 instrument STOP; relaunch from scratch
+
+Container `eh-grpo3seed-3-clean_sft_dpo_grpo-train-20260806T111330Z` exited **139** (SIGSEGV) at 11:48:48Z, 35m into the run, at step **150 of 1861**.
+
+**The watch trap fired again and was caught by the standing rule.** The background wait task reported "exit code 0", which is the status of the WAIT command, not of the container. The container's real code, read from the watch OUTPUT FILE and confirmed by `docker inspect`, is 139. Reading the file rather than trusting the task summary is what surfaced this; the rule earns its place a second time.
+
+Crash signature, identical to the seed-3 stage-1 crash on 2026-08-05:
+```
+torch.AcceleratorError: CUDA error: unknown error   (cudaErrorUnknown)
+terminate called after throwing an instance of 'c10::AcceleratorError'
+Exception raised from currentStreamCaptureStatusMayInitCtx at c10/cuda/CUDAGraphsC10Utils.h:71
+```
+`docker inspect` reports `OOMKilled=false`.
+
+**Capacity is RULED OUT, decisively and by comparison rather than by assertion.** Seed-3 peaked at **49.06%** reserved before dying. Seed 2 ran this SAME arm, same config shape, same data, to a clean 1861/1861 finish at a peak of **82.60%**. The crash occurred at substantially LOWER memory pressure than the run that succeeded, so a memory explanation would have to argue that less pressure caused a failure more pressure did not. Diagnosis stands as a transient WSL2 GPU-passthrough fault, matching the stage-1 precedent.
+
+**G0 `training_completed_clean` FAILS for this cell.** Per the gate's own interpretation, a G0 failure stops the cell before any outcome is read, and the cell is relaunched after repair rather than reported. No outcome from this run is read, recorded, or carried forward. This is an instrument stop, not a result.
+
+**Relaunching from scratch, NOT resuming from the step-150 checkpoint.** The trainer exposes `--resume-from-checkpoint` and using it would save 35 minutes, but a resumed optimizer trajectory is not the trajectory that produced seeds 1 and 2, and this arm feeds the descriptive G3 matrix where cross-seed comparability is the entire point. Thirty-five minutes is not worth a silently non-comparable arm. Same reasoning and same call as the stage-1 crash.
+
+Nothing about the config changes; it was verified before the first launch and the crash is not attributable to it. Relaunch cleared under the standing seed-3 green light.
