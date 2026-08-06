@@ -1485,3 +1485,35 @@ All four call sites verified verbatim by the lead. So every training container i
 The rule is now written into `.skills/experiment-runner/reference/local-runtime.md` (PR #392): never paste `docker logs` from ANY training container into the repo, a commit message, a PR body, an issue, or an agent report; never redirect that stdout to a tracked path; evidence a launch with `docker inspect` plus `training_lineage.json`, which carry no row text. That is what was done for this launch, before the hazard was known, which is luck rather than discipline and is exactly why it is now written down.
 
 **Lead process error in the audit itself, recorded because it is the same class of mistake.** My first audit pass grepped the whole tree for loose patterns including `chosen:` and `rejected:`, which matched the tracked `datasets/sycophancy-eval/*.jsonl` files and pulled a large volume of question text into the session context. Nothing was written anywhere and those files are pre-existing tracked public eval data, so there is no leak. But the correct audit is scoped to docs and notebooks using only the distinctive trainer-output markers. Searching broadly for row text is itself a way to spread row text, and a public repo makes the blast radius of a careless grep larger than it looks.
+
+## 2026-08-06 05:39Z / 10:25Z — Seed-3 `clean_sft_grpo_v2` trained and merged; **G0 PASS**; full eval running (G1 deciding)
+
+Training container `eh-grpo3seed-3-clean_sft_grpo_v2-train-20260805T221719Z` exited **0** at 05:39:11Z, 7h22m, confirmed by both watches.
+
+Lead-verified from artifacts: `model.base_model` = seed-3 SFT merged base, `training.seed` **3**, batch 32, `num_generations` 4, LR 5e-6, beta 0.1, `dataset.train_examples` **14888**, `results.final_step` **1861**, epochs 1.0, final_loss 0.1059. LoRA reads **rank 32 / alpha 64 / dropout 0.05** in `training_lineage.json` AND independently in `final_model/adapter_config.json`. The 1861 steps match the seed-1 GRPO precedent.
+
+Note on what the lineage cannot show: the GRPO `lineage.lora` block carries rank/alpha/dropout/target_modules/bias but NOT `random_state`, and `runtime` is null for this trainer (schema difference, not a failure). `random_state: 3` was verified pre-launch instead, by reading the exact config file named in the running container's `Config.Cmd`.
+
+Merge clean on the first attempt, shard bytes **4,967,215,360** and **3,077,766,632**, exact.
+
+### G0 ADJUDICATED **PASS** for seed 3, cell `clean_sft_grpo_v2`
+
+| check | verdict | evidence |
+|---|---|---|
+| `merge_first_lineage` | PASS | base_model = `sft_schema_clean_seed3_full/20260805_163620/.../merged-16bit` |
+| `bounded_smoke_coverage` | PASS | 192 rows, `generated_answer` 192/192, `stated_confidence` 192/192 (`coverage_pct` 100.0, `n_missing` 0), thinking-tag hits **0**, `enable_thinking` uniformly False |
+| `training_completed_clean` | PASS | exit 0, final_step 1861, `final_model/adapter_model.safetensors` + `adapter_config.json` + `training_lineage.json` present |
+| `dataset_audit_matches_frozen` | PASS | `train_examples` **14888**, matching the frozen GRPO train count |
+| `containment` | PASS | nothing staged; untracked files are eval configs only |
+
+### The placeholder trap was real, and it was avoided
+
+The two eval configs carried a literal `<SEED3_GRPO_V2_TIMESTAMP>` placeholder because the run directory could not be known before launch. Two things could have gone wrong and neither did.
+
+First, the executor's initial substitution left the token surviving in its own comment prose; it caught that itself, fixed it, and re-verified to a zero-match grep across all four file locations. Verified: no placeholder token survives.
+
+Second and more serious, the dry-run had left an empty directory at `20260805_221623` alongside the real run at `20260805_221744`. I checked both: the real run's `final_model/adapter_model.safetensors` is **264,308,896 bytes**, and the dry-run leftover has **no adapter at all**. Had the wrong timestamp been substituted, the eval would have loaded no adapter and measured the bare SFT base while producing a perfectly well-formed G1 number. That failure mode is invisible in the output; it is only catchable at the path. Recorded as a standing hazard for any arm whose eval config is written before its training run exists.
+
+Full eval launched 10:25:00Z, container `eh-grpo3seed-3-clean_sft_grpo_v2-fulleval-20260806T102500Z`. Lead-verified before recording: running image digest matches the pin, `Config.Cmd` names the intended config, `model_name` = the seed-3 SFT merged base (adapter-on-source-base per the terminal-arm convention), adapter = the real `20260805_221744/final_model`. Dual watches armed.
+
+**No G1 verdict is available yet and none is implied.** The band stands exactly as pre-stated on 2026-08-05 at ~21:55Z, corroborated today by AMENDMENT.md:412 which states the same rule independently of gates.yaml: PASS iff `answer_on_unknown_pct` <= **8.72** AND `refusal_recall_pct` >= **91.28**.
