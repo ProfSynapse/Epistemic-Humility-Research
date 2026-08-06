@@ -1664,3 +1664,17 @@ Container `eh-grpo3seed-3-clean_sft_dpo_grpo-train-20260806T131003Z` exited **0*
 Lead-verified from `training_lineage.json` in run dir `20260806_131028`: base = seed-3 DPO merged (`20260805_174834`), seed 3, LoRA rank 32 / alpha 64 / dropout 0.05, batch 32, num_generations 4, LR 5e-6, beta 0.1, train_examples **14888**, final_step **1861**/1861, epochs 1.0, final_loss 0.0884. `final_model/` present.
 
 Closeout dispatched: eval configs (flagging the THREE decoy directories — two dry-run leftovers and the crashed run's checkpoint dir — against the one valid run dir `20260806_131028`, verified by adapter presence), merge, smoke, full eval on the source merged base.
+
+## 2026-08-06 ~21:00Z — `clean_sft_dpo_grpo` seed 3 CLOSED: **G0 PASS**; full eval recorded; next arm cleared
+
+Closeout lead-verified from artifacts: run-dir disambiguation correct (only `20260806_131028` holds `final_model`; the three decoys have none), adapter 264,308,896 bytes, merge shards exact (4,967,215,360 + 3,077,766,632), eval-config diffs seed-scoped only (5 and 6 keys).
+
+**G0 ADJUDICATED PASS** for seed 3, cell `clean_sft_dpo_grpo`: merge_first_lineage (base = seed-3 DPO merged), bounded_smoke_coverage (lead-rederived from rows: 192/192 `generated_answer`, 192/192 `stated_confidence`, **0** thinking-tag hits), training_completed_clean (exit 0, 1861/1861, artifacts present), dataset_audit (14888), containment (results dirs confirmed gitignored, nothing staged).
+
+Full eval, n=3369, lead-read from metrics.json: `refusal_recall_pct` **92.54**, `answer_on_unknown_pct` **7.46** (complementarity holds), `over_refusal_pct` **64.66**, `truthful_pct` 40.87, `correct_on_known_pct` 51.09 (recorded with its known filtered-denominator caveat; raw counts: 422 correct of 826 answered of 2337 known), confidence coverage 100%.
+
+**No gate reads on this arm.** G2's registered comparison is `clean_sft_grpo_dpo` vs `clean_sft_grpo_v2` (GRPO-then-DPO), NOT this arm (DPO-then-GRPO). `clean_sft_dpo_grpo` enters the descriptive G3 matrix only. Seed-3 progress: 6 of 8 arms complete.
+
+## 2026-08-06 ~21:05Z — `clean_sft_kto_grpo` seed 3 CLEARED FOR LAUNCH
+
+Recorded before the launch verb. Next in registered launch_order. Config `grpo_clean_sft_kto_grpo_seed3_full.yaml` prepared and lead-verified 2026-08-05 (63 keys, 4 seed-scoped diffs, source = seed-3 KTO merged at `20260805_195738`, verified on disk). GPU free, standing seed-3 green light. GRPO trainer, ~6-7h expected.
