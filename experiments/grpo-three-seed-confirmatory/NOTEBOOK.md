@@ -1552,3 +1552,11 @@ GRPO buys the abstention gain by refusing substantially more overall: over-refus
 **One instrument question to resolve before any write-up, flagged not assumed.** `over_refusal_pct` and `correct_on_known_pct` both RISE together, which is counterintuitive if both are rates over all known-labelled rows. A plausible explanation is that `correct_on_known_pct` is computed over ANSWERED known rows, so refusing the hard knowns mechanically raises accuracy on what remains. I have NOT verified that, and it materially changes how the +7 pp accuracy figure should be described. Resolve from the scorer source before any of these numbers appear in prose. Do not cite the accuracy gain until then.
 
 Seed 3 is now 5 of 8 arms complete. G2 remains open and needs `clean_sft_grpo_dpo` on seed 3.
+
+## 2026-08-06 ~11:00Z — `clean_sft_dpo_grpo` seed 3 CLEARED FOR LAUNCH (registered order kept)
+
+Recorded before the launch verb.
+
+Considered and REJECTED: reordering the remaining stage-3 arms to run `clean_sft_grpo_dpo` first, which would resolve G2 roughly 24h sooner since G2's open leg is `grpo_dpo` vs `grpo_v2` on seed 3. Rejected because `launch_order` is a REGISTERED field in the signed cell.yaml, listing `clean_sft`, `clean_sft_dpo`, `clean_sft_kto`, `clean_sft_grpo_v2`, `clean_sft_dpo_grpo`, `clean_sft_kto_grpo`, `clean_sft_grpo_dpo`, `clean_sft_grpo_kto`. Run order cannot affect any result here (each arm trains from a fixed merged checkpoint with a fixed seed on frozen data, so the arms are independent given their sources), which means deviating buys no scientific benefit while creating a divergence from a signed value. Getting an answer sooner is not a reason to edit a registered field. Flagged to the user as an available option if they want to authorize the deviation explicitly; proceeding in registered order absent that.
+
+Next arm is therefore `clean_sft_dpo_grpo`, whose config was prepared and lead-verified on 2026-08-05 (63 keys, 4 seed-scoped differences, source = seed-3 DPO merged at `20260805_174834`, verified on disk). Preconditions: GPU free (grpo_v2 full eval exited 0), G0 PASS on its source cell, user green-light for the seed-3 chain stands.
