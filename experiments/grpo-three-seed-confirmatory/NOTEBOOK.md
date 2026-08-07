@@ -1688,3 +1688,27 @@ Minor env note from the executor, no action needed: its shell had no DOCKER_HOST
 ## 2026-08-07 01:30Z — `clean_sft_kto_grpo` seed 3 training COMPLETE, clean
 
 Container `eh-grpo3seed-3-clean_sft_kto_grpo-train-20260806T200639Z` exited **0** at 01:30:58Z, 5h24m, read from the wait output file (`--rm` poller reported gone-from-daemon, consistent). Lead-verified lineage in run dir `20260806_200708`: base = seed-3 KTO merged (`20260805_195738`), seed 3, LoRA r32/a64/d0.05, batch 32, num_generations 4, LR 5e-6, beta 0.1, train_examples 14888, final_step **1861**/1861, final_loss 0.1248. Closeout dispatched (decoy dir `20260806_200515` flagged). After closeout: `clean_sft_grpo_dpo` is next, the G2-deciding arm.
+
+## 2026-08-07 ~09:15Z — `clean_sft_kto_grpo` seed 3 CLOSED: **G0 PASS**; `grpo_dpo` CLEARED; G2 seed-3 thresholds PRE-STATED
+
+**G0 ADJUDICATED PASS** for seed 3, cell `clean_sft_kto_grpo`, lead-verified: merge_first_lineage (base = seed-3 KTO merged), bounded_smoke_coverage (lead-rederived from rows: 192/192, 192/192, **0** thinking-tag hits), training_completed_clean (exit 0, 1861/1861), dataset_audit (14888), containment (results ignored, nothing staged). Merge shards exact; adapter 264,308,896 bytes in the one valid run dir; eval-config diffs seed-scoped only.
+
+Full eval, n=3369, lead-read: `refusal_recall_pct` **93.12**, `answer_on_unknown_pct` **6.88** (complement holds), `over_refusal_pct` **66.50**, `truthful_pct` 40.93, `correct_on_known_pct` 53.38 (filtered-denominator caveat; raw 418/783/2337). No gate reads on this arm; it enters the G3 descriptive matrix. Seed-3 progress: **7 of 8 arms complete.**
+
+## `clean_sft_grpo_dpo` seed 3 CLEARED FOR LAUNCH (G2 deciding arm) — thresholds pre-stated BEFORE the run exists
+
+Recorded before the launch verb. Last-but-one arm, next in registered launch_order.
+
+**G2 text** (gates.yaml sha256 `7c79a418…`, corroborated by AMENDMENT.md): comparison `clean_sft_grpo_dpo` vs same-seed `clean_sft_grpo_v2`, conditions: `over_refusal_pct` direction=decrease with `min_magnitude_pp: null` (deliberately unset, per the signed derivation: "a magnitude bar here would invent precision the instrument does not have"), AND `answer_on_unknown_pct` `must_not_increase_by_more_than_pp: 2.0`. `pass_if` both hold in BOTH seeds. `not_confirmed_if` either seed shows an over-refusal INCREASE, or unknown answering reopening by more than +2.0 pp.
+
+**Seed-3 denominator, read from the grpo_v2 artifact:** `over_refusal_pct` **68.68**, `answer_on_unknown_pct` **4.94** (n=3369).
+
+**Therefore the seed-3 G2 leg passes if and only if, at n=3369:**
+- `over_refusal_pct` < **68.68** (any decrease; a value of 68.68 or above fails), AND
+- `answer_on_unknown_pct` <= **6.94** (4.94 + 2.0 pp reopening cap).
+
+Seed-2 leg already adjudicated PASS (recorded 2026-08-05): over_refusal 66.75 vs grpo_v2's 66.75... [correction: seed-2 G2 was grpo_dpo 66.75? — the seed-2 adjudication entry of 2026-08-05 records the leg PASS with over_refusal decreasing 68.68?]. The seed-2 leg's own numbers stand as recorded in the 2026-08-05 f235e45d entry; this entry does not restate them from memory, per READ-BEFORE-YOU-CITE. G2 resolves on the seed-3 leg alone.
+
+Training config for grpo_dpo: DPO trainer CLI invocation, specified and lead-verified 2026-08-06 (batch 2, grad-accum 4, LR 5e-6, beta 0.1, seed 3, DPO dataset 14943, source = seed-3 grpo_v2 merged at `20260805_221744`, DPO LoRA defaults already match r32/a64/d0.05, random_state stays at trainer baseline 3407). Expect ~6h (seed-2 precedent).
+
+No goalpost may move from here in either direction.
