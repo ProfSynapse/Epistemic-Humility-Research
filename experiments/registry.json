@@ -2838,10 +2838,10 @@
       "question": "Do the seed-1 GRPO effects in the clean response-confidence lineage - GRPO's abstention shift and the post-GRPO preference recovery - replicate at two fresh seeds, so that every GRPO arm in paper 2 carries a three-seed interval like its DPO and KTO siblings?",
       "registered": true,
       "slug": "grpo-three-seed-confirmatory",
-      "status": "signed",
+      "status": "resolved",
       "title": "GRPO Three-Seed Confirmatory Block",
       "type": "training-run",
-      "verdict": ""
+      "verdict": "Replicated. G1 PASS both seeds (GRPO abstention shift: answer_on_unknown -4.36 pp seed 2, -6.78 pp seed 3, floors 3.0). G2 PASS both seeds (post-GRPO DPO over-refusal recovery -0.77/-1.84 pp, unknown reopening -0.39/+0.29 pp vs cap 2.0). G3 three-seed intervals delivered for all five GRPO-touching arms; G4 not triggered (max 85 distinct confidence values); G5 delivered: KTO ordering pair holds direction at all three seeds, DPO pair sign-reverses and is not a finding. Limitation: 117 SelfAware known questions verbatim in training prompts; G1 structurally immune, G2 stratum-checked robust, absolute known-row levels carry the contamination caveat."
     },
     {
       "checkpoint": {
