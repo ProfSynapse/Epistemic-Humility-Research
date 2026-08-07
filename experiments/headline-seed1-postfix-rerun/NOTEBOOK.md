@@ -51,3 +51,7 @@ exactly the two seed-1 cells across all 23 phase1 run records. Its first draft u
 `str.splitlines()` for JSONL row splitting, which also breaks on U+0085; one row of
 the DPO build carries a raw U+0085, so the row counts came out one too high. Fixed to
 split on newlines only, and the corrected output now matches the figures above.
+
+## 2026-08-07 — LAUNCH CLEARED (recorded before the launch verb)
+
+PI launch approval received in session 2026-08-07 ("get our next gpu run going"), matching the signed authorization ("Launch authorized once the GPU frees after the GRPO three-seed chain"). The GRPO chain resolved and released the GPU earlier today (grpo-three-seed-confirmatory resolved, PR #397 merged); GPU verified free at dispatch. Preconditions per AMENDMENT §5/§10: container digest pinned (mismatch = hard stop), trainer submodule must sit at pinned commit 089fa9b7 for BOTH cells, data staged by sha256 (post-fix builds only; consuming a pre-fix sha is a G0 stop), beta 0.1 explicit in both cell configs, eval config committed with placeholder adapter paths. Two cells SERIAL: dpo__4b__headline__seed1__postfix (~1.2h) then kto__4b__headline__seed1__postfix (~5.8h), then full SelfAware evals (~40min/arm). Training seed stays 1 in both cells (dataset-version replication, not fresh-seed). Executor dispatched with read-the-docs-first instruction; lead adjudicates all gates from artifacts.
