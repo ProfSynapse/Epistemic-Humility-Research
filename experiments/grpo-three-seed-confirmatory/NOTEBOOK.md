@@ -1819,3 +1819,11 @@ Trigger requires >200 distinct stated_confidence values AND Brier vs response-ap
 **FINDINGS 5-6 (NOTE, already on file / accepted):** gates.yaml `status: proposed` self-description stays unedited to preserve the sha pin, corrected at resolve. Hedge-counting refusal classifier (scorers.py:80-91) is byte-stable and arm-uniform but absorbs hedged answers into refusal_recall; one line in limitations.
 
 **Lead verdict: block is CLEAR TO RESOLVE**, pending user approval of `bin/exp resolve` and the resolution PR. Resolution text must carry, in order: contamination limitation + guard follow-up, G5 with the DPO-pair sign reversal stated plainly, G4 not-triggered record, expanded G2 limitations.
+
+## 2026-08-07 — RESOLVED (status: resolved, verdict stamped) and the gates.yaml status-field defect ruled UNFIXABLE-BY-DESIGN
+
+`bin/exp resolve` stamped the verdict (G1 PASS both seeds, G2 PASS both seeds, G3/G4/G5 delivered, contamination limitation) and flipped experiment.yaml to `status: resolved`; registry regenerated.
+
+The plan to correct gates.yaml's stale `status: proposed / adjudicated_by: null` header fields at resolve time is WITHDRAWN. Attempted via the audited instrument and the tool refused: `bin/exp repin` hard-blocks any repin once results exist ("a repin after resolution is goalpost movement"). That refusal is correct as a rule even though this diff was status-fields-only: the pin's guarantee is that the adjudicated thresholds are byte-identical to what was signed, and an exception channel for "harmless" edits is exactly how goalpost movement would launder itself. The lead's draft edit was reverted; gates.yaml remains byte-identical to the signed pin 7c79a418..., stale self-description and all.
+
+Standing disposition, for every future reader: gates.yaml's `status: proposed` header is a KNOWN COSMETIC DEFECT of the sign tooling (it never rewrote the drafting header). The authoritative machine state is experiment.yaml (`status: resolved`, verdict field). TOOLING FOLLOW-UP (second bin/exp gap found this block, alongside the AMENDMENT banner one): `bin/exp sign` should rewrite or warn about drafting-status headers in the files it pins, so signed artifacts never self-describe as drafts.
