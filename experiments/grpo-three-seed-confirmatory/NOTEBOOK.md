@@ -1720,3 +1720,7 @@ Container `eh-grpo3seed-3-clean_sft_grpo_dpo-train-20260807T021050Z`, started 02
 Dispatch-hygiene note: the lead's launch message contained a digest typo, caught and corrected inline in the same message; the executor verified against the corrected string only and said so explicitly. The lead independently confirmed the running container's digest matches the pin.
 
 Dual watches armed. Expect ~6h (seed-2 precedent), closing ~08:10Z, then closeout, then the G2 adjudication against the pre-stated band: over_refusal < 68.68 AND answer_on_unknown <= 6.94.
+
+## 2026-08-07 03:34Z — `clean_sft_grpo_dpo` seed 3 training COMPLETE, clean
+
+Container exited **0** at 03:34:01Z, **1h21m41s** (fast is expected: DPO arms run ~1.4h, unlike the 5-7h GRPO arms; the "~6h" projection in the launch entry was wrong, carried over from the GRPO pace). Lead-verified lineage in `20260807_021114`: base = seed-3 grpo_v2 merged (`20260805_221744`), seed 3, LoRA r32/a64/d0.05, batch 2 / grad-accum 4, LR 5e-6, beta 0.1, train_examples **14943**, final_step **1868**/1868, final_loss 0.0445. Both watches consistent. Closeout dispatched with the no-adjudication-language instruction reinforced; G2 adjudicates from the full eval against the pre-stated band.
