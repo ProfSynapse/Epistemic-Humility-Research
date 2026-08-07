@@ -1827,3 +1827,22 @@ Trigger requires >200 distinct stated_confidence values AND Brier vs response-ap
 The plan to correct gates.yaml's stale `status: proposed / adjudicated_by: null` header fields at resolve time is WITHDRAWN. Attempted via the audited instrument and the tool refused: `bin/exp repin` hard-blocks any repin once results exist ("a repin after resolution is goalpost movement"). That refusal is correct as a rule even though this diff was status-fields-only: the pin's guarantee is that the adjudicated thresholds are byte-identical to what was signed, and an exception channel for "harmless" edits is exactly how goalpost movement would launder itself. The lead's draft edit was reverted; gates.yaml remains byte-identical to the signed pin 7c79a418..., stale self-description and all.
 
 Standing disposition, for every future reader: gates.yaml's `status: proposed` header is a KNOWN COSMETIC DEFECT of the sign tooling (it never rewrote the drafting header). The authoritative machine state is experiment.yaml (`status: resolved`, verdict field). TOOLING FOLLOW-UP (second bin/exp gap found this block, alongside the AMENDMENT banner one): `bin/exp sign` should rewrite or warn about drafting-status headers in the files it pins, so signed artifacts never self-describe as drafts.
+
+## 2026-08-07 ~09:50Z — POST-RESOLUTION ADDENDUM: clean-subset sensitivity analysis (PI-requested) and corrected contamination accounting
+
+PI asked whether the contamination requires retraining or re-evaluation. Answer, now backed by computation: NEITHER. The generations already exist and score independently per row, so the correct instrument is re-aggregation over the decontaminated subset. Results-analyst computed it; lead spot-verified (grpo_dev overlap re-derived independently: 11 distinct, all known, disjoint from the 117). Script pinned at `analysis/clean_subset_sensitivity.py`. Gates remain adjudicated on the pre-registered full population (`selfaware-full-3369`); everything below is SENSITIVITY, NON-GATING, for paper-2 reporting.
+
+**Corrected contamination accounting (supersedes red-team Finding 1's counts):**
+- Gradient-training exposure: 117 distinct known questions, verbatim user prompts, SET-IDENTICAL across all four training files (SFT/DPO/KTO/GRPO train).
+- NEW: 11 additional distinct known questions leak ONLY into the GRPO dev split (`grpo_dev.jsonl`) — checkpoint-selection exposure, not gradient exposure. The red-team checked train files only; found by the sensitivity analyst, independently re-derived by the lead.
+- Full union: 128 distinct / 128 eval rows, ALL known, ZERO unknown. The union is the exclusion set for the sensitivity table.
+- Row-count correction: the red-team's "118 of 3369 rows" for the DPO slice was slightly off; two independent derivations (lead, analyst) both give 117 rows / 117 distinct. Adjudicated: 117.
+
+**Sensitivity results on the retained population (n=3241; 2209 known / 1032 unknown; identical across all 16 runs, verified per-run):**
+- Identity check HOLDS on all 16 runs: unknown-row metrics (refusal_recall, answer_on_unknown) are byte-identical to the full-population values, as forced by zero unknown-row contamination. G1's evidentiary basis is untouched by construction, now verified per-run.
+- G1-shaped deltas: identical to full-population to the second decimal in all four cells.
+- G2-shaped deltas: directions and magnitudes unchanged (seed 2 -0.77/-0.39; seed 3 -1.85/+0.29 vs full-population -1.84/+0.29; 0.01 pp rounding).
+- G5-shaped ordering deltas: DPO-pair sign reversal and KTO-pair direction both survive decontamination (clean-subset values +0.19/+2.31 and -3.21/-2.62).
+- Levels shift as predicted: known-row over_refusal rises ~1.5-2.3 pp on every arm once the memorized low-refusal rows are removed (e.g. seed-3 grpo_v2 68.68 -> 70.80); correct_on_known falls ~4-5 pp with denominators reported per run in the analyst table.
+
+**Paper-2 reporting rule established:** report full-population numbers with the contamination caveat, plus the clean-subset (n=3241) table as the sensitivity analysis; all conclusions are unchanged under decontamination. The leakage-guard extension follow-up now covers dev-split exposure as well as train.
