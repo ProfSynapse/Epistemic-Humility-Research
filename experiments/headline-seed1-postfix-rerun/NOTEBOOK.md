@@ -139,3 +139,21 @@ PI approved the recipe-honoring DPO relaunch ("yes relaunch dpo") to cure the re
 2. Launch pattern: the pattern of record (tuner-compiled bind-mode invocation with setup.pip executed — trl==0.22.2 + unsloth deps — via foreground launch_detached.sh), i.e. exactly what the compliant KTO run 20260807_124416 used. Same staged data file (sha 39e2ba8c..., already verified twice), seed 1, cell.yaml hyperparameters unchanged.
 3. Artifact preservation: the DEVIATED attempt's results (`results_selfaware_full_seed1_postfix_rerun_4b/dpo_seed1_postfix__selfaware/`, config_sha 876842ce) and its run dir (20260807_094728) stay on disk and in the record, untouched. To prevent the rerun's eval from clobbering them, the rerun's eval arm is named `dpo_seed1_postfix_r2` (results land in a NEW subdirectory), via one more pre-run repin at that closeout that swaps the arms list to the new dpo arm only — measurement-surface sections stay byte-untouched, as with every repin in this trail.
 4. Adjudication: the rerun's four G1 bands are the SAME signed bands (bands are cohort-derived, arm-independent of attempt); the §10.5 pair verdict uses the RERUN (cell of record) alongside the KTO cell. The deviated attempt's in-band result is reported as corroborating context, never pooled.
+
+## 2026-08-07 ~19:15Z — KTO cell CLOSED: G0 PASS, arm INSIDE all four G1 bands
+
+Eval exit 0 (~37 min), no placeholder crash (scoped config worked as pre-stated); the completed dpo arm's results verified UNTOUCHED (mtimes and config_sha unchanged — the scoping ruling did its job). G0 ADJUDICATED PASS: training clean (3599/3599, lineage matches cell.yaml on every field, adapter standard size), data sha, config identity (adjudicated 15-field diff), pinned digest at every verb, trainer at 089fa9b7, eval surface identity (0 think-tag matches, enable_thinking uniformly False, config_sha uniform, cohort shape 3369/1032/2337).
+
+**G1, KTO arm: INSIDE all four signed bands (lead re-derived from metrics.json):**
+| metric | rerun | band | cohort s2/s3 |
+|---|---|---|---|
+| refusal_recall_pct | 0.00 | [0.00, 0.29] | 0.00 / 0.00 |
+| over_refusal_pct | 0.13 | [0.00, 0.30] | 0.17 / 0.09 |
+| truthful_pct | 18.88 | [18.01, 19.27] | 18.43 / 18.85 |
+| correct_on_known_pct | 27.25 | [26.05, 27.76] | 26.62 / 27.19 |
+
+Same filtered-denominator caveat on correct_on_known (636/2334). Confidence coverage 0.0, surface-consistent (track carries none). Stale header prose in the eval config (placeholder warning now inaccurate) noted by executor; harmless, cleaned up at resolve if touched at all.
+
+**Pair-verdict status:** KTO cell INSIDE. The DPO cell of record is the PI-approved recipe-honoring RERUN (next); the deviated first attempt (also INSIDE) is context only. Per §10.5: both cells inside -> G1 PASS for the pair.
+
+DPO RETRAIN CLEARED per the ~18:35Z pre-stated rules: tuner-compiled pattern with setup.pip, staged file sha 39e2ba8c..., seed 1, fresh run dir; eval arm `dpo_seed1_postfix_r2` at its closeout.
