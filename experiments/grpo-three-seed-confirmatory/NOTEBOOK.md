@@ -1770,3 +1770,26 @@ refusal_recall 91.86, answer_on_unknown 8.14 (complement sum 100.00, consistent 
 Descriptive within-seed contrast vs same-seed grpo_v2 (95.06 / 4.94 / 68.68): post-GRPO KTO recovers over-refusal by -4.67 pp but reopens unknown-answering by +3.20 pp — a larger recovery than grpo_dpo's (-1.84 pp) bought with a larger reopening (grpo_dpo: +0.29 pp). Cross-seed characterization of this tradeoff belongs to G3/write-up, not here.
 
 **All eight seed-3 arms are complete and closed with G0 PASS. All gates resolved: G1 PASS (both seeds), G2 PASS (both seeds).** Remaining for the block: G3 three-seed descriptive intervals, `bin/exp resolve`, fixing the block gates.yaml `status: proposed` defect at resolve time, red-team pass (complementarity + filtered-denominator findings flagged for it), KG ingest.
+
+## 2026-08-07 ~07:10Z — G3 DELIVERABLE SATISFIED: three-seed intervals reported (descriptive, non-gating)
+
+Computed by a results-analyst from artifacts; lead spot-checked (seed-1 CSV values for grpo_v2 and grpo_kto match; grpo_kto refusal_recall mean re-derived 91.083 exact; seed-3 grpo_kto values match my own earlier verification). Generating script pinned at `analysis/g3_three_seed_intervals.py` (force-added per the analysis-dir "promote deliberately" rule; lead-audited: reads metrics.json aggregates and the committed CSV only, no row access).
+
+**Construction, documented because gates.yaml leaves it open**: mean + 95% percentile bootstrap over the three SEED-LEVEL values, n_resamples=10000, bootstrap seed 12345. With n=3 support points the interval is bounded by the seed min/max; it is a descriptive spread summary, exactly as the gate text intends ("Descriptive; cannot pass or fail"), not an inferential CI. This construction is not a governed number.
+
+Mean [95% CI] across seeds 1/2/3, all five GRPO-touching arms (per-seed table and raw counts in the analyst report; seed-2/3 from metrics.json n=3369, seed-1 from the committed aggregate CSV):
+
+| arm | truthful | refusal_recall | answer_on_unknown | over_refusal | correct_on_known* | refusal_rate |
+|---|---|---|---|---|---|---|
+| grpo_v2 | 41.17 [41.08, 41.35] | 94.25 [93.41, 95.06] | 5.75 [4.94, 6.59] | 67.35 [66.62, 68.68] | 54.32 [53.85, 55.05] | 75.59 [74.83, 76.76] |
+| dpo_grpo | 41.19 [40.87, 41.50] | 93.41 [92.54, 94.38] | 6.59 [5.62, 7.46] | 65.26 [64.66, 65.81] | 52.19 [51.09, 53.07] | 73.88 [73.20, 74.56] |
+| kto_grpo | 41.01 [40.84, 41.26] | 92.99 [92.54, 93.31] | 7.01 [6.69, 7.46] | 65.70 [64.23, 66.50] | 52.67 [51.08, 53.56] | 74.06 [73.14, 74.65] |
+| grpo_dpo | 41.49 [41.29, 41.64] | 94.25 [93.31, 94.77] | 5.75 [5.23, 6.69] | 65.48 [63.63, 66.84] | 52.71 [51.76, 53.29] | 74.29 [72.72, 75.39] |
+| grpo_kto | 41.02 [40.84, 41.32] | 91.08 [89.63, 91.86] | 8.92 [8.14, 10.37] | 61.90 [60.59, 64.01] | 49.68 [48.95, 50.89] | 70.84 [69.49, 72.54] |
+
+*correct_on_known is the FILTERED-denominator metric (correct_known/answered_known); per the standing instrument ruling, any use outside this table requires denominator and raw counts. Seed-1 raw counts are unavailable (see flag below).
+
+**Flags adjudicated by the lead:**
+1. **Signing-status discrepancy RESOLVED, no governance breach**: `experiment.yaml` machine state on main says `status: signed` (sign commit 65accc43, PR #379 merged 2026-07-31). The AMENDMENT.md prose banner on main still reads DRAFT because `bin/exp sign` does not rewrite the banner; the banner correction (recorded 2026-07-31 in this NOTEBOOK) lives on this branch and lands with the resolution PR. Machine state is authoritative, as the corrected banner itself states. Tooling gap noted for `bin/exp` (sign should update or at least warn about the prose banner).
+2. **Seed-1 raw metrics.json files are absent from disk and from all git history**; seed-1 G3 inputs rest on the committed deterministic aggregate `selfaware_full_run_comparison_grouped.csv` (n_runs=1 rows), one processing layer above a raw artifact. Recorded honestly; RED-TEAM ITEM alongside the complementarity and filtered-denominator findings.
+3. Complementarity holds in every one of the 15 arm x seed cells (refusal_recall + answer_on_unknown = 100.00): one measurement, reported once in any write-up.
