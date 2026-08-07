@@ -1712,3 +1712,11 @@ Seed-2 leg already adjudicated PASS (recorded 2026-08-05): over_refusal 66.75 vs
 Training config for grpo_dpo: DPO trainer CLI invocation, specified and lead-verified 2026-08-06 (batch 2, grad-accum 4, LR 5e-6, beta 0.1, seed 3, DPO dataset 14943, source = seed-3 grpo_v2 merged at `20260805_221744`, DPO LoRA defaults already match r32/a64/d0.05, random_state stays at trainer baseline 3407). Expect ~6h (seed-2 precedent).
 
 No goalpost may move from here in either direction.
+
+## 2026-08-07 02:10Z — `clean_sft_grpo_dpo` seed 3 LAUNCHED (G2 deciding arm)
+
+Container `eh-grpo3seed-3-clean_sft_grpo_dpo-train-20260807T021050Z`, started 02:10:50Z, run dir `clean_sft_grpo_dpo_seed3_full/20260807_021114` (dry-run decoy: `20260807_021026`, no final_model). Lead-verified from the running container via inspect: digest exact, `Entrypoint=["python3"]`, and the resolved CLI args carry `--seed 3`, `--learning-rate 5e-6`, `--batch-size 2`, `--gradient-accumulation 4`, `--beta 0.1`, model = the seed-3 grpo_v2 merged base (`20260805_221744`). Dry-run confirmed dataset 14943 and LoRA r32/a64/d0.05 (DPO defaults, no flags needed; random_state at trainer baseline 3407 per the standing rule).
+
+Dispatch-hygiene note: the lead's launch message contained a digest typo, caught and corrected inline in the same message; the executor verified against the corrected string only and said so explicitly. The lead independently confirmed the running container's digest matches the pin.
+
+Dual watches armed. Expect ~6h (seed-2 precedent), closing ~08:10Z, then closeout, then the G2 adjudication against the pre-stated band: over_refusal < 68.68 AND answer_on_unknown <= 6.94.
