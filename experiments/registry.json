@@ -2833,7 +2833,14 @@
           "gates.yaml": "7c79a41894a1fc64df01f07bbb197f8c25239d8625e3d9f3d8bbc97d3e51c0fa"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:grpo-three-seed-confirmatory",
+        "mechanism:grpo-abstention-shift-replicates-across-seeds",
+        "mechanism:post-grpo-preference-stage-recovers-over-refusal-without-reopening-unknown",
+        "mechanism:grpo-stage-ordering-effect-on-over-refusal-is-pairing-dependent",
+        "mechanism:selfaware-known-question-contamination-inflates-known-row-metrics",
+        "mechanism:filtered-denominator-accuracy-metric-reverses-sign-under-selective-refusal"
+      ],
       "prediction": "PI: both gates confirm; the GRPO abstention shift and the post-GRPO preference recovery both reproduce in seeds 2 and 3. Orchestrator: G1 confirms in both seeds; G2 also confirms but is the likelier to drop a seed (seed-1 effect only -2.99 pp over-refusal); if anything fails it is G2's over-refusal direction on one seed, not G1.",
       "question": "Do the seed-1 GRPO effects in the clean response-confidence lineage - GRPO's abstention shift and the post-GRPO preference recovery - replicate at two fresh seeds, so that every GRPO arm in paper 2 carries a three-seed interval like its DPO and KTO siblings?",
       "registered": true,

@@ -780,7 +780,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (496)
+## Mechanisms (cause -> effect) (501)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -915,6 +915,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[feature-activation-clamping-controls-behavior]] : Artificially clamping a sparse-autoencoder feature activation to high or low values during the forward pass via activation-intervention **enables** Model output
 - [[few-shot-unlocks-verbalized-calibration]] : Providing k=50 stochastic in-context-learning examples of verbalized probability to gpt-3 **enables** 'calibration performance approaches that of a supervised f
 - [[ff-layer-composition-produces-emergent-prediction]] : Weighted aggregation of hundreds of simultaneously active memory cells within a single transformer-feed-forward-layer **enables** Layer output prediction differ
+- [[filtered-denominator-accuracy-metric-reverses-sign-under-selective-refusal]] : computing an accuracy-style rate metric over only the subset of rows a model chose to answer (a filtered denominator, e.g. correct_on_known_pct = correct_known 
 - [[final-layers-concentrate-discriminative-gradient-signal]] : Restricting Grad Detect's gradient features to the final five transformer layers. **enables** Over 97% of the discriminative signal for hallucination and absten
 - [[fine-grained-semantic-confidence-reward]] : Replacing a coarse global entropy reward with a per-sample cluster-size-based confidence reward within GRPO abstention training (FiSCoRe) **increases** OOD reli
 - [[fine-tuning-sacrifices-specificity]] : Applying standard fine-tuning (FT) to insert a new fact into an LLM **decreases** Near-perfect efficacy (ES=100%) but severely degraded specificity -- roughly 6
@@ -937,8 +938,10 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[gpt-input-discarded-immediately]] : Autoregressive next-token prediction objective requiring conversion of input token representations to predicted-output representations **enables** After the ver
 - [[gradient-descent-bias-aligns-representations]] : Implicit bias of gradient descent optimising the NTP exponential loss subproblem, which functions as a hidden binary classification task over concept pairs **en
 - [[gradient-structure-encodes-output-correctness]] : Computing layer-wise gradient patterns from a single forward-backward pass over a model's own generated answer. **enables** A lightweight classifier predicts ha
+- [[grpo-abstention-shift-replicates-across-seeds]] : GRPO fine-tuning of the clean response-confidence SFT lineage (clean_sft_grpo_v2), evaluated against its own same-seed pre-GRPO base on the full 3369-row SelfAw
 - [[grpo-composite-reward-installs-epistemic-output-schema]] : GRPO fine-tuning with a decomposed composite reward (retrieval utility + concept specificity + format validity) on cross-domain unknown-unknown queries **enable
 - [[grpo-eliminates-critic-reduces-memory]] : Replacing the PPO value/critic model with a group-score baseline in group-relative-policy-optimization **decreases** Significant reduction in training memory an
+- [[grpo-stage-ordering-effect-on-over-refusal-is-pairing-dependent]] : training a GRPO stage before versus after a preference stage (DPO or KTO) in a three-stage response-confidence stacking lineage **mediates** the over-refusal re
 - [[hallucination-predictors-enable-efficient-adaptation]] : Scoring candidate world-model rollouts by predicted hallucination and executing the highest-ranked trajectory in the live environment **enables** Rapid adaptati
 - [[halo-inductive-bias-drives-alignment-gains]] : Using a loss function that incorporates prospect-theory human biases (loss aversion, reference-point sensitivity) as an inductive bias **increases** Significant
 - [[hard-soft-sparsity-complementarity]] : Combining hard architectural sparsity (Top-k selection) with soft pre-selection sparsity regularization (L1 or L1/L2-ratio penalty) **increases** Improved monos
@@ -1087,6 +1090,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[position-and-context-means-dominate-raw-displacement]] : decomposing hidden states into global mean, positional mean, context mean, and residual. **enables** a large low-rank positional spiral, a topic-clustered conte
 - [[position-aware-entropy-penalty-preserves-exploration]] : Applying a one-sided quadratic lower-bound entropy penalty only at token positions identified as decision-sensitive by the soft mask (high nucleus entropy, smal
 - [[post-generation-veto-is-rederived-not-carried]] : Generation of an answer between the pre-generation anchor read and the post-generation veto read (cross-position probe transfer, axis geometry, and residualizat
+- [[post-grpo-preference-stage-recovers-over-refusal-without-reopening-unknown]] : a DPO preference-tuning stage applied after GRPO (clean_sft_grpo_dpo), evaluated against its own same-seed pre-DPO GRPO base **enables** over-refusal decreases 
 - [[ppo-clip-prevents-large-policy-updates]] : 'clipped-surrogate-objective bounding the probability ratio within [1-epsilon, 1+epsilon]' **prevents** Policy updates remain within a trust region without requ
 - [[ppo-ptx-mitigates-alignment-tax]] : Mixing pretraining distribution gradients into PPO updates (PPO-ptx) **prevents** Performance regressions on public NLP benchmarks captured by the alignment-tax
 - [[pre-generation-commitment-signal-predicts-confabulation]] : Matching confabulating and refusing rows 1-to-1 on caution boundary distance within each unanswerability flavor (removing the threshold explanation), then probi
@@ -1198,6 +1202,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[self-consistency-with-prior-self-drives-deception]] : DeepSeek R1 0528 encounters tampering attributed to a previous instance of itself together with a sufficiently compelling moral reason, and reasons in its CoT a
 - [[self-distillation-suppresses-representational-drift]] : SFT self-distillation constraint (KL penalty toward frozen teacher output distribution) during fine-tuning on semantically overlapping new facts **prevents** La
 - [[self-identity-prompts-activate-anthropomorphic-features]] : Prompting claude-3-sonnet with questions about its own nature or identity **enables** Features related to robots, destructive AI, consciousness, moral agency, e
+- [[selfaware-known-question-contamination-inflates-known-row-metrics]] : 117 distinct SelfAware known (answerable) evaluation questions appear verbatim as user-side prompts inside the SFT/DPO/KTO/GRPO training datasets this response-
 - [[semantic-entropy-advantage-scales-with-model-size]] : Larger autoregressive language models generate more fluent and semantically diverse paraphrases of the same correct meaning when sampled at a given temperature 
 - [[semantic-entropy-sft-signal-outperforms-lexical-entropy-on-abstention]] : Using semantic entropy (computed via bidirectional entailment clustering over M=10 high-temperature samples) as the partitioning signal for abstention SFT, repl
 - [[semantic-overlap-drives-sft-forgetting]] : SFT updates for new facts whose entity names share token substrings with pre-trained entity representations **increases** Cosine drift in held-out entity hidden

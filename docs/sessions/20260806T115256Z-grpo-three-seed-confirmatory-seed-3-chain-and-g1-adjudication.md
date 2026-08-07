@@ -4,7 +4,7 @@ session_id: 20260806T115256Z-grpo-three-seed-confirmatory-seed-3-chain-and-g1-ad
 title: 'GRPO three-seed confirmatory: seed-3 chain and G1 adjudication'
 status: active
 created_at: '2026-08-06T11:52:56Z'
-updated_at: '2026-08-06T11:53:36Z'
+updated_at: '2026-08-07T09:34:16Z'
 question: Does the seed-1 GRPO abstention shift replicate across seeds 2 and 3 (G1,
   primary falsifier), and does post-GRPO preference recovery replicate (G2)?
 tags:
@@ -82,6 +82,30 @@ checkpoints:
   - Relaunch dpo_grpo, then kto_grpo, then grpo_dpo (closes G2), then grpo_kto, in
     registered launch_order. PR 394 open.
   signals: {}
+- id: 004-checkpoint
+  at: '2026-08-07T09:34:16Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Block RESOLVED and merged (PR #397): G2 adjudicated PASS both seeds against
+    pre-stated band; grpo_kto final arm closed G0 PASS (chain 8/8); G3 intervals delivered
+    (seed-level bootstrap, script pinned); red-team pass SAFE TO RESOLVE with two
+    MAJOR accepted findings: (1) 117 SelfAware known questions verbatim in training
+    prompts (G1 structurally immune, G2 stratum-robust, absolute known-row levels
+    caveated, guard-extension follow-up), (2) G5 delivered with DPO-pair sign reversal
+    (KTO pair holds). G4 not triggered (max 85 distinct). bin/exp repin correctly
+    refused post-resolution gates.yaml header fix; defect ruled cosmetic, machine
+    state authoritative. KG ingest in flight on branch kg/grpo-three-seed-ingest.
+    Clean-subset sensitivity re-aggregation dispatched (PI-approved): decontaminated
+    metrics for all 16 runs as paper-2 sensitivity table, gates unchanged. Next GPU
+    run launched with PI approval: headline-seed1-postfix-rerun DPO cell dispatched
+    (cold-start seed 1, post-fix build sha 39e2ba8c, trainer pinned 089fa9b7, worktree
+    postfix-rerun).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: grpo-three-seed-confirmatory
 ---
 # GRPO three-seed confirmatory: seed-3 chain and G1 adjudication
@@ -116,3 +140,8 @@ _No summary yet._
 - summary: clean_sft_dpo_grpo seed 3 crashed exit 139 (SIGSEGV) at step 150/1861, torch.AcceleratorError cudaErrorUnknown, OOMKilled=false. Second CUDA fault on this WSL2 host in two days (same signature as seed-3 stage-1). Capacity ruled out BY COMPARISON: crashed at 49.06% VRAM peak while seed 2 ran the same arm to 1861/1861 at 82.60%. G0 training_completed_clean FAILS, instrument stop, no outcome read. Relaunching from scratch, deliberately NOT --resume-from-checkpoint, because a resumed optimizer trajectory is not how seeds 1-2 were produced and this arm feeds the cross-seed G3 matrix. Watch-trap note: the background wait task summary again reported 'exit code 0' while the container exited 139; the real code came from the watch output file and docker inspect.
 - next steps:
   - Relaunch dpo_grpo, then kto_grpo, then grpo_dpo (closes G2), then grpo_kto, in registered launch_order. PR 394 open.
+### 004-checkpoint - Checkpoint
+
+- at: `2026-08-07T09:34:16Z`
+- kind: `checkpoint`
+- summary: Block RESOLVED and merged (PR #397): G2 adjudicated PASS both seeds against pre-stated band; grpo_kto final arm closed G0 PASS (chain 8/8); G3 intervals delivered (seed-level bootstrap, script pinned); red-team pass SAFE TO RESOLVE with two MAJOR accepted findings: (1) 117 SelfAware known questions verbatim in training prompts (G1 structurally immune, G2 stratum-robust, absolute known-row levels caveated, guard-extension follow-up), (2) G5 delivered with DPO-pair sign reversal (KTO pair holds). G4 not triggered (max 85 distinct). bin/exp repin correctly refused post-resolution gates.yaml header fix; defect ruled cosmetic, machine state authoritative. KG ingest in flight on branch kg/grpo-three-seed-ingest. Clean-subset sensitivity re-aggregation dispatched (PI-approved): decontaminated metrics for all 16 runs as paper-2 sensitivity table, gates unchanged. Next GPU run launched with PI approval: headline-seed1-postfix-rerun DPO cell dispatched (cold-start seed 1, post-fix build sha 39e2ba8c, trainer pinned 089fa9b7, worktree postfix-rerun).
