@@ -1752,3 +1752,21 @@ Recorded before the launch verb. KTO-trainer arm: explicit `--lora-r 32 --lora-a
 ## 2026-08-07 ~04:20Z — `clean_sft_grpo_kto` seed 3 LAUNCHED (final arm, 8/8)
 
 Dry-run container `...-dryrun-20260807T041704Z` ran first; training container `eh-grpo3seed-3-clean_sft_grpo_kto-train-20260807T041917Z` running. Lead independently verified on the live container: image digest matches the pinned sha256 char-for-char; entrypoint explicitly `["python3"]`. Lead-side backstop watches confirmed both the dispatch pickup and the dry-run-to-train seam (the seam where the 2026-08-06 dropped-launch incident occurred). Executor exit-side watches armed. Expected ~1h40m per seed-2 precedent.
+
+## 2026-08-07 ~06:35Z — `clean_sft_grpo_kto` seed 3 CLOSED, G0 PASS — **SEED-3 CHAIN COMPLETE (8/8)**
+
+**G0 ADJUDICATED PASS**, all five checks lead-verified:
+- merge_first_lineage: training_lineage.json base_model = seed-3 grpo_v2 merged (20260805_221744); r32/alpha64/dropout 0.05 explicit (not KTO baked-in defaults); seed 3; lr 1e-6; beta 0.1; weights 1.0/1.0.
+- training_completed_clean: container exit 0 (read from docker-wait output file); final_step 2491 = ceil(29886/12) exactly, one full epoch, no early stop; final_loss 0.0896; 1h34m25s.
+- bounded_smoke_coverage: lead-rederived from scored rows: 192/192 generated_answer, 192/192 stated_confidence, 0 thinking-tag hits.
+- dataset_audit: KTO train 29886 (verified pre-launch and re-confirmed in lineage).
+- containment: results dir git-ignored (probed on the file, not the dir); no row text in any committed artifact.
+
+Run dir `20260807_041945` (dry-run decoy `20260807_041745` has no final_model, untouched). Adapter 264,308,896 bytes exact; merged-16bit shards 4,967,215,360 + 3,077,766,632 exact. Eval configs seed-scoped diffs only (full: 6/28 keys, smoke: 5/29), worktree and canonical byte-identical.
+
+**Full eval, n=3369, confidence coverage 100%** (descriptive; this arm carries no gate reads):
+refusal_recall 91.86, answer_on_unknown 8.14 (complement sum 100.00, consistent with the standing one-measurement fact), over_refusal 64.01, refusal_rate 72.54, truthful 40.84. Counts: refuse_on_unknown 948, refuse_on_known 1496, answered_known 841, correct_known 428, answered_unknown 84, correct_unknown 0. correct_on_known_pct 50.89 is the FILTERED-denominator metric (correct_known/answered_known = 428/841); per the standing instrument ruling it is not citable without denominator and raw counts.
+
+Descriptive within-seed contrast vs same-seed grpo_v2 (95.06 / 4.94 / 68.68): post-GRPO KTO recovers over-refusal by -4.67 pp but reopens unknown-answering by +3.20 pp — a larger recovery than grpo_dpo's (-1.84 pp) bought with a larger reopening (grpo_dpo: +0.29 pp). Cross-seed characterization of this tradeoff belongs to G3/write-up, not here.
+
+**All eight seed-3 arms are complete and closed with G0 PASS. All gates resolved: G1 PASS (both seeds), G2 PASS (both seeds).** Remaining for the block: G3 three-seed descriptive intervals, `bin/exp resolve`, fixing the block gates.yaml `status: proposed` defect at resolve time, red-team pass (complementarity + filtered-denominator findings flagged for it), KG ingest.
