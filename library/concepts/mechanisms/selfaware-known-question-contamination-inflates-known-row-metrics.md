@@ -10,7 +10,7 @@ kg:
   id: mechanism:selfaware-known-question-contamination-inflates-known-row-metrics
   type: mechanism
   status: canonical
-cause: "117 distinct SelfAware known (answerable) evaluation questions appear verbatim as user-side prompts inside the SFT/DPO/KTO/GRPO training datasets this response-confidence lineage consumes, because the pre-registered leakage guard checks question disjointness against the Cheng TriviaQA test set only and was never extended to SelfAware"
+cause: "128 distinct SelfAware known (answerable) evaluation questions leak into the response-confidence training pipeline: 117 appear verbatim as user-side prompts in all four gradient-training datasets (SFT/DPO/KTO/GRPO train, set-identical across files) and a disjoint 11 appear only in the GRPO dev split (checkpoint-selection exposure, not gradient exposure); the pre-registered leakage guard checks question disjointness against the Cheng TriviaQA test set only and was never extended to SelfAware"
 effect: "absolute levels of over_refusal_pct, correct_on_known_pct, and truthful_pct on known rows are inflated by the memorized ~5 percent of the known population (contaminated-stratum over-refusal roughly 30 percent versus roughly 71 percent on the clean stratum), while metrics computed only over the 1032 unknown-labeled rows are structurally unaffected and within-lineage deltas remain stratum-robust"
 polarity: increases
 related:
@@ -25,6 +25,7 @@ relationships:
   confidence: high
   evidence:
   - "experiments/grpo-three-seed-confirmatory/NOTEBOOK.md RED-TEAM PASS FINDING 1 (MAJOR, ACCEPTED); 117 exact-match distinct questions against DPO train prompts, all label known, zero unknown"
+  - "experiments/grpo-three-seed-confirmatory/NOTEBOOK.md clean-subset sensitivity addendum 2026-08-07: full-union accounting 128 distinct/128 rows (117 train + 11 grpo_dev-only), corrected DPO-slice row count 117 (not 118); all gate-shaped deltas, the G5 sign patterns, and every unknown-row metric are unchanged on the decontaminated n=3241 population (script: experiments/grpo-three-seed-confirmatory/analysis/clean_subset_sensitivity.py)"
 - type: related_to
   target: '[[selfaware]]'
   target_id: dataset:selfaware
