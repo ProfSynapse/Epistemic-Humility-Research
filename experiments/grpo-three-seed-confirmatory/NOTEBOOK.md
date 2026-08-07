@@ -1748,3 +1748,7 @@ Honest characterization, recorded with the verdict:
 ## `clean_sft_grpo_kto` seed 3 CLEARED FOR LAUNCH (final arm)
 
 Recorded before the launch verb. KTO-trainer arm: explicit `--lora-r 32 --lora-alpha 64 --lora-dropout 0.05` REQUIRED (KTO defaults are r64/a128), random_state at trainer baseline 3407, batch 12 / grad-accum 1 / LR 1e-6 / beta 0.1, KTO dataset 29886, source = seed-3 grpo_v2 merged (`20260805_221744`). Invocation specified and lead-verified 2026-08-06. Seed-2 precedent for this arm peaked at 99.2% VRAM and completed; watch but do not preempt.
+
+## 2026-08-07 ~04:20Z — `clean_sft_grpo_kto` seed 3 LAUNCHED (final arm, 8/8)
+
+Dry-run container `...-dryrun-20260807T041704Z` ran first; training container `eh-grpo3seed-3-clean_sft_grpo_kto-train-20260807T041917Z` running. Lead independently verified on the live container: image digest matches the pinned sha256 char-for-char; entrypoint explicitly `["python3"]`. Lead-side backstop watches confirmed both the dispatch pickup and the dry-run-to-train seam (the seam where the 2026-08-06 dropped-launch incident occurred). Executor exit-side watches armed. Expected ~1h40m per seed-2 precedent.
