@@ -75,3 +75,21 @@ Launch: container `eh-postfix-seed1-dpo-train-20260807_094728` (started 09:47:28
 Training: exit 0, 1800/1800 steps, 58m07s, lineage matches cell.yaml on every field (base 4-bit foundation, seed 1, r32/a64/0.05, LR 5e-06, beta 0.1, staged dataset 14395 rows). Adapter 264,308,896 bytes.
 
 Executor hard-stopped at eval launch on a real instrument defect (third correct stop this experiment): the pinned eval config's `gold_path` and `eval_sets.selfaware.path` carried three `../` segments, but run_eval.py resolves relative paths from `archive/experiment/phase1/eval/` which needs four; as committed the eval would crash at load, before any GPU cost. Lead verified the resolution both ways and against the known-working GRPO-chain configs, fixed both lines to four levels, and ran `bin/exp repin` (pre-run, audited; third repin in this experiment's trail) with the full reason. The same repin absorbs the amendment-authorized DPO adapter-placeholder fill (§10 item 1). New pin 876842ce... `exp validate` OK. Worktree and canonical copies byte-identical. No prompt, generation, scoring, or bootstrap field changed — the eval surface is untouched.
+
+## 2026-08-07 ~11:45Z — DPO cell: eval complete, G0 PASS, arm INSIDE all four G1 bands
+
+Eval container exited 1; attribution verified by evidence chain (executor) and accepted by lead: run_eval's arm loop fully generated, scored, and wrote arm 0 (dpo, 3369 rows, config_sha 876842ce matches provenance) BEFORE arm 1 (kto) whose adapter is still the amendment's placeholder; the crash is the placeholder failing its first lazy LoRA weight load, after all DPO artifacts were complete. No KTO artifacts exist anywhere; DPO scored_rows exactly 3369 with label counts matching the cohort surface (1032/2337). LESSON for the record: a multi-arm eval config with an unfilled placeholder arm exits nonzero BY CONSTRUCTION after the filled arms complete; the KTO arm eval needs lead-decided scoping at its closeout (do not blind-rerun the whole config: nondeterministic regeneration of the completed dpo arm would be a silent-substitution provenance hole).
+
+G0 ADJUDICATED PASS (all checks): data sha (pre- and post-checkout, twice), config identity (5-field diff, beta pre-authorized), pinned digest at every verb, trainer at 089fa9b7, training clean 1800/1800, eval surface identity (0 think-tag/reasoning matches over 3369 rows, enable_thinking uniformly False, temp 0.0 / seed 20240601, cohort shape 1032/2337).
+
+**G1, DPO arm: INSIDE all four signed bands (lead re-derived from metrics.json):**
+| metric | rerun | band | cohort s2/s3 |
+|---|---|---|---|
+| refusal_recall_pct | 0.00 | [0.00, 0.29] | 0.00 / 0.00 |
+| over_refusal_pct | 0.13 | [0.00, 0.30] | 0.04 / 0.17 |
+| truthful_pct | 16.62 | [13.48, 18.28] | 16.68 / 15.08 |
+| correct_on_known_pct | 23.99 | [19.48, 26.35] | 24.06 / 21.77 |
+
+The rerun sits at the cohort's abstention floor exactly (refusal_recall 0.00, counts 0/1032). Per the signed §10.5 decision rule the pair verdict (PASS/PARTIAL/FAIL) waits for the KTO cell; no verdict is recorded yet. Raw observation, no gate weight: stated_confidence coverage 0.0 (all rows null) — surface-consistent, the cohort CSV carries no confidence columns; this track never measured it. correct_on_known_pct carries the standing filtered-denominator caveat (560/2334 here; near-complete answering makes the filter mild for this arm).
+
+KTO cell CLEARED for launch (second and final cell): cold-start seed 1, post-fix build sha 9cb291ee... (verified twice already), trainer stays at 089fa9b7, ~5.8h expected.
