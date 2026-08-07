@@ -51,4 +51,10 @@ verdict: 'Replicated. G1 PASS both seeds (GRPO abstention shift: answer_on_unkno
   at all three seeds, DPO pair sign-reverses and is not a finding. Limitation: 117
   SelfAware known questions verbatim in training prompts; G1 structurally immune,
   G2 stratum-checked robust, absolute known-row levels carry the contamination caveat.'
-kg: []
+kg:
+- experiment:grpo-three-seed-confirmatory
+- mechanism:grpo-abstention-shift-replicates-across-seeds
+- mechanism:post-grpo-preference-stage-recovers-over-refusal-without-reopening-unknown
+- mechanism:grpo-stage-ordering-effect-on-over-refusal-is-pairing-dependent
+- mechanism:selfaware-known-question-contamination-inflates-known-row-metrics
+- mechanism:filtered-denominator-accuracy-metric-reverses-sign-under-selective-refusal
