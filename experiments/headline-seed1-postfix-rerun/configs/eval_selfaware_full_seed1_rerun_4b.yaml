@@ -38,14 +38,14 @@ vllm:
   max_model_len: 2048
 
 arms:
-  - name: dpo_seed1_postfix
-    method: dpo
-    model: qwen3-4b-instruct
-    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed1_postfix/20260807_094728/final_model
+  # dpo_seed1_postfix arm REMOVED per the pre-stated eval-scoping ruling
+  # (NOTEBOOK 2026-08-07 ~12:05Z): its eval already completed under
+  # config_sha 876842ce and rerunning it here would nondeterministically
+  # regenerate finished results (silent-substitution hazard).
   - name: kto_seed1_postfix
     method: kto
     model: qwen3-4b-instruct
-    adapter: 'PLACEHOLDER - fill with the kto__4b__headline__seed1__postfix final_model path after training completes (see cell.yaml arms[1].artifacts.output_root)'
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1_postfix/20260807_124416/final_model
 
 eval_sets:
   selfaware:

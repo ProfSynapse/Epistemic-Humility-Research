@@ -30,7 +30,7 @@ instrument:
   pins:
     cell.yaml: a934232054281fda8ba060045a369c22227bea1fe90df4795d204d0dbe5c421c
     gates.yaml: 93d1ff8c05b31cd5fa496a2503c3db48f96e1200b5711d135bbd4307207eecea
-    configs/eval_selfaware_full_seed1_rerun_4b.yaml: 876842cea02295ddf327051ed28216ad3c28dc75d163383691482ff3e0395d40
+    configs/eval_selfaware_full_seed1_rerun_4b.yaml: 52e78ef1b6665fe9ca272871d83fa4014d8cffb5ef9ca9d3fd613462427d4244
     scripts/audit_data_provenance.py: c5ceb60042750c4aabc590d4be8e4af443fd4785f734bbfa84370d36eb4009d7
     scripts/data_builds.yaml: 74dfde53eb66fd462b94657686b40307ac071ec69874cb647c870f6022d6dad6
   persistence:
@@ -85,6 +85,16 @@ instrument:
       arm adapter placeholder (AMENDMENT §10 item 1: placeholders to be filled once
       the rerun adapters exist). No prompt, generation, scoring, or bootstrap field
       changed.'
+  - file: configs/eval_selfaware_full_seed1_rerun_4b.yaml
+    old_sha256: 876842cea02295ddf327051ed28216ad3c28dc75d163383691482ff3e0395d40
+    new_sha256: 52e78ef1b6665fe9ca272871d83fa4014d8cffb5ef9ca9d3fd613462427d4244
+    date: '2026-08-07T18:22:59Z'
+    reason: 'Pre-run repin executing the eval-scoping ruling PRE-STATED in NOTEBOOK
+      ~12:05Z, before any KTO eval artifact existed: (1) fill arms[kto].adapter with
+      the real final_model path (run 20260807_124416; amendment-authorized placeholder
+      fill, §10.1); (2) REMOVE the dpo arm, whose eval already completed under config_sha
+      876842ce, so it cannot be nondeterministically regenerated. Prompt/generation/confidence/bootstrap/vllm/eval_sets
+      sections byte-untouched.'
 inputs:
 - archive/docs/protocols/phase1/PROTOCOL.md
 - archive/experiment/phase1/run_records/dpo__4b__headline__seed1.json
