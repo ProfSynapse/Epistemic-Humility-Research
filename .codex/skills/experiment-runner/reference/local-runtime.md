@@ -346,6 +346,69 @@ does not exist: scratch\...`.
   `sed` are missing. Verify the submodule SHA with the gitlink plus
   `git -C synaptic-tuner rev-parse HEAD`.
 
+## Missing --entrypoint python3 produces a live-looking dead container
+
+Verified directly against the pinned image:
+`docker image inspect unsloth/unsloth:latest --format '{{json .Config.Entrypoint}}'`
+returns `["/usr/local/bin/entrypoint.sh"]`. Reading that script
+(`docker run --rm --entrypoint cat unsloth/unsloth:latest
+/usr/local/bin/entrypoint.sh`) shows it sets up SSH host keys, a
+Jupyter/SSH environment, and a `chpasswd` step, then ends with
+`exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf`,
+handing off to a supervisor process that runs indefinitely and never
+invokes the trainer.
+
+Consequence, confirmed against a real incident: a `docker run` that omits
+`--entrypoint python3` launches this bootstrap instead of the trainer. The
+container reports `Up` for 5+ minutes with `nvidia-smi` showing 0 MiB GPU
+memory. `docker logs` shows supervisord/Jupyter startup lines instead of
+trainer output; that mismatch is the detection signal. Fix: stop/rm the
+container and relaunch with `--entrypoint python3` explicit.
+
+This is the general form of the existing note further down this file that
+the same image's default entrypoint "may chmod the mounted repo and fail on
+`.tmp/pytest-codex*`" for eval wrapper runs: both symptoms share one root
+cause, launching this image without `--entrypoint python3` hands control to
+the bootstrap script instead of the intended process.
+
+Rule: every `docker run` for a training/merge/eval verb against this image
+passes `--entrypoint python3` explicitly. A missing entrypoint fails
+silently in the worst way: a container that is `Up` while doing nothing
+GPU-relevant, which defeats any liveness check that only tests container
+existence.
+
+Corollary, generalizing the liveness check below: liveness is container
+`Up` AND (GPU memory climbing OR trainer log rows appearing in the JSONL),
+never container `Up` alone.
+
+## Watch the launch, not only the exit
+
+The "Teammate watch discipline for long containers" note above covers
+EXIT-side watching (`docker wait` as the reliable completion signal). It has
+a blind spot: a launch that never actually starts a container produces the
+same silence as a healthy long run, because an exit watch has nothing to
+fire on until a container exists and exits. Verified incident: a relaunch
+was dispatched, the dry-run step completed, but the real training container
+never started, and the GPU sat idle for about 65 minutes before anyone
+noticed.
+
+Rule: after dispatching any launch, arm a LAUNCH-side watch alongside the
+exit-side one. Poll `docker ps --filter name=<pattern>` (the pattern from
+the run's naming convention) on an interval, e.g. every 60s:
+- Emit LAUNCH CONFIRMED on the first match.
+- If no match appears after a bounded window (about 15 minutes), emit a
+  STALL WARNING carrying `nvidia-smi` memory and the current `docker ps`
+  output, and exit nonzero rather than continuing to wait silently.
+
+Two corollaries:
+- Name dry-run containers on the SAME convention as real runs (e.g.
+  `<run-id>-dryrun-<timestamp>`), not left to Docker's random auto-name. An
+  unnamed dry-run container costs an extra `docker inspect` just to identify
+  which container it is.
+- Never end a turn on an unconfirmed async wait. If a launch was dispatched,
+  confirm it started, or report that it did not, before the turn ends; do
+  not hand off "launched" as a claim that was never checked.
+
 ## Observing a detached training container
 
 Learned across the GRPO three-seed chain (2026-08-04/05), where every long
