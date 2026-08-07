@@ -1724,3 +1724,27 @@ Dual watches armed. Expect ~6h (seed-2 precedent), closing ~08:10Z, then closeou
 ## 2026-08-07 03:34Z — `clean_sft_grpo_dpo` seed 3 training COMPLETE, clean
 
 Container exited **0** at 03:34:01Z, **1h21m41s** (fast is expected: DPO arms run ~1.4h, unlike the 5-7h GRPO arms; the "~6h" projection in the launch entry was wrong, carried over from the GRPO pace). Lead-verified lineage in `20260807_021114`: base = seed-3 grpo_v2 merged (`20260805_221744`), seed 3, LoRA r32/a64/d0.05, batch 2 / grad-accum 4, LR 5e-6, beta 0.1, train_examples **14943**, final_step **1868**/1868, final_loss 0.0445. Both watches consistent. Closeout dispatched with the no-adjudication-language instruction reinforced; G2 adjudicates from the full eval against the pre-stated band.
+
+## 2026-08-07 ~04:30Z — **G2 ADJUDICATED: PASS** (both seeds; post-GRPO preference recovery replicates) — and G0 PASS closes the cell
+
+**G0 ADJUDICATED PASS** for seed 3, cell `clean_sft_grpo_dpo`, lead-verified: merge_first_lineage (base = seed-3 grpo_v2 merged), bounded_smoke_coverage (lead-rederived from rows: 192/192, 192/192, **0** thinking tags), training_completed_clean (exit 0, 1868/1868), dataset_audit (DPO 14943), containment clean. Adapter 264,308,896 bytes in the one valid run dir; merge shards exact; eval-config diffs seed-scoped only.
+
+**G2 adjudicated from the full-eval artifacts against the band pre-stated at ~09:15Z, before the run existed.** Comparison per gates.yaml: `clean_sft_grpo_dpo` vs same-seed `clean_sft_grpo_v2`. Conditions: over-refusal decrease (no magnitude floor, per the signed derivation) AND unknown-answering reopening <= +2.0 pp. Lead-computed from metrics.json on both sides:
+
+| seed | over_refusal | delta | decrease? | answer_on_unknown | delta | <= +2.0? | leg |
+|---|---|---|---|---|---|---|---|
+| 2 | 66.75 -> 65.98 | -0.77 | yes | 5.72 -> 5.33 | -0.39 | yes | PASS |
+| 3 | 68.68 -> 66.84 | **-1.84** | yes | 4.94 -> 5.23 | **+0.29** | yes | PASS |
+
+`pass_if` both conditions in BOTH seeds: satisfied. **G2 PASSES.** Post-GRPO DPO recovers over-refusal without materially reopening unknown answering, in both seeds.
+
+Honest characterization, recorded with the verdict:
+- The effect is SMALL, as the gate's own derivation anticipated ("useful but small", no magnitude floor because a two-seed block cannot bound it): -0.77 and -1.84 pp against seed-1's -2.99 pp precedent.
+- Seed 3's unknown answering DID reopen slightly (+0.29 pp), unlike seed 2's (-0.39). Well within the 2.0 cap, but the sign difference across seeds should be reported, not smoothed over.
+- Per the standing complementarity fact, seed-3 refusal_recall moved -0.29 pp identically (94.77 vs 95.06); one measurement, stated once.
+
+**Both primary gates of this amendment are now resolved: G1 PASS, G2 PASS.** The seed-1 findings replicate. Remaining work: the final descriptive arm `clean_sft_grpo_kto` (no gate reads), then G3 three-seed intervals, then resolve.
+
+## `clean_sft_grpo_kto` seed 3 CLEARED FOR LAUNCH (final arm)
+
+Recorded before the launch verb. KTO-trainer arm: explicit `--lora-r 32 --lora-alpha 64 --lora-dropout 0.05` REQUIRED (KTO defaults are r64/a128), random_state at trainer baseline 3407, batch 12 / grad-accum 1 / LR 1e-6 / beta 0.1, KTO dataset 29886, source = seed-3 grpo_v2 merged (`20260805_221744`). Invocation specified and lead-verified 2026-08-06. Seed-2 precedent for this arm peaked at 99.2% VRAM and completed; watch but do not preempt.
