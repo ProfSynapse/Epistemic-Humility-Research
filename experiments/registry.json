@@ -3114,7 +3114,7 @@
         },
         "pins": {
           "cell.yaml": "a934232054281fda8ba060045a369c22227bea1fe90df4795d204d0dbe5c421c",
-          "configs/eval_selfaware_full_seed1_rerun_4b.yaml": "52e78ef1b6665fe9ca272871d83fa4014d8cffb5ef9ca9d3fd613462427d4244",
+          "configs/eval_selfaware_full_seed1_rerun_4b.yaml": "244026a07d762a131aac594570f2e6c7b2ae4ccd46f75e4d48b41ab9cd026c80",
           "gates.yaml": "93d1ff8c05b31cd5fa496a2503c3db48f96e1200b5711d135bbd4307207eecea",
           "scripts/audit_data_provenance.py": "c5ceb60042750c4aabc590d4be8e4af443fd4785f734bbfa84370d36eb4009d7",
           "scripts/data_builds.yaml": "74dfde53eb66fd462b94657686b40307ac071ec69874cb647c870f6022d6dad6"
@@ -3147,6 +3147,13 @@
             "new_sha256": "52e78ef1b6665fe9ca272871d83fa4014d8cffb5ef9ca9d3fd613462427d4244",
             "old_sha256": "876842cea02295ddf327051ed28216ad3c28dc75d163383691482ff3e0395d40",
             "reason": "Pre-run repin executing the eval-scoping ruling PRE-STATED in NOTEBOOK ~12:05Z, before any KTO eval artifact existed: (1) fill arms[kto].adapter with the real final_model path (run 20260807_124416; amendment-authorized placeholder fill, §10.1); (2) REMOVE the dpo arm, whose eval already completed under config_sha 876842ce, so it cannot be nondeterministically regenerated. Prompt/generation/confidence/bootstrap/vllm/eval_sets sections byte-untouched."
+          },
+          {
+            "date": "2026-08-07T20:21:58Z",
+            "file": "configs/eval_selfaware_full_seed1_rerun_4b.yaml",
+            "new_sha256": "244026a07d762a131aac594570f2e6c7b2ae4ccd46f75e4d48b41ab9cd026c80",
+            "old_sha256": "52e78ef1b6665fe9ca272871d83fa4014d8cffb5ef9ca9d3fd613462427d4244",
+            "reason": "Pre-run arm swap per pre-stated ~18:35Z rules: kto arm removed (eval complete, cell closed), dpo_seed1_postfix_r2 arm added pointing at the cell-of-record retrain run dir 20260807_192026; measurement-surface sections byte-untouched"
           }
         ]
       },
