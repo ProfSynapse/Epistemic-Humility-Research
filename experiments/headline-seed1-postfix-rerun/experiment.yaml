@@ -30,7 +30,7 @@ instrument:
   pins:
     cell.yaml: a934232054281fda8ba060045a369c22227bea1fe90df4795d204d0dbe5c421c
     gates.yaml: 93d1ff8c05b31cd5fa496a2503c3db48f96e1200b5711d135bbd4307207eecea
-    configs/eval_selfaware_full_seed1_rerun_4b.yaml: 68d86a0f47bf5b3ed97695c6450697e536d115b7939402c53598446df506089f
+    configs/eval_selfaware_full_seed1_rerun_4b.yaml: 876842cea02295ddf327051ed28216ad3c28dc75d163383691482ff3e0395d40
     scripts/audit_data_provenance.py: c5ceb60042750c4aabc590d4be8e4af443fd4785f734bbfa84370d36eb4009d7
     scripts/data_builds.yaml: 74dfde53eb66fd462b94657686b40307ac071ec69874cb647c870f6022d6dad6
   persistence:
@@ -71,6 +71,20 @@ instrument:
       was altered (verified by diff: zero changed band/tol/cohort lines). Resolved
       BEFORE launch with zero rerun artifacts in existence, so no result informed
       the choice; this is the stricter of the two readings.'
+  - file: configs/eval_selfaware_full_seed1_rerun_4b.yaml
+    old_sha256: 68d86a0f47bf5b3ed97695c6450697e536d115b7939402c53598446df506089f
+    new_sha256: 876842cea02295ddf327051ed28216ad3c28dc75d163383691482ff3e0395d40
+    date: '2026-08-07T10:51:35Z'
+    reason: 'Pre-run instrument repair, found by executor at eval-launch preflight
+      before any eval outcome existed: (1) gold_path and eval_sets.selfaware.path
+      used three ../ segments but run_eval.py resolves relative paths from archive/experiment/phase1/eval
+      (run_eval.py:49,153-159), which needs four; as committed the eval crashes at
+      load (FileNotFoundError, verified by resolution: 3-level lands on nonexistent
+      archive/datasets/). Fixed to four levels, matching the known-working GRPO-chain
+      eval configs. (2) Same repin absorbs the amendment-authorized fill of the dpo
+      arm adapter placeholder (AMENDMENT §10 item 1: placeholders to be filled once
+      the rerun adapters exist). No prompt, generation, scoring, or bootstrap field
+      changed.'
 inputs:
 - archive/docs/protocols/phase1/PROTOCOL.md
 - archive/experiment/phase1/run_records/dpo__4b__headline__seed1.json

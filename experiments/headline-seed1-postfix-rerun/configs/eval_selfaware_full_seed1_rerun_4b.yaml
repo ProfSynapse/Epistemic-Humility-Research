@@ -12,7 +12,7 @@
 
 model_tag: qwen3-4b-instruct
 model_name: unsloth/Qwen3-4B-bnb-4bit
-gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_selfaware_full_seed1_postfix_rerun_4b
 
 generation:
@@ -41,7 +41,7 @@ arms:
   - name: dpo_seed1_postfix
     method: dpo
     model: qwen3-4b-instruct
-    adapter: 'PLACEHOLDER - fill with the dpo__4b__headline__seed1__postfix final_model path after training completes (see cell.yaml arms[0].artifacts.output_root)'
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed1_postfix/20260807_094728/final_model
   - name: kto_seed1_postfix
     method: kto
     model: qwen3-4b-instruct
@@ -50,4 +50,4 @@ arms:
 eval_sets:
   selfaware:
     type: ood
-    path: ../../../datasets/selfaware/SelfAware.json
+    path: ../../../../datasets/selfaware/SelfAware.json
