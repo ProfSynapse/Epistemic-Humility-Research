@@ -1,0 +1,199 @@
+# Pre-stated gates for ood-breadth-beyond-selfaware.
+#
+# Fixed before launch. Changing any value after results exist voids the test and
+# requires a new signed revision. Integrity gates G0-G3 are read first and all
+# must pass; evidential gates G4-G7 are read only after they do. G6 is a labeling
+# gate, not an outcome gate.
+#
+# Thresholds are derived from the SelfAware values paper 3 reports and from the
+# power available on each surface. None is a rounded convenient default; the
+# derivation is stated inline with each.
+
+# ===========================================================================
+# Integrity gates
+# ===========================================================================
+
+g0_disjointness_screen:
+  direction: pass_required
+  scope: every_surface
+  fail_closed: true
+  thresholds:
+    training_pool_hits_in_retained_rows_max: 0
+    selfaware_overlap_hits_in_retained_rows_max: 0
+    dataset_sha256_must_match_cell_yaml: true
+  expected_drop_counts:
+    kuq_known:   {duplicate: 10,  training_hit: 169, selfaware_overlap: 197, retained: 3071}
+    kuq_unknown: {duplicate: 955, training_hit: 0,   selfaware_overlap: 13,  retained: 2469}
+    ambigqa_known:   {duplicate: 0, training_hit: 0, selfaware_overlap: 0, retained: 830}
+    ambigqa_unknown: {duplicate: 0, training_hit: 0, selfaware_overlap: 0, retained: 1002}
+    bigbench_known:   {duplicate: 0, training_hit: 0, selfaware_overlap: 0, retained: 23}
+    bigbench_unknown: {duplicate: 0, training_hit: 0, selfaware_overlap: 0, retained: 23}
+    ambigqa_internal_topup: {unknown: 501, known: 415, total: 916}
+  on_failure: void_affected_surface
+  on_count_mismatch: >-
+    A materially different drop count means the training files or the datasets
+    changed since registration. Re-derive the design; do not patch the count.
+  derivation: >-
+    Zero is the only defensible threshold. This is the item-26 guard and the
+    direct response to the SelfAware leak recorded in
+    experiments/grpo-three-seed-confirmatory/NOTEBOOK.md lines 1835-1839. A
+    surface that retains even one training-pool row is not OOD for that metric,
+    and a surface sharing rows with SelfAware cannot evidence generalization
+    beyond SelfAware.
+  must_run_before: any_generation
+
+g1_remerge_parity:
+  direction: pass_required
+  scope: [A2, A6, A7]
+  procedure: >-
+    Re-merge the surviving contrastive LoRA to 16-bit, then re-run the SelfAware
+    panel for A2 through the original config and compare against the committed
+    results_amendment_k_ metrics.json.
+  thresholds:
+    behavior_metric_abs_delta_max_pp: 0.10
+    n_must_match_exactly: true
+    n_known_labeled_must_match_exactly: true
+    n_unknown_labeled_must_match_exactly: true
+  applies_to_metrics: all_nine_behavior_metrics
+  on_failure: void_arms_A2_A6_A7_report_on_five_arms
+  derivation: >-
+    0.10 percentage points is below the rounding grain of the committed
+    metrics.json values, which are stored to two decimals, so any real
+    divergence in the merge exceeds it while bit-level reproduction passes. The
+    original merged weights are absent from disk, so this gate is the only thing
+    standing between a re-merged base and an unverified substitute.
+  secondary_function: >-
+    Doubles as the end-to-end instrument-parity check for the whole rerun. If A2
+    reproduces on SelfAware, the pipeline is byte-faithful to the one that
+    produced paper 3's numbers.
+
+g2_surface_construction:
+  direction: pass_required
+  scope: every_surface_every_arm
+  thresholds:
+    retained_n_must_equal:
+      S_KUQ:      {total: 5540, known: 3071, unknown: 2469}
+      S_AMBIGQA:  {total: 1832, known: 830,  unknown: 1002}
+      S_BIGBENCH: {total: 46,   known: 23,   unknown: 23}
+      internal_panel: {total: 2748, known: 1245, unknown: 1503}
+    label_from_target: false
+    json_coverage_pct_min: 99.0
+  derivation: >-
+    Counts are exact because they are fully determined by the frozen files and
+    the deterministic screen; any deviation is a construction defect, not
+    variance. label_from_target false matches the SelfAware setup and blocks an
+    oracle leak. The 99.0 coverage floor sits just under the 100.0 the SelfAware
+    runs achieved, allowing a handful of structured-output retries to fail
+    without invalidating a run while still catching a JSON-contract break on the
+    new prompt distribution.
+  on_failure: run_invalid_not_interesting
+
+g3_no_thinking_contamination:
+  direction: pass_required
+  scope: every_arm_every_surface
+  thresholds:
+    assert_no_think_scaffolding_clean: true      # run_eval.py lines 339, 347
+    assert_no_generated_thinking_clean: true     # run_eval.py line 388
+    enable_thinking: false
+  derivation: matches the SelfAware runs; thinking tokens change the emitted-scalar distribution
+
+g_docker_digest:
+  direction: pass_required
+  scope: every_gpu_stage
+  thresholds:
+    image_digest_must_equal: sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772
+    comparison: char_for_char
+    verified_with: docker_inspect_before_stage_is_treated_as_valid
+  on_failure: void_stage
+
+# ===========================================================================
+# Evidential gates (read only if every integrity gate passes)
+# ===========================================================================
+
+g4_unknown_side_behavior_transfer:
+  direction: higher_is_pass
+  scope: [S_KUQ, S_AMBIGQA]
+  statistic: spearman_rho_of_arm_rank_by_refusal_recall_pct_vs_selfaware
+  threshold: 0.70
+  n_arms: 8
+  uncertainty: paired_bootstrap_200_resamples_seed_12345_ci_reported
+  on_fail_meaning: >-
+    Abstention behavior is surface-specific. That is itself a reportable finding
+    about the training, not a null.
+  derivation: >-
+    With 8 arms, rho 0.70 corresponds to roughly a two-adjacent-pair inversion
+    and is the point at which the ordering stops being recognizably the same
+    ordering. Set from the arm count, not from an observed value.
+
+g5_stated_confidence_collapse_transfer:
+  direction: lower_is_pass
+  scope: S_AMBIGQA
+  applies_to: all_eight_arms
+  thresholds:
+    emitted_auroc_vs_appropriateness_max: 0.65
+    emitted_std_max: 0.10
+  requires: both_conditions_on_every_arm
+  derivation: >-
+    Paper 3 reports the emitted scalar at AUROC 0.52 to 0.56 against
+    appropriateness on SelfAware (manuscript.md lines 335-337) and std about
+    0.015 on the held-in known set (manuscript.md lines 329-331). The 0.65 ceiling
+    sits above the reported range by roughly the width of that range again, so
+    ordinary surface-to-surface movement passes while a channel doing real
+    discriminative work does not. The 0.10 std ceiling is several times the
+    reported 0.015 and still far below a distribution that spans the unit
+    interval.
+  mirrors: the falsifier in AMENDMENT.md section "Falsifier"
+
+g6_bigbench_labeling:
+  direction: pass_required
+  scope: S_BIGBENCH
+  type: labeling_gate_not_outcome_gate
+  thresholds:
+    every_rate_reported_with_n: true
+    every_rate_reported_with_wilson_95_ci: true
+    labeled_spot_check_n_23_per_side_not_gated: true
+    read_by_g4_or_g5_or_g7: false
+  derivation: >-
+    n=23 per side means one row moves any rate by 4.3 points and a Wilson 95
+    percent interval near a rate of 0.9 spans roughly plus or minus 13 points.
+    This gate passes or fails on how the result is written up, not on what the
+    numbers are, because the standing failure mode in this program is a small-n
+    cell drifting into a claim. TODO.md records the worked instance: n=1 of 382,
+    fire rate 0.26 percent, Wilson [0.000, 0.794], recorded as having passed at
+    2/382.
+
+g7_internal_readout_transfer:
+  direction: higher_is_pass
+  scope: internal_panel_on_S_AMBIGQA
+  applies_to: [A1, A4]
+  thresholds:
+    heldout_probe_auroc_min: 0.90
+    margin_over_same_checkpoint_emitted_auroc_min: 0.15
+  margin_population: the_1832_shared_rows_only
+  requires: both_conditions_on_both_arms
+  derivation: >-
+    Paper 3's internal readout sits at 0.9968 for clean SFT and 0.9971 for
+    SFT-to-GRPO-v2 on SelfAware (manuscript.md lines 387-390). AmbigQA's unknown
+    side is a different construct (ambiguity rather than unknowable), so a large
+    drop is expected and allowed; 0.90 is set well below the SelfAware values yet
+    far enough above chance that a genuinely transferring answerability axis is
+    distinguishable from a weak correlate. The 0.15 margin is under half the 0.335
+    gap paper 3 reports for the like-for-like GRPO-v2 contrast (internal 0.972 vs
+    emitted 0.637, manuscript.md lines 359-364), so it requires the gap to survive
+    without requiring it to survive at full SelfAware size.
+
+# ===========================================================================
+# Discipline
+# ===========================================================================
+
+no_goalpost_movement:
+  rule: >-
+    Every threshold above is fixed at signing. An ambiguous result is reported as
+    ambiguous. If the falsifier fires, the response is to narrow paper 3's claim
+    and record the boundary, never to retune a threshold, drop a surface, or
+    reweight between surfaces.
+
+not_falsifiers:
+  - over_refusal_levels_moving_between_surfaces      # predicted to move, see prediction P3
+  - S_BIGBENCH_disagreeing                           # n=23, no gate reads it
+  - kuq_correctness_dependent_metrics_disagreeing    # gold known-unreliable, ood.py lines 45-47
