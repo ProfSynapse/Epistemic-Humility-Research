@@ -163,3 +163,20 @@ DPO RETRAIN CLEARED per the ~18:35Z pre-stated rules: tuner-compiled pattern wit
 Executor7 launched the recipe-honoring DPO retrain per the ~18:35Z rules. Pre-launch verification (executor-reported, lead spot-checked where noted): submodule at 089fa9b7 clean (lead re-verified), staged file sha 39e2ba8c9bc1b41ef1b7e797f80637c276ba150c97055962bbc4e2b550bd17b5 at 14395 rows, digest char-for-char before both verbs, GPU and disk clear, deviated run dir 20260807_094728 untouched (59 files, unchanged). Trainer flags derived from the materialized recipe via the tuner-compile JSON probe, matching cell.yaml on every field (cold-start unsloth/Qwen3-4B-bnb-4bit, seed 1, batch 2, grad-accum 4, LR 5e-06, beta 0.1, r32/a64/dropout 0.05, max_seq 2048, 1 epoch).
 
 Dry-run `eh-postfix-seed1-dpo-r2-dryrun-20260807_191850` exit 0, banner matches cell.yaml (14395 examples, effective batch 8). Train container `eh-postfix-seed1-dpo-r2-train-20260807_192026` started 19:20:26Z, run dir `.../dpo__4b__headline__seed1_postfix/20260807_192026`, from scratch. Pattern is the pattern of record: bash entrypoint executes setup.pip (trl==0.22.2 plus unsloth deps) then execs train_dpo.py; foreground via launch_detached.sh with exit-code sidecar. Lead independently verified on the live container: image resolves to the pinned digest, step log advancing (265/1800, loss and epoch moving) minutes after the executor's own 235/1800 reading. total_steps 1800 as expected. Exit side held by lead (docker wait armed, exit code to sidecar file). Expected completion ~20:30-20:35Z; eval repin to arm `dpo_seed1_postfix_r2` follows a clean exit.
+
+## 2026-08-08 ~00:55Z — DPO r2 cell (cell of record) CLOSED: G0 PASS, arm INSIDE all four G1 bands; §10.5 pair verdict G1 PASS
+
+Eval container `eh-postfix-seed1-dpo-r2-eval-20260808_001047` exit 0 (~37 min), results in the new subdir `dpo_seed1_postfix_r2__selfaware/` as pre-stated; both prior result subdirs verified byte-untouched (mtimes unchanged: dpo 07:35, kto 15:10 local). G0 ADJUDICATED PASS for the r2 cell: training clean (1800/1800, lineage matches cell.yaml on every locked field, adapter standard size, lead-verified), data sha 39e2ba8c verified pre-launch at 14395 rows, setup.pip executed per recipe (trl 0.22.2, curing the deviated attempt's finding), pinned digest at every verb (executor-verified plus lead live-container check), trainer at 089fa9b7 clean, eval surface identity (0 think-tag matches, enable_thinking uniformly False, config_sha uniform 244026a0 across all 3369 rows, cohort shape 3369/1032/2337).
+
+**G1, DPO r2 arm: INSIDE all four signed bands (lead re-derived from metrics.json):**
+
+| metric | r2 rerun | band | deviated attempt (context) |
+|---|---|---|---|
+| refusal_recall_pct | 0.10 | [0.00, 0.29] | 0.00 |
+| over_refusal_pct | 0.17 | [0.00, 0.30] | 0.13 |
+| truthful_pct | 13.86 (CI 12.67-15.29) | [13.48, 18.28] | 16.62 |
+| correct_on_known_pct | 19.97 (466/2333) | [19.48, 26.35] | 23.99 |
+
+Confidence coverage 0.0, surface-consistent (track carries none). Observation, recorded as context and not adjudicated: the r2 (trl 0.22.2) values sit 2-4 pp below the deviated attempt (trl 0.23.1) on truthful and correct_on_known, both attempts inside the bands; the trl pin difference was behaviorally real, which retroactively justifies treating the setup.pip skip as a G0 environment-identity failure rather than cosmetics. correct_on_known lands near the band's lower edge (19.97 vs 19.48) but inside; the band's own tolerance already encodes cohort spread and the single-metric-outside rule was not triggered.
+
+**§10.5 PAIR VERDICT: G1 PASS.** Both cells of record INSIDE all four bands (KTO closed ~19:15Z, DPO r2 closed here). The deviated DPO attempt (also inside) is corroborating context only, never pooled. Remaining before resolve: submodule restore to 2995494885c9ddebae37efd38e27caa844e7bba8 (both cells now closed, restore pre-cleared on lead dispatch), G2 confound-isolation bookkeeping gate, then `bin/exp resolve` and the resolution PR on PI approval.
