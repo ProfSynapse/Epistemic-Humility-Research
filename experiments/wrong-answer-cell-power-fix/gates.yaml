@@ -1,0 +1,199 @@
+# wrong-answer-cell-power-fix gates, fixed before launch.
+#
+# G0 gates are integrity preconditions: they stop the cell before any outcome
+# metric is computed and are never read as evidence. E gates are evidential and
+# are adjudicated only on Arm A (primary). Arm B is descriptive and can never
+# move an E gate in either direction.
+
+gates:
+
+  # -------------------------------------------------------------------------
+  # G0: integrity preconditions. All must pass BEFORE any metric is computed.
+  # -------------------------------------------------------------------------
+  - id: G0-1
+    kind: render-parity
+    arm: A
+    stop: pre-outcome
+    direction: must-hold
+    criterion: >-
+      prompts rendered by render_probe_prompt with the pinned deployment
+      prompt.system reproduce the eval render byte for byte on a 50-row sample,
+      and the thinking-off self-check is clean on 100 percent of rows
+    on_failure: STOP; a render mismatch invalidates the joined internal-vs-stated comparison
+
+  - id: G0-2
+    kind: join-integrity
+    arm: A
+    stop: pre-outcome
+    direction: must-hold
+    criterion: >-
+      every extracted row joins 1:1 to a scored eval row on question_id plus
+      normq(question), with 0 unmatched and 0 duplicates, and the recovered
+      behavior-cell counts reproduce the pinned counts exactly (grpov2:
+      answered_known 780 = 420 correct + 360 wrong; cleansft: answered_known
+      993 = 469 correct + 524 wrong)
+    on_failure: STOP
+
+  - id: G0-3
+    kind: disjointness
+    arm: B
+    stop: pre-outcome
+    direction: must-be-zero
+    criterion: >-
+      0 residual normq collisions between the Arm B pool and all three exclusion
+      sources in cell.yaml disjointness.exclude_against, after filtering; the
+      pre-filter collision count is recorded in NOTEBOOK.md
+    on_failure: STOP until the pool is refiltered
+
+  - id: G0-4
+    kind: grader-parity
+    arm: A and B
+    stop: pre-outcome
+    direction: at-least
+    threshold: 0.995
+    criterion: >-
+      re-grading 200 already-scored rows with this cell's scorer reproduces the
+      eval's correct/wrong label at >= 99.5 percent agreement
+    on_failure: STOP; grader drift would silently redefine the wrong cell
+
+  - id: G0-5
+    kind: data-adequacy-precondition
+    arm: A and B
+    stop: pre-outcome
+    direction: at-least
+    threshold: {wrong: 300, correct: 300}
+    criterion: >-
+      >= 300 wrong AND >= 300 correct answered-known rows before any fit
+      (Arm A expects 360/420 on grpov2 and 524/469 on cleansft; Arm B target
+      500/500)
+    on_failure: >-
+      data-stage stop for that arm (extract or render more rows), never a probe
+      verdict; this is the 16-wrong and 27-wrong lesson made procedural
+
+  - id: G0-6
+    kind: schema-compliance
+    arm: B
+    stop: pre-outcome
+    direction: at-least
+    threshold: 0.95
+    criterion: >-
+      >= 95 percent of Arm B generations parse as an object with an answer
+      string and a response_confidence number in [0,1], within the pinned 2
+      retries
+    on_failure: STOP Arm B; the stated channel is not measurable on that render
+
+  - id: G0-7
+    kind: render-shift-control
+    arm: B
+    stop: none
+    direction: within
+    threshold: {emitted_mean: 0.03, emitted_std: 0.01}
+    criterion: >-
+      on a purpose-held 300-row control slice rendered under BOTH the deployment
+      prompt and the composed forced-answer prompt, the answered-known emitted
+      mean is within 0.03 and the emitted std within 0.01 of the deployment-render
+      values (0.8222 mean / 0.01755 std on known_correct_answered)
+    on_failure: >-
+      not a stop; Arm B stated-channel numbers become caveated-only and E5 is
+      not reported
+
+  # -------------------------------------------------------------------------
+  # E: evidential gates. Arm A only.
+  # -------------------------------------------------------------------------
+  - id: E1
+    kind: internal-discrimination
+    arm: A
+    tier: supporting
+    direction: at-least
+    threshold: {auroc: 0.60, ci_lower: 0.55}
+    criterion: >-
+      A1 (internal refit readout AUROC correct vs wrong) >= 0.60 with its
+      bootstrap 95 percent CI lower bound > 0.55, on >= 300 wrong rows, at the
+      primary layer L35 on the grpov2 checkpoint
+    unlocks: >-
+      the paper-3 internal discrimination figure is replaced by a powered
+      estimate with a CI
+    blocks: >-
+      failing E1 together with E2 fires the primary falsifier
+
+  - id: E2
+    kind: primary
+    arm: A
+    tier: primary
+    direction: at-least
+    threshold: {gap: 0.05, ci: excludes-zero}
+    criterion: >-
+      A4 (gap = internal A1 minus emitted A3) >= +0.05 with the paired bootstrap
+      95 percent CI excluding 0, at the primary layer L35 on the grpov2 checkpoint
+    unlocks: >-
+      manuscript.md:336-337 stands as written, now on 360 wrong rows instead of 16
+    blocks: >-
+      failing E2 together with E1 fires the primary falsifier and forces the
+      section-4 discrimination sentence to be rewritten
+
+  - id: E3
+    kind: calibration-contrast
+    arm: A
+    tier: supporting
+    direction: greater-than-zero
+    threshold: {ci: excludes-zero, must_hold_under: [raw, base_rate_reweighted]}
+    criterion: >-
+      A7 (calibration gap = emitted ECE minus internal ECE) > 0 with the paired
+      bootstrap 95 percent CI excluding 0, under BOTH the raw and the
+      base-rate-reweighted accounting
+    unlocks: Figure 1 right panel stands with restated numbers
+    blocks: >-
+      failure fires the secondary falsifier; the panel is rebuilt or removed
+
+  - id: E4
+    kind: cell-ordering
+    arm: A
+    tier: supporting
+    direction: ordered
+    threshold: {correct_minus_wrong_ci: excludes-zero}
+    criterion: >-
+      internal projection cell means ordered known_correct_answered >
+      known_answered_wrong > known_refused > unknown_refused, with the
+      correct-minus-wrong step's bootstrap CI excluding 0
+    unlocks: manuscript.md:315-316 stands
+    blocks: >-
+      failure fires the tertiary falsifier; the ordering claim drops to the
+      three cells it can support
+
+  - id: E5
+    kind: convergent-validity
+    arm: B
+    tier: descriptive
+    gated: false
+    direction: within
+    threshold: {emitted_auroc: 0.05, internal_auroc: 0.10}
+    criterion: >-
+      Arm B emitted AUROC within +/-0.05 of the deployment-render 0.5207, and
+      Arm B internal AUROC within +/-0.10 of Arm A's
+    note: >-
+      descriptive only; divergence is reported as a render-shift observation and
+      never adjudicates E1 through E4. Not reported at all if G0-7 fails.
+
+verdict_rule:
+  SUCCESS: G0 all pass, E1 and E2 pass (E3 and E4 reported)
+  PARTIAL: E1 and E2 pass, E3 or E4 fails; the corresponding paper sentence is rewritten
+  FAILURE: primary falsifier fires; reported straight as a negative
+
+falsifier: >-
+  PRIMARY: on >= 300 wrong rows the internal refit readout ranks the model's own
+  correct vs wrong answers at AUROC < 0.60 AND the gap over the emitted scalar is
+  <= +0.05 with a paired CI including 0. Then manuscript.md:336-337 ("the
+  discriminating signal exists internally and the verbalized number is a
+  collapsed near-constant") is overturned in its discrimination half. SECONDARY:
+  A7 <= 0 or its CI includes 0 under the base-rate-reweighted accounting, which
+  overturns Figure 1's right panel (manuscript.md:345-347). TERTIARY: the
+  internal correct-minus-wrong step's CI includes 0 or the ordering inverts,
+  which reduces manuscript.md:315-316 to a three-cell ordering. None of the three
+  touches the correctness-confidence-probe or correctness-readout-deployment-port
+  results, which measure a post-generation correctness probe at a different read
+  position.
+
+no_goalpost_rule: >-
+  Every threshold above is fixed at sign. An ambiguous straddle (for example A1
+  at 0.61 with a CI crossing 0.60) is reported as ambiguous and the paper
+  sentence is caveated, not retuned. Arm B never adjudicates an E gate.
