@@ -1,0 +1,195 @@
+# caution-install-bounded-site-sweep gates. DRAFT until `bin/exp sign`.
+# Prose home is AMENDMENT.md, section Gates; this file is the machine-readable
+# pin. Thresholds inherit from
+# experiments/j-space-cross-family-layer-contrast/gates.yaml as transcribed in
+# .skills/mechinterp-cells/reference/read-then-actuate.md section 6, so this
+# cell's numbers are comparable to the raw-base cells it contrasts against.
+#
+# Thresholds are final at signing. An ambiguous result is reported as ambiguous
+# and no threshold is re-specified after a result is seen.
+
+seed: 20260707
+n_boot: 10000
+
+# The registered site set, enumerated here so this file is self-contained about
+# the space the gates below are scored over. Sites are named by hidden-state
+# index with the decoder block the hook edits in parentheses, per AMENDMENT.md
+# D3. Any gate that says "every site" means exactly this list and no other.
+# hs35 was added pre-sign on 2026-08-08 by lead adjudication of AMENDMENT.md N2:
+# it is the site the historical caution_direction_L35 hooks, one block later
+# than the program's inherited hs34 site.
+registered_sites:
+  trained_substrate: [hs13, hs16, hs19, hs23, hs29, hs34, hs35]   # blocks 12,15,18,22,28,33,34
+  raw_base_substrate: [hs23, hs29]                                 # blocks 22,28; G4 anchor only
+  n_sites_trained: 7
+  n_positions: 2
+  n_site_position_cells_trained: 14
+
+gates:
+
+  # ---------------------------------------------------------------- G0
+  # Integrity, pre-outcome. Any failure is a STOP before any outcome read,
+  # not an outcome.
+  - name: g0_integrity
+    interpretation: stop_before_outcome
+    checks:
+      - id: g0a_pool_power_confab
+        quantity: held-out confab row count, trained substrate
+        pass_if: ">= 150"
+        direction: floor
+        note: >-
+          The pre-sign feasibility probe (NOTEBOOK.md) exists to establish that
+          this is reachable before signing. A failure here after signing is a
+          registered NOT-RUN, not a behavioral null.
+      - id: g0a_pool_power_known
+        quantity: held-out known_correct_answered row count, trained substrate
+        pass_if: ">= 250"
+        direction: floor
+      - id: g0b_answer_capture
+        quantity: fraction of split rows captured
+        pass_if: ">= 0.90"
+        direction: floor
+      - id: g0b_seam_continuity
+        quantity: min cosine between adjacent-site captures
+        pass_if: ">= 0.999"
+        direction: floor
+      - id: g0c_refit_reproducible
+        quantity: two fixed-seed direction fits
+        pass_if: "byte-identical"
+        direction: equality
+      - id: g0d_gate_auc_on_fit
+        quantity: FIT answerability gate AUC, every site
+        pass_if: ">= 0.90"
+        direction: floor
+        note: >-
+          Reported alongside the random-direction READ control at the same site.
+          A gate AUC alone is not evidence of an answerability direction.
+      - id: g0e_write_readback
+        quantity: smoke frac_readback_within_tol
+        pass_if: "== 1.0"
+        direction: equality
+        note: proves write accuracy only, never behavioral effect
+      - id: g0f_containment
+        quantity: committed row text, questions, aliases, generations
+        pass_if: "none present in analysis-committed/"
+        direction: equality
+
+  # ------------------------------------------------------------ G-DOSE
+  # FIT-only dose calibration, before any held-out read. Scored per
+  # (site, position). Zero usable rungs is a registered calibration outcome.
+  - name: g_dose_viability
+    interpretation: per_cell_screen
+    scope: per (site, position)
+    checks:
+      - id: usable_rung_exists
+        pass_if: ">= 1"
+        direction: floor
+      - id: readback_within_tol
+        pass_if: "== 1.0"
+        direction: equality
+      - id: collapse_rate_on_dosed
+        pass_if: "== 0.0"
+        direction: equality
+      - id: fit_confab_clean_tighten
+        pass_if: ">= 0.50"
+        direction: floor
+    selection_rule: >-
+      highest FIT confab clean_tighten, then lower known-correct cost, then
+      lower ratio
+    failure_disposition: >-
+      dose-viability NOT-RUN with the full eight-rung table; the cell leaves the
+      held-out stage and is ineligible for pairing. Never reported as a
+      behavioral null.
+
+  # ---------------------------------------------------------------- G1
+  - name: g1_actuation
+    primitive: rate_over_population
+    arm: gated
+    population: confab_held_out
+    indicator: clean_tighten
+    pass_if_rate: ">= 0.50"
+    pass_if_wilson_lower_ci: "> 0.40"
+    direction: floor
+
+  # ---------------------------------------------------------------- G2
+  # Selectivity, with the mandatory three-way disposition. A Wilson 95% upper
+  # cap below 0.10 is unsatisfiable below N = 35, so below that N no
+  # observation separates harmless from harmful.
+  - name: g2_selectivity
+    primitive: rate_over_population
+    arm: gated
+    population: known_correct_answered_held_out
+    indicator: not_well_formed_correct
+    pass_if_rate: "<= 0.05"
+    pass_if_wilson_upper_ci: "< 0.10"
+    direction: ceiling
+    disposition_rule:
+      adjudicable_if: "n_fired_known >= 35"
+      not_adjudicable_if: "n_fired_known < 35"
+      not_adjudicable_meaning: >-
+        neither a pass nor a fail. May NOT be cited as evidence that the
+        intervention is harmless. A vacuous pass is recorded as a vacuous pass.
+      headline_rule: >-
+        if the fired-only rate exceeds the cap while the full-population number
+        passes, the fired-only rate goes in the headline, not a table
+
+  # ---------------------------------------------------------------- G3
+  # Direction specificity. RG1 criterion, not S1: no Qwen3-4B entry exists in
+  # experiments/placebo-seed-distribution-census, and importing another
+  # family's census constant is forbidden.
+  - name: g3_direction_specificity
+    primitive: effect_ratio_over_draws
+    arm: gated
+    control_arm: random_direction
+    criterion: RG1
+    k_draws_min: 3
+    aggregation: max over draws
+    pass_if_ratio: ">= 3.0"
+    direction: floor
+    draw_hygiene_sc1:
+      max_abs_cos_vs_c_hat: 0.015
+      max_abs_cos_vs_u_d: 0.015
+      magnitude_match: exact, verified by readback
+      void_and_redraw_ledger: committed, including voids
+      sigma_gain_assertion: required
+    companion_arms_reported_separately:
+      - permuted_gate
+      - raw_write_pos_ctrl
+
+  # ---------------------------------------------------------------- G4
+  # Substrate anchor. Governs whether a trained-checkpoint null is reportable.
+  - name: g4_substrate_anchor
+    primitive: interval_containment
+    arm: gated
+    substrate: raw_base
+    sites: [hs23, hs29]
+    reference:
+      source: experiments/j-space-layer-contrast-rep2-multisource/AMENDMENT.md, Outcome
+      hs23_clean_tighten: 194/221 = 0.8778
+      hs29_clean_tighten: 205/221 = 0.9276
+      interval_rule: >-
+        that Outcome publishes a Wilson interval for hs34 only (163/221,
+        67.6-79.1%), not for hs23 or hs29. This gate therefore computes the
+        Wilson 95% interval itself from the published counts above, at
+        n_boot and seed as declared at the top of this file, and does not
+        reference an interval the source does not carry.
+    pass_if: >-
+      observed raw-base rate falls inside the Wilson 95% interval computed from
+      that site's cited count
+    direction: interval
+    pool_identity_note: >-
+      the cited rates come from rep2's 221-row multi-source held-out confab
+      pool. Record which raw-base pool the anchor arm actually ran on. If it is
+      not the rep2 pool, the comparison is rate-to-interval and not a paired
+      replication, and is reported as such.
+    failure_disposition: >-
+      a trained-checkpoint null indicts the instrument rather than the
+      checkpoint; the cell resolves instrument-void rather than as a null
+
+summary_rule: >-
+  A pass on G1 with an ADJUDICABLE G2 and a passing G3, at any registered site
+  and position on the trained substrate, fires the falsifier and overturns the
+  one-way-leverage statement. A clean sweep of G1 failures across every
+  registered site and position, with G4 holding and every site either dose-viable
+  or recorded NOT-RUN with its rung table, supports the bounded-search null. G4
+  failing voids both readings.

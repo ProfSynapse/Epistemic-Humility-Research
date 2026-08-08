@@ -553,6 +553,63 @@
     },
     {
       "checkpoint": {
+        "base_form": "clean-SFT merged-16bit, bf16, no quantization",
+        "base_model": "unsloth/Qwen3-4B",
+        "reference_substrate": {
+          "repo": "unsloth/Qwen3-4B",
+          "revision": "64033659d5caf1b8ed7f929b29de705e93a4d468",
+          "role": "G4 interpretability anchor, raw base, no adapter"
+        },
+        "repo": "professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora",
+        "revision": "8914081dfcec4f1f025f2dbe4195d4f7aa8d210e"
+      },
+      "created_at": "2026-08-08T22:27:53Z",
+      "falsifier": "Any registered site and position on the trained checkpoint clears G1, an ADJUDICABLE G2, and G3 together, at a dose drawn from the registered ladder. One qualifying cell is sufficient, because the statement being tested is an impossibility claim.",
+      "inputs": [
+        "experiments/doubt-gated-caution-tighten/AMENDMENT.md",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json",
+        "experiments/j-space-layer-contrast-rep2-multisource/AMENDMENT.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md",
+        "experiments/ungated-vs-gated-dose-matched/AMENDMENT.md",
+        "experiments/doubt-regulated-caution/AMENDMENT.md",
+        "experiments/ao-propensity-regulated-caution/AMENDMENT.md",
+        "experiments/selected-setpoint-regulator/AMENDMENT.md",
+        "experiments/write-direction-naming-battery/AMENDMENT.md",
+        "experiments/diag-item11-batched-steering-equivalence/experiment.yaml",
+        "experiments/j-space-cross-family-layer-contrast/mine_eval_pool.py",
+        "docs/atlas/family-layer-map.md"
+      ],
+      "instrument": {
+        "concurrency": "one GPU job at a time",
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "feasibility_probe.yaml"
+        ],
+        "lane": "local_3090",
+        "modules": [],
+        "persistence": {},
+        "pins": {},
+        "runtime_image_digest": "sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772"
+      },
+      "kg": [],
+      "posture": "exploratory",
+      "prediction": "The null survives on the trained checkpoint. No registered site and position clears G1 on the trained lineage, while the raw-base anchor arms at hs23 and hs29 reproduce their published rates inside their Wilson intervals. If anything clears G1, it is an in-band site between hs13 and hs23 rather than hs34.",
+      "question": "Does the raw-base answerability-gated caution snap, the one mechanism in this program with a governed installation success, transfer to the trained clean-SFT to GRPO-v2 checkpoint; and if not, does a bounded search over seven write sites, two write positions, an eight-rung ratio-normalized dose ladder, and three magnitude-matched two-site combinations find a site where caution can be installed on genuine unknowns?",
+      "registered": true,
+      "sign_blocked_on": "Pre-sign feasibility probe registered in NOTEBOOK.md and configured in feasibility_probe.yaml. All four probe checks (P1 confab supply, P2 known-correct supply, P3 capture, P4 disjointness) must pass before bin/exp sign.",
+      "slug": "caution-install-bounded-site-sweep",
+      "status": "draft",
+      "tier": 2,
+      "title": "Bounded caution-install site sweep on the trained Qwen3-4B lineage",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
