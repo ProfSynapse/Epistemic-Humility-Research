@@ -90,3 +90,37 @@ input, and it stays fully specified with its sha256 in `cell.yaml` under
   module is written; if it does not hold, the control arm costs a second pass.
 - Measured smoke wall-clock numbers for any `short-run` persistence declaration
   are not available yet; nothing in this draft claims one.
+
+## 2026-08-08 ~23:00Z - Arm A harness built; four modules hand-pinned (tooling gap)
+
+Harness-builder delivered the Arm A modules (row_join.py, readout.py,
+arm_a_extract.py, score_gates.py) against the locked cell.yaml/gates.yaml,
+which were verified byte-identical to their sign pins before and after the
+build. CPU smoke: 24/24 checks passed on the real sha-pinned scored-rows
+data, including G0-2 join integrity (3369/3369 ids, 0 unmatched, 0
+duplicates, pinned cell counts 780/420/360 and 993/469/524 reproduced
+exactly), G0-4 grader parity 100 percent on 200 rows, G0-5 adequacy both
+checkpoints, and an independent re-derivation of the historical emitted
+channel on the joined population: A3 = 0.5207, A8 = 0.8212 / 0.01750
+(n=780), matching the AMENDMENT-cited values. E1-E4 estimator exercised
+end-to-end on synthetic hidden states; degenerate self-test does not
+spuriously pass E1.
+
+PIN RECORD (lead, manual): the four modules are pinned in
+experiment.yaml instrument.pins by hand because the sign tooling has no
+verb for adding new module pins to a signed pre-run experiment
+(bin/exp sign refuses non-drafts; bin/exp repin repairs existing pins
+only). This is the designed workflow's intended step (modules were left
+empty at sign because they did not exist yet); the hand-pin performs
+exactly the hash sign would have computed, pre-run, with shas visible in
+the PR diff. THIRD bin/exp tooling gap recorded this program, alongside
+the unfilled-banner and outcome-placeholder gaps: sign should support
+adding module pins to a signed pre-run experiment.
+sha256 prefixes: row_join 187ddd53f7d8027f, readout 75f2c17b2eb0c59a,
+arm_a_extract 0b5f9b25a3cfc7d9, score_gates cbf8e154b9423f18.
+
+Launch note recorded ahead of the run: the builder-suggested docker
+command uses a --digest flag that does not exist in docker run; the
+actual launch will pin the image by reference (image@sha256 digest form)
+and record the exact command here at launch time. GPU launch remains
+blocked on the registration PR (#407) merge.

@@ -6041,11 +6041,37 @@
           "cell.yaml",
           "gates.yaml"
         ],
-        "modules": [],
-        "persistence": {},
+        "modules": [
+          "row_join.py",
+          "readout.py",
+          "arm_a_extract.py",
+          "score_gates.py"
+        ],
+        "persistence": {
+          "arm_a_extract.py": {
+            "checkpoint_path": "experiments/wrong-answer-cell-power-fix/analysis/hidden_states/wrong-answer-cell-power-fix-arm-a/extraction/<extraction_id>/rows.jsonl",
+            "persistence": "incremental"
+          },
+          "readout.py": {
+            "measured_smoke_wall_clock_s": 2.3,
+            "persistence": "short-run"
+          },
+          "row_join.py": {
+            "measured_smoke_wall_clock_s": 0.16,
+            "persistence": "short-run"
+          },
+          "score_gates.py": {
+            "measured_smoke_wall_clock_s": 7.0,
+            "persistence": "short-run"
+          }
+        },
         "pins": {
+          "arm_a_extract.py": "0b5f9b25a3cfc7d9b4b6614d57a6fd868880896e093dc380db03121ca4890687",
           "cell.yaml": "5ee37dd3bdb12e64dd526441f34e732d241e11fbd9c6841879d51ae3ed7b6b34",
-          "gates.yaml": "01ee0b017009cf6298a77c60fb5e2a82a67324c1bc0a7d4398489ee1bad2cc54"
+          "gates.yaml": "01ee0b017009cf6298a77c60fb5e2a82a67324c1bc0a7d4398489ee1bad2cc54",
+          "readout.py": "75f2c17b2eb0c59a88bdc6f8aca6770db9985adfd0c933f0157458cb5384496b",
+          "row_join.py": "187ddd53f7d8027fa0b06dbbf92bd5fa50b65180b56d4ea34c304a9d28d6aa85",
+          "score_gates.py": "cbf8e154b9423f1875b600118e35b5b7de5b0d44e36ab3cdb77bf67caaf2a23a"
         }
       },
       "kg": [],
