@@ -524,6 +524,55 @@ layer establishes is a direction rather than a magnitude: a programmable
 reward pushes the abstention routine further out along the frontier the SFT
 stage set, rather than off it.
 
+#### The shift and the recovery replicate across three seeds
+
+A single seed invites the obvious objection: is this a shift or a fluke?
+A pre-registered replication retrained the entire GRPO-touching lineage,
+from clean SFT through the rebalanced-reward GRPO arm and all four
+two-stage stacks, at two fresh seeds, with two outcomes fixed before any
+seed-2 or seed-3 result existed. The first asked whether GRPO's move away
+from unknown-answering, measured against its own same-seed clean-SFT base,
+would reproduce in direction by at least 3.0 percentage points; it did at
+both new seeds, answer-on-unknown falling 4.36 and 6.78 points against a
+seed-1 magnitude of 6.39. The second asked whether a preference stage
+applied after GRPO would keep recovering known-row over-refusal without
+reopening unknown-answering by more than 2.0 points; it also held at both
+new seeds, over-refusal falling 0.77 and 1.84 points while unknown-answering
+moved -0.39 and +0.29 points. Neither threshold moved after a result
+existed.
+
+Across all three seeds, the plain SFT-then-GRPO arm reads truthful 41.17%
+(95% interval 41.08 to 41.35), refusal recall 94.25% (93.41 to 95.06),
+over-refusal 67.35% (66.62 to 68.68); the best two-stage stack, GRPO
+followed by DPO, reads truthful 41.49% (41.29 to 41.64) at over-refusal
+65.48% (63.63 to 66.84).
+
+| Arm (response-confidence contract, mean [95% interval] across 3 seeds) | Truthful % | Refusal recall % | Over-refusal % | Correct-on-known % |
+|---|---|---|---|---|
+| SFT then GRPO (rebalanced reward) | 41.17 [41.08, 41.35] | 94.25 [93.41, 95.06] | 67.35 [66.62, 68.68] | 54.32 [53.85, 55.05] |
+| DPO then GRPO | 41.19 [40.87, 41.50] | 93.41 [92.54, 94.38] | 65.26 [64.66, 65.81] | 52.19 [51.09, 53.07] |
+| KTO then GRPO | 41.01 [40.84, 41.26] | 92.99 [92.54, 93.31] | 65.70 [64.23, 66.50] | 52.67 [51.08, 53.56] |
+| GRPO then DPO | 41.49 [41.29, 41.64] | 94.25 [93.31, 94.77] | 65.48 [63.63, 66.84] | 52.71 [51.76, 53.29] |
+| GRPO then KTO | 41.02 [40.84, 41.32] | 91.08 [89.63, 91.86] | 61.90 [60.59, 64.01] | 49.68 [48.95, 50.89] |
+
+Every number above is exploratory response-confidence-track evidence,
+reported separately from and never pooled with the plain-answer headline of
+Section 4.1.
+
+Whether a preference stage placed before GRPO beats the same stage placed
+after it, on over-refusal, was registered as a secondary, descriptive
+pattern, and the two orderings resolve differently. For KTO the direction
+holds at all three seeds: GRPO-first beats GRPO-last by 5.78, 3.13, and 2.49
+points, shrinking but never crossing zero. For DPO it does not: the seed-1
+margin favored GRPO-first by 1.67 points, but both new seeds favor
+GRPO-last, by 0.17 and 2.18 points. The DPO-pairing claim is retracted; only
+the KTO-pairing pattern is reported, and only as descriptive.
+
+A small overlap between this replication's training prompts and a slice of
+the evaluation questions inflates the absolute known-row numbers above
+without changing any of the deltas or outcomes reported here; Section 7
+states the size of the overlap and its bound.
+
 SFT induces the behavior, preference optimization repositions it, GRPO
 amplifies it. Every objective selects an
 operating point on the same recall/over-refusal frontier; nothing we trained
@@ -629,6 +678,17 @@ on the contract. GRPO conclusions are conditional on the reward family
 tested (appropriateness-dominant with confidence shaping); a reward designed
 around a different decomposition could behave differently.
 
+The pre-registration behind this study's design also specified two evidence
+layers this paper does not report: three-seed confirmation of the same
+headline matrix at 8B (nine runs at the pre-registered default config, no
+sensitivity panel) and a two-run bridge replication of SFT and DPO on
+Llama-2-7b-chat, checked against a published baseline as a pipeline
+validation step. Neither ran for this paper; no result exists for either,
+so there is nothing to selectively report. Both are deferred to a planned
+follow-on paper examining how the stage decomposition here generalizes
+across model size and model family, and the pre-registration covering them
+remains standing until that paper either runs them or supersedes it.
+
 The three cold-start preference seeds were not all trained on the same file. A
 mid-study fix to the dataset builder made the held-out dev split group by
 normalized question text, so that duplicate source rows carrying identical
@@ -641,9 +701,19 @@ so no question was added or removed, but 1,460 of the 14,395 training questions,
 three-seed intervals reported for cold-start DPO and KTO span one pre-fix run and
 two post-fix runs, so part of their spread may be the dataset version rather than
 training-seed variation. The three SFT seeds are unaffected, all three having
-trained on the corrected build. A rerun of the two affected seed-1 runs on the
-corrected build is pre-registered and queued; until it lands, those two intervals
-are the widest-scoped numbers in the paper.
+trained on the corrected build. A rerun of the two affected seed-1 runs has
+since completed: both arms were retrained cold-start on the corrected
+build, at the same training-library version as their seed 2/3 cohort, and
+re-evaluated on the same SelfAware surface. Both land inside every
+replication band drawn from the seed 2/3 cohort (four metrics per arm): the
+dataset-version confound is provenance-only, and the conclusions in Section
+4.1 do not change. One reproducibility note surfaced in the process. An
+earlier rerun attempt that omitted the training-library version pin ran
+against a newer library build than the cohort by construction; its results
+differed from the pinned rerun by 2 to 4 percentage points on truthfulness
+and correct-on-known, though both attempts landed inside the same bands.
+Pinning the training library's exact version, not only the base model and
+the hyperparameters, measurably matters at this scale.
 
 Model-specific known/unknown labels are noisy (the synthesis measured 42.9
 to 51.3% of "unknown" answers being correct in released artifacts of the
@@ -652,6 +722,40 @@ the middle; our labels are regenerated per-model but not immune to the same
 effect. The design premises carried over from the evidence synthesis inherit
 that synthesis's own limitations, which it documents alongside the evidence
 tables named in Appendix B.
+
+A small slice of the evaluation surface used in the three-seed GRPO
+replication of Section 4.3 also appears, verbatim, among that replication's
+own training prompts. Of the 3,369 SelfAware rows, 128 distinct known
+(answerable) questions, all drawn from the answerable half of the set,
+appear as training examples: 117 verbatim in every gradient-training file
+the replication's four objectives consume, and 11 more only in the file
+used to pick a checkpoint. No unknown (unanswerable) question leaks
+anywhere. That bounds the consequence precisely. The abstention-shift result
+in Section 4.3 is computed only over unknown-labeled rows, so it is
+unaffected by construction. The recovery result was checked stratum by
+stratum and holds uniformly whether or not a row is contaminated, so the
+delta it reports is not an artifact of memorization. What is affected is the
+absolute level of any known-row number: contaminated rows are easier for the
+model (roughly 30% over-refusal against roughly 71% on the rest of the known
+rows), so the full population reads over-refusal roughly 1.5 to 2.3 points
+lower, and correct-on-known roughly 4 to 5 points higher, than the
+decontaminated population does. Recomputing on the decontaminated remainder
+(3,241 of 3,369 rows) changes no direction and no outcome: the
+abstention-shift deltas are identical to the second decimal, the recovery
+deltas match within 0.01 points, and the ordering deltas move by at most
+0.13 points with every sign preserved.
+
+| Check (clean-subset recompute, non-gating) | Seed 2 | Seed 3 | Full-population value |
+|---|---|---|---|
+| Abstention shift (answer-on-unknown delta, GRPO vs. same-seed SFT base) | unchanged to two decimals | unchanged to two decimals | -4.36 / -6.78 pp |
+| Post-GRPO recovery (over-refusal delta, GRPO-then-DPO vs. GRPO) | -0.77 pp | -1.85 pp | -0.77 / -1.84 pp |
+| Post-GRPO recovery (unknown reopening) | -0.39 pp | +0.29 pp | -0.39 / +0.29 pp |
+| Stage-ordering, KTO pairing (over-refusal delta) | -3.21 pp | -2.62 pp | -3.13 / -2.49 pp |
+| Stage-ordering, DPO pairing (over-refusal delta) | +0.19 pp | +2.31 pp | +0.17 / +2.18 pp |
+
+The numbers reported in Section 4.3 are the full-population numbers,
+carrying this caveat; the decontaminated cross-check above changes no
+conclusion.
 
 ### What would overturn this
 
@@ -776,6 +880,19 @@ with the internal label it carries in the repository.
   the four two-stage stacks of Section 4.3, scored in
   `results_amendment_f_response_confidence_selfaware_clean_sft_{dpo_grpo,grpo_dpo,grpo_kto,kto_grpo}_seed1_full_4b/`.
   Internal label: Amendment F.
+- [The GRPO three-seed replication and its contamination finding](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/grpo-three-seed-confirmatory/AMENDMENT.md):
+  the registered two-seed extension of the GRPO layer, its notebook of
+  record, and its resolved verdict, behind the three-seed table, the
+  stage-ordering pattern, and the SelfAware overlap caveat and
+  clean-subset sensitivity check of Sections 4.3 and 7. Internal label: the
+  GRPO three-seed confirmatory block.
+- [The seed-1 dataset-version rerun](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/headline-seed1-postfix-rerun/AMENDMENT.md):
+  the registered replication behind Section 7's resolution of the cold-start
+  preference dataset-version confound and the training-library pinning
+  observation. Internal label: the headline seed-1 postfix rerun.
+- [The contamination mechanism note](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/library/concepts/mechanisms/selfaware-known-question-contamination-inflates-known-row-metrics.md):
+  the canonical wording for the SelfAware training/evaluation overlap
+  caveat in Section 7.
 - [The confidence-collapse diagnostics](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md):
   the runbook covering the emitted-confidence collapse reported in Section 5.
   Internal label: Amendment J diagnostics.
@@ -851,7 +968,11 @@ Governance notes: the three-seed cold-start block is the pre-registered
 headline surface (PROTOCOL v0.3, signed 2026-06-10); Amendments A/B are signed
 prospective extensions; Amendments D/E/F/J are exploratory single-seed
 evidence cells with pre-stated predictions and falsifiers, reported here as
-exploratory and never pooled with the headline block. The confidence-channel
+exploratory and never pooled with the headline block. The GRPO three-seed
+replication and the seed-1 dataset-version rerun are both signed, resolved
+registrations built on that same exploratory response-confidence track;
+neither is promoted to the headline surface, and both are reported above
+with that status stated. The confidence-channel
 training variants (proper-scoring GRPO, contrastive SFT, RL-on-contrastive,
 and their descendants), the probe program, the readout work, and the steering
 work are outside the scope of this paper and are not reported here.
