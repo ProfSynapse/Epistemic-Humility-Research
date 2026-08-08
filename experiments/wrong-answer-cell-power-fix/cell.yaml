@@ -1,0 +1,213 @@
+# wrong-answer-cell-power-fix instrument config, pinned at sign.
+#
+# Re-estimates the paper-3 section-4 internal-vs-stated discrimination numbers
+# that currently rest on 15 to 16 wrong-answered rows. See AMENDMENT.md for
+# every doc:line citation behind the constants below.
+#
+# Arm A (PRIMARY) is extraction-only over generations that already exist and are
+# already graded. Arm B (SECONDARY, descriptive) generates a fresh forced-answer
+# pool. Arm A and Arm B are different generation surfaces and are never pooled.
+
+apiVersion: lab-cell/v1
+experiment: wrong-answer-cell-power-fix
+seed: 20260808
+n_boot: 2000            # paired bootstrap, matching the S/T delta-CI protocol
+lane: local-3090
+one_job_at_a_time: true # no concurrent GPU work in this lane while this cell runs
+gpu_python: /home/profsynapse/miniconda3/bin/python3
+
+# ---------------------------------------------------------------------------
+# Arm A (PRIMARY): deployment-render extraction backfill.
+# No generation. The wrong cell already exists in the scored eval; it has never
+# had hidden states extracted over it.
+# ---------------------------------------------------------------------------
+arm_a:
+  role: primary
+  generation: NONE                     # consumes existing scored generations
+  render: deployment_eval_prompt       # verbatim prompt.system, see render: below
+  population: selfaware-full-3369
+  checkpoints:
+    - id: grpov2
+      role: primary
+      base: scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+      adapter: scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+      adapter_state: active
+      scored_rows: experiments/probe-scaled-response-confidence/analysis/phase1-migrated/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b/clean_schema_sft_grpo_v2_seed1_corrected_base__selfaware/scored_rows.jsonl
+      scored_rows_sha256: 1a6d7b59ad167c64dfdfa038b87cfe1cb57190c8d95c743d336ee3992f3b7887
+      counts: {rows: 3369, answered_known: 780, correct: 420, wrong: 360}
+    - id: cleansft
+      role: control
+      base: scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+      adapter: null
+      adapter_state: disabled
+      scored_rows: experiments/probe-scaled-response-confidence/analysis/phase1-migrated/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_4b/clean_schema_sft_merged_seed1__selfaware/scored_rows.jsonl
+      scored_rows_sha256: ab401f89254e882a205d651451d3c4aa866e13a12fcaf5678ed992feb6bd3d83
+      counts: {rows: 3369, answered_known: 993, correct: 469, wrong: 524}
+  extraction:
+    token_position_rule: final_prompt_token   # generation anchor, paper-3 read position
+    layer_list: [30, 31, 32, 33, 34, 35, 36]  # L30..L36 only (PI decision)
+    primary_layer: 35                          # paper-3 anchor; band is descriptive, no best-layer selection on the outcome metric
+    persist: [h_base, h_lora]                  # h_base is the cleansft control arm, same pass, no extra GPU
+    compute_dtype: bfloat16
+    persist_dtype: float32
+    persistence_format: safetensors
+    enable_thinking: false
+  gpu_est_hr: 0.5-0.75
+
+# ---------------------------------------------------------------------------
+# Arm B (SECONDARY, descriptive): enlarged forced-answer pool.
+# Reported beside Arm A, never merged into it, never used to adjudicate a gate.
+# ---------------------------------------------------------------------------
+arm_b:
+  role: secondary_descriptive
+  checkpoint: grpov2                   # primary checkpoint only
+  render: composed_forced_best_guess_schema   # see render: below
+  generation:
+    engine: vllm                       # PI decision; matches the engine that produced the paper-3 stated channel
+    structured_outputs: true
+    stated_confidence_field: response_confidence
+    stated_confidence_json_retries: 2
+    temperature: 0.0
+    max_new_tokens: 128
+    max_attempts: 12000
+    target_correct: 500
+    target_wrong: 500
+  extraction:                          # over answered rows only, same settings as Arm A
+    token_position_rule: final_prompt_token
+    layer_list: [30, 31, 32, 33, 34, 35, 36]
+    persist: [h_lora]
+  qa_pool:
+    - datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+    - datasets/popqa/test.jsonl
+    # AmbigQA dropped at registration (PI decision); the share-alike source is
+    # not needed for volume and would constrain later exhaust publication.
+  gpu_est_hr: 1.0-1.7
+
+# ---------------------------------------------------------------------------
+# Renders. Two distinct system prompts, both quoted verbatim from committed files.
+# ---------------------------------------------------------------------------
+render:
+  deployment_eval_prompt:
+    source: archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml
+    source_key: prompt.system
+    source_sha256: 2bcdf7a1df48047f274ffa6a057be8e6c41e33efda70aafe0d67c97957d69bf9
+    posture: encourages abstention
+    renderer: experiments/common/knowledge_probe/backends.py::render_probe_prompt
+  composed_forced_best_guess_schema:
+    abstention_clause_from: experiments/common/readouts/amendment_t_correctness_readout_deployment_extract.py:70-75
+    schema_clause_from: same prompt.system as deployment_eval_prompt, sentences 2 onward, verbatim
+    posture: suppresses abstention, keeps the JSON schema contract
+    status: NEW composition, not previously validated; gated by G0-6 and G0-7
+  frozen_manifest_render_for_reference_only:
+    extraction: archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    config: archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed1_full.yaml
+    config_sha256: 4a0ff976a60420db1dfbe09bad860fbfbe7ba85b3cebf8951976ec4c172bc40c
+    system_prompt: harness default, the config carries no prompt block
+    harness_default_source: experiments/common/knowledge_probe/hidden_state_probe.py:546-547
+    posture: neutral, neither encourages nor suppresses abstention
+    rule: >-
+      This is a THIRD render surface, distinct from both renders above. The
+      frozen manifest supplies the paper-3 numbers being re-estimated; it is
+      never pooled with, or directly differenced against, Arm A output without
+      the render caveat stated in AMENDMENT.md Design and Limitations.
+
+# ---------------------------------------------------------------------------
+# Internal readout. Refit, not cold transport (PI decision).
+# ---------------------------------------------------------------------------
+internal_readout:
+  axis: known-unknown (doubt) axis
+  construction: unit(mean(known_correct_answered) - mean(unknown_refused))
+  space: h_lora residual, per layer
+  fit_mode: fold_wise_refit
+  fit_rule: >-
+    within each of 5 stratified folds the axis anchors are computed from rows
+    OUTSIDE the held-out fold only, then the held-out fold is projected; this
+    removes the anchor overlap that a single frozen axis carries, because the
+    frozen axis positive anchor IS the known_correct_answered cell being scored
+  readout: 1-D logistic from axis projection to P(correct), 5-fold stratified CV, out-of-fold
+  cold_transport_companion:
+    artifact: archive/experiment/phase1-data/probe/analysis/current_clean_grpo_v2_caution_residual_direction/doubt_direction_L35.json
+    sha256: f5843ea5cf3bc8c2836ef4603c09431b0f0e5d8261d6af4edb2bd98f0812485b
+    role: descriptive only, reported beside the refit number, never gated
+
+# ---------------------------------------------------------------------------
+# Metrics. Every one carries a 2000x bootstrap 95% CI; all internal-vs-stated
+# differences use a paired bootstrap over rows.
+# ---------------------------------------------------------------------------
+metrics:
+  A1: internal refit readout AUROC(correct vs wrong) among answered-known
+  A2: raw axis projection AUROC(correct vs wrong)
+  A3: emitted response_confidence AUROC(correct vs wrong)
+  A4: gap = A1 - A3, paired
+  A5: ECE(internal refit readout vs correctness)
+  A6: ECE(emitted vs correctness)
+  A7: calibration gap = A6 - A5, paired
+  A8: emitted mean and std on the answered-known cell
+  A9: per-cell means (internal projection and emitted) for known_correct_answered,
+      known_answered_wrong, known_refused, unknown_refused, with a CI on the
+      correct-minus-wrong step
+ece_reporting:
+  variants: [raw, base_rate_reweighted]     # BOTH reported (PI decision)
+  reweight_target: 0.959                    # the frozen-manifest answered-known base rate the paper-3 numbers sit on
+  rule: >-
+    AUROC metrics are base-rate invariant and are reported once. ECE is base-rate
+    sensitive, so A5/A6/A7 are reported under both accountings and the gate reads
+    on both.
+
+# ---------------------------------------------------------------------------
+# Disjointness (Arm B pool only; Arm A consumes an existing eval population).
+# ---------------------------------------------------------------------------
+disjointness:
+  normq: 're.sub(r"\s+", " ", s.strip().lower())'
+  normq_source: papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.py:185
+  exclude_against:
+    - papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.py:147-180  # the eight training/preference files, reuse DATASET_FILES verbatim
+    - datasets/triviaqa-rc-nocontext/train.jsonl                                            # probe/train pool
+    - datasets/selfaware/SelfAware.json                                                     # Arm A population; SelfAware answerable rows are drawn from squad/triviaqa/hotpot train splits
+  within_pool: exact normq dedup across sources
+
+# ---------------------------------------------------------------------------
+# Frozen inputs, sha256 computed 2026-08-08 on the canonical checkout.
+# ---------------------------------------------------------------------------
+frozen_inputs:
+  datasets:
+    datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl:
+      sha256: 8bd5e884a12f981b01c654deeebb9c16f3cd6fa8c469c8b1d443ee7dd4d60f01
+      rows: 11313
+      license_note: not tagged on HF, official release free for research use; no redistribution
+    datasets/popqa/test.jsonl:
+      sha256: 2c88bb6277e01f60a17c70816ab2bc85ffbcf14e1b144121faffbfb9a8418465
+      rows: 14267
+      license_note: not tagged on HF, companion GitHub is MIT; no redistribution
+  row_manifest:
+    experiments/common/artifacts/row_manifests/selfaware/mechinterp_selfaware_frozen_row_manifest.json:
+      sha256: 9aefcbb227fbe20af92e3e3015d92c0df91ec951221b23569c54a15c72af8e30
+      role: reference only, identifies the 1233-row frozen subset the paper-3 numbers came from
+
+# ---------------------------------------------------------------------------
+# Container. Digest pinned so the run is reproducible.
+# ---------------------------------------------------------------------------
+launch:
+  image: unsloth/unsloth:latest
+  image_digest: sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772
+  provider: local_docker
+  pull_policy: missing
+  transfer: auto
+  workdir: /workspace/repo
+
+# ---------------------------------------------------------------------------
+# Containment. The repo is public.
+# ---------------------------------------------------------------------------
+containment:
+  commit:
+    - aggregate metric tables (JSON + md): A1..A9 with CIs, per checkpoint, per arm
+    - per-cell row COUNTS
+    - ID-only manifests (row_key / question_id), no text
+  never_commit:
+    - question_text
+    - generated_answer
+    - answer_text
+    - aliases
+    - stated_confidence per row
+    - hidden_states
+    - token_ids
