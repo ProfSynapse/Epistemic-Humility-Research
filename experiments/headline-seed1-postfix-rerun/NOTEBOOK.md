@@ -192,3 +192,11 @@ Experiment state: G0 PASS both cells, G1 PASS (pair, §10.5), G2 satisfied as ru
 ## 2026-08-08 ~01:15Z — Executor closeout report cross-checked; one provenance note
 
 The executor's eval closeout report matches the lead's independent adjudication on every value (all four metrics with numerators/denominators, bootstrap CI, surface checks, untouched-dirs check). Provenance note: the canonical checkout's copy of the eval config was stale at eval launch (still carrying the KTO-scoped sha); the executor synced it from the committed worktree file (cac9fa71) before the verb, per the lead's dispatch, and the post-sync sha matched 244026a0 exactly. The uniform config_sha across all 3369 result rows confirms the committed config is what ran. No adjudication changes.
+
+## 2026-08-08 ~01:30Z — RESOLVED (PI approved: "Proceed")
+
+`bin/exp resolve` stamped: status resolved, verdict G1 PASS (pair). The signed prediction is confirmed: both rerun arms inside all eight cohort-derived bands, the dev-split-fix confound is provenance-only, headline conclusions unchanged, falsifier did not fire. Per section 3 nothing is adopted into the headline matrix by this experiment.
+
+Process note, owed to the record: the first resolve invocation's verdict text described the motivation as a "pre-fix seed-1 anomaly", which is not the amendment's framing (section 2 records a dataset-version confound found by provenance audit, not an anomalous result). Caught by the lead re-reading sections 2, 7, and 8 immediately after stamping, while the resolve output was still uncommitted; the file was reverted and re-stamped with language matching the signed prediction and falsifier. No committed state ever carried the wrong text.
+
+Remaining: resolution PR (PI merge approval), then KG ingest with node ids recorded in the manifest kg: list.

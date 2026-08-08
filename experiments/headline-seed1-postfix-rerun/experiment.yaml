@@ -1,7 +1,7 @@
 slug: headline-seed1-postfix-rerun
 title: Headline DPO/KTO seed-1 rerun on post-fix dataset build
 type: training-run
-status: signed
+status: resolved
 registered: true
 created_at: '2026-08-01T09:06:11Z'
 question: Does the locked headline seed-1 result for cold-start DPO and cold-start
@@ -116,5 +116,15 @@ inputs:
 - archive/experiment/phase1/eval/run_eval.py
 - archive/experiment/phase1/eval/config/eval_selfaware_full_local_4b.yaml
 - papers/paper-2-training-regimen/analysis/selfaware_seed_metrics.csv
-verdict: ''
+verdict: 'G1 PASS (pair, section 10.5 rule): both rerun arms INSIDE all eight cohort-derived
+  G1 bands. KTO arm 0.00/0.13/18.88/27.25; DPO cell of record is the recipe-honoring
+  r2 retrain, 0.10/0.17/13.86/19.97. The signed prediction is CONFIRMED: the dev-split-fix
+  dataset confound is provenance-only, both arms stay at the cohort abstention floor,
+  and headline conclusions are unchanged; the falsifier (any metric outside its band)
+  did not fire. G0 PASS both cells at trainer vintage 089fa9b7 on the post-fix builds;
+  the first DPO attempt (setup.pip skipped, trl 0.23.1) is a recorded deviated attempt,
+  inside bands, context only, and its 2-4 pp spread vs the r2 cell shows the trl pin
+  is behaviorally real. Per section 3 this experiment adopts nothing into the headline
+  matrix; per the G2 sign-time ruling it is a commensurability check against the cohort
+  bands, not single-variable attribution of the dataset change.'
 kg: []
