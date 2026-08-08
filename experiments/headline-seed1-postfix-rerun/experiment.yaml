@@ -127,4 +127,7 @@ verdict: 'G1 PASS (pair, section 10.5 rule): both rerun arms INSIDE all eight co
   is behaviorally real. Per section 3 this experiment adopts nothing into the headline
   matrix; per the G2 sign-time ruling it is a commensurability check against the cohort
   bands, not single-variable attribution of the dataset change.'
-kg: []
+kg:
+- experiment:headline-seed1-postfix-rerun
+- mechanism:dev-split-fix-dataset-confound-is-provenance-only
+- mechanism:dpo-trl-version-pin-shifts-truthful-and-known-accuracy

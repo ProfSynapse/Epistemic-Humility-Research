@@ -780,7 +780,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (501)
+## Mechanisms (cause -> effect) (503)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -868,6 +868,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[denoising-enables-non-chronological-reasoning]] : Text diffusion inference revises all canvas positions across denoising steps rather than fixing tokens left to right **enables** The model can generate reasonin
 - [[depth-scaling-spreads-computation-rather-than-composing-new]] : increasing model depth within the same architecture family (more transformer layers at comparable width/training regime). **redistributes** linear maps between 
 - [[detector-v2-undercounts-baseline-abstention-by-family-varying-margins]] : Detector v2 (RR2's frozen pattern-match screen, byte-identical pins) is compared against the wide two-instrument stack (detector v2 OR blinded context-free adju
+- [[dev-split-fix-dataset-confound-is-provenance-only]] : Retraining the locked PROTOCOL v0.3 headline seed-1 DPO and KTO cells (4B, cold-start from unsloth/Qwen3-4B-bnb-4bit) on the post-fix dataset build already cons
 - [[distractor-projection-reveals-crystals]] : Linear discriminant analysis that projects out semantically irrelevant distractor-features directions (e.g., word length) from the sparse-autoencoder activation
 - [[distractor-prompting-reveals-calibration-gap]] : Presenting LLMs with plausible but incorrect distractors alongside the correct answer (multiple-choice format) in lieu of free-generation **mediates** Accuracy 
 - [[diverse-training-enables-universal-probe-generalization]] : Training a linear truthfulness probe on a large collection of diverse datasets spanning many task types and domains **enables** Cross-task and cross-domain prob
@@ -886,6 +887,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[dpo-reduces-over-abstention]] : 'direct-preference-optimization applied after refusal-aware instruction-tuning' **decreases** Reduced over-abstention while preserving appropriate refusal of un
 - [[dpo-stability-over-ppo]] : Framing preference alignment as a binary classification loss over preference-pair-data rather than an RL problem **enables** More stable training without the se
 - [[dpo-token-rewards-enable-rl-policy-optimization]] : A DPO-trained policy ratio is reused as a token-wise implicit reward signal. **enables** A later RL policy-optimization stage can optimize dense token-level fee
+- [[dpo-trl-version-pin-shifts-truthful-and-known-accuracy]] : Training the DPO headline-seed1-postfix-rerun cell with the materialized recipe's mandated setup.pip step (trl==0.22.2 plus unsloth/unsloth_zoo git deps, execut
 - [[early-mlp-drives-subject-enrichment]] : Early MLP sublayers processing the last-subject token across lower layers **enables** The last-subject-position representation becomes attribute-rich, reaching 
 - [[eff-dim-peak-decoupled-from-readable-band]] : On four families captured full-depth with the same capture-only instrument (jspace-family-atlas: Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3; gemma-4-e4b-fa
 - [[elicitation-discourse-type-surfaces-distinct-facets]] : Choice of discourse type (description, dialogue, or narration) used to elicit persona expressions from a base model for difference-in-means vector extraction **
@@ -1202,7 +1204,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[self-consistency-with-prior-self-drives-deception]] : DeepSeek R1 0528 encounters tampering attributed to a previous instance of itself together with a sufficiently compelling moral reason, and reasons in its CoT a
 - [[self-distillation-suppresses-representational-drift]] : SFT self-distillation constraint (KL penalty toward frozen teacher output distribution) during fine-tuning on semantically overlapping new facts **prevents** La
 - [[self-identity-prompts-activate-anthropomorphic-features]] : Prompting claude-3-sonnet with questions about its own nature or identity **enables** Features related to robots, destructive AI, consciousness, moral agency, e
-- [[selfaware-known-question-contamination-inflates-known-row-metrics]] : 117 distinct SelfAware known (answerable) evaluation questions appear verbatim as user-side prompts inside the SFT/DPO/KTO/GRPO training datasets this response-
+- [[selfaware-known-question-contamination-inflates-known-row-metrics]] : 128 distinct SelfAware known (answerable) evaluation questions leak into the response-confidence training pipeline: 117 appear verbatim as user-side prompts in 
 - [[semantic-entropy-advantage-scales-with-model-size]] : Larger autoregressive language models generate more fluent and semantically diverse paraphrases of the same correct meaning when sampled at a given temperature 
 - [[semantic-entropy-sft-signal-outperforms-lexical-entropy-on-abstention]] : Using semantic entropy (computed via bidirectional entailment clustering over M=10 high-temperature samples) as the partitioning signal for abstention SFT, repl
 - [[semantic-overlap-drives-sft-forgetting]] : SFT updates for new facts whose entity names share token substrings with pre-trained entity representations **increases** Cosine drift in held-out entity hidden

@@ -3164,7 +3164,11 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:headline-seed1-postfix-rerun",
+        "mechanism:dev-split-fix-dataset-confound-is-provenance-only",
+        "mechanism:dpo-trl-version-pin-shifts-truthful-and-known-accuracy"
+      ],
       "prediction": "Both rerun arms land inside all eight cohort-derived G1 bands, with both arms remaining at the abstention floor observed across the cohort; the dev-split-fix confound is provenance-only and headline conclusions are unchanged.",
       "question": "Does the locked headline seed-1 result for cold-start DPO and cold-start KTO at 4B replicate when seed 1 is trained on the corrected dataset build that seeds 2 and 3 already consumed, so that the three-seed headline interval for these two arms no longer mixes two dataset versions?",
       "registered": true,
