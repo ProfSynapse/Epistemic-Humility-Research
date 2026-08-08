@@ -30,6 +30,7 @@ instrument:
   - readout.py
   - arm_a_extract.py
   - score_gates.py
+  - real_run.py
   pins:
     cell.yaml: 5ee37dd3bdb12e64dd526441f34e732d241e11fbd9c6841879d51ae3ed7b6b34
     gates.yaml: 01ee0b017009cf6298a77c60fb5e2a82a67324c1bc0a7d4398489ee1bad2cc54
@@ -37,6 +38,7 @@ instrument:
     readout.py: 75f2c17b2eb0c59a88bdc6f8aca6770db9985adfd0c933f0157458cb5384496b
     arm_a_extract.py: 0b5f9b25a3cfc7d9b4b6614d57a6fd868880896e093dc380db03121ca4890687
     score_gates.py: cbf8e154b9423f1875b600118e35b5b7de5b0d44e36ab3cdb77bf67caaf2a23a
+    real_run.py: 893c66366800027099ed837e584167c8764bb3d8b1e0286273e591e5bd14b1fa
   persistence:
     row_join.py:
       persistence: short-run
