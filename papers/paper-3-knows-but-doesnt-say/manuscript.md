@@ -2,7 +2,7 @@
 title: "Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model"
 author: "Joseph Rosenbaum (Synaptic Labs)"
 status: draft-v1
-date: 2026-07-02
+date: 2026-08-08
 repository: https://github.com/ProfSynapse/Epistemic-Humility-Research
 target: arXiv (cs.CL / cs.AI)
 evidence_base: >
@@ -21,8 +21,9 @@ evidence_base: >
 notes: >
   Numbers discipline: every quantitative claim in this draft traces to a named
   artifact above. All experiments are single-seed (seed 1), Qwen3-4B, evaluated on
-  SelfAware (n=3369) unless stated otherwise; this is a within-model mechanistic
-  study, not a multi-seed effect-size estimate. Figures marked "directional" rest
+  SelfAware (n=3369) unless stated otherwise (the GRPO confidence collapse
+  carries a three-seed replication citation, Section 7); this is a
+  within-model mechanistic study, not a multi-seed effect-size estimate. Figures marked "directional" rest
   on small wrong-answer cells (n=16 on the held-in TriviaQA known set) and are
   reported as such. Companion papers: the program's taxonomy and
   evidence-synthesis paper, [*The Depths of Ignorance: A Taxonomy, Systematic
@@ -541,7 +542,14 @@ correctness at generation time, and on the held-in distribution it is trained
 against, roughly 96% of its answered known rows are correct (373/388 in the
 behavior subset of the same artifact); emitting the majority-cell constant is
 therefore reward-optimal. Collapse is not a training accident. It is the
-optimum of the objective as specified.
+optimum of the objective as specified. The collapse itself has since
+replicated beyond this seed: a registered three-seed extension of the GRPO
+lineage retrained the arm at two fresh seeds and evaluated a pre-stated
+non-collapse guard (more than 200 distinct emitted confidence values on any
+retrained arm); the guard did not trigger, with distinct-value counts
+ranging 4 to 85 across all retrained arms, so the emitted scalar stays
+collapsed at every seed tested (exploratory three-seed evidence, reported
+separately from this paper's single-seed cells; see Appendix A).
 
 #### Intervention 5: GRPO v3, proper scoring
 
@@ -622,6 +630,11 @@ baseline (AUROC 0.552; the unknown cell-mean ordering inverts, the model stating
 refuses, 0.666). Note that the answer-masked variant is not collapsed to a constant
 (std 0.180 ≫ base 0.05): it emits *spread* confidence that does not *discriminate*.
 Variance is not calibration.
+
+A small verbatim overlap between these arms' training prompts and the known
+half of the evaluation set inflates absolute known-row levels without moving
+any Table 1 verdict; Section 9 states the overlap, its bounds, and the
+decontaminated recomputation.
 
 ### Mechanistic reading
 
@@ -988,7 +1001,26 @@ hard direction.
   answer-masked direction flip) are
   unlikely to be seed noise, but the precise effect sizes are single-seed estimates
   and the whole pattern needs replication across seeds and at least one other model
-  family/size before any claim of generality.
+  family/size before any claim of generality. One component has since cleared
+  that bar: the GRPO confidence collapse of Section 7 replicated at two
+  further seeds under a pre-stated non-collapse guard that did not trigger
+  (Section 7, interventions 3-4). The rest of the pattern remains single-seed.
+- Training/evaluation overlap on known questions. Of the 3,369 SelfAware
+  evaluation rows, 117 known (answerable) questions appear verbatim as
+  training prompts in every gradient-training file the Section 7
+  interventions consume (115 of the same 117 for the probe-distilled arm);
+  no unknown (unanswerable) question leaks. The consequence is bounded the
+  same way as in the training-regimen paper: metrics computed over
+  unknown-labeled rows are identical on the decontaminated population by
+  construction (verified per run), while absolute known-row levels shift
+  (correct-on-known falls 3.7 to 5.2 points, over-refusal rises 0.7 to 2.0
+  points across the eight Section 7 runs). Recomputing every gated Table 1
+  cell on the decontaminated population (n = 3,252) flips no reading: all
+  twelve pass/fail cells stay on the same side of their gates, the tightest
+  surviving margin being the clean-SFT base's correct-on-known at 43.03
+  against its 42.2 gate. The dissociation story is unaffected. Sensitivity
+  script and per-run table:
+  `analysis/clean_subset_sensitivity_p3.py` / `clean_subset_sensitivity_p3.csv`.
 - Small wrong-answer cells. Some internal-vs-stated discrimination numbers rest
   on few wrong-answered items (n = 16 on the held-in known set); these are reported
   as directional. The full-eval AUROC numbers (n ≈ 3369) are not affected.
@@ -1181,6 +1213,14 @@ cells with pre-stated predictions and falsifiers, reported here as exploratory
 and never pooled with the pre-registered headline matrix (PROTOCOL v0.3, signed
 2026-06-10), whose confirmatory surface belongs to the training-regimen paper
 ([*Teaching Small Language Models to Say I Don't Know*](../paper-2-training-regimen/manuscript.md)).
+The Section 7 seed-robustness citation for the GRPO confidence collapse comes
+from the signed, resolved three-seed extension
+([the GRPO three-seed replication](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/grpo-three-seed-confirmatory/AMENDMENT.md),
+G4 non-collapse guard not triggered, distinct-value range 4 to 85 against a
+200-value trigger), likewise exploratory and never pooled. The Section 9
+overlap sensitivity is computed by this paper's own pinned script
+(`analysis/clean_subset_sensitivity_p3.py`), reusing that experiment's
+exclusion-set derivation.
 The Section 8 references to
 [*It's What's on the Inside That Counts*](../paper-4-two-signal-readout/manuscript.md)
 correspond to the training-free two-signal readout program, maintained in the
