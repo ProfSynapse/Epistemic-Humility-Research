@@ -12,7 +12,7 @@
 
 model_tag: qwen3-4b-instruct
 model_name: unsloth/Qwen3-4B-bnb-4bit
-gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_selfaware_full_seed1_postfix_rerun_4b
 
 generation:
@@ -38,16 +38,23 @@ vllm:
   max_model_len: 2048
 
 arms:
-  - name: dpo_seed1_postfix
+  # Arm-scoping history (pre-stated rulings, see NOTEBOOK):
+  # - dpo_seed1_postfix arm REMOVED 2026-08-07 ~12:05Z: its eval completed
+  #   under config_sha 876842ce; rerunning would nondeterministically
+  #   regenerate finished results (silent-substitution hazard). That result
+  #   is now the DEVIATED attempt's record (retroactive G0 setup.pip
+  #   finding, ~12:55Z entry), preserved untouched.
+  # - kto_seed1_postfix arm REMOVED 2026-08-07 ~19:45Z: its eval completed
+  #   under config_sha 52e78ef1, cell closed (~19:15Z entry). Same hazard.
+  # - dpo_seed1_postfix_r2 is the PI-approved recipe-honoring DPO retrain
+  #   (cell of record, ~18:35Z rules): distinct arm name so results land in
+  #   a NEW subdirectory, preserving the deviated attempt's directory.
+  - name: dpo_seed1_postfix_r2
     method: dpo
     model: qwen3-4b-instruct
-    adapter: 'PLACEHOLDER - fill with the dpo__4b__headline__seed1__postfix final_model path after training completes (see cell.yaml arms[0].artifacts.output_root)'
-  - name: kto_seed1_postfix
-    method: kto
-    model: qwen3-4b-instruct
-    adapter: 'PLACEHOLDER - fill with the kto__4b__headline__seed1__postfix final_model path after training completes (see cell.yaml arms[1].artifacts.output_root)'
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed1_postfix/20260807_192026/final_model
 
 eval_sets:
   selfaware:
     type: ood
-    path: ../../../datasets/selfaware/SelfAware.json
+    path: ../../../../datasets/selfaware/SelfAware.json
