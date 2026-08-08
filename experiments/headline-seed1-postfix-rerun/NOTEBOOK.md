@@ -188,3 +188,7 @@ Confidence coverage 0.0, surface-consistent (track carries none). Observation, r
 **Submodule restored.** Both cells closed, GPU idle, no containers running; canonical synaptic-tuner checked out from 089fa9b7 back to the recorded restore target 2995494885c9ddebae37efd38e27caa844e7bba8, clean tree, matching the superproject's recorded pointer exactly (git status clean on the submodule path).
 
 Experiment state: G0 PASS both cells, G1 PASS (pair, §10.5), G2 satisfied as ruled. Ready for `bin/exp resolve` and the resolution PR, both awaiting PI approval.
+
+## 2026-08-08 ~01:15Z — Executor closeout report cross-checked; one provenance note
+
+The executor's eval closeout report matches the lead's independent adjudication on every value (all four metrics with numerators/denominators, bootstrap CI, surface checks, untouched-dirs check). Provenance note: the canonical checkout's copy of the eval config was stale at eval launch (still carrying the KTO-scoped sha); the executor synced it from the committed worktree file (cac9fa71) before the verb, per the lead's dispatch, and the post-sync sha matched 244026a0 exactly. The uniform config_sha across all 3369 result rows confirms the committed config is what ran. No adjudication changes.
