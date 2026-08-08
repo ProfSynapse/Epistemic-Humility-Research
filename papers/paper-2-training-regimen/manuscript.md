@@ -598,6 +598,18 @@ the evaluation questions inflates the absolute known-row numbers above
 without changing any of the deltas or outcomes reported here; Section 7
 states the size of the overlap and its bound.
 
+![Scatter plot of the five GRPO-touching arms' three-seed mean operating points with bootstrap-CI error bars, each connected by a dotted line to its seed-1-only point, showing the shift holds beyond the single seed.](figures/fig-p1-10-three-seed-replication.png)
+
+**Figure 7. The three-seed replication holds the seed-1 shift.** Exploratory
+response-confidence-track evidence, never pooled with the plain-answer
+headline (Section 4.1); n = 3 seeds per arm. Each arm's three-seed mean
+(filled diamond) carries a 95% seed-level bootstrap CI, a descriptive
+interval bounded by the seed minimum and maximum rather than an inferential
+one; the open circle is the original seed-1-only point (Figure 6) for the
+same arm. Every seed-1 point sits inside or near its arm's three-seed
+interval: the operating points measured at seed 1 are not a single-seed
+artifact.
+
 SFT induces the behavior, preference optimization repositions it, GRPO
 amplifies it. Every objective selects an
 operating point on the same recall/over-refusal frontier; nothing we trained
