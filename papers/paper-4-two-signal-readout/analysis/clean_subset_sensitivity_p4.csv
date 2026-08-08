@@ -1,0 +1,7 @@
+name,description,manuscript_value,full_recomputed,clean_value,n_full,n_clean,n_excluded,delta,status
+U_G1_gate_confirm_auroc_L33,"within-SelfAware known-vs-unknown AUROC, U pre-gen anchor, layer 33 (AMENDMENT.md sec.7 headline)",0.999,0.9991,0.9984,397,336,61,-0.0007,recomputed
+control_known_vs_full_halluc121,known-answered vs FULL 121-row hallucination set (pre-correction reading),0.93,0.93,0.9195,397,336,61,-0.0104,recomputed
+control_known_vs_setA12,"known-answered vs Set A (12, both-detector-answered; corrected)",0.814,0.814,0.8043,288,227,61,-0.0097,recomputed
+control_wide270_vs_setA12,known-answered minus 6 wide-flipped (270) vs Set A (12),,0.8225,0.8155,282,222,60,-0.0071,recomputed
+control_known_vs_setB8_BLOCKED,"known-answered vs Set B (8, census-corrected) -- Set B row identity not reproducible",0.7368659420289855,,,,,,,"BLOCKED: Set B row identity requires missing analysis/ug3_corrected_rescore.py (gitignored, absent from disk) or a manual text census not present as a pinned artifact"
+control_fully_corrected_270vs8_BLOCKED,270 known-answered vs Set B (8) fully-corrected -- Set B row identity not reproducible,0.75,,,,,,,"BLOCKED: Set B row identity requires missing analysis/ug3_corrected_rescore.py (gitignored, absent from disk) or a manual text census not present as a pinned artifact"
