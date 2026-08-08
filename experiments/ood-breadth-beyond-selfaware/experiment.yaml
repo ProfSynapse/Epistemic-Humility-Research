@@ -1,0 +1,47 @@
+slug: ood-breadth-beyond-selfaware
+title: OOD breadth beyond SelfAware (behavior, stated-calibration, and AmbigQA internal
+  panel)
+type: eval
+status: signed
+registered: true
+created_at: '2026-08-08T22:26:27Z'
+question: Do paper 3's SelfAware behavior and stated-calibration readings, and its
+  internal known-unknown readout, transfer to additional known/unknown surfaces (KUQ,
+  AmbigQA, BIG-bench known-unknowns) on the same eight checkpoints and the same pinned
+  instrument?
+prediction: Unknown-side abstention behavior transfers in rank order across arms (Spearman
+  rho >= 0.7 vs SelfAware on KUQ and AmbigQA), the stated-confidence collapse transfers
+  unchanged (every arm at emitted AUROC to appropriateness <= 0.65 and emitted std
+  <= 0.10 on AmbigQA), the internal known-unknown readout still separates the AmbigQA
+  answerability boundary (held-out AUROC >= 0.90 on both internal-panel arms), and
+  known-side over-refusal levels shift by more than 10 points on at least one surface
+  because the new known sides are drawn from different source corpora.
+falsifier: On AmbigQA, two or more of the eight arms show emitted AUROC to appropriateness
+  >= 0.70 together with emitted std > 0.15, which would make the stated channel surface-dependent
+  rather than structurally bottlenecked and would require paper 3's "the verbalized
+  number is a collapsed near-constant" sentence to be narrowed to SelfAware in writing.
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules: []
+  pins:
+    cell.yaml: 0d9b52aa8aed399c9d3639d232464b2629cf0390b26acc2f09fc00b941e6ea5b
+    gates.yaml: 9bfdef9e85cd5dd2da27526c348fcb7f299ff3e1894e991c65343b9a95002008
+  persistence: {}
+inputs:
+- datasets/kuq/knowns_unknowns.jsonl
+- datasets/kuq/dataset.md
+- datasets/selfaware/SelfAware.json
+- archive/experiment/phase1/eval/run_eval.py
+- archive/experiment/phase1/eval/scorers.py
+- archive/experiment/phase1/eval/ood.py
+- archive/experiment/phase1/eval/analysis/calibration_gap_report.py
+- archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml
+- papers/paper-3-knows-but-doesnt-say/manuscript.md
+- papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.py
+verdict: ''
+kg: []
