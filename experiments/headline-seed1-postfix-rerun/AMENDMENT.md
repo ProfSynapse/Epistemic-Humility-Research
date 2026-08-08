@@ -311,10 +311,34 @@ same sign-off.
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | |
-| user | |
+| orchestrator | Joint prediction, recorded once in the manifest `prediction:` field at sign time: both rerun arms land inside all eight cohort-derived G1 bands, both remain at the cohort abstention floor, and the dev-split-fix confound is provenance-only. CONFIRMED at resolve. |
+| user | See above; no separate user call was recorded for this cell. |
+
+This table was backfilled from the manifest on 2026-08-08 (paper-4 review
+pass); the sign tooling left the placeholders in place, the same bin/exp gap
+recorded in `grpo-three-seed-confirmatory`.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-08-08 (verdict stamped in `experiment.yaml`; full record in
+`NOTEBOOK.md`). This section was back-filled 2026-08-08 during the paper-4
+review pass; the resolve step had stamped the manifest but left this
+placeholder in place, a bin/exp tooling gap already registered.
+
+- G1 PASS under the section 10.5 pair rule: both rerun arms INSIDE all eight
+  cohort-derived G1 bands. KTO arm 0.00 / 0.13 / 18.88 / 27.25; the DPO cell
+  of record is the recipe-honoring r2 retrain at 0.10 / 0.17 / 13.86 / 19.97
+  (466/2333). The falsifier (any metric outside its band) did not fire.
+- G0 PASS for both cells at trainer vintage 089fa9b7 on the post-fix dataset
+  builds. G2 satisfied as ruled: a commensurability check with both arms at
+  the same trainer vintage, not a single-variable attribution.
+- The first DPO attempt (setup.pip skipped, trl 0.23.1) is a recorded
+  deviated attempt: inside bands, context only. Its 2-4 pp spread against the
+  r2 cell shows the trl pin is behaviorally real.
+- Per section 3, this experiment adopts nothing into the headline: it tests
+  whether the locked seed-1 rows survive the corrected dataset build, and
+  they do.
+
+One-sentence verdict (as stamped in the manifest): the signed prediction is
+CONFIRMED; the dev-split-fix dataset confound is provenance-only, both arms
+stay at the cohort abstention floor, and headline conclusions are unchanged.
