@@ -203,3 +203,11 @@ real_run.py pinned by hand in experiment.yaml (same tooling-gap
 mechanism as the four build modules; sign has no add-pin verb). Results
 promoted to analysis-committed/ per program convention (analysis/ is
 gitignored). Resolution awaits PI approval.
+
+## 2026-08-09 ~00:00Z - RESOLVED: status falsified, verdict stamped (PI approved)
+
+PI approved the resolution and the Arm B skip in one directive. bin/exp
+resolve stamped the manifest (status: falsified, verdict as adjudicated in
+the prior entry); registry regenerated. KG ingest and the paper-3
+axis-level sentence revision are registered follow-ups riding the
+resolution PR and the next paper pass.

@@ -6122,10 +6122,10 @@
       "question": "On hundreds of wrong-answered rows instead of sixteen, does the internal known-unknown axis still rank the model's own correct versus wrong answers better than its emitted response_confidence does, and does the calibration contrast in paper 3 Figure 1 survive once the answered-known base rate is no longer 96 percent?",
       "registered": true,
       "slug": "wrong-answer-cell-power-fix",
-      "status": "signed",
+      "status": "falsified",
       "title": "Wrong-answer cell power fix (paper-3 internal-vs-stated re-estimation)",
       "type": "probe-fit",
-      "verdict": ""
+      "verdict": "Prediction FALSIFIED; primary falsifier fired as worded. On 360 deployment-rendered wrong / 420 correct answered-known rows (vs the paper's 16), the known-unknown axis at pinned L35 ranks the model's own correct vs wrong answers at AUROC 0.5597 (CI 0.5185-0.5993, floor 0.60/0.55) and beats the emitted response_confidence channel by +0.0390 (CI includes 0, floor +0.05): E1 and E2 FAIL, all G0 integrity gates PASS, red-team reproduced every number exactly and the null is not instrument-induced. SCOPE (binding for write-ups): overturned at the AXIS level only; an unregistered full-dimension context probe on the same vectors reaches 0.6769/0.6995, so correct-vs-wrong is linearly present in the residual stream and the finding is that the known-unknown axis does not carry it at deployment. The raw calibration contrast survives decisively (A7 +0.2373, CI 0.1853-0.2769); E3's reweighted arm fired on an arithmetic degeneracy, recorded as such. E4 PASS under the adjudicated out-of-fold reading (step 4.85, CI excludes 0). Arm B not run by PI decision; E5 not computed; verdict independent of Arm B. The M7 comparator drop (0.649 to 0.5597) is power AND render-surface confounded, never differenced without caveat."
     },
     {
       "checkpoint": {
