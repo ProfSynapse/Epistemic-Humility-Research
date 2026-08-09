@@ -124,3 +124,90 @@ command uses a --digest flag that does not exist in docker run; the
 actual launch will pin the image by reference (image@sha256 digest form)
 and record the exact command here at launch time. GPU launch remains
 blocked on the registration PR (#407) merge.
+
+## 2026-08-08 ~23:40Z - Arm A RUN COMPLETE; all gates scored; PRIMARY FALSIFIER FIRED; red-team pass SAFE TO ADJUDICATE
+
+Extraction extraction__ab37a32e61a9 (3369 rows, manifest status=ok
+verified=True, 0 missing shards of 6738, all 3369 prompt hashes distinct,
+one config sha, generation_attempts 1 on every row). Scored with the
+pinned estimators via real_run.py (sha 893c6636..., pinned this entry;
+results in analysis-committed/real_run_results.{json,md}).
+
+Gate results at pinned primary layer L35, grpov2 checkpoint:
+- G0-1 render parity 0/50 mismatches PASS (but see limitation below);
+  G0-2 join 0/0/0 with pinned counts 780/420/360 and 993/469/524
+  reproduced exactly PASS; G0-4 grader parity 1.0000 both checkpoints
+  PASS; G0-5 adequacy 420/360 and 469/524 PASS.
+- E1 FAIL: A1 internal refit AUROC 0.5597, CI (0.5185, 0.5993), against
+  the 0.60 floor with CI-lower 0.55.
+- E2 FAIL: A4 gap over emitted 0.0390, CI (-0.0163, 0.0942), includes 0,
+  against the +0.05 floor.
+- PRIMARY FALSIFIER FIRES as worded (both conditions met on 360 wrong /
+  420 correct rows, above the 300/300 floor).
+- E3 fired-as-worded with a DEGENERACY recorded: the raw accounting
+  passes decisively (A7 +0.2373, CI 0.1853-0.2769) while the
+  base-rate-reweighted arm is arithmetically degenerate (reweighting
+  labels to 0.959 without recalibrating collapses ECE to the distance of
+  the mean prediction from 0.959, so a constant predictor at 0.959 scores
+  zero regardless of discrimination). The reweighted sign flip carries no
+  calibration content; any write-up states this.
+- E4 PASS under the adjudicated reading: the A1 estimator's own
+  out-of-fold projection gives correct-minus-wrong step 4.8484, CI
+  (1.7384, 7.8129), excludes 0, full ordering holds. The frozen-axis
+  reading is excluded by this AMENDMENT's own words (the frozen direction
+  is never gated); the fresh full-population reading is excluded because
+  it reintroduces the anchor overlap section 2.5 rejects. Caveat: the top
+  and bottom cells are the axis anchors; the non-trivial content is wrong
+  and known_refused landing in between, which they do.
+- E5 not computed (Arm B not built in this delivery).
+
+Verdict rule: E1+E2 fail => FAILURE (prediction falsified). Adjudication
+scope, per the red-team pass (opus, full report in session records; all
+reported numbers independently reproduced from the safetensors, exact
+match): the null is NOT instrument-induced. The in-sample axis
+construction the paper used reaches only 0.5680 on this population; the
+band maximum (L34) is 0.5718; alternative axis families 0.5636; seven CV
+seeds span 0.5567-0.5632. The anti-leakage refit costs about 0.008
+AUROC, not the 0.09 needed to reach the floor.
+
+CRITICAL SCOPE for any write-up (red-team W2, accepted): an unregistered,
+ungated context probe (full-dimension logistic on the same vectors, same
+rows) reaches 0.6769 (grpov2) / 0.6995 (cleansft), so correct-vs-wrong IS
+linearly decodable from the pre-generation residual stream at this
+position. What fails is that the KNOWN-UNKNOWN AXIS does not carry that
+signal at deployment (0.5597). The paper-3 sentence is overturned at the
+axis level only; it must never be rewritten as "no internal signal
+exists."
+
+Recorded limitations (red-team W1, W6 accepted):
+- G0-1 as implemented verifies render determinism (independent re-render
+  vs the extraction's own recorded prompt_hash), not byte-parity against
+  the June eval render, whose prompts were never persisted. The two
+  render modes (direct vs chat_template_kwargs) differ in trailing
+  tokens; both harnesses try direct first and it resolves clean under
+  the current stack, so a mode divergence is unlikely but unverifiable
+  from committed artifacts. This is the one un-closed
+  instrument-difference hypothesis; it cannot rescue the in-domain refit
+  result.
+- The M7 comparator (0.649 on the frozen manifest) was measured under
+  the harness default neutral prompt on a 96 percent correct population;
+  A1 (0.5597) is deployment-prompt at 54 percent correct. The drop is
+  power AND surface confounded; per cell.yaml it is never differenced
+  without this caveat.
+- cleansft control: A1 0.5457 (lower than grpov2); its nominal E2 pass
+  (gap 0.0563, CI lower 0.0071) reflects an emitted channel below chance
+  (0.4894), both channels at floor; consistent with the grpov2 picture,
+  not a counter-signal.
+
+real_run.py pinned by hand in experiment.yaml (same tooling-gap
+mechanism as the four build modules; sign has no add-pin verb). Results
+promoted to analysis-committed/ per program convention (analysis/ is
+gitignored). Resolution awaits PI approval.
+
+## 2026-08-09 ~00:00Z - RESOLVED: status falsified, verdict stamped (PI approved)
+
+PI approved the resolution and the Arm B skip in one directive. bin/exp
+resolve stamped the manifest (status: falsified, verdict as adjudicated in
+the prior entry); registry regenerated. KG ingest and the paper-3
+axis-level sentence revision are registered follow-ups riding the
+resolution PR and the next paper pass.
