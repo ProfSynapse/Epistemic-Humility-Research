@@ -1,0 +1,46 @@
+# rawbase-ambigqa-boundary-readout gates. Fail-closed; any RG failure voids
+# the M1 reading before it is looked at.
+
+rg0_panel_integrity:
+  direction: pass_required
+  checks:
+    pool_file: experiments/ood-breadth-beyond-selfaware/analysis/screen/internal_panel_pool.jsonl
+    pool_sha256_must_equal: b0f936583d5a2fcd7dbc1393dce754c62669cb5185a5c80fb644266875a48bfd
+    rows_must_equal: 2748
+    known_must_equal: 1245
+    unknown_must_equal: 1503
+  derivation: >-
+    The cell's entire claim is a same-panel comparison against item 26's G7
+    numbers; a changed pool would silently change the question.
+
+rg1_extraction_capture:
+  direction: pass_required
+  checks:
+    n_rows_must_equal: 2748
+    n_answered_must_equal: 2748
+  derivation: same bar item 26's stage-6 extraction met exactly on both arms.
+
+rg2_runtime_provenance:
+  direction: pass_required
+  checks:
+    image_digest_must_equal_manifest_runtime_image_digest: true
+    provenance_json_line_must_appear_in_run_log: true
+  derivation: standing directive 2026-07-10, mechinterp local GPU verbs.
+
+m1_heldout_probe_auroc:
+  statistic: heldout_probe_auroc_5fold_L35_anchor
+  protocol: internal_panel_probe_gate.py unchanged (item 26 pin ee3f22ee)
+  emitted_margin_subcheck: NOT_READ (no emitted surface on a raw base; margin fields recorded descriptive-only)
+  bands:
+    flavor_specific_supported_max: 0.73
+    ambiguous_open_interval: [0.73, 0.85]
+    training_warp_falsifier_min: 0.85
+  comparators_fixed_not_gates:
+    trained_A1: 0.6279
+    trained_A4: 0.6349
+
+no_goalpost_movement:
+  rule: >-
+    Bands fixed at signing. An ambiguous result is reported as ambiguous.
+    No band is retuned, no alternative layer or position is substituted, and
+    no post-hoc probe family is promoted after the number exists.
