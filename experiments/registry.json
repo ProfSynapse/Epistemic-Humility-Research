@@ -6117,7 +6117,10 @@
           "score_gates.py": "cbf8e154b9423f1875b600118e35b5b7de5b0d44e36ab3cdb77bf67caaf2a23a"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:wrong-answer-cell-power-fix",
+        "mechanism:known-unknown-axis-does-not-carry-answer-correctness-at-deployment"
+      ],
       "prediction": "Internal refit readout AUROC(correct vs wrong) lands at 0.60 to 0.72 against the emitted scalar's already-measured 0.5207, a gap of +0.08 to +0.20 with a paired CI excluding 0; internal ECE rises off 0.004 to 0.05 to 0.15 raw while emitted ECE rises to 0.25 to 0.32 raw, so the calibration contrast survives and widens under both accountings; the correct > wrong internal ordering holds.",
       "question": "On hundreds of wrong-answered rows instead of sixteen, does the internal known-unknown axis still rank the model's own correct versus wrong answers better than its emitted response_confidence does, and does the calibration contrast in paper 3 Figure 1 survive once the answered-known base rate is no longer 96 percent?",
       "registered": true,
