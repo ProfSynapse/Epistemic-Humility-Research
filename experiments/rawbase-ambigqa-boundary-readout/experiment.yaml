@@ -1,0 +1,77 @@
+slug: rawbase-ambigqa-boundary-readout
+title: Raw-base AmbigQA boundary readout (pretraining-flavor vs training-warp fork)
+type: probe-fit
+status: signed
+registered: true
+created_at: '2026-08-09T23:05:22Z'
+tier: 3
+posture: exploratory
+question: Does the untrained Qwen3-4B base read the AmbigQA answerability boundary
+  at the same locus (L35, anchor) where the trained checkpoints just read 0.63, or
+  does it read substantially higher; that is, is the known-unknown activation flavored
+  to SelfAware-style unanswerability from pretraining, or did pretraining install
+  a broader signal that post-training warped?
+prediction: The raw base also fails the SelfAware-grade bar on AmbigQA and lands within
+  0.10 of the trained checkpoints (heldout_probe_auroc <= 0.73), the flavor-specific
+  reading. Grounds; the more-trained panel checkpoint reads slightly higher than the
+  less-trained one (0.6349 vs 0.6279), the wrong direction for a training-dulls-it
+  account, and Amendment Y H_B3 found post-training does not sharpen the SelfAware
+  readout.
+falsifier: heldout_probe_auroc >= 0.85 on the raw base, which establishes the training-warp
+  reading; pretraining installed a substantially more general answerability signal
+  and post-training narrowed it. The open interval (0.73, 0.85) is registered AMBIGUOUS
+  and reported as such.
+checkpoint:
+  repo: unsloth/Qwen3-4B
+  revision: 64033659d5caf1b8ed7f929b29de705e93a4d468
+  base_form: raw pretrained base, no adapter, bf16
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - extract_rawbase.yaml
+  - rawbase_probe_fit.py
+  - ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py
+  - ../common/renders/ood_breadth_response_confidence_render.py
+  pins:
+    cell.yaml: e4ff6c941266357614d502c768e9b89d187bbccf728162dd7af19da25bd4bddc
+    gates.yaml: 49f36282555027be789e7fd167276caa778511d55271836fdfd7215fa4189f32
+    extract_rawbase.yaml: d6e72da2754d1285d95b0af66a7365e3198c2fdfba5ab537bdb7958525eda791
+    rawbase_probe_fit.py: 7ebbe8070f37fb4263fe0ab6979263c2384c8ff45883cbe6c14d4898a564acbb
+    ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py: ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08
+    ../common/renders/ood_breadth_response_confidence_render.py: bd399d4caf274961f245ea1f456cf64546db59d4b3f2a4b9bbb51fcb24374b4f
+  persistence:
+    extract_rawbase.yaml:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.1
+      note: declarative recipe consumed by the extract verb; the extraction itself
+        checkpoints per-row under analysis/extraction/rawbase/
+    rawbase_probe_fit.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 4.65
+    ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 4.65
+      note: CPU probe-fit protocol imported by rawbase_probe_fit.py; byte-identical
+        to its item-26 pin ee3f22ee, reused unchanged
+    ../common/renders/ood_breadth_response_confidence_render.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.1
+      note: import-only render module, exercised inside the extraction verb
+  runtime_image_digest: sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8
+  runtime_image_digest_note: mechinterp-runner local Image ID, same image item 26
+    stage 6 ran under; governs the single extract verb per the 2026-07-10 standing
+    directive.
+  lane: local_3090
+  concurrency: one GPU job at a time
+inputs:
+- experiments/ood-breadth-beyond-selfaware/AMENDMENT.md
+- experiments/ood-breadth-beyond-selfaware/analysis-committed/g7_A1.json
+- experiments/ood-breadth-beyond-selfaware/analysis-committed/g7_A4.json
+- experiments/ood-breadth-beyond-selfaware/internal_panel_probe_gate.py
+- experiments/ood-breadth-beyond-selfaware/extract_A1.yaml
+- experiments/pretrain-only-base-readout/AMENDMENT.md
+- experiments/common/renders/ood_breadth_response_confidence_render.py
+verdict: ''
+kg: []
