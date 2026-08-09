@@ -83,3 +83,42 @@ and `gates.yaml` only.
 
 Nothing in this entry is a result. No generation has been run and no gate has
 been read.
+
+## 2026-08-09T00:50Z Harness build accepted; lead hand-pin of the build modules (audit entry)
+
+Harness build delivered by the build agent and verified by the lead: all
+reported sha256s reproduced on disk, `cell.yaml` and `gates.yaml` byte-identical
+to their manifest pins, `AMENDMENT.md` untouched, `ood.py` diff purely additive
+(95 insertions, 0 deletions, pre-change sha e747f232 matching the
+`frozen_inputs.instrument_pre_change` record). G0 screen reproduced every
+registered `expected_drop_counts` value exactly; dataset sha verification 6/6.
+
+**Hand-pin.** `bin/exp sign` refuses non-draft experiments and `bin/exp repin`
+refuses files not already in `instrument.pins`, so there is no CLI path to add
+the new modules to this signed manifest (third recorded occurrence of this
+tooling gap, after wrong-answer-cell-power-fix twice). Per `cell.yaml`
+`configs.pin_requirement`, the lead hand-added to `instrument.modules` and
+`instrument.pins`: the three experiment-local scripts
+(`screen_ood_surfaces.py`, `gate_score.py`, `internal_panel_probe_gate.py`),
+the two extraction recipes (`extract_A1.yaml`, `extract_A4.yaml`), the shared
+render module
+(`experiments/common/renders/ood_breadth_response_confidence_render.py`), the
+post-change `archive/experiment/phase1/eval/ood.py` (cfd6cf8b, as the
+registration's D2 note directs), and the eight
+`eval_ood_breadth_*` arm configs. Persistence declared short-run for the three
+scripts (measured wall-clocks below); config files and the import-only render
+module carry no persistence entry, matching the wrong-answer-cell-power-fix
+precedent that only executable modules are declared.
+
+**Ordering repair.** The build agent ran the G0 screen before the modules were
+pinned (the pin_requirement says before stage 0). To cure the ordering, the
+lead re-ran `screen_ood_surfaces.py` after pinning, under the pinned sha:
+`screen_summary.json` came back byte-identical
+(36d80b90c5ab552399578177643876c14670cb0fbefd77d317c66daabd0af746), every
+registered count again reproduced, wall-clock 2.91 s. The committed screen
+output is therefore generated under the pinned instrument. `gate_score.py`
+no-data invocation verified (reports G3/G_docker computable, evidential gates
+NOT_RUN) at 0.22 s.
+
+Nothing in this entry is a result. No generation has been run and no
+evidential gate has been read.

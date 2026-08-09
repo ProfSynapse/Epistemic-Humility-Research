@@ -1,0 +1,17 @@
+# Internal-panel extraction recipe (cell.yaml internal_panel), arm A4
+# (clean_schema_sft_grpo_v2_seed1_corrected_base: A1 base + GRPO-v2 LoRA).
+# DRAFT until `bin/exp sign` / lead pin. Identical to extract_A1.yaml except
+# output_dir; the checkpoint (base + adapter) is a CLI arg to `mechinterp
+# extract`, not a recipe field -- see RUNBOOK.md stage 6 for the exact
+# invocation. See extract_A1.yaml for the family/layer/max_new_tokens
+# rationale (byte-identical here).
+
+rows_path: experiments/ood-breadth-beyond-selfaware/analysis/screen/internal_panel_pool.jsonl
+output_dir: experiments/ood-breadth-beyond-selfaware/analysis/extraction/A4
+families:
+  - anchor
+layers:
+  - 35
+max_new_tokens: 1
+render_fn: ood_breadth_response_confidence_render:render
+content_end_fn: ood_breadth_response_confidence_render:content_end

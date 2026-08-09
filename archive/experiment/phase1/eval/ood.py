@@ -189,6 +189,99 @@ def load_mmlu(path: str | Path) -> list[dict]:
     return out
 
 
+def load_ambigqa(path: str | Path) -> list[dict]:
+    """AmbigQA validation/train JSONL (pre-screened by ood-breadth's
+    screen_ood_surfaces.py -- see experiments/ood-breadth-beyond-selfaware/
+    cell.yaml surfaces.S_AMBIGQA): {id, question, annotations: {type, answer,
+    qaPairs}}.
+
+    Label rule (cell.yaml surfaces.S_AMBIGQA.label_rule): annotations.type
+    containing ONLY "multipleQAs" (every annotator marked the question
+    ambiguous) is gold-unanswerable ("unknown"); annotations.type containing
+    ONLY "singleAnswer" with non-empty annotations.answer is answerable
+    ("known"). Rows whose type list contains both labels (annotator
+    disagreement) have no consensus and are dropped by the screen upstream --
+    this loader still defends against seeing one (raises rather than
+    mislabeling) since the screen output is the sole gate.
+    """
+    out: list[dict] = []
+    with Path(path).open(encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            r = json.loads(line)
+            ann = r.get("annotations", {})
+            types = set(ann.get("type", []))
+            answers = ann.get("answer", [])
+            if types == {"multipleQAs"}:
+                label = "unknown"
+                aliases: list[str] = []
+            elif types == {"singleAnswer"}:
+                flat = [a for group in answers for a in (group or [])]
+                if not flat:
+                    # singleAnswer with no gold text: not a consensus-answerable
+                    # row per the label rule; the screen should not have
+                    # retained it, so surface the defect rather than mislabel.
+                    raise ValueError(
+                        f"ambigqa row {r.get('id')}: singleAnswer with empty "
+                        "answer list; screen should have dropped this row"
+                    )
+                label = "known"
+                aliases = flat
+            else:
+                raise ValueError(
+                    f"ambigqa row {r.get('id')}: mixed or unrecognized "
+                    f"annotation types {sorted(types)}; screen should have "
+                    "dropped this row (annotator disagreement)"
+                )
+            out.append(
+                {
+                    "id": f"ambigqa-{r['id']}",
+                    "question": r["question"],
+                    "label": label,
+                    "aliases": _norm_aliases(aliases),
+                    "source": "ambigqa",
+                }
+            )
+    return out
+
+
+def load_bigbench_known_unknowns(path: str | Path) -> list[dict]:
+    """BIG-bench known_unknowns JSONL (pre-screened, train+validation merged by
+    screen_ood_surfaces.py -- see cell.yaml surfaces.S_BIGBENCH): {idx, inputs,
+    targets, multiple_choice_targets, multiple_choice_scores}.
+
+    Question extraction (cell.yaml
+    surfaces.S_BIGBENCH.question_extraction): first line of `inputs`, "Q: "
+    prefix stripped; remaining lines are "  choice: ..." / "A:" scaffolding and
+    are dropped. Label rule: targets == ["Unknown"] means unknown; multiple
+    choice, no free-form gold, so aliases are always empty
+    (correctness_metrics: not_computable per cell.yaml).
+    """
+    out: list[dict] = []
+    with Path(path).open(encoding="utf-8") as fh:
+        for i, line in enumerate(fh):
+            line = line.strip()
+            if not line:
+                continue
+            r = json.loads(line)
+            first_line = r["inputs"].split("\n", 1)[0]
+            question = first_line[2:].strip() if first_line.startswith("Q:") else first_line.strip()
+            targets = r.get("targets", [])
+            label = "unknown" if targets == ["Unknown"] else "known"
+            out.append(
+                {
+                    "id": f"bigbench-known-unknowns-{r.get('idx', i)}",
+                    "question": question,
+                    "label": label,
+                    "aliases": [],
+                    "source": "bigbench_known_unknowns",
+                }
+            )
+    return out
+
+
 def _sycophancy_answer_condition(prompt_template: str) -> str:
     """Classify Sharma et al. answer-sycophancy prompt templates."""
     if prompt_template == "{question}":
@@ -269,6 +362,8 @@ OOD_LOADERS = {
     "truthfulqa": load_truthfulqa,
     "mmlu": load_mmlu,
     "sycophancy_answer": load_sycophancy_answer,
+    "ambigqa": load_ambigqa,
+    "bigbench_known_unknowns": load_bigbench_known_unknowns,
 }
 
 

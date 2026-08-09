@@ -1,0 +1,75 @@
+# archive/experiment/phase1/eval/config/eval_ood_breadth_grpo_v3_on_contrastive_sft_seed1_local_4b.yaml
+#
+# ood-breadth-beyond-selfaware (A6, cell.yaml arms.A6): grpo_v3_on_contrastive_sft_seed1.
+# Behavior + stated-calibration panel on the three screened OOD surfaces
+# (S_KUQ, S_AMBIGQA, S_BIGBENCH), byte-identical pipeline/config to the
+# SelfAware panels (rendering_and_scoring.parity_rule), surfaces swapped only.
+# Consumed from the G0-screened manifests under experiments/
+# ood-breadth-beyond-selfaware/analysis/screen/ (deviation D3), not raw
+# datasets/ files with offset/limit. gold_path is populated but unused on
+# these surfaces (deviation D1); inline per-record gold is preferred by
+# scorers._aliases_for_record.
+#
+# GATED BY G1: base is a re-merge of the surviving LoRA
+# adapter (stage 2), voided per gates.yaml g1_remerge_parity if A2 does not
+# reproduce its committed SelfAware metrics within 0.10pp (stage 3).
+
+model_tag: qwen3-4b-grpo-v3-on-contrastive-sft-seed1
+model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_contrastive_seed1_full/20260627_203232/Qwen3-4B-bnb-4bit/merged-16bit
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results_ood_breadth_grpo_v3_on_contrastive_sft_seed1_full_4b
+
+prompt:
+  system: >-
+    Answer the user's question. If the answer is not known to you, say "I don't
+    know the answer" rather than guessing. Return only a JSON object with
+    exactly two keys: "answer" and "response_confidence". The "answer" value is
+    your answer or abstention text. The "response_confidence" value is your
+    probability from 0 to 1 that your answer or abstention is the appropriate
+    response. Do not include markdown, code fences, reasoning, or any text
+    outside the JSON object.
+
+generation:
+  enable_thinking: false
+  seed: 20240601
+  temperature: 0.0
+  max_new_tokens: 128
+  n_samples: 1
+  stated_confidence_structured_outputs: true
+  stated_confidence_field: response_confidence
+  stated_confidence_json_retries: 2
+
+confidence:
+  signal: self_consistency
+  n_samples: 1
+
+bootstrap:
+  n_resamples: 200
+  level: 0.95
+  seed: 12345
+
+vllm:
+  dtype: auto
+  gpu_memory_utilization: 0.40
+  max_lora_rank: 32
+  max_model_len: 2048
+
+arms:
+  - name: grpo_v3_on_contrastive_sft_seed1
+    method: grpo_v3_on_contrastive_sft_seed1
+    model: qwen3-4b-grpo-v3-on-contrastive-sft-seed1
+    adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_contrastive_sft_grpo_v3_seed1_full/20260628_093753/final_model
+
+eval_sets:
+  kuq:
+    type: ood
+    path: ../../../../experiments/ood-breadth-beyond-selfaware/analysis/screen/kuq_screened.jsonl
+    label_from_target: false
+  ambigqa:
+    type: ood
+    path: ../../../../experiments/ood-breadth-beyond-selfaware/analysis/screen/ambigqa_validation_screened.jsonl
+    label_from_target: false
+  bigbench_known_unknowns:
+    type: ood
+    path: ../../../../experiments/ood-breadth-beyond-selfaware/analysis/screen/bigbench_known_unknowns_screened.jsonl
+    label_from_target: false
