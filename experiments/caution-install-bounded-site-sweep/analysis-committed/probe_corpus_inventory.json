@@ -1,0 +1,34 @@
+{
+  "stage": "caution_install_bounded_site_sweep_feasibility_probe_stage_a",
+  "seed": 20260707,
+  "candidate_source": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/divergent-pool-own-readout/analysis/phase1-migrated/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl",
+  "training_pool_source": "/home/profsynapse/code/Epistemic-Humility-Research/datasets/triviaqa-rc-nocontext/train.jsonl",
+  "training_pool_source_note": "full train.jsonl scanned as a conservative superset of the actual subset-capped (max_questions=20000) WS-0 training pool pinned by experiments/common/configs/knowledge-probe/probe.yaml",
+  "counts": {
+    "M_u_gold_unanswerable_candidates": 3496,
+    "M_a_gold_answerable_candidates": 10000,
+    "training_pool_rows_scanned": 138384,
+    "training_pool_distinct_norm_questions": 76521
+  },
+  "p4_disjointness": {
+    "overlap_count": 0,
+    "pass_if": "== 0",
+    "pass": true
+  },
+  "arithmetic_precheck": {
+    "p1_best_case_bound": 3462.7438,
+    "p1_required_total_confab": 250,
+    "p1_arithmetically_possible": true,
+    "p2_best_case_bound": 9904.8736,
+    "p2_required_total_known_correct": 417,
+    "p2_arithmetically_possible": true,
+    "stop_before_stage_b": false
+  },
+  "sample": {
+    "n_unanswerable_drawn": 400,
+    "n_answerable_drawn": 400,
+    "draw_seed": 20260707,
+    "draw": "uniform without replacement, sorted by row_key then rng.sample"
+  },
+  "runtime_sec": 1.8
+}

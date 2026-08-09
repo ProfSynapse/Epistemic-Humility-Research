@@ -1,0 +1,44 @@
+{
+  "stage": "caution_install_bounded_site_sweep_feasibility_probe_census_extension",
+  "pi_approved": "2026-08-09",
+  "criterion_fixed_before_run": {
+    "expression": "actual_total_confab_count (over all M_u=3496 unknown-label rows) >= 250",
+    "required_total_confab": 250,
+    "note": "registered pool floor unchanged; measurement replaces Wilson-bound extrapolation"
+  },
+  "census_run": {
+    "n_remaining_rows_targeted": 3096,
+    "n_generated_this_run": 3096,
+    "elapsed_sec": 5760.6,
+    "rows_per_minute": 32.25,
+    "mean_new_tokens": 32.44,
+    "n_census_captured": 3096,
+    "n_census_confab": 227,
+    "n_census_unknown_refused": 2869,
+    "n_census_total": 3096
+  },
+  "stage_b_contribution": {
+    "n_stage_b_unknown_probed": 400,
+    "n_stage_b_confab": 33,
+    "n_stage_b_captured": 400,
+    "n_stage_b_unknown_refused": 367
+  },
+  "combined_full_corpus": {
+    "M_u": 3496,
+    "total_unknown_probed": 3496,
+    "total_confab": 260,
+    "total_captured": 3496,
+    "total_capture_rate": 1.0,
+    "total_unknown_refused": 3236
+  },
+  "criterion_result": {
+    "actual_total_confab_count": 260,
+    "threshold": 250,
+    "pass": true
+  },
+  "wilson_context_only_not_the_criterion": {
+    "note": "informational only; the fixed criterion above is COUNT, not this bound. Included for continuity with Stage B's P1 report.",
+    "combined_point_rate": 0.0744,
+    "combined_wilson_lower_95": 0.0661
+  }
+}
