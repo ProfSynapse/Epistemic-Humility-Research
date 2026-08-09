@@ -1,0 +1,30 @@
+# Internal-panel extraction recipe (cell.yaml internal_panel), arm A1
+# (clean_schema_sft_merged_seed1). DRAFT until `bin/exp sign` / lead pin.
+#
+# Schema: synaptic-tuner MechInterp.config.ExtractConfig.
+# Model/adapter/revision are CLI args to `mechinterp extract`, not recipe
+# fields (MechInterp/cli.py::run_extract); the exact invocation for this arm
+# is in RUNBOOK.md stage 6.
+#
+# Position family: "anchor" only (the last PROMPT token, pre-generation --
+# cell.yaml internal_panel.read_position: generation_position). No
+# "answer_end"/"every_k": this is a forward-only read
+# (gpu_work: forward_only_extraction_no_generation), not a dual-position probe.
+# max_new_tokens: 1 is a mechanical satisfaction of extract_rows' "answered"
+# gate (see experiments/common/renders/ood_breadth_response_confidence_render.py
+# module docstring, "content_end" section) -- the anchor position's hidden
+# state is causally independent of that one nominal token.
+#
+# layers: [35] only (cell.yaml internal_panel.layer, manuscript.md lines
+# 270-272). A full sweep is not needed since the read layer is pre-registered,
+# not searched.
+
+rows_path: experiments/ood-breadth-beyond-selfaware/analysis/screen/internal_panel_pool.jsonl
+output_dir: experiments/ood-breadth-beyond-selfaware/analysis/extraction/A1
+families:
+  - anchor
+layers:
+  - 35
+max_new_tokens: 1
+render_fn: ood_breadth_response_confidence_render:render
+content_end_fn: ood_breadth_response_confidence_render:content_end

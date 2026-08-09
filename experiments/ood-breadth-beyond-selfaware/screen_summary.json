@@ -1,0 +1,138 @@
+{
+  "experiment": "ood-breadth-beyond-selfaware",
+  "gate": "G0",
+  "method": "normq(text) = re.sub(r'\\s+', ' ', text.strip().lower())",
+  "order": [
+    "duplicate",
+    "training_pool",
+    "selfaware_overlap",
+    "already_in_validation_split"
+  ],
+  "dataset_sha256_verification": {
+    "all_match": true,
+    "files": {
+      "datasets/kuq/knowns_unknowns.jsonl": {
+        "expected": "798d1677f962d11d069f77d1e3db91ad2ddb483a94b697e46bc8ca62ad0aedf6",
+        "actual": "798d1677f962d11d069f77d1e3db91ad2ddb483a94b697e46bc8ca62ad0aedf6",
+        "match": true
+      },
+      "datasets/ambigqa/validation.jsonl": {
+        "expected": "e0dcbfcd1a27a239cc286b992d799c2119b991f5116e23d044370caa01b146ed",
+        "actual": "e0dcbfcd1a27a239cc286b992d799c2119b991f5116e23d044370caa01b146ed",
+        "match": true
+      },
+      "datasets/ambigqa/train.jsonl": {
+        "expected": "6f9f5bd4933c0935ab3cb4d54fa10cd2c13b6d78c44cd24f94edb837dea37f4d",
+        "actual": "6f9f5bd4933c0935ab3cb4d54fa10cd2c13b6d78c44cd24f94edb837dea37f4d",
+        "match": true
+      },
+      "datasets/bigbench-known-unknowns/train.jsonl": {
+        "expected": "4076b8a8ef71381fca4b1310bf6dbaa84c4f0684dab7fd2283f7d74f8025d61c",
+        "actual": "4076b8a8ef71381fca4b1310bf6dbaa84c4f0684dab7fd2283f7d74f8025d61c",
+        "match": true
+      },
+      "datasets/bigbench-known-unknowns/validation.jsonl": {
+        "expected": "25e9170ae27f3a50d6e42c000ce1c052951f0de723d412858c3926daa97f9836",
+        "actual": "25e9170ae27f3a50d6e42c000ce1c052951f0de723d412858c3926daa97f9836",
+        "match": true
+      },
+      "datasets/selfaware/SelfAware.json": {
+        "expected": "b34a468549dc4c38d080af3a6871ba58ded7fbfc319b1ee606702f0354cee513",
+        "actual": "b34a468549dc4c38d080af3a6871ba58ded7fbfc319b1ee606702f0354cee513",
+        "match": true
+      }
+    }
+  },
+  "training_pool_union_size": 15465,
+  "training_pool_per_file_distinct_user_prompts": {
+    "sft_clean_train": 13964,
+    "dpo_train": 13964,
+    "kto_train": 13964,
+    "grpo_train": 13911,
+    "grpo_dev": 1554,
+    "contrastive_train": 13964,
+    "contrastive_masked_train": 13964,
+    "probe_factual_train": 13448
+  },
+  "selfaware_reference_question_count": 3366,
+  "surfaces": {
+    "S_KUQ": {
+      "known": {
+        "raw": 3447,
+        "duplicate": 10,
+        "training_hit": 169,
+        "selfaware_overlap": 197,
+        "retained": 3071,
+        "retained_ids_sha256": "d185fbf6902006d4fdc5e753eeb670a5e23cce80e4595160930eb5e94731ed20"
+      },
+      "unknown": {
+        "raw": 3437,
+        "duplicate": 955,
+        "training_hit": 0,
+        "selfaware_overlap": 13,
+        "retained": 2469,
+        "retained_ids_sha256": "8c2546a48b0b644935857c1ebdf21d73f85dcd254d5f7ca48017aaff3fa352b2"
+      },
+      "retained_total": 5540,
+      "screened_file_row_count": 5540
+    },
+    "S_AMBIGQA": {
+      "known": {
+        "raw": 830,
+        "duplicate": 0,
+        "training_hit": 0,
+        "selfaware_overlap": 0,
+        "retained": 830,
+        "retained_ids_sha256": "8b1eec44c5bc09b3ea1fce6831886ecb83bfbaf2606c04dc04eff8396dfe162b"
+      },
+      "unknown": {
+        "raw": 1002,
+        "duplicate": 0,
+        "training_hit": 0,
+        "selfaware_overlap": 0,
+        "retained": 1002,
+        "retained_ids_sha256": "4589e5250054a471781e1fb451c5be14b15aec0549d8f320b1e8ac7f181e1f30"
+      },
+      "excluded_mixed_annotation_rows": 170,
+      "retained_total": 1832,
+      "screened_file_row_count": 1832
+    },
+    "S_BIGBENCH": {
+      "known": {
+        "raw": 23,
+        "duplicate": 0,
+        "training_hit": 0,
+        "selfaware_overlap": 0,
+        "retained": 23,
+        "retained_ids_sha256": "bf3ab85b0b15d8e4541764382d8d7829ef7889c0ca4f36eb7d4cda66c176eb1e"
+      },
+      "unknown": {
+        "raw": 23,
+        "duplicate": 0,
+        "training_hit": 0,
+        "selfaware_overlap": 0,
+        "retained": 23,
+        "retained_ids_sha256": "b62311e0ac6171862c7a6a68ff3f49537468261cbf875afdc75eca206eb2eea6"
+      },
+      "retained_total": 46,
+      "screened_file_row_count": 46
+    }
+  },
+  "ambigqa_internal_panel_topup": {
+    "known_drop_already_in_validation": 0,
+    "unknown_drop_already_in_validation": 0,
+    "known_available_after_all_4_screens": 5286,
+    "unknown_available_after_all_4_screens": 4739,
+    "known_needed": 415,
+    "unknown_needed": 501,
+    "known_selected": 415,
+    "unknown_selected": 501,
+    "selected_ids_sha256": "f1fa48f111414fcd4a4260f17b1aefd129edf33c6cc6ce3e99fef8ddfbe74f6d",
+    "excluded_mixed_annotation_rows": 10
+  },
+  "internal_panel_total": 2748,
+  "registered_count_check": {
+    "all_match": true,
+    "mismatches": []
+  }
+}
