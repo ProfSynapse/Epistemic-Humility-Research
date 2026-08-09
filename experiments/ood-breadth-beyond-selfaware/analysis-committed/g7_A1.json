@@ -1,0 +1,18 @@
+{
+  "gate": "G7",
+  "layer": 35,
+  "n_panel": 2748,
+  "n_panel_known": 1245,
+  "n_panel_unknown": 1503,
+  "heldout_probe_auroc": 0.6279,
+  "heldout_probe_auroc_std_across_folds": 0.0164,
+  "heldout_probe_auroc_pass": false,
+  "n_shared_rows": 1832,
+  "internal_auroc_on_shared_rows": 0.6319,
+  "emitted_auroc_to_known_on_shared_rows": 0.4994,
+  "emitted_missing_confidence_rows": 0,
+  "margin": 0.1326,
+  "margin_pass": false,
+  "gate_pass": false,
+  "arm": "A1"
+}

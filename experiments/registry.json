@@ -4505,6 +4505,7 @@
           "screen_ood_surfaces.py",
           "gate_score.py",
           "internal_panel_probe_gate.py",
+          "score_evidential_fivearm.py",
           "extract_A1.yaml",
           "extract_A4.yaml",
           "../common/renders/ood_breadth_response_confidence_render.py",
@@ -4525,6 +4526,10 @@
           },
           "internal_panel_probe_gate.py": {
             "note": "CPU probe-fit over saved safetensors; no natural checkpoint, rerun-from-scratch on interruption",
+            "persistence": "short-run"
+          },
+          "score_evidential_fivearm.py": {
+            "measured_smoke_wall_clock_s": 0.35,
             "persistence": "short-run"
           },
           "screen_ood_surfaces.py": {
@@ -4549,8 +4554,11 @@
           "gate_score.py": "8de8bb63485b65b245609919319ae9d6ce1b5c3fc196402bb2aac0738c160e80",
           "gates.yaml": "9bfdef9e85cd5dd2da27526c348fcb7f299ff3e1894e991c65343b9a95002008",
           "internal_panel_probe_gate.py": "ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08",
+          "score_evidential_fivearm.py": "013300c49dc504fdda710132f239d8f03c13a8c67f561be8775c9038296c557c",
           "screen_ood_surfaces.py": "50630020c0505417aa8a0f0c7f76356f289236bb9b9c21633b1d7b1cc657b149"
-        }
+        },
+        "runtime_image_digest": "sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8",
+        "runtime_image_digest_note": "local Image ID of mechinterp-runner:local (not registry-pushed); applies to the stage-6 MechInterp.cli extract verb only, per the 2026-07-10 standing directive in .skills/mechinterp-cells/reference/modal-launch.md. The eval-lane stages 2-5 ran under cell.yaml lane.docker_digest as registered."
       },
       "kg": [],
       "prediction": "Unknown-side abstention behavior transfers in rank order across arms (Spearman rho >= 0.7 vs SelfAware on KUQ and AmbigQA), the stated-confidence collapse transfers unchanged (every arm at emitted AUROC to appropriateness <= 0.65 and emitted std <= 0.10 on AmbigQA), the internal known-unknown readout still separates the AmbigQA answerability boundary (held-out AUROC >= 0.90 on both internal-panel arms), and known-side over-refusal levels shift by more than 10 points on at least one surface because the new known sides are drawn from different source corpora.",
