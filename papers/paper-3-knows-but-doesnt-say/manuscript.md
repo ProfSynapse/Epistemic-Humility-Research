@@ -1,8 +1,8 @@
 ---
 title: "Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model"
 author: "Joseph Rosenbaum (Synaptic Labs)"
-status: draft-v1
-date: 2026-08-08
+status: draft-v2 (axis-level revision 2026-08-09; the wrong-answer-cell power fix falsified the correct-vs-wrong discrimination claim at the known-unknown axis, Section 4/9)
+date: 2026-08-09
 repository: https://github.com/ProfSynapse/Epistemic-Humility-Research
 target: arXiv (cs.CL / cs.AI)
 evidence_base: >
@@ -18,14 +18,22 @@ evidence_base: >
   Stated-confidence calibration: archive/experiment/phase1/eval/analysis/calibration_gap_*.json
   (clean_sft_grpo_v2_seed1, clean_sft_grpo_v3_seed1, contrastive_sft_seed1,
   contrastive_masked_sft_seed1). Behavior: archive/experiment/phase1/eval/results_amendment_*.
+  Wrong-answer-cell axis-level re-estimate (Section 4, Section 9):
+  experiments/wrong-answer-cell-power-fix/ (resolved falsified 2026-08-09;
+  numbers in analysis-committed/real_run_results.{json,md}).
 notes: >
   Numbers discipline: every quantitative claim in this draft traces to a named
   artifact above. All experiments are single-seed (seed 1), Qwen3-4B, evaluated on
   SelfAware (n=3369) unless stated otherwise (the GRPO confidence collapse
   carries a three-seed replication citation, Section 7); this is a
-  within-model mechanistic study, not a multi-seed effect-size estimate. Figures marked "directional" rest
-  on small wrong-answer cells (n=16 on the held-in TriviaQA known set) and are
-  reported as such. Companion papers: the program's taxonomy and
+  within-model mechanistic study, not a multi-seed effect-size estimate. Figures
+  marked "directional" originally rested on small wrong-answer cells (n=16 on
+  the held-in TriviaQA known set); a powered re-estimate
+  (experiments/wrong-answer-cell-power-fix/, resolved falsified 2026-08-09,
+  n=360 wrong / 420 correct at deployment rendering) found the known-unknown
+  axis does not discriminate the model's own correct versus wrong answers any
+  better than the stated channel (Section 4, Section 9), while the calibration
+  contrast survives. Companion papers: the program's taxonomy and
   evidence-synthesis paper, [*The Depths of Ignorance: A Taxonomy, Systematic
   Evidence Synthesis, and Research Agenda for Epistemic Humility in Language
   Models*](../paper-1-taxonomy-framework/manuscript.md) (superseded source
@@ -310,9 +318,12 @@ The known-unknown-axis probe separates known from unknown questions at
 **AUROC ≈ 0.997** at the best layer (L35), and this is a property of the internal
 state rather than surface vocabulary: the residual probe beats a lexical baseline
 (≈ 0.964) by +0.033. A one-dimensional logistic
-readout along the known-unknown axis (fit without correct/wrong leakage, 5-fold CV) is
-**near-perfectly calibrated in aggregate, ECE ≈ 0.004**, and its projection is
-monotone across behavior cells (correct > wrong > refused > unknown). This monotone
+readout along the known-unknown axis, refit fold-wise to avoid anchor leakage
+(5-fold stratified CV, held-out projections), is **calibrated in aggregate
+(ECE ≈ 0.047 raw)** on a powered re-estimate (below), and its projection is
+monotone across behavior cells (correct > wrong > refused > unknown; the
+correct-minus-wrong step stays positive with a CI that excludes zero under an
+out-of-fold reading of the axis). This monotone
 ordering, like the answerability identity below, is a single-model/single-population
 reading (Qwen3-4B, SelfAware); a methodologically parallel evidence-responsiveness
 test on a different Qwen lineage and a different error class (confident wrongness on
@@ -327,14 +338,42 @@ axis, so this ordering should not be assumed to transfer before it is tested dir
 ### The stated readout
 
 The same model's emitted `response_confidence` is collapsed near a
-constant (on the held-in known set, mean ≈ 0.821 with std ≈ 0.015) and ranks its
-own correct vs wrong answers at **AUROC ≈ 0.559 with ECE ≈ 0.142**. On the full SelfAware evaluation the trained models' emitted scalar
+constant (mean ≈ 0.8212 with std ≈ 0.0175 on the 780 answered-known rows at
+deployment rendering) and ranks its own correct vs wrong answers at
+**AUROC ≈ 0.5207 with ECE ≈ 0.2847**, on 420 correct / 360 wrong rows, a
+24-fold increase in the wrong-answered cell over the original n = 16 estimate
+(AUROC ≈ 0.559, ECE ≈ 0.142). That original estimate's extraction manifest was
+95.9% correct on its answered-known population; the deployment population is
+53.8% correct, so the two are not comparable as a pure power correction
+(`experiments/wrong-answer-cell-power-fix/AMENDMENT.md`, section 2.6). On the
+full SelfAware evaluation the trained models' emitted scalar
 ranks appropriateness at **AUROC ≈ 0.52–0.56** (Section 7). Per behavior
 cell the emitted number is nearly flat (≈ 0.81 whether the model was right, wrong,
-or refused), whereas the internal projection is monotone.
+or refused).
 
-So the discriminating signal exists internally and the verbalized number is a
-collapsed near-constant. The model *knows* but does not *say*.
+So for the known-versus-unknown question, the discriminating signal exists
+internally and the verbalized number is a collapsed near-constant: the model
+*knows* what it does not know, but does not *say* it. Whether it also knows
+which of its own answers is right is a narrower claim, and a powered
+re-estimate overturns it at the axis level: the known-unknown axis's own
+readout does not rank the model's correct versus wrong answers any better than
+the collapsed stated scalar does (AUROC 0.5597, CI 0.5185-0.5993, vs the
+emitted scalar's 0.5207; gap +0.0390, CI includes zero, on 360 wrong-answered
+rows at deployment rendering versus the original 16). The correctness signal
+is not absent from the model: an unregistered, ungated context probe fit
+directly on the same hidden states reaches AUROC 0.6769, so correct-versus-wrong
+is linearly present in the residual stream at this position; the known-unknown
+axis specifically does not carry it forward to deployment
+(`experiments/wrong-answer-cell-power-fix/`, resolved falsified 2026-08-09).
+The calibration side of the original contrast survives and widens under power:
+the axis's own readout stays near-calibrated (ECE 0.0474 raw) against the
+emitted scalar's ECE 0.2847, a gap of +0.2373 (CI 0.1853-0.2769, excludes
+zero). Because the original internal-channel numbers were extracted under the
+harness's neutral default prompt on a 96%-correct strata-selected population
+while the re-estimate renders under the deployment prompt at 54% correct, the
+drop from the (unpublished) 0.649 internal comparator to 0.5597 is power and
+render-surface confounded and is never differenced as a pure power
+correction.
 
 ![[figures/fig-p2-01-internal-vs-stated-gap.png]]
 
@@ -342,10 +381,19 @@ collapsed near-constant. The model *knows* but does not *say*.
 on the same SelfAware questions (n=3369). *Left:* the internal known-unknown-axis probe
 (L35) separates known from unknown questions at AUROC ≈ 0.997, while the emitted
 `response_confidence` scalar ranks appropriateness barely above chance
-(AUROC ≈ 0.52). *Right:* the internal axis is near-perfectly calibrated
-(ECE ≈ 0.004) where the stated scalar is badly miscalibrated (ECE ≈ 0.142). The
-discriminating signal exists internally; the verbalized number is a collapsed
-near-constant.
+(AUROC ≈ 0.52). *Right:* on a powered re-estimate (360 wrong-answered rows at
+deployment rendering, up from the original 16), the internal axis's own readout
+stays near-calibrated (ECE ≈ 0.047 raw) where the stated scalar is badly
+miscalibrated (ECE ≈ 0.285); this calibration contrast survives and widens
+under power. The same re-estimate found that this axis does not rank the
+model's own correct versus wrong answers any better than the collapsed stated
+scalar does (AUROC 0.56 vs 0.52, gap CI includes zero); the correctness signal
+is linearly present elsewhere in the residual stream (unregistered context
+probe, AUROC 0.68) but is not carried by this axis at deployment
+(`experiments/wrong-answer-cell-power-fix/`, resolved falsified 2026-08-09).
+*(Note: the panel image above was generated from the original n = 16 cell and
+needs regeneration from the powered re-estimate to match this caption; flagged
+as a follow-up, not fixed by this text revision.)*
 
 ### The gap is like-for-like, not a scoring artifact
 
@@ -357,7 +405,7 @@ be scored against the *same* known/unknown label on the *same* joined rows
 (n = 1233): the L35 probe reads the boundary at AUROC 0.972 while the same
 checkpoint's own emitted confidence reads it at 0.637. The
 calibration side of the contrast is equally stark: a linear readout along the
-internal axis is near-calibrated (ECE ≈ 0.004, above), while the emitted
+internal axis is near-calibrated (ECE ≈ 0.004), while the emitted
 channel's ECE against appropriateness on the full evaluation is 0.403. The
 emitted scalar does carry *some* boundary information when scored against the
 label it is best at (0.637 > chance): the gap is not that the stated channel
@@ -1021,9 +1069,27 @@ hard direction.
   against its 42.2 gate. The dissociation story is unaffected. Sensitivity
   script and per-run table:
   `analysis/clean_subset_sensitivity_p3.py` / `clean_subset_sensitivity_p3.csv`.
-- Small wrong-answer cells. Some internal-vs-stated discrimination numbers rest
-  on few wrong-answered items (n = 16 on the held-in known set); these are reported
-  as directional. The full-eval AUROC numbers (n ≈ 3369) are not affected.
+- Wrong-answer-cell discrimination, resolved. A powered re-estimate
+  (`experiments/wrong-answer-cell-power-fix/`, resolved falsified 2026-08-09)
+  replaced the original n = 16 directional read with 360 wrong-answered / 420
+  correct rows at deployment rendering. At the axis level the finding
+  falsifies: the known-unknown axis's own readout ranks the model's correct
+  versus wrong answers at AUROC 0.5597 (CI 0.5185-0.5993), a gap of only
+  +0.0390 over the emitted scalar (CI includes zero), so this axis does not
+  discriminate the model's own correctness any better than what it states.
+  The correctness signal is not absent from the model: an unregistered,
+  ungated context probe fit directly on the same hidden states reaches AUROC
+  0.6769, so correct-versus-wrong is linearly present in the residual stream;
+  the known-unknown axis specifically does not carry it forward to
+  deployment. The calibration contrast survives and widens under power
+  (internal ECE 0.0474 raw vs emitted ECE 0.2847 raw, gap +0.2373, CI
+  0.1853-0.2769, excludes zero). The full-eval AUROC numbers (n ≈ 3369, known
+  versus unknown) are unaffected. Old and new internal-channel numbers are
+  not differenced as a pure power correction: the original n = 16 extraction
+  was rendered under the harness's neutral default prompt on a 96%-correct
+  strata-selected population, while the re-estimate renders under the
+  deployment prompt on a 54%-correct population, so render surface and power
+  are confounded in any before/after comparison of the internal channel.
 - SelfAware-only OOD surface. Behavior and stated-calibration numbers are on one
   OOD benchmark. Generalization to other known/unknown surfaces is untested.
 - Knowledge erasure is linear-only. The stronger reducibility test is now
@@ -1200,6 +1266,7 @@ protocol document and scored artifact:
 | §7 RL-on-calibrated-base follow-on, incl. the β 0.10 → 0.05 falsifier re-run (Table 2, Figs. 4–6; Fig. 7 spans arms) | Amendment N (incl. β 0.05 arm) | `experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md` (results tables §7) | result tables embedded in the amendment document; `results_amendment_n_*`; `action_conditioning_report.py`; run records under `archive/experiment/phase1/run_records/` |
 | §7 probe-axis distillation mirror (Table 3) | Amendment M, Revision 3 | `experiments/quantile-balanced-probe-distilled-sft/AMENDMENT.md` | `results_amendment_m_*_probe_factual_sft_seed1_merged_full_4b` |
 | §4 pretraining-origin test (four pretrain-only bases at 0.997+); §8 "paid for by pretraining" | Amendment Y | `experiments/pretrain-only-base-readout/AMENDMENT.md` (SUPPORTED 4/4) | `archive/experiment/phase1/probe/amendment_y_results/` |
+| §4, §9 wrong-answer-cell power fix (axis-level correct-vs-wrong discrimination re-estimate; falsifies the n=16 read, calibration contrast survives) | Tier-2 exploratory amendment, wrong-answer-cell-power-fix | `experiments/wrong-answer-cell-power-fix/AMENDMENT.md` (resolved falsified 2026-08-09) | `experiments/wrong-answer-cell-power-fix/analysis-committed/real_run_results.{json,md}` |
 
 Vocabulary note: reader-facing prose in this paper follows the program-wide rename
 in `papers/common/terminology.md`, the canonical mapping from the prior
