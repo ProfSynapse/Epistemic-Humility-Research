@@ -79,4 +79,6 @@ verdict: 'Prediction FALSIFIED; primary falsifier fired as worded. On 360 deploy
   CI excludes 0). Arm B not run by PI decision; E5 not computed; verdict independent
   of Arm B. The M7 comparator drop (0.649 to 0.5597) is power AND render-surface confounded,
   never differenced without caveat.'
-kg: []
+kg:
+- experiment:wrong-answer-cell-power-fix
+- mechanism:known-unknown-axis-does-not-carry-answer-correctness-at-deployment

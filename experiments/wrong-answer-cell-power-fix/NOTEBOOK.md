@@ -125,6 +125,30 @@ actual launch will pin the image by reference (image@sha256 digest form)
 and record the exact command here at launch time. GPU launch remains
 blocked on the registration PR (#407) merge.
 
+## 2026-08-08 ~23:30Z - LAUNCH: Arm A extraction (lead)
+
+Registration PR #407 merged to main (a4775abe); PI launch approval standing
+for the paper-3 burn-down. All six instrument pins verified byte-identical
+immediately before launch (cell.yaml, gates.yaml, row_join.py, readout.py,
+arm_a_extract.py, score_gates.py). GPU idle at launch (0 percent, 0 MiB;
+the item-27 probe container had exited). One GPU job at a time in force;
+the item-27 probe retry is explicitly held until this run completes.
+
+Launch mode: host gpu_python per cell.yaml line 17
+(/home/profsynapse/miniconda3/bin/python3, torch 2.9.0+cu128, CUDA
+available), matching the program precedent for extraction cells
+(qwen35-4b-midband-doubt-snap, correctness-direction-rotation). No docker
+verb is used for this stage, so the image digest pin does not apply; the
+builder-suggested docker command was discarded (its --digest flag does not
+exist in docker run).
+
+Command: cd /home/profsynapse/code/Epistemic-Humility-Research &&
+/home/profsynapse/miniconda3/bin/python3
+experiments/wrong-answer-cell-power-fix/arm_a_extract.py --run
+Expected 0.5 to 0.75 GPU hours; both checkpoints one pass (h_base cleansft
+adapter-disabled, h_lora grpov2 adapter-active), layers 30-36, resumable
+append-log persistence.
+
 ## 2026-08-08 ~23:40Z - Arm A RUN COMPLETE; all gates scored; PRIMARY FALSIFIER FIRED; red-team pass SAFE TO ADJUDICATE
 
 Extraction extraction__ab37a32e61a9 (3369 rows, manifest status=ok
