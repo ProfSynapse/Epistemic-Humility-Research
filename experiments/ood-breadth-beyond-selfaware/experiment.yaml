@@ -2,7 +2,7 @@ slug: ood-breadth-beyond-selfaware
 title: OOD breadth beyond SelfAware (behavior, stated-calibration, and AmbigQA internal
   panel)
 type: eval
-status: signed
+status: resolved
 registered: true
 created_at: '2026-08-08T22:26:27Z'
 question: Do paper 3's SelfAware behavior and stated-calibration readings, and its
@@ -65,9 +65,9 @@ instrument:
     ../../archive/experiment/phase1/eval/config/eval_ood_breadth_probe_factual_schema_sft_merged_seed1_local_4b.yaml: dff13b6b64e4e3561a2ad7f2b9edd297b110be53848346d46893da2284e0744f
   runtime_image_digest: sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8
   runtime_image_digest_note: local Image ID of mechinterp-runner:local (not registry-pushed);
-    applies to the stage-6 MechInterp.cli extract verb only, per the 2026-07-10
-    standing directive in .skills/mechinterp-cells/reference/modal-launch.md. The
-    eval-lane stages 2-5 ran under cell.yaml lane.docker_digest as registered.
+    applies to the stage-6 MechInterp.cli extract verb only, per the 2026-07-10 standing
+    directive in .skills/mechinterp-cells/reference/modal-launch.md. The eval-lane
+    stages 2-5 ran under cell.yaml lane.docker_digest as registered.
   persistence:
     screen_ood_surfaces.py:
       persistence: short-run
@@ -77,7 +77,8 @@ instrument:
       measured_smoke_wall_clock_s: 0.22
     internal_panel_probe_gate.py:
       persistence: short-run
-      note: CPU probe-fit over saved safetensors; no natural checkpoint, rerun-from-scratch on interruption
+      note: CPU probe-fit over saved safetensors; no natural checkpoint, rerun-from-scratch
+        on interruption
     score_evidential_fivearm.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.35
@@ -92,5 +93,8 @@ inputs:
 - archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml
 - papers/paper-3-knows-but-doesnt-say/manuscript.md
 - papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.py
-verdict: ''
+verdict: Falsifier not fired; behavior transfers in level but the internal known-unknown
+  readout does not transfer to AmbigQA (G7 FAIL both arms, 0.6279/0.6349 vs 0.90 floor)
+  and the stated-confidence collapse is not universal (G5 FAIL); G4 unadjudicable
+  after the registered G1 void of arms A2/A6/A7.
 kg: []

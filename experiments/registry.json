@@ -4565,10 +4565,10 @@
       "question": "Do paper 3's SelfAware behavior and stated-calibration readings, and its internal known-unknown readout, transfer to additional known/unknown surfaces (KUQ, AmbigQA, BIG-bench known-unknowns) on the same eight checkpoints and the same pinned instrument?",
       "registered": true,
       "slug": "ood-breadth-beyond-selfaware",
-      "status": "signed",
+      "status": "resolved",
       "title": "OOD breadth beyond SelfAware (behavior, stated-calibration, and AmbigQA internal panel)",
       "type": "eval",
-      "verdict": ""
+      "verdict": "Falsifier not fired; behavior transfers in level but the internal known-unknown readout does not transfer to AmbigQA (G7 FAIL both arms, 0.6279/0.6349 vs 0.90 floor) and the stated-confidence collapse is not universal (G5 FAIL); G4 unadjudicable after the registered G1 void of arms A2/A6/A7."
     },
     {
       "checkpoint": {
@@ -5345,11 +5345,11 @@
       "question": "Does the untrained Qwen3-4B base read the AmbigQA answerability boundary at the same locus (L35, anchor) where the trained checkpoints just read 0.63, or does it read substantially higher; that is, is the known-unknown activation flavored to SelfAware-style unanswerability from pretraining, or did pretraining install a broader signal that post-training warped?",
       "registered": true,
       "slug": "rawbase-ambigqa-boundary-readout",
-      "status": "signed",
+      "status": "resolved",
       "tier": 3,
       "title": "Raw-base AmbigQA boundary readout (pretraining-flavor vs training-warp fork)",
       "type": "probe-fit",
-      "verdict": ""
+      "verdict": "Falsifier not fired; prediction supported. The raw pretrained base reads the AmbigQA boundary at 0.6338, within 0.006 of both trained checkpoints, so the known-unknown activation is flavor-specific to SelfAware-style unanswerability from pretraining, and the G7 non-transfer is not a post-training warp."
     },
     {
       "checkpoint": {
