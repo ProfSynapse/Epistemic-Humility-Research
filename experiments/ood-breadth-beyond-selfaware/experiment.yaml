@@ -31,6 +31,7 @@ instrument:
   - screen_ood_surfaces.py
   - gate_score.py
   - internal_panel_probe_gate.py
+  - score_evidential_fivearm.py
   - extract_A1.yaml
   - extract_A4.yaml
   - ../common/renders/ood_breadth_response_confidence_render.py
@@ -48,6 +49,7 @@ instrument:
     gates.yaml: 9bfdef9e85cd5dd2da27526c348fcb7f299ff3e1894e991c65343b9a95002008
     screen_ood_surfaces.py: 50630020c0505417aa8a0f0c7f76356f289236bb9b9c21633b1d7b1cc657b149
     gate_score.py: 8de8bb63485b65b245609919319ae9d6ce1b5c3fc196402bb2aac0738c160e80
+    score_evidential_fivearm.py: 013300c49dc504fdda710132f239d8f03c13a8c67f561be8775c9038296c557c
     internal_panel_probe_gate.py: ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08
     extract_A1.yaml: 472a449e8de3b4e9e577e43893bd73f37d9d8f730992965dbd5e9e55984b9e71
     extract_A4.yaml: b77846db8463b9035d260395bb3f70a7aa8e6a0fac441903b04dc2ca1afc9829
@@ -61,6 +63,11 @@ instrument:
     ../../archive/experiment/phase1/eval/config/eval_ood_breadth_grpo_v3_on_contrastive_sft_seed1_local_4b.yaml: 9672acb844f8586a3f327604a174ffbbcc697a2a5ffa85e7bb1f23f3df606ac7
     ../../archive/experiment/phase1/eval/config/eval_ood_breadth_grpo_v3_beta005_on_contrastive_sft_seed1_local_4b.yaml: 8f7b23d04859ad5ec8867d4a21e1e04d99415d4a2b49ff4a37e255a3a86437a1
     ../../archive/experiment/phase1/eval/config/eval_ood_breadth_probe_factual_schema_sft_merged_seed1_local_4b.yaml: dff13b6b64e4e3561a2ad7f2b9edd297b110be53848346d46893da2284e0744f
+  runtime_image_digest: sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8
+  runtime_image_digest_note: local Image ID of mechinterp-runner:local (not registry-pushed);
+    applies to the stage-6 MechInterp.cli extract verb only, per the 2026-07-10
+    standing directive in .skills/mechinterp-cells/reference/modal-launch.md. The
+    eval-lane stages 2-5 ran under cell.yaml lane.docker_digest as registered.
   persistence:
     screen_ood_surfaces.py:
       persistence: short-run
@@ -71,6 +78,9 @@ instrument:
     internal_panel_probe_gate.py:
       persistence: short-run
       note: CPU probe-fit over saved safetensors; no natural checkpoint, rerun-from-scratch on interruption
+    score_evidential_fivearm.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.35
 inputs:
 - datasets/kuq/knowns_unknowns.jsonl
 - datasets/kuq/dataset.md
