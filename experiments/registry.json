@@ -553,6 +553,94 @@
     },
     {
       "checkpoint": {
+        "base_form": "clean-SFT merged-16bit, bf16, no quantization",
+        "base_model": "unsloth/Qwen3-4B",
+        "reference_substrate": {
+          "repo": "unsloth/Qwen3-4B",
+          "revision": "64033659d5caf1b8ed7f929b29de705e93a4d468",
+          "role": "G4 interpretability anchor, raw base, no adapter"
+        },
+        "repo": "professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora",
+        "revision": "8914081dfcec4f1f025f2dbe4195d4f7aa8d210e"
+      },
+      "created_at": "2026-08-08T22:27:53Z",
+      "falsifier": "Any registered site and position on the trained checkpoint clears G1, an ADJUDICABLE G2, and G3 together, at a dose drawn from the registered ladder. One qualifying cell is sufficient, because the statement being tested is an impossibility claim.",
+      "inputs": [
+        "experiments/doubt-gated-caution-tighten/AMENDMENT.md",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json",
+        "experiments/j-space-layer-contrast-rep2-multisource/AMENDMENT.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md",
+        "experiments/ungated-vs-gated-dose-matched/AMENDMENT.md",
+        "experiments/doubt-regulated-caution/AMENDMENT.md",
+        "experiments/ao-propensity-regulated-caution/AMENDMENT.md",
+        "experiments/selected-setpoint-regulator/AMENDMENT.md",
+        "experiments/write-direction-naming-battery/AMENDMENT.md",
+        "experiments/diag-item11-batched-steering-equivalence/experiment.yaml",
+        "experiments/j-space-cross-family-layer-contrast/mine_eval_pool.py",
+        "docs/atlas/family-layer-map.md"
+      ],
+      "instrument": {
+        "concurrency": "one GPU job at a time",
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "feasibility_probe.yaml"
+        ],
+        "lane": "local_3090",
+        "modules": [
+          "probe_common.py",
+          "probe_stage_a.py",
+          "probe_stage_b.py",
+          "probe_census_extension.py"
+        ],
+        "persistence": {
+          "probe_census_extension.py": {
+            "checkpoint_path": "experiments/caution-install-bounded-site-sweep/analysis/probe_census_generations_private.jsonl",
+            "persistence": "incremental"
+          },
+          "probe_common.py": {
+            "measured_smoke_wall_clock_s": 0.1,
+            "note": "import-only helpers shared by the probe stages",
+            "persistence": "short-run"
+          },
+          "probe_stage_a.py": {
+            "measured_smoke_wall_clock_s": 60,
+            "persistence": "short-run"
+          },
+          "probe_stage_b.py": {
+            "checkpoint_path": "experiments/caution-install-bounded-site-sweep/analysis/probe_generations_private.jsonl",
+            "persistence": "incremental"
+          }
+        },
+        "pins": {
+          "cell.yaml": "d0ff8c9803a9f3b8d42abf16d4a89f238340d54d1220e2ce48dd05527dcfbb99",
+          "feasibility_probe.yaml": "c1e5ed87b36e5a175e3a637a6051f2f6445cfdf0471bfecdb6d6175f1e3f7081",
+          "gates.yaml": "47308ed0ac9aadad37356c9bd945fe44444ae293c6a6c69872beba5083b5646a",
+          "probe_census_extension.py": "7c5d4a8a44fdf0dd3788b12dfc3d103c4ccdfad7aa58f1f3014586389596ce28",
+          "probe_common.py": "9ede6b49fb10c362557b6b4cb11df1d70e1f3d8902a818796cd80c5b5cd49de7",
+          "probe_stage_a.py": "3d5e2f4db244ad47477dad6cae31452594e28b331a4ca532ccc39f640bf52417",
+          "probe_stage_b.py": "a139b16223d30fa0214c8efbc32562b367d0ef15084a8b8c2f9c1e520eb94c9b"
+        },
+        "runtime_image_digest": "sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772"
+      },
+      "kg": [],
+      "posture": "exploratory",
+      "prediction": "The null survives on the trained checkpoint. No registered site and position clears G1 on the trained lineage, while the raw-base anchor arms at hs23 and hs29 reproduce their published rates inside their Wilson intervals. If anything clears G1, it is an in-band site between hs13 and hs23 rather than hs34.",
+      "question": "Does the raw-base answerability-gated caution snap, the one mechanism in this program with a governed installation success, transfer to the trained clean-SFT to GRPO-v2 checkpoint; and if not, does a bounded search over seven write sites, two write positions, an eight-rung ratio-normalized dose ladder, and three magnitude-matched two-site combinations find a site where caution can be installed on genuine unknowns?",
+      "registered": true,
+      "sign_blocked_on": "CLEARED 2026-08-09T02:10Z: P2/P3/P4 passed at the probe (NOTEBOOK 2026-08-09T00:15:59Z); P1 satisfied by count under the pre-stated census criterion (NOTEBOOK census adjudication entry: 260 actual confabs over the full 3496 >= 250 registered floor). Signing authorized.",
+      "slug": "caution-install-bounded-site-sweep",
+      "status": "signed",
+      "tier": 2,
+      "title": "Bounded caution-install site sweep on the trained Qwen3-4B lineage",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
