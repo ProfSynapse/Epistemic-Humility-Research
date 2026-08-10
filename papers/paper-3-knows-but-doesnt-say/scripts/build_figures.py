@@ -82,10 +82,18 @@ def _bar_labels(ax, bars, fmt="{:.2f}", dy=0.0):
 # ============================================================ Figure 1 — the gap
 def fig1_internal_vs_stated():
     # Provenance: paper §4 / Abstract. Internal probe L35 known/unknown
-    # AUROC 0.997, ECE 0.004
-    # [experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/c2_sft.json];
-    # stated->appropriateness AUROC ~0.52,
-    # own correct-vs-wrong ECE 0.142 [checkpoint calibration_gap reports].
+    # AUROC 0.997 [experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/c2_sft.json];
+    # stated->appropriateness AUROC ~0.52. Left panel unchanged by the
+    # wrong-answer-cell-power-fix re-estimate (manuscript.md: "headline 0.997
+    # known/unknown readout untouched").
+    #
+    # Right panel: powered re-estimate on 420 correct / 360 wrong deployment-
+    # rendered rows, raw accounting (gate E3 raw sub-check; the reweighted-to-
+    # base-rate accounting flips sign and is reported in prose only, not this
+    # panel) [experiments/wrong-answer-cell-power-fix/analysis-committed/real_run_results.md,
+    # grpov2 primary/gated: A5 internal ECE raw 0.0474, A6 emitted ECE raw
+    # 0.2847]. Supersedes the original n=16 estimate (ECE 0.004 / 0.142); see
+    # manuscript.md:346-397 (Figure 1 caption and its regeneration note).
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(8.4, 4.2))
 
     labels = ["Internal\n(probe, L35)", "Stated\n(emitted number)"]
@@ -99,10 +107,10 @@ def fig1_internal_vs_stated():
     axL.set_title("Discrimination")
     _style(axL); _bar_labels(axL, bars)
 
-    bars2 = axR.bar(labels, [0.004, 0.142], color=cols, width=0.6, zorder=3)
-    axR.set_ylim(0, 0.18)
+    bars2 = axR.bar(labels, [0.0474, 0.2847], color=cols, width=0.6, zorder=3)
+    axR.set_ylim(0, 0.32)
     axR.set_ylabel("Expected calibration error (lower = better)")
-    axR.set_title("Calibration error")
+    axR.set_title("Calibration error (powered re-estimate, raw)")
     _style(axR); _bar_labels(axR, bars2, fmt="{:.3f}")
 
     _save(fig, "fig-p2-01-internal-vs-stated-gap",
