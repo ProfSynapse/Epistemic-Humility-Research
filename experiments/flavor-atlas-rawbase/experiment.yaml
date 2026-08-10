@@ -1,7 +1,7 @@
 slug: flavor-atlas-rawbase
 title: 'Flavor atlas: per-flavor known-unknown activations on the raw base'
 type: probe-fit
-status: signed
+status: resolved
 registered: true
 created_at: '2026-08-10T00:00:14Z'
 tier: 3
@@ -103,5 +103,9 @@ inputs:
 - datasets/selfaware/SelfAware.json
 - datasets/kuq/knowns_unknowns.jsonl
 - experiments/common/renders/ood_breadth_response_confidence_render.py
-verdict: ''
+verdict: 'Mixed atlas as registered: P1 supported (every KUQ flavor including overt
+  ambiguity separates at 0.98 to 0.999 with free cross-transfer to SelfAware), P2
+  failed (only the AmbigQA half held), neither falsifier fired; the pretrained unanswerability
+  code is broad across overt flavors and the boundary is overt vs covert unanswerability,
+  with AmbigQA unreadable at every layer.'
 kg: []
