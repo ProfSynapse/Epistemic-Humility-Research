@@ -6,6 +6,47 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-10T16:11Z - Item-27 live kill-resume drill: BLOCKED at launch, zero GPU minutes, defect found
+
+Live kill -9 resume drill attempted per lead directive (PI-approved drill;
+full sweep not approved). Preflight (`run_sweep.py preflight`) passed, exit
+0. Pinned image digest verified char-for-char against `cell.yaml
+execution.runtime_image_digest` / `experiment.yaml instrument.runtime_image_digest`
+and the local `unsloth/unsloth:latest` image
+(`sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`).
+Zero other containers running, GPU idle (0 processes, baseline util/mem)
+before launch.
+
+Drill target: Stage 1 (`mine_pool.py --substrate trained
+--i-know-this-runs-on-gpu`), launched via `experiments/common/launch_detached.sh`
+wrapping `docker_launch.sh` exactly per that script's own documented usage
+pattern. Launch failed immediately: `docker_launch.sh` is not executable
+(`git ls-files -s` shows mode `100644`, no +x bit, as committed in
+37ca6f24). The detached wrapper's exec attempt returned exit code 126
+("Permission denied") before `docker_launch.sh`'s own body ran, so no
+`docker run` was ever issued: `docker ps` stayed empty and `nvidia-smi`
+showed no new process and unchanged idle util/memory throughout. Zero GPU
+minutes consumed, zero units mined, no checkpoint file created, no
+container touched the pinned image.
+
+Per the drill's binding invariants (no harness-file edits; a defect stops
+the drill for lead adjudication rather than being worked around), no chmod
+or other fix was applied. This is a mode-bit-only defect (the file's own
+content hash/pin is unaffected; a `chmod +x` would not change
+`instrument.pins.docker_launch.sh`), but it blocks every direct invocation
+of `docker_launch.sh` documented in its own usage header, so the pinned
+launch path as committed cannot currently run. Reported to the lead;
+resume verification itself was never reached and remains outstanding.
+
+Lead adjudication (2026-08-10T16:20Z): mode-bit-only defect confirmed
+(`git ls-files -s` mode 100644; content byte-identical to its
+`instrument.pins` sha, so no content repin is required). Ruled a
+build-environment launch repair, legitimate on a signed pre-run cell:
+fixed via `git update-index --chmod=+x docker_launch.sh` on the
+launch-prep branch (PR #432) and `chmod +x` on the canonical working
+copy so the drill can rerun. No harness content changed, no gate
+quantity involved. Drill to be re-attempted after the fix.
+
 ### 2026-08-10T16:15Z - Lead review of the materialization script; pinned into the instrument
 
 Lead review of `materialize_rows_with_text_raw_base.py` (entry below):
