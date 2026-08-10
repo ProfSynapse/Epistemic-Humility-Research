@@ -6,6 +6,101 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-10T16:28Z - Item-27 kill-resume drill: PASSED. Resume verified, no recompute, no duplicates, clean stop
+
+Third attempt, after lead adjudication of the prior entry: `analysis/` and
+`analysis-committed/` set world-writable recursively (`chmod -R a+rwX`,
+verified zero non-world-writable directories under either tree). No file
+content changed under either tree by this fix; no repin required.
+
+**Standing launch-procedure note**, per lead instruction: a pre-launch
+world-writable check on `analysis/` and `analysis-committed/` is now part
+of this cell's launch procedure -- the unsloth image runs as a non-root
+user (uid 1001) and any CPU staging step that recreates either directory
+re-introduces default `755`, which silently breaks every incremental
+checkpoint write inside the container on the next GPU launch.
+
+Preflight re-passed (exit 0) before launch; image digest re-verified
+char-for-char; 0 containers running, GPU idle before launch.
+
+**Drill sequence and counts (row text and questions excluded; row_key
+counts only):**
+
+| Step | Time (UTC) | Units on disk |
+|---|---|---|
+| Launch (Stage 1, `mine_pool.py --substrate trained`) | 16:28:53 | 0 (fresh checkpoint, confirmed by container's own resume log line) |
+| Pre-kill snapshot | 16:31:39 | 21, all unique row_keys, 0 duplicates |
+| `docker kill --signal=SIGKILL` on the container | 16:31:42 | 24 on disk at kill time (a few more landed between snapshot and kill) |
+| Container removed (`--rm`), GPU confirmed released | 16:31:45 | -- |
+| Identical relaunch | 16:32:04 | container's own log: "resume: 24 known-label rows already mined (1 known_correct_answered so far)" -- exact match to the 24 on disk at kill time |
+| Growth watched post-resume | 16:32:42 - 16:32:55 | 25 -> 32 |
+| `docker stop` (clean stop) | 16:33:02 | 36 final |
+
+**Integrity check on the final checkpoint file**
+(`analysis/mined_known_generations_private.jsonl`): 36 total lines, 36
+unique `row_key`s, 0 duplicate keys, 0 unparseable lines (file fully
+loadable via `json.loads` per line). The 21 `row_key`s captured in the
+pre-kill snapshot are a strict subset of the final 36 (no data loss on
+already-committed rows); 15 new rows were added after the snapshot,
+consistent with generation continuing without recomputing the 24 rows
+that existed at kill time.
+
+**GPU budget consumed by the drill:** roughly 5 minutes of container
+uptime across the killed run (2m49s, 16:29:01-16:31:42) and the resumed
+run (56s of active generation plus stop overhead, 16:32:01-16:33:02),
+well under the "few minutes at most" target; well short of any stage
+completion.
+
+**Verdict:** kill -9 resume on the real registered launch path is
+CONFIRMED for Stage 1 (`mine_pool.py`): the harness correctly detects
+already-mined `row_key`s via `analysis/mined_known_generations_private.jsonl`
+on restart, does not recompute or duplicate them, and the checkpoint file
+stays loadable and unique-keyed across a hard kill. GPU released and
+confirmed idle after both the kill and the final clean stop; zero
+containers left running.
+
+### 2026-08-10T16:17Z - Item-27 kill-resume drill rerun: launch succeeded, container crashed at first checkpoint write, second defect found
+
+Rerun after lead adjudication of the prior entry: `docker_launch.sh`
+executable bit restored on the canonical working copy (git mode fix
+committed on a separate branch, PR #432); content hash reverified
+unchanged (`2efd1f8982844bd8fc2857214ced7b6252ac7bf6a3cfa1356baf63574b79733b`,
+matches the `experiment.yaml` instrument pin, no repin). Preflight
+(`run_sweep.py preflight`) re-passed, exit 0. GPU idle, zero containers
+running, image digest re-verified char-for-char before relaunch.
+
+Launch this time succeeded: container `caution-install-sweep-mine_pool-20260810T161732Z`
+came up on the pinned image (`f21629b9ae4e`, matches
+`sha256:f21629b9ae4ed...`), model/pool loading proceeded (confab=260,
+known-label candidates=10000, already_probed=400, remaining=9600, resume
+state read as 0 rows already mined -- correct for a fresh checkpoint).
+The container then crashed with an uncaught `PermissionError` (Errno 13)
+on its very first attempt to open the incremental checkpoint file
+(`analysis/mined_known_generations_private.jsonl`) in append mode --
+`sweep_lib.write_jsonl_row`'s `path.open("a", ...)` call. Root cause: the
+container's non-root runtime user cannot write to the host-mounted
+`analysis/` directory, which is `drwxr-xr-x` (owner-only write) on this
+host, not world/group-writable. This is the same permission class this
+cell's own earlier feasibility-probe Stage B relaunch hit and fixed
+(NOTEBOOK 2026-08-08T23:14:50Z addendum, "output-directory permission
+fix," `analysis/` and `analysis-committed/` set to 777) -- but that fix
+was never reapplied to this checkpoint's specific output path, or the
+directory reverted since.
+
+Consequence: zero rows were ever written to the checkpoint file (it does
+not exist on disk after the crash), so no partial progress existed to
+kill -9 and resume against. The container exited on its own (docker exit
+code 1) before any SIGKILL was sent; GPU confirmed released immediately
+after (idle baseline util/mem, matches pre-launch reading), zero other
+containers left running. Zero GPU minutes usefully consumed toward the
+drill's purpose (a few seconds of model/pool load only).
+
+Per the same binding invariant as the prior entry (no harness edits;
+report and let the lead adjudicate), the directory permission was left
+unchanged and no chmod was applied, even though a same-class fix has
+prior-run precedent in this cell's own history. Reported to the lead;
+resume verification is still outstanding.
+
 ### 2026-08-10T16:11Z - Item-27 live kill-resume drill: BLOCKED at launch, zero GPU minutes, defect found
 
 Live kill -9 resume drill attempted per lead directive (PI-approved drill;
