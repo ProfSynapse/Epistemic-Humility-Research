@@ -6,6 +6,109 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-10T16:15Z - Lead review of the materialization script; pinned into the instrument
+
+Lead review of `materialize_rows_with_text_raw_base.py` (entry below):
+
+- Verbatim-port claim verified against
+  `j-space-layer-contrast-rep2-multisource/mine_multisource_pool.py`: loader
+  control flow (filter conditions, dedupe, idx increment placement) is
+  identical; the port drops only the `label` and `_nq` dict fields, which do
+  not affect row_key assignment or question resolution. `norm_q` matches
+  `j-space-cross-family-layer-contrast/scorers.py:norm_question` character
+  for character (same HIR-prefix regex, same transforms).
+- Determinism re-verified by lead rerun: identical output sha256
+  `78ed2041ccde4db8ddca2b23d53c70ba1e49b5b21bb8392a2776d7815e4b4f16`,
+  preflight still exit 0.
+- Containment verified: output written only under gitignored `analysis/`,
+  fatal paths print row_keys only, summary prints counts and sha only.
+- One wording fix in the docstring (prose-hygiene term), no logic change.
+- Pinned into `experiment.yaml` (`instrument.modules` + `pins` +
+  `persistence`, sha256 `04726d66aa399a15a8ca0848bf714444e68ac5dec142beb6a618e02868e51c94`)
+  with a repin audit entry: new staging module added post-signing, pre-run;
+  pure input staging, no gate quantity or protocol constant involved.
+  `bin/exp validate` OK.
+
+### 2026-08-10T15:52Z - Launch-prep materialization complete: preflight green (exit 0)
+
+Per PR #430's launch-prep list, items 1-3. CPU only; no GPU verbs, no docker
+run, no commits (per instruction). Canonical checkout
+`/home/profsynapse/code/Epistemic-Humility-Research`, branch `main`.
+
+- **Item 1, expansion corpus, PRESENT**: F16's expansion corpus
+  (`mine_pool.EXPANSION_CANDIDATES`) --
+  `experiments/divergent-pool-own-readout/analysis/phase1-migrated/probe/
+  analysis/ah_stage0/expansion/expansion_candidates.jsonl` -- confirmed
+  present in this worktree (13,496 lines, gitignored). No action needed.
+
+- **Item 2, `analysis/rows_with_text_raw_base.jsonl` materialized**: new
+  script `materialize_rows_with_text_raw_base.py` (gitignored output, tracked
+  script) deterministically reconstructs question text for all 221 row_keys
+  in rep2's committed raw_base anchor pool
+  (`experiments/j-space-layer-contrast-rep2-multisource/analysis-committed/
+  multisource_pool_manifest.json`), which is ID/role/source/category_canon
+  only per rep2's own containment policy and carries no text.
+
+  Join method: rep2's mining script
+  (`j-space-layer-contrast-rep2-multisource/mine_multisource_pool.py`) builds
+  each row_key as `msrc::<source>::<idx>`, where `idx` increments only over
+  candidates from the three original dataset loaders (`datasets/kuq/
+  knowns_unknowns.jsonl` unknown=true, `datasets/kuq/unknowns_all.jsonl`
+  deduped, `datasets/selfaware/SelfAware.json` answerable=false) that survive
+  a dual-exclusion filter (against the predecessor fit/held-out split and
+  rep1's fresh pool, resolved to question text via two private candidate
+  caches). This script verbatim-ports `resolve_excluded_questions`,
+  `load_kuq_ku_unknown`, `load_kuq_ku_unknown_x`, and
+  `load_selfaware_unanswerable` from that source script (norm_question is the
+  same HIR-prefix-stripping normalizer already verbatim-ported into this
+  experiment's own `probe_common.py`), reading the same git-tracked dataset
+  files plus the two private exclusion-resolution caches at their migrated
+  locations in this checkout (`experiments/divergent-pool-own-readout/
+  analysis/phase1-migrated/probe/analysis/ah_stage0/candidates.jsonl` and
+  `.../expansion/expansion_candidates.jsonl`, the same file as item 1).
+
+  Because idx assignment only increments for candidates that survive
+  exclusion, an incomplete exclusion set would silently misalign every
+  downstream row_key. Guarded against this: the script recomputes
+  `exclusion_resolution_counts` and hard-fails unless it matches rep2's own
+  manifest-recorded counts EXACTLY (`predecessor_split_keys=739,
+  rep1_pool_keys=2263, union_keys=3002, resolved_to_question=3002,
+  unresolved_keys=0`) -- it did, on the first run, meaning the 166 `ah::`
+  keys resolved via the migrated `candidates.jsonl` matched rep2's original
+  resolution exactly, not just the more numerous `ahx::` keys. Additional
+  hard-fail cross-checks, all passed: reconstructed `source` matches the
+  manifest's `source` for every row_key; reconstructed `category_canon`
+  matches the manifest's `category_canon` for every row_key (a genuine
+  content check, not just an id match); per-source counts
+  (kuq_ku_unknown=139, kuq_ku_unknown_x=6, selfaware_unanswerable=76) match
+  `manifest["counts"]["selected_confab_by_source"]` exactly; zero empty
+  question text; all 221 resolved (zero missing). No sampling -- all 221
+  row_keys included deterministically every run.
+
+  **Materialized file**: `analysis/rows_with_text_raw_base.jsonl` (gitignored
+  per this experiment's `.gitignore` `analysis/` entry, confirmed via `git
+  check-ignore -v`). 221 rows, 221 unique row_keys, every row `role:
+  "confab"`, zero empty `question` fields. Fields:
+  `{row_key, role, question, aliases, source, category}`, matching the
+  schema `mine_pool.py` writes for the trained substrate's
+  `rows_with_text.jsonl` so `extract_anchor.py`/`dose_calibrate.py` read one
+  shape regardless of substrate. sha256
+  `78ed2041ccde4db8ddca2b23d53c70ba1e49b5b21bb8392a2776d7815e4b4f16`. No row
+  text (question or otherwise) appears in this notebook entry or elsewhere
+  in a tracked path.
+
+- **Item 3, preflight**: `python3 run_sweep.py preflight` now exits 0
+  (`{"ok": true, "problems": []}`), both checks it runs (F16 corpus staged;
+  `rows_with_text_raw_base.jsonl` covers all 221 registered row_keys with
+  `role: "confab"`) satisfied by items 1-2 above. No harness code changed to
+  reach this; both preflight checks were already correctly implemented
+  (Round 3's `ALSO(a)`) and simply had nothing to check against until now.
+
+- **No harness defect observed** this pass. `git status` over the touched
+  and read experiment directories shows only the new tracked script
+  (`materialize_rows_with_text_raw_base.py`) as untracked; the materialized
+  `analysis/` output is gitignored and does not appear. No commits made.
+
 ### 2026-08-10T21:10Z - Round 4: raw_base gate-params handoff fix (tau/mu_d/sigma_d import), stray artifact cleanup. CPU smoke re-passed.
 
 Follow-up to the 2026-08-10T18:45Z Round 3 entry, per lead adjudication of
