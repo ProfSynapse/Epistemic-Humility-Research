@@ -580,6 +580,208 @@ def _gate_adjudicator():
 
 
 # ---------------------------------------------------------------------------
+# run_cell.py: orchestration end-to-end. surface_residualization.py and
+# gate_adjudicator.py are library-only (no CLI of their own); run_cell.py
+# is their first and only committed real-data caller, so this check is the
+# only thing in the repo that ever drives stages 2-5 (probe sweep,
+# residualization, gate adjudication, containment+write) together against
+# real (if synthetic) inputs.
+# ---------------------------------------------------------------------------
+
+def _write_jsonl(path: Path, rows: list[dict]) -> None:
+    with path.open("w", encoding="utf-8") as fh:
+        for r in rows:
+            fh.write(json.dumps(r) + "\n")
+
+
+def _write_extraction_fixture(ext_dir: Path, rows: list[dict], *, hid: int = 8,
+                               n_hidden_states: int = 43, render: str = "primary",
+                               seed: int = 0) -> dict:
+    """Same synthetic-activation convention as _probe_sweep_end_to_end's
+    write_panel_and_extraction, plus the extra manifest fields
+    run_cell.build_run_context reads (model_repo/revision/base_form/
+    hidden_size/n_hidden_layers)."""
+    import numpy as np
+    import torch
+    from safetensors.torch import save_file
+
+    rng = np.random.default_rng(seed)
+    ext_dir.mkdir(parents=True, exist_ok=True)
+    for r in rows:
+        base = 1.0 if r["label"] == "known" else -1.0
+        tensors = {f"L{L}": torch.tensor(rng.normal(0, 1, hid) + base * 0.6, dtype=torch.float32)
+                   for L in range(n_hidden_states)}
+        stem = r["row_key"].replace("::", "__")
+        save_file(tensors, str(ext_dir / f"{stem}__anchor.safetensors"))
+    manifest = {
+        "stage": "flavor_atlas_gemma_pt_confirmatory_anchor_extract",
+        "model_repo": "synthetic/smoke-repo",
+        "revision": "synthetic-smoke-revision",
+        "base_form": "pretrain-only base, no adapter, bf16",
+        "render": render,
+        "hidden_size": hid,
+        "n_hidden_layers": n_hidden_states - 1,
+        "layers": "all",
+        "n_hidden_states": n_hidden_states,
+        "anchor_position": "prompt_len-1",
+        "forward_use_cache": True,
+        "complete": True,
+        "n_rows_extracted": len(rows),
+        "n_rows_total": len(rows),
+    }
+    (ext_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    return manifest
+
+
+@check("run_cell: orchestration end-to-end (stages 2-5: probe sweep, residualization, "
+       "gate adjudication, containment+write) on synthetic fixtures")
+def _run_cell_orchestration_end_to_end():
+    import build_flavor_panels as bfp
+    import render_gemma as rg
+    import run_cell as rc
+
+    tmp = Path(tempfile.mkdtemp())
+    panels_dir = tmp / "panels"
+    panels_dir.mkdir()
+    extraction_root = tmp / "extraction"
+    control_extraction_dir = tmp / "control_extraction"
+
+    def make_kuq_rows() -> list[dict]:
+        rows, i = [], 0
+        for _ in range(700):
+            rows.append({"row_key": f"kuq-{i:06d}", "question": f"Synthetic kuq question {i}?",
+                         "label": "known", "flavor": "known"})
+            i += 1
+        for cat in rg.KUQ_CATEGORIES:
+            for _ in range(250):
+                rows.append({"row_key": f"kuq-{i:06d}", "question": f"Synthetic kuq question {i}?",
+                             "label": "unknown", "flavor": cat})
+                i += 1
+        return rows
+
+    kuq_rows = make_kuq_rows()
+    ambigqa_rows = (
+        [{"row_key": f"ambigqa-{i:04d}", "question": f"Synthetic ambigqa question {i}?",
+          "label": "known", "flavor": "ambigqa"} for i in range(20)]
+        + [{"row_key": f"ambigqa-{i:04d}", "question": f"Synthetic ambigqa question {i}?",
+            "label": "unknown", "flavor": "ambigqa"} for i in range(20, 40)]
+    )
+    selfaware_rows = (
+        [{"row_key": f"selfaware-{i:04d}", "question": f"Synthetic selfaware question {i}?",
+          "label": "known", "flavor": "selfaware"} for i in range(20)]
+        + [{"row_key": f"selfaware-{i:04d}", "question": f"Synthetic selfaware question {i}?",
+            "label": "unknown", "flavor": "selfaware"} for i in range(20, 40)]
+    )
+
+    _write_jsonl(panels_dir / "kuq_panel.jsonl", kuq_rows)
+    _write_jsonl(panels_dir / "ambigqa_panel.jsonl", ambigqa_rows)
+    _write_jsonl(panels_dir / "selfaware_panel.jsonl", selfaware_rows)
+
+    _write_extraction_fixture(extraction_root / "kuq", kuq_rows)
+    _write_extraction_fixture(extraction_root / "ambigqa", ambigqa_rows)
+    _write_extraction_fixture(extraction_root / "selfaware", selfaware_rows)
+    control_rows = rg.select_dual_render_subsample(kuq_rows)
+    _write_extraction_fixture(control_extraction_dir, control_rows, render="control")
+
+    # Stage 1 (panel verify) is deliberately NOT driven through run_cell's
+    # subprocess call to build_flavor_panels.py's main() here: that main()
+    # hard-enforces the REAL upstream row/flavor counts pinned in
+    # gates.yaml (5540/2748/3369 with exact per-flavor splits) against a
+    # real sha256 preimage -- structurally impossible to satisfy with
+    # synthetic data, exactly why the existing `_panel_builder` check above
+    # exercises verify_and_copy directly instead of main(). This check
+    # pre-seeds panels_dir as if stage 1 had already run (mirroring that
+    # same discipline) and drives every stage that is actually new this
+    # pass: probe sweep, residualization, gate adjudication, containment.
+    panels_manifest = {
+        "gg0_status": "PASS",
+        "reused_from": {
+            "kuq": {"sha256": bfp.sha256_of(panels_dir / "kuq_panel.jsonl")},
+            "ambigqa": {"sha256": bfp.sha256_of(panels_dir / "ambigqa_panel.jsonl")},
+            "selfaware": {"sha256": bfp.sha256_of(panels_dir / "selfaware_panel.jsonl")},
+        },
+        "counts": bfp.counts_summary(kuq_rows, ambigqa_rows, selfaware_rows),
+    }
+    (panels_dir / "panels_manifest.json").write_text(json.dumps(panels_manifest, indent=2), encoding="utf-8")
+
+    args = rc.parse_args([
+        # resolve_plan's source-panel existence check looks under
+        # --rawbase-panels-dir (real gitignored upstream data by default);
+        # pointing it at the already-pre-seeded panels_dir keeps that check
+        # meaningful (files must exist) without needing the real upstream
+        # panels this synthetic smoke deliberately does not have.
+        "--rawbase-panels-dir", str(panels_dir),
+        "--panels-dir", str(panels_dir),
+        "--extraction-root", str(extraction_root),
+        "--control-extraction-dir", str(control_extraction_dir),
+        "--probe-out", str(tmp / "probe_result.json"),
+        "--residualization-out", str(tmp / "residualization_result.json"),
+        "--committed-out", str(tmp / "analysis-committed" / "gemma_flavor_sweep.json"),
+        "--n-permutations", "3",
+        "--paired-smoke-outcome", "hs00_to_hs24_identical_and_divergence_begins_at_hs25",
+        "--runtime-image-digest", "sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8",
+        "--provenance-lines-present",
+    ])
+
+    plan = rc.resolve_plan(args)
+    assert rc.missing_inputs(plan) == [], rc.missing_inputs(plan)
+
+    extraction_manifests = rc.require_seam_admissible(plan["extractions"])
+    assert len(extraction_manifests) == 4
+    assert all(m.get("forward_use_cache") is True for m in extraction_manifests)
+
+    probe_result = rc.run_probe_sweep(args)
+    assert "dual_leg_decision" in probe_result
+    for cat in rc.KUQ_CATEGORIES:
+        assert probe_result["dual_leg_decision"][cat]["leg_a"]["hidden_state"] == 24
+
+    residualization_result = rc.run_residualization(args, probe_result)
+    assert residualization_result["n_permutations"] == 3
+    assert any(v != 0.0 for v in residualization_result["treatment_r2"].values()), \
+        "treatment_r2 all zero -- residualization looks stubbed"
+    assert residualization_result["planted"]["planted_pooled_auroc"] > 0.0, \
+        "planted control auroc is zero -- residualization looks stubbed"
+    assert set(residualization_result["residualized_dual_leg_decision"].keys()) == set(rc.KUQ_CATEGORIES)
+
+    probe_module_sha = rc.sha256_file(plan["probe_module"]["path"])
+    run_context = rc.build_run_context(args, extraction_manifests, panels_manifest, probe_module_sha)
+    assert run_context["kuq_rows"] == len(kuq_rows)
+
+    gates = rc.load_yaml(rc.GATES_PATH)
+    adjudication = rc.run_gate_adjudication(
+        args, gates, extraction_manifests, run_context, probe_result, residualization_result,
+    )
+    gate_results = adjudication["gate_results"]
+    # gg1/gg3 pass (real flags supplied); gg0 fails against synthetic data
+    # (wrong revision/shas/row-counts) -- proving adjudication is genuinely
+    # discriminating, not stubbed, and that fail-closed propagation holds
+    # even when this orchestrator runs against a synthetic fixture.
+    assert gate_results["gg1"]["status"] == "pass", gate_results["gg1"]
+    assert gate_results["gg3"]["status"] == "pass", gate_results["gg3"]
+    assert gate_results["gg0"]["status"] == "fail", gate_results["gg0"]
+    assert adjudication["p1_f1"]["verdict"] == "INDETERMINATE", adjudication["p1_f1"]
+    assert adjudication["p2_f2"]["verdict"] == "INDETERMINATE", adjudication["p2_f2"]
+
+    committed = rc.build_committed_output(
+        run_context, extraction_manifests, probe_result, residualization_result, adjudication,
+    )
+    private_texts = {r["question"] for r in kuq_rows + ambigqa_rows + selfaware_rows}
+    rc.finalize_and_write(args, committed, gates, private_texts)
+
+    assert args.committed_out.is_file(), "GG6 should have passed and the committed file should exist"
+    on_disk = json.loads(args.committed_out.read_text())
+    for key in ("g1_kuq", "g2_ambigqa", "g3_selfaware", "g4_transfer_matrix",
+                "dual_leg_decision", "g5_residualization", "gate_adjudication", "input_shas"):
+        assert key in on_disk, f"committed output missing '{key}' -- orchestration looks stubbed"
+    assert on_disk["gate_adjudication"]["gate_results"]["gg6"]["status"] == "pass", \
+        on_disk["gate_adjudication"]["gate_results"]["gg6"]
+    blob = json.dumps(on_disk).lower()
+    for q in private_texts:
+        assert q.lower() not in blob, "a raw question string leaked into the committed output"
+    return "PASS"
+
+
+# ---------------------------------------------------------------------------
 # kv_seam_paired_smoke.py + test_leg_b_selection_logic.py: already have
 # their own committed CLI entry points; invoked here as subprocesses of
 # the EXACT committed command so this runner also proves those commands
@@ -616,6 +818,7 @@ def main() -> int:
         _gg1_cpu_gate, _probe_sweep_end_to_end,
         _residualization,
         _gate_adjudicator,
+        _run_cell_orchestration_end_to_end,
         _kv_seam_subprocess, _leg_b_subprocess,
     ]
     for fn in checks:

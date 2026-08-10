@@ -2189,7 +2189,8 @@
           "kv_seam_paired_smoke.py",
           "test_leg_b_selection_logic.py",
           "smoke_all.py",
-          "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py"
+          "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py",
+          "run_cell.py"
         ],
         "persistence": {
           "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py": {
@@ -2227,6 +2228,11 @@
             "note": "exercised by smoke_all.py::_render_primary, _render_subsample, _render_control (committed, reproducible; see smoke_all.py entry below). primary (k-shot) render is a pure string build; the chat-template control loads the google/gemma-4-E4B-it tokenizer from the local HF cache (local_files_only, no network), which dominates wall clock, and is SKIPPED with an explicit marker if that cache entry is absent. Also covers the deterministic 1800-row dual-render subsample selector (200/flavor x 6 + 600 known) for determinism and exact counts.",
             "persistence": "short-run"
           },
+          "run_cell.py": {
+            "measured_smoke_wall_clock_s": 45.06,
+            "note": "CPU-side read-chain orchestrator (stages 1-5: panel verify, probe sweep, residualization, gate adjudication, containment+write); never runs a GPU verb; wall clock measured from the smoke suite fixture drive of stages 2-5; real run reruns from scratch on interruption",
+            "persistence": "short-run"
+          },
           "smoke_all.py": {
             "measured_smoke_wall_clock_s": 18.0,
             "note": "the committed, single reproducible entry point for every smoke claim above. Replay: `cd experiments/flavor-atlas-gemma-pt-confirmatory && python3 smoke_all.py`. Run twice from the committed tree (fresh process each time) to confirm determinism: both runs 11 passed, 0 skipped, 0 failed (wall clock ~18s first run, ~17s second run, dominated by the control-render tokenizer load from the local HF cache). Exit code 0 iff zero FAILs; SKIPPED (control-render only, conditional on local -it tokenizer cache) is never counted as passing. Superseded the prior ad-hoc interactive smokes, which were not replayable from the committed tree. Full per-check results and exact commands recorded in NOTEBOOK.md under the 2026-08-10 entry \"committed smoke runner (smoke_all.py) + reproducibility fix\".",
@@ -2253,10 +2259,27 @@
           "gates.yaml": "05584fd81579e37d1f2ab5d71f35a41d1d82fd121215bff46f51bacc45703313",
           "kv_seam_paired_smoke.py": "b39e1cd0ebcff3745f28f9a3295288e1a302912281cb9ca9ef715ebd5ae694cd",
           "render_gemma.py": "d106276fff68f3bb75f8922438fbaeca8ed8f9f7eaefa4ddcad3bf0095b80dcb",
-          "smoke_all.py": "6b280fc2c7bafb31db74ebc70ad3345a3ec0de41df9ab5e686875d0ed8d7c7a9",
+          "run_cell.py": "02066253cd57369ba34068990bebdd5cf222c9bbe19afa8eea3ecfb9845a77cc",
+          "smoke_all.py": "7998770a086105970a35613ef045d1371bbb5c54aaab00cb8d8918321a3ec263",
           "surface_residualization.py": "91593c37c034872e3d976ad4356431766c0b2709234fcde1bbf9010299793102",
           "test_leg_b_selection_logic.py": "f68492d73ab27af3159b7bb99258d780741053890ad9178275e253f37eef0563"
         },
+        "repins": [
+          {
+            "date": "2026-08-10T16:45:00Z",
+            "file": "run_cell.py",
+            "new_sha256": "02066253cd57369ba34068990bebdd5cf222c9bbe19afa8eea3ecfb9845a77cc",
+            "old_sha256": "none (new module, added post-signing pre-launch)",
+            "reason": "Instrument-completeness repair: surface_residualization.py and gate_adjudicator.py were library-only modules with no registered executable driver, so stages G5/GG-adjudication had no real-run path. run_cell.py is the CPU-side orchestrator driving the registered read chain end to end (subprocessing the pinned build_flavor_panels.py and flavor_probe_sweep.py CLIs verbatim, then residualization at the probe-selected layers and gate adjudication over real readouts, counts-only committed output behind gg6 containment) plus a --dry-run existence check. Never wraps or reimplements extract_anchor_gemma.py; extraction verb prohibition unchanged. No gate quantity, threshold, or registered constant changed; cell is launch-gated and nothing has run."
+          },
+          {
+            "date": "2026-08-10T16:31:29Z",
+            "file": "smoke_all.py",
+            "new_sha256": "7998770a086105970a35613ef045d1371bbb5c54aaab00cb8d8918321a3ec263",
+            "old_sha256": "6b280fc2c7bafb31db74ebc70ad3345a3ec0de41df9ab5e686875d0ed8d7c7a9",
+            "reason": "Smoke suite extended with a 12th check driving run_cell.py's real stage 2-5 orchestration end to end on synthetic fixtures at near-real minimums (2200-row KUQ panel), asserting real gate branches (gg1/gg3 pass, gg0 correctly fails on synthetic pins, P1/P2 INDETERMINATE under fail-closed propagation), non-trivial residualization numbers, complete committed output, gg6 containment pass, and no question-text leak. Existing 11 checks unchanged (additions-only diff). Companion to the run_cell.py addition; a stubbed orchestration can no longer pass the smoke."
+          }
+        ],
         "runtime_image_digest": "sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8",
         "runtime_image_digest_note": "confirmed at signing via `docker image inspect mechinterp-runner:local` (read-only), matching char for char the digest the three most recent flavor cells pin, per the 2026-07-10 standing directive. Governs the four extract verbs (extract_anchor_gemma.py, never mechinterp extract) once GPU launch is approved."
       },
