@@ -33,6 +33,10 @@ related:
 - '[[auroc]]'
 - '[[abstention]]'
 - '[[hallucination]]'
+- '[[ood-breadth-beyond-selfaware]]'
+- '[[rawbase-ambigqa-boundary-readout]]'
+- '[[ambigqa-internal-readout-does-not-transfer-from-selfaware]]'
+- '[[ambigqa-boundary-signal-is-pretraining-flavor-specific]]'
 relationships:
 - type: supports
   target: '[[verbalized-confidence-channel-bottleneck]]'
@@ -42,6 +46,40 @@ relationships:
   target: '[[caution-residual-ablation-relaxes-overrefusal-asymmetrically]]'
   target_id: mechanism:caution-residual-ablation-relaxes-overrefusal-asymmetrically
   confidence: high
+- type: related_to
+  target: '[[ood-breadth-beyond-selfaware]]'
+  target_id: experiment:ood-breadth-beyond-selfaware
+  confidence: high
+  evidence:
+  - "experiments/ood-breadth-beyond-selfaware/AMENDMENT.md (resolves paper-3
+    limitations-burn-down item 26, manuscript lines 1027-1029; re-tests
+    Result 1's SelfAware-only internal-vs-stated headline gap on KUQ,
+    AmbigQA, and BIG-bench known-unknowns)"
+- type: related_to
+  target: '[[rawbase-ambigqa-boundary-readout]]'
+  target_id: experiment:rawbase-ambigqa-boundary-readout
+  confidence: medium
+  evidence:
+  - "experiments/rawbase-ambigqa-boundary-readout/AMENDMENT.md Reporting
+    (feeds the pretraining-origin scoping sentence for Result 1's internal
+    answerability axis)"
+- type: related_to
+  target: '[[ambigqa-internal-readout-does-not-transfer-from-selfaware]]'
+  target_id: mechanism:ambigqa-internal-readout-does-not-transfer-from-selfaware
+  confidence: high
+  evidence:
+  - "experiments/ood-breadth-beyond-selfaware/NOTEBOOK.md 2026-08-09T16:45Z
+    Stage 8 (G7 FAIL: Result 1's near-perfect SelfAware internal readout,
+    0.997, reads AmbigQA's boundary at only 0.63 held-out)"
+- type: related_to
+  target: '[[ambigqa-boundary-signal-is-pretraining-flavor-specific]]'
+  target_id: mechanism:ambigqa-boundary-signal-is-pretraining-flavor-specific
+  confidence: medium
+  evidence:
+  - "experiments/rawbase-ambigqa-boundary-readout/NOTEBOOK.md 2026-08-09T23:30Z
+    RESULT (the raw pretrained base reads AmbigQA at the same low level as
+    the trained checkpoints, scoping Result 1's axis as pretraining-installed
+    and SelfAware-flavored)"
 - type: related_to
   target: '[[internal-twosignal-readout--training-free]]'
   target_id: paper:internal-twosignal

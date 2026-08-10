@@ -780,7 +780,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (504)
+## Mechanisms (cause -> effect) (507)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -791,6 +791,9 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[alignment-conflates-answer-and-format-uncertainty]] : Supervised fine-tuning and preference optimization on human-preference dialog data optimize over both choice tokens and format tokens simultaneously without dis
 - [[alignment-training-saturates-on-small-data]] : Applying RL-free alignment methods (DPO, KTO, IPO, CPO) to an SFT-warmed model across increasing training-set sizes from hundreds to tens of thousands of prefer
 - [[alignment-tuning-amplifies-multi-turn-sycophancy]] : RLHF-style alignment tuning (instruction tuning via preference optimization) **increases** Increased sycophantic stance abandonment under sustained multi-turn c
+- [[ambigqa-boundary-signal-is-pretraining-flavor-specific]] : In rawbase-ambigqa-boundary-readout, the identical 2748-row AmbigQA internal panel (1245 known / 1503 unknown, pool sha256 b0f93658...48bfd), the identical laye
+- [[ambigqa-internal-readout-does-not-transfer-from-selfaware]] : In ood-breadth-beyond-selfaware (paper-3 limitations burn-down item 26), the pinned internal_panel_probe_gate.py protocol (5-fold cross-validation without corre
+- [[ambigqa-stated-confidence-collapse-not-universal-across-arms]] : In ood-breadth-beyond-selfaware (paper-3 limitations burn-down item 26), the registered G5 gate required every surviving arm to show emitted AUROC to appropriat
 - [[answer-commitment-bias-undermines-epistemic-humility]] : A learned bias toward always selecting one of the presented answer options, reinforced by recognition-focused training and evaluation that reward picking a list
 - [[answer-protecting-gate-shelters-confab-cloud]] : Thresholding any answerability or knowledge-boundary readout so that correct answers are protected (collateral tolerance about 1 of 90 correct rows), as in the 
 - [[answer-relabeling-enables-abstention]] : Relabeling unfamiliar-finetuning-examples with 'I don't know' before supervised-finetuning (answer-relabeling) **enables** Model's default hedged-prediction bec
