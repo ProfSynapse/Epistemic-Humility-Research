@@ -828,8 +828,8 @@ the Qwen-family models is a mid-to-late region that overlaps this workspace band
 the gate saturates by 20% of depth, far below it. Read descriptively, the dial appears to
 read from the band where the model's verbalizable workspace concentrates, and the gate is
 computed and carried long before the workspace begins. Three scope fences, stated
-plainly. First, the J-lens run characterized the companion actuation line's caution and
-known-unknown directions, not this paper's gate and dial probes, so the claim here is band
+plainly. First, the J-lens run characterized the caution and
+known-unknown directions used in the program's registered actuation experiments, not this paper's gate and dial probes, so the claim here is band
 overlap, never that the dial itself was verbalized under the lens. Second, the run used
 the bf16 sibling of the bnb-4bit base (same architecture and configuration, different
 quantization). Third, it is an exploratory characterization: it grounds the depth
@@ -1122,14 +1122,13 @@ happens to produce?).
 
 #### Why not just steer?
 
-The companion actuation study
-([*Look Before You Speak: Gating Caution Writes on a Model's Own Doubt Readout*](../paper-5-actuation/manuscript.md))
-found the answerability axis is causally steerable, but *asymmetrically*: excess caution
-could be relaxed, and pushing along the axis did not install missing caution under an
-ungated write. Whether a write *gated* on the model's own answerability readout escapes
-that asymmetry is actuation work, not reading work, and it is that study's subject: its
-honest statement is conditional, ungated steering could not install missing caution, but a
-gated write can, on one model. This paper deploys a *gate* (threshold-and-abstain) rather than a write because
+The program's registered actuation experiments found the answerability axis is causally
+steerable, but *asymmetrically*: excess caution could be relaxed, and pushing along the
+axis did not install missing caution under an ungated write. Whether a write *gated* on
+the model's own answerability readout escapes that asymmetry is actuation work, not
+reading work, and outside this paper's scope; the registered result there is conditional,
+ungated steering could not install missing caution, but a gated write can, on one model
+(provenance in Appendix A). This paper deploys a *gate* (threshold-and-abstain) rather than a write because
 of that scope, not because writing is impossible: the read-and-threshold pipeline
 developed here is validated across four families and four sizes, while the gated-write
 result is validated on one model at one scale.
@@ -1406,7 +1405,7 @@ Every figure and number is generated from tracked result artifacts. Figures are 
 | J-lens workspace localization (§4.9) | `experiments/j-space-localization-qwen3-4b/analysis-committed/results/jspace-jlens-r1/` (`smoke_full.json`, `h1_full.json`, `profile_full.json`; repo-root path, not under the probe dir) |
 | Gate-dial fusion diagnostic (§4.5) | repository PR #128 (Stage 1/1.5 CPU diagnostics), cited as prior fact in the veto experiment's signed design (`experiments/unified-two-signal-dial-veto/AMENDMENT.md` §1.1); no standalone experiment directory, no signed gates, and no result JSON exist for this diagnostic, and its CI is reported only as "excludes 0", not numerically |
 | Warning-policy operating points (§5) | repository PR #205 analysis (declared-floor thresholds per checkpoint); no standalone experiment directory or result JSON exists for this analysis |
-| Answerability-gated caution write, §6 discussion (single-model steering result, owned and reported by the companion actuation paper; no effect size is restated here) | `experiments/doubt-gated-caution-tighten/AMENDMENT.md` (G1/G2 Outcome) and `experiments/j-space-layer-contrast-rep2-multisource/AMENDMENT.md` (exploratory multi-source replication) |
+| Answerability-gated caution write, §6 discussion (single-model steering result from the program's registered actuation experiments; no effect size is restated here) | `experiments/doubt-gated-caution-tighten/AMENDMENT.md` (G1/G2 Outcome) and `experiments/j-space-layer-contrast-rep2-multisource/AMENDMENT.md` (exploratory multi-source replication) |
 | Cross-dataset gate transfer, KUQ → SelfAware (§5) | `experiments/xdataset-probe-transfer/` (repo-root path) |
 | Latent-knowledge control package (§4.11) | `experiments/selfaware-latent-knowledge-controls/` (repo-root path) |
 | Calibrated gate head (§7, limitation 3) | `experiments/aux-head-trainable-readout/` (repo-root path) |
