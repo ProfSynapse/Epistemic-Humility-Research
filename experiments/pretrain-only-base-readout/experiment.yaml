@@ -38,4 +38,7 @@ inputs:
 verdict: COMPLETE — H_B1 SUPPORTED 4/4 (boundary signal predates post-training); H_B2
   veto SUPPORTED 4/4; H_B3 sharpening NOT SUPPORTED (post-training does not sharpen,
   can dull the readout).
-kg: []
+kg:
+- experiment:pretrain-only-base-readout
+- mechanism:knowledge-boundary-gate-and-veto-predate-post-training
+- mechanism:post-training-does-not-sharpen-knowledge-boundary-veto

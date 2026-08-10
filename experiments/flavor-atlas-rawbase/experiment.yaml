@@ -108,4 +108,7 @@ verdict: 'Mixed atlas as registered: P1 supported (every KUQ flavor including ov
   failed (only the AmbigQA half held), neither falsifier fired; the pretrained unanswerability
   code is broad across overt flavors and the boundary is overt vs covert unanswerability,
   with AmbigQA unreadable at every layer.'
-kg: []
+kg:
+- experiment:flavor-atlas-rawbase
+- mechanism:pretrained-base-carries-broad-overt-unanswerability-code
+- mechanism:overt-vs-covert-unanswerability-is-the-boundary-not-flavor

@@ -19,7 +19,46 @@ related:
 - '[[internal-paper3--knows-but-doesnt-say]]'
 - '[[ambigqa-internal-readout-does-not-transfer-from-selfaware]]'
 - '[[ambigqa-boundary-signal-is-pretraining-flavor-specific]]'
+- '[[pretrain-only-base-readout]]'
+- '[[post-training-does-not-sharpen-knowledge-boundary-veto]]'
+- '[[flavor-atlas-rawbase]]'
+- '[[overt-vs-covert-unanswerability-is-the-boundary-not-flavor]]'
 relationships:
+- type: related_to
+  target: '[[pretrain-only-base-readout]]'
+  target_id: experiment:pretrain-only-base-readout
+  confidence: high
+  evidence:
+  - "AMENDMENT.md sec 3 Prediction, lines 16-18 and 60-63 ('Amendment Y
+    ... established that the SelfAware readout predates post-training'
+    and 'Amendment Y's H_B3 found post-training does not sharpen the
+    SelfAware readout' cited directly as grounds for this cell's own
+    prediction)"
+- type: related_to
+  target: '[[post-training-does-not-sharpen-knowledge-boundary-veto]]'
+  target_id: mechanism:post-training-does-not-sharpen-knowledge-boundary-veto
+  confidence: high
+  evidence:
+  - "AMENDMENT.md sec 3 Prediction, lines 60-63 (this cell's prediction is
+    grounded directly on that mechanism: training has not been shown to
+    create or destroy the knowledge-boundary signal on any surface)"
+- type: related_to
+  target: '[[flavor-atlas-rawbase]]'
+  target_id: experiment:flavor-atlas-rawbase
+  confidence: high
+  evidence:
+  - "experiments/flavor-atlas-rawbase/AMENDMENT.md Motivation and posture
+    (direct PI follow-on continuation on the same substrate; the atlas's
+    M2 AmbigQA reading at L35, 0.6338, reproduces this cell's committed
+    heldout_probe_auroc exactly)"
+- type: related_to
+  target: '[[overt-vs-covert-unanswerability-is-the-boundary-not-flavor]]'
+  target_id: mechanism:overt-vs-covert-unanswerability-is-the-boundary-not-flavor
+  confidence: high
+  evidence:
+  - "experiments/flavor-atlas-rawbase/NOTEBOOK.md 2026-08-10T01:55Z RESULT
+    (refines this cell's flavor-specific reading into an overt-vs-covert
+    reading, using six additional KUQ flavors as comparators)"
 - type: builds_on
   target: '[[ood-breadth-beyond-selfaware]]'
   target_id: experiment:ood-breadth-beyond-selfaware
