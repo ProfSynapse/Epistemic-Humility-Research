@@ -277,6 +277,20 @@ inspection or fixture debugging.
   prior result MUST instruct the subagent to read that doc first and MUST NOT
   hand it a remembered interpretation to cement. If you cannot cite the doc line
   you read it from, you do not know it yet.
+- TERMINOLOGY DISCIPLINE. `papers/common/terminology.md` is the SSOT for
+  construct names; retired terms (currently "caution gate", "caution axis",
+  and bare mental-state uses of "caution"/"doubt" as construct names) never
+  appear in NEW running prose, chat summaries included. Governed identifiers
+  (slugs, filenames, config keys, signed amendment text) keep retired terms
+  verbatim, but their wording never flows into prose: when quoting or
+  recapping a governed doc, re-render operationally (e.g. the
+  caution-install slug renders as "abstention install",
+  "answerability-gated abstention snap"). Semantic renames of signed docs go
+  through the experiments skill's "Terminology annotations on signed docs"
+  procedure, never by editing signed text. Delegation prompts restate this
+  alongside the other invariants. A pre-commit lint
+  (`.githooks/check_retired_terms.py`) fails the commit if a retired term
+  lands in `papers/` or `docs/` prose.
 - Do not commit or redistribute restricted or gitignored data.
 - Keep exact provenance for quantitative claims, dataset transformations, and
   reported results.

@@ -247,6 +247,39 @@ from (the origin experiment slug and the path it was generated at) in a short no
 beside it. This keeps cross-experiment dependencies explicit and prevents an
 experiment from reaching into a sibling's private directory.
 
+## Terminology annotations on signed docs (semantic renames)
+
+When a program-wide terminology ruling (recorded in
+`papers/common/terminology.md`) retires a term that appears in an already
+signed experiment's working label or prose, the signed text is NEVER
+rewritten and nothing is ever renamed on disk. The rename is semantic only
+and is recorded additively:
+
+1. Precondition: the ruling exists in `papers/common/terminology.md` first.
+   That file is the sole source of truth for how retired terms render in
+   prose; do not invent a rendering inside one experiment.
+2. Append a dated `## Terminology annotation (additive, YYYY-MM-DD)` section
+   to the experiment's `AMENDMENT.md`, stating: which working label predates
+   which ruling, the operational prose rendering, and the sentence "Nothing
+   else changes: the slug, directory, filenames, config keys, gate
+   definitions, question, prediction, falsifier, and every registered
+   constant remain verbatim as signed. This annotation is semantic only and
+   moves no goalpost."
+3. Add a matching dated NOTEBOOK.md entry recording who directed it and that
+   no pinned file changed (AMENDMENT.md is not sha-pinned, so no repin is
+   involved; `bin/exp validate` must stay OK).
+4. Never touch the `question`, `prediction`, `falsifier`, or `title` fields
+   in `experiment.yaml`, and never edit the signed Question / Prediction /
+   Falsifier / Gates prose. If a rename cannot be expressed without touching
+   those, it is not a semantic change and requires a signed revision with
+   changelog and PI approval instead.
+5. Slugs, directories, filenames, and config keys are provenance and stay
+   verbatim forever, in citations too; only running prose renders the new
+   term.
+6. Lead executes with explicit PI direction; the change reaches main through
+   a normal PR the PI merges (for a running cell, it may ride the results PR
+   and must be noted in the NOTEBOOK when added).
+
 ## Command reference
 
 All commands run through the `bin/exp` wrapper (Windows: `bin\exp.cmd`), which
