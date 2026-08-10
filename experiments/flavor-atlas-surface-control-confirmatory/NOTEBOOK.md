@@ -6,6 +6,45 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-08-10T19:21Z CRASH + REPAIR: the real run crashed in `evaluate_sg4`
+  with `KeyError: 'min_activation_oof_r2_at_each_primary_layer'`, after all
+  20 C1/C2 permutation replicates had already checkpointed under
+  `analysis/checkpoints/` (expensive work preserved; the crash was in gate
+  adjudication, downstream of every residualization pass). Root cause: the
+  real `gates.yaml` nests every SG's gate parameters under a `checks:`
+  level (`sg4_treatment_strength.checks.min_activation_oof_r2_at_each_primary_layer`,
+  and likewise for `sg6_permutation_negative_control.checks...`), but
+  `evaluate_sg4` and `evaluate_sg6` read the gates dict flat
+  (`gates["sg4_treatment_strength"]["min_activation_oof_r2_at_each_primary_layer"]`,
+  `gates["sg6_permutation_negative_control"]["min_permuted_runs_keeping_all_six_flavors_at_or_above_0_90"]`),
+  a dialect mismatch from every other SG reader in the module (`sg0`, `sg2`
+  correctly read `gates["sgN_..."]["checks"]`). `build_fixture`'s synthetic
+  gates dict had independently reproduced the same flat shape for sg4/sg6,
+  which is exactly why `--smoke` passed clean while the real run crashed:
+  the fixture validated the buggy read path instead of the real schema.
+  Repair scope: (1) fixed both reads in `evaluate_sg4` and `evaluate_sg6` to
+  the real nested `["checks"]` shape; no threshold, layer number, or
+  registered constant changed, read-path shape only; (2) fixed
+  `build_fixture`'s `sg4_treatment_strength` and
+  `sg6_permutation_negative_control` entries to mirror the real `checks:`
+  nesting, so the fixture can no longer validate a wrong read path; (3)
+  added a smoke check ("real gates.yaml/cell.yaml schema walk") that loads
+  the real `gates.yaml`/`cell.yaml` from disk and walks an explicit list of
+  key-path tuples the module reads at runtime, asserting presence only
+  (computes nothing) -- any future schema drift between the governed YAML
+  and the harness's read paths now fails `--smoke` before a real run burns
+  compute on it. No committed output existed at crash time (the crash
+  preceded any write of `analysis-committed/surface_control.json`), so this
+  is a harness-crash repair on a signed pre-result cell, not a result
+  change; no goalpost moved. The rerun resumes from the preserved
+  `analysis/checkpoints/` (per-(panel, layer, block) granularity) and only
+  re-executes SG4/SG6 adjudication plus anything not yet checkpointed, so
+  re-adjudication after this fix is cheap. Fixed in worktree
+  `ehr-worktrees/style-gatefix` on branch `fix/style-control-gates-dialect`;
+  `--smoke` reran twice (78 checks passing both times, stable) and
+  `--dry-run` once (ten gitignored `flavor-atlas-rawbase` inputs correctly
+  reported missing, exit 1, nothing written) in that worktree. Not signed,
+  not committed by this change; the lead reviews, repins, and commits.
 - 2026-08-10T16:40Z LEAD REVIEW + REPIN: reviewed the repair below. Verified
   only the harness module and this notebook changed (governed docs
   untouched, diff-checked); layer plan and every decision constant derive

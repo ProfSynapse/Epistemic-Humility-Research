@@ -1012,7 +1012,7 @@ def compute_permutation_controls(
 def evaluate_sg4(
     observed_r2_by_layer: dict[int, float], permuted_r2_by_layer: dict[int, list[float]], gates: dict[str, Any]
 ) -> dict[str, Any]:
-    checks = gates["sg4_treatment_strength"]
+    checks = gates["sg4_treatment_strength"]["checks"]
     min_r2 = float(checks["min_activation_oof_r2_at_each_primary_layer"])
     q = float(checks["permutation_null_quantile"])
     min_above = float(checks["min_above_permutation_quantile"])
@@ -1028,7 +1028,7 @@ def evaluate_sg4(
 
 
 def evaluate_sg6(replicate_all_flavors_pass: list[bool], gates: dict[str, Any]) -> dict[str, Any]:
-    checks = gates["sg6_permutation_negative_control"]
+    checks = gates["sg6_permutation_negative_control"]["checks"]
     min_pass = int(checks["min_permuted_runs_keeping_all_six_flavors_at_or_above_0_90"])
     n_pass = sum(replicate_all_flavors_pass)
     return {"n_permutations": len(replicate_all_flavors_pass), "n_passing": n_pass, "pass": n_pass >= min_pass}
@@ -1493,6 +1493,84 @@ def run_smoke() -> int:
         print(f"  [{status}] {name}", file=sys.stderr)
         if not cond:
             failures.append(name)
+
+    print("== smoke: real gates.yaml/cell.yaml schema walk ==", file=sys.stderr)
+    # Every key path this module actually reads off the REAL gates.yaml and
+    # cell.yaml (not the synthetic fixture below), asserting presence only.
+    # This exists because the fixture's dicts are hand-built at the SAME
+    # shape the code expects, so a fixture-only smoke can pass even when the
+    # code's read path has drifted from the real file's schema (as happened
+    # when sg4/sg6 were read flat while gates.yaml nests them under
+    # `checks:`). Walking the real files here catches that class of drift
+    # before a real run burns compute on it.
+    real_gates_for_schema_check = load_yaml(GATES_PATH)
+    real_cell_for_schema_check = load_yaml(CELL_PATH)
+
+    def walk(d: Any, path: tuple[str, ...]) -> bool:
+        cur = d
+        for key in path:
+            if not isinstance(cur, dict) or key not in cur:
+                return False
+            cur = cur[key]
+        return True
+
+    gates_key_paths: list[tuple[str, ...]] = [
+        ("sg0_input_integrity", "checks"),
+        ("sg0_input_integrity", "checks", "kuq_panel_sha256_must_equal"),
+        ("sg0_input_integrity", "checks", "ambigqa_panel_sha256_must_equal"),
+        ("sg0_input_integrity", "checks", "selfaware_panel_sha256_must_equal"),
+        ("sg0_input_integrity", "checks", "panels_manifest_sha256_must_equal"),
+        ("sg0_input_integrity", "checks", "kuq_extraction_manifest_sha256_must_equal"),
+        ("sg0_input_integrity", "checks", "ambigqa_extraction_manifest_sha256_must_equal"),
+        ("sg0_input_integrity", "checks", "selfaware_extraction_manifest_sha256_must_equal"),
+        ("sg0_input_integrity", "checks", "atlas_sweep_sha256_must_equal"),
+        ("sg0_input_integrity", "checks", "probe_module_sha256_must_equal"),
+        ("sg0_input_integrity", "checks", "kuq_rows_must_equal"),
+        ("sg0_input_integrity", "checks", "kuq_known_must_equal"),
+        ("sg0_input_integrity", "checks", "kuq_unknown_must_equal"),
+        ("sg0_input_integrity", "checks", "kuq_flavor_counts_must_equal"),
+        ("sg0_input_integrity", "checks", "ambigqa_rows_must_equal"),
+        ("sg0_input_integrity", "checks", "selfaware_rows_must_equal"),
+        ("sg2_baseline_reproduction", "checks"),
+        ("sg2_baseline_reproduction", "checks", "cells"),
+        ("sg2_baseline_reproduction", "checks", "hidden_state_0_must_equal_for_all_rows"),
+        ("sg4_treatment_strength", "checks"),
+        ("sg4_treatment_strength", "checks", "min_activation_oof_r2_at_each_primary_layer"),
+        ("sg4_treatment_strength", "checks", "permutation_null_quantile"),
+        ("sg4_treatment_strength", "checks", "min_above_permutation_quantile"),
+        ("sg6_permutation_negative_control", "checks"),
+        ("sg6_permutation_negative_control", "checks", "min_permuted_runs_keeping_all_six_flavors_at_or_above_0_90"),
+        ("s_bands",),
+        ("s_bands", "primary_cells"),
+        ("s_bands", "reference_cells"),
+        ("s_bands", "p1_survival_floor_heldout_auroc"),
+        ("s_bands", "p2_ambigqa_ceiling"),
+        ("s_bands", "p3_surface_only_carrier_floor"),
+    ]
+    cell_key_paths: list[tuple[str, ...]] = [
+        ("seed",),
+        ("n_hidden_states",),
+        ("hidden_dim",),
+        ("source_panels",),
+        ("panels_manifest", "path"),
+        ("baseline_atlas_sweep", "path"),
+        ("probe_protocol", "module"),
+        ("render_module", "path"),
+        ("residualization", "alpha_grid"),
+        ("residualization", "outer_folds"),
+        ("residualization", "inner_folds"),
+        ("permutation_control", "n_permutations"),
+        ("permutation_control", "seed_start"),
+        ("planted_signal",),
+        ("primary_cells",),
+        ("reference_cells", "pooled_all_unknowns"),
+        ("reference_cells", "selfaware"),
+        ("reference_cells", "ambigqa"),
+    ]
+    for path in gates_key_paths:
+        check(f"real gates.yaml has key path {'.'.join(path)}", walk(real_gates_for_schema_check, path))
+    for path in cell_key_paths:
+        check(f"real cell.yaml has key path {'.'.join(path)}", walk(real_cell_for_schema_check, path))
 
     print("== smoke: surface featurization ==", file=sys.stderr)
     stems = {
@@ -1971,11 +2049,15 @@ def build_fixture(tmp_root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
             }
         },
         "sg4_treatment_strength": {
-            "min_activation_oof_r2_at_each_primary_layer": 0.0,
-            "permutation_null_quantile": 0.95,
-            "min_above_permutation_quantile": 0.0,
+            "checks": {
+                "min_activation_oof_r2_at_each_primary_layer": 0.0,
+                "permutation_null_quantile": 0.95,
+                "min_above_permutation_quantile": 0.0,
+            }
         },
-        "sg6_permutation_negative_control": {"min_permuted_runs_keeping_all_six_flavors_at_or_above_0_90": 0},
+        "sg6_permutation_negative_control": {
+            "checks": {"min_permuted_runs_keeping_all_six_flavors_at_or_above_0_90": 0}
+        },
         "s_bands": {
             "primary_cells": {f: [cell_fixture["primary_cells"][f]["best_layer"], secondary_layer] for f in KUQ_CATEGORIES},
             "reference_cells": {"selfaware": [ref_best["selfaware"], secondary_layer], "ambigqa": [ref_best["ambigqa"], secondary_layer]},
