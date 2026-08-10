@@ -65,6 +65,13 @@ above and recorded here:
   0.030) with one-way leverage. Every word in the name is a measured fact.
   "Caution" survives in running prose only in its ordinary-English caveat
   sense, never as a construct name.
+- **Disambiguation**: the family-atlas read panel's `caution` axis is a
+  DIFFERENT contrast (refused-versus-confabulated, per
+  `docs/atlas/family-layer-map.md`) that shared the working label. In
+  running prose it renders as the **refusal-versus-confabulation
+  contrast**, never as "refusal axis", which is reserved for the
+  refuse-versus-answer-among-knowns construct. The atlas artifact keys
+  (`doubt` / `caution` / `raw_refusal`) stay verbatim as keys.
 
 ## 2. Scope: where the old names held, and why generalizing prose needs new ones
 
