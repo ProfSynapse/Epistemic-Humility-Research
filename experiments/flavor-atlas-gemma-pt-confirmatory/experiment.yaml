@@ -44,6 +44,7 @@ instrument:
   - test_leg_b_selection_logic.py
   - smoke_all.py
   - ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py
+  - run_cell.py
   pins:
     cell.yaml: cba032b74068163b7483c5fec742202c538d107002bf1d96e95d557613ecd363
     gates.yaml: 05584fd81579e37d1f2ab5d71f35a41d1d82fd121215bff46f51bacc45703313
@@ -55,8 +56,9 @@ instrument:
     gate_adjudicator.py: 271bb129348297be21a27667e30b8d7c8f5776edde0696903c34ceb6733fba62
     kv_seam_paired_smoke.py: b39e1cd0ebcff3745f28f9a3295288e1a302912281cb9ca9ef715ebd5ae694cd
     test_leg_b_selection_logic.py: f68492d73ab27af3159b7bb99258d780741053890ad9178275e253f37eef0563
-    smoke_all.py: 6b280fc2c7bafb31db74ebc70ad3345a3ec0de41df9ab5e686875d0ed8d7c7a9
+    smoke_all.py: 7998770a086105970a35613ef045d1371bbb5c54aaab00cb8d8918321a3ec263
     ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py: ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08
+    run_cell.py: 02066253cd57369ba34068990bebdd5cf222c9bbe19afa8eea3ecfb9845a77cc
   persistence:
     render_gemma.py:
       persistence: short-run
@@ -162,6 +164,13 @@ instrument:
       measured_smoke_wall_clock_s: 7.424
       note: pinned item-26 probe protocol imported unchanged, exercised transitively
         by smoke_all.py's probe-sweep and residualization checks (both call _cv_auroc_with_oof).
+    run_cell.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 45.06
+      note: 'CPU-side read-chain orchestrator (stages 1-5: panel verify, probe sweep,
+        residualization, gate adjudication, containment+write); never runs a GPU verb;
+        wall clock measured from the smoke suite fixture drive of stages 2-5; real
+        run reruns from scratch on interruption'
   runtime_image_digest: sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8
   runtime_image_digest_note: confirmed at signing via `docker image inspect mechinterp-runner:local`
     (read-only), matching char for char the digest the three most recent flavor cells
@@ -173,6 +182,32 @@ instrument:
   launch_gate: GPU may not run until the lead relays PI launch approval AND the Qwen-side
     surface control (flavor-atlas-surface-control-confirmatory) has resolved. No GPU
     verb, no docker run, and no weight download were issued while authoring this scaffolding.
+  repins:
+  - file: run_cell.py
+    old_sha256: none (new module, added post-signing pre-launch)
+    new_sha256: 02066253cd57369ba34068990bebdd5cf222c9bbe19afa8eea3ecfb9845a77cc
+    date: '2026-08-10T16:45:00Z'
+    reason: 'Instrument-completeness repair: surface_residualization.py and gate_adjudicator.py
+      were library-only modules with no registered executable driver, so stages G5/GG-adjudication
+      had no real-run path. run_cell.py is the CPU-side orchestrator driving the registered
+      read chain end to end (subprocessing the pinned build_flavor_panels.py and flavor_probe_sweep.py
+      CLIs verbatim, then residualization at the probe-selected layers and gate adjudication
+      over real readouts, counts-only committed output behind gg6 containment) plus
+      a --dry-run existence check. Never wraps or reimplements extract_anchor_gemma.py;
+      extraction verb prohibition unchanged. No gate quantity, threshold, or registered
+      constant changed; cell is launch-gated and nothing has run.'
+  - file: smoke_all.py
+    old_sha256: 6b280fc2c7bafb31db74ebc70ad3345a3ec0de41df9ab5e686875d0ed8d7c7a9
+    new_sha256: 7998770a086105970a35613ef045d1371bbb5c54aaab00cb8d8918321a3ec263
+    date: '2026-08-10T16:31:29Z'
+    reason: Smoke suite extended with a 12th check driving run_cell.py's real stage
+      2-5 orchestration end to end on synthetic fixtures at near-real minimums (2200-row
+      KUQ panel), asserting real gate branches (gg1/gg3 pass, gg0 correctly fails
+      on synthetic pins, P1/P2 INDETERMINATE under fail-closed propagation), non-trivial
+      residualization numbers, complete committed output, gg6 containment pass, and
+      no question-text leak. Existing 11 checks unchanged (additions-only diff). Companion
+      to the run_cell.py addition; a stubbed orchestration can no longer pass the
+      smoke.
 inputs:
 - experiments/flavor-atlas-rawbase/AMENDMENT.md
 - experiments/flavor-atlas-rawbase/gates.yaml
