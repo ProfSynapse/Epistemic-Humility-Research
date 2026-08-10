@@ -77,4 +77,6 @@ verdict: Falsifier not fired; prediction supported. The raw pretrained base read
   the AmbigQA boundary at 0.6338, within 0.006 of both trained checkpoints, so the
   known-unknown activation is flavor-specific to SelfAware-style unanswerability from
   pretraining, and the G7 non-transfer is not a post-training warp.
-kg: []
+kg:
+- experiment:rawbase-ambigqa-boundary-readout
+- mechanism:ambigqa-boundary-signal-is-pretraining-flavor-specific

@@ -97,4 +97,7 @@ verdict: Falsifier not fired; behavior transfers in level but the internal known
   readout does not transfer to AmbigQA (G7 FAIL both arms, 0.6279/0.6349 vs 0.90 floor)
   and the stated-confidence collapse is not universal (G5 FAIL); G4 unadjudicable
   after the registered G1 void of arms A2/A6/A7.
-kg: []
+kg:
+- experiment:ood-breadth-beyond-selfaware
+- mechanism:ambigqa-internal-readout-does-not-transfer-from-selfaware
+- mechanism:ambigqa-stated-confidence-collapse-not-universal-across-arms

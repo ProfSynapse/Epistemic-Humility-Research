@@ -4560,7 +4560,11 @@
         "runtime_image_digest": "sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8",
         "runtime_image_digest_note": "local Image ID of mechinterp-runner:local (not registry-pushed); applies to the stage-6 MechInterp.cli extract verb only, per the 2026-07-10 standing directive in .skills/mechinterp-cells/reference/modal-launch.md. The eval-lane stages 2-5 ran under cell.yaml lane.docker_digest as registered."
       },
-      "kg": [],
+      "kg": [
+        "experiment:ood-breadth-beyond-selfaware",
+        "mechanism:ambigqa-internal-readout-does-not-transfer-from-selfaware",
+        "mechanism:ambigqa-stated-confidence-collapse-not-universal-across-arms"
+      ],
       "prediction": "Unknown-side abstention behavior transfers in rank order across arms (Spearman rho >= 0.7 vs SelfAware on KUQ and AmbigQA), the stated-confidence collapse transfers unchanged (every arm at emitted AUROC to appropriateness <= 0.65 and emitted std <= 0.10 on AmbigQA), the internal known-unknown readout still separates the AmbigQA answerability boundary (held-out AUROC >= 0.90 on both internal-panel arms), and known-side over-refusal levels shift by more than 10 points on at least one surface because the new known sides are drawn from different source corpora.",
       "question": "Do paper 3's SelfAware behavior and stated-calibration readings, and its internal known-unknown readout, transfer to additional known/unknown surfaces (KUQ, AmbigQA, BIG-bench known-unknowns) on the same eight checkpoints and the same pinned instrument?",
       "registered": true,
@@ -5339,7 +5343,10 @@
         "runtime_image_digest": "sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8",
         "runtime_image_digest_note": "mechinterp-runner local Image ID, same image item 26 stage 6 ran under; governs the single extract verb per the 2026-07-10 standing directive."
       },
-      "kg": [],
+      "kg": [
+        "experiment:rawbase-ambigqa-boundary-readout",
+        "mechanism:ambigqa-boundary-signal-is-pretraining-flavor-specific"
+      ],
       "posture": "exploratory",
       "prediction": "The raw base also fails the SelfAware-grade bar on AmbigQA and lands within 0.10 of the trained checkpoints (heldout_probe_auroc <= 0.73), the flavor-specific reading. Grounds; the more-trained panel checkpoint reads slightly higher than the less-trained one (0.6349 vs 0.6279), the wrong direction for a training-dulls-it account, and Amendment Y H_B3 found post-training does not sharpen the SelfAware readout.",
       "question": "Does the untrained Qwen3-4B base read the AmbigQA answerability boundary at the same locus (L35, anchor) where the trained checkpoints just read 0.63, or does it read substantially higher; that is, is the known-unknown activation flavored to SelfAware-style unanswerability from pretraining, or did pretraining install a broader signal that post-training warped?",
