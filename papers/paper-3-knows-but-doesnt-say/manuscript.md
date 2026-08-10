@@ -88,7 +88,10 @@ projecting out the known-unknown axis). (3) We place the two axes in the program
 known-unknown axis is the answerability separation itself, present untrained (0.997 on the
 raw base, 0.997+ on four pretrain-only bases), while caution is a construct of the
 trained model alone, unreadable on a base that never refuses; training does not
-create the known-unknown axis, but it does create caution. A companion actuation study confirms the
+create the known-unknown axis, but it does create caution. That separation is
+reliable across *overt* kinds of unanswerability and is not universal: on covertly
+ambiguous natural questions it falls to ≈ 0.63, on trained checkpoints and on the
+raw base alike (Section 8). A companion actuation study confirms the
 caution gate is causally real and one-way (ablation collapses over-refusal on
 known questions from 0.994 to 0.030, yet no intervention installs appropriate
 abstention on genuine unknowns). (4) We show the stated
@@ -133,7 +136,10 @@ Our contributions, each a section below:
   at ≈ 0.52–0.56 and is near-constant. The over-refused-but-known items are
   internally "known," so the failure is verbalization, not representation. The
   axis is not created by our training: the same separation reads at 0.997
-  untrained on the raw base and at 0.997+ on four pretrain-only bases.
+  untrained on the raw base and at 0.997+ on four pretrain-only bases. Nor is it
+  universal across kinds of unanswerability: it holds wherever the question is
+  overtly unanswerable and falls to ≈ 0.63 where the unanswerability is covert
+  (Section 8).
 - The geometry (Section 5). The internal signal decomposes into a graded
   *known-unknown axis* and a separable *caution* gate. We show why the naive measurement
   (raw cosine = −0.83, "they're the same axis") is wrong and the held-out
@@ -450,7 +456,9 @@ instruction tuning, no adapter) and at 0.997 or higher on four pretrain-only bas
 models spanning families and eras, a registered pretraining-origin test whose
 falsifier fired on none of the four bases (Appendix A). We fit the axis on trained
 checkpoints because that is where this paper's questions live; the signal itself is
-a pretraining-origin property.
+a pretraining-origin property. Its scope is narrower than answerability in general:
+it covers questions whose surface marks them as unanswerable, and not questions
+whose ambiguity is covert, a boundary Section 8 reports.
 
 ## 5. Result 2: The internal signal is two axes, a graded known-unknown axis and a separable caution gate
 
@@ -1017,7 +1025,10 @@ of points. Third, as *strategy*: the expensive part of epistemic humility (the
 internal knowledge-boundary signal) is already paid for by pretraining:
 the same answerability readout is present in pretrain-only base weights, before
 any instruction tuning or preference training, replicated across four bases
-spanning families and eras (Appendix A).
+spanning families and eras (Appendix A). What pretraining pays for is bounded,
+though: the readout covers overt unanswerability and not covert ambiguity, where
+base and trained checkpoints alike read at ≈ 0.63 (see *Where the internal readout
+fails* below).
 The unsolved part is the *readout*: coupling stated confidence and action to a
 signal that is linearly available inside. Training the readout failed here in
 seven variants; reading it directly with a probe trivially succeeds. The
@@ -1041,6 +1052,52 @@ supervision. It also tempers the "steer in humility at inference" hope: the easy
 steering direction (less over-caution) is the opposite of what novel unknowns
 require (more caution), and the companion actuation study could not install the
 hard direction.
+
+### Where the internal readout fails: covert ambiguity
+
+Three follow-on cells map the boundary of the readout reported here, and it is
+narrower than "unanswerability." Extending the internal panel to AmbigQA, a surface
+of naturally occurring questions whose unanswerability is referential
+underspecification rather than an absent fact, the same probe protocol at the same
+locus reads the answerability boundary at only 0.6279 (clean SFT) and 0.6349
+(SFT→GRPO-v2) held-out on a 2,748-row panel, against a pre-registered floor of 0.90
+(`experiments/ood-breadth-beyond-selfaware/AMENDMENT.md`, G7 FAIL on both arms). An
+exploratory per-flavor atlas on the raw base then locates the boundary. Probes fit
+on each of six labeled categories of unanswerable question (KUQ's ambiguous,
+controversial, counterfactual, false-assumption, future-unknown and
+unsolved-problem strata) separate their own unknowns from the known pool at 0.98 to
+0.999 best-layer held-out AUROC, and each of them reads every other category, and
+SelfAware, at 0.83 or better. AmbigQA is the exception in both directions: it peaks
+at 0.6590 across all 37 layers, and transfers into it and out of it sit near chance
+(`experiments/flavor-atlas-rawbase/AMENDMENT.md`). The dividing line is therefore
+not flavor but *overt versus covert*. The readout is reliable wherever the question's
+surface marks it as unanswerable, including questions labeled ambiguous when that
+ambiguity is overt, and it is close to uninformative where the ambiguity is covert.
+
+This failure is not something training did. On the identical panel, locus and probe
+protocol, the raw pretrained base reads AmbigQA at 0.6338, within 0.006 of both
+trained checkpoints, so post-training neither installed the information nor
+destroyed it (`experiments/rawbase-ambigqa-boundary-readout/AMENDMENT.md`). The
+pretraining-origin reading of Section 4 survives with its scope corrected: what
+pretraining supplies is an overt-unanswerability signal, not an answerability
+signal in general. Covert referential ambiguity is a distinct and harder
+hallucination surface, and plausibly so. Judging a question overtly unanswerable
+can be done from the question itself, whereas judging it covertly ambiguous
+requires retrieving the competing answers the question admits, which is a
+retrieval act rather than a reading of the prompt. A model that never notices the
+ambiguity has nothing about it to represent.
+
+Two caveats bound this. The atlas is exploratory and carries a registered style
+confound: the labeled unknown categories are stylistically distinctive question
+types, so a within-dataset known-versus-unknown probe may ride surface style in
+part, and while free cross-dataset transfer argues against a pure dataset artifact
+it does not eliminate style as a shared carrier; a style-controlled cell (surface
+form matched, flavor varied) is the natural confirmatory follow-up and must be
+registered before any of the atlas is promoted to a claim. Second, nothing here
+tests whether the gap is trainable. We did not attempt to install the missing
+signal, so whether targeted training or a retrieval-augmented read could supply it
+is open, and it is a different question from this paper's, which is whether a
+signal the model already carries reaches its output.
 
 ## 9. Limitations
 
