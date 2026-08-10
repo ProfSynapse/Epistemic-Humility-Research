@@ -392,10 +392,6 @@ model's own correct versus wrong answers any better than the collapsed stated
 scalar does (AUROC 0.56 vs 0.52, gap CI includes zero); the correctness signal
 is linearly present elsewhere in the residual stream (unregistered context
 probe, AUROC 0.68) but is not carried by this axis at deployment.
-*(Note: the panel image above was generated from the original n = 16 cell and
-needs regeneration from the powered re-estimate to match this caption; flagged
-as a follow-up, not fixed by this text revision.)*
-
 ### The gap is like-for-like, not a scoring artifact
 
 A skeptic could object
