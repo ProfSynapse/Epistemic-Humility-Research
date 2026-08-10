@@ -2086,7 +2086,11 @@
         "runtime_image_digest": "sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8",
         "runtime_image_digest_note": "mechinterp-runner local Image ID, same image the prior two cells ran under; governs the three extract verbs per the 2026-07-10 standing directive."
       },
-      "kg": [],
+      "kg": [
+        "experiment:flavor-atlas-rawbase",
+        "mechanism:pretrained-base-carries-broad-overt-unanswerability-code",
+        "mechanism:overt-vs-covert-unanswerability-is-the-boundary-not-flavor"
+      ],
       "posture": "exploratory",
       "prediction": "P1: at least one of {future unknown, unsolved problem} reaches held-out AUROC >= 0.90 at some layer on the raw base. P2: the ambiguity flavors (KUQ ambiguous and AmbigQA) stay below 0.75 at every layer.",
       "question": "Do other flavors of unanswerability (KUQ's six categories, with SelfAware and AmbigQA as reference flavors) each have their own separable activation signature in the raw Qwen3-4B base, at possibly different layers, or is the pretrained known-unknown code narrow (SelfAware-flavored only) or universal (one code for all flavors)?",
@@ -4944,7 +4948,11 @@
         "modules": [],
         "pins": {}
       },
-      "kg": [],
+      "kg": [
+        "experiment:pretrain-only-base-readout",
+        "mechanism:knowledge-boundary-gate-and-veto-predate-post-training",
+        "mechanism:post-training-does-not-sharpen-knowledge-boundary-veto"
+      ],
       "legacy": {
         "label": "Y",
         "migrated_to": "experiments/pretrain-only-base-readout/AMENDMENT.md",

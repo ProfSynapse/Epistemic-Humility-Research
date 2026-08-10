@@ -21,7 +21,27 @@ related:
 - '[[ambigqa-internal-readout-does-not-transfer-from-selfaware]]'
 - '[[internal-paper3--knows-but-doesnt-say]]'
 - '[[known-unknown-direction]]'
+- '[[flavor-atlas-rawbase]]'
+- '[[overt-vs-covert-unanswerability-is-the-boundary-not-flavor]]'
 relationships:
+- type: related_to
+  target: '[[flavor-atlas-rawbase]]'
+  target_id: experiment:flavor-atlas-rawbase
+  confidence: high
+  evidence:
+  - "experiments/flavor-atlas-rawbase/NOTEBOOK.md 2026-08-10T01:55Z RESULT
+    (the atlas REFINES this mechanism's reading: adding six more overt
+    flavors as comparators shows the AmbigQA gap is not SelfAware-specific
+    but overt-vs-covert-specific)"
+- type: related_to
+  target: '[[overt-vs-covert-unanswerability-is-the-boundary-not-flavor]]'
+  target_id: mechanism:overt-vs-covert-unanswerability-is-the-boundary-not-flavor
+  confidence: high
+  evidence:
+  - "experiments/flavor-atlas-rawbase/NOTEBOOK.md 2026-08-10T01:55Z RESULT
+    (that mechanism supersedes this one's SelfAware-vs-AmbigQA framing
+    with an overt-vs-covert framing, without changing this mechanism's
+    own pretraining-origin numeric result)"
 - type: supported_by
   target: '[[rawbase-ambigqa-boundary-readout]]'
   target_id: experiment:rawbase-ambigqa-boundary-readout

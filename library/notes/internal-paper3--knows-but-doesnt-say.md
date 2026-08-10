@@ -37,6 +37,11 @@ related:
 - '[[rawbase-ambigqa-boundary-readout]]'
 - '[[ambigqa-internal-readout-does-not-transfer-from-selfaware]]'
 - '[[ambigqa-boundary-signal-is-pretraining-flavor-specific]]'
+- '[[pretrain-only-base-readout]]'
+- '[[knowledge-boundary-gate-and-veto-predate-post-training]]'
+- '[[flavor-atlas-rawbase]]'
+- '[[pretrained-base-carries-broad-overt-unanswerability-code]]'
+- '[[overt-vs-covert-unanswerability-is-the-boundary-not-flavor]]'
 relationships:
 - type: supports
   target: '[[verbalized-confidence-channel-bottleneck]]'
@@ -84,6 +89,45 @@ relationships:
   target: '[[internal-twosignal-readout--training-free]]'
   target_id: paper:internal-twosignal
   confidence: high
+- type: related_to
+  target: '[[pretrain-only-base-readout]]'
+  target_id: experiment:pretrain-only-base-readout
+  confidence: high
+  evidence:
+  - "papers/paper-3-knows-but-doesnt-say/manuscript.md line 1325
+    provenance table (Section 4 pretraining-origin test, four
+    pretrain-only bases at 0.997+; Section 8 origin claim downgraded to
+    open question at registration, answered here SUPPORTED 4/4)"
+- type: related_to
+  target: '[[knowledge-boundary-gate-and-veto-predate-post-training]]'
+  target_id: mechanism:knowledge-boundary-gate-and-veto-predate-post-training
+  confidence: high
+  evidence:
+  - "papers/paper-3-knows-but-doesnt-say/manuscript.md line 1325
+    provenance table (Section 4's pretraining-origin test)"
+- type: related_to
+  target: '[[flavor-atlas-rawbase]]'
+  target_id: experiment:flavor-atlas-rawbase
+  confidence: high
+  evidence:
+  - "papers/paper-3-knows-but-doesnt-say/manuscript.md lines 1056-1094,
+    Section 8 'Where the internal readout fails: covert ambiguity' (cites
+    experiments/flavor-atlas-rawbase/AMENDMENT.md directly for the M1/M4
+    numbers)"
+- type: related_to
+  target: '[[pretrained-base-carries-broad-overt-unanswerability-code]]'
+  target_id: mechanism:pretrained-base-carries-broad-overt-unanswerability-code
+  confidence: high
+  evidence:
+  - "papers/paper-3-knows-but-doesnt-say/manuscript.md lines 1065-1069
+    (six KUQ flavors separate at 0.98 to 0.999 with free cross-transfer)"
+- type: related_to
+  target: '[[overt-vs-covert-unanswerability-is-the-boundary-not-flavor]]'
+  target_id: mechanism:overt-vs-covert-unanswerability-is-the-boundary-not-flavor
+  confidence: high
+  evidence:
+  - "papers/paper-3-knows-but-doesnt-say/manuscript.md lines 1070-1075
+    ('The dividing line is therefore not flavor but overt versus covert')"
 - type: measures
   target: '[[auroc]]'
   target_id: metric:auroc
