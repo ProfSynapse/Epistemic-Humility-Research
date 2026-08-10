@@ -1,0 +1,98 @@
+# flavor-atlas-gemma-pt-confirmatory instrument summary. Machine-readable
+# companion to AMENDMENT.md; the extraction recipe is extract_anchor_gemma.py
+# (vendored seam-safe extractor, use_cache=True always; the mechinterp
+# extract verb is PROHIBITED on this substrate, see gates.yaml gg1); the
+# CPU sweep is flavor_probe_sweep.py over panels reused byte-identical from
+# flavor-atlas-rawbase by build_flavor_panels.py; the CPU secondary is
+# surface_residualization.py; gate_adjudicator.py adjudicates GG0-GG7.
+
+substrate:
+  repo: google/gemma-4-E4B
+  revision: 411aa17b749aa952df1359d2dcea73917a544d9a
+  base_form: pretrain-only base (pt), no adapter, bf16
+  architecture:
+    model_type: gemma4
+    wrapper_class: Gemma4ForConditionalGeneration
+    n_text_decoder_blocks: 42
+    hidden_size: 2560
+    n_hidden_states: 43
+    num_kv_shared_layers: 18
+    kv_seam_blocks: [24, 41]
+
+lane: local_3090
+gpu_work: forward_only_extraction_no_generation
+runtime: mechinterp-runner pinned image (experiment.yaml instrument.runtime_image_digest)
+concurrency: one GPU job at a time; four sequential extract verbs (kuq, ambigqa, selfaware, dual-render subsample)
+extraction_verb: extract_anchor_gemma.py ONLY; mechinterp extract PROHIBITED (see gates.yaml gg1_kv_seam_admissibility)
+
+panels:
+  kuq:
+    source: experiments/flavor-atlas-rawbase/analysis/panels/kuq_panel.jsonl
+    sha256: 69433a777d40b76544b7f4575bc042bb2a9d4d159ca6e8a8bf20d133cf0a8eef
+    rows: 5540
+  ambigqa:
+    source: experiments/flavor-atlas-rawbase/analysis/panels/ambigqa_panel.jsonl
+    sha256: ee60cbf9115eefc18a997a0a81600ce627789c6f710f9905fe959936ba33d7f2
+    rows: 2748
+  selfaware:
+    source: experiments/flavor-atlas-rawbase/analysis/panels/selfaware_panel.jsonl
+    sha256: 378762ac7cd703743b7b4edc54bdbdd86fa47e1cd8657688f4dbf5d43aa186f0
+    rows: 3369
+  dual_render_subsample:
+    derived_from: kuq_panel.jsonl (200 unknown/flavor + 600 known, fixed seed, deterministic order)
+    rows: 1800
+
+render:
+  primary:
+    name: base_mode_kshot
+    module: render_gemma.py::render_primary_kshot
+    derivation: >-
+      vendored byte-identical from experiments/common/readouts/
+      amendment_x_cross_model_extract.py (_BASE_MODE_FEWSHOT,
+      build_base_mode_prompt); no chat template, no system prompt, fixed
+      5-shot QA block, anchor at prompt_len-1 on "Q: {question}\nA:"
+    lead_adjudication: >-
+      PRIMARY per "Amendment Y base-mode k-shot render rule" (swap from the
+      draft's original chat-template-primary default)
+  control:
+    name: chat_template
+    module: render_gemma.py::render_control_chat
+    derivation: >-
+      google/gemma-4-E4B-it chat template applied to the pt base (shared
+      tokenizer), system prompt verbatim from
+      experiments/common/renders/ood_breadth_response_confidence_render.py
+    role: descriptive dual-render control (G6) only; cannot pass/falsify/rescue
+
+read:
+  families: [anchor]
+  layers: all (43 hidden states)
+  anchor_position: prompt_len-1
+
+probe:
+  protocol: internal_panel_probe_gate._cv_auroc_with_oof unchanged
+  module_sha256: ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08
+  outputs:
+    - g1 flavor-by-layer auroc map (6 KUQ flavors + pooled, 43 layers)
+    - g2 ambigqa layer sweep (43 layers, whole-curve boundary clause)
+    - g3 selfaware layer sweep (43 layers)
+    - g4 cross-flavor transfer matrix at source-best layers
+    - leg_a decision: hs24 externally-fixed anchor, 6 flavors
+    - leg_b decision: nested split-half selection (50/50, stratified), 6 flavors
+    - g6 dual-render control on 1800-row chat-template subsample
+
+residualization_secondary:
+  module: surface_residualization.py
+  reference_instrument: experiments/family-atlas-surface-residualization-control
+  surface_basis: question-text-only scalar covariates + hashed lexical n-grams (word+char) reduced by truncated SVD
+  prohibited_inputs: [source, panel, category, flavor, label, generated_text, completion_length, answer_correctness, answer_text, aliases]
+  alpha_grid: [0.01, 0.1, 1, 10, 100, 1000]
+  outer_folds: 5
+  inner_folds: 3
+  planted_channel_layer: 0
+  n_permutations: 20
+
+gate_adjudicator:
+  module: gate_adjudicator.py
+  gates: [gg0, gg1, gg2, gg3, gg4, gg5, gg6, gg7]
+  decision_order: [gg0, gg1, gg2, gg3, gg4, gg5, gg6, gg7]
+  failure_disposition: fail_closed_indeterminate

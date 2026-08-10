@@ -1,0 +1,190 @@
+slug: flavor-atlas-gemma-pt-confirmatory
+title: 'Second-substrate confirmatory: overt-unanswerability flavor separation on
+  pretrain-only Gemma'
+type: probe-fit
+status: signed
+registered: true
+created_at: '2026-08-10T14:35:09Z'
+tier: 3
+posture: exploratory
+question: Does the overt-unanswerability flavor separation and the overt-vs-covert
+  boundary that flavor-atlas-rawbase found on unsloth/Qwen3-4B raw base replicate
+  on a second, fresh substrate -- google/gemma-4-E4B pretrain-only base -- using the
+  same panels and probe protocol?
+prediction: 'P1 (Clause A, primary): all six KUQ flavors reach held-out out-of-fold
+  AUROC >= 0.90 at hidden state 24 AND under the nested split-half selection leg,
+  for all twelve primary cells. P2 (Clause B, primary): AmbigQA stays <= 0.75 at every
+  one of the 43 hidden states. P3 (transfer, primary): every off-diagonal transfer-matrix
+  cell among the six KUQ flavors and SelfAware reads >= 0.75, and every cell involving
+  AmbigQA reads <= 0.75. P4 (style control, secondary, banded): after cross-fitted
+  surface residualization, all six flavors retain AUROC >= 0.90 at both legs. P5 (reference):
+  SelfAware reaches >= 0.90 at both legs.'
+falsifier: 'F1 (Clause A does not replicate): with GG0-GG4 passing, any one of the
+  twelve primary cells reads below 0.90. F2 (Clause B does not replicate): with GG0-GG4
+  passing, AmbigQA reaches >= 0.90 at any hidden state. F3 (style artifact): with
+  the residualization controls passing, all six flavors fall to <= 0.75 at both legs
+  after residualization. F4 (transfer does not replicate): any off-diagonal cell among
+  the six flavors and SelfAware reads below 0.75.'
+checkpoint:
+  repo: google/gemma-4-E4B
+  revision: 411aa17b749aa952df1359d2dcea73917a544d9a
+  base_form: pretrain-only base (pt), no adapter, bf16
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - render_gemma.py
+  - extract_anchor_gemma.py
+  - build_flavor_panels.py
+  - flavor_probe_sweep.py
+  - surface_residualization.py
+  - gate_adjudicator.py
+  - kv_seam_paired_smoke.py
+  - test_leg_b_selection_logic.py
+  - smoke_all.py
+  - ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py
+  pins:
+    cell.yaml: cba032b74068163b7483c5fec742202c538d107002bf1d96e95d557613ecd363
+    gates.yaml: 05584fd81579e37d1f2ab5d71f35a41d1d82fd121215bff46f51bacc45703313
+    render_gemma.py: d106276fff68f3bb75f8922438fbaeca8ed8f9f7eaefa4ddcad3bf0095b80dcb
+    extract_anchor_gemma.py: bb603ff829faa2fae4134cb700485b478c09c86333eca7d9ca3b727f79460985
+    build_flavor_panels.py: b6c40544663c35e03639041ccd2edc30d434df9f46e526f166dc882dbd4c9d2d
+    flavor_probe_sweep.py: 130dc9ac2a0e40bed7cfc3abbfa21961f202c47251c4db165086138666455820
+    surface_residualization.py: 91593c37c034872e3d976ad4356431766c0b2709234fcde1bbf9010299793102
+    gate_adjudicator.py: 271bb129348297be21a27667e30b8d7c8f5776edde0696903c34ceb6733fba62
+    kv_seam_paired_smoke.py: b39e1cd0ebcff3745f28f9a3295288e1a302912281cb9ca9ef715ebd5ae694cd
+    test_leg_b_selection_logic.py: f68492d73ab27af3159b7bb99258d780741053890ad9178275e253f37eef0563
+    smoke_all.py: 6b280fc2c7bafb31db74ebc70ad3345a3ec0de41df9ab5e686875d0ed8d7c7a9
+    ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py: ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08
+  persistence:
+    render_gemma.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 15.4
+      note: exercised by smoke_all.py::_render_primary, _render_subsample, _render_control
+        (committed, reproducible; see smoke_all.py entry below). primary (k-shot)
+        render is a pure string build; the chat-template control loads the google/gemma-4-E4B-it
+        tokenizer from the local HF cache (local_files_only, no network), which dominates
+        wall clock, and is SKIPPED with an explicit marker if that cache entry is
+        absent. Also covers the deterministic 1800-row dual-render subsample selector
+        (200/flavor x 6 + 600 known) for determinism and exact counts.
+    extract_anchor_gemma.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 3.3
+      note: exercised by smoke_all.py::_extractor (committed, reproducible). CPU smoke
+        with a mocked model/tokenizer over a synthetic panel (both render arms), covering
+        primary+control extraction, per-row safetensors schema (L0..L42, hidden width
+        2560), kill-resume (missing rows re-extracted, present rows left alone), render-fingerprint-change
+        forcing a fresh restart, and the GG0 hard-stop on a wrong hidden-state count.
+        No GPU verb, no docker run, no weight download was issued; the real model
+        load and captures still require the live GPU run.
+    build_flavor_panels.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.001
+      note: exercised by smoke_all.py::_panel_builder (committed, reproducible). verify_and_copy
+        exercised directly with a self-computed sha256 (positive case) and both a
+        sha256 mismatch and a missing-source-file negative case, plus counts_summary
+        sanity on synthetic rows. The real upstream flavor-atlas-rawbase panels are
+        gitignored and not present in every checkout, so main()'s full run against
+        the real pinned shas is not exercised by the smoke; the reuse-and-verify mechanism
+        it depends on is.
+    flavor_probe_sweep.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 9.8
+      note: exercised by smoke_all.py::_gg1_cpu_gate and _probe_sweep_end_to_end (committed,
+        reproducible). End-to-end smoke over synthetic panels/activations (43 layers,
+        small hidden dim for speed) covering G1/G2/G3/G4, the dual-leg decision (Leg
+        A hs24 + Leg B nested split-half) for all six flavors plus the pooled and
+        selfaware reference rows, the transfer matrix, and G6 on a mixed known/unknown
+        control subsample. require_forward_use_cache (GG1 CPU-side gate) separately
+        smoked for both hard-stop and pass cases. Full production sweep over 43 layers
+        x 11657 primary rows + 1800 control rows is budgeted tens of minutes to a
+        small number of hours CPU per AMENDMENT.md compute budget (draft estimate,
+        not re-measured here).
+    surface_residualization.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.76
+      note: exercised by smoke_all.py::_residualization (committed, reproducible).
+        build_surface_matrix, crossfit_ridge, activation_oof_r2, permutation_negative_control,
+        and planted_channel_positive_control all smoked on synthetic data engineered
+        so each control's pass/fail direction is meaningful (a surface matrix independently
+        correlated with y for the negative control smoke; a surface matrix genuinely
+        label-correlated for the positive-control smoke, since the plant is a linear
+        projection of the surface matrix and needed real surface-label correlation
+        to be detectable). smoke_all.py asserts the registered gate bounds (raw AUROC
+        >= 0.90, residualized AUROC <= 0.75) rather than an exact printed value, since
+        the numbers are seed-stable but not bitwise pinned across sklearn/numpy versions;
+        both committed runs landed at raw=0.9954, residualized=0.2375, same seed,
+        same result both times.
+    gate_adjudicator.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.029
+      note: exercised by smoke_all.py::_gate_adjudicator (committed, reproducible).
+        GG0/GG1/GG4 pass+fail branches, P1/F1 and P2/F2 adjudication on synthetic
+        dual-leg/curve data, and the fail-closed adjudicate() propagation (a failing
+        GG0 forces P1/P2/P3 to INDETERMINATE rather than being silently skipped or
+        scored) all smoked and passing.
+    kv_seam_paired_smoke.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.05
+      note: exercised by smoke_all.py::_kv_seam_subprocess, which invokes `python3
+        kv_seam_paired_smoke.py --mode=synthetic` as a subprocess of the exact committed
+        CLI command (committed, reproducible). --mode=synthetic self-check passes
+        on all three named fixture profiles (documented signature, all-identical,
+        halt-early- divergence). --mode=live correctly refuses to run (no GPU runtime
+        available in this pass); it must be run for real before any production capture.
+    test_leg_b_selection_logic.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.05
+      note: exercised by smoke_all.py::_leg_b_subprocess, which invokes `python3 test_leg_b_selection_logic.py`
+        as a subprocess of the exact committed CLI command (committed, reproducible).
+        Gate-math assertion. Engineered synthetic selection/evaluation curves where
+        the registered (select-on-selection-split, report-on-evaluation-split) formula
+        and a plausible-wrong circular formula (select directly on the evaluation
+        split) disagree on both the chosen layer and the reported AUROC; confirms
+        the registered, non-circular formula is what flavor_probe_sweep.py implements.
+    smoke_all.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 18.0
+      note: 'the committed, single reproducible entry point for every smoke claim
+        above. Replay: `cd experiments/flavor-atlas-gemma-pt-confirmatory && python3
+        smoke_all.py`. Run twice from the committed tree (fresh process each time)
+        to confirm determinism: both runs 11 passed, 0 skipped, 0 failed (wall clock
+        ~18s first run, ~17s second run, dominated by the control-render tokenizer
+        load from the local HF cache). Exit code 0 iff zero FAILs; SKIPPED (control-render
+        only, conditional on local -it tokenizer cache) is never counted as passing.
+        Superseded the prior ad-hoc interactive smokes, which were not replayable
+        from the committed tree. Full per-check results and exact commands recorded
+        in NOTEBOOK.md under the 2026-08-10 entry "committed smoke runner (smoke_all.py)
+        + reproducibility fix".'
+    ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 7.424
+      note: pinned item-26 probe protocol imported unchanged, exercised transitively
+        by smoke_all.py's probe-sweep and residualization checks (both call _cv_auroc_with_oof).
+  runtime_image_digest: sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8
+  runtime_image_digest_note: confirmed at signing via `docker image inspect mechinterp-runner:local`
+    (read-only), matching char for char the digest the three most recent flavor cells
+    pin, per the 2026-07-10 standing directive. Governs the four extract verbs (extract_anchor_gemma.py,
+    never mechinterp extract) once GPU launch is approved.
+  lane: local_3090
+  concurrency: one GPU job at a time; four sequential extract verbs (kuq, ambigqa,
+    selfaware, dual-render control subsample)
+  launch_gate: GPU may not run until the lead relays PI launch approval AND the Qwen-side
+    surface control (flavor-atlas-surface-control-confirmatory) has resolved. No GPU
+    verb, no docker run, and no weight download were issued while authoring this scaffolding.
+inputs:
+- experiments/flavor-atlas-rawbase/AMENDMENT.md
+- experiments/flavor-atlas-rawbase/gates.yaml
+- experiments/flavor-atlas-rawbase/analysis/panels/kuq_panel.jsonl
+- experiments/flavor-atlas-rawbase/analysis/panels/ambigqa_panel.jsonl
+- experiments/flavor-atlas-rawbase/analysis/panels/selfaware_panel.jsonl
+- experiments/pretrain-only-base-readout/AMENDMENT.md
+- experiments/gemma4-e4b-kv-seam-quarantine/extract_anchor.py
+- experiments/gemma-4-e4b-family-atlas/AMENDMENT.md
+- experiments/family-atlas-surface-residualization-control/reanalyze_surface_residualization.py
+- experiments/common/readouts/amendment_x_cross_model_extract.py
+- experiments/common/renders/ood_breadth_response_confidence_render.py
+- experiments/ood-breadth-beyond-selfaware/internal_panel_probe_gate.py
+verdict: ''
+kg: []
