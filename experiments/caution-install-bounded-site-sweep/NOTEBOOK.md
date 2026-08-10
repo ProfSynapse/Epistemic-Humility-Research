@@ -6,6 +6,445 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-10T21:10Z - Round 4: raw_base gate-params handoff fix (tau/mu_d/sigma_d import), stray artifact cleanup. CPU smoke re-passed.
+
+Follow-up to the 2026-08-10T18:45Z Round 3 entry, per lead adjudication of
+the delta verify's one blocker and two minors. No git operations; CPU only.
+
+- **Governed-text note (lead action, no code change here)**: the lead
+  corrected the g0b quantity wording in `gates.yaml` and `AMENDMENT.md` to
+  the cache-condition-invariance quantity (matching the Round 3
+  `run_seam_check` implementation, which was already correct against the
+  lead's Round 3 instruction but not yet against the governed text) and
+  repinned `gates.yaml` (new sha256
+  `ea176dac3635efd54cd346949da776db4f0996ef6570a5a950c03bf2e252a93d`,
+  `experiment.yaml` repins block, dated 2026-08-10T15:18:14Z). No seam-check
+  code changed this round; the implementation now matches the governed text
+  it was already anticipating.
+
+- **BLOCKER, RESOLVED -- raw_base gate-params handoff**: `run_import_raw_base`
+  wrote `provenance.mu_d_over_fit_pool` / `sigma_d_over_fit_pool` (the
+  source amendment's own spelling) and no `tau` at all, but
+  `gate_scoring.load_gate_params` (the shared reader, left unmodified per
+  instruction) reads canonical `provenance.mu_d` / `sigma_d` and
+  `manifest["sites"][site]["tau"]` -- a KeyError waiting for Stage 6/8 to
+  hit it on raw_base. Fixed on the import side only:
+    - `build_directions.run_import_raw_base` now maps the source's
+      `mu_d_over_fit_pool` / `sigma_d_over_fit_pool` onto canonical
+      `mu_d` / `sigma_d` in the WRITTEN u_d copy's provenance (source
+      spellings kept alongside, not replaced); hard-fails if the source
+      fields this mapping depends on are absent.
+    - Added `sweep_lib.raw_base_gate_fit_params(site)`: imports `tau`
+      (`tau_frozen`, Youden-J) from the SAME source amendment's own
+      `experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json`
+      (already G0d-gated there), hard-failing on a missing/malformed file
+      or a missing/mismatched per-site entry; records that file's sha256 in
+      manifest provenance too. `raw_base_direction_import` now returns
+      these fields, and `run_import_raw_base` writes `tau` /
+      `tau_frozen_method` / `gate_fit_source_path` / `gate_fit_sha256`
+      into each site's `build_gate_manifest.json` entry.
+    - **Live-driven, not just unit-tested**: ran the REAL
+      `build_directions.run_import_raw_base` followed by the REAL
+      `gate_scoring.load_gate_params("raw_base", "hs23"/"hs29")` end to
+      end, both COMMITTED/DIRECTIONS_DIR redirected to a tempdir (never
+      touching the tracked/gitignored real paths). Both sites resolved with
+      no KeyError:
+      hs23: u_d.shape=[2560], mu_d=-4.706120, sigma_d=3.841707,
+      tau=0.139240 (tau_frozen_method=youden_j);
+      hs29: u_d.shape=[2560], mu_d=1.535061, sigma_d=10.566303,
+      tau=0.120912 (tau_frozen_method=youden_j). tau values match the
+      lead's cited quotes exactly (hs23 0.13924013495876808, hs29
+      0.12091211815721492), re-read from the source file, not hardcoded.
+      g0_overall_pass True (g0c reproducible, g0d AUC>=0.90 both sites).
+
+- **Minor #1, RESOLVED**: `sweep_lib._load_direction_json` now checks
+  vector dimensionality (== 2560, Qwen3-4B hidden_dim) and that every entry
+  is numeric and finite (extended slightly past the literal "numeric
+  entries" ask to also reject NaN/Infinity, since a non-finite entry is
+  technically still a Python float and would otherwise pass a bare type
+  check -- flagged here in case a narrower reading was intended).
+
+- **Minor #2, RESOLVED**: `g0d_note` now interpolates the actual measured
+  source AUC (`auc_neg_z_d_on_fit`) it references instead of pointing at
+  the source file without quoting a number. As a direct consequence,
+  `g0d_pass` is now computed from that real value (`>= 0.90`, the same
+  registered floor used elsewhere) rather than hardcoded True -- both sites
+  still read True (hs23 AUC 0.9905, hs29 AUC 0.9984), so this round's
+  behavior is unchanged, but the gate is no longer a rubber stamp.
+
+- **Stray artifact cleanup**: deleted the two tracked pre-run artifacts
+  Round 3's live tests left behind (`analysis-committed/gate_report.json`,
+  `analysis-committed/raw_base/build_gate_manifest.json`) -- premature
+  outputs from CPU verification, not real run evidence. This round's
+  re-drive test wrote only to a tempdir (see above); `git status` confirmed
+  clean before this report (only source `.py`/`.md` modifications and the
+  pre-existing untracked harness scripts, no stray artifacts).
+
+CPU smoke (`python3 run_sweep.py --smoke-harness`) re-ran clean after this
+pass: exit 0, `gpu_touched: false`, `cleaned_up: true`. No threshold, band,
+count, seed, or gate definition was changed; the fix repairs the import's
+handoff to `gate_scoring.load_gate_params`, which itself was left
+unmodified per instruction.
+
+### 2026-08-10T18:45Z - Round 3: seam-check correction (BLOCKER #9), raw_base directions import (BLOCKER #8), four new defects, preflight subcommand. CPU smoke re-passed.
+
+Follow-up to the 2026-08-10T14:30Z wiring-pass entry, per lead adjudication of
+the verify re-review's two blockers and four new defects. No git operations;
+CPU only.
+
+- **BLOCKER #9, RESOLVED (regression, not incremental)**: the prior seam-
+  continuity check (`extract_anchor.py compute_seam_continuity`) measured
+  cosine between ADJACENT hidden-state layers within one forward pass --
+  the wrong quantity; real residual streams never approach the registered
+  0.999 floor between adjacent layers (re-reviewer measured min 0.043 on
+  healthy committed data, hard-stopping Stage 2 on GOOD data). The
+  REGISTERED quantity is cache-condition invariance of the SAME hidden
+  state: min cosine between the SAME row's SAME hidden state, captured
+  twice via direct `transformers` forward calls
+  (`output_hidden_states=True`), once `use_cache=True` and once
+  `use_cache=False`, never routed through the tuner's capture path (which
+  hardcodes the flag). Replaced with `select_seam_check_rows()` (seeded,
+  fixed 32-row subset, `random.Random(f"{seed}:seam_check")`),
+  `seam_cosine_between_runs()` (pure math, CPU-testable), and
+  `run_seam_check()` (the two forward calls, reusing the already-loaded
+  model/tokenizer). Floor unchanged at 0.999. CPU-smoke-tested the
+  comparison math on synthetic tensors: identical-vectors case gives
+  min_cos ~1.0 (passes); a deliberately perturbed layer is correctly
+  identified by both value and layer index; `select_seam_check_rows`
+  called twice on the same input is deterministic. GPU execution (the real
+  Qwen3 forward passes) happens at launch, per instruction -- Qwen is an
+  unaffected family so this should read ~1.0 there; a failure would be a
+  real red flag, not an artifact of the old wrong-quantity check.
+
+- **BLOCKER #8, RESOLVED**: "a paired replication reuses the replicated
+  operating point; it never refits." raw_base's Stage 3
+  (`build_directions.py`) no longer fits anything -- it IMPORTS hs23/hs29
+  `c_hat`/`u_d` unchanged from `j-space-midband-write-sweep-qwen3-4b`'s own
+  committed, already-gated artifacts
+  (`experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/{hs23,hs29}/{c_hat,u_d}_hs{23,29}.json`).
+  Added `sweep_lib.raw_base_direction_import()`: loads and validates each
+  file (schema_version == mechinterp-direction/v1, non-empty vector,
+  provenance.hs_index matches the requested site), hard-fails (RuntimeError)
+  on any missing or malformed source; live-tested both hard-fail paths
+  (missing file, hs_index mismatch) plus the real import. `build_directions.py`
+  now branches to `run_import_raw_base()` for raw_base, which writes the
+  imported records (unchanged, plus an `import_provenance` block recording
+  source path/sha256/identity) to `directions/raw_base/<site>/{c_hat,u_d}_<site>.json`
+  and a `build_gate_manifest.json` reporting `mode: "imported"` with G0c/G0d
+  marked N/A-imported (not silently defaulted to pass -- G0c is verified by
+  re-reading and comparing sha256, G0d notes the source amendment's own
+  gate already governs). Live-ran against the real committed artifacts:
+    - `c_hat_hs23.json` sha256 `50c3b580d7077ae4c5ee4496aa075e9158ae57fd168961f3d1854cddce7f1a72`
+    - `u_d_hs23.json` sha256 `3565c8a16670f7fe3542cd1e26ee66bc451e08f2e40718f6ea8e26f86cb0672b`
+    - `c_hat_hs29.json` sha256 `e6872569423e8cca31a61c857d27a3a89e89aa5f7061924c9ce21faa672bf692`
+    - `u_d_hs29.json` sha256 `8cebdf90ccf76ada347592a6f8ab7514fb5d8a75468ec091fde8c03805e9faf6`
+  Lead: these four paths need adding to `experiment.yaml` `inputs:`/pins (not
+  done by this pass -- experiment.yaml is the lead's own edit per the Round
+  2 convention).
+
+- **NEW DEFECT #1, RESOLVED**: `adjudicate_gates.g3_direction_specificity`'s
+  `pass` now additionally requires `gated_lift > 0 AND max_draw_lift > 0`
+  (guard, not a new threshold) -- a negative-lift arm can never represent
+  direction-specific installation. CPU-smoke-tested with a synthetic case
+  (negative gated_lift, negative max_draw_lift, numeric ratio >= 3.0 by
+  sign cancellation) confirming the guard blocks the pass the old code
+  would have granted.
+
+- **NEW DEFECT #2, RESOLVED**: a non-finite ratio (only reachable when
+  max_draw_lift == 0) now serializes as the string sentinel `"inf"`/`"-inf"`
+  plus an explanatory `ratio_note` field, never bare JSON Infinity.
+  `sweep_lib.write_json` now passes `allow_nan=False` to `json.dumps`
+  globally, raising a clear `ValueError` naming the target path if any
+  caller ever tries to write a non-finite float unsanitized. CPU-smoke-
+  tested both: the g3 sentinel path, and `write_json` rejecting
+  `float('inf')` / `float('nan')` directly.
+
+- **NEW DEFECT #3, RESOLVED**: `run_sweep.py`'s smoke-harness G3 assertion
+  no longer re-implements the lift/ratio/guard math inline; it now calls
+  `adjudicate_gates.g3_direction_specificity(substrate, ctrl=..., ho=...)`
+  directly on in-memory dicts shaped like the worked example (RG1 section
+  5.1: gated lift +40.9pts, draws +13.3/-7.4/+21.8pts, ratio ~1.87x FAIL),
+  via a new optional `ctrl`/`ho` parameter pair on that function -- keeps
+  the smoke's "never touches real analysis-committed/*" invariant (no disk
+  I/O) while eliminating the second, driftable copy of the gate math.
+  Re-ran the full `--smoke-harness`: ratio reproduces 1.8716 (FAIL), exit 0,
+  `gpu_touched: false`.
+
+- **NEW DEFECT #4, RESOLVED**: `AMENDMENT.md`'s status line no longer reads
+  "may now launch as confirmatory-tier-2 evidence" (wrong -- this cell is
+  registered Tier 2 EXPLORATORY, not confirmatory). Reworded to match the
+  body's own registration: signed, may launch per its gates; Tier 2
+  EXPLORATORY, results reported separately from the locked headline matrix
+  and never pooled with it, a positive result is a lead requiring a
+  confirmatory replication registered before running it.
+
+- **ALSO(a), RESOLVED**: added `run_sweep.py preflight` (dedicated
+  subcommand, checked before the flag-based CLI schema). Checks (1) F16's
+  expansion corpus (`mine_pool.EXPANSION_CANDIDATES`) is staged into the
+  worktree, (2) `analysis/rows_with_text_raw_base.jsonl` covers all 221 of
+  rep2's registered raw_base anchor pool row_keys AND each carries
+  `role: "confab"` specifically, not just row_key presence. The same role
+  check was added to the existing hard-fails in
+  `extract_anchor.py._raw_base_joined_rows` and
+  `dose_calibrate.py.calibration_pool` (previously checked row_key presence
+  only). Live-ran `preflight` against this worktree's current (unstaged)
+  state: correctly reports both problems by name, exit 1.
+
+- **ALSO(b), RESOLVED -- G4 overlap disclosure, made pre-run**:
+  `adjudicate_gates.g4_substrate_anchor` now computes and reports
+  `dose_selection_overlap`: the count and fraction of raw_base rows that
+  are BOTH dose-selected-on (`dose_calibrate.py`'s calibration pool, first
+  `n_confab_fit_rows` row_keys sorted) AND scored in G4's denominator (the
+  full rep2 221-row pool), computed from `cell.yaml`
+  `dose_ladder.calibration_pool.n_confab_fit_rows` and
+  `sweep_lib.raw_base_anchor_pool()` rather than hardcoded -- live-computed
+  as 24/221 = 10.9%, matching the re-reviewer's measurement exactly.
+  **Two-sided caveat, disclosed here pre-run**: raw_base has no registered
+  FIT/HELD-OUT split, so this overlap is structural, not a bug to fix
+  before launch -- but it means the 24 dose-selected rows are not held out
+  from G4's evaluation population. This can bias the observed rate EITHER
+  toward OR away from the reference Wilson interval (dosing at calibration
+  time could shift those 24 rows' own downstream confab rate in either
+  direction relative to the other 197), not exclusively toward a false
+  containment pass. The write-up must state this disclosure, not treat a
+  G4 PASS as unqualified.
+
+CPU smoke (`python3 run_sweep.py --smoke-harness`) re-ran clean after every
+change in this pass: exit 0, `gpu_touched: false`, `cleaned_up: true`. No
+threshold, band, count, seed, or gate definition was changed; every fix
+repairs the instrument's implementation of the design already registered in
+`AMENDMENT.md`/`cell.yaml`/`gates.yaml`.
+
+### 2026-08-10T14:30Z - Final wiring pass: F8 resolved per G4 (rep2 pool), F25 resolved by repin + assertion. CPU smoke re-passed.
+
+Follow-up to the 2026-08-10T00:00Z remediation entry, per lead adjudication
+of the two gaps that entry reported unresolved. No git operations; CPU only.
+
+- **F8, RESOLVED** (was reported-unresolved): the lead read AMENDMENT.md's
+  G4 block precisely -- there is no missing raw_base mining stage; the
+  registered raw_base anchor population IS rep2's 221-row multi-source
+  held-out confab pool
+  (`experiments/j-space-layer-contrast-rep2-multisource/analysis-committed/
+  multisource_pool_manifest.json`), the same pool G4 cites for the hs23/
+  hs29 reference rates. Added `sweep_lib.raw_base_anchor_pool()`: loads that
+  manifest, cross-checks its confab count against the SAME experiment's
+  independently-written `full_summary.json` (both read 221; verified live
+  against the real committed artifacts, not just unit-tested), hard-fails
+  on any mismatch or missing file, and returns provenance (manifest sha256
+  c7ccbb980ba8e9788386d69c4338f71c4ab117960fb0eea58011c1507508c456,
+  identity string). `extract_anchor.py`'s `_raw_base_joined_rows()` and
+  `dose_calibrate.py`'s `calibration_pool()` now source raw_base's confab
+  rows from this verified pool (all `split="held_out"`, matching rep2's own
+  no-internal-split methodology) instead of the old blanket "no mining
+  stage" error. `extract_anchor.py` records the pool's sha256 + identity
+  string into that substrate's `manifest.json`, satisfying G4's "record
+  which raw-base pool it ran on."
+  **Residual gap, reported not silently closed**: rep2's committed manifest
+  is deliberately ID/role-only (its own containment policy) -- it carries
+  no question text. `rows_with_text_path("raw_base")` still needs to be
+  populated with real text for these exact 221 row_keys before a GPU stage
+  can run; both call sites now verify this precisely (naming exactly which
+  of the 221 registered row_keys are missing text) rather than erroring
+  vaguely. Live-tested this hard-fail path against the real repo state
+  (text file absent): correctly names 221/221 missing, first 5 row_keys.
+  **Design call flagged for lead review**: `dose_calibrate.py`'s raw_base
+  calibration pool draws its confab side from the SAME 221 rows the anchor
+  arm will later evaluate at Stage 6 (no separate FIT subset), since
+  raw_base has no registered FIT/HELD-OUT split and rep2's own methodology
+  didn't split this pool either; known_correct_answered has no registered
+  raw_base source, so `known_correct_cost` reads a fixed, harmless 1.0
+  tiebreaker for every rung. Flag if a different reading was intended.
+- **F25, RESOLVED** (was reported-unresolved): the lead corrected
+  `cell.yaml` substrates[0] (trained) `base_model` from the raw lineage
+  repo (`unsloth/Qwen3-4B`) to the actual GPU-verified load target
+  (`professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit` @
+  `ac361232c001af0ed5b0386b06dafc35d5cd31ea`) and ran `bin/exp repin` (new
+  cell.yaml sha256
+  b118c1c4a045ca3230dbe8260f0a1d4e43929c0a81abff842352303cf47fb0c2, recorded
+  in `experiment.yaml`'s `instrument.repins` block). `sweep_lib.py`'s
+  `base_repo_and_revision()` no longer special-cases the trained substrate
+  with a hardcoded return; it now reads (repo, revision) directly from
+  `cell.yaml`'s substrates block for BOTH substrates (via the same
+  `substrate_config()` every other call site uses), and asserts the trained
+  substrate's cell.yaml values still equal the GPU-verified recipe
+  (`TRAINED_BASE_REPO_VERIFIED`/`TRAINED_BASE_REVISION_VERIFIED`), failing
+  loudly if a future cell.yaml edit silently drifts from what was actually
+  verified to load. Live-tested against the real repinned cell.yaml: both
+  substrates resolve correctly, assertion passes.
+- `experiment.yaml`'s `inputs:` gained the F16 corpus path
+  (`experiments/divergent-pool-own-readout/analysis/phase1-migrated/probe/
+  analysis/ah_stage0/expansion/expansion_candidates.jsonl`) and the two
+  rep2 artifacts this pass reads (`multisource_pool_manifest.json`,
+  `full_summary.json`). Bookkeeping only, not a re-sign.
+
+**Verification.** `python3 run_sweep.py --smoke-harness` (all 4 CPU-only
+phases) exits 0. Every `.py` file in the directory re-parses cleanly. The
+four pinned instrument modules were re-hashed and still match
+`experiment.yaml`'s `instrument.pins` exactly. `raw_base_anchor_pool()` and
+the F25 assertion were both exercised live against the real committed
+artifacts and real repinned `cell.yaml` in this worktree (not just
+syntax-checked), confirming both the success and hard-fail paths behave as
+documented.
+
+### 2026-08-10T00:00Z - Red-team remediation (item 27): instrument repairs, pre-data. CPU smoke re-passed.
+
+Harness-level fixes to implement the SIGNED design as registered, per the
+red-team findings report. No registered threshold, band, count, seed, gate
+definition, or falsifier changed. No data existed yet; these are pre-read
+instrument repairs. Per-finding, terse:
+
+- **F1/F13** (G3 lift math): `adjudicate_gates.py` `g3_direction_specificity`
+  and `run_sweep.py`'s `--smoke-harness` Phase 4 mirror both previously
+  computed a raw-rate ratio (`gated_rate / draw_rate`, no baseline
+  subtraction). Rewritten to the registered RG1 criterion: per-cell lift =
+  rate minus that SAME cell's own undosed baseline, for `gated` and for each
+  of >=3 fresh draws; ratio = gated_lift / max(draw_lift). Smoke now asserts
+  the corrected formula reproduces the RG1 worked example
+  (read-then-actuate.md 5.1): ratio ~1.87-1.88, FAIL -- not the old bug's
+  spurious PASS shape.
+- **F2** (mine_pool.py question/category source): generation records
+  verifiably carry no question text (`probe_stage_b.py`,
+  `probe_census_extension.py` write only
+  `{row_key,label,source,completion,n_new_tokens,terminated_naturally,
+  **grade}`). DEVIATION from the literal instruction ("take from the
+  generation record itself"): sourced from the full expansion-candidates
+  corpus (`load_all_candidates()`), which does carry question/aliases/
+  category per row_key, instead. Hard-fails (nonzero exit, no partial pool
+  file) if any selected row still has empty question text. Counts/
+  stratification unchanged.
+- **F3** (docker_launch.sh image substitution): rewrote to resolve+run
+  `unsloth/unsloth@<cell.yaml execution.runtime_image_digest>` by digest,
+  exit 1 if not locally present, never substitutes mechinterp-runner. The
+  prior script read the pin only to print a WARNING on mismatch while
+  actually launching `mechinterp-runner:local` by tag.
+- **F4**: single `load_split_manifest` helper added to `sweep_lib.py`
+  (`json.loads`, not `load_jsonl` which mis-parsed the pretty-printed
+  manifest object as JSONL and crashed 5 downstream consumers).
+- **F5**: `mine_pool.py` gained `--substrate` (required) and
+  `--i-know-this-runs-on-gpu`. `split_fit_heldout.py` registered as its own
+  Stage "1b" in `run_sweep.py`'s STAGES dict (string keys, new STAGE_ORDER
+  list), between mining (1) and extraction (2).
+- **F6**: `install_pinned_loader` gained an optional `base_revision` param,
+  bound via `functools.partial` only when passed. Threaded through
+  `dose_calibrate.py` (whose `run_dose_calibration` has no `revision`
+  parameter at all) without touching the tuner submodule or colliding with
+  `run_steer` call sites, which already pass `revision` as a third
+  positional.
+- **F7**: `dose_calibrate.py` readback check rewritten so a MISSING
+  `readback_measured`/`readback_commanded` (unmeasured row) fails, not
+  vacuously passes via `or`'s short-circuit on `None`.
+- **F8**: raw_base gets its own harness-internal (non-pinned, gitignored)
+  `rows_with_text_path`/`split_manifest_path` via `sweep_lib.py`; consumers
+  fail loudly rather than silently reusing the trained pool. cell.yaml's
+  singular `surface.rows_path`/`surface.split_manifest` pins are untouched
+  (hash-pinned) and remain implicitly trained-only, matching Stage 1's
+  registered scope. UNRESOLVED GAP (reported, not silently closed): no
+  registered mining stage exists anywhere in AMENDMENT.md's Run Plan for
+  raw_base -- its anchor-pool POPULATION mechanism needs a lead design
+  decision before Stage 2+ can run for raw_base. extract_anchor.py and
+  dose_calibrate.py both raise a loud, substrate-aware error naming this gap
+  rather than resolving it.
+- **F9**: `extract_anchor.py` gained `compute_seam_continuity()` -- min
+  cosine between consecutive hidden-state-index captures, over every
+  extracted row -- persisted into that substrate's `manifest.json` and read
+  into `adjudicate_gates.py`'s `g0_integrity` as
+  `g0b_seam_continuity_<substrate>`. Previously never computed anywhere
+  despite the docstring claiming it was.
+- **F10**: `adjudicate_gates.py`'s `g0f_containment` was a hardcoded string.
+  Replaced with a real recursive scan of every `.json`/`.jsonl` file under
+  `analysis-committed/` for the row-text field names verified present in
+  this harness's own producers (question, aliases, answer_text, completion,
+  prompt, generation).
+- **F11**: `adjudicate_gates.py`'s `g4_holding` used `all()` over a
+  filtered generator that silently returns `True` when empty (e.g. every
+  raw_base anchor cell NOT_RUN). Fixed to report
+  `"UNKNOWN_no_ran_anchor_cells_instrument_void"` instead of a vacuous pass.
+- **F12**: `run_held_out.py`'s `summarize_cell()` now persists BOTH the full
+  held-out population rate and the fired-only rate (both numerators/
+  denominators) for `known_correct_answered_held_out`.
+  `adjudicate_gates.py`'s `g2_selectivity` implements gates.yaml's
+  headline_rule literally: fired-only rate is the headline exactly when it
+  exceeds the cap while the full-population rate passes; otherwise
+  full-population is the headline. Measurement only, no new threshold.
+- **F14**: `run_pairs.py` now verifies readback at BOTH pair members
+  against the registered `dose_ladder.readback_tolerance` per row
+  (`readback_a_within_tol`/`readback_b_within_tol`), and aggregates
+  `frac_readback_within_tol` into each position's summary.
+- **F15**: `run_pairs.py`'s generation call now uses `**gen_kwargs` from
+  `MechInterp.cli._generation_kwargs(tokenizer, GenerationContract(...))`,
+  the same generation-kwargs contract every other stage script uses,
+  replacing manually duplicated `max_new_tokens`/`min_new_tokens`/
+  `do_sample`/`num_beams`/`return_dict_in_generate` kwargs.
+- **F16**: `mine_pool.py`'s hardcoded machine-local
+  `CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")`
+  replaced with a repo-root-relative `EXPANSION_CANDIDATES` path (via
+  `sweep_lib.REPO_ROOT`), working both on host and under the container's
+  `/workspace` mount. Resolved path for the lead to pin at experiment.yaml:
+  `experiments/divergent-pool-own-readout/analysis/phase1-migrated/probe/
+  analysis/ah_stage0/expansion/expansion_candidates.jsonl`.
+- **F17**: added `sweep_lib.emit_provenance_line()`, called once from
+  `install_pinned_loader()` (the shared choke point every GPU-verb script
+  already calls before any model load), printing one provenance JSON line
+  (runtime_image_digest, python/torch/cuda versions) to stdout, which
+  `launch_detached.sh`/`docker_launch.sh` already redirect into the run
+  log. `unsloth/unsloth:latest --entrypoint python3` overrides
+  mechinterp-runner's own `print_provenance.py` entrypoint, so this
+  Python-side emission is the correct fix, not a shell-side one.
+- **F18**: `docker_launch.sh` rewritten for detached launch: dropped `-it`,
+  added a deterministic `--name`, `--ipc=host`, and corrected the HF cache
+  mount to `/home/unsloth/.cache/huggingface` with `HF_HOME`/
+  `HUGGINGFACE_HUB_CACHE` set explicitly (the image runs as non-root uid
+  1001, home `/home/unsloth`; the old `/root/.cache/huggingface` mount was
+  silently unreachable by the container's own HF client).
+- **F19**: `AMENDMENT.md`'s status line corrected from "DRAFT (not signed)"
+  to reflect `experiment.yaml`'s actual state: `status: signed`,
+  `sign_blocked_on: 'CLEARED 2026-08-09T02:10Z: P2/P3/P4 passed at the
+  probe ... P1 satisfied by count under the pre-stated census criterion ...
+  Signing authorized.'`. `cell.yaml`/`gates.yaml` untouched (hash-pinned;
+  their `# DRAFT` header comments are inert prose, not machine-read).
+- **F20**: `build_directions.py` now reloads each written u_d/c_hat JSON via
+  `json.loads(path.read_text())["vector"]` and compares `np.array_equal`
+  against the in-memory array; `g0c_pass` requires both the two-fit
+  reproducibility check AND this roundtrip check.
+- **F21**: `build_random_directions.py` now reads
+  `max_abs_cos_vs_c_hat`/`max_abs_cos_vs_u_d` from `gates.yaml`'s
+  `g3_direction_specificity.draw_hygiene_sc1` (previously loaded via
+  `load_gates()` but never used -- a hardcoded `MAX_ABS_COS = 0.015`
+  constant was used instead).
+- **F22**: `mine_pool.py`'s `--target-known-correct` default is now derived
+  (`math.ceil(REQUIRED_TOTAL_KNOWN_CORRECT * 1.10)` = 459) from the
+  registered floor and a named 10% margin constant, not a bare hardcoded
+  `460`.
+- **F23**: `write_smoke.py`'s `cell_ok` now also requires
+  `frac_within_tol == 1.0` (gates.yaml g0e_write_readback's actual pass_if),
+  not just the tuner's own coarser all-or-nothing `passed` boolean.
+- **F24**: local `.gitignore` gained `generated/` (claimed gitignored by
+  `materialize_configs.py`'s own docstring but never actually entered) and
+  `analysis-committed/_smoke_harness/` (the one committed-tree namespace a
+  `--smoke-harness --keep-smoke-artifacts` run writes into). No leftover
+  smoke artifacts were found on disk at fix time.
+- **F25** (trained-base repo/revision, UNRESOLVED, flagged not silently
+  resolved): `sweep_lib.base_repo_and_revision()` now prints a loud
+  "UNRESOLVED-F25" warning (both identifiers) the first time it resolves
+  the "trained" substrate's base repo/revision, so a real run's log
+  visibly carries this open question instead of masking it. Investigation
+  and lead recommendation are in the delegation's final report, not
+  repeated here.
+- Also fixed (same bug class as F8, not separately numbered):
+  `write_smoke.py`'s `probe_rows()` was hardcoded to always read the
+  trained substrate's `rows_with_text.jsonl` regardless of `--substrate`;
+  now uses `sweep_lib.rows_with_text_path(substrate)`.
+
+**Verification.** `python3 run_sweep.py --smoke-harness` (all 4 CPU-only
+phases: pool construction, site iteration, checkpoint/resume, report
+generation) exits 0 after every fix above, including the corrected G3 lift
+math (regression-asserted against the RG1 worked example). `bash -n
+docker_launch.sh` and `python3 -c "import ast; ast.parse(...)"` over every
+touched `.py` file pass. The four pinned instrument modules
+(`probe_common.py`, `probe_stage_a.py`, `probe_stage_b.py`,
+`probe_census_extension.py`) were re-hashed and match `experiment.yaml`'s
+`instrument.pins` exactly -- confirmed untouched.
+
 ### 2026-08-09T02:15Z - Census COMPLETE. P1 satisfied by count (260 >= 250). All probe checks pass; signing
 
 **Census run.** Container caution-install-probe-census-20260809b exited 0.

@@ -18,8 +18,9 @@ substrates:
   # experiments/diag-item11-batched-steering-equivalence/experiment.yaml.
   - name: trained
     role: primary
-    base_model: unsloth/Qwen3-4B
-    base_form: clean-SFT merged-16bit
+    base_model: professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit
+    revision: ac361232c001af0ed5b0386b06dafc35d5cd31ea
+    base_form: clean-SFT merged-16bit (lineage unsloth/Qwen3-4B)
     adapter_repo: professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora
     adapter_revision: 8914081dfcec4f1f025f2dbe4195d4f7aa8d210e
     quantization: none

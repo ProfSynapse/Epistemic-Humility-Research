@@ -580,7 +580,15 @@
         "experiments/write-direction-naming-battery/AMENDMENT.md",
         "experiments/diag-item11-batched-steering-equivalence/experiment.yaml",
         "experiments/j-space-cross-family-layer-contrast/mine_eval_pool.py",
-        "docs/atlas/family-layer-map.md"
+        "docs/atlas/family-layer-map.md",
+        "experiments/divergent-pool-own-readout/analysis/phase1-migrated/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl",
+        "experiments/j-space-layer-contrast-rep2-multisource/analysis-committed/multisource_pool_manifest.json",
+        "experiments/j-space-layer-contrast-rep2-multisource/analysis-committed/full_summary.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs23/c_hat_hs23.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs23/u_d_hs23.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs29/c_hat_hs29.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs29/u_d_hs29.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json"
       ],
       "instrument": {
         "concurrency": "one GPU job at a time",
@@ -594,11 +602,87 @@
           "probe_common.py",
           "probe_stage_a.py",
           "probe_stage_b.py",
-          "probe_census_extension.py"
+          "probe_census_extension.py",
+          "adjudicate_gates.py",
+          "alin_profile.py",
+          "build_directions.py",
+          "build_random_directions.py",
+          "docker_launch.sh",
+          "dose_calibrate.py",
+          "extract_anchor.py",
+          "gate_scoring.py",
+          "grader_sweep.py",
+          "materialize_configs.py",
+          "mine_pool.py",
+          "render_sweep.py",
+          "run_controls.py",
+          "run_held_out.py",
+          "run_pairs.py",
+          "run_sweep.py",
+          "split_fit_heldout.py",
+          "sweep_lib.py",
+          "write_smoke.py"
         ],
         "persistence": {
+          "adjudicate_gates.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "alin_profile.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "build_directions.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "build_random_directions.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "docker_launch.sh": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "dose_calibrate.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "extract_anchor.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "gate_scoring.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "grader_sweep.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "materialize_configs.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "mine_pool.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
           "probe_census_extension.py": {
             "checkpoint_path": "experiments/caution-install-bounded-site-sweep/analysis/probe_census_generations_private.jsonl",
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
             "persistence": "incremental"
           },
           "probe_common.py": {
@@ -612,18 +696,95 @@
           },
           "probe_stage_b.py": {
             "checkpoint_path": "experiments/caution-install-bounded-site-sweep/analysis/probe_generations_private.jsonl",
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
             "persistence": "incremental"
+          },
+          "render_sweep.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "run_controls.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "run_held_out.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "run_pairs.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "run_sweep.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "split_fit_heldout.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "sweep_lib.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "write_smoke.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
           }
         },
         "pins": {
-          "cell.yaml": "d0ff8c9803a9f3b8d42abf16d4a89f238340d54d1220e2ce48dd05527dcfbb99",
+          "adjudicate_gates.py": "5813ae3e1adabe9155053677a579b1cf358309b72745941d374623ed0af32c21",
+          "alin_profile.py": "fee9888bce2f3284b7308ee57c98e5338a7160f72da85580d9794e04885fbfe9",
+          "build_directions.py": "0b8e989201371518c8a392359922022dd5300ab3f87b84cdbbb8f6d81d54da97",
+          "build_random_directions.py": "0e26b1be448aa587d42b760af40b33ce4cca3f2569f3e93cd9d2a782ced5bcb5",
+          "cell.yaml": "b118c1c4a045ca3230dbe8260f0a1d4e43929c0a81abff842352303cf47fb0c2",
+          "docker_launch.sh": "2efd1f8982844bd8fc2857214ced7b6252ac7bf6a3cfa1356baf63574b79733b",
+          "dose_calibrate.py": "1eb61de617bdc8f666b1c78b9b9cfc2014b87d7144bf4d6deca40d0dc05a81b9",
+          "extract_anchor.py": "af46bd30d57233745d34b3e6e39acf0e2ad0a804cfae5b7a61015d8696b692f9",
           "feasibility_probe.yaml": "c1e5ed87b36e5a175e3a637a6051f2f6445cfdf0471bfecdb6d6175f1e3f7081",
-          "gates.yaml": "47308ed0ac9aadad37356c9bd945fe44444ae293c6a6c69872beba5083b5646a",
+          "gate_scoring.py": "946bcc1c93f7d068b6ca8ba975e3eca77d5d15c013db442978e229af5bd21aaa",
+          "gates.yaml": "ea176dac3635efd54cd346949da776db4f0996ef6570a5a950c03bf2e252a93d",
+          "grader_sweep.py": "4ed035339a0408640eeade8b4bf65a9eb8d6513909883fcb2942e4225eb266d7",
+          "materialize_configs.py": "01fae475fda4b0be869be2ba6c240377feffcbc6e2cfa70417b2f0a39550e1e4",
+          "mine_pool.py": "46f6a51701788c3f71026401d3edbb39de5a6248ebbef8b4662d6365891a59de",
           "probe_census_extension.py": "7c5d4a8a44fdf0dd3788b12dfc3d103c4ccdfad7aa58f1f3014586389596ce28",
           "probe_common.py": "9ede6b49fb10c362557b6b4cb11df1d70e1f3d8902a818796cd80c5b5cd49de7",
           "probe_stage_a.py": "3d5e2f4db244ad47477dad6cae31452594e28b331a4ca532ccc39f640bf52417",
-          "probe_stage_b.py": "a139b16223d30fa0214c8efbc32562b367d0ef15084a8b8c2f9c1e520eb94c9b"
+          "probe_stage_b.py": "a139b16223d30fa0214c8efbc32562b367d0ef15084a8b8c2f9c1e520eb94c9b",
+          "render_sweep.py": "2dbca966807da00c35085e5c7d598a390e9defd0e0cb0e3bd87731bdc9eeef39",
+          "run_controls.py": "48d2f0fd45b6cc3abce16f2607681edfe340b940fe27df5a7ba1fe3330587188",
+          "run_held_out.py": "d006ce42e8dd00bfc428474f12e4276ef190ba3042be5016a273aa0945965250",
+          "run_pairs.py": "f9a438b8a5f42d00dd7beedb2fd5d95f579c3e0ed98ccc86d8cce15343867a8c",
+          "run_sweep.py": "ab6a4d74bca82df5aca1fed98dc8683dab682b8acd40babdf88e9818055a0e6a",
+          "split_fit_heldout.py": "f550c5a087287b80f450002db30aaf6197b76e2d8193b4df7a658a04f43f22af",
+          "sweep_lib.py": "e6bc601866bf7d96cd36c7d1d4246313176b7334f36f05e0190a5fba82b0dd60",
+          "write_smoke.py": "a022a71b118a848dd05eb6bc5300a92f540b4e0e7631075f88b2ba5babc9ac34"
         },
+        "repins": [
+          {
+            "date": "2026-08-10T13:57:05Z",
+            "file": "cell.yaml",
+            "new_sha256": "b118c1c4a045ca3230dbe8260f0a1d4e43929c0a81abff842352303cf47fb0c2",
+            "old_sha256": "d0ff8c9803a9f3b8d42abf16d4a89f238340d54d1220e2ce48dd05527dcfbb99",
+            "reason": "F25: trained-substrate base_model named the raw lineage repo while base_form said clean-SFT merged-16bit; corrected to the actual load target (the merged clean-SFT repo at its pinned revision, matching the GPU-verified feasibility-probe recipe in NOTEBOOK.md). Identifier defect fixed before any sweep data exists; no threshold, band, seed, or gate touched."
+          },
+          {
+            "date": "2026-08-10T15:18:14Z",
+            "file": "gates.yaml",
+            "new_sha256": "ea176dac3635efd54cd346949da776db4f0996ef6570a5a950c03bf2e252a93d",
+            "old_sha256": "47308ed0ac9aadad37356c9bd945fe44444ae293c6a6c69872beba5083b5646a",
+            "reason": "G0b quantity wording said adjacent-site cosine, which is not the registered seam diagnostic (the reference's 1.000000 comes from comparing the same hidden state under both cache conditions) and induced a wrong implementation caught in re-review. Wording corrected to the cache-condition-invariance quantity the harness now computes; threshold 0.999 and direction unchanged."
+          }
+        ],
         "runtime_image_digest": "sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772"
       },
       "kg": [],
