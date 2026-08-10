@@ -1,15 +1,5 @@
 ---
-<!--
-TITLE CANDIDATES (writer proposal, PI picks; spec docs/preparation/paper5-rewrite-spec.md section 3 ruling 1):
-1. "Readable Is Not Writable: Channel, Gate, and Workspace Constraints on Actuating Known-Unknown State in Small Language Models"
-   Minimal-diff option: keeps the existing lead phrase and structure that papers 3/4 already link against, swaps only the retired "Epistemic State" for the governed known-unknown vocabulary.
-2. "Look Before You Speak: Operating-Point-Dependent Selectivity in Actuating Known-Unknown State"
-   Foregrounds the paper's actual finding after this rewrite (the gate's role changes with dose regime) rather than the older channel/gate/workspace framing, while keeping the "Look Before You Speak" phrase the PI ruling allows.
-3. "The Write Sorts Itself: Gate, Channel, and Workspace Constraints on Actuating Known-Unknown State"
-   Leads with the mid-band positive result (the write self-sorts without the gate) as the memorable hook, most distinctive of the three, at the cost of not previewing the overdrive-regime half of the thesis.
-Working title below is candidate 1, chosen for continuity with existing cross-references from papers 3 and 4; PI may swap at PR time, in which case those cross-references need a follow-up fix (tracked in the writer's report, not in scope for this rewrite).
--->
-title: "Readable Is Not Writable: Channel, Gate, and Workspace Constraints on Actuating Known-Unknown State in Small Language Models"
+title: "Look Before You Speak: Operating-Point-Dependent Selectivity in Actuating Known-Unknown State"
 author: "Joseph Rosenbaum (Synaptic Labs)"
 status: draft-v0
 date: 2026-07-31
@@ -76,13 +66,13 @@ notes: >
   answerability axis this paper actuates on.
 ---
 
-# Readable Is Not Writable: Channel, Gate, and Workspace Constraints on Actuating Known-Unknown State in Small Language Models
+# Look Before You Speak: Operating-Point-Dependent Selectivity in Actuating Known-Unknown State
 
 *Draft v0. Companion to [*Knows but Doesn't Say*](../paper-3-knows-but-doesnt-say/manuscript.md)
 and [*It's What's on the Inside That Counts*](../paper-4-two-signal-readout/manuscript.md).*
 
 *Scope note on "epistemic state": throughout, the phrase names what a linear
-readout of the hidden state reports about answerability and caution, not a
+readout of the hidden state reports about answerability and refusal, not a
 claim that the model represents its own doubt as a mental state. Earlier work
 in this program named these readouts mentalistically (the doubt direction, the
 doubt gate, doubt-coupling); the vocabulary here is known-unknown (KU), which
@@ -117,8 +107,8 @@ failed to train readout consultation: the true-sensor arm was less congruent
 with its final readout than a permuted-sensor control.
 
 Second, hidden-state actuation does work when the problem is posed as a
-KU-gated controller rather than as an unconditional write. A KU-gated caution
-snap on raw-base Qwen3-4B converted 136/185 held-out confabulations into
+KU-gated controller rather than as an unconditional write. A KU-gated boundary
+push (dosed write) on raw-base Qwen3-4B converted 136/185 held-out confabulations into
 clean refusals (73.5%, Wilson 95% CI [66.7, 79.3]) while producing 8/258
 false refusals on known-correct answers (3.1%, CI [1.6, 6.0]); random-direction
 and permuted-gate controls did not reproduce the result. Which component
@@ -151,7 +141,7 @@ hs34 (rd 0.944) 123/185
 using the J-lens backward to target natural refusal tokens was not enough to
 improve the controller: a token-target direction was non-inert by itself
 (88/185 = 47.6%) but added only one extra clean refusal on top of the hs23
-caution snap.
+boundary push (dosed write).
 
 Together these results support a practical distinction: epistemic state is
 readable, externally usable, and sometimes writable, but not automatically
@@ -183,8 +173,9 @@ the model's policy never uses the direction it reads. Conversely, a direction ca
 be behaviorally causal without being a faithful self-readout. The claim the
 evidence supports is correspondingly narrow:
 
-> **Readable is not writable.** Epistemic directions can be strong, portable
-> readouts while remaining weak, channel-dependent, or non-selective actuators.
+> **A readable direction is not automatically a usable actuator.** Epistemic
+> directions can be strong, portable readouts while remaining weak,
+> channel-dependent, or non-selective actuators.
 
 That thesis had an obvious way to be wrong. If writing a readable direction
 back into the residual stream at the layer where it reads best had moved
@@ -202,9 +193,10 @@ The results refine the claim into three engineering rules.
 2. **Separate sensing from actuation, but which part supplies selectivity is
    regime-conditional.** The successful controller is a two-part system: a
    known-unknown (KU) readout gate decides which rows receive a write, and a
-   caution snap supplies the refusal behavior. At an overdrive dose, the snap
-   alone is not selective and the gate is essential. At a mid-band dose, the
-   snap is already content-selective on its own; the gate's contribution
+   boundary push (dosed write) supplies the refusal behavior. At an overdrive
+   dose, the write alone is not selective and the gate is essential. At a
+   mid-band dose, the write is already content-selective on its own; the
+   gate's contribution
    there is a modest, sub-floor increment plus cost governance, not the
    source of selectivity.
 3. **Write near the workspace band.** A Jacobian-lens localization, which
@@ -307,11 +299,11 @@ probe score read from the policy's own pre-generation hidden state.
 
 ### 3.2 Readouts and directions
 
-The core readouts are the known-unknown (KU) direction and a caution/refusal
+The core readouts are the known-unknown (KU) direction and a refusal
 direction. In the gating experiments, the sensor is a standardized KU
 projection: confabulation-prone rows project lower on it than known-correct
 answered rows, so the gate fires when `-z_d` exceeds a threshold selected on a
-FIT split. The actuator is a `c_hat` caution direction, constructed by
+FIT split. The actuator is a `c_hat` boundary-push direction, constructed by
 orthogonalizing a raw refuse/control direction against the KU direction and
 confab-propensity controls. Later J-space experiments reuse per-layer versions
 of these gates and write directions.
@@ -391,17 +383,17 @@ was +7.9 points. The asymmetry, +26.1 points, passed its locked gate.
 
 Internal-state instrumentation sharpened the picture. The known-unknown
 direction did not move semantically with the prompt; compliance traveled
-primarily through a caution/policy axis. A divergent-pool follow-up then separated rows where the
+primarily through a refusal/policy axis. A divergent-pool follow-up then separated rows where the
 model's own readout and the gold label disagreed. Release congruence with the
 model's own readout was a precise zero: -0.21 points, CI [-4.45, +4.10]. A
 pre-registered positive-control addendum verified that the instrument was live
-(+50.98 point induced refusal on a caution-representative stratum). The verdict:
+(+50.98 point induced refusal on a refusal-representative stratum). The verdict:
 system prompts move policy by compliance and boundary distance, not by making the
 model consult its own readout.
 
 **Interpretation.** Authority is an actuator, but it is not the self-monitoring
-channel we wanted. It can install caution from outside, even against the model's
-own knowledge.
+channel we wanted. It can install refusal behavior from outside, even against
+the model's own knowledge.
 
 ### 4.3 Rewarding the readout also fails to train consultation
 
@@ -435,8 +427,8 @@ than asking a single direction to be both sensor and actuator, the successful
 controller separates them:
 
 1. a **KU readout gate** decides which rows look like confabulations;
-2. a fixed **caution snap** writes only those fired rows to a selected refusal
-   setpoint.
+2. a fixed **boundary push (dosed write)** writes only those fired rows to a
+   selected refusal setpoint.
 
 At this write site (Qwen3-4B, L34) and dose (200), a registered comparison
 later established why this separation matters: an unconditional write damages
@@ -459,7 +451,7 @@ floor and the lower CI >50% requirement. Known-correct false refusal was
 8/258 = 3.1%, CI [1.6, 6.0], clearing the <=5% point floor and <10% upper CI
 requirement. A random-direction write on the same fired rows produced only
 13/185 clean tighten, and a permuted gate produced 59/258 known-correct cost.
-The effect depends on both the caution direction and the KU readout gate.
+The effect depends on both the boundary-push direction and the KU readout gate.
 
 **Interpretation.** The model need not internally choose to consult its readout
 for the system to use that readout. The readout can gate an external controller.
@@ -484,20 +476,20 @@ seeds, pooled confab clean-tighten conversion is 643/925 = 69.5%, above the
 ### 4.5 J-space localizes a better write site
 
 The successful gate-and-snap controller still raised a mechanistic question:
-where should a write occur? The inherited caution write site was an L34
+where should a write occur? The inherited boundary-push write site was an L34
 residual-stream direction. A Jacobian-lens characterization asked whether this
 site lies inside or outside the model's workspace-like verbalizable band.
 
 The instrument passed a correctness smoke: the final-layer J-lens closely
 matched the direct unembed baseline over 1000 prompts, with mean cosine 0.9811,
 mean top-10 overlap 0.82, and top-1 match 3/5 over five random directions. The
-H1 read then found that caution-like directions verbalized as first-person,
+H1 read then found that boundary-push-like directions verbalized as first-person,
 absence, error, and impossibility tokens, while the known-unknown direction
 verbalized more as answer/reply tokens. That readout says something about what
 the direction is: a direction that verbalizes toward answer/reply tokens is
 tracking answerability, not a self-directed uncertainty state, and a later cell
 on an out-of-population error class characterizes it the same way, closer to
-unanswerability recognition than to self-directed doubt
+unanswerability recognition than to self-directed uncertainty
 (`margin-evidence-responsiveness-worldknown` Outcome). The layer profile
 localized a workspace-like band to hs=23-29, peaking at hs=26. The inherited
 L34 direction corresponds to hs=34, just after that band.
@@ -513,8 +505,8 @@ versus hs34 (rd 0.944)
 was not optimal.
 
 **Interpretation.** The late write site was not dead, but it was suboptimal.
-Writing near the workspace-like band made the same regulated caution snap
-substantially more effective on this surface.
+Writing near the workspace-like band made the same regulated boundary push
+(dosed write) substantially more effective on this surface.
 
 ### 4.6 Token-targeted J-space writing is real but redundant
 
@@ -528,7 +520,7 @@ as answer/reply forms.
 
 At the selected FIT dose, the J-token direction wrote accurately and safely. It
 was also non-inert: alone, it converted 88/185 confab rows into clean refusals
-(47.6%). But it did not improve the already strong hs23 caution snap. The
+(47.6%). But it did not improve the already strong hs23 boundary push (dosed write). The
 baseline hs23 `c_hat_only` arm reached 165/185 = 89.2%. The hybrid
 `c_hat_plus_j_token` arm reached 166/185 = 89.7%, only +0.54 points. Known-correct
 cost increased by only +0.39 points, so safety was not the issue. The issue was
@@ -544,7 +536,7 @@ tokens" is not automatically a better policy intervention.
 Two adjacent screens support the same read/write caution, though they are not
 main-line evidence for the epistemic controller.
 
-The dark-actuator screen validated the positive-control caution lever: the
+The dark-actuator screen validated the positive-control boundary-push lever: the
 positive control converted 79/80 confab rows into coherent refusals while
 negative and random controls stayed near floor. But the broader candidate screen
 was null: apparent candidates were artifacts of malformed-output scoring,
@@ -559,9 +551,9 @@ directions do not automatically become clean actuators.
 
 ### 4.8 Cross-family replication surfaces an instrument problem, not (yet) a mechanism problem
 
-The gated caution controller in Section 4.4 was fit and evaluated on raw-base
-Qwen3-4B alone. A cross-family test asked whether the same KU-gated caution
-write, refit at each family's own atlas-located workspace-band site, actuates
+The gated boundary-push controller in Section 4.4 was fit and evaluated on raw-base
+Qwen3-4B alone. A cross-family test asked whether the same KU-gated boundary
+push (dosed write), refit at each family's own atlas-located workspace-band site, actuates
 refusal on Llama-3.2-3B and Mistral-7B-v0.3. The initial run
 (`rr-cross-family-raw-refusal`) landed a null shape on both families under a
 locked three-phrase canonical refusal detector. On the mistral leg, an
@@ -584,14 +576,14 @@ well-formedness held at 0.987, and known-correct false refusal stayed at
 and cost gates passed.
 
 The placebo gate did not. A random-direction control matched in magnitude to
-the true caution write lifted adjudicated confab abstention from a
+the true boundary-push write lifted adjudicated confab abstention from a
 368/1312 = 0.280 baseline to 465/1312 = 0.354, a +7.39 point rise against the
 registered 2-point no-op tolerance. Per the pre-registered falsifier, this
 failure alone falsifies the claim that the write is direction-specific on
 mistral, even though the gated arm's own lift over baseline (+41.9 points,
 5.7 times the random direction's) remains far larger. The result is reported
-straight: the mistral cross-family test is falsified, not because the caution
-write failed to move behavior, but because a magnitude-matched random
+straight: the mistral cross-family test is falsified, not because the
+boundary-push write failed to move behavior, but because a magnitude-matched random
 direction also moved it, and the registered tolerance for "moved it" was too
 strict for this family's baseline.
 
@@ -617,9 +609,10 @@ together license a narrow but firm claim: the flat, small, symmetric placebo
 tolerance this program inherited from a Qwen-scale, apparently near-zero
 baseline world is the wrong instrument for cross-family direction-specificity
 testing. It is not evidence that random-direction writes are generically
-confounded with the true caution write; on Qwen3.5-4B the matched-magnitude
-random direction moved hedging in the opposite direction from the true
-write's effect. It is evidence that "no-op within N points" cannot be
+confounded with the IDK switch, the name the Qwen3.5-4B hs20 operating point
+earned from its own registered confirmatory naming cell: on Qwen3.5-4B the
+matched-magnitude random direction moved hedging in the opposite direction
+from the IDK switch's effect. It is evidence that "no-op within N points" cannot be
 registered without first measuring the family's own wide-instrument baseline
 and without deciding, in advance, whether the criterion should be a flat
 tolerance or an effect-ratio gate. The calibration study's design rule for
@@ -682,7 +675,7 @@ the 0.60 floor, well-formedness 0.987, and known-correct adjudicated false
 refusal 2/382 = 0.0052 (Wilson 95% UCB 0.019) against the 0.05 ceiling. An
 adversarial red-team review certified the failure across six registered
 attack surfaces before the verdict was recorded: the three random directions
-were genuinely random (cosine similarity to the true caution direction <=
+were genuinely random (cosine similarity to the true boundary-push direction <=
 0.015), magnitude-matched at the mechanism level (erase-write setpoint
 identical to the gated write within 0.004), scored on identical populations
 with exact arithmetic, and the failure is robust to an alternative rate rule
@@ -873,10 +866,10 @@ paper's claims.
   (`experiments/placebo-seed-distribution-census/AMENDMENT.md`, Outcome;
   Section 4.9).
 - *Qwen specificity is strengthened, not weakened.* Because qwen's placebo null
-  is itself suppressive, the true caution write's recruitment of refusals is
+  is itself suppressive, the IDK switch's recruitment of refusals is
   sign-opposed to the family's nonspecific-perturbation response: a random
   perturbation at matched magnitude pushes qwen hedging down, while the gated
-  caution write pushes it up. A confound a placebo is meant to catch would push
+  IDK switch pushes it up. A confound a placebo is meant to catch would push
   the same way as the true write, and here it pushes the opposite way, so the
   qwen gate-and-snap result (Section 4.4) sits on firmer specificity footing
   than a near-zero placebo would have left it.
@@ -1022,8 +1015,8 @@ Taken together, the channels sort by how far each one gets before it breaks.
 | System prompt | Large behavior movement when labels are correct | Divergent-pool congruence with own readout is zero | Authority moves policy; it does not establish self-consultation |
 | Reward | Some boundary-preserving behavior | TRUE sensor less congruent than PERMUTED | Reward can train correlates without readout consultation |
 | Unconditional write, overdrive regime (Qwen3-4B, L34, dose 200) | Damages most confabs (77.8%) | Non-selective on knowns: damages 60.1% of known-correct rows vs 3.1% gated (57.0pp, McNemar p = 4.2e-43) | At this dose, the gate is the sole source of selectivity; the write alone is not selective |
-| KU-gated caution snap, overdrive regime (Qwen3-4B, L34, dose 200) | 73.5% clean tighten, 3.1% known cost; held-out and sampled-decode replicated | Release direction remains null | Gate supplies selectivity; snap supplies the refusal action |
-| KU-gated caution snap, mid-band regime (Qwen3.5-4B hs20 = rd 0.625, mistral hs16 = rd 0.500; dose_abs 12.608 qwen, 3.665 mistral) | Permuted-gate confab abstention already 0.550 qwen / 0.600 mistral, near the true gate's 0.689 / 0.694: the write is largely self-sorting | True gate's own contribution, Gap_Sel(c_hat), is real but sub-floor (0.148 qwen, 0.129 mistral, vs a 0.20 floor); cost protection sub-floor too (0.008 / 0.034 vs 0.10) | At this dose, the write self-sorts; the gate's role reduces to a modest increment plus cost governance, not the source of selectivity |
+| KU-gated boundary push (dosed write), overdrive regime (Qwen3-4B, L34, dose 200) | 73.5% clean tighten, 3.1% known cost; held-out and sampled-decode replicated | Release direction remains null | Gate supplies selectivity; the write supplies the refusal action |
+| KU-gated boundary push (dosed write), mid-band regime (Qwen3.5-4B hs20 = rd 0.625, mistral hs16 = rd 0.500; dose_abs 12.608 qwen, 3.665 mistral) | Permuted-gate confab abstention already 0.550 qwen / 0.600 mistral, near the true gate's 0.689 / 0.694: the write is largely self-sorting | True gate's own contribution, Gap_Sel(c_hat), is real but sub-floor (0.148 qwen, 0.129 mistral, vs a 0.20 floor); cost protection sub-floor too (0.008 / 0.034 vs 0.10) | At this dose, the write self-sorts; the gate's role reduces to a modest increment plus cost governance, not the source of selectivity |
 | Mid-band J-space write (layer site, not dose regime; Qwen3-4B, 36 blocks) | hs23 = rd 0.639 beats hs34 = rd 0.944 by +22.7pp | Needs layer-specific dose; not yet cross-family | Write site matters |
 | Natural J-token write | Non-inert token-only effect | Redundant with `c_hat` hybrid | Verbalizable token target is not enough |
 | Cross-family gated snap (mistral, bounded negative) | Wide-instrument adjudicated refusal 69.9%, cost pristine (0.52% known-correct); benefit and cost gates reproduce at every re-test | Direction-specificity falsified three times independently, at three sites and doses: RR2's flat 2-point placebo tolerance, RR3's corrected 3x effect-ratio gate (ratio 1.87), and the mid-band factorial's S1 leg (ratio 2.03, K=15 census denominator); the mid-band factorial's own gate-contribution leg is also sub-floor (Gap_Sel 0.129 vs 0.20); the cross-family confirmatory fleet found a true behavioral null at the registered late write site (0/874 clean_tighten at every dose); a 15-seed placebo census (Section 4.10) resolved all three families' matched-magnitude placebo as sign-consistent rather than seed noise (qwen suppresses 14/15, mistral recruits at the 12/15 boundary, llama newly suppresses 12/15), so llama is not a null control | Mistral is readable everywhere the audit looked but not shown actuable by a direction-specific write at any tested site; placebo criteria must be registered against each family's measured per-family null distribution, not a flat tolerance or a single seed; the census (Section 4.10) supplies that distribution at K=15 for percentile-based or sign-opposition criteria |
@@ -1064,8 +1057,8 @@ prompt can change refusal behavior without improving readout congruence.
 
 ### 6.2 Why the gate matters, and why its role changes with dose
 
-Whether the caution write needs the gate to be selective is not a fixed
-property of the direction; it depends on where the dose lands relative to
+Whether the boundary push (dosed write) needs the gate to be selective is not
+a fixed property of the direction; it depends on where the dose lands relative to
 each row's commitment margin, the minimum perturbation dose that flips that
 row's behavior to abstention. At an overdrive dose, above typical
 known-correct margins, the write crosses everything: applied indiscriminately
@@ -1098,8 +1091,8 @@ Outcome) did not hold: the effective-dimensionality profile that motivated
 "write near the interior peak" instead peaks early in both llama (layer 4 of
 28, 0.14 depth) and mistral (layer 3 of 32, 0.09 depth), not inside the
 predicted interior band. The atlas's read panel still delivers a usable,
-family-specific interior band where known-unknown, caution, and raw-refusal
-readouts all clear 0.80 held-out AUROC simultaneously (llama layers 15-23,
+family-specific interior band where known-unknown, the refusal-versus-confabulation
+contrast, and raw-refusal readouts all clear 0.80 held-out AUROC simultaneously (llama layers 15-23,
 mistral layers 7-27), so a readable workspace-like band exists in every
 family tested, but the specific "write near the eff-dim peak" account is
 currently scoped to raw-base Qwen3-4B and should not be read as a
@@ -1216,16 +1209,17 @@ escalation:
    small-tolerance band.
 4. **The multi-family confirmatory fleet is resolved, not pending.** A
    registered cross-family confirmatory (`doubt-snap-cross-family-confirmatory`
-   Outcome) already attempted a gated caution snap on qwen, llama, mistral,
+   Outcome) already attempted a gated boundary push (dosed write) on qwen, llama, mistral,
    and a larger qwen tier at each family's registered late write site. It was
    NOT PROMOTED: every launched cell stopped at the pre-outcome FIT
    dose-viability rule before reaching held-out scoring (peak FIT
    clean_tighten 32.6% qwen small-tier, 18.4% llama, 0.0% mistral, 5.75% qwen
    mid-tier, all below the 60% floor). A companion c_hat validity audit found
-   the caution encoding linearly readable in all four families (0.84-0.99
-   AUROC refused-vs-confab), so the stop reflects a write-site problem at the
-   registered universal-depth site, not an absence of the underlying signal:
-   the caution direction reads everywhere tested but is actuable, at that
+   the refusal-versus-confabulation encoding linearly readable in all four
+   families (0.84-0.99 AUROC refused-vs-confab), so the stop reflects a
+   write-site problem at the registered universal-depth site, not an absence
+   of the underlying signal: the boundary-push direction reads everywhere
+   tested but is actuable, at that
    site, only in the Qwen lineage. This reframes the open question: not
    "does the gated snap work cross-family" but "at which family-relative
    site does it work," which the family atlas (Section 6.3) already answers
@@ -1266,9 +1260,10 @@ correlates without congruence; and whether an unconditional write is
 selective depends on the dose regime, not on the write alone. The first clean
 positive controller in this arc is not a prompt or a reward but a gated
 hidden-state intervention: read the known-unknown state, fire selectively at
-an overdrive dose where the gate alone supplies selectivity, or write caution
-at a mid-band dose where the write already self-sorts and the gate mainly
-tightens cost, sited near a workspace-like layer band.
+an overdrive dose where the gate alone supplies selectivity, or apply the
+boundary push (dosed write) at a mid-band dose where the write already
+self-sorts and the gate mainly tightens cost, sited near a workspace-like
+layer band.
 
 The emerging lesson is pragmatic and regime-aware. Treat known-unknown
 readouts as sensors first. Use them to gate interventions, expecting the
@@ -1293,7 +1288,7 @@ and its adjudicated status.
 | Inverted system prompt showed asymmetric compliance, not belief revision | `experiments/oracle-dissociation-prime/AMENDMENT.md` §9 | Pass |
 | Divergent-pool test found zero own-readout congruence; Addendum A1 certified the instrument | `experiments/divergent-pool-own-readout/AMENDMENT.md` §9-10 | H-compliance |
 | Probe-as-reward TRUE arm failed to train readout consultation | `experiments/probe-as-reward/AMENDMENT.md` §5 | Null |
-| Raw-base KU-gated caution snap produced 73.5% clean tighten at 3.1% known cost (overdrive regime, L34/dose 200) | `experiments/doubt-gated-caution-tighten/AMENDMENT.md` Outcome | Exploratory pass |
+| Raw-base KU-gated boundary push (dosed write) produced 73.5% clean tighten at 3.1% known cost (overdrive regime, L34/dose 200) | `experiments/doubt-gated-caution-tighten/AMENDMENT.md` Outcome | Exploratory pass |
 | At this overdrive operating point, an unconditional write damages 60.1% of held-out known-correct rows vs 3.1% gated (57.0pp, McNemar p = 4.2e-43): the gate is the sole source of selectivity here | `experiments/ungated-vs-gated-dose-matched/AMENDMENT.md` Outcome | Registered pass; scoped to L34/dose-200 |
 | Mid-band write site (Qwen3.5-4B hs20, dose_abs 12.608) decouples refusal from corruption in-sample FIT (refused 0.684, well-formed 0.980, known cost 0.042); permuted-gate control shows the write is already content-selective there | `experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md` Outcome | Exploratory pass, in-sample |
 | Same mid-band operating point transfers to held-out (refused 0.678, well-formed 0.977, known cost 0.039), promoting it from an in-sample selection to a held-out claim | `experiments/qwen35-4b-midband-heldout/AMENDMENT.md` Outcome | Held-out pass |
@@ -1305,7 +1300,7 @@ and its adjudicated status.
 | Natural token-target J-space write was non-inert but redundant with `c_hat` | `experiments/j-space-token-targeted-refusal-qwen3-4b/AMENDMENT.md` Outcome | Exploratory falsification |
 | Cross-family atlas: eff_dim_frac peaks early (0.09-0.14 depth) in both llama and mistral, not interior as predicted; read panel still delivers a usable per-family interior band (llama L15-23, mistral L7-27) | `experiments/jspace-family-atlas/AMENDMENT.md` Outcome | Prediction failed; read panel delivered |
 | Cross-family confirmatory fleet (qwen/llama/mistral, universal-depth write site) NOT PROMOTED: every cell stopped at FIT dose-viability before held-out; companion c_hat audit shows the encoding readable in all four families while late-site writes actuate only in the Qwen lineage | `experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md` Outcome | Not promoted; write-site problem, not a family-mechanism null |
-| Dark-candidate screen validates positive caution lever but promotes no dark candidates | `experiments/dark-actuator-screen/AMENDMENT.md` Outcome | Supporting null |
+| Dark-candidate screen validates positive boundary-push lever but promotes no dark candidates | `experiments/dark-actuator-screen/AMENDMENT.md` Outcome | Supporting null |
 | AQ sycophancy actuator found readable direction but no clean actuator vs control | `experiments/aq-sycophancy-activation-actuator/AMENDMENT.md` Outcome | Unsigned interim pilot (draft, not a governed result) |
 | Mistral cross-family gated write cleared benefit (69.9% adjudicated refusal) and cost (0.52% known-correct) gates under a wide blinded instrument but failed the flat 2-point placebo tolerance (+7.39pp random-direction lift) | `experiments/rr2-mistral-adjudicated-refusal-confirm/AMENDMENT.md` Outcome | Exploratory falsification (placebo-criterion design flaw, not benefit/cost) |
 | Wide-instrument baseline hedging and placebo response are family-graded and family-signed (qwen -5.13pp suppression, mistral +7.39pp recruitment); flat placebo tolerances must be registered per-family | `experiments/abstention-wide-instrument-calibration/AMENDMENT.md` Outcome | Exploratory instrument calibration, resolved |
@@ -1323,7 +1318,7 @@ and its adjudicated status.
    actuation channels.
 2. **Figure 2: Channel ladder.** Text injection, system authority, reward, and
    hidden-state write results on a common "readout consultation" axis.
-3. **Figure 3: Gated caution controller.** Confab clean_tighten and known-correct
+3. **Figure 3: Gated boundary-push controller.** Confab clean_tighten and known-correct
    false-refusal rates for no-op, random direction, permuted gate, and real gate.
 4. **Figure 4: J-space profile.** Effective-dimensionality fraction by hs layer,
    with hs23/26/29 band and hs34 reference marked.
@@ -1351,7 +1346,7 @@ and its adjudicated status.
   the small-K max-over-K denominator RR3 first proposed (Section 4.9). The
   per-family wide-instrument baselines from Section 4.8 (qwen 0.104, llama
   0.164, mistral 0.280) still anchor the recruitment-versus-suppression axis.
-- Run llama's gated caution snap (not yet attempted; its placebo response has
+- Run llama's gated boundary push (dosed write) (not yet attempted; its placebo response has
   been measured, first at null by RR3's rider and then by the Section 4.10
   census as a newly discovered suppressive sign, so llama is not a null
   control) before claiming or ruling out cross-family direction-specificity
