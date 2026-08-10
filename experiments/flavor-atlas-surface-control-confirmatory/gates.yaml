@@ -1,0 +1,177 @@
+# flavor-atlas-surface-control-confirmatory gates. Fail-closed; any SG
+# failure voids the dependent S readings before they are looked at. All
+# numbers fixed at signing, before any residualized AUROC exists. Every
+# band is a constant already committed in flavor-atlas-rawbase/gates.yaml
+# or family-atlas-surface-residualization-control/cell.yaml; no new
+# threshold is invented here. Transcribed from the PI-approved design
+# draft (docs/review not required for this transcription; content is
+# byte-identical to the draft's gates appendix).
+
+sg0_input_integrity:
+  direction: pass_required
+  checks:
+    kuq_panel_sha256_must_equal: 69433a777d40b76544b7f4575bc042bb2a9d4d159ca6e8a8bf20d133cf0a8eef
+    ambigqa_panel_sha256_must_equal: ee60cbf9115eefc18a997a0a81600ce627789c6f710f9905fe959936ba33d7f2
+    selfaware_panel_sha256_must_equal: 378762ac7cd703743b7b4edc54bdbdd86fa47e1cd8657688f4dbf5d43aa186f0
+    panels_manifest_sha256_must_equal: 6a58e429c930723c9e6c29afa76821cacbdc9a92b053ec4975c8618f8a5225d0
+    kuq_extraction_manifest_sha256_must_equal: 718aa477a1026f9db4f86d7983701cb10c8f91d2f537ec03842d8f4edec5fa00
+    ambigqa_extraction_manifest_sha256_must_equal: 11789967714e11b83b9816645570e088f26ee023ad43bd35fbb3ef4e1e17af1e
+    selfaware_extraction_manifest_sha256_must_equal: f3b421fefefd252cae6fc008d583ec6308a1a128c6b19c246f58bc5f14733d60
+    atlas_sweep_sha256_must_equal: d3327f7346908492814459566e27682df369c38eee8429f4f13ddecadd83ec10
+    probe_module_sha256_must_equal: ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08
+    kuq_rows_must_equal: 5540
+    kuq_known_must_equal: 3071
+    kuq_unknown_must_equal: 2469
+    kuq_flavor_counts_must_equal:
+      ambiguous: 411
+      controversial: 490
+      counterfactual: 403
+      false assumption: 368
+      future unknown: 490
+      unsolved problem: 307
+    ambigqa_rows_must_equal: 2748
+    selfaware_rows_must_equal: 3369
+    n_hidden_states_present_must_equal: 37
+    hidden_dim_must_equal: 2560
+    every_panel_row_has_anchor_file: true
+  derivation: >-
+    This cell decides whether the atlas separation is style. A changed
+    panel, a changed capture, or a changed probe module silently changes
+    what is being controlled.
+
+sg1_no_new_capture:
+  direction: pass_required
+  checks:
+    gpu_verbs_must_equal: 0
+    model_loads_must_equal: 0
+    extraction_tree_digest_unchanged_before_and_after: true
+  derivation: >-
+    Analysis-only reanalysis of existing captures. Any write into an
+    extraction directory means the instrument is not the one the atlas ran.
+
+sg2_baseline_reproduction:
+  direction: pass_required
+  checks:
+    raw_probe_must_reproduce_atlas_sweep_at_4dp: true
+    cells:
+      ambiguous: {L26: 0.9800, L35: 0.9766}
+      controversial: {L20: 0.9960, L35: 0.9949}
+      counterfactual: {L19: 0.9963, L35: 0.9952}
+      false assumption: {L29: 0.9918, L35: 0.9912}
+      future unknown: {L17: 0.9994, L35: 0.9990}
+      unsolved problem: {L28: 0.9937, L35: 0.9915}
+      pooled_all_unknowns: {L27: 0.9887, L35: 0.9874}
+      selfaware: {L25: 0.9937, L35: 0.9925}
+      ambigqa: {L25: 0.6590, L35: 0.6338}
+    hidden_state_0_must_equal_for_all_rows: 0.5000
+  derivation: >-
+    Mirrors family-atlas-surface-residualization-control G1. A controlled
+    number is meaningless unless the uncontrolled number is reproduced
+    first. Failure is indeterminate, not a result.
+
+sg3_surface_model_hygiene:
+  direction: pass_required
+  checks:
+    prohibited_surface_inputs_absent:
+      [source, panel, category, flavor, label, generated_text,
+       completion_length, answer_correctness, answer_text, aliases,
+       baseline_behavior]
+    lexical_input_must_equal: question_text_only
+    surface_basis_fit_without_labels: true
+    fold_assignment_identical_across_layers_blocks_and_controls: true
+    all_residuals_out_of_fold: true
+  derivation: >-
+    Deliberate deviation from the parent instrument: here the label IS pool
+    membership and flavor IS the KUQ category, so admitting source, panel,
+    or category would hand the surface model the answer and make the
+    residualization vacuous.
+
+sg4_treatment_strength:
+  direction: pass_required
+  checks:
+    min_activation_oof_r2_at_each_primary_layer: 0.01
+    permutation_null_quantile: 0.95
+    min_above_permutation_quantile: 0.005
+    n_permutations: 20
+  derivation: >-
+    Reused verbatim from family-atlas-surface-residualization-control
+    cell.yaml treatment_strength. An unchanged AUROC is interpretable only
+    if the surface model removed a measurable activation component.
+
+sg5_planted_channel_reachability:
+  direction: pass_required
+  checks:
+    plant_layer_hidden_state_index: 0
+    plant_is_linear_function_of_surface_matrix: true
+    gamma_grid: [0.25, 0.5, 1.0, 2.0, 4.0, 8.0]
+    gamma_scale_reference: hidden_state_1_centered_activation_rms
+    planted_pooled_auroc_must_reach_at_least: 0.90
+    residualized_planted_pooled_auroc_must_be_at_most: 0.75
+    max_flavor_deviation_from_unplanted_residualized: 0.05
+  derivation: >-
+    Hidden state 0 is the only layer with a committed exactly-null baseline
+    (0.5000 for all nine rows; anchor embeddings are byte-identical across
+    rows), so any post-plant readability is unambiguously the planted
+    surface channel. 0.75 is the atlas ambiguity ceiling; 0.05 is the parent
+    cell's max controlled-profile deviation.
+
+sg6_permutation_negative_control:
+  direction: pass_required
+  checks:
+    n_permutations: 20
+    permutation_blocks: [panel, label, flavor]
+    min_permuted_runs_keeping_all_six_flavors_at_or_above_0_90: 18
+  derivation: >-
+    18 of 20 reused verbatim from the parent cell's G4. Guards against
+    generic variance removal manufacturing a collapse.
+
+sg7_containment_and_provenance:
+  direction: pass_required
+  checks:
+    committed_output_is_counts_only: true
+    no_question_text_in_analysis_committed: true
+    no_row_level_matrix_prediction_or_activation_in_analysis_committed: true
+    provenance_json_line_in_run_log: true
+
+s_bands:
+  probe_protocol: internal_panel_probe_gate._cv_auroc_with_oof unchanged (item 26 pin ee3f22ee; folds=5, C=0.5, seed=0, out-of-fold AUROC)
+  primary_cells:
+    ambiguous: [26, 35]
+    controversial: [20, 35]
+    counterfactual: [19, 35]
+    false assumption: [29, 35]
+    future unknown: [17, 35]
+    unsolved problem: [28, 35]
+  reference_cells:
+    pooled_all_unknowns: [27, 35]
+    selfaware: [25, 35]
+    ambigqa: [25, 35]
+  p1_survival_floor_heldout_auroc: 0.90
+  p1_applies_to: all twelve primary cells
+  p2_selfaware_floor: 0.90
+  p2_ambigqa_ceiling: 0.75
+  p3_surface_only_carrier_floor: 0.75
+  p3_applies_to: at least one of the six KUQ flavors
+  f1_style_artifact_confirmed:
+    all_six_flavors_at_or_below_at_both_primary_layers: 0.75
+  f2_promotion_blocked:
+    any_primary_cell_below: 0.90
+  ambiguous_zone: strictly between 0.75 and 0.90 at either primary layer, reported per flavor, no promotion
+  collapse_asymmetry_rule: >-
+    F1 licenses only "not promotable on these pools" and "fresh
+    surface-matched pool is next"; it never licenses "the raw base has no
+    unanswerability code", because residualization removes surface-
+    predictable activation variance and cannot separate a style artifact
+    from style being collinear with overt unanswerability in these pools.
+
+no_goalpost_movement:
+  rule: >-
+    Bands fixed at signing and inherited verbatim from
+    flavor-atlas-rawbase/gates.yaml and
+    family-atlas-surface-residualization-control/cell.yaml. The twelve
+    primary cells are fixed before any residualized number exists. No band
+    is retuned, no surface block other than combined is promoted to
+    primary, no layer is added to or removed from the primary set, and no
+    flavor is dropped or merged after any number exists. Max-over-layer
+    residualized values are reported next to full curves and are
+    descriptive. A mixed result is reported as mixed.

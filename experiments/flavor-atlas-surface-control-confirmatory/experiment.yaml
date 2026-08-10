@@ -1,0 +1,83 @@
+slug: flavor-atlas-surface-control-confirmatory
+title: Style-controlled confirmatory read of the flavor-atlas overt-unanswerability
+  separation
+type: probe-fit
+status: signed
+registered: true
+created_at: '2026-08-10T13:49:01Z'
+tier: 3
+posture: exploratory
+question: Does the flavor-atlas-rawbase overt-unanswerability separation (all six
+  KUQ flavors plus SelfAware, 0.9800-0.9994 held-out AUROC on the raw base) survive
+  cross-fitted removal of the activation variance predictable from prompt surface
+  (length, punctuation, digit profile, interrogative form, and lexical n-grams), or
+  is it a style artifact?
+prediction: 'P1 (primary): after cross-fitted combined-surface residualization, all
+  six KUQ flavors retain held-out out-of-fold AUROC >= 0.90 at both of their two primary
+  layers (committed best layer and L35), for all twelve primary cells. P2 (reference):
+  SelfAware retains AUROC >= 0.90 at both L25 and L35, and AmbigQA stays <= 0.75 at
+  both L25 and L35. P3 (secondary, S2): the surface-only probe on Z alone reaches
+  at least 0.75 for at least one of the six KUQ flavors.'
+falsifier: 'F1 (style artifact confirmed): with C1/C2/C3 passing, all six KUQ flavors
+  fall to <= 0.75 at both primary layers; the atlas separation is carried by the registered
+  linear surface model and may not be promoted to a claim. F2 (partial style dependence,
+  blocks promotion): with C1/C2/C3 passing, any one of the twelve primary cells reads
+  below 0.90. F1 and F2 are nested (F2 fires whenever F1 fires) but carry different
+  write-ups. Any other pattern is reported as mixed, per flavor, with no pooled rescue.'
+checkpoint:
+  repo: unsloth/Qwen3-4B
+  revision: 64033659d5caf1b8ed7f929b29de705e93a4d468
+  base_form: raw pretrained base, no adapter, bf16
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - reanalyze_surface_control.py
+  - ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py
+  - ../selfaware-latent-knowledge-controls/latent_knowledge_probe.py
+  - ../common/renders/ood_breadth_response_confidence_render.py
+  pins:
+    cell.yaml: c1e6e6d87f4c607b9cff1875a0c7993787fd08ec42d86406c4cfef78d029130e
+    gates.yaml: d0e240425a6f89dc97d2729813ed59c42059573f0b94e2fddad5d5a9bf358f7a
+    reanalyze_surface_control.py: dd1f67eb5a2c5b8d6b3ce1ea02906eae5cbdaf242e40c3519f24279ac3fb3f5d
+    ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py: ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08
+    ../selfaware-latent-knowledge-controls/latent_knowledge_probe.py: 350f9d9e4acf57b1af858396fb50616fa5b98e7ebb475155af9d40da038eda93
+    ../common/renders/ood_breadth_response_confidence_render.py: bd399d4caf274961f245ea1f456cf64546db59d4b3f2a4b9bbb51fcb24374b4f
+  persistence:
+    reanalyze_surface_control.py:
+      persistence: incremental
+      checkpoint_path: experiments/flavor-atlas-surface-control-confirmatory/analysis/checkpoints
+    ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 7.424
+      note: pinned item-26 probe protocol imported unchanged; wall clock carried over
+        from flavor-atlas-rawbase's own measurement of the same module, since this
+        cell calls it the identical way (no fresh timing needed for an unmodified
+        import).
+    ../selfaware-latent-knowledge-controls/latent_knowledge_probe.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 7.424
+      note: load_layers activation reader imported unchanged, same carried-over timing
+        as flavor-atlas-rawbase.
+    ../common/renders/ood_breadth_response_confidence_render.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.1
+      note: import-only render module, used only for the rendered_prompt_token_count
+        fallback when a panel row lacks that field; carried-over timing from flavor-atlas-rawbase.
+inputs:
+- experiments/flavor-atlas-rawbase/AMENDMENT.md
+- experiments/flavor-atlas-rawbase/gates.yaml
+- experiments/flavor-atlas-rawbase/analysis/extraction/kuq/manifest.json
+- experiments/flavor-atlas-rawbase/analysis/extraction/ambigqa/manifest.json
+- experiments/flavor-atlas-rawbase/analysis/extraction/selfaware/manifest.json
+- experiments/flavor-atlas-rawbase/analysis/panels/kuq_panel.jsonl
+- experiments/flavor-atlas-rawbase/analysis/panels/ambigqa_panel.jsonl
+- experiments/flavor-atlas-rawbase/analysis/panels/selfaware_panel.jsonl
+- experiments/flavor-atlas-rawbase/analysis/panels/panels_manifest.json
+- experiments/flavor-atlas-rawbase/analysis-committed/atlas_sweep.json
+- experiments/ood-breadth-beyond-selfaware/internal_panel_probe_gate.py
+- experiments/family-atlas-surface-residualization-control/AMENDMENT.md
+- experiments/common/renders/ood_breadth_response_confidence_render.py
+verdict: ''
+kg: []
