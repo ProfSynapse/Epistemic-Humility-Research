@@ -1,7 +1,16 @@
 # caution-install-bounded-site-sweep
 
-Status: DRAFT (not signed; do not launch as confirmatory evidence). Signing is
-blocked on the pre-sign feasibility probe registered in `NOTEBOOK.md`.
+Status: SIGNED (2026-08-09T02:10Z). Per `experiment.yaml`: `status: signed`,
+`sign_blocked_on: 'CLEARED 2026-08-09T02:10Z: P2/P3/P4 passed at the probe
+(NOTEBOOK 2026-08-09T00:15:59Z); P1 satisfied by count under the pre-stated
+census criterion (NOTEBOOK census adjudication entry: 260 actual confabs over
+the full 3496 >= 250 registered floor). Signing authorized.' The pre-sign
+feasibility probe registered in `NOTEBOOK.md` has run and cleared; this cell
+may now launch per its registered gates. Per this document's own registration
+below: Tier 2, EXPLORATORY -- its results are reported separately from the
+locked headline matrix, never pooled with it, and a positive result is a lead
+requiring a confirmatory replication registered before running it (see
+Limitations).
 
 Tier 2, exploratory cell, per
 `.skills/experiment-runner/reference/amendment-vs-lab-notebook.md` decision
@@ -341,7 +350,7 @@ comparable to the raw-base cells it contrasts against.
 | G0a pool power, held-out confab | at least 150 | floor |
 | G0a pool power, held-out known_correct_answered | at least 250 | floor |
 | G0b answer capture on split rows | at least 0.90 | floor |
-| G0b seam continuity, adjacent-site cosine | at least 0.999 | floor |
+| G0b seam continuity, same-state cosine across cache conditions (use_cache True vs False) | at least 0.999 | floor |
 | G0c direction refit reproducibility | byte-identical across two fixed-seed fits | equality |
 | G0d FIT answerability gate AUC, every site | at least 0.90 | floor |
 | G0e smoke readback within tolerance | equals 1.0 | equality |

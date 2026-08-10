@@ -50,7 +50,7 @@ gates:
         pass_if: ">= 0.90"
         direction: floor
       - id: g0b_seam_continuity
-        quantity: min cosine between adjacent-site captures
+        quantity: min cosine between the same (row, hidden state) captured under use_cache=True and use_cache=False (cache-condition invariance, per the read-then-actuate reference's seam diagnostic; a failure indicts the capture path's cache handling, not run-to-run flake)
         pass_if: ">= 0.999"
         direction: floor
       - id: g0c_refit_reproducible
