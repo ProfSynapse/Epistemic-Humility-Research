@@ -69,7 +69,7 @@ axis recovered by a linear probe on hidden states, the *stated* confidence the
 model verbalizes as a number, and the *behavior* it commits to (answer or abstain).
 On a known/unknown question split (SelfAware, n=3369), the internal axis separates
 known from unknown items at AUROC ≈ 0.997 and is well-calibrated by a one-dimensional
-readout (ECE ≈ 0.004), while the stated confidence the same model emits ranks
+readout (ECE ≈ 0.047), while the stated confidence the same model emits ranks
 appropriateness at AUROC ≈ 0.52–0.56 (barely above chance) and is collapsed
 near a constant (≈ 0.82, std ≈ 0.01–0.03). The model represents what it does not know;
 it does not report it. By "knows" we mean this internal recognition of which
@@ -130,7 +130,7 @@ its behavior or its stated number fail to couple the two.
 Our contributions, each a section below:
 
 - The gap (Section 4). A linear probe on hidden states separates known from
-  unknown questions at AUROC ≈ 0.997 and is calibrated to ECE ≈ 0.004 by a 1-D
+  unknown questions at AUROC ≈ 0.997 and is calibrated to ECE ≈ 0.047 by a 1-D
   readout; the model's *stated* confidence on the same items ranks appropriateness
   at ≈ 0.52–0.56 and is near-constant. The over-refused-but-known items are
   internally "known," so the failure is verbalization, not representation. The
@@ -406,7 +406,8 @@ be scored against the *same* known/unknown label on the *same* joined rows
 (n = 1233): the L35 probe reads the boundary at AUROC 0.972 while the same
 checkpoint's own emitted confidence reads it at 0.637. The
 calibration side of the contrast is equally stark: a linear readout along the
-internal axis is near-calibrated (ECE ≈ 0.004), while the emitted
+internal axis is near-calibrated (ECE ≈ 0.047 raw, measured on Section 4's
+correct/wrong population rather than on this paragraph's joined rows), while the emitted
 channel's ECE against appropriateness on the full evaluation is 0.403. The
 emitted scalar does carry *some* boundary information when scored against the
 label it is best at (0.637 > chance): the gap is not that the stated channel
@@ -926,7 +927,7 @@ The taxonomy paper
 ([*The Depths of Ignorance*](../paper-1-taxonomy-framework/manuscript.md)) framed the
 distinction between humility a model possesses (tethered to its internal state)
 and humility it merely performs (untethered behavior). Section 4 makes the distinction concrete: the
-internal tether exists and is calibrated (ECE 0.004), the performed behavior can be
+internal tether exists and is calibrated (ECE 0.047), the performed behavior can be
 shaped (Sections 6–7), and the *stated* confidence (the channel a user actually
 reads) is tied to neither. The model is, in the precise sense of the *Meno*, giving
 true opinions without the tether; our seven interventions are attempts to install
@@ -947,7 +948,7 @@ right target directly*.
 ### The implied experiment, run and resolved: probe distillation does not route the axis into the scalar
 
 The model already contains a calibrated estimate of
-appropriateness: the internal known-unknown axis (ECE 0.004). The natural objective is
+appropriateness: the internal known-unknown axis (ECE 0.047). The natural objective is
 therefore not to induce calibration from outcomes, but to *distill the internal axis
 into the stated channel*: supervise the emitted `response_confidence` toward the
 model's own known-unknown-axis readout, so the model learns to *say* what it already
