@@ -1,0 +1,39 @@
+# flavor-atlas-rawbase instrument summary. Machine-readable companion to
+# AMENDMENT.md; the extraction recipes are extract_kuq.yaml,
+# extract_ambigqa_alllayers.yaml, extract_selfaware.yaml; the CPU sweep is
+# flavor_probe_sweep.py over panels built by build_flavor_panels.py.
+
+substrate:
+  repo: unsloth/Qwen3-4B
+  revision: 64033659d5caf1b8ed7f929b29de705e93a4d468
+  base_form: raw pretrained base, no adapter, bf16
+
+lane: local_3090
+gpu_work: forward_only_extraction_no_generation
+runtime: mechinterp-runner pinned image (experiment.yaml instrument.runtime_image_digest)
+concurrency: one GPU job at a time; three sequential extract verbs
+
+panels:
+  kuq:
+    source: experiments/ood-breadth-beyond-selfaware/analysis/screen/kuq_screened.jsonl
+    rows: 5540
+  ambigqa:
+    source: experiments/ood-breadth-beyond-selfaware/analysis/screen/internal_panel_pool.jsonl
+    rows: 2748
+  selfaware:
+    source: datasets/selfaware/SelfAware.json
+    rows: 3369
+
+read:
+  families: [anchor]
+  layers: all (37 hidden states)
+  render_fn: ood_breadth_response_confidence_render:render
+  max_new_tokens: 1
+
+probe:
+  protocol: internal_panel_probe_gate._cv_auroc_with_oof unchanged
+  outputs:
+    - m1 flavor-by-layer auroc map (6 KUQ flavors + pooled, 37 layers)
+    - m2 ambigqa layer sweep
+    - m3 selfaware layer sweep
+    - m4 cross-flavor transfer matrix at source-best layers

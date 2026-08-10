@@ -1,0 +1,74 @@
+# flavor-atlas-rawbase gates. Fail-closed; any FG failure voids the
+# dependent M readings before they are looked at. All numbers fixed at
+# signing, before any extraction ran.
+
+fg0_panel_integrity:
+  direction: pass_required
+  checks:
+    kuq_pool_file: experiments/ood-breadth-beyond-selfaware/analysis/screen/kuq_screened.jsonl
+    kuq_pool_sha256_must_equal: 4a0a3a146dd8af573f3b8dfae7fcd9e207660a2d10deaa9071dd339c5104c5cc
+    kuq_rows_must_equal: 5540
+    kuq_known_must_equal: 3071
+    kuq_unknown_must_equal: 2469
+    kuq_flavor_counts_must_equal:
+      ambiguous: 411
+      controversial: 490
+      counterfactual: 403
+      false assumption: 368
+      future unknown: 490
+      unsolved problem: 307
+    ambigqa_pool_file: experiments/ood-breadth-beyond-selfaware/analysis/screen/internal_panel_pool.jsonl
+    ambigqa_pool_sha256_must_equal: b0f936583d5a2fcd7dbc1393dce754c62669cb5185a5c80fb644266875a48bfd
+    ambigqa_rows_must_equal: 2748
+    ambigqa_known_must_equal: 1245
+    ambigqa_unknown_must_equal: 1503
+    selfaware_source_file: datasets/selfaware/SelfAware.json
+    selfaware_rows_must_equal: 3369
+    selfaware_answerable_must_equal: 2337
+    selfaware_unanswerable_must_equal: 1032
+  derivation: >-
+    The atlas is a same-instrument comparison across flavors; a changed
+    pool silently changes which flavor is being read. KUQ flavor counts
+    were recounted from the screened pool on disk before signing.
+
+fg1_extraction_capture:
+  direction: pass_required
+  checks:
+    e1_kuq_n_rows_must_equal: 5540
+    e1_kuq_n_answered_must_equal: 5540
+    e2_ambigqa_n_rows_must_equal: 2748
+    e2_ambigqa_n_answered_must_equal: 2748
+    e3_selfaware_n_rows_must_equal: 3369
+    e3_selfaware_n_answered_must_equal: 3369
+    n_hidden_states_present_must_equal: 37
+  derivation: >-
+    Same capture bar item 26 stage 6 and rawbase-ambigqa-boundary-readout
+    met exactly; all-layer capture is the point of the atlas, so a
+    truncated layer set is a capture failure, not a partial result.
+
+fg2_runtime_provenance:
+  direction: pass_required
+  checks:
+    image_digest_must_equal_manifest_runtime_image_digest: true
+    provenance_json_line_must_appear_in_each_run_log: true
+  derivation: standing directive 2026-07-10, mechinterp local GPU verbs.
+
+m_bands:
+  probe_protocol: internal_panel_probe_gate._cv_auroc_with_oof unchanged (item 26 pin ee3f22ee; folds=5, C=0.5, seed=0, out-of-fold AUROC)
+  p1_discovery_floor_heldout_auroc: 0.90
+  p1_applies_to_flavors: [future unknown, unsolved problem]
+  p2_ambiguity_ceiling_all_layers: 0.75
+  p2_applies_to: [kuq ambiguous, ambigqa]
+  f1_universal_code:
+    every_flavor_some_layer_auroc_min: 0.90
+    transfer_matrix_offdiagonal_min: 0.85
+  f2_dataset_specific:
+    no_kuq_flavor_reaches_at_any_layer: 0.75
+  mixed_atlas_rule: any other pattern is reported descriptively per flavor, no single-number verdict
+
+no_goalpost_movement:
+  rule: >-
+    Bands fixed at signing. Max-over-layer selection is reported next to
+    the full layer curve. No band is retuned, no alternative position
+    family or probe family is promoted, and no flavor is dropped or
+    merged after any number exists. A mixed result is reported as mixed.
