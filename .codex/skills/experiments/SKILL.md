@@ -157,6 +157,22 @@ described in the mechinterp-cells `reference/organization.md` "Kill-resume
 smoke drill" section: a validator or grep check that `RunLog` is imported is
 not evidence that resume actually works.
 
+Before signing ANY cell, verify the registered real-run entry point actually
+exists and reaches the real path, not only that the smoke passes. A smoke
+suite exercises component functions; it structurally cannot detect that the
+orchestration branch of `main()` is a stub or a refusal placeholder, because
+the smoke takes its own branch. A cell in this program was signed and merged
+with every component function smoke-covered while `main()` contained only the
+`--smoke` branch and a hard-coded refusal; the defect surfaced only at
+execution time. The sign-off check is: run the registered entry point in its
+real mode (a `--dry-run` that resolves every real input and prints the
+execution plan without computing is the standard shape; every new
+orchestrator module should ship one), or at minimum read `main()` end to end
+and confirm a branch performs the registered stages. Library-only modules
+(no `if __name__` guard, no CLI) count as unreachable unless a pinned driver
+module demonstrably invokes them for real data; check that the driver exists
+before signing, not after.
+
 ## Lifecycle
 
 ```

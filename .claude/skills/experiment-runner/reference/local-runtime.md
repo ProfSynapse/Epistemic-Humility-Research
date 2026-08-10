@@ -592,3 +592,23 @@ encodes the start timestamp (`YYYYMMDD_HHMMSS`) and `training_lineage.json`
 carries the end `timestamp`, so the duration is the difference. Several trainers
 also record `training_time_seconds` directly in the lineage file; prefer that
 when present. This is the durable source and survives pruning.
+
+## mechinterp-runner writes root-owned files (2026-08-09)
+
+The `mechinterp-runner` image has no `USER` directive, so containers run as
+root and every file the container writes lands on the host as `root:root`
+mode 600 - unreadable by the host user that downstream CPU stages run as. A
+pre-launch `chmod a+rwX` on the output directory does NOT cover files the
+container creates during the run. Two containment-safe remedies, in order of
+preference: (1) run the container with `--user $(id -u):$(id -g)` when the
+workload does not need root; (2) after exit, widen bits with a throwaway
+container from the SAME pinned image (`--entrypoint /bin/chmod -R a+rwX
+<dir>`), which changes no file content and stays inside the pinned
+instrument. Contrast with the unsloth eval image, which runs as uid 1001 and
+has the opposite problem (needs world-writable output dirs pre-launch).
+Package gaps found and fixed in the image 2026-08-09 (requests, peft,
+pandas - the CLI router eagerly imports all handler modules before ANY
+verb): if a mechinterp verb fails at import time inside the image, check the
+router's eager-import block before suspecting the verb's own deps, and fix
+by Dockerfile pin + rebuild + repin, never by pip-install into a pinned
+runtime.
