@@ -2092,11 +2092,11 @@
       "question": "Do other flavors of unanswerability (KUQ's six categories, with SelfAware and AmbigQA as reference flavors) each have their own separable activation signature in the raw Qwen3-4B base, at possibly different layers, or is the pretrained known-unknown code narrow (SelfAware-flavored only) or universal (one code for all flavors)?",
       "registered": true,
       "slug": "flavor-atlas-rawbase",
-      "status": "signed",
+      "status": "resolved",
       "tier": 3,
       "title": "Flavor atlas: per-flavor known-unknown activations on the raw base",
       "type": "probe-fit",
-      "verdict": ""
+      "verdict": "Mixed atlas as registered: P1 supported (every KUQ flavor including overt ambiguity separates at 0.98 to 0.999 with free cross-transfer to SelfAware), P2 failed (only the AmbigQA half held), neither falsifier fired; the pretrained unanswerability code is broad across overt flavors and the boundary is overt vs covert unanswerability, with AmbigQA unreadable at every layer."
     },
     {
       "checkpoint": {
