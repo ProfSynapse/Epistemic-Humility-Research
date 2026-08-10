@@ -40,7 +40,7 @@ instrument:
   pins:
     cell.yaml: c1e6e6d87f4c607b9cff1875a0c7993787fd08ec42d86406c4cfef78d029130e
     gates.yaml: d0e240425a6f89dc97d2729813ed59c42059573f0b94e2fddad5d5a9bf358f7a
-    reanalyze_surface_control.py: dd1f67eb5a2c5b8d6b3ce1ea02906eae5cbdaf242e40c3519f24279ac3fb3f5d
+    reanalyze_surface_control.py: ebaa4684f22e81d41296e42a4cecd896e2e3f89bbb6545c23c01473f390ad987
     ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py: ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08
     ../selfaware-latent-knowledge-controls/latent_knowledge_probe.py: 350f9d9e4acf57b1af858396fb50616fa5b98e7ebb475155af9d40da038eda93
     ../common/renders/ood_breadth_response_confidence_render.py: bd399d4caf274961f245ea1f456cf64546db59d4b3f2a4b9bbb51fcb24374b4f
@@ -65,6 +65,22 @@ instrument:
       measured_smoke_wall_clock_s: 0.1
       note: import-only render module, used only for the rendered_prompt_token_count
         fallback when a panel row lacks that field; carried-over timing from flavor-atlas-rawbase.
+  repins:
+  - file: reanalyze_surface_control.py
+    old_sha256: dd1f67eb5a2c5b8d6b3ce1ea02906eae5cbdaf242e40c3519f24279ac3fb3f5d
+    new_sha256: ebaa4684f22e81d41296e42a4cecd896e2e3f89bbb6545c23c01473f390ad987
+    date: '2026-08-10T16:22:37Z'
+    reason: 'Instrument-completeness repair on a signed pre-run cell: the signed module''s
+      main() carried only the --smoke branch and a refusal stub; the registered real-run
+      orchestration did not exist and the executing agent hard-stopped. Rewrote main()
+      with the real branch (SG0/SG1 integrity, frozen surface basis, cross-fitted
+      ridge residualization over every registered panel-layer, S1/S2/S3, C1/C2/C3,
+      SG8 adjudication, counts-only committed JSON), added --dry-run existence check,
+      extended --smoke with a fixture-backed end-to-end drive of run_real, and fixed
+      evaluate_sg2''s hardcoded layer 35 to read each cell''s registered secondary_layer.
+      No gate quantity, threshold, or registered constant changed; no results exist.
+      Lead-verified: smoke pass, dry-run exit 1 on missing inputs in worktree, full
+      dry-run pass against real canonical inputs.'
 inputs:
 - experiments/flavor-atlas-rawbase/AMENDMENT.md
 - experiments/flavor-atlas-rawbase/gates.yaml
