@@ -6,6 +6,245 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-10T16:28Z - Item-27 kill-resume drill: PASSED. Resume verified, no recompute, no duplicates, clean stop
+
+Third attempt, after lead adjudication of the prior entry: `analysis/` and
+`analysis-committed/` set world-writable recursively (`chmod -R a+rwX`,
+verified zero non-world-writable directories under either tree). No file
+content changed under either tree by this fix; no repin required.
+
+**Standing launch-procedure note**, per lead instruction: a pre-launch
+world-writable check on `analysis/` and `analysis-committed/` is now part
+of this cell's launch procedure -- the unsloth image runs as a non-root
+user (uid 1001) and any CPU staging step that recreates either directory
+re-introduces default `755`, which silently breaks every incremental
+checkpoint write inside the container on the next GPU launch.
+
+Preflight re-passed (exit 0) before launch; image digest re-verified
+char-for-char; 0 containers running, GPU idle before launch.
+
+**Drill sequence and counts (row text and questions excluded; row_key
+counts only):**
+
+| Step | Time (UTC) | Units on disk |
+|---|---|---|
+| Launch (Stage 1, `mine_pool.py --substrate trained`) | 16:28:53 | 0 (fresh checkpoint, confirmed by container's own resume log line) |
+| Pre-kill snapshot | 16:31:39 | 21, all unique row_keys, 0 duplicates |
+| `docker kill --signal=SIGKILL` on the container | 16:31:42 | 24 on disk at kill time (a few more landed between snapshot and kill) |
+| Container removed (`--rm`), GPU confirmed released | 16:31:45 | -- |
+| Identical relaunch | 16:32:04 | container's own log: "resume: 24 known-label rows already mined (1 known_correct_answered so far)" -- exact match to the 24 on disk at kill time |
+| Growth watched post-resume | 16:32:42 - 16:32:55 | 25 -> 32 |
+| `docker stop` (clean stop) | 16:33:02 | 36 final |
+
+**Integrity check on the final checkpoint file**
+(`analysis/mined_known_generations_private.jsonl`): 36 total lines, 36
+unique `row_key`s, 0 duplicate keys, 0 unparseable lines (file fully
+loadable via `json.loads` per line). The 21 `row_key`s captured in the
+pre-kill snapshot are a strict subset of the final 36 (no data loss on
+already-committed rows); 15 new rows were added after the snapshot,
+consistent with generation continuing without recomputing the 24 rows
+that existed at kill time.
+
+**GPU budget consumed by the drill:** roughly 5 minutes of container
+uptime across the killed run (2m49s, 16:29:01-16:31:42) and the resumed
+run (56s of active generation plus stop overhead, 16:32:01-16:33:02),
+well under the "few minutes at most" target; well short of any stage
+completion.
+
+**Verdict:** kill -9 resume on the real registered launch path is
+CONFIRMED for Stage 1 (`mine_pool.py`): the harness correctly detects
+already-mined `row_key`s via `analysis/mined_known_generations_private.jsonl`
+on restart, does not recompute or duplicate them, and the checkpoint file
+stays loadable and unique-keyed across a hard kill. GPU released and
+confirmed idle after both the kill and the final clean stop; zero
+containers left running.
+
+### 2026-08-10T16:17Z - Item-27 kill-resume drill rerun: launch succeeded, container crashed at first checkpoint write, second defect found
+
+Rerun after lead adjudication of the prior entry: `docker_launch.sh`
+executable bit restored on the canonical working copy (git mode fix
+committed on a separate branch, PR #432); content hash reverified
+unchanged (`2efd1f8982844bd8fc2857214ced7b6252ac7bf6a3cfa1356baf63574b79733b`,
+matches the `experiment.yaml` instrument pin, no repin). Preflight
+(`run_sweep.py preflight`) re-passed, exit 0. GPU idle, zero containers
+running, image digest re-verified char-for-char before relaunch.
+
+Launch this time succeeded: container `caution-install-sweep-mine_pool-20260810T161732Z`
+came up on the pinned image (`f21629b9ae4e`, matches
+`sha256:f21629b9ae4ed...`), model/pool loading proceeded (confab=260,
+known-label candidates=10000, already_probed=400, remaining=9600, resume
+state read as 0 rows already mined -- correct for a fresh checkpoint).
+The container then crashed with an uncaught `PermissionError` (Errno 13)
+on its very first attempt to open the incremental checkpoint file
+(`analysis/mined_known_generations_private.jsonl`) in append mode --
+`sweep_lib.write_jsonl_row`'s `path.open("a", ...)` call. Root cause: the
+container's non-root runtime user cannot write to the host-mounted
+`analysis/` directory, which is `drwxr-xr-x` (owner-only write) on this
+host, not world/group-writable. This is the same permission class this
+cell's own earlier feasibility-probe Stage B relaunch hit and fixed
+(NOTEBOOK 2026-08-08T23:14:50Z addendum, "output-directory permission
+fix," `analysis/` and `analysis-committed/` set to 777) -- but that fix
+was never reapplied to this checkpoint's specific output path, or the
+directory reverted since.
+
+Consequence: zero rows were ever written to the checkpoint file (it does
+not exist on disk after the crash), so no partial progress existed to
+kill -9 and resume against. The container exited on its own (docker exit
+code 1) before any SIGKILL was sent; GPU confirmed released immediately
+after (idle baseline util/mem, matches pre-launch reading), zero other
+containers left running. Zero GPU minutes usefully consumed toward the
+drill's purpose (a few seconds of model/pool load only).
+
+Per the same binding invariant as the prior entry (no harness edits;
+report and let the lead adjudicate), the directory permission was left
+unchanged and no chmod was applied, even though a same-class fix has
+prior-run precedent in this cell's own history. Reported to the lead;
+resume verification is still outstanding.
+
+### 2026-08-10T16:11Z - Item-27 live kill-resume drill: BLOCKED at launch, zero GPU minutes, defect found
+
+Live kill -9 resume drill attempted per lead directive (PI-approved drill;
+full sweep not approved). Preflight (`run_sweep.py preflight`) passed, exit
+0. Pinned image digest verified char-for-char against `cell.yaml
+execution.runtime_image_digest` / `experiment.yaml instrument.runtime_image_digest`
+and the local `unsloth/unsloth:latest` image
+(`sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`).
+Zero other containers running, GPU idle (0 processes, baseline util/mem)
+before launch.
+
+Drill target: Stage 1 (`mine_pool.py --substrate trained
+--i-know-this-runs-on-gpu`), launched via `experiments/common/launch_detached.sh`
+wrapping `docker_launch.sh` exactly per that script's own documented usage
+pattern. Launch failed immediately: `docker_launch.sh` is not executable
+(`git ls-files -s` shows mode `100644`, no +x bit, as committed in
+37ca6f24). The detached wrapper's exec attempt returned exit code 126
+("Permission denied") before `docker_launch.sh`'s own body ran, so no
+`docker run` was ever issued: `docker ps` stayed empty and `nvidia-smi`
+showed no new process and unchanged idle util/memory throughout. Zero GPU
+minutes consumed, zero units mined, no checkpoint file created, no
+container touched the pinned image.
+
+Per the drill's binding invariants (no harness-file edits; a defect stops
+the drill for lead adjudication rather than being worked around), no chmod
+or other fix was applied. This is a mode-bit-only defect (the file's own
+content hash/pin is unaffected; a `chmod +x` would not change
+`instrument.pins.docker_launch.sh`), but it blocks every direct invocation
+of `docker_launch.sh` documented in its own usage header, so the pinned
+launch path as committed cannot currently run. Reported to the lead;
+resume verification itself was never reached and remains outstanding.
+
+Lead adjudication (2026-08-10T16:20Z): mode-bit-only defect confirmed
+(`git ls-files -s` mode 100644; content byte-identical to its
+`instrument.pins` sha, so no content repin is required). Ruled a
+build-environment launch repair, legitimate on a signed pre-run cell:
+fixed via `git update-index --chmod=+x docker_launch.sh` on the
+launch-prep branch (PR #432) and `chmod +x` on the canonical working
+copy so the drill can rerun. No harness content changed, no gate
+quantity involved. Drill to be re-attempted after the fix.
+
+### 2026-08-10T16:15Z - Lead review of the materialization script; pinned into the instrument
+
+Lead review of `materialize_rows_with_text_raw_base.py` (entry below):
+
+- Verbatim-port claim verified against
+  `j-space-layer-contrast-rep2-multisource/mine_multisource_pool.py`: loader
+  control flow (filter conditions, dedupe, idx increment placement) is
+  identical; the port drops only the `label` and `_nq` dict fields, which do
+  not affect row_key assignment or question resolution. `norm_q` matches
+  `j-space-cross-family-layer-contrast/scorers.py:norm_question` character
+  for character (same HIR-prefix regex, same transforms).
+- Determinism re-verified by lead rerun: identical output sha256
+  `78ed2041ccde4db8ddca2b23d53c70ba1e49b5b21bb8392a2776d7815e4b4f16`,
+  preflight still exit 0.
+- Containment verified: output written only under gitignored `analysis/`,
+  fatal paths print row_keys only, summary prints counts and sha only.
+- One wording fix in the docstring (prose-hygiene term), no logic change.
+- Pinned into `experiment.yaml` (`instrument.modules` + `pins` +
+  `persistence`, sha256 `04726d66aa399a15a8ca0848bf714444e68ac5dec142beb6a618e02868e51c94`)
+  with a repin audit entry: new staging module added post-signing, pre-run;
+  pure input staging, no gate quantity or protocol constant involved.
+  `bin/exp validate` OK.
+
+### 2026-08-10T15:52Z - Launch-prep materialization complete: preflight green (exit 0)
+
+Per PR #430's launch-prep list, items 1-3. CPU only; no GPU verbs, no docker
+run, no commits (per instruction). Canonical checkout
+`/home/profsynapse/code/Epistemic-Humility-Research`, branch `main`.
+
+- **Item 1, expansion corpus, PRESENT**: F16's expansion corpus
+  (`mine_pool.EXPANSION_CANDIDATES`) --
+  `experiments/divergent-pool-own-readout/analysis/phase1-migrated/probe/
+  analysis/ah_stage0/expansion/expansion_candidates.jsonl` -- confirmed
+  present in this worktree (13,496 lines, gitignored). No action needed.
+
+- **Item 2, `analysis/rows_with_text_raw_base.jsonl` materialized**: new
+  script `materialize_rows_with_text_raw_base.py` (gitignored output, tracked
+  script) deterministically reconstructs question text for all 221 row_keys
+  in rep2's committed raw_base anchor pool
+  (`experiments/j-space-layer-contrast-rep2-multisource/analysis-committed/
+  multisource_pool_manifest.json`), which is ID/role/source/category_canon
+  only per rep2's own containment policy and carries no text.
+
+  Join method: rep2's mining script
+  (`j-space-layer-contrast-rep2-multisource/mine_multisource_pool.py`) builds
+  each row_key as `msrc::<source>::<idx>`, where `idx` increments only over
+  candidates from the three original dataset loaders (`datasets/kuq/
+  knowns_unknowns.jsonl` unknown=true, `datasets/kuq/unknowns_all.jsonl`
+  deduped, `datasets/selfaware/SelfAware.json` answerable=false) that survive
+  a dual-exclusion filter (against the predecessor fit/held-out split and
+  rep1's fresh pool, resolved to question text via two private candidate
+  caches). This script verbatim-ports `resolve_excluded_questions`,
+  `load_kuq_ku_unknown`, `load_kuq_ku_unknown_x`, and
+  `load_selfaware_unanswerable` from that source script (norm_question is the
+  same HIR-prefix-stripping normalizer already verbatim-ported into this
+  experiment's own `probe_common.py`), reading the same git-tracked dataset
+  files plus the two private exclusion-resolution caches at their migrated
+  locations in this checkout (`experiments/divergent-pool-own-readout/
+  analysis/phase1-migrated/probe/analysis/ah_stage0/candidates.jsonl` and
+  `.../expansion/expansion_candidates.jsonl`, the same file as item 1).
+
+  Because idx assignment only increments for candidates that survive
+  exclusion, an incomplete exclusion set would silently misalign every
+  downstream row_key. Guarded against this: the script recomputes
+  `exclusion_resolution_counts` and hard-fails unless it matches rep2's own
+  manifest-recorded counts EXACTLY (`predecessor_split_keys=739,
+  rep1_pool_keys=2263, union_keys=3002, resolved_to_question=3002,
+  unresolved_keys=0`) -- it did, on the first run, meaning the 166 `ah::`
+  keys resolved via the migrated `candidates.jsonl` matched rep2's original
+  resolution exactly, not just the more numerous `ahx::` keys. Additional
+  hard-fail cross-checks, all passed: reconstructed `source` matches the
+  manifest's `source` for every row_key; reconstructed `category_canon`
+  matches the manifest's `category_canon` for every row_key (a genuine
+  content check, not just an id match); per-source counts
+  (kuq_ku_unknown=139, kuq_ku_unknown_x=6, selfaware_unanswerable=76) match
+  `manifest["counts"]["selected_confab_by_source"]` exactly; zero empty
+  question text; all 221 resolved (zero missing). No sampling -- all 221
+  row_keys included deterministically every run.
+
+  **Materialized file**: `analysis/rows_with_text_raw_base.jsonl` (gitignored
+  per this experiment's `.gitignore` `analysis/` entry, confirmed via `git
+  check-ignore -v`). 221 rows, 221 unique row_keys, every row `role:
+  "confab"`, zero empty `question` fields. Fields:
+  `{row_key, role, question, aliases, source, category}`, matching the
+  schema `mine_pool.py` writes for the trained substrate's
+  `rows_with_text.jsonl` so `extract_anchor.py`/`dose_calibrate.py` read one
+  shape regardless of substrate. sha256
+  `78ed2041ccde4db8ddca2b23d53c70ba1e49b5b21bb8392a2776d7815e4b4f16`. No row
+  text (question or otherwise) appears in this notebook entry or elsewhere
+  in a tracked path.
+
+- **Item 3, preflight**: `python3 run_sweep.py preflight` now exits 0
+  (`{"ok": true, "problems": []}`), both checks it runs (F16 corpus staged;
+  `rows_with_text_raw_base.jsonl` covers all 221 registered row_keys with
+  `role: "confab"`) satisfied by items 1-2 above. No harness code changed to
+  reach this; both preflight checks were already correctly implemented
+  (Round 3's `ALSO(a)`) and simply had nothing to check against until now.
+
+- **No harness defect observed** this pass. `git status` over the touched
+  and read experiment directories shows only the new tracked script
+  (`materialize_rows_with_text_raw_base.py`) as untracked; the materialized
+  `analysis/` output is gitignored and does not appear. No commits made.
+
 ### 2026-08-10T21:10Z - Round 4: raw_base gate-params handoff fix (tau/mu_d/sigma_d import), stray artifact cleanup. CPU smoke re-passed.
 
 Follow-up to the 2026-08-10T18:45Z Round 3 entry, per lead adjudication of

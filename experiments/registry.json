@@ -621,7 +621,8 @@
           "run_sweep.py",
           "split_fit_heldout.py",
           "sweep_lib.py",
-          "write_smoke.py"
+          "write_smoke.py",
+          "materialize_rows_with_text_raw_base.py"
         ],
         "persistence": {
           "adjudicate_gates.py": {
@@ -672,6 +673,11 @@
           "materialize_configs.py": {
             "measured_smoke_wall_clock_s": 0.17,
             "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "materialize_rows_with_text_raw_base.py": {
+            "measured_smoke_wall_clock_s": 0.5,
+            "note": "launch-prep staging: deterministically reconstructs rep2 row_key to question text join for the 221-row raw_base anchor pool; hard-fails on any count/source/category mismatch vs the rep2 committed manifest; writes only gitignored analysis/rows_with_text_raw_base.jsonl",
             "persistence": "short-run"
           },
           "mine_pool.py": {
@@ -755,6 +761,7 @@
           "gates.yaml": "ea176dac3635efd54cd346949da776db4f0996ef6570a5a950c03bf2e252a93d",
           "grader_sweep.py": "4ed035339a0408640eeade8b4bf65a9eb8d6513909883fcb2942e4225eb266d7",
           "materialize_configs.py": "01fae475fda4b0be869be2ba6c240377feffcbc6e2cfa70417b2f0a39550e1e4",
+          "materialize_rows_with_text_raw_base.py": "04726d66aa399a15a8ca0848bf714444e68ac5dec142beb6a618e02868e51c94",
           "mine_pool.py": "46f6a51701788c3f71026401d3edbb39de5a6248ebbef8b4662d6365891a59de",
           "probe_census_extension.py": "7c5d4a8a44fdf0dd3788b12dfc3d103c4ccdfad7aa58f1f3014586389596ce28",
           "probe_common.py": "9ede6b49fb10c362557b6b4cb11df1d70e1f3d8902a818796cd80c5b5cd49de7",
@@ -783,6 +790,13 @@
             "new_sha256": "ea176dac3635efd54cd346949da776db4f0996ef6570a5a950c03bf2e252a93d",
             "old_sha256": "47308ed0ac9aadad37356c9bd945fe44444ae293c6a6c69872beba5083b5646a",
             "reason": "G0b quantity wording said adjacent-site cosine, which is not the registered seam diagnostic (the reference's 1.000000 comes from comparing the same hidden state under both cache conditions) and induced a wrong implementation caught in re-review. Wording corrected to the cache-condition-invariance quantity the harness now computes; threshold 0.999 and direction unchanged."
+          },
+          {
+            "date": "2026-08-10T16:10:00Z",
+            "file": "materialize_rows_with_text_raw_base.py",
+            "new_sha256": "04726d66aa399a15a8ca0848bf714444e68ac5dec142beb6a618e02868e51c94",
+            "old_sha256": "none (new module, added post-signing pre-run)",
+            "reason": "new launch-prep staging module added post-signing, pre-run: materializes the registered raw_base anchor input analysis/rows_with_text_raw_base.jsonl from rep2 committed manifest plus git-tracked datasets. Pure input staging, no gate quantity or protocol constant involved; verified by exact match of exclusion_resolution_counts, per-source counts, and category_canon against rep2 manifest."
           }
         ],
         "runtime_image_digest": "sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772"
