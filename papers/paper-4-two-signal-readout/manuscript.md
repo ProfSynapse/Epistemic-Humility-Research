@@ -828,7 +828,7 @@ the Qwen-family models is a mid-to-late region that overlaps this workspace band
 the gate saturates by 20% of depth, far below it. Read descriptively, the dial appears to
 read from the band where the model's verbalizable workspace concentrates, and the gate is
 computed and carried long before the workspace begins. Three scope fences, stated
-plainly. First, the J-lens run characterized the caution and
+plainly. First, the J-lens run characterized the refusal and
 known-unknown directions used in the program's registered actuation experiments, not this paper's gate and dial probes, so the claim here is band
 overlap, never that the dial itself was verbalized under the lens. Second, the run used
 the bf16 sibling of the bnb-4bit base (same architecture and configuration, different
@@ -1123,11 +1123,11 @@ happens to produce?).
 #### Why not just steer?
 
 The program's registered actuation experiments found the answerability axis is causally
-steerable, but *asymmetrically*: excess caution could be relaxed, and pushing along the
-axis did not install missing caution under an ungated write. Whether a write *gated* on
+steerable, but *asymmetrically*: excess refusal could be relaxed, and pushing along the
+axis did not install missing abstention under an ungated write. Whether a write *gated* on
 the model's own answerability readout escapes that asymmetry is actuation work, not
 reading work, and outside this paper's scope; the registered result there is conditional,
-ungated steering could not install missing caution, but a gated write can, on one model
+ungated steering could not install missing abstention, but a gated write can, on one model
 (provenance in Appendix A). This paper deploys a *gate* (threshold-and-abstain) rather than a write because
 of that scope, not because writing is impossible: the read-and-threshold pipeline
 developed here is validated across four families and four sizes, while the gated-write
@@ -1139,16 +1139,16 @@ Four families measured with the same capture-only atlas instrument show one shap
 effective dimensionality of representation variance over the epistemic pool peaks in the
 first 10-15% of depth (llama layer 4 of 28; mistral layer 3 of 32; gemma hidden state 4 of
 42; qwen3-4b hidden state 5 of 36, at 0.139 of depth) and collapses thereafter, while the
-three epistemic contrasts, the known-unknown (answerability) readout, the caution
-contrast, and raw refusal, become simultaneously linearly readable (held-out AUROC at or
+three epistemic contrasts, the known-unknown (answerability) readout, the
+refusal-versus-confabulation contrast, and raw refusal, become simultaneously linearly readable (held-out AUROC at or
 above 0.80) only after that collapse, across a wide mid-band (llama 15-23, mistral 7-27,
 gemma 13-42, qwen3-4b hidden states 22-36). The registered prediction that readability
 would coincide with a dimensionality peak (an interior "workspace band") failed in all four
 families, and on the fourth it fired that cell's pre-registered falsifier on the profile
-limb: at the dimensionality peak itself, two of the three axes read below the bar (caution
+limb: at the dimensionality peak itself, two of the three axes read below the bar (refusal-versus-confabulation
 0.670, raw refusal 0.737). One axis needs its own control read beside it, in all four
 families alike: the known-unknown axis is norm- and position-confounded, so the interior
-band is carried by the caution and raw-refusal contrasts, which clear their controls with a
+band is carried by the refusal-versus-confabulation and raw-refusal contrasts, which clear their controls with a
 wide margin. Layer coordinates do not transfer across families, but the decoupling motif
 has replicated four of four times.
 
