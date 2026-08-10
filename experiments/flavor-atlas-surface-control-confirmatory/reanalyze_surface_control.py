@@ -365,6 +365,7 @@ def crossfit_ridge_incremental(
     if checkpoint_path is not None:
         state_path = require_beneath_analysis(checkpoint_path.with_suffix(".npz"))
         meta_path = require_beneath_analysis(checkpoint_path.with_suffix(".json"))
+        state_path.parent.mkdir(parents=True, exist_ok=True)
         meta = read_checkpoint(meta_path, fingerprint, unit)
         if meta is not None and state_path.exists():
             state = np.load(state_path)
@@ -514,49 +515,223 @@ def m1_flavor_mask(panel: Panel, flavor_name: str | None) -> np.ndarray:
     return known_mask | unknown_mask
 
 
+def load_panel(name: str, cell: dict[str, Any], base_dir: Path = HERE) -> Panel:
+    spec = cell["source_panels"][name]
+    path = resolve_path(base_dir, spec["panel_file"])
+    rows = load_jsonl(path)
+    row_keys = [r["row_key"] for r in rows]
+    y_known = np.asarray([1 if r["label"] == "known" else 0 for r in rows])
+    flavor = np.asarray([r["flavor"] for r in rows])
+    extraction_dir = resolve_path(base_dir, spec["extraction_dir"])
+    return Panel(name=name, rows=rows, row_keys=row_keys, y_known=y_known, flavor=flavor, extraction_dir=extraction_dir)
+
+
+def make_raw_cache():
+    """Memoizing wrapper over `load_layer_matrix`, keyed by (panel, layer),
+    so a layer shared by several primary cells (L35) or several permutation
+    replicates is only ever read from disk once."""
+    cache: dict[tuple[str, int], np.ndarray] = {}
+
+    def get(panel: Panel, layer: int) -> np.ndarray:
+        key = (panel.name, layer)
+        if key not in cache:
+            cache[key] = load_layer_matrix(panel.extraction_dir, panel.row_keys, layer)
+        return cache[key]
+
+    return get
+
+
+def flavor_auroc(panel: Panel, values: np.ndarray, flavor: str | None) -> float:
+    mask = m1_flavor_mask(panel, flavor)
+    mean_auc, _std, _oof = ipg_cv_auroc_with_oof(values[mask], panel.y_known[mask])
+    return float(mean_auc)
+
+
+def fit_full_probe(x: np.ndarray, y: np.ndarray, seed: int = 0):
+    """S3 construction: one full-data fit of the pinned probe family (same
+    scaler, same C=0.5), no cross-validation -- frozen and then scored on a
+    DIFFERENT dataset (`score_frozen`), which is its own held-out set."""
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import StandardScaler
+
+    sc = StandardScaler().fit(x)
+    clf = LogisticRegression(C=0.5, max_iter=2000, random_state=seed)
+    clf.fit(sc.transform(x), y)
+    return sc, clf
+
+
+def score_frozen(sc, clf, x: np.ndarray, y: np.ndarray) -> float:
+    from sklearn.metrics import roc_auc_score
+
+    scores = clf.decision_function(sc.transform(x))
+    return float(roc_auc_score(y, scores))
+
+
+def primary_layer_set(cell: dict[str, Any]) -> list[int]:
+    """The distinct KUQ layers spanned by the twelve primary cells (six
+    flavors' best_layer plus the shared secondary_layer) -- what C1/C2 are
+    evaluated at, per gates.yaml sg4/sg6 ('each primary layer')."""
+    layers: set[int] = set()
+    for spec in cell["primary_cells"].values():
+        layers.add(int(spec["best_layer"]))
+        layers.add(int(spec["secondary_layer"]))
+    return sorted(layers)
+
+
+def compute_layer_plan(cell: dict[str, Any]) -> dict[str, list[int]]:
+    """Every (panel, layer) this run must residualize, derived entirely from
+    cell.yaml: primary_cells, reference_cells, s3_transfer's extra layers,
+    and hidden states 0/1 (SG2's null check plus C3's plant/RMS reference,
+    KUQ only)."""
+    primary = cell["primary_cells"]
+    reference = cell["reference_cells"]
+    s3 = cell["s3_transfer"]
+
+    kuq_layers: set[int] = set(primary_layer_set(cell))
+    kuq_layers.add(int(reference["pooled_all_unknowns"]["best_layer"]))
+    kuq_layers.add(int(reference["pooled_all_unknowns"]["secondary_layer"]))
+    for l in s3["kuq_extra_layers"]:
+        kuq_layers.add(int(l))
+    kuq_layers.update({0, 1})
+
+    selfaware_layers: set[int] = {
+        int(reference["selfaware"]["best_layer"]),
+        int(reference["selfaware"]["secondary_layer"]),
+        0,
+    }
+    for l in s3["selfaware_extra_layers"]:
+        selfaware_layers.add(int(l))
+
+    ambigqa_layers: set[int] = {
+        int(reference["ambigqa"]["best_layer"]),
+        int(reference["ambigqa"]["secondary_layer"]),
+        0,
+    }
+
+    return {"kuq": sorted(kuq_layers), "selfaware": sorted(selfaware_layers), "ambigqa": sorted(ambigqa_layers)}
+
+
 # --------------------------------------------------------------------------
 # SG0 / SG1: integrity
 # --------------------------------------------------------------------------
 
-def verify_sg0(cell: dict[str, Any], gates: dict[str, Any]) -> dict[str, Any]:
-    from safetensors import safe_open
+def resolve_path(base_dir: Path, raw: str) -> Path:
+    """Resolve a cell.yaml-declared path against `base_dir` (the real HERE
+    for a production run, a fixture root for the smoke end-to-end check).
+    An already-absolute string (used by the fixture for the real, unfaked
+    pinned modules) is returned unchanged."""
+    p = Path(raw)
+    return p.resolve() if p.is_absolute() else (base_dir / p).resolve()
 
+
+def real_input_inventory(
+    cell: dict[str, Any], gates: dict[str, Any], base_dir: Path = HERE
+) -> list[dict[str, Any]]:
+    """Every real, on-disk input this cell reads at run time: label,
+    resolved path, and (when pinned) the expected sha256. Single source of
+    truth for SG0 verification and for `--dry-run` reporting."""
+    checks = gates["sg0_input_integrity"]["checks"]
+    panels_cfg = cell["source_panels"]
+    entries: list[tuple[str, str, str | None]] = [
+        ("kuq panel", panels_cfg["kuq"]["panel_file"], checks["kuq_panel_sha256_must_equal"]),
+        ("ambigqa panel", panels_cfg["ambigqa"]["panel_file"], checks["ambigqa_panel_sha256_must_equal"]),
+        ("selfaware panel", panels_cfg["selfaware"]["panel_file"], checks["selfaware_panel_sha256_must_equal"]),
+        ("panels manifest", cell["panels_manifest"]["path"], checks["panels_manifest_sha256_must_equal"]),
+        (
+            "kuq extraction manifest",
+            str(Path(panels_cfg["kuq"]["extraction_dir"]) / "manifest.json"),
+            checks["kuq_extraction_manifest_sha256_must_equal"],
+        ),
+        (
+            "ambigqa extraction manifest",
+            str(Path(panels_cfg["ambigqa"]["extraction_dir"]) / "manifest.json"),
+            checks["ambigqa_extraction_manifest_sha256_must_equal"],
+        ),
+        (
+            "selfaware extraction manifest",
+            str(Path(panels_cfg["selfaware"]["extraction_dir"]) / "manifest.json"),
+            checks["selfaware_extraction_manifest_sha256_must_equal"],
+        ),
+        ("atlas sweep baseline", cell["baseline_atlas_sweep"]["path"], checks["atlas_sweep_sha256_must_equal"]),
+        ("probe module", cell["probe_protocol"]["module"], checks["probe_module_sha256_must_equal"]),
+        ("render module", cell["render_module"]["path"], None),
+        ("kuq extraction dir", panels_cfg["kuq"]["extraction_dir"], None),
+        ("ambigqa extraction dir", panels_cfg["ambigqa"]["extraction_dir"], None),
+        ("selfaware extraction dir", panels_cfg["selfaware"]["extraction_dir"], None),
+    ]
+    inventory = []
+    for label, rel, expected_sha in entries:
+        path = resolve_path(base_dir, rel)
+        exists = path.exists()
+        actual_sha = sha256_file(path) if (exists and path.is_file() and expected_sha) else None
+        sha_ok = expected_sha is None or actual_sha == expected_sha
+        inventory.append(
+            {
+                "label": label,
+                "path": path,
+                "exists": exists,
+                "sha256": expected_sha,
+                "sha256_actual": actual_sha,
+                "sha256_ok": sha_ok,
+            }
+        )
+    return inventory
+
+
+def verify_panels_manifest_counts(
+    cell: dict[str, Any], gates: dict[str, Any], base_dir: Path = HERE
+) -> list[str]:
+    """panels_manifest.json's own recorded counts, cross-checked against the
+    same gates.yaml numbers SG0 already pins by sha. The sha pin proves the
+    file is byte-identical to what was reviewed; this proves the file's
+    CONTENT is what the cell believes it is -- a legible failure instead of
+    an opaque hash mismatch when it disagrees."""
+    path = resolve_path(base_dir, cell["panels_manifest"]["path"])
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    checks = gates["sg0_input_integrity"]["checks"]
+    problems: list[str] = []
+    counts = manifest.get("counts", {})
+
+    kuq = counts.get("kuq", {})
+    if kuq.get("n") != checks["kuq_rows_must_equal"]:
+        problems.append(f"panels_manifest kuq.n={kuq.get('n')} vs gate {checks['kuq_rows_must_equal']}")
+    kuq_labels = kuq.get("by_label", {})
+    if kuq_labels.get("known") != checks["kuq_known_must_equal"]:
+        problems.append(f"panels_manifest kuq.by_label.known={kuq_labels.get('known')} vs gate {checks['kuq_known_must_equal']}")
+    if kuq_labels.get("unknown") != checks["kuq_unknown_must_equal"]:
+        problems.append(f"panels_manifest kuq.by_label.unknown={kuq_labels.get('unknown')} vs gate {checks['kuq_unknown_must_equal']}")
+    kuq_flavors = kuq.get("by_flavor", {})
+    for cat, expected in checks["kuq_flavor_counts_must_equal"].items():
+        got = kuq_flavors.get(cat, 0)
+        if got != expected:
+            problems.append(f"panels_manifest kuq.by_flavor['{cat}']={got} vs gate {expected}")
+
+    ambigqa = counts.get("ambigqa", {})
+    if ambigqa.get("n") != checks["ambigqa_rows_must_equal"]:
+        problems.append(f"panels_manifest ambigqa.n={ambigqa.get('n')} vs gate {checks['ambigqa_rows_must_equal']}")
+
+    selfaware = counts.get("selfaware", {})
+    if selfaware.get("n") != checks["selfaware_rows_must_equal"]:
+        problems.append(f"panels_manifest selfaware.n={selfaware.get('n')} vs gate {checks['selfaware_rows_must_equal']}")
+
+    return problems
+
+
+def verify_sg0(cell: dict[str, Any], gates: dict[str, Any], base_dir: Path = HERE) -> dict[str, Any]:
     checks = gates["sg0_input_integrity"]["checks"]
     problems: list[str] = []
 
-    def check_file(rel: str, expected_sha: str, label: str) -> Path:
-        path = (HERE / rel).resolve()
-        if not path.is_file():
-            problems.append(f"{label} missing: {rel}")
-            return path
-        actual = sha256_file(path)
-        if actual != expected_sha:
-            problems.append(f"{label} sha256 mismatch: {rel} actual={actual[:12]} expected={expected_sha[:12]}")
-        return path
+    for item in real_input_inventory(cell, gates, base_dir):
+        if not item["exists"]:
+            problems.append(f"{item['label']} missing: {item['path']}")
+            continue
+        if item["sha256"] is not None and not item["sha256_ok"]:
+            problems.append(
+                f"{item['label']} sha256 mismatch: actual={(item['sha256_actual'] or '')[:12]} "
+                f"expected={item['sha256'][:12]}"
+            )
 
     panels_cfg = cell["source_panels"]
-    check_file(panels_cfg["kuq"]["panel_file"], checks["kuq_panel_sha256_must_equal"], "kuq panel")
-    check_file(panels_cfg["ambigqa"]["panel_file"], checks["ambigqa_panel_sha256_must_equal"], "ambigqa panel")
-    check_file(panels_cfg["selfaware"]["panel_file"], checks["selfaware_panel_sha256_must_equal"], "selfaware panel")
-    check_file(cell["panels_manifest"]["path"], checks["panels_manifest_sha256_must_equal"], "panels manifest")
-    check_file(
-        str(Path(panels_cfg["kuq"]["extraction_dir"]) / "manifest.json"),
-        checks["kuq_extraction_manifest_sha256_must_equal"],
-        "kuq extraction manifest",
-    )
-    check_file(
-        str(Path(panels_cfg["ambigqa"]["extraction_dir"]) / "manifest.json"),
-        checks["ambigqa_extraction_manifest_sha256_must_equal"],
-        "ambigqa extraction manifest",
-    )
-    check_file(
-        str(Path(panels_cfg["selfaware"]["extraction_dir"]) / "manifest.json"),
-        checks["selfaware_extraction_manifest_sha256_must_equal"],
-        "selfaware extraction manifest",
-    )
-    check_file(cell["baseline_atlas_sweep"]["path"], checks["atlas_sweep_sha256_must_equal"], "atlas sweep")
-    check_file(cell["probe_protocol"]["module"], checks["probe_module_sha256_must_equal"], "probe module")
-
     for name, expected in (
         ("kuq_rows_must_equal", panels_cfg["kuq"]["n_rows"]),
         ("kuq_known_must_equal", panels_cfg["kuq"]["n_known"]),
@@ -572,6 +747,9 @@ def verify_sg0(cell: dict[str, Any], gates: dict[str, Any]) -> dict[str, Any]:
         got = panels_cfg["kuq"]["flavor_counts"].get(cat)
         if got != expected:
             problems.append(f"kuq flavor '{cat}' count mismatch: cell.yaml={got} gates.yaml={expected}")
+
+    if not problems:
+        problems.extend(verify_panels_manifest_counts(cell, gates, base_dir))
 
     status = "PASS" if not problems else "STOP"
     return {"status": status, "problems": problems}
@@ -666,6 +844,592 @@ def adjudicate(
 
 
 # --------------------------------------------------------------------------
+# Real-run orchestration (SG2, S2, S3, C1/C2, C3) -- shared verbatim between
+# the CLI real-data path and the smoke fixture end-to-end check below, which
+# is why every function here takes `cell`/`gates`/panels/features as
+# arguments rather than reading the module-level CELL_PATH/GATES_PATH.
+# --------------------------------------------------------------------------
+
+def evaluate_sg2(
+    kuq: Panel, ambigqa: Panel, selfaware: Panel, cell: dict[str, Any], gates: dict[str, Any], raw_cache
+) -> dict[str, Any]:
+    """Raw (non-residualized) reproduction of the atlas baseline at 4dp,
+    plus the hidden-state-0 == 0.5000 null check for all nine rows. A
+    controlled number is meaningless unless the uncontrolled number is
+    reproduced first (gates.yaml sg2 derivation)."""
+    checks = gates["sg2_baseline_reproduction"]["checks"]
+    cells_expected = checks["cells"]
+    problems: list[str] = []
+    computed: dict[str, dict[str, float]] = {}
+
+    def raw_row(panel: Panel, best_layer: int, secondary_layer: int, flavor: str | None, key: str) -> None:
+        got_best = round(flavor_auroc(panel, raw_cache(panel, best_layer), flavor), 4)
+        got_secondary = round(flavor_auroc(panel, raw_cache(panel, secondary_layer), flavor), 4)
+        secondary_key = f"L{secondary_layer}"
+        computed[key] = {f"L{best_layer}": got_best, secondary_key: got_secondary}
+        expected = cells_expected.get(key)
+        if expected is None:
+            problems.append(f"{key}: no expected baseline registered in gates.yaml sg2 cells table")
+        elif computed[key][f"L{best_layer}"] != expected.get(f"L{best_layer}") or computed[key][secondary_key] != expected.get(secondary_key):
+            problems.append(f"{key}: got {computed[key]}, expected {expected}")
+
+    for flavor, spec in cell["primary_cells"].items():
+        raw_row(kuq, int(spec["best_layer"]), int(spec["secondary_layer"]), flavor, flavor)
+    pooled_spec = cell["reference_cells"]["pooled_all_unknowns"]
+    raw_row(kuq, int(pooled_spec["best_layer"]), int(pooled_spec["secondary_layer"]), None, "pooled_all_unknowns")
+    selfaware_spec = cell["reference_cells"]["selfaware"]
+    raw_row(selfaware, int(selfaware_spec["best_layer"]), int(selfaware_spec["secondary_layer"]), None, "selfaware")
+    ambigqa_spec = cell["reference_cells"]["ambigqa"]
+    raw_row(ambigqa, int(ambigqa_spec["best_layer"]), int(ambigqa_spec["secondary_layer"]), None, "ambigqa")
+
+    hs0_expected = round(float(checks["hidden_state_0_must_equal_for_all_rows"]), 4)
+    hs0_computed: dict[str, float] = {}
+    for flavor in cell["primary_cells"]:
+        hs0_computed[flavor] = round(flavor_auroc(kuq, raw_cache(kuq, 0), flavor), 4)
+    hs0_computed["pooled_all_unknowns"] = round(flavor_auroc(kuq, raw_cache(kuq, 0), None), 4)
+    hs0_computed["selfaware"] = round(flavor_auroc(selfaware, raw_cache(selfaware, 0), None), 4)
+    hs0_computed["ambigqa"] = round(flavor_auroc(ambigqa, raw_cache(ambigqa, 0), None), 4)
+    for row, val in hs0_computed.items():
+        if val != hs0_expected:
+            problems.append(f"hidden_state_0 for {row}: got {val}, expected {hs0_expected}")
+
+    return {
+        "status": "PASS" if not problems else "STOP",
+        "problems": problems,
+        "computed": computed,
+        "hidden_state_0": hs0_computed,
+    }
+
+
+def compute_s2(
+    kuq: Panel, ambigqa: Panel, selfaware: Panel, features, slices: dict[str, slice], cell: dict[str, Any]
+) -> dict[str, float]:
+    """S2: surface-only probe, no activation touched at all -- every atlas
+    row (six flavors plus the three reference pools)."""
+    s2: dict[str, float] = {}
+    for flavor in cell["primary_cells"]:
+        mask = m1_flavor_mask(kuq, flavor)
+        z = features.combined[slices["kuq"]][mask]
+        mean_auc, _std, _oof = ipg_cv_auroc_with_oof(z, kuq.y_known[mask])
+        s2[flavor] = float(mean_auc)
+    mask = m1_flavor_mask(kuq, None)
+    s2["pooled_all_unknowns"] = float(
+        ipg_cv_auroc_with_oof(features.combined[slices["kuq"]][mask], kuq.y_known[mask])[0]
+    )
+    s2["selfaware"] = float(ipg_cv_auroc_with_oof(features.combined[slices["selfaware"]], selfaware.y_known)[0])
+    s2["ambigqa"] = float(ipg_cv_auroc_with_oof(features.combined[slices["ambigqa"]], ambigqa.y_known)[0])
+    return s2
+
+
+def compute_s3(kuq: Panel, selfaware: Panel, cell: dict[str, Any], get_kuq_residual, get_selfaware_residual) -> dict[str, Any]:
+    """S3: descriptive residualized cross-dataset transfer, both directions,
+    at the layers `s3_transfer` in cell.yaml declares (AMENDMENT.md Design
+    S3). Fit is a single full-data probe fit, frozen and scored on the
+    OTHER dataset -- never refit there."""
+    kuq_to_selfaware: dict[str, Any] = {}
+    for flavor, spec in cell["primary_cells"].items():
+        layer = int(spec["best_layer"])
+        kuq_residual, _r2 = get_kuq_residual(layer)
+        mask = m1_flavor_mask(kuq, flavor)
+        sc, clf = fit_full_probe(kuq_residual[mask], kuq.y_known[mask])
+        selfaware_residual, _r2 = get_selfaware_residual(layer)
+        kuq_to_selfaware[flavor] = {"layer": layer, "auroc": score_frozen(sc, clf, selfaware_residual, selfaware.y_known)}
+
+    fit_layer = int(cell["s3_transfer"]["selfaware_to_kuq_fit_layer"])
+    selfaware_residual, _r2 = get_selfaware_residual(fit_layer)
+    sc, clf = fit_full_probe(selfaware_residual, selfaware.y_known)
+    selfaware_to_kuq: dict[str, Any] = {}
+    for flavor in cell["primary_cells"]:
+        kuq_residual, _r2 = get_kuq_residual(fit_layer)
+        mask = m1_flavor_mask(kuq, flavor)
+        selfaware_to_kuq[flavor] = {"layer": fit_layer, "auroc": score_frozen(sc, clf, kuq_residual[mask], kuq.y_known[mask])}
+
+    return {"kuq_flavor_to_selfaware": kuq_to_selfaware, "selfaware_to_kuq": selfaware_to_kuq}
+
+
+def compute_permutation_controls(
+    kuq: Panel,
+    features,
+    slices: dict[str, slice],
+    cell: dict[str, Any],
+    fingerprint: str,
+    checkpoint_root: Path | None,
+) -> tuple[dict[int, list[float]], list[bool]]:
+    """C1/C2 share the same 20 fixed-seed permutation replicates (AMENDMENT.md
+    Compute budget: '20 permutation replicates ... restricted to the primary
+    layers'). For each replicate: permute Z once, then residualize KUQ at
+    every distinct primary layer using that SAME permuted Z, recording the
+    activation-OOF-R2 (feeds C1's threshold) and, at each flavor's own two
+    primary layers, the residualized AUROC (feeds C2's 18-of-20 count)."""
+    primary_layers = primary_layer_set(cell)
+    n_perm = int(cell["permutation_control"]["n_permutations"])
+    seed_start = int(cell["permutation_control"]["seed_start"])
+    strata = [f"{lab}|{flav}" for lab, flav in zip(kuq.y_known.astype(str), kuq.flavor)]
+
+    permuted_r2_by_layer: dict[int, list[float]] = {l: [] for l in primary_layers}
+    replicate_all_flavors_pass: list[bool] = []
+
+    for i in range(n_perm):
+        perm_seed = seed_start + i
+        z_perm = permute_within_strata(features.combined[slices["kuq"]], strata, perm_seed)
+        replicate_ok = True
+        for layer in primary_layers:
+            h_raw = load_layer_matrix(kuq.extraction_dir, kuq.row_keys, layer)
+            seed = int(cell["seed"]) + layer
+            ckpt = (checkpoint_root / "kuq" / "permutation" / f"p{i}" / f"hs{layer}") if checkpoint_root else None
+            residual, _yhat, _chosen = crossfit_ridge_incremental(
+                h_raw,
+                z_perm,
+                strata,
+                cell["residualization"]["alpha_grid"],
+                outer_folds=int(cell["residualization"]["outer_folds"]),
+                inner_folds=int(cell["residualization"]["inner_folds"]),
+                seed=seed,
+                checkpoint_path=ckpt,
+                fingerprint=fingerprint,
+                unit=f"kuq/permutation/p{i}/L{layer}",
+            )
+            permuted_r2_by_layer[layer].append(activation_oof_r2(h_raw, residual))
+            for flavor, spec in cell["primary_cells"].items():
+                if layer not in (int(spec["best_layer"]), int(spec["secondary_layer"])):
+                    continue
+                # 0.90 here is the registered C2 band: gates.yaml
+                # sg6_permutation_negative_control's key name is
+                # min_permuted_runs_keeping_all_six_flavors_AT_OR_ABOVE_0_90 --
+                # the floor is embedded in that key's name, not exposed as a
+                # separate numeric field, so it is transcribed here rather
+                # than read out of the dict. This is the C2 band, a distinct
+                # registered quantity from sg8's p1_survival_floor even
+                # though the two currently share a value; do not derive one
+                # from the other.
+                if flavor_auroc(kuq, residual, flavor) < 0.90:
+                    replicate_ok = False
+        replicate_all_flavors_pass.append(replicate_ok)
+
+    return permuted_r2_by_layer, replicate_all_flavors_pass
+
+
+def evaluate_sg4(
+    observed_r2_by_layer: dict[int, float], permuted_r2_by_layer: dict[int, list[float]], gates: dict[str, Any]
+) -> dict[str, Any]:
+    checks = gates["sg4_treatment_strength"]
+    min_r2 = float(checks["min_activation_oof_r2_at_each_primary_layer"])
+    q = float(checks["permutation_null_quantile"])
+    min_above = float(checks["min_above_permutation_quantile"])
+    per_layer: dict[int, dict[str, Any]] = {}
+    all_pass = True
+    for layer, observed in observed_r2_by_layer.items():
+        perm_values = permuted_r2_by_layer.get(layer, [])
+        q95 = float(np.percentile(perm_values, q * 100)) if perm_values else 0.0
+        cell_pass = observed >= min_r2 and observed >= q95 + min_above
+        per_layer[layer] = {"observed_r2": observed, "permutation_q95": q95, "pass": cell_pass}
+        all_pass = all_pass and cell_pass
+    return {"per_layer": per_layer, "pass": all_pass}
+
+
+def evaluate_sg6(replicate_all_flavors_pass: list[bool], gates: dict[str, Any]) -> dict[str, Any]:
+    checks = gates["sg6_permutation_negative_control"]
+    min_pass = int(checks["min_permuted_runs_keeping_all_six_flavors_at_or_above_0_90"])
+    n_pass = sum(replicate_all_flavors_pass)
+    return {"n_permutations": len(replicate_all_flavors_pass), "n_passing": n_pass, "pass": n_pass >= min_pass}
+
+
+def compute_and_evaluate_c3(
+    kuq: Panel,
+    features,
+    slices: dict[str, slice],
+    cell: dict[str, Any],
+    fingerprint: str,
+    get_kuq_residual,
+    checkpoint_root: Path | None,
+) -> dict[str, Any]:
+    """C3: single scalar surface score projected along one seeded random
+    unit direction, planted into hidden-state-0 (AMENDMENT.md C3;
+    cell.yaml planted_signal). hs_index and hs_index+1 come from
+    cell.yaml, never hardcoded."""
+    planted_cfg = cell["planted_signal"]
+    hs_index = int(planted_cfg["hs_index"])
+    h0 = load_layer_matrix(kuq.extraction_dir, kuq.row_keys, hs_index)
+    h1 = load_layer_matrix(kuq.extraction_dir, kuq.row_keys, hs_index + 1)
+    hs1_rms = hidden_state_1_centered_rms(h1)
+
+    z_kuq = features.combined[slices["kuq"]]
+    sc, w = fit_pooled_surface_weights(z_kuq, kuq.y_known, seed=int(planted_cfg["weight_fit_seed"]))
+    s = sc.transform(z_kuq) @ w
+    u = seeded_unit_vector(h0.shape[1], seed=int(planted_cfg["projection_seed"]))
+
+    reach_floor = float(planted_cfg["planted_pooled_auroc_must_reach_at_least"])
+    chosen_gamma = None
+    planted_pooled_auroc = None
+    h0_planted = None
+    for gv in planted_cfg["gamma_grid"]:
+        candidate = plant_hidden_state_0(h0, s, u, float(gv), hs1_rms)
+        auc, _std, _oof = ipg_cv_auroc_with_oof(candidate, kuq.y_known)
+        if auc >= reach_floor:
+            chosen_gamma, planted_pooled_auroc, h0_planted = float(gv), float(auc), candidate
+            break
+    reachable = chosen_gamma is not None
+    if not reachable:
+        gv = float(planted_cfg["gamma_grid"][-1])
+        h0_planted = plant_hidden_state_0(h0, s, u, gv, hs1_rms)
+        planted_pooled_auroc, _std, _oof = ipg_cv_auroc_with_oof(h0_planted, kuq.y_known)
+        chosen_gamma = gv
+
+    unplanted_residual, _r2 = get_kuq_residual(hs_index)
+    strata = [f"{lab}|{flav}" for lab, flav in zip(kuq.y_known.astype(str), kuq.flavor)]
+    seed = int(cell["seed"]) + hs_index
+    ckpt = (checkpoint_root / "kuq" / "planted" / f"hs{hs_index}") if checkpoint_root else None
+    planted_residual, _yhat, _chosen = crossfit_ridge_incremental(
+        h0_planted,
+        z_kuq,
+        strata,
+        cell["residualization"]["alpha_grid"],
+        outer_folds=int(cell["residualization"]["outer_folds"]),
+        inner_folds=int(cell["residualization"]["inner_folds"]),
+        seed=seed,
+        checkpoint_path=ckpt,
+        fingerprint=fingerprint,
+        unit=f"kuq/planted/hs{hs_index}",
+    )
+    residualized_planted_pooled_auroc, _std, _oof = ipg_cv_auroc_with_oof(planted_residual, kuq.y_known)
+
+    per_flavor_deviation: dict[str, float] = {}
+    max_dev = 0.0
+    for flavor in cell["primary_cells"]:
+        unplanted_auc = flavor_auroc(kuq, unplanted_residual, flavor)
+        planted_auc = flavor_auroc(kuq, planted_residual, flavor)
+        dev = abs(planted_auc - unplanted_auc)
+        per_flavor_deviation[flavor] = dev
+        max_dev = max(max_dev, dev)
+
+    ceiling = float(planted_cfg["residualized_planted_pooled_auroc_must_be_at_most"])
+    max_allowed_dev = float(planted_cfg["max_flavor_deviation_from_unplanted_residualized"])
+    sg5_pass = reachable and (residualized_planted_pooled_auroc <= ceiling) and (max_dev <= max_allowed_dev)
+
+    return {
+        "gamma": chosen_gamma,
+        "planted_pooled_auroc": planted_pooled_auroc,
+        "reachable": reachable,
+        "residualized_planted_pooled_auroc": residualized_planted_pooled_auroc,
+        "per_flavor_deviation": per_flavor_deviation,
+        "max_flavor_deviation": max_dev,
+        "pass": sg5_pass,
+    }
+
+
+def append_provenance_line(analysis_root: Path, fingerprint: str, out_path: Path) -> None:
+    log_path = require_beneath_analysis(analysis_root / "run_log.jsonl")
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    record = {
+        "provenance": True,
+        "config_fingerprint": fingerprint,
+        "committed_output": str(out_path),
+        "timestamp_unix": time.time(),
+    }
+    with log_path.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(record, sort_keys=True) + "\n")
+
+
+def run_real(
+    cell: dict[str, Any],
+    gates: dict[str, Any],
+    base_dir: Path,
+    out_path: Path,
+    checkpoint_root: Path,
+    analysis_root: Path,
+) -> tuple[int, dict[str, Any] | None]:
+    """The full registered real-data pipeline: SG0 -> panel load -> SG0 row
+    coverage -> panels_manifest counts -> SG1 pre-digest -> surface basis ->
+    SG2 baseline reproduction -> S1/reference residualization -> S2 -> S3 ->
+    C1/C2 permutation controls -> C3 planted control -> SG1 post-digest ->
+    SG8 adjudication -> counts-only committed write. Every threshold and
+    layer number is read from `cell`/`gates`; nothing decision-relevant is a
+    bare literal. Returns (exit_code, payload_or_None)."""
+    fingerprint = config_fingerprint(cell, gates)
+
+    print("SG0: verifying input integrity (paths, shas, declared counts)...", file=sys.stderr)
+    sg0 = verify_sg0(cell, gates, base_dir)
+    if sg0["status"] != "PASS":
+        print("SG0 STOP:", file=sys.stderr)
+        for p in sg0["problems"]:
+            print(f"  - {p}", file=sys.stderr)
+        return 1, None
+
+    panels = {name: load_panel(name, cell, base_dir) for name in ("kuq", "ambigqa", "selfaware")}
+    kuq, ambigqa, selfaware = panels["kuq"], panels["ambigqa"], panels["selfaware"]
+
+    print("SG0: verifying every panel row has full anchor coverage (header-only reads)...", file=sys.stderr)
+    coverage_problems: list[str] = []
+    for panel in panels.values():
+        coverage_problems.extend(verify_sg0_row_coverage(panel, int(cell["n_hidden_states"])))
+    if coverage_problems:
+        print("SG0 STOP (anchor coverage):", file=sys.stderr)
+        for p in coverage_problems[:50]:
+            print(f"  - {p}", file=sys.stderr)
+        return 1, None
+
+    print("SG1: recording pre-run extraction-tree digests...", file=sys.stderr)
+    pre_digests = {name: extraction_tree_digest(p.extraction_dir) for name, p in panels.items()}
+
+    print("building the frozen surface basis over the full question union...", file=sys.stderr)
+    render_path = resolve_path(base_dir, cell["render_module"]["path"])
+    if str(render_path.parent) not in sys.path:
+        sys.path.insert(0, str(render_path.parent))
+    try:
+        import ood_breadth_response_confidence_render as render_mod
+    except Exception as exc:
+        print(f"REFUSING TO RUN: could not import render module ({render_path}): {exc}", file=sys.stderr)
+        return 1, None
+    render_fn = render_mod.render
+
+    union_rows = kuq.rows + ambigqa.rows + selfaware.rows
+    questions = [r["question"] for r in union_rows]
+    tokenizer_cache: list = []
+    token_counts = [get_token_count(r, render_fn, tokenizer_cache) for r in union_rows]
+    features = build_surface_matrix(questions, token_counts, cell)
+
+    n_kuq, n_ambigqa, n_selfaware = len(kuq.rows), len(ambigqa.rows), len(selfaware.rows)
+    slices = {
+        "kuq": slice(0, n_kuq),
+        "ambigqa": slice(n_kuq, n_kuq + n_ambigqa),
+        "selfaware": slice(n_kuq + n_ambigqa, n_kuq + n_ambigqa + n_selfaware),
+    }
+
+    raw_cache = make_raw_cache()
+
+    print("SG2: reproducing the raw (non-residualized) atlas baseline...", file=sys.stderr)
+    sg2 = evaluate_sg2(kuq, ambigqa, selfaware, cell, gates, raw_cache)
+    if sg2["status"] != "PASS":
+        print(
+            "SG2 STOP (baseline reproduction failed -- this cell is not reading the same "
+            "instrument the atlas read):",
+            file=sys.stderr,
+        )
+        for p in sg2["problems"]:
+            print(f"  - {p}", file=sys.stderr)
+        return 1, None
+
+    residual_cache: dict[tuple[str, int], tuple[np.ndarray, float]] = {}
+
+    def get_panel_residual(panel: Panel, panel_slice: slice, layer: int):
+        key = (panel.name, layer)
+        if key not in residual_cache:
+            h_raw = raw_cache(panel, layer)
+            z = features.combined[panel_slice]
+            strata = [f"{lab}|{flav}" for lab, flav in zip(panel.y_known.astype(str), panel.flavor)]
+            seed = int(cell["seed"]) + layer
+            ckpt = checkpoint_root / panel.name / "combined" / f"hs{layer}"
+            residual, _yhat, _chosen = crossfit_ridge_incremental(
+                h_raw,
+                z,
+                strata,
+                cell["residualization"]["alpha_grid"],
+                outer_folds=int(cell["residualization"]["outer_folds"]),
+                inner_folds=int(cell["residualization"]["inner_folds"]),
+                seed=seed,
+                checkpoint_path=ckpt,
+                fingerprint=fingerprint,
+                unit=f"{panel.name}/combined/L{layer}",
+            )
+            residual_cache[key] = (residual, activation_oof_r2(h_raw, residual))
+        return residual_cache[key]
+
+    def get_kuq_residual(layer: int):
+        return get_panel_residual(kuq, slices["kuq"], layer)
+
+    def get_selfaware_residual(layer: int):
+        return get_panel_residual(selfaware, slices["selfaware"], layer)
+
+    def get_ambigqa_residual(layer: int):
+        return get_panel_residual(ambigqa, slices["ambigqa"], layer)
+
+    print("S1/reference: cross-fitted residualization at every registered layer...", file=sys.stderr)
+    layer_plan = compute_layer_plan(cell)
+    for layer in layer_plan["kuq"]:
+        get_kuq_residual(layer)
+    for layer in layer_plan["selfaware"]:
+        get_selfaware_residual(layer)
+    for layer in layer_plan["ambigqa"]:
+        get_ambigqa_residual(layer)
+
+    residualized_primary: dict[str, dict[int, float]] = {}
+    for flavor, spec in cell["primary_cells"].items():
+        residualized_primary[flavor] = {}
+        for layer in (int(spec["best_layer"]), int(spec["secondary_layer"])):
+            residual, _r2 = get_kuq_residual(layer)
+            residualized_primary[flavor][layer] = flavor_auroc(kuq, residual, flavor)
+
+    reference_readout: dict[str, dict[int, float]] = {}
+    pooled_spec = cell["reference_cells"]["pooled_all_unknowns"]
+    reference_readout["pooled_all_unknowns"] = {}
+    for layer in (int(pooled_spec["best_layer"]), int(pooled_spec["secondary_layer"])):
+        residual, _r2 = get_kuq_residual(layer)
+        reference_readout["pooled_all_unknowns"][layer] = flavor_auroc(kuq, residual, None)
+
+    selfaware_spec = cell["reference_cells"]["selfaware"]
+    reference_readout["selfaware"] = {}
+    for layer in (int(selfaware_spec["best_layer"]), int(selfaware_spec["secondary_layer"])):
+        residual, _r2 = get_selfaware_residual(layer)
+        reference_readout["selfaware"][layer] = flavor_auroc(selfaware, residual, None)
+
+    ambigqa_spec = cell["reference_cells"]["ambigqa"]
+    reference_readout["ambigqa"] = {}
+    for layer in (int(ambigqa_spec["best_layer"]), int(ambigqa_spec["secondary_layer"])):
+        residual, _r2 = get_ambigqa_residual(layer)
+        reference_readout["ambigqa"][layer] = flavor_auroc(ambigqa, residual, None)
+
+    print("S2: surface-only probe (no activations)...", file=sys.stderr)
+    s2 = compute_s2(kuq, ambigqa, selfaware, features, slices, cell)
+
+    print("S3: descriptive residualized cross-dataset transfer...", file=sys.stderr)
+    s3 = compute_s3(kuq, selfaware, cell, get_kuq_residual, get_selfaware_residual)
+
+    print("C1/C2: permutation controls at the distinct primary layers...", file=sys.stderr)
+    observed_r2_by_layer: dict[int, float] = {}
+    for layer in primary_layer_set(cell):
+        _residual, r2 = get_kuq_residual(layer)
+        observed_r2_by_layer[layer] = r2
+    permuted_r2_by_layer, replicate_all_flavors_pass = compute_permutation_controls(
+        kuq, features, slices, cell, fingerprint, checkpoint_root
+    )
+    sg4 = evaluate_sg4(observed_r2_by_layer, permuted_r2_by_layer, gates)
+    sg6 = evaluate_sg6(replicate_all_flavors_pass, gates)
+
+    print("C3: planted linear surface channel...", file=sys.stderr)
+    c3 = compute_and_evaluate_c3(kuq, features, slices, cell, fingerprint, get_kuq_residual, checkpoint_root)
+
+    print("SG1: verifying no extraction directory changed during the run...", file=sys.stderr)
+    post_digests = {name: extraction_tree_digest(p.extraction_dir) for name, p in panels.items()}
+    if pre_digests != post_digests:
+        raise ControlError("SG1 VIOLATION: an extraction directory changed during this analysis-only run")
+
+    print("SG8: adjudicating P1/P2/P3/F1/F2 against the registered bands...", file=sys.stderr)
+    all_controls_pass = sg4["pass"] and c3["pass"] and sg6["pass"]
+    decision = (
+        adjudicate(residualized_primary, reference_readout, s2, gates)
+        if all_controls_pass
+        else {"status": "INDETERMINATE", "reason": "one or more of C1/C2/C3 failed; SG8 does not adjudicate"}
+    )
+
+    payload = {
+        "cell": "flavor-atlas-surface-control-confirmatory",
+        "config_fingerprint": fingerprint,
+        "gates": {
+            "SG0": True,
+            "SG1": True,
+            "SG2": True,
+            "SG3": True,
+            "SG4": sg4["pass"],
+            "SG5": c3["pass"],
+            "SG6": sg6["pass"],
+        },
+        "controls_pass": all_controls_pass,
+        "s1_primary": {f: {str(l): round(v, 4) for l, v in layers.items()} for f, layers in residualized_primary.items()},
+        "reference": {r: {str(l): round(v, 4) for l, v in layers.items()} for r, layers in reference_readout.items()},
+        "s2_surface_only": {k: round(v, 4) for k, v in s2.items()},
+        "s3_transfer": s3,
+        "c1_treatment_strength": {
+            "per_layer": {str(l): v for l, v in sg4["per_layer"].items()},
+            "pass": sg4["pass"],
+        },
+        "c2_permutation": {"n_permutations": sg6["n_permutations"], "n_passing": sg6["n_passing"], "pass": sg6["pass"]},
+        "c3_planted": c3,
+        "decision": decision,
+        "sg2_baseline": sg2["computed"],
+    }
+
+    print("SG7: containment scan before commit...", file=sys.stderr)
+    _walk_private_text(payload, set(questions))
+
+    atomic_write_json(out_path, payload)
+    append_provenance_line(analysis_root, fingerprint, out_path)
+    print(f"wrote {out_path}", file=sys.stderr)
+    return 0, payload
+
+
+def run_dry_run(cell: dict[str, Any], gates: dict[str, Any], base_dir: Path) -> int:
+    """Resolves every real input, prints the full execution plan, executes
+    nothing and writes nothing. Standing pre-sign / pre-launch existence
+    check."""
+    inventory = real_input_inventory(cell, gates, base_dir)
+
+    print("== dry-run: resolved real inputs ==", file=sys.stderr)
+    all_ok = True
+    for item in inventory:
+        ok = item["exists"] and item["sha256_ok"]
+        all_ok = all_ok and ok
+        status = "ok" if ok else ("MISSING" if not item["exists"] else "SHA_MISMATCH")
+        print(f"  [{status}] {item['label']}: {item['path']}", file=sys.stderr)
+
+    layer_plan = compute_layer_plan(cell)
+    primary_layers = primary_layer_set(cell)
+    n_flavors = len(cell["primary_cells"])
+    print("\n== dry-run: execution plan (nothing executed, nothing written) ==", file=sys.stderr)
+    print("  panels: kuq, ambigqa, selfaware", file=sys.stderr)
+    print(f"  kuq layers to residualize: {layer_plan['kuq']}", file=sys.stderr)
+    print(f"  selfaware layers to residualize: {layer_plan['selfaware']}", file=sys.stderr)
+    print(f"  ambigqa layers to residualize: {layer_plan['ambigqa']}", file=sys.stderr)
+    print(f"  S1 primary cells: {n_flavors} flavors x 2 layers = {n_flavors * 2}", file=sys.stderr)
+    print(f"  S1 reference cells: {list(cell['reference_cells'].keys())} x 2 layers", file=sys.stderr)
+    print(f"  S2 rows: {n_flavors + 3} (six flavors + pooled + selfaware + ambigqa)", file=sys.stderr)
+    print(f"  S3 transfer cells: {n_flavors * 2} ({n_flavors} kuq->selfaware + {n_flavors} selfaware->kuq)", file=sys.stderr)
+    print(
+        f"  C1/C2 permutation replicates: {cell['permutation_control']['n_permutations']} "
+        f"x {len(primary_layers)} distinct primary layers {primary_layers}",
+        file=sys.stderr,
+    )
+    print(
+        f"  C3 planted control: hidden state {cell['planted_signal']['hs_index']}, "
+        f"gamma grid {cell['planted_signal']['gamma_grid']}",
+        file=sys.stderr,
+    )
+    print(f"  committed output: {resolve_path(base_dir, cell['containment']['committed_output'])}", file=sys.stderr)
+    print(f"  checkpoint root: {(ANALYSIS_ROOT / 'checkpoints')}", file=sys.stderr)
+
+    # The real panels (per flavor-atlas-rawbase/build_flavor_panels.py) do
+    # not carry rendered_prompt_token_count, so get_token_count's tokenizer
+    # fallback is on the real critical path. Nothing else checks it before
+    # spend, so resolve it here: same import as run_real, then render and
+    # tokenize one fixed synthetic string. Read-only; no writes.
+    tokenizer_label = "render module tokenizer (get_token_count fallback)"
+    tokenizer_ok = False
+    tokenizer_detail = ""
+    try:
+        render_path = resolve_path(base_dir, cell["render_module"]["path"])
+        if str(render_path.parent) not in sys.path:
+            sys.path.insert(0, str(render_path.parent))
+        import ood_breadth_response_confidence_render as render_mod
+
+        tokenizer = render_mod._get_tokenizer()
+        prompt = render_mod.render({"question": "dry-run tokenizer check"})
+        n_tokens = len(tokenizer(prompt).input_ids)
+        tokenizer_ok = True
+        tokenizer_detail = f"resolved, {n_tokens} tokens for the probe string"
+    except Exception as exc:  # noqa: BLE001 -- any exception here IS the dry-run finding
+        tokenizer_detail = f"{type(exc).__name__}: {exc}"
+    print(
+        f"  [{'ok' if tokenizer_ok else 'FAILED'}] {tokenizer_label}: {tokenizer_detail}",
+        file=sys.stderr,
+    )
+    all_ok = all_ok and tokenizer_ok
+
+    if not all_ok:
+        missing = [item["label"] for item in inventory if not item["exists"]]
+        mismatched = [item["label"] for item in inventory if item["exists"] and not item["sha256_ok"]]
+        print("\ndry-run: STOP -- not every real input resolves.", file=sys.stderr)
+        if missing:
+            print(f"  missing: {missing}", file=sys.stderr)
+        if mismatched:
+            print(f"  sha256 mismatch: {mismatched}", file=sys.stderr)
+        if not tokenizer_ok:
+            print(f"  tokenizer fallback failed: {tokenizer_detail}", file=sys.stderr)
+        return 1
+
+    print("\ndry-run: all real inputs resolve; the plan above is what a real run would execute.", file=sys.stderr)
+    return 0
+
+
+# --------------------------------------------------------------------------
 # CLI
 # --------------------------------------------------------------------------
 
@@ -673,18 +1437,24 @@ def main(argv: Sequence[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", type=Path, default=DEFAULT_COMMITTED_PATH)
     ap.add_argument("--smoke", action="store_true", help="run the synthetic self-check; touches no real captures")
+    ap.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="resolve every real input and print the execution plan; executes and writes nothing",
+    )
     args = ap.parse_args(argv)
 
     if args.smoke:
         return run_smoke()
 
-    print(
-        "REFUSING TO RUN: the real-data path is not exercised by this scaffold task "
-        "(no GPU/extraction verb, no signed instrument in hand). Use --smoke for the "
-        "CPU self-check, or run the signed instrument after `bin/exp sign`.",
-        file=sys.stderr,
-    )
-    return 1
+    cell = load_yaml(CELL_PATH)
+    gates = load_yaml(GATES_PATH)
+
+    if args.dry_run:
+        return run_dry_run(cell, gates, HERE)
+
+    code, _payload = run_real(cell, gates, HERE, args.out, ANALYSIS_ROOT / "checkpoints", ANALYSIS_ROOT)
+    return code
 
 
 # --------------------------------------------------------------------------
@@ -933,12 +1703,345 @@ def run_smoke() -> int:
     for p in (ckpt_path.with_suffix(".npz"), ckpt_path.with_suffix(".json"), ckpt_path.with_suffix(".npz.tmp")):
         p.unlink(missing_ok=True)
 
+    print("== smoke: real orchestration end-to-end on a tiny synthetic fixture ==", file=sys.stderr)
+    try:
+        fixture_ok, fixture_detail = run_fixture_end_to_end_check()
+    except Exception as exc:  # noqa: BLE001 -- any exception here IS the failure signal
+        fixture_ok, fixture_detail = False, f"raised {type(exc).__name__}: {exc}"
+    check(f"real run_real() orchestration produces a complete adjudicated JSON ({fixture_detail})", fixture_ok)
+
+    for p in (ckpt_path.with_suffix(".npz"), ckpt_path.with_suffix(".json"), ckpt_path.with_suffix(".npz.tmp")):
+        p.unlink(missing_ok=True)
+
     print(f"\nsmoke: {len(failures)} failing check(s)" if failures else "\nsmoke: ALL CHECKS PASSED", file=sys.stderr)
     if failures:
         for name in failures:
             print(f"  FAILED: {name}", file=sys.stderr)
         return 1
     return 0
+
+
+def build_fixture(tmp_root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Build a tiny, real-schema fixture under `tmp_root`: three panels with
+    real safetensors extraction dirs, a panels_manifest.json, an
+    atlas-sweep placeholder, and matching cell/gates dicts at the SAME
+    shape as the production cell.yaml/gates.yaml, just far smaller. This is
+    what `run_fixture_end_to_end_check` drives `run_real` against -- it
+    never touches a real flavor-atlas-rawbase path.
+
+    Hidden state 0 is constructed IDENTICAL across every row of a panel
+    (mirroring the real anchor-embedding invariant), which gives an exact,
+    principled 0.5000 null AUROC rather than a hand-picked placeholder.
+    """
+    from safetensors.torch import save_file as st_save_file
+    import torch
+
+    rng = np.random.default_rng(20260813)
+    hidden_dim = 4
+    n_hidden_states = 6  # layers 0..5
+
+    best_layer_by_flavor = {
+        "ambiguous": 1,
+        "controversial": 2,
+        "counterfactual": 1,
+        "false assumption": 2,
+        "future unknown": 3,
+        "unsolved problem": 3,
+    }
+    secondary_layer = 5
+    ref_best = {"pooled_all_unknowns": 1, "selfaware": 2, "ambigqa": 2}
+
+    def write_rows(panel_dir: Path, rows: list[dict[str, Any]], y_known: np.ndarray) -> None:
+        panel_dir.mkdir(parents=True, exist_ok=True)
+        layer_weights = {L: rng.normal(size=hidden_dim) for L in range(1, n_hidden_states)}
+        const0 = np.full(hidden_dim, 0.1, dtype=np.float32)
+        for i, row in enumerate(rows):
+            tensors: dict[str, torch.Tensor] = {"L0": torch.from_numpy(const0.copy())}
+            for L in range(1, n_hidden_states):
+                sign = 1.0 if y_known[i] == 1 else -1.0
+                noise = rng.normal(scale=0.3, size=hidden_dim)
+                tensors[f"L{L}"] = torch.from_numpy((sign * layer_weights[L] + noise).astype(np.float32))
+            stem = row["row_key"].replace("::", "__")
+            st_save_file(tensors, str(panel_dir / f"{stem}__anchor.safetensors"))
+
+    # ---- KUQ: six flavors, six unknown rows each, plus a known pool ----
+    kuq_rows: list[dict[str, Any]] = []
+    kuq_y: list[int] = []
+    n_unknown_per_flavor = 6
+    n_known = 24
+    for flavor in KUQ_CATEGORIES:
+        for i in range(n_unknown_per_flavor):
+            rk = f"kuq-{flavor.replace(' ', '_')}-{i:03d}"
+            kuq_rows.append(
+                {
+                    "row_key": rk,
+                    "question": f"fixture unknown question {flavor} {i}",
+                    "label": "unknown",
+                    "flavor": flavor,
+                    "rendered_prompt_token_count": 12 + i,
+                }
+            )
+            kuq_y.append(0)
+    for i in range(n_known):
+        rk = f"kuq-known-{i:03d}"
+        kuq_rows.append(
+            {
+                "row_key": rk,
+                "question": f"fixture known question {i}",
+                "label": "known",
+                "flavor": "known",
+                "rendered_prompt_token_count": 10 + i,
+            }
+        )
+        kuq_y.append(1)
+    kuq_y_arr = np.asarray(kuq_y)
+
+    # ---- AmbigQA / SelfAware: single pool each, known vs unknown ----
+    def make_pool_rows(prefix: str, n_known_pool: int, n_unknown_pool: int, flavor_name: str) -> tuple[list[dict[str, Any]], np.ndarray]:
+        rows: list[dict[str, Any]] = []
+        y: list[int] = []
+        for i in range(n_known_pool):
+            rows.append(
+                {
+                    "row_key": f"{prefix}-known-{i:03d}",
+                    "question": f"fixture {prefix} known question {i}",
+                    "label": "known",
+                    "flavor": flavor_name,
+                    "rendered_prompt_token_count": 11 + i,
+                }
+            )
+            y.append(1)
+        for i in range(n_unknown_pool):
+            rows.append(
+                {
+                    "row_key": f"{prefix}-unknown-{i:03d}",
+                    "question": f"fixture {prefix} unknown question {i}",
+                    "label": "unknown",
+                    "flavor": flavor_name,
+                    "rendered_prompt_token_count": 13 + i,
+                }
+            )
+            y.append(0)
+        return rows, np.asarray(y)
+
+    ambigqa_rows, ambigqa_y = make_pool_rows("ambigqa", 8, 8, "ambigqa")
+    selfaware_rows, selfaware_y = make_pool_rows("selfaware", 12, 8, "selfaware")
+
+    rawbase_dir = tmp_root / "rawbase"
+    extraction_root = rawbase_dir / "analysis" / "extraction"
+    panels_root = rawbase_dir / "analysis" / "panels"
+    panels_root.mkdir(parents=True, exist_ok=True)
+
+    write_rows(extraction_root / "kuq", kuq_rows, kuq_y_arr)
+    write_rows(extraction_root / "ambigqa", ambigqa_rows, ambigqa_y)
+    write_rows(extraction_root / "selfaware", selfaware_rows, selfaware_y)
+
+    def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+        with path.open("w", encoding="utf-8") as fh:
+            for row in rows:
+                fh.write(json.dumps(row) + "\n")
+
+    kuq_panel_path = panels_root / "kuq_panel.jsonl"
+    ambigqa_panel_path = panels_root / "ambigqa_panel.jsonl"
+    selfaware_panel_path = panels_root / "selfaware_panel.jsonl"
+    write_jsonl(kuq_panel_path, kuq_rows)
+    write_jsonl(ambigqa_panel_path, ambigqa_rows)
+    write_jsonl(selfaware_panel_path, selfaware_rows)
+
+    for name, extraction_dir in (
+        ("kuq", extraction_root / "kuq"),
+        ("ambigqa", extraction_root / "ambigqa"),
+        ("selfaware", extraction_root / "selfaware"),
+    ):
+        (extraction_dir / "manifest.json").write_text(
+            json.dumps({"layers": "all", "n_hidden_states": n_hidden_states, "hidden_dim": hidden_dim}), encoding="utf-8"
+        )
+
+    flavor_counts = {f: n_unknown_per_flavor for f in KUQ_CATEGORIES}
+    panels_manifest = {
+        "fg0_status": "PASS",
+        "sources": {"kuq": {"path": "kuq_panel.jsonl"}, "ambigqa": {"path": "ambigqa_panel.jsonl"}, "selfaware": {"path": "selfaware_panel.jsonl"}},
+        "counts": {
+            "kuq": {"n": len(kuq_rows), "by_label": {"known": n_known, "unknown": n_unknown_per_flavor * len(KUQ_CATEGORIES)}, "by_flavor": flavor_counts},
+            "ambigqa": {"n": len(ambigqa_rows), "by_label": {"known": 8, "unknown": 8}},
+            "selfaware": {"n": len(selfaware_rows), "by_label": {"known": 12, "unknown": 8}},
+        },
+    }
+    panels_manifest_path = panels_root / "panels_manifest.json"
+    panels_manifest_path.write_text(json.dumps(panels_manifest, indent=2), encoding="utf-8")
+
+    atlas_sweep_path = rawbase_dir / "analysis-committed" / "atlas_sweep.json"
+    atlas_sweep_path.parent.mkdir(parents=True, exist_ok=True)
+    atlas_sweep_path.write_text(json.dumps({"fixture": True}), encoding="utf-8")
+
+    cell_fixture: dict[str, Any] = {
+        "seed": 4242,
+        "n_hidden_states": n_hidden_states,
+        "hidden_dim": hidden_dim,
+        "source_panels": {
+            "kuq": {
+                "extraction_dir": "rawbase/analysis/extraction/kuq",
+                "panel_file": "rawbase/analysis/panels/kuq_panel.jsonl",
+                "n_rows": len(kuq_rows),
+                "n_known": n_known,
+                "n_unknown": n_unknown_per_flavor * len(KUQ_CATEGORIES),
+                "flavor_counts": flavor_counts,
+            },
+            "ambigqa": {
+                "extraction_dir": "rawbase/analysis/extraction/ambigqa",
+                "panel_file": "rawbase/analysis/panels/ambigqa_panel.jsonl",
+                "n_rows": len(ambigqa_rows),
+            },
+            "selfaware": {
+                "extraction_dir": "rawbase/analysis/extraction/selfaware",
+                "panel_file": "rawbase/analysis/panels/selfaware_panel.jsonl",
+                "n_rows": len(selfaware_rows),
+            },
+        },
+        "panels_manifest": {"path": "rawbase/analysis/panels/panels_manifest.json"},
+        "baseline_atlas_sweep": {"path": "rawbase/analysis-committed/atlas_sweep.json"},
+        "probe_protocol": {"module": str(ITEM26_DIR / "internal_panel_probe_gate.py")},
+        "render_module": {"path": str(RENDERS_DIR / "ood_breadth_response_confidence_render.py")},
+        "surface_covariates": {
+            "lexical": {
+                "word_hash_features": 32,
+                "char_hash_features": 32,
+                "word_svd_components": 3,
+                "char_svd_components": 3,
+                "word_ngram_range": [1, 2],
+                "char_ngram_range": [3, 5],
+                "alternate_sign": False,
+                "sublinear_tf": True,
+            }
+        },
+        "residualization": {"outer_folds": 3, "inner_folds": 2, "alpha_grid": [0.1, 1.0, 10.0]},
+        "permutation_control": {"n_permutations": 2, "seed_start": 5000},
+        "planted_signal": {
+            "hs_index": 0,
+            "weight_fit_seed": 606,
+            "projection_seed": 707,
+            "gamma_grid": [1.0, 2.0, 4.0, 8.0, 16.0, 32.0],
+            "planted_pooled_auroc_must_reach_at_least": 0.90,
+            "residualized_planted_pooled_auroc_must_be_at_most": 0.99,
+            "max_flavor_deviation_from_unplanted_residualized": 1.0,
+        },
+        "primary_cells": {f: {"best_layer": best_layer_by_flavor[f], "secondary_layer": secondary_layer} for f in KUQ_CATEGORIES},
+        "reference_cells": {
+            "pooled_all_unknowns": {"best_layer": ref_best["pooled_all_unknowns"], "secondary_layer": secondary_layer},
+            "selfaware": {"best_layer": ref_best["selfaware"], "secondary_layer": secondary_layer},
+            "ambigqa": {"best_layer": ref_best["ambigqa"], "secondary_layer": secondary_layer},
+        },
+        "s3_transfer": {
+            "selfaware_extra_layers": sorted(set(best_layer_by_flavor.values()) - {ref_best["selfaware"]}),
+            "kuq_extra_layers": [ref_best["selfaware"]],
+            "selfaware_to_kuq_fit_layer": ref_best["selfaware"],
+        },
+        "containment": {"committed_output": "output/surface_control.json"},
+    }
+
+    def sha(path: Path) -> str:
+        return sha256_file(path)
+
+    gates_fixture: dict[str, Any] = {
+        "sg0_input_integrity": {
+            "checks": {
+                "kuq_panel_sha256_must_equal": sha(kuq_panel_path),
+                "ambigqa_panel_sha256_must_equal": sha(ambigqa_panel_path),
+                "selfaware_panel_sha256_must_equal": sha(selfaware_panel_path),
+                "panels_manifest_sha256_must_equal": sha(panels_manifest_path),
+                "kuq_extraction_manifest_sha256_must_equal": sha(extraction_root / "kuq" / "manifest.json"),
+                "ambigqa_extraction_manifest_sha256_must_equal": sha(extraction_root / "ambigqa" / "manifest.json"),
+                "selfaware_extraction_manifest_sha256_must_equal": sha(extraction_root / "selfaware" / "manifest.json"),
+                "atlas_sweep_sha256_must_equal": sha(atlas_sweep_path),
+                "probe_module_sha256_must_equal": sha(ITEM26_DIR / "internal_panel_probe_gate.py"),
+                "kuq_rows_must_equal": len(kuq_rows),
+                "kuq_known_must_equal": n_known,
+                "kuq_unknown_must_equal": n_unknown_per_flavor * len(KUQ_CATEGORIES),
+                "kuq_flavor_counts_must_equal": flavor_counts,
+                "ambigqa_rows_must_equal": len(ambigqa_rows),
+                "selfaware_rows_must_equal": len(selfaware_rows),
+                "n_hidden_states_present_must_equal": n_hidden_states,
+                "hidden_dim_must_equal": hidden_dim,
+            }
+        },
+        "sg2_baseline_reproduction": {
+            "checks": {
+                "cells": {},  # populated below by a bootstrap pass over the same code path
+                "hidden_state_0_must_equal_for_all_rows": 0.5000,
+            }
+        },
+        "sg4_treatment_strength": {
+            "min_activation_oof_r2_at_each_primary_layer": 0.0,
+            "permutation_null_quantile": 0.95,
+            "min_above_permutation_quantile": 0.0,
+        },
+        "sg6_permutation_negative_control": {"min_permuted_runs_keeping_all_six_flavors_at_or_above_0_90": 0},
+        "s_bands": {
+            "primary_cells": {f: [cell_fixture["primary_cells"][f]["best_layer"], secondary_layer] for f in KUQ_CATEGORIES},
+            "reference_cells": {"selfaware": [ref_best["selfaware"], secondary_layer], "ambigqa": [ref_best["ambigqa"], secondary_layer]},
+            "p1_survival_floor_heldout_auroc": 0.90,
+            "p2_ambigqa_ceiling": 0.75,
+            "p3_surface_only_carrier_floor": 0.75,
+        },
+    }
+
+    # Bootstrap pass: compute the raw baseline the SAME way evaluate_sg2
+    # will at real-run time, then transcribe it into the fixture's own
+    # gates table -- exactly how a human populates gates.yaml's SG2 table
+    # from one real atlas-sweep run, just automated here.
+    kuq_panel = load_panel("kuq", cell_fixture, tmp_root)
+    ambigqa_panel = load_panel("ambigqa", cell_fixture, tmp_root)
+    selfaware_panel = load_panel("selfaware", cell_fixture, tmp_root)
+    raw_cache = make_raw_cache()
+    bootstrap = evaluate_sg2(kuq_panel, ambigqa_panel, selfaware_panel, cell_fixture, gates_fixture, raw_cache)
+    gates_fixture["sg2_baseline_reproduction"]["checks"]["cells"] = bootstrap["computed"]
+
+    return cell_fixture, gates_fixture
+
+
+def run_fixture_end_to_end_check() -> tuple[bool, str]:
+    """Drives the REAL `run_real` orchestration end-to-end against a tiny
+    synthetic fixture in the real on-disk schema, asserting it produces a
+    complete adjudicated JSON. This fails loudly if `main()`'s real-data
+    branch is ever reduced back to a stub, because `run_real` would not
+    exist / would not be reachable / would not return a payload."""
+    import shutil
+    import tempfile
+
+    fixture_scratch = ANALYSIS_ROOT / "smoke" / "fixture"
+    if fixture_scratch.exists():
+        shutil.rmtree(fixture_scratch)
+    checkpoint_root = fixture_scratch / "checkpoints"
+    out_path = fixture_scratch / "surface_control.json"
+
+    with tempfile.TemporaryDirectory(prefix="style-control-fixture-") as tmp:
+        tmp_root = Path(tmp)
+        cell_fixture, gates_fixture = build_fixture(tmp_root)
+        code, payload = run_real(cell_fixture, gates_fixture, tmp_root, out_path, checkpoint_root, fixture_scratch)
+
+    if code != 0 or payload is None:
+        return False, f"run_real returned code={code}, payload is None={payload is None}"
+    if not out_path.is_file():
+        return False, "committed output was not written to disk"
+    on_disk = json.loads(out_path.read_text(encoding="utf-8"))
+
+    required_top_level = {
+        "cell", "config_fingerprint", "gates", "controls_pass", "s1_primary",
+        "reference", "s2_surface_only", "s3_transfer", "c1_treatment_strength",
+        "c2_permutation", "c3_planted", "decision", "sg2_baseline",
+    }
+    missing = required_top_level - set(on_disk.keys())
+    if missing:
+        return False, f"committed JSON missing top-level keys: {sorted(missing)}"
+    if set(on_disk["s1_primary"].keys()) != set(KUQ_CATEGORIES):
+        return False, f"s1_primary flavor keys incomplete: {sorted(on_disk['s1_primary'].keys())}"
+    if len(on_disk["s3_transfer"]["kuq_flavor_to_selfaware"]) != len(KUQ_CATEGORIES):
+        return False, "s3_transfer kuq_flavor_to_selfaware incomplete"
+    if not (checkpoint_root.exists() and any(checkpoint_root.rglob("*.json"))):
+        return False, "no incremental checkpoints were written during the real orchestration"
+
+    shutil.rmtree(fixture_scratch, ignore_errors=True)
+    return True, f"wrote {len(required_top_level)} top-level sections, controls_pass={on_disk['controls_pass']}"
 
 
 def ipg_cv_auroc_with_oof(x: np.ndarray, y: np.ndarray):
