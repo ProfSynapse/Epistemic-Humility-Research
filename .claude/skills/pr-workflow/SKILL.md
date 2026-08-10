@@ -160,6 +160,25 @@ git push
 
 Never push `main` for governed evidence; that stays PR-gated.
 
+## Shared-checkout collision (2026-08-10)
+
+The canonical checkout is ONE working tree shared by the lead and every
+subagent pointed at it. Two rules, learned the hard way when a lead
+`git checkout -b` moved HEAD out from under a librarian mid-task and its
+uncommitted edits landed on the wrong branch:
+
+- Never switch branches (checkout/switch/reset) in the canonical checkout
+  while any file-writing subagent is working there. Branch moves are a
+  lead-only verb, taken only when the tree has no agent in flight.
+- When work must land on a DIFFERENT branch than the checkout currently
+  has (for example committing one agent's output while another branch is
+  active), build the commit in a dedicated worktree under
+  `/home/profsynapse/code/ehr-worktrees/`: `git worktree add <dir> <branch>`,
+  copy the exact files in, validate/regen there, commit, push, then
+  restore the shared tree's tracked files from HEAD (`git checkout HEAD --
+  <files>`, not bare `git checkout --`, which restores from the index and
+  leaves staged content behind) and `git worktree remove` the temp tree.
+
 ## Skill maintenance
 
 Edit the canonical tree under `.skills/pr-workflow/` only. After edits:

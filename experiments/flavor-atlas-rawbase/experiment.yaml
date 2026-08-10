@@ -1,0 +1,107 @@
+slug: flavor-atlas-rawbase
+title: 'Flavor atlas: per-flavor known-unknown activations on the raw base'
+type: probe-fit
+status: signed
+registered: true
+created_at: '2026-08-10T00:00:14Z'
+tier: 3
+posture: exploratory
+question: Do other flavors of unanswerability (KUQ's six categories, with SelfAware
+  and AmbigQA as reference flavors) each have their own separable activation signature
+  in the raw Qwen3-4B base, at possibly different layers, or is the pretrained known-unknown
+  code narrow (SelfAware-flavored only) or universal (one code for all flavors)?
+prediction: 'P1: at least one of {future unknown, unsolved problem} reaches held-out
+  AUROC >= 0.90 at some layer on the raw base. P2: the ambiguity flavors (KUQ ambiguous
+  and AmbigQA) stay below 0.75 at every layer.'
+falsifier: 'F1 (universal code): every flavor including both ambiguity surfaces reaches
+  >= 0.90 at some layer AND every off-diagonal transfer-matrix cell reads >= 0.85.
+  F2 (dataset-specific): no KUQ flavor reaches 0.75 at any layer. Any other pattern
+  is a mixed atlas, reported descriptively with no single-number verdict.'
+checkpoint:
+  repo: unsloth/Qwen3-4B
+  revision: 64033659d5caf1b8ed7f929b29de705e93a4d468
+  base_form: raw pretrained base, no adapter, bf16
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - build_flavor_panels.py
+  - flavor_probe_sweep.py
+  - extract_kuq.yaml
+  - extract_ambigqa_alllayers.yaml
+  - extract_selfaware.yaml
+  - ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py
+  - ../selfaware-latent-knowledge-controls/latent_knowledge_probe.py
+  - ../common/renders/ood_breadth_response_confidence_render.py
+  pins:
+    cell.yaml: ff816c9a608e17f0d00096faf7c1069e587cbdeb666257476e79697c49508a56
+    gates.yaml: ca8961ed17692fa7adca74b9063b076160cb3f1f4d0bf52401203dc8d7fdb694
+    build_flavor_panels.py: 7a3aed2815a8dce69711a81e6959b06f7ecd3b185ff7697b8ef266b1489f2687
+    flavor_probe_sweep.py: 136ce9200885a1fcac982b6d92599d21419ae57d0a122ff3c5cf1466ed63134f
+    extract_kuq.yaml: d69f819b5f761b46d40229a0201497d04b508ade2554522b90b8dddb999f546e
+    extract_ambigqa_alllayers.yaml: b4406ff5ddecf8e1e42de5aac9c78eb7f19a25291c7be1607976ec15fc6a21dc
+    extract_selfaware.yaml: ef8f5be6f7ac6a507a22e159d6465ca9779bd0b4e08a4518dc63cd1cd8d77342
+    ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py: ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08
+    ../selfaware-latent-knowledge-controls/latent_knowledge_probe.py: 350f9d9e4acf57b1af858396fb50616fa5b98e7ebb475155af9d40da038eda93
+    ../common/renders/ood_breadth_response_confidence_render.py: bd399d4caf274961f245ea1f456cf64546db59d4b3f2a4b9bbb51fcb24374b4f
+  persistence:
+    build_flavor_panels.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.123
+    flavor_probe_sweep.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 7.424
+      note: single-(source,layer) OOF fit on 2748 rows; full production sweep is roughly
+        333 such fits plus the cheap M4 frozen-probe evaluations, budgeted tens of
+        minutes CPU, rerun-from-scratch on interruption
+    extract_kuq.yaml:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.1
+      note: declarative recipe consumed by the extract verb; the extraction itself
+        checkpoints per-row under analysis/extraction/kuq/
+    extract_ambigqa_alllayers.yaml:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.1
+      note: declarative recipe consumed by the extract verb; per-row checkpointing
+        under analysis/extraction/ambigqa/
+    extract_selfaware.yaml:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.1
+      note: declarative recipe consumed by the extract verb; per-row checkpointing
+        under analysis/extraction/selfaware/
+    ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 7.424
+      note: pinned item-26 probe protocol imported unchanged by flavor_probe_sweep.py
+    ../selfaware-latent-knowledge-controls/latent_knowledge_probe.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 7.424
+      note: load_layers activation reader imported unchanged
+    ../common/renders/ood_breadth_response_confidence_render.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.1
+      note: import-only render module, exercised inside the extract verb
+  runtime_image_digest: sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8
+  runtime_image_digest_note: mechinterp-runner local Image ID, same image the prior
+    two cells ran under; governs the three extract verbs per the 2026-07-10 standing
+    directive.
+  lane: local_3090
+  concurrency: one GPU job at a time; three sequential extract verbs
+  repins:
+  - file: flavor_probe_sweep.py
+    old_sha256: 5640bae5f5177b85386797d2aa2299c706724346dd1e5f3278e2bc2797444e30
+    new_sha256: 136ce9200885a1fcac982b6d92599d21419ae57d0a122ff3c5cf1466ed63134f
+    date: '2026-08-10T00:36:28Z'
+    reason: discover_layers assumed manifest layers is a list; all-layer manifests
+      record the string 'all'. Startup crash, fixed before any AUROC was computed;
+      no protocol constant touched.
+inputs:
+- experiments/rawbase-ambigqa-boundary-readout/AMENDMENT.md
+- experiments/ood-breadth-beyond-selfaware/AMENDMENT.md
+- experiments/ood-breadth-beyond-selfaware/internal_panel_probe_gate.py
+- datasets/selfaware/SelfAware.json
+- datasets/kuq/knowns_unknowns.jsonl
+- experiments/common/renders/ood_breadth_response_confidence_render.py
+verdict: ''
+kg: []
