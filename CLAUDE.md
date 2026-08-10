@@ -1,4 +1,8 @@
-
+<!-- GENERATED FILE NOTICE: the section between the PROJECT_ORCHESTRATOR
+     markers below is derived from AGENTS.md, the canonical source. Do NOT
+     hand-edit this file: edit AGENTS.md, then run
+     `python3 bin/sync_skills.py --write`. Hand edits are overwritten by
+     the next sync. -->
 
 <!-- PROJECT_ORCHESTRATOR_START -->
 # Epistemic Humility Research Agent Orchestrator
