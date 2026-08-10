@@ -2484,7 +2484,7 @@
           "../selfaware-latent-knowledge-controls/latent_knowledge_probe.py": "350f9d9e4acf57b1af858396fb50616fa5b98e7ebb475155af9d40da038eda93",
           "cell.yaml": "c1e6e6d87f4c607b9cff1875a0c7993787fd08ec42d86406c4cfef78d029130e",
           "gates.yaml": "d0e240425a6f89dc97d2729813ed59c42059573f0b94e2fddad5d5a9bf358f7a",
-          "reanalyze_surface_control.py": "ebaa4684f22e81d41296e42a4cecd896e2e3f89bbb6545c23c01473f390ad987"
+          "reanalyze_surface_control.py": "bfcb38a17f790538d19df92a09073aa6a88faf1d786696b8fe45ba31b6809d3d"
         },
         "repins": [
           {
@@ -2493,6 +2493,13 @@
             "new_sha256": "ebaa4684f22e81d41296e42a4cecd896e2e3f89bbb6545c23c01473f390ad987",
             "old_sha256": "dd1f67eb5a2c5b8d6b3ce1ea02906eae5cbdaf242e40c3519f24279ac3fb3f5d",
             "reason": "Instrument-completeness repair on a signed pre-run cell: the signed module's main() carried only the --smoke branch and a refusal stub; the registered real-run orchestration did not exist and the executing agent hard-stopped. Rewrote main() with the real branch (SG0/SG1 integrity, frozen surface basis, cross-fitted ridge residualization over every registered panel-layer, S1/S2/S3, C1/C2/C3, SG8 adjudication, counts-only committed JSON), added --dry-run existence check, extended --smoke with a fixture-backed end-to-end drive of run_real, and fixed evaluate_sg2's hardcoded layer 35 to read each cell's registered secondary_layer. No gate quantity, threshold, or registered constant changed; no results exist. Lead-verified: smoke pass, dry-run exit 1 on missing inputs in worktree, full dry-run pass against real canonical inputs."
+          },
+          {
+            "date": "2026-08-10T20:49:14Z",
+            "file": "reanalyze_surface_control.py",
+            "new_sha256": "bfcb38a17f790538d19df92a09073aa6a88faf1d786696b8fe45ba31b6809d3d",
+            "old_sha256": "ebaa4684f22e81d41296e42a4cecd896e2e3f89bbb6545c23c01473f390ad987",
+            "reason": "Harness-crash repair, pre-result: real run crashed 2026-08-10T19:21Z with KeyError in evaluate_sg4 because evaluate_sg4 and evaluate_sg6 read gates.yaml one level shallow (missing the checks: nesting the real file uses); the smoke fixture reproduced the same flat shape, validating the buggy read path. Fixed both reads to the real nested shape, fixed the fixture to mirror the real schema, and added a smoke schema-walk over 48 real gates.yaml/cell.yaml key paths the module reads so schema drift now fails the smoke pre-run. No committed output existed at crash time; all 20 permutation replicates were checkpointed, rerun resumes cheaply. No gate value, threshold, or registered constant changed."
           }
         ]
       },

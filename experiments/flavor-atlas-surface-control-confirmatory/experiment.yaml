@@ -40,7 +40,7 @@ instrument:
   pins:
     cell.yaml: c1e6e6d87f4c607b9cff1875a0c7993787fd08ec42d86406c4cfef78d029130e
     gates.yaml: d0e240425a6f89dc97d2729813ed59c42059573f0b94e2fddad5d5a9bf358f7a
-    reanalyze_surface_control.py: ebaa4684f22e81d41296e42a4cecd896e2e3f89bbb6545c23c01473f390ad987
+    reanalyze_surface_control.py: bfcb38a17f790538d19df92a09073aa6a88faf1d786696b8fe45ba31b6809d3d
     ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py: ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08
     ../selfaware-latent-knowledge-controls/latent_knowledge_probe.py: 350f9d9e4acf57b1af858396fb50616fa5b98e7ebb475155af9d40da038eda93
     ../common/renders/ood_breadth_response_confidence_render.py: bd399d4caf274961f245ea1f456cf64546db59d4b3f2a4b9bbb51fcb24374b4f
@@ -81,6 +81,19 @@ instrument:
       No gate quantity, threshold, or registered constant changed; no results exist.
       Lead-verified: smoke pass, dry-run exit 1 on missing inputs in worktree, full
       dry-run pass against real canonical inputs.'
+  - file: reanalyze_surface_control.py
+    old_sha256: ebaa4684f22e81d41296e42a4cecd896e2e3f89bbb6545c23c01473f390ad987
+    new_sha256: bfcb38a17f790538d19df92a09073aa6a88faf1d786696b8fe45ba31b6809d3d
+    date: '2026-08-10T20:49:14Z'
+    reason: 'Harness-crash repair, pre-result: real run crashed 2026-08-10T19:21Z
+      with KeyError in evaluate_sg4 because evaluate_sg4 and evaluate_sg6 read gates.yaml
+      one level shallow (missing the checks: nesting the real file uses); the smoke
+      fixture reproduced the same flat shape, validating the buggy read path. Fixed
+      both reads to the real nested shape, fixed the fixture to mirror the real schema,
+      and added a smoke schema-walk over 48 real gates.yaml/cell.yaml key paths the
+      module reads so schema drift now fails the smoke pre-run. No committed output
+      existed at crash time; all 20 permutation replicates were checkpointed, rerun
+      resumes cheaply. No gate value, threshold, or registered constant changed.'
 inputs:
 - experiments/flavor-atlas-rawbase/AMENDMENT.md
 - experiments/flavor-atlas-rawbase/gates.yaml
