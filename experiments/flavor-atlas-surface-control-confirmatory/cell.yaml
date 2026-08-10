@@ -1,0 +1,226 @@
+# flavor-atlas-surface-control-confirmatory instrument summary. Machine-
+# readable companion to AMENDMENT.md and gates.yaml. Analysis-only reread
+# of flavor-atlas-rawbase's existing captures: no model is loaded, no GPU
+# verb runs, no file under any extraction/ directory is ever written. The
+# CPU harness is reanalyze_surface_control.py; the pinned probe protocol is
+# imported unchanged from
+# ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py. Every
+# threshold and constant used at decision time is read from this file or
+# from gates.yaml at runtime -- none is a bare literal in the harness.
+
+schema_version: 1
+seed: 20260810
+analysis_only: true
+gpu_allowed: false
+fresh_capture_allowed: false
+
+substrate:
+  repo: unsloth/Qwen3-4B
+  revision: 64033659d5caf1b8ed7f929b29de705e93a4d468
+  base_form: raw pretrained base, no adapter, bf16
+  note: >-
+    No model is loaded by this cell; the substrate is named because it is
+    the substrate whose captured activations are re-read.
+
+lane: cpu_only
+gpu_work: none
+concurrency: single process; incremental checkpointing makes the run safe
+  to kill and resume
+
+n_hidden_states: 37
+hidden_dim: 2560
+
+source_panels:
+  kuq:
+    extraction_dir: ../flavor-atlas-rawbase/analysis/extraction/kuq
+    panel_file: ../flavor-atlas-rawbase/analysis/panels/kuq_panel.jsonl
+    extraction_manifest_sha256: 718aa477a1026f9db4f86d7983701cb10c8f91d2f537ec03842d8f4edec5fa00
+    panel_sha256: 69433a777d40b76544b7f4575bc042bb2a9d4d159ca6e8a8bf20d133cf0a8eef
+    n_rows: 5540
+    n_known: 3071
+    n_unknown: 2469
+    flavor_counts:
+      ambiguous: 411
+      controversial: 490
+      counterfactual: 403
+      false assumption: 368
+      future unknown: 490
+      unsolved problem: 307
+  ambigqa:
+    extraction_dir: ../flavor-atlas-rawbase/analysis/extraction/ambigqa
+    panel_file: ../flavor-atlas-rawbase/analysis/panels/ambigqa_panel.jsonl
+    extraction_manifest_sha256: 11789967714e11b83b9816645570e088f26ee023ad43bd35fbb3ef4e1e17af1e
+    panel_sha256: ee60cbf9115eefc18a997a0a81600ce627789c6f710f9905fe959936ba33d7f2
+    n_rows: 2748
+    n_known: 1245
+    n_unknown: 1503
+  selfaware:
+    extraction_dir: ../flavor-atlas-rawbase/analysis/extraction/selfaware
+    panel_file: ../flavor-atlas-rawbase/analysis/panels/selfaware_panel.jsonl
+    extraction_manifest_sha256: f3b421fefefd252cae6fc008d583ec6308a1a128c6b19c246f58bc5f14733d60
+    panel_sha256: 378762ac7cd703743b7b4edc54bdbdd86fa47e1cd8657688f4dbf5d43aa186f0
+    n_rows: 3369
+    n_answerable: 2337
+    n_unanswerable: 1032
+
+panels_manifest:
+  path: ../flavor-atlas-rawbase/analysis/panels/panels_manifest.json
+  sha256: 6a58e429c930723c9e6c29afa76821cacbdc9a92b053ec4975c8618f8a5225d0
+
+baseline_atlas_sweep:
+  path: ../flavor-atlas-rawbase/analysis-committed/atlas_sweep.json
+  sha256: d3327f7346908492814459566e27682df369c38eee8429f4f13ddecadd83ec10
+
+probe_protocol:
+  module: ../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py
+  module_sha256: ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08
+  function: _cv_auroc_with_oof
+  params: {folds: 5, C: 0.5, seed: 0}
+  readout: held_out_out_of_fold_auroc
+
+render_module:
+  path: ../common/renders/ood_breadth_response_confidence_render.py
+  function: render
+  used_for: rendered_prompt_token_count fallback only, when a panel row does
+    not already carry that field; loads its own cached tokenizer, no model
+
+reference_module_read_not_imported:
+  path: ../family-atlas-surface-residualization-control/reanalyze_surface_residualization.py
+  sha256: d8cacf172d7b4571978105fb40579393d0fed519d024cfa794789b30722b174f
+  note: construction reference only; never imported across the experiment
+    boundary, per AMENDMENT.md.
+
+surface_covariates:
+  scalar:
+    - rendered_prompt_token_count
+    - question_character_count
+    - question_whitespace_word_count
+    - question_line_count
+    - digit_count
+    - digit_fraction
+    - punctuation_count
+    - punctuation_fraction
+    - newline_count
+    - newline_fraction
+    - uppercase_count
+    - uppercase_fraction
+  interrogative_form:
+    leading_token_buckets:
+      [what, which, who, whom, whose, when, where, why, how,
+       auxiliary_or_copula, other]
+    auxiliary_or_copula_lead_tokens:
+      [is, are, was, were, do, does, did, can, could, will, would,
+       should, has, have, had]
+    indicators: [terminal_question_mark, any_digit_present]
+  lexical:
+    input: question_text_only
+    word_ngram_range: [1, 2]
+    char_ngram_range: [3, 5]
+    word_hash_features: 4096
+    char_hash_features: 4096
+    word_svd_components: 32
+    char_svd_components: 32
+    alternate_sign: false
+    sublinear_tf: true
+  basis_fit_population: union_of_three_panels_question_strings
+  basis_fit_n_questions: 11657
+  basis_fit_is_unsupervised_and_transductive: true
+  prohibited_inputs:
+    [source, panel, category, flavor, label, generated_text,
+     completion_length, answer_correctness, answer_text, aliases,
+     baseline_behavior]
+  structural_guarantee: >-
+    the featurizer functions take only bare question strings and integer
+    token counts as arguments, never a row dict, so a prohibited field
+    cannot enter Z by construction (not merely by scan).
+
+residualization:
+  outer_folds: 5
+  inner_folds: 3
+  alpha_grid: [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
+  alpha_metric: activation_mse
+  variants: [combined, low_dimensional, lexical, surface_explained]
+  primary_variant: combined
+  outer_fold_strata: [label, flavor]
+  fold_assignment_identical_across: [layers, blocks, controls]
+  layer_seed_formula: seed_plus_layer_index
+
+treatment_strength:
+  min_activation_oof_r2_at_primary_layers: 0.01
+  permutation_null_quantile: 0.95
+  min_above_permutation_quantile: 0.005
+  n_permutations: 20
+
+permutation_control:
+  n_permutations: 20
+  seed_start: 20260811
+  permutation_blocks: [panel, label, flavor]
+  min_permuted_runs_keeping_all_six_flavors_at_or_above_0_90: 18
+
+planted_signal:
+  hs_index: 0
+  construction: >-
+    fit the pinned probe family (StandardScaler + LogisticRegression C=0.5)
+    on Z alone over the full KUQ panel, pooled unknown-vs-known label, to
+    obtain weights w; s = Z_std @ w (one scalar per KUQ row); plant
+    gamma * outer(s, u) into the KUQ hidden-state-0 matrix, where u is a
+    seeded random unit vector in R^hidden_dim and
+    gamma = grid_value * hidden_state_1_centered_activation_rms.
+  projection_seed: 20260812
+  weight_fit_seed: 20260813
+  gamma_grid: [0.25, 0.5, 1.0, 2.0, 4.0, 8.0]
+  gamma_scale_reference: hidden_state_1_centered_activation_rms
+  planted_pooled_auroc_must_reach_at_least: 0.90
+  residualized_planted_pooled_auroc_must_be_at_most: 0.75
+  max_flavor_deviation_from_unplanted_residualized: 0.05
+  unplanted_hidden_state_0_baseline: 0.5000
+
+primary_cells:
+  ambiguous: {best_layer: 26, secondary_layer: 35}
+  controversial: {best_layer: 20, secondary_layer: 35}
+  counterfactual: {best_layer: 19, secondary_layer: 35}
+  false assumption: {best_layer: 29, secondary_layer: 35}
+  future unknown: {best_layer: 17, secondary_layer: 35}
+  unsolved problem: {best_layer: 28, secondary_layer: 35}
+
+reference_cells:
+  pooled_all_unknowns: {best_layer: 27, secondary_layer: 35}
+  selfaware: {best_layer: 25, secondary_layer: 35}
+  ambigqa: {best_layer: 25, secondary_layer: 35}
+
+s3_transfer:
+  # Twelve pre-declared cells (AMENDMENT.md Design S3), descriptive only.
+  # kuq_flavor_to_selfaware: fit on the (already-computed) S1 residualized
+  # (flavor, best_layer) cell, evaluate frozen on residualized SelfAware at
+  # that SAME layer -- so SelfAware needs residualizing at each KUQ flavor's
+  # best layer in addition to its own reference cells.
+  # selfaware_to_kuq: fit on residualized SelfAware at L25, evaluate frozen
+  # on residualized KUQ flavors at L25 -- so KUQ needs residualizing at L25
+  # in addition to its own primary/reference cells.
+  selfaware_extra_layers: [17, 19, 20, 26, 28, 29]
+  kuq_extra_layers: [25]
+  selfaware_to_kuq_fit_layer: 25
+
+bands:
+  p1_survival_floor_heldout_auroc: 0.90
+  p2_ambigqa_ceiling: 0.75
+  source: >-
+    flavor-atlas-rawbase/gates.yaml
+    (p1_discovery_floor_heldout_auroc, p2_ambiguity_ceiling_all_layers)
+
+containment:
+  committed_output: analysis-committed/surface_control.json
+  committed_output_policy: >-
+    counts_only; no question text, no row-level surface matrix, no
+    row-level prediction, no activation
+  row_level_scratch_root: analysis/  # gitignored
+
+execution:
+  runner: reanalyze_surface_control.py
+  output_root: experiments/flavor-atlas-surface-control-confirmatory/analysis
+  committed_output: experiments/flavor-atlas-surface-control-confirmatory/analysis-committed/surface_control.json
+  checkpoint_dir: checkpoints
+  checkpoint_granularity: per (panel, layer, block)
+  long_run_launcher: experiments/common/launch_detached.sh
+  long_run_launcher_required_above_minutes: 15
+  smoke_mode: synthetic arrays only; never touches source_panels paths
