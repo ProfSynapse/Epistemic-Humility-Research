@@ -6,6 +6,27 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-11 -- Bookkeeping: Outcome section backfilled from the recorded verdict
+
+**Tier 3, bookkeeping only, no goalpost implications.** The `## Outcome`
+section of `AMENDMENT.md` still held the unfilled "Filled at resolve"
+placeholder despite `experiment.yaml` reading `status: resolved` with a verdict
+on record. Backfilled in a PI-approved governed pass from the recorded verdict
+line, the 2026-08-09T16:45Z stage-8 adjudication entry below, and the committed
+artifacts (`screen_summary.json`, `analysis-committed/gate_report.json`,
+`analysis-committed/evidential_report_fivearm.json`,
+`analysis-committed/g7_A1.json`, `analysis-committed/g7_A4.json`). Every gate
+number in the new prose was re-read from those files; the behavior levels and
+the descriptive five-arm Spearman, which exist only in the adjudication entry
+and not in any committed artifact, are labelled as such in the Outcome. Two
+things were recorded as "not recorded" rather than resolved: the bulleted P4
+(answer-supervision dissociation) is not scored anywhere in the adjudication
+record, and the Prediction section's bullets do not map one-to-one onto the four
+scored components. NO ADJUDICATION WAS PERFORMED: no verdict, gate, band,
+threshold, prediction, falsifier or status was changed, and no number was
+recomputed. The header's "Outcome placeholder still unfilled" flag was updated
+to record the backfill.
+
 ### 2026-08-11 -- Bookkeeping: AMENDMENT.md header corrected to match machine state
 
 **Tier 3, bookkeeping only, no goalpost implications.** `AMENDMENT.md`'s header claimed a draft/not-signed (or otherwise stale) status that contradicted `experiment.yaml`'s machine state (`status: resolved`), which has read verdict "falsifier not fired, G7 readout non-transfer" on record. Corrected the AMENDMENT.md header ("Status:" line) to match the machine state. Also flagged (not fixed, no scientific content authored): this document's own "Outcome" section is still the unfilled placeholder text despite the machine state showing resolved with a verdict on record. Follows the precedent set by `gemma-4-e4b-family-atlas/AMENDMENT.md`'s 2026-07-20 header correction. No signed content (question, prediction, falsifier, gates, Outcome) touched.

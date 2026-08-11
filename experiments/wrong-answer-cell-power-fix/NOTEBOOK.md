@@ -6,6 +6,31 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-11 -- Bookkeeping: Outcome section backfilled from the recorded verdict
+
+**Tier 3, bookkeeping only, no goalpost implications.** The `## Outcome`
+section of `AMENDMENT.md` still held the unfilled "Filled at resolve"
+placeholder despite `experiment.yaml` reading `status: falsified` with a
+verdict on record. Backfilled in a PI-approved governed pass from the
+recorded verdict line, the 2026-08-08 ~23:40Z gate-scoring entry and the
+2026-08-09 ~00:00Z resolve entry below, and
+`analysis-committed/real_run_results.{json,md}`; every gate number in the
+new prose was re-read from those artifacts. Two things are flagged in the
+Outcome as recorded outside the committed artifacts rather than silently
+adopted: (a) the ADJUDICATED E4 out-of-fold reading (step 4.8484, CI
+1.7384-7.8129) appears only here and in the `verdict:` line, while
+`real_run_results.json` carries only the frozen-axis reading (step 119.37,
+CI includes 0, pass false) and the fresh full-population-axis reading
+(step 5.2316, CI excludes 0, pass true) that the scorer flagged AMBIGUOUS
+for the lead; and (b) the red-team robustness figures (in-sample
+construction 0.5680, alternative axis families 0.5636, seven CV seeds
+0.5567-0.5632) live in this notebook and the session red-team report, with
+only the L34 band maximum 0.5718 independently checkable in the committed
+JSON. NO ADJUDICATION WAS PERFORMED: no verdict, gate, band, threshold,
+prediction, falsifier or status was changed, and no number was recomputed.
+The header's "Outcome placeholder still unfilled" flag was updated to
+record the backfill.
+
 ### 2026-08-11 -- Bookkeeping: AMENDMENT.md header corrected to match machine state
 
 **Tier 3, bookkeeping only, no goalpost implications.** `AMENDMENT.md`'s

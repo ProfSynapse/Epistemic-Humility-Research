@@ -58,6 +58,9 @@ RESOLVED_STATES = frozenset({"resolved", "null-result", "falsified", "historical
 # are not caught by SIGNED_PLUS.
 PIN_CHECK_STATUSES = SIGNED_PLUS | {"historical"}
 
+# Statuses that assert a finished result -- and therefore a written Outcome.
+TERMINAL_STATUSES = frozenset({"resolved", "null-result", "falsified"})
+
 # Persistence declaration modes for instrument.modules (see
 # _module_persistence_problems). A killed run that buffered results in memory
 # and wrote output only at the end loses the whole run; every module a signed
@@ -441,6 +444,65 @@ def _stale_amendment_header_problems(exp_dir: Path, data: dict) -> list[str]:
     return []
 
 
+_OUTCOME_PLACEHOLDER_RE = re.compile(r"filled at resolve", re.IGNORECASE)
+
+
+def _unfilled_outcome_problems(exp_dir: Path, data: dict) -> list[str]:
+    """Flag a terminal-status experiment whose AMENDMENT.md ``## Outcome``
+    section is still the scaffold placeholder (or empty).
+
+    Returns human-readable problems (empty = ok). Checked only at the
+    terminal statuses (resolved / null-result / falsified): a terminal
+    status in experiment.yaml implies a written Outcome in the governed
+    doc, since the amendment is the sole citable source for the result.
+    ``historical`` (migrated legacy) cells are exempt -- they predate the
+    scaffold convention. Only the body of each exactly-``## Outcome``
+    section is inspected, so header prose narrating a past backfill (e.g.
+    'carried the unfilled placeholder text ("Filled at resolve...") -- was
+    backfilled <date>') is never flagged, and a filled ``### Outcome``
+    subsection elsewhere does not mask a still-unfilled trailing
+    ``## Outcome`` (the qwen35-4b-midband-heldout shape). Warning-only and
+    NOT auto-repaired, matching the two sibling drift checks above:
+    writing an Outcome requires human transcription from the cell's own
+    committed artifacts and notebook adjudication, never automation. See
+    the four-cell Outcome backfill of 2026-08-11 for the fix pattern.
+    """
+    if data.get("status") not in TERMINAL_STATUSES:
+        return []
+    amend_path = exp_dir / "AMENDMENT.md"
+    if not amend_path.is_file():
+        return []
+    try:
+        lines = amend_path.read_text(encoding="utf-8").splitlines()
+    except Exception:
+        return []
+
+    bodies: list[list[str]] = []
+    current: list[str] | None = None
+    for line in lines:
+        if re.match(r"^##\s+Outcome\s*$", line):
+            current = []
+            bodies.append(current)
+        elif re.match(r"^##\s", line):
+            current = None
+        elif current is not None:
+            current.append(line)
+
+    for body in bodies:
+        body_text = "\n".join(body).strip()
+        if not body_text or _OUTCOME_PLACEHOLDER_RE.search(body_text):
+            return [
+                "AMENDMENT.md `## Outcome` is still the unfilled scaffold "
+                "placeholder (or empty) but experiment.yaml status is "
+                f"{data.get('status')!r}; a terminal status implies a "
+                "written Outcome. Backfill it from this cell's own "
+                "committed artifacts and NOTEBOOK.md adjudication (see the "
+                "four-cell backfill of 2026-08-11 for the pattern), never "
+                "from downstream summaries."
+            ]
+    return []
+
+
 def _is_untracked_data_input(rel: str) -> bool:
     """True when an input path lives under an experiment's gitignored data dir.
 
@@ -544,6 +606,13 @@ def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[s
     # fault, and not auto-repaired since the fix requires human judgment
     # about which surrounding prose is now stale.
     for p in _stale_amendment_header_problems(mpath.parent, data):
+        print(f"exp validate: warning: {slug}: {p}", file=sys.stderr)
+
+    # A terminal-status experiment whose `## Outcome` still reads "Filled
+    # at resolve..." presents no written result in the governed doc -- the
+    # defect class found on four cells 2026-08-11. Warning-only: the fix is
+    # human transcription, not automation (see _unfilled_outcome_problems).
+    for p in _unfilled_outcome_problems(mpath.parent, data):
         print(f"exp validate: warning: {slug}: {p}", file=sys.stderr)
 
     inputs = data.get("inputs", []) or []
