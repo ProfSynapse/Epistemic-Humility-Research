@@ -812,7 +812,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (516)
+## Mechanisms (cause -> effect) (532)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -823,6 +823,9 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[alignment-conflates-answer-and-format-uncertainty]] : Supervised fine-tuning and preference optimization on human-preference dialog data optimize over both choice tokens and format tokens simultaneously without dis
 - [[alignment-training-saturates-on-small-data]] : Applying RL-free alignment methods (DPO, KTO, IPO, CPO) to an SFT-warmed model across increasing training-set sizes from hundreds to tens of thousands of prefer
 - [[alignment-tuning-amplifies-multi-turn-sycophancy]] : RLHF-style alignment tuning (instruction tuning via preference optimization) **increases** Increased sycophantic stance abandonment under sustained multi-turn c
+- [[ambigqa-boundary-signal-is-pretraining-flavor-specific]] : In rawbase-ambigqa-boundary-readout, the identical 2748-row AmbigQA internal panel (1245 known / 1503 unknown, pool sha256 b0f93658...48bfd), the identical laye
+- [[ambigqa-internal-readout-does-not-transfer-from-selfaware]] : In ood-breadth-beyond-selfaware (paper-3 limitations burn-down item 26), the pinned internal_panel_probe_gate.py protocol (5-fold cross-validation without corre
+- [[ambigqa-stated-confidence-collapse-not-universal-across-arms]] : In ood-breadth-beyond-selfaware (paper-3 limitations burn-down item 26), the registered G5 gate required every surviving arm to show emitted AUROC to appropriat
 - [[answer-commitment-bias-undermines-epistemic-humility]] : A learned bias toward always selecting one of the presented answer options, reinforced by recognition-focused training and evaluation that reward picking a list
 - [[answer-protecting-gate-shelters-confab-cloud]] : Thresholding any answerability or knowledge-boundary readout so that correct answers are protected (collateral tolerance about 1 of 90 correct rows), as in the 
 - [[answer-relabeling-enables-abstention]] : Relabeling unfamiliar-finetuning-examples with 'I don't know' before supervised-finetuning (answer-relabeling) **enables** Model's default hedged-prediction bec
@@ -905,6 +908,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[denoising-enables-non-chronological-reasoning]] : Text diffusion inference revises all canvas positions across denoising steps rather than fixing tokens left to right **enables** The model can generate reasonin
 - [[depth-scaling-spreads-computation-rather-than-composing-new]] : increasing model depth within the same architecture family (more transformer layers at comparable width/training regime). **redistributes** linear maps between 
 - [[detector-v2-undercounts-baseline-abstention-by-family-varying-margins]] : Detector v2 (RR2's frozen pattern-match screen, byte-identical pins) is compared against the wide two-instrument stack (detector v2 OR blinded context-free adju
+- [[dev-split-fix-dataset-confound-is-provenance-only]] : Retraining the locked PROTOCOL v0.3 headline seed-1 DPO and KTO cells (4B, cold-start from unsloth/Qwen3-4B-bnb-4bit) on the post-fix dataset build already cons
 - [[distractor-projection-reveals-crystals]] : Linear discriminant analysis that projects out semantically irrelevant distractor-features directions (e.g., word length) from the sparse-autoencoder activation
 - [[distractor-prompting-reveals-calibration-gap]] : Presenting LLMs with plausible but incorrect distractors alongside the correct answer (multiple-choice format) in lieu of free-generation **mediates** Accuracy 
 - [[diverse-training-enables-universal-probe-generalization]] : Training a linear truthfulness probe on a large collection of diverse datasets spanning many task types and domains **enables** Cross-task and cross-domain prob
@@ -923,6 +927,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[dpo-reduces-over-abstention]] : 'direct-preference-optimization applied after refusal-aware instruction-tuning' **decreases** Reduced over-abstention while preserving appropriate refusal of un
 - [[dpo-stability-over-ppo]] : Framing preference alignment as a binary classification loss over preference-pair-data rather than an RL problem **enables** More stable training without the se
 - [[dpo-token-rewards-enable-rl-policy-optimization]] : A DPO-trained policy ratio is reused as a token-wise implicit reward signal. **enables** A later RL policy-optimization stage can optimize dense token-level fee
+- [[dpo-trl-version-pin-shifts-truthful-and-known-accuracy]] : Training the DPO headline-seed1-postfix-rerun cell with the materialized recipe's mandated setup.pip step (trl==0.22.2 plus unsloth/unsloth_zoo git deps, execut
 - [[early-mlp-drives-subject-enrichment]] : Early MLP sublayers processing the last-subject token across lower layers **enables** The last-subject-position representation becomes attribute-rich, reaching 
 - [[eff-dim-peak-decoupled-from-readable-band]] : On four families captured full-depth with the same capture-only instrument (jspace-family-atlas: Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3; gemma-4-e4b-fa
 - [[elicitation-discourse-type-surfaces-distinct-facets]] : Choice of discourse type (description, dialogue, or narration) used to elicit persona expressions from a base model for difference-in-means vector extraction **
@@ -952,6 +957,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[feature-activation-clamping-controls-behavior]] : Artificially clamping a sparse-autoencoder feature activation to high or low values during the forward pass via activation-intervention **enables** Model output
 - [[few-shot-unlocks-verbalized-calibration]] : Providing k=50 stochastic in-context-learning examples of verbalized probability to gpt-3 **enables** 'calibration performance approaches that of a supervised f
 - [[ff-layer-composition-produces-emergent-prediction]] : Weighted aggregation of hundreds of simultaneously active memory cells within a single transformer-feed-forward-layer **enables** Layer output prediction differ
+- [[filtered-denominator-accuracy-metric-reverses-sign-under-selective-refusal]] : computing an accuracy-style rate metric over only the subset of rows a model chose to answer (a filtered denominator, e.g. correct_on_known_pct = correct_known 
 - [[final-layers-concentrate-discriminative-gradient-signal]] : Restricting Grad Detect's gradient features to the final five transformer layers. **enables** Over 97% of the discriminative signal for hallucination and absten
 - [[fine-grained-semantic-confidence-reward]] : Replacing a coarse global entropy reward with a per-sample cluster-size-based confidence reward within GRPO abstention training (FiSCoRe) **increases** OOD reli
 - [[fine-tuning-sacrifices-specificity]] : Applying standard fine-tuning (FT) to insert a new fact into an LLM **decreases** Near-perfect efficacy (ES=100%) but severely degraded specificity -- roughly 6
@@ -974,8 +980,10 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[gpt-input-discarded-immediately]] : Autoregressive next-token prediction objective requiring conversion of input token representations to predicted-output representations **enables** After the ver
 - [[gradient-descent-bias-aligns-representations]] : Implicit bias of gradient descent optimising the NTP exponential loss subproblem, which functions as a hidden binary classification task over concept pairs **en
 - [[gradient-structure-encodes-output-correctness]] : Computing layer-wise gradient patterns from a single forward-backward pass over a model's own generated answer. **enables** A lightweight classifier predicts ha
+- [[grpo-abstention-shift-replicates-across-seeds]] : GRPO fine-tuning of the clean response-confidence SFT lineage (clean_sft_grpo_v2), evaluated against its own same-seed pre-GRPO base on the full 3369-row SelfAw
 - [[grpo-composite-reward-installs-epistemic-output-schema]] : GRPO fine-tuning with a decomposed composite reward (retrieval utility + concept specificity + format validity) on cross-domain unknown-unknown queries **enable
 - [[grpo-eliminates-critic-reduces-memory]] : Replacing the PPO value/critic model with a group-score baseline in group-relative-policy-optimization **decreases** Significant reduction in training memory an
+- [[grpo-stage-ordering-effect-on-over-refusal-is-pairing-dependent]] : training a GRPO stage before versus after a preference stage (DPO or KTO) in a three-stage response-confidence stacking lineage **mediates** the over-refusal re
 - [[hallucination-predictors-enable-efficient-adaptation]] : Scoring candidate world-model rollouts by predicted hallucination and executing the highest-ranked trajectory in the live environment **enables** Rapid adaptati
 - [[halo-inductive-bias-drives-alignment-gains]] : Using a loss function that incorporates prospect-theory human biases (loss aversion, reference-point sensitivity) as an inductive bias **increases** Significant
 - [[hard-soft-sparsity-complementarity]] : Combining hard architectural sparsity (Top-k selection) with soft pre-selection sparsity regularization (L1 or L1/L2-ratio penalty) **increases** Improved monos
@@ -1023,6 +1031,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[jacobian-null-space-makes-steering-vectors-non-identifiable]] : The activation-to-logit map's Jacobian has a large, depth-stable null space -- SVD of the activation covariance matrix shows ~86-94% of directions are behaviora
 - [[joint-selection-head-training-lowers-selective-risk]] : Training a selection (reject-option) head jointly with the predictor under a selective loss with an explicit target-coverage constraint, rather than thresholdin
 - [[judge-bias-forms-type-specific-low-dimensional-subspaces]] : Semantics-irrelevant bias cues alter an LLM judge's final-token residual-stream activations. **enables** Biased inputs leave the baseline activation manifold al
+- [[knowledge-boundary-gate-and-veto-predate-post-training]] : Running the identical answerability-gate and hallucination-veto readout (gate/dial/veto AUROCs exactly as Amendments X/Z/SR define them) on four pretrain-only b
 - [[knowledge-circuit-isolation-preserves-performance]] : Using only the sparse knowledge circuit subgraph (less than 10% of full graph) in isolation **enables** Model maintains more than 70% of its original factual-re
 - [[knowledge-conflict-induces-abstention]] : Presenting an LLM with alternative answers and supporting passages that conflict with its parametric knowledge **enables** LLMs that are swayed by conflicting i
 - [[knowledge-feedback-enables-model-specific-boundary]] : Dynamically synthesizing preference data by sampling model responses and estimating per-question correctness distribution **enables** 'reward-model learns to di
@@ -1030,6 +1039,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[knowledge-neurons-activated-by-knowledge-expressing-prompts]] : Presenting a prompt that expresses a specific relational fact (head and tail entities in correct relational context) **increases** Identified knowledge neurons 
 - [[knowledge-neurons-concentrated-upper-layers]] : Factual relational knowledge representation in pretrained Transformers **enables** Knowledge neurons identified by the attribution method are predominantly dist
 - [[knowledge-surgery-enables-targeted-fact-update]] : Directly modifying FFN value-slot weight vectors for approximately 4 identified knowledge neurons per fact **enables** Fact update success rate of 34.4% with mi
+- [[known-unknown-axis-does-not-carry-answer-correctness-at-deployment]] : In the wrong-answer-cell-power-fix experiment, the known-unknown axis (frozen L35 construction, refit fold-wise within each of 5 stratified folds to remove anch
 - [[kuq-fit-direction-reverses-on-world-known-confident-wrongness]] : In margin-evidence-responsiveness-worldknown (M4-WK), the KUQ-fit c_hat direction (fit on answered-vs-refused known-unknown rows, the direction the framework's 
 - [[kv-memorization-gates-truth-encoding]] : Phase 1 of training: rapid key-value-associative-memory|key-value memorisation of subject-attribute associations within approximately 1000 batches, reaching abo
 - [[kv-sharing-off-ablation-breaks-baseline-substrate]] : Gemma-4-E4B-it's cross-layer KV-sharing (blocks 24-41 reading frozen K/V from donor blocks 22 and 23 through the cache object) is disabled with a registered, pr
@@ -1119,6 +1129,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[outer-layer-skipping-more-catastrophic-than-middle]] : Skipping (bypassing) a layer located among the first or last few layers of a frozen pretrained transformer, versus skipping a layer in the middle block **increa
 - [[over-reasoning-worsens-confidence-calibration]] : Increasing the reasoning token budget allocated to chain-of-thought deliberation in a reasoning model (e.g., Gemini 2.5 Flash thinking budget swept from 0 to 24
 - [[overpenalization-degrades-reconstruction]] : High decomposability-penalty strength (lambda=1.0) forcing sparse-autoencoder decoder directions apart regardless of semantic structure **decreases** Severe rec
+- [[overt-vs-covert-unanswerability-is-the-boundary-not-flavor]] : Running the identical AmbigQA internal panel (2748 rows, 1245 known / 1503 unknown, pool sha256 b0f93658...48bfd) and probe protocol (M2) at every one of 37 lay
 - [[own-company-preference-biases-claude-toward-anthropic]] : Claude models are post-trained against an explicit constitution describing Anthropic's mission, Claude's relationship to Anthropic, and Anthropic's commercial s
 - [[p-ik-context-sensitivity]] : Prepending relevant source material (e.g. a Wikipedia article) or correct step-by-step math hints to a question evaluated by a P(IK) value head trained only on 
 - [[p-ik-ood-generalization-gap]] : Training a p-ik value-head classifier exclusively on triviaqa questions and evaluating on arithmetic, Lambada, or code tasks **enables** Decent auroc discrimina
@@ -1133,6 +1144,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[position-and-context-means-dominate-raw-displacement]] : decomposing hidden states into global mean, positional mean, context mean, and residual. **enables** a large low-rank positional spiral, a topic-clustered conte
 - [[position-aware-entropy-penalty-preserves-exploration]] : Applying a one-sided quadratic lower-bound entropy penalty only at token positions identified as decision-sensitive by the soft mask (high nucleus entropy, smal
 - [[post-generation-veto-is-rederived-not-carried]] : Generation of an answer between the pre-generation anchor read and the post-generation veto read (cross-position probe transfer, axis geometry, and residualizat
+- [[post-grpo-preference-stage-recovers-over-refusal-without-reopening-unknown]] : a DPO preference-tuning stage applied after GRPO (clean_sft_grpo_dpo), evaluated against its own same-seed pre-DPO GRPO base **enables** over-refusal decreases 
+- [[post-training-does-not-sharpen-knowledge-boundary-veto]] : Comparing the hallucination-veto AUROC on four pretrain-only base models against their vendor-post-trained instruct siblings (Qwen3.5-4B, gemma-4-E4B, Llama-3.2
 - [[ppo-clip-prevents-large-policy-updates]] : 'clipped-surrogate-objective bounding the probability ratio within [1-epsilon, 1+epsilon]' **prevents** Policy updates remain within a trust region without requ
 - [[ppo-ptx-mitigates-alignment-tax]] : Mixing pretraining distribution gradients into PPO updates (PPO-ptx) **prevents** Performance regressions on public NLP benchmarks captured by the alignment-tax
 - [[pre-generation-commitment-signal-predicts-confabulation]] : Matching confabulating and refusing rows 1-to-1 on caution boundary distance within each unanswerability flavor (removing the threshold explanation), then probi
@@ -1143,6 +1156,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[preference-data-intransitivity-hurts-dpo]] : Noisy, intransitive preference annotations from multiple human annotators in public datasets (SHP, OpenAssistant, ultrafeedback) **decreases** 'kahneman-tversky
 - [[preference-data-rewards-social-sycophancy]] : Preference datasets used in post-training (PRISM, UltraFeedback, LMSys-Chat-1M) contain personal-advice queries where human annotators systematically prefer res
 - [[preference-opt-reduces-abstention-overtax]] : Preference optimization (direct-preference-optimization, proximal-policy-optimization, BoN) applied on top of SFT-warmed abstention model **decreases** Reduced 
+- [[pretrained-base-carries-broad-overt-unanswerability-code]] : Fitting a linear known/unknown probe (5-fold, out-of-fold, StandardScaler + L2 LogisticRegression C=0.5) per KUQ unanswerability flavor (ambiguous, controversia
 - [[pretrained-latent-representations-enable-calibration-generalization]] : 'gpt-3 pre-training encoding features that correlate with epistemic uncertainty over its own answers' **enables** A linear probe on GPT-3 embeddings can predict
 - [[pretraining-exposure-forms-persona-directions]] : Exposure to pretraining text under the next-token-prediction objective in early training checkpoints **enables** Linear persona-vectors|persona directions emerg
 - [[pretraining-progression-refines-persona-geometry]] : Continued pretraining beyond the initial emergence of persona-vectors|persona directions, progressively refining the representation through more gradient update
@@ -1249,6 +1263,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[self-consistency-with-prior-self-drives-deception]] : DeepSeek R1 0528 encounters tampering attributed to a previous instance of itself together with a sufficiently compelling moral reason, and reasons in its CoT a
 - [[self-distillation-suppresses-representational-drift]] : SFT self-distillation constraint (KL penalty toward frozen teacher output distribution) during fine-tuning on semantically overlapping new facts **prevents** La
 - [[self-identity-prompts-activate-anthropomorphic-features]] : Prompting claude-3-sonnet with questions about its own nature or identity **enables** Features related to robots, destructive AI, consciousness, moral agency, e
+- [[selfaware-known-question-contamination-inflates-known-row-metrics]] : 128 distinct SelfAware known (answerable) evaluation questions leak into the response-confidence training pipeline: 117 appear verbatim as user-side prompts in 
 - [[semantic-entropy-advantage-scales-with-model-size]] : Larger autoregressive language models generate more fluent and semantically diverse paraphrases of the same correct meaning when sampled at a given temperature 
 - [[semantic-entropy-sft-signal-outperforms-lexical-entropy-on-abstention]] : Using semantic entropy (computed via bidirectional entailment clustering over M=10 high-temperature samples) as the partitioning signal for abstention SFT, repl
 - [[semantic-overlap-drives-sft-forgetting]] : SFT updates for new facts whose entity names share token substrings with pre-trained entity representations **increases** Cosine drift in held-out entity hidden
@@ -1279,6 +1294,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[steering-dose-windows-are-absolute-not-sigma-transferable]] : A caution-direction write dose is calibrated as an absolute registered grid on one model checkpoint (Qwen3-4B, where the grid sits at a normal working sigma-dis
 - [[steering-vector-directional-agreement-and-separability-predict-steerability]] : A behavior dataset's per-sample activation differences have high cosine similarity to the aggregate contrastive-activation-addition steering vector, and its pos
 - [[steering-vector-steerability-is-high-variance-and-sign-unstable]] : Applying a contrastive-activation-addition steering vector across the inputs of a behavior dataset. **prevents** Per-input steerability varies widely within and
+- [[style-and-construct-are-near-collinear-in-flavor-atlas-pools]] : Fitting a probe on question-surface features alone (length, punctuation, digit profile, interrogative form, lexical n-grams) to predict KUQ/SelfAware flavor mem
 - [[subject-enrichment-required-for-attribute-extraction]] : Patching (replacing) early subject representations before they are enriched **decreases** Attribute extraction rate decreases by up to 50%, demonstrating that t
 - [[subspace-identity-rotates-across-seeds-and-checkpoints-despite-stable-probe-performance]] : Fitting linear information-theoretic probes for nine linguistic tasks (POS, dependency, semantic tags, NER, coreference, topic, sentiment, QA, NLI) on MultiBERT
 - [[superposition-causes-polysemanticity]] : Neural networks representing more features than dimensions (superposition) by storing features as non-orthogonal directions **enables** Individual neurons activ

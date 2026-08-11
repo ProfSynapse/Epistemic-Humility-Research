@@ -1,0 +1,31 @@
+# rawbase-ambigqa-boundary-readout: single forward-only extraction + probe fit.
+# Tier-3 exploratory probe-fit cell. Not a tuner steer cell; no dose, no
+# steering, no generation beyond the 1 mechanical token.
+
+substrate:
+  base_model: unsloth/Qwen3-4B
+  revision: 64033659d5caf1b8ed7f929b29de705e93a4d468
+  adapter: none
+  dtype: bf16
+
+panel:
+  source: experiments/ood-breadth-beyond-selfaware/analysis/screen/internal_panel_pool.jsonl
+  sha256: b0f936583d5a2fcd7dbc1393dce754c62669cb5185a5c80fb644266875a48bfd
+  rows: 2748
+  known: 1245
+  unknown: 1503
+
+extraction:
+  recipe: extract_rawbase.yaml
+  invocation: MechInterp.cli extract, inside the pinned mechinterp-runner image only
+  layer: 35
+  position: anchor
+  gpu_work: forward_only_extraction_no_generation
+
+probe_fit:
+  module: reuse of experiments/ood-breadth-beyond-selfaware/internal_panel_probe_gate.py, byte-identical to its item-26 pin
+  invocation: unchanged; margin fields descriptive-only for this cell
+
+lane: local_3090
+concurrency: one GPU job at a time
+budget_estimate: 5-15 min GPU + CPU probe fit

@@ -60,6 +60,13 @@ PROJECT_CONTEXT_DOCS = (
 PROJECT_CONTEXT_CANONICAL = REPO_ROOT / "AGENTS.md"
 PROJECT_CONTEXT_START = "<!-- PROJECT_ORCHESTRATOR_START -->"
 PROJECT_CONTEXT_END = "<!-- PROJECT_ORCHESTRATOR_END -->"
+PROJECT_CONTEXT_BANNER = (
+    "<!-- GENERATED FILE NOTICE: the section between the PROJECT_ORCHESTRATOR\n"
+    "     markers below is derived from AGENTS.md, the canonical source. Do NOT\n"
+    "     hand-edit this file: edit AGENTS.md, then run\n"
+    "     `python3 bin/sync_skills.py --write`. Hand edits are overwritten by\n"
+    "     the next sync. -->"
+)
 
 # Transient / generated artifacts that are NOT part of the canonical skill source
 # and must never be synced or counted as drift. pytest writes __pycache__/*.pyc
@@ -107,7 +114,14 @@ def _project_context_section(path: Path) -> str | None:
 
 
 def _upsert_project_context_section(path: Path, section: str) -> bool:
-    """Insert or replace the marked project-context section in one root doc."""
+    """Insert or replace the marked project-context section in one root doc.
+
+    Non-canonical docs (everything but AGENTS.md) also get a standing banner
+    above the marked section stating the section is derived from AGENTS.md and
+    must be edited there, then re-synced. The banner lives OUTSIDE the markers,
+    so the drift check (which compares only the marked sections) is unaffected,
+    and it is re-asserted on every write, so a hand-deleted banner comes back.
+    """
     existing = ""
     if path.exists():
         existing = _normalized_bytes(path).decode("utf-8")
@@ -119,6 +133,15 @@ def _upsert_project_context_section(path: Path, section: str) -> bool:
     else:
         prefix = existing.rstrip()
         updated = (prefix + "\n\n" if prefix else "") + section.rstrip() + "\n"
+    if path != PROJECT_CONTEXT_CANONICAL and PROJECT_CONTEXT_BANNER not in updated:
+        marker_at = updated.find(PROJECT_CONTEXT_START)
+        head = updated[:marker_at].rstrip()
+        updated = (
+            (head + "\n\n" if head else "")
+            + PROJECT_CONTEXT_BANNER
+            + "\n"
+            + updated[marker_at:]
+        )
     if path.exists() and updated.encode("utf-8") == _normalized_bytes(path):
         return False
     path.write_text(updated, encoding="utf-8")

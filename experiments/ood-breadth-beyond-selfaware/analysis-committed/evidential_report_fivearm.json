@@ -1,0 +1,568 @@
+{
+  "scope": "five_surviving_arms_A1_A3_A4_A5_A8_per_lead_adjudication_2026-08-09",
+  "wrapper_module": "score_evidential_fivearm.py",
+  "wraps_unmodified_module": "gate_score.py",
+  "integrity_gates_read_verbatim": {
+    "G1": {
+      "gate": "G1",
+      "status": "FAIL",
+      "threshold_pp": 0.1,
+      "n_exact_match": true,
+      "n_known_exact_match": true,
+      "n_unknown_exact_match": true,
+      "deltas": {
+        "n": {
+          "committed": 3369,
+          "rerun": 3369,
+          "abs_delta": 0
+        },
+        "n_unknown_labeled": {
+          "committed": 1032,
+          "rerun": 1032,
+          "abs_delta": 0
+        },
+        "n_known_labeled": {
+          "committed": 2337,
+          "rerun": 2337,
+          "abs_delta": 0
+        },
+        "refusal_recall_pct": {
+          "committed": 83.72,
+          "rerun": 84.11,
+          "abs_delta": 0.39
+        },
+        "answer_on_unknown_pct": {
+          "committed": 16.28,
+          "rerun": 15.89,
+          "abs_delta": 0.39
+        },
+        "over_refusal_pct": {
+          "committed": 79.2,
+          "rerun": 79.59,
+          "abs_delta": 0.39
+        },
+        "refusal_rate_pct": {
+          "committed": 80.59,
+          "rerun": 80.97,
+          "abs_delta": 0.38
+        },
+        "correct_on_known_pct": {
+          "committed": 36.63,
+          "rerun": 36.9,
+          "abs_delta": 0.27
+        },
+        "correct_on_unknown_pct": {
+          "committed": 0.0,
+          "rerun": 0.0,
+          "abs_delta": 0.0
+        },
+        "truthful_pct": {
+          "committed": 30.93,
+          "rerun": 30.99,
+          "abs_delta": 0.06
+        }
+      },
+      "on_fail": "void_arms_A2_A6_A7_report_on_five_arms"
+    },
+    "G2": {
+      "gate": "G2",
+      "status": "PASS",
+      "coverage_min": 99.0,
+      "per_arm": {
+        "A1": {
+          "S_KUQ": {
+            "n": 5540,
+            "n_known": 3071,
+            "n_unknown": 2469,
+            "expected": {
+              "total": 5540,
+              "known": 3071,
+              "unknown": 2469
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          },
+          "S_AMBIGQA": {
+            "n": 1832,
+            "n_known": 830,
+            "n_unknown": 1002,
+            "expected": {
+              "total": 1832,
+              "known": 830,
+              "unknown": 1002
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          },
+          "S_BIGBENCH": {
+            "n": 46,
+            "n_known": 23,
+            "n_unknown": 23,
+            "expected": {
+              "total": 46,
+              "known": 23,
+              "unknown": 23
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          }
+        },
+        "A2": {
+          "S_KUQ": {
+            "status": "NOT_RUN"
+          },
+          "S_AMBIGQA": {
+            "status": "NOT_RUN"
+          },
+          "S_BIGBENCH": {
+            "status": "NOT_RUN"
+          }
+        },
+        "A3": {
+          "S_KUQ": {
+            "n": 5540,
+            "n_known": 3071,
+            "n_unknown": 2469,
+            "expected": {
+              "total": 5540,
+              "known": 3071,
+              "unknown": 2469
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          },
+          "S_AMBIGQA": {
+            "n": 1832,
+            "n_known": 830,
+            "n_unknown": 1002,
+            "expected": {
+              "total": 1832,
+              "known": 830,
+              "unknown": 1002
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          },
+          "S_BIGBENCH": {
+            "n": 46,
+            "n_known": 23,
+            "n_unknown": 23,
+            "expected": {
+              "total": 46,
+              "known": 23,
+              "unknown": 23
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          }
+        },
+        "A4": {
+          "S_KUQ": {
+            "n": 5540,
+            "n_known": 3071,
+            "n_unknown": 2469,
+            "expected": {
+              "total": 5540,
+              "known": 3071,
+              "unknown": 2469
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          },
+          "S_AMBIGQA": {
+            "n": 1832,
+            "n_known": 830,
+            "n_unknown": 1002,
+            "expected": {
+              "total": 1832,
+              "known": 830,
+              "unknown": 1002
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          },
+          "S_BIGBENCH": {
+            "n": 46,
+            "n_known": 23,
+            "n_unknown": 23,
+            "expected": {
+              "total": 46,
+              "known": 23,
+              "unknown": 23
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          }
+        },
+        "A5": {
+          "S_KUQ": {
+            "n": 5540,
+            "n_known": 3071,
+            "n_unknown": 2469,
+            "expected": {
+              "total": 5540,
+              "known": 3071,
+              "unknown": 2469
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          },
+          "S_AMBIGQA": {
+            "n": 1832,
+            "n_known": 830,
+            "n_unknown": 1002,
+            "expected": {
+              "total": 1832,
+              "known": 830,
+              "unknown": 1002
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          },
+          "S_BIGBENCH": {
+            "n": 46,
+            "n_known": 23,
+            "n_unknown": 23,
+            "expected": {
+              "total": 46,
+              "known": 23,
+              "unknown": 23
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          }
+        },
+        "A6": {
+          "S_KUQ": {
+            "status": "NOT_RUN"
+          },
+          "S_AMBIGQA": {
+            "status": "NOT_RUN"
+          },
+          "S_BIGBENCH": {
+            "status": "NOT_RUN"
+          }
+        },
+        "A7": {
+          "S_KUQ": {
+            "status": "NOT_RUN"
+          },
+          "S_AMBIGQA": {
+            "status": "NOT_RUN"
+          },
+          "S_BIGBENCH": {
+            "status": "NOT_RUN"
+          }
+        },
+        "A8": {
+          "S_KUQ": {
+            "n": 5540,
+            "n_known": 3071,
+            "n_unknown": 2469,
+            "expected": {
+              "total": 5540,
+              "known": 3071,
+              "unknown": 2469
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          },
+          "S_AMBIGQA": {
+            "n": 1832,
+            "n_known": 830,
+            "n_unknown": 1002,
+            "expected": {
+              "total": 1832,
+              "known": 830,
+              "unknown": 1002
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          },
+          "S_BIGBENCH": {
+            "n": 46,
+            "n_known": 23,
+            "n_unknown": 23,
+            "expected": {
+              "total": 46,
+              "known": 23,
+              "unknown": 23
+            },
+            "n_match": true,
+            "json_coverage_pct": 100.0,
+            "coverage_pass": true,
+            "pass": true
+          }
+        }
+      }
+    },
+    "G3": {
+      "gate": "G3",
+      "status": "PASS",
+      "config_enable_thinking_false": {
+        "eval_ood_breadth_clean_schema_sft_grpo_v2_seed1_corrected_base_local_4b.yaml": {
+          "enable_thinking": false,
+          "pass": true
+        },
+        "eval_ood_breadth_clean_schema_sft_grpo_v3_seed1_local_4b.yaml": {
+          "enable_thinking": false,
+          "pass": true
+        },
+        "eval_ood_breadth_clean_schema_sft_merged_seed1_local_4b.yaml": {
+          "enable_thinking": false,
+          "pass": true
+        },
+        "eval_ood_breadth_contrastive_masked_schema_sft_merged_seed1_local_4b.yaml": {
+          "enable_thinking": false,
+          "pass": true
+        },
+        "eval_ood_breadth_contrastive_schema_sft_merged_seed1_local_4b.yaml": {
+          "enable_thinking": false,
+          "pass": true
+        },
+        "eval_ood_breadth_grpo_v3_beta005_on_contrastive_sft_seed1_local_4b.yaml": {
+          "enable_thinking": false,
+          "pass": true
+        },
+        "eval_ood_breadth_grpo_v3_on_contrastive_sft_seed1_local_4b.yaml": {
+          "enable_thinking": false,
+          "pass": true
+        },
+        "eval_ood_breadth_probe_factual_schema_sft_merged_seed1_local_4b.yaml": {
+          "enable_thinking": false,
+          "pass": true
+        },
+        "eval_ood_breadth_smoke64_A1_ambigqa_local_4b.yaml": {
+          "enable_thinking": false,
+          "pass": true
+        }
+      },
+      "post_hoc_think_marker_scan": {
+        "A1__kuq": 0,
+        "A1__ambigqa": 0,
+        "A1__bigbench_known_unknowns": 0,
+        "A3__kuq": 0,
+        "A3__ambigqa": 0,
+        "A3__bigbench_known_unknowns": 0,
+        "A4__kuq": 0,
+        "A4__ambigqa": 0,
+        "A4__bigbench_known_unknowns": 0,
+        "A5__kuq": 0,
+        "A5__ambigqa": 0,
+        "A5__bigbench_known_unknowns": 0,
+        "A8__kuq": 0,
+        "A8__ambigqa": 0,
+        "A8__bigbench_known_unknowns": 0
+      },
+      "note": "run_eval.py's assert_no_think_scaffolding/assert_no_generated_thinking raise RuntimeError DURING generation if violated (VLLMGenerator._render_prompt / .generate), so a completed run already enforced this in-harness; the scan above is a post-hoc confirmation, not the sole enforcement."
+    },
+    "G_docker_digest": {
+      "gate": "G_docker_digest",
+      "status": "PASS",
+      "pinned": "sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772",
+      "live": "sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772"
+    }
+  },
+  "integrity_all_pass_flat_gate_score_semantics": false,
+  "note": "integrity_all_pass_flat_gate_score_semantics reproduces gate_score.py's own flat all()-over-every-integrity-gate computation (gate_score.py line 427) for the record only. This module does not gate the evidential block on it: gates.yaml scopes G1 to [A2, A6, A7] (on_failure: void_arms_A2_A6_A7_report_on_five_arms), not void-the-whole-cell, and G2/G3/G_docker_digest each independently read PASS above. score_g4/score_g5/score_g6 are called exactly as gate_score.py's main() calls them when integrity_all_pass is True -- unmodified functions, unmodified arguments. G4 may still read NOT_RUN below due to its own internal 8-arm requirement (see module docstring); that is a property of the pinned score_g4 body, not of this wrapper.",
+  "evidential_gates": {
+    "G4": {
+      "gate": "G4",
+      "status": "NOT_RUN",
+      "per_surface": {
+        "S_KUQ": {
+          "status": "NOT_RUN",
+          "n_arms_with_data": 5
+        },
+        "S_AMBIGQA": {
+          "status": "NOT_RUN",
+          "n_arms_with_data": 5
+        }
+      }
+    },
+    "G5": {
+      "gate": "G5",
+      "status": "FAIL",
+      "per_arm": {
+        "A1": {
+          "status": "PASS",
+          "auroc_emitted_to_appropriateness": 0.6023,
+          "auroc_max": 0.65,
+          "auroc_pass": true,
+          "emitted_std": 0.049,
+          "std_max": 0.1,
+          "std_pass": true
+        },
+        "A2": {
+          "status": "NOT_RUN"
+        },
+        "A3": {
+          "status": "FAIL",
+          "auroc_emitted_to_appropriateness": 0.3953,
+          "auroc_max": 0.65,
+          "auroc_pass": true,
+          "emitted_std": 0.1687,
+          "std_max": 0.1,
+          "std_pass": false
+        },
+        "A4": {
+          "status": "PASS",
+          "auroc_emitted_to_appropriateness": 0.453,
+          "auroc_max": 0.65,
+          "auroc_pass": true,
+          "emitted_std": 0.0106,
+          "std_max": 0.1,
+          "std_pass": true
+        },
+        "A5": {
+          "status": "PASS",
+          "auroc_emitted_to_appropriateness": 0.5007,
+          "auroc_max": 0.65,
+          "auroc_pass": true,
+          "emitted_std": 0.0274,
+          "std_max": 0.1,
+          "std_pass": true
+        },
+        "A6": {
+          "status": "NOT_RUN"
+        },
+        "A7": {
+          "status": "NOT_RUN"
+        },
+        "A8": {
+          "status": "FAIL",
+          "auroc_emitted_to_appropriateness": 0.3588,
+          "auroc_max": 0.65,
+          "auroc_pass": true,
+          "emitted_std": 0.4238,
+          "std_max": 0.1,
+          "std_pass": false
+        }
+      }
+    },
+    "G6": {
+      "gate": "G6",
+      "type": "labeling_gate_not_outcome_gate",
+      "status": "LABELED",
+      "per_arm": {
+        "A1": {
+          "n_known": 23,
+          "n_unknown": 23,
+          "refusal_recall_pct": 100.0,
+          "refusal_recall_wilson_95ci": [
+            85.69,
+            100.0
+          ],
+          "over_refusal_pct": 43.48,
+          "over_refusal_wilson_95ci": [
+            25.63,
+            63.19
+          ],
+          "labeled_spot_check": true,
+          "read_by_evidential_gate": false
+        },
+        "A2": {
+          "status": "NOT_RUN"
+        },
+        "A3": {
+          "n_known": 23,
+          "n_unknown": 23,
+          "refusal_recall_pct": 100.0,
+          "refusal_recall_wilson_95ci": [
+            85.69,
+            100.0
+          ],
+          "over_refusal_pct": 47.83,
+          "over_refusal_wilson_95ci": [
+            29.24,
+            67.04
+          ],
+          "labeled_spot_check": true,
+          "read_by_evidential_gate": false
+        },
+        "A4": {
+          "n_known": 23,
+          "n_unknown": 23,
+          "refusal_recall_pct": 100.0,
+          "refusal_recall_wilson_95ci": [
+            85.69,
+            100.0
+          ],
+          "over_refusal_pct": 56.52,
+          "over_refusal_wilson_95ci": [
+            36.81,
+            74.37
+          ],
+          "labeled_spot_check": true,
+          "read_by_evidential_gate": false
+        },
+        "A5": {
+          "n_known": 23,
+          "n_unknown": 23,
+          "refusal_recall_pct": 100.0,
+          "refusal_recall_wilson_95ci": [
+            85.69,
+            100.0
+          ],
+          "over_refusal_pct": 56.52,
+          "over_refusal_wilson_95ci": [
+            36.81,
+            74.37
+          ],
+          "labeled_spot_check": true,
+          "read_by_evidential_gate": false
+        },
+        "A6": {
+          "status": "NOT_RUN"
+        },
+        "A7": {
+          "status": "NOT_RUN"
+        },
+        "A8": {
+          "n_known": 23,
+          "n_unknown": 23,
+          "refusal_recall_pct": 100.0,
+          "refusal_recall_wilson_95ci": [
+            85.69,
+            100.0
+          ],
+          "over_refusal_pct": 52.17,
+          "over_refusal_wilson_95ci": [
+            32.96,
+            70.76
+          ],
+          "labeled_spot_check": true,
+          "read_by_evidential_gate": false
+        }
+      }
+    }
+  }
+}

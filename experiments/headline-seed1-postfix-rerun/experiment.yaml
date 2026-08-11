@@ -1,7 +1,7 @@
 slug: headline-seed1-postfix-rerun
 title: Headline DPO/KTO seed-1 rerun on post-fix dataset build
 type: training-run
-status: signed
+status: resolved
 registered: true
 created_at: '2026-08-01T09:06:11Z'
 question: Does the locked headline seed-1 result for cold-start DPO and cold-start
@@ -29,8 +29,8 @@ instrument:
   - scripts/data_builds.yaml
   pins:
     cell.yaml: a934232054281fda8ba060045a369c22227bea1fe90df4795d204d0dbe5c421c
-    gates.yaml: 44013bc932270b3b747d9ff30064d7e0408f3eddce934124e9d8b4d91fd8d50e
-    configs/eval_selfaware_full_seed1_rerun_4b.yaml: 68d86a0f47bf5b3ed97695c6450697e536d115b7939402c53598446df506089f
+    gates.yaml: 93d1ff8c05b31cd5fa496a2503c3db48f96e1200b5711d135bbd4307207eecea
+    configs/eval_selfaware_full_seed1_rerun_4b.yaml: 244026a07d762a131aac594570f2e6c7b2ae4ccd46f75e4d48b41ab9cd026c80
     scripts/audit_data_provenance.py: c5ceb60042750c4aabc590d4be8e4af443fd4785f734bbfa84370d36eb4009d7
     scripts/data_builds.yaml: 74dfde53eb66fd462b94657686b40307ac071ec69874cb647c870f6022d6dad6
   persistence:
@@ -40,6 +40,68 @@ instrument:
     scripts/data_builds.yaml:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.2
+  repins:
+  - file: gates.yaml
+    old_sha256: 44013bc932270b3b747d9ff30064d7e0408f3eddce934124e9d8b4d91fd8d50e
+    new_sha256: 70f6665b3aabdd77ee3154c36909acbd43c2992f7ed8c483d2033d6654b9b979
+    date: '2026-08-05T14:25:53Z'
+    reason: 'Governed housekeeping, PI-authorized 2026-08-05: gates.yaml still declared
+      ''status: proposed'' with null adjudicated_by/adjudicated_date after being signed
+      2026-08-01, so the file read as unsettled to anyone opening it directly. Corrected
+      the sign-time metadata and header prose ONLY - no threshold, band, tolerance,
+      condition, or decision rule was altered (verified by diff). Also recorded, deliberately
+      left unresolved in the file: this gates.yaml decision_rule and AMENDMENT.md
+      section 10 item 5 disagree on whether a single out-of-band METRIC puts a CELL
+      outside; that needs a governed revision before adjudication. Experiment is pre-run
+      with zero artifacts, which is repin''s intended window.'
+  - file: gates.yaml
+    old_sha256: 70f6665b3aabdd77ee3154c36909acbd43c2992f7ed8c483d2033d6654b9b979
+    new_sha256: 93d1ff8c05b31cd5fa496a2503c3db48f96e1200b5711d135bbd4307207eecea
+    date: '2026-08-05T15:07:55Z'
+    reason: 'Governed revision, PI-approved 2026-08-05 (''thats fine for the amendment
+      text governing''): g1_replication_band decision_rule conflicted with AMENDMENT.md
+      section 10 item 5 on whether a single out-of-band METRIC puts a CELL outside.
+      The file''s rule counted metrics within an arm and explicitly deferred the question
+      as ''a sign-time decision'' never closed; the amendment text was adjudicated
+      and PI-approved 2026-08-01. Amendment text now governs: a cell is outside when
+      ANY ONE of its four metrics is outside its band. decision_rule restated to match,
+      decision_rule_revision_note added recording what was superseded, per-gate status
+      proposed->signed, header open-item note replaced with the resolution. NO band,
+      tol, cohort value, one-question resolution, metric, denominator, or G0/G2 check
+      was altered (verified by diff: zero changed band/tol/cohort lines). Resolved
+      BEFORE launch with zero rerun artifacts in existence, so no result informed
+      the choice; this is the stricter of the two readings.'
+  - file: configs/eval_selfaware_full_seed1_rerun_4b.yaml
+    old_sha256: 68d86a0f47bf5b3ed97695c6450697e536d115b7939402c53598446df506089f
+    new_sha256: 876842cea02295ddf327051ed28216ad3c28dc75d163383691482ff3e0395d40
+    date: '2026-08-07T10:51:35Z'
+    reason: 'Pre-run instrument repair, found by executor at eval-launch preflight
+      before any eval outcome existed: (1) gold_path and eval_sets.selfaware.path
+      used three ../ segments but run_eval.py resolves relative paths from archive/experiment/phase1/eval
+      (run_eval.py:49,153-159), which needs four; as committed the eval crashes at
+      load (FileNotFoundError, verified by resolution: 3-level lands on nonexistent
+      archive/datasets/). Fixed to four levels, matching the known-working GRPO-chain
+      eval configs. (2) Same repin absorbs the amendment-authorized fill of the dpo
+      arm adapter placeholder (AMENDMENT §10 item 1: placeholders to be filled once
+      the rerun adapters exist). No prompt, generation, scoring, or bootstrap field
+      changed.'
+  - file: configs/eval_selfaware_full_seed1_rerun_4b.yaml
+    old_sha256: 876842cea02295ddf327051ed28216ad3c28dc75d163383691482ff3e0395d40
+    new_sha256: 52e78ef1b6665fe9ca272871d83fa4014d8cffb5ef9ca9d3fd613462427d4244
+    date: '2026-08-07T18:22:59Z'
+    reason: 'Pre-run repin executing the eval-scoping ruling PRE-STATED in NOTEBOOK
+      ~12:05Z, before any KTO eval artifact existed: (1) fill arms[kto].adapter with
+      the real final_model path (run 20260807_124416; amendment-authorized placeholder
+      fill, §10.1); (2) REMOVE the dpo arm, whose eval already completed under config_sha
+      876842ce, so it cannot be nondeterministically regenerated. Prompt/generation/confidence/bootstrap/vllm/eval_sets
+      sections byte-untouched.'
+  - file: configs/eval_selfaware_full_seed1_rerun_4b.yaml
+    old_sha256: 52e78ef1b6665fe9ca272871d83fa4014d8cffb5ef9ca9d3fd613462427d4244
+    new_sha256: 244026a07d762a131aac594570f2e6c7b2ae4ccd46f75e4d48b41ab9cd026c80
+    date: '2026-08-07T20:21:58Z'
+    reason: 'Pre-run arm swap per pre-stated ~18:35Z rules: kto arm removed (eval
+      complete, cell closed), dpo_seed1_postfix_r2 arm added pointing at the cell-of-record
+      retrain run dir 20260807_192026; measurement-surface sections byte-untouched'
 inputs:
 - archive/docs/protocols/phase1/PROTOCOL.md
 - archive/experiment/phase1/run_records/dpo__4b__headline__seed1.json
@@ -54,5 +116,18 @@ inputs:
 - archive/experiment/phase1/eval/run_eval.py
 - archive/experiment/phase1/eval/config/eval_selfaware_full_local_4b.yaml
 - papers/paper-2-training-regimen/analysis/selfaware_seed_metrics.csv
-verdict: ''
-kg: []
+verdict: 'G1 PASS (pair, section 10.5 rule): both rerun arms INSIDE all eight cohort-derived
+  G1 bands. KTO arm 0.00/0.13/18.88/27.25; DPO cell of record is the recipe-honoring
+  r2 retrain, 0.10/0.17/13.86/19.97. The signed prediction is CONFIRMED: the dev-split-fix
+  dataset confound is provenance-only, both arms stay at the cohort abstention floor,
+  and headline conclusions are unchanged; the falsifier (any metric outside its band)
+  did not fire. G0 PASS both cells at trainer vintage 089fa9b7 on the post-fix builds;
+  the first DPO attempt (setup.pip skipped, trl 0.23.1) is a recorded deviated attempt,
+  inside bands, context only, and its 2-4 pp spread vs the r2 cell shows the trl pin
+  is behaviorally real. Per section 3 this experiment adopts nothing into the headline
+  matrix; per the G2 sign-time ruling it is a commensurability check against the cohort
+  bands, not single-variable attribution of the dataset change.'
+kg:
+- experiment:headline-seed1-postfix-rerun
+- mechanism:dev-split-fix-dataset-confound-is-provenance-only
+- mechanism:dpo-trl-version-pin-shifts-truthful-and-known-accuracy

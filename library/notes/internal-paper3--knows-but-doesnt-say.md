@@ -33,6 +33,15 @@ related:
 - '[[auroc]]'
 - '[[abstention]]'
 - '[[hallucination]]'
+- '[[ood-breadth-beyond-selfaware]]'
+- '[[rawbase-ambigqa-boundary-readout]]'
+- '[[ambigqa-internal-readout-does-not-transfer-from-selfaware]]'
+- '[[ambigqa-boundary-signal-is-pretraining-flavor-specific]]'
+- '[[pretrain-only-base-readout]]'
+- '[[knowledge-boundary-gate-and-veto-predate-post-training]]'
+- '[[flavor-atlas-rawbase]]'
+- '[[pretrained-base-carries-broad-overt-unanswerability-code]]'
+- '[[overt-vs-covert-unanswerability-is-the-boundary-not-flavor]]'
 relationships:
 - type: supports
   target: '[[verbalized-confidence-channel-bottleneck]]'
@@ -43,9 +52,82 @@ relationships:
   target_id: mechanism:caution-residual-ablation-relaxes-overrefusal-asymmetrically
   confidence: high
 - type: related_to
+  target: '[[ood-breadth-beyond-selfaware]]'
+  target_id: experiment:ood-breadth-beyond-selfaware
+  confidence: high
+  evidence:
+  - "experiments/ood-breadth-beyond-selfaware/AMENDMENT.md (resolves paper-3
+    limitations-burn-down item 26, manuscript lines 1027-1029; re-tests
+    Result 1's SelfAware-only internal-vs-stated headline gap on KUQ,
+    AmbigQA, and BIG-bench known-unknowns)"
+- type: related_to
+  target: '[[rawbase-ambigqa-boundary-readout]]'
+  target_id: experiment:rawbase-ambigqa-boundary-readout
+  confidence: medium
+  evidence:
+  - "experiments/rawbase-ambigqa-boundary-readout/AMENDMENT.md Reporting
+    (feeds the pretraining-origin scoping sentence for Result 1's internal
+    answerability axis)"
+- type: related_to
+  target: '[[ambigqa-internal-readout-does-not-transfer-from-selfaware]]'
+  target_id: mechanism:ambigqa-internal-readout-does-not-transfer-from-selfaware
+  confidence: high
+  evidence:
+  - "experiments/ood-breadth-beyond-selfaware/NOTEBOOK.md 2026-08-09T16:45Z
+    Stage 8 (G7 FAIL: Result 1's near-perfect SelfAware internal readout,
+    0.997, reads AmbigQA's boundary at only 0.63 held-out)"
+- type: related_to
+  target: '[[ambigqa-boundary-signal-is-pretraining-flavor-specific]]'
+  target_id: mechanism:ambigqa-boundary-signal-is-pretraining-flavor-specific
+  confidence: medium
+  evidence:
+  - "experiments/rawbase-ambigqa-boundary-readout/NOTEBOOK.md 2026-08-09T23:30Z
+    RESULT (the raw pretrained base reads AmbigQA at the same low level as
+    the trained checkpoints, scoping Result 1's axis as pretraining-installed
+    and SelfAware-flavored)"
+- type: related_to
   target: '[[internal-twosignal-readout--training-free]]'
   target_id: paper:internal-twosignal
   confidence: high
+- type: related_to
+  target: '[[pretrain-only-base-readout]]'
+  target_id: experiment:pretrain-only-base-readout
+  confidence: high
+  evidence:
+  - "papers/paper-3-knows-but-doesnt-say/manuscript.md line 1325
+    provenance table (Section 4 pretraining-origin test, four
+    pretrain-only bases at 0.997+; Section 8 origin claim downgraded to
+    open question at registration, answered here SUPPORTED 4/4)"
+- type: related_to
+  target: '[[knowledge-boundary-gate-and-veto-predate-post-training]]'
+  target_id: mechanism:knowledge-boundary-gate-and-veto-predate-post-training
+  confidence: high
+  evidence:
+  - "papers/paper-3-knows-but-doesnt-say/manuscript.md line 1325
+    provenance table (Section 4's pretraining-origin test)"
+- type: related_to
+  target: '[[flavor-atlas-rawbase]]'
+  target_id: experiment:flavor-atlas-rawbase
+  confidence: high
+  evidence:
+  - "papers/paper-3-knows-but-doesnt-say/manuscript.md lines 1056-1094,
+    Section 8 'Where the internal readout fails: covert ambiguity' (cites
+    experiments/flavor-atlas-rawbase/AMENDMENT.md directly for the M1/M4
+    numbers)"
+- type: related_to
+  target: '[[pretrained-base-carries-broad-overt-unanswerability-code]]'
+  target_id: mechanism:pretrained-base-carries-broad-overt-unanswerability-code
+  confidence: high
+  evidence:
+  - "papers/paper-3-knows-but-doesnt-say/manuscript.md lines 1065-1069
+    (six KUQ flavors separate at 0.98 to 0.999 with free cross-transfer)"
+- type: related_to
+  target: '[[overt-vs-covert-unanswerability-is-the-boundary-not-flavor]]'
+  target_id: mechanism:overt-vs-covert-unanswerability-is-the-boundary-not-flavor
+  confidence: high
+  evidence:
+  - "papers/paper-3-knows-but-doesnt-say/manuscript.md lines 1070-1075
+    ('The dividing line is therefore not flavor but overt versus covert')"
 - type: measures
   target: '[[auroc]]'
   target_id: metric:auroc

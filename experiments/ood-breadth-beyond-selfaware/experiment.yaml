@@ -1,0 +1,103 @@
+slug: ood-breadth-beyond-selfaware
+title: OOD breadth beyond SelfAware (behavior, stated-calibration, and AmbigQA internal
+  panel)
+type: eval
+status: resolved
+registered: true
+created_at: '2026-08-08T22:26:27Z'
+question: Do paper 3's SelfAware behavior and stated-calibration readings, and its
+  internal known-unknown readout, transfer to additional known/unknown surfaces (KUQ,
+  AmbigQA, BIG-bench known-unknowns) on the same eight checkpoints and the same pinned
+  instrument?
+prediction: Unknown-side abstention behavior transfers in rank order across arms (Spearman
+  rho >= 0.7 vs SelfAware on KUQ and AmbigQA), the stated-confidence collapse transfers
+  unchanged (every arm at emitted AUROC to appropriateness <= 0.65 and emitted std
+  <= 0.10 on AmbigQA), the internal known-unknown readout still separates the AmbigQA
+  answerability boundary (held-out AUROC >= 0.90 on both internal-panel arms), and
+  known-side over-refusal levels shift by more than 10 points on at least one surface
+  because the new known sides are drawn from different source corpora.
+falsifier: On AmbigQA, two or more of the eight arms show emitted AUROC to appropriateness
+  >= 0.70 together with emitted std > 0.15, which would make the stated channel surface-dependent
+  rather than structurally bottlenecked and would require paper 3's "the verbalized
+  number is a collapsed near-constant" sentence to be narrowed to SelfAware in writing.
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - screen_ood_surfaces.py
+  - gate_score.py
+  - internal_panel_probe_gate.py
+  - score_evidential_fivearm.py
+  - extract_A1.yaml
+  - extract_A4.yaml
+  - ../common/renders/ood_breadth_response_confidence_render.py
+  - ../../archive/experiment/phase1/eval/ood.py
+  - ../../archive/experiment/phase1/eval/config/eval_ood_breadth_clean_schema_sft_merged_seed1_local_4b.yaml
+  - ../../archive/experiment/phase1/eval/config/eval_ood_breadth_contrastive_schema_sft_merged_seed1_local_4b.yaml
+  - ../../archive/experiment/phase1/eval/config/eval_ood_breadth_contrastive_masked_schema_sft_merged_seed1_local_4b.yaml
+  - ../../archive/experiment/phase1/eval/config/eval_ood_breadth_clean_schema_sft_grpo_v2_seed1_corrected_base_local_4b.yaml
+  - ../../archive/experiment/phase1/eval/config/eval_ood_breadth_clean_schema_sft_grpo_v3_seed1_local_4b.yaml
+  - ../../archive/experiment/phase1/eval/config/eval_ood_breadth_grpo_v3_on_contrastive_sft_seed1_local_4b.yaml
+  - ../../archive/experiment/phase1/eval/config/eval_ood_breadth_grpo_v3_beta005_on_contrastive_sft_seed1_local_4b.yaml
+  - ../../archive/experiment/phase1/eval/config/eval_ood_breadth_probe_factual_schema_sft_merged_seed1_local_4b.yaml
+  pins:
+    cell.yaml: 0d9b52aa8aed399c9d3639d232464b2629cf0390b26acc2f09fc00b941e6ea5b
+    gates.yaml: 9bfdef9e85cd5dd2da27526c348fcb7f299ff3e1894e991c65343b9a95002008
+    screen_ood_surfaces.py: 50630020c0505417aa8a0f0c7f76356f289236bb9b9c21633b1d7b1cc657b149
+    gate_score.py: 8de8bb63485b65b245609919319ae9d6ce1b5c3fc196402bb2aac0738c160e80
+    score_evidential_fivearm.py: 013300c49dc504fdda710132f239d8f03c13a8c67f561be8775c9038296c557c
+    internal_panel_probe_gate.py: ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08
+    extract_A1.yaml: 472a449e8de3b4e9e577e43893bd73f37d9d8f730992965dbd5e9e55984b9e71
+    extract_A4.yaml: b77846db8463b9035d260395bb3f70a7aa8e6a0fac441903b04dc2ca1afc9829
+    ../common/renders/ood_breadth_response_confidence_render.py: bd399d4caf274961f245ea1f456cf64546db59d4b3f2a4b9bbb51fcb24374b4f
+    ../../archive/experiment/phase1/eval/ood.py: cfd6cf8be6c0a892056b4b339dd2b8725dc9050c5cf991d8ec184f2b216d7760
+    ../../archive/experiment/phase1/eval/config/eval_ood_breadth_clean_schema_sft_merged_seed1_local_4b.yaml: 55331127707290d3f3997641611d7fa16a4945f26f2564065ee90080db34de6b
+    ../../archive/experiment/phase1/eval/config/eval_ood_breadth_contrastive_schema_sft_merged_seed1_local_4b.yaml: 5c77de7669f87fceb107c353dfc5cfae1a68e28cce57e27a781c6a28e75222c1
+    ../../archive/experiment/phase1/eval/config/eval_ood_breadth_contrastive_masked_schema_sft_merged_seed1_local_4b.yaml: 9286bfa16c3d902af5bd06c62aea5a9c16e809180ae9877162ce335d06212ffd
+    ../../archive/experiment/phase1/eval/config/eval_ood_breadth_clean_schema_sft_grpo_v2_seed1_corrected_base_local_4b.yaml: 5e88a465fdd0990d2e088b2993ead3dd71b48873a2d825bf4b921d2d7c0cf160
+    ../../archive/experiment/phase1/eval/config/eval_ood_breadth_clean_schema_sft_grpo_v3_seed1_local_4b.yaml: d5e7aa9c10a578d565e4f0f191ffd31fb6c589f2948786ed8fa77e7bb6809695
+    ../../archive/experiment/phase1/eval/config/eval_ood_breadth_grpo_v3_on_contrastive_sft_seed1_local_4b.yaml: 9672acb844f8586a3f327604a174ffbbcc697a2a5ffa85e7bb1f23f3df606ac7
+    ../../archive/experiment/phase1/eval/config/eval_ood_breadth_grpo_v3_beta005_on_contrastive_sft_seed1_local_4b.yaml: 8f7b23d04859ad5ec8867d4a21e1e04d99415d4a2b49ff4a37e255a3a86437a1
+    ../../archive/experiment/phase1/eval/config/eval_ood_breadth_probe_factual_schema_sft_merged_seed1_local_4b.yaml: dff13b6b64e4e3561a2ad7f2b9edd297b110be53848346d46893da2284e0744f
+  runtime_image_digest: sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8
+  runtime_image_digest_note: local Image ID of mechinterp-runner:local (not registry-pushed);
+    applies to the stage-6 MechInterp.cli extract verb only, per the 2026-07-10 standing
+    directive in .skills/mechinterp-cells/reference/modal-launch.md. The eval-lane
+    stages 2-5 ran under cell.yaml lane.docker_digest as registered.
+  persistence:
+    screen_ood_surfaces.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 2.91
+    gate_score.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.22
+    internal_panel_probe_gate.py:
+      persistence: short-run
+      note: CPU probe-fit over saved safetensors; no natural checkpoint, rerun-from-scratch
+        on interruption
+    score_evidential_fivearm.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.35
+inputs:
+- datasets/kuq/knowns_unknowns.jsonl
+- datasets/kuq/dataset.md
+- datasets/selfaware/SelfAware.json
+- archive/experiment/phase1/eval/run_eval.py
+- archive/experiment/phase1/eval/scorers.py
+- archive/experiment/phase1/eval/ood.py
+- archive/experiment/phase1/eval/analysis/calibration_gap_report.py
+- archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml
+- papers/paper-3-knows-but-doesnt-say/manuscript.md
+- papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.py
+verdict: Falsifier not fired; behavior transfers in level but the internal known-unknown
+  readout does not transfer to AmbigQA (G7 FAIL both arms, 0.6279/0.6349 vs 0.90 floor)
+  and the stated-confidence collapse is not universal (G5 FAIL); G4 unadjudicable
+  after the registered G1 void of arms A2/A6/A7.
+kg:
+- experiment:ood-breadth-beyond-selfaware
+- mechanism:ambigqa-internal-readout-does-not-transfer-from-selfaware
+- mechanism:ambigqa-stated-confidence-collapse-not-universal-across-arms

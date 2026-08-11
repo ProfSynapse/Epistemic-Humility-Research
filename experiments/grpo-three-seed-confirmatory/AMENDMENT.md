@@ -1,8 +1,11 @@
 # GRPO Three-Seed Confirmatory Block
 
-Status: **DRAFT — NOT SIGNED. Do not launch.** Signing requires the PI's explicit
-approval and is performed by the lead. Nothing in this document authorizes a GPU
-launch, a commit of results, or a publication.
+Status: **SIGNED 2026-07-31** (`bin/exp sign`, PI approval "Sign as drafted" in
+session; merged to main in PR #379). Launch authorized per the NOTEBOOK launch
+record of 2026-07-31. Machine state in `experiment.yaml` is authoritative for
+signed status; this banner was corrected on 2026-07-31 after the sign tooling
+left the drafting text in place (bookkeeping correction, recorded in
+NOTEBOOK.md; no design content changed).
 
 Machine state lives in `experiment.yaml`; the pre-stated thresholds live in
 `gates.yaml`; the per-seed matrix lives in `cell.yaml`. Nothing is duplicated
@@ -593,11 +596,49 @@ approvals and are **out of scope**.
 
 | Predictor | Call |
 |-----------|------|
-| PI (user) | *(empty — filled at sign time)* |
-| orchestrator (lead) | *(empty — filled at sign time)* |
+| PI (user) | Both gates confirm; the GRPO abstention shift and the post-GRPO preference recovery both reproduce in seeds 2 and 3 |
+| orchestrator (lead) | G1 confirms in both seeds; G2 also confirms but is the likelier to drop a seed (seed-1 effect only -2.99 pp over-refusal); if anything fails it is G2's over-refusal direction on one seed, not G1 |
+
+Recorded at sign time in `experiment.yaml` (authoritative); this table was
+backfilled from the manifest on 2026-07-31 after the sign tooling left the
+placeholders in place.
 
 ## Outcome
 
-Filled at resolve. Record the G1/G2 results per seed, the three-seed intervals,
-the confidence-collapse status, and the one-sentence verdict that also goes into
-`verdict:` in the manifest.
+Resolved 2026-08-07 (verdict stamped in `experiment.yaml`; full record in
+`NOTEBOOK.md`, red-team pass and post-resolution addendum). This section was
+back-filled 2026-08-08 during the paper-4 review pass; the resolve step had
+stamped the manifest but left this placeholder in place, a bin/exp tooling gap
+already registered in the NOTEBOOK.
+
+- G1 PASS at both new seeds: the GRPO abstention shift replicates.
+  answer_on_unknown delta -4.36 pp (seed 2) and -6.78 pp (seed 3) against the
+  registered floor of 3.0. G1 is computed over the 1032 unknown-labeled rows
+  only and is structurally immune to the contamination finding below.
+- G2 PASS at both new seeds: post-GRPO DPO over-refusal recovery -0.77 pp
+  (seed 2) and -1.84 pp (seed 3), with unknown reopening -0.39 / +0.29 pp
+  against the 2.0 cap. Direction-only by design; an 18-row and 43-row effect,
+  reported with counts, and stratum-robust under the contamination split.
+- G3 delivered: three-seed mean [min, max] intervals for all five
+  GRPO-touching arms (table in NOTEBOOK.md, 2026-08-07 entry). Seed-1 raw
+  metrics.json files are absent from disk and git history; seed-1 G3 inputs
+  rest on the committed deterministic aggregate CSV, recorded as a limitation.
+- G4 NOT TRIGGERED: distinct stated_confidence values range 4 to 85 across
+  arms (max clean_schema_sft_merged_seed3 = 85) against the >200 trigger leg.
+  Confidence stays collapsed exactly as pre-stated; nothing routes to a new
+  registration.
+- G5 delivered (non-gating): KTO ordering pair holds direction at all three
+  seeds (-5.78 / -3.13 / -2.49). The DPO pair sign-reverses at both new seeds
+  (-1.67 / +0.17 / +2.18) and is barred from being reported as a finding, as
+  the amendment pre-declared.
+- Standing limitation (red-team Finding 1, MAJOR, accepted): 117 distinct
+  SelfAware known questions appear verbatim in all four training files, plus
+  11 more in the GRPO dev split only (128-union, all known, zero unknown).
+  Absolute known-row levels carry this caveat; the clean-subset sensitivity
+  (n=3241, `analysis/clean_subset_sensitivity.py`) leaves every gate-shaped
+  delta and every unknown-row metric unchanged.
+
+One-sentence verdict (as stamped in the manifest): Replicated. Both gates
+confirm at both fresh seeds, the three-seed intervals are delivered for all
+five GRPO-touching arms, confidence collapse does not trigger G4, and the
+contamination limitation is recorded against absolute known-row levels.

@@ -1,0 +1,14 @@
+# flavor-atlas-rawbase extraction recipe (kuq). DRAFT until bin/exp sign.
+# Schema: synaptic-tuner MechInterp.config.ExtractConfig. Model/revision are
+# CLI args to mechinterp extract (see NOTEBOOK launch entry). layers is
+# OMITTED deliberately: all 37 hidden states are captured (AMENDMENT Design,
+# gates.yaml fg1). Anchor family only, forward-only read, max_new_tokens 1 is
+# the mechanical "answered" gate satisfaction as in the prior two cells.
+
+rows_path: experiments/flavor-atlas-rawbase/analysis/panels/kuq_panel.jsonl
+output_dir: experiments/flavor-atlas-rawbase/analysis/extraction/kuq
+families:
+  - anchor
+max_new_tokens: 1
+render_fn: ood_breadth_response_confidence_render:render
+content_end_fn: ood_breadth_response_confidence_render:content_end

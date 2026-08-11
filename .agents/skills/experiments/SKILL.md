@@ -157,6 +157,22 @@ described in the mechinterp-cells `reference/organization.md` "Kill-resume
 smoke drill" section: a validator or grep check that `RunLog` is imported is
 not evidence that resume actually works.
 
+Before signing ANY cell, verify the registered real-run entry point actually
+exists and reaches the real path, not only that the smoke passes. A smoke
+suite exercises component functions; it structurally cannot detect that the
+orchestration branch of `main()` is a stub or a refusal placeholder, because
+the smoke takes its own branch. A cell in this program was signed and merged
+with every component function smoke-covered while `main()` contained only the
+`--smoke` branch and a hard-coded refusal; the defect surfaced only at
+execution time. The sign-off check is: run the registered entry point in its
+real mode (a `--dry-run` that resolves every real input and prints the
+execution plan without computing is the standard shape; every new
+orchestrator module should ship one), or at minimum read `main()` end to end
+and confirm a branch performs the registered stages. Library-only modules
+(no `if __name__` guard, no CLI) count as unreachable unless a pinned driver
+module demonstrably invokes them for real data; check that the driver exists
+before signing, not after.
+
 ## Lifecycle
 
 ```
@@ -230,6 +246,39 @@ via their `inputs:` list. The promoted copy keeps provenance: record where it ca
 from (the origin experiment slug and the path it was generated at) in a short note
 beside it. This keeps cross-experiment dependencies explicit and prevents an
 experiment from reaching into a sibling's private directory.
+
+## Terminology annotations on signed docs (semantic renames)
+
+When a program-wide terminology ruling (recorded in
+`papers/common/terminology.md`) retires a term that appears in an already
+signed experiment's working label or prose, the signed text is NEVER
+rewritten and nothing is ever renamed on disk. The rename is semantic only
+and is recorded additively:
+
+1. Precondition: the ruling exists in `papers/common/terminology.md` first.
+   That file is the sole source of truth for how retired terms render in
+   prose; do not invent a rendering inside one experiment.
+2. Append a dated `## Terminology annotation (additive, YYYY-MM-DD)` section
+   to the experiment's `AMENDMENT.md`, stating: which working label predates
+   which ruling, the operational prose rendering, and the sentence "Nothing
+   else changes: the slug, directory, filenames, config keys, gate
+   definitions, question, prediction, falsifier, and every registered
+   constant remain verbatim as signed. This annotation is semantic only and
+   moves no goalpost."
+3. Add a matching dated NOTEBOOK.md entry recording who directed it and that
+   no pinned file changed (AMENDMENT.md is not sha-pinned, so no repin is
+   involved; `bin/exp validate` must stay OK).
+4. Never touch the `question`, `prediction`, `falsifier`, or `title` fields
+   in `experiment.yaml`, and never edit the signed Question / Prediction /
+   Falsifier / Gates prose. If a rename cannot be expressed without touching
+   those, it is not a semantic change and requires a signed revision with
+   changelog and PI approval instead.
+5. Slugs, directories, filenames, and config keys are provenance and stay
+   verbatim forever, in citations too; only running prose renders the new
+   term.
+6. Lead executes with explicit PI direction; the change reaches main through
+   a normal PR the PI merges (for a running cell, it may ride the results PR
+   and must be noted in the NOTEBOOK when added).
 
 ## Command reference
 

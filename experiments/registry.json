@@ -553,6 +553,269 @@
     },
     {
       "checkpoint": {
+        "base_form": "clean-SFT merged-16bit, bf16, no quantization",
+        "base_model": "unsloth/Qwen3-4B",
+        "reference_substrate": {
+          "repo": "unsloth/Qwen3-4B",
+          "revision": "64033659d5caf1b8ed7f929b29de705e93a4d468",
+          "role": "G4 interpretability anchor, raw base, no adapter"
+        },
+        "repo": "professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora",
+        "revision": "8914081dfcec4f1f025f2dbe4195d4f7aa8d210e"
+      },
+      "created_at": "2026-08-08T22:27:53Z",
+      "falsifier": "Any registered site and position on the trained checkpoint clears G1, an ADJUDICABLE G2, and G3 together, at a dose drawn from the registered ladder. One qualifying cell is sufficient, because the statement being tested is an impossibility claim.",
+      "inputs": [
+        "experiments/doubt-gated-caution-tighten/AMENDMENT.md",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json",
+        "experiments/j-space-layer-contrast-rep2-multisource/AMENDMENT.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md",
+        "experiments/ungated-vs-gated-dose-matched/AMENDMENT.md",
+        "experiments/doubt-regulated-caution/AMENDMENT.md",
+        "experiments/ao-propensity-regulated-caution/AMENDMENT.md",
+        "experiments/selected-setpoint-regulator/AMENDMENT.md",
+        "experiments/write-direction-naming-battery/AMENDMENT.md",
+        "experiments/diag-item11-batched-steering-equivalence/experiment.yaml",
+        "experiments/j-space-cross-family-layer-contrast/mine_eval_pool.py",
+        "docs/atlas/family-layer-map.md",
+        "experiments/divergent-pool-own-readout/analysis/phase1-migrated/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl",
+        "experiments/j-space-layer-contrast-rep2-multisource/analysis-committed/multisource_pool_manifest.json",
+        "experiments/j-space-layer-contrast-rep2-multisource/analysis-committed/full_summary.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs23/c_hat_hs23.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs23/u_d_hs23.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs29/c_hat_hs29.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs29/u_d_hs29.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json"
+      ],
+      "instrument": {
+        "concurrency": "one GPU job at a time",
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "feasibility_probe.yaml"
+        ],
+        "lane": "local_3090",
+        "modules": [
+          "probe_common.py",
+          "probe_stage_a.py",
+          "probe_stage_b.py",
+          "probe_census_extension.py",
+          "adjudicate_gates.py",
+          "alin_profile.py",
+          "build_directions.py",
+          "build_random_directions.py",
+          "docker_launch.sh",
+          "dose_calibrate.py",
+          "extract_anchor.py",
+          "gate_scoring.py",
+          "grader_sweep.py",
+          "materialize_configs.py",
+          "mine_pool.py",
+          "render_sweep.py",
+          "run_controls.py",
+          "run_held_out.py",
+          "run_pairs.py",
+          "run_sweep.py",
+          "split_fit_heldout.py",
+          "sweep_lib.py",
+          "write_smoke.py",
+          "materialize_rows_with_text_raw_base.py"
+        ],
+        "persistence": {
+          "adjudicate_gates.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "alin_profile.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "build_directions.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "build_random_directions.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "docker_launch.sh": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "dose_calibrate.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "extract_anchor.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "gate_scoring.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "grader_sweep.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "materialize_configs.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "materialize_rows_with_text_raw_base.py": {
+            "measured_smoke_wall_clock_s": 0.5,
+            "note": "launch-prep staging: deterministically reconstructs rep2 row_key to question text join for the 221-row raw_base anchor pool; hard-fails on any count/source/category mismatch vs the rep2 committed manifest; writes only gitignored analysis/rows_with_text_raw_base.jsonl",
+            "persistence": "short-run"
+          },
+          "mine_pool.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "probe_census_extension.py": {
+            "checkpoint_path": "experiments/caution-install-bounded-site-sweep/analysis/probe_census_generations_private.jsonl",
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "incremental"
+          },
+          "probe_common.py": {
+            "measured_smoke_wall_clock_s": 0.1,
+            "note": "import-only helpers shared by the probe stages",
+            "persistence": "short-run"
+          },
+          "probe_stage_a.py": {
+            "measured_smoke_wall_clock_s": 60,
+            "persistence": "short-run"
+          },
+          "probe_stage_b.py": {
+            "checkpoint_path": "experiments/caution-install-bounded-site-sweep/analysis/probe_generations_private.jsonl",
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "incremental"
+          },
+          "render_sweep.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "run_controls.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "run_held_out.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "run_pairs.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "run_sweep.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "split_fit_heldout.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "sweep_lib.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          },
+          "write_smoke.py": {
+            "measured_smoke_wall_clock_s": 0.17,
+            "note": "sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules",
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "adjudicate_gates.py": "5813ae3e1adabe9155053677a579b1cf358309b72745941d374623ed0af32c21",
+          "alin_profile.py": "fee9888bce2f3284b7308ee57c98e5338a7160f72da85580d9794e04885fbfe9",
+          "build_directions.py": "0b8e989201371518c8a392359922022dd5300ab3f87b84cdbbb8f6d81d54da97",
+          "build_random_directions.py": "0e26b1be448aa587d42b760af40b33ce4cca3f2569f3e93cd9d2a782ced5bcb5",
+          "cell.yaml": "b118c1c4a045ca3230dbe8260f0a1d4e43929c0a81abff842352303cf47fb0c2",
+          "docker_launch.sh": "2efd1f8982844bd8fc2857214ced7b6252ac7bf6a3cfa1356baf63574b79733b",
+          "dose_calibrate.py": "1eb61de617bdc8f666b1c78b9b9cfc2014b87d7144bf4d6deca40d0dc05a81b9",
+          "extract_anchor.py": "af46bd30d57233745d34b3e6e39acf0e2ad0a804cfae5b7a61015d8696b692f9",
+          "feasibility_probe.yaml": "c1e5ed87b36e5a175e3a637a6051f2f6445cfdf0471bfecdb6d6175f1e3f7081",
+          "gate_scoring.py": "946bcc1c93f7d068b6ca8ba975e3eca77d5d15c013db442978e229af5bd21aaa",
+          "gates.yaml": "ea176dac3635efd54cd346949da776db4f0996ef6570a5a950c03bf2e252a93d",
+          "grader_sweep.py": "4ed035339a0408640eeade8b4bf65a9eb8d6513909883fcb2942e4225eb266d7",
+          "materialize_configs.py": "01fae475fda4b0be869be2ba6c240377feffcbc6e2cfa70417b2f0a39550e1e4",
+          "materialize_rows_with_text_raw_base.py": "04726d66aa399a15a8ca0848bf714444e68ac5dec142beb6a618e02868e51c94",
+          "mine_pool.py": "46f6a51701788c3f71026401d3edbb39de5a6248ebbef8b4662d6365891a59de",
+          "probe_census_extension.py": "7c5d4a8a44fdf0dd3788b12dfc3d103c4ccdfad7aa58f1f3014586389596ce28",
+          "probe_common.py": "9ede6b49fb10c362557b6b4cb11df1d70e1f3d8902a818796cd80c5b5cd49de7",
+          "probe_stage_a.py": "3d5e2f4db244ad47477dad6cae31452594e28b331a4ca532ccc39f640bf52417",
+          "probe_stage_b.py": "a139b16223d30fa0214c8efbc32562b367d0ef15084a8b8c2f9c1e520eb94c9b",
+          "render_sweep.py": "2dbca966807da00c35085e5c7d598a390e9defd0e0cb0e3bd87731bdc9eeef39",
+          "run_controls.py": "48d2f0fd45b6cc3abce16f2607681edfe340b940fe27df5a7ba1fe3330587188",
+          "run_held_out.py": "d006ce42e8dd00bfc428474f12e4276ef190ba3042be5016a273aa0945965250",
+          "run_pairs.py": "f9a438b8a5f42d00dd7beedb2fd5d95f579c3e0ed98ccc86d8cce15343867a8c",
+          "run_sweep.py": "ab6a4d74bca82df5aca1fed98dc8683dab682b8acd40babdf88e9818055a0e6a",
+          "split_fit_heldout.py": "f550c5a087287b80f450002db30aaf6197b76e2d8193b4df7a658a04f43f22af",
+          "sweep_lib.py": "e6bc601866bf7d96cd36c7d1d4246313176b7334f36f05e0190a5fba82b0dd60",
+          "write_smoke.py": "a022a71b118a848dd05eb6bc5300a92f540b4e0e7631075f88b2ba5babc9ac34"
+        },
+        "repins": [
+          {
+            "date": "2026-08-10T13:57:05Z",
+            "file": "cell.yaml",
+            "new_sha256": "b118c1c4a045ca3230dbe8260f0a1d4e43929c0a81abff842352303cf47fb0c2",
+            "old_sha256": "d0ff8c9803a9f3b8d42abf16d4a89f238340d54d1220e2ce48dd05527dcfbb99",
+            "reason": "F25: trained-substrate base_model named the raw lineage repo while base_form said clean-SFT merged-16bit; corrected to the actual load target (the merged clean-SFT repo at its pinned revision, matching the GPU-verified feasibility-probe recipe in NOTEBOOK.md). Identifier defect fixed before any sweep data exists; no threshold, band, seed, or gate touched."
+          },
+          {
+            "date": "2026-08-10T15:18:14Z",
+            "file": "gates.yaml",
+            "new_sha256": "ea176dac3635efd54cd346949da776db4f0996ef6570a5a950c03bf2e252a93d",
+            "old_sha256": "47308ed0ac9aadad37356c9bd945fe44444ae293c6a6c69872beba5083b5646a",
+            "reason": "G0b quantity wording said adjacent-site cosine, which is not the registered seam diagnostic (the reference's 1.000000 comes from comparing the same hidden state under both cache conditions) and induced a wrong implementation caught in re-review. Wording corrected to the cache-condition-invariance quantity the harness now computes; threshold 0.999 and direction unchanged."
+          },
+          {
+            "date": "2026-08-10T16:10:00Z",
+            "file": "materialize_rows_with_text_raw_base.py",
+            "new_sha256": "04726d66aa399a15a8ca0848bf714444e68ac5dec142beb6a618e02868e51c94",
+            "old_sha256": "none (new module, added post-signing pre-run)",
+            "reason": "new launch-prep staging module added post-signing, pre-run: materializes the registered raw_base anchor input analysis/rows_with_text_raw_base.jsonl from rep2 committed manifest plus git-tracked datasets. Pure input staging, no gate quantity or protocol constant involved; verified by exact match of exclusion_resolution_counts, per-source counts, and category_canon against rep2 manifest."
+          }
+        ],
+        "runtime_image_digest": "sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772"
+      },
+      "kg": [],
+      "posture": "exploratory",
+      "prediction": "The null survives on the trained checkpoint. No registered site and position clears G1 on the trained lineage, while the raw-base anchor arms at hs23 and hs29 reproduce their published rates inside their Wilson intervals. If anything clears G1, it is an in-band site between hs13 and hs23 rather than hs34.",
+      "question": "Does the raw-base answerability-gated caution snap, the one mechanism in this program with a governed installation success, transfer to the trained clean-SFT to GRPO-v2 checkpoint; and if not, does a bounded search over seven write sites, two write positions, an eight-rung ratio-normalized dose ladder, and three magnitude-matched two-site combinations find a site where caution can be installed on genuine unknowns?",
+      "registered": true,
+      "sign_blocked_on": "CLEARED 2026-08-09T02:10Z: P2/P3/P4 passed at the probe (NOTEBOOK 2026-08-09T00:15:59Z); P1 satisfied by count under the pre-stated census criterion (NOTEBOOK census adjudication entry: 260 actual confabs over the full 3496 >= 250 registered floor). Signing authorized.",
+      "slug": "caution-install-bounded-site-sweep",
+      "status": "signed",
+      "tier": 2,
+      "title": "Bounded caution-install site sweep on the trained Qwen3-4B lineage",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
@@ -1902,6 +2165,361 @@
     },
     {
       "checkpoint": {
+        "base_form": "pretrain-only base (pt), no adapter, bf16",
+        "repo": "google/gemma-4-E4B",
+        "revision": "411aa17b749aa952df1359d2dcea73917a544d9a"
+      },
+      "created_at": "2026-08-10T14:35:09Z",
+      "falsifier": "F1 (Clause A does not replicate): with GG0-GG4 passing, any one of the twelve primary cells reads below 0.90. F2 (Clause B does not replicate): with GG0-GG4 passing, AmbigQA reaches >= 0.90 at any hidden state. F3 (style artifact): with the residualization controls passing, all six flavors fall to <= 0.75 at both legs after residualization. F4 (transfer does not replicate): any off-diagonal cell among the six flavors and SelfAware reads below 0.75.",
+      "inputs": [
+        "experiments/flavor-atlas-rawbase/AMENDMENT.md",
+        "experiments/flavor-atlas-rawbase/gates.yaml",
+        "experiments/flavor-atlas-rawbase/analysis/panels/kuq_panel.jsonl",
+        "experiments/flavor-atlas-rawbase/analysis/panels/ambigqa_panel.jsonl",
+        "experiments/flavor-atlas-rawbase/analysis/panels/selfaware_panel.jsonl",
+        "experiments/pretrain-only-base-readout/AMENDMENT.md",
+        "experiments/gemma4-e4b-kv-seam-quarantine/extract_anchor.py",
+        "experiments/gemma-4-e4b-family-atlas/AMENDMENT.md",
+        "experiments/family-atlas-surface-residualization-control/reanalyze_surface_residualization.py",
+        "experiments/common/readouts/amendment_x_cross_model_extract.py",
+        "experiments/common/renders/ood_breadth_response_confidence_render.py",
+        "experiments/ood-breadth-beyond-selfaware/internal_panel_probe_gate.py"
+      ],
+      "instrument": {
+        "concurrency": "one GPU job at a time; four sequential extract verbs (kuq, ambigqa, selfaware, dual-render control subsample)",
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "lane": "local_3090",
+        "launch_gate": "GPU may not run until the lead relays PI launch approval AND the Qwen-side surface control (flavor-atlas-surface-control-confirmatory) has resolved. No GPU verb, no docker run, and no weight download were issued while authoring this scaffolding.",
+        "modules": [
+          "render_gemma.py",
+          "extract_anchor_gemma.py",
+          "build_flavor_panels.py",
+          "flavor_probe_sweep.py",
+          "surface_residualization.py",
+          "gate_adjudicator.py",
+          "kv_seam_paired_smoke.py",
+          "test_leg_b_selection_logic.py",
+          "smoke_all.py",
+          "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py",
+          "run_cell.py"
+        ],
+        "persistence": {
+          "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py": {
+            "measured_smoke_wall_clock_s": 7.424,
+            "note": "pinned item-26 probe protocol imported unchanged, exercised transitively by smoke_all.py's probe-sweep and residualization checks (both call _cv_auroc_with_oof).",
+            "persistence": "short-run"
+          },
+          "build_flavor_panels.py": {
+            "measured_smoke_wall_clock_s": 0.001,
+            "note": "exercised by smoke_all.py::_panel_builder (committed, reproducible). verify_and_copy exercised directly with a self-computed sha256 (positive case) and both a sha256 mismatch and a missing-source-file negative case, plus counts_summary sanity on synthetic rows. The real upstream flavor-atlas-rawbase panels are gitignored and not present in every checkout, so main()'s full run against the real pinned shas is not exercised by the smoke; the reuse-and-verify mechanism it depends on is.",
+            "persistence": "short-run"
+          },
+          "extract_anchor_gemma.py": {
+            "measured_smoke_wall_clock_s": 3.3,
+            "note": "exercised by smoke_all.py::_extractor (committed, reproducible). CPU smoke with a mocked model/tokenizer over a synthetic panel (both render arms), covering primary+control extraction, per-row safetensors schema (L0..L42, hidden width 2560), kill-resume (missing rows re-extracted, present rows left alone), render-fingerprint-change forcing a fresh restart, and the GG0 hard-stop on a wrong hidden-state count. No GPU verb, no docker run, no weight download was issued; the real model load and captures still require the live GPU run.",
+            "persistence": "short-run"
+          },
+          "flavor_probe_sweep.py": {
+            "measured_smoke_wall_clock_s": 9.8,
+            "note": "exercised by smoke_all.py::_gg1_cpu_gate and _probe_sweep_end_to_end (committed, reproducible). End-to-end smoke over synthetic panels/activations (43 layers, small hidden dim for speed) covering G1/G2/G3/G4, the dual-leg decision (Leg A hs24 + Leg B nested split-half) for all six flavors plus the pooled and selfaware reference rows, the transfer matrix, and G6 on a mixed known/unknown control subsample. require_forward_use_cache (GG1 CPU-side gate) separately smoked for both hard-stop and pass cases. Full production sweep over 43 layers x 11657 primary rows + 1800 control rows is budgeted tens of minutes to a small number of hours CPU per AMENDMENT.md compute budget (draft estimate, not re-measured here).",
+            "persistence": "short-run"
+          },
+          "gate_adjudicator.py": {
+            "measured_smoke_wall_clock_s": 0.029,
+            "note": "exercised by smoke_all.py::_gate_adjudicator (committed, reproducible). GG0/GG1/GG4 pass+fail branches, P1/F1 and P2/F2 adjudication on synthetic dual-leg/curve data, and the fail-closed adjudicate() propagation (a failing GG0 forces P1/P2/P3 to INDETERMINATE rather than being silently skipped or scored) all smoked and passing.",
+            "persistence": "short-run"
+          },
+          "kv_seam_paired_smoke.py": {
+            "measured_smoke_wall_clock_s": 0.05,
+            "note": "exercised by smoke_all.py::_kv_seam_subprocess, which invokes `python3 kv_seam_paired_smoke.py --mode=synthetic` as a subprocess of the exact committed CLI command (committed, reproducible). --mode=synthetic self-check passes on all three named fixture profiles (documented signature, all-identical, halt-early- divergence). --mode=live correctly refuses to run (no GPU runtime available in this pass); it must be run for real before any production capture.",
+            "persistence": "short-run"
+          },
+          "render_gemma.py": {
+            "measured_smoke_wall_clock_s": 15.4,
+            "note": "exercised by smoke_all.py::_render_primary, _render_subsample, _render_control (committed, reproducible; see smoke_all.py entry below). primary (k-shot) render is a pure string build; the chat-template control loads the google/gemma-4-E4B-it tokenizer from the local HF cache (local_files_only, no network), which dominates wall clock, and is SKIPPED with an explicit marker if that cache entry is absent. Also covers the deterministic 1800-row dual-render subsample selector (200/flavor x 6 + 600 known) for determinism and exact counts.",
+            "persistence": "short-run"
+          },
+          "run_cell.py": {
+            "measured_smoke_wall_clock_s": 45.06,
+            "note": "CPU-side read-chain orchestrator (stages 1-5: panel verify, probe sweep, residualization, gate adjudication, containment+write); never runs a GPU verb; wall clock measured from the smoke suite fixture drive of stages 2-5; real run reruns from scratch on interruption",
+            "persistence": "short-run"
+          },
+          "smoke_all.py": {
+            "measured_smoke_wall_clock_s": 18.0,
+            "note": "the committed, single reproducible entry point for every smoke claim above. Replay: `cd experiments/flavor-atlas-gemma-pt-confirmatory && python3 smoke_all.py`. Run twice from the committed tree (fresh process each time) to confirm determinism: both runs 11 passed, 0 skipped, 0 failed (wall clock ~18s first run, ~17s second run, dominated by the control-render tokenizer load from the local HF cache). Exit code 0 iff zero FAILs; SKIPPED (control-render only, conditional on local -it tokenizer cache) is never counted as passing. Superseded the prior ad-hoc interactive smokes, which were not replayable from the committed tree. Full per-check results and exact commands recorded in NOTEBOOK.md under the 2026-08-10 entry \"committed smoke runner (smoke_all.py) + reproducibility fix\".",
+            "persistence": "short-run"
+          },
+          "surface_residualization.py": {
+            "measured_smoke_wall_clock_s": 0.76,
+            "note": "exercised by smoke_all.py::_residualization (committed, reproducible). build_surface_matrix, crossfit_ridge, activation_oof_r2, permutation_negative_control, and planted_channel_positive_control all smoked on synthetic data engineered so each control's pass/fail direction is meaningful (a surface matrix independently correlated with y for the negative control smoke; a surface matrix genuinely label-correlated for the positive-control smoke, since the plant is a linear projection of the surface matrix and needed real surface-label correlation to be detectable). smoke_all.py asserts the registered gate bounds (raw AUROC >= 0.90, residualized AUROC <= 0.75) rather than an exact printed value, since the numbers are seed-stable but not bitwise pinned across sklearn/numpy versions; both committed runs landed at raw=0.9954, residualized=0.2375, same seed, same result both times.",
+            "persistence": "short-run"
+          },
+          "test_leg_b_selection_logic.py": {
+            "measured_smoke_wall_clock_s": 0.05,
+            "note": "exercised by smoke_all.py::_leg_b_subprocess, which invokes `python3 test_leg_b_selection_logic.py` as a subprocess of the exact committed CLI command (committed, reproducible). Gate-math assertion. Engineered synthetic selection/evaluation curves where the registered (select-on-selection-split, report-on-evaluation-split) formula and a plausible-wrong circular formula (select directly on the evaluation split) disagree on both the chosen layer and the reported AUROC; confirms the registered, non-circular formula is what flavor_probe_sweep.py implements.",
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py": "ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08",
+          "build_flavor_panels.py": "b6c40544663c35e03639041ccd2edc30d434df9f46e526f166dc882dbd4c9d2d",
+          "cell.yaml": "cba032b74068163b7483c5fec742202c538d107002bf1d96e95d557613ecd363",
+          "extract_anchor_gemma.py": "bb603ff829faa2fae4134cb700485b478c09c86333eca7d9ca3b727f79460985",
+          "flavor_probe_sweep.py": "130dc9ac2a0e40bed7cfc3abbfa21961f202c47251c4db165086138666455820",
+          "gate_adjudicator.py": "271bb129348297be21a27667e30b8d7c8f5776edde0696903c34ceb6733fba62",
+          "gates.yaml": "05584fd81579e37d1f2ab5d71f35a41d1d82fd121215bff46f51bacc45703313",
+          "kv_seam_paired_smoke.py": "b39e1cd0ebcff3745f28f9a3295288e1a302912281cb9ca9ef715ebd5ae694cd",
+          "render_gemma.py": "d106276fff68f3bb75f8922438fbaeca8ed8f9f7eaefa4ddcad3bf0095b80dcb",
+          "run_cell.py": "02066253cd57369ba34068990bebdd5cf222c9bbe19afa8eea3ecfb9845a77cc",
+          "smoke_all.py": "7998770a086105970a35613ef045d1371bbb5c54aaab00cb8d8918321a3ec263",
+          "surface_residualization.py": "91593c37c034872e3d976ad4356431766c0b2709234fcde1bbf9010299793102",
+          "test_leg_b_selection_logic.py": "f68492d73ab27af3159b7bb99258d780741053890ad9178275e253f37eef0563"
+        },
+        "repins": [
+          {
+            "date": "2026-08-10T16:45:00Z",
+            "file": "run_cell.py",
+            "new_sha256": "02066253cd57369ba34068990bebdd5cf222c9bbe19afa8eea3ecfb9845a77cc",
+            "old_sha256": "none (new module, added post-signing pre-launch)",
+            "reason": "Instrument-completeness repair: surface_residualization.py and gate_adjudicator.py were library-only modules with no registered executable driver, so stages G5/GG-adjudication had no real-run path. run_cell.py is the CPU-side orchestrator driving the registered read chain end to end (subprocessing the pinned build_flavor_panels.py and flavor_probe_sweep.py CLIs verbatim, then residualization at the probe-selected layers and gate adjudication over real readouts, counts-only committed output behind gg6 containment) plus a --dry-run existence check. Never wraps or reimplements extract_anchor_gemma.py; extraction verb prohibition unchanged. No gate quantity, threshold, or registered constant changed; cell is launch-gated and nothing has run."
+          },
+          {
+            "date": "2026-08-10T16:31:29Z",
+            "file": "smoke_all.py",
+            "new_sha256": "7998770a086105970a35613ef045d1371bbb5c54aaab00cb8d8918321a3ec263",
+            "old_sha256": "6b280fc2c7bafb31db74ebc70ad3345a3ec0de41df9ab5e686875d0ed8d7c7a9",
+            "reason": "Smoke suite extended with a 12th check driving run_cell.py's real stage 2-5 orchestration end to end on synthetic fixtures at near-real minimums (2200-row KUQ panel), asserting real gate branches (gg1/gg3 pass, gg0 correctly fails on synthetic pins, P1/P2 INDETERMINATE under fail-closed propagation), non-trivial residualization numbers, complete committed output, gg6 containment pass, and no question-text leak. Existing 11 checks unchanged (additions-only diff). Companion to the run_cell.py addition; a stubbed orchestration can no longer pass the smoke."
+          }
+        ],
+        "runtime_image_digest": "sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8",
+        "runtime_image_digest_note": "confirmed at signing via `docker image inspect mechinterp-runner:local` (read-only), matching char for char the digest the three most recent flavor cells pin, per the 2026-07-10 standing directive. Governs the four extract verbs (extract_anchor_gemma.py, never mechinterp extract) once GPU launch is approved."
+      },
+      "kg": [],
+      "posture": "exploratory",
+      "prediction": "P1 (Clause A, primary): all six KUQ flavors reach held-out out-of-fold AUROC >= 0.90 at hidden state 24 AND under the nested split-half selection leg, for all twelve primary cells. P2 (Clause B, primary): AmbigQA stays <= 0.75 at every one of the 43 hidden states. P3 (transfer, primary): every off-diagonal transfer-matrix cell among the six KUQ flavors and SelfAware reads >= 0.75, and every cell involving AmbigQA reads <= 0.75. P4 (style control, secondary, banded): after cross-fitted surface residualization, all six flavors retain AUROC >= 0.90 at both legs. P5 (reference): SelfAware reaches >= 0.90 at both legs.",
+      "question": "Does the overt-unanswerability flavor separation and the overt-vs-covert boundary that flavor-atlas-rawbase found on unsloth/Qwen3-4B raw base replicate on a second, fresh substrate -- google/gemma-4-E4B pretrain-only base -- using the same panels and probe protocol?",
+      "registered": true,
+      "slug": "flavor-atlas-gemma-pt-confirmatory",
+      "status": "signed",
+      "tier": 3,
+      "title": "Second-substrate confirmatory: overt-unanswerability flavor separation on pretrain-only Gemma",
+      "type": "probe-fit",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "base_form": "raw pretrained base, no adapter, bf16",
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "64033659d5caf1b8ed7f929b29de705e93a4d468"
+      },
+      "created_at": "2026-08-10T00:00:14Z",
+      "falsifier": "F1 (universal code): every flavor including both ambiguity surfaces reaches >= 0.90 at some layer AND every off-diagonal transfer-matrix cell reads >= 0.85. F2 (dataset-specific): no KUQ flavor reaches 0.75 at any layer. Any other pattern is a mixed atlas, reported descriptively with no single-number verdict.",
+      "inputs": [
+        "experiments/rawbase-ambigqa-boundary-readout/AMENDMENT.md",
+        "experiments/ood-breadth-beyond-selfaware/AMENDMENT.md",
+        "experiments/ood-breadth-beyond-selfaware/internal_panel_probe_gate.py",
+        "datasets/selfaware/SelfAware.json",
+        "datasets/kuq/knowns_unknowns.jsonl",
+        "experiments/common/renders/ood_breadth_response_confidence_render.py"
+      ],
+      "instrument": {
+        "concurrency": "one GPU job at a time; three sequential extract verbs",
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "lane": "local_3090",
+        "modules": [
+          "build_flavor_panels.py",
+          "flavor_probe_sweep.py",
+          "extract_kuq.yaml",
+          "extract_ambigqa_alllayers.yaml",
+          "extract_selfaware.yaml",
+          "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py",
+          "../selfaware-latent-knowledge-controls/latent_knowledge_probe.py",
+          "../common/renders/ood_breadth_response_confidence_render.py"
+        ],
+        "persistence": {
+          "../common/renders/ood_breadth_response_confidence_render.py": {
+            "measured_smoke_wall_clock_s": 0.1,
+            "note": "import-only render module, exercised inside the extract verb",
+            "persistence": "short-run"
+          },
+          "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py": {
+            "measured_smoke_wall_clock_s": 7.424,
+            "note": "pinned item-26 probe protocol imported unchanged by flavor_probe_sweep.py",
+            "persistence": "short-run"
+          },
+          "../selfaware-latent-knowledge-controls/latent_knowledge_probe.py": {
+            "measured_smoke_wall_clock_s": 7.424,
+            "note": "load_layers activation reader imported unchanged",
+            "persistence": "short-run"
+          },
+          "build_flavor_panels.py": {
+            "measured_smoke_wall_clock_s": 0.123,
+            "persistence": "short-run"
+          },
+          "extract_ambigqa_alllayers.yaml": {
+            "measured_smoke_wall_clock_s": 0.1,
+            "note": "declarative recipe consumed by the extract verb; per-row checkpointing under analysis/extraction/ambigqa/",
+            "persistence": "short-run"
+          },
+          "extract_kuq.yaml": {
+            "measured_smoke_wall_clock_s": 0.1,
+            "note": "declarative recipe consumed by the extract verb; the extraction itself checkpoints per-row under analysis/extraction/kuq/",
+            "persistence": "short-run"
+          },
+          "extract_selfaware.yaml": {
+            "measured_smoke_wall_clock_s": 0.1,
+            "note": "declarative recipe consumed by the extract verb; per-row checkpointing under analysis/extraction/selfaware/",
+            "persistence": "short-run"
+          },
+          "flavor_probe_sweep.py": {
+            "measured_smoke_wall_clock_s": 7.424,
+            "note": "single-(source,layer) OOF fit on 2748 rows; full production sweep is roughly 333 such fits plus the cheap M4 frozen-probe evaluations, budgeted tens of minutes CPU, rerun-from-scratch on interruption",
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "../common/renders/ood_breadth_response_confidence_render.py": "bd399d4caf274961f245ea1f456cf64546db59d4b3f2a4b9bbb51fcb24374b4f",
+          "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py": "ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08",
+          "../selfaware-latent-knowledge-controls/latent_knowledge_probe.py": "350f9d9e4acf57b1af858396fb50616fa5b98e7ebb475155af9d40da038eda93",
+          "build_flavor_panels.py": "7a3aed2815a8dce69711a81e6959b06f7ecd3b185ff7697b8ef266b1489f2687",
+          "cell.yaml": "ff816c9a608e17f0d00096faf7c1069e587cbdeb666257476e79697c49508a56",
+          "extract_ambigqa_alllayers.yaml": "b4406ff5ddecf8e1e42de5aac9c78eb7f19a25291c7be1607976ec15fc6a21dc",
+          "extract_kuq.yaml": "d69f819b5f761b46d40229a0201497d04b508ade2554522b90b8dddb999f546e",
+          "extract_selfaware.yaml": "ef8f5be6f7ac6a507a22e159d6465ca9779bd0b4e08a4518dc63cd1cd8d77342",
+          "flavor_probe_sweep.py": "136ce9200885a1fcac982b6d92599d21419ae57d0a122ff3c5cf1466ed63134f",
+          "gates.yaml": "ca8961ed17692fa7adca74b9063b076160cb3f1f4d0bf52401203dc8d7fdb694"
+        },
+        "repins": [
+          {
+            "date": "2026-08-10T00:36:28Z",
+            "file": "flavor_probe_sweep.py",
+            "new_sha256": "136ce9200885a1fcac982b6d92599d21419ae57d0a122ff3c5cf1466ed63134f",
+            "old_sha256": "5640bae5f5177b85386797d2aa2299c706724346dd1e5f3278e2bc2797444e30",
+            "reason": "discover_layers assumed manifest layers is a list; all-layer manifests record the string 'all'. Startup crash, fixed before any AUROC was computed; no protocol constant touched."
+          }
+        ],
+        "runtime_image_digest": "sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8",
+        "runtime_image_digest_note": "mechinterp-runner local Image ID, same image the prior two cells ran under; governs the three extract verbs per the 2026-07-10 standing directive."
+      },
+      "kg": [
+        "experiment:flavor-atlas-rawbase",
+        "mechanism:pretrained-base-carries-broad-overt-unanswerability-code",
+        "mechanism:overt-vs-covert-unanswerability-is-the-boundary-not-flavor"
+      ],
+      "posture": "exploratory",
+      "prediction": "P1: at least one of {future unknown, unsolved problem} reaches held-out AUROC >= 0.90 at some layer on the raw base. P2: the ambiguity flavors (KUQ ambiguous and AmbigQA) stay below 0.75 at every layer.",
+      "question": "Do other flavors of unanswerability (KUQ's six categories, with SelfAware and AmbigQA as reference flavors) each have their own separable activation signature in the raw Qwen3-4B base, at possibly different layers, or is the pretrained known-unknown code narrow (SelfAware-flavored only) or universal (one code for all flavors)?",
+      "registered": true,
+      "slug": "flavor-atlas-rawbase",
+      "status": "resolved",
+      "tier": 3,
+      "title": "Flavor atlas: per-flavor known-unknown activations on the raw base",
+      "type": "probe-fit",
+      "verdict": "Mixed atlas as registered: P1 supported (every KUQ flavor including overt ambiguity separates at 0.98 to 0.999 with free cross-transfer to SelfAware), P2 failed (only the AmbigQA half held), neither falsifier fired; the pretrained unanswerability code is broad across overt flavors and the boundary is overt vs covert unanswerability, with AmbigQA unreadable at every layer."
+    },
+    {
+      "checkpoint": {
+        "base_form": "raw pretrained base, no adapter, bf16",
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "64033659d5caf1b8ed7f929b29de705e93a4d468"
+      },
+      "created_at": "2026-08-10T13:49:01Z",
+      "falsifier": "F1 (style artifact confirmed): with C1/C2/C3 passing, all six KUQ flavors fall to <= 0.75 at both primary layers; the atlas separation is carried by the registered linear surface model and may not be promoted to a claim. F2 (partial style dependence, blocks promotion): with C1/C2/C3 passing, any one of the twelve primary cells reads below 0.90. F1 and F2 are nested (F2 fires whenever F1 fires) but carry different write-ups. Any other pattern is reported as mixed, per flavor, with no pooled rescue.",
+      "inputs": [
+        "experiments/flavor-atlas-rawbase/AMENDMENT.md",
+        "experiments/flavor-atlas-rawbase/gates.yaml",
+        "experiments/flavor-atlas-rawbase/analysis/extraction/kuq/manifest.json",
+        "experiments/flavor-atlas-rawbase/analysis/extraction/ambigqa/manifest.json",
+        "experiments/flavor-atlas-rawbase/analysis/extraction/selfaware/manifest.json",
+        "experiments/flavor-atlas-rawbase/analysis/panels/kuq_panel.jsonl",
+        "experiments/flavor-atlas-rawbase/analysis/panels/ambigqa_panel.jsonl",
+        "experiments/flavor-atlas-rawbase/analysis/panels/selfaware_panel.jsonl",
+        "experiments/flavor-atlas-rawbase/analysis/panels/panels_manifest.json",
+        "experiments/flavor-atlas-rawbase/analysis-committed/atlas_sweep.json",
+        "experiments/ood-breadth-beyond-selfaware/internal_panel_probe_gate.py",
+        "experiments/family-atlas-surface-residualization-control/AMENDMENT.md",
+        "experiments/common/renders/ood_breadth_response_confidence_render.py"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "reanalyze_surface_control.py",
+          "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py",
+          "../selfaware-latent-knowledge-controls/latent_knowledge_probe.py",
+          "../common/renders/ood_breadth_response_confidence_render.py"
+        ],
+        "persistence": {
+          "../common/renders/ood_breadth_response_confidence_render.py": {
+            "measured_smoke_wall_clock_s": 0.1,
+            "note": "import-only render module, used only for the rendered_prompt_token_count fallback when a panel row lacks that field; carried-over timing from flavor-atlas-rawbase.",
+            "persistence": "short-run"
+          },
+          "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py": {
+            "measured_smoke_wall_clock_s": 7.424,
+            "note": "pinned item-26 probe protocol imported unchanged; wall clock carried over from flavor-atlas-rawbase's own measurement of the same module, since this cell calls it the identical way (no fresh timing needed for an unmodified import).",
+            "persistence": "short-run"
+          },
+          "../selfaware-latent-knowledge-controls/latent_knowledge_probe.py": {
+            "measured_smoke_wall_clock_s": 7.424,
+            "note": "load_layers activation reader imported unchanged, same carried-over timing as flavor-atlas-rawbase.",
+            "persistence": "short-run"
+          },
+          "reanalyze_surface_control.py": {
+            "checkpoint_path": "experiments/flavor-atlas-surface-control-confirmatory/analysis/checkpoints",
+            "persistence": "incremental"
+          }
+        },
+        "pins": {
+          "../common/renders/ood_breadth_response_confidence_render.py": "bd399d4caf274961f245ea1f456cf64546db59d4b3f2a4b9bbb51fcb24374b4f",
+          "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py": "ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08",
+          "../selfaware-latent-knowledge-controls/latent_knowledge_probe.py": "350f9d9e4acf57b1af858396fb50616fa5b98e7ebb475155af9d40da038eda93",
+          "cell.yaml": "c1e6e6d87f4c607b9cff1875a0c7993787fd08ec42d86406c4cfef78d029130e",
+          "gates.yaml": "d0e240425a6f89dc97d2729813ed59c42059573f0b94e2fddad5d5a9bf358f7a",
+          "reanalyze_surface_control.py": "bfcb38a17f790538d19df92a09073aa6a88faf1d786696b8fe45ba31b6809d3d"
+        },
+        "repins": [
+          {
+            "date": "2026-08-10T16:22:37Z",
+            "file": "reanalyze_surface_control.py",
+            "new_sha256": "ebaa4684f22e81d41296e42a4cecd896e2e3f89bbb6545c23c01473f390ad987",
+            "old_sha256": "dd1f67eb5a2c5b8d6b3ce1ea02906eae5cbdaf242e40c3519f24279ac3fb3f5d",
+            "reason": "Instrument-completeness repair on a signed pre-run cell: the signed module's main() carried only the --smoke branch and a refusal stub; the registered real-run orchestration did not exist and the executing agent hard-stopped. Rewrote main() with the real branch (SG0/SG1 integrity, frozen surface basis, cross-fitted ridge residualization over every registered panel-layer, S1/S2/S3, C1/C2/C3, SG8 adjudication, counts-only committed JSON), added --dry-run existence check, extended --smoke with a fixture-backed end-to-end drive of run_real, and fixed evaluate_sg2's hardcoded layer 35 to read each cell's registered secondary_layer. No gate quantity, threshold, or registered constant changed; no results exist. Lead-verified: smoke pass, dry-run exit 1 on missing inputs in worktree, full dry-run pass against real canonical inputs."
+          },
+          {
+            "date": "2026-08-10T20:49:14Z",
+            "file": "reanalyze_surface_control.py",
+            "new_sha256": "bfcb38a17f790538d19df92a09073aa6a88faf1d786696b8fe45ba31b6809d3d",
+            "old_sha256": "ebaa4684f22e81d41296e42a4cecd896e2e3f89bbb6545c23c01473f390ad987",
+            "reason": "Harness-crash repair, pre-result: real run crashed 2026-08-10T19:21Z with KeyError in evaluate_sg4 because evaluate_sg4 and evaluate_sg6 read gates.yaml one level shallow (missing the checks: nesting the real file uses); the smoke fixture reproduced the same flat shape, validating the buggy read path. Fixed both reads to the real nested shape, fixed the fixture to mirror the real schema, and added a smoke schema-walk over 48 real gates.yaml/cell.yaml key paths the module reads so schema drift now fails the smoke pre-run. No committed output existed at crash time; all 20 permutation replicates were checkpointed, rerun resumes cheaply. No gate value, threshold, or registered constant changed."
+          }
+        ]
+      },
+      "kg": [
+        "experiment:flavor-atlas-surface-control-confirmatory",
+        "mechanism:style-and-construct-are-near-collinear-in-flavor-atlas-pools"
+      ],
+      "posture": "exploratory",
+      "prediction": "P1 (primary): after cross-fitted combined-surface residualization, all six KUQ flavors retain held-out out-of-fold AUROC >= 0.90 at both of their two primary layers (committed best layer and L35), for all twelve primary cells. P2 (reference): SelfAware retains AUROC >= 0.90 at both L25 and L35, and AmbigQA stays <= 0.75 at both L25 and L35. P3 (secondary, S2): the surface-only probe on Z alone reaches at least 0.75 for at least one of the six KUQ flavors.",
+      "question": "Does the flavor-atlas-rawbase overt-unanswerability separation (all six KUQ flavors plus SelfAware, 0.9800-0.9994 held-out AUROC on the raw base) survive cross-fitted removal of the activation variance predictable from prompt surface (length, punctuation, digit profile, interrogative form, and lexical n-grams), or is it a style artifact?",
+      "registered": true,
+      "slug": "flavor-atlas-surface-control-confirmatory",
+      "status": "resolved",
+      "tier": 3,
+      "title": "Style-controlled confirmatory read of the flavor-atlas overt-unanswerability separation",
+      "type": "probe-fit",
+      "verdict": "INDETERMINATE as registered: C1 passed but C2 failed (0/20 permuted-surface runs kept all six flavors at or above 0.90, band requires 18/20) and C3 failed (planted-channel flavor deviation 0.077 vs 0.05 max), so SG8 did not adjudicate P1-P3/F1-F2; the instrument removes generic variance too aggressively to separate style from style-collinear structure on these pools, atlas promotion stays blocked, and the atlas is not falsified."
+    },
+    {
+      "checkpoint": {
         "repo": "local AH stage-0/category geometry cached activations",
         "revision": "historical"
       },
@@ -2833,15 +3451,22 @@
           "gates.yaml": "7c79a41894a1fc64df01f07bbb197f8c25239d8625e3d9f3d8bbc97d3e51c0fa"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:grpo-three-seed-confirmatory",
+        "mechanism:grpo-abstention-shift-replicates-across-seeds",
+        "mechanism:post-grpo-preference-stage-recovers-over-refusal-without-reopening-unknown",
+        "mechanism:grpo-stage-ordering-effect-on-over-refusal-is-pairing-dependent",
+        "mechanism:selfaware-known-question-contamination-inflates-known-row-metrics",
+        "mechanism:filtered-denominator-accuracy-metric-reverses-sign-under-selective-refusal"
+      ],
       "prediction": "PI: both gates confirm; the GRPO abstention shift and the post-GRPO preference recovery both reproduce in seeds 2 and 3. Orchestrator: G1 confirms in both seeds; G2 also confirms but is the likelier to drop a seed (seed-1 effect only -2.99 pp over-refusal); if anything fails it is G2's over-refusal direction on one seed, not G1.",
       "question": "Do the seed-1 GRPO effects in the clean response-confidence lineage - GRPO's abstention shift and the post-GRPO preference recovery - replicate at two fresh seeds, so that every GRPO arm in paper 2 carries a three-seed interval like its DPO and KTO siblings?",
       "registered": true,
       "slug": "grpo-three-seed-confirmatory",
-      "status": "signed",
+      "status": "resolved",
       "title": "GRPO Three-Seed Confirmatory Block",
       "type": "training-run",
-      "verdict": ""
+      "verdict": "Replicated. G1 PASS both seeds (GRPO abstention shift: answer_on_unknown -4.36 pp seed 2, -6.78 pp seed 3, floors 3.0). G2 PASS both seeds (post-GRPO DPO over-refusal recovery -0.77/-1.84 pp, unknown reopening -0.39/+0.29 pp vs cap 2.0). G3 three-seed intervals delivered for all five GRPO-touching arms; G4 not triggered (max 85 distinct confidence values); G5 delivered: KTO ordering pair holds direction at all three seeds, DPO pair sign-reverses and is not a finding. Limitation: 117 SelfAware known questions verbatim in training prompts; G1 structurally immune, G2 stratum-checked robust, absolute known-row levels carry the contamination caveat."
     },
     {
       "checkpoint": {
@@ -3114,21 +3739,62 @@
         },
         "pins": {
           "cell.yaml": "a934232054281fda8ba060045a369c22227bea1fe90df4795d204d0dbe5c421c",
-          "configs/eval_selfaware_full_seed1_rerun_4b.yaml": "68d86a0f47bf5b3ed97695c6450697e536d115b7939402c53598446df506089f",
-          "gates.yaml": "44013bc932270b3b747d9ff30064d7e0408f3eddce934124e9d8b4d91fd8d50e",
+          "configs/eval_selfaware_full_seed1_rerun_4b.yaml": "244026a07d762a131aac594570f2e6c7b2ae4ccd46f75e4d48b41ab9cd026c80",
+          "gates.yaml": "93d1ff8c05b31cd5fa496a2503c3db48f96e1200b5711d135bbd4307207eecea",
           "scripts/audit_data_provenance.py": "c5ceb60042750c4aabc590d4be8e4af443fd4785f734bbfa84370d36eb4009d7",
           "scripts/data_builds.yaml": "74dfde53eb66fd462b94657686b40307ac071ec69874cb647c870f6022d6dad6"
-        }
+        },
+        "repins": [
+          {
+            "date": "2026-08-05T14:25:53Z",
+            "file": "gates.yaml",
+            "new_sha256": "70f6665b3aabdd77ee3154c36909acbd43c2992f7ed8c483d2033d6654b9b979",
+            "old_sha256": "44013bc932270b3b747d9ff30064d7e0408f3eddce934124e9d8b4d91fd8d50e",
+            "reason": "Governed housekeeping, PI-authorized 2026-08-05: gates.yaml still declared 'status: proposed' with null adjudicated_by/adjudicated_date after being signed 2026-08-01, so the file read as unsettled to anyone opening it directly. Corrected the sign-time metadata and header prose ONLY - no threshold, band, tolerance, condition, or decision rule was altered (verified by diff). Also recorded, deliberately left unresolved in the file: this gates.yaml decision_rule and AMENDMENT.md section 10 item 5 disagree on whether a single out-of-band METRIC puts a CELL outside; that needs a governed revision before adjudication. Experiment is pre-run with zero artifacts, which is repin's intended window."
+          },
+          {
+            "date": "2026-08-05T15:07:55Z",
+            "file": "gates.yaml",
+            "new_sha256": "93d1ff8c05b31cd5fa496a2503c3db48f96e1200b5711d135bbd4307207eecea",
+            "old_sha256": "70f6665b3aabdd77ee3154c36909acbd43c2992f7ed8c483d2033d6654b9b979",
+            "reason": "Governed revision, PI-approved 2026-08-05 ('thats fine for the amendment text governing'): g1_replication_band decision_rule conflicted with AMENDMENT.md section 10 item 5 on whether a single out-of-band METRIC puts a CELL outside. The file's rule counted metrics within an arm and explicitly deferred the question as 'a sign-time decision' never closed; the amendment text was adjudicated and PI-approved 2026-08-01. Amendment text now governs: a cell is outside when ANY ONE of its four metrics is outside its band. decision_rule restated to match, decision_rule_revision_note added recording what was superseded, per-gate status proposed->signed, header open-item note replaced with the resolution. NO band, tol, cohort value, one-question resolution, metric, denominator, or G0/G2 check was altered (verified by diff: zero changed band/tol/cohort lines). Resolved BEFORE launch with zero rerun artifacts in existence, so no result informed the choice; this is the stricter of the two readings."
+          },
+          {
+            "date": "2026-08-07T10:51:35Z",
+            "file": "configs/eval_selfaware_full_seed1_rerun_4b.yaml",
+            "new_sha256": "876842cea02295ddf327051ed28216ad3c28dc75d163383691482ff3e0395d40",
+            "old_sha256": "68d86a0f47bf5b3ed97695c6450697e536d115b7939402c53598446df506089f",
+            "reason": "Pre-run instrument repair, found by executor at eval-launch preflight before any eval outcome existed: (1) gold_path and eval_sets.selfaware.path used three ../ segments but run_eval.py resolves relative paths from archive/experiment/phase1/eval (run_eval.py:49,153-159), which needs four; as committed the eval crashes at load (FileNotFoundError, verified by resolution: 3-level lands on nonexistent archive/datasets/). Fixed to four levels, matching the known-working GRPO-chain eval configs. (2) Same repin absorbs the amendment-authorized fill of the dpo arm adapter placeholder (AMENDMENT §10 item 1: placeholders to be filled once the rerun adapters exist). No prompt, generation, scoring, or bootstrap field changed."
+          },
+          {
+            "date": "2026-08-07T18:22:59Z",
+            "file": "configs/eval_selfaware_full_seed1_rerun_4b.yaml",
+            "new_sha256": "52e78ef1b6665fe9ca272871d83fa4014d8cffb5ef9ca9d3fd613462427d4244",
+            "old_sha256": "876842cea02295ddf327051ed28216ad3c28dc75d163383691482ff3e0395d40",
+            "reason": "Pre-run repin executing the eval-scoping ruling PRE-STATED in NOTEBOOK ~12:05Z, before any KTO eval artifact existed: (1) fill arms[kto].adapter with the real final_model path (run 20260807_124416; amendment-authorized placeholder fill, §10.1); (2) REMOVE the dpo arm, whose eval already completed under config_sha 876842ce, so it cannot be nondeterministically regenerated. Prompt/generation/confidence/bootstrap/vllm/eval_sets sections byte-untouched."
+          },
+          {
+            "date": "2026-08-07T20:21:58Z",
+            "file": "configs/eval_selfaware_full_seed1_rerun_4b.yaml",
+            "new_sha256": "244026a07d762a131aac594570f2e6c7b2ae4ccd46f75e4d48b41ab9cd026c80",
+            "old_sha256": "52e78ef1b6665fe9ca272871d83fa4014d8cffb5ef9ca9d3fd613462427d4244",
+            "reason": "Pre-run arm swap per pre-stated ~18:35Z rules: kto arm removed (eval complete, cell closed), dpo_seed1_postfix_r2 arm added pointing at the cell-of-record retrain run dir 20260807_192026; measurement-surface sections byte-untouched"
+          }
+        ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:headline-seed1-postfix-rerun",
+        "mechanism:dev-split-fix-dataset-confound-is-provenance-only",
+        "mechanism:dpo-trl-version-pin-shifts-truthful-and-known-accuracy"
+      ],
       "prediction": "Both rerun arms land inside all eight cohort-derived G1 bands, with both arms remaining at the abstention floor observed across the cohort; the dev-split-fix confound is provenance-only and headline conclusions are unchanged.",
       "question": "Does the locked headline seed-1 result for cold-start DPO and cold-start KTO at 4B replicate when seed 1 is trained on the corrected dataset build that seeds 2 and 3 already consumed, so that the three-seed headline interval for these two arms no longer mixes two dataset versions?",
       "registered": true,
       "slug": "headline-seed1-postfix-rerun",
-      "status": "signed",
+      "status": "resolved",
       "title": "Headline DPO/KTO seed-1 rerun on post-fix dataset build",
       "type": "training-run",
-      "verdict": ""
+      "verdict": "G1 PASS (pair, section 10.5 rule): both rerun arms INSIDE all eight cohort-derived G1 bands. KTO arm 0.00/0.13/18.88/27.25; DPO cell of record is the recipe-honoring r2 retrain, 0.10/0.17/13.86/19.97. The signed prediction is CONFIRMED: the dev-split-fix dataset confound is provenance-only, both arms stay at the cohort abstention floor, and headline conclusions are unchanged; the falsifier (any metric outside its band) did not fire. G0 PASS both cells at trainer vintage 089fa9b7 on the post-fix builds; the first DPO attempt (setup.pip skipped, trl 0.23.1) is a recorded deviated attempt, inside bands, context only, and its 2-4 pp spread vs the r2 cell shows the trl pin is behaviorally real. Per section 3 this experiment adopts nothing into the headline matrix; per the G2 sign-time ruling it is a commensurability check against the cohort bands, not single-variable attribution of the dataset change."
     },
     {
       "checkpoint": {
@@ -4346,6 +5012,103 @@
         "repo": "",
         "revision": ""
       },
+      "created_at": "2026-08-08T22:26:27Z",
+      "falsifier": "On AmbigQA, two or more of the eight arms show emitted AUROC to appropriateness >= 0.70 together with emitted std > 0.15, which would make the stated channel surface-dependent rather than structurally bottlenecked and would require paper 3's \"the verbalized number is a collapsed near-constant\" sentence to be narrowed to SelfAware in writing.",
+      "inputs": [
+        "datasets/kuq/knowns_unknowns.jsonl",
+        "datasets/kuq/dataset.md",
+        "datasets/selfaware/SelfAware.json",
+        "archive/experiment/phase1/eval/run_eval.py",
+        "archive/experiment/phase1/eval/scorers.py",
+        "archive/experiment/phase1/eval/ood.py",
+        "archive/experiment/phase1/eval/analysis/calibration_gap_report.py",
+        "archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml",
+        "papers/paper-3-knows-but-doesnt-say/manuscript.md",
+        "papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.py"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "screen_ood_surfaces.py",
+          "gate_score.py",
+          "internal_panel_probe_gate.py",
+          "score_evidential_fivearm.py",
+          "extract_A1.yaml",
+          "extract_A4.yaml",
+          "../common/renders/ood_breadth_response_confidence_render.py",
+          "../../archive/experiment/phase1/eval/ood.py",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_clean_schema_sft_merged_seed1_local_4b.yaml",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_contrastive_schema_sft_merged_seed1_local_4b.yaml",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_contrastive_masked_schema_sft_merged_seed1_local_4b.yaml",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_clean_schema_sft_grpo_v2_seed1_corrected_base_local_4b.yaml",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_clean_schema_sft_grpo_v3_seed1_local_4b.yaml",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_grpo_v3_on_contrastive_sft_seed1_local_4b.yaml",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_grpo_v3_beta005_on_contrastive_sft_seed1_local_4b.yaml",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_probe_factual_schema_sft_merged_seed1_local_4b.yaml"
+        ],
+        "persistence": {
+          "gate_score.py": {
+            "measured_smoke_wall_clock_s": 0.22,
+            "persistence": "short-run"
+          },
+          "internal_panel_probe_gate.py": {
+            "note": "CPU probe-fit over saved safetensors; no natural checkpoint, rerun-from-scratch on interruption",
+            "persistence": "short-run"
+          },
+          "score_evidential_fivearm.py": {
+            "measured_smoke_wall_clock_s": 0.35,
+            "persistence": "short-run"
+          },
+          "screen_ood_surfaces.py": {
+            "measured_smoke_wall_clock_s": 2.91,
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_clean_schema_sft_grpo_v2_seed1_corrected_base_local_4b.yaml": "5e88a465fdd0990d2e088b2993ead3dd71b48873a2d825bf4b921d2d7c0cf160",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_clean_schema_sft_grpo_v3_seed1_local_4b.yaml": "d5e7aa9c10a578d565e4f0f191ffd31fb6c589f2948786ed8fa77e7bb6809695",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_clean_schema_sft_merged_seed1_local_4b.yaml": "55331127707290d3f3997641611d7fa16a4945f26f2564065ee90080db34de6b",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_contrastive_masked_schema_sft_merged_seed1_local_4b.yaml": "9286bfa16c3d902af5bd06c62aea5a9c16e809180ae9877162ce335d06212ffd",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_contrastive_schema_sft_merged_seed1_local_4b.yaml": "5c77de7669f87fceb107c353dfc5cfae1a68e28cce57e27a781c6a28e75222c1",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_grpo_v3_beta005_on_contrastive_sft_seed1_local_4b.yaml": "8f7b23d04859ad5ec8867d4a21e1e04d99415d4a2b49ff4a37e255a3a86437a1",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_grpo_v3_on_contrastive_sft_seed1_local_4b.yaml": "9672acb844f8586a3f327604a174ffbbcc697a2a5ffa85e7bb1f23f3df606ac7",
+          "../../archive/experiment/phase1/eval/config/eval_ood_breadth_probe_factual_schema_sft_merged_seed1_local_4b.yaml": "dff13b6b64e4e3561a2ad7f2b9edd297b110be53848346d46893da2284e0744f",
+          "../../archive/experiment/phase1/eval/ood.py": "cfd6cf8be6c0a892056b4b339dd2b8725dc9050c5cf991d8ec184f2b216d7760",
+          "../common/renders/ood_breadth_response_confidence_render.py": "bd399d4caf274961f245ea1f456cf64546db59d4b3f2a4b9bbb51fcb24374b4f",
+          "cell.yaml": "0d9b52aa8aed399c9d3639d232464b2629cf0390b26acc2f09fc00b941e6ea5b",
+          "extract_A1.yaml": "472a449e8de3b4e9e577e43893bd73f37d9d8f730992965dbd5e9e55984b9e71",
+          "extract_A4.yaml": "b77846db8463b9035d260395bb3f70a7aa8e6a0fac441903b04dc2ca1afc9829",
+          "gate_score.py": "8de8bb63485b65b245609919319ae9d6ce1b5c3fc196402bb2aac0738c160e80",
+          "gates.yaml": "9bfdef9e85cd5dd2da27526c348fcb7f299ff3e1894e991c65343b9a95002008",
+          "internal_panel_probe_gate.py": "ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08",
+          "score_evidential_fivearm.py": "013300c49dc504fdda710132f239d8f03c13a8c67f561be8775c9038296c557c",
+          "screen_ood_surfaces.py": "50630020c0505417aa8a0f0c7f76356f289236bb9b9c21633b1d7b1cc657b149"
+        },
+        "runtime_image_digest": "sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8",
+        "runtime_image_digest_note": "local Image ID of mechinterp-runner:local (not registry-pushed); applies to the stage-6 MechInterp.cli extract verb only, per the 2026-07-10 standing directive in .skills/mechinterp-cells/reference/modal-launch.md. The eval-lane stages 2-5 ran under cell.yaml lane.docker_digest as registered."
+      },
+      "kg": [
+        "experiment:ood-breadth-beyond-selfaware",
+        "mechanism:ambigqa-internal-readout-does-not-transfer-from-selfaware",
+        "mechanism:ambigqa-stated-confidence-collapse-not-universal-across-arms"
+      ],
+      "prediction": "Unknown-side abstention behavior transfers in rank order across arms (Spearman rho >= 0.7 vs SelfAware on KUQ and AmbigQA), the stated-confidence collapse transfers unchanged (every arm at emitted AUROC to appropriateness <= 0.65 and emitted std <= 0.10 on AmbigQA), the internal known-unknown readout still separates the AmbigQA answerability boundary (held-out AUROC >= 0.90 on both internal-panel arms), and known-side over-refusal levels shift by more than 10 points on at least one surface because the new known sides are drawn from different source corpora.",
+      "question": "Do paper 3's SelfAware behavior and stated-calibration readings, and its internal known-unknown readout, transfer to additional known/unknown surfaces (KUQ, AmbigQA, BIG-bench known-unknowns) on the same eight checkpoints and the same pinned instrument?",
+      "registered": true,
+      "slug": "ood-breadth-beyond-selfaware",
+      "status": "resolved",
+      "title": "OOD breadth beyond SelfAware (behavior, stated-calibration, and AmbigQA internal panel)",
+      "type": "eval",
+      "verdict": "Falsifier not fired; behavior transfers in level but the internal known-unknown readout does not transfer to AmbigQA (G7 FAIL both arms, 0.6279/0.6349 vs 0.90 floor) and the stated-confidence collapse is not universal (G5 FAIL); G4 unadjudicable after the registered G1 void of arms A2/A6/A7."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
       "inputs": [],
@@ -4601,7 +5364,11 @@
         "modules": [],
         "pins": {}
       },
-      "kg": [],
+      "kg": [
+        "experiment:pretrain-only-base-readout",
+        "mechanism:knowledge-boundary-gate-and-veto-predate-post-training",
+        "mechanism:post-training-does-not-sharpen-knowledge-boundary-veto"
+      ],
       "legacy": {
         "label": "Y",
         "migrated_to": "experiments/pretrain-only-base-readout/AMENDMENT.md",
@@ -5047,6 +5814,83 @@
       "title": "Amendment AL — Radial anti-propensity steering on the AI-TRUE checkpoint",
       "type": "historical-amendment",
       "verdict": "USE-THE-SIGNAL NULL (injection channel), resolved 2026-07-05. AL-G1 PASS (collateral 0 of allowed 3). AL-G2 MISS (0 of 116 baseline confabs killed; dose ladder 0.5x/1.0x/2.0x kills 0/0/1 of 30 pushed confabs). AL-G3 MISS (primary minus control kill diff 0, bootstrap 95% CI [0.00, 0.00]). The null is causal, not instrumental: smoke readback shows the pushed-anchor propensity projection moved -2.7133 vs commanded -2.7110 (ratio 1.0008), unpushed shift exactly 0.0000, and all 1,564 unpushed rows reproduce the baseline grade (1564/1564 parity). The direction moves the internal readout by the commanded amount but does not actuate the fabricate-vs-refuse choice. Sixth use-the-signal null; first in the activation-injection channel. Grading commits fa82c629 / 7b4be949 / e9141fff."
+    },
+    {
+      "checkpoint": {
+        "base_form": "raw pretrained base, no adapter, bf16",
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "64033659d5caf1b8ed7f929b29de705e93a4d468"
+      },
+      "created_at": "2026-08-09T23:05:22Z",
+      "falsifier": "heldout_probe_auroc >= 0.85 on the raw base, which establishes the training-warp reading; pretraining installed a substantially more general answerability signal and post-training narrowed it. The open interval (0.73, 0.85) is registered AMBIGUOUS and reported as such.",
+      "inputs": [
+        "experiments/ood-breadth-beyond-selfaware/AMENDMENT.md",
+        "experiments/ood-breadth-beyond-selfaware/analysis-committed/g7_A1.json",
+        "experiments/ood-breadth-beyond-selfaware/analysis-committed/g7_A4.json",
+        "experiments/ood-breadth-beyond-selfaware/internal_panel_probe_gate.py",
+        "experiments/ood-breadth-beyond-selfaware/extract_A1.yaml",
+        "experiments/pretrain-only-base-readout/AMENDMENT.md",
+        "experiments/common/renders/ood_breadth_response_confidence_render.py"
+      ],
+      "instrument": {
+        "concurrency": "one GPU job at a time",
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "lane": "local_3090",
+        "modules": [
+          "extract_rawbase.yaml",
+          "rawbase_probe_fit.py",
+          "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py",
+          "../common/renders/ood_breadth_response_confidence_render.py"
+        ],
+        "persistence": {
+          "../common/renders/ood_breadth_response_confidence_render.py": {
+            "measured_smoke_wall_clock_s": 0.1,
+            "note": "import-only render module, exercised inside the extraction verb",
+            "persistence": "short-run"
+          },
+          "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py": {
+            "measured_smoke_wall_clock_s": 4.65,
+            "note": "CPU probe-fit protocol imported by rawbase_probe_fit.py; byte-identical to its item-26 pin ee3f22ee, reused unchanged",
+            "persistence": "short-run"
+          },
+          "extract_rawbase.yaml": {
+            "measured_smoke_wall_clock_s": 0.1,
+            "note": "declarative recipe consumed by the extract verb; the extraction itself checkpoints per-row under analysis/extraction/rawbase/",
+            "persistence": "short-run"
+          },
+          "rawbase_probe_fit.py": {
+            "measured_smoke_wall_clock_s": 4.65,
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "../common/renders/ood_breadth_response_confidence_render.py": "bd399d4caf274961f245ea1f456cf64546db59d4b3f2a4b9bbb51fcb24374b4f",
+          "../ood-breadth-beyond-selfaware/internal_panel_probe_gate.py": "ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08",
+          "cell.yaml": "e4ff6c941266357614d502c768e9b89d187bbccf728162dd7af19da25bd4bddc",
+          "extract_rawbase.yaml": "d6e72da2754d1285d95b0af66a7365e3198c2fdfba5ab537bdb7958525eda791",
+          "gates.yaml": "49f36282555027be789e7fd167276caa778511d55271836fdfd7215fa4189f32",
+          "rawbase_probe_fit.py": "7ebbe8070f37fb4263fe0ab6979263c2384c8ff45883cbe6c14d4898a564acbb"
+        },
+        "runtime_image_digest": "sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8",
+        "runtime_image_digest_note": "mechinterp-runner local Image ID, same image item 26 stage 6 ran under; governs the single extract verb per the 2026-07-10 standing directive."
+      },
+      "kg": [
+        "experiment:rawbase-ambigqa-boundary-readout",
+        "mechanism:ambigqa-boundary-signal-is-pretraining-flavor-specific"
+      ],
+      "posture": "exploratory",
+      "prediction": "The raw base also fails the SelfAware-grade bar on AmbigQA and lands within 0.10 of the trained checkpoints (heldout_probe_auroc <= 0.73), the flavor-specific reading. Grounds; the more-trained panel checkpoint reads slightly higher than the less-trained one (0.6349 vs 0.6279), the wrong direction for a training-dulls-it account, and Amendment Y H_B3 found post-training does not sharpen the SelfAware readout.",
+      "question": "Does the untrained Qwen3-4B base read the AmbigQA answerability boundary at the same locus (L35, anchor) where the trained checkpoints just read 0.63, or does it read substantially higher; that is, is the known-unknown activation flavored to SelfAware-style unanswerability from pretraining, or did pretraining install a broader signal that post-training warped?",
+      "registered": true,
+      "slug": "rawbase-ambigqa-boundary-readout",
+      "status": "resolved",
+      "tier": 3,
+      "title": "Raw-base AmbigQA boundary readout (pretraining-flavor vs training-warp fork)",
+      "type": "probe-fit",
+      "verdict": "Falsifier not fired; prediction supported. The raw pretrained base reads the AmbigQA boundary at 0.6338, within 0.006 of both trained checkpoints, so the known-unknown activation is flavor-specific to SelfAware-style unanswerability from pretraining, and the G7 non-transfer is not a post-training warp."
     },
     {
       "checkpoint": {
@@ -5969,6 +6813,77 @@
       "title": "Write-direction naming battery: what is the mid-band c_hat write, behaviorally?",
       "type": "steer-cell",
       "verdict": "unnamed write direction (form instrument void): the taxonomy failed blinded calibration (0.43 vs 0.05) so axis G is void; axis B is positive-only via O-2 (output-gate suppression, not abstention control); axis K is knowledge-state (no difficulty gradient); O-1's dissociation confirmed (6.37:1 wrongness over abstention on knowns)."
+    },
+    {
+      "checkpoint": {
+        "repo": "local; clean-SFT merged-16bit base (sft_schema_clean_seed1_full/20260623_123624) with the GRPO-v2 LoRA active as the primary arm and the adapter disabled as the control arm",
+        "revision": "schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model"
+      },
+      "created_at": "2026-08-08T22:24:12Z",
+      "falsifier": "On at least 300 wrong rows the internal refit readout ranks correct versus wrong at AUROC below 0.60 AND the gap over the emitted scalar is at most +0.05 with a paired CI including 0: the internal axis does not discriminate its own correctness better than the stated channel at deployment, overturning manuscript.md:336-337 in its discrimination half.",
+      "inputs": [
+        "experiments/probe-scaled-response-confidence/analysis/phase1-migrated/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b/clean_schema_sft_grpo_v2_seed1_corrected_base__selfaware/scored_rows.jsonl",
+        "experiments/probe-scaled-response-confidence/analysis/phase1-migrated/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_4b/clean_schema_sft_merged_seed1__selfaware/scored_rows.jsonl",
+        "archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml",
+        "archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json",
+        "archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed1_full.yaml",
+        "experiments/common/artifacts/row_manifests/selfaware/mechinterp_selfaware_frozen_row_manifest.json",
+        "datasets/selfaware/SelfAware.json",
+        "datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl",
+        "datasets/popqa/test.jsonl"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "row_join.py",
+          "readout.py",
+          "arm_a_extract.py",
+          "score_gates.py",
+          "real_run.py"
+        ],
+        "persistence": {
+          "arm_a_extract.py": {
+            "checkpoint_path": "experiments/wrong-answer-cell-power-fix/analysis/hidden_states/wrong-answer-cell-power-fix-arm-a/extraction/<extraction_id>/rows.jsonl",
+            "persistence": "incremental"
+          },
+          "readout.py": {
+            "measured_smoke_wall_clock_s": 2.3,
+            "persistence": "short-run"
+          },
+          "row_join.py": {
+            "measured_smoke_wall_clock_s": 0.16,
+            "persistence": "short-run"
+          },
+          "score_gates.py": {
+            "measured_smoke_wall_clock_s": 7.0,
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "arm_a_extract.py": "0b5f9b25a3cfc7d9b4b6614d57a6fd868880896e093dc380db03121ca4890687",
+          "cell.yaml": "5ee37dd3bdb12e64dd526441f34e732d241e11fbd9c6841879d51ae3ed7b6b34",
+          "gates.yaml": "01ee0b017009cf6298a77c60fb5e2a82a67324c1bc0a7d4398489ee1bad2cc54",
+          "readout.py": "75f2c17b2eb0c59a88bdc6f8aca6770db9985adfd0c933f0157458cb5384496b",
+          "real_run.py": "893c66366800027099ed837e584167c8764bb3d8b1e0286273e591e5bd14b1fa",
+          "row_join.py": "187ddd53f7d8027fa0b06dbbf92bd5fa50b65180b56d4ea34c304a9d28d6aa85",
+          "score_gates.py": "cbf8e154b9423f1875b600118e35b5b7de5b0d44e36ab3cdb77bf67caaf2a23a"
+        }
+      },
+      "kg": [
+        "experiment:wrong-answer-cell-power-fix",
+        "mechanism:known-unknown-axis-does-not-carry-answer-correctness-at-deployment"
+      ],
+      "prediction": "Internal refit readout AUROC(correct vs wrong) lands at 0.60 to 0.72 against the emitted scalar's already-measured 0.5207, a gap of +0.08 to +0.20 with a paired CI excluding 0; internal ECE rises off 0.004 to 0.05 to 0.15 raw while emitted ECE rises to 0.25 to 0.32 raw, so the calibration contrast survives and widens under both accountings; the correct > wrong internal ordering holds.",
+      "question": "On hundreds of wrong-answered rows instead of sixteen, does the internal known-unknown axis still rank the model's own correct versus wrong answers better than its emitted response_confidence does, and does the calibration contrast in paper 3 Figure 1 survive once the answered-known base rate is no longer 96 percent?",
+      "registered": true,
+      "slug": "wrong-answer-cell-power-fix",
+      "status": "falsified",
+      "title": "Wrong-answer cell power fix (paper-3 internal-vs-stated re-estimation)",
+      "type": "probe-fit",
+      "verdict": "Prediction FALSIFIED; primary falsifier fired as worded. On 360 deployment-rendered wrong / 420 correct answered-known rows (vs the paper's 16), the known-unknown axis at pinned L35 ranks the model's own correct vs wrong answers at AUROC 0.5597 (CI 0.5185-0.5993, floor 0.60/0.55) and beats the emitted response_confidence channel by +0.0390 (CI includes 0, floor +0.05): E1 and E2 FAIL, all G0 integrity gates PASS, red-team reproduced every number exactly and the null is not instrument-induced. SCOPE (binding for write-ups): overturned at the AXIS level only; an unregistered full-dimension context probe on the same vectors reaches 0.6769/0.6995, so correct-vs-wrong is linearly present in the residual stream and the finding is that the known-unknown axis does not carry it at deployment. The raw calibration contrast survives decisively (A7 +0.2373, CI 0.1853-0.2769); E3's reweighted arm fired on an arithmetic degeneracy, recorded as such. E4 PASS under the adjudicated out-of-fold reading (step 4.85, CI excludes 0). Arm B not run by PI decision; E5 not computed; verdict independent of Arm B. The M7 comparator drop (0.649 to 0.5597) is power AND render-surface confounded, never differenced without caveat."
     },
     {
       "checkpoint": {

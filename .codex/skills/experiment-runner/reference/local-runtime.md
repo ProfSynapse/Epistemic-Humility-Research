@@ -85,6 +85,31 @@ does not exist: scratch\...`.
   and `docker run --rm --gpus all --entrypoint nvidia-smi
   unsloth/unsloth:latest` saw the RTX 3090.
 
+- Teammate watch discipline for long containers (added after four silent
+  stalls across three executor agents, 2026-07-31 to 2026-08-03; stalls of
+  1.5h/8h/10h/1h idle GPU): a spawned teammate agent is NOT reliably
+  re-invoked when its own background `docker wait` completes — the wake was
+  observed to drop both when the completion landed mid-turn (notification
+  swallowed, not queued) and when the agent was properly idle. Lead-session
+  background-task notifications ARE reliable. This is harness plumbing, not
+  agent discipline; swapping executors does not fix it. Binding architecture
+  for any teammate-driven container chain:
+  1. SHORT operations (merges, bounded smokes, anything under ~10 min) run
+     FOREGROUND inside the teammate's turn with an explicit timeout —
+     foreground work cannot stall (zero stalls since adopting this).
+  2. LONG containers: teammate reports the exact container name via
+     SendMessage IMMEDIATELY at launch; the LEAD holds a bare background
+     `docker wait <name>` as the PRIMARY wake. The teammate's own watch is
+     best-effort redundancy only.
+  3. When the lead watch fires: verify artifacts on disk, then IMMEDIATELY
+     SendMessage the teammate the verified numbers plus an explicit proceed
+     order — never wait for the teammate's own report. If the idle-guard
+     blocks the send, the teammate is genuinely mid-turn and will handle it;
+     resend at its next idle notification.
+  4. The teammate must `docker inspect` every launched-but-unclosed container
+     at the START of every turn, regardless of any wake, and act on exited
+     ones in the same turn instead of idling.
+
 - Storage hygiene (added after the 2026-08-02 disk-full crash truncated a
   merge shard mid-write): run `scripts/ops/prune_runtime.sh stage` at every
   stage boundary (prunes stopped containers and dangling images only) and
@@ -320,3 +345,270 @@ does not exist: scratch\...`.
 - `git submodule status` can fail if Git Unix helpers such as `basename` or
   `sed` are missing. Verify the submodule SHA with the gitlink plus
   `git -C synaptic-tuner rev-parse HEAD`.
+
+## Missing --entrypoint python3 produces a live-looking dead container
+
+Verified directly against the pinned image:
+`docker image inspect unsloth/unsloth:latest --format '{{json .Config.Entrypoint}}'`
+returns `["/usr/local/bin/entrypoint.sh"]`. Reading that script
+(`docker run --rm --entrypoint cat unsloth/unsloth:latest
+/usr/local/bin/entrypoint.sh`) shows it sets up SSH host keys, a
+Jupyter/SSH environment, and a `chpasswd` step, then ends with
+`exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf`,
+handing off to a supervisor process that runs indefinitely and never
+invokes the trainer.
+
+Consequence, confirmed against a real incident: a `docker run` that omits
+`--entrypoint python3` launches this bootstrap instead of the trainer. The
+container reports `Up` for 5+ minutes with `nvidia-smi` showing 0 MiB GPU
+memory. `docker logs` shows supervisord/Jupyter startup lines instead of
+trainer output; that mismatch is the detection signal. Fix: stop/rm the
+container and relaunch with `--entrypoint python3` explicit.
+
+This is the general form of the existing note further down this file that
+the same image's default entrypoint "may chmod the mounted repo and fail on
+`.tmp/pytest-codex*`" for eval wrapper runs: both symptoms share one root
+cause, launching this image without `--entrypoint python3` hands control to
+the bootstrap script instead of the intended process.
+
+Rule: every `docker run` for a training/merge/eval verb against this image
+passes `--entrypoint python3` explicitly. A missing entrypoint fails
+silently in the worst way: a container that is `Up` while doing nothing
+GPU-relevant, which defeats any liveness check that only tests container
+existence.
+
+Corollary, generalizing the liveness check below: liveness is container
+`Up` AND (GPU memory climbing OR trainer log rows appearing in the JSONL),
+never container `Up` alone.
+
+## Watch the launch, not only the exit
+
+The "Teammate watch discipline for long containers" note above covers
+EXIT-side watching (`docker wait` as the reliable completion signal). It has
+a blind spot: a launch that never actually starts a container produces the
+same silence as a healthy long run, because an exit watch has nothing to
+fire on until a container exists and exits. Verified incident: a relaunch
+was dispatched, the dry-run step completed, but the real training container
+never started, and the GPU sat idle for about 65 minutes before anyone
+noticed.
+
+Rule: after dispatching any launch, arm a LAUNCH-side watch alongside the
+exit-side one. Poll `docker ps --filter name=<pattern>` (the pattern from
+the run's naming convention) on an interval, e.g. every 60s:
+- Emit LAUNCH CONFIRMED on the first match.
+- If no match appears after a bounded window (about 15 minutes), emit a
+  STALL WARNING carrying `nvidia-smi` memory and the current `docker ps`
+  output, and exit nonzero rather than continuing to wait silently.
+
+Two corollaries:
+- Name dry-run containers on the SAME convention as real runs (e.g.
+  `<run-id>-dryrun-<timestamp>`), not left to Docker's random auto-name. An
+  unnamed dry-run container costs an extra `docker inspect` just to identify
+  which container it is.
+- Never end a turn on an unconfirmed async wait. If a launch was dispatched,
+  confirm it started, or report that it did not, before the turn ends; do
+  not hand off "launched" as a claim that was never checked.
+
+## Observing a detached training container
+
+Learned across the GRPO three-seed chain (2026-08-04/05), where every long
+training job ran detached under `docker run -d`.
+
+- **`docker logs` on a detached container is block-buffered and will look
+  frozen.** Python's stdout is not line-buffered when it is not a TTY, so the
+  log can sit unchanged at the last flushed block for many minutes while the
+  job is healthily training. Observed repeatedly: a container stuck at 27 log
+  lines while `nvidia-smi` showed 16.9 GB used and 100% utilization. **A static
+  log is not evidence of a stall, and is not evidence of progress either.**
+- **Use the trainer's own run-directory JSONL as the progress signal.** Every
+  trainer in this program writes `<run_dir>/logs/training_<timestamp>.jsonl`
+  (plus a `training_latest.jsonl`) with per-interval records carrying `step`,
+  `epoch`, `loss`, `elapsed_seconds`, and a full GPU/RAM capacity block. This
+  file is written directly, bypasses stdout entirely, and is the reliable way to
+  read live progress. Parse it with newline-only splits, never
+  `str.splitlines()`.
+- Corollary for liveness checks: `docker inspect` status plus `nvidia-smi`
+  utilization prove the process is alive; only the JSONL proves it is making
+  *training* progress. Prefer the JSONL; fall back to the other two.
+- If you genuinely need the literal printed banner from a detached run, it
+  flushes at the first logging checkpoint or at process exit. Do not block on
+  it: the banner is deterministic given the config file, so a dry-run against
+  the byte-identical config establishes the same values before launch.
+- `rtk`-proxied `docker logs` returns a filtered "Log Summary" that omits the
+  actual output. Use `rtk proxy docker logs` to see raw container output.
+
+## Training container stdout contains dataset row text (all trainers)
+
+Found during the GRPO `grpo_v2` launch (2026-08-05), then checked against the
+other three trainers: this is not a GRPO-specific behavior. SFT, DPO, KTO, and
+GRPO each carry their own independent copy of a `print_dataset_samples`
+function (not shared code, four separate implementations) and each calls it
+with `num_samples=2` right before model loading, so every trainer's stdout
+(and therefore `docker logs` for every trainer's container) opens with two
+real dataset rows:
+
+- SFT: defined `Trainers/sft/src/data_loader.py:240`, called at
+  `Trainers/sft/train_sft.py:965`. Prints per-message role/content previews
+  (first 100 chars) for conversational rows, or a truncated text/completion
+  field (first 200 chars), plus `label` if present.
+- KTO: defined `Trainers/kto/src/data_loader.py:340`, called at
+  `Trainers/kto/train_kto.py:678`. Prints `label`, and `prompt`/`completion`
+  each truncated to 200 chars.
+- DPO: defined `Trainers/dpo/src/data_loader.py:157`, called at
+  `Trainers/dpo/train_dpo.py:477`. Prints `prompt`/`chosen`/`rejected` message
+  content each truncated to 160 chars.
+- GRPO: defined `Trainers/grpo/src/data_loader.py:93`, called at
+  `Trainers/grpo/train_grpo.py:337`. Prints row `keys`, `prompt` (truncated to
+  200 chars, or the first 2 messages for message-list prompts),
+  `ground_truth_tool`, and `ground_truth_args_json` (truncated to 200 chars).
+
+A fifth copy exists at `Trainers/mlx_sft_mac/src/data_loader.py:301`, but
+nothing in `Trainers/mlx_sft_mac/train_sft.py` calls it, so that lane does not
+currently print row samples.
+
+This repo is public. Quoting container logs is the natural way to demonstrate
+that a run started correctly, and for any of these four trainers that habit
+publishes real dataset content (question/prompt text, and for KTO/DPO also
+completion/chosen/rejected text) into whatever it gets pasted into.
+
+Rule:
+- Never paste `docker logs` output from a training container (any trainer,
+  not just GRPO) into the repo, a commit message, a PR body, an issue, or any
+  agent report.
+- Never redirect that stdout to a tracked path.
+- To evidence a correct launch, use `docker inspect` (image digest,
+  `Config.Cmd`, container state) and the run's own artifacts
+  (`training_lineage.json`, metrics logs), none of which carry row text.
+- If log inspection is genuinely needed for debugging, keep it in the
+  terminal and quote only the specific non-row lines required, never the
+  `Dataset samples:` block itself.
+
+## Dry-run cost by trainer (verify before budgeting a pre-launch check)
+
+Dry-run before every multi-hour launch is standing practice in this program.
+The cost is not uniform, because the trainers put their `--dry-run` early exit
+in different places. Read the source rather than assuming:
+
+| Trainer | `--dry-run` exits | Cost |
+| --- | --- | --- |
+| `Trainers/dpo/train_dpo.py` | BEFORE `load_model_and_tokenizer` | free, ~15 s |
+| `Trainers/kto/train_kto.py` | AFTER model load + LoRA apply | ~1 min |
+| `Trainers/sft/train_sft.py` | AFTER model load + LoRA apply | ~35 s |
+| `Trainers/grpo/train_grpo.py` | after model load | ~90 s |
+
+All four are cheap against a 1-8 h run; run the dry-run regardless. The point of
+the table is that only DPO's is genuinely free, so do not assume a "quick check"
+costs nothing on the others when the GPU is contended.
+
+## LoRA hyperparameters are per-trainer, not inherited from a trainer's defaults
+
+A trainer's own config file ships baked-in LoRA defaults. Those defaults are
+per-trainer and are not the registered adapter spec, even when one trainer's
+defaults happen to line up with it.
+
+Confirmed by reading the configs: `synaptic-tuner/Trainers/kto/configs/config.yaml:7-9`
+defaults to `r: 64`, `lora_alpha: 128`, `lora_dropout: 0.05`, double the
+registered adapter rank and alpha for the current experiment arms (r=32,
+alpha=64, dropout=0.05). `synaptic-tuner/Trainers/dpo/configs/config.yaml:7-9`
+defaults to `r: 32`, `lora_alpha: 64`, `lora_dropout: 0.05`, which already
+matches the registered spec, but that match is a property of that one
+trainer's config file, not something that propagates to other trainers. A
+"defaults already match, so pass no LoRA flags" habit formed against DPO does
+not generalize to KTO; carried over, it silently trains at double adapter
+capacity while every other precheck still passes.
+
+Rule: never infer LoRA hyperparameters from a trainer's defaults, and never
+carry a "defaults match" finding from one trainer to another. Pass
+`--lora-r`, `--lora-alpha`, `--lora-dropout` explicitly on every launch. Both
+trainers accept them (`synaptic-tuner/Trainers/kto/train_kto.py:390-392`,
+`synaptic-tuner/Trainers/dpo/train_dpo.py:241-243`) and both use `is not None`
+checks so the override always wins over the config default. Confirm the
+resolved values in the dry-run banner before the real launch (`Rank:` /
+`Alpha:` / `Dropout:` lines at `train_dpo.py:500-502` and
+`train_kto.py:785-787`), and verify them again at closeout in the run's
+`training_lineage.json`, which carries a top-level `"lora"` block built from
+the same `config.lora.r` / `lora_alpha` / `lora_dropout` values
+(`synaptic-tuner/shared/training_utils.py:147-196`, `build_base_lineage`).
+
+See also the "Before launching a one-off KTO cell" bullet earlier in this
+file, which recorded a near-miss with these exact numbers (a stale handoff
+summary carrying `lr=5e-6`, LoRA r64/alpha128 instead of the runbook's
+`lr=1e-6`, r32/alpha64). That bullet is about trusting a stale summary over
+the checked-in runbook; this section is the more general rule: don't infer
+LoRA values from ANY trainer's built-in config defaults, for any trainer.
+
+## Merge step invocation
+
+Two invocation failures when calling `merge_lora_checkpoint`
+(`synaptic-tuner/shared/model_loading/merge.py:162`) directly from a
+standalone script rather than through the tuner's merge handler:
+
+- **cwd must be inside `synaptic-tuner/`.** The `shared` package that holds
+  the merge helper lives at `synaptic-tuner/shared/`, not at the research
+  repo root (there is no `shared/` directory at the repo root; the module is
+  imported elsewhere as `from shared.model_loading import merge`, e.g.
+  `synaptic-tuner/tests/trainers/embedding/test_merge_seam_behavior_preservation.py:40`).
+  Running the merge with cwd at the repo root fails with
+  `ModuleNotFoundError: No module named 'shared'`.
+- **Wrap `lora_path` / `output_path` in `Path(...)`.** The function signature
+  types both as `pathlib.Path`
+  (`merge_lora_checkpoint(lora_path: Path, output_path: Path, ...)` at
+  `merge.py:162-168`), and the implementation calls
+  `output_path.mkdir(parents=True, exist_ok=True)` internally
+  (`merge.py:105` for the causal-LM path, `merge.py:136` for embedding).
+  Passing raw strings fails with `AttributeError: 'str' object has no
+  attribute 'mkdir'`.
+
+The CLI-level entrypoint (`synaptic-tuner/tuner/handlers/merge_handler.py`)
+already gets both of these right; the failure mode is specific to calling
+`merge_lora_checkpoint` directly.
+
+## Interpreting a backup polling monitor's terminal report
+
+When a training container is watched by a polling loop as a backup to
+`docker wait` (see "Teammate watch discipline for long containers" above),
+and the container is pruned between polls (e.g. by `prune_runtime.sh stage`,
+see "Compute accounting after stage-boundary pruning" below), the poller
+reports the container as gone from the daemon rather than reporting an exit
+code. That "gone" reading is a TERMINAL state (stop polling), but it is not
+evidence of failure, and it is not evidence of success either: it only says
+the daemon no longer has a record for that container ID.
+
+The authoritative exit code comes from the `docker wait` watch's output file,
+not from the poller. This is the same distinction as the rule that a
+background wait task's own reported exit status is the status of the WAIT
+command, not of the container. The poller's "container gone" report is
+similarly a statement about the daemon lookup, not about training outcome.
+Verify success or failure from the `docker wait` output file plus host
+artifacts (`final_model`, `training_lineage.json`, metrics logs), never from
+the poller's terminal state alone.
+
+## Compute accounting after stage-boundary pruning
+
+`prune_runtime.sh stage` removes stopped containers, so `docker inspect` cannot
+reconstruct GPU hours after the fact — a whole seed's containers will report
+zero. **Compute GPU-hours from the run records instead**: the run directory name
+encodes the start timestamp (`YYYYMMDD_HHMMSS`) and `training_lineage.json`
+carries the end `timestamp`, so the duration is the difference. Several trainers
+also record `training_time_seconds` directly in the lineage file; prefer that
+when present. This is the durable source and survives pruning.
+
+## mechinterp-runner writes root-owned files (2026-08-09)
+
+The `mechinterp-runner` image has no `USER` directive, so containers run as
+root and every file the container writes lands on the host as `root:root`
+mode 600 - unreadable by the host user that downstream CPU stages run as. A
+pre-launch `chmod a+rwX` on the output directory does NOT cover files the
+container creates during the run. Two containment-safe remedies, in order of
+preference: (1) run the container with `--user $(id -u):$(id -g)` when the
+workload does not need root; (2) after exit, widen bits with a throwaway
+container from the SAME pinned image (`--entrypoint /bin/chmod -R a+rwX
+<dir>`), which changes no file content and stays inside the pinned
+instrument. Contrast with the unsloth eval image, which runs as uid 1001 and
+has the opposite problem (needs world-writable output dirs pre-launch).
+Package gaps found and fixed in the image 2026-08-09 (requests, peft,
+pandas - the CLI router eagerly imports all handler modules before ANY
+verb): if a mechinterp verb fails at import time inside the image, check the
+router's eager-import block before suspecting the verb's own deps, and fix
+by Dockerfile pin + rebuild + repin, never by pip-install into a pinned
+runtime.

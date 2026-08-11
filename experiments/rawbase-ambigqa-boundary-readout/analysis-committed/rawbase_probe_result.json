@@ -1,0 +1,12 @@
+{
+  "cell": "rawbase-ambigqa-boundary-readout",
+  "statistic": "m1_heldout_probe_auroc",
+  "layer": 35,
+  "n_panel": 2748,
+  "n_panel_known": 1245,
+  "n_panel_unknown": 1503,
+  "heldout_probe_auroc": 0.6338,
+  "heldout_probe_auroc_std_across_folds": 0.0104,
+  "emitted_margin_subcheck": "NOT_READ (registered; raw base has no emitted surface)",
+  "protocol": "internal_panel_probe_gate._cv_auroc_with_oof unchanged (folds=5, C=0.5, seed=0)"
+}

@@ -1,6 +1,6 @@
 # Terminology: the margin-theory vocabulary rename
 
-Status: draft, 2026-07-18. Single source of truth for the program's vocabulary
+Status: draft, 2026-07-18; extended 2026-08-10 (IDK switch scope, caution-gate retirement). Single source of truth for the program's vocabulary
 rename, adopted in `docs/research/margin-theory-framework.md` section 3 after
 the gate-contribution factorial. All five papers (and the planned paper 6)
 cite this file instead of each running an independent rename pass.
@@ -15,7 +15,8 @@ wherever they appear, in this file and in every paper.
 |---|---|---|---|
 | doubt direction (synonyms in prior prose: doubt axis, doubt readout) | known-unknown direction (KU direction; symbol c_hat unchanged); for the probe reading specifically, known-unknown (answerability) readout | Names how it was fit (separating known from unknown items), not a claim about the model's mental state. | `docs/research/margin-theory-framework.md` section 3 (table row 1); falsification context in `experiments/gate-contribution-factorial/AMENDMENT.md`, Outcome. |
 | doubt gate | KU readout gate | It is a classifier threshold used for deployment targeting; calling it "doubt" implied it detected doubt rather than thresholded a readout. | `docs/research/margin-theory-framework.md` section 3 (table row 2); `experiments/gate-contribution-factorial/AMENDMENT.md`, Outcome (gate axis falsified on both families: Gap_Sel(c_hat) 0.148 qwen, CI [0.119, 0.177], and 0.129 mistral, CI [0.103, 0.156], against a registered 0.20 floor). |
-| caution write | boundary push (dosed write) | The intervention displaces the state toward an existing boundary; it is not shown to install a disposition. | `docs/research/margin-theory-framework.md` section 3 (table row 3); `experiments/ungated-vs-gated-dose-matched/AMENDMENT.md`, Outcome (H4-G1/H4-G2); `experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md`, Outcome note 3. |
+| caution write | IDK switch, for the validated actuator only (the frozen Qwen3.5-4B hs20 operating point); boundary push (dosed write) for any other dosed write | The actuator name was earned by a registered confirmatory naming cell (discrete flip to explicit IDK at the endpoint, no graded intermediate at mid-dose, direction-specific), so it applies exactly where it was validated. Generic or historical dosed writes at other sites keep the descriptive boundary-push name, which claims only displacement, not an installed disposition. | `experiments/idk-switch-naming-confirmatory/AMENDMENT.md`, Outcome (all three name-earning gates PASS, resolved 2026-07-31); `docs/research/margin-theory-framework.md` section 3 (table row 3); `experiments/ungated-vs-gated-dose-matched/AMENDMENT.md`, Outcome (H4-G1/H4-G2). PI scope ruling 2026-08-10 (see below). |
+| caution gate (paper 3 working label; interim "caution axis" also superseded) | refusal axis | "Gate" asserts conditional switching control no registered cell earned, and "caution" attributes a mental disposition no experiment measured. The operational facts are: the direction is fit as a refuse-versus-answer contrast among known items, it is separable from the known-unknown axis, and ablating it collapses over-refusal with one-way leverage. "Refusal axis" names exactly that fit and that causal handle, and claims nothing more. The earned switch name belongs to the write actuator (row above) and does not extend to the read-side mechanism. | Paper 3 sections 5 and 6 (separability and one-way ablation evidence); naming discipline per `experiments/idk-switch-naming-confirmatory/AMENDMENT.md` (names are earned by registered gates). PI rulings 2026-08-10 (see below). |
 | confab propensity | split into two constructs: baseline confab rate (behavior without intervention) and commitment margin (fragility under intervention) | One name was carrying two different quantities: what the model does unprompted, and how easily an intervention flips it. | `docs/research/margin-theory-framework.md` section 2 (Claim 1) and section 3 (table row 4); commitment margin operationalized per row in `experiments/margin-mapping/AMENDMENT.md`, Outcome (resolved 2026-07-17, qwen35_4b only; mistral void by instrument loss). |
 | (unnamed) | boundary anisotropy | Names a measured family-level property: whether short margins are direction-specific (qwen) or generic (mistral). | `docs/research/margin-theory-framework.md` section 2 (Claim 4); `experiments/gate-contribution-factorial/AMENDMENT.md`, Outcome (S1 direction-specificity ratio 7.27 qwen, sign-opposed, passes; 2.03 mistral, fails). |
 | doubt-coupling | KU-readout coupling (first mention may expand: known-unknown readout coupling) | The mechanism makes the gate a live function of the readout; the coupling is to a readout, not to a mental state. | Construct defined in `experiments/doubt-regulated-caution/AMENDMENT.md`; naming follows the KU-readout-gate row above. Lead adjudication 2026-07-18 (see below). |
@@ -41,6 +42,36 @@ above and recorded here:
   `papers/paper-5-actuation/manuscript.md`), is ruled to rename to
   **KU-readout coupling**, following the KU-readout-gate row. The governed
   doc's own name and slug stay verbatim under usage rule 1.
+
+### Adjudicated extensions (PI rulings, 2026-08-10)
+
+- **IDK switch** is adopted as the earned name of the caution-write actuator,
+  scoped to exactly what the confirmatory naming cell validated: the frozen
+  Qwen3.5-4B hs20 operating point (`experiments/idk-switch-naming-confirmatory/`,
+  resolved 2026-07-31, all three name-earning gates PASS). The PI ruled the
+  name actuator-only: it does not extend to the read-side refusal-axis mechanism,
+  to other write sites, or across families. Dosed writes outside the
+  validated actuator keep "boundary push (dosed write)".
+- **caution gate** is retired program-wide. The PI's rule: mechanism names
+  are earned through experiment, and no registered cell earned gate
+  semantics (conditional switching control) for the read-side mechanism.
+- **caution axis** was proposed as the replacement and rejected by the PI
+  the same day, under the same rule: "caution" is an inferred mental state
+  no experiment measured, so it has no more earned standing than "gate".
+  Paper 3's construct renames to **refusal axis**, the fully operational
+  name: it is fit as a refuse-versus-answer mass-mean contrast among known
+  items, is separable from the known-unknown axis (whitened cosine about
+  -0.61), and ablation along it collapses over-refusal on knowns (0.994 to
+  0.030) with one-way leverage. Every word in the name is a measured fact.
+  "Caution" survives in running prose only in its ordinary-English caveat
+  sense, never as a construct name.
+- **Disambiguation**: the family-atlas read panel's `caution` axis is a
+  DIFFERENT contrast (refused-versus-confabulated, per
+  `docs/atlas/family-layer-map.md`) that shared the working label. In
+  running prose it renders as the **refusal-versus-confabulation
+  contrast**, never as "refusal axis", which is reserved for the
+  refuse-versus-answer-among-knowns construct. The atlas artifact keys
+  (`doubt` / `caution` / `raw_refusal`) stay verbatim as keys.
 
 ## 2. Scope: where the old names held, and why generalizing prose needs new ones
 

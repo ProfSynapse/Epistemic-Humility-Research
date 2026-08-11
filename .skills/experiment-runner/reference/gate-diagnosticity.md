@@ -90,6 +90,50 @@ reopen the verdict. For a NEW pre-registration, prefer:
    scoreboard, and a well-separated readout gate gets silently rewarded with
    an unfalsifiable cost claim.
 
+## A sibling trap: an eval metric's own denominator shrinks with the intervention
+
+The pattern above is about a gate's denominator including rows the
+intervention never touched. The mirror-image trap is a denominator that
+EXCLUDES rows precisely because of how the intervention changed them, which
+is just as capable of manufacturing a false improvement.
+
+Verified case: `archive/experiment/phase1/eval/scorers.py` computes
+`correct_on_known_pct` as `correct_known / answered_known`
+(`scorers.py:287`), where `answered_known` only counts known-labelled rows
+the model did NOT refuse (incremented at `scorers.py:268`, inside the `else`
+branch of the refusal check at `scorers.py:265-269`). Every other headline
+rate in the same function divides by a fixed label-class count that is
+incremented unconditionally, before the refusal branch is reached:
+`refusal_recall_pct` (`:281`), `answer_on_unknown_pct` (`:282-284`), and
+`over_refusal_pct` (`:285`) all divide by `n_unknown_labeled` /
+`n_known_labeled`.
+
+Effect, from one real GRPO seed-3 comparison: `answered_known` fell 958 to
+732 (-23.6%) while `correct_known` fell 455 to 403 (-11.4%). Because the
+denominator shrank faster than the numerator, `correct_on_known_pct` ROSE
+47.49% to 55.05% (+7.56pp), even though the same numerator over the FIXED
+known-row count (`correct_known / n_known_labeled`) FELL, 19.47% to 17.24%
+(-2.23pp). The filtered-denominator metric reports improvement for a model
+that got 52 fewer known questions right.
+
+Rule: before comparing any rate across arms, find its denominator in the
+scorer source. If the denominator can be changed by the intervention itself
+(here, refusing more shrinks `answered_known`), the rate is not comparable
+across arms on its own; report it with its denominator stated and, ideally,
+the raw numerator count alongside it. General smell to watch for: two
+metrics moving in a direction that "should" trade off (over-refusal UP and
+accuracy UP, together) is a prompt to go read the denominators, not a result
+to accept at face value.
+
+A related failure mode in the same block: `truthful_pct` (`scorers.py:289`)
+sums raw counts, `refuse_on_unknown + correct_known`, over the FIXED full
+row count `n`. In this same comparison it looked nearly flat (+0.53pp on
+seed 3, +0.18pp on seed 2), but that flatness was two real, opposing effects
+cancelling: a refusal-on-unknown gain and a correct-known loss of comparable
+size (+70/-52 rows on seed 3, +45/-39 rows on seed 2). A flat composite
+metric must be decomposed into its component counts before it is reported as
+"no effect."
+
 ## Checkable habit (apply before trusting any gate result, not only at design time)
 
 Before accepting a cost/harm gate's PASS as evidence:

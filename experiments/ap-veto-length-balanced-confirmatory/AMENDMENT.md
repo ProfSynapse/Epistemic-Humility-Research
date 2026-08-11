@@ -1,8 +1,15 @@
 # ap-veto-length-balanced-confirmatory
 
-Status: draft (not signed; do not launch as confirmatory evidence). Tier-2
+Status: resolved (registered; see `experiment.yaml` for the verdict). Tier-2
 confirmatory follow-up to Amendment AM. Never pooled with the locked Phase 1
 matrix or the PR #205 published veto operating characteristics.
+
+Header correction 2026-08-08: this line previously still read "draft (not
+signed; do not launch as confirmatory evidence)", a stale banner left over
+from the drafting stage. The manifest (`experiment.yaml`: `registered: true`,
+`status: resolved`, verdict recorded) is the machine state of record and was
+already correct; only the banner was stale. Corrected during the paper-4
+review pass; no substantive content changed.
 
 Machine state lives in `experiment.yaml`; it is not duplicated here.
 

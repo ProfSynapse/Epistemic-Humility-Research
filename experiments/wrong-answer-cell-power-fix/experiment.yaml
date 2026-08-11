@@ -1,0 +1,84 @@
+slug: wrong-answer-cell-power-fix
+title: Wrong-answer cell power fix (paper-3 internal-vs-stated re-estimation)
+type: probe-fit
+status: falsified
+registered: true
+created_at: '2026-08-08T22:24:12Z'
+question: On hundreds of wrong-answered rows instead of sixteen, does the internal
+  known-unknown axis still rank the model's own correct versus wrong answers better
+  than its emitted response_confidence does, and does the calibration contrast in
+  paper 3 Figure 1 survive once the answered-known base rate is no longer 96 percent?
+prediction: Internal refit readout AUROC(correct vs wrong) lands at 0.60 to 0.72 against
+  the emitted scalar's already-measured 0.5207, a gap of +0.08 to +0.20 with a paired
+  CI excluding 0; internal ECE rises off 0.004 to 0.05 to 0.15 raw while emitted ECE
+  rises to 0.25 to 0.32 raw, so the calibration contrast survives and widens under
+  both accountings; the correct > wrong internal ordering holds.
+falsifier: 'On at least 300 wrong rows the internal refit readout ranks correct versus
+  wrong at AUROC below 0.60 AND the gap over the emitted scalar is at most +0.05 with
+  a paired CI including 0: the internal axis does not discriminate its own correctness
+  better than the stated channel at deployment, overturning manuscript.md:336-337
+  in its discrimination half.'
+checkpoint:
+  repo: local; clean-SFT merged-16bit base (sft_schema_clean_seed1_full/20260623_123624)
+    with the GRPO-v2 LoRA active as the primary arm and the adapter disabled as the
+    control arm
+  revision: schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - row_join.py
+  - readout.py
+  - arm_a_extract.py
+  - score_gates.py
+  - real_run.py
+  pins:
+    cell.yaml: 5ee37dd3bdb12e64dd526441f34e732d241e11fbd9c6841879d51ae3ed7b6b34
+    gates.yaml: 01ee0b017009cf6298a77c60fb5e2a82a67324c1bc0a7d4398489ee1bad2cc54
+    row_join.py: 187ddd53f7d8027fa0b06dbbf92bd5fa50b65180b56d4ea34c304a9d28d6aa85
+    readout.py: 75f2c17b2eb0c59a88bdc6f8aca6770db9985adfd0c933f0157458cb5384496b
+    arm_a_extract.py: 0b5f9b25a3cfc7d9b4b6614d57a6fd868880896e093dc380db03121ca4890687
+    score_gates.py: cbf8e154b9423f1875b600118e35b5b7de5b0d44e36ab3cdb77bf67caaf2a23a
+    real_run.py: 893c66366800027099ed837e584167c8764bb3d8b1e0286273e591e5bd14b1fa
+  persistence:
+    row_join.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.16
+    readout.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 2.3
+    arm_a_extract.py:
+      persistence: incremental
+      checkpoint_path: experiments/wrong-answer-cell-power-fix/analysis/hidden_states/wrong-answer-cell-power-fix-arm-a/extraction/<extraction_id>/rows.jsonl
+    score_gates.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 7.0
+inputs:
+- experiments/probe-scaled-response-confidence/analysis/phase1-migrated/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b/clean_schema_sft_grpo_v2_seed1_corrected_base__selfaware/scored_rows.jsonl
+- experiments/probe-scaled-response-confidence/analysis/phase1-migrated/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_4b/clean_schema_sft_merged_seed1__selfaware/scored_rows.jsonl
+- archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml
+- archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json
+- archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed1_full.yaml
+- experiments/common/artifacts/row_manifests/selfaware/mechinterp_selfaware_frozen_row_manifest.json
+- datasets/selfaware/SelfAware.json
+- datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+- datasets/popqa/test.jsonl
+verdict: 'Prediction FALSIFIED; primary falsifier fired as worded. On 360 deployment-rendered
+  wrong / 420 correct answered-known rows (vs the paper''s 16), the known-unknown
+  axis at pinned L35 ranks the model''s own correct vs wrong answers at AUROC 0.5597
+  (CI 0.5185-0.5993, floor 0.60/0.55) and beats the emitted response_confidence channel
+  by +0.0390 (CI includes 0, floor +0.05): E1 and E2 FAIL, all G0 integrity gates
+  PASS, red-team reproduced every number exactly and the null is not instrument-induced.
+  SCOPE (binding for write-ups): overturned at the AXIS level only; an unregistered
+  full-dimension context probe on the same vectors reaches 0.6769/0.6995, so correct-vs-wrong
+  is linearly present in the residual stream and the finding is that the known-unknown
+  axis does not carry it at deployment. The raw calibration contrast survives decisively
+  (A7 +0.2373, CI 0.1853-0.2769); E3''s reweighted arm fired on an arithmetic degeneracy,
+  recorded as such. E4 PASS under the adjudicated out-of-fold reading (step 4.85,
+  CI excludes 0). Arm B not run by PI decision; E5 not computed; verdict independent
+  of Arm B. The M7 comparator drop (0.649 to 0.5597) is power AND render-surface confounded,
+  never differenced without caveat.'
+kg:
+- experiment:wrong-answer-cell-power-fix
+- mechanism:known-unknown-axis-does-not-carry-answer-correctness-at-deployment

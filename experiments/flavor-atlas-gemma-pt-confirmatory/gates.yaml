@@ -1,0 +1,199 @@
+# flavor-atlas-gemma-pt-confirmatory gates. Fail-closed; any GG failure
+# voids the dependent G readings before they are looked at. All numbers
+# fixed at signing, before any Gemma flavor number exists. Bands 0.90 and
+# 0.75 are lifted verbatim from flavor-atlas-rawbase/gates.yaml; the 0.85
+# transfer bar from that file is deliberately NOT reused (see
+# transfer_band_derivation).
+#
+# RENDER SWAP (lead adjudication, "Amendment Y base-mode k-shot render
+# rule"): the base-mode k-shot surface is PRIMARY (all G1-G5 readings);
+# the chat-template surface is the descriptive G6 control. This is the
+# reverse of the original draft's default and follows the draft's own
+# stated fallback ("swap the primary and the control; the arithmetic is
+# unchanged").
+
+gg0_substrate_and_input_integrity:
+  direction: pass_required
+  checks:
+    model_repo_must_equal: google/gemma-4-E4B
+    model_base_form_must_equal: pretrain-only base, no adapter, bf16
+    model_revision_must_equal: 411aa17b749aa952df1359d2dcea73917a544d9a
+    n_text_decoder_blocks_must_equal: 42
+    n_hidden_states_must_equal: 43
+    hidden_dim_must_equal: 2560
+    adapter_must_be_absent: true
+    kuq_panel_sha256_must_equal: 69433a777d40b76544b7f4575bc042bb2a9d4d159ca6e8a8bf20d133cf0a8eef
+    ambigqa_panel_sha256_must_equal: ee60cbf9115eefc18a997a0a81600ce627789c6f710f9905fe959936ba33d7f2
+    selfaware_panel_sha256_must_equal: 378762ac7cd703743b7b4edc54bdbdd86fa47e1cd8657688f4dbf5d43aa186f0
+    panels_manifest_sha256_must_equal: 6a58e429c930723c9e6c29afa76821cacbdc9a92b053ec4975c8618f8a5225d0
+    probe_module_sha256_must_equal: ee3f22eed5f8b4fe8f260c5b3335c565156eadfcf083473bb445921d29885b08
+    kuq_rows_must_equal: 5540
+    kuq_known_must_equal: 3071
+    kuq_unknown_must_equal: 2469
+    kuq_flavor_counts_must_equal:
+      ambiguous: 411
+      controversial: 490
+      counterfactual: 403
+      false assumption: 368
+      future unknown: 490
+      unsolved problem: 307
+    ambigqa_rows_must_equal: 2748
+    selfaware_rows_must_equal: 3369
+  derivation: >-
+    Base form is the claim. An instruction-tuned checkpoint cannot evidence
+    a statement about what pretraining leaves behind, and a changed panel
+    silently changes which flavor is being read. Revision confirmed at
+    signing via HfApi().model_info, no weight download (public, ungated).
+
+gg1_kv_seam_admissibility:
+  direction: pass_required
+  checks:
+    every_extraction_manifest_forward_use_cache_must_equal: true
+    mechinterp_extract_verb_must_not_be_used: true
+    no_artifact_from_capture_py_may_be_read: true
+    paired_smoke_rows: 32
+    paired_smoke_admissible_outcomes:
+      - hs00_to_hs24_identical_and_divergence_begins_at_hs25
+      - all_layers_identical
+    paired_smoke_halt_outcome: divergence_at_or_below_hs24
+  derivation: >-
+    gemma-4-E4B blocks 24-41 read donor K/V from blocks 22/23 through the
+    cache object (config.json text_config.num_kv_shared_layers: 18,
+    confirmed at signing, matches exactly the 18 blocks 24-41).
+    synaptic-tuner/MechInterp/extraction/capture.py:161 passes
+    use_cache=False unconditionally, which starves those blocks and makes
+    hs25-hs42 garbage (cos 0.732 -> 0.075) while hs00-hs24 stay
+    bit-identical. Qwen, llama and mistral are unaffected, so the Qwen cell
+    never had to gate on this. Only a forward_use_cache==True full-depth
+    extraction is admissible. The live 32-row GPU smoke has NOT been run in
+    this signing-prerequisite pass (GPU verbs are out of scope here); only
+    the synthetic classifier-logic harness has been CPU-smoked.
+
+gg2_capture_completeness:
+  direction: pass_required
+  checks:
+    kuq_rows_extracted_must_equal: 5540
+    ambigqa_rows_extracted_must_equal: 2748
+    selfaware_rows_extracted_must_equal: 3369
+    dual_render_rows_extracted_must_equal: 1800
+    complete_flag_must_be_true_for_each: true
+    n_hidden_states_present_must_equal: 43
+    anchor_position_must_equal: prompt_len-1
+    hidden_dim_must_equal: 2560
+
+gg3_runtime_provenance:
+  direction: pass_required
+  checks:
+    image_digest_must_equal_manifest_runtime_image_digest: true
+    provenance_json_line_must_appear_in_each_run_log: true
+    one_gpu_job_at_a_time: true
+  derivation: >-
+    standing directive 2026-07-10, mechinterp local GPU verbs. Digest
+    confirmed at signing via `docker image inspect mechinterp-runner:local`
+    (read-only): sha256:2471502c3110a96d4955b48eb58da41e96a90276d22c4d5f1eac2c99b60a2cf8,
+    matches char for char.
+
+gg4_hidden_state_0_sanity:
+  direction: pass_required
+  checks:
+    hs0_auroc_must_be_at_most: 0.55
+    applies_to: [six kuq flavors, pooled, selfaware, ambigqa]
+  derivation: >-
+    The anchor is the final token of a fixed template, so hidden state 0
+    should carry no row-level information. Amendment Y measures 0.4979 on
+    this pt checkpoint and the Qwen atlas measures exactly 0.5000 on its
+    own. A separating hs0 means the anchor is not what the design assumes.
+    Not lifted from a committed gate; derived as a loose sanity bound from
+    the two committed observations above (draft open question 9, left
+    as-is at signing).
+
+gg5_residualization_controls:
+  direction: pass_required_for_secondary_only
+  checks:
+    min_activation_oof_r2_at_each_primary_layer: 0.01
+    permutation_null_quantile: 0.95
+    min_above_permutation_quantile: 0.005
+    n_permutations: 20
+    min_permuted_runs_keeping_all_six_flavors_at_or_above_0_90: 18
+    plant_layer_hidden_state_index: 0
+    planted_pooled_auroc_must_reach_at_least: 0.90
+    residualized_planted_pooled_auroc_must_be_at_most: 0.75
+    prohibited_surface_inputs_absent:
+      [source, panel, category, flavor, label, generated_text,
+       completion_length, answer_correctness, answer_text, aliases]
+    surface_basis: >-
+      question-text-only: scalar text-shape covariates (length, token
+      count, digit/punctuation/newline/uppercase counts and fractions) plus
+      hashed word/char n-gram features reduced by truncated SVD. No
+      source/panel/category/flavor/label one-hot columns (present in the
+      family-atlas-surface-residualization-control reference instrument but
+      removed here because they ARE the prohibited signal for this cell).
+    alpha_grid: [0.01, 0.1, 1, 10, 100, 1000]
+    outer_folds: 5
+    inner_folds: 3
+  derivation: >-
+    Carried from family-atlas-surface-residualization-control and the
+    companion cell flavor-atlas-surface-control-confirmatory, adapted per
+    this cell's own prohibited-input list. outer_folds=5/inner_folds=3 is
+    this cell's own choice (not lifted from a prior pin, since no prior
+    cell's exact fold counts were available at signing time): 5 matches the
+    probe protocol's own established StratifiedKFold(5) discipline
+    elsewhere in this program, 3 matches the draft's explicit "inner
+    three-fold" language. Flag for lead review before sign-off if a
+    different fold count was intended. Failure makes P4 and F3
+    indeterminate; it does not touch P1, P2, P3.
+
+gg6_containment:
+  direction: pass_required
+  checks:
+    committed_output_is_counts_only: true
+    no_question_text_in_analysis_committed: true
+    no_row_level_matrix_prediction_or_activation_in_analysis_committed: true
+
+g_bands:
+  probe_protocol: internal_panel_probe_gate._cv_auroc_with_oof unchanged (item 26 pin ee3f22ee; folds=5, C=0.5, seed=0, out-of-fold AUROC)
+  primary_render: base_mode_kshot (Amendment Y rule; vendored byte-identical _BASE_MODE_FEWSHOT/build_base_mode_prompt)
+  control_render: chat_template (google/gemma-4-E4B-it template + Qwen render's verbatim system prompt), descriptive only, G6
+  leg_a_prefixed_anchor_hidden_state: 24
+  leg_a_derivation: >-
+    Best layer of Amendment Y's committed answerability surface on this
+    exact pretrain-only checkpoint (0.9975, CI [0.9956, 0.9989]), selected
+    on known_answered vs hallucination over a 1233-row SelfAware subset,
+    which is a different label set and estimator from the six KUQ flavor
+    probes this cell decides on. Depth 24/42 = 0.571. Also the top of the
+    seam-safe hs00-hs24 region.
+  leg_b_split_half_selection:
+    selection_fraction: 0.50
+    stratified_by: [label, flavor]
+    rule: best layer chosen on the selection split; reported AUROC computed out of fold on the complementary evaluation split at that layer
+  primary_cells: 6 flavors x 2 legs = 12
+  p1_replication_floor_heldout_auroc: 0.90
+  p2_ambigqa_ceiling_all_43_hidden_states: 0.75
+  p3_transfer_offdiagonal_floor_among_seven_overt: 0.75
+  p3_transfer_ambigqa_ceiling_either_direction: 0.75
+  p4_residualized_floor: 0.90
+  p5_selfaware_floor: 0.90
+  f1_clause_a_fails: any of the twelve primary cells below 0.90
+  f2_clause_b_fails: ambigqa at or above 0.90 at any hidden state
+  f3_style_artifact: all six flavors at or below 0.75 residualized at both legs
+  f4_transfer_fails: any off-diagonal among the seven overt sources below 0.75
+  ambiguous_zone: strictly between 0.75 and 0.90, reported per flavor, no promotion
+  transfer_band_derivation: >-
+    flavor-atlas-rawbase's F1 limb used 0.85 for off-diagonal transfer. That
+    bar is NOT reused: the Qwen cell's own realized minimum off-diagonal
+    among the seven overt sources was 0.8331, below 0.85, so requiring 0.85
+    here would require the replication to beat what it replicates. 0.75 sits
+    below Qwen's realized minimum (0.8331) and above Qwen's realized maxima
+    into AmbigQA (0.5746) and out of AmbigQA (0.5853).
+
+no_goalpost_movement:
+  rule: >-
+    Bands fixed at signing and inherited verbatim from
+    flavor-atlas-rawbase/gates.yaml and
+    family-atlas-surface-residualization-control. The twelve primary cells
+    and the two legs are fixed before any Gemma flavor number exists. No
+    band is retuned, no layer is added to or removed from the primary set,
+    no flavor is dropped or merged, and the descriptive dual-render control
+    can neither pass nor rescue a primary reading. Max-over-layer values are
+    reported next to full curves and are descriptive. A mixed result is
+    reported as mixed.

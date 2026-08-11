@@ -1,0 +1,16 @@
+# Fitted directions and other large local data for this experiment.
+directions/
+# Local analysis scratch; keep untracked, promote real outputs deliberately.
+analysis/
+# F24 fix: materialize_configs.py's own module docstring claims "Generated
+# YAMLs are written under `generated/` (gitignored, per
+# sweep_lib.GENERATED_DIR)" -- that entry never actually existed here, so the
+# claim was false and a real run would have committed provenance YAMLs this
+# harness explicitly documents as scratch.
+generated/
+# F24 fix: run_sweep.py --smoke-harness --keep-smoke-artifacts writes a
+# synthetic gate_report.json under analysis-committed/_smoke_harness/ (the
+# ONE tree in this experiment that is otherwise tracked). Without this
+# entry, a smoke run kept for inspection could get committed alongside real
+# analysis-committed/ evidence and be mistaken for it.
+analysis-committed/_smoke_harness/

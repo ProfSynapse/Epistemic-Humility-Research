@@ -1,0 +1,78 @@
+{
+  "stage": "caution_install_bounded_site_sweep_feasibility_probe_stage_b",
+  "seed": 20260707,
+  "substrate": {
+    "base_model": "professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit",
+    "base_revision": "ac361232c001af0ed5b0386b06dafc35d5cd31ea",
+    "adapter_repo": "professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora",
+    "adapter_revision": "8914081dfcec4f1f025f2dbe4195d4f7aa8d210e"
+  },
+  "generation_contract": {
+    "max_new_tokens": 200,
+    "min_new_tokens": 1,
+    "do_sample": false,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "eos_includes_im_end": true,
+    "enable_thinking": false,
+    "eos_ids": [
+      151645
+    ]
+  },
+  "counts": {
+    "n_probed_total": 800,
+    "n_unknown_probed": 400,
+    "n_known_probed": 400,
+    "n_captured": 800,
+    "n_confab": 33,
+    "n_known_correct_answered": 89,
+    "n_unknown_refused": 367
+  },
+  "throughput_this_run": {
+    "n_generated_this_run": 800,
+    "elapsed_sec": 1434.0,
+    "rows_per_minute": 33.47,
+    "mean_new_tokens": 30.84
+  },
+  "checks": {
+    "P1_confab_supply": {
+      "confab_count": 33,
+      "n_unanswerable": 400,
+      "point_rate": 0.0825,
+      "wilson_lower_95": 0.0593,
+      "M_u": 3496,
+      "product": 207.47,
+      "threshold": 250,
+      "direction": "floor",
+      "pass": false
+    },
+    "P2_known_correct_supply": {
+      "known_correct_count": 89,
+      "n_answerable": 400,
+      "point_rate": 0.2225,
+      "wilson_lower_95": 0.1845,
+      "M_a": 10000,
+      "product": 1844.88,
+      "threshold": 417,
+      "direction": "floor",
+      "pass": true
+    },
+    "P3_capture": {
+      "n_captured": 800,
+      "n_probed": 800,
+      "capture_rate": 1.0,
+      "threshold": 0.9,
+      "direction": "floor",
+      "pass": true
+    },
+    "P4_disjointness": {
+      "overlap_count": 0,
+      "threshold": 0,
+      "direction": "equality",
+      "pass": true,
+      "carried_from": "/workspace/experiments/caution-install-bounded-site-sweep/analysis-committed/probe_corpus_inventory.json"
+    }
+  },
+  "overall_pass": false,
+  "generations_private_path": "/workspace/experiments/caution-install-bounded-site-sweep/analysis/probe_generations_private.jsonl"
+}

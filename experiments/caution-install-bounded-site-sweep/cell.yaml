@@ -1,0 +1,260 @@
+# caution-install-bounded-site-sweep main instrument.
+# DRAFT until `bin/exp sign`. Signing is additionally blocked on the pre-sign
+# feasibility probe registered in NOTEBOOK.md (see AMENDMENT.md, Gates: G0a).
+#
+# This file pins the PARAMETERS of the bounded site sweep. Prose home is
+# AMENDMENT.md; gates are scored separately from gates.yaml so the run and the
+# adjudication stay independent.
+#
+# Containment: this cell's row pool is restricted. Question text, aliases, gold
+# answers, and per-row generations stay under the gitignored analysis/ directory
+# and are never committed. Only directions, manifests, and aggregate summaries
+# land in analysis-committed/.
+
+seed: 20260707
+
+substrates:
+  # Primary: the open question. Pin from
+  # experiments/diag-item11-batched-steering-equivalence/experiment.yaml.
+  - name: trained
+    role: primary
+    base_model: professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit
+    revision: ac361232c001af0ed5b0386b06dafc35d5cd31ea
+    base_form: clean-SFT merged-16bit (lineage unsloth/Qwen3-4B)
+    adapter_repo: professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora
+    adapter_revision: 8914081dfcec4f1f025f2dbe4195d4f7aa8d210e
+    quantization: none
+    dtype: bf16
+    sites: [hs13, hs16, hs19, hs23, hs29, hs34, hs35]
+  # Reference: G4 interpretability anchor only, two sites.
+  # Revision pin from the qwen3 row of docs/atlas/family-layer-map.md.
+  - name: raw_base
+    role: g4_anchor
+    base_model: unsloth/Qwen3-4B
+    base_form: raw base, no adapter
+    revision: 64033659d5caf1b8ed7f929b29de705e93a4d468
+    quantization: none
+    dtype: bf16
+    sites: [hs23, hs29]
+
+# Sites are named by BOTH conventions because they differ by one and the
+# difference is consequential (AMENDMENT.md, D3). hs_index is the hidden-state
+# index the direction is fit on; decoder_block is the block the hook edits, and
+# equals hs_index - 1 (verified against the layer field and provenance block of
+# the committed direction JSONs at
+# experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/).
+sites:
+  - name: hs13
+    hs_index: 13
+    decoder_block: 12
+    relative_depth: 0.361
+    status: new_in_band
+  - name: hs16
+    hs_index: 16
+    decoder_block: 15
+    relative_depth: 0.444
+    status: new_in_band
+  - name: hs19
+    hs_index: 19
+    decoder_block: 18
+    relative_depth: 0.528
+    status: new_in_band
+  - name: hs23
+    hs_index: 23
+    decoder_block: 22
+    relative_depth: 0.639
+    status: anchor_band_upper_edge
+  - name: hs29
+    hs_index: 29
+    decoder_block: 28
+    relative_depth: 0.806
+    status: anchor_raw_base_best
+  - name: hs34
+    hs_index: 34
+    decoder_block: 33
+    relative_depth: 0.944
+    status: reference_inherited_write_site
+  - name: hs35
+    hs_index: 35
+    decoder_block: 34
+    relative_depth: 0.972
+    status: reference_historical_claim_site
+    note: >-
+      the site the historical caution_direction_L35 hooks. Added pre-sign on
+      2026-08-08 by lead adjudication of AMENDMENT.md N2, because the sweep must
+      cover the site the claim it revises was measured at. One decoder block
+      later than hs34, which is the program's inherited write site.
+
+n_hidden_layers: 36
+
+surface:
+  # Re-mined per substrate: role labels are behavior-dependent and do not port
+  # across checkpoints (read-then-actuate reference, section 1.1).
+  rows_path: experiments/caution-install-bounded-site-sweep/analysis/rows_with_text.jsonl
+  rows_path_status: local_gitignored_runtime_input
+  split_manifest: experiments/caution-install-bounded-site-sweep/analysis-committed/split_manifest.json
+  split:
+    fit_frac: 0.40
+    split_seed: 20260707
+    stratify_by: category
+    never_split: [unknown_refused]
+  generation:
+    max_new_tokens: 200
+    min_new_tokens: 1
+    do_sample: false
+    temperature: 0.0
+    top_p: 1.0
+    eos_includes_im_end: true
+    enable_thinking: false
+  containment:
+    committed_row_text: forbidden
+    committed_generations: forbidden
+    committed_aliases: forbidden
+
+extraction:
+  anchor: final_prompt_token          # index prompt_len - 1
+  dtype: float32
+  full_depth: true
+  use_cache: true                     # pinned; see read-then-actuate section 2.1
+
+directions:
+  random_state: 20260707
+  # All refit from scratch per substrate and site. Nothing is inherited: the
+  # archived trained-lineage L35 direction JSONs are absent from this checkout
+  # (AMENDMENT.md, Motivation finding 1).
+  recipe:
+    u_d: unit(mean(H[known_correct_answered FIT]) - mean(H[unknown_refused]))
+    pos_ctrl: unit(mean(H[unknown_refused]) - mean(H[confab FIT]))
+    neg_ctrl: >-
+      LogisticRegression(saga, C=1.0, tol=1e-3, max_iter=5000,
+      random_state=20260707) on StandardScaler(H), coefficient rescaled by scale_
+    c_hat: unit(pos_ctrl orthogonalized against {u_d, neg_ctrl} via QR)
+  verify_reproducible: true           # two fixed-seed fits must be byte-identical
+
+gate:
+  score: neg_z_d                      # = -z_d; confab rows read LOW on u_d
+  z_clip: [-2.0, 2.0]
+  standardization_source: FIT pool mu_d / sigma_d
+  tau_rule: youden_j
+  tau_fit_population: FIT confab vs FIT known_correct_answered
+  fire_rule: "score >= tau"
+  site_policy: co_located_with_write  # AMENDMENT.md, D2
+
+law:
+  kind: erase_write
+  readout: c_hat
+  positions:                          # Axis 2; both registered, neither presumed
+    - name: anchor
+      generation_mode: anchor
+    - name: anchor_onward
+      generation_mode: gen_stream
+
+dose_ladder:
+  # Axis 3. Ratio-normalized; absolute setpoints are forbidden in this cell.
+  kind: norm_scaled_ratio
+  ratios: [0.100, 0.153, 0.235, 0.361, 0.554, 0.850, 1.304, 2.000]
+  dose_rule: >-
+    dose = ratio x that site's own median anchor L2 norm, computed under that
+    arm's own condition
+  readback_tolerance:
+    rel: 0.05
+    abs_floor: 0.5
+  usable_rule: >-
+    frac_readback_within_tol == 1.0 AND collapse_rate_on_dosed == 0.0 AND
+    FIT confab clean_tighten >= 0.5
+  selection_rule: >-
+    highest FIT confab clean_tighten, then lower known-correct cost, then lower
+    ratio
+  no_usable_rung_disposition: >-
+    record dose-viability NOT-RUN with the full eight-rung table; the site
+    leaves the held-out stage and is ineligible for pairing. This is a
+    calibration outcome, never a behavioral null.
+  ladder_is_closed: true              # not extended after results are seen
+  calibration_pool:                   # AMENDMENT.md, D1
+    n_confab_fit_rows: 24
+    n_known_correct_fit_rows: 24
+    reuse_same_rows_across_sites: true
+
+multi_site:
+  # Axis 4. Novel: no governed cell in this program has written two sites
+  # simultaneously.
+  enabled: true
+  max_members: 2
+  eligibility: member cleared dose viability on Axis 3
+  magnitude_match: >-
+    split the best single site's calibrated dose across the two members so total
+    commanded displacement matches; verify readback at BOTH members against the
+    same tolerance
+  n_pairs: 3
+  selection_rules:
+    - best in-band site x second-best in-band site
+    - best in-band site x best out-of-band site
+    - lowest eligible site x highest eligible site
+  insufficient_sites_disposition: >-
+    fewer than two eligible sites records NOT-RUN (insufficient viable sites);
+    not retried under this amendment
+
+arms:
+  - name: gated
+    description: real instrument, answerability gate then c_hat snap at the calibrated dose
+  - name: baseline_undosed
+    description: no-op baseline on the same populations
+  - name: random_direction
+    description: >-
+      G3 placebo. SAME fired rows, matched realized magnitude, random unit
+      direction instead of c_hat. K >= 3 fresh draws under SC1 hygiene.
+  - name: permuted_gate
+    description: >-
+      fire set permuted across the combined confab + known-correct pool at the
+      same total fire count, c_hat held. Asks a different question from
+      random_direction and does not substitute for it.
+  - name: raw_write_pos_ctrl
+    description: >-
+      orthogonalization control. Writes the raw mass-mean pos_ctrl instead of
+      c_hat, at matched magnitude, on the same fired rows.
+
+placebo:
+  criterion: RG1                      # read-then-actuate section 5.2, generation 2
+  criterion_rationale: >-
+    S1 needs a per-family placebo census; no Qwen3-4B entry exists in
+    experiments/placebo-seed-distribution-census, and borrowing another family's
+    constant is forbidden. The flat tolerance band is forbidden by
+    experiments/rr3-corrected-placebo-replication.
+  k_draws_min: 3
+  draw_hygiene_sc1:
+    max_abs_cos_vs_c_hat: 0.015
+    max_abs_cos_vs_u_d: 0.015
+    magnitude_match: exact, verified by readback at the arm's own tolerance
+    void_and_redraw_ledger: committed, including voided draws
+    sigma_gain_assertion: >-
+      assert sigma != gain before dosing; passing the gain as the sigma argument
+      realizes gain**2 and has silently mis-dosed runs in this program before
+
+read_controls:
+  random_direction_read_control: required at every site
+  a_lin_profile:
+    enabled: true
+    device: cpu
+    scope: all seven sites, both substrates where extracted
+    confound_rule: >-
+      absolute A_lin difference above 0.10 between two compared sites declares
+      that contrast confounded at registration time
+
+smoke:
+  n_rows: 8
+  write_rel_tol: 0.05
+  write_abs_floor: 0.5
+  note: >-
+    A passing smoke proves write accuracy only, never behavioral effect
+    (mechinterp-cells SKILL.md invariants). Do not use --force-full-run.
+
+execution:
+  lane: local_3090
+  concurrency: one GPU job at a time
+  gpu_ack_flag: --i-know-this-runs-on-gpu
+  runtime_image_digest: sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772
+  render_fn_path: experiments/common/renders
+  grader_path: experiments/common/graders
+  local_private_dir: experiments/caution-install-bounded-site-sweep/analysis/
+  committed_public_dir: experiments/caution-install-bounded-site-sweep/analysis-committed/
+  resume: true
