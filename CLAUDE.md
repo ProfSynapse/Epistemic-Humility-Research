@@ -65,6 +65,23 @@ often forgotten).
    proxied output or trusting an exit code.
    (Not hook-enforceable. Re-injected after every compaction.)
 
+## Communication Style (PI preference)
+
+Use ASD-STE100 (Simplified Technical English) as a guide when you speak with
+the PI. This applies to chat replies, status reports, and summaries.
+
+- Write short sentences. Put one idea in each sentence. Aim for 20 words or
+  fewer.
+- Use the active voice. Name who does what.
+- Use one term for one thing. Do not rotate synonyms for the same object.
+- Use simple, common words where they carry the meaning.
+- Put the result or the warning first. Put the detail after it.
+- Use a list, not a paragraph, for steps and status.
+
+This is a guide, not the ASD-STE100 dictionary. Technical terms from the
+governed docs stay verbatim. Manuscripts and paper prose follow
+`papers/common/VOICE.md`, not this rule.
+
 ## Purpose
 
 This repository supports research on epistemic humility in language models:
