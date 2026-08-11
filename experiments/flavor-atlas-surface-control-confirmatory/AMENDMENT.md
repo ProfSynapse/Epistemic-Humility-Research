@@ -1,10 +1,14 @@
 # Surface control for the raw-base flavor atlas: does the overt-unanswerability separation survive style removal?
 
-Status: draft (not signed; do not launch as confirmatory evidence). Design
-PI-approved 2026-08-10; the OPEN QUESTIONS section carried by the working
-draft has been resolved by the lead and is folded into this text rather than
-reproduced. `bin/exp sign` still owns pinning the instrument and flipping
-this to `signed`.
+Status: resolved 2026-08-11 by the lead with PI approval (machine state in
+`experiment.yaml`); verdict INDETERMINATE (see AMENDMENT.md "Outcome" and
+experiment.yaml `verdict:`). This header was stale boilerplate reading
+"draft (not signed) ... `bin/exp sign` still owns pinning the instrument
+and flipping this to `signed`" until 2026-08-11; corrected to match the
+machine state, which had since progressed through signing to resolution.
+Design PI-approved 2026-08-10; the OPEN QUESTIONS section carried by the
+working draft was resolved by the lead and folded into this text rather
+than reproduced.
 
 Keep this document the prose home for the experiment. The machine state lives
 in `experiment.yaml` and is never duplicated here.

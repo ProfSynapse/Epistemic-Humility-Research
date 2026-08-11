@@ -1,6 +1,10 @@
 # Dial token-logprob baseline, clean redo (generation-time token-ID cache)
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: signed (machine state in `experiment.yaml`); not yet resolved --
+the "Outcome" section below is correctly still a placeholder pending the
+run. This header was stale boilerplate reading "draft (not signed)" until
+2026-08-11; corrected to match the machine state, which was already
+`signed`.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.

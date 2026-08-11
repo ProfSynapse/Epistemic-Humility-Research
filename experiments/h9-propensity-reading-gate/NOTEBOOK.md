@@ -6,6 +6,10 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-11 -- Bookkeeping: AMENDMENT.md header corrected to match machine state
+
+**Tier 3, bookkeeping only, no goalpost implications.** `AMENDMENT.md`'s header claimed a draft/not-signed (or otherwise stale) status that contradicted `experiment.yaml`'s machine state (`status: resolved`), which has read verdict "INCONCLUSIVE-BY-POWER" on record. Corrected the AMENDMENT.md header ("Status:" line) to match the machine state. Follows the precedent set by `gemma-4-e4b-family-atlas/AMENDMENT.md`'s 2026-07-20 header correction. No signed content (question, prediction, falsifier, gates, Outcome) touched.
+
 - 2026-07-11 (remediation, smoke tier, CPU-only, no GPU): addressed the pre-sign
   red-team (docs/review/h9-presign-redteam-2026-07-11.md), both blockers and all
   four concerns, per lead adjudication. No gate threshold changed.

@@ -6,6 +6,24 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-11 -- Bookkeeping: AMENDMENT.md header corrected to match machine state
+
+**Tier 3, bookkeeping only, no goalpost implications.** `AMENDMENT.md`'s
+header claimed a draft/not-signed status that contradicted
+`experiment.yaml`'s machine state (`status: falsified`), which has read
+verdict "primary falsifier fired as worded" on record since 2026-08-09.
+Corrected the AMENDMENT.md header ("Status:" line) to match the machine
+state. Also flagged (not fixed, no scientific content authored): this
+document's own "Outcome" section is still the unfilled placeholder text
+despite the machine state showing falsified with a verdict on record.
+Follows the precedent set by `gemma-4-e4b-family-atlas/AMENDMENT.md`'s
+2026-07-20 header correction. No signed content (question, prediction,
+falsifier, gates, Outcome) touched. Caught by the new `bin/exp validate`
+header-vs-status guard added in this same pass -- this was the 18th case,
+missed by the initial manual sweep because its header uses bold
+`**Status:**` markers that the sweep script's regex didn't handle but the
+validator's does.
+
 ### 2026-08-08 registration draft filled (drafting agent, no run, no commit)
 
 Filled `experiment.yaml`, `AMENDMENT.md`, `cell.yaml`, `gates.yaml` from the

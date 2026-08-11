@@ -6,6 +6,10 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-11 -- Bookkeeping: AMENDMENT.md header corrected to match machine state
+
+**Tier 3, bookkeeping only, no goalpost implications.** `AMENDMENT.md`'s header claimed a draft/not-signed (or otherwise stale) status that contradicted `experiment.yaml`'s machine state (`status: resolved`), which has read verdict "DATA-STAGE STOP, exactly as pre-registered" on record. Corrected the AMENDMENT.md header ("Status:" line) to match the machine state. Follows the precedent set by `gemma-4-e4b-family-atlas/AMENDMENT.md`'s 2026-07-20 header correction. No signed content (question, prediction, falsifier, gates, Outcome) touched.
+
 - (add dated entries as the experiment progresses)
 - 2026-07-18: BUILD+RUN+RESOLVE arc, single session. Harness built to the
   pinned cell/gates, 8-row GPU smoke clean, both arms run (~5 min wall,

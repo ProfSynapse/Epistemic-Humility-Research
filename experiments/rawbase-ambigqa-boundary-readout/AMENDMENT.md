@@ -2,10 +2,21 @@
 amendment: rawbase-ambigqa-boundary-readout
 tier: 3
 posture: exploratory
-status: draft
+status: resolved
 ---
 
 # Raw-base AmbigQA boundary readout (pretraining-flavor vs training-warp fork)
+
+**Status correction (2026-08-11): this file's frontmatter `status:` field
+read `draft` though `experiment.yaml` has read `status: resolved` with a
+verdict on record ("Falsifier not fired; prediction supported...", see
+experiment.yaml `verdict:`) since the run resolved. Corrected the
+frontmatter to match the machine state. Separate, unresolved gap found at
+the same correction pass: this document has no `## Outcome` (or numbered
+equivalent) section at all -- unlike its sibling documents, the resolved
+verdict was never written back into the governed prose here, only into
+`experiment.yaml`. Flagged for lead/PI follow-up, not corrected here (no
+scientific content authored by this pass).**
 
 ## 1. Question
 

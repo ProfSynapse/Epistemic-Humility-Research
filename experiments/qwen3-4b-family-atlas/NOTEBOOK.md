@@ -6,6 +6,18 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-08-11 (bookkeeping: `AMENDMENT.md` header corrected to match machine
+  state; no goalpost implications). Header still read "draft (not signed; do
+  not launch as confirmatory evidence)" — stale boilerplate left over from
+  before sign-time. `experiment.yaml` has read `status: resolved` with
+  `verdict: FALSIFIER FIRED...` since 2026-07-21, and the "Outcome" section
+  below has documented the same since that date. Corrected the header to
+  state the true status (resolved, FALSIFIER FIRED) and to point at
+  `experiment.yaml` and the "Outcome" section, following the precedent set
+  by `gemma-4-e4b-family-atlas/AMENDMENT.md`'s 2026-07-20 header correction.
+  No signed content (question, prediction, falsifier, gates, Outcome)
+  touched.
+
 - 2026-07-21 (AG1/AG2: profile + read-panel stage, `profile_and_read_family_atlas_panel.py score --cell-id qwen3_4b_raw_base`). Reads only; no pinned file edited.
 
   **Permission blocker, resolved by container re-run (precedent: gemma-4-e4b-family-atlas hit the identical issue).** First attempt ran directly on the host (`analysis/qwen3_4b_raw_base/read_panel_run1.log`, exit 1, 67s): the full profile+panel computation completed, but the final `write_json` to `analysis-committed/qwen3_4b_raw_base/atlas_summary.json.tmp` raised `PermissionError` -- capture's earlier docker run left `analysis-committed/qwen3_4b_raw_base/` (and `analysis/qwen3_4b_raw_base/atlas_capture/`) `root:root`-owned on the bind mount, unwritable to the host `profsynapse` user. No `sudo` available (non-interactive, no password). Re-ran the SAME unmodified script inside the same pinned `mechinterp-runner` container (`sha256:d445...5c3d23c`, `DOCKER_HOST=unix:///var/run/docker.sock` override, no `--gpus` -- script is CPU-only) so root-in-container matches the directory's root ownership; no host permission escalation, no pinned-file edit, no parameter change. Log `analysis/qwen3_4b_raw_base/read_panel_run2.log`, exit 0, wall clock 68s (matches the 71.27s persistence declaration). Wrote `analysis-committed/qwen3_4b_raw_base/atlas_summary.json`.

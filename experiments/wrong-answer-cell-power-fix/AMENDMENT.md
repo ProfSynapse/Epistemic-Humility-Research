@@ -1,9 +1,20 @@
 # Wrong-Answer Cell Power Fix
 
-**Status:** draft (not signed; do not launch, do not cite as evidence). Tier-2
-exploratory cell: new evidence, falsifier pre-stated, reported separately from
-the locked PROTOCOL v0.3 matrix and never pooled with it. Prose lives here;
-machine state lives in `experiment.yaml`.
+**Status:** falsified, resolved 2026-08-09, PI approved (machine state in
+`experiment.yaml`); verdict: primary falsifier fired as worded, the
+known-unknown axis at pinned L35 does not carry correct-vs-wrong at
+deployment (see experiment.yaml `verdict:`). This header was stale
+boilerplate reading "draft (not signed; do not launch, do not cite as
+evidence)" until 2026-08-11; corrected to match the machine state, which
+was already `falsified`. **Separate, unresolved gap found at the same
+correction pass: this document's own "Outcome" section below is still the
+unfilled placeholder text ("Filled at resolve...") despite the machine
+state showing falsified with a verdict on record; it has not been
+backfilled with the actual result narrative. Flagged for lead/PI
+follow-up, not corrected here (no scientific content authored by this
+pass).** Tier-2 exploratory cell: new evidence, falsifier pre-stated,
+reported separately from the locked PROTOCOL v0.3 matrix and never pooled
+with it. Prose lives here; machine state lives in `experiment.yaml`.
 
 **Instrument rationale.** Tier-2 Amendment per
 `.skills/experiment-runner/reference/amendment-vs-lab-notebook.md` decision Q2:
