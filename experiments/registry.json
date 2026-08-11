@@ -2503,17 +2503,20 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:flavor-atlas-surface-control-confirmatory",
+        "mechanism:style-and-construct-are-near-collinear-in-flavor-atlas-pools"
+      ],
       "posture": "exploratory",
       "prediction": "P1 (primary): after cross-fitted combined-surface residualization, all six KUQ flavors retain held-out out-of-fold AUROC >= 0.90 at both of their two primary layers (committed best layer and L35), for all twelve primary cells. P2 (reference): SelfAware retains AUROC >= 0.90 at both L25 and L35, and AmbigQA stays <= 0.75 at both L25 and L35. P3 (secondary, S2): the surface-only probe on Z alone reaches at least 0.75 for at least one of the six KUQ flavors.",
       "question": "Does the flavor-atlas-rawbase overt-unanswerability separation (all six KUQ flavors plus SelfAware, 0.9800-0.9994 held-out AUROC on the raw base) survive cross-fitted removal of the activation variance predictable from prompt surface (length, punctuation, digit profile, interrogative form, and lexical n-grams), or is it a style artifact?",
       "registered": true,
       "slug": "flavor-atlas-surface-control-confirmatory",
-      "status": "signed",
+      "status": "resolved",
       "tier": 3,
       "title": "Style-controlled confirmatory read of the flavor-atlas overt-unanswerability separation",
       "type": "probe-fit",
-      "verdict": ""
+      "verdict": "INDETERMINATE as registered: C1 passed but C2 failed (0/20 permuted-surface runs kept all six flavors at or above 0.90, band requires 18/20) and C3 failed (planted-channel flavor deviation 0.077 vs 0.05 max), so SG8 did not adjudicate P1-P3/F1-F2; the instrument removes generic variance too aggressively to separate style from style-collinear structure on these pools, atlas promotion stays blocked, and the atlas is not falsified."
     },
     {
       "checkpoint": {

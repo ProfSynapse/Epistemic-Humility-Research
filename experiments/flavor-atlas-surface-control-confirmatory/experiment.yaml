@@ -2,7 +2,7 @@ slug: flavor-atlas-surface-control-confirmatory
 title: Style-controlled confirmatory read of the flavor-atlas overt-unanswerability
   separation
 type: probe-fit
-status: signed
+status: resolved
 registered: true
 created_at: '2026-08-10T13:49:01Z'
 tier: 3
@@ -108,5 +108,11 @@ inputs:
 - experiments/ood-breadth-beyond-selfaware/internal_panel_probe_gate.py
 - experiments/family-atlas-surface-residualization-control/AMENDMENT.md
 - experiments/common/renders/ood_breadth_response_confidence_render.py
-verdict: ''
-kg: []
+verdict: 'INDETERMINATE as registered: C1 passed but C2 failed (0/20 permuted-surface
+  runs kept all six flavors at or above 0.90, band requires 18/20) and C3 failed (planted-channel
+  flavor deviation 0.077 vs 0.05 max), so SG8 did not adjudicate P1-P3/F1-F2; the
+  instrument removes generic variance too aggressively to separate style from style-collinear
+  structure on these pools, atlas promotion stays blocked, and the atlas is not falsified.'
+kg:
+- experiment:flavor-atlas-surface-control-confirmatory
+- mechanism:style-and-construct-are-near-collinear-in-flavor-atlas-pools

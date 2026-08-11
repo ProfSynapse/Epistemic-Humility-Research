@@ -780,7 +780,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (511)
+## Mechanisms (cause -> effect) (512)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -1242,6 +1242,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[steering-dose-windows-are-absolute-not-sigma-transferable]] : A caution-direction write dose is calibrated as an absolute registered grid on one model checkpoint (Qwen3-4B, where the grid sits at a normal working sigma-dis
 - [[steering-vector-directional-agreement-and-separability-predict-steerability]] : A behavior dataset's per-sample activation differences have high cosine similarity to the aggregate contrastive-activation-addition steering vector, and its pos
 - [[steering-vector-steerability-is-high-variance-and-sign-unstable]] : Applying a contrastive-activation-addition steering vector across the inputs of a behavior dataset. **prevents** Per-input steerability varies widely within and
+- [[style-and-construct-are-near-collinear-in-flavor-atlas-pools]] : Fitting a probe on question-surface features alone (length, punctuation, digit profile, interrogative form, lexical n-grams) to predict KUQ/SelfAware flavor mem
 - [[subject-enrichment-required-for-attribute-extraction]] : Patching (replacing) early subject representations before they are enriched **decreases** Attribute extraction rate decreases by up to 50%, demonstrating that t
 - [[subspace-identity-rotates-across-seeds-and-checkpoints-despite-stable-probe-performance]] : Fitting linear information-theoretic probes for nine linguistic tasks (POS, dependency, semantic tags, NER, coreference, topic, sentiment, QA, NLI) on MultiBERT
 - [[superposition-causes-polysemanticity]] : Neural networks representing more features than dimensions (superposition) by storing features as non-orthogonal directions **enables** Individual neurons activ

@@ -6,6 +6,25 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-10T23:58Z - PI decision: launch declined, cell parked (signed, unlaunched)
+
+PI ruling recorded by the lead. The upstream style-control cell
+(flavor-atlas-surface-control-confirmatory) completed today and its lead
+adjudication is INDETERMINATE: C2 (permutation negative control, 0/20 vs
+required 18/20) and C3 (planted-channel deviation 0.077 vs max 0.05) both
+failed, so the instrument could not settle whether the atlas separation is
+carried by prompt surface. Its S2 readout showed question text alone
+predicts flavor at 0.91-0.99 on these pools, meaning style and construct
+are near-collinear by construction and no observational read on these
+panels can separate them. A Gemma replication would use the same pools and
+inherit the same interpretation cap, so the PI ruled the GPU spend not
+worth it: causal actuation work (the paper-5 spine, currently the
+caution-install-bounded-site-sweep cell, prose: bounded abstention-install
+site sweep) is the better path to a promotable claim. This cell stays
+signed and unlaunched with all pins intact; no gate, band, or registered
+constant changes. Relaunch consideration returns to the PI only if a
+surface-matched-pool design revives the observational route.
+
 ### 2026-08-10T16:50Z - Lead review + pin: run_cell.py accepted, smoke_all.py repinned
 
 Lead review of the repair below. Verified: only run_cell.py (new),
