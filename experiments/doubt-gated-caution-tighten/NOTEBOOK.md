@@ -6,6 +6,10 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-11 -- Bookkeeping: AMENDMENT.md header corrected to match machine state
+
+**Tier 3, bookkeeping only, no goalpost implications.** `AMENDMENT.md`'s header claimed a draft/not-signed (or otherwise stale) status that contradicted `experiment.yaml`'s machine state (`status: resolved`), which has read verdict "doubt-gated caution snap passed as a training-free selective tighten instrument" on record. Corrected the AMENDMENT.md header ("Status:" line) to match the machine state. Follows the precedent set by `gemma-4-e4b-family-atlas/AMENDMENT.md`'s 2026-07-20 header correction. No signed content (question, prediction, falsifier, gates, Outcome) touched.
+
 - 2026-07-07 -- HARNESS BUILD (harness-builder agent, local 3090, free). Scaffolded
   via `bin/exp new doubt-gated-caution-tighten --type steer-cell`. Ported the fixed
   generation contract and gate/snap logic from the sibling

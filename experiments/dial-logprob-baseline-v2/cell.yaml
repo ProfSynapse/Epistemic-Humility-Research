@@ -1,0 +1,75 @@
+# dial-logprob-baseline-v2 (LP v2) instrument config, pinned at sign.
+# GPU harness config for the generation-time-token-ID-cache clean redo of
+# dial-logprob-baseline (v1, resolved 2026-07-18, DATA-STAGE STOP). Populations,
+# arms, dial layers/AUROCs, logprob variants, and containment rules transfer
+# byte-identical from experiments/dial-logprob-baseline/cell.yaml (design draft
+# docs/preparation/amendment-draft-dial-logprob-baseline-v2.md sec.4). Only the
+# `generation`/`roundtrip_check` blocks are new; they replace v1's
+# `sequence_reconstruction`/`roundtrip_assert` block (design draft sec.3.2/3.3).
+apiVersion: lab-cell/v1
+experiment: dial-logprob-baseline-v2
+seed: 20260719
+n_boot_paired: 2000
+arms:
+  - id: s_base_primary
+    model:
+      name: unsloth/Qwen3-4B-bnb-4bit    # S manifest model_name, verbatim from v1
+      adapter: null
+    rows: archive/experiment/phase1-data/probe/qwen3-4b-instruct/amendment_s/stage2/rows.jsonl
+    tensors_dir: archive/experiment/phase1-data/probe/qwen3-4b-instruct/amendment_s/stage2
+    dial_layer: 20                        # S best post layer (S AMENDMENT sec.7), verbatim from v1
+    dial_signed_auroc: 0.834              # LP-G0 reproduction target, verbatim from v1
+    n_rows_expected: 1836
+    gate: LP-G1
+  - id: t_deployed_descriptive
+    model:
+      name: scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+      adapter: scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+    rows: archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2/rows.jsonl
+    tensors_dir: archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2
+    dial_layer: 22                        # T best post layer (deployment-port sec.7), verbatim from v1
+    dial_signed_auroc: 0.819              # LP-G0 reproduction target, verbatim from v1
+    n_rows_expected: 1488
+    gate: descriptive-only
+generation:
+  # THE FIX (design draft sec.3.2). Replaces v1's separate reconstruct-then-
+  # teacher-force steps with one capture-at-generation call
+  # (model.generate(..., output_scores=True, return_dict_in_generate=True)):
+  # `gen.sequences` gives the exact generation-time token IDs directly, and
+  # `gen.scores` gives the per-step logits the old design needed a SEPARATE
+  # forward pass to recompute. max_new_tokens/do_sample/num_beams are inherited
+  # verbatim from the S/T extractors' own generation kwargs -- they MUST stay
+  # pinned to those exact values, or regeneration is not a reproduction of the
+  # original run.
+  max_new_tokens: 48       # verbatim: amendment_s/_t extractor --max-new-tokens default
+  do_sample: false          # verbatim: greedy, matches source generation
+  num_beams: 1              # verbatim
+  batch_size: 1             # NEW: matches source's batch-1 generation loop (design draft sec.3.3), maximizes exact-reproduction odds under floating-point non-determinism
+  output_scores: true       # NEW: captures per-step logits at generation time
+  return_dict_in_generate: true
+logprob_variants:
+  primary: mean_answer_span               # length-normalized mean token logprob, verbatim from v1
+  secondary: [sum_answer_span, min_answer_span]   # descriptive only, verbatim from v1
+roundtrip_check:
+  # REDEFINED from v1's sequence_reconstruction/roundtrip_assert block (design
+  # draft sec.3.3): v1 round-tripped cached prompt_len/answer_tok_len against a
+  # RE-TOKENIZED reconstruction of decoded text; v2 compares the REGENERATED
+  # decode directly against the cached answer_text field, so there is no
+  # re-tokenization step left to fail. Stronger than v1's check: it catches any
+  # content divergence, not just a token-count mismatch.
+  criterion: regenerated_answer_text_equals_cached_answer_text_exact
+  source_field: answer_text
+  assert: exact                            # LP-G0 data-stage stop on any mismatch, same discipline as v1 -- no tolerance improvised after seeing results
+dial_refit:
+  module: experiments/common/readouts/amendment_s_correctness_probe_score.py
+  procedure: source-cell out-of-fold (oof_probe), reproduce signed AUROC before unblinding   # verbatim from v1; unchanged, reads existing cached hidden-state tensors, no model needed
+  dial_reproduction_tolerance: 0.002       # "within reporting precision" -- v1 reproduced to 0.0002 (S) / 0.0004 (T)
+containment:
+  commit: [id_manifest, aggregate_json, variant_table]
+  never_commit: [question_text, answer_text, aliases, token_ids, per_row_scores, per_step_logits, regenerated_text]
+lane: local-3090   # GPU launch requires the item-27 sweep's GPU tail clear + explicit PI approval naming exact cells/lane (AMENDMENT.md sec.8); NOT authorized by this file
+timing_smoke:
+  # design draft sec.8 pass 0, registered as a separately-invocable harness mode
+  # (`lp_v2_harness.py --arm <id> --timing-smoke N`); UNLAUNCHED by this draft --
+  # it is still a GPU touch and needs the same launch precondition as a full run.
+  rows_per_arm_recommended: [50, 100]

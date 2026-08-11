@@ -1,6 +1,10 @@
 # Gemma-4-E4B pocket ladder: hs25/hs26/hs27, sharing ON
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: resolved 2026-07-31 (machine state in `experiment.yaml`); verdict:
+no direction-specific actuation in the pocket, E1/hs25 failed mandatory G3
+(see AMENDMENT.md "Outcome" and experiment.yaml `verdict:`). This header
+was stale boilerplate reading "draft (not signed)" until 2026-08-11;
+corrected to match the machine state, which was already `resolved`.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.

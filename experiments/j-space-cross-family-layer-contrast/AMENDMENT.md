@@ -1,8 +1,11 @@
 # j-space-cross-family-layer-contrast
 
-Status: draft (not signed; do not launch as confirmatory evidence). No GPU
-work has run for this experiment; every artifact under this directory is a
-scaffold, not a result.
+Status: signed (machine state in `experiment.yaml`); interim verdict
+INCONCLUSIVE recorded 2026-07-24 (lead + user; see this document's "Outcome"
+section and `experiment.yaml` `verdict:`). This header was stale boilerplate
+reading "draft (not signed) ... No GPU work has run" until 2026-08-11;
+corrected to match the machine state, which was already `signed` with GPU
+work completed for 3 of the 4 registered families.
 
 Keep this document the prose home for the experiment. The machine state lives
 in `experiment.yaml` and is never duplicated here.

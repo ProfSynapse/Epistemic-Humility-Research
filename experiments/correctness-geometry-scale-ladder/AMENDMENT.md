@@ -1,9 +1,17 @@
 # Correctness-geometry scale ladder (1.7B->8B->14B)
 
-Status: draft (not signed; do not launch as confirmatory evidence). Real
-per-row correctness labels have NOT been read by any script in this
-experiment. This cell has gone through THREE successive pre-outcome
-instrument iterations, all synthetic-only:
+Status: resolved 2026-07-20 (machine state in `experiment.yaml`); G1
+resolves as pre-stated middle ground M3 (see AMENDMENT.md "Outcome" and
+experiment.yaml `verdict:`). This header was stale boilerplate reading
+"draft (not signed) ... Real per-row correctness labels have NOT been
+read" until 2026-08-11; corrected to match the machine state, which was
+already `resolved` -- real per-row correctness labels were read once the
+v3 instrument (below) passed construction-validity. The v1/v2/v3
+pre-outcome instrument-iteration history below is retained as design
+record; it predates the real-data run and resolution.
+
+This cell went through THREE successive pre-outcome instrument iterations,
+all synthetic-only, before the real run:
 
 - **v1** (2026-07-20): G_val FAILED for all four estimators, all three
   scales (mean-shift generator; diagnosis 13.1/13.2). Lead adjudicated this

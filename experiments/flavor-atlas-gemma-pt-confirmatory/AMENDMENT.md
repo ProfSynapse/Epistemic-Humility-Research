@@ -1,9 +1,12 @@
 # Second-substrate confirmatory: overt-unanswerability flavor separation on pretrain-only Gemma
 
-Status: draft (not signed; do not launch as confirmatory evidence). Lead signs;
-GPU launch is separately gated and requires PI approval AND the Qwen-side
-surface control (`flavor-atlas-surface-control-confirmatory`) to have
-resolved first.
+Status: signed (machine state in `experiment.yaml`); not yet resolved --
+the "Outcome" section below is correctly still a placeholder pending the
+run. This header was stale boilerplate reading "draft (not signed); Lead
+signs" until 2026-08-11; corrected to match the machine state, which was
+already `signed`. GPU launch is separately gated and requires PI approval
+AND the Qwen-side surface control
+(`flavor-atlas-surface-control-confirmatory`) to have resolved first.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.

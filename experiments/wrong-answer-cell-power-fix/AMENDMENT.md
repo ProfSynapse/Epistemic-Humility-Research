@@ -1,9 +1,19 @@
 # Wrong-Answer Cell Power Fix
 
-**Status:** draft (not signed; do not launch, do not cite as evidence). Tier-2
-exploratory cell: new evidence, falsifier pre-stated, reported separately from
-the locked PROTOCOL v0.3 matrix and never pooled with it. Prose lives here;
-machine state lives in `experiment.yaml`.
+**Status:** falsified, resolved 2026-08-09, PI approved (machine state in
+`experiment.yaml`); verdict: primary falsifier fired as worded, the
+known-unknown axis at pinned L35 does not carry correct-vs-wrong at
+deployment (see experiment.yaml `verdict:`). This header was stale
+boilerplate reading "draft (not signed; do not launch, do not cite as
+evidence)" until 2026-08-11; corrected to match the machine state, which
+was already `falsified`. The gap flagged at that same correction pass —
+this document's own "Outcome" section still carrying the unfilled
+placeholder text ("Filled at resolve...") — was backfilled 2026-08-11 in
+a PI-approved governed pass, written from the recorded verdict and the
+committed artifacts. No adjudication was performed and no verdict, gate,
+threshold, or status changed. Tier-2 exploratory cell: new evidence, falsifier pre-stated,
+reported separately from the locked PROTOCOL v0.3 matrix and never pooled
+with it. Prose lives here; machine state lives in `experiment.yaml`.
 
 **Instrument rationale.** Tier-2 Amendment per
 `.skills/experiment-runner/reference/amendment-vs-lab-notebook.md` decision Q2:
@@ -431,5 +441,181 @@ held-out) registered before running, per the firewall.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-08-09 with status **falsified**. Gates were scored and adjudicated
+by the lead at 2026-08-08 ~23:40Z after a red-team pass (`NOTEBOOK.md`), and the
+PI approved the resolution and the Arm B skip in one directive at ~00:00Z, at
+which point `bin/exp resolve` stamped the manifest. **Outcome class: FAILURE**
+under the registered verdict rule (E1 and E2 both failing fires the primary
+falsifier), reported straight.
+
+One-sentence summary (also in `experiment.yaml` `verdict:`): "Prediction
+FALSIFIED; primary falsifier fired as worded. On 360 deployment-rendered wrong /
+420 correct answered-known rows (vs the paper's 16), the known-unknown axis at
+pinned L35 ranks the model's own correct vs wrong answers at AUROC 0.5597 (CI
+0.5185-0.5993, floor 0.60/0.55) and beats the emitted response_confidence
+channel by +0.0390 (CI includes 0, floor +0.05): E1 and E2 FAIL, all G0
+integrity gates PASS, red-team reproduced every number exactly and the null is
+not instrument-induced. SCOPE (binding for write-ups): overturned at the AXIS
+level only; an unregistered full-dimension context probe on the same vectors
+reaches 0.6769/0.6995, so correct-vs-wrong is linearly present in the residual
+stream and the finding is that the known-unknown axis does not carry it at
+deployment. The raw calibration contrast survives decisively (A7 +0.2373, CI
+0.1853-0.2769); E3's reweighted arm fired on an arithmetic degeneracy, recorded
+as such. E4 PASS under the adjudicated out-of-fold reading (step 4.85, CI
+excludes 0). Arm B not run by PI decision; E5 not computed; verdict independent
+of Arm B. The M7 comparator drop (0.649 to 0.5597) is power AND render-surface
+confounded, never differenced without caveat."
+
+Numbers below are quoted from `analysis-committed/real_run_results.json` and its
+`.md` companion (extraction `extraction__ab37a32e61a9`, config sha
+`ab37a32e61a95268`, data sha256 `1a6d7b59...`, primary layer L35, band L30-L36,
+2000 bootstrap resamples, seed 20260808) except where explicitly marked
+otherwise.
+
+### G0 integrity gates: all PASS
+
+Read first, as registered, and never read as evidence.
+
+- **G0-1 render parity: PASS.** 0 mismatches over 50 sampled rows. Read with
+  the limitation recorded below.
+- **G0-2 join integrity: PASS.** 3369 rows on each checkpoint, 3369 shared ids,
+  0 unmatched either way, 0 duplicate ids either way, 0 question-or-label
+  mismatches on shared ids. The pinned cell counts reproduced exactly: grpov2
+  780 answered-known = 420 correct + 360 wrong; cleansft 993 answered-known =
+  469 correct + 524 wrong. Full behavior-cell counts on grpov2:
+  known_correct_answered 420, known_answered_wrong 360, known_refused 1557,
+  unknown_refused 964, unknown_answered 68.
+- **G0-4 grader parity: PASS on both checkpoints.** 200/200 agreement, rate
+  1.0000 against the 0.995 floor, zero disagreements.
+- **G0-5 data adequacy: PASS on both checkpoints.** grpov2 420 correct / 360
+  wrong and cleansft 469 / 524, all above the 300/300 floor. This is the
+  registered precondition that makes the cell a powered re-estimate rather than
+  a repeat of the n = 16 reading, and it is a data-stage stop, never a verdict.
+- **G0-3, G0-6, G0-7: not read.** All three are Arm B gates, and Arm B was not
+  run.
+
+### E gates, adjudicated on Arm A, primary checkpoint grpov2 at L35
+
+- **E1 internal discrimination: FAIL.** A1 internal refit AUROC(correct vs
+  wrong) **0.5597**, CI (0.5185, 0.5993), against the registered floor of 0.60
+  with a CI lower bound above 0.55. Both legs miss.
+- **E2 the gap (PRIMARY): FAIL.** A4 = A1 minus A3 = **+0.0390**, paired CI
+  (-0.0163, 0.0942), which includes 0, against the +0.05 floor with a CI
+  excluding 0. The emitted comparator is A3 = 0.5207, independently re-derived
+  on the joined population during the harness smoke.
+- **PRIMARY FALSIFIER FIRED as worded.** E1 and E2 both fail on 360 wrong and
+  420 correct rows, above the 300/300 floor the falsifier names.
+- **E3 calibration contrast: FAIL as worded, with a degeneracy recorded.** The
+  gate requires A7 above 0 with a CI excluding 0 under *both* accountings. Raw:
+  A7 = **+0.2373**, CI (0.1853, 0.2769) — passes decisively. Reweighted: A7 =
+  **-0.2792**, CI (-0.2850, -0.2736) — negative, so the gate fails. The
+  underlying components are A5 internal ECE 0.0474 raw / 0.4166 reweighted and
+  A6 emitted ECE 0.2847 raw / 0.1373 reweighted. The reweighted sign flip is an
+  arithmetic degeneracy and carries no calibration content: reweighting labels
+  to the 0.959 base rate without recalibrating collapses ECE to the distance of
+  the mean prediction from 0.959, so a constant predictor at 0.959 scores zero
+  regardless of discrimination. Any write-up that quotes the reweighted arm
+  states this.
+- **E4 cell ordering: PASS under the lead's adjudicated reading.** The pinned
+  scorer refused to pick an axis and flagged the choice AMBIGUOUS, because A1's
+  estimator is undefined on the refused cells that E4's four-cell ordering
+  needs; it reported two readings instead. The lead adjudicated a third: the A1
+  estimator's own **out-of-fold projection**, giving a correct-minus-wrong step
+  of **4.8484**, CI (1.7384, 7.8129), excluding 0, with the full ordering
+  holding. **Provenance caveat: those out-of-fold numbers are recorded only in
+  `NOTEBOOK.md` and in the `verdict:` line, not in
+  `analysis-committed/real_run_results.json`**, which carries only the two
+  readings the scorer offered: the frozen-axis reading (step 119.37, CI
+  (-109.97, 344.77), includes 0, ordering not held, scored `pass: false`) and
+  the fresh full-population-axis reading (step 5.2316, CI (2.1625, 8.1528),
+  excludes 0, ordering held, scored `pass: true`). The lead's recorded grounds
+  for excluding both: the frozen direction is never gated by this amendment's
+  own words, and the fresh full-population axis reintroduces the anchor overlap
+  section 2.5 rejects. Caveat carried with the PASS: the top and bottom cells
+  are the axis anchors, so the non-trivial content is wrong and known_refused
+  landing in between, which they do.
+- **E5 convergent validity: not computed.** Arm B was not built; the artifact
+  records `status: not_computed`, `reason: "Arm B not built"`. E5 is descriptive
+  only and adjudicates none of E1 through E4, so the verdict is independent of
+  it.
+
+### Descriptive readouts, gated by nothing
+
+- **A2 frozen-axis raw projection AUROC: 0.5159** on grpov2, the historical
+  instrument kept visible next to the refit number.
+- **Layer band L30-L36 on grpov2** (A1 internal refit AUROC): 0.5640, 0.5657,
+  0.5702, 0.5699, 0.5718, 0.5597 (L35, the pre-registered primary), 0.5513. The
+  band maximum, 0.5718 at L34, is still far below the 0.60 floor, so the
+  registered decision to fix L35 in advance rather than select a best layer
+  costs the result nothing.
+- **A8 emitted mean / standard deviation: 0.8212 / 0.0175** over n = 780
+  answered-known rows on grpov2.
+- **A9 emitted per-cell means on grpov2**, each with its n: known_correct_
+  answered 0.8222 (n=420), known_answered_wrong 0.8200 (n=360), known_refused
+  0.8109 (n=1557), unknown_refused 0.8111 (n=964), unknown_answered 0.8124
+  (n=68). The emitted channel is near-constant across all five cells.
+- **cleansft control arm, descriptive and not gated:** A1 0.5457, CI (0.5103,
+  0.5812); A2 0.5352; A3 0.4894; A4 +0.0563, CI (0.0071, 0.1067); A7 raw
+  +0.2096, CI (0.1606, 0.2442); A8 0.7174 / 0.0171 (n=993); band L30-L36 0.5607
+  to 0.5316 with L35 at 0.5457. Its nominal E2 pass is not a counter-signal:
+  the gap clears only because the emitted channel sits below chance at 0.4894,
+  so both channels are at the floor. Its E1 fails, consistent with the grpov2
+  picture.
+
+### Red-team verification and why the null is not instrument-induced
+
+The red-team pass (opus) independently reproduced every reported number from the
+saved hidden states with an exact match, and the lead accepted its finding that
+the null is not an artifact of the instrument. The supporting robustness numbers
+are recorded in `NOTEBOOK.md` and the session red-team report rather than in a
+committed artifact: the in-sample axis construction the paper used reaches only
+0.5680 on this population, alternative axis families 0.5636, and seven
+cross-validation seeds span 0.5567 to 0.5632. The anti-leakage refit costs about
+0.008 AUROC, not the roughly 0.09 that would be needed to reach the floor. Of
+these, only the band maximum of 0.5718 at L34 is independently checkable in
+`real_run_results.json`.
+
+### Binding scope limits
+
+- **Overturned at the AXIS level only.** An unregistered, ungated
+  full-dimension context probe on the same vectors and the same rows reaches
+  0.6769 (grpov2) and 0.6995 (cleansft), so correct-versus-wrong IS linearly
+  decodable from the pre-generation residual stream at this position. What
+  fails is that the known-unknown axis does not carry that signal at
+  deployment. The paper-3 sentence must never be rewritten as "no internal
+  signal exists". This is binding on every write-up.
+- **The M7 comparator drop is confounded.** The 0.649 comparator was measured
+  under the harness default neutral prompt on a 96 percent correct population,
+  while A1's 0.5597 is deployment-rendered at 54 percent correct. The drop is
+  power AND render-surface confounded and is never differenced without this
+  caveat.
+- **G0-1 verifies render determinism, not byte-parity with the June eval
+  render**, whose prompts were never persisted. The two render modes differ in
+  trailing tokens; both harnesses try the direct mode first and it resolves
+  clean under the current stack, so a mode divergence is unlikely but
+  unverifiable from committed artifacts. This is the one un-closed
+  instrument-difference hypothesis, and it cannot rescue the in-domain refit
+  result.
+- **The reweighted E3 arm is arithmetically degenerate** and its sign flip
+  carries no calibration content, as stated above.
+- **Single model, single seed, exploratory.** Reported separately from the
+  locked PROTOCOL v0.3 matrix and never pooled with it. These are
+  re-estimations of paper 3's own directional numbers, not new claims.
+- **Promotion: none.** A powered re-estimate stays exploratory; a headline
+  claim would require a confirmatory replication registered before running.
+- **Containment.** Committed outputs are aggregate metric tables, per-cell
+  counts and ID-only manifests; no question text, generated answers, aliases,
+  per-row stated confidence, token ids or hidden states are committed.
+
+### Run provenance
+
+Arm A ran as a single host `gpu_python` extraction pass covering both
+checkpoints (adapter-disabled control and adapter-active primary) over all 3369
+rows at layers 30 to 36, producing extraction `extraction__ab37a32e61a9` with
+manifest `status=ok`, `verified=True`, 0 missing shards of 6738, all 3369 prompt
+hashes distinct, one config sha, and `generation_attempts` 1 on every row. Five
+instrument modules were hand-pinned rather than pinned by `bin/exp sign`,
+because the sign tooling has no verb for adding module pins to a signed pre-run
+experiment; the hand-pin computes exactly the hashes sign would have, pre-run,
+with the shas visible in the PR diff. Arm B was skipped by PI decision and the
+verdict does not depend on it.

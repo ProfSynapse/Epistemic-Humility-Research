@@ -6,6 +6,10 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-11 -- Bookkeeping: AMENDMENT.md header corrected to match machine state
+
+**Tier 3, bookkeeping only, no goalpost implications.** `AMENDMENT.md`'s header claimed a draft/not-signed (or otherwise stale) status that contradicted `experiment.yaml`'s machine state (`status: null-result`), which has read verdict "null-result, instrument-limited" on record. Corrected the AMENDMENT.md header ("Status:" line) to match the machine state. Follows the precedent set by `gemma-4-e4b-family-atlas/AMENDMENT.md`'s 2026-07-20 header correction. No signed content (question, prediction, falsifier, gates, Outcome) touched.
+
 - 2026-07-20 (RUN, KILL FORENSICS, RED-TEAM, RESOLVE null-result): the
   first full launch (12:45 EDT, 8 workers) was killed 57m29s in with no
   traceback and no kernel OOM record; root cause was launching the

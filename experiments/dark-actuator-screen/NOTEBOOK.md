@@ -6,6 +6,10 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-11 -- Bookkeeping: AMENDMENT.md header corrected to match machine state
+
+**Tier 3, bookkeeping only, no goalpost implications.** `AMENDMENT.md`'s header claimed a draft/not-signed (or otherwise stale) status that contradicted `experiment.yaml`'s machine state (`status: null-result`), which has read verdict "NULL" on record. Corrected the AMENDMENT.md header ("Status:" line) to match the machine state. Follows the precedent set by `gemma-4-e4b-family-atlas/AMENDMENT.md`'s 2026-07-20 header correction. No signed content (question, prediction, falsifier, gates, Outcome) touched.
+
 ### 2026-07-06 -- 3-direction wiring smoke PASSED (gen_stream fixed); full 34-direction screen launched on a documented 160-row subsample
 
 **3-direction smoke (`pos_ctrl_L34`, `L34_succ_pc0`, `randctrl_L34_succ_pc0`), 200-row

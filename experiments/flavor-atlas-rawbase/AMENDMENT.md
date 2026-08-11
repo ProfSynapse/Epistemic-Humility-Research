@@ -1,6 +1,14 @@
 # Flavor atlas: per-flavor known-unknown activations on the raw base
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: resolved (machine state in `experiment.yaml`; verdict on record
+there -- see experiment.yaml `verdict:`). This header was stale
+boilerplate reading "draft (not signed)" until 2026-08-11; corrected to
+match the machine state, which was already `resolved`. The gap flagged at
+that same correction pass — this document's own "Outcome" section still
+carrying the unfilled placeholder text ("Filled at resolve...") — was
+backfilled 2026-08-11 in a PI-approved governed pass, written from the
+recorded verdict and the committed artifacts. No adjudication was
+performed and no verdict, gate, threshold, or status changed.
 
 - Slug: `flavor-atlas-rawbase`
 - Type: probe-fit (exploratory atlas)
@@ -131,5 +139,108 @@ any FG failure voids the dependent M readings before they are looked at.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the
-one-sentence summary that also goes into `verdict:` in the manifest.
+Resolved 2026-08-10. Gates and bands were adjudicated by the lead at
+2026-08-10T01:55Z (`NOTEBOOK.md`); the verdict was PI-approved and the
+resolve stamp applied the same day. Verdict: MIXED ATLAS, the registered
+"any other pattern" branch.
+
+One-sentence summary (also in `experiment.yaml` `verdict:`): "Mixed atlas
+as registered: P1 supported (every KUQ flavor including overt ambiguity
+separates at 0.98 to 0.999 with free cross-transfer to SelfAware), P2
+failed (only the AmbigQA half held), neither falsifier fired; the
+pretrained unanswerability code is broad across overt flavors and the
+boundary is overt vs covert unanswerability, with AmbigQA unreadable at
+every layer."
+
+Gate results:
+
+- FG0 panel integrity: PASS. Adjudicated at build time against every
+  locked count and both source shas, then re-verified inside the
+  production sweep (`analysis-committed/atlas_sweep.json`,
+  `fg0_reverify.status = "PASS"` with an empty `problems` list).
+- FG1 extraction capture: PASS, adjudicated at extraction time. The three
+  manifests recorded 2748 (AmbigQA), 5540 (KUQ) and 3369 (SelfAware) rows
+  with 37 hidden states each, matching the panel sizes exactly.
+- FG2 runtime provenance: PASS, adjudicated at extraction time. The
+  pinned image digest was verified character for character before each
+  docker verb and the provenance JSON line appears in all three run logs.
+
+No FG failed, so no M reading was voided.
+
+Registered readouts, all from `analysis-committed/atlas_sweep.json` under
+the pinned probe protocol (`internal_panel_probe_gate._cv_auroc_with_oof`
+unchanged: folds 5, C 0.5, seed 0, out-of-fold AUROC). Best-layer values
+are max-over-37-layers selections and are reported here next to their L35
+value; the full per-layer curve for every row lives in the artifact.
+
+- M1, each KUQ flavor against the 3071-row KUQ known pool, as
+  best layer / best OOF AUROC (L35 value in parentheses): ambiguous
+  n=411, L26 0.9800 (0.9766); controversial n=490, L20 0.9960 (0.9949);
+  counterfactual n=403, L19 0.9963 (0.9952); false assumption n=368, L29
+  0.9918 (0.9912); future unknown n=490, L17 0.9994 (0.9990); unsolved
+  problem n=307, L28 0.9937 (0.9915); pooled all-unknowns n=2469, L27
+  0.9887 (0.9874).
+- M2, AmbigQA unknown vs known (1503 vs 1245): best L25 0.6590, L35
+  0.6338 — reproducing the resolved `rawbase-ambigqa-boundary-readout`
+  value exactly. Below the 0.75 ceiling at every one of the 37 layers.
+- M3, SelfAware reference (1032 vs 2337): best L25 0.9937, L35 0.9925.
+- M4, frozen-probe transfer at each source's own best layer: every
+  ordered pair among the six KUQ flavors and SelfAware reads 0.8331
+  (unsolved-problem probe evaluated on ambiguous) to 0.9996
+  (unsolved-problem probe on future unknown), 42 off-diagonal cells.
+  AmbigQA is the exception in both directions: every other probe
+  evaluated into AmbigQA reads 0.4878 to 0.5746, and the AmbigQA-trained
+  probe reads 0.4332 to 0.5853 everywhere else.
+
+Adjudication against the bands fixed at signing:
+
+- P1 SUPPORTED. Future unknown 0.9994 and unsolved problem 0.9937 both
+  clear the 0.90 discovery floor.
+- P2 FAILED as registered. The AmbigQA half held (0.6590 max, under the
+  0.75 ceiling at every layer) but KUQ ambiguous reaches 0.9800, far
+  above it.
+- F1 (universal code) DOES NOT FIRE. AmbigQA never reaches 0.90 at any
+  layer and transfers into it sit near chance, so the "every flavor
+  including both ambiguity surfaces" condition is not met.
+- F2 (dataset-specific) DOES NOT FIRE. Every KUQ flavor clears 0.75.
+- Registered consequence: neither falsifier and a split prediction is the
+  mixed-atlas branch, reported descriptively per flavor with no
+  single-number verdict.
+
+Descriptive reading (exploratory, adjudicating nothing beyond the bands
+above): the raw pretrained base carries a broad, freely transferring
+unanswerability code that covers all six KUQ flavors and SelfAware,
+including overtly ambiguous KUQ questions. What it cannot read at any
+layer is AmbigQA, whose ambiguity is covert. The operative boundary looks
+like overt vs covert unanswerability rather than flavor vs flavor. This
+refines rather than contradicts the resolved
+`rawbase-ambigqa-boundary-readout` verdict: the pretrained signal is not
+narrowly "SelfAware-flavored", it is broad across overt flavors, and
+AmbigQA fails because nothing on the question's surface marks it as
+unanswerable.
+
+Scope limits carried from the signed text:
+
+- Tier 3, exploratory. Nothing here pools with any headline matrix.
+- Max-over-layers selection is post hoc across 222 (flavor, layer) probes
+  in M1 plus the sweeps, so every best-layer number above is a selected
+  maximum reported against its full layer curve, not a pre-registered
+  point estimate.
+- Promotion of any per-flavor discovery to a claim requires a registered
+  confirmatory follow-up (fresh split or fresh surface) under the
+  program's standing promotion rule.
+- Registered caveat, stated before any confirmatory use: KUQ and
+  SelfAware unknowns are stylistically distinctive question types, so
+  within-dataset known-vs-unknown probes may partly ride surface style.
+  Cross-dataset transfer (KUQ probes reading SelfAware at 0.9105 to
+  0.9759, SelfAware reading KUQ at 0.8392 to 0.9921) argues against a
+  pure dataset artifact but does not eliminate style as a shared carrier.
+  A style-controlled confirmatory cell, matched surface form with flavor
+  varied, was named at signing as the natural follow-up and as a
+  precondition for promoting this atlas.
+
+Run provenance: `flavor_probe_sweep.py` was repinned once mid-cell
+(`experiment.yaml` `instrument.repins`) after a startup crash where
+`discover_layers` assumed a list of layer indices while all-layer
+manifests record the string `all`. The crash occurred before any AUROC
+was computed, and no band, threshold, or protocol constant was touched.

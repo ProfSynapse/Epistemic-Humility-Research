@@ -6,6 +6,21 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-11 -- Bookkeeping: AMENDMENT.md header corrected to match machine state
+
+**Tier 3, bookkeeping only, no goalpost implications.** `AMENDMENT.md`'s
+header still read "draft (not signed; do not launch as confirmatory
+evidence). No GPU work has run for this experiment; every artifact under
+this directory is a scaffold, not a result." — stale boilerplate left over
+from before sign-time. The machine state in `experiment.yaml` has read
+`status: signed` with an interim `verdict: INCONCLUSIVE (interim,
+2026-07-24)` since that date, and the "Outcome" section below documents
+completed GPU work for 3 of the 4 registered families. Corrected the header
+to state the true status (signed, interim INCONCLUSIVE) and to point at
+`experiment.yaml` and the "Outcome" section, following the precedent set by
+`gemma-4-e4b-family-atlas/AMENDMENT.md`'s 2026-07-20 header correction. No
+signed content (question, prediction, falsifier, gates, Outcome) touched.
+
 ### 2026-07-24 -- CORRECTION to the A_lin entry below: `A_lin` is NOT the read instrument, and the KU readout gate reads gemma BEST exactly where the write side has never been tried
 
 **Tier 3, correction.** Corrects the framing of the entry immediately below.

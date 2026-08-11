@@ -1,6 +1,10 @@
 # qwen3-4b-family-atlas
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: resolved 2026-07-21 (machine state in `experiment.yaml`); verdict
+FALSIFIER FIRED on the profile limb (lead adjudication; see this document's
+"Outcome" section and `experiment.yaml` `verdict:`). This header was stale
+boilerplate reading "draft (not signed)" until 2026-08-11; corrected to
+match the machine state, which was already `resolved`.
 
 Keep this document the prose home for the experiment. The machine state
 lives in `experiment.yaml` and is never duplicated here.

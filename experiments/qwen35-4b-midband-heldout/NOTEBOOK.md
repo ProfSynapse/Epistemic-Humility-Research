@@ -6,6 +6,29 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-11 -- Bookkeeping: Outcome section backfilled from the recorded verdict
+
+**Bookkeeping only, no goalpost implications.** The trailing `## Outcome`
+section of `AMENDMENT.md` still held the unfilled "Filled at resolve"
+placeholder despite `experiment.yaml` reading `status: resolved` with a verdict
+on record, and despite the `### Outcome` subsection under the Falsifier already
+recording the resolution. Backfilled in a PI-approved governed pass at the level
+of detail the placeholder demanded (shape, G0/G1/G3(i)/G3(ii) with Wilson
+intervals on every rate, fired held-out counts, row-level decoupling count,
+placebo readings, one-sentence summary) from the recorded verdict line, the
+2026-07-13 "RESOLVED shape A" entry, and
+`analysis-committed/heldout_summary.json`; every number in the new prose was
+re-read from that artifact and agrees with the existing `### Outcome`. One item
+is recorded as "not recorded" rather than resolved: the measured realized
+projection behind the G0 smoke readback check is in no committed artifact,
+which carries only the commanded dose. The existing `### Outcome` subsection was
+left untouched. This cell's header carried no "Outcome placeholder still
+unfilled" flag to update. NO ADJUDICATION WAS PERFORMED: no verdict, gate,
+threshold, prediction, falsifier or status was changed, and no number was
+recomputed. (Note for future readers: this file's preamble says newest first,
+but the pre-existing entries below run oldest first; this entry follows the
+stated convention.)
+
 - 2026-07-13 (draft): scaffolded and drafted the held-out confirmation stage
   reserved by qwen35-4b-midband-doubt-snap scope statement 2. Frozen operating
   point (hs20 direction set, tau_frozen, mu/sigma, sigma_c, dose 8 x sigma_c)
