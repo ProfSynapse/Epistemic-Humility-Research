@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -362,6 +363,84 @@ def _stale_gate_status_problems(exp_dir: Path, data: dict) -> list[str]:
     return problems
 
 
+_HEADER_DRAFT_WORD_RE = re.compile(r"\bdraft\b", re.IGNORECASE)
+_HEADER_DRAFT_PHRASES = ("not signed", "no gpu work has run")
+
+
+def _amendment_header_status_line(exp_dir: Path) -> str | None:
+    """Return AMENDMENT.md's header status-assertion line, or None if absent.
+
+    Checks the two conventions used across amendments: a prose ``Status:``
+    line (optionally bold-marked, e.g. ``**Status:**``) within the first ~15
+    lines, or a YAML frontmatter ``status:`` field. Returns the raw text to
+    check for draft-claiming language; None means the header makes no
+    explicit status claim, so there is nothing to contradict.
+    """
+    amend_path = exp_dir / "AMENDMENT.md"
+    if not amend_path.is_file():
+        return None
+    try:
+        lines = amend_path.read_text(encoding="utf-8").splitlines()
+    except Exception:
+        return None
+
+    if lines and lines[0].strip() == "---":
+        for line in lines[1:15]:
+            if line.strip() == "---":
+                break
+            m = re.match(r"^\s*status:\s*(.+?)\s*$", line, re.IGNORECASE)
+            if m:
+                return f"status: {m.group(1)}"
+        return None
+
+    for line in lines[:15]:
+        if re.match(r"^\s*\*{0,2}status:", line, re.IGNORECASE):
+            return line
+    return None
+
+
+def _stale_amendment_header_problems(exp_dir: Path, data: dict) -> list[str]:
+    """Flag a signed-or-later experiment whose AMENDMENT.md header still
+    reads as an unsigned draft.
+
+    Returns human-readable problems (empty = ok). Checked only at `signed`
+    and beyond, mirroring `_stale_gate_status_problems` above: a genuine
+    draft correctly has a draft header, so drafts are never flagged. Only
+    fires on a confident contradiction -- the header's own status-assertion
+    line (see `_amendment_header_status_line`) containing the standalone
+    word "draft", or the phrase "not signed" or "no gpu work has run" -- so
+    a corrected header that narrates its own past draft/signing history in
+    later prose (the exact convention this check exists to make routine,
+    e.g. "this header was stale boilerplate reading 'draft' until <date>;
+    corrected to match the machine state") is never flagged, since that
+    narration lives outside the single status-assertion line. Ambiguous
+    prose using neither literal marker is intentionally left unflagged.
+    Warning-only and deliberately NOT auto-repaired, matching
+    `_stale_gate_status_problems`'s severity: this is a bookkeeping
+    contradiction between a human-authored header and the machine state, not
+    a data-integrity fault, so it should not block a commit. See the two
+    header-drift cases (`j-space-cross-family-layer-contrast`,
+    `qwen3-4b-family-atlas`) and the wider sweep fixed 2026-08-11, and the
+    `gemma-4-e4b-family-atlas/AMENDMENT.md` 2026-07-20 header correction
+    that first established the fix pattern this check guards.
+    """
+    if data.get("status") not in SIGNED_PLUS:
+        return []
+    status_line = _amendment_header_status_line(exp_dir)
+    if status_line is None:
+        return []
+    sl = status_line.lower()
+    if _HEADER_DRAFT_WORD_RE.search(sl) or any(p in sl for p in _HEADER_DRAFT_PHRASES):
+        return [
+            f"AMENDMENT.md header still reads as an unsigned draft "
+            f"({status_line.strip()!r}) but experiment.yaml status is "
+            f"{data.get('status')!r}; correct the header to state the true "
+            "status (see gemma-4-e4b-family-atlas/AMENDMENT.md's 2026-07-20 "
+            "header correction for the pattern)."
+        ]
+    return []
+
+
 def _is_untracked_data_input(rel: str) -> bool:
     """True when an input path lives under an experiment's gitignored data dir.
 
@@ -454,6 +533,17 @@ def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[s
     # through `bin/exp repin` (pre-run) or a governed revision, never a silent
     # rewrite. See the grpo-three-seed-confirmatory NOTEBOOK entry of 2026-08-05.
     for p in _stale_gate_status_problems(mpath.parent, data):
+        print(f"exp validate: warning: {slug}: {p}", file=sys.stderr)
+
+    # A signed-or-later experiment whose AMENDMENT.md header still asserts
+    # "draft (not signed)" reads as unlaunched/unsigned to anyone opening the
+    # governed doc directly, even though the machine state has moved on --
+    # exactly the drift found and fixed across 19 amendments 2026-08-11 (see
+    # _stale_amendment_header_problems). Warning-only for the same reason as
+    # the gates-status check above: bookkeeping drift, not a data-integrity
+    # fault, and not auto-repaired since the fix requires human judgment
+    # about which surrounding prose is now stale.
+    for p in _stale_amendment_header_problems(mpath.parent, data):
         print(f"exp validate: warning: {slug}: {p}", file=sys.stderr)
 
     inputs = data.get("inputs", []) or []

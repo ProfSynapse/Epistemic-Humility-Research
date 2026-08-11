@@ -1,14 +1,20 @@
 # Gemma-4-E4B KV-sharing seam: is the mid-band null a quarantine artifact?
 
-Status: **DRAFT (not signed; do not launch).** Drafted by a delegated agent
-2026-07-24, then **re-grounded by the lead the same day** on the clean
-`use_cache=True` activations: the withdrawn `0/176` framing, the withdrawn
-G2-diagnosticity claim, the underived `n_fired_known < 10` threshold, and the
-missing shallow-depth arms are all corrected below, and the corresponding blocks
-in `gates.yaml` and `experiment.yaml` are corrected to match. The lead has **NOT
-signed it**; several pre-sign items remain open (see "Open questions at sign").
-Nothing in this rewrite moves a locked threshold; it changes what the numbers
-are claimed to mean and adds descriptive, non-gating arms.
+Status: resolved 2026-07-31, PI approval on record (machine state in
+`experiment.yaml`); verdict C1 FAIL, A2/A4 INCONCLUSIVE as registered,
+D-ladder supports KV-quarantine as SUPPORTED-not-established (see
+AMENDMENT.md "Outcome" and experiment.yaml `verdict:`). This header was
+stale boilerplate reading "DRAFT (not signed; do not launch) ... The lead
+has NOT signed it" until 2026-08-11; corrected to match the machine state,
+which had since progressed through signing to resolution. Drafted by a
+delegated agent 2026-07-24, then **re-grounded by the lead the same day**
+on the clean `use_cache=True` activations: the withdrawn `0/176` framing,
+the withdrawn G2-diagnosticity claim, the underived `n_fired_known < 10`
+threshold, and the missing shallow-depth arms were all corrected (see
+below), and the corresponding blocks in `gates.yaml` and `experiment.yaml`
+were corrected to match. Nothing in that rewrite moved a locked threshold;
+it changed what the numbers are claimed to mean and added descriptive,
+non-gating arms.
 
 **Header updated 2026-07-25 — three clauses above were stale and are corrected
 here rather than silently edited away.** (a) "the input dependency on the

@@ -1,10 +1,13 @@
 # Write-direction naming battery: what is the mid-band c_hat write, behaviorally?
 
-Status: DRAFT (not signed; do not launch as confirmatory evidence). Drafted
-2026-07-30 under a lead design assignment. Signing is lead-only with explicit
-PI approval. Two disclosures below (section "Prior reads that broke blinding")
-must be adjudicated by the PI before this draft can be signed, because they
-change what this cell is allowed to pre-register.
+Status: falsified, resolved 2026-07-30 (lead adjudication, user-approved
+close-out; machine state in `experiment.yaml`); verdict: unnamed write
+direction, form instrument void (see AMENDMENT.md "Outcome" and
+experiment.yaml `verdict:`). This header was stale boilerplate reading
+"DRAFT (not signed) ... must be adjudicated by the PI before this draft
+can be signed" until 2026-08-11; corrected to match the machine state,
+which had since progressed through PI adjudication, signing, and
+resolution. Drafted 2026-07-30 under a lead design assignment.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.

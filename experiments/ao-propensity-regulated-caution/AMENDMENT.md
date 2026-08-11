@@ -1,8 +1,12 @@
 # ao-propensity-regulated-caution
 
-Status: draft (not signed; do not launch as confirmatory evidence). Tier-2
-exploratory local mechanism evidence, never pooled with the locked Phase 1
-matrix.
+Status: null-result, run 2026-07-06 (machine state in `experiment.yaml`);
+verdict NULL on Stage 1 knob validation, Stage 2 does not run per the
+falsifier (see AMENDMENT.md "Outcome" and experiment.yaml `verdict:`). This
+header was stale boilerplate reading "draft (not signed)" until 2026-08-11;
+corrected to match the machine state, which was already `null-result`.
+Tier-2 exploratory local mechanism evidence, never pooled with the locked
+Phase 1 matrix.
 
 Machine state lives in `experiment.yaml`; it is not duplicated here.
 

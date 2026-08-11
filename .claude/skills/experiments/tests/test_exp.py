@@ -237,6 +237,57 @@ def test_validate_warns_but_passes_on_signed_missing_persistence(repo: Path, cap
     assert "warning" in capsys.readouterr().err
 
 
+# --- stale AMENDMENT.md header vs machine status -----------------------------
+
+def test_validate_warns_on_stale_draft_header_when_signed(repo: Path, capsys):
+    # AMENDMENT.md's scaffolded header reads "Status: draft (not signed...)"
+    # and `sign` never rewrites it -- so a signed experiment whose header
+    # still says draft/not-signed must warn, matching the drift found and
+    # fixed across 19 amendments 2026-08-11 (gemma-4-e4b-family-atlas's
+    # 2026-07-20 header correction established the fix pattern).
+    _sign_ready(repo, "cell-header-stale")
+    _run(repo, "sign", "cell-header-stale")
+    capsys.readouterr()
+    assert _run(repo, "validate") == 0
+    err = capsys.readouterr().err
+    assert "warning" in err
+    assert "cell-header-stale" in err
+    assert "draft" in err.lower()
+
+
+def test_validate_silent_on_corrected_header_when_signed(repo: Path, capsys):
+    # The corrected-header convention (state the true status on the header's
+    # own Status line, then narrate the old draft language in later prose
+    # for the audit trail) must not re-trigger the warning it exists to fix.
+    d = _sign_ready(repo, "cell-header-fixed")
+    _run(repo, "sign", "cell-header-fixed")
+    (d / "AMENDMENT.md").write_text(
+        "# cell-header-fixed\n\n"
+        "Status: signed (machine state in `experiment.yaml`); not yet\n"
+        "resolved. This header was stale boilerplate reading \"draft (not\n"
+        "signed)\" until 2026-08-11; corrected to match the machine state,\n"
+        "which was already `signed`.\n\n"
+        "Keep this document the prose home for the experiment.\n",
+        encoding="utf-8",
+    )
+    capsys.readouterr()
+    assert _run(repo, "validate") == 0
+    assert "warning" not in capsys.readouterr().err
+
+
+def test_validate_silent_on_draft_header_when_draft(repo: Path, capsys):
+    # A genuine draft correctly has a draft header; never flag it -- the
+    # check only fires at signed-or-later, mirroring
+    # `_stale_gate_status_problems`.
+    _run(repo, "new", "cell-header-draft", "--type", "eval")
+    m = _manifest(repo, "cell-header-draft")
+    m["question"] = "Does X actuate Y?"
+    _write_manifest(repo, "cell-header-draft", m)
+    capsys.readouterr()
+    assert _run(repo, "validate") == 0
+    assert "warning" not in capsys.readouterr().err
+
+
 # --- pin drift detection -----------------------------------------------------
 
 def test_validate_detects_pin_drift(repo: Path):

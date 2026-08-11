@@ -1,8 +1,11 @@
 # Correctness discriminative-subspace overlap across training checkpoints
 
-Status: draft (not signed; do not launch as confirmatory evidence). Design packet
-v2, lead-adjudicated 2026-07-20; PI approved the design arc 2026-07-20 following
-lit-review due diligence.
+Status: null-result, resolved 2026-07-20 as instrument-limited (machine
+state in `experiment.yaml`; see AMENDMENT.md "Outcome" and experiment.yaml
+`verdict:`). This header was stale boilerplate reading "draft (not
+signed)" until 2026-08-11; corrected to match the machine state, which was
+already `null-result`. Design packet v2, lead-adjudicated 2026-07-20; PI
+approved the design arc 2026-07-20 following lit-review due diligence.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.

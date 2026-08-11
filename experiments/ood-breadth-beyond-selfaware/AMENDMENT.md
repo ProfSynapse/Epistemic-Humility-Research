@@ -1,6 +1,15 @@
 # ood-breadth-beyond-selfaware
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: resolved (machine state in `experiment.yaml`; verdict on record
+there -- see experiment.yaml `verdict:`). This header was stale
+boilerplate reading "draft (not signed)" until 2026-08-11; corrected to
+match the machine state, which was already `resolved`. **Separate,
+unresolved gap found at the same correction pass: this document's own
+"Outcome" section below is still the unfilled placeholder text ("Filled
+at resolve...") despite the machine state showing resolved with a verdict
+on record; it has not been backfilled with the actual result narrative.
+Flagged for lead/PI follow-up, not corrected here (no scientific content
+authored by this pass).**
 
 Machine state lives in `experiment.yaml`; the instrument specification lives in
 `cell.yaml`; the pre-stated thresholds live in `gates.yaml`. This document is the

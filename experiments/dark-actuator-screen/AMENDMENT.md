@@ -1,10 +1,14 @@
 # dark-actuator-screen
 
-Status: draft (not signed; do not launch as confirmatory evidence). Tier-2
-exploratory lab-diagnostic (a knob-discovery SCREEN, not a single-hypothesis
-confirmatory cell). Never pooled with the locked Phase 1 matrix. Its only
-positive output is a ranked shortlist: any candidate that clears the graduation
-bar earns its OWN signed amendment before any claim is made.
+Status: null-result, run 2026-07-06 (machine state in `experiment.yaml`);
+verdict NULL (see AMENDMENT.md "Outcome" and experiment.yaml `verdict:`).
+This header was stale boilerplate reading "draft (not signed)" until
+2026-08-11; corrected to match the machine state, which was already
+`null-result`. Tier-2 exploratory lab-diagnostic (a knob-discovery SCREEN,
+not a single-hypothesis confirmatory cell). Never pooled with the locked
+Phase 1 matrix. Its only positive output is a ranked shortlist: any
+candidate that clears the graduation bar earns its OWN signed amendment
+before any claim is made.
 
 Machine state lives in `experiment.yaml`; it is not duplicated here.
 

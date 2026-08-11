@@ -1,9 +1,11 @@
 # H9 held-out reading gate for the confab-propensity direction on AI-TRUE
 
-Status: draft (not signed; do not launch as confirmatory evidence). Gates in
-section 5 LOCK at signing. The Modal launch in section 6 needs separate explicit
-user approval on top of signing; signing this document does not authorize the
-GPU spend.
+Status: resolved 2026-07-11 (machine state in `experiment.yaml`); verdict
+INCONCLUSIVE-BY-POWER (H9-G0 unmet twice, H9-G1 never read per the
+read-once rule; see AMENDMENT.md "Outcome" and experiment.yaml
+`verdict:`). This header was stale boilerplate reading "draft (not
+signed)" until 2026-08-11; corrected to match the machine state, which was
+already `resolved`. Gates in section 5 LOCKED at signing.
 
 Machine state lives in `experiment.yaml`; it is never duplicated here.
 
