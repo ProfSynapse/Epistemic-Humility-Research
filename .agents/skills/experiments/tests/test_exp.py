@@ -288,6 +288,55 @@ def test_validate_silent_on_draft_header_when_draft(repo: Path, capsys):
     assert "warning" not in capsys.readouterr().err
 
 
+# --- unfilled Outcome vs terminal status -------------------------------------
+
+def test_validate_warns_on_placeholder_outcome_when_resolved(repo: Path, capsys):
+    # `resolve` flips the machine status but never writes the Outcome prose,
+    # so a resolved cell whose `## Outcome` still reads "Filled at
+    # resolve..." must warn -- the four-cell defect class backfilled
+    # 2026-08-11.
+    _sign_ready(repo, "cell-outcome-stale")
+    _run(repo, "sign", "cell-outcome-stale")
+    _run(repo, "resolve", "cell-outcome-stale", "--verdict", "Passed.")
+    capsys.readouterr()
+    assert _run(repo, "validate") == 0
+    err = capsys.readouterr().err
+    assert "warning" in err
+    assert "cell-outcome-stale" in err
+    assert "Outcome" in err and "terminal" in err
+
+
+def test_validate_silent_on_written_outcome_when_resolved(repo: Path, capsys):
+    # A written Outcome (no placeholder text left in the section body)
+    # satisfies the check; the corrected header keeps the sibling
+    # header-drift check quiet too, so stderr is fully clean.
+    d = _sign_ready(repo, "cell-outcome-ok")
+    _run(repo, "sign", "cell-outcome-ok")
+    _run(repo, "resolve", "cell-outcome-ok", "--verdict", "Passed.")
+    (d / "AMENDMENT.md").write_text(
+        "# cell-outcome-ok\n\n"
+        "Status: resolved (machine state in `experiment.yaml`).\n\n"
+        "## Outcome\n\n"
+        "Passed. All gates green; verdict copied to the manifest.\n",
+        encoding="utf-8",
+    )
+    capsys.readouterr()
+    assert _run(repo, "validate") == 0
+    assert "warning" not in capsys.readouterr().err
+
+
+def test_validate_silent_on_placeholder_outcome_when_signed(repo: Path, capsys):
+    # Pre-terminal statuses correctly carry the scaffold placeholder; only
+    # a terminal status creates the obligation to write the Outcome. (The
+    # header-drift warning may fire here; assert only that no Outcome
+    # warning does.)
+    _sign_ready(repo, "cell-outcome-signed")
+    _run(repo, "sign", "cell-outcome-signed")
+    capsys.readouterr()
+    assert _run(repo, "validate") == 0
+    assert "Outcome" not in capsys.readouterr().err
+
+
 # --- pin drift detection -----------------------------------------------------
 
 def test_validate_detects_pin_drift(repo: Path):

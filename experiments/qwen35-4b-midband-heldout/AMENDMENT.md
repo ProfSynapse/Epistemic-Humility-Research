@@ -315,7 +315,133 @@ sign (see the adjudication note in the handoff and `gates.yaml`
 
 ## Outcome
 
-Filled at resolve. Record the shape (A through E) that occurred, the gate
-results (G0 / G1 / G3(i) / G3(ii)) with Wilson CIs on every rate, the fired
-held-out counts, the row-level decoupling count, the placebo readbacks, and
-the one-sentence summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-13 by the lead (`NOTEBOOK.md`, "RESOLVED shape A" entry;
+`bin/exp resolve`). **Outcome shape A** occurred, as recorded in
+`analysis-committed/heldout_summary.json` (`outcome_shape: "A"`): the falsifier
+does not fire and the frozen hs20 operating point is PROMOTED to a held-out
+claim about Qwen3.5-4B. The `### Outcome` subsection under the Falsifier above
+records the same resolution; this section is the fuller transcription demanded
+by the template and adds no content beyond it.
+
+One-sentence summary (also in `experiment.yaml` `verdict:`): "The frozen hs20
+mid-band operating point transfers to the untouched Qwen3.5-4B held-out pool
+with refused 0.678, well-formed 0.977, known-correct false refusal 0.039, and
+intact placebo specificity, promoting the doubt-gated caution-snap window from
+an in-sample selection to a held-out claim about this model."
+
+Every rate below is quoted from `analysis-committed/heldout_summary.json` with
+its n, its success count, and its Wilson 95 percent interval, at four decimal
+places where the artifact carries them. Nothing was refit: the write layer
+(`hs_index` 20), the direction set, the threshold, the standardization scalars
+and the dose (`dose_abs` 12.6082 = 8 x sigma_c, `gain_gated` 8.0) were loaded
+verbatim from the resolved ladder.
+
+### Fired held-out counts
+
+The frozen gate fired on **1286 of the 1332 held-out confabs** and **17 of the
+360 held-out known-correct rows**, 1303 fired rows in total
+(`n_fired_confab`, `n_fired_known`, `n_fired_total`). The population was the
+untouched held-out pool at its registered size, 1332 + 360 = 1692 rows, meeting
+an intervention for the first time. The `permuted_gate` arm reproduced that
+same total fire count as 1025 confab plus 278 known rows under the registered
+fresh seed 20260713 (`heldout_permute_seed`).
+
+### Gate results
+
+- **G0 instrument validity: held throughout** (stop-gate, not an outcome).
+  The frozen operating-point hashes were verified at launch and the pipeline
+  refuses placeholders and mismatches; the run passed under single-launch
+  run-log integrity. The dosed-smoke realized-projection readback was
+  adjudicated under the shared MechInterp `SmokeConfig` contract recorded at
+  sign (`write_rel_tol` 0.05, `write_abs_floor` 0.5, `offtarget_tol` 1e-3)
+  against the target 12.608; the measured realized projection is **not
+  recorded** in any committed artifact, which carries only the commanded
+  `dose_abs` / `gain_random` of 12.6082. Degenerate and natural-stop hygiene
+  from the summary: the `gated` known-role arm ran at natural stop 1.0000 with
+  degenerate 0.0000, and the weakest known-role arm on this surface is
+  `permuted_gate` at natural stop 0.9861 (355/360) with degenerate 0.0222
+  (8/360).
+- **G1 refusal transfer: PASS.** Fired-confab refused **872/1286 = 0.6781**,
+  Wilson 95 percent [0.6520, 0.7030], against the 0.60 point floor and the
+  requirement that the Wilson lower bound exceed 0.50. Both legs clear.
+- **G1 format: PASS.** Fired-confab well-formed **1256/1286 = 0.9767**, Wilson
+  [0.9669, 0.9836], against the 0.80 floor. Refusal induction and output
+  well-formedness stay decoupled out of sample, which is the property the
+  in-sample window claimed.
+- **G1 cost: PASS.** Gated-arm false refusal over the full 360 held-out
+  known-correct population **14/360 = 0.0389**, Wilson [0.0233, 0.0642],
+  against the 0.05 point ceiling and the Wilson-upper ceiling of 0.10; both
+  clear. Reported alongside as registered, the fired-known conditional is
+  **14/17 = 0.8235**, Wilson [0.5897, 0.9381] — of the 17 knowns the gate fired
+  on, 14 refused, so the system-level cost is low because the gate fires on few
+  knowns, not because the write is gentle on the ones it fires on.
+- **Baseline reference (registered as expected near zero, and it is).** Refused
+  0/1332 = 0.0000, Wilson [0.0000, 0.0029] on confabs and 0/360 = 0.0000,
+  Wilson [0.0000, 0.0106] on knowns. Baseline well-formed 1324/1332 = 0.9940 on
+  confabs and 360/360 = 1.0000 on knowns.
+- **G3(i) placebo, direction specificity: PASS.** The `random_direction` arm
+  moved refusal by **+0.0083** on confabs (11/1332 = 0.0083 against a baseline
+  0.0000) and by **0.0000** on knowns (0/360, unchanged from baseline), both
+  inside the 2-point band on both populations
+  (`gates.g3i.confab_delta_random_minus_baseline` 0.008258,
+  `known_delta_random_minus_baseline` 0.0). Recorded for completeness and read
+  by no gate: the placebo arm's confab well-formed dips to **1172/1332 =
+  0.8799**, Wilson [0.8613, 0.8963], with natural stop 0.9354, so the matched-
+  magnitude placebo write degrades output without inducing refusal.
+- **G3(ii) placebo, gate selectivity: PASS.** The `permuted_gate` arm's
+  known-correct false refusal is **20/360 = 0.0556**, Wilson [0.0362, 0.0842],
+  strictly worse than the `gated` arm's 0.0389. Choosing the same number of
+  rows at random rather than by the frozen gate costs more on the known side,
+  so the row selection, not the raw dose count, is what limits false refusal.
+
+### Row-level decoupling
+
+**869 of the 1286 fired held-out confabs were simultaneously refused AND
+well-formed** (`gated.fired_confab.row_level_decoupling`). The decoupling is a
+property of individual rows on held-out, not only of the two marginal rates.
+The corresponding counts on the cost side are 14 on both the fired-known
+conditional and the full known population, and 0 on both baseline populations.
+
+### Predictions scoreboard adjudication
+
+Both recorded scoreboard calls were shape A and both are CORRECT. The observed
+fired-confab refused rate of 0.6781 sits inside the orchestrator's pre-launch
+0.62 to 0.70 band, and the well-formed, cost and placebo legs all landed inside
+the calls as recorded.
+
+### Scope limits carried from the signed text
+
+- Tier 2, exploratory, one substrate. This promotes the hs20 mid-band window
+  from an in-sample existence result to a held-out claim **about Qwen3.5-4B
+  specifically**, and about the one frozen operating point scored here.
+- Never pooled with the locked Phase 1 headline matrix, and never pooled with
+  the `doubt-snap-cross-family-confirmatory` fleet, which is resolved
+  not-promoted and used different gate definitions; those surfaces are governed
+  separately.
+- One dose and one layer: a confirmation of a single operating point, not a
+  search. The FIT rows were not consumed here; only the held-out partition was
+  scored.
+- Batch parity, not single-row parity: the run used `batch_size` 8, following
+  the ladder's Stage C precedent. Single-row parity was not verified there and
+  is not claimed here.
+- The fleet-style Wilson-bounded thresholds adopted at sign are the pass/fail
+  rule; the ladder's point-estimate floors are reported as inner floors for
+  continuity.
+- Row-level logs with per-row text and full sub-grade dicts stay gitignored
+  under `analysis/runlog/` per the data-exhaust rule; `analysis-committed/`
+  carries counts, rates and ID-only manifests, no question, alias, or answer
+  text.
+
+### Run provenance and verification
+
+The lead independently recomputed every gated rate from the row-level logs and
+reports an exact match on all legs; the result is in-prediction and the
+instrument was hardened and adversarially reviewed before signing, so lead
+verification rather than a fresh red-team pass is the certification tier
+applied. One operational event is on record and changed nothing: the first full
+launch was refused by the RunLog fingerprint guard because pipeline smoke and
+pipeline run share `analysis/runlog/` paths (n_rows 8 against 1692). That is
+the resume guard working as designed; the smoke logs were archived, the
+refusing attempt's log preserved, and the run relaunched clean. No pinned
+module changed, and the materialize and anchor-capture artifacts were untouched
+and reused.

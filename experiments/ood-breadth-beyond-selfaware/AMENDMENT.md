@@ -3,13 +3,12 @@
 Status: resolved (machine state in `experiment.yaml`; verdict on record
 there -- see experiment.yaml `verdict:`). This header was stale
 boilerplate reading "draft (not signed)" until 2026-08-11; corrected to
-match the machine state, which was already `resolved`. **Separate,
-unresolved gap found at the same correction pass: this document's own
-"Outcome" section below is still the unfilled placeholder text ("Filled
-at resolve...") despite the machine state showing resolved with a verdict
-on record; it has not been backfilled with the actual result narrative.
-Flagged for lead/PI follow-up, not corrected here (no scientific content
-authored by this pass).**
+match the machine state, which was already `resolved`. The gap flagged at
+that same correction pass — this document's own "Outcome" section still
+carrying the unfilled placeholder text ("Filled at resolve...") — was
+backfilled 2026-08-11 in a PI-approved governed pass, written from the
+recorded verdict and the committed artifacts. No adjudication was
+performed and no verdict, gate, threshold, or status changed.
 
 Machine state lives in `experiment.yaml`; the instrument specification lives in
 `cell.yaml`; the pre-stated thresholds live in `gates.yaml`. This document is the
@@ -410,5 +409,183 @@ because none was adjudicated explicitly:
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-08-09. Gates were adjudicated by the lead at 2026-08-09T16:45Z
+(`NOTEBOOK.md`, stage-8 entry); the verdict was PI-approved and the resolve
+stamp applied the same day. The falsifier did not fire; the cell reports on
+five arms after the registered G1 void.
+
+One-sentence summary (also in `experiment.yaml` `verdict:`): "Falsifier not
+fired; behavior transfers in level but the internal known-unknown readout does
+not transfer to AmbigQA (G7 FAIL both arms, 0.6279/0.6349 vs 0.90 floor) and
+the stated-confidence collapse is not universal (G5 FAIL); G4 unadjudicable
+after the registered G1 void of arms A2/A6/A7."
+
+### Gate results
+
+Integrity gates, read first as registered:
+
+- **G0 disjointness screen: PASS.** `screen_summary.json`
+  (`dataset_sha256_verification.all_match: true` over all six pinned files;
+  `registered_count_check.all_match: true` with an empty `mismatches` list).
+  Retained rows carry zero training-pool hits and zero SelfAware overlaps on
+  every surface: KUQ retained 3071 known (from 3447 raw, dropping 10
+  duplicates, 169 training hits, 197 SelfAware overlaps) and 2469 unknown
+  (from 3437, dropping 955 duplicates, 0 training hits, 13 overlaps), total
+  5540; AmbigQA validation retained 830 known and 1002 unknown with zero drops
+  on every screen and 170 mixed-annotation rows excluded by rule; BIG-bench
+  retained 23 per side with zero drops. Training-pool union 15,465 distinct
+  prompts. The AmbigQA internal panel was built to 2748 rows (1245 known, 1503
+  unknown) as the 1832-row validation surface plus the registered 916-row
+  deterministic train top-up (415 known, 501 unknown selected against 5286 and
+  4739 available).
+- **G1 re-merge parity: FAIL.** `analysis-committed/gate_report.json`,
+  `integrity_gates.G1`. Row counts reproduced exactly (n 3369, known 2337,
+  unknown 1032), but five of the nine behavior metrics exceeded the registered
+  0.10 pp bar on the re-merged answer-supervised base: `refusal_recall_pct`
+  83.72 to 84.11 (0.39 pp), `answer_on_unknown_pct` 16.28 to 15.89 (0.39 pp),
+  `over_refusal_pct` 79.20 to 79.59 (0.39 pp), `refusal_rate_pct` 80.59 to
+  80.97 (0.38 pp), `correct_on_known_pct` 36.63 to 36.90 (0.27 pp).
+  `correct_on_unknown_pct` (0.00) and `truthful_pct` (0.06 pp) were within.
+  The registered consequence was applied unchanged and no retry was taken:
+  `void_arms_A2_A6_A7_report_on_five_arms`. The cell reports on A1, A3, A4,
+  A5, A8. (`correct_on_known_pct` appears here only as a reproduction delta on
+  a fixed population; its filtered denominator makes it unquotable as a level
+  without its denominator and raw count, per the reporting rule above.)
+- **G2 surface construction: PASS.** All 15 surviving arm-by-surface cells at
+  their exact registered counts (KUQ 5540 = 3071 + 2469; AmbigQA 1832 = 830 +
+  1002; BIG-bench 46 = 23 + 23), stated-confidence JSON coverage 100.0 percent
+  against the 99.0 floor, `label_from_target` false everywhere.
+- **G3 no thinking contamination: PASS.** `enable_thinking` false on every arm
+  config and zero think-marker hits across all 15 scored-rows files.
+- **G docker digest: PASS.** Live image digest equal to the pinned
+  `sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`
+  character for character.
+
+Evidential gates, from `analysis-committed/evidential_report_fivearm.json`
+(and `g7_A1.json` / `g7_A4.json` for G7):
+
+- **G4 unknown-side behavior transfer: NOT_RUN as registered.** `gates.yaml`
+  registers G4 over eight arms and derives its 0.70 Spearman threshold from
+  that count; after the registered G1 consequence only five arms exist. The
+  pinned scorer's eight-arm requirement therefore refused the gate, and
+  `no_goalpost_movement` forbids re-deriving a five-arm threshold after the
+  fact. G4 is unadjudicable in this cell, not failed. Two harness gaps are
+  recorded for the record and change nothing: the two registered clauses (the
+  G1 five-arm reporting consequence and G4's eight-arm instrument) conflict,
+  and the pinned `score_g4` never implemented the registered
+  `paired_bootstrap_200_resamples_seed_12345` uncertainty, which is moot for a
+  gate that did not run.
+- **G5 stated-collapse transfer: FAIL.** The gate requires both conditions on
+  every arm. Emitted AUROC against appropriateness / emitted standard
+  deviation on AmbigQA: A1 0.6023 / 0.0490 pass-pass, A4 0.4530 / 0.0106
+  pass-pass, A5 0.5007 / 0.0274 pass-pass, A3 0.3953 / 0.1687 (AUROC passes,
+  standard deviation fails the 0.10 ceiling), A8 0.3588 / 0.4238 (same
+  pattern). Two of the five surviving arms show real stated-confidence spread
+  on AmbigQA, so the collapse does not transfer uniformly. The spread carries
+  no positive appropriateness signal: both high-spread arms rank below chance.
+- **G6 BIG-bench labeling: read as a labeling gate, not an outcome gate.**
+  n = 23 per side. `refusal_recall_pct` 100.0 on all five arms (Wilson 95
+  percent interval [85.69, 100.0]); `over_refusal_pct` 43.48 (A1), 47.83 (A3),
+  56.52 (A4), 56.52 (A5), 52.17 (A8) with wide Wilson intervals spanning
+  roughly 25 to 75 percent. Every rate carries its n and interval and is
+  labeled a spot check; no evidential gate reads it.
+- **G7 internal readout transfer: FAIL on both panel arms.** Held-out probe
+  AUROC at layer 35 on the 2748-row panel: 0.6279 (A1, fold standard deviation
+  0.0164) and 0.6349 (A4, 0.0149), both far under the 0.90 floor. The margin
+  leg also fails: internal minus same-checkpoint emitted AUROC on the 1832
+  shared rows is 0.1326 (A1: internal 0.6319 against emitted 0.4994) and
+  0.1379 (A4: internal 0.6412 against emitted 0.5034), under the 0.15 floor,
+  with zero rows missing a stated confidence. Panel composition exact on both
+  arms (2748 = 1245 known + 1503 unknown).
+
+### Prediction scoring, as worded
+
+The four components of the Prediction section's opening sentence, scored as
+worded and numbered as the adjudication entry numbers them:
+
+1. **Unknown-side rank-order transfer at Spearman rho at least 0.70: NOT
+   ADJUDICABLE** (G4 NOT_RUN as registered).
+2. **The stated-confidence collapse transfers unchanged on every arm: FAILED**
+   (G5 FAIL, two arms exceed the standard-deviation ceiling).
+3. **The internal known-unknown readout still separates the AmbigQA
+   answerability boundary at held-out AUROC at least 0.90 on both panel arms:
+   FAILED** (0.6279 and 0.6349).
+4. **Known-side over-refusal shifts by more than 10 points on at least one
+   surface: SUPPORTED.** Every surviving arm moves more than 10 pp on at least
+   one surface against its own committed SelfAware level.
+
+The Prediction section's detail bullets are labelled P1 to P4 but do not map
+one-to-one onto these four components: the bulleted P3 is the over-refusal
+component scored as 4 above, and the internal-readout component scored as 3
+above has no bullet. The bulleted P4, that the answer-supervised versus
+answer-masked contrast holds its direction on AmbigQA, is **not recorded** as
+scored anywhere in the adjudication entry. What the record does establish is
+that A2, the answer-supervised arm (`cell.yaml` `arms`, "Table 1 col 2
+(answer-supervised)"), is one of the three arms G1 voided, so its side of that
+contrast was never generated.
+
+### Falsifier reading
+
+The registered falsifier required two or more arms on AmbigQA at emitted AUROC
+against appropriateness of at least 0.70 together with emitted standard
+deviation above 0.15. The two high-spread arms (A3 at 0.1687, A8 at 0.4238)
+rank at 0.3953 and 0.3588, below chance, and the highest AUROC on any
+surviving arm is A1's 0.6023. **The falsifier DOES NOT FIRE.** Paper 3's
+"collapsed near-constant" sentence does not take the registered narrowing.
+The G5 failure nonetheless obliges a variance qualifier wherever that collapse
+is described as universal across arms.
+
+### Readouts recorded in the notebook but not in a committed artifact
+
+The per-arm, per-surface behavior levels behind the verdict's "behavior
+transfers in level" clause live in gitignored eval outputs; only the lead's
+2026-08-09T16:45Z adjudication entry in `NOTEBOOK.md` records them, as refusal
+recall 93.7 to 97.4 on KUQ, 100.0 on BIG-bench, and 67.9 to 77.5 on AmbigQA,
+with the P4 over-refusal shifts against each arm's committed SelfAware level
+at BIG-bench -8.6 to -14.9 pp, AmbigQA +7.3 to +11.9 pp, and KUQ +8.0 to +10.3
+pp. Also from that entry, explicitly DESCRIPTIVE, UNREGISTERED and UNGATED and
+to be labeled as such wherever quoted: the five-arm Spearman of arm rank by
+refusal recall against SelfAware is approximately 0.10 on KUQ and 0.20 on
+AmbigQA under a plain rank, on SelfAware reference levels compressed into about
+6.5 pp with one exact tie, so arm ordering is noise-dominated at that spread.
+
+### Scope limits carried from the signed text
+
+- Tier 2, exploratory. Reported separately from the PROTOCOL v0.3 locked
+  headline matrix and never pooled with it or labeled as a headline result.
+  This cell re-estimates existing directional claims on new surfaces; it
+  promotes nothing, and promotion to a claim requires a confirmatory
+  replication registered in advance.
+- Per surface, never averaged across surfaces, with each surface's n and class
+  denominators attached.
+- Three of the eight registered arms were voided before the panel by G1, so
+  every reading above is a five-arm reading.
+- Construct heterogeneity is real and must be labeled rather than blurred:
+  AmbigQA "unanswerable" means ambiguous or underspecified, while SelfAware
+  and KUQ "unknown" means unknown to anyone.
+- KUQ correctness is unreliable by the loader's own statement, so its
+  correctness-dependent metrics are caveated and ungated; BIG-bench is n = 23
+  per side, spot check only.
+- Single seed, single model: this cell inherits paper 3's seed-1 Qwen3-4B scope
+  entirely and broadens the evaluation surface only.
+- The internal panel covers two arms and one surface, so the internal-versus-
+  stated gap itself is addressed only on AmbigQA and only for the clean-SFT and
+  GRPO-v2 checkpoints.
+- Three surfaces is not all surfaces.
+
+### Run provenance
+
+The stage-6 extraction runtime was pinned, then superseded twice before first
+evidential use (missing `requests`/`peft`, then `pandas`, each fixed generically
+in the tuner submodule and pushed before rebuild); zero extraction rows were
+produced under either superseded digest, and the digest of record is
+`experiment.yaml` `instrument.runtime_image_digest`
+(`sha256:2471502c...`), governing the stage-6 extract verb only. Eval-lane
+stages 2 to 5 ran under `cell.yaml` `lane.docker_digest` as registered. At
+stage 8 the pinned `gate_score.py` was found to gate its evidential block on a
+flat `all()` over integrity gates, which contradicts `gates.yaml` scoping G1's
+failure to voiding three arms; the lead adjudicated this a pinned-script defect
+against the registration and remedied it with `score_evidential_fivearm.py`,
+which imports and calls the pinned scoring functions unchanged and bypasses
+only the flat short-circuit. No threshold, formula, seed, or population was
+altered, and its run reproduced the integrity statuses verbatim.
