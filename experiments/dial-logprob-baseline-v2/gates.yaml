@@ -1,0 +1,37 @@
+# dial-logprob-baseline-v2 (LP v2) gates, fixed before launch.
+# LP-G1, its floor, its ambiguous_band, and the primary (dial-novelty)
+# falsifier transfer byte-identical from experiments/dial-logprob-baseline/gates.yaml.
+# Only LP-G0's third sub-criterion is redefined (design draft sec.3.3/sec.6).
+# A SECOND, confirmation-framing falsifier is added per the PI's sign-off
+# ruling on the draft's sec.7 open point (adopted: the prediction is a
+# confirmation of v1's descriptive read at exact precision, not a fresh blind
+# guess -- see confirmation_falsifier below and AMENDMENT.md Prediction/Falsifier).
+gates:
+  - id: LP-G0
+    kind: integrity-precondition
+    stop: pre-outcome
+    criteria:
+      - refit dial reproduces signed source AUROC per arm (S 0.834 at L20, T 0.819 at L22) within reporting precision, before any logprob comparison is unblinded
+      - row counts match source inventories (1836 S; 1488 T)
+      - "REDEFINED (v2): regenerated answer_text (decoded from generation-time new_ids, never re-tokenized) matches the cached answer_text field byte-for-byte for every row; any mismatch is a data-stage stop, not a result -- same no-tolerance-improvised discipline as v1"
+    dial_reproduction_tolerance: 0.002
+  - id: LP-G1
+    kind: primary
+    arm: s_base_primary
+    criterion: dial AUROC minus primary-logprob AUROC >= +0.05, paired bootstrap 95% CI excluding 0
+    floor: 0.05
+    floor_justification: matches the S/T self-eval-gain convention (S sec.4 G2; T sec.4 T-G2)
+    ambiguous_band: 0 < margin < +0.05 or CI straddling 0 -> reported as small/uncertain margin; gate never retuned after result
+falsifier: primary-logprob AUROC >= dial AUROC on s_base_primary with paired 95% CI excluding 0 in that direction
+confirmation_falsifier:
+  # NEW for v2 (PI-adopted framing, draft sec.7). This is a SEPARATE falsifier
+  # from the LP-G1 dial-novelty falsifier above: it is about whether v2's
+  # exact-precision numbers confirm or overturn v1's own descriptive read, the
+  # prediction v2 is actually stated against (AMENDMENT.md Prediction).
+  s_base_descriptive_margin_band: [-0.011, 0.040]   # v1 descriptive CI, verbatim (AMENDMENT.md sec.2)
+  t_deployed_descriptive_margin_band: [0.122, 0.192]  # v1 descriptive CI, verbatim
+  criterion: gated S-arm margin/CI lands materially outside the S band above, OR gated T-arm margin/CI lands materially outside the T band above
+  materiality: a gated point estimate outside the cited band, or a gated CI that does not overlap the cited band
+arm2_status: t_deployed_descriptive reported with identical statistics, descriptive only, no gate
+n_boot_paired: 2000
+seed: 20260719
