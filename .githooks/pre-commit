@@ -14,6 +14,11 @@ fi
 
 $PYTHON bin/validate_kg.py
 
+# Retired-terminology lint over staged papers/ and docs/ prose (SSOT:
+# papers/common/terminology.md). Signed experiment text and archive/ are
+# out of scope by design.
+$PYTHON .githooks/check_retired_terms.py
+
 if [ -d docs/sessions ]; then
   $PYTHON .agents/skills/experiment-runner/scripts/research_session.py validate docs/sessions
 fi
