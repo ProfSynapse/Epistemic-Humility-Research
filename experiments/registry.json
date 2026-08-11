@@ -1443,6 +1443,51 @@
     },
     {
       "checkpoint": {
+        "repo": "unsloth/Qwen3-4B-bnb-4bit",
+        "revision": "as-cached (S manifest model_name, verbatim from v1; arm 2 uses clean-SFT merged-16bit + GRPO-v2 adapter under scratch/schema_response_confidence/runs/, exact dirs pinned in cell.yaml)"
+      },
+      "created_at": "2026-08-11T12:18:33Z",
+      "falsifier": "Two independent falsifiers, both reported straight. (1) Dial-novelty falsifier, verbatim from v1: primary-variant logprob AUROC at or above the dial AUROC on the S base arm (margin <=0), paired 95% CI excluding 0 in that direction. (2) Confirmation falsifier, new for v2: the gated S-arm margin/CI lands materially outside v1's descriptive band [-0.011,+0.040], or the gated T-arm margin/CI lands materially outside v1's descriptive band [+0.122,+0.192] -- either would mean exact-precision measurement overturns, not confirms, the redo's own motivating read.",
+      "inputs": [
+        "experiments/common/readouts/amendment_s_correctness_probe_score.py",
+        "experiments/common/readouts/amendment_s_correctness_probe_extract.py",
+        "experiments/common/readouts/amendment_t_correctness_readout_deployment_extract.py",
+        "experiments/common/knowledge_probe/backends.py",
+        "docs/preparation/amendment-draft-dial-logprob-baseline-v2.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "lp_v2_harness.py"
+        ],
+        "persistence": {
+          "lp_v2_harness.py": {
+            "checkpoint_path": "experiments/dial-logprob-baseline-v2/analysis/",
+            "note": "directory prefix, not a single file -- the module writes one resumable runlog per arm beneath it, experiments/dial-logprob-baseline-v2/analysis/<arm>/runlog/<arm>.jsonl. RunLog (synaptic-tuner shared/utilities/run_log.py) is unavailable on the current submodule pin (branch feature/runlog, not on main as of 2026-08-11); this module reimplements the same append+flush+resume contract locally rather than checking out a different submodule branch.",
+            "persistence": "incremental"
+          }
+        },
+        "pins": {
+          "cell.yaml": "8d79ebd219f684cf6ec20fe444a675149876a56212b7c8f862abeff7985d37ae",
+          "gates.yaml": "3809e6186fdde96d9eadebdc28d36cc3d9d3ee199e7fc3cac7ad445e0fd4a4d0",
+          "lp_v2_harness.py": "401fa6a616a14f2642de065f5b6e9708decce55a4351d5456cbba3454fe14d24"
+        }
+      },
+      "kg": [],
+      "prediction": "CONFIRMATION CELL (PI-adopted framing, 2026-08-11, from draft sec.7): a fresh blind guess is not possible here because v1's own descriptive numbers are already known and cited in this cell's own design (AMENDMENT.md sec.2) -- re-stating v1's falsified blind 0.60-0.72 call would not be honest pre-registration. The stated prediction is that v1's descriptive read holds at exact (gated) precision: S base margin lands near +0.014, most likely still inside the pre-stated LP-G1 ambiguous band (LP-G1 most likely does NOT pass); T deployed margin confirms clearly positive, near +0.158.",
+      "question": "What is the correctness dial's margin over the model's own answer-span token log-probabilities (length-normalized mean, primary) on the exact rows the dial was measured on (amendment S base population primary; amendment T deployed arm descriptive)?",
+      "registered": true,
+      "slug": "dial-logprob-baseline-v2",
+      "status": "signed",
+      "title": "Dial token-logprob baseline, clean redo (generation-time token-ID cache)",
+      "type": "probe-fit",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
