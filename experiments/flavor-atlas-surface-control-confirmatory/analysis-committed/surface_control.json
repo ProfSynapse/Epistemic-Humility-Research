@@ -1,0 +1,222 @@
+{
+  "c1_treatment_strength": {
+    "pass": true,
+    "per_layer": {
+      "17": {
+        "observed_r2": 0.4290678494659246,
+        "pass": true,
+        "permutation_q95": 0.060204531498257954
+      },
+      "19": {
+        "observed_r2": 0.42610522919234706,
+        "pass": true,
+        "permutation_q95": 0.06610587413736102
+      },
+      "20": {
+        "observed_r2": 0.4250429521723469,
+        "pass": true,
+        "permutation_q95": 0.06880977218011629
+      },
+      "26": {
+        "observed_r2": 0.35460971478246706,
+        "pass": true,
+        "permutation_q95": 0.05798554935329958
+      },
+      "28": {
+        "observed_r2": 0.3481996135497092,
+        "pass": true,
+        "permutation_q95": 0.05487269665527683
+      },
+      "29": {
+        "observed_r2": 0.3513072157482673,
+        "pass": true,
+        "permutation_q95": 0.05323713605886707
+      },
+      "35": {
+        "observed_r2": 0.3445047191678502,
+        "pass": true,
+        "permutation_q95": 0.04476613212990185
+      }
+    }
+  },
+  "c2_permutation": {
+    "n_passing": 0,
+    "n_permutations": 20,
+    "pass": false
+  },
+  "c3_planted": {
+    "gamma": 0.25,
+    "max_flavor_deviation": 0.076786858687526,
+    "pass": false,
+    "per_flavor_deviation": {
+      "ambiguous": 0.025585428911689134,
+      "controversial": 0.038481512887986624,
+      "counterfactual": 0.05271753067784024,
+      "false assumption": 0.076786858687526,
+      "future unknown": 0.005262821105243565,
+      "unsolved problem": 0.024272800494176572
+    },
+    "planted_pooled_auroc": 0.947005975906765,
+    "reachable": true,
+    "residualized_planted_pooled_auroc": 0.5333871265531663
+  },
+  "cell": "flavor-atlas-surface-control-confirmatory",
+  "config_fingerprint": "d9687ad5eee66c99be71d4da0432b8b352ca8614fec0261b91aadd48e361324f",
+  "controls_pass": false,
+  "decision": {
+    "reason": "one or more of C1/C2/C3 failed; SG8 does not adjudicate",
+    "status": "INDETERMINATE"
+  },
+  "gates": {
+    "SG0": true,
+    "SG1": true,
+    "SG2": true,
+    "SG3": true,
+    "SG4": true,
+    "SG5": false,
+    "SG6": false
+  },
+  "reference": {
+    "ambigqa": {
+      "25": 0.5253,
+      "35": 0.5194
+    },
+    "pooled_all_unknowns": {
+      "27": 0.4989,
+      "35": 0.4848
+    },
+    "selfaware": {
+      "25": 0.4382,
+      "35": 0.4213
+    }
+  },
+  "s1_primary": {
+    "ambiguous": {
+      "26": 0.7731,
+      "35": 0.7778
+    },
+    "controversial": {
+      "20": 0.838,
+      "35": 0.8588
+    },
+    "counterfactual": {
+      "19": 0.624,
+      "35": 0.6305
+    },
+    "false assumption": {
+      "29": 0.8191,
+      "35": 0.8102
+    },
+    "future unknown": {
+      "17": 0.3987,
+      "35": 0.4661
+    },
+    "unsolved problem": {
+      "28": 0.8359,
+      "35": 0.8504
+    }
+  },
+  "s2_surface_only": {
+    "ambigqa": 0.6597,
+    "ambiguous": 0.9167,
+    "controversial": 0.9522,
+    "counterfactual": 0.9766,
+    "false assumption": 0.9447,
+    "future unknown": 0.9863,
+    "pooled_all_unknowns": 0.9404,
+    "selfaware": 0.9523,
+    "unsolved problem": 0.9096
+  },
+  "s3_transfer": {
+    "kuq_flavor_to_selfaware": {
+      "ambiguous": {
+        "auroc": 0.5607405140758874,
+        "layer": 26
+      },
+      "controversial": {
+        "auroc": 0.6295883047569766,
+        "layer": 20
+      },
+      "counterfactual": {
+        "auroc": 0.6278713184928666,
+        "layer": 19
+      },
+      "false assumption": {
+        "auroc": 0.6075987733561545,
+        "layer": 29
+      },
+      "future unknown": {
+        "auroc": 0.5922694569662955,
+        "layer": 17
+      },
+      "unsolved problem": {
+        "auroc": 0.647168237288248,
+        "layer": 28
+      }
+    },
+    "selfaware_to_kuq": {
+      "ambiguous": {
+        "auroc": 0.5522987590527825,
+        "layer": 25
+      },
+      "controversial": {
+        "auroc": 0.6845553200114303,
+        "layer": 25
+      },
+      "counterfactual": {
+        "auroc": 0.6849055399385753,
+        "layer": 25
+      },
+      "false assumption": {
+        "auroc": 0.7195733580620957,
+        "layer": 25
+      },
+      "future unknown": {
+        "auroc": 0.6648887884688228,
+        "layer": 25
+      },
+      "unsolved problem": {
+        "auroc": 0.7216908836154547,
+        "layer": 25
+      }
+    }
+  },
+  "sg2_baseline": {
+    "ambigqa": {
+      "L25": 0.659,
+      "L35": 0.6338
+    },
+    "ambiguous": {
+      "L26": 0.98,
+      "L35": 0.9766
+    },
+    "controversial": {
+      "L20": 0.996,
+      "L35": 0.9949
+    },
+    "counterfactual": {
+      "L19": 0.9963,
+      "L35": 0.9952
+    },
+    "false assumption": {
+      "L29": 0.9918,
+      "L35": 0.9912
+    },
+    "future unknown": {
+      "L17": 0.9994,
+      "L35": 0.999
+    },
+    "pooled_all_unknowns": {
+      "L27": 0.9887,
+      "L35": 0.9874
+    },
+    "selfaware": {
+      "L25": 0.9937,
+      "L35": 0.9925
+    },
+    "unsolved problem": {
+      "L28": 0.9937,
+      "L35": 0.9915
+    }
+  }
+}

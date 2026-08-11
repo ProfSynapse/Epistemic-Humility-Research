@@ -507,11 +507,81 @@ exceed 15 minutes launches through
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | (left for the lead, to be filled before any residualized number exists) |
-| user | (left for the PI, to be filled before any residualized number exists) |
+| orchestrator | not filled before the first residualized number existed; recorded as void at resolve, no post-hoc call entered |
+| user | not filled before the first residualized number existed; recorded as void at resolve, no post-hoc call entered |
 
 ## Outcome
 
-Filled at resolve. Record the twelve primary cells, the reference and
-secondary readouts, every gate result, and the one-sentence summary that
-also goes into `verdict:` in the manifest.
+Resolved 2026-08-11 by the lead with PI approval. Verdict: INDETERMINATE.
+
+One-sentence summary (also in `experiment.yaml` `verdict:`): INDETERMINATE
+as registered: C1 passed but C2 failed (0/20 permuted-surface runs kept all
+six flavors at or above 0.90, band requires 18/20) and C3 failed
+(planted-channel flavor deviation 0.077 vs 0.05 max), so SG8 did not
+adjudicate P1-P3/F1-F2; the instrument removes generic variance too
+aggressively to separate style from style-collinear structure on these
+pools, atlas promotion stays blocked, and the atlas is not falsified.
+
+Gate results (from `analysis-committed/surface_control.json`, config
+fingerprint d9687ad5eee66c99be71d4da0432b8b352ca8614fec0261b91aadd48e361324f):
+
+- SG0 input integrity: pass. SG1 no new capture: pass. SG2 baseline
+  reproduction: pass, all nine banded cells reproduced at 4dp exactly.
+  SG3 surface-model hygiene: pass. SG7 containment and provenance: pass.
+- SG4 / C1 treatment strength: pass, decisively. Combined-block activation
+  OOF R2 at the primary layers 0.3445 to 0.4291 against permutation 95th
+  percentiles of 0.0448 to 0.0688.
+- SG5 / C3 planted channel: FAIL. The plant was reachable
+  (planted pooled AUROC 0.9470 at gamma 0.25, band >= 0.90) and removed
+  (residualized 0.5334, band <= 0.75), but the unplanted flavors'
+  residualized hidden-state-0 profile moved by up to 0.0768 against the
+  0.05 band (worst: false assumption).
+- SG6 / C2 permutation negative control: FAIL. 0 of 20 permuted-`Z`
+  residualized runs left all six flavors at or above 0.90 at both primary
+  layers; the band requires at least 18 of 20. Residualization against
+  structurally meaningless surface matrices also collapses the readings,
+  so the observed collapse is generic variance removal, not something
+  specific to the true surface structure.
+- SG8: refused adjudication as registered ("one or more of C1/C2/C3
+  failed; SG8 does not adjudicate"). P1, P2, P3, F1, F2, and the ambiguous
+  zone were not adjudicated. Per the signed control text, C2 and C3
+  failures are indeterminate, never a pass and never a falsification.
+
+Descriptive readouts (adjudicating nothing, reported per the
+no-goalpost-movement rule's mixed-result requirement):
+
+- S1 residualized primary cells (best layer / L35): ambiguous
+  0.7731/0.7778, controversial 0.8380/0.8588, counterfactual
+  0.6240/0.6305, false assumption 0.8191/0.8102, future unknown
+  0.3987/0.4661, unsolved problem 0.8359/0.8504.
+- References: SelfAware 0.4382/0.4213 (L25/L35), AmbigQA 0.5253/0.5194,
+  pooled all-unknowns 0.4989/0.4848 (L27/L35).
+- S2 surface-only carrier: 0.9096 to 0.9863 across the six KUQ flavors
+  (SelfAware 0.9523, AmbigQA 0.6597, pooled 0.9404). A strong style
+  carrier demonstrably exists in these pools; the P3 band would have been
+  met descriptively.
+- S3 residualized cross-dataset transfer stayed modest in both directions
+  (0.5523 to 0.7217).
+
+Interpretation, bounded by the collapse-asymmetry rule: this outcome
+licenses only "not adjudicable with this instrument on these pools". It
+does not license "the atlas separation is style" and it does not license
+"the raw base has no unanswerability code". The S2 readout shows question
+text alone predicts flavor at 0.91 to 0.99 here, so style and construct
+are near-collinear in these panels by construction; combined with the C2
+failure, no residualization-family instrument on these pools can separate
+a style artifact from style being collinear with overt unanswerability.
+The registered next routes are a fresh surface-matched pool (same style,
+different answerability, breaking the confound at construction) or causal
+actuation on the trained lineage, which does not inherit this readout
+confound. The scope limit noted at signing stands: the planted-channel
+control verifies reachability within the surface model's own span, not
+removal of a nonlinear style encoding.
+
+Run provenance: the adjudicated output was produced by module pin
+bfcb38a17f790538d19df92a09073aa6a88faf1d786696b8fe45ba31b6809d3d after two
+in-run harness events recorded in `NOTEBOOK.md` (a gates.yaml read-path
+dialect crash repaired by repin before any gate was adjudicated, and a
+checkpoint-fingerprint invalidation caused by that repin, resolved by a
+full recompute under the new pin with the stale checkpoints preserved
+aside). No gate, band, or registered constant changed at any point.

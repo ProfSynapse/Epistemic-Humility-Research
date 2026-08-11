@@ -6,6 +6,47 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-08-10T21:49:12Z CRASH + RECOVERY (checkpoint fingerprint invalidation):
+  the 21:01:22Z rerun (PID 84781) crashed ~2 minutes in, at 21:03Z, with
+  `ControlError: checkpoint fingerprint/unit mismatch:
+  analysis/checkpoints/kuq/combined/hs0.json`, raised from `read_checkpoint`
+  during S1 cross-fitted residualization. Root cause (lead-verified, no
+  further diagnosis needed): `config_fingerprint()` hashes `cell.yaml` +
+  `gates.yaml` + the harness module's own bytes
+  (`h.update(Path(__file__).read_bytes())`); the gate-fix repin
+  (ebaa4684 -> bfcb38a1, see the CRASH + REPAIR entry below) changed the
+  module bytes and therefore the fingerprint, so every checkpoint banked
+  under the pre-repin module hard-failed the fail-closed fingerprint guard.
+  This is the guard working as designed, not a new defect -- the
+  "resume from banked checkpoints" plan became invalid the moment the module
+  was repinned. Resolution: moved the stale checkpoint tree aside for
+  provenance (not deleted) to `analysis/checkpoints_stale_ebaa4684/`;
+  re-verified the module sha256 (`bfcb38a17f790538d19df92a09073aa6a88faf1d786696b8fe45ba31b6809d3d`)
+  against `experiment.yaml`'s pin; relaunched the exact registered command
+  unmodified, CPU only, backgrounded, fresh log
+  (`surface_control_run3.log`), confirmed alive and progressing past
+  SG0/SG1/SG2 within 20s with a clean checkpoint directory. No gate,
+  threshold, or registered constant touched. Full recompute expected
+  (SG2 baseline + residualization at every layer + all 20 permutation
+  replicates), ~70-80 min CPU per the prior full pass's wall clock.
+- 2026-08-10T21:01:22Z RESTART-RESUME (post-repair): pulled canonical main to
+  7b17d372 (PR #436 merged: `evaluate_sg4`/`evaluate_sg6` nested-`checks:`
+  read-path fix, repinned `reanalyze_surface_control.py` dd1f67eb-adjacent
+  ebaa4684 -> `bfcb38a17f790538d19df92a09073aa6a88faf1d786696b8fe45ba31b6809d3d`).
+  Verified the on-disk module hash matches the `experiment.yaml` pin exactly.
+  Ran `--dry-run`: all eleven real inputs resolved, execution plan unchanged
+  from prior runs, exit 0. All 20 C1/C2 permutation replicates and the
+  combined residualization for all three panels remained checkpointed under
+  `analysis/checkpoints/` through the crash (untouched by the repair).
+  Relaunched the exact registered command unmodified, CPU only, backgrounded:
+  `python3
+  experiments/flavor-atlas-surface-control-confirmatory/reanalyze_surface_control.py
+  --out experiments/flavor-atlas-surface-control-confirmatory/analysis-committed/surface_control.json`.
+  Confirmed the real compute worker (child of the launching shell) alive and
+  past SG0/SG1 within 15s. Switching to disk-based monitoring per the lead's
+  instruction after two log-tail Monitor misses today: checking process
+  liveness, newest checkpoint mtime, and `analysis-committed/` existence at
+  10+ minute intervals instead of tailing the run log.
 - 2026-08-10T19:21Z CRASH + REPAIR: the real run crashed in `evaluate_sg4`
   with `KeyError: 'min_activation_oof_r2_at_each_primary_layer'`, after all
   20 C1/C2 permutation replicates had already checkpointed under
@@ -45,6 +86,26 @@ in `experiment.yaml`.
   `--dry-run` once (ten gitignored `flavor-atlas-rawbase` inputs correctly
   reported missing, exit 1, nothing written) in that worktree. Not signed,
   not committed by this change; the lead reviews, repins, and commits.
+- 2026-08-10T18:10:25Z RESTART-RESUME: host restart killed the prior real-run
+  executor mid-run (last checkpoint activity observed ~13:09Z, mid SG6
+  permutation controls for the kuq panel, permutation replicate p7 of 20).
+  No process was found running on relaunch (`ps aux` clean) and no
+  `analysis-committed/surface_control.json` existed. Verified pinned module
+  sha256 (`ebaa4684f22e81d41296e42a4cecd896e2e3f89bbb6545c23c01473f390ad987`)
+  still matches `experiment.yaml` before touching anything; left
+  `analysis/checkpoints/` untouched (153 files on disk: SG0/SG1 pass,
+  combined residualization complete for kuq/ambigqa/selfaware, kuq
+  permutation replicates p0-p7 partially written). Ran `--dry-run`: all
+  eleven real inputs resolved, execution plan printed, exit 0. Relaunched
+  the exact registered command unmodified: `python3
+  experiments/flavor-atlas-surface-control-confirmatory/reanalyze_surface_control.py
+  --out experiments/flavor-atlas-surface-control-confirmatory/analysis-committed/surface_control.json`,
+  backgrounded (PID 7697), CPU only. Confirmed process alive and progressing
+  past SG0/SG1/SG2 in its log within the first 30s; will monitor checkpoint
+  file timestamps at 10+ minute intervals rather than polling continuously.
+  (Entry re-inserted by the lead after the PR #436 merge; it was written in
+  the canonical working tree before that merge and predates the CRASH +
+  REPAIR entry above in wall-clock order of the events it describes.)
 - 2026-08-10T16:40Z LEAD REVIEW + REPIN: reviewed the repair below. Verified
   only the harness module and this notebook changed (governed docs
   untouched, diff-checked); layer plan and every decision constant derive

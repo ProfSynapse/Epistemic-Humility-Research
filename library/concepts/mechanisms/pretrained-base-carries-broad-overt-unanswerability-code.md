@@ -20,6 +20,7 @@ related:
 - '[[answerability-axis-present-without-task-training]]'
 - '[[overt-vs-covert-unanswerability-is-the-boundary-not-flavor]]'
 - '[[known-unknowns-taxonomy]]'
+- '[[flavor-atlas-surface-control-confirmatory]]'
 relationships:
 - type: supported_by
   target: '[[flavor-atlas-rawbase]]'
@@ -27,6 +28,15 @@ relationships:
   confidence: high
   evidence:
   - "NOTEBOOK.md 2026-08-10T01:55Z RESULT, M1 and M4 tables"
+- type: related_to
+  target: '[[flavor-atlas-surface-control-confirmatory]]'
+  target_id: experiment:flavor-atlas-surface-control-confirmatory
+  confidence: high
+  evidence:
+  - "AMENDMENT.md Outcome (the registered style-controlled confirmatory
+    cell for this mechanism's caveat; ran INDETERMINATE, C2/C3 failed,
+    SG8 refused adjudication, promotion stays blocked, atlas not
+    falsified)"
 - type: related_to
   target: '[[unanswerability-detection-shares-one-axis-across-flavors]]'
   target_id: mechanism:unanswerability-detection-shares-one-axis-across-flavors
@@ -89,10 +99,14 @@ atlas with a registered style confound. KUQ and SelfAware unknowns are
 stylistically distinctive question types, so a within-dataset known-versus-
 unknown probe may ride surface style in part. Free cross-dataset transfer
 (KUQ probes reading SelfAware at 0.91-0.98 and vice versa) argues against a
-pure dataset artifact but does not eliminate style as a shared carrier. A
-style-controlled confirmatory cell (matched surface form, flavor varied) is
-the natural follow-up and must be registered before any promotion of this
-atlas reading to a claim.
+pure dataset artifact but does not eliminate style as a shared carrier. The
+style-controlled confirmatory cell this caveat called for has since run as
+[[flavor-atlas-surface-control-confirmatory]]: its own negative control and
+planted-channel control both failed, so it came back INDETERMINATE rather
+than resolving the caveat either way (see
+[[style-and-construct-are-near-collinear-in-flavor-atlas-pools]] for the
+descriptive remainder). Promotion of this atlas reading to a claim stays
+blocked; it is not falsified.
 
 **Lineage:** builds on [[flavor-atlas-rawbase]], the direct PI follow-on to
 [[ambigqa-boundary-signal-is-pretraining-flavor-specific]] (which resolved
