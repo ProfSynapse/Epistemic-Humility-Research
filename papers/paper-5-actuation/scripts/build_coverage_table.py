@@ -163,10 +163,29 @@ def _walk_declared(node: Any, path: tuple[str, ...] = ()) -> list[dict[str, str]
             k for k in ("repo", "model", "substrate", "family", "cell_id")
             if k in node and not isinstance(node[k], (dict, list))
         }
+        # A scalar `id:` counts as a declaration only inside a `families:`
+        # block (e.g. placebo-seed-distribution-census's cell.yaml, whose
+        # per-family blocks carry `id: qwen35-4b` rather than a repo/model
+        # key). `id` is far too generic to trigger on globally -- opaque-id
+        # fields, row ids, and the like would pollute the walk.
+        id_is_declaration = (
+            "families" in path
+            and "id" in node
+            and not isinstance(node["id"], (dict, list))
+        )
+        if id_is_declaration:
+            scalar_keys.add("id")
+        # Collect `id` only when it triggered as a families-block declaration.
+        # Elsewhere `id` is a lane/arm label (e.g. abstention-wide-instrument-
+        # calibration's QH/QL lanes) and collecting it would split entries
+        # that dedupe identical today.
+        collect_keys = ["cell_id", "family", "repo", "model", "revision", "substrate", "scale_tier"]
+        if id_is_declaration:
+            collect_keys.append("id")
         if scalar_keys:
             entry = {
                 k: str(node[k])
-                for k in ("cell_id", "family", "repo", "model", "revision", "substrate", "scale_tier")
+                for k in collect_keys
                 if k in node and not isinstance(node[k], (dict, list))
             }
             if entry:
@@ -193,7 +212,10 @@ def _dedupe(entries: list[dict[str, str]]) -> list[dict[str, str]]:
 def _format_declared(entries: list[dict[str, str]]) -> str:
     parts = []
     for e in entries:
-        label = e.get("repo") or e.get("model") or e.get("substrate") or e.get("family") or "?"
+        label = e.get("repo") or e.get("model") or e.get("substrate") or e.get("family")
+        if not label and "id" in e:
+            label = f"family id `{e['id']}` (HF repo/revision resolves via the fleet model_matrix.yaml)"
+        label = label or "?"
         rev = e.get("revision")
         tier = f" [{e['scale_tier']}]" if "scale_tier" in e else ""
         cid = f" ({e['cell_id']})" if "cell_id" in e else ""
@@ -280,10 +302,19 @@ def build_row(slug: str, claim: str) -> dict[str, str]:
     declared = _dedupe(declared)
 
     if not declared:
+        if fallback_files:
+            inspected = ", ".join(str(f.relative_to(EXP / slug)) for f in fallback_files)
+            gap = (
+                f"fallback file(s) inspected ({inspected}) but no recognizable "
+                "checkpoint declaration found (repo/model/substrate/family/"
+                "cell_id, or families.*.id)"
+            )
+        else:
+            gap = "no cell.yaml/families/model_matrix.yaml fallback file exists"
         return {
             "slug": slug,
             "status": status,
-            "substrate": f"UNRESOLVED -- {substrate_note}; no cell.yaml/families/model_matrix.yaml fallback found",
+            "substrate": f"UNRESOLVED -- {substrate_note}; {gap}",
             "declared_launched": "UNRESOLVED (hand-read AMENDMENT.md required)",
             "section": SECTION_MAP.get(slug, "UNMAPPED (add to SECTION_MAP)"),
         }
