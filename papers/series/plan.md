@@ -26,7 +26,7 @@ Title format is `[catchy idiom]: [subtitle naming the study]`.
 | 2 | paper-2-training-regimen | Teaching Small Language Models to Say I Don't Know: A Controlled Comparison of SFT, DPO, KTO, and GRPO on Model-Specific Abstention Data | The front door: training the behavior in partially works and structurally disappoints. |
 | 3 | paper-3-knows-but-doesnt-say | Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model | The diagnosis: the knowledge is inside, the mouth is the bottleneck. Home of the internal anatomy (the readable epistemic directions). |
 | 4 | paper-4-two-signal-readout | It's What's on the Inside That Counts: A Training-Free Two-Signal Readout for Epistemic Humility in Small Language Models | The reading half: bypass the mouth, read the representation. Deployable today. |
-| 5 | paper-5-actuation | Look Before You Speak: Gating Caution Writes on a Model's Own Doubt Readout (decided 2026-07-10; manuscript still carries the old title until the rewrite) | The destination: the model acts on its own knowledge when, and only when, the write is gated by its own doubt, at the right depth. |
+| 5 | paper-5-actuation | Look Before You Speak: Operating-Point-Dependent Selectivity in Actuating Known-Unknown State (title as merged to main in PR 427; PI reconfirmed 2026-08-11) | The destination: the model acts on its own knowledge when, and only when, the write is gated by its own uncertainty readout, at the right depth. |
 
 Build-on logic: 1 frames, 2 shows the obvious fix disappoints, 3 explains why
 (and maps the internal landscape), then the diagnosis branches: 4 is "it's
@@ -50,7 +50,7 @@ Rules:
 | Taxonomy, evidence synthesis, agenda | 1 | |
 | SFT/DPO/KTO/GRPO abstention comparison, calibration tradeoffs | 2 | GRPO framing: extension vs registered arm, still open |
 | Internal-vs-stated gap; training resistance; channel bottleneck | 3 | |
-| Internal anatomy: doubt axis, caution axis (reading claims only) | 3 | Census (docs/review/paper3-direction-provenance-2026-07-10.md): doubt is base/pretrain-validated but IS the answerability gate under another name (state the identity, do not double-count); caution reading is real but trained-checkpoint-only (base never refuses), scope sentence must say so |
+| Internal anatomy: uncertainty axis, refusal axis (reading claims only) | 3 | Census (docs/review/paper3-direction-provenance-2026-07-10.md): the uncertainty reading is base/pretrain-validated but IS the answerability gate under another name (state the identity, do not double-count); the refusal-axis reading is real but trained-checkpoint-only (base never refuses), scope sentence must say so |
 | Confab-propensity direction | 5 only | Census verdict: NOT safe as a paper 3 result (reading numbers ungoverned, checkpoint-specific to the most-trained checkpoint, governed causal outcome null). Paper 3 gets at most a one-line forward pointer |
 | Caution-ablation steering result (over-refusal 0.994 to 0.030) | 5 | Currently argued inside paper 3 section 6 (census flag A3); under the ownership rule it moves to 5, paper 3 keeps one summarizing sentence + citation |
 | Answerability gate, correctness dial, veto + decomposition (content core ~0.74) | 4 | Current after the 2026-07-10 revision arc |
@@ -58,7 +58,7 @@ Rules:
 | Correctness-direction cross-checkpoint rotation and discriminative-subspace-overlap nulls (dial cold-transfer mechanism) | 4 | Both exploratory Tier-2 nulls; paper 5 §6.5 cites the pair as cross-family motivation only, never re-argued |
 | Workspace localization (read-only J-lens diagnostic) | 4 (descriptive subsection) | Steering cells excluded |
 | Ungated steering asymmetry; propensity-direction actuation nulls; setpoint nulls | 5 | The caveat landscape |
-| Doubt-gated caution snap (incl. multi-source replication); layer-contrast arc | 5 | The headline |
+| Answerability-gated abstention snap (incl. multi-source replication); layer-contrast arc | 5 | The headline |
 | Mid-band doubt-snap (Qwen3.5) | 5 | RUNNING; not citable until resolved |
 | Cross-family actuation panel | 5 | Remaining cells await paid-launch decision |
 
@@ -127,8 +127,11 @@ action in the workspace band. Open:
   instrument check), all queued behind the ladder freeing the 3090. Designs
   to be drafted and signed in the meantime so they launch the day the GPU
   frees.
-- Title decided: "Look Before You Speak: Gating Caution Writes on a Model's
-  Own Doubt Readout".
+- Title decided and reconfirmed (PI, 2026-08-11): "Look Before You Speak:
+  Operating-Point-Dependent Selectivity in Actuating Known-Unknown State" --
+  the title already merged to main in PR 427, which also applied the
+  terminology rulings. An alternative ("Hold That Thought") was considered
+  and declined.
 - Cross-family actuation panel: awaits the PI's paid-launch decision; the
   paper's family scope is honest without it but stronger with it. H5 (AI-TRUE
   caution-lever screen) and H7 (cross-family J-lens profiles) stay optional,
@@ -148,7 +151,6 @@ action in the workspace band. Open:
 
 ## Open decisions for the PI
 
-1. Paper 5 title.
 2. Cross-family actuation panel: paid launch yes/no/when.
 3. Paper 2 GRPO framing (extension vs registered confirmatory arm).
 4. Venue + collaborator timing.
