@@ -48,7 +48,7 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/bin_search_guard.sh\"",
-            "timeout": 10,
+            "timeout": 40,
             "statusMessage": "Checking bin/search was tried before raw code search..."
           },
           {
@@ -56,6 +56,17 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/main_protect_guard.sh\"",
             "timeout": 10,
             "statusMessage": "Checking not committing on protected main..."
+          }
+        ]
+      },
+      {
+        "matcher": "Grep|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/kg_search_redirect.sh\"",
+            "timeout": 40,
+            "statusMessage": "Routing raw search through the KG (bin/search)..."
           }
         ]
       }
