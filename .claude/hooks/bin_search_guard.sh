@@ -100,8 +100,27 @@ args = toks[1:]
 def is_flag(a, *names):
     return a in names
 
+def to_query(s):
+    # Best-effort: turn a regex/pattern into KG search terms.
+    raw = re.sub(r"\\[a-zA-Z]", " ", s or "")
+    stop = {"py", "md", "yaml", "yml", "json", "txt", "sh", "csv"}
+    terms, seen = [], set()
+    for t in re.findall(r"[A-Za-z0-9_][A-Za-z0-9_\-\.]+", raw):
+        t = t.strip("._-")
+        if len(t) < 2 or t.isdigit() or t.lower() in stop or t.lower() in seen:
+            continue
+        seen.add(t.lower())
+        terms.append(t)
+    return " ".join(terms[:8])
+
+def first_pattern(args):
+    for a in args:
+        if not a.startswith("-"):
+            return a
+    return ""
+
 if prog == "rg":
-    print("BLOCK rg"); raise SystemExit
+    print("BLOCK|" + to_query(first_pattern(args))); raise SystemExit
 
 if prog in ("grep", "egrep", "fgrep"):
     recursive = any(
@@ -119,13 +138,14 @@ if prog in ("grep", "egrep", "fgrep"):
             dir_arg = True
             break
     if recursive or dir_arg:
-        print("BLOCK grep"); raise SystemExit
+        print("BLOCK|" + to_query(first_pattern(args))); raise SystemExit
     print("ALLOW"); raise SystemExit
 
 if prog == "find":
-    if any(is_flag(a, "-name", "-iname", "-path", "-ipath", "-regex", "-iregex")
-           for a in args):
-        print("BLOCK find"); raise SystemExit
+    for i, a in enumerate(args):
+        if is_flag(a, "-name", "-iname", "-path", "-ipath", "-regex", "-iregex"):
+            val = args[i + 1] if i + 1 < len(args) else ""
+            print("BLOCK|" + to_query(val)); raise SystemExit
     print("ALLOW"); raise SystemExit
 
 print("ALLOW")
@@ -136,9 +156,31 @@ case "$verdict" in
   ALLOW*) exit 0 ;;
 esac
 
-echo "BLOCKED: raw exploratory code search is not the first move in this repo. Run the typed knowledge-graph search FIRST, then fall back to scoped text search only over its candidate set:
-  bin/search <query terms> --limit 10
-AGENTS.md (\"Search And Traversal\"): the KG is the default entry point for ALL exploration — locating papers, concepts, claims, mechanisms, experiment artifacts, or code. Do not open with a broad rg/grep/find sweep or a fan-out search agent.
+# No round trip: run the KG search HERE with terms guessed from the blocked
+# pattern, and hand the candidate set back inline in the block message.
+query="${verdict#BLOCK|}"
+results=""
+if [ -n "$query" ]; then
+  proj="${CLAUDE_PROJECT_DIR:-$PWD}"
+  results=$( cd "$proj" 2>/dev/null && ./bin/search $query --limit 8 2>/dev/null | head -c 6000 )
+fi
+
+echo "BLOCKED: raw exploratory code search is not the first move in this repo. The typed knowledge-graph search (bin/search) is the required entry point (AGENTS.md \"Search And Traversal\")." >&2
+if [ -n "$results" ]; then
+  echo "
+To save you the round trip, bin/search ALREADY RAN with terms guessed from your pattern (query: '$query'). Results:
+
+$results
+
+Next moves:
+- Read the candidate files above, or run a SCOPED grep over just those files (targeted grep on a known file is allowed).
+- Wrong terms? Re-run yourself: bin/search <better terms> --limit 10" >&2
+else
+  echo "
+No usable query terms could be guessed from your command. Run:
+  bin/search <query terms> --limit 10" >&2
+fi
+echo "
 If the KG genuinely does not index this target (logs, node_modules, a raw data dir), proceed consciously by prefixing the command with the bypass token:
   EHR_SEARCH_OK=1 <your command>" >&2
 exit 2
