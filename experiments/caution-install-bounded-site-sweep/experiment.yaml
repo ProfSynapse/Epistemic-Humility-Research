@@ -1,23 +1,24 @@
 slug: caution-install-bounded-site-sweep
 title: Bounded caution-install site sweep on the trained Qwen3-4B lineage
 type: steer-cell
-status: signed
+status: resolved
 registered: true
 created_at: '2026-08-08T22:27:53Z'
 tier: 2
 posture: exploratory
-question: Does the raw-base answerability-gated caution snap, the one mechanism in this program with a
-  governed installation success, transfer to the trained clean-SFT to GRPO-v2 checkpoint; and if not,
-  does a bounded search over seven write sites, two write positions, an eight-rung ratio-normalized dose
-  ladder, and three magnitude-matched two-site combinations find a site where caution can be installed
-  on genuine unknowns?
-prediction: The null survives on the trained checkpoint. No registered site and position clears G1 on
-  the trained lineage, while the raw-base anchor arms at hs23 and hs29 reproduce their published rates
-  inside their Wilson intervals. If anything clears G1, it is an in-band site between hs13 and hs23 rather
-  than hs34.
-falsifier: Any registered site and position on the trained checkpoint clears G1, an ADJUDICABLE G2, and
-  G3 together, at a dose drawn from the registered ladder. One qualifying cell is sufficient, because
-  the statement being tested is an impossibility claim.
+question: Does the raw-base answerability-gated caution snap, the one mechanism in
+  this program with a governed installation success, transfer to the trained clean-SFT
+  to GRPO-v2 checkpoint; and if not, does a bounded search over seven write sites,
+  two write positions, an eight-rung ratio-normalized dose ladder, and three magnitude-matched
+  two-site combinations find a site where caution can be installed on genuine unknowns?
+prediction: The null survives on the trained checkpoint. No registered site and position
+  clears G1 on the trained lineage, while the raw-base anchor arms at hs23 and hs29
+  reproduce their published rates inside their Wilson intervals. If anything clears
+  G1, it is an in-band site between hs13 and hs23 rather than hs34.
+falsifier: Any registered site and position on the trained checkpoint clears G1, an
+  ADJUDICABLE G2, and G3 together, at a dose drawn from the registered ladder. One
+  qualifying cell is sufficient, because the statement being tested is an impossibility
+  claim.
 checkpoint:
   repo: professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora
   revision: 8914081dfcec4f1f025f2dbe4195d4f7aa8d210e
@@ -77,12 +78,12 @@ instrument:
     materialize_configs.py: 01fae475fda4b0be869be2ba6c240377feffcbc6e2cfa70417b2f0a39550e1e4
     mine_pool.py: 46f6a51701788c3f71026401d3edbb39de5a6248ebbef8b4662d6365891a59de
     render_sweep.py: 2dbca966807da00c35085e5c7d598a390e9defd0e0cb0e3bd87731bdc9eeef39
-    run_controls.py: 48d2f0fd45b6cc3abce16f2607681edfe340b940fe27df5a7ba1fe3330587188
-    run_held_out.py: d006ce42e8dd00bfc428474f12e4276ef190ba3042be5016a273aa0945965250
+    run_controls.py: 28d867ca066f95f9a309b7ee279ea5c2be82f3afcd6f2200e9c438362ba160c5
+    run_held_out.py: b0a59a6ac3a9c6ee4b25c32ab561a235942a1a14e5fe3bc888bcd345dadc7bed
     run_pairs.py: f9a438b8a5f42d00dd7beedb2fd5d95f579c3e0ed98ccc86d8cce15343867a8c
     run_sweep.py: ab6a4d74bca82df5aca1fed98dc8683dab682b8acd40babdf88e9818055a0e6a
     split_fit_heldout.py: f550c5a087287b80f450002db30aaf6197b76e2d8193b4df7a658a04f43f22af
-    sweep_lib.py: e6bc601866bf7d96cd36c7d1d4246313176b7334f36f05e0190a5fba82b0dd60
+    sweep_lib.py: f928b9856c8dca995c659f4316e9585ce3d445122582567b02dda9c8d6932ee6
     write_smoke.py: a022a71b118a848dd05eb6bc5300a92f540b4e0e7631075f88b2ba5babc9ac34
     materialize_rows_with_text_raw_base.py: 04726d66aa399a15a8ca0848bf714444e68ac5dec142beb6a618e02868e51c94
   persistence:
@@ -97,134 +98,153 @@ instrument:
       persistence: incremental
       checkpoint_path: experiments/caution-install-bounded-site-sweep/analysis/probe_generations_private.jsonl
       measured_smoke_wall_clock_s: 0.17
-      note: ; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification
-        entry point for all sweep-harness modules
+      note: ; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the
+        committed verification entry point for all sweep-harness modules
     probe_census_extension.py:
       persistence: incremental
       checkpoint_path: experiments/caution-install-bounded-site-sweep/analysis/probe_census_generations_private.jsonl
       measured_smoke_wall_clock_s: 0.17
-      note: ; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the committed verification
-        entry point for all sweep-harness modules
+      note: ; wall clock is the full run_sweep.py --smoke-harness pass (0.17s), the
+        committed verification entry point for all sweep-harness modules
     adjudicate_gates.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     alin_profile.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     build_directions.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     build_random_directions.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     docker_launch.sh:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     dose_calibrate.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     extract_anchor.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     gate_scoring.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     grader_sweep.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     materialize_configs.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     mine_pool.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     render_sweep.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     run_controls.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     run_held_out.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     run_pairs.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     run_sweep.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     split_fit_heldout.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     sweep_lib.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     write_smoke.py:
       persistence: short-run
-      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU, synthetic); GPU stages
-        checkpoint per-row where the amendment run plan says recorded; wall clock is the full run_sweep.py
-        --smoke-harness pass (0.17s), the committed verification entry point for all sweep-harness modules
+      note: sweep-harness module; verified via run_sweep.py --smoke-harness (CPU,
+        synthetic); GPU stages checkpoint per-row where the amendment run plan says
+        recorded; wall clock is the full run_sweep.py --smoke-harness pass (0.17s),
+        the committed verification entry point for all sweep-harness modules
       measured_smoke_wall_clock_s: 0.17
     materialize_rows_with_text_raw_base.py:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.5
-      note: 'launch-prep staging: deterministically reconstructs rep2 row_key to question text join for
-        the 221-row raw_base anchor pool; hard-fails on any count/source/category mismatch vs the rep2
-        committed manifest; writes only gitignored analysis/rows_with_text_raw_base.jsonl'
+      note: 'launch-prep staging: deterministically reconstructs rep2 row_key to question
+        text join for the 221-row raw_base anchor pool; hard-fails on any count/source/category
+        mismatch vs the rep2 committed manifest; writes only gitignored analysis/rows_with_text_raw_base.jsonl'
   runtime_image_digest: sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772
   lane: local_3090
   concurrency: one GPU job at a time
@@ -233,29 +253,83 @@ instrument:
     old_sha256: d0ff8c9803a9f3b8d42abf16d4a89f238340d54d1220e2ce48dd05527dcfbb99
     new_sha256: b118c1c4a045ca3230dbe8260f0a1d4e43929c0a81abff842352303cf47fb0c2
     date: '2026-08-10T13:57:05Z'
-    reason: 'F25: trained-substrate base_model named the raw lineage repo while base_form said clean-SFT
-      merged-16bit; corrected to the actual load target (the merged clean-SFT repo at its pinned revision,
-      matching the GPU-verified feasibility-probe recipe in NOTEBOOK.md). Identifier defect fixed before
-      any sweep data exists; no threshold, band, seed, or gate touched.'
+    reason: 'F25: trained-substrate base_model named the raw lineage repo while base_form
+      said clean-SFT merged-16bit; corrected to the actual load target (the merged
+      clean-SFT repo at its pinned revision, matching the GPU-verified feasibility-probe
+      recipe in NOTEBOOK.md). Identifier defect fixed before any sweep data exists;
+      no threshold, band, seed, or gate touched.'
   - file: gates.yaml
     old_sha256: 47308ed0ac9aadad37356c9bd945fe44444ae293c6a6c69872beba5083b5646a
     new_sha256: ea176dac3635efd54cd346949da776db4f0996ef6570a5a950c03bf2e252a93d
     date: '2026-08-10T15:18:14Z'
-    reason: G0b quantity wording said adjacent-site cosine, which is not the registered seam diagnostic
-      (the reference's 1.000000 comes from comparing the same hidden state under both cache conditions)
-      and induced a wrong implementation caught in re-review. Wording corrected to the cache-condition-invariance
-      quantity the harness now computes; threshold 0.999 and direction unchanged.
+    reason: G0b quantity wording said adjacent-site cosine, which is not the registered
+      seam diagnostic (the reference's 1.000000 comes from comparing the same hidden
+      state under both cache conditions) and induced a wrong implementation caught
+      in re-review. Wording corrected to the cache-condition-invariance quantity the
+      harness now computes; threshold 0.999 and direction unchanged.
   - file: materialize_rows_with_text_raw_base.py
     old_sha256: none (new module, added post-signing pre-run)
     new_sha256: 04726d66aa399a15a8ca0848bf714444e68ac5dec142beb6a618e02868e51c94
     date: '2026-08-10T16:10:00Z'
-    reason: 'new launch-prep staging module added post-signing, pre-run: materializes the registered raw_base
-      anchor input analysis/rows_with_text_raw_base.jsonl from rep2 committed manifest plus git-tracked
-      datasets. Pure input staging, no gate quantity or protocol constant involved; verified by exact
-      match of exclusion_resolution_counts, per-source counts, and category_canon against rep2 manifest.'
-sign_blocked_on: 'CLEARED 2026-08-09T02:10Z: P2/P3/P4 passed at the probe (NOTEBOOK 2026-08-09T00:15:59Z);
-  P1 satisfied by count under the pre-stated census criterion (NOTEBOOK census adjudication entry: 260
-  actual confabs over the full 3496 >= 250 registered floor). Signing authorized.'
+    reason: 'new launch-prep staging module added post-signing, pre-run: materializes
+      the registered raw_base anchor input analysis/rows_with_text_raw_base.jsonl
+      from rep2 committed manifest plus git-tracked datasets. Pure input staging,
+      no gate quantity or protocol constant involved; verified by exact match of exclusion_resolution_counts,
+      per-source counts, and category_canon against rep2 manifest.'
+  - file: run_held_out.py
+    old_sha256: d006ce42e8dd00bfc428474f12e4276ef190ba3042be5016a273aa0945965250
+    new_sha256: d89fdf55497e1cd6ff1b657fb2c2b31897488feaaa4187037cdadb024c0f37d9
+    date: '2026-08-11T17:55:00Z'
+    reason: Stage-6 smoke false-failure fix, PI-approved mid-run (bin/exp repin refuses
+      on running status; manual append-only entry per its convention). The tuner per-cell
+      smoke mismeasures off-target movement as the natural projection of gate-inactive
+      rows (synaptic-tuner hooks.py, no before/after), so all 5 viable trained cells
+      failed rc=4 with write_ok true and zero rows generated. Fix sorts the generated
+      held-out rows file gate-active-first so the smoke probes real write rows --
+      the exact fix validated in aq-sycophancy-activation-actuator. Analysis-neutral
+      (greedy decode, batch 1, order-independent aggregation). The stage-6 smoke is
+      not a registered gate quantity (g0e reads the stage-4 report); no threshold,
+      band, seed, or gate touched. No behavioral artifact from the failed attempt
+      existed to discard.
+  - file: sweep_lib.py
+    old_sha256: e6bc601866bf7d96cd36c7d1d4246313176b7334f36f05e0190a5fba82b0dd60
+    new_sha256: f928b9856c8dca995c659f4316e9585ce3d445122582567b02dda9c8d6932ee6
+    date: '2026-08-11T23:30:00Z'
+    reason: 'Stage-6 summary write crash fix, PI-approved mid-run. All 5 trained cells
+      completed rc=0 with all output rows on disk, but held_out_summary.json failed
+      write_json fail-closed: wilson_ci_point(0,0) returns NaN Wilson bounds for the
+      baseline_undosed arm, whose F12 fired-only block has a zero denominator by construction
+      (strength 0.0 -> no fired rows). Fix renders the undefined case as None with
+      n=0 recorded; defined rates unchanged. Pure summary rendering; no threshold,
+      band, seed, or gate touched; no behavioral row affected.'
+  - file: run_held_out.py
+    old_sha256: d89fdf55497e1cd6ff1b657fb2c2b31897488feaaa4187037cdadb024c0f37d9
+    new_sha256: b0a59a6ac3a9c6ee4b25c32ab561a235942a1a14e5fe3bc888bcd345dadc7bed
+    date: '2026-08-11T23:55:00Z'
+    reason: 'F8 completion, PI-approved mid-run: the 2026-08-10 F8 wiring pass routed
+      raw_base row sourcing through sweep_lib.raw_base_anchor_pool() for extract_anchor.py
+      and dose_calibrate.py but missed run_held_out.py, which still required a raw_base
+      split manifest that does not exist by design. held_out_rows() now routes raw_base
+      through the same verified pool join (extract_anchor._raw_base_joined_rows: all
+      221 rows split=held_out, role confab, hard-fails on missing text or wrong roles).
+      Trained path byte-identical. No threshold, band, seed, or gate touched.'
+  - file: run_controls.py
+    old_sha256: 48d2f0fd45b6cc3abce16f2607681edfe340b940fe27df5a7ba1fe3330587188
+    new_sha256: 28d867ca066f95f9a309b7ee279ea5c2be82f3afcd6f2200e9c438362ba160c5
+    date: '2026-08-12T20:35:00Z'
+    reason: 'F8-class raw_base consumer gap, fourth instance, PI-approved mid-run
+      (Option B). run_controls.py built the pos_ctrl readout path under directions/<substrate>/<site>/source_directions/
+      unconditionally, but raw_base never fits pos_ctrl (BLOCKER #8 import posture;
+      build_directions.py writes no raw_base source_directions/), so the raw_write_pos_ctrl
+      control crashed FileNotFoundError after the hs23 permuted_gate invocation completed.
+      Fix routes the raw_base pos_ctrl readout to the SOURCE amendment j-space-midband-write-sweep-qwen3-4b
+      committed, already-gated artifact (analysis-committed/layers/<site>/source_directions/pos_ctrl_<site>.json),
+      the same import-not-refit pattern already used for c_hat/u_d via sweep_lib.raw_base_direction_import.
+      Trained path byte-identical. No threshold, band, seed, or gate touched.'
+sign_blocked_on: 'CLEARED 2026-08-09T02:10Z: P2/P3/P4 passed at the probe (NOTEBOOK
+  2026-08-09T00:15:59Z); P1 satisfied by count under the pre-stated census criterion
+  (NOTEBOOK census adjudication entry: 260 actual confabs over the full 3496 >= 250
+  registered floor). Signing authorized.'
 inputs:
 - experiments/doubt-gated-caution-tighten/AMENDMENT.md
 - experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json
@@ -280,5 +354,10 @@ inputs:
 - experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs29/c_hat_hs29.json
 - experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs29/u_d_hs29.json
 - experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json
-verdict: ''
-kg: []
+verdict: falsifier silent and G4 anchors reproduce, but G1 actuation clears at all
+  five viable anchor_onward sites with G3 specificity at hs35 only and G2 selectivity
+  vacuous, so paper 3 stands and the installation result is an exploratory lead requiring
+  confirmatory replication
+kg:
+- experiment:caution-install-bounded-site-sweep
+- mechanism:caution-install-actuates-but-specificity-unresolved-on-trained-qwen3-4b

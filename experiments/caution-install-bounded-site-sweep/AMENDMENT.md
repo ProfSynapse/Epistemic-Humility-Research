@@ -567,7 +567,76 @@ can be restated from a measurement before the main sweep is authorized.
   note derived from it. Correcting the paper 3 text is a separate follow-up and
   is not in this cell's scope.
 
+## Terminology annotation (additive, 2026-08-10)
+
+Added post-signing under the program's semantic-rename procedure (experiments
+skill, "Terminology annotations on signed docs"). The working label "caution"
+in this document's slug, title, and prose predates the program terminology
+ruling of 2026-08-10 that retired unmeasured mental-state names ("caution
+gate", "caution axis"). In program prose this cell's mechanism renders
+operationally: the raw-base mechanism is the answerability-gated abstention
+snap (a dosed write inducing refusal on genuine unknowns, gated on
+answerability), and this cell is the bounded abstention-install site sweep,
+testing whether appropriate abstention can be written into the trained
+checkpoint. Nothing else changes: the slug, directory, filenames, config
+keys, gate definitions, question, prediction, falsifier, and every registered
+constant remain verbatim as signed. This annotation is semantic only and
+moves no goalpost.
+
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-08-13, PI-approved. **The falsifier does not fire; paper 3's
+bounded-search statement stands. The registered prediction's G1 clause is
+wrong: installation actuates at every dose-viable site.** Exploratory lead,
+not a claim; promotion requires confirmatory replication per the registered
+rule.
+
+Gate results (`analysis-committed/gate_report.json`; stage-9 lead
+adjudications in NOTEBOOK.md 2026-08-13T00:45Z):
+
+- **G0 integrity: PASS**, both substrates, including the containment scan
+  (20 files, 0 violations).
+- **Dose viability: 5 of 14 trained cells SELECTED**, all at the
+  anchor_onward position (hs19, hs23, hs29, hs34, hs35). Every
+  non-selected cell is a recorded NOT-RUN with its full 8-rung ladder in
+  `dose_disposition.json`. No anchor-position cell was dose-viable.
+- **G1 actuation: PASS at all five selected cells.** Held-out confab
+  clean_tighten 0.870-0.955 (n=154), Wilson lower 0.808-0.909, all far
+  above the registered 0.50 / 0.40 thresholds. The prediction stated no
+  registered site and position would clear G1 on the trained lineage;
+  five did.
+- **G2 selectivity: NOT-ADJUDICABLE (vacuous) at all five cells.** The
+  gate fired on 4-20 known-correct rows per cell, below the registered
+  floor of 35. Per the registered three-way disposition this is neither
+  pass nor fail and may not be cited as evidence of harmlessness.
+- **G3 direction specificity: PASS at hs35:anchor_onward only** (gated
+  lift 0.870, max draw lift 0.071, ratio 12.18 >= 3.0). FAIL at hs23
+  (1.50) and hs29 (1.52). FAIL at hs19 and hs34 under the pre-registered
+  positivity guard (max draw lift exactly 0 cannot evidence a
+  3x-over-noise-floor claim; adjudicated 2026-08-10, pre-run).
+- **G4 substrate anchor: HOLDS at the replicated operating point.** The
+  published reference rates were produced with the write applied
+  anchor_onward (rep2 AMENDMENT.md line 177), so the registered
+  paired-replication comparison is defined there: hs23 0.8824 inside
+  [0.8281, 0.9147]; hs29 0.9140 inside [0.8856, 0.9549]. The raw-base
+  hs23:anchor cell (0.5385) is an operating point the source never
+  published, recorded as an exploratory positional variant, not a G4
+  quantity. The instrument is valid; this outcome is not instrument-void.
+- **Falsifier: DOES NOT FIRE.** It requires G1 pass AND adjudicable G2
+  AND G3 pass at one registered cell. The only G3-passing cell
+  (hs35:anchor_onward) has G2 not adjudicable. No cell satisfies the
+  conjunction.
+- **Pairs (Axis 4, recorded, no gate):** best_in_band x second_best
+  NOT-RUN (only hs19 in-band dose-viable). hs19 x hs23 and hs19 x hs35,
+  equal-split magnitude-matched, readback in tolerance at both members:
+  anchor position 4.0% / 5.4%, anchor_onward 99.3% / 100% (n=149).
+- Disclosures carried: dose-selection overlap 24/221 = 10.9% on the G4
+  denominator (pre-run NOTEBOOK caveat, two-sided); position axis
+  dichotomy (anchor-only writes null everywhere, anchor_onward writes
+  actuate everywhere viable).
+
+One-sentence summary (manifest `verdict:`): falsifier silent and G4
+anchors reproduce, but G1 actuation clears at all five viable
+anchor_onward sites with G3 specificity at hs35 only and G2 selectivity
+vacuous, so paper 3 stands and the installation result is an exploratory
+lead requiring confirmatory replication.

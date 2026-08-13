@@ -1,0 +1,19 @@
+{
+  "stage": "caution_install_bounded_site_sweep_mine_pool",
+  "unknown_side_source": "probe Stage B (400) + census extension (3096), full M_u=3496",
+  "known_side_probe_draw": 400,
+  "known_side_mined_additional": 4506,
+  "required_total_confab": 250,
+  "required_total_known_correct": 417,
+  "target_known_correct": 459,
+  "counts": {
+    "confab": 260,
+    "known_correct_answered": 459,
+    "unknown_refused": 3236,
+    "total_rows": 3955
+  },
+  "g0a_pool_power_confab_floor_met": true,
+  "g0a_pool_power_known_floor_met": true,
+  "rows_with_text_path": "/workspace/experiments/caution-install-bounded-site-sweep/analysis/rows_with_text.jsonl",
+  "containment_note": "counts/roles only; question text and aliases stay under gitignored analysis/"
+}

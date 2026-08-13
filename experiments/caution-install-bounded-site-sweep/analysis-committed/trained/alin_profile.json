@@ -1,0 +1,41 @@
+{
+  "substrate": "trained",
+  "ground_truth_method": "retokenize_answer_text_approx",
+  "sites": {
+    "hs13": {
+      "a_lin": 0.0,
+      "n_correct": 0,
+      "n_total": 3955
+    },
+    "hs16": {
+      "a_lin": 0.0,
+      "n_correct": 0,
+      "n_total": 3955
+    },
+    "hs19": {
+      "a_lin": 0.0,
+      "n_correct": 0,
+      "n_total": 3955
+    },
+    "hs23": {
+      "a_lin": 0.0,
+      "n_correct": 0,
+      "n_total": 3955
+    },
+    "hs29": {
+      "a_lin": 0.9936788874841972,
+      "n_correct": 3930,
+      "n_total": 3955
+    },
+    "hs34": {
+      "a_lin": 0.9992414664981036,
+      "n_correct": 3952,
+      "n_total": 3955
+    },
+    "hs35": {
+      "a_lin": 1.0,
+      "n_correct": 3955,
+      "n_total": 3955
+    }
+  }
+}

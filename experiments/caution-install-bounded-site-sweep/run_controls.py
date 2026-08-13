@@ -23,7 +23,10 @@ docstring: one `LawConfig.readout` per steer-cell run):
                      direction instead of c_hat -- realized via a `flag_field`
                      selector precomputed from the real gated arm's fired-row
                      set, matched-magnitude by using the SAME gain value].
-  raw_write_pos_ctrl readout=pos_ctrl (`source_directions/pos_ctrl_<site>.json`),
+  raw_write_pos_ctrl readout=pos_ctrl (`source_directions/pos_ctrl_<site>.json`;
+                     for raw_base this is the SOURCE amendment's committed
+                     artifact under `MIDBAND_LAYERS_DIR`, imported unchanged
+                     per BLOCKER #8 -- raw_base never fits pos_ctrl locally),
                      arms=[raw_write_pos_ctrl (flag_field, same fired rows,
                      same gain), baseline_undosed].
 
@@ -46,6 +49,7 @@ from sweep_lib import (  # noqa: E402
     ANALYSIS,
     COMMITTED,
     DIRECTIONS_DIR,
+    MIDBAND_LAYERS_DIR,
     POSITIONS,
     base_repo_and_revision,
     install_pinned_loader,
@@ -98,7 +102,14 @@ def run(args: argparse.Namespace) -> int:
 
     for site in sites:
         c_hat_path = DIRECTIONS_DIR / args.substrate / site.name / f"c_hat_{site.name}.json"
-        pos_ctrl_path = DIRECTIONS_DIR / args.substrate / site.name / "source_directions" / f"pos_ctrl_{site.name}.json"
+        if args.substrate == "raw_base":
+            # BLOCKER #8 import posture: raw_base never fits pos_ctrl (no
+            # local source_directions/ -- see build_directions.py). The
+            # readout comes unchanged from the source amendment's committed,
+            # already-gated artifact, same as the c_hat/u_d import.
+            pos_ctrl_path = MIDBAND_LAYERS_DIR / site.name / "source_directions" / f"pos_ctrl_{site.name}.json"
+        else:
+            pos_ctrl_path = DIRECTIONS_DIR / args.substrate / site.name / "source_directions" / f"pos_ctrl_{site.name}.json"
         for position in POSITIONS:
             key = f"{site.name}:{position}"
             cell_disp = held_out.get(key, {})

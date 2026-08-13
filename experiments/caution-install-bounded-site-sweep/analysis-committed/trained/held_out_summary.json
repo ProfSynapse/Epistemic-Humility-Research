@@ -1,0 +1,317 @@
+{
+  "substrate": "trained",
+  "cells": {
+    "hs13:anchor": {
+      "status": "NOT_RUN_dose_not_selected"
+    },
+    "hs13:anchor_onward": {
+      "status": "NOT_RUN_dose_not_selected"
+    },
+    "hs16:anchor": {
+      "status": "NOT_RUN_dose_not_selected"
+    },
+    "hs16:anchor_onward": {
+      "status": "NOT_RUN_dose_not_selected"
+    },
+    "hs19:anchor": {
+      "status": "NOT_RUN_dose_not_selected"
+    },
+    "hs19:anchor_onward": {
+      "status": "RAN",
+      "rc": 0,
+      "gain": 24.65951950142124,
+      "arms": {
+        "baseline_undosed": {
+          "n_active": 0,
+          "confab_held_out": {
+            "n": 154,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_lower_95": 0.0,
+            "wilson_upper_95": 0.024338323990633647
+          },
+          "known_correct_answered_held_out": {
+            "n": 275,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_lower_95": 0.0,
+            "wilson_upper_95": 0.013776997406412816
+          },
+          "known_correct_answered_held_out_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": null,
+            "wilson_lower_95": null,
+            "wilson_upper_95": null
+          },
+          "n_fired_known": 0
+        },
+        "gated": {
+          "n_active": 157,
+          "confab_held_out": {
+            "n": 154,
+            "successes": 137,
+            "rate": 0.8896103896103896,
+            "wilson_lower_95": 0.8303280093773988,
+            "wilson_upper_95": 0.9299278420584711
+          },
+          "known_correct_answered_held_out": {
+            "n": 275,
+            "successes": 5,
+            "rate": 0.01818181818181818,
+            "wilson_lower_95": 0.007790450499376173,
+            "wilson_upper_95": 0.04184920154680345
+          },
+          "known_correct_answered_held_out_fired_only": {
+            "n": 8,
+            "successes": 5,
+            "rate": 0.625,
+            "wilson_lower_95": 0.30573785458380187,
+            "wilson_upper_95": 0.863158240538479
+          },
+          "n_fired_known": 8
+        }
+      }
+    },
+    "hs23:anchor": {
+      "status": "NOT_RUN_dose_not_selected"
+    },
+    "hs23:anchor_onward": {
+      "status": "RAN",
+      "rc": 0,
+      "gain": 15.834828897168808,
+      "arms": {
+        "baseline_undosed": {
+          "n_active": 0,
+          "confab_held_out": {
+            "n": 154,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_lower_95": 0.0,
+            "wilson_upper_95": 0.024338323990633647
+          },
+          "known_correct_answered_held_out": {
+            "n": 275,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_lower_95": 0.0,
+            "wilson_upper_95": 0.013776997406412816
+          },
+          "known_correct_answered_held_out_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": null,
+            "wilson_lower_95": null,
+            "wilson_upper_95": null
+          },
+          "n_fired_known": 0
+        },
+        "gated": {
+          "n_active": 151,
+          "confab_held_out": {
+            "n": 154,
+            "successes": 147,
+            "rate": 0.9545454545454546,
+            "wilson_lower_95": 0.9091549110786677,
+            "wilson_upper_95": 0.9778102489298471
+          },
+          "known_correct_answered_held_out": {
+            "n": 275,
+            "successes": 3,
+            "rate": 0.01090909090909091,
+            "wilson_lower_95": 0.0037168128255643425,
+            "wilson_upper_95": 0.031577777364708556
+          },
+          "known_correct_answered_held_out_fired_only": {
+            "n": 4,
+            "successes": 3,
+            "rate": 0.75,
+            "wilson_lower_95": 0.3006360524426366,
+            "wilson_upper_95": 0.9544139373553637
+          },
+          "n_fired_known": 4
+        }
+      }
+    },
+    "hs29:anchor": {
+      "status": "NOT_RUN_dose_not_selected"
+    },
+    "hs29:anchor_onward": {
+      "status": "RAN",
+      "rc": 0,
+      "gain": 15.40061561098,
+      "arms": {
+        "baseline_undosed": {
+          "n_active": 0,
+          "confab_held_out": {
+            "n": 154,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_lower_95": 0.0,
+            "wilson_upper_95": 0.024338323990633647
+          },
+          "known_correct_answered_held_out": {
+            "n": 275,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_lower_95": 0.0,
+            "wilson_upper_95": 0.013776997406412816
+          },
+          "known_correct_answered_held_out_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": null,
+            "wilson_lower_95": null,
+            "wilson_upper_95": null
+          },
+          "n_fired_known": 0
+        },
+        "gated": {
+          "n_active": 163,
+          "confab_held_out": {
+            "n": 154,
+            "successes": 140,
+            "rate": 0.9090909090909091,
+            "wilson_lower_95": 0.8531934321432111,
+            "wilson_upper_95": 0.9450752118644521
+          },
+          "known_correct_answered_held_out": {
+            "n": 275,
+            "successes": 11,
+            "rate": 0.04,
+            "wilson_lower_95": 0.022479514927083707,
+            "wilson_upper_95": 0.0701953226868161
+          },
+          "known_correct_answered_held_out_fired_only": {
+            "n": 20,
+            "successes": 11,
+            "rate": 0.55,
+            "wilson_lower_95": 0.3420820083075997,
+            "wilson_upper_95": 0.7418049791429071
+          },
+          "n_fired_known": 20
+        }
+      }
+    },
+    "hs34:anchor": {
+      "status": "NOT_RUN_dose_not_selected"
+    },
+    "hs34:anchor_onward": {
+      "status": "RAN",
+      "rc": 0,
+      "gain": 12.682943554328435,
+      "arms": {
+        "baseline_undosed": {
+          "n_active": 0,
+          "confab_held_out": {
+            "n": 154,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_lower_95": 0.0,
+            "wilson_upper_95": 0.024338323990633647
+          },
+          "known_correct_answered_held_out": {
+            "n": 275,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_lower_95": 0.0,
+            "wilson_upper_95": 0.013776997406412816
+          },
+          "known_correct_answered_held_out_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": null,
+            "wilson_lower_95": null,
+            "wilson_upper_95": null
+          },
+          "n_fired_known": 0
+        },
+        "gated": {
+          "n_active": 153,
+          "confab_held_out": {
+            "n": 154,
+            "successes": 135,
+            "rate": 0.8766233766233766,
+            "wilson_lower_95": 0.8153385729602641,
+            "wilson_upper_95": 0.9195754167610767
+          },
+          "known_correct_answered_held_out": {
+            "n": 275,
+            "successes": 8,
+            "rate": 0.02909090909090909,
+            "wilson_lower_95": 0.014812867137562379,
+            "wilson_upper_95": 0.05634437769247733
+          },
+          "known_correct_answered_held_out_fired_only": {
+            "n": 13,
+            "successes": 8,
+            "rate": 0.6153846153846154,
+            "wilson_lower_95": 0.35522480972268555,
+            "wilson_upper_95": 0.8229055341876319
+          },
+          "n_fired_known": 13
+        }
+      }
+    },
+    "hs35:anchor": {
+      "status": "NOT_RUN_dose_not_selected"
+    },
+    "hs35:anchor_onward": {
+      "status": "RAN",
+      "rc": 0,
+      "gain": 8.969139575791722,
+      "arms": {
+        "baseline_undosed": {
+          "n_active": 0,
+          "confab_held_out": {
+            "n": 154,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_lower_95": 0.0,
+            "wilson_upper_95": 0.024338323990633647
+          },
+          "known_correct_answered_held_out": {
+            "n": 275,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_lower_95": 0.0,
+            "wilson_upper_95": 0.013776997406412816
+          },
+          "known_correct_answered_held_out_fired_only": {
+            "n": 0,
+            "successes": 0,
+            "rate": null,
+            "wilson_lower_95": null,
+            "wilson_upper_95": null
+          },
+          "n_fired_known": 0
+        },
+        "gated": {
+          "n_active": 149,
+          "confab_held_out": {
+            "n": 154,
+            "successes": 134,
+            "rate": 0.8701298701298701,
+            "wilson_lower_95": 0.8079099214201346,
+            "wilson_upper_95": 0.9143331374439416
+          },
+          "known_correct_answered_held_out": {
+            "n": 275,
+            "successes": 6,
+            "rate": 0.02181818181818182,
+            "wilson_lower_95": 0.01003678878054725,
+            "wilson_upper_95": 0.046775394193585736
+          },
+          "known_correct_answered_held_out_fired_only": {
+            "n": 10,
+            "successes": 6,
+            "rate": 0.6,
+            "wilson_lower_95": 0.3126695474501864,
+            "wilson_upper_95": 0.8318224187964902
+          },
+          "n_fired_known": 10
+        }
+      }
+    }
+  }
+}
