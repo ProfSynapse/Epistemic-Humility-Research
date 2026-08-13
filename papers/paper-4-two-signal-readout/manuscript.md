@@ -1249,7 +1249,7 @@ We state these plainly; several are the reason specific claims are scoped as the
 8. Correctness-axis causality is untested. The gate has causal (steering) evidence; the
    dial is correlational. Whether steering along the correctness axis moves actual correctness
    is future work.
-9. Token-logprob baseline: computed, descriptive only. The dial is bounded below by a
+9. Token-logprob baseline: now measured under gates on both checkpoints. The dial is bounded below by a
    question-surface text baseline (0.75–0.78 per family, §4.11), and the cheapest internal
    competitor, the model's own token log-probabilities on the answer span, has now been
    computed in a pre-registered follow-up cell (dial-logprob-baseline, resolved
@@ -1276,9 +1276,16 @@ We state these plainly; several are the reason specific claims are scoped as the
    the model's own logprobs on the raw base is now measured, gated, and small:
    what this paper establishes there remains its cross-model geometry, its
    post-answer read advantage, and its veto behavior. The deployed-checkpoint
-   margin stayed unmeasured in that cell (a pre-registered power-floor stop:
-   the abstention-trained checkpoint answered too few fresh prompts), so the
-   +0.158 descriptive picture above still awaits gated confirmation.
+   margin has since been measured under a gate at adequate power
+   (`dial-logprob-t-deployed-confirmatory`, resolved 2026-08-13): a
+   registered 12,000-attempt cap cleared the power floor (1,501 answered
+   rows, zero capture-integrity failures), and the dial's margin over the
+   answer-span logprob passed its pre-registered gate, AUROC 0.7962 against
+   0.6569, margin +0.139, paired 95% CI [+0.103, +0.176]. The checkpoint
+   dependence is therefore now gated on both sides: small-to-ambiguous on
+   the raw base, large on the deployed abstention-trained checkpoint, where
+   abstention training has reshaped output probabilities and the internal
+   read retains its separation.
 10. Evaluation-surface breadth. Every gate number in this paper is measured on questions
     that are either answerable or *overtly* unanswerable, meaning the question's own surface
     marks it as having no answer. The companion program has since read the same axis on a
