@@ -1850,3 +1850,29 @@ PI asked whether the contamination requires retraining or re-evaluation. Answer,
 ## 2026-08-08 — POST-RESOLUTION BOOKKEEPING: reporting-rule scope clarification (PI-approved)
 
 The resolution's reporting rules named paper 2 as the reporting surface for this block's numbers. The PI approved (2026-08-08, in session) a narrow extension: paper 3, which owns the GRPO confidence-collapse claim, may cite this block's G4 non-collapse record (guard not triggered; distinct emitted-confidence values 4 to 85 across all retrained arms against the 200-value trigger) as seed-robustness evidence for that claim, labeled exploratory and never pooled, without restating the block's other numbers. This is a citation-scope clarification, not a change to any gate, verdict, or number. Paper 3's overlap sensitivity additionally reuses this block's exclusion-set derivation via its own pinned script (papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.py); that script's independent re-derivation of the union reproduced 128 distinct / 117 gradient + 11 dev-only / zero unknown exactly.
+
+## 2026-08-13 -- descriptive addition: three-seed stated-confidence intervals (lab-notebook tier)
+
+- PI-requested descriptive analysis over the replication's existing eval
+  artifacts (no new runs, no gate changes): three-seed mean + seed-level
+  bootstrap intervals (same convention as g3_three_seed_intervals.py,
+  n_boot 10000) for the stated_confidence block of every arm's full
+  SelfAware eval. Script: analysis/g3_stated_confidence_three_seed.py;
+  outputs committed at analysis-committed/g3_stated_confidence_three_seed
+  .{json,csv} (containment-scanned, numbers/labels only).
+- Complete at all 3 seeds for all 8 arms: mean_stated_confidence and
+  brier_vs_response_appropriateness (seed-1 values recovered from the
+  amendment-e corrected-base eval metrics and the committed aggregate CSV).
+  clean_sft_grpo_v2: mean confidence 0.8146 [0.8112, 0.8191]
+  (0.8134/0.8191/0.8113 per seed); appropriateness Brier worse than the
+  re-evaluated SFT base at every GRPO-touching arm at every seed
+  (base 0.3511 vs 0.40-0.45).
+- By-outcome (per-cell mean confidence) three-seed possible only for
+  clean_sft_grpo_v2 (seed-1 source: calibration_gap_clean_sft_grpo_v2_
+  seed1.json); flat within ~0.01 across outcome cells at all three seeds.
+  Other 7 arms: seeds 2/3 only (no seed-1 by-outcome source on disk).
+- Known gap, reported not imputed: seed-1 raw metrics.json for this track
+  is absent from disk and git for all arms, so mae/brier vs known_label and
+  vs answer_correctness carry seed-2/3 values only.
+- Downstream use: paper 2 section 5 upgrades its single-seed caveat to
+  cite these intervals; the finer metrics stay scoped as above.
