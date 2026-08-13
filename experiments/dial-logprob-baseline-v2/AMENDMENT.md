@@ -1,10 +1,9 @@
 # Dial token-logprob baseline, clean redo (generation-time token-ID cache)
 
-Status: signed (machine state in `experiment.yaml`); not yet resolved --
-the "Outcome" section below is correctly still a placeholder pending the
-run. This header was stale boilerplate reading "draft (not signed)" until
-2026-08-11; corrected to match the machine state, which was already
-`signed`.
+Status: RESOLVED (2026-08-13, machine state in `experiment.yaml`; see
+Outcome -- LP-G0 data-stage stop, both arms). Header history: stale
+boilerplate reading "draft (not signed)" corrected 2026-08-11 to `signed`;
+updated again at resolution.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.

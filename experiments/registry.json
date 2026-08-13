@@ -1507,7 +1507,11 @@
           "lp_v2_harness.py": "401fa6a616a14f2642de065f5b6e9708decce55a4351d5456cbba3454fe14d24"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:dial-logprob-baseline-v2",
+        "experiment:dial-logprob-baseline",
+        "mechanism:reproduction-bet-causes-generation-capture-round-trip-failure"
+      ],
       "prediction": "CONFIRMATION CELL (PI-adopted framing, 2026-08-11, from draft sec.7): a fresh blind guess is not possible here because v1's own descriptive numbers are already known and cited in this cell's own design (AMENDMENT.md sec.2) -- re-stating v1's falsified blind 0.60-0.72 call would not be honest pre-registration. The stated prediction is that v1's descriptive read holds at exact (gated) precision: S base margin lands near +0.014, most likely still inside the pre-stated LP-G1 ambiguous band (LP-G1 most likely does NOT pass); T deployed margin confirms clearly positive, near +0.158.",
       "question": "What is the correctness dial's margin over the model's own answer-span token log-probabilities (length-normalized mean, primary) on the exact rows the dial was measured on (amendment S base population primary; amendment T deployed arm descriptive)?",
       "registered": true,
@@ -1559,7 +1563,13 @@
           "lp_v3_harness.py": "1f3c0d47116a998b89fac2735f489091928c9fc69d7a2c0e995dd50f1215c906"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:dial-logprob-baseline-v3",
+        "experiment:dial-logprob-baseline",
+        "experiment:dial-logprob-baseline-v2",
+        "mechanism:self-consistent-single-pass-capture-eliminates-reproduction-bet-round-trip-failure",
+        "mechanism:qwen3-4b-dial-margin-over-logprob-remains-ambiguous-on-fresh-generation"
+      ],
       "prediction": "Disclosure per v2 precedent: no fresh blind guess is possible (v1 descriptive read and v2's non-result unblinded numbers were seen). Stated prediction: S base margin lands inside the ambiguous band (near +0.02, between 0 and +0.05), LP3-G1 most likely does NOT pass; T deployed margin clearly positive, near +0.15.",
       "question": "Verbatim from v1/v2: does the fitted correctness dial beat the model's own sequence probability (length-normalized mean answer-span token logprob) at ranking the correctness of the model's own answers, by the registered margin?",
       "registered": true,

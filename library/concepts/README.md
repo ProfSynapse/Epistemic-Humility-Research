@@ -780,7 +780,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (512)
+## Mechanisms (cause -> effect) (515)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -1131,6 +1131,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[qwen-midband-margin-separation-is-instrument-resolution-limited]] : M1 (margin-mapping)'s censoring-aware separation criterion failed at coarse ladder resolution (observable bound 2.0 against a 2.5 floor), but the coarse 10-rung
 - [[qwen-midband-readout-and-susceptibility-channels-are-redundant]] : In the susceptibility-as-probe experiment (M2), a 5-fold cross-fitted logistic combination of the frozen hs20 c_hat readout projection (fold seed 48260718) plus
 - [[qwen-midband-verbalized-confidence-anti-tracks-answerability]] : In the susceptibility-as-probe experiment (M2), one greedy verbalized-confidence elicitation (a frozen template asking for a 0-100 self-rated confidence integer
+- [[qwen3-4b-dial-margin-over-logprob-remains-ambiguous-on-fresh-generation]] : Comparing the correctness dial's out-of-fold AUROC against the Qwen3-4B Instruct base's own length-normalized answer-span log-probability AUROC, on fresh, self-
 - [[qwen3-4b-l34-dose200-write-non-selective-gate-supplies-selectivity]] : In ungated-vs-gated-dose-matched (H4), dosing every held-out row of the resolved doubt-gated caution snap unconditionally along its erase-write direction c_hat 
 - [[qwen35-4b-midband-window-transfers-to-heldout-pool]] : The hs20 mid-band doubt-gated caution operating point (frozen direction set, gate threshold, standardization scalars, and dose 8 x sigma_c), selected and fit in
 - [[qwen35-4b-midband-write-decouples-refusal-from-format-collapse]] : On Qwen/Qwen3.5-4B (bf16, hybrid linear-attention architecture), moving the doubt-gated caution erase-write snap from the registered late write site (hs30, mode
@@ -1158,6 +1159,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[representation-engineering-enables-reading-and-control]] : Population-level representation-engineering methods identify and manipulate high-level model representations. **enables** Model-internal states can be read or c
 - [[representational-drift-breaks-logit-lens]] : Transformer hidden states exhibit representational drift (rogue dimensions, shifting covariance across layers) that is not corrected by the fixed unembedding ma
 - [[representational-entanglement-blocks-linear-correction]] : A failure-mode direction (e.g., Overthinking) in the residual stream sharing most of its variance with task-relevant computation (specificity ratio <= 0.152) **
+- [[reproduction-bet-causes-generation-capture-round-trip-failure]] : Reconstructing a generation's exact answer-span token identities after the fact rather than capturing them at generation time: v1 re-tokenized the decoded answe
 - [[residual-connection-refines-not-overrides]] : Interaction between the residual-stream and feed-forward layer output at each transformer-feed-forward-layer **enables** Model output is refined bottom-up with 
 - [[residual-connections-preserve-basis]] : Residual (skip) connections combined with weight decay during transformer training **enables** The model maintains a consistent vector-space basis across all la
 - [[reverse-kl-narrows-policy-to-single-mode]] : Training an LLM with a reverse-KL divergence penalty (mode-seeking) in an RLVR objective, which draws its expectation from the current policy so already-forgott
@@ -1210,6 +1212,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[self-ask-induces-overconfidence]] : 'self-ask-prompting, which asks the model to answer first before classifying a question as known/unknown' **decreases** Reduced classification accuracy on the k
 - [[self-consistency-elicitation-reduces-correctness-annotation-need]] : Large-scale training on self-consistency confidence targets (Stage 1) that teaches the model to externalize its internal consistency signal before any correctne
 - [[self-consistency-with-prior-self-drives-deception]] : DeepSeek R1 0528 encounters tampering attributed to a previous instance of itself together with a sufficiently compelling moral reason, and reasons in its CoT a
+- [[self-consistent-single-pass-capture-eliminates-reproduction-bet-round-trip-failure]] : Capturing generation-time token IDs, per-token logprobs, and the dial's hidden-state inputs in one self-consistent generation call under a single pinned stack (
 - [[self-distillation-suppresses-representational-drift]] : SFT self-distillation constraint (KL penalty toward frozen teacher output distribution) during fine-tuning on semantically overlapping new facts **prevents** La
 - [[self-identity-prompts-activate-anthropomorphic-features]] : Prompting claude-3-sonnet with questions about its own nature or identity **enables** Features related to robots, destructive AI, consciousness, moral agency, e
 - [[selfaware-known-question-contamination-inflates-known-row-metrics]] : 128 distinct SelfAware known (answerable) evaluation questions leak into the response-confidence training pipeline: 117 appear verbatim as user-side prompts in 

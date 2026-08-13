@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-13T13:24:53Z'
+updated_at: '2026-08-13T13:30:37Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -340,6 +340,22 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 013-checkpoint
+  at: '2026-08-13T13:30:37Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'PR 451 v3 resolution merged to main at 992e5054 on PI approval. Paper
+    4 limitation 9 updated to record the v3 successor-cell outcome: raw-base margin
+    measured gated and small in the ambiguous band, deployed margin still unmeasured
+    after the registered power-floor stop; opened as PR 452 awaiting PI merge. Remaining
+    sprint items: paper-2 GRPO framing decision, outreach email skeleton, librarian
+    KG backfill for v2 and v3, harvest-conflict duplicate cleanup.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -417,3 +433,8 @@ _No summary yet._
 - at: `2026-08-13T13:24:53Z`
 - kind: `checkpoint`
 - summary: v3 signed on PI approval, first cell through the vLLM sign gate. GPU launch: attempt 1 aborted at engine init (Windows-mount nvcc EPERM, host repair recorded), attempt 2 clean end to end in about 12 minutes with vLLM generation at 2.5 minutes per arm. S arm: LP3-G0 pass, integrity 0 failures versus v2 15.4 percent, margin +0.0118 CI [-0.0122,+0.0359] lands in registered ambiguous band, no falsifier fired. T arm: registered data-stage stop, 710 answered under the 1000 floor. Resolved as resolved on PI approval. PR 450 ownership move merged after lead corrected the paper agent conflation of the 0.030 full-direction and 0.524 perp-component ablations. Docker containers and stale images pruned on PI request.
+### 013-checkpoint - Checkpoint
+
+- at: `2026-08-13T13:30:37Z`
+- kind: `checkpoint`
+- summary: PR 451 v3 resolution merged to main at 992e5054 on PI approval. Paper 4 limitation 9 updated to record the v3 successor-cell outcome: raw-base margin measured gated and small in the ambiguous band, deployed margin still unmeasured after the registered power-floor stop; opened as PR 452 awaiting PI merge. Remaining sprint items: paper-2 GRPO framing decision, outreach email skeleton, librarian KG backfill for v2 and v3, harvest-conflict duplicate cleanup.

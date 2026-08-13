@@ -1,6 +1,6 @@
 # Dial token-logprob baseline v3: fresh self-consistent generation, no reproduction bet
 
-Status: DRAFT — not signed. Registered content below is frozen at signing.
+Status: RESOLVED (2026-08-13; signed 2026-08-13, machine state in `experiment.yaml`). Registered content frozen at signing; see Outcome.
 
 ## Question
 

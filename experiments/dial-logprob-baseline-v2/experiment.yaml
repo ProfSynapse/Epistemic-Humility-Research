@@ -56,4 +56,7 @@ inputs:
 verdict: both arms stopped at the LP-G0 integrity gate (dial-refit reproduction outside
   tolerance; 15.4%/6.3% byte-for-byte round-trip failures), so the cell records a
   data-stage stop with no reportable comparison, the same verdict class as v1
-kg: []
+kg:
+- experiment:dial-logprob-baseline-v2
+- experiment:dial-logprob-baseline
+- mechanism:reproduction-bet-causes-generation-capture-round-trip-failure

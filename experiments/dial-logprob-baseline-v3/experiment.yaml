@@ -59,4 +59,9 @@ verdict: 'S arm: LP3-G0 pass, LP3-G1 ambiguous band (margin +0.0118, CI [-0.0122
   neither falsifier fired; integrity clean (v2 failure class eliminated). T arm: registered
   data-stage stop at the power floor (710 answered < 1000); descriptive stats not
   reported.'
-kg: []
+kg:
+- experiment:dial-logprob-baseline-v3
+- experiment:dial-logprob-baseline
+- experiment:dial-logprob-baseline-v2
+- mechanism:self-consistent-single-pass-capture-eliminates-reproduction-bet-round-trip-failure
+- mechanism:qwen3-4b-dial-margin-over-logprob-remains-ambiguous-on-fresh-generation
