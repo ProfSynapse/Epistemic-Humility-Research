@@ -121,7 +121,9 @@ failed to train readout consultation: the true-sensor arm was less congruent
 with its final readout than a permuted-sensor control.
 
 Second, hidden-state actuation does work when the problem is posed as a
-KU-gated controller rather than as an unconditional write. A KU-gated boundary
+KU-gated controller rather than as an unconditional write, and it needs no
+training at all: every positive result below runs on a frozen, off-the-shelf
+checkpoint. A KU-gated boundary
 push (dosed write) on raw-base Qwen3-4B converted 136/185 held-out confabulations into
 clean refusals (73.5%, Wilson 95% CI [66.7, 79.3]) while producing 8/258
 false refusals on known-correct answers (3.1%, CI [1.6, 6.0]); random-direction
@@ -160,7 +162,11 @@ boundary push (dosed write).
 Together these results support a practical distinction: epistemic state is
 readable, externally usable, and sometimes writable, but not automatically
 consulted by the model's own policy. Productive actuation requires the right
-channel, the right gate, and the right write site.
+channel, the right gate, and the right write site, and none of it requires
+training the model. The same relax-but-not-install asymmetry this
+training-free controller exhibits also appears, independently, when a
+related direction is ablated on a trained checkpoint (Section 6.6): training
+does not appear to erase the mechanism.
 
 ---
 
@@ -1554,6 +1560,38 @@ escalation:
 The success criterion for the next paper-quality claim should be stricter than
 this one: same-model replication plus at least two-family support for the
 workspace-band advantage, with pre-stated cost guards and placebo controls.
+
+### 6.6 The relax-but-not-install asymmetry survives training
+
+Every result above is staged on an untrained substrate by design: the
+paper's central claim is that gated actuation needs no training at all, so
+raw-base checkpoints are where that claim has to be demonstrated. A natural
+objection is that training might simply overwrite the mechanism once it
+exists, leaving the untrained result irrelevant to deployed, trained models.
+It does not appear to. Ablating the refusal axis on the clean-SFT-to-GRPO-v2
+checkpoint used elsewhere in the program's diagnosis work collapses
+over-refusal on known questions from 0.994 to 0.030 with clean specificity
+(correct-on-known preserved), the known-unknown-orthogonalized component of
+the direction alone carries a large share of that effect, and no intervention
+tried there installs appropriate abstention on genuine unknowns -- the same
+relax-but-not-install asymmetry this paper documents on untrained substrates
+throughout (Sections 4.1, 4.2, 4.9-4.10, 6.4), now independently observed on
+a trained one. The intervention is the program's phase-3 refusal-axis
+ablation on that checkpoint, documented in the companion diagnosis paper
+(`papers/paper-3-knows-but-doesnt-say/manuscript.md` §6 and Appendix A); the
+run configurations survive under
+`archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/`,
+while the row-level outputs remain untracked under the program's public-repo
+containment rules.
+
+This is evidence of durability, not a third headline substrate: the
+intervention is unconditioned ablation rather than this paper's KU-gated
+write, it runs on a checkpoint this paper never trains or evaluates
+elsewhere, and it is imported, not independently replicated under this
+paper's own instrumentation. Read together with the raw-base results above,
+the two substrates bound the claim in the direction the paper cares about:
+training is not required to get the relax-but-not-install asymmetry, and, on
+this evidence, does not obviously remove it either.
 
 ---
 
