@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-13T00:37:42Z'
+updated_at: '2026-08-13T13:24:53Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -263,12 +263,13 @@ checkpoints:
   summary: 'Item-27 CLOSED OUT: PI approved resolved status; Outcome written; bin/exp
     resolve done; librarian KG ingest (experiment + mechanism nodes, validators 0
     errors); synaptic-tuner fast-forwarded 0b6b44d->1dac020 (PR 153); results PR 446
-    merged to main (717c21d4) after retired-term lint fixes in this session note
-    (retired term rendered as abstention-install in prose, slugs backticked). Program pivot: PI goal is all
-    5 papers ship-shape for collaborator outreach emails NEXT WEEK. Decision layout
-    delivered: v2 dial-logprob-baseline-v2 launch (signed, paper-4 sec-7 confirmation
-    cell, GPU free), paper-3 item-27 integration + fig-p2-01/ECE residuals, paper-5
-    appendix residuals, papers 1/2 readiness audit dispatched (read-only subagent).'
+    merged to main (717c21d4) after retired-term lint fixes in this session note (retired
+    term rendered as abstention-install in prose, slugs backticked). Program pivot:
+    PI goal is all 5 papers ship-shape for collaborator outreach emails NEXT WEEK.
+    Decision layout delivered: v2 dial-logprob-baseline-v2 launch (signed, paper-4
+    sec-7 confirmation cell, GPU free), paper-3 item-27 integration + fig-p2-01/ECE
+    residuals, paper-5 appendix residuals, papers 1/2 readiness audit dispatched (read-only
+    subagent).'
   evidence: []
   run_ids: []
   commands: []
@@ -296,6 +297,43 @@ checkpoints:
     \ stale 2026-07-30 inventory doc). Verified-real residuals: paper-3 cross-dir\
     \ embeds, item-27/ECE integration, paper-5 Appendix D items, v2 splice into paper\
     \ 4."
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 011-checkpoint
+  at: '2026-08-13T11:01:59Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Merged PRs 447 448 449 (paper-3 item-27 integration, paper-5 polish, v2
+    resolution + v3 draft + vLLM sign-gate); local main at 312c497e. Dispatched two
+    background agents per PI directive: harness-builder for the `dial-logprob-baseline-v3`
+    vLLM harness (capability check against pinned installed version, smoke + dry-run,
+    no sign/launch) and a worktree paper agent executing the PI-ruled ownership move
+    of the over-refusal 0.994 to 0.030 trained-checkpoint result into paper 5 body
+    (survives-training framing) with paper 3 trim and series plan update. Signing
+    and GPU launch remain with the PI.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 012-checkpoint
+  at: '2026-08-13T13:24:53Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'v3 signed on PI approval, first cell through the vLLM sign gate. GPU launch:
+    attempt 1 aborted at engine init (Windows-mount nvcc EPERM, host repair recorded),
+    attempt 2 clean end to end in about 12 minutes with vLLM generation at 2.5 minutes
+    per arm. S arm: LP3-G0 pass, integrity 0 failures versus v2 15.4 percent, margin
+    +0.0118 CI [-0.0122,+0.0359] lands in registered ambiguous band, no falsifier
+    fired. T arm: registered data-stage stop, 710 answered under the 1000 floor. Resolved
+    as resolved on PI approval. PR 450 ownership move merged after lead corrected
+    the paper agent conflation of the 0.030 full-direction and 0.524 perp-component
+    ablations. Docker containers and stale images pruned on PI request.'
   evidence: []
   run_ids: []
   commands: []
@@ -369,3 +407,13 @@ _No summary yet._
 - at: `2026-08-13T00:37:42Z`
 - kind: `checkpoint`
 - summary: Ship-shape sprint decisions (PI, 2026-08-13): (1) v2 dial-logprob-baseline-v2 LAUNCHED (PI-approved; local lane, HF_HUB_OFFLINE=1 against as-cached checkpoint after container-owned .locks blocked hub lock; arms sequential S then T; two aborted no-row invocations noted in cell NOTEBOOK). (2) Paper-3 item-27 update approved with honest full framing (falsifier silent + G1 actuation as open thread) — paper3-update worktree agent dispatched (also: claim-ownership trim per series plan, fig-p1-08/09 embed fix, ECE restatement verify). (3) AC ruling: doubt-regulated-caution stays APPENDIX-ONLY in paper 5; PI scope rule: paper 5 is deliberately untrained/raw-base — training-free actuation is the headline; paper5-polish worktree agent dispatched (AC ruling text, amendment-label conversion, 4-area bibliography from 2026-07-30 draft docs). (4) Outreach: first email is overall-research intro, not per-paper pitch. CAUTION: paper-audit agent report was substantially WRONG (claimed papers 1/4/5 figures missing/unembedded; disk+manuscript check shows all five papers have built+embedded figure sets; agent audited from stale 2026-07-30 inventory doc). Verified-real residuals: paper-3 cross-dir embeds, item-27/ECE integration, paper-5 Appendix D items, v2 splice into paper 4.
+### 011-checkpoint - Checkpoint
+
+- at: `2026-08-13T11:01:59Z`
+- kind: `checkpoint`
+- summary: Merged PRs 447 448 449 (paper-3 item-27 integration, paper-5 polish, v2 resolution + v3 draft + vLLM sign-gate); local main at 312c497e. Dispatched two background agents per PI directive: harness-builder for the `dial-logprob-baseline-v3` vLLM harness (capability check against pinned installed version, smoke + dry-run, no sign/launch) and a worktree paper agent executing the PI-ruled ownership move of the over-refusal 0.994 to 0.030 trained-checkpoint result into paper 5 body (survives-training framing) with paper 3 trim and series plan update. Signing and GPU launch remain with the PI.
+### 012-checkpoint - Checkpoint
+
+- at: `2026-08-13T13:24:53Z`
+- kind: `checkpoint`
+- summary: v3 signed on PI approval, first cell through the vLLM sign gate. GPU launch: attempt 1 aborted at engine init (Windows-mount nvcc EPERM, host repair recorded), attempt 2 clean end to end in about 12 minutes with vLLM generation at 2.5 minutes per arm. S arm: LP3-G0 pass, integrity 0 failures versus v2 15.4 percent, margin +0.0118 CI [-0.0122,+0.0359] lands in registered ambiguous band, no falsifier fired. T arm: registered data-stage stop, 710 answered under the 1000 floor. Resolved as resolved on PI approval. PR 450 ownership move merged after lead corrected the paper agent conflation of the 0.030 full-direction and 0.524 perp-component ablations. Docker containers and stale images pruned on PI request.

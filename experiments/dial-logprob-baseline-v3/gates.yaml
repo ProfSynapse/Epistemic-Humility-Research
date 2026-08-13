@@ -1,3 +1,35 @@
-# TODO: replace this placeholder with pre-stated gates.
-# Gates must be fixed before launch and should define the pass/fail thresholds
-# and falsifier boundary used by the amendment.
+# dial-logprob-baseline-v3 (LP v3) gates, fixed before launch.
+# LP3-G1, its floor, its ambiguous_band, and the primary (dial-novelty)
+# falsifier transfer byte-identical from v1/v2 (experiments/dial-logprob-baseline/gates.yaml,
+# experiments/dial-logprob-baseline-v2/gates.yaml). LP3-G0 is REDEFINED for v3
+# (AMENDMENT.md "Gates"): v1/v2's LP-G0 reproduction sub-criteria (refit-matches-
+# signed-source-AUROC, row-count-matches-source-inventory) are DROPPED because
+# there is no external cached artifact left to reproduce against -- v3 generates
+# fresh and derives every quantity (answer text, label, dial score, logprob) from
+# ONE generation event. LP3-G0 instead asserts INTERNAL capture-integrity
+# (a-b) plus two pre-stated floors, (c) power and (d) instrument sanity, that
+# were not needed in v1/v2 because those cells inherited fixed source-inventory
+# row counts and a fixed signed AUROC to reproduce against.
+gates:
+  - id: LP3-G0
+    kind: integrity-precondition
+    stop: pre-outcome
+    criteria:
+      - "(a) capture integrity: for every row, the answer text decoded from the captured vLLM (or teacher-forced fallback) token IDs is the SAME object scored and logprob'd, and (when the HF fallback path runs) the teacher-forced extraction pass consumed EXACTLY those IDs (prompt + generated, verbatim) -- asserted per row; any divergence is a harness bug and a stop, never a tolerance-adjusted pass"
+      - "(b) coverage: every prompt attempted from each arm's source inventory (the amendment_s_correctness_probe_extract.build_pool population, imported unchanged) receives a recorded disposition (answered / refused / empty) in the runlog; none silently dropped"
+      - "(c) power floor, pre-stated: at least 1,000 answered (label in {correct, wrong}) rows per arm, else the arm records a data-stage stop -- source answered counts were 1836 (S) / 1488 (T); 1000 is a power floor, not a tuned threshold"
+      - "(d) instrument sanity, pre-stated: the fresh S-arm dial OOF AUROC is at least 0.75, else the cell records instrument-void -- the signed June value was 0.834; 0.75 is a sanity bound on whether the dial reads at all on fresh data, not a reproduction target"
+    power_floor_n: 1000
+    instrument_sanity_auroc_min: 0.75
+  - id: LP3-G1
+    kind: primary
+    arm: s_base_primary
+    criterion: dial AUROC minus primary-logprob AUROC >= +0.05, paired bootstrap 95% CI excluding 0
+    floor: 0.05
+    floor_justification: verbatim from v1/v2 (matches the S/T self-eval-gain convention)
+    ambiguous_band: 0 < margin < +0.05 or CI straddling 0 -> reported as small/uncertain margin; gate never retuned after result
+falsifier: primary-logprob AUROC >= dial AUROC on s_base_primary with paired 95% CI excluding 0 in that direction
+lp3_g0_falsifier: the fresh-generation posture fails its own LP3-G0 integrity gate -- reported straight as a design-diagnosis signal, not retried as a fourth same-shape run
+arm2_status: t_deployed_descriptive reported with identical statistics, descriptive only, no gate
+n_boot_paired: 2000
+seed: 20260813

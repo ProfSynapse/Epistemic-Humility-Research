@@ -1,0 +1,15 @@
+{
+  "arm": "t_deployed_descriptive",
+  "lp3_g0": {
+    "a_capture_integrity_ok": true,
+    "a_n_integrity_fail": 0,
+    "b_coverage_ok": true,
+    "c_power_floor_ok": false,
+    "c_n_answered": 710,
+    "c_power_floor_n": 1000,
+    "pass": false
+  },
+  "gate_verdict": {
+    "stopped_at_lp3_g0": true
+  }
+}

@@ -136,4 +136,37 @@ version (or runs in a pinned image) before the run.
 
 ## Outcome
 
-Filled at resolve.
+Run 2026-08-13, local RTX 3090, vLLM 0.27.1 pinned stack, single launch
+sequence (one aborted engine-init attempt repaired at the host-env level
+before any evidence row; NOTEBOOK repair #1).
+
+**S arm (primary): LP3-G0 PASS; LP3-G1 lands in the registered ambiguous
+band; neither falsifier fires.** Capture integrity was perfect -- 0
+divergences across all rows, against v2's 282/1836 (15.4%) round-trip
+failure rate -- so the single-capture posture eliminated the failure class
+that stopped v1/v2, and falsifier (2) did not fire. Coverage complete;
+1820 answered rows (>= 1000 floor); fresh dial OOF AUROC 0.8301 (>= 0.75
+sanity bound; June signed value 0.834, descriptive comparison only). The
+primary quantity: dial AUROC minus primary-logprob AUROC = **+0.0118,
+paired 95% CI [-0.0122, +0.0359]** (n_boot 2000, seed 20260813). The
+margin is positive but under the +0.05 floor with a CI straddling zero:
+the registered ambiguous-band disposition applies verbatim -- reported as
+a small/uncertain margin, gate not passed, gate not retuned. Falsifier
+(1) (logprob >= dial with CI excluding 0) did not fire. The registered
+prediction for S (ambiguous band near +0.02) landed as stated.
+
+**T arm (descriptive-only): registered data-stage stop at the LP3-G0
+power floor.** Integrity (0 failures) and coverage passed, but only 710
+answered rows emerged from the pinned 4000-attempt inventory against the
+1000-row floor (June source: 1488). Per gates.yaml the arm's descriptive
+statistics are not reported, and the registered T-side prediction (+0.15)
+is untested. Recorded as hypothesis only, not a result: the deployed
+abstention-trained checkpoint abstains more under fresh greedy
+vLLM generation than in the June cache.
+
+**One-sentence verdict:** on fresh, fully self-consistent data the dial's
+advantage over the raw answer-logprob baseline on the base model is small
+and statistically uncertain (+0.012, CI straddling 0) rather than the
+>= +0.05 novelty margin, the fresh-generation instrument itself is sound
+(integrity clean, dial reads at 0.830), and the deployed-arm comparison
+remains unmeasured for want of answered rows.
