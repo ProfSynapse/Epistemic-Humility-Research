@@ -90,10 +90,9 @@ trained model alone, unreadable on a base that never refuses; training does not
 create the known-unknown axis, but it does create the refusal axis. That separation is
 reliable across *overt* kinds of unanswerability and is not universal: on covertly
 ambiguous natural questions it falls to ≈ 0.63, on trained checkpoints and on the
-raw base alike (Section 8). A pre-registered actuation study confirms the
-refusal axis is causally real and one-way (ablation collapses over-refusal on
-known questions from 0.994 to 0.030, yet no intervention installs appropriate
-abstention on genuine unknowns). (4) We show the stated
+raw base alike (Section 8). A companion actuation study confirms the
+refusal axis is causally real and one-way, relaxable but not installable by
+steering (`papers/paper-5-actuation/manuscript.md` §6.6). (4) We show the stated
 confidence gap survives seven training interventions (DPO, KTO, GRPO v1/v2/v3, and
 two contrastive-SFT variants), and we localize the mechanism with a clean
 single-variable dissociation: contrastive SFT installs stated calibration only when
@@ -146,11 +145,11 @@ Our contributions, each a section below:
   right, a methodological caution about cosine in high-dimensional activation
   space. The refusal axis, unlike the known-unknown axis, is a construct of the trained model alone: a base
   that never refuses offers no refuse/answer contrast to read.
-- Causal status, imported (Section 6). A pre-registered actuation study
-  establishes that the refusal axis is causally real but asymmetric: ablating the
-  refusal direction collapses over-refusal on known items (0.994 → 0.030) with
-  clean specificity, while no intervention tried there installs abstention on
-  true unknowns. A pre-registered bounded site sweep on the trained checkpoint
+- Causal status, imported (Section 6). A companion actuation study
+  establishes that the refusal axis is causally real but asymmetric: ablating
+  it collapses over-refusal on known items with clean specificity, while no
+  intervention tried there installs abstention on true unknowns
+  (`papers/paper-5-actuation/manuscript.md` §6.6). A pre-registered bounded site sweep on the trained checkpoint
   has since left the one-way statement standing while opening an exploratory
   actuation thread; Section 6 states both and what they license.
 - Training resistance and a localizing dissociation (Section 7). The stated-
@@ -541,14 +540,13 @@ therefore do not include it among this paper's internal-confidence signals.
 
 The two-axis decomposition makes a causal prediction: intervening on the refusal
 axis should change the refuse/answer decision without changing what the model
-knows. Testing that prediction by steering is actuation work, and it was run as a
-separate pre-registered actuation study, which
-establishes the result this paper's argument needs: ablating the refusal direction
-collapses over-refusal on known items from 0.994 to 0.030 with clean specificity,
-the known-unknown-orthogonalized component alone carries a large share of that effect, and
-no intervention tried there (including steering the knowledge axis directly)
-installs appropriate abstention on genuine unknowns. The leverage is one-way:
-over-refusal can be relaxed; appropriate abstention cannot be written in.
+knows. A companion actuation study establishes that the refusal axis is
+causally real but asymmetric: ablating it collapses over-refusal on known
+items from 0.994 to 0.030 with clean specificity, while no intervention
+tried there installs appropriate abstention on genuine unknowns (companion
+actuation paper, `papers/paper-5-actuation/manuscript.md` §6.6). The
+leverage is one-way: over-refusal can be relaxed; appropriate abstention
+cannot be written in.
 
 The one-way statement has since been stress-tested where it is most exposed. A
 pre-registered bounded site sweep searched for an abstention install on this
