@@ -1267,11 +1267,18 @@ We state these plainly; several are the reason specific claims are scoped as the
    0.6608 while the dial holds 0.8183 (margin +0.158, CI [+0.122, +0.192]). The
    descriptive picture: the dial's clear margin over the model's own sequence probability
    appears on the deployed checkpoint, after abstention training reshapes output
-   probabilities, not on the raw base. A gated version of this comparison needs a
-   successor cell that caches generation-time token IDs; until then, what this paper
-   establishes about the dial on the raw base remains its cross-model geometry, its
-   post-answer read advantage, and its veto behavior, not that it beats the model's own
-   logprobs there.
+   probabilities, not on the raw base. That successor comparison has since run
+   (`dial-logprob-baseline-v3`, resolved 2026-08-13, after an intermediate
+   reproduction attempt stopped at its own integrity gate): fresh single-pass
+   generation caching token IDs at the source eliminated the round-trip failure
+   class entirely, and the raw-base margin landed in the pre-registered ambiguous
+   band (+0.012, paired 95% CI [-0.012, +0.036]) — so the dial's advantage over
+   the model's own logprobs on the raw base is now measured, gated, and small:
+   what this paper establishes there remains its cross-model geometry, its
+   post-answer read advantage, and its veto behavior. The deployed-checkpoint
+   margin stayed unmeasured in that cell (a pre-registered power-floor stop:
+   the abstention-trained checkpoint answered too few fresh prompts), so the
+   +0.158 descriptive picture above still awaits gated confirmation.
 10. Evaluation-surface breadth. Every gate number in this paper is measured on questions
     that are either answerable or *overtly* unanswerable, meaning the question's own surface
     marks it as having no answer. The companion program has since read the same axis on a
