@@ -57,4 +57,7 @@ inputs:
 verdict: On the deployed abstention-trained checkpoint the dial beats the model's
   own answer-span logprob by a gated margin of +0.1393 (95% CI [0.1031, 0.1755], n=1,501);
   LT-G0 and LT-G1 both pass.
-kg: []
+kg:
+- experiment:dial-logprob-t-deployed-confirmatory
+- mechanism:qwen3-4b-dial-margin-over-logprob-large-on-deployed-checkpoint
+- mechanism:dial-margin-over-logprob-is-checkpoint-dependent

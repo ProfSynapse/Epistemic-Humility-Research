@@ -1623,7 +1623,11 @@
           "lp_t_harness.py": "2295c7145feaf94a8b5119252613d2dffdf35fd1dccb2611aba347770e26aa6b"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:dial-logprob-t-deployed-confirmatory",
+        "mechanism:qwen3-4b-dial-margin-over-logprob-large-on-deployed-checkpoint",
+        "mechanism:dial-margin-over-logprob-is-checkpoint-dependent"
+      ],
       "prediction": "Disclosure: v1 descriptive (+0.158, round-trip caveat) and v2 unblinded stopped-cell margin (+0.1747) have been seen. Stated prediction: T-arm margin clearly positive near +0.15, LT-G1 PASS.",
       "question": "Does the fitted correctness dial beat the deployed checkpoint's own length-normalized answer-span token logprob at ranking the correctness of its own answers, by the registered +0.05 margin, at adequate power (>=1000 answered rows)?",
       "registered": true,

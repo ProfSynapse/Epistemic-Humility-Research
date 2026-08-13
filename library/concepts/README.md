@@ -780,7 +780,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (515)
+## Mechanisms (cause -> effect) (517)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -873,6 +873,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[depth-scaling-spreads-computation-rather-than-composing-new]] : increasing model depth within the same architecture family (more transformer layers at comparable width/training regime). **redistributes** linear maps between 
 - [[detector-v2-undercounts-baseline-abstention-by-family-varying-margins]] : Detector v2 (RR2's frozen pattern-match screen, byte-identical pins) is compared against the wide two-instrument stack (detector v2 OR blinded context-free adju
 - [[dev-split-fix-dataset-confound-is-provenance-only]] : Retraining the locked PROTOCOL v0.3 headline seed-1 DPO and KTO cells (4B, cold-start from unsloth/Qwen3-4B-bnb-4bit) on the post-fix dataset build already cons
+- [[dial-margin-over-logprob-is-checkpoint-dependent]] : Measuring the correctness dial's margin over the model's own length-normalized mean answer-span log-probability on two checkpoints of the same fresh self-consis
 - [[distractor-projection-reveals-crystals]] : Linear discriminant analysis that projects out semantically irrelevant distractor-features directions (e.g., word length) from the sparse-autoencoder activation
 - [[distractor-prompting-reveals-calibration-gap]] : Presenting LLMs with plausible but incorrect distractors alongside the correct answer (multiple-choice format) in lieu of free-generation **mediates** Accuracy 
 - [[diverse-training-enables-universal-probe-generalization]] : Training a linear truthfulness probe on a large collection of diverse datasets spanning many task types and domains **enables** Cross-task and cross-domain prob
@@ -1131,6 +1132,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[qwen-midband-margin-separation-is-instrument-resolution-limited]] : M1 (margin-mapping)'s censoring-aware separation criterion failed at coarse ladder resolution (observable bound 2.0 against a 2.5 floor), but the coarse 10-rung
 - [[qwen-midband-readout-and-susceptibility-channels-are-redundant]] : In the susceptibility-as-probe experiment (M2), a 5-fold cross-fitted logistic combination of the frozen hs20 c_hat readout projection (fold seed 48260718) plus
 - [[qwen-midband-verbalized-confidence-anti-tracks-answerability]] : In the susceptibility-as-probe experiment (M2), one greedy verbalized-confidence elicitation (a frozen template asking for a 0-100 self-rated confidence integer
+- [[qwen3-4b-dial-margin-over-logprob-large-on-deployed-checkpoint]] : Comparing the correctness dial's out-of-fold AUROC against the deployed abstention-trained Qwen3-4B checkpoint's own length-normalized mean answer-span log-prob
 - [[qwen3-4b-dial-margin-over-logprob-remains-ambiguous-on-fresh-generation]] : Comparing the correctness dial's out-of-fold AUROC against the Qwen3-4B Instruct base's own length-normalized answer-span log-probability AUROC, on fresh, self-
 - [[qwen3-4b-l34-dose200-write-non-selective-gate-supplies-selectivity]] : In ungated-vs-gated-dose-matched (H4), dosing every held-out row of the resolved doubt-gated caution snap unconditionally along its erase-write direction c_hat 
 - [[qwen35-4b-midband-window-transfers-to-heldout-pool]] : The hs20 mid-band doubt-gated caution operating point (frozen direction set, gate threshold, standardization scalars, and dose 8 x sigma_c), selected and fit in
