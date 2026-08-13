@@ -1512,8 +1512,35 @@
       "question": "What is the correctness dial's margin over the model's own answer-span token log-probabilities (length-normalized mean, primary) on the exact rows the dial was measured on (amendment S base population primary; amendment T deployed arm descriptive)?",
       "registered": true,
       "slug": "dial-logprob-baseline-v2",
-      "status": "signed",
+      "status": "resolved",
       "title": "Dial token-logprob baseline, clean redo (generation-time token-ID cache)",
+      "type": "probe-fit",
+      "verdict": "both arms stopped at the LP-G0 integrity gate (dial-refit reproduction outside tolerance; 15.4%/6.3% byte-for-byte round-trip failures), so the cell records a data-stage stop with no reportable comparison, the same verdict class as v1"
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-13T10:07:05Z",
+      "falsifier": "(1) Dial-novelty, verbatim from v1/v2: primary-variant logprob AUROC at or above dial AUROC on the S base arm (margin <= 0), paired 95% CI excluding 0 in that direction. (2) The fresh-generation posture fails its own LP3-G0 integrity gate, showing the failure class was never reproduction and sending the design back for diagnosis rather than a fourth same-shape run.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "persistence": {},
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "Disclosure per v2 precedent: no fresh blind guess is possible (v1 descriptive read and v2's non-result unblinded numbers were seen). Stated prediction: S base margin lands inside the ambiguous band (near +0.02, between 0 and +0.05), LP3-G1 most likely does NOT pass; T deployed margin clearly positive, near +0.15.",
+      "question": "Verbatim from v1/v2: does the fitted correctness dial beat the model's own sequence probability (length-normalized mean answer-span token logprob) at ranking the correctness of the model's own answers, by the registered margin?",
+      "registered": true,
+      "slug": "dial-logprob-baseline-v3",
+      "status": "draft",
+      "title": "Dial token-logprob baseline v3: fresh self-consistent generation, no reproduction bet",
       "type": "probe-fit",
       "verdict": ""
     },
