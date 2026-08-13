@@ -190,7 +190,13 @@ kg:
   status: canonical
 cause: "<what is done>."
 effect: "<what results>."
-polarity: enables          # increases | decreases | enables | prevents | mediates
+polarity: enables          # REQUIRED, closed vocabulary, ERROR if wrong.
+                           # increases | decreases | enables | prevents | mediates
+                           # causes | modulates | trades_off | redistributes | limits
+                           # complicates | decouples | explains
+                           # Definitions: library/SCHEMA.md "polarity is a closed
+                           # vocabulary". Nulls and confounds belong in the last
+                           # three, not squeezed into `decreases`.
 related:
 - '[[<arxiv>--<slug>]]'
 - '[[<atom-in-cause-or-effect>]]'

@@ -69,6 +69,34 @@ Mechanism nodes are `claim`-like: they carry `cause`, `effect`, `polarity`
 descriptive fields, `supported_by` edges to the papers that evidence them, and
 `related_to` edges to the concept atoms named in cause/effect.
 
+### `polarity` is a closed vocabulary (enforced)
+
+`polarity` is REQUIRED on every mechanism atom and must be one of the thirteen
+values below. The vocabulary lives in the skill's
+`references/edge-ontology.yaml` under `field_vocabularies.mechanism.polarity`;
+the validator fails the commit on a missing, non-string, or off-vocabulary value
+(codes KG120 / KG121 / KG122, severity ERROR).
+
+| Value | Use when |
+|---|---|
+| `increases` | Cause raises the magnitude or rate of the effect. |
+| `decreases` | Cause lowers the magnitude or rate of the effect. |
+| `enables` | Cause makes the effect possible without forcing it. |
+| `prevents` | Cause blocks the effect from occurring. |
+| `mediates` | Cause carries or routes an effect originating elsewhere. |
+| `causes` | Cause produces the effect directly (strong form of `enables`). |
+| `modulates` | Cause changes the effect with no fixed sign. |
+| `trades_off` | Cause improves one quantity at the measured expense of another. |
+| `redistributes` | Cause reallocates a fixed quantity rather than adding or removing. |
+| `limits` | Cause bounds how far the effect can go, without reducing it. |
+| `complicates` | Finding confounds or undercuts an interpretation; no causal sign asserted. |
+| `decouples` | Finding asserts two quantities are NOT coupled. |
+| `explains` | Cause accounts for an effect observed elsewhere; explanatory, not causal-magnitude. |
+
+The last three carry most of the program's null and confound results, so reach
+for them rather than forcing a null into `decreases`. Adding a fourteenth value
+is a deliberate schema change: edit the ontology and add a `changelog` entry.
+
 ## Edge object shape
 
 ```yaml

@@ -85,6 +85,31 @@ def validate_note(note: ParsedNote, ontology: dict[str, Any], index: NoteIndex) 
                 if kg_status != "deprecated":
                     add("WARN", "KG115", note, "kg.deprecated_by is set; set kg.status: deprecated explicitly", findings)
 
+        # Controlled vocabularies for non-edge frontmatter fields (ontology
+        # `field_vocabularies`, keyed by kg.type). Generic on purpose: the
+        # domain owns the values, this loop owns the enforcement, so a research
+        # field like mechanism.polarity gets the same drift protection as edges.
+        if isinstance(kg_type, str) and kg_type:
+            for field, spec in (ontology.get("field_vocabularies") or {}).get(kg_type, {}).items():
+                if not isinstance(spec, dict):
+                    continue
+                allowed = spec.get("values") or {}
+                severity = str(spec.get("severity") or "WARN").upper()
+                value = frontmatter.get(field)
+                if value is None:
+                    if spec.get("required"):
+                        add(severity, "KG120", note, f"{kg_type} note is missing required field {field!r}", findings)
+                elif not isinstance(value, str):
+                    add(severity, "KG121", note, f"{field} must be a string, got {type(value).__name__}", findings)
+                elif value not in allowed:
+                    add(
+                        severity,
+                        "KG122",
+                        note,
+                        f"{field} {value!r} is not in the {kg_type} vocabulary; allowed: {sorted(allowed)}",
+                        findings,
+                    )
+
         tags = frontmatter.get("tags") or []
         if isinstance(tags, str):
             tags = [tags]

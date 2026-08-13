@@ -1,4 +1,4 @@
-version: 1
+version: 2
 description: "Canonical edge ontology for typed Obsidian knowledge graph relationships."
 
 # Research extension (Epistemic-Humility vault): the node types and edges marked
@@ -346,3 +346,62 @@ edges:
     inverse: supersedes
     aliases: [replaced_by]
     description: "Subject (deprecated note) was replaced by target, the current revision."
+
+  # Research extension: adjudicated disagreement between two graph nodes. Unlike
+  # `opposes` (a stance) or `supersedes` (a resolved lineage), `contradicts` marks
+  # two nodes that BOTH claim to be current and cannot both hold. It is a standing
+  # flag for adjudication, not a verdict: the conflict pass in analyze_kg.py
+  # reports it until a supersession pointer or a scope qualifier resolves it.
+  contradicts:
+    inverse: contradicted_by
+    aliases: [refutes, conflicts_with]
+    description: "Subject asserts something that cannot hold together with target; needs adjudication."
+  contradicted_by:
+    inverse: contradicts
+    description: "Subject is contradicted by target; needs adjudication."
+
+# Controlled vocabularies for non-edge frontmatter fields, keyed by kg.type.
+# The validator enforces these generically, so a domain field gets the same
+# drift protection the edge vocabulary already has. `severity: ERROR` makes an
+# off-vocabulary value fail the commit; `required: true` makes an absent field
+# fail too. Adding a value here is a deliberate schema change: record it under
+# `changelog` below so vocabulary growth stays visible in review.
+field_vocabularies:
+  mechanism:
+    polarity:
+      severity: ERROR
+      required: true
+      description: "How the cause bears on the effect. One value per mechanism atom."
+      values:
+        increases: "Cause raises the magnitude or rate of the effect."
+        decreases: "Cause lowers the magnitude or rate of the effect."
+        enables: "Cause makes the effect possible without forcing it."
+        prevents: "Cause blocks the effect from occurring."
+        mediates: "Cause carries or routes an effect that originates elsewhere."
+        causes: "Cause produces the effect directly; the strong productive form of `enables`."
+        modulates: "Cause changes the effect with no fixed sign; direction depends on conditions."
+        trades_off: "Cause improves one quantity at the measured expense of another."
+        redistributes: "Cause reallocates a fixed quantity rather than adding or removing any."
+        limits: "Cause bounds how far the effect can go, without reducing it."
+        complicates: "Finding confounds or undercuts an interpretation rather than asserting a causal sign."
+        decouples: "Finding asserts two quantities are NOT coupled; the expected link is absent."
+        explains: "Cause accounts for an effect already observed elsewhere; explanatory, not causal-magnitude."
+
+# Vocabulary changelog. Every change to node_types, edges, or field_vocabularies
+# gets an entry. Borrowed from semantica's change_management module: an ontology
+# with a version integer and no history cannot tell a reviewer what moved.
+changelog:
+  - version: 1
+    date: "unknown"
+    author: "profsynapse"
+    description: "Initial canonical edge ontology plus the Epistemic-Humility research extension."
+  - version: 2
+    date: "2026-08-13"
+    author: "profsynapse"
+    description: >-
+      Add `contradicts`/`contradicted_by` edges and the `field_vocabularies`
+      block pinning mechanism `polarity` at ERROR severity. Polarity had drifted
+      to 14 values across 513 mechanism atoms with nothing validating it; the
+      eight values beyond the documented five are adopted here with definitions
+      rather than remapped, because they carry analytic meaning the five-value
+      set cannot express. `neutral` is the sole remap (to `decouples`).
