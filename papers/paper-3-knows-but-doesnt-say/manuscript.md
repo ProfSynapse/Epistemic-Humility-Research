@@ -68,8 +68,8 @@ rather than possessing it. We separate the two in a small instruction-tuned mode
 axis recovered by a linear probe on hidden states, the *stated* confidence the
 model verbalizes as a number, and the *behavior* it commits to (answer or abstain).
 On a known/unknown question split (SelfAware, n=3369), the internal axis separates
-known from unknown items at AUROC ≈ 0.997 and is well-calibrated by a one-dimensional
-readout (ECE ≈ 0.047), while the stated confidence the same model emits ranks
+known from unknown items at AUROC ≈ 0.997 and its one-dimensional readout is
+near-calibrated in aggregate (ECE ≈ 0.047 raw), while the stated confidence the same model emits ranks
 appropriateness at AUROC ≈ 0.52–0.56 (barely above chance) and is collapsed
 near a constant (≈ 0.82, std ≈ 0.01–0.03). The model represents what it does not know;
 it does not report it. By "knows" we mean this internal recognition of which
@@ -130,8 +130,8 @@ its behavior or its stated number fail to couple the two.
 Our contributions, each a section below:
 
 - The gap (Section 4). A linear probe on hidden states separates known from
-  unknown questions at AUROC ≈ 0.997 and is calibrated to ECE ≈ 0.047 by a 1-D
-  readout; the model's *stated* confidence on the same items ranks appropriateness
+  unknown questions at AUROC ≈ 0.997, and its 1-D readout is near-calibrated
+  in aggregate (ECE ≈ 0.047 raw); the model's *stated* confidence on the same items ranks appropriateness
   at ≈ 0.52–0.56 and is near-constant. The over-refused-but-known items are
   internally "known," so the failure is verbalization, not representation. The
   axis is not created by our training: the same separation reads at 0.997
@@ -150,7 +150,9 @@ Our contributions, each a section below:
   establishes that the refusal axis is causally real but asymmetric: ablating the
   refusal direction collapses over-refusal on known items (0.994 → 0.030) with
   clean specificity, while no intervention tried there installs abstention on
-  true unknowns. Section 6 states that conclusion and what it licenses.
+  true unknowns. A pre-registered bounded site sweep on the trained checkpoint
+  has since left the one-way statement standing while opening an exploratory
+  actuation thread; Section 6 states both and what they license.
 - Training resistance and a localizing dissociation (Section 7). The stated-
   confidence gap survives DPO, KTO, GRPO v1/v2/v3, and contrastive SFT. A clean
   dissociation between answer-supervised and answer-masked contrastive SFT shows
@@ -548,6 +550,29 @@ no intervention tried there (including steering the knowledge axis directly)
 installs appropriate abstention on genuine unknowns. The leverage is one-way:
 over-refusal can be relaxed; appropriate abstention cannot be written in.
 
+The one-way statement has since been stress-tested where it is most exposed. A
+pre-registered bounded site sweep searched for an abstention install on this
+paper's trained checkpoint (clean SFT → GRPO-v2): seven write sites spanning
+relative depth 0.361 to 0.972 at three-block resolution, two write positions,
+an eight-rung ratio-normalized dose ladder per site, and three registered
+magnitude-matched two-site pair rules (two ran; the in-band pair recorded
+NOT-RUN for insufficient viable sites), under the one mechanism class with a
+governed installation success elsewhere. The registered falsifier — one cell
+clearing actuation, adjudicable selectivity, and direction specificity
+together — stayed silent, so the one-way statement stands as registered. The
+sweep's registered prediction was still wrong in the opposite direction: it
+predicted no site would clear the actuation gate, and every dose-viable cell
+cleared it — five sites, all at the write position running from the pre-answer
+anchor token onward (no anchor-position-only write was dose-viable), converting
+held-out confabulations to clean refusals at 0.870–0.955 (Wilson lower bounds
+0.808–0.909, against the registered 0.50 / 0.40 thresholds). What that
+actuation lacks is what the null now rests on: direction specificity cleared
+at one of the five sites, and selectivity was not adjudicable at any of them
+(the write fired on 4–20 known-correct rows per cell, below the registered
+floor of 35, so harmlessness cannot be claimed). The cleared actuation is an
+exploratory lead, not an install; promotion requires a confirmatory
+replication registered before it runs.
+
 Two consequences carry forward here. The causal dissociation confirms that the
 refusal axis is a mechanism of its own and not a re-reading of the known-unknown axis, closing
 Section 5's reading-side case from the intervention side. And the asymmetry frames
@@ -884,9 +909,11 @@ appropriateness 0.501; emitted → appropriateness 0.526; ECE 0.408. The emitted
 is large (0.42) precisely *because* it splits on the answer/abstain action, not
 because it discriminates correctness: the same "variance is not calibration" caution
 as the answer-masked variant, in its sharpest form. A scalar-only SFT loss with a
-genuinely calibrated, per-row-varying target (the source axis ranks correctness at
-AUROC 0.997) still installs only a re-description of the action the model already
-takes, not the correctness the target encodes.
+genuinely calibrated, per-row-varying target (the source axis separates known
+from unknown at AUROC 0.997; its correct-vs-wrong discrimination on answered
+knowns re-estimates at 0.5597, per the Section 4 revision) still installs only a
+re-description of the action the model already takes, not the state the target
+encodes.
 
 Table 3. Probe-axis distillation: distilling the calibrated internal axis into
 the stated scalar by SFT (SelfAware, n = 3369; greedy).
@@ -923,7 +950,7 @@ The taxonomy paper
 ([*The Depths of Ignorance*](../paper-1-taxonomy-framework/manuscript.md)) framed the
 distinction between humility a model possesses (tethered to its internal state)
 and humility it merely performs (untethered behavior). Section 4 makes the distinction concrete: the
-internal tether exists and is calibrated (ECE 0.047), the performed behavior can be
+internal tether exists and its readout is near-calibrated in aggregate (ECE 0.047 raw), the performed behavior can be
 shaped (Sections 6–7), and the *stated* confidence (the channel a user actually
 reads) is tied to neither. The model is, in the precise sense of the *Meno*, giving
 true opinions without the tether; our seven interventions are attempts to install
@@ -943,8 +970,8 @@ right target directly*.
 
 ### The implied experiment, run and resolved: probe distillation does not route the axis into the scalar
 
-The model already contains a calibrated estimate of
-appropriateness: the internal known-unknown axis (ECE 0.047). The natural objective is
+The model already contains a near-calibrated aggregate estimate of
+appropriateness: the internal known-unknown axis (ECE 0.047 raw). The natural objective is
 therefore not to induce calibration from outcomes, but to *distill the internal axis
 into the stated channel*: supervise the emitted `response_confidence` toward the
 model's own known-unknown-axis readout, so the model learns to *say* what it already
@@ -1149,11 +1176,20 @@ signal the model already carries reaches its output.
   correlate. The causal steering results summarized in Section 6 (from the
   actuation study) partly mitigate this for the
   refusal axis but not for the known-unknown axis.
-- The imported steering evidence is single-site / few-layer. The causal
-  results Section 6 summarizes come from the actuation study and rest
-  on interventions at a small number of sites and layers, so "cannot install
-  appropriate abstention" is a statement about the interventions tried there, not a proof of
-  impossibility.
+- The abstention-install search is bounded, not exhaustive. The causal results
+  Section 6 summarizes rest on the actuation study's interventions plus a
+  pre-registered bounded site sweep on the clean-SFT → GRPO-v2 checkpoint:
+  seven write sites spanning relative depth 0.361 to 0.972 at three-block
+  resolution, two write positions, an eight-rung ratio-normalized dose ladder
+  per site, and three registered magnitude-matched two-site pair rules (two
+  ran; the third recorded NOT-RUN for insufficient viable sites), under the
+  one mechanism class with a governed installation success elsewhere. "Cannot
+  install appropriate abstention" is therefore a statement about that searched
+  space, not a proof of impossibility. Within the sweep itself the actuation
+  gate cleared at all five dose-viable sites while direction specificity
+  cleared at one and selectivity was not adjudicable at any, so the open
+  thread is exploratory actuation without an adjudicated install, pending
+  confirmatory replication (Section 6).
 - The SFT→RL confidence/action result is single-seed and exploratory. The
   GRPO-v3-on-answer-supervised cell (Section 7, Table 2) is one seed of one
   exploratory pre-registered cell, reported separately from the locked matrix; the confidence/action decoupling
@@ -1309,6 +1345,7 @@ protocol document and scored artifact:
 | §4, §9 wrong-answer-cell power fix (axis-level correct-vs-wrong discrimination re-estimate; falsifies the n=16 read, calibration contrast survives) | Tier-2 exploratory amendment, wrong-answer-cell-power-fix | `experiments/wrong-answer-cell-power-fix/AMENDMENT.md` (resolved falsified 2026-08-09; render-vs-power confound, §2.6) | `experiments/wrong-answer-cell-power-fix/analysis-committed/real_run_results.{json,md}` |
 | §4 monotonicity transfer caution (0.997-axis ordering not assumed portable); §8 the $P(\text{answer correct})$ identification caution; §9 naming caution from a different lineage (Qwen3.5-4B hs20) | evidence-responsiveness rebase (M4-WK) and constructive direction search (M4c), both null-result | `experiments/margin-evidence-responsiveness-worldknown/AMENDMENT.md` (Outcome); `experiments/evidence-response-direction-search/AMENDMENT.md` (Outcome) | `experiments/margin-evidence-responsiveness-worldknown/analysis-committed/`; `experiments/evidence-response-direction-search/analysis-committed/` |
 | §8 covert-ambiguity boundary: AmbigQA held-out 0.6279 / 0.6349 against the registered 0.90 floor; per-flavor atlas (six KUQ strata at 0.98–0.999, AmbigQA peak 0.6590 across 37 layers); raw-base replication at 0.6338 | OOD breadth cell (G7); flavor atlas (Tier-3 exploratory); raw-base AmbigQA readout (Tier-3) | `experiments/ood-breadth-beyond-selfaware/AMENDMENT.md` (G7 FAIL on both arms); `experiments/flavor-atlas-rawbase/AMENDMENT.md`; `experiments/rawbase-ambigqa-boundary-readout/AMENDMENT.md` | `experiments/ood-breadth-beyond-selfaware/analysis-committed/`; `experiments/flavor-atlas-rawbase/analysis-committed/`; `experiments/rawbase-ambigqa-boundary-readout/analysis-committed/` |
+| §6 bounded abstention-install site sweep (falsifier silent, one-way statement stands; exploratory anchor-onward actuation lead); §9 searched-space bound | Tier-2 exploratory amendment, `caution-install-bounded-site-sweep` | `experiments/caution-install-bounded-site-sweep/AMENDMENT.md` (Outcome; resolved 2026-08-13: falsifier silent, the registered prediction's no-actuation clause failed at all five dose-viable cells) | `experiments/caution-install-bounded-site-sweep/analysis-committed/gate_report.json`; `experiments/caution-install-bounded-site-sweep/analysis-committed/trained/` |
 | §9 training/evaluation overlap sensitivity (decontaminated n = 3,252; twelve gated cells unchanged) | this paper's own pinned sensitivity script | `papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.py` | `papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.csv` |
 
 Vocabulary note: reader-facing prose in this paper follows the program-wide rename
