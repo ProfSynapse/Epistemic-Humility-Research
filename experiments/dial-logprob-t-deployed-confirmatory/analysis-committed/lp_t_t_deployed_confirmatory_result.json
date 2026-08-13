@@ -1,0 +1,41 @@
+{
+  "arm": "t_deployed_confirmatory",
+  "lt_g0": {
+    "a_capture_integrity_ok": true,
+    "a_n_integrity_fail": 0,
+    "b_coverage_ok": true,
+    "c_power_floor_ok": true,
+    "c_n_answered": 1501,
+    "c_power_floor_n": 1000,
+    "d_instrument_sanity_ok": true,
+    "d_dial_auroc": 0.7962,
+    "d_instrument_sanity_auroc_min": 0.75,
+    "pass": true
+  },
+  "variant_aurocs": {
+    "mean_answer_span": {
+      "auroc": 0.6568671328671328,
+      "n": 1501
+    },
+    "sum_answer_span": {
+      "auroc": 0.7706393606393607,
+      "n": 1501
+    },
+    "min_answer_span": {
+      "auroc": 0.7536343656343656,
+      "n": 1501
+    }
+  },
+  "dial_minus_primary_logprob_margin": 0.1393,
+  "margin_bootstrap_ci": {
+    "n_boot_effective": 2000,
+    "ci_lo": 0.10309765947509514,
+    "ci_hi": 0.17549957041550251,
+    "mean": 0.13996914237260855
+  },
+  "gate_verdict": {
+    "LT_G1_pass": true,
+    "falsifier_fired": false,
+    "ambiguous_band": false
+  }
+}
