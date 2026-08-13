@@ -1876,3 +1876,25 @@ The resolution's reporting rules named paper 2 as the reporting surface for this
   vs answer_correctness carry seed-2/3 values only.
 - Downstream use: paper 2 section 5 upgrades its single-seed caveat to
   cite these intervals; the finer metrics stay scoped as above.
+
+## 2026-08-13 -- seed-1 recovery: full three-seed stated-confidence table (supersedes the gap note above)
+
+- The seed-1 "absent raw metrics" gap in the earlier entry is CLOSED without
+  any re-eval: the seed-1 full-eval outputs (complete extended
+  stated_confidence metrics.json + scored_rows.jsonl, 3,369 rows/arm)
+  survive as phase1-migrated copies under
+  experiments/probe-scaled-response-confidence/analysis/phase1-migrated/
+  (amendment-e arms) and experiments/grpo-centered-stacking/analysis/
+  phase1-migrated/ (amendment-f arms).
+- Identity verification 8/8 arms: recovered mean_stated_confidence and
+  brier_vs_response_appropriateness match the committed aggregate CSV to 6
+  decimals (same runs, not re-evals); recomputed grpo_v2 by-outcome cells
+  match calibration_gap_clean_sft_grpo_v2_seed1.json exactly.
+- Result: all 8 arms x 8 stated-confidence fields x 5 by-outcome cells now
+  carry three-seed mean + seed-level bootstrap CI (same G3 convention).
+  Zero gaps remain; no GPU re-eval required. grpo_v2 examples:
+  mean confidence 0.8146 [0.8112, 0.8191]; mae_vs_known_label 0.3776
+  [0.3770, 0.3786].
+- Outputs committed: analysis-committed/g3_stated_confidence_three_seed_v2
+  .{json,csv} (containment-scanned; supersedes the v1 pair for paper
+  citation). Scripts: analysis/g3_stated_confidence_seed1_recovery.py.
