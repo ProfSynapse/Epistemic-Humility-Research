@@ -72,10 +72,15 @@ settled on.
 
 ### Paper 2 (training regimen)
 
-Headline matrix ran under the locked protocol. Open: GRPO framing decision
-(report-as-extension vs register a confirmatory arm); consistency check of
-calibration metrics with paper 4's dial scoping; voice/self-containment pass
-(it predates the VOICE.md rules).
+Headline matrix ran under the locked protocol. All three open items closed
+2026-08-13: GRPO framing decided report-as-extension (no confirmatory arm
+registered; boundary was already explicit throughout, two numeric-precision
+fixes in section 4.3); calibration-metric consistency with paper 4's dial
+scoping fixed (section 3.4 now declares all three confidence targets, with
+correctness-given-answered scoped to answered rows); voice/self-containment
+pass done (two internal artifact pointers moved to Appendix A; voice
+mechanics already clean). Declined: the reconciliation doc's suggested
+forward-citation of paper 4 (violates series no-forward-citation rule).
 
 ### Paper 3 (diagnosis)
 
