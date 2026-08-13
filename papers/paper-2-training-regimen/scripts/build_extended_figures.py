@@ -138,23 +138,27 @@ def _shade_ideal_quadrant(ax) -> None:
 def fig_07_regimen_operating_points() -> None:
     g = grouped_rows()
     pts = [
-        # (arm key, label, class, label offset)
-        ("clean_sft_merged", "SFT (baseline)", "baseline", (6, -14)),
-        ("clean_sft_dpo", "SFT→DPO", "pref", (-12, 10)),
-        ("clean_sft_kto", "SFT→KTO", "pref", (6, -4)),
-        ("clean_sft_grpo_v2", "SFT→GRPO", "grpo", (12, 12)),
-        ("clean_sft_dpo_grpo", "DPO→GRPO", "stack", (-92, -24)),
-        ("clean_sft_grpo_dpo", "GRPO→DPO", "stack", (-78, 6)),
-        ("clean_sft_kto_grpo", "KTO→GRPO", "stack", (14, -14)),
-        ("clean_sft_grpo_kto", "GRPO→KTO", "stack", (8, -4)),
+        # (arm key, label, class, marker, label offset). Marker encodes stage
+        # order for the stacks: "^" is GRPO applied first, "s" is GRPO applied
+        # second, so a reader reads the order off the shape without relying on
+        # the crowded label text alone.
+        ("clean_sft_merged", "SFT (baseline)", "baseline", "o", (6, -14)),
+        ("clean_sft_dpo", "SFT→DPO", "pref", "o", (-16, 20)),
+        ("clean_sft_kto", "SFT→KTO", "pref", "o", (8, -6)),
+        ("clean_sft_grpo_v2", "SFT→GRPO", "grpo", "o", (14, 22)),
+        ("clean_sft_dpo_grpo", "DPO→GRPO", "stack", "s", (-48, 26)),
+        ("clean_sft_grpo_dpo", "GRPO→DPO", "stack", "^", (-64, -26)),
+        ("clean_sft_kto_grpo", "KTO→GRPO", "stack", "s", (42, 14)),
+        ("clean_sft_grpo_kto", "GRPO→KTO", "stack", "^", (-14, -32)),
     ]
     fig, ax = plt.subplots(figsize=(7.2, 5.4))
-    for key, label, cls, (dx, dy) in pts:
+    for key, label, cls, marker, (dx, dy) in pts:
         r = g[key]
         ax.scatter(
             r["over_refusal"],
             r["recall"],
-            s=110 if cls == "baseline" else 80,
+            marker=marker,
+            s=110 if cls == "baseline" else 90,
             color=COLORS[cls],
             edgecolor="white",
             linewidth=1.2,
@@ -168,9 +172,10 @@ def fig_07_regimen_operating_points() -> None:
             fontsize=7.8,
             color="#1f2933",
             zorder=4,
+            arrowprops=dict(arrowstyle="-", color=COLORS[cls], lw=0.7, alpha=0.6, shrinkA=0, shrinkB=5),
         )
-    ax.set_xlabel("Over-refusal on known questions (%)  ← better")
-    ax.set_ylabel("Refusal recall on unknown questions (%)  better →")
+    ax.set_xlabel("Over-refusal on known questions (%)")
+    ax.set_ylabel("Refusal recall on unknown questions (%)")
     ax.set_title(
         "GRPO amplifies the abstention routine; stacks stay on its frontier\n"
         "(SelfAware, response-confidence contract, seed 1, exploratory)",
@@ -180,13 +185,11 @@ def fig_07_regimen_operating_points() -> None:
     ax.set_ylim(78, 100)
     _shade_ideal_quadrant(ax)
     handles = [
-        plt.Line2D([], [], marker="o", ls="", color=COLORS[c], label=l)
-        for c, l in [
-            ("baseline", "clean SFT baseline"),
-            ("pref", "preference stage (DPO/KTO)"),
-            ("grpo", "GRPO stage"),
-            ("stack", "two-stage stacks"),
-        ]
+        plt.Line2D([], [], marker="o", ls="", color=COLORS["baseline"], label="clean SFT baseline"),
+        plt.Line2D([], [], marker="o", ls="", color=COLORS["pref"], label="preference stage (DPO/KTO)"),
+        plt.Line2D([], [], marker="o", ls="", color=COLORS["grpo"], label="GRPO stage"),
+        plt.Line2D([], [], marker="^", ls="", color=COLORS["stack"], label="stack, GRPO first"),
+        plt.Line2D([], [], marker="s", ls="", color=COLORS["stack"], label="stack, GRPO second"),
     ]
     ax.legend(handles=handles, loc="lower right", fontsize=8, frameon=False)
     save(fig, "fig-p1-07-regimen-operating-points")
@@ -219,18 +222,22 @@ def fig_10_three_seed_replication() -> None:
     three-seed mean/CI values are the transcribed table above."""
     g = grouped_rows()
     arms = [
-        ("clean_sft_grpo_v2", "SFT->GRPO", COLORS["grpo"], (12, 10)),
-        ("clean_sft_dpo_grpo", "DPO->GRPO", COLORS["stack"], (10, 14)),
-        ("clean_sft_kto_grpo", "KTO->GRPO", COLORS["stack"], (12, -6)),
-        ("clean_sft_grpo_dpo", "GRPO->DPO", COLORS["stack"], (-90, 4)),
-        ("clean_sft_grpo_kto", "GRPO->KTO", COLORS["stack"], (12, 10)),
+        ("clean_sft_grpo_v2", "SFT→GRPO", COLORS["grpo"], (30, 28)),
+        ("clean_sft_dpo_grpo", "DPO→GRPO", COLORS["stack"], (-102, -10)),
+        ("clean_sft_kto_grpo", "KTO→GRPO", COLORS["stack"], (58, -20)),
+        ("clean_sft_grpo_dpo", "GRPO→DPO", COLORS["stack"], (-102, 18)),
+        ("clean_sft_grpo_kto", "GRPO→KTO", COLORS["stack"], (18, -34)),
     ]
-    fig, ax = plt.subplots(figsize=(7.8, 6.2))
+    fig, ax = plt.subplots(figsize=(8.4, 6.6))
+    x_vals: list[float] = []
+    y_vals: list[float] = []
     for key, label, color, (dx, dy) in arms:
         s1 = g[key]
         three = THREE_SEED_GRPO_TOUCHING[key]
         r_mean, r_lo, r_hi = three["recall"]
         o_mean, o_lo, o_hi = three["over_refusal"]
+        x_vals.extend([o_lo, o_hi, s1["over_refusal"]])
+        y_vals.extend([r_lo, r_hi, s1["recall"]])
         # three-seed mean +/- bootstrap-CI error bars (asymmetric, bounded by
         # the three seed-level values per NOTEBOOK.md:1778)
         ax.errorbar(
@@ -275,10 +282,15 @@ def fig_10_three_seed_replication() -> None:
             fontsize=8.2,
             color="#1f2933",
             zorder=5,
+            arrowprops=dict(arrowstyle="-", color=color, lw=0.7, alpha=0.6, shrinkA=0, shrinkB=5),
         )
+    x_pad = (max(x_vals) - min(x_vals)) * 0.18
+    y_pad = (max(y_vals) - min(y_vals)) * 0.18
+    ax.set_xlim(min(x_vals) - x_pad, max(x_vals) + x_pad)
+    ax.set_ylim(min(y_vals) - y_pad, max(y_vals) + y_pad)
     _shade_ideal_quadrant(ax)
-    ax.set_xlabel("Over-refusal on known questions (%)  <- better")
-    ax.set_ylabel("Refusal recall on unknown questions (%)  better ->")
+    ax.set_xlabel("Over-refusal on known questions (%)")
+    ax.set_ylabel("Refusal recall on unknown questions (%)")
     ax.set_title(
         "The three-seed replication holds: GRPO-touching arms stay shifted,\n"
         "not just the seed-1 point (SelfAware, response-confidence contract, exploratory)",
