@@ -13,6 +13,7 @@ cause: Replacing a span of a frozen pretrained transformer's middle layers with 
 effect: Benchmark accuracy degrades toward random-baseline performance far faster than simply skipping the same layers, making Middle Repeat the single most catastrophic intervention tested
 polarity: decreases
 related:
+- '[[outer-layer-skipping-more-catastrophic-than-middle]]'
 - '[[2407.09298--transformer-layers-as-painters]]'
 - '[[middle-layer-repeat]]'
 - '[[middle-layers-share-representation-space]]'
@@ -27,6 +28,11 @@ relationships:
 - type: related_to
   target: '[[middle-layers-share-representation-space]]'
   target_id: mechanism:middle-layers-share-representation-space
+- type: different_from
+  target: '[[outer-layer-skipping-more-catastrophic-than-middle]]'
+  target_id: mechanism:outer-layer-skipping-more-catastrophic-than-middle
+  confidence: high
+  note: "Different interventions on the same substrate: weight sharing (Middle Repeat) versus layer skipping. Both report degradation; neither denies the other."
 ---
 
 Even though middle layers share a common representation space and tolerate

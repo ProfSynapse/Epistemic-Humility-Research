@@ -193,6 +193,19 @@ the lead:
 - `SUPERSEDES: none — <one sentence on what you searched and why nothing is
   overturned>`.
 
+After the librarian finishes the Move-4 tail, run the conflict pass and report
+its count:
+
+```bash
+python3 .agents/skills/knowledge-graph/scripts/analyze_kg.py --root library
+# read the trailing "Conflicts needing adjudication" block
+```
+
+A non-zero count on a pair involving THIS resolve is a blocker: adjudicate it
+(supersede, add a scope qualifier, or add a `different_from` edge with a `note:`
+saying why the pair is distinct) before reporting done. A non-zero count on
+pairs unrelated to this resolve is reported to the lead, not fixed here.
+
 For each superseded node the librarian sets `kg.status: deprecated` and
 `kg.deprecated_by: <successor kg.id>` per the Supersession convention in the
 knowledge-graph skill's `references/relationship-schema.md`, then re-runs the

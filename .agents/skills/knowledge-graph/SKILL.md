@@ -126,6 +126,39 @@ python3 skills/knowledge-graph/scripts/analyze_kg.py
 python3 skills/knowledge-graph/scripts/analyze_kg.py --json
 ```
 
+## Conflict detection (run it after any ingest that lands a result)
+
+`analyze_kg.py` ends with a **Conflicts needing adjudication** block. It reports
+five things and decides none of them:
+
+| Check | Fires when |
+|---|---|
+| opposing-polarity pairs | Two live mechanisms assert polarities that cannot both hold (`increases` vs `decreases`, `enables` vs `prevents`, anything vs `decouples`) on a matching cause AND a matching effect. |
+| open `contradicts` edges | A `contradicts` edge exists and neither endpoint has been deprecated: the flag was raised and never closed. |
+| supersession cycles | `deprecated_by` pointers loop, so "follow to the current revision" never terminates. |
+| multi-hop supersession chains | The successor is itself deprecated. One hop is all most readers do, so a two-hop chain reads as current when it is not. |
+| disputed edges with no evidence | `status: disputed` recorded without the `evidence` needed to settle it. |
+
+Matching is on cause AND effect text, not topic overlap. An earlier cut matched
+on shared `related` atoms and returned 48 hits on a corpus whose true count is
+zero, because every calibration mechanism shares atoms with every other one.
+Thresholds are `CAUSE_THRESHOLD` / `EFFECT_THRESHOLD` in the script.
+
+**Adjudicate in the graph, not in a skip-list.** When you rule a flagged pair
+distinct, add a `different_from` edge between them with a `note:` saying why.
+The pass suppresses adjudicated pairs, so the report stays at zero and the next
+non-zero reading means something. A check that keeps reporting a settled pair
+teaches everyone to ignore it.
+
+The pass is ~7s over the full library, so it is deliberately NOT in the
+pre-commit hook. Run it after any ingest that lands an experimental result, and
+whenever you are about to trust a cross-experiment reading.
+
+Fixtures in `tests/test_kg_scripts.py` (`ConflictDetectionTests`) prove each
+check fires on a true positive and stays quiet on the near-misses the live
+corpus actually contains. A detector that reports zero and a detector that is
+broken look identical, so those tests are the only thing separating them.
+
 Build or update the local search index, then search it:
 
 ```bash

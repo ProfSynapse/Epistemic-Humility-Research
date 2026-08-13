@@ -841,5 +841,199 @@ kg:
             self.assertEqual("fulltext_for", edge["edge_type"])
 
 
+MECHANISM = """---
+aliases: [{slug}]
+tags: [kg/mechanism, concept, mechanism]
+kg:
+  id: mechanism:{slug}
+  type: mechanism
+  status: {status}{deprecated_by}
+cause: "{cause}"
+effect: "{effect}"
+polarity: {polarity}
+related:{related}
+relationships:{relationships}
+---
+
+Body.
+"""
+
+
+class ConflictDetectionTests(unittest.TestCase):
+    """The conflict pass reports zero on the live corpus, which is
+    indistinguishable from a broken detector. These fixtures prove each check
+    fires on a real positive and stays quiet on the near-misses that the live
+    corpus actually contains.
+    """
+
+    def build(self, tmp: str, specs: list[dict]) -> dict:
+        from analyze_kg import detect_conflicts
+
+        root = Path(tmp)
+        (root / "concepts" / "mechanisms").mkdir(parents=True)
+        for spec in specs:
+            dep = spec.get("deprecated_by")
+            (root / "concepts" / "mechanisms" / f"{spec['slug']}.md").write_text(
+                MECHANISM.format(
+                    slug=spec["slug"],
+                    status=spec.get("status", "canonical"),
+                    deprecated_by=f"\n  deprecated_by: {dep}" if dep else "",
+                    cause=spec.get("cause", "A cause."),
+                    effect=spec.get("effect", "An effect."),
+                    polarity=spec.get("polarity", "increases"),
+                    related="\n" + "\n".join(f"- '[[{t}]]'" for t in spec.get("edges", {}).values())
+                    if spec.get("edges")
+                    else " []",
+                    relationships="\n"
+                    + "\n".join(
+                        f"- type: {etype}\n  target: '[[{target}]]'\n  target_id: mechanism:{target}"
+                        for etype, target in spec.get("edges", {}).items()
+                    )
+                    if spec.get("edges")
+                    else " []",
+                ),
+                encoding="utf-8",
+            )
+        ontology = load_ontology()
+        index = NoteIndex.build(root)
+        notes, _ = collect_graph_notes([], root=root)
+        triples = collect_triples(notes, ontology, index=index)
+        return detect_conflicts(notes, triples, index)
+
+    def test_opposing_polarity_fires_on_same_cause_and_effect(self) -> None:
+        cause = "Raising the steering dose at the midband site on the trained model"
+        effect = "Held out abstention rate on confabulation rows rises sharply"
+        with tempfile.TemporaryDirectory() as tmp:
+            conflicts = self.build(
+                tmp,
+                [
+                    {"slug": "dose-raises-abstention", "polarity": "increases", "cause": cause, "effect": effect},
+                    {"slug": "dose-lowers-abstention", "polarity": "decreases", "cause": cause, "effect": effect},
+                ],
+            )
+        self.assertEqual(1, len(conflicts["opposing_polarity"]))
+        pair = conflicts["opposing_polarity"][0]
+        self.assertEqual({"increases", "decreases"}, {pair["left_polarity"], pair["right_polarity"]})
+
+    def test_coupling_versus_decouples_is_a_conflict(self) -> None:
+        cause = "Fitting the known unknown axis on the frozen layer thirty five construction"
+        effect = "Answer correctness at deployment is predicted by the readout"
+        with tempfile.TemporaryDirectory() as tmp:
+            conflicts = self.build(
+                tmp,
+                [
+                    {"slug": "axis-carries-correctness", "polarity": "mediates", "cause": cause, "effect": effect},
+                    {"slug": "axis-does-not-carry-correctness", "polarity": "decouples", "cause": cause, "effect": effect},
+                ],
+            )
+        self.assertEqual(1, len(conflicts["opposing_polarity"]))
+
+    def test_different_from_edge_suppresses_an_adjudicated_pair(self) -> None:
+        cause = "Raising the steering dose at the midband site on the trained model"
+        effect = "Held out abstention rate on confabulation rows rises sharply"
+        with tempfile.TemporaryDirectory() as tmp:
+            conflicts = self.build(
+                tmp,
+                [
+                    {
+                        "slug": "dose-raises-abstention",
+                        "polarity": "increases",
+                        "cause": cause,
+                        "effect": effect,
+                        "edges": {"different_from": "dose-lowers-abstention"},
+                    },
+                    {"slug": "dose-lowers-abstention", "polarity": "decreases", "cause": cause, "effect": effect},
+                ],
+            )
+        self.assertEqual([], conflicts["opposing_polarity"])
+
+    def test_unrelated_subjects_do_not_conflict_on_topic_overlap_alone(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            conflicts = self.build(
+                tmp,
+                [
+                    {
+                        "slug": "lora-regularizes-calibration",
+                        "polarity": "decreases",
+                        "cause": "Training with a low rank adapter instead of full finetuning",
+                        "effect": "Expected calibration error on held out questions falls",
+                    },
+                    {
+                        "slug": "alignment-conflates-uncertainty",
+                        "polarity": "increases",
+                        "cause": "Alignment training that mixes answer uncertainty with format uncertainty",
+                        "effect": "Stated confidence detaches from answerability",
+                    },
+                ],
+            )
+        self.assertEqual([], conflicts["opposing_polarity"])
+
+    def test_deprecated_node_is_excluded_from_conflicts(self) -> None:
+        cause = "Raising the steering dose at the midband site on the trained model"
+        effect = "Held out abstention rate on confabulation rows rises sharply"
+        with tempfile.TemporaryDirectory() as tmp:
+            conflicts = self.build(
+                tmp,
+                [
+                    {"slug": "dose-raises-abstention", "polarity": "increases", "cause": cause, "effect": effect},
+                    {
+                        "slug": "dose-lowers-abstention",
+                        "polarity": "decreases",
+                        "cause": cause,
+                        "effect": effect,
+                        "status": "deprecated",
+                        "deprecated_by": "mechanism:dose-raises-abstention",
+                    },
+                ],
+            )
+        self.assertEqual([], conflicts["opposing_polarity"])
+
+    def test_supersession_cycle_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            conflicts = self.build(
+                tmp,
+                [
+                    {"slug": "claim-a", "status": "deprecated", "deprecated_by": "mechanism:claim-b"},
+                    {"slug": "claim-b", "status": "deprecated", "deprecated_by": "mechanism:claim-a"},
+                ],
+            )
+        self.assertEqual(1, len(conflicts["supersession_cycles"]))
+
+    def test_multi_hop_supersession_chain_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            conflicts = self.build(
+                tmp,
+                [
+                    {"slug": "claim-v1", "status": "deprecated", "deprecated_by": "mechanism:claim-v2"},
+                    {"slug": "claim-v2", "status": "deprecated", "deprecated_by": "mechanism:claim-v3"},
+                    {"slug": "claim-v3"},
+                ],
+            )
+        chains = conflicts["supersession_chains"]
+        self.assertEqual(1, len(chains))
+        self.assertEqual("mechanism:claim-v3", chains[0]["head"])
+
+    def test_open_contradicts_edge_is_reported_until_one_side_is_deprecated(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            open_conflict = self.build(
+                tmp,
+                [
+                    {"slug": "claim-x", "edges": {"contradicts": "claim-y"}},
+                    {"slug": "claim-y"},
+                ],
+            )
+        self.assertEqual(1, len(open_conflict["unresolved_contradicts"]))
+
+        with tempfile.TemporaryDirectory() as tmp:
+            closed = self.build(
+                tmp,
+                [
+                    {"slug": "claim-x", "edges": {"contradicts": "claim-y"}},
+                    {"slug": "claim-y", "status": "deprecated", "deprecated_by": "mechanism:claim-x"},
+                ],
+            )
+        self.assertEqual([], closed["unresolved_contradicts"])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -29,10 +29,11 @@ relationships:
   target: '[[canonical-phrase-detector-undercounts-cross-family-abstention-idioms]]'
   target_id: mechanism:canonical-phrase-detector-undercounts-cross-family-abstention-idioms
   confidence: medium
-- type: related_to
+- type: different_from
   target: '[[undosed-wide-instrument-baseline-abstention-is-family-graded]]'
   target_id: mechanism:undosed-wide-instrument-baseline-abstention-is-family-graded
   confidence: high
+  note: "Complementary, not opposing, despite inverse polarity on a similar cause: this atom compares the narrow screen against the wide stack, the target reports the wide stack's own family grading. Both hold on the same run."
 - type: related_to
   target: '[[abstention]]'
   target_id: term:abstention
