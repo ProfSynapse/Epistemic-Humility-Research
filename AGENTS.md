@@ -221,6 +221,16 @@ When protocol, preregistration, or paper-claim files are involved, read the
 local instructions in that area before editing. Treat registered study design as
 governed: changes need explicit rationale, changelog, and user approval.
 
+GENERATION ENGINE (PI ruling 2026-08-13): vLLM is the forced default for every
+new generation, eval, logprob, or capture surface — the only exceptions are
+parity-locked reuse of a registered engine and per-row intervention cells.
+Never rule vLLM out from remembered capability limits; that memory is
+chronically stale (current vLLM exposes generation-time hidden states,
+per-token logprobs, LoRA, and bnb quantization). Capability questions are
+settled at build time against the pinned installed version. Full decision
+table: experiment-runner `reference/batched-generation.md`. Restate this rule
+in every generation-surface delegation prompt.
+
 ## Skills And When To Use Them
 
 - `experiment-runner`: use for experiment orchestration, matrix/runnable-cell

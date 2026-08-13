@@ -199,5 +199,29 @@ Full thresholds: `gates.yaml`. In summary:
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-08-13, PI-approved. **LP-G0 data-stage stop, both arms — no
+result, per the registered pre-outcome rule.** The confirmation question
+remains open.
+
+- S base: LP-G0 (a) FAIL, dial refit 0.8395 vs signed 0.834 (|diff| 0.0055
+  against the 0.002 tolerance); (b) PASS, 1836/1836 rows; (c) FAIL, 282/1836
+  rows (15.4%) fail the byte-for-byte answer_text round-trip.
+- T deployed: (a) FAIL, 0.8164 vs signed 0.819 (|diff| 0.0026); (b) PASS,
+  1488/1488; (c) FAIL, 93/1488 (6.3%) round-trip failures.
+
+Per the registered discipline ("any mismatch is a data-stage stop, not a
+result"), the downstream margins the harness computed before halting are not
+results and are not cited here; both committed JSONs carry
+gate_verdict.stopped_at_lp_g0 = true as the sole reportable verdict.
+
+Reading, recorded as hypothesis and not finding: the cached generations date
+from the June stack; the run executed under torch 2.10.0+cu128 with the S
+checkpoint loaded offline from the as-cached snapshot. Exact greedy-decode
+reproduction through 4-bit quantized kernels across a stack upgrade is the
+natural suspect for both the round-trip failures and the refit tolerance
+misses. No diagnostic was run behind the stop.
+
+One-sentence summary (manifest `verdict:`): both arms stopped at the LP-G0
+integrity gate (dial-refit reproduction outside tolerance; 15.4% / 6.3%
+byte-for-byte round-trip failures), so the cell records a data-stage stop
+with no reportable comparison, the same verdict class as v1.

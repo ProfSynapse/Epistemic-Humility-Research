@@ -4,10 +4,10 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-13T00:05:09Z'
+updated_at: '2026-08-13T00:37:42Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
-  fix, OOD breadth, abstention-install transfer) survive their gates, and what do their
-  resolutions change in paper 3?
+  fix, OOD breadth, abstention-install transfer) survive their gates, and what do
+  their resolutions change in paper 3?
 tags: []
 run_ids: []
 trajectory:
@@ -256,6 +256,52 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 009-checkpoint
+  at: '2026-08-13T00:21:30Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Item-27 CLOSED OUT: PI approved resolved status; Outcome written; bin/exp
+    resolve done; librarian KG ingest (experiment + mechanism nodes, validators 0
+    errors); synaptic-tuner fast-forwarded 0b6b44d->1dac020 (PR 153); results PR 446
+    merged to main (717c21d4) after retired-term lint fixes in this session note
+    (retired term rendered as abstention-install in prose, slugs backticked). Program pivot: PI goal is all
+    5 papers ship-shape for collaborator outreach emails NEXT WEEK. Decision layout
+    delivered: v2 dial-logprob-baseline-v2 launch (signed, paper-4 sec-7 confirmation
+    cell, GPU free), paper-3 item-27 integration + fig-p2-01/ECE residuals, paper-5
+    appendix residuals, papers 1/2 readiness audit dispatched (read-only subagent).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 010-checkpoint
+  at: '2026-08-13T00:37:42Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: "Ship-shape sprint decisions (PI, 2026-08-13): (1) v2 dial-logprob-baseline-v2\
+    \ LAUNCHED (PI-approved; local lane, HF_HUB_OFFLINE=1 against as-cached checkpoint\
+    \ after container-owned .locks blocked hub lock; arms sequential S then T; two\
+    \ aborted no-row invocations noted in cell NOTEBOOK). (2) Paper-3 item-27 update\
+    \ approved with honest full framing (falsifier silent + G1 actuation as open thread)\
+    \ \u2014 paper3-update worktree agent dispatched (also: claim-ownership trim per\
+    \ series plan, fig-p1-08/09 embed fix, ECE restatement verify). (3) AC ruling:\
+    \ doubt-regulated-caution stays APPENDIX-ONLY in paper 5; PI scope rule: paper\
+    \ 5 is deliberately untrained/raw-base \u2014 training-free actuation is the headline;\
+    \ paper5-polish worktree agent dispatched (AC ruling text, amendment-label conversion,\
+    \ 4-area bibliography from 2026-07-30 draft docs). (4) Outreach: first email is\
+    \ overall-research intro, not per-paper pitch. CAUTION: paper-audit agent report\
+    \ was substantially WRONG (claimed papers 1/4/5 figures missing/unembedded; disk+manuscript\
+    \ check shows all five papers have built+embedded figure sets; agent audited from\
+    \ stale 2026-07-30 inventory doc). Verified-real residuals: paper-3 cross-dir\
+    \ embeds, item-27/ECE integration, paper-5 Appendix D items, v2 splice into paper\
+    \ 4."
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -313,3 +359,13 @@ _No summary yet._
 - at: `2026-08-13T00:05:09Z`
 - kind: `checkpoint`
 - summary: Item-27 GPU sequence COMPLETE through stage 9. Mid-run repair #4 (PI-approved Option B): run_controls.py raw_base pos_ctrl readout imported from j-space-midband source amendment committed artifact (pin 48d2f0fd->28d867ca, audit entry, smoke-harness pass). Stage-7 raw_base controls complete (3 RAN cells, all rc=0). Stage-8 pairs complete on trained (2 pairs ran; in-band pair NOT-RUN insufficient sites, disposition in NOTEBOOK; anchor position ~4-5%, anchor_onward 99-100%). Stage-9 adjudication: G0 pass, G1 PASS all 5 anchor_onward cells (0.87-0.955) so prediction G1 clause WRONG, G2 vacuous everywhere (fired known 4-20 < 35), G3 pass hs35 only (12.2x), G4 HOLDS at replicated anchor_onward operating point (lead adjudication citing rep2 AMENDMENT line 177), falsifier DOES NOT FIRE. Verdict lifted to PI; resolution wording, results PR, submodule fast-forward pending.
+### 009-checkpoint - Checkpoint
+
+- at: `2026-08-13T00:21:30Z`
+- kind: `checkpoint`
+- summary: Item-27 CLOSED OUT: PI approved resolved status; Outcome written; bin/exp resolve done; librarian KG ingest (experiment + mechanism nodes, validators 0 errors); synaptic-tuner fast-forwarded 0b6b44d->1dac020 (PR 153); results PR 446 merged to main (717c21d4) after retired-term lint fixes in this session note (retired term rendered to 'abstention-install' in prose, slugs backticked). Program pivot: PI goal is all 5 papers ship-shape for collaborator outreach emails NEXT WEEK. Decision layout delivered: v2 dial-logprob-baseline-v2 launch (signed, paper-4 sec-7 confirmation cell, GPU free), paper-3 item-27 integration + fig-p2-01/ECE residuals, paper-5 appendix residuals, papers 1/2 readiness audit dispatched (read-only subagent).
+### 010-checkpoint - Checkpoint
+
+- at: `2026-08-13T00:37:42Z`
+- kind: `checkpoint`
+- summary: Ship-shape sprint decisions (PI, 2026-08-13): (1) v2 dial-logprob-baseline-v2 LAUNCHED (PI-approved; local lane, HF_HUB_OFFLINE=1 against as-cached checkpoint after container-owned .locks blocked hub lock; arms sequential S then T; two aborted no-row invocations noted in cell NOTEBOOK). (2) Paper-3 item-27 update approved with honest full framing (falsifier silent + G1 actuation as open thread) — paper3-update worktree agent dispatched (also: claim-ownership trim per series plan, fig-p1-08/09 embed fix, ECE restatement verify). (3) AC ruling: doubt-regulated-caution stays APPENDIX-ONLY in paper 5; PI scope rule: paper 5 is deliberately untrained/raw-base — training-free actuation is the headline; paper5-polish worktree agent dispatched (AC ruling text, amendment-label conversion, 4-area bibliography from 2026-07-30 draft docs). (4) Outreach: first email is overall-research intro, not per-paper pitch. CAUTION: paper-audit agent report was substantially WRONG (claimed papers 1/4/5 figures missing/unembedded; disk+manuscript check shows all five papers have built+embedded figure sets; agent audited from stale 2026-07-30 inventory doc). Verified-real residuals: paper-3 cross-dir embeds, item-27/ECE integration, paper-5 Appendix D items, v2 splice into paper 4.
