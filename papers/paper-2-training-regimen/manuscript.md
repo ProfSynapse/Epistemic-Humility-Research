@@ -56,11 +56,12 @@ warm-up, preference optimization *repositions* the boundary along a
 recall/over-refusal trade-off (DPO aggressively toward answering, KTO
 conservatively; three seeds each), and GRPO under an appropriateness reward
 *amplifies* the routine to near-ceiling recall while re-inflating
-over-refusal, with truthfulness essentially flat under the shift (originally
-single-seed, since replicated at two further seeds; exploratory throughout).
+over-refusal, with truthfulness essentially flat under the shift (three
+seeds; exploratory throughout); stacking GRPO with DPO or KTO, in either
+order, does not escape the trade-off either.
 No
-objective or ordering moves the underlying discrimination frontier; each
-selects an operating point on the frontier the SFT stage defines. Stated
+objective, stack, or ordering moves the underlying discrimination frontier;
+each selects an operating point on the frontier the SFT stage defines. Stated
 confidence, measured after the same runs, carries a warning: every regimen's
 emitted confidence tracks the *decision to answer*, not the truth of the
 answer, so behavioral gains masquerade as confidence shifts. The practical
@@ -79,15 +80,21 @@ which case you are in. The model has no difficulty producing the words "I
 don't know." What it lacks is any dependable coupling between those words and
 the state of not knowing.
 
-Installing that coupling is a training problem. Models that assert falsehoods
-confidently while refusing questions they could answer have been described as
-polite liars (DeVilling, 2025): systems that misrepresent their own epistemic
+The field treats installing that coupling as a training problem: repair the
+incentive during post-training and the coupling should follow. This paper
+runs that premise to ground. Models that assert falsehoods confidently while
+refusing questions they could answer have been described as polite liars
+(DeVilling, 2025): systems that misrepresent their own epistemic
 state, not out of anything resembling malice, but because the training signal
 rewarded the appearance of knowledge over the admission of ignorance. Kalai
-et al. (2025) derive the same incentive from the arithmetic of binary-graded
-evaluation, where a guess strictly dominates an abstention. If post-training
-installs the incentive, post-training is also where it can be removed, and the
-practical question becomes which post-training objective to remove it with.
+et al. (2025) trace the incentive further back than post-training: ordinary
+cross-entropy pretraining already produces it whenever incorrect statements
+are statistically indistinguishable from correct ones, and binary-graded
+post-training evaluation then locks it in, since under that scoring a guess
+strictly dominates an abstention. The incentive is set during pretraining and
+sustained by evaluation practice, not installed by post-training;
+post-training remains the more directly adjustable stage, and the practical
+question becomes which post-training objective adjusts it best.
 
 Two things are already established about that question. The first is that
 post-training damages calibration, meaning the agreement between the
@@ -116,16 +123,21 @@ direction, often by large margins.
 
 Targeted training helps, then, and there are several objectives to target
 with. Which of them to use has never been tested under fixed conditions. Our
-own systematic synthesis of this literature, which extracted 78 quantitative
-effects from 39 studies across the calibration, abstention, hallucination, and
-sycophancy work, verified the absence directly: no
+own systematic synthesis of this literature, reported as a companion paper in
+this research program (Rosenbaum, 2026), extracted 78 quantitative effects
+from 39 studies across the calibration, abstention, hallucination, and
+sycophancy work and verified the absence directly: no
 published study runs supervised fine-tuning against the major preference
 objectives on one abstention dataset, and none applies Kahneman-Tversky
 optimization to abstention at all. This paper runs the missing comparison:
 supervised fine-tuning (SFT), direct preference optimization (DPO),
 Kahneman-Tversky optimization (KTO), and group relative policy optimization
 (GRPO), over one small open-weights base, with one model-specific
-known/unknown data construction and one measurement panel.
+known/unknown data construction and one measurement panel. In the depth
+taxonomy a companion paper (Rosenbaum, 2026) synthesizes, this is the
+shallowest and most direct approach available, L1: train the model's
+expressed confidence and refusal decisions themselves, rather than any
+deeper structure behind them.
 
 What comes out is a decomposition by stage rather than a ranking. A single
 objective that both taught abstention from the base model and improved the
@@ -178,7 +190,7 @@ model's* knowledge. Fine-tuning on facts the model does not know causally
 drives hallucination (Gekhman et al., 2024); data aligned with what it already
 knows induces overconfidence (Wang et al., 2025). That is why every successful
 abstention method builds *model-specific* training splits, and why this one
-does too (claim family C1 in the synthesis).
+does too.
 
 Preference-based methods beat SFT on abstention and truthfulness quality. The
 anchor result is the model-specific tournament of Cheng et al. (2024), which
@@ -187,26 +199,29 @@ what that model in particular gets right, and the synthesis confirms it in a
 reanalysis of AbstentionBench (Kirichenko et al., 2025), a benchmark of
 questions that should not be answered at all. The margin is modest: the median
 improvement is an order of magnitude smaller than the calibration damage
-above (C2).
+above.
 
 The improvement is also a trade rather than a gain. Reanalyzing the outputs
 Cheng et al. released, the synthesis finds DPO cutting SFT-induced
 over-refusal nearly in half while giving up a third of refusal recall. That is
 movement along a refusal ROC curve, the curve traced by sliding one threshold
 between catching more unanswerable questions and wrongly refusing more
-answerable ones, and not a better ability to tell the two kinds apart (C3).
+answerable ones, and not a better ability to tell the two kinds apart.
 
-### Two measurement lessons
+### Two measurement lessons that fix the reporting
 
-A single abstention score hides which failure a model is making. Refusal
+A single abstention score hides which failure a model is making: refusal
 recall and refusal precision come apart across 20 models in the synthesis's
-reanalysis (Spearman $\rho = -0.05$, effectively no relationship), so every
+reanalysis (Spearman $\rho = -0.05$, effectively no relationship). Every
 result below reports both error rates rather than a summary of them.
 
-Model-specific known/unknown labels are themselves noisy. In the released
+Model-specific known/unknown labels are themselves noisy: in the released
 artifacts of the lineage this study follows, 42.9 to 51.3% of answers to
-questions labeled "unknown" were in fact correct, which pulls every
-recall/over-refusal number toward the middle of its range.
+questions labeled "unknown" were in fact correct. This study regenerates
+known/unknown labels fresh against the model under study rather than
+borrowing them, for exactly that reason (Section 3.2). The residual caveat
+carries forward wherever a borrowed-label result is cited: label noise pulls
+its recall/over-refusal numbers toward the middle of their range.
 
 ### The gaps this experiment closes
 
@@ -255,10 +270,14 @@ The study has three evidence layers:
    paired tests. Answers whether the preference objectives can *reposition* an
    existing boundary, which is the sequential reading the published
    preference-beats-SFT and trade-off results suggest (Section 2).
-3. GRPO (originally single seed, since replicated at two further seeds;
-   exploratory throughout): GRPO applied after SFT under a
-   behavior-dominant appropriateness reward. Answers what reinforcement
-   learning with a programmable reward adds.
+3. GRPO (three seeds, exploratory throughout): GRPO applied after SFT under a
+   behavior-dominant appropriateness reward, plus the four two-stage
+   combinations of GRPO with DPO and KTO on the SFT-warmed base, in both
+   orders (GRPO then DPO, DPO then GRPO, GRPO then KTO, KTO then GRPO).
+   Answers what reinforcement learning with a programmable reward adds,
+   alone and stacked with preference optimization. To our knowledge, no
+   prior work stacks a verifiable-reward RL stage with preference
+   optimization for abstention, in either order.
 
 ### 3.2 Data construction
 
@@ -282,8 +301,10 @@ only a reward over sampled completions.
 All arms are trained on Qwen3-4B with low-rank adaptation (LoRA) and its
 quantized variant (QLoRA), which train a small set of added parameters instead
 of all of the model's weights and so fit the compute available here; recipes,
-seeds, and per-run records are committed in the repository (Appendix A). The
-comparison should be read as a replication-style stress test of the
+seeds, and per-run records are committed in the repository (Appendix A). All
+four objectives run in their TRL-library implementations, with model
+loading, 4-bit quantization, and LoRA adaptation handled through Unsloth.
+The comparison should be read as a replication-style stress test of the
 known/unknown supervision idea at small scale, not a bit-for-bit reproduction
 of any prior stack.
 
@@ -295,27 +316,44 @@ checkpoint).
 
 #### GRPO
 
-GRPO samples groups of completions per prompt and optimizes
-group-relative advantages (Shao et al., 2024) under a programmable reward:
-each prompt draws a group of $G$ sampled completions, each completion earns
-a scalar reward $r_i$, and the policy gradient weights completion $i$ by its
-group-normalized advantage
+GRPO (Shao et al., 2024) samples a group of completions per prompt and
+reinforces each in proportion to how far its reward sits above the group
+mean.
 
-$$\hat{A}_i = \frac{r_i - \mathrm{mean}(r_1, \ldots, r_G)}{\mathrm{std}(r_1, \ldots, r_G)},$$
+The appropriateness reward is built from a behavior term plus a
+confidence-shaping term, and the behavior term dominates the confidence term
+by design, respecting the reward-hacking caution from Section 2.
 
-so a completion is reinforced exactly insofar as it outscores its own
-siblings. The primary reward is *appropriateness-dominant*: answering a known
-question and
-abstaining on an unknown question earn positive reward; answering an unknown
-question (hallucination risk) and refusing a known question (over-refusal) are
-penalized, with hallucination penalized asymmetrically harder. Two reward
-revisions tuned the penalty weights and the confidence-shaping term (the
-first revision's operating point turned out to over-reward refusal; the
-second rebalanced it). Behavior terms dominate confidence terms in every
-variant by design, respecting the reward-hacking caution from Section 2.
-A third revision replaced the heuristic confidence shaping with a proper
-scoring rule; it belongs to the confidence-channel line of work and is not
-evaluated here. We also trained the four two-stage combinations of GRPO with
+| Case | Reward |
+|---|---|
+| Known question answered correctly | +2.0 |
+| Known question answered incorrectly | -0.8 |
+| Known question refused (over-refusal) | -2.0 |
+| Unknown question abstained | +1.2 |
+| Unknown question answered (hallucination) | -1.2 |
+| Ambiguous question answered correctly | +0.8 |
+| Ambiguous question refused | +0.1 |
+| Ambiguous question answered incorrectly | -0.8 |
+
+The behavior term is asymmetric: it penalizes over-refusal hardest (-2.0),
+harder than answering an unknown question (-1.2).
+
+Malformed output is penalized: a completion that is not valid JSON loses
+-2.4; a valid completion missing the confidence field loses -0.5.
+
+The confidence-shaping term scores stated confidence against a per-case
+target: 0.82 for a correct known answer or a correct unknown abstention,
+0.18 to 0.22 for the penalized cases, 0.45 to 0.50 for ambiguous cases,
+worth up to 0.6 in magnitude and falling linearly to zero one tolerance
+(0.2) from target and to its floor two tolerances away. An exact 0.0 or 1.0
+stated confidence is separately penalized (-1.0) to discourage collapsing to
+the endpoints. A correct known answer hedged with generic uncertainty
+language loses an additional 0.1.
+
+A confidence-shaping variant that uses a proper scoring rule in place of
+the heuristic term belongs to a separate line of work on the confidence
+channel and is not evaluated here. We also trained the four two-stage
+combinations of GRPO with
 DPO and KTO on the SFT-warmed base, in both orders (Section 4.3).
 
 ### 3.4 Evaluation surface and metrics
@@ -341,10 +379,8 @@ point estimates; with three seeds these are descriptive. Two output contracts
 are used and never pooled: a *plain-answer* contract (layers 1 and 2) and a
 *response-confidence* contract (layer 3) in which the model returns an
 answer plus a numeric confidence in $[0, 1]$. The contract is itself an
-intervention (an early schema exposing an explicit answer/abstain decision
-field induced base-model over-refusal in smoke tests, and was dropped), so
-every GRPO-layer comparison is made against a clean-SFT baseline re-evaluated
-under the same contract.
+intervention, so every GRPO-layer comparison is made against a clean-SFT
+baseline re-evaluated under the same contract.
 
 Confidence is scored against three targets, kept separate throughout: the
 *known-label* target (1 for known rows, 0 for unknown, available before any
@@ -382,21 +418,27 @@ Direct DPO-vs-KTO paired tests show no difference in unknown refusal (exact
 $p = 1.0$ in all three seeds): on cold-start abstention, DPO and KTO are the
 same failure mode.
 
-![Scatter plot of refusal recall against over-refusal for cold-start SFT, DPO, and KTO, with SFT alone in the high-recall corner and both preference arms at the origin.](figures/fig-p1-01-cold-start-tradeoff.png)
+![Scatter plot of refusal recall against over-refusal for cold-start SFT, DPO, and KTO, with SFT alone in the high-recall corner and both preference arms at the origin, and a translucent green upper-left quadrant marking the direction of the ideal operating point.](figures/fig-p1-01-cold-start-tradeoff.png)
 
 **Figure 1. Cold-start SelfAware refusal trade-off.** Each faint point is one
 seed and each outlined point is the mean across seeds. SFT occupies the
 high-recall/high-over-refusal corner; cold-start DPO and KTO sit at the
 answer-everything origin (inset). Trained from scratch, only SFT teaches the
 model to refuse at all, and it overshoots; DPO and KTO leave it answering
-essentially everything.
+essentially everything. The green quadrant marks the direction of the ideal
+operating point (high unknown-question refusal, low over-refusal); its
+boundaries are the panel midlines, illustrative rather than quantitative.
 
-![Bar chart of row-level transitions from SFT to cold-start DPO and KTO, dominated by abstentions converted into attempted answers.](figures/fig-p1-03-paired-transitions.png)
+![Bar chart comparing SFT against cold-start DPO and against cold-start KTO, each pair showing unknown refusals lost as one bar and over-refusals converted to answers as a second, stacked bar with a small green correct segment atop a larger orange wrong segment.](figures/fig-p1-03-paired-transitions.png)
 
 **Figure 2. Paired row transitions from SFT to the cold-start preference
-arms.** Bars are seed means. DPO and KTO convert hundreds of correct SFT
-abstentions into attempted answers; only a small fraction of known-question
-conversions become correct answers.
+arms.** Bars are seed means. For each pair, the left bar is unknown
+abstentions the preference arm loses; the right bar is known-question
+over-refusals the preference arm converts to an attempted answer, split into
+the wrong share (orange, bottom) and the correct share (green, top). Both
+pairs convert hundreds of over-refusals, and in both pairs the correct share
+is a small fraction of the total: the conversions are mostly new wrong
+answers, not new correct ones.
 
 This falsifies the hypothesis that motivated including KTO at all: that its
 unpaired binary format, which matches the shape of known/unknown data exactly,
@@ -421,12 +463,15 @@ surface):
   preserved at 75.68%. It answers only 91 previously-refused unknown rows and
   converts 322 known refusals (37 correct).
 
-![Scatter plot of SFT-warmed operating points, with DPO far toward low over-refusal and low recall and KTO close to the merged-SFT point.](figures/fig-p1-04-sft-warmed-tradeoff.png)
+![Scatter plot of SFT-warmed operating points, with DPO far toward low over-refusal and low recall and KTO close to the merged-SFT point, and a translucent green upper-left quadrant marking the direction of the ideal operating point.](figures/fig-p1-04-sft-warmed-tradeoff.png)
 
 **Figure 3. SFT-warmed operating points on SelfAware (plain-answer
 contract).** DPO moves far toward low over-refusal at heavy recall cost; KTO
 stays near the merged-SFT abstention policy. Neither arm improves
-discrimination between the two kinds of question.
+discrimination between the two kinds of question. The green quadrant marks
+the direction of the ideal operating point (high unknown-question refusal,
+low over-refusal); its boundaries are the panel midlines, illustrative
+rather than quantitative.
 
 Across the available seeds the pattern is stable (three-seed SFT-DPO means:
 recall 52.81%, over-refusal 14.59%, truthfulness 31.18%; three-seed SFT-KTO:
@@ -472,11 +517,11 @@ answer sits near 0.9 whether it is right, wrong, or unanswerable.
 ### 4.3 GRPO amplifies the routine to near-ceiling recall
 
 GRPO is the third behavioral profile, distinct from both preference methods.
-Every GRPO number in this section is exploratory: originally single-seed, and
-since replicated at two further seeds (this section's closing subsection),
-under the response-confidence contract only, against a clean-SFT baseline
-re-evaluated under that same contract (recall 87.02%, over-refusal 57.51%, truthful
-40.58%). The same-contract DPO and KTO arms land at (87.11%, 56.18%, 40.69%)
+Every GRPO number in this section is exploratory and single-seed, except the
+three-seed replication reported below. All
+figures here use the response-confidence contract only, against a clean-SFT
+baseline re-evaluated under that same contract (recall 87.02%, over-refusal
+57.51%, truthful 40.58%). The same-contract DPO and KTO arms land at (87.11%, 56.18%, 40.69%)
 and (81.01%, 52.37%, 39.36%). Because the contract differs from the one used
 in Sections 4.1 and 4.2, these rows are comparable to each other and not to
 the seed-level numbers above.
@@ -486,37 +531,38 @@ the seed-level numbers above.
 | clean SFT (baseline) | 40.58 | 87.02 | 57.51 | 47.23 |
 | SFT then DPO | 40.69 | 87.11 | 56.18 | 46.09 |
 | SFT then KTO | 39.36 | 81.01 | 52.37 | 44.03 |
-| SFT then GRPO (first reward) | 39.69 | 95.54 | 75.70 | 61.80 |
-| SFT then GRPO (rebalanced reward) | 41.08 | 93.41 | 66.62 | 53.85 |
+| SFT then GRPO | 41.08 | 93.41 | 66.62 | 53.85 |
 
 *Correct-on-known is the filtered-denominator metric (correct answered /
 answered known), not a fraction of all known rows; per-arm denominators are
 in the underlying run records, and these seed-1 values rest on the committed
 aggregate CSV rather than raw per-row counts.*
 
-![Scatter plot of every response-confidence-contract arm in recall and over-refusal, with preference arms clustered near the SFT baseline and all GRPO arms and stacks displaced up and to the right along the same curve.](figures/fig-p1-07-regimen-operating-points.png)
+![Scatter plot of every response-confidence-contract arm in recall and over-refusal, with preference arms clustered near the SFT baseline and all GRPO arms and stacks displaced up and to the right along the same curve; a translucent green upper-left quadrant marks the direction of the ideal operating point.](figures/fig-p1-07-regimen-operating-points.png)
 
 **Figure 6. GRPO amplifies the abstention routine; stacks stay on its
 frontier.** Operating points of all response-confidence-contract arms
 (seed 1, exploratory), including the four two-stage GRPO/preference stacks.
 The preference arms cluster with the SFT baseline; the GRPO arms and every
 stack shift up-right: more recall, more over-refusal. No combination of
-stages escapes the bargain; each picks a spot on the same curve.
+stages escapes the bargain; each picks a spot on the same curve. The green
+quadrant marks the direction of the ideal operating point (high
+unknown-question refusal, low over-refusal); its boundaries are the panel
+midlines, illustrative rather than quantitative.
 
-GRPO *amplifies* the abstention routine. Across its two reward revisions,
-refusal recall rises to 93.41 to 95.54% (a separate run of the first reward
-variant, on an earlier SFT base not shown in the table above, reached
-97.87%, higher still), the highest of any arm; truthfulness moves far less,
-40.84 to 41.64% across
-the rebalanced variant and its stacks, against 40.58% for the same-contract
-SFT baseline, a margin the three-seed replication below confirms is
-essentially flat rather than a truthfulness gain. The appropriateness reward
-pays for refusing unknowns and the policy obliges, hard.
+GRPO *amplifies* the abstention routine. Refusal recall rises to 93.41%, the
+highest of any arm; truthfulness moves far less, 40.84 to 41.64% across GRPO
+and its stacks, against 40.58% for the same-contract SFT baseline, a margin
+the three-seed replication below confirms is essentially flat rather than a
+truthfulness gain. The appropriateness reward pays for refusing unknowns and
+the policy obliges, hard.
 
-The amplification drags over-refusal back up with it, to 66 to 76% against 52
+The amplification drags over-refusal back up with it, to 66.62% against 52
 to 56% for the preference arms. GRPO undoes precisely the repositioning that
-DPO buys. The reward's asymmetric hallucination penalty makes refusal the safe
-action, and the policy generalizes that safety margin onto known questions.
+DPO buys. This happens despite the reward's own asymmetry working against
+it: known-question refusal is the single worst-penalized behavior in the
+table (-2.0), yet the policy still generalizes its rewarded
+unknown-question refusal habit onto known questions.
 
 Stacking a preference stage with GRPO does not escape the trade-off in either
 order. All four two-stage stacks (DPO then GRPO, GRPO then DPO, KTO then GRPO,
@@ -529,21 +575,18 @@ below sharpens the ordering comparison.
 
 Two further limits belong on the GRPO result while it is being read. The
 truthfulness margin over the same-contract SFT baseline is small; at this
-single-seed pass it is measured without an interval around it (the three-seed
-replication below reports one), while the two reward revisions
-differ from each other by 1.4 truthfulness points and 9 over-refusal points;
-the reward specification moves this arm more than the choice to use GRPO at
-all does. And every GRPO conclusion is conditional on the reward family
-tested, appropriateness-dominant with a confidence-shaping term. What this
-layer establishes is a direction rather than a magnitude: a programmable
-reward pushes the abstention routine further out along the frontier the SFT
-stage set, rather than off it.
+single-seed pass it is measured without an interval around it (the
+three-seed replication below reports one). And every GRPO conclusion is
+conditional on the reward family tested, appropriateness-dominant with a
+confidence-shaping term. What this layer establishes is a direction rather
+than a magnitude: a programmable reward pushes the abstention routine
+further out along the frontier the SFT stage set, rather than off it.
 
 #### The shift and the recovery replicate across three seeds
 
 A single seed invites the obvious objection: is this a shift or a fluke?
 A pre-registered replication retrained the entire GRPO-touching lineage,
-from clean SFT through the rebalanced-reward GRPO arm and all four
+from clean SFT through the GRPO arm and all four
 two-stage stacks, at two fresh seeds, with two outcomes fixed before any
 seed-2 or seed-3 result existed. For the DPO-touching arms this is a partial
 replicate: the DPO trainer exposes no random-state flag, so its LoRA
@@ -570,7 +613,7 @@ followed by DPO, reads truthful 41.49% (41.29 to 41.64) at over-refusal
 
 | Arm (response-confidence contract, mean [95% interval] across 3 seeds) | Truthful % | Refusal recall % | Over-refusal % | Correct-on-known % |
 |---|---|---|---|---|
-| SFT then GRPO (rebalanced reward) | 41.17 [41.08, 41.35] | 94.25 [93.41, 95.06] | 67.35 [66.62, 68.68] | 54.32 [53.85, 55.05] |
+| SFT then GRPO | 41.17 [41.08, 41.35] | 94.25 [93.41, 95.06] | 67.35 [66.62, 68.68] | 54.32 [53.85, 55.05] |
 | DPO then GRPO | 41.19 [40.87, 41.50] | 93.41 [92.54, 94.38] | 65.26 [64.66, 65.81] | 52.19 [51.09, 53.07] |
 | KTO then GRPO | 41.01 [40.84, 41.26] | 92.99 [92.54, 93.31] | 65.70 [64.23, 66.50] | 52.67 [51.08, 53.56] |
 | GRPO then DPO | 41.49 [41.29, 41.64] | 94.25 [93.31, 94.77] | 65.48 [63.63, 66.84] | 52.71 [51.76, 53.29] |
@@ -586,10 +629,6 @@ for this replication; the two retrained arms that never touch GRPO sit in
 the same truthful band (clean_sft_dpo reads 41.32% at seed 2), so no
 truthfulness ordering is supportable at this resolution.
 
-Every number above is exploratory response-confidence-track evidence,
-reported separately from and never pooled with the plain-answer headline of
-Section 4.1.
-
 Whether a preference stage placed before GRPO beats the same stage placed
 after it, on over-refusal, was registered as a secondary, descriptive
 pattern, and the two orderings resolve differently. For KTO the direction
@@ -604,7 +643,7 @@ the evaluation questions inflates the absolute known-row numbers above
 without changing any of the deltas or outcomes reported here; Section 7
 states the size of the overlap and its bound.
 
-![Scatter plot of the five GRPO-touching arms' three-seed mean operating points with bootstrap-CI error bars, each connected by a dotted line to its seed-1-only point, showing the shift holds beyond the single seed.](figures/fig-p1-10-three-seed-replication.png)
+![Scatter plot of the five GRPO-touching arms' three-seed mean operating points with bootstrap-CI error bars, each connected by a dotted line to its seed-1-only point, showing the shift holds beyond the single seed; a translucent green upper-left quadrant marks the direction of the ideal operating point.](figures/fig-p1-10-three-seed-replication.png)
 
 **Figure 7. The three-seed replication holds the seed-1 shift.** Exploratory
 response-confidence-track evidence, never pooled with the plain-answer
@@ -614,7 +653,9 @@ interval bounded by the seed minimum and maximum rather than an inferential
 one; the open circle is the original seed-1-only point (Figure 6) for the
 same arm. Every seed-1 point sits inside or near its arm's three-seed
 interval: the operating points measured at seed 1 are not a single-seed
-artifact.
+artifact. The green quadrant marks the direction of the ideal operating
+point (high unknown-question refusal, low over-refusal); its boundaries are
+the panel midlines, illustrative rather than quantitative.
 
 SFT induces the behavior, preference optimization repositions it, GRPO
 amplifies it. Every objective selects an
@@ -629,10 +670,14 @@ is malformed. The objectives do different jobs: an inducer is mandatory
 (without SFT nothing abstains), and the second stage is a policy knob whose
 setting depends on the deployment's asymmetric costs. What the field should
 compare is not objectives but *regimens*, and regimens should be reported as
-operating points with both error rates, never as single scalars. This is the
-experiment-level confirmation of the reanalysis lesson from the synthesis
-(Section 2): recall and over-refusal decouple, and any scalar hides which
-failure a model makes.
+operating points with both error rates, never as single scalars. The
+synthesis motivated two-rate reporting from a cross-model decoupling of
+recall and precision (Section 2); this experiment adds the within-lineage
+reason for it. Here the two error rates do not decouple: they trade off
+along a single frontier, so a scalar cannot distinguish moving along that
+frontier from moving it, and hides which failure a regimen bought. That is a
+policy choice about behavior, not a change in what the model can tell known
+from unknown.
 
 ## 5. Stated confidence tracks the decision, not the truth
 
@@ -642,30 +687,17 @@ already visible in Figure 5: emitted confidence tracks the decision to answer,
 not the truth of the answer. Every regimen is highly confident whenever it
 answers, including on wrong answers and on unanswerable questions; refusals
 get near-zero confidence. Under the response-confidence contract the
-best-behaved checkpoint in the study, rebalanced-reward GRPO, emits confidence
+best-behaved checkpoint in the study, GRPO, emits confidence
 with standard deviation 0.013 across 3,369 rows: a near-constant value around
 0.8 whose AUROC against response appropriateness is 0.520, a coin flip. The
 confidence token is decorative. Section 4.2's DPO signature is the same fact
 from the other side, where repositioning toward answering *looks like* rising
 confidence while correctness-conditioned calibration worsens.
 
-If the number a model writes out is not a confidence signal, the question that
-follows is whether the model has one anywhere. That is a question about
-internal states rather than outputs, and nothing in these regimens was
-designed to answer it. One measurement on the same checkpoint bears on it: a
-held-out linear probe of the hidden states: a linear classifier fit not to
-anything the model writes but to its internal activations at one late layer,
-read at the end of the question, with the full construction linked in
-Appendix A. On the 1,233-row subset where both channels are jointly
-available, it separates known from unknown rows at AUROC 0.972 where the
-emitted channel reads 0.637. One
-probe on one checkpoint settles nothing about whether such a signal can be
-read reliably, trained against, or trusted away from this distribution. It is
-enough to make the question worth asking, and behavior alone cannot answer it.
-
-The practitioner's warning does not wait on that answer. Under every regimen
-tested here, the stated confidence number reports what the model *did*, not
-what it *knows*.
+The practitioner's warning holds regardless of what produces it: under every
+regimen tested here, the stated confidence number reports what the model
+*did*, not what it *knows*: performed, not possessed, in the vocabulary a
+companion paper (Rosenbaum, 2026) uses for exactly this gap.
 
 ## 6. Discussion
 
@@ -681,19 +713,63 @@ surveyed in Section 2, are asking which of the rough cut and the final sanding
 makes a board flat. One has to happen first, and the other has nothing to work
 on until it does.
 
-### The frontier did not move
+### A policy, not epistemic humility
 
-Nothing here, including the best stack, improved discrimination between known
-and unknown; every intervention chose a point on the frontier the SFT stage
-created. Two readings survive that result. On the first, the discriminative
-signal sits somewhere the output objectives never reach, which would make the
-stage decomposition a decomposition of *policy* over an epistemic signal none
-of this training moved, and the frontier the SFT stage "created" better
-described as one it *exposed*. On the second, the objectives do reach the
-signal and simply fail to sharpen it. Both readings predict exactly what we
-measured, and no behavioral experiment can separate them: telling them apart
-means measuring the signal itself rather than the policy that gates it, which
-is the same open question Section 5 arrives at from the confidence side.
+This study is the strongest version of one way to install epistemic humility:
+pick the post-training objective that shapes the model's *expressed*
+epistemic state directly, and iterate. In the depth taxonomy synthesized in a
+companion paper (Rosenbaum, 2026), that is the shallowest level, L1: humility
+as a scalar (a confidence number or a refuse/answer decision), scored against
+how well it tracks the model's actual reliability. Training the expression
+directly, at L1, with four objectives and a controlled comparison, is close
+to as strong a test of that level as post-training currently allows.
+
+What four objectives buy, decomposed by stage, is a *policy*, not a
+discovery. SFT installs a gross refuse-or-answer routine; DPO and KTO
+reposition it along the recall/over-refusal trade-off; GRPO amplifies it.
+Every regimen we trained lands somewhere on the same fixed frontier, and
+every model we shipped, whatever the regimen, sits at some point along it:
+under-refusing or over-refusing relative to that frontier, never off it.
+None of the four objectives moved the frontier itself (Section 4), and the
+companion paper's cross-cutting *coherence axis* names exactly what none of
+them touched: whether the expressed state is tethered to something real
+inside the model, or merely produced on cue. Untethered, it is Plato's
+version of the same problem, restated for language models: a true belief not
+anchored by reasoning is one of Daedalus's statues, correct today and free to
+wander tomorrow (companion paper, Section 2, after *Meno* 97d-98a). Four
+rounds of policy tuning at L1 never tests whether the statue is tied down; it
+only rearranges where the statue stands.
+
+The companion paper's definition gives that test a verdict rather than a
+question: epistemic humility is an expressed epistemic state that tracks the
+model's actual reliability (Rosenbaum, 2026). Measured against that
+definition, this study's two expressed channels fail in different ways. The
+confidence channel fails outright: under the best-behaved regimen in the
+study, stated confidence sits at a near-constant 0.8 whether the answer is
+right, wrong, or refused, and its AUROC against response appropriateness is
+0.520, a coin flip (Section 5). That is not weak tracking; by the definition
+above, it is no tracking at all. The behavior channel does better, but only
+by inheritance, not improvement: the refuse-or-answer decision separates
+known from unknown well above chance, yet that separation is the frontier
+SFT installed once, from nothing, at the start (Section 4). Nothing applied
+after it, not DPO, not KTO, not GRPO, not any stack of them, raised that
+frontier by a point; three further stages only respent it.
+
+By this program's own definition, then, these four regimens did not produce
+epistemic humility. What they produced is a refusal policy with a fixed,
+inherited discrimination boundary, wearing a confidence number that tracks
+nothing. If humility as tracking was not installed by any of this, the
+question that remains is whether the model carries an internal signal that
+could support it anyway. Nothing in these regimens was designed to measure
+that, and behavior alone cannot answer it.
+
+That verdict is exactly as fenced as the evidence behind it: four
+objectives, one model, one data construction. It says nothing about whether
+some other regimen, at some other scale, could install coherence between
+expression and internal state; that stronger claim, that behavioral
+post-training at L1 cannot do so no matter the objective or scale, is not
+this paper's result. It is the open question this paper hands to the
+research agenda the companion paper lays out.
 
 ### Deployment reading
 
@@ -702,18 +778,17 @@ the results above. An SFT inducer stage is mandatory; without it nothing
 abstains. The second stage is chosen by cost asymmetry, DPO if over-refusal is
 the expensive error and KTO or GRPO if hallucination is. The model's stated
 confidence should not be trusted under any of these regimens (Section 5), and
-an RL reward did not fix it here. And if you control the weights, the probe
-comparison in Section 5 (AUROC 0.972 internal against 0.637 emitted) says a
-linear readout of the hidden states ranks uncertainty far better than anything
-the model will tell you.
+an RL reward did not fix it here. And if you control the weights, the
+question above is the one worth starting from: whether the signal absent
+from the model's own words exists somewhere in its internals.
 
 ## 7. Limitations
 
 This is a small-model, single-family study: Qwen3-4B with low-rank adaptation
 recipes, evaluated centrally on SelfAware. The cold-start and SFT-warmed
-layers carry three seeds (descriptive t-intervals); the GRPO layer and its
-four two-stage stacks have since been replicated to three seeds as well
-(exploratory response-confidence track, never pooled with the headline); the
+layers, and the GRPO layer with its four two-stage stacks, all carry three
+seeds (descriptive t-intervals for the confirmatory layers, exploratory
+response-confidence track for GRPO, never pooled with the headline); the
 stated-confidence observations of Section 5 remain single-seed and
 exploratory. Every exploratory result is labeled as such wherever it
 appears. Negative cold-start DPO/KTO results are claims
@@ -760,11 +835,11 @@ seed 2/3 cohort on a second axis, the trainer submodule vintage: the two
 preference seed-1 runs predate a training-library update that both seed 2/3
 cohorts already trained under (exact revisions are recorded in Appendix A).
 The three SFT seeds are unaffected, all three having
-trained on the corrected build. A rerun of the two affected seed-1 runs has
-since completed: both arms were retrained cold-start on the corrected
-build, at the same training-library version as their seed 2/3 cohort,
-pinning both the dataset build and the trainer vintage together, and
-re-evaluated on the same SelfAware surface. Because both axes moved at once,
+trained on the corrected build. The two affected seed-1 runs were rerun:
+both arms retrained cold-start on the corrected build, at the same
+training-library version as their seed 2/3 cohort, pinning both the dataset
+build and the trainer vintage together, and re-evaluated on the same
+SelfAware surface. Because both axes moved at once,
 the rerun is a commensurability check against the cohort rather than an
 isolation of the dataset variable alone. Both land inside every replication
 band drawn from the seed 2/3 cohort (four metrics per arm). Those bands
@@ -773,14 +848,14 @@ bands pass 8 of 8 metric-arm combinations when applied to the original
 pre-fix rows, because this is a low-power confirmation gate rather than a
 discovery gate. The result therefore reads as no effect detectable at this
 instrument's resolution, not as a demonstration that the dataset version
-did not matter; on that reading the conclusions in Section 4.1 stand. One
-reproducibility note surfaced in the process. An
-earlier rerun attempt that omitted the training-library version pin ran
-against a newer library build than the cohort by construction; its results
-differed from the pinned rerun by 2 to 4 percentage points on truthfulness
-and correct-on-known, though both attempts landed inside the same bands.
-Pinning the training library's exact version, not only the base model and
-the hyperparameters, measurably matters at this scale.
+did not matter; on that reading the conclusions in Section 4.1 stand. A
+reproducibility note follows from the rerun: an earlier attempt that omitted
+the training-library version pin ran against a newer library build than the
+cohort by construction, and its results differed from the pinned rerun by 2
+to 4 percentage points on truthfulness and correct-on-known, though both
+attempts landed inside the same bands. Pinning the training library's exact
+version, not only the base model and the hyperparameters, measurably matters
+at this scale.
 
 Model-specific known/unknown labels are noisy (the synthesis measured 42.9
 to 51.3% of "unknown" answers being correct in released artifacts of the
@@ -884,6 +959,10 @@ Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C. D., & Finn, C.
 (2023). *Direct Preference Optimization: Your Language Model is Secretly a
 Reward Model*. arXiv:2305.18290.
 
+Rosenbaum, J. (2026). *The Depths of Ignorance: A Taxonomy, Systematic
+Evidence Synthesis, and Research Agenda for Epistemic Humility in Language
+Models*. Companion paper, this research program.
+
 Shao, Z., et al. (2024). *DeepSeekMath: Pushing the Limits of Mathematical
 Reasoning in Open Language Models* (GRPO). arXiv:2402.03300.
 
@@ -934,14 +1013,13 @@ with the internal label it carries in the repository.
 - [The stated-confidence amendment](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/stated-confidence-grpo/AMENDMENT.md):
   the registered extension behind Section 4.2's confidence contract, scored in
   `results_amendment_b_stated_confidence_*`. Internal label: Amendment B.
-- [The schema response-confidence amendment](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/schema-response-confidence/AMENDMENT.md):
-  the first GRPO reward variant of Section 4.3, scored in
-  `results_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_full_4b/`.
-  Internal label: Amendment D.
+- [The GRPO reward implementation](https://github.com/ProfSynapse/Epistemic-Humility-Research/tree/main/archive/experiment/phase1/grpo):
+  `humility_reward_v2.py`, the source of the appropriateness reward
+  specification reported in Section 3.3.
 - [The probe-scaled response-confidence amendment](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/probe-scaled-response-confidence/AMENDMENT.md):
-  the clean-SFT baseline and both GRPO reward variants of Section 4.3, scored
+  the clean-SFT baseline, DPO, KTO, and GRPO arms of Section 4.3, scored
   in
-  `results_amendment_e_response_confidence_selfaware_clean_sft_{merged,dpo,kto,grpo,grpo_v2}_seed1_*_full_4b/`.
+  `results_amendment_e_response_confidence_selfaware_clean_sft_{merged,dpo,kto,grpo_v2}_seed1_*_full_4b/`.
   Internal label: Amendment E.
 - [The GRPO-centered stacking amendment](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/grpo-centered-stacking/AMENDMENT.md):
   the four two-stage stacks of Section 4.3, scored in
@@ -964,18 +1042,15 @@ with the internal label it carries in the repository.
   the runbook covering the emitted-confidence collapse reported in Section 5.
   Internal label: Amendment J diagnostics.
 - [The calibration-gap record](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json):
-  the emitted-confidence standard deviation and AUROC figures of Section 5,
-  and under `B_internal_vs_emitted` the probe comparison, internal AUROC 0.972
-  against emitted 0.637 on the same rows.
-- [The probe note](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/archive/notes/experiments/caution-vs-doubt-knowledge-gate.md):
-  how the held-out linear probe of Section 5 was fit and evaluated.
+  the emitted-confidence standard deviation and AUROC figures of Section 5.
 - [The grouped run inventory](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv):
   every arm in the study on one behavioral surface, the source of the
   cross-arm comparisons in Section 4.
 - [Training recipes](https://github.com/ProfSynapse/Epistemic-Humility-Research/tree/main/archive/experiment/phase1/recipes)
   and [per-run records](https://github.com/ProfSynapse/Epistemic-Humility-Research/tree/main/archive/experiment/phase1/run_records):
   the objective configurations, seeds, and run provenance for every arm in
-  Section 3.3.
+  Section 3.3. The base build loaded through Unsloth is
+  `unsloth/Qwen3-4B-bnb-4bit`.
 - [The release record](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/docs/public-artifacts.md)
   and [the checkpoint staging registry](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/docs/checkpoint-staging.md):
   which checkpoints are public, at which revision, and the mapping from each

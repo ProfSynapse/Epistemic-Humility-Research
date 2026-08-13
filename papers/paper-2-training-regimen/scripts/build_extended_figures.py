@@ -22,12 +22,19 @@ from __future__ import annotations
 
 import csv
 import json
+import sys
 from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+THIS_DIR = Path(__file__).resolve().parent
+if str(THIS_DIR) not in sys.path:
+    sys.path.insert(0, str(THIS_DIR))
+
+from ideal_zone import IDEAL_GREEN_RGB, IDEAL_QUADRANT_ALPHA
 
 REPO = Path(__file__).resolve().parents[3]
 ANALYSIS = REPO / "archive" / "experiment" / "phase1" / "eval" / "analysis"
@@ -100,6 +107,33 @@ def behavior(results_dir: str) -> dict[str, float]:
     }
 
 
+def _shade_ideal_quadrant(ax) -> None:
+    """Flat-fill the panel's own upper-left quadrant (low over-refusal, high
+    recall) in translucent green: no fade, no marker, no boundary line drawn
+    at the midline itself. The quadrant boundary is the midpoint of
+    whatever range is actually plotted on each axis, so it moves with a
+    zoomed panel rather than pointing at a fixed data value that may sit
+    outside the view. Restores the caller's axis limits afterward so the
+    shading rectangle cannot expand the view via autoscale.
+    """
+    xlim, ylim = ax.get_xlim(), ax.get_ylim()
+    x_mid = (xlim[0] + xlim[1]) / 2
+    y_mid = (ylim[0] + ylim[1]) / 2
+    r, g, b = (c / 255 for c in IDEAL_GREEN_RGB)
+    ax.add_patch(
+        plt.Rectangle(
+            (xlim[0], y_mid),
+            x_mid - xlim[0],
+            ylim[1] - y_mid,
+            facecolor=(r, g, b, IDEAL_QUADRANT_ALPHA),
+            edgecolor="none",
+            zorder=0,
+        )
+    )
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+
+
 # ---------------------------------------------------------------- fig-p1-07
 def fig_07_regimen_operating_points() -> None:
     g = grouped_rows()
@@ -108,8 +142,7 @@ def fig_07_regimen_operating_points() -> None:
         ("clean_sft_merged", "SFT (baseline)", "baseline", (6, -14)),
         ("clean_sft_dpo", "SFT→DPO", "pref", (-12, 10)),
         ("clean_sft_kto", "SFT→KTO", "pref", (6, -4)),
-        ("clean_sft_grpo_v1", "SFT→GRPO (first reward)", "grpo", (-118, 6)),
-        ("clean_sft_grpo_v2", "SFT→GRPO (rebalanced)", "grpo", (12, 12)),
+        ("clean_sft_grpo_v2", "SFT→GRPO", "grpo", (12, 12)),
         ("clean_sft_dpo_grpo", "DPO→GRPO", "stack", (-92, -24)),
         ("clean_sft_grpo_dpo", "GRPO→DPO", "stack", (-78, 6)),
         ("clean_sft_kto_grpo", "KTO→GRPO", "stack", (14, -14)),
@@ -145,6 +178,7 @@ def fig_07_regimen_operating_points() -> None:
     )
     ax.set_xlim(48, 82)
     ax.set_ylim(78, 100)
+    _shade_ideal_quadrant(ax)
     handles = [
         plt.Line2D([], [], marker="o", ls="", color=COLORS[c], label=l)
         for c, l in [
@@ -185,7 +219,7 @@ def fig_10_three_seed_replication() -> None:
     three-seed mean/CI values are the transcribed table above."""
     g = grouped_rows()
     arms = [
-        ("clean_sft_grpo_v2", "SFT->GRPO\n(rebalanced)", COLORS["grpo"], (12, 10)),
+        ("clean_sft_grpo_v2", "SFT->GRPO", COLORS["grpo"], (12, 10)),
         ("clean_sft_dpo_grpo", "DPO->GRPO", COLORS["stack"], (10, 14)),
         ("clean_sft_kto_grpo", "KTO->GRPO", COLORS["stack"], (12, -6)),
         ("clean_sft_grpo_dpo", "GRPO->DPO", COLORS["stack"], (-90, 4)),
@@ -242,6 +276,7 @@ def fig_10_three_seed_replication() -> None:
             color="#1f2933",
             zorder=5,
         )
+    _shade_ideal_quadrant(ax)
     ax.set_xlabel("Over-refusal on known questions (%)  <- better")
     ax.set_ylabel("Refusal recall on unknown questions (%)  better ->")
     ax.set_title(
@@ -278,7 +313,7 @@ def fig_08_confidence_channel() -> None:
     arms = [
         # (display label, calibration dict, behavior dict, color)
         (
-            "GRPO\n(rebal.)",
+            "GRPO",
             calib("clean_sft_grpo_v2_seed1"),
             grouped_rows()["clean_sft_grpo_v2"],
             COLORS["grpo"],
