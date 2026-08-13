@@ -1,0 +1,400 @@
+{
+  "substrate": "raw_base",
+  "ratios": [
+    0.1,
+    0.153,
+    0.235,
+    0.361,
+    0.554,
+    0.85,
+    1.304,
+    2.0
+  ],
+  "cells": {
+    "hs23:anchor": {
+      "status": "SELECTED",
+      "selected_rung": {
+        "ratio": 0.554,
+        "setpoint": 37.22863980865479,
+        "readback_within_tol": true,
+        "collapse_rate_on_dosed": 0.0,
+        "fit_confab_clean_tighten": 0.5,
+        "known_correct_cost": 1.0,
+        "n_records": 24,
+        "usable": true
+      },
+      "gain": 18.341275930876538,
+      "median_anchor_norm": 67.19971084594727,
+      "sigma": 2.0297737163412064,
+      "rung_table": [
+        {
+          "ratio": 0.1,
+          "setpoint": 6.719971084594727,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.08333333333333333,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 0.153,
+          "setpoint": 10.281555759429931,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.08333333333333333,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 0.235,
+          "setpoint": 15.791932048797607,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.16666666666666666,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 0.361,
+          "setpoint": 24.25909561538696,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.2916666666666667,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 0.554,
+          "setpoint": 37.22863980865479,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.5,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": true
+        },
+        {
+          "ratio": 0.85,
+          "setpoint": 57.119754219055174,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 1.304,
+          "setpoint": 87.62842294311524,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 2.0,
+          "setpoint": 134.39942169189453,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        }
+      ],
+      "rc": 0
+    },
+    "hs23:anchor_onward": {
+      "status": "SELECTED",
+      "selected_rung": {
+        "ratio": 0.361,
+        "setpoint": 24.25909561538696,
+        "readback_within_tol": true,
+        "collapse_rate_on_dosed": 0.0,
+        "fit_confab_clean_tighten": 1.0,
+        "known_correct_cost": 1.0,
+        "n_records": 24,
+        "usable": true
+      },
+      "gain": 11.951625651708355,
+      "median_anchor_norm": 67.19971084594727,
+      "sigma": 2.0297737163412064,
+      "rung_table": [
+        {
+          "ratio": 0.1,
+          "setpoint": 6.719971084594727,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.625,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": true
+        },
+        {
+          "ratio": 0.153,
+          "setpoint": 10.281555759429931,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.875,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": true
+        },
+        {
+          "ratio": 0.235,
+          "setpoint": 15.791932048797607,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.9583333333333334,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": true
+        },
+        {
+          "ratio": 0.361,
+          "setpoint": 24.25909561538696,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 1.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": true
+        },
+        {
+          "ratio": 0.554,
+          "setpoint": 37.22863980865479,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 1.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": true
+        },
+        {
+          "ratio": 0.85,
+          "setpoint": 57.119754219055174,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.9166666666666666,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": true
+        },
+        {
+          "ratio": 1.304,
+          "setpoint": 87.62842294311524,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 2.0,
+          "setpoint": 134.39942169189453,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        }
+      ],
+      "rc": 0
+    },
+    "hs29:anchor": {
+      "status": "NOT_RUN_no_usable_rung",
+      "median_anchor_norm": 208.63277435302734,
+      "sigma": 7.811584135836962,
+      "rung_table": [
+        {
+          "ratio": 0.1,
+          "setpoint": 20.863277435302734,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 0.153,
+          "setpoint": 31.920814476013184,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 0.235,
+          "setpoint": 49.02870197296142,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 0.361,
+          "setpoint": 75.31643154144287,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.08333333333333333,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 0.554,
+          "setpoint": 115.58255699157716,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.25,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 0.85,
+          "setpoint": 177.33785820007324,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.25,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 1.304,
+          "setpoint": 272.0571377563477,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 2.0,
+          "setpoint": 417.2655487060547,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        }
+      ],
+      "rc": 0
+    },
+    "hs29:anchor_onward": {
+      "status": "SELECTED",
+      "selected_rung": {
+        "ratio": 0.554,
+        "setpoint": 115.58255699157716,
+        "readback_within_tol": true,
+        "collapse_rate_on_dosed": 0.0,
+        "fit_confab_clean_tighten": 1.0,
+        "known_correct_cost": 1.0,
+        "n_records": 24,
+        "usable": true
+      },
+      "gain": 14.796301874458813,
+      "median_anchor_norm": 208.63277435302734,
+      "sigma": 7.811584135836962,
+      "rung_table": [
+        {
+          "ratio": 0.1,
+          "setpoint": 20.863277435302734,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.16666666666666666,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 0.153,
+          "setpoint": 31.920814476013184,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.3333333333333333,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 0.235,
+          "setpoint": 49.02870197296142,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.625,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": true
+        },
+        {
+          "ratio": 0.361,
+          "setpoint": 75.31643154144287,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.8333333333333334,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": true
+        },
+        {
+          "ratio": 0.554,
+          "setpoint": 115.58255699157716,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 1.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": true
+        },
+        {
+          "ratio": 0.85,
+          "setpoint": 177.33785820007324,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 1.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": true
+        },
+        {
+          "ratio": 1.304,
+          "setpoint": 272.0571377563477,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        },
+        {
+          "ratio": 2.0,
+          "setpoint": 417.2655487060547,
+          "readback_within_tol": true,
+          "collapse_rate_on_dosed": 0.0,
+          "fit_confab_clean_tighten": 0.0,
+          "known_correct_cost": 1.0,
+          "n_records": 24,
+          "usable": false
+        }
+      ],
+      "rc": 0
+    }
+  }
+}

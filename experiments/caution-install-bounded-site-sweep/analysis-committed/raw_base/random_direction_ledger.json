@@ -1,0 +1,87 @@
+{
+  "substrate": "raw_base",
+  "random_state": 20260707,
+  "k_draws_min": 3,
+  "max_abs_cos_vs_c_hat": 0.015,
+  "max_abs_cos_vs_u_d": 0.015,
+  "sites": {
+    "hs23": {
+      "hidden_dim": 2560,
+      "n_accepted": 3,
+      "n_voided": 4,
+      "accepted_draw_indices": [
+        1,
+        3,
+        6
+      ],
+      "void_ledger": [
+        {
+          "draw_index": 0,
+          "cos_vs_c_hat": 0.01956428654486141,
+          "cos_vs_u_d": -0.006034770773783663,
+          "accepted": false
+        },
+        {
+          "draw_index": 2,
+          "cos_vs_c_hat": 0.022973647610149354,
+          "cos_vs_u_d": -0.0004029789829787106,
+          "accepted": false
+        },
+        {
+          "draw_index": 4,
+          "cos_vs_c_hat": -0.0028744070313180114,
+          "cos_vs_u_d": -0.0287247274753823,
+          "accepted": false
+        },
+        {
+          "draw_index": 5,
+          "cos_vs_c_hat": 0.028443623483315958,
+          "cos_vs_u_d": -0.02570383874866411,
+          "accepted": false
+        }
+      ]
+    },
+    "hs29": {
+      "hidden_dim": 2560,
+      "n_accepted": 3,
+      "n_voided": 5,
+      "accepted_draw_indices": [
+        4,
+        6,
+        7
+      ],
+      "void_ledger": [
+        {
+          "draw_index": 0,
+          "cos_vs_c_hat": 0.055179581505534724,
+          "cos_vs_u_d": 0.020538706251639144,
+          "accepted": false
+        },
+        {
+          "draw_index": 1,
+          "cos_vs_c_hat": 0.003156722032761034,
+          "cos_vs_u_d": 0.0193277405047641,
+          "accepted": false
+        },
+        {
+          "draw_index": 2,
+          "cos_vs_c_hat": -0.039867734795092695,
+          "cos_vs_u_d": -0.00519549446360462,
+          "accepted": false
+        },
+        {
+          "draw_index": 3,
+          "cos_vs_c_hat": -0.03378303192419929,
+          "cos_vs_u_d": 0.03179457989510952,
+          "accepted": false
+        },
+        {
+          "draw_index": 5,
+          "cos_vs_c_hat": -0.019808629444098606,
+          "cos_vs_u_d": -0.02601234991635061,
+          "accepted": false
+        }
+      ]
+    }
+  }
+}

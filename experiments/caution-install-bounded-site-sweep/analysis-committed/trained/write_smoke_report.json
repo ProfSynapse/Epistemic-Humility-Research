@@ -1,0 +1,78 @@
+{
+  "substrate": "trained",
+  "probe_gain": 1.0,
+  "n_probe_rows": 8,
+  "cells": {
+    "hs13:anchor": {
+      "rc": 0,
+      "passed": true,
+      "frac_readback_within_tol": 1.0
+    },
+    "hs13:anchor_onward": {
+      "rc": 0,
+      "passed": true,
+      "frac_readback_within_tol": 1.0
+    },
+    "hs16:anchor": {
+      "rc": 0,
+      "passed": true,
+      "frac_readback_within_tol": 1.0
+    },
+    "hs16:anchor_onward": {
+      "rc": 0,
+      "passed": true,
+      "frac_readback_within_tol": 1.0
+    },
+    "hs19:anchor": {
+      "rc": 0,
+      "passed": true,
+      "frac_readback_within_tol": 1.0
+    },
+    "hs19:anchor_onward": {
+      "rc": 0,
+      "passed": true,
+      "frac_readback_within_tol": 1.0
+    },
+    "hs23:anchor": {
+      "rc": 0,
+      "passed": true,
+      "frac_readback_within_tol": 1.0
+    },
+    "hs23:anchor_onward": {
+      "rc": 0,
+      "passed": true,
+      "frac_readback_within_tol": 1.0
+    },
+    "hs29:anchor": {
+      "rc": 0,
+      "passed": true,
+      "frac_readback_within_tol": 1.0
+    },
+    "hs29:anchor_onward": {
+      "rc": 0,
+      "passed": true,
+      "frac_readback_within_tol": 1.0
+    },
+    "hs34:anchor": {
+      "rc": 0,
+      "passed": true,
+      "frac_readback_within_tol": 1.0
+    },
+    "hs34:anchor_onward": {
+      "rc": 0,
+      "passed": true,
+      "frac_readback_within_tol": 1.0
+    },
+    "hs35:anchor": {
+      "rc": 0,
+      "passed": true,
+      "frac_readback_within_tol": 1.0
+    },
+    "hs35:anchor_onward": {
+      "rc": 0,
+      "passed": true,
+      "frac_readback_within_tol": 1.0
+    }
+  },
+  "g0e_pass": true
+}

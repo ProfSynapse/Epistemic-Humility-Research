@@ -42,6 +42,8 @@ related:
 - '[[flavor-atlas-rawbase]]'
 - '[[pretrained-base-carries-broad-overt-unanswerability-code]]'
 - '[[overt-vs-covert-unanswerability-is-the-boundary-not-flavor]]'
+- '[[caution-install-bounded-site-sweep]]'
+- '[[caution-install-actuates-but-specificity-unresolved-on-trained-qwen3-4b]]'
 relationships:
 - type: supports
   target: '[[verbalized-confidence-channel-bottleneck]]'
@@ -152,6 +154,23 @@ relationships:
   target: '[[hallucination]]'
   target_id: term:hallucination
   confidence: medium
+- type: related_to
+  target: '[[caution-install-bounded-site-sweep]]'
+  target_id: experiment:caution-install-bounded-site-sweep
+  confidence: high
+  evidence:
+  - "experiments/caution-install-bounded-site-sweep/AMENDMENT.md#outcome
+    (falsifier does not fire; on a silent falsifier, the section 9
+    single-site/few-layer caveat is replaced by a statement naming the
+    searched space per the amendment's own registered rule)"
+- type: related_to
+  target: '[[caution-install-actuates-but-specificity-unresolved-on-trained-qwen3-4b]]'
+  target_id: mechanism:caution-install-actuates-but-specificity-unresolved-on-trained-qwen3-4b
+  confidence: medium
+  evidence:
+  - "experiments/caution-install-bounded-site-sweep/AMENDMENT.md#outcome
+    (Gate results, resolved 2026-08-13; G1 actuation clears broadly while
+    G3 specificity and G2 selectivity remain unresolved)"
 ---
 
 ## Summary

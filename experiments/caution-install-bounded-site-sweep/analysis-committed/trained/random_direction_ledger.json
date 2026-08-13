@@ -1,0 +1,333 @@
+{
+  "substrate": "trained",
+  "random_state": 20260707,
+  "k_draws_min": 3,
+  "max_abs_cos_vs_c_hat": 0.015,
+  "max_abs_cos_vs_u_d": 0.015,
+  "sites": {
+    "hs13": {
+      "hidden_dim": 2560,
+      "n_accepted": 3,
+      "n_voided": 12,
+      "accepted_draw_indices": [
+        8,
+        12,
+        14
+      ],
+      "void_ledger": [
+        {
+          "draw_index": 0,
+          "cos_vs_c_hat": -0.030074312020706092,
+          "cos_vs_u_d": 0.011336223203883588,
+          "accepted": false
+        },
+        {
+          "draw_index": 1,
+          "cos_vs_c_hat": -0.011823459576297192,
+          "cos_vs_u_d": -0.04051092840185743,
+          "accepted": false
+        },
+        {
+          "draw_index": 2,
+          "cos_vs_c_hat": -0.03265518945539059,
+          "cos_vs_u_d": 0.024090431409456232,
+          "accepted": false
+        },
+        {
+          "draw_index": 3,
+          "cos_vs_c_hat": -0.016739115211403106,
+          "cos_vs_u_d": 0.001953228687957268,
+          "accepted": false
+        },
+        {
+          "draw_index": 4,
+          "cos_vs_c_hat": -0.02450688955890413,
+          "cos_vs_u_d": -0.015304698113584553,
+          "accepted": false
+        },
+        {
+          "draw_index": 5,
+          "cos_vs_c_hat": -0.04649029301986615,
+          "cos_vs_u_d": -0.03341937249608029,
+          "accepted": false
+        },
+        {
+          "draw_index": 6,
+          "cos_vs_c_hat": 0.013086045653385257,
+          "cos_vs_u_d": -0.057860311829970125,
+          "accepted": false
+        },
+        {
+          "draw_index": 7,
+          "cos_vs_c_hat": -0.002793554913198909,
+          "cos_vs_u_d": -0.02714194948464332,
+          "accepted": false
+        },
+        {
+          "draw_index": 9,
+          "cos_vs_c_hat": 0.042021774863418584,
+          "cos_vs_u_d": -0.044853054423024785,
+          "accepted": false
+        },
+        {
+          "draw_index": 10,
+          "cos_vs_c_hat": -0.03894688784168498,
+          "cos_vs_u_d": -0.007643710449477859,
+          "accepted": false
+        },
+        {
+          "draw_index": 11,
+          "cos_vs_c_hat": 0.017042336028582537,
+          "cos_vs_u_d": 0.019654451267848587,
+          "accepted": false
+        },
+        {
+          "draw_index": 13,
+          "cos_vs_c_hat": -0.015587664061728733,
+          "cos_vs_u_d": -0.010843803258877072,
+          "accepted": false
+        }
+      ]
+    },
+    "hs16": {
+      "hidden_dim": 2560,
+      "n_accepted": 3,
+      "n_voided": 5,
+      "accepted_draw_indices": [
+        2,
+        4,
+        7
+      ],
+      "void_ledger": [
+        {
+          "draw_index": 0,
+          "cos_vs_c_hat": 0.004821291482857795,
+          "cos_vs_u_d": 0.04969883582215699,
+          "accepted": false
+        },
+        {
+          "draw_index": 1,
+          "cos_vs_c_hat": 0.04965561410771806,
+          "cos_vs_u_d": -0.009082082538601642,
+          "accepted": false
+        },
+        {
+          "draw_index": 3,
+          "cos_vs_c_hat": 0.0020534069815375637,
+          "cos_vs_u_d": 0.037167822276803784,
+          "accepted": false
+        },
+        {
+          "draw_index": 5,
+          "cos_vs_c_hat": 0.014568534805759988,
+          "cos_vs_u_d": 0.018716260800813136,
+          "accepted": false
+        },
+        {
+          "draw_index": 6,
+          "cos_vs_c_hat": -0.028004317201262084,
+          "cos_vs_u_d": 0.004248219459881909,
+          "accepted": false
+        }
+      ]
+    },
+    "hs19": {
+      "hidden_dim": 2560,
+      "n_accepted": 3,
+      "n_voided": 3,
+      "accepted_draw_indices": [
+        0,
+        3,
+        5
+      ],
+      "void_ledger": [
+        {
+          "draw_index": 1,
+          "cos_vs_c_hat": 0.0351518575455613,
+          "cos_vs_u_d": 0.012640397609925375,
+          "accepted": false
+        },
+        {
+          "draw_index": 2,
+          "cos_vs_c_hat": 0.015911236663621188,
+          "cos_vs_u_d": -0.0025664181634099193,
+          "accepted": false
+        },
+        {
+          "draw_index": 4,
+          "cos_vs_c_hat": 0.0273695639022554,
+          "cos_vs_u_d": 0.038223181323037064,
+          "accepted": false
+        }
+      ]
+    },
+    "hs23": {
+      "hidden_dim": 2560,
+      "n_accepted": 3,
+      "n_voided": 3,
+      "accepted_draw_indices": [
+        2,
+        4,
+        5
+      ],
+      "void_ledger": [
+        {
+          "draw_index": 0,
+          "cos_vs_c_hat": -0.04528770664521673,
+          "cos_vs_u_d": -0.019792228972419203,
+          "accepted": false
+        },
+        {
+          "draw_index": 1,
+          "cos_vs_c_hat": 0.01799106571204974,
+          "cos_vs_u_d": -0.009459701241725429,
+          "accepted": false
+        },
+        {
+          "draw_index": 3,
+          "cos_vs_c_hat": 0.03316276564411381,
+          "cos_vs_u_d": -0.0008203996095962219,
+          "accepted": false
+        }
+      ]
+    },
+    "hs29": {
+      "hidden_dim": 2560,
+      "n_accepted": 3,
+      "n_voided": 5,
+      "accepted_draw_indices": [
+        0,
+        2,
+        7
+      ],
+      "void_ledger": [
+        {
+          "draw_index": 1,
+          "cos_vs_c_hat": 0.03410254083937525,
+          "cos_vs_u_d": -0.005088778327822764,
+          "accepted": false
+        },
+        {
+          "draw_index": 3,
+          "cos_vs_c_hat": -0.04957261035035307,
+          "cos_vs_u_d": -0.002214081066844148,
+          "accepted": false
+        },
+        {
+          "draw_index": 4,
+          "cos_vs_c_hat": 0.05029154220334678,
+          "cos_vs_u_d": -0.006453135687656469,
+          "accepted": false
+        },
+        {
+          "draw_index": 5,
+          "cos_vs_c_hat": -0.002838332653637139,
+          "cos_vs_u_d": -0.03611661117890942,
+          "accepted": false
+        },
+        {
+          "draw_index": 6,
+          "cos_vs_c_hat": -0.0309308109079071,
+          "cos_vs_u_d": 0.01685260534286261,
+          "accepted": false
+        }
+      ]
+    },
+    "hs34": {
+      "hidden_dim": 2560,
+      "n_accepted": 3,
+      "n_voided": 5,
+      "accepted_draw_indices": [
+        1,
+        4,
+        7
+      ],
+      "void_ledger": [
+        {
+          "draw_index": 0,
+          "cos_vs_c_hat": 0.030555344091811952,
+          "cos_vs_u_d": -0.006232202087445482,
+          "accepted": false
+        },
+        {
+          "draw_index": 2,
+          "cos_vs_c_hat": -0.032033162349945625,
+          "cos_vs_u_d": 0.016663186992427914,
+          "accepted": false
+        },
+        {
+          "draw_index": 3,
+          "cos_vs_c_hat": 0.05375929374025261,
+          "cos_vs_u_d": 0.03236457637914855,
+          "accepted": false
+        },
+        {
+          "draw_index": 5,
+          "cos_vs_c_hat": 0.007036418105530639,
+          "cos_vs_u_d": -0.016831152950597242,
+          "accepted": false
+        },
+        {
+          "draw_index": 6,
+          "cos_vs_c_hat": 0.017737775327308816,
+          "cos_vs_u_d": -0.016532633176935672,
+          "accepted": false
+        }
+      ]
+    },
+    "hs35": {
+      "hidden_dim": 2560,
+      "n_accepted": 3,
+      "n_voided": 7,
+      "accepted_draw_indices": [
+        1,
+        3,
+        9
+      ],
+      "void_ledger": [
+        {
+          "draw_index": 0,
+          "cos_vs_c_hat": -0.005755398274755615,
+          "cos_vs_u_d": -0.03549749588175361,
+          "accepted": false
+        },
+        {
+          "draw_index": 2,
+          "cos_vs_c_hat": 0.02311518020478951,
+          "cos_vs_u_d": 0.013212156143060554,
+          "accepted": false
+        },
+        {
+          "draw_index": 4,
+          "cos_vs_c_hat": -0.018491802008111378,
+          "cos_vs_u_d": -0.013270407229051689,
+          "accepted": false
+        },
+        {
+          "draw_index": 5,
+          "cos_vs_c_hat": -0.01657457699763406,
+          "cos_vs_u_d": -0.0008538091861510174,
+          "accepted": false
+        },
+        {
+          "draw_index": 6,
+          "cos_vs_c_hat": 0.0071391944582670595,
+          "cos_vs_u_d": 0.0283125638212625,
+          "accepted": false
+        },
+        {
+          "draw_index": 7,
+          "cos_vs_c_hat": -0.015863586607677407,
+          "cos_vs_u_d": -0.011510867849603925,
+          "accepted": false
+        },
+        {
+          "draw_index": 8,
+          "cos_vs_c_hat": 0.016205627463698302,
+          "cos_vs_u_d": 0.03225434373155393,
+          "accepted": false
+        }
+      ]
+    }
+  }
+}

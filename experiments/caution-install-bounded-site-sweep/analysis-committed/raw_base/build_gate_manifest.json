@@ -1,0 +1,46 @@
+{
+  "substrate": "raw_base",
+  "mode": "imported",
+  "source_amendment": "j-space-midband-write-sweep-qwen3-4b",
+  "sites": {
+    "hs23": {
+      "hs_index": 23,
+      "decoder_block": 22,
+      "imported": true,
+      "c_hat_source_path": "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs23/c_hat_hs23.json",
+      "c_hat_sha256": "50c3b580d7077ae4c5ee4496aa075e9158ae57fd168961f3d1854cddce7f1a72",
+      "c_hat_identity": "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs23/c_hat_hs23.json@sha256:50c3b580d7077ae4c5ee4496aa075e9158ae57fd168961f3d1854cddce7f1a72 (amendment=j-space-midband-write-sweep-qwen3-4b, role='caution_write_c_hat', hs_index=23, decoder_block_index=22, fit_population='FIT split only (see split_manifest.json)')",
+      "u_d_source_path": "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs23/u_d_hs23.json",
+      "u_d_sha256": "3565c8a16670f7fe3542cd1e26ee66bc451e08f2e40718f6ea8e26f86cb0672b",
+      "u_d_identity": "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs23/u_d_hs23.json@sha256:3565c8a16670f7fe3542cd1e26ee66bc451e08f2e40718f6ea8e26f86cb0672b (amendment=j-space-midband-write-sweep-qwen3-4b, role='doubt_sensor_u_d', hs_index=23, decoder_block_index=22, fit_population='FIT split only (see split_manifest.json)')",
+      "tau": 0.13924013495876808,
+      "tau_frozen_method": "youden_j",
+      "gate_fit_source_path": "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+      "gate_fit_sha256": "deb84217dce14005e5828df177675bf1eb60b130c4a19ff4475a2c7705ccec8a",
+      "g0c_reproducible": true,
+      "g0c_note": "N/A_imported: not fit here; reproducibility means re-import is byte-identical (verified by re-reading the source file and comparing sha256, not assumed).",
+      "g0d_pass": true,
+      "g0d_note": "N/A_imported: not fit here; source amendment's own G0d gate (AUC >= 0.90) already governs this direction -- measured AUC=0.9905 (auc_neg_z_d_on_fit), from experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json."
+    },
+    "hs29": {
+      "hs_index": 29,
+      "decoder_block": 28,
+      "imported": true,
+      "c_hat_source_path": "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs29/c_hat_hs29.json",
+      "c_hat_sha256": "e6872569423e8cca31a61c857d27a3a89e89aa5f7061924c9ce21faa672bf692",
+      "c_hat_identity": "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs29/c_hat_hs29.json@sha256:e6872569423e8cca31a61c857d27a3a89e89aa5f7061924c9ce21faa672bf692 (amendment=j-space-midband-write-sweep-qwen3-4b, role='caution_write_c_hat', hs_index=29, decoder_block_index=28, fit_population='FIT split only (see split_manifest.json)')",
+      "u_d_source_path": "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs29/u_d_hs29.json",
+      "u_d_sha256": "8cebdf90ccf76ada347592a6f8ab7514fb5d8a75468ec091fde8c03805e9faf6",
+      "u_d_identity": "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/hs29/u_d_hs29.json@sha256:8cebdf90ccf76ada347592a6f8ab7514fb5d8a75468ec091fde8c03805e9faf6 (amendment=j-space-midband-write-sweep-qwen3-4b, role='doubt_sensor_u_d', hs_index=29, decoder_block_index=28, fit_population='FIT split only (see split_manifest.json)')",
+      "tau": 0.12091211815721492,
+      "tau_frozen_method": "youden_j",
+      "gate_fit_source_path": "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+      "gate_fit_sha256": "deb84217dce14005e5828df177675bf1eb60b130c4a19ff4475a2c7705ccec8a",
+      "g0c_reproducible": true,
+      "g0c_note": "N/A_imported: not fit here; reproducibility means re-import is byte-identical (verified by re-reading the source file and comparing sha256, not assumed).",
+      "g0d_pass": true,
+      "g0d_note": "N/A_imported: not fit here; source amendment's own G0d gate (AUC >= 0.90) already governs this direction -- measured AUC=0.9984 (auc_neg_z_d_on_fit), from experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json."
+    }
+  },
+  "g0_overall_pass": true
+}

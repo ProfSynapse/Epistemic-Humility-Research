@@ -780,7 +780,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (512)
+## Mechanisms (cause -> effect) (513)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -832,6 +832,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[causal-separability-enables-faithful-editing]] : Two concepts satisfying causal-separability (intervening on one does not affect the marginal distribution of the other in the score representation) **enables** 
 - [[causal-tracing-does-not-predict-edit-success]] : A model MLP layer's activation-patching (Causal Tracing) localization effect for a fact **prevents** No positive relationship to whether editing that layer with
 - [[caution-encoding-read-actuate-dissociation-across-families]] : In doubt-snap-cross-family-confirmatory's lead-verified c_hat validity audit (CPU, over existing captures across the four launched cells: qwen35_4b, qwen35_9b, 
+- [[caution-install-actuates-but-specificity-unresolved-on-trained-qwen3-4b]] : In the caution-install-bounded-site-sweep experiment (Tier 2, exploratory), the answerability-gated caution snap mechanism from doubt-gated-caution-tighten (an 
 - [[caution-readout-is-low-rank-on-collinear-carriers]] : Recomputing direction-removal robustness in a label-agnostic randomized PCA-128 basis instead of the raw 2,560-dimensional activation space. **mediates** The ca
 - [[caution-residual-ablation-relaxes-overrefusal-asymmetrically]] : Ablating the caution residual direction (activation steering at inference) in a small instruction-tuned model that over-refuses known questions. **decreases** O
 - [[caution-write-idk-jump-replicates-under-fresh-sampled-decode-seeds]] : Dosing the frozen Qwen3.5-4B hs20 c_hat write direction to 1.0x over the naming battery's registered 400-row P_CONFAB population, regenerated under a FRESH samp

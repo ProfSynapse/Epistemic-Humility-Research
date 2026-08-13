@@ -1,0 +1,16 @@
+{
+  "substrate": "raw_base",
+  "ground_truth_method": "retokenize_answer_text_approx",
+  "sites": {
+    "hs23": {
+      "a_lin": 0.0,
+      "n_correct": 0,
+      "n_total": 221
+    },
+    "hs29": {
+      "a_lin": 0.02262443438914027,
+      "n_correct": 5,
+      "n_total": 221
+    }
+  }
+}
