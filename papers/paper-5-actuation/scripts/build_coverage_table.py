@@ -81,8 +81,9 @@ SECTION_MAP: dict[str, str] = {
     "first-person-injection": "4.1",  # content @370-377
     "radial-anti-propensity-steering": "4.2",  # content @399-443 (Fig 6)
     "doubt-regulated-caution": "NOT NARRATED IN BODY (front matter + Appendix A only; "
-    "flagged as open work at Appendix C: \"Decide whether AC belongs in the "
-    "main result body\" -- AC is this cell's legacy amendment label)",
+    "resolved 2026-08-13: AC remains appendix-only by PI ruling -- the paper's "
+    "scope is deliberately raw-base/untrained substrates and AC is "
+    "trained-lineage predecessor context -- AC is this cell's legacy amendment label)",
     "second-person-doubt-prime": "4.3",  # content @453-457
     "oracle-dissociation-prime": "4.3",  # content @461-465
     "divergent-pool-own-readout": "4.3",  # content @469-473

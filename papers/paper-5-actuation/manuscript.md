@@ -180,12 +180,18 @@ Those results are about reading. Actuation runs the other direction. If a model
 already contains a faithful epistemic signal, can we make its generation policy
 consult that signal? Can we steer the residual stream, inject the signal in text, reward
 agreement with it, or write into the workspace-like layer band where reportable
-representations live?
+representations live (Gurnee et al., 2026)?
 
 This is not a trivial extension of probing. A linear probe can be useful even if
 the model's policy never uses the direction it reads. Conversely, a direction can
-be behaviorally causal without being a faithful self-readout. The claim the
-evidence supports is correspondingly narrow:
+be behaviorally causal without being a faithful self-readout. Neither half is
+peculiar to this program. Representation engineering treats reading a concept
+direction and writing along it as one method (Zou et al., 2023), and a
+controlled study across five models finds the two can come apart sharply: a
+logistic probe above 93% accuracy at every layer produced near-zero steering
+effect at its own best-accuracy layer, while alignment with the model's own
+unembedding readout predicted steering success where probe accuracy did not
+(Billa, 2026). The claim the evidence supports is correspondingly narrow:
 
 > **A readable direction is not automatically a usable actuator.** Epistemic
 > directions can be strong, portable readouts while remaining weak,
@@ -247,11 +253,22 @@ separation), while stated confidence was nearly flat.
 then split the internal state into two deployable readouts: an answerability
 **gate** before generation and a correctness **dial** after generation. The
 gate/dial/veto pipeline is useful because it reads the model from outside
-rather than asking the model to faithfully report itself.
+rather than asking the model to faithfully report itself. Both results sit
+inside an established finding that hidden states carry knowledge and truth
+structure the output channel does not express (Burns et al., 2022; Kadavath et
+al., 2022; Marks et al., 2023; Orgad et al., 2024), including answerability
+specifically, which is linearly readable even on items the model goes on to
+hallucinate an answer for (Slobodkin et al., 2023), and entity-level knowledge
+awareness, which is readable as a direction and causally gates whether the
+model refuses or fabricates (Ferrando et al., 2024).
 
 That distinction motivates the present study. External reading can support a
 classifier, a monitor, or an abstention wrapper, but it does not prove the model's
-own policy uses the signal. Actuation asks whether the internal state can be
+own policy uses the signal. Abstention itself is also not a solved problem an
+external controller would be redundant with: the design space is wide (Wen et
+al., 2024), training a model to say "I don't know" is a substantial project in
+its own right (Cheng et al., 2024), and reasoning post-training degrades
+abstention rather than fixing it (Kirichenko et al., 2025). Actuation asks whether the internal state can be
 made causal for behavior.
 
 ### 2.2 What would count as use?
@@ -268,6 +285,15 @@ The cleanest positive evidence would satisfy three conditions:
 - specificity: a permuted or random control does not reproduce the effect;
 - selectivity: the intervention moves target failures without imposing the
   same action on rows where it is inappropriate.
+
+The specificity condition is the one the external literature has found hardest
+to satisfy, which is why this paper spends an arc of experiments on it
+(Sections 4.9 through 4.11): a random unit vector orthogonal to a fitted
+steering vector can produce behavioral effects statistically indistinguishable
+from the fitted vector itself across several traits and models (Venkatesh and
+Kurapath, 2026). Because intervention conclusions are also sensitive to metric
+and corruption choices (Zhang et al., 2023), every control below was frozen
+before outcome evaluation.
 
 The successful cells below meet these conditions only when readout and write are
 separated: the readout gates the intervention, and the write supplies a fixed
@@ -304,8 +330,13 @@ We tested four ways to route an epistemic readout into behavior.
   fitted direction at a specified layer and token scope, either by adding a
   scaled copy of the direction or, in the erase-write form used by most cells
   here, by removing the state's existing component along that direction and
-  writing a fixed setpoint in its place. These are the closest analogue to
-  turning the probe around. Every activation write reported in this paper is
+  writing a fixed setpoint in its place, following the activation-addition
+  line (Turner et al., 2023) and its contrastive difference-of-means
+  construction (Panickssery et al., 2023), within the broader read-and-write
+  program of representation engineering (Zou et al., 2023). These are the
+  closest analogue to turning the probe around, the strategy inference-time
+  intervention makes explicit for a truthfulness probe (Li et al., 2023).
+  Every activation write reported in this paper is
   timed to a fixed pre-generation position and persists through decode; a
   mid-generation write timed to the point where the model commits to an
   answer was also attempted, but is not reported as a result because an
@@ -326,13 +357,25 @@ projection: confabulation-prone rows project lower on it than known-correct
 answered rows, so the gate fires when `-z_d` exceeds a threshold selected on a
 FIT split. The actuator is a `c_hat` boundary-push direction, constructed by
 orthogonalizing a raw refuse/control direction against the KU direction and
-confab-propensity controls. Later J-space experiments reuse per-layer versions
-of these gates and write directions.
+confab-propensity controls. The raw direction is built the way refusal
+directions are built elsewhere (Arditi et al., 2024); the orthogonalization is
+a guard against the gate and the actuator collapsing into one axis, and it is
+worth saying plainly that it does not buy representational independence, since
+ablating one orthogonal refusal direction measurably changes another
+(Wollschläger et al., 2025), and refusal is not well captured by any single
+direction (Joad et al., 2026). Later J-space experiments reuse per-layer
+versions of these gates and write directions.
 
-The J-space line adds a Jacobian lens. For a hidden-state vector at a layer, the
-J-lens estimates how that vector would verbalize through the model's final-token
-logit space. We use it in two ways: first as a read-only localization diagnostic,
-and then backward as a source of token-target write directions.
+The J-space line adds the Jacobian lens (J-lens) of Gurnee et al. (2026). For a
+hidden-state vector at a layer, the J-lens estimates the first-order causal
+effect of that vector on the model's final output, a Jacobian rather than a
+fixed or learned linear map, and applies the unembedding matrix to the result
+to give a vocabulary readout of what the model is poised to verbalize at that
+point. Gurnee et al. find that workspace-like properties, meaning
+representations available for report and for flexible internal use, emerge in
+an intermediate band of layers rather than uniformly. We use the lens in two
+ways: first as a read-only localization diagnostic, and then backward as a
+source of token-target write directions.
 
 ### 3.3 Outcomes and controls
 
@@ -342,12 +385,23 @@ with a single answer field. The main cost outcome is **known-correct false
 refusal**: a row previously answered correctly is no longer a well-formed correct
 answer after intervention.
 
-Controls are matched to the mechanism:
+Controls are matched to the mechanism, and each control's metric and
+construction were declared before outcome evaluation, following the standard
+caution that intervention conclusions are sensitive to exactly those choices
+(Zhang et al., 2023):
 
 - text-injection arms use placebo or permuted labels with the same prompt form;
 - reward arms compare true-sensor and permuted-sensor rewards;
 - hidden-state write arms use random-direction controls and permuted gates;
 - J-space token-target arms use a matched random J-space direction.
+
+**Populations.** Confabulation-prone rows come from the unanswerable split of
+Known-Unknown Questions (Amayuelas et al., 2023), whose per-row subtype labels
+(controversial, future-unknown, underspecified, and the rest) Section 4.11
+uses for its subtype breakdown. Known-correct rows come from PopQA (Mallen et
+al., 2022) and TriviaQA (Joshi et al., 2017), graded against gold answers.
+Every cell below draws its rows from these three sources unless its governing
+amendment says otherwise.
 
 ---
 
@@ -357,7 +411,13 @@ Controls are matched to the mechanism:
 
 The first actuation attempt asked the most direct question: if gate and dial
 directions are readable, can we write them back into the model at the positions
-where they read best?
+where they read best? That premise, that the best read site is the best write
+site, is one an independent study has since tested directly and rejected: probe
+accuracy does not predict steering success, and the layer where a probe reads
+best can produce no steering effect at all (Billa, 2026). Steerability also
+tracks how separable the two activation clusters are along the fitted
+difference direction rather than how accurately a classifier can be fit (Braun
+et al., 2025).
 
 On Qwen3.5-4B, an 8-cell steering grid crossed two signals (gate/dial), two
 positions (anchor/end), and two channels (activation write/text injection). No
@@ -476,15 +536,29 @@ model consult its own readout.
 
 Authority is an actuator, but it is not the self-monitoring channel this
 section set out to find. It can install refusal behavior from outside, even
-against the model's own knowledge.
+against the model's own knowledge. That models capitulate to authoritative
+framing against their own prior answer is well documented: challenged on a
+correct answer, models flip roughly 46% of the time on average, with
+confrontational and persona-based challengers the most effective (Laban et
+al., 2023). The steering analogue is equally well documented, in that an
+externally supplied knowledge-awareness direction can force refusal on
+entities the model does in fact know about (Ferrando et al., 2024).
 
 ### 4.4 Rewarding the readout also fails to train consultation
 
 If prompting does not make the model consult its readout, perhaps training can.
-The probe-as-reward cell took two checkpoints that had been supervised
-fine-tuned on clean data and trained both with the same reinforcement-learning
-recipe (group-relative policy optimization, which scores a group of sampled
-completions against each other rather than against a learned value model). In
+Reward is known to move uncertainty behavior: proper scoring rules over
+verbalized confidence improve calibration without an accuracy cost (Damani et
+al., 2025), direct confidence expression responds to a logarithmic scoring
+reward (Bani-Harouni et al., 2025), and metacognitive self-judgment as a
+reward signal improves faithful uncertainty expression over standard RL (Liu
+et al., 2026). The question here is narrower and harder: not whether reward
+moves the behavior, but whether it makes the policy consult its own
+hidden-state readout. The probe-as-reward cell took two checkpoints that had
+been supervised fine-tuned on clean data and trained both with the same
+reinforcement-learning recipe, group-relative policy optimization (Shao et
+al., 2024), which scores a group of sampled completions against each other
+rather than against a learned value model. In
 the TRUE arm, reward agreement was computed from a frozen probe read from the
 policy's own pre-generation state. In the PERMUTED arm, the sensor was
 permuted within class. The primary held-out metric was congruence between the
@@ -501,13 +575,20 @@ not learn to consult its own readout.
 Reward can shape behavior correlated with the sensor, but this does not imply
 policy-readout congruence. On rows where content and readout dissociate, the
 policy sides with learned content and boundary behavior rather than with its
-own current probe state.
+own current probe state. A ternary abstention reward under GRPO reaches a
+compatible conclusion from a different direction, moving abstention behavior
+without coupling it to confidence (Mohamadi et al., 2025).
 
 ### 4.5 A gated hidden-state controller succeeds, and the gate's role depends on the dose regime
 
 The first robust positive result came from changing the intervention form. Rather
 than asking a single direction to be both sensor and actuator, the successful
-controller separates them:
+controller separates them. The nearest published analogue is entity-level:
+directions that detect whether a model can recall facts about a queried entity
+causally gate refusal versus fabrication when written back in (Ferrando et
+al., 2024). The controller below applies the same read-then-write logic at the
+level of whole questions, and separates the two roles into two different
+directions:
 
 1. a KU readout gate decides which rows look like confabulations;
 2. a fixed boundary push (dosed write) writes only those fired rows to a
@@ -524,7 +605,11 @@ versus 73.5% gated). The 60.1% figure is not a refusal rate; it decomposes as
 degenerate output. At this specific write site and dose, which the margin
 theory identifies as an overdrive operating point, the gate is the sole
 source of selectivity: the write, left unconditional, damages most
-known-correct rows.
+known-correct rows. This is the collateral-damage trade-off that additive
+steering methods are known to face at effective magnitudes (Nguyen et al.,
+2026), and that norm-violating writes in particular incur as outright
+capability collapse (Dang and Ngo, 2026). What the gate buys here is a way to
+pay that cost only on rows the readout has already flagged.
 
 ![FIG-P5-02: Dose-matched ungated versus gated write, at the resolved Qwen3-4B / L34 / dose-200 operating point](figures/fig-p5-02-ungated-vs-gated-h4.png)
 **Figure 2.** Dosing every held-out row unconditionally versus dosing only
@@ -576,13 +661,15 @@ both confabulation conversion and known-correct cost.
 
 The successful gate-and-snap controller still raised a mechanistic question:
 where should a write occur? The inherited boundary-push write site was an L34
-residual-stream direction. A Jacobian-lens characterization asked whether this
-site lies inside or outside the model's workspace-like verbalizable band.
+residual-stream direction. A Jacobian-lens characterization (Gurnee et al.,
+2026) asked whether this site lies inside or outside the model's
+workspace-like verbalizable band.
 
 The instrument passed a correctness smoke: the final-layer J-lens closely
 matched the direct unembed baseline over 1000 prompts, with mean cosine 0.9811,
 mean top-10 overlap 0.82, and top-1 match 3/5 over five random directions. The
-H1 read then found that boundary-push-like directions verbalized as first-person,
+registered direction-verbalization read (H1) then found that
+boundary-push-like directions verbalized as first-person,
 absence, error, and impossibility tokens, while the known-unknown direction
 verbalized more as answer/reply tokens. That readout says something about what
 the direction is: a direction that verbalizes toward answer/reply tokens is
@@ -593,8 +680,11 @@ unanswerability recognition than to self-directed uncertainty
 localized a workspace-like band to hs=23-29, peaking at hs=26. The inherited
 L34 direction corresponds to hs=34, just after that band.
 
-The first causal layer sweep at a fixed absolute dose stopped at G0 because dose
-200 collapsed hs23 and hs26. FIT-only dose calibration fixed that: usable
+The first causal layer sweep at a fixed absolute dose stopped at its
+registered instrument-validity stop gate (G0) because dose 200 collapsed hs23
+and hs26, the coherence collapse that additive steering incurs once its
+magnitude leaves the range the residual stream tolerates (Dang and Ngo, 2026).
+FIT-only dose calibration fixed that: usable
 non-collapsing setpoints were recovered at hs23=25, hs26=75, hs29=125, and
 hs34=175. The held-out contrast then supported the layer-site hypothesis. Over
 443 held-out rows, hs23 (rd 0.639) achieved 165/185 clean refusals (89.2%)
@@ -610,7 +700,11 @@ late write site, with the selected setpoint marked.
 
 The late write site was not dead, but it was suboptimal on the pool that
 produced this contrast. Writing near the workspace-like band made the same
-regulated boundary push substantially more effective there.
+regulated boundary push substantially more effective there. This is a second,
+independent route to the same practical conclusion Billa (2026) reaches on
+binary concept families, that the standard middle-layer heuristic and the
+probe's own best layer are both poor guides to where a write will land, and
+that a readout of what the model is prepared to verbalize is a better one.
 
 That +22.7 point margin needed a same-model replication, because the
 reference site was already close to its own ceiling on the pool that
@@ -661,7 +755,14 @@ top of a controller that was already doing the job.
 
 Verbalizable token directions can be real actuators without being useful
 additive controllers. A direction that points toward refusal tokens is not
-automatically a better policy intervention.
+automatically a better policy intervention. One reading of the redundancy is
+that the `c_hat` write is already routing through the same pathway: clamping
+the logits of refusal and compliance tokens to their unsteered values
+collapses steered refusal from 86.5% to 26.0%, evidence that steering acts on
+this behavior largely through token emission probability rather than upstream
+reasoning (Sun et al., 2026). If the boundary push is already moving those
+token logits, a direction built to move them explicitly has little left to
+add.
 
 ### 4.8 Supporting pattern beyond the core epistemic arc
 
@@ -678,23 +779,31 @@ A separate answer-sycophancy readout, still an unsigned interim pilot rather
 than a governed result, found a readable L24 direction on Qwen3-4B where the
 actuator failed to beat a matched control: the write path fired and a neutral
 guardrail passed, but the anti-sycophancy-vs-control gate failed with diff 0.
+That sycophancy is readable and steerable from an internal subspace is
+established (Panickssery et al., 2023; Sun et al., 2026), so the pilot's
+negative is about this direction and this control, not about the construct.
 The pilot points the same way as the governed cells: readable behavioral
 directions do not automatically become clean actuators.
 
 ### 4.9 Cross-family replication surfaces an instrument problem, not (yet) a mechanism problem
 
 The gated boundary-push controller in Section 4.5 was fit and evaluated on raw-base
-Qwen3-4B alone. A cross-family test asked whether the same KU-gated boundary
+Qwen3-4B alone. Steering interventions are known to transfer poorly across
+families, with several methods failing to reproduce their headline effect on
+the majority of model-task pairs once evaluated across dozens of models
+(Queiroz Da Silva et al., 2025), so a cross-family test was a real test rather
+than a formality. It asked whether the same KU-gated boundary
 push (dosed write), refit at each family's own atlas-located workspace-band site, actuates
 refusal on Llama-3.2-3B and Mistral-7B-v0.3. The initial run
-(`rr-cross-family-raw-refusal`) landed a null shape on both families under a
+(`rr-cross-family-raw-refusal`, hereafter RR) landed a null shape on both families under a
 locked three-phrase canonical refusal detector. On the mistral leg, an
 unblinded post hoc hand-read of the non-refused rows found well-formed
 abstention idioms the detector's fixed vocabulary did not count, suggesting
 the null was partly a detector-width artifact rather than an absence of the
 behavior.
 
-A confirmatory replication (`rr2-mistral-adjudicated-refusal-confirm`) tested
+A confirmatory replication (`rr2-mistral-adjudicated-refusal-confirm`,
+hereafter RR2) tested
 that suggestion directly, on fresh held-out mistral rows never seen by the
 detector-width caveat, using two registered instruments: a widened automatic
 pattern detector (detector v2) and a primary blinded adjudication lane in
@@ -710,7 +819,13 @@ and cost gates passed.
 The placebo gate did not. A random-direction control matched in magnitude to
 the true boundary-push write lifted adjudicated confab abstention from a
 368/1312 = 0.280 baseline to 465/1312 = 0.354, a +7.39 point rise against the
-registered 2-point no-op tolerance. Per the pre-registered falsifier, this
+registered 2-point no-op tolerance. A magnitude-matched random direction
+moving refusal behavior is not itself surprising in hindsight: steering in a
+random, semantically empty direction reliably shifts refusal in the other
+direction too, raising harmful compliance from a 0% baseline to between 1% and
+13% across model families (Korznikov et al., 2025). What the registered
+tolerance assumed, and what this program had not measured, was that such a
+direction would do nothing. Per the pre-registered falsifier, this
 failure alone falsifies the claim that the write is direction-specific on
 mistral, even though the gated arm's own lift over baseline (+41.9 points,
 5.7 times the random direction's) remains far larger. The result is reported
@@ -782,7 +897,8 @@ any of these results are promoted from exploratory to headline.
 
 ### 4.10 A corrected effect-ratio criterion still falsifies mistral direction-specificity, and reveals why single-seed placebo readings mislead
 
-A third experiment (`rr3-corrected-placebo-replication`) applied exactly the
+A third experiment (`rr3-corrected-placebo-replication`, hereafter RR3)
+applied exactly the
 design rule the calibration study called for. Before any new data, it
 registered an effect-ratio primary gate in place of a flat tolerance: the
 gated arm's confab lift over baseline must be at least 3x the MAXIMUM
@@ -822,7 +938,12 @@ and posture; Outcome).
 A methods finding follows from this design: single-seed placebo readings are
 unreliable. The three fresh random seeds, at the same layer, dose, and
 population, produced lifts
-spanning -7.4 to +21.8 points, a 29-point spread from seed choice alone.
+spanning -7.4 to +21.8 points, a 29-point spread from seed choice alone. High
+variance is the documented condition of steering effects generally rather than
+a quirk of this placebo: per-input steerability varies widely within a single
+concept, and on several datasets roughly half of inputs are anti-steerable,
+with the same direction moving behavior the opposite way (Tan et al., 2024;
+Braun et al., 2025, report anti-steerable fractions from 3% to 50%).
 RR2's single random seed (+7.39 points, cited in Section 4.9) and the
 calibration study's family-signed placebo map (mistral +7.39, qwen -5.13;
 Section 4.9) are each a single draw from that distribution. RR3's Outcome
@@ -863,7 +984,8 @@ with wide single-seed variance (-7.4 to +21.8).
 
 A depth caveat applies to the llama leg. The llama ladder ran at that family's
 read-selected atlas site, hs20 = rd 0.714. llama's own write site, the one
-that cleared `dose_is_usable` and passed held-out G1 at 0.7420, is hs17 =
+that cleared `dose_is_usable` and passed the held-out clean-tightening gate
+(G1) at 0.7420, is hs17 =
 rd 0.607. The two are not interchangeable: read-optimal and actuate-optimal
 depth are separately measured quantities in this program, and rd 0.714 sits
 above the band in which any family here has actuated at all. A null placebo
@@ -1019,7 +1141,13 @@ The census sharpens three of this paper's claims.
   requires the selectivity evidence this paper already leans on (moving
   target failures without imposing refusal on known-correct rows) together
   with a specificity margin referenced to the family's own measured placebo
-  null, not to zero.
+  null, not to zero. The same problem has been reported from two other
+  directions: random semantically empty directions reliably break refusal
+  (Korznikov et al., 2025), and a random vector orthogonal to a fitted
+  steering vector can be behaviorally indistinguishable from it, which makes
+  the fitted vector non-identifiable as the cause of its own effect
+  (Venkatesh and Kurapath, 2026). A measured per-family null is the
+  operational answer this paper can offer to that problem.
 
 Breaking the same placebo response down by question type within the
 known-unknown pool (`placebo-signflip-question-type-analysis` Outcome) shows
@@ -1027,7 +1155,12 @@ the family-level sign is not evenly distributed: one subtype,
 future-unknown items, carries qwen's entire suppression (-24.7 points against
 -2.8 or smaller elsewhere) and is also mistral's single largest recruitment
 delta (+11.8 points), the extreme mover in both families but in opposite
-directions. Question type does not explain away the cross-family sign
+directions. That this particular subtype is the extreme mover is at least
+consistent with its construction: the dataset's authors report future-unknown
+as the category models classify most easily, because it carries distinctive
+temporal linguistic cues the other categories lack (Amayuelas et al., 2023),
+so it is the subtype where a row's unanswerability is most legible from
+surface form alone. Question type does not explain away the cross-family sign
 difference at the family level, but it shows the sign is not homogeneous
 within a family either.
 
@@ -1152,7 +1285,7 @@ Taken together, the channels sort by how far each one gets before it breaks.
 | KU-gated boundary push (dosed write), mid-band regime (Qwen3.5-4B hs20 = rd 0.625, mistral hs16 = rd 0.500; dose_abs 12.608 qwen, 3.665 mistral) | Permuted-gate confab abstention already 0.550 qwen / 0.600 mistral, near the true gate's 0.689 / 0.694: the write is largely self-sorting | True gate's own contribution, Gap_Sel(c_hat), is real but sub-floor (0.148 qwen, 0.129 mistral, vs a 0.20 floor); cost protection sub-floor too (0.008 / 0.034 vs 0.10) | At this dose, the write self-sorts; the gate's role reduces to a modest increment plus cost governance, not the source of selectivity |
 | Mid-band J-space write (layer site, not dose regime; Qwen3-4B, 36 blocks) | hs23 = rd 0.639 beats hs34 = rd 0.944 by +22.7pp | Needs layer-specific dose; not yet cross-family | Write site matters |
 | Natural J-token write | Non-inert token-only effect | Redundant with `c_hat` hybrid | Verbalizable token target is not enough |
-| Cross-family gated snap (mistral, bounded negative) | Wide-instrument adjudicated refusal 69.9%, cost pristine (0.52% known-correct); benefit and cost gates reproduce at every re-test | Direction-specificity falsified three times independently, at three sites and doses: RR2's flat 2-point placebo tolerance, RR3's corrected 3x effect-ratio gate (ratio 1.87), and the mid-band factorial's S1 leg (ratio 2.03, K=15 census denominator); the mid-band factorial's own gate-contribution leg is also sub-floor (Gap_Sel 0.129 vs 0.20); the cross-family confirmatory fleet found a true behavioral null at the registered late write site (0/874 clean_tighten at every dose); a 15-seed placebo census (Section 4.11) resolved all three families' matched-magnitude placebo as sign-consistent rather than seed noise (qwen suppresses 14/15, mistral recruits at the 12/15 boundary, llama newly suppresses 12/15), so llama is not a null control | Mistral is readable everywhere the audit looked but not shown actuable by a direction-specific write at any tested site; placebo criteria must be registered against each family's measured per-family null distribution, not a flat tolerance or a single seed; the census (Section 4.11) supplies that distribution at K=15 for percentile-based or sign-opposition criteria |
+| Cross-family gated snap (mistral, bounded negative) | Wide-instrument adjudicated refusal 69.9%, cost pristine (0.52% known-correct); benefit and cost gates reproduce at every re-test | Direction-specificity falsified three times independently, at three sites and doses: RR2's flat 2-point placebo tolerance, RR3's corrected 3x effect-ratio gate (ratio 1.87), and the mid-band factorial's direction-specificity (S1) leg (ratio 2.03, K=15 census denominator); the mid-band factorial's own gate-contribution leg is also sub-floor (Gap_Sel 0.129 vs 0.20); the cross-family confirmatory fleet found a true behavioral null at the registered late write site (0/874 clean_tighten at every dose); a 15-seed placebo census (Section 4.11) resolved all three families' matched-magnitude placebo as sign-consistent rather than seed noise (qwen suppresses 14/15, mistral recruits at the 12/15 boundary, llama newly suppresses 12/15), so llama is not a null control | Mistral is readable everywhere the audit looked but not shown actuable by a direction-specific write at any tested site; placebo criteria must be registered against each family's measured per-family null distribution, not a flat tolerance or a single seed; the census (Section 4.11) supplies that distribution at K=15 for percentile-based or sign-opposition criteria |
 | Depth-ladder write, KV-sharing seam (gemma, formerly reputed inert) | Two below-seam sites (relative depth 0.357, 0.524) clear held-out clean-tightening and known-correct cost floors, overturning the reputation that this family does not actuate; the shallower of the two carried no placebo arm, and at 0.524 all five accepted random draws produced zero lift, a degenerate pass reported under that label rather than a large specificity margin | Direction-specificity fails everywhere above the seam it has been tested: relative depth 0.571 clears both gates and fails it (worst placebo draw reproduces 88% of the effect, ratio 1.139), 0.595 does the same (78%, ratio 1.279), and 0.619 and 0.643 never reach a usable dose (best fit-split tightening 0.375 and 0.250 against a 0.50 floor); the sharing-on/sharing-off contrast meant to isolate the seam mechanism could not run because turning sharing off broke the model outright (known-correct well-formedness 0% to 100% malformed, NLL 3.53 to 12.33) | Four families deep, no family in this program has ever been shown to be architecturally inert: gemma's null was a depth-coverage artifact of testing only relative depth >= 0.81. Every above-seam site of the cross-family operating range has now been measured and none produced adjudicated direction-specific actuation, but relative depth and KV-sharing status are the same variable across that band, so whether the failure traces to the seam or to the depth falloff every family shows remains open; the ablation built to answer that broke the substrate it was meant to probe |
 
 The practical controller that emerges is not "make the model introspect." It is:
@@ -1186,7 +1319,11 @@ generation policy. There are at least three separable bottlenecks:
   and writable at another.
 
 This explains why a probe can be near-perfect while steering is flat, and why a
-prompt can change refusal behavior without improving readout congruence.
+prompt can change refusal behavior without improving readout congruence. The
+write-site bottleneck in particular is not specific to epistemic directions: a
+probe above 93% accuracy at every layer of a model can still produce near-zero
+steering effect at its own best layer, with steering success tracking
+alignment to the model's unembedding readout instead (Billa, 2026).
 
 ### 6.2 Why the gate matters, and why its role changes with dose
 
@@ -1210,14 +1347,23 @@ same separation used in ordinary control systems, sensor, controller,
 actuator, but which part of the system supplies selectivity is
 dose-dependent: at overdrive the controller (gate) does the selecting, and at
 mid-band the actuator (write) already discriminates while the controller
-mainly tightens cost.
+mainly tightens cost. Read as a dosing problem this is the same
+accuracy-versus-effect frontier that work on collateral damage in activation
+steering characterizes (Nguyen et al., 2026); the gate is one way of moving
+along that frontier without lowering the dose.
 
 ### 6.3 Why J-space matters, and where the account is scoped
 
 The J-space diagnostic gives a mechanistic explanation for one repeated pattern:
-directions are portable as readouts but fragile as writes. If the reportable or
-workspace-relevant component of a concept lives in a mid-to-late band, late
-residual writes may be downstream of the useful broadcast site. The calibrated
+directions are portable as readouts but fragile as writes. Gurnee et al. (2026)
+report that workspace-like properties emerge only in an intermediate band of
+layers, with early layers giving noisy readouts and late layers shading into
+output preparation. If the reportable or workspace-relevant component of a
+concept lives in such a band, late residual writes may be downstream of the
+useful broadcast site. The band this paper measures on Qwen3-4B sits later
+than the range Gurnee et al. describe, at relative depth 0.64 to 0.81, so the
+claim here is that a band of this kind exists and matters for write placement,
+not that it is the same band at the same depth. The calibrated
 layer contrast supports that account on raw-base Qwen3-4B, but a cross-family
 atlas test of the account's own predicted shape (`jspace-family-atlas`
 Outcome) did not hold: the effective-dimensionality profile that motivated
@@ -1260,6 +1406,13 @@ not population effect-size estimates. Key limits:
   placebo sign-consistent rather than seed noise in all three families, so the
   single-seed caution stands but the underlying nulls are now measured, not
   assumed;
+- every direction in this paper is fit once, statically, on single-turn rows,
+  and applied without re-estimation. Linear representations are not guaranteed
+  to be stable under that assumption: factuality directions have been shown to
+  invert sign over a few turns of role-cued conversation, with steering along
+  a statically fitted direction producing opposite behavioral changes at
+  different points in the same conversation (Lampinen et al., 2026). Nothing
+  here tests multi-turn or context-shifted deployment;
 - the controller has a coherence/saturation ceiling on an out-of-population
   error class. On world-known items, where the error is a confidently wrong
   answer rather than acknowledged ignorance, steering the fitted direction
@@ -1297,7 +1450,10 @@ One asymmetry should shape how that next study is designed. The known-unknown
 (answerability) axis this paper's gated write is built on reads at near-ceiling
 accuracy on Qwen3-4B and, in the companion readout paper that established the
 gate/dial pipeline, transfers across four model families at AUROC 0.997 to
-0.998 with no per-family refitting. The correctness axis that same paper reads
+0.998 with no per-family refitting. Knowledge-awareness directions have shown
+a related portability elsewhere, transferring from a base model's own feature
+dictionary into the chat model's refusal behavior (Ferrando et al., 2024). The
+correctness axis that same paper reads
 at the answer token does not carry the same portability, even within one
 model's own training trajectory. A direct
 measurement of its cross-checkpoint rotation found none of the answerability
@@ -1424,6 +1580,53 @@ itself.
 
 ---
 
+## References
+
+(Compiled 2026-07-30 from the program's knowledge-graph library; every external
+entry has an ingested note under `library/notes/`.)
+
+- Amayuelas et al. (2023). Knowledge of Knowledge: Exploring Known-Unknowns Uncertainty with Large Language Models. arXiv:2305.13712.
+- Arditi et al. (2024). Refusal in Language Models Is Mediated by a Single Direction. arXiv:2406.11717.
+- Bani-Harouni et al. (2025). Rewarding Doubt: A Reinforcement Learning Approach to Calibrated Confidence Expression of Large Language Models. arXiv:2503.02623.
+- Billa (2026). Predicting Where Steering Vectors Succeed. arXiv:2604.15557.
+- Braun et al. (2025). Understanding (Un)Reliability of Steering Vectors in Language Models. arXiv:2505.22637.
+- Burns et al. (2022). Discovering Latent Knowledge in Language Models Without Supervision. arXiv:2212.03827.
+- Cheng et al. (2024). Can AI Assistants Know What They Don't Know?. arXiv:2401.13275.
+- Damani et al. (2025). Beyond Binary Rewards: Training LMs to Reason About Their Uncertainty. arXiv:2507.16806.
+- Dang and Ngo (2026). Selective Steering: Norm-Preserving Control Through Discriminative Layer Selection. arXiv:2601.19375.
+- Ferrando et al. (2024). Do I Know This Entity? Knowledge Awareness and Hallucinations in Language Models. arXiv:2411.14257.
+- Gurnee et al. (2026). Verbalizable Representations Form a Global Workspace in Language Models. arXiv:2607.15495. Transformer Circuits. https://transformer-circuits.pub/2026/workspace/index.html.
+- Joad et al. (2026). There Is More to Refusal in Large Language Models than a Single Direction. arXiv:2602.02132.
+- Joshi et al. (2017). TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension. arXiv:1705.03551.
+- Kadavath et al. (2022). Language Models (Mostly) Know What They Know. arXiv:2207.05221.
+- Kirichenko et al. (2025). AbstentionBench: Reasoning LLMs Fail on Unanswerable Questions. arXiv:2506.09038.
+- Korznikov et al. (2025). The Rogue Scalpel: Activation Steering Compromises LLM Safety. arXiv:2509.22067.
+- Laban et al. (2023). Are You Sure? Challenging LLMs Leads to Performance Drops in The FlipFlop Experiment. arXiv:2311.08596.
+- Lampinen et al. (2026). Linear Representations in Language Models Can Change Dramatically Over a Conversation. arXiv:2601.20834.
+- Li et al. (2023). Inference-Time Intervention: Eliciting Truthful Answers from a Language Model. arXiv:2306.03341.
+- Liu et al. (2026). Reinforcement Learning with Metacognitive Feedback Elicits Faithful Uncertainty Expression in LLMs. arXiv:2606.32032.
+- Mallen et al. (2022). When Not to Trust Language Models: Investigating Effectiveness of Parametric and Non-Parametric Memories. arXiv:2212.10511.
+- Marks et al. (2023). The Geometry of Truth: Emergent Linear Structure in Large Language Model Representations of True/False Datasets. arXiv:2310.06824.
+- Mohamadi et al. (2025). Honesty over Accuracy: Trustworthy Language Models through Reinforced Hesitation. arXiv:2511.11500.
+- Nguyen et al. (2026). Minimizing Collateral Damage in Activation Steering. arXiv:2605.01167.
+- Orgad et al. (2024). LLMs Know More Than They Show: On the Intrinsic Representation of LLM Hallucinations. arXiv:2410.02707.
+- Panickssery et al. (2023). Steering Llama 2 via Contrastive Activation Addition. arXiv:2312.06681.
+- Queiroz Da Silva et al. (2025). Steering off Course: Reliability Challenges in Steering Language Models. arXiv:2504.04635.
+- Rosenbaum (2026). The Depths of Ignorance: A Taxonomy, Systematic Evidence Synthesis, and Research Agenda for Epistemic Humility in Language Models. Companion draft, this repository: [papers/paper-1-taxonomy-framework/manuscript.md](../paper-1-taxonomy-framework/manuscript.md).
+- Rosenbaum (2026). Teaching Small Language Models to Say I Don't Know: A Controlled Comparison of SFT, DPO, KTO, and GRPO on Model-Specific Abstention Data. Companion draft, this repository: [papers/paper-2-training-regimen/manuscript.md](../paper-2-training-regimen/manuscript.md).
+- Rosenbaum (2026). Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model. Companion draft, this repository: [papers/paper-3-knows-but-doesnt-say/manuscript.md](../paper-3-knows-but-doesnt-say/manuscript.md).
+- Rosenbaum (2026). It's What's on the Inside That Counts: A Training-Free Two-Signal Readout for Epistemic Humility in Small Language Models. Companion draft, this repository: [papers/paper-4-two-signal-readout/manuscript.md](../paper-4-two-signal-readout/manuscript.md).
+- Shao et al. (2024). DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv:2402.03300.
+- Slobodkin et al. (2023). The Curious Case of Hallucinatory (Un)answerability: Finding Truths in the Hidden States of Over-Confident Large Language Models. arXiv:2310.11877.
+- Sun et al. (2026). Valence-Arousal Subspace in LLMs: Circular Emotion Geometry and Multi-Behavioral Control. arXiv:2604.03147.
+- Tan et al. (2024). Analyzing the Generalization and Reliability of Steering Vectors. arXiv:2407.12404.
+- Turner et al. (2023). Steering Language Models With Activation Engineering. arXiv:2308.10248.
+- Venkatesh and Kurapath (2026). On the Non-Identifiability of Steering Vectors in Large Language Models. arXiv:2602.06801.
+- Wen et al. (2024). Know Your Limits: A Survey of Abstention in Large Language Models. arXiv:2407.18418.
+- Wollschläger et al. (2025). The Geometry of Refusal in Large Language Models: Concept Cones and Representational Independence. arXiv:2502.17420.
+- Zhang et al. (2023). Towards Best Practices of Activation Patching in Language Models: Metrics and Methods. arXiv:2309.16042.
+- Zou et al. (2023). Representation Engineering: A Top-Down Approach to AI Transparency. arXiv:2310.01405.
+
 ## Appendix A. Traceability Map
 
 Each reader-facing claim above, with the governed document that registered it
@@ -1478,7 +1681,7 @@ Generated by `papers/paper-5-actuation/scripts/build_coverage_table.py` (determi
 | `causal-confidence-steering` | historical | UNRESOLVED -- historical-amendment migration; checkpoint fields intentionally blank. experiment.yaml migration.notes: "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md." | UNRESOLVED (hand-read AMENDMENT.md required) | 4.1 |
 | `first-person-injection` | historical | UNRESOLVED -- historical-amendment migration; checkpoint fields intentionally blank. experiment.yaml migration.notes: "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md." | UNRESOLVED (hand-read AMENDMENT.md required) | 4.1 |
 | `radial-anti-propensity-steering` | historical | UNRESOLVED -- historical-amendment migration; checkpoint fields intentionally blank. experiment.yaml migration.notes: "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md." | UNRESOLVED (hand-read AMENDMENT.md required) | 4.2 |
-| `doubt-regulated-caution` | historical | UNRESOLVED -- historical-amendment migration; checkpoint fields intentionally blank. experiment.yaml migration.notes: "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md. Instrument configs migrated from the archived legacy probe config tree on 2026-07-09; the batched smoke is a companion equivalence check, not the registered evidence run." | UNRESOLVED (hand-read AMENDMENT.md required) | NOT NARRATED IN BODY (front matter + Appendix A only; flagged as open work at Appendix C: "Decide whether AC belongs in the main result body" -- AC is this cell's legacy amendment label) |
+| `doubt-regulated-caution` | historical | UNRESOLVED -- historical-amendment migration; checkpoint fields intentionally blank. experiment.yaml migration.notes: "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md. Instrument configs migrated from the archived legacy probe config tree on 2026-07-09; the batched smoke is a companion equivalence check, not the registered evidence run." | UNRESOLVED (hand-read AMENDMENT.md required) | NOT NARRATED IN BODY (front matter + Appendix A only; resolved 2026-08-13: AC remains appendix-only by PI ruling -- the paper's scope is deliberately raw-base/untrained substrates and AC is trained-lineage predecessor context -- AC is this cell's legacy amendment label) |
 | `second-person-doubt-prime` | historical | UNRESOLVED -- historical-amendment migration; checkpoint fields intentionally blank. experiment.yaml migration.notes: "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md." | UNRESOLVED (hand-read AMENDMENT.md required) | 4.3 |
 | `oracle-dissociation-prime` | historical | UNRESOLVED -- historical-amendment migration; checkpoint fields intentionally blank. experiment.yaml migration.notes: "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md." | UNRESOLVED (hand-read AMENDMENT.md required) | 4.3 |
 | `divergent-pool-own-readout` | historical | UNRESOLVED -- historical-amendment migration; checkpoint fields intentionally blank. experiment.yaml migration.notes: "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md." | UNRESOLVED (hand-read AMENDMENT.md required) | 4.3 |
@@ -1538,18 +1741,27 @@ manifest documents that caveat and the one derived count.
    replications (`fig-p5-05-localization.png`).
 6. Figure 6, propensity push null: confabulation kills under the primary
    push versus the permuted-assignment control, with the read-back
-   verification of push magnitude (requested as
-   `fig-p5-06-propensity-null.png`, not yet built).
+   verification of push magnitude (built and embedded in Section 4.2 as
+   `fig-p5-06-propensity-null.png`).
 
 ## Appendix D. Open Work Before Submission
 
 - Reconcile this draft against `archive/papers/retired/results-provenance-inventory.md`.
-- Decide whether AC belongs in the main result body or only as the predecessor
-  to the raw-base gate-and-snap result.
-- Convert amendment-label prose into reader-facing condition names.
-- Add bibliography and related-work citations for activation addition,
-  refusal steering, Jacobian lens / global workspace, and representation
-  engineering.
+- Resolved 2026-08-13 (PI ruling): `doubt-regulated-caution` (legacy amendment
+  label AC) remains appendix-only. This paper's scope is deliberately raw-base
+  (untrained) substrates -- the central finding is that actuation works
+  without training -- and AC is a trained-lineage predecessor to the raw-base
+  gate-and-snap result, so it stays as predecessor context in the front
+  matter and Appendix A rather than entering the main result body.
+- Resolved 2026-08-13: amendment-label prose in the body converted to
+  reader-facing condition names (H1, G0, G1, and S1 glossed at use; RR, RR2,
+  and RR3 introduced as shorthand beside their governed slugs). Appendix A
+  and governed slugs stay verbatim.
+- Resolved 2026-08-13: bibliography and related-work citations added for
+  activation addition, refusal steering, Jacobian lens / global workspace,
+  and representation engineering (References section; sources and insertion
+  points per `docs/review/p5-bibliography-draft-2026-07-30.md` and
+  `docs/review/p5-citation-insertions-2026-07-30.md`).
 - All six figures are built from committed aggregate artifacts and
   referenced inline (Appendix C), including Figure 6 (the propensity-push
   null, Section 4.2).
