@@ -149,6 +149,27 @@ def frontmatter_field(path, field):
     return ""
 
 
+def kg_field(path, key):
+    """Read a key nested under the `kg:` frontmatter block.
+
+    frontmatter_field() only sees column-0 keys, but kg.status / kg.deprecated_by
+    are indented under `kg:`. A top-level `status:` also exists on paper notes and
+    means something else entirely, so this deliberately reads only inside `kg:`.
+    """
+    inside = False
+    for line in open(path, encoding="utf-8"):
+        if line.startswith("kg:"):
+            inside = True
+            continue
+        if inside:
+            if line[:1] not in (" ", "\t"):
+                break
+            stripped = line.strip()
+            if stripped.startswith(key + ":"):
+                return stripped.split(":", 1)[1].strip().strip('"').strip("'")
+    return ""
+
+
 def regen_moc():
     order = [
         ("methods", "Methods & algorithms"),
@@ -168,11 +189,23 @@ def regen_moc():
         "",
     ]
     total = 0
+    deprecated = []
     for d, label in order:
         files = sorted(glob.glob(f"library/concepts/{d}/*.md"))
-        out.append(f"## {label} ({len(files)})")
-        out.append("")
+        live = []
         for fp in files:
+            # Deprecated atoms are listed separately at the end, never inline with
+            # the canonical set. A generated index that shows a superseded atom
+            # beside its successor puts the stale reading back in front of the
+            # reader, which is the failure the supersession convention exists to
+            # stop. The note itself is never deleted; only its placement changes.
+            if kg_field(fp, "status") == "deprecated" or kg_field(fp, "deprecated_by"):
+                deprecated.append(fp)
+            else:
+                live.append(fp)
+        out.append(f"## {label} ({len(live)})")
+        out.append("")
+        for fp in live:
             stem = os.path.basename(fp)[:-3]
             if d == "mechanisms":
                 cause = frontmatter_field(fp, "cause")
@@ -183,6 +216,21 @@ def regen_moc():
                 desc = first_line_body(fp)
             out.append(f"- [[{stem}]] : {desc}")
             total += 1
+        out.append("")
+
+    if deprecated:
+        out.append(f"## Deprecated ({len(deprecated)})")
+        out.append("")
+        out.append(
+            "Superseded atoms, kept for provenance. Each points at its successor "
+            "via `kg.deprecated_by`; default `bin/search` hides them. Cite the "
+            "successor, never these."
+        )
+        out.append("")
+        for fp in sorted(deprecated):
+            stem = os.path.basename(fp)[:-3]
+            succ = kg_field(fp, "deprecated_by") or "(no successor recorded)"
+            out.append(f"- [[{stem}]] -> `{succ}`")
         out.append("")
     open("library/concepts/README.md", "w", encoding="utf-8").write("\n".join(out))
     return total

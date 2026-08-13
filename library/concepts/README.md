@@ -345,7 +345,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[p-lie]] : The proportion of MASK benchmark examples on which a model's pressured statement contradicts its independently-elicited belief, excluding ca
 - [[parallelism-score]] : The Parallelism Score (PS) is the average cosine similarity between linear decoder vectors (coding directions) for the same rule dichotomy m
 - [[pass-at-k]] : A sampling-based evaluation metric that measures the probability of generating at least one correct solution within k independent attempts f
-- [[pass-k]] : pass^k is a multi-trial task-success metric used in LedgerAgent: a task receives
+- [[pass-k]] : Not to be confused with pass-at-k (Pass@k), which requires at least one of k
 - [[perplexity]] : Perplexity is the exponentiated average negative log-likelihood a language
 - [[phi-coefficient-cooccurrence]] : The phi (phi) coefficient measures co-occurrence of two binary SAE latent firing
 - [[pr-auc-claim-filtering]] : Area under the precision-recall curve for the binary task of distinguishing factually correct from incorrect atomic claims using a continuou
@@ -780,7 +780,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (513)
+## Mechanisms (cause -> effect) (512)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -1054,8 +1054,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[misclassified-examples-proxy-for-ood-calibration]] : Treating the model's own hard / misclassified in-distribution examples as the supervision signal that drives down the learned confidence scalar. **enables** The
 - [[mistral-atlas-site-write-abstains-below-canonical-detector-floor]] : The doubt-gated caution write applied at Mistral-7B-Instruct-v0.3's own atlas-located workspace-band sites (hidden states hs15/hs16/hs17, sigma-relative dose gr
 - [[model-accuracy-strengthens-probability-correctness-signal]] : Higher model accuracy on a task dataset **increases** Stronger within-dataset correlation between log-probability and answer correctness
-- [[model-scale-amplifies-sycophancy]] : Increasing language model parameter count (810M to 52B), whether pretrained or RLHF-trained **increases** Higher rate of matching the dialog user's stated view 
-- [[model-scale-confounded-with-design]] : Comparing MLLMs that differ simultaneously in parameter count, architecture, training data, visual encoder, and post-training strategy **neutral** Parameter cou
+- [[model-scale-amplifies-sycophancy]] : Increasing language model parameter count, whether pretrained or RLHF-trained, holding training procedure constant within a family **increases** Higher rate of 
+- [[model-scale-confounded-with-design]] : Comparing MLLMs that differ simultaneously in parameter count, architecture, training data, visual encoder, and post-training strategy **decouples** Parameter c
 - [[model-scale-improves-self-knowledge]] : Increasing model parameter size within a model family (e.g., ada to babbage to curie to davinci) **increases** Higher self-knowledge-f1, consistent with neural 
 - [[model-size-improves-calibration]] : Increasing language model parameter count (800M to 52B) on diverse multiple-choice and True/False tasks with appropriate formatting **decreases** Lower expected
 - [[model-size-increases-performativity]] : Model size and capability (larger models store more in-weights knowledge) **increases** Rate of performative chain-of-thought-faithfulness|chain-of-thought on t
@@ -1202,7 +1202,6 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[scale-improves-accuracy-not-honesty]] : Increasing training compute (FLOPs) across LLM families **mediates** Factual accuracy rises strongly (Spearman +87.3%) while honesty under pressure declines (Sp
 - [[scale-increases-representational-sparsity]] : Increasing LLM parameter count (model scale) from 70M to 6.9B **increases** 'Average representational sparsity increases (features can be decoded by fewer neuro
 - [[scale-threshold-for-above-chance-mmlu-accuracy]] : Increasing GPT-3 model size from 2.7B through 6.7B and 13B to 175B parameters, evaluated few-shot on the 57-subject MMLU benchmark **enables** Accuracy remains 
-- [[scaling-amplifies-sycophancy]] : Increasing model scale within a model family, holding training procedure constant. **increases** Average sycophancy rates on subjective opinion tasks increase m
 - [[scaling-fails-on-long-tail-knowledge]] : Increasing LM parameter count **mediates** Negligible accuracy gain on low-popularity factual questions; GPT-Neo 6B to GPT-3 davinci-003 accuracy on 4,000 least
 - [[score-rep-subspace-encodes-concept]] : Training a score-based generative model on data whose high-level concepts are causal-separability|causally separable factors in the data-generating process **en
 - [[se-supervision-improves-ood-probe-generalization]] : Training a hidden-state probe with semantic entropy labels instead of ground-truth accuracy labels **increases** The probe generalizes better to held-out tasks,
@@ -1299,3 +1298,9 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 ## Gaps (verified literature absences) (1)
 
 - [[gap-4-probe-transfer]] : Gap 4 (archive/meta-analysis/paper/draft-v0.md §6.3): no probe-transfer study tests whether
+
+## Deprecated (1)
+
+Superseded atoms, kept for provenance. Each points at its successor via `kg.deprecated_by`; default `bin/search` hides them. Cite the successor, never these.
+
+- [[scaling-amplifies-sycophancy]] -> `mechanism:model-scale-amplifies-sycophancy`
