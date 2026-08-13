@@ -17,6 +17,7 @@ kg:
   status: canonical
 area: metrics
 related:
+- '[[pass-k]]'
 - '[[2509.07430--choice-of-divergence-rlvr-diversity]]'
 - '[[reasoning-fine-tuning]]'
 - '[[group-relative-policy-optimization]]'
@@ -43,6 +44,11 @@ relationships:
   target: '[[online-rl-training]]'
   target_id: term:online-rl-training
   confidence: medium
+- type: different_from
+  target: '[[pass-k]]'
+  target_id: metric:pass-k
+  confidence: high
+  note: "Opposite quantifier: pass@k requires AT LEAST ONE of k attempts to succeed, pass^k requires ALL k. Near-identical surface forms; do not conflate."
 ---
 
 A sampling-based evaluation metric that measures the probability of generating at least one correct solution within k independent attempts from the same model. Pass@1 corresponds to greedy or single-sample accuracy; higher k values assess solution diversity and the model's ability to cover multiple valid reasoning paths. Formally, Pass@k = 1 - C(n-c, k) / C(n, k) where n samples are drawn and c are correct.

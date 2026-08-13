@@ -83,6 +83,11 @@ red_team: <not required | done, outcome | required - STOP>
   docs (`docs/atlas/family-layer-map.md`, `docs/prediction-scoreboard.md`) are
   LIVING DOCS committed straight to main from the canonical checkout. KG nodes
   under `library/` also go straight to main.
+- **Supersession is decided explicitly, never by omission.** Step 7 emits a
+  `SUPERSEDES:` line on every resolve, either naming the superseded node ids or
+  stating `none` with the searches that justify it. A resolve that overturns a
+  prior reading and adds a node beside it, with no pointer, leaves two live
+  claims and is not finished.
 - **PR merge needs explicit per-PR user approval.** This skill opens the PR; it
   never merges it.
 - **Containment.** Confirm the committed artifact is ID-free (no question /
@@ -168,10 +173,45 @@ main. Restate READ-BEFORE-CITE and KG-search-first in the delegation. This is a
 separate task, not something this skill's own subagent does inline, because it
 edits `library/` on main and the branch `kg:` list in two different checkouts.
 
+**The supersession decision is mandatory and explicit.** Every resolve either
+supersedes prior graph nodes or does not, and the wrap-up must say WHICH in
+writing. Do not leave it implicit: a resolve that overturns a prior reading and
+silently adds a node beside it leaves two live claims and no pointer, which is
+how the graph tells a future reader a false thing.
+
+Before handing off, run:
+
+```bash
+bin/search <the question this result answers, phrased 3 ways> --limit 10
+bin/search <same> --include-deprecated --limit 10
+```
+
+Then record one of these two lines in the handoff packet and in the report to
+the lead:
+
+- `SUPERSEDES: <old kg.id> -> <new kg.id>` (one line per superseded node), or
+- `SUPERSEDES: none — <one sentence on what you searched and why nothing is
+  overturned>`.
+
+For each superseded node the librarian sets `kg.status: deprecated` and
+`kg.deprecated_by: <successor kg.id>` per the Supersession convention in the
+knowledge-graph skill's `references/relationship-schema.md`, then re-runs the
+retrieval check to confirm the successor now ranks at or above where the stale
+node ranked (kg-ingest Move 4e).
+
+Scope note: a result that holds only at a new site, family, or dose does NOT
+supersede the earlier one. It narrows it. Add the scope qualifier to both nodes
+rather than deprecating a result that is still true where it was measured. If
+the two genuinely cannot both hold and you cannot tell which wins, add a
+`contradicts` edge and escalate to the lead. `contradicts` is a flag for
+adjudication, not a verdict, and the conflict pass in `analyze_kg.py` keeps
+reporting it until it is resolved. Choosing the verdict is lead-only.
+
 ### 8. Report to the lead
 Report: the re-derived numbers (confirming they match the packet), the resolve
-status, the PR number, the main commit sha for the living docs, and that KG
-ingest is delegated. State plainly that PR merge awaits the user's approval.
+status, the PR number, the main commit sha for the living docs, the
+`SUPERSEDES:` line from step 7, and that KG ingest is delegated. State plainly
+that PR merge awaits the user's approval.
 
 ## What this skill does NOT do
 - decide the verdict, falsifier, or scores (lead-only inputs);

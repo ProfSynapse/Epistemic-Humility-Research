@@ -13,6 +13,7 @@ kg:
   status: canonical
 area: mechanistic-interpretability
 related:
+- '[[hydra-effect]]'
 - '[[2509.09708--beyond-i-m-sorry-i-can-t]]'
 - '[[caution-readout-is-low-rank-on-collinear-carriers]]'
 relationships:
@@ -24,6 +25,11 @@ relationships:
   target: '[[caution-readout-is-low-rank-on-collinear-carriers]]'
   target_id: mechanism:caution-readout-is-low-rank-on-collinear-carriers
   confidence: high
+- type: variation_of
+  target: '[[hydra-effect]]'
+  target_id: term:hydra-effect
+  confidence: high
+  note: "Refusal-specific instance of the general self-repair phenomenon; distinct node, not a duplicate."
 ---
 
 The refusal hydra effect is the phenomenon in which SAE features that show zero

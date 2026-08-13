@@ -13,6 +13,7 @@ kg:
   status: canonical
 area: mechanistic-interpretability
 related:
+- '[[refusal-direction]]'
 - '[[2502.09674--hidden-dimensions-llm-alignment-multi-dimensional-analysis]]'
 - '[[safety-residual-space]]'
 relationships:
@@ -23,6 +24,11 @@ relationships:
 - type: derived_from
   target: '[[safety-residual-space]]'
   target_id: term:safety-residual-space
+- type: variation_of
+  target: '[[refusal-direction]]'
+  target_id: term:refusal-direction
+  confidence: high
+  note: "Specific construction (first singular vector of the safety-residual space) of the generic refusal direction."
 ---
 
 The dominant refusal direction is the first (largest) singular vector of the
