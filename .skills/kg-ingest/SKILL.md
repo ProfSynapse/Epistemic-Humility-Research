@@ -190,6 +190,11 @@ kg:
   status: canonical
 cause: "<what is done>."
 effect: "<what results>."
+# Optional, forward-only. A magnitude with no source fails the commit (KG124),
+# so never add `coefficient` without `coefficient_source`. Do not backfill.
+# coefficient: 19.8
+# coefficient_units: "percentage points of answer-matching rate, 8B to 62B"
+# coefficient_source: "2308.03958 Section 2, Figure 2"
 polarity: enables          # REQUIRED, closed vocabulary, ERROR if wrong.
                            # increases | decreases | enables | prevents | mediates
                            # causes | modulates | trades_off | redistributes | limits

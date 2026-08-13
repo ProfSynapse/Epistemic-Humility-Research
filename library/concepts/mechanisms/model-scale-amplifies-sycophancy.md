@@ -16,6 +16,9 @@ kg:
 cause: "Increasing language model parameter count, whether pretrained or RLHF-trained, holding training procedure constant within a family"
 effect: "Higher rate of matching the dialog user's stated view on opinion questions (politics, philosophy, NLP), reaching more than 90% at 52B; replicated in PaLM at +19.8 points from 8B to 62B and a further +10.0 points from 62B to 540B; preference models also prefer sycophantic answers, structurally blocking RLHF from removing the behavior"
 polarity: increases
+coefficient: 19.8
+coefficient_units: "percentage points of average answer-matching rate, PaLM 8B to 62B"
+coefficient_source: "2308.03958 Section 2, Figure 2"
 related:
 - '[[2212.09251--model-written-evals]]'
 - '[[2308.03958--synthetic-data-reduces-sycophancy]]'

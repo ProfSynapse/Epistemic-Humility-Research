@@ -859,6 +859,96 @@ Body.
 """
 
 
+class FieldRuleTests(unittest.TestCase):
+    """Ontology `field_rules` / `kg_field_rules` enforcement.
+
+    Each case asserts the finding code AND that the severity is ERROR where the
+    ontology says ERROR, because a rule that only warns does not stop anything.
+    """
+
+    def findings(self, tmp: str, kg_extra: str = "", body_extra: str = "", polarity: str = "increases") -> list:
+        root = Path(tmp)
+        (root / "concepts" / "mechanisms").mkdir(parents=True)
+        path = root / "concepts" / "mechanisms" / "fixture.md"
+        path.write_text(
+            "---\naliases: [fixture]\ntags: [kg/mechanism, concept, mechanism]\n"
+            "kg:\n  id: mechanism:fixture\n  type: mechanism\n  status: canonical\n"
+            f"{kg_extra}"
+            f'cause: "A cause."\neffect: "An effect."\npolarity: {polarity}\n'
+            f"{body_extra}"
+            "related: []\nrelationships: []\n---\n\nBody.\n",
+            encoding="utf-8",
+        )
+        ontology = load_ontology()
+        index = NoteIndex.build(root)
+        notes, _ = collect_graph_notes([], root=root)
+        self.assertEqual(1, len(notes), "fixture did not parse as a graph note")
+        return validate_note(notes[0], ontology, index)
+
+    def codes(self, findings: list, prefix: str = "KG12") -> dict[str, str]:
+        return {f.code: f.severity for f in findings if f.code.startswith(prefix)}
+
+    def test_coefficient_without_source_is_an_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            codes = self.codes(self.findings(tmp, body_extra="coefficient: 19.8\n"))
+        self.assertEqual("ERROR", codes.get("KG124"))
+
+    def test_coefficient_must_be_a_number(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            codes = self.codes(
+                self.findings(tmp, body_extra='coefficient: "about twenty"\ncoefficient_source: "Figure 2"\n')
+            )
+        self.assertEqual("ERROR", codes.get("KG123"))
+
+    def test_fully_sourced_coefficient_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            codes = self.codes(
+                self.findings(
+                    tmp,
+                    body_extra=(
+                        "coefficient: 19.8\ncoefficient_units: percentage points\n"
+                        'coefficient_source: "Section 2, Figure 2"\n'
+                    ),
+                )
+            )
+        self.assertEqual({}, codes)
+
+    def test_malformed_date_is_an_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            codes = self.codes(self.findings(tmp, kg_extra="  valid_from: last-tuesday\n"))
+        self.assertEqual("ERROR", codes.get("KG123"))
+
+    def test_yaml_parsed_and_quoted_dates_both_pass(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            codes = self.codes(self.findings(tmp, kg_extra='  valid_from: 2026-08-13\n  recorded_at: "2026-08"\n'))
+        self.assertEqual({}, codes)
+
+    def test_superseded_at_without_a_successor_is_an_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            codes = self.codes(self.findings(tmp, kg_extra="  superseded_at: 2026-08-13\n"))
+        self.assertEqual("ERROR", codes.get("KG124"))
+
+    def test_off_vocabulary_polarity_is_an_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            codes = self.codes(self.findings(tmp, polarity="sproinks"))
+        self.assertEqual("ERROR", codes.get("KG122"))
+
+    def test_missing_required_polarity_is_an_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "concepts" / "mechanisms").mkdir(parents=True)
+            (root / "concepts" / "mechanisms" / "fixture.md").write_text(
+                "---\naliases: [fixture]\ntags: [kg/mechanism, concept, mechanism]\n"
+                "kg:\n  id: mechanism:fixture\n  type: mechanism\n  status: canonical\n"
+                'cause: "A cause."\neffect: "An effect."\nrelated: []\nrelationships: []\n---\n\nBody.\n',
+                encoding="utf-8",
+            )
+            ontology = load_ontology()
+            notes, _ = collect_graph_notes([], root=root)
+            findings = validate_note(notes[0], ontology, NoteIndex.build(root))
+        self.assertEqual("ERROR", self.codes(findings).get("KG120"))
+
+
 class ConflictDetectionTests(unittest.TestCase):
     """The conflict pass reports zero on the live corpus, which is
     indistinguishable from a broken detector. These fixtures prove each check

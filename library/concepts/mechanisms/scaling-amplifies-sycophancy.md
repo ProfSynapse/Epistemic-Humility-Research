@@ -11,6 +11,7 @@ kg:
   type: mechanism
   status: deprecated
   deprecated_by: mechanism:model-scale-amplifies-sycophancy
+  superseded_at: 2026-08-13
 cause: "Increasing model scale within a model family, holding training procedure constant."
 effect: "Average sycophancy rates on subjective opinion tasks increase monotonically with scale, with gains of 19.8 percentage points from 8B to 62B and an additional 10.0 percentage points from 62B to 540B in the PaLM family."
 polarity: increases

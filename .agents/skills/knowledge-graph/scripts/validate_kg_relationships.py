@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -30,6 +32,85 @@ from kg_common import (
 
 def add(severity: str, code: str, note: ParsedNote, message: str, findings: list[Finding]) -> None:
     findings.append(Finding(severity, code, rel_path(note.path), message))
+
+
+DATE_RE = re.compile(r"^\d{4}(-\d{2}(-\d{2})?)?([T ]\d{2}:\d{2}(:\d{2})?([.+-][\d:.]+|Z)?)?$")
+
+
+def type_error(expected: str, value: Any) -> str | None:
+    """Return an error message when `value` does not match `expected`, else None."""
+    if expected == "number":
+        # bool is an int subclass; a boolean coefficient is a mistake, not a number.
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return f"must be a number, got {type(value).__name__}"
+    elif expected == "string":
+        if not isinstance(value, str) or not value.strip():
+            return "must be a non-empty string"
+    elif expected == "date":
+        # PyYAML turns an unquoted 2026-08-13 into a date/datetime object, so
+        # both the parsed form and the quoted string form are legal here.
+        if isinstance(value, (datetime.date, datetime.datetime)):
+            return None
+        if not isinstance(value, str) or not DATE_RE.match(value.strip()):
+            return "must be a date (YYYY, YYYY-MM, YYYY-MM-DD, or an ISO timestamp)"
+    return None
+
+
+def check_field_rules(
+    note: ParsedNote,
+    rules: dict[str, Any],
+    container: dict[str, Any],
+    label: str,
+    findings: list[Finding],
+) -> None:
+    """Apply ontology field rules to one mapping (frontmatter or the kg block)."""
+    for field, spec in (rules or {}).items():
+        if not isinstance(spec, dict):
+            continue
+        severity = str(spec.get("severity") or "WARN").upper()
+        value = container.get(field)
+
+        if value is None:
+            if spec.get("required"):
+                add(severity, "KG120", note, f"{label} is missing required field {field!r}", findings)
+            continue
+
+        allowed = spec.get("values")
+        if allowed:
+            if not isinstance(value, str):
+                add(severity, "KG121", note, f"{field} must be a string, got {type(value).__name__}", findings)
+                continue
+            if value not in allowed:
+                add(
+                    severity,
+                    "KG122",
+                    note,
+                    f"{field} {value!r} is not in the {label} vocabulary; allowed: {sorted(allowed)}",
+                    findings,
+                )
+                continue
+
+        expected = spec.get("type")
+        if expected:
+            message = type_error(str(expected), value)
+            if message:
+                add(severity, "KG123", note, f"{field} {message}", findings)
+                continue
+
+        # A magnitude with no provenance, or a supersession stamp with no
+        # successor, is the failure these co-requirements exist to stop.
+        for companion in spec.get("requires") or []:
+            if container.get(companion) is None:
+                add(
+                    severity,
+                    "KG124",
+                    note,
+                    f"{field} is set but {companion!r} is missing; {field} requires it",
+                    findings,
+                )
+        for companion in spec.get("recommends") or []:
+            if container.get(companion) is None:
+                add("WARN", "KG125", note, f"{field} is set; also record {companion!r}", findings)
 
 
 def validate_note(note: ParsedNote, ontology: dict[str, Any], index: NoteIndex) -> list[Finding]:
@@ -85,30 +166,16 @@ def validate_note(note: ParsedNote, ontology: dict[str, Any], index: NoteIndex) 
                 if kg_status != "deprecated":
                     add("WARN", "KG115", note, "kg.deprecated_by is set; set kg.status: deprecated explicitly", findings)
 
-        # Controlled vocabularies for non-edge frontmatter fields (ontology
-        # `field_vocabularies`, keyed by kg.type). Generic on purpose: the
-        # domain owns the values, this loop owns the enforcement, so a research
-        # field like mechanism.polarity gets the same drift protection as edges.
+        # Field rules for non-edge frontmatter (ontology `field_rules`, keyed by
+        # kg.type) and for keys inside the `kg:` block (`kg_field_rules`).
+        # Generic on purpose: the domain owns the values, this loop owns the
+        # enforcement, so a research field like mechanism.polarity or a
+        # bitemporal stamp gets the same drift protection as edges.
+        rules = ontology.get("field_rules") or ontology.get("field_vocabularies") or {}
         if isinstance(kg_type, str) and kg_type:
-            for field, spec in (ontology.get("field_vocabularies") or {}).get(kg_type, {}).items():
-                if not isinstance(spec, dict):
-                    continue
-                allowed = spec.get("values") or {}
-                severity = str(spec.get("severity") or "WARN").upper()
-                value = frontmatter.get(field)
-                if value is None:
-                    if spec.get("required"):
-                        add(severity, "KG120", note, f"{kg_type} note is missing required field {field!r}", findings)
-                elif not isinstance(value, str):
-                    add(severity, "KG121", note, f"{field} must be a string, got {type(value).__name__}", findings)
-                elif value not in allowed:
-                    add(
-                        severity,
-                        "KG122",
-                        note,
-                        f"{field} {value!r} is not in the {kg_type} vocabulary; allowed: {sorted(allowed)}",
-                        findings,
-                    )
+            check_field_rules(note, rules.get(kg_type, {}), frontmatter, f"{kg_type} note", findings)
+        if isinstance(kg, dict):
+            check_field_rules(note, ontology.get("kg_field_rules") or {}, kg, "kg block", findings)
 
         tags = frontmatter.get("tags") or []
         if isinstance(tags, str):

@@ -1,4 +1,4 @@
-version: 2
+version: 3
 description: "Canonical edge ontology for typed Obsidian knowledge graph relationships."
 
 # Research extension (Epistemic-Humility vault): the node types and edges marked
@@ -360,13 +360,17 @@ edges:
     inverse: contradicts
     description: "Subject is contradicted by target; needs adjudication."
 
-# Controlled vocabularies for non-edge frontmatter fields, keyed by kg.type.
-# The validator enforces these generically, so a domain field gets the same
-# drift protection the edge vocabulary already has. `severity: ERROR` makes an
-# off-vocabulary value fail the commit; `required: true` makes an absent field
-# fail too. Adding a value here is a deliberate schema change: record it under
-# `changelog` below so vocabulary growth stays visible in review.
-field_vocabularies:
+# Rules for non-edge frontmatter fields, keyed by kg.type. The validator enforces
+# these generically, so a domain field gets the same drift protection the edge
+# vocabulary already has. Supported keys per field:
+#   severity  - ERROR (fails the commit) or WARN
+#   required  - the field must be present
+#   values    - closed vocabulary; anything else is off-vocabulary
+#   type      - one of `date`, `number`, `string`
+#   requires  - other fields that must be present when this one is
+# Adding a value or a field here is a deliberate schema change: record it under
+# `changelog` below so growth stays visible in review.
+field_rules:
   mechanism:
     polarity:
       severity: ERROR
@@ -386,6 +390,60 @@ field_vocabularies:
         complicates: "Finding confounds or undercuts an interpretation rather than asserting a causal sign."
         decouples: "Finding asserts two quantities are NOT coupled; the expected link is absent."
         explains: "Cause accounts for an effect already observed elsewhere; explanatory, not causal-magnitude."
+
+    # Quantified mechanisms (borrowed from semantica's bridge_axiom: a cause to
+    # effect rule that carries its magnitude AND the line it was read from).
+    # Optional, forward-only: existing qualitative atoms stay valid. But a
+    # magnitude with no source is exactly the claim this program does not
+    # accept, so `coefficient` hard-requires `coefficient_source`.
+    coefficient:
+      severity: ERROR
+      type: number
+      requires: [coefficient_source]
+      description: "Effect size of the cause on the effect. Bare number; units go in coefficient_units."
+    coefficient_units:
+      severity: ERROR
+      type: string
+      description: "What the coefficient measures, e.g. 'percentage points', 'AUROC', 'log-odds'."
+    coefficient_source:
+      severity: ERROR
+      type: string
+      description: "Exact provenance for the coefficient: table, figure, or section. Never a bare paper id."
+
+# Rules for keys inside the `kg:` block, applied to every node type.
+#
+# Bitemporal claim tracking, borrowed from semantica's BiTemporalFact. Two clocks
+# that are routinely confused:
+#   WORLD time  (valid_from / valid_until) - when the claim HOLDS. A result
+#     measured on one checkpoint stays true of that checkpoint forever.
+#   BELIEF time (recorded_at / superseded_at) - when WE held it. A reading we
+#     abandoned last month was still our reading before then.
+# Supersession is a belief-time event: `superseded_at` records WHEN we stopped
+# believing a node, which is what lets a reader ask what the program believed on
+# a given date instead of only what it believes now. All optional and
+# forward-only; nothing on disk is retrofitted.
+kg_field_rules:
+  valid_from:
+    severity: ERROR
+    type: date
+    description: "World time: start of the window in which the claim holds (checkpoint, revision, model version date)."
+  valid_until:
+    severity: ERROR
+    type: date
+    description: "World time: end of that window. Absent means open-ended."
+  recorded_at:
+    severity: ERROR
+    type: date
+    description: "Belief time: when this node entered the graph as a believed claim."
+  superseded_at:
+    severity: ERROR
+    type: date
+    requires: [deprecated_by]
+    description: "Belief time: when the node stopped being believed. Meaningless without a successor pointer."
+  deprecated_by:
+    severity: WARN
+    recommends: [superseded_at]
+    description: "Successor kg.id. Record superseded_at alongside it so the belief-time window is closed."
 
 # Vocabulary changelog. Every change to node_types, edges, or field_vocabularies
 # gets an entry. Borrowed from semantica's change_management module: an ontology
