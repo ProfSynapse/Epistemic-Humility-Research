@@ -1524,25 +1524,50 @@
       },
       "created_at": "2026-08-13T10:07:05Z",
       "falsifier": "(1) Dial-novelty, verbatim from v1/v2: primary-variant logprob AUROC at or above dial AUROC on the S base arm (margin <= 0), paired 95% CI excluding 0 in that direction. (2) The fresh-generation posture fails its own LP3-G0 integrity gate, showing the failure class was never reproduction and sending the design back for diagnosis rather than a fourth same-shape run.",
-      "inputs": [],
+      "inputs": [
+        "experiments/common/readouts/amendment_s_correctness_probe_extract.py",
+        "experiments/common/readouts/amendment_t_correctness_readout_deployment_extract.py",
+        "experiments/common/readouts/amendment_s_correctness_probe_score.py",
+        "experiments/common/knowledge_probe/backends.py",
+        "archive/experiment/phase1/eval/scorers.py",
+        "experiments/dial-logprob-baseline-v2/AMENDMENT.md",
+        "experiments/dial-logprob-baseline-v2/cell.yaml",
+        ".skills/experiment-runner/reference/batched-generation.md"
+      ],
       "instrument": {
         "configs": [
           "cell.yaml",
           "gates.yaml"
         ],
-        "modules": [],
-        "persistence": {},
-        "pins": {}
+        "engine": {
+          "name": "vllm",
+          "version": "0.27.1"
+        },
+        "modules": [
+          "lp_v3_harness.py"
+        ],
+        "persistence": {
+          "lp_v3_harness.py": {
+            "checkpoint_path": "experiments/dial-logprob-baseline-v3/analysis/",
+            "note": "directory prefix, not a single file -- per arm, the module writes a resumable (chunked append+flush) generation runlog experiments/dial-logprob-baseline-v3/analysis/<arm>/runlog/<arm>_generation.jsonl, a resumable (per-row append+flush) extraction runlog experiments/dial-logprob-baseline-v3/analysis/<arm>/runlog/<arm>_extraction.jsonl, and the extraction phase's safetensors shards + rows.jsonl under experiments/dial-logprob-baseline-v3/analysis/<arm>/tensors/. --phase generate|extract|score lets a real launch run each phase as a separate process invocation (recommended for guaranteed GPU memory release between the vLLM engine and the HF teacher-forced pass; --phase all runs all three in one process with best-effort cleanup -- see lp_v3_harness.py module docstring and NOTEBOOK.md).",
+            "persistence": "incremental"
+          }
+        },
+        "pins": {
+          "cell.yaml": "133c3a80fb390aa99f5c88ede4f78d014efe5bdfd4f79be7addb6f3a89ecc07c",
+          "gates.yaml": "4f0f9c7be1ab679b1371f188eb108d8f05390a3be50cac6433658053a8b7284e",
+          "lp_v3_harness.py": "1f3c0d47116a998b89fac2735f489091928c9fc69d7a2c0e995dd50f1215c906"
+        }
       },
       "kg": [],
       "prediction": "Disclosure per v2 precedent: no fresh blind guess is possible (v1 descriptive read and v2's non-result unblinded numbers were seen). Stated prediction: S base margin lands inside the ambiguous band (near +0.02, between 0 and +0.05), LP3-G1 most likely does NOT pass; T deployed margin clearly positive, near +0.15.",
       "question": "Verbatim from v1/v2: does the fitted correctness dial beat the model's own sequence probability (length-normalized mean answer-span token logprob) at ranking the correctness of the model's own answers, by the registered margin?",
       "registered": true,
       "slug": "dial-logprob-baseline-v3",
-      "status": "draft",
+      "status": "resolved",
       "title": "Dial token-logprob baseline v3: fresh self-consistent generation, no reproduction bet",
       "type": "probe-fit",
-      "verdict": ""
+      "verdict": "S arm: LP3-G0 pass, LP3-G1 ambiguous band (margin +0.0118, CI [-0.0122,+0.0359]); neither falsifier fired; integrity clean (v2 failure class eliminated). T arm: registered data-stage stop at the power floor (710 answered < 1000); descriptive stats not reported."
     },
     {
       "checkpoint": {

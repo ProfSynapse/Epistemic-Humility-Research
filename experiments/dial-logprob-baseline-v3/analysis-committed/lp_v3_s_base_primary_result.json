@@ -1,0 +1,41 @@
+{
+  "arm": "s_base_primary",
+  "lp3_g0": {
+    "a_capture_integrity_ok": true,
+    "a_n_integrity_fail": 0,
+    "b_coverage_ok": true,
+    "c_power_floor_ok": true,
+    "c_n_answered": 1820,
+    "c_power_floor_n": 1000,
+    "d_instrument_sanity_ok": true,
+    "d_dial_auroc": 0.8301,
+    "d_instrument_sanity_auroc_min": 0.75,
+    "pass": true
+  },
+  "variant_aurocs": {
+    "mean_answer_span": {
+      "auroc": 0.8183136363636363,
+      "n": 1820
+    },
+    "sum_answer_span": {
+      "auroc": 0.7854212121212121,
+      "n": 1820
+    },
+    "min_answer_span": {
+      "auroc": 0.8301818181818181,
+      "n": 1820
+    }
+  },
+  "dial_minus_primary_logprob_margin": 0.0118,
+  "margin_bootstrap_ci": {
+    "n_boot_effective": 2000,
+    "ci_lo": -0.012161287170302914,
+    "ci_hi": 0.03591378787878772,
+    "mean": 0.011860320252719136
+  },
+  "gate_verdict": {
+    "LP3_G1_pass": false,
+    "falsifier_fired": false,
+    "ambiguous_band": true
+  }
+}
