@@ -346,18 +346,22 @@ field induced base-model over-refusal in smoke tests, and was dropped), so
 every GRPO-layer comparison is made against a clean-SFT baseline re-evaluated
 under the same contract.
 
-Confidence is scored against two targets, kept separate throughout: the
-*known-label* target (1 for known rows, 0 for unknown) and *response
-appropriateness* (1 when the model did the right thing for the row: answered
-a known correctly or refused an unknown). Four calibration metrics are
-reported against those targets. The standard deviation of emitted confidence
-detects collapse, the case where a model writes out the same number on every
-row. AUROC, the area under the receiver operating characteristic curve, asks
-how well confidence *ranks* rows, with 0.5 meaning chance and 1.0 a perfect
-ordering; it is computed against appropriateness and against
-correctness-given-answered. ECE asks whether the confidence levels are right
-in absolute terms, and the Brier score, the mean squared error between the
-stated confidence and the outcome, penalizes both errors at once.
+Confidence is scored against three targets, kept separate throughout: the
+*known-label* target (1 for known rows, 0 for unknown, available before any
+answer is produced), *response appropriateness* (1 when the model did the
+right thing for the row: answered a known correctly or refused an unknown),
+and, restricted to the rows the model chose to answer,
+*correctness-given-answered* (1 when the answer given was actually right).
+Four calibration metrics are reported against these targets. The standard
+deviation of
+emitted confidence detects collapse, the case where a model writes out the
+same number on every row. AUROC, the area under the receiver operating
+characteristic curve, asks how well confidence *ranks* rows, with 0.5
+meaning chance and 1.0 a perfect ordering; it is computed against
+appropriateness and against correctness-given-answered. ECE asks whether the
+confidence levels are right in absolute terms, and the Brier score, the mean
+squared error between the stated confidence and the outcome, penalizes both
+errors at once.
 
 ## 4. Behavioral results: induce, reposition, amplify
 
@@ -499,16 +503,18 @@ The preference arms cluster with the SFT baseline; the GRPO arms and every
 stack shift up-right: more recall, more over-refusal. No combination of
 stages escapes the bargain; each picks a spot on the same curve.
 
-GRPO *amplifies* the abstention routine. Refusal recall rises to 93 to 98%
-(the first reward variant reached 97.87% on an earlier SFT base), the highest
-of any arm; truthfulness moves far less, 40.84 to 41.64% across
+GRPO *amplifies* the abstention routine. Across its two reward revisions,
+refusal recall rises to 93.41 to 95.54% (a separate run of the first reward
+variant, on an earlier SFT base not shown in the table above, reached
+97.87%, higher still), the highest of any arm; truthfulness moves far less,
+40.84 to 41.64% across
 the rebalanced variant and its stacks, against 40.58% for the same-contract
 SFT baseline, a margin the three-seed replication below confirms is
 essentially flat rather than a truthfulness gain. The appropriateness reward
 pays for refusing unknowns and the policy obliges, hard.
 
-The amplification drags over-refusal back up with it, to 66 to 76% against 56
-to 57% for the preference arms. GRPO undoes precisely the repositioning that
+The amplification drags over-refusal back up with it, to 66 to 76% against 52
+to 56% for the preference arms. GRPO undoes precisely the repositioning that
 DPO buys. The reward's asymmetric hallucination penalty makes refusal the safe
 action, and the policy generalizes that safety margin onto known questions.
 
@@ -731,7 +737,7 @@ validation step. The registered 4B matrix also specified a learning-rate
 sensitivity panel (six runs: SFT, DPO, and KTO each at two non-default
 learning rates) and a beta sensitivity panel (four runs: DPO and KTO each
 at two non-default beta values), both single-seed and robustness-only per
-the pre-registration (PROTOCOL v0.3 section 3.1). None of these four evidence layers ran for this
+the pre-registration. None of these four evidence layers ran for this
 paper; no result exists for any of them, so there is nothing to selectively
 report. All are deferred to a planned follow-on paper examining how the
 stage decomposition here generalizes
@@ -750,9 +756,10 @@ so no question was added or removed, but 1,460 of the 14,395 training questions,
 three-seed intervals reported for cold-start DPO and KTO span one pre-fix run and
 two post-fix runs, so part of their spread may be the dataset version rather than
 training-seed variation. The original seed-1 cells also differ from the
-seed 2/3 cohort on a second axis, the trainer submodule vintage (DPO seed 1
-at commit 3a3d7a26, KTO seed 1 at 04005402, both seed 2/3 cohorts at
-089fa9b7). The three SFT seeds are unaffected, all three having
+seed 2/3 cohort on a second axis, the trainer submodule vintage: the two
+preference seed-1 runs predate a training-library update that both seed 2/3
+cohorts already trained under (exact revisions are recorded in Appendix A).
+The three SFT seeds are unaffected, all three having
 trained on the corrected build. A rerun of the two affected seed-1 runs has
 since completed: both arms were retrained cold-start on the corrected
 build, at the same training-library version as their seed 2/3 cohort,
@@ -1021,7 +1028,10 @@ post-fix training files are `sft_train.jsonl` at `714577a8ce6d32ac...`,
 `9cb291ee45c8dd58...`; the run record for each arm records the SHA its run
 consumed, and the two preference seed-1 runs consumed the pre-fix builds
 `22669d2c8c0b19df...` and `4d79fa505f5ae424...` respectively. All three SFT seeds
-consumed the post-fix build. The rerun of the two affected seed-1 runs is
+consumed the post-fix build. The trainer submodule vintage named in Section
+7 is the second axis distinguishing the original preference seed-1 runs from
+their seed 2/3 cohort: DPO seed 1 ran at synaptic-tuner commit `3a3d7a26`,
+KTO seed 1 at `04005402`, and both seed 2/3 cohorts at `089fa9b7`. The rerun of the two affected seed-1 runs is
 registered separately.
 
 Governance notes: the three-seed cold-start block is the pre-registered
