@@ -8,7 +8,7 @@ repository: https://github.com/ProfSynapse/Epistemic-Humility-Research
 reproducibility: >
   Behavioral tables and Figures 1-5 regenerate via
   papers/paper-2-training-regimen/scripts/build_figures.py into
-  papers/paper-2-training-regimen/analysis/ and papers/paper-2-training-regimen/figures/; Figure 6
+  papers/paper-2-training-regimen/analysis/ and papers/paper-2-training-regimen/figures/; Figure 8
   (regimen operating points) regenerates via
   papers/paper-2-training-regimen/scripts/build_extended_figures.py. The grouped run inventory is
   archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv.
@@ -669,6 +669,18 @@ rate near 4 to 6% for arms that read zero. The scorer was left as
 pinned rather than retuned, and the same audit found no false positives in 60
 sampled SFT-side refusals.*
 
+![Grouped bar chart of unknown-question refusal recall by checkpoint and prompt condition, with the untrained base and cold DPO, KTO, and GRPO checkpoints all between 85 and 94 percent under the response-confidence contract and at zero under the other prompts, while cold SFT, merged clean SFT, and SFT-then-GRPO retain 69 to 77 percent under the structure-only prompt.](figures/fig-p1-11-prompt-crossing.png)
+
+**Figure 3. Prompt condition crosses training regimen** (SelfAware
+unknown-labeled rows, n=1,032; exploratory). The response-confidence
+contract alone elicits 85 to 94% refusal recall from the untrained base and
+from every cold preference and reinforcement-learning checkpoint; under
+plain-answer or structure-only prompting those same checkpoints read 0.00%.
+Only checkpoints with SFT in their history keep 69 to 77% once the
+instruction is removed. The base's response-confidence bar is the
+counterfactual, and the cold GRPO response-confidence value is that
+experiment's own evaluation, not re-run here.
+
 Read the base row first. The same untrained weights refuse almost every
 unknown question under one contract and none at all under the other two. The
 response-confidence contract, which tells the model to say "I don't know the
@@ -700,6 +712,15 @@ every seed cleared its threshold by more than double: the three-seed claim
 is confirmatory for internalization, not a description of one lucky run.
 Section 7 states the registered thresholds and what would have overturned
 them.
+
+![Bar chart of structure-only refusal recall across thirteen checkpoints, with the three cold SFT seeds, merged clean SFT, and SFT-then-GRPO between 69 and 79 percent above a dashed 30 percent floor, and the base plus every cold DPO, KTO, and GRPO seed at zero below a dashed 10 percent ceiling.](figures/fig-p1-12-internalization-seeds.png)
+
+**Figure 4. Instruction-free internalization by seed** (structure-only
+prompt; dashed lines are the preregistered 30% internalization floor and
+10% base ceiling). All three cold-SFT seeds, the merged clean-SFT
+checkpoint, and SFT-then-GRPO clear the floor; the base and every cold DPO,
+KTO, and GRPO seed read 0.00% scored, about 4 to 6% by the row-level audit,
+under the ceiling either way.
 
 Two independent SFT recipes land in the same place: the cold-start seed-1
 adapter reads 69.57% and the separately built merged clean-SFT checkpoint
@@ -733,7 +754,7 @@ surface):
 
 ![Scatter plot of SFT-warmed operating points, with DPO far toward low over-refusal and low recall and KTO close to the merged-SFT point, and a translucent green zone over the plot's top-left grid cell marking the direction of the ideal operating point.](figures/fig-p1-04-sft-warmed-tradeoff.png)
 
-**Figure 3. SFT-warmed operating points on SelfAware (plain-answer
+**Figure 5. SFT-warmed operating points on SelfAware (plain-answer
 contract).** DPO moves far toward low over-refusal at heavy recall cost; KTO
 stays near the merged-SFT abstention policy. Neither arm improves
 discrimination between the two kinds of question. The green zone marks the
@@ -766,7 +787,7 @@ the first of the three background findings predicts (Section 2).
 
 ![Grouped bar chart of stated-confidence metrics for merged SFT, SFT-DPO, and SFT-KTO under the answer-plus-confidence contract, with a small "0 = ideal" note tied to the axis for the lower-is-better metric groups.](figures/fig-p1-05-stated-confidence.png)
 
-**Figure 4. Stated-confidence profile of the SFT-warmed arms
+**Figure 6. Stated-confidence profile of the SFT-warmed arms
 (answer/confidence contract, six runs pooled per arm).** Confidence coverage is near 100%
 for all arms; the differences are behavioral and confidence-level shifts, not
 parse failures. Judged against actual answer correctness (the two rightmost
@@ -775,7 +796,7 @@ is the least trustworthy of the three.
 
 ![Bar chart of mean stated confidence split by outcome, showing near-identical high confidence on correct answers, wrong answers, and answers to unanswerable questions, and near-zero confidence on refusals, with a dashed green tick over each outcome group marking the ideal confidence shape.](figures/fig-p1-06-confidence-alignment.png)
 
-**Figure 5. Stated confidence by actual outcome.** All three regimens are
+**Figure 7. Stated confidence by actual outcome.** All three regimens are
 highly confident whenever they *answer*, including on wrong answers and on
 unknown questions; refusals get near-zero confidence. Confidence tracks the
 decision to answer, not the truth of the answer: the dashed green tick over
@@ -810,7 +831,7 @@ aggregate CSV rather than raw per-row counts.*
 
 ![Scatter plot of every response-confidence-contract arm in recall and over-refusal, with preference arms clustered near the SFT baseline and all GRPO arms and stacks displaced up and to the right along the same curve; a translucent green upper-left quadrant marks the direction of the ideal operating point.](figures/fig-p1-07-regimen-operating-points.png)
 
-**Figure 6. GRPO amplifies the abstention routine; stacks stay on its
+**Figure 8. GRPO amplifies the abstention routine; stacks stay on its
 frontier.** Operating points of all response-confidence-contract arms
 (seed 1, exploratory), including the four two-stage GRPO/preference stacks.
 The preference arms cluster with the SFT baseline; the GRPO arms and every
@@ -838,7 +859,7 @@ Stacking a preference stage with GRPO does not escape the trade-off in either
 order. All four two-stage stacks (DPO then GRPO, GRPO then DPO, KTO then GRPO,
 GRPO then KTO) land within 1.1 truthfulness points and about 6 over-refusal
 points (6.03 at the widest) of plain SFT-GRPO, and all of them sit on the same
-curve as every other arm (Figure 6). Ordering is a marginal adjustment to the
+curve as every other arm (Figure 8). Ordering is a marginal adjustment to the
 operating point GRPO defines, at least at a resolution this layer can see:
 each stack was one run at one seed at this pass; the three-seed replication
 below sharpens the ordering comparison.
@@ -914,12 +935,12 @@ states the size of the overlap and its bound.
 
 ![Scatter plot of the five GRPO-touching arms' three-seed mean operating points with bootstrap-CI error bars, each connected by a dotted line to its seed-1-only point, showing the shift holds beyond the single seed; a translucent green upper-left quadrant marks the direction of the ideal operating point.](figures/fig-p1-10-three-seed-replication.png)
 
-**Figure 7. The three-seed replication holds the seed-1 shift.** Exploratory
+**Figure 9. The three-seed replication holds the seed-1 shift.** Exploratory
 response-confidence-track evidence, never pooled with the plain-answer
 headline (Section 4.1); n = 3 seeds per arm. Each arm's three-seed mean
 (filled diamond) carries a 95% seed-level bootstrap CI, a descriptive
 interval bounded by the seed minimum and maximum rather than an inferential
-one; the open circle is the original seed-1-only point (Figure 6) for the
+one; the open circle is the original seed-1-only point (Figure 8) for the
 same arm. Every seed-1 point sits inside or near its arm's three-seed
 interval: the operating points measured at seed 1 are not a single-seed
 artifact. The green quadrant marks the direction of the ideal operating
@@ -985,7 +1006,7 @@ from unknown.
 
 Behavior is half the construct. The other half is whether the model can *say
 how sure it is*, and the same runs supply one clean observation about it,
-already visible for the SFT-warmed arms in Figure 5 (answer-plus-confidence
+already visible for the SFT-warmed arms in Figure 7 (answer-plus-confidence
 contract): emitted confidence tracks the decision to answer, not the truth
 of the answer. Every regimen is highly confident whenever it
 answers, including on wrong answers and on unanswerable questions; refusals

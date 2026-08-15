@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="700" viewBox="0 0 1180 700">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="590.0" y="26.0" font-family="Arial, sans-serif" font-size="18" text-anchor="middle" fill="#202020">Prompt condition crosses training regimen</text>
+<text x="590.0" y="46.0" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#202020">Refusal recall on unknown-labeled rows (%); unmeasured cells are absent</text>
+<text x="24" y="270.0" transform="rotate(-90 24 270.0)" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#202020">Unknown-question refusal recall (%)</text>
+<rect x="120" y="70" width="760" height="400" fill="#fafafa" stroke="#202020"/>
+<line x1="120" y1="470.0" x2="880" y2="470.0" stroke="#dddddd"/>
+<text x="104.0" y="474.0" font-family="Arial, sans-serif" font-size="10" text-anchor="end" fill="#202020">0</text>
+<line x1="120" y1="390.0" x2="880" y2="390.0" stroke="#dddddd"/>
+<text x="104.0" y="394.0" font-family="Arial, sans-serif" font-size="10" text-anchor="end" fill="#202020">20</text>
+<line x1="120" y1="310.0" x2="880" y2="310.0" stroke="#dddddd"/>
+<text x="104.0" y="314.0" font-family="Arial, sans-serif" font-size="10" text-anchor="end" fill="#202020">40</text>
+<line x1="120" y1="230.0" x2="880" y2="230.0" stroke="#dddddd"/>
+<text x="104.0" y="234.0" font-family="Arial, sans-serif" font-size="10" text-anchor="end" fill="#202020">60</text>
+<line x1="120" y1="150.0" x2="880" y2="150.0" stroke="#dddddd"/>
+<text x="104.0" y="154.0" font-family="Arial, sans-serif" font-size="10" text-anchor="end" fill="#202020">80</text>
+<line x1="120" y1="70.0" x2="880" y2="70.0" stroke="#dddddd"/>
+<text x="104.0" y="74.0" font-family="Arial, sans-serif" font-size="10" text-anchor="end" fill="#202020">100</text>
+<text x="174.3" y="490.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">raw</text>
+<text x="174.3" y="503.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">base</text>
+<rect x="133.3" y="106.4" width="24" height="363.6" fill="rgb(201, 151, 58)"/>
+<text x="145.3" y="101.4" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">90.9</text>
+<rect x="162.3" y="470.0" width="24" height="0.0" fill="rgb(92, 99, 112)"/>
+<text x="174.3" y="465.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">0.0</text>
+<rect x="191.3" y="470.0" width="24" height="0.0" fill="rgb(47, 111, 78)"/>
+<text x="203.3" y="465.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">0.0</text>
+<text x="282.9" y="490.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">cold</text>
+<text x="282.9" y="503.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">DPO</text>
+<text x="282.9" y="516.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">s1</text>
+<rect x="241.9" y="92.1" width="24" height="377.9" fill="rgb(201, 151, 58)"/>
+<text x="253.9" y="87.1" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">94.5</text>
+<rect x="299.9" y="470.0" width="24" height="0.0" fill="rgb(47, 111, 78)"/>
+<text x="311.9" y="465.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">0.0</text>
+<text x="391.4" y="490.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">cold</text>
+<text x="391.4" y="503.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">KTO</text>
+<text x="391.4" y="516.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">s1</text>
+<rect x="350.4" y="94.0" width="24" height="376.0" fill="rgb(201, 151, 58)"/>
+<text x="362.4" y="89.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">94.0</text>
+<rect x="408.4" y="470.0" width="24" height="0.0" fill="rgb(47, 111, 78)"/>
+<text x="420.4" y="465.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">0.0</text>
+<text x="500.0" y="490.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">cold</text>
+<text x="500.0" y="503.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">GRPO</text>
+<text x="500.0" y="516.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">s1</text>
+<rect x="459.0" y="127.4" width="24" height="342.6" fill="rgb(201, 151, 58)"/>
+<text x="471.0" y="122.4" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">85.7</text>
+<rect x="517.0" y="470.0" width="24" height="0.0" fill="rgb(47, 111, 78)"/>
+<text x="529.0" y="465.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">0.0</text>
+<text x="608.6" y="490.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">cold</text>
+<text x="608.6" y="503.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">SFT</text>
+<text x="608.6" y="516.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">s1</text>
+<rect x="625.6" y="191.7" width="24" height="278.3" fill="rgb(47, 111, 78)"/>
+<text x="637.6" y="186.7" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">69.6</text>
+<text x="717.1" y="490.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">clean-SFT</text>
+<text x="717.1" y="503.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">merged</text>
+<rect x="734.1" y="192.1" width="24" height="277.9" fill="rgb(47, 111, 78)"/>
+<text x="746.1" y="187.1" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">69.5</text>
+<text x="825.7" y="490.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">SFT→</text>
+<text x="825.7" y="503.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">GRPO</text>
+<text x="825.7" y="516.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">s1</text>
+<rect x="842.7" y="160.3" width="24" height="309.7" fill="rgb(47, 111, 78)"/>
+<text x="854.7" y="155.3" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">77.4</text>
+<text x="145.3" y="88.4" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#202020">‡</text>
+<text x="471.0" y="109.4" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#202020">†</text>
+<rect x="900" y="101" width="16" height="16" fill="rgb(201, 151, 58)"/>
+<text x="924.0" y="114.0" font-family="Arial, sans-serif" font-size="11" text-anchor="start" fill="#202020">response-confidence</text>
+<rect x="900" y="127" width="16" height="16" fill="rgb(92, 99, 112)"/>
+<text x="924.0" y="140.0" font-family="Arial, sans-serif" font-size="11" text-anchor="start" fill="#202020">plain-answer</text>
+<rect x="900" y="153" width="16" height="16" fill="rgb(47, 111, 78)"/>
+<text x="924.0" y="166.0" font-family="Arial, sans-serif" font-size="11" text-anchor="start" fill="#202020">structure-only</text>
+<text x="590.0" y="674.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">‡ counterfactual: only near-ceiling read from an untrained checkpoint (raw base, RC prompt)</text>
+<text x="590.0" y="686.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">† provenance: cold GRPO RC value is its own experiment's evaluation, not re-run here</text>
+</svg>
