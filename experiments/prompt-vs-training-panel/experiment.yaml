@@ -80,4 +80,7 @@ verdict: The RC contract alone elicits near-ceiling abstention from the untraine
   ~4-6 audited); only SFT-trained weights carry abstention without the instruction
   (69.6, deepened to 77.4 by GRPO on top), so training-regimen abstention claims are
   meaningful only relative to prompt condition.
-kg: []
+kg:
+- experiment:prompt-vs-training-panel
+- mechanism:rc-prompt-elicits-near-ceiling-abstention-from-untrained-base
+- mechanism:only-sft-installs-abstention-in-weights

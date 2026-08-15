@@ -35,4 +35,6 @@ verdict: 'Instruction-free abstention internalization is seed-robust: all three 
   seeds retain 69.6-79.4 percent refusal recall under the structure-only prompt while
   all DPO/KTO seeds read 0.00, making only-SFT-installs-abstention a three-seed claim
   in both directions.'
-kg: []
+kg:
+- experiment:pstruct-internalization-seed-robustness
+- mechanism:only-sft-installs-abstention-in-weights
