@@ -1132,15 +1132,18 @@ Read together: a prompt elicits only what training has left available, and
 training amplifies only what a prompt or a supervised stage makes available
 in the first place.
 
-AbstentionBench (Kirichenko et al., 2025) has three of the four ingredients
-this study crosses, holding them apart. It checks base against instruction-
-tuned models, it manipulates a system prompt, and it tracks abstention
-through a stagewise supervised, preference, and verifiable-reward pipeline,
-finding abstention improving through the first two stages and then degrading
-after the reinforcement-learning stage. It never crosses those factors
-factorially, which is the operation that separates elicitation from
-installation, and its stagewise direction is a useful independent signal that
-objectives differ on this axis rather than being interchangeable.
+AbstentionBench (Kirichenko et al., 2025) is the closest published design
+to ours. It compares base models with instruction-tuned ones, it varies the
+system prompt, and it measures abstention after each stage of a supervised,
+then preference, then verifiable-reward training pipeline, finding that
+abstention improves through the first two stages and degrades after the
+reinforcement-learning stage. Each of those comparisons runs on its own,
+though. The benchmark never takes one checkpoint and re-measures it with the
+abstention prompt removed, and that removal test is what tells a model that
+merely follows the prompt apart from a model whose weights changed. Without
+it, a stage that "improves abstention" could be improving either one. Its
+stagewise result is still useful to us as independent evidence that training
+objectives are not interchangeable on this axis.
 
 Two further results bear on how much a training stage really changes. Yue et
 al. (2025) find that reinforcement learning with verifiable rewards raises
