@@ -634,8 +634,9 @@ two rows; the confirmatory layer above reads that arm as having learned
 nothing, and under the response-confidence instruction it refuses more
 unknown questions than the untrained base model does under the same
 instruction, 94.48 against 90.89. Both readings are true of the same file on
-disk. That pair is the reason the
-verbs in this paper carry their prompt condition.
+disk, so a claim that this arm learned abstention, or failed to, says
+nothing until it names the prompt it was measured under. This is why every
+training verb in this paper states its prompt condition.
 
 Against that, the SFT rows separate. All three cold-SFT seeds keep most of
 their abstention when the instruction is taken away: 69.57, 76.94, and 79.36%
