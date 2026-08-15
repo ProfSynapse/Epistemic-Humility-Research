@@ -878,20 +878,13 @@ the panel midlines, illustrative rather than quantitative.
 Everything above applies the reward on top of SFT. A separate exploratory
 cell asked the cold-start question for GRPO: can the appropriateness reward
 teach abstention to the base model with no supervised stage at all, the way
-SFT can and the preference objectives cannot? The registered prediction was
-that it cannot, at eval refusal recall below 10%, with the modal mechanism
-being no trainable signal, defined in advance as at least 90% of training
-groups sitting at zero advantage. The registered falsifier was recall at or
-above 20%.
-
-The falsifier fired, and not marginally. Trained from the base model under
-the response-confidence contract, cold-start GRPO reads refusal recall
-85.66% (884 of 1,032 unknown rows), over-refusal 60.89%, truthful 38.14%.
-The no-signal mechanism was wrong too: 64.78% of training groups sat at zero
-advantage (9,645 of 14,888), below the 90% floor, and the run trained on real
-gradient, with mean reward rising 0.362 to 0.603 and KL divergence from the
-reference policy rising 0.005 to 0.155. Both halves of the prediction were
-wrong.
+SFT can and the preference objectives cannot? The registered prediction
+said no, expecting the run to starve for trainable signal. It was wrong on
+both counts, and not marginally: the run trained on real gradient, and the
+checkpoint reads refusal recall 85.66% under the response-confidence
+contract, far past the registered falsifier. The prediction's thresholds,
+the training diagnostics, and the run record live in the cell's registered
+record, linked in Appendix A.
 
 The panel supplies the control that this cell was designed without, and it
 changes what the 85.66% means. Under the identical contract, on the identical
@@ -902,11 +895,11 @@ and over-refusal 65.38 to 60.89. Take the instruction away and the same
 checkpoint reads 0.00% (4 to 6% audited), exactly where the untrained base
 reads. Per the band frozen before the panel ran, the verb for this cell is
 that cold-start GRPO preserves and sharpens instruction-elicited abstention.
-It induced none, and it internalized none. The rollout diagnostics show the
-same thing from inside training: about 59% of unknown-labeled rollouts
-already ended in abstention within the first 25 steps, and the rollout
-abstention rate stayed essentially flat across the whole run at 0.4414. The
-reward was reinforcing a behavior the prompt had already put there.
+It induced none, and it internalized none. The rollout diagnostics show
+the same thing from inside training: more than half of unknown-labeled
+rollouts already ended in abstention within the first 25 steps, and the
+rate stayed essentially flat across the run. The reward was reinforcing a
+behavior the prompt had already put there.
 
 One arm was deliberately not run: GRPO from the base model under the
 structure-only prompt. The panel row explains why. Without an abstention
