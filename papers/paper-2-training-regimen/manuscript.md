@@ -1,7 +1,7 @@
 ---
 title: "Teaching Small Language Models to Say I Don't Know: A Controlled Comparison of SFT, DPO, KTO, and GRPO on Model-Specific Abstention Data"
 author: "Joseph Rosenbaum (Synaptic Labs)"
-status: draft-v3 (restructured 2026-08-15 around the prompt-vs-training disentanglement: every training verb scoped to its prompt condition, the prompt-condition crossing added as Section 4.2, the cold-start GRPO cell reported and reclassified in Section 4.4, and the three system prompts printed verbatim in Appendix C; previously restructured 2026-07-01, when the evidence-synthesis Part I split out to papers/paper-1-taxonomy-framework/manuscript.md and the confidence-channel and probe-depth material split out to separate work in this line)
+status: draft-v3 (restructured 2026-08-15 around the prompt-vs-training disentanglement: every training verb scoped to its prompt condition, the prompt-condition crossing added as Section 4.2, the cold-start GRPO run reported and reclassified in Section 4.1, and the three system prompts printed verbatim in Appendix C; previously restructured 2026-07-01, when the evidence-synthesis Part I split out to papers/paper-1-taxonomy-framework/manuscript.md and the confidence-channel and probe-depth material split out to separate work in this line)
 date: 2026-08-15
 supersedes: archive/papers/paper-2-training-regimen/drafts/paper2-training-regimen-draft-v1.md (experiment portion)
 repository: https://github.com/ProfSynapse/Epistemic-Humility-Research
@@ -553,6 +553,61 @@ That gives the first half of the stage decomposition: under a contract that
 elicits nothing from the untrained model, abstention has to be induced, and
 among these objectives only SFT induces it.
 
+#### Cold-start GRPO: a surprise, and what it turned out to mean
+
+The fourth objective gets the same cold-start question: can the
+appropriateness reward teach abstention to the base model with no
+supervised stage at all, the way SFT can and the preference objectives
+cannot? Its number cannot sit inside the block above, because the cell runs
+under the response-confidence contract on the exploratory tier, so it is
+reported beside the confirmatory rows rather than pooled with them. The
+registered prediction
+said no, expecting the run to starve for trainable signal. It was wrong on
+both counts, and not marginally: the run trained on real gradient, and the
+checkpoint reads refusal recall 85.66% under the response-confidence
+contract, far past the level fixed in advance as disproof. The
+preregistered thresholds, training diagnostics, and run record are linked
+in Appendix A.
+
+The prompt crossing of Section 4.2 supplies the control this experiment was
+designed without, and it changes what the 85.66% means. Under the identical contract, on the identical
+rows, the untrained base model reads 90.89%. The trained checkpoint is
+*below* its own starting point: across the run the operating point slid
+slightly toward answering on both sides of the ledger, recall 90.89 to 85.66
+and over-refusal 65.38 to 60.89. Take the instruction away and the same
+checkpoint reads 0.00% (4 to 6% audited), exactly where the untrained base
+reads. Under wording rules fixed before the crossing ran, the accurate
+description is that cold-start GRPO preserves and sharpens
+instruction-elicited abstention.
+It induced none, and it internalized none. The rollout diagnostics show
+the same thing from inside training: more than half of unknown-labeled
+rollouts already ended in abstention within the first 25 steps, and the
+rate stayed essentially flat across the run. The reward was reinforcing a
+behavior the prompt had already put there.
+
+One arm was deliberately not run: GRPO from the base model under the
+structure-only prompt. The crossing explains why. Without an abstention
+instruction the base model abstains on 0.00% of unknown questions, so a
+policy sampling its own completions produces groups in which nothing abstains
+and the abstention term has no difference to grade. Even with the instruction
+present, 64.78% of this run's groups still carried zero advantage. Jha et al.
+(2026) report the same failure directly: their reinforcement-learning-only
+arm fails on open-ended mathematics because the starting model almost never
+emits an abstention spontaneously, starving the algorithm of exploration
+signal, and a supervised abstention warm-up partially recovers it. The
+instruction is therefore doing structural work in these runs rather than
+contaminating them: it is the scaffolding that gives the reward something to
+reinforce. The posture this paper takes from that is scaffolded training with
+scaffold-removed measurement, which is what the structure-only column of
+Section 4.2 reports.
+
+One disclosure belongs with every number in this experiment. Training rollouts were
+sampled at temperature 1.35 and evaluation is greedy, and the two regimes
+disagree sharply on the same policy: refusal on known questions runs about
+23% in rollouts against 60.89% at greedy evaluation. The evaluation figures
+here are regime-dependent, and rollout-side rates are not comparable to them.
+
+
 ### 4.2 The prompt condition decides what the numbers mean
 
 How much of the abstention measured above belongs to the training, and how
@@ -581,13 +636,11 @@ note under the checkpoint table below. The gap between the first two rows is
 the instrument's sharpest fact: an explicit refusal instruction and a soft
 one differ by the entire effect.*
 
-An
-integrity precondition, fixed before either run, required full row coverage
-and a matching configuration hash on every scored row of every arm. All
-seventeen arms passed it. The cold GRPO response-confidence cell is the one
-entry from outside these two cells: it is that experiment's own registered
-eval, run under the same pinned instrument, and its integrity gate passed
-there.
+Before any result was read, every arm was required to show full row
+coverage and a matching configuration hash on every scored row; all
+seventeen arms passed. The cold GRPO response-confidence entry comes from
+that experiment's own evaluation, run under the same pinned instrument and
+held to the same checks.
 
 | Checkpoint | Response-confidence | Plain-answer | Structure-only |
 |---|---|---|---|
@@ -653,7 +706,7 @@ adapter reads 69.57% and the separately built merged clean-SFT checkpoint
 69.48%. Adding GRPO on top of that merged checkpoint raises instruction-free
 recall to 77.42%, so the reward deepens what the supervised stage installed.
 Applied to the base model instead, the same reward installs nothing: the
-cold-start GRPO checkpoint reads 0.00% without the instruction (Section 4.4).
+cold-start GRPO checkpoint reads 0.00% without the instruction (Section 4.1).
 
 This is what the reserved vocabulary is for. The response-confidence contract
 *elicits* abstention that the base weights already afford, and every
@@ -809,8 +862,8 @@ held in direction and size at both new seeds, and the preference stage kept
 recovering known-row over-refusal without reopening unknown-answering.
 Neither threshold moved after a result existed. (The DPO-touching arms are
 a partial replicate; the trainer exposes no random-state flag, so only the
-source model and data order vary. Registered thresholds and per-seed deltas
-are in Appendix A's provenance for this cell.)
+source model and data order vary. Preregistered thresholds and per-seed
+deltas are in the replication's record, linked in Appendix A.)
 
 Across all three seeds, the plain SFT-then-GRPO arm reads truthful 41.17%
 (95% interval 41.08 to 41.35), refusal recall 94.25% (93.41 to 95.06),
@@ -872,56 +925,6 @@ interval: the operating points measured at seed 1 are not a single-seed
 artifact. The green quadrant marks the direction of the ideal operating
 point (high unknown-question refusal, low over-refusal); its boundaries are
 the panel midlines, illustrative rather than quantitative.
-
-#### Cold-start GRPO: a registered prediction, falsified and then corrected
-
-Everything above applies the reward on top of SFT. A separate exploratory
-cell asked the cold-start question for GRPO: can the appropriateness reward
-teach abstention to the base model with no supervised stage at all, the way
-SFT can and the preference objectives cannot? The registered prediction
-said no, expecting the run to starve for trainable signal. It was wrong on
-both counts, and not marginally: the run trained on real gradient, and the
-checkpoint reads refusal recall 85.66% under the response-confidence
-contract, far past the registered falsifier. The prediction's thresholds,
-the training diagnostics, and the run record live in the cell's registered
-record, linked in Appendix A.
-
-The panel supplies the control that this cell was designed without, and it
-changes what the 85.66% means. Under the identical contract, on the identical
-rows, the untrained base model reads 90.89%. The trained checkpoint is
-*below* its own starting point: across the run the operating point slid
-slightly toward answering on both sides of the ledger, recall 90.89 to 85.66
-and over-refusal 65.38 to 60.89. Take the instruction away and the same
-checkpoint reads 0.00% (4 to 6% audited), exactly where the untrained base
-reads. Per the band frozen before the panel ran, the verb for this cell is
-that cold-start GRPO preserves and sharpens instruction-elicited abstention.
-It induced none, and it internalized none. The rollout diagnostics show
-the same thing from inside training: more than half of unknown-labeled
-rollouts already ended in abstention within the first 25 steps, and the
-rate stayed essentially flat across the run. The reward was reinforcing a
-behavior the prompt had already put there.
-
-One arm was deliberately not run: GRPO from the base model under the
-structure-only prompt. The panel row explains why. Without an abstention
-instruction the base model abstains on 0.00% of unknown questions, so a
-policy sampling its own completions produces groups in which nothing abstains
-and the abstention term has no difference to grade. Even with the instruction
-present, 64.78% of this run's groups still carried zero advantage. Jha et al.
-(2026) report the same failure directly: their reinforcement-learning-only
-arm fails on open-ended mathematics because the starting model almost never
-emits an abstention spontaneously, starving the algorithm of exploration
-signal, and a supervised abstention warm-up partially recovers it. The
-instruction is therefore doing structural work in these runs rather than
-contaminating them: it is the scaffolding that gives the reward something to
-reinforce. The posture this paper takes from that is scaffolded training with
-scaffold-removed measurement, which is what the structure-only column of
-Section 4.2 reports.
-
-One disclosure belongs with every number in this cell. Training rollouts were
-sampled at temperature 1.35 and evaluation is greedy, and the two regimes
-disagree sharply on the same policy: refusal on known questions runs about
-23% in rollouts against 60.89% at greedy evaluation. The evaluation figures
-here are regime-dependent, and rollout-side rates are not comparable to them.
 
 SFT induces the behavior, preference optimization repositions it, GRPO
 amplifies it, all of it measured under a prompt that asks for abstention.
@@ -1366,8 +1369,8 @@ falsify the claim that nothing here moves the frontier. Neither appeared in
 any arm we trained, at one scale, in one model family, on one benchmark, and
 that is the scope the claim is fenced to.
 
-The internalization claim was registered with its own kill criterion, fixed
-before the runs and not moved afterward: any supervised seed reading below
+The internalization claim carried preregistered pass and fail conditions,
+fixed before the runs and not moved afterward: any supervised seed reading below
 30% refusal recall under the structure-only prompt would have scoped the
 claim to a single seed or retired it, and any preference seed reading at or
 above 10% would have broken the clean negative. Three supervised seeds
@@ -1573,7 +1576,7 @@ with the internal label it carries in the repository.
   `analysis-committed/metrics_cold_{sft,dpo,kto}_seed{2,3}_pstruct__selfaware.json`.
   Internal label: the structure-only internalization seed-robustness cell.
 - [The cold-start GRPO cell](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/grpo-cold-start-induction/AMENDMENT.md):
-  the falsified registered prediction reported in Section 4.4, its training
+  the falsified registered prediction reported in Section 4.1, its training
   run record, and the three registered diagnostics computed by the pinned
   `grpo_cold_diagnostics.py` over the run's reward-debug log, with results in
   `analysis-committed/diagnostics_cold_base_grpo_v2_seed1.json` and evaluation
