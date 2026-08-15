@@ -1,0 +1,17 @@
+# Pre-stated gates for prompt-crossing-completion.
+# Fixed at signing; never retuned after any result.
+
+pc_g0:
+  # Integrity precondition, per arm (verbatim from prompt-vs-training-panel PV-G0).
+  rows_total: 3369
+  full_coverage: true
+  config_sha_match: true
+  scorer_parse_recorded: true
+
+pc_g1:
+  # Classification rule for the six seq arms, against each seed's cold-SFT
+  # P-struct parent value (69.57 / 76.94 / 79.36; panel + seed-robustness).
+  erosion_floor_pct: 30.0          # below this = falsifier (frozen R3 floor, reused)
+  preserve_band_pp: 10.0           # within +/-10pp of parent = preserved
+  # [30, parent-10pp) = partial erosion; > parent+10pp = deepened.
+  parent_pstruct_recall_pct: {seed1: 69.57, seed2: 76.94, seed3: 79.36}

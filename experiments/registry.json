@@ -5796,6 +5796,36 @@
         "repo": "",
         "revision": ""
       },
+      "created_at": "2026-08-15T21:01:38Z",
+      "falsifier": "Any seq preference arm below 30 percent P-struct refusal recall: preference-after-SFT erodes internalized abstention below the registered floor and Section 4.3 must add an erosion finding.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "configs/eval_crossing_seq_pstruct_local_4b.yaml",
+          "configs/eval_crossing_coldsft_rc_local_4b.yaml",
+          "configs/eval_crossing_warmed_pplain_local_4b.yaml"
+        ],
+        "modules": [],
+        "persistence": {},
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "All six seq preference arms stay at or above the 30 percent internalization floor under P-struct (expected 40-80; DPO at/below parent, KTO near parent); cold SFT under response-confidence reads 85-95; warmed arms under plain-answer within about 10 points of their response-confidence readings.",
+      "question": "Does a preference stage applied to an internalized SFT checkpoint preserve, erode, or deepen instruction-free abstention (warmed seq DPO/KTO under P-struct, three seeds each), and what do the missing contract-symmetric readings (cold SFT under response-confidence, warmed arms under plain-answer) show?",
+      "registered": true,
+      "slug": "prompt-crossing-completion",
+      "status": "draft",
+      "title": "Completing the prompt-condition crossing",
+      "type": "eval",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
       "created_at": "2026-08-14T11:15:06Z",
       "falsifier": "Instrument-level only: any arm failing PV-G0 (incomplete coverage, config-sha mismatch, or scorer parse-path failure) is a stop reported straight; interpretation bands R1-R4 are frozen at signing.",
       "inputs": [],

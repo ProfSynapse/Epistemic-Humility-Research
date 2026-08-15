@@ -1631,6 +1631,16 @@ with the internal label it carries in the repository.
   Face Hub at the revisions listed below. Pin the revision, because a
   repository's head commit also carries its model card, and each card states the
   same status label the governance notes below assign.
+- The released datasets, on the Hugging Face Hub:
+  [`epistemic-humility-phase1`](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1)
+  carries the redistributable training and dev files every arm in Section 3.3
+  consumed (with `questions_frozen.json` and the build manifest; restricted
+  upstream sources are excluded, as its card states);
+  [`epistemic-humility-phase1-evals`](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1-evals)
+  carries the aggregate evaluation-analysis layer behind the cross-arm
+  comparisons; and
+  [`epistemic-humility-phase1-labels`](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1-labels)
+  carries the frozen question split and the knowledge-label probe manifest.
 - Cold-start adapters, the pre-registered headline surface of Section 4.1.
   Internal label: headline matrix.
   - [`eh-qwen3-4b-headline-sft-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-headline-sft-seed1-lora) at `535dfabec0365b80663df618880ac2ad0976eb51`

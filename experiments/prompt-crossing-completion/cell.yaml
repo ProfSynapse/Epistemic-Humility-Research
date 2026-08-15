@@ -1,0 +1,22 @@
+# prompt-crossing-completion: three-config eval-only cell. Eleven arms
+# complete the prompt-condition crossing: warmed seq DPO/KTO (Amendment A,
+# three seeds each) under P-struct, cold-start SFT seeds under the
+# response-confidence contract, and the two warmed arms under the
+# plain-answer contract. Prompts byte-identical to their pinned sources
+# (panel configs for P-struct and RC; headline eval config for plain).
+
+instrument:
+  harness: archive/experiment/phase1/eval/run_eval.py
+  engine: vllm
+  eval_set: selfaware   # full set, n=3369 per arm
+  generation: {temperature: 0.0, enable_thinking: false, max_new_tokens: 128}
+
+run_order:
+  - {order: 1, config: configs/eval_crossing_seq_pstruct_local_4b.yaml,
+     arms: [seq_sft_dpo_seed1_pstruct, seq_sft_dpo_seed2_pstruct,
+            seq_sft_dpo_seed3_pstruct, seq_sft_kto_seed1_pstruct,
+            seq_sft_kto_seed2_pstruct, seq_sft_kto_seed3_pstruct]}
+  - {order: 2, config: configs/eval_crossing_coldsft_rc_local_4b.yaml,
+     arms: [cold_sft_seed1_rc, cold_sft_seed2_rc, cold_sft_seed3_rc]}
+  - {order: 3, config: configs/eval_crossing_warmed_pplain_local_4b.yaml,
+     arms: [clean_sft_merged_pplain, sft_grpo_v2_seed1_pplain]}
