@@ -39,60 +39,31 @@ Synaptic Labs
 ## Abstract
 
 Teaching a small language model to say "I don't know" is a post-training
-problem, and the field has four standard tools for it that have never been run
-against each other under fixed conditions. We ran that comparison: supervised
-fine-tuning (SFT), direct preference optimization (DPO), Kahneman-Tversky
-optimization (KTO), and group relative policy optimization (GRPO, a
-reinforcement-learning method driven by a programmable reward), each training
-on the same model-specific known/unknown dataset, meaning one whose labels
-record what this particular model can and cannot answer, over the same small
-open-weights base (Qwen3-4B), each evaluated on one surface with exact
-paired row tests. Every evaluation in that comparison ran under a system
-prompt that already told the model it could decline, as does much of
-the published abstention-training work beside it, which leaves what the
-training installed and what the prompt elicited entangled. Crossing three
-prompt conditions with the base model and with checkpoints from every
-objective separates them (exploratory panel; refusal recall on 1,032
-unknown-labeled questions). Given the response-confidence contract the
-reinforcement-learning arms use, the base model refuses 90.89% of unknown
-questions with none of our training applied to it. Strip the abstention
-instruction down to a structure-only prompt and it refuses 0.00% (4 to 6% by
-a row-level audit of natural-language abstentions the pinned scorer does not
-match). Only SFT *internalizes* abstention, meaning the behavior survives the
-instruction's removal: 69.6, 76.9, and 79.4% refusal recall across three
-seeds under the structure-only prompt, the latter two seeds from a
-replication registered before those runs, against 0.00% for all three DPO seeds, all three KTO seeds, and
-cold-start GRPO. One cold-start DPO checkpoint refuses
-nothing under the structure-only prompt and 94.48% under the
-response-confidence contract, the same weights read two ways. GRPO deepens
-what SFT installed, 77.4% instruction-free against the 69.5% of the
-checkpoint it started from, and installs nothing cold: trained from the
-base model under an appropriateness reward it reaches 85.66% recall with the
-instruction present, below the 90.89% that same instruction elicits from the
-base model, so it preserves and sharpens instruction-elicited abstention
-rather than inducing any. That cell's registered prediction was falsified.
-
-Under the plain-answer contract of the confirmatory comparison, where the
-base model refuses 0.00%, only SFT *induces* abstention (refusal recall
-87.9%, over-refusal 64.8%, three seeds); cold-start DPO and KTO refuse
-essentially nothing, falsifying the natural hypothesis that KTO's unpaired
-binary format makes it a native abstention trainer. Applied after an SFT
-warm-up, preference optimization *repositions* the boundary along a
-recall/over-refusal trade-off (DPO aggressively toward answering, KTO
-conservatively; three seeds each), and GRPO under an appropriateness reward
-*amplifies* the routine to near-ceiling recall while re-inflating
-over-refusal, with truthfulness essentially flat under the shift (three
-seeds; exploratory throughout); stacking GRPO with DPO or KTO, in either
-order, does not escape the trade-off either. No objective, stack, or
-ordering moves the underlying discrimination frontier;
-each selects an operating point on the frontier the SFT stage defines. Stated
-confidence, measured after the same runs, carries a warning: every regimen's
-emitted confidence tracks the *decision to answer*, not the truth of the
-answer, so behavioral gains masquerade as confidence shifts. The practical
-conclusion here: report abstention training as an operating point with both
-error rates under a named prompt condition, choose the second stage by
-deployment cost asymmetry, and do not read the confidence number as
-knowledge.
+problem with four standard tools that have never been run against each other
+under fixed conditions. We ran that comparison: SFT, DPO, KTO, and GRPO, each
+trained on the same model-specific known/unknown dataset over the same base
+model (Qwen3-4B) and evaluated on one surface with exact paired row tests.
+Every such evaluation, here and in much of the published work, runs under a
+system prompt that already invites refusal, entangling what training
+installed with what the prompt elicited. Crossing three prompt conditions
+with the base model and every objective's checkpoints, in an exploratory
+panel alongside the confirmatory comparison, separates the two. The
+instruction alone elicits 90.89% refusal recall from the untrained base;
+without it the base refuses essentially nothing. Only SFT *internalizes*
+abstention that survives the instruction's removal (69.6 to 79.4% across
+three seeds); every cold-start DPO, KTO, and GRPO checkpoint refuses
+essentially nothing without the instruction, and one cold DPO checkpoint
+swings from zero to 94.48% on the prompt alone. GRPO deepens what SFT
+installed (69.5 to 77.4% instruction-free) and installs nothing from a cold
+start: it preserves and sharpens instruction-elicited abstention rather than
+inducing any. Under the confirmatory plain-answer contract, only SFT
+*induces* abstention (refusal recall 87.9%, over-refusal 64.8%, three
+seeds); after an SFT warm-up, preference optimization *repositions* the
+recall/over-refusal trade-off and GRPO *amplifies* recall to near ceiling.
+No objective, stack, or ordering moves the discrimination frontier the SFT
+stage defines, and every regimen's stated confidence tracks the decision to
+answer, not the truth of the answer. Report abstention training as an
+operating point, with both error rates, under a named prompt condition.
 
 ## 1. Introduction
 
