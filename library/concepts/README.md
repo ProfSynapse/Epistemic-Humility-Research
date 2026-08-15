@@ -794,7 +794,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (530)
+## Mechanisms (cause -> effect) (533)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -861,6 +861,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[co-occurrence-frequency-drives-lre-formation]] : High subject-object-co-occurrence-frequency between a subject entity and its relational object in pretraining data **increases** Formation of high-quality (high
 - [[coarse-linguistic-confidence-degrades-selective-classification]] : Closed-source LLMs emitting linguistically verbalized confidence scores that cluster at a small number of discrete values (e.g., GPT-4 outputs 0.9 for 50% of ex
 - [[code-pretraining-benefits-math-reasoning]] : Pre-training on code tokens before math-domain continual pre-training on the deepseekmath-corpus **increases** Improved mathematical reasoning performance on ma
+- [[cold-grpo-falsifier-fires-but-reclassified-as-prompt-preservation]] : Cold-start GRPO trains the raw Qwen3-4B base under the rebalanced appropriateness reward for the full registered 1,861-step budget, producing real policy gradie
 - [[composed-steering-preserves-linguistic-ability]] : Injecting a steer2adapt composed steering vector learned from ~12 examples via Bayesian optimisation over a domain-matched semantic-prior-subspace **enables** A
 - [[computational-buffer-improves-recall]] : Conditioning the final answer on extra reasoning tokens that carry no task-relevant semantic content (a dummy 'Let me think.' trace repeated to length), in reas
 - [[conditional-attention-gating-eliminates-attention-sinks]] : an input-conditioned (per-channel or per-head) attention gate is added to a transformer's attention block, giving the model an explicit learned suppression mech
@@ -1101,6 +1102,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[observation-noise-enables-boundary-localization]] : Non-zero observation noise (sigma > 0) in the evidence-accumulation-task|multi-task evidence accumulation setting, creating graded classification difficulty tha
 - [[off-support-l1-increases-monosemanticity]] : Applying an L1 penalty to the pre-selection activations of units not chosen by the Top-k operator (off-support units) in a Top-k SAE **increases** Increased mon
 - [[online-rl-outperforms-offline-rl]] : Using on-policy (real-time) data sampling during online-rl-training **increases** Greater performance gains over offline rejection-sampling fine-tuning, especia
+- [[only-sft-installs-abstention-in-weights]] : Removing the abstention-eliciting instruction (evaluating under the structure-only P-struct contract, zero abstention affordance) from checkpoints of all four c
 - [[open-ended-generation-breaks-prompting-calibration]] : Applying black-box prompting-based or perplexity-based uncertainty estimation methods to open-ended LLM generation where answer choices are not provided **preve
 - [[orthogonality-does-not-imply-independence]] : Ablating one refusal-direction from residual-stream activations, which then propagates through non-linear transformer layers downstream **enables** The cosine s
 - [[orthogonality-enables-compositional-generalization]] : Orthogonality regularisation forcing the composition token embedding to remain orthogonal to all frozen behavior-token embeddings during compositional-steering-
@@ -1167,6 +1169,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[random-direction-placebo-response-is-family-specific-in-sign]] : A magnitude-matched random_direction write (the registered placebo, same anchor and dose family as the real doubt-gated caution write) is applied to the confab 
 - [[random-direction-steering-breaks-alignment-safeguards]] : Adding a random, semantically empty direction vector to the residual stream via activation-steering, with no targeting of any refusal-related structure **enable
 - [[rank1-projection-sufficient-for-linear-concept-erasure]] : Applying a rank-1 orthogonal projection (removing a single direction found by rlace) to GloVe or BERT representations **enables** Any linear classifier's gender
+- [[rc-prompt-elicits-near-ceiling-abstention-from-untrained-base]] : Evaluating the raw, untrained Qwen3-4B base (no adapter, no post-training of any kind) on the full SelfAware set under three prompt levels: the response-confide
 - [[rdo-reduces-capability-side-effects]] : Optimising a refusal-direction-optimization direction with an explicit retain loss (KL penalty on safe-prompt behaviour) rather than using directional-ablation 
 - [[reasoning-effort-reduces-value-leakage]] : Increasing reasoning effort or reasoning-trace length (e.g. Claude Opus max vs. high reasoning level) on the Donation Bet and Choosing Activities tasks. **decre
 - [[reasoning-expands-parametric-knowledge-boundary]] : Enabling a model's reasoning mode (ON) before it answers a single-hop factual question, holding parametric knowledge fixed via a hybrid ON/OFF model. **increase

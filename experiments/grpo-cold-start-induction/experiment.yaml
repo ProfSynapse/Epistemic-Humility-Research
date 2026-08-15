@@ -69,4 +69,7 @@ verdict: Cold-start GRPO trained on real gradient (not Null-B) and fired the reg
   (90.89 under the same instruction, 0 without it) shows the reward preserved and
   sharpened prompt-elicited abstention rather than inducing any; the registered prediction
   is falsified and the induction framing retired.
-kg: []
+kg:
+- experiment:grpo-cold-start-induction
+- mechanism:cold-grpo-falsifier-fires-but-reclassified-as-prompt-preservation
+- mechanism:only-sft-installs-abstention-in-weights

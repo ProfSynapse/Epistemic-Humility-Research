@@ -3667,7 +3667,11 @@
           "grpo_cold_diagnostics.py": "68c283e363f34b2a540eb3767ffc4a7a803c92eed9352741d7d37a3c365a7878"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:grpo-cold-start-induction",
+        "mechanism:cold-grpo-falsifier-fires-but-reclassified-as-prompt-preservation",
+        "mechanism:only-sft-installs-abstention-in-weights"
+      ],
       "prediction": "Eval refusal recall below 10% (cold DPO/KTO read ~0%), with Null-B (no trainable signal: >=90% of training groups at zero advantage) as the modal mechanism.",
       "question": "Can GRPO under the rebalanced (v2) appropriateness reward induce abstention when trained from the raw Qwen3-4B base with no SFT warm-up, completing paper 2's cold-start comparison across all four objectives?",
       "registered": true,
@@ -5849,7 +5853,11 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:prompt-vs-training-panel",
+        "mechanism:rc-prompt-elicits-near-ceiling-abstention-from-untrained-base",
+        "mechanism:only-sft-installs-abstention-in-weights"
+      ],
       "prediction": "Base+P-rc recall lands 55-80% and base+P-struct under 10%, while cold-SFT+P-struct retains over half its instructed recall (training internalizes for SFT; cold GRPO is compliance-heavy).",
       "question": "How much of the program's measured abstention is carried by the eval prompt's abstention instruction versus by training, measured by crossing raw-base and trained checkpoints with instructed and structure-only prompts?",
       "registered": true,
@@ -5885,7 +5893,10 @@
           "gates.yaml": "fcf65c917690a60d7930a7ebe90678bb72c64f90a4299aa13f8aaa063ee1d124"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:pstruct-internalization-seed-robustness",
+        "mechanism:only-sft-installs-abstention-in-weights"
+      ],
       "prediction": "Both SFT seeds land at or above the 30% internalization floor (expected 55-80%), and all four DPO/KTO arms land below 10% (base-tracking).",
       "question": "Is the panel's instruction-free abstention internalization finding (cold SFT retains 69.6% recall under a structure-only prompt while the base reads 0.0%) robust across the remaining headline seeds, for SFT and for the DPO/KTO negatives?",
       "registered": true,
