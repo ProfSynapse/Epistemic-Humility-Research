@@ -1,0 +1,83 @@
+slug: prompt-vs-training-panel
+title: 'Prompt-vs-training disentanglement panel: base counterfactuals and instruction-free
+  abstention'
+type: eval
+status: resolved
+registered: true
+created_at: '2026-08-14T11:15:06Z'
+question: How much of the program's measured abstention is carried by the eval prompt's
+  abstention instruction versus by training, measured by crossing raw-base and trained
+  checkpoints with instructed and structure-only prompts?
+prediction: Base+P-rc recall lands 55-80% and base+P-struct under 10%, while cold-SFT+P-struct
+  retains over half its instructed recall (training internalizes for SFT; cold GRPO
+  is compliance-heavy).
+falsifier: 'Instrument-level only: any arm failing PV-G0 (incomplete coverage, config-sha
+  mismatch, or scorer parse-path failure) is a stop reported straight; interpretation
+  bands R1-R4 are frozen at signing.'
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  - configs/eval_panel_prc_local_4b.yaml
+  - configs/eval_panel_pplain_local_4b.yaml
+  - configs/eval_panel_pstruct_cold_local_4b.yaml
+  - configs/eval_panel_pstruct_warmed_local_4b.yaml
+  modules: []
+  pins:
+    cell.yaml: 6ab13728b9f6867ff9d8ea63c8d308490ee3ba79822f7c4a91fb318933bb8eb3
+    gates.yaml: fdee6209666da0da33e73350651b887a6de5964056a3cb8ddca9d033f6bc268a
+    configs/eval_panel_prc_local_4b.yaml: 7ae53fcdbbe76d8589b0799abcc1f682475824017c1b68e03f95e452263617c0
+    configs/eval_panel_pplain_local_4b.yaml: 030e9c1f814d20219e54a526a644bff7c6e701a46a24d5d5ccf4be25a9c44659
+    configs/eval_panel_pstruct_cold_local_4b.yaml: ec81bd46bb3c5beae1a232e3221520aed2f0c8fb978ce0e108b75e6dcec07289
+    configs/eval_panel_pstruct_warmed_local_4b.yaml: 68ec1a299d37a9f091a4fa28d917fb1e1bc40e8976b4ab43f42f7464a317ee8b
+  persistence: {}
+  engine:
+    name: vllm
+    version: 0.16.1.dev0+g89a77b108.d20260417
+  repins:
+  - file: configs/eval_panel_prc_local_4b.yaml
+    old_sha256: 5c71acff6d4609bbb1f79a7c371da3bf3388eac92bf949ec03be8205f732156c
+    new_sha256: 7ae53fcdbbe76d8589b0799abcc1f682475824017c1b68e03f95e452263617c0
+    date: '2026-08-14T11:50:48Z'
+    reason: 'Pre-launch harness-validation repair: run_eval.py requires each arm''s
+      model label to equal the config''s model_tag (run_eval.py:263-272); arms carried
+      sibling-config labels and every launch failed at validation before engine init
+      (zero run artifacts). Arm model labels set to each config''s model_tag; no design
+      change.'
+  - file: configs/eval_panel_pplain_local_4b.yaml
+    old_sha256: c80a3046b1ce219b08b6083c3773f402269ed7b76ef285012f1fd79f660fc28f
+    new_sha256: 030e9c1f814d20219e54a526a644bff7c6e701a46a24d5d5ccf4be25a9c44659
+    date: '2026-08-14T11:50:48Z'
+    reason: 'Pre-launch harness-validation repair: run_eval.py requires each arm''s
+      model label to equal the config''s model_tag (run_eval.py:263-272); arms carried
+      sibling-config labels and every launch failed at validation before engine init
+      (zero run artifacts). Arm model labels set to each config''s model_tag; no design
+      change.'
+  - file: configs/eval_panel_pstruct_cold_local_4b.yaml
+    old_sha256: 05bab0eb93cd173dc37bd697a8b3302223a56c6948da5a3979dc10f17af21ed9
+    new_sha256: ec81bd46bb3c5beae1a232e3221520aed2f0c8fb978ce0e108b75e6dcec07289
+    date: '2026-08-14T11:50:48Z'
+    reason: 'Pre-launch harness-validation repair: run_eval.py requires each arm''s
+      model label to equal the config''s model_tag (run_eval.py:263-272); arms carried
+      sibling-config labels and every launch failed at validation before engine init
+      (zero run artifacts). Arm model labels set to each config''s model_tag; no design
+      change.'
+  - file: configs/eval_panel_pstruct_warmed_local_4b.yaml
+    old_sha256: cdd71421fa9863cd5037066f77e390b2f5e971422df788c3d94c341bf23b8ad3
+    new_sha256: 68ec1a299d37a9f091a4fa28d917fb1e1bc40e8976b4ab43f42f7464a317ee8b
+    date: '2026-08-14T11:50:48Z'
+    reason: 'Pre-launch harness-validation repair: run_eval.py requires each arm''s
+      model label to equal the config''s model_tag (run_eval.py:263-272); arms carried
+      sibling-config labels and every launch failed at validation before engine init
+      (zero run artifacts). Arm model labels set to each config''s model_tag; no design
+      change.'
+inputs: []
+verdict: The RC contract alone elicits near-ceiling abstention from the untrained
+  base (recall 90.89) while plain and structure-only prompts elicit none (0.00 scored,
+  ~4-6 audited); only SFT-trained weights carry abstention without the instruction
+  (69.6, deepened to 77.4 by GRPO on top), so training-regimen abstention claims are
+  meaningful only relative to prompt condition.
+kg: []

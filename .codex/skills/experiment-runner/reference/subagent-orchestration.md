@@ -40,6 +40,17 @@ correct run at step 4). Mitigations, all three:
 
 ## Division of labor (the rules)
 
+- **LAUNCH-TURN WATCHER (non-negotiable, mechanical):** in the SAME turn
+  that any long-running job launches (by the lead or a runner), the lead
+  arms its own completion watcher — a Monitor tool call or a lead-owned
+  background `docker wait <container>` / poll loop — keyed on the disk-level
+  completion condition (container exit, output file existence), never on
+  the runner's promise to report. Rationale: runner completion reports have
+  now silently failed to arrive at least six times; a prose reminder to
+  "check later" has also failed (the lead forgot during a compaction gap
+  and the PI had to ask "progress?" three times). If the launch turn ends
+  without a lead-owned watcher armed, that is a process error to fix
+  immediately, not later.
 - **Runners launch GPU jobs and write scripts. The lead owns every analysis
   tail.** The moment outputs exist on disk, the lead runs the scorer /
   gate-checker / extractor tail itself — runner scripts are normally

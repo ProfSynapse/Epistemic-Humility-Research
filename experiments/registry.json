@@ -3672,10 +3672,10 @@
       "question": "Can GRPO under the rebalanced (v2) appropriateness reward induce abstention when trained from the raw Qwen3-4B base with no SFT warm-up, completing paper 2's cold-start comparison across all four objectives?",
       "registered": true,
       "slug": "grpo-cold-start-induction",
-      "status": "signed",
+      "status": "falsified",
       "title": "Cold-start GRPO: can the appropriateness reward induce abstention from the base model?",
       "type": "training-run",
-      "verdict": ""
+      "verdict": "Cold-start GRPO trained on real gradient (not Null-B) and fired the registered >=20 percent falsifier at 85.66 percent eval recall, but the panel base counterfactual (90.89 under the same instruction, 0 without it) shows the reward preserved and sharpened prompt-elicited abstention rather than inducing any; the registered prediction is falsified and the induction framing retired."
     },
     {
       "checkpoint": {
@@ -5786,6 +5786,114 @@
       "title": "Protocol Amendment E: Probe-Scaled Response Confidence Targets",
       "type": "historical-amendment",
       "verdict": "DRAFT / NOT SIGNED; probe scaling alone insufficient (scalar still collapsed, target-imbalance failure), v3 clean-SFT mainline reserved for later contrast."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-14T11:15:06Z",
+      "falsifier": "Instrument-level only: any arm failing PV-G0 (incomplete coverage, config-sha mismatch, or scorer parse-path failure) is a stop reported straight; interpretation bands R1-R4 are frozen at signing.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "configs/eval_panel_prc_local_4b.yaml",
+          "configs/eval_panel_pplain_local_4b.yaml",
+          "configs/eval_panel_pstruct_cold_local_4b.yaml",
+          "configs/eval_panel_pstruct_warmed_local_4b.yaml"
+        ],
+        "engine": {
+          "name": "vllm",
+          "version": "0.16.1.dev0+g89a77b108.d20260417"
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "6ab13728b9f6867ff9d8ea63c8d308490ee3ba79822f7c4a91fb318933bb8eb3",
+          "configs/eval_panel_pplain_local_4b.yaml": "030e9c1f814d20219e54a526a644bff7c6e701a46a24d5d5ccf4be25a9c44659",
+          "configs/eval_panel_prc_local_4b.yaml": "7ae53fcdbbe76d8589b0799abcc1f682475824017c1b68e03f95e452263617c0",
+          "configs/eval_panel_pstruct_cold_local_4b.yaml": "ec81bd46bb3c5beae1a232e3221520aed2f0c8fb978ce0e108b75e6dcec07289",
+          "configs/eval_panel_pstruct_warmed_local_4b.yaml": "68ec1a299d37a9f091a4fa28d917fb1e1bc40e8976b4ab43f42f7464a317ee8b",
+          "gates.yaml": "fdee6209666da0da33e73350651b887a6de5964056a3cb8ddca9d033f6bc268a"
+        },
+        "repins": [
+          {
+            "date": "2026-08-14T11:50:48Z",
+            "file": "configs/eval_panel_prc_local_4b.yaml",
+            "new_sha256": "7ae53fcdbbe76d8589b0799abcc1f682475824017c1b68e03f95e452263617c0",
+            "old_sha256": "5c71acff6d4609bbb1f79a7c371da3bf3388eac92bf949ec03be8205f732156c",
+            "reason": "Pre-launch harness-validation repair: run_eval.py requires each arm's model label to equal the config's model_tag (run_eval.py:263-272); arms carried sibling-config labels and every launch failed at validation before engine init (zero run artifacts). Arm model labels set to each config's model_tag; no design change."
+          },
+          {
+            "date": "2026-08-14T11:50:48Z",
+            "file": "configs/eval_panel_pplain_local_4b.yaml",
+            "new_sha256": "030e9c1f814d20219e54a526a644bff7c6e701a46a24d5d5ccf4be25a9c44659",
+            "old_sha256": "c80a3046b1ce219b08b6083c3773f402269ed7b76ef285012f1fd79f660fc28f",
+            "reason": "Pre-launch harness-validation repair: run_eval.py requires each arm's model label to equal the config's model_tag (run_eval.py:263-272); arms carried sibling-config labels and every launch failed at validation before engine init (zero run artifacts). Arm model labels set to each config's model_tag; no design change."
+          },
+          {
+            "date": "2026-08-14T11:50:48Z",
+            "file": "configs/eval_panel_pstruct_cold_local_4b.yaml",
+            "new_sha256": "ec81bd46bb3c5beae1a232e3221520aed2f0c8fb978ce0e108b75e6dcec07289",
+            "old_sha256": "05bab0eb93cd173dc37bd697a8b3302223a56c6948da5a3979dc10f17af21ed9",
+            "reason": "Pre-launch harness-validation repair: run_eval.py requires each arm's model label to equal the config's model_tag (run_eval.py:263-272); arms carried sibling-config labels and every launch failed at validation before engine init (zero run artifacts). Arm model labels set to each config's model_tag; no design change."
+          },
+          {
+            "date": "2026-08-14T11:50:48Z",
+            "file": "configs/eval_panel_pstruct_warmed_local_4b.yaml",
+            "new_sha256": "68ec1a299d37a9f091a4fa28d917fb1e1bc40e8976b4ab43f42f7464a317ee8b",
+            "old_sha256": "cdd71421fa9863cd5037066f77e390b2f5e971422df788c3d94c341bf23b8ad3",
+            "reason": "Pre-launch harness-validation repair: run_eval.py requires each arm's model label to equal the config's model_tag (run_eval.py:263-272); arms carried sibling-config labels and every launch failed at validation before engine init (zero run artifacts). Arm model labels set to each config's model_tag; no design change."
+          }
+        ]
+      },
+      "kg": [],
+      "prediction": "Base+P-rc recall lands 55-80% and base+P-struct under 10%, while cold-SFT+P-struct retains over half its instructed recall (training internalizes for SFT; cold GRPO is compliance-heavy).",
+      "question": "How much of the program's measured abstention is carried by the eval prompt's abstention instruction versus by training, measured by crossing raw-base and trained checkpoints with instructed and structure-only prompts?",
+      "registered": true,
+      "slug": "prompt-vs-training-panel",
+      "status": "resolved",
+      "title": "Prompt-vs-training disentanglement panel: base counterfactuals and instruction-free abstention",
+      "type": "eval",
+      "verdict": "The RC contract alone elicits near-ceiling abstention from the untrained base (recall 90.89) while plain and structure-only prompts elicit none (0.00 scored, ~4-6 audited); only SFT-trained weights carry abstention without the instruction (69.6, deepened to 77.4 by GRPO on top), so training-regimen abstention claims are meaningful only relative to prompt condition."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-14T14:26:10Z",
+      "falsifier": "Any SFT seed below 30% P-struct recall (internalization not seed-robust; paper 2 scopes or drops the claim); any DPO/KTO arm at or above 10% breaks the negative and is reported straight.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "configs/eval_seedrobust_pstruct_local_4b.yaml"
+        ],
+        "engine": {
+          "name": "vllm",
+          "version": "0.16.1.dev0+g89a77b108.d20260417"
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "a5ffed28a209c43b3f4fb0ace7ca962868054941b4a45d9477c56c9274ca3242",
+          "configs/eval_seedrobust_pstruct_local_4b.yaml": "97fc94b46d443d631f6b7bb5590bf854a347e59cc9ffc194b0542469063171e6",
+          "gates.yaml": "fcf65c917690a60d7930a7ebe90678bb72c64f90a4299aa13f8aaa063ee1d124"
+        }
+      },
+      "kg": [],
+      "prediction": "Both SFT seeds land at or above the 30% internalization floor (expected 55-80%), and all four DPO/KTO arms land below 10% (base-tracking).",
+      "question": "Is the panel's instruction-free abstention internalization finding (cold SFT retains 69.6% recall under a structure-only prompt while the base reads 0.0%) robust across the remaining headline seeds, for SFT and for the DPO/KTO negatives?",
+      "registered": true,
+      "slug": "pstruct-internalization-seed-robustness",
+      "status": "resolved",
+      "title": "Instruction-free abstention internalization: seed robustness of the P-struct readout",
+      "type": "eval",
+      "verdict": "Instruction-free abstention internalization is seed-robust: all three cold-SFT seeds retain 69.6-79.4 percent refusal recall under the structure-only prompt while all DPO/KTO seeds read 0.00, making only-SFT-installs-abstention a three-seed claim in both directions."
     },
     {
       "checkpoint": {
