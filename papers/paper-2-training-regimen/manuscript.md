@@ -618,7 +618,10 @@ same JSON output schema with every abstention affordance removed, so the
 model is told what shape to answer in and nothing at all about declining. An
 integrity precondition, fixed before either run, required full row coverage
 and a matching configuration hash on every scored row of every arm. All
-seventeen arms passed it.
+seventeen arms passed it. The cold GRPO response-confidence cell is the one
+entry from outside these two cells: it is that experiment's own registered
+eval, run under the same pinned instrument, and its integrity gate passed
+there.
 
 | Checkpoint | Response-confidence | Plain-answer | Structure-only |
 |---|---|---|---|
@@ -652,8 +655,11 @@ unknown question under one contract and none at all under the other two. The
 response-confidence contract, which tells the model to say "I don't know the
 answer" rather than guess, elicits 90.89% refusal recall from a model trained
 for none of this. The plain-answer contract, whose abstention clause more
-softly tells it to say so plainly if it does not know, elicits 0.00%. Instruction strength, not the presence of an abstention option,
-decides whether there is any base signal at all.
+softly tells it to say so plainly if it does not know, elicits 0.00%. In this crossing, instruction strength rather than the mere
+presence of an abstention affordance decided whether the base produced any
+signal, a two-contract comparison within one model that is consistent with
+the near-zero readings Jha et al. (2026) report for a starting checkpoint
+offered only an "I don't know" option.
 
 Now read cold-start DPO. Under the structure-only prompt it refuses 0.00% of
 unknown questions. Under the response-confidence contract, the same
