@@ -80,154 +80,88 @@ The field treats installing that coupling as a training problem: repair the
 incentive during post-training and the coupling should follow. This paper
 runs that premise to ground. Models that assert falsehoods confidently while
 refusing questions they could answer have been described as polite liars
-(DeVilling, 2025): systems that misrepresent their own epistemic
-state, not out of anything resembling malice, but because the training signal
-rewarded the appearance of knowledge over the admission of ignorance. Kalai
-et al. (2025) trace the incentive further back than post-training: ordinary
-cross-entropy pretraining already produces it whenever incorrect statements
-are statistically indistinguishable from correct ones, and binary-graded
-post-training evaluation then locks it in, since under that scoring a guess
-strictly dominates an abstention. The incentive is set during pretraining and
-sustained by evaluation practice, not installed by post-training;
-post-training remains the more directly adjustable stage, and the practical
-question becomes which post-training objective adjusts it best.
+(DeVilling, 2025): systems that misrepresent their own epistemic state
+because the training signal rewarded the appearance of knowledge over the
+admission of ignorance. Kalai et al. (2025) trace the incentive back past
+post-training, to cross-entropy pretraining and binary-graded evaluation
+under which a guess strictly dominates an abstention. Post-training did not
+create the incentive, but it remains the most directly adjustable stage, and
+the practical question becomes which post-training objective adjusts it
+best.
 
-Two things are already established about that question. The first is that
-post-training damages calibration, meaning the agreement between the
-confidence a model attaches to an answer and the rate at which such answers
-turn out to be right. The GPT-4 technical report puts expected calibration
-error (ECE, the average gap between assigned probability and observed
-accuracy, where 0 is perfect and higher is worse) at 0.007 for the pretrained
-base model on a subset of MMLU, a broad multiple-choice knowledge exam; after
-reinforcement learning from human feedback (RLHF), the same subset reads
-0.074, ten times worse (OpenAI, 2023). Reinforcement learning is not the only
-culprit. Plain instruction tuning on one base model nearly triples ECE, 0.13
-to 0.36, while at the same time *reducing* predictive entropy from 1.32 to
-0.92, so the tuned model gets more decisive and less reliable about its own
-reliability in one step (Lithgow-Serrano et al., 2025). Kadavath et al. (2022)
-name the mechanism, that post-training concentrates probability mass on
-high-reward outputs and sharpens every distribution whether or not the model's
-knowledge warrants it, and show that a single temperature adjustment largely
-restores calibration. The signal survives in the weights. Only its expression
-is broken.
+Two things are already established about that question, and Section 2
+reviews the evidence for both. Post-training damages calibration: RLHF
+multiplied the GPT-4 base model's expected calibration error tenfold on an
+MMLU subset (OpenAI, 2023), instruction tuning sharpens confidence faster
+than accuracy warrants, and Kadavath et al. (2022) locate the mechanism in
+probability mass concentrating on high-reward outputs. The signal survives
+in the weights; only its expression is broken. And the converse holds:
+refusal-aware tuning (Zhang et al., 2023), factuality-aware DPO (Tian et
+al., 2023), and related recipes deliberately move humility metrics in the
+right direction, often by large margins.
 
-The second established thing is the converse: what training breaks, training
-can deliberately improve. Refusal-aware tuning (Zhang et al., 2023),
-factuality-aware DPO (Tian et al., 2023), calibrated reward models, and
-listener-aware preference pairs all move humility metrics in the right
-direction, often by large margins.
-
-Targeted training helps, then, and there are several objectives to target
-with. Which of them to use has never been tested under fixed conditions. Our
-own systematic synthesis of this literature, reported as a companion paper in
+Which objective to use has never been tested under fixed conditions. Our
+systematic synthesis of this literature, reported as a companion paper in
 this research program (Rosenbaum, 2026), extracted 78 quantitative effects
-from 39 studies across the calibration, abstention, hallucination, and
-sycophancy work and verified the absence directly: no
-published study runs supervised fine-tuning against the major preference
-objectives on one abstention dataset, and none applies Kahneman-Tversky
-optimization to abstention at all. This paper runs the missing comparison:
-supervised fine-tuning (SFT), direct preference optimization (DPO),
-Kahneman-Tversky optimization (KTO), and group relative policy optimization
-(GRPO), over one small open-weights base, with one model-specific
-known/unknown data construction and one measurement panel. In the depth
-taxonomy a companion paper (Rosenbaum, 2026) synthesizes, this is the
-shallowest and most direct approach available, L1: train the model's
-expressed confidence and refusal decisions themselves, rather than any
-deeper structure behind them.
+from 39 studies and verified the absence directly: no published study runs
+supervised fine-tuning against the major preference objectives on one
+abstention dataset, and none applies Kahneman-Tversky optimization to
+abstention at all. This paper runs the missing comparison: supervised
+fine-tuning (SFT), direct preference optimization (DPO), Kahneman-Tversky
+optimization (KTO), and group relative policy optimization (GRPO), over one
+small open-weights base, with one model-specific known/unknown data
+construction and one measurement panel. In the depth taxonomy the companion
+synthesizes, this is the shallowest and most direct approach available, L1:
+train the model's expressed confidence and refusal decisions themselves.
 
 A refusal rate means something only relative to the prompt it was measured
 under, and that binds this study as tightly as the literature around it.
-Every evaluation reported below was produced under a system prompt that
-already tells the model it may decline. The cold-start comparison used a
-plain-answer contract, which instructs the model to say so plainly if it does
-not know the answer; the reinforcement-learning arms used a
-response-confidence contract, which instructs it to reply "I don't know the
-answer" rather than guess. The instruction was never removed at evaluation
-time, and the base model itself, meaning the Qwen3-4B checkpoint as it ships
-with none of our training applied, had never been evaluated under either
-contract anywhere in this research program. A refusal rate measured that way
-pools two different things:
-weights that carry an abstention policy, and weights that follow an
-instruction to abstain. Prompt and training are crossed factors, and only one
-margin of the table had been measured.
-
-The synthesis companion to this paper had recorded a version of the same hole
-in the published record. Its third verified gap notes that every result in the
-verifiable-reward abstention cluster is measured against its own prompting or
-cold-start baseline, on its own dataset, and none against the supervised and
-preference families on shared data (Rosenbaum, 2026). A prompting baseline
-compares a trained model against a prompted one. The cell underneath both,
-the base model under the same instruction, is the one nobody had filled.
-
-We filled it. Eleven evaluations crossed three prompt conditions, the two
-deployment contracts plus a structure-only prompt with every abstention
-affordance stripped out, against the base model and against
-checkpoints from each objective. The sharpest row belongs to cold-start DPO,
-the arm the confirmatory comparison reads as having learned nothing at all:
-under the structure-only prompt it refuses 0.00% of unknown questions, and
-under the response-confidence contract the same weights refuse 94.48%. The
-checkpoint did not change between those two numbers. Only the prompt did.
-Every 0.00% under the structure-only prompt is a scored zero: a row-level
-audit found natural-language abstentions the pinned scorer's markers do not
-match, which puts the honest rate near 4 to 6% for each arm reading zero,
-against the 30% floor the internalization claim had to clear. The
-scorer was left as pinned.
+Every evaluation reported below ran under a system prompt that already
+tells the model it may decline: a plain-answer contract for the cold-start
+comparison, a response-confidence contract for the reinforcement-learning
+arms. The base model, meaning the Qwen3-4B checkpoint with none of our
+training applied, had never been evaluated under either contract in this
+research program, and the companion synthesis records the same hole in the
+published record: every result in the verifiable-reward abstention cluster
+is measured against its own prompting or cold-start baseline, never against
+the base model under the same instruction (Rosenbaum, 2026). A refusal rate
+measured that way pools two different things, weights that carry an
+abstention policy and weights that follow an instruction to abstain. Prompt
+and training are crossed factors, and only one margin of the table had been
+measured. An exploratory panel therefore crosses three prompt conditions,
+the two deployment contracts plus a structure-only prompt with every
+abstention affordance stripped out, with the base model and with
+checkpoints from every objective. Section 4 reports the crossing; what it
+changes is not the numbers but what the numbers mean.
 
 Four words are kept apart for the rest of this paper. A prompt *elicits*
 behavior the weights already afford, and the model *complies* while the
 instruction is present; take the instruction away and the behavior leaves
 with it. Training *internalizes* behavior when the behavior survives the
-instruction's removal. *Induces* is used only where a training stage produced
-abstention that the measured base model did not produce under the same
-prompt, and it carries that prompt condition with it every time.
-
-What comes out is a decomposition by stage rather than a ranking. A single
-objective that both taught abstention from the base model and
-improved the model's underlying discrimination between answerable and
-unanswerable questions would have refuted that reading; no arm and no
-ordering we trained produced one. One prediction going in did fail, and its
-failure is the cleanest result in the study. Kahneman-Tversky optimization
-consumes exactly the unpaired binary labels a known/unknown split produces,
-which made it the natural candidate for a native abstention trainer. Trained
-from the base model, it refuses nothing at all.
-
-The prompt-condition crossing sorts the same objectives a second time, and
-the two sortings agree. Under the deployment prompts, only SFT induces
-abstention; with the instruction removed, only SFT-trained weights keep any,
-at 69.6 to 79.4% refusal recall across three seeds against 0.00% for every
-DPO and KTO seed. That claim carries its own registered falsifier, fixed
-before the run: any SFT seed below 30% under the structure-only prompt would
-have scoped the claim to a single seed or dropped it. None came near the
-floor. What the crossing changes is the reading of the reinforcement-learning
-arm. Cold-start GRPO under the appropriateness reward reaches 85.66% refusal
-recall, which fired its own registered falsifier for a no-induction
-prediction, and the base model under that identical instruction
-reaches 90.89%. The reward preserved and sharpened abstention the prompt was
-already eliciting. It induced none, and it internalized none: with the
-instruction removed, that checkpoint refuses 0.00%.
+instruction's removal. *Induces* is used only where a training stage
+produced abstention that the measured base model did not produce under the
+same prompt, and it carries that prompt condition with it every time.
 
 Contributions:
 
 1. A crossing of prompt condition with training that separates elicited
-   abstention from internalized abstention: the base model measured
-   under each deployment contract, and every objective's checkpoints measured
+   abstention from internalized abstention: the base model measured under
+   each deployment contract, and every objective's checkpoints measured
    under a structure-only prompt with the abstention affordance removed
    (Section 4, exploratory tier). To our knowledge, no prior
    abstention-training study reports both of those measurements.
-2. The first SFT / DPO / KTO / GRPO comparison on shared abstention data and a
-   shared small open-weights base, with seed-level intervals and exact
+2. The first SFT / DPO / KTO / GRPO comparison on shared abstention data and
+   a shared small open-weights base, with seed-level intervals and exact
    row-level paired transitions (Section 4). This runs, at the behavioral
    level, three of the experiments Section 2 identifies as absent from the
    literature.
 3. A stage decomposition of the regimen under the deployment prompts: SFT
-   induces, preference optimization repositions, GRPO amplifies. No objective
-   or sequence we tested escapes the recall/over-refusal trade-off; they
-   select operating points on it (Section 4). With the instruction removed,
-   only what the SFT stage installed survives.
+   induces, preference optimization repositions, GRPO amplifies; with the
+   instruction removed, only what the SFT stage installed survives
+   (Section 4).
 4. A stated-confidence measurement after the same runs showing that emitted
-   confidence tracks the decision to answer, not the truth of the answer, so
-   repositioning toward answering masquerades as confidence (Sections 4.3
-   and 5).
+   confidence tracks the decision to answer, not the truth of the answer
+   (Sections 4.3 and 5).
 
 ## 2. Background: what the evidence says, and what was missing
 
