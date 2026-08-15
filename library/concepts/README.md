@@ -794,7 +794,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (533)
+## Mechanisms (cause -> effect) (538)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -884,6 +884,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[cross-entropy-loss-promotes-polysemanticity]] : Training neural networks on cross-entropy loss with sparse activations **increases** Individual neurons become polysemantic even without superposition, because 
 - [[cross-trajectory-readback-fails-after-intervention-diverges]] : In h6-genstream-hook-firing-check (H6), measuring the realized per-step write on the tuner plain-HF register_forward_hook path as the projection of hidden_ON mi
 - [[declarative-procedural-accuracy-gap-in-autoregressive-lms]] : Evaluating a large autoregressive language model (GPT-3 175B) on MMLU subjects that differ in whether correct answers require recall of factual propositions (de
+- [[decoding-parameters-confound-icl-alignment-comparisons]] : Evaluating URIAL-style in-context-learning alignment (a fixed system prompt plus three constant demonstrations, zero gradient updates) against instruction fine-
 - [[decomposability-penalty-reduces-cooccurrence]] : Joint training of a primary sparse-autoencoder with a decomposability-penalty (MetaSAE) that penalises correlated latent activations **decreases** Reduction in 
 - [[deep-transformer-layers-are-representationally-redundant-and-prunable]] : Position of a transformer layer in the deeper (later) portion of the layer stack, as measured by low angular distance between the hidden states entering and lea
 - [[deepening-safety-alignment-improves-attack-robustness]] : Augmenting SFT data with safety-recovery examples that continue a harmful-looking prefix with a refusal, extending the depth of the token positions over which t
@@ -893,6 +894,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[detector-v2-undercounts-baseline-abstention-by-family-varying-margins]] : Detector v2 (RR2's frozen pattern-match screen, byte-identical pins) is compared against the wide two-instrument stack (detector v2 OR blinded context-free adju
 - [[dev-split-fix-dataset-confound-is-provenance-only]] : Retraining the locked PROTOCOL v0.3 headline seed-1 DPO and KTO cells (4B, cold-start from unsloth/Qwen3-4B-bnb-4bit) on the post-fix dataset build already cons
 - [[dial-margin-over-logprob-is-checkpoint-dependent]] : Measuring the correctness dial's margin over the model's own length-normalized mean answer-span log-probability on two checkpoints of the same fresh self-consis
+- [[distillation-expands-reasoning-boundary-beyond-base]] : Distilling long chain-of-thought reasoning traces from a stronger teacher model (DeepSeek-R1) into a smaller base model (Qwen2.5-Math-7B, producing DeepSeek-R1-
 - [[distractor-projection-reveals-crystals]] : Linear discriminant analysis that projects out semantically irrelevant distractor-features directions (e.g., word length) from the sparse-autoencoder activation
 - [[distractor-prompting-reveals-calibration-gap]] : Presenting LLMs with plausible but incorrect distractors alongside the correct answer (multiple-choice format) in lieu of free-generation **mediates** Accuracy 
 - [[diverse-training-enables-universal-probe-generalization]] : Training a linear truthfulness probe on a large collection of diverse datasets spanning many task types and domains **enables** Cross-task and cross-domain prob
@@ -902,6 +904,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[doubt-gate-adds-sub-floor-selectivity-write-drives-abstention-lift]] : In a 2x2 factorial crossing {true doubt gate, fire-count-matched permuted gate} x {true c_hat caution direction, K=5 fresh random directions} plus baseline, sco
 - [[doubt-regulated-caution-coupling-actuates-selective-refusal-release]] : On clean-SFT -> GRPO-v2 seed1, erasing the caution_perp projection from the L35 residual stream at every position and writing a doubt-proportional setpoint in i
 - [[downstream-compensation-decorrelates-ablation-and-unembedding-importance-measures]] : Downstream hydra-effect compensatory response to an attention-layer ablation in chinchilla-7b **decreases** Weakens the correlation between ablation-based layer
+- [[dpo-acts-as-final-layer-steering-not-belief-change]] : Direct Preference Optimization (DPO) fine-tuning of a 7B LLaMA-family base model on preference pairs (OASST1, Anthropic HH); the mean final-layer hidden-state d
 - [[dpo-beta-should-follow-pair-quality]] : Preference-pair datasets mix closely matched informative pairs, easy high-gap pairs, and outliers under one static DPO beta. **causes** The same beta can under-
 - [[dpo-choice-induces-severe-answer-uncertainty-shift]] : Direct preference optimization using pairs that share the same format but differ in which choice is labeled preferred (DPO-Choice scheme) **increases** The mode
 - [[dpo-concentrates-persona-suppression]] : direct-preference-optimization (DPO) alignment stage with preference signals against harmful content, applied after SFT and before RLVR **decreases** Significan
@@ -1210,6 +1213,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[rlhf-reduces-closed-domain-hallucination]] : 'reinforcement-learning-from-human-feedback fine-tuning (PPO) of gpt-3 on human preference data' **decreases** 'hallucination rate on closed-domain tasks drops 
 - [[rlhf-rl-optimisation-collapses-per-input-diversity]] : On-policy RL optimisation (PPO) of a language model against a reward model, as in RLHF fine-tuning **decreases** Substantially reduced syntactic (EAD) and seman
 - [[rlvr-post-training-degrades-abstention]] : Adding a reinforcement learning with verifiable reward (RLVR) stage on top of SFT+DPO post-training **decreases** Decreased abstention-recall relative to the DP
+- [[rlvr-reasoning-bounded-by-base-model]] : Reinforcement Learning with Verifiable Rewards (RLVR), tested across six popular RL algorithms (PPO, GRPO, Reinforce++, RLOO, ReMax, DAPO) and math, code, and v
 - [[rms-norm-sharpens-linear-separability]] : RMSNorm applied after the attention-weighted average, contracting true-context vectors (which average close to zero due to subject-attribute embedding anticorre
 - [[rmsnorm-ffn-jointly-drive-massive-activation-emergence]] : at a single, model-consistent Massive Emergence (ME) Layer, the RMSNorm and FFN parameters act jointly on the first token's hidden state. **enables** the first 
 - [[rogue-dimensions-dominate-similarity-not-behavior]] : one to five embedding dimensions with far-from-origin means and outsized variance. **enables** dominate cosine and Euclidean similarity (driving anisotropy) des
@@ -1282,6 +1286,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[superposition-causes-polysemanticity]] : Neural networks representing more features than dimensions (superposition) by storing features as non-orthogonal directions **enables** Individual neurons activ
 - [[superposition-creates-adversarial-vulnerability]] : Features stored in superposition introduce non-zero interference terms in the effective weight matrix **enables** Adversaries can exploit the interference struc
 - [[superposition-enables-early-layer-ngram-detection]] : Early LLM layers representing many n-gram (compound word) features via sparse combinations of polysemantic neurons in superposition **enables** Individual neuro
+- [[surface-pattern-imitation-explains-low-resource-instruction-tuning-gains]] : Fine-tuning T5-large-lm-adapt (770M) on task instructions deliberately corrupted two ways in a low-resource setting (fewer than 5 training instances per task): 
 - [[swiglu-quadratic-amplification-produces-massive-activations]] : SwiGLU's elementwise gating multiplication quadratically amplifies a growing residual-stream signal in one or two early feed-forward blocks. **causes** extreme 
 - [[sycophancy-type-differential-rl-amplification]] : Optimizing a language model against a preference model (PM) via reinforcement learning on a fixed training distribution **increases** Feedback sycophancy and mi
 - [[sycophantic-pressure-degrades-classification-accuracy]] : A neutral-to-adversarial challenger utterance issued after an LLM's initial classification response, providing no new information or evidence **decreases** The 
