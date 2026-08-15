@@ -802,22 +802,15 @@ further out along the frontier the SFT stage set, rather than off it.
 #### The shift and the recovery replicate across three seeds
 
 A single seed invites the obvious objection: is this a shift or a fluke?
-A pre-registered replication retrained the entire GRPO-touching lineage,
-from clean SFT through the GRPO arm and all four
-two-stage stacks, at two fresh seeds, with two outcomes fixed before any
-seed-2 or seed-3 result existed. For the DPO-touching arms this is a partial
-replicate: the DPO trainer exposes no random-state flag, so its LoRA
-initialization stays at the trainer's baseline across seeds while the source
-model and data order still vary. The first asked whether GRPO's move away
-from unknown-answering, measured against its own same-seed clean-SFT base,
-would reproduce in direction by at least 3.0 percentage points; it did at
-both new seeds, answer-on-unknown falling 4.36 and 6.78 points against a
-seed-1 magnitude of 6.39. The second asked whether a preference stage
-applied after GRPO would keep recovering known-row over-refusal without
-reopening unknown-answering by more than 2.0 points; it also held at both
-new seeds, over-refusal falling 0.77 points (18 rows) and 1.84 points (43
-rows) while unknown-answering moved -0.39 and +0.29 points. Neither
-threshold moved after a result existed.
+A replication registered before any seed-2 or seed-3 result existed
+retrained the entire GRPO-touching lineage at two fresh seeds, and both
+pre-stated outcomes reproduced: GRPO's move away from unknown-answering
+held in direction and size at both new seeds, and the preference stage kept
+recovering known-row over-refusal without reopening unknown-answering.
+Neither threshold moved after a result existed. (The DPO-touching arms are
+a partial replicate; the trainer exposes no random-state flag, so only the
+source model and data order vary. Registered thresholds and per-seed deltas
+are in Appendix A's provenance for this cell.)
 
 Across all three seeds, the plain SFT-then-GRPO arm reads truthful 41.17%
 (95% interval 41.08 to 41.35), refusal recall 94.25% (93.41 to 95.06),
