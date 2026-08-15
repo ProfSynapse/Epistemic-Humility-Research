@@ -48,7 +48,7 @@ on the same model-specific known/unknown dataset, meaning one whose labels
 record what this particular model can and cannot answer, over the same small
 open-weights base (Qwen3-4B), each evaluated on one surface with exact
 paired row tests. Every evaluation in that comparison ran under a system
-prompt that already told the model it could decline, as does nearly all of
+prompt that already told the model it could decline, as does much of
 the published abstention-training work beside it, which leaves what the
 training installed and what the prompt elicited entangled. Crossing three
 prompt conditions with the base model and with checkpoints from every
@@ -60,8 +60,8 @@ instruction down to a structure-only prompt and it refuses 0.00% (4 to 6% by
 a row-level audit of natural-language abstentions the pinned scorer does not
 match). Only SFT *internalizes* abstention, meaning the behavior survives the
 instruction's removal: 69.6, 76.9, and 79.4% refusal recall across three
-seeds under the structure-only prompt, from a replication registered before
-it ran, against 0.00% for all three DPO seeds, all three KTO seeds, and
+seeds under the structure-only prompt, the latter two seeds from a
+replication registered before those runs, against 0.00% for all three DPO seeds, all three KTO seeds, and
 cold-start GRPO. One cold-start DPO checkpoint refuses
 nothing under the structure-only prompt and 94.48% under the
 response-confidence contract, the same weights read two ways. GRPO deepens
@@ -70,8 +70,7 @@ checkpoint it started from, and installs nothing cold: trained from the
 base model under an appropriateness reward it reaches 85.66% recall with the
 instruction present, below the 90.89% that same instruction elicits from the
 base model, so it preserves and sharpens instruction-elicited abstention
-rather than inducing any. That cell's registered prediction was falsified and
-is reported as such.
+rather than inducing any. That cell's registered prediction was falsified.
 
 Under the plain-answer contract of the confirmatory comparison, where the
 base model refuses 0.00%, only SFT *induces* abstention (refusal recall
