@@ -1,8 +1,8 @@
 ---
 title: "Teaching Small Language Models to Say I Don't Know: A Controlled Comparison of SFT, DPO, KTO, and GRPO on Model-Specific Abstention Data"
 author: "Joseph Rosenbaum (Synaptic Labs)"
-status: draft-v2 (restructured 2026-07-01; the evidence-synthesis Part I split out to papers/paper-1-taxonomy-framework/manuscript.md, the confidence-channel and probe-depth material split out to separate work in this line)
-date: 2026-07-01
+status: draft-v3 (restructured 2026-08-15 around the prompt-vs-training disentanglement: every training verb scoped to its prompt condition, the prompt-condition crossing added as Section 4.2, the cold-start GRPO cell reported and reclassified in Section 4.4, and the three system prompts printed verbatim in Appendix C; previously restructured 2026-07-01, when the evidence-synthesis Part I split out to papers/paper-1-taxonomy-framework/manuscript.md and the confidence-channel and probe-depth material split out to separate work in this line)
+date: 2026-08-15
 supersedes: archive/papers/paper-2-training-regimen/drafts/paper2-training-regimen-draft-v1.md (experiment portion)
 repository: https://github.com/ProfSynapse/Epistemic-Humility-Research
 reproducibility: >
@@ -322,6 +322,50 @@ known/unknown labels fresh against the model under study rather than
 borrowing them, for exactly that reason (Section 3.2). The residual caveat
 carries forward wherever a borrowed-label result is cited: label noise pulls
 its recall/over-refusal numbers toward the middle of their range.
+
+### What a prompt can already do
+
+A separate literature, mostly not about abstention, has been reporting for
+years that base models already do much of what post-training gets credited
+with. Lin et al. (2023) decode base and aligned models side by side and find
+them nearly identical on the majority of token positions; a base model given
+a system prompt and three stylistic in-context examples "can match or even
+surpass" the same model after supervised fine-tuning and reinforcement
+learning from human feedback. The counterweight matters as much as the
+result: Zhao et al. (2024) find that in-context alignment still underperforms
+instruction tuning on a standard chat benchmark, and that decoding
+parameters are a confound in this comparison, which is one reason everything
+in this study decodes greedily at temperature 0. Hewitt et al. (2024) push
+the point further, showing that response-only training and narrow-domain
+tuning both yield broad instruction following, so the mapping the tuning
+appears to teach substantially pre-exists in the base model and the tuning
+reveals it. LIMA (Zhou et al., 2023) makes the same argument from the data
+side: a thousand curated examples suffice, because alignment is largely
+surfacing what pretraining already put there. Askell et al. (2021) run the
+relationship in the opposite direction, distilling a prompt's effect into
+weights so the behavior persists without it, which is exactly the operation
+supervised fine-tuning performs here.
+
+Two results bring this to the abstention surface directly. Ling et al. (2025)
+show that abstention can be driven by structural features of the prompt
+rather than by any uncertainty the model holds: adding an "Unknown" option
+raises abstention, and so does a random word placed in that option's slot.
+That is the reason the third prompt condition in this study strips the
+abstention affordance while holding the output format byte-identical. And
+R-Tuning's own table records the effect on this paper's benchmark: a
+pretrained LLaMA-13B, prompted with their certainty template, refuses 28.00%
+of SelfAware questions against 12.21% under a vanilla prompt and 96.61%
+after their training (Zhang et al., 2023). The prompt was doing measurable
+work on this exact surface in 2023.
+
+The training side has a cousin. Kung and Peng (2023) train models on task
+definitions with all semantic content stripped out, and on examples with
+deliberately wrong input-output mappings, and find performance comparable to
+training on the real thing: the gains "come from picking up superficial
+patterns, such as learning the output format and guessing," a result they
+establish in a low-resource setting. Format and scaffold do more of the work
+than the labels suggest, whether they arrive through the prompt or through
+the training data.
 
 ### The gaps this experiment closes
 
@@ -1052,6 +1096,16 @@ signature is the same fact
 from the other side, where repositioning toward answering *looks like* rising
 confidence while correctness-conditioned calibration worsens.
 
+One scope condition binds all of this. Every stated-confidence number in this
+study was produced under a contract that also carries an abstention
+instruction, because the confidence field and the abstention clause live in
+the same system prompt. No confidence reading exists under the
+structure-only prompt, so nothing here says whether the confidence channel
+behaves differently once the instruction is gone. What the crossing shows is
+that the behavior it accompanies can be almost entirely the prompt's doing
+(Section 4.2), which is a reason to read a confidence number as conditional
+on its contract rather than as a property of the checkpoint.
+
 The practitioner's warning holds regardless of what produces it: under every
 regimen tested here, the stated confidence number reports what the model
 *did*, not what it *knows*: performed, not possessed, in the vocabulary a
@@ -1070,6 +1124,119 @@ them against each other as alternatives, including the ones in the literature
 surveyed in Section 2, are asking which of the rough cut and the final sanding
 makes a board flat. One has to happen first, and the other has nothing to work
 on until it does.
+
+The prompt-condition crossing sharpens that into a stronger version of the
+same point. Sanding a board that was never cut leaves you with the board you
+started with, and that is what cold-start DPO, KTO, and GRPO are: under an
+instruction they produce abstention at or above the level SFT reaches, and
+with the instruction removed they are indistinguishable from an untrained
+model. The supervised stage is the only one in this study that changed what
+the weights do on their own. A reward can deepen that change, from 69.48 to
+77.42% instruction-free refusal recall on the checkpoint it was applied to,
+and it can do nothing at all when there is no change to deepen.
+
+### Scaffolded training, scaffold-removed measurement
+
+Every training run in this study used a prompt that asks for abstention, and
+that was necessary rather than incidental. Under a structure-only prompt the
+base model abstains on essentially nothing, so a reinforcement-learning stage
+sampling its own rollouts has no abstention to reinforce and no difference
+among rollouts to grade. Jha et al. (2026) report exactly this failure in
+print: their reinforcement-learning-only arm cannot induce abstention on
+open-ended mathematics because the starting model almost never emits an
+abstention spontaneously, and a supervised warm-up partially recovers it. The
+instruction is scaffolding, and scaffolding is a legitimate part of a
+training recipe.
+
+What is not legitimate is leaving the scaffold in place when the measurement
+is taken and then describing the result as a property of the weights. The
+posture this study ends with separates the two: train with whatever scaffold
+the objective needs, then measure with the scaffold removed. Both readings
+are reportable and they answer different questions. The instructed reading
+says what a deployment gets when it controls the system prompt. The
+instruction-free reading says what the weights carry when it does not.
+
+That generalizes past this paper, and it is the part we would most like
+other groups to adopt. An abstention-training result is interpretable only
+against two measurements that, to our knowledge, are not currently reported
+together: the model measured under the same instruction before the training
+stage, which bounds how much of the effect the prompt would have produced
+anyway, and the trained model measured with the instruction removed, which
+shows how much of it now lives in the weights. Neither is expensive. Both are
+evaluations against checkpoints that already exist, and in this study the
+whole crossing cost seventeen evaluation runs and no training at all. A result reported without
+the first cannot distinguish training from prompting; a result reported
+without the second cannot distinguish weights from compliance. Our own
+cold-start reinforcement-learning cell is the cautionary case: read on its
+own it looked like an objective that induces abstention at 85.66% recall, and
+the only thing that corrected it was an untrained baseline under the same
+prompt.
+
+### Reconciling with the published record
+
+The closest prior work to this study is also its data lineage. Cheng et al.
+(2024) compare prompting against supervised and preference training on
+model-specific labels, and their preference arms beat the supervised stage
+they start from. Our cold-start preference arms do the opposite, refusing
+essentially nothing. The two results are compatible once the starting point
+is stated: their preference methods are initialized from their own
+instruction-tuned model, whose sampling distribution already contains
+abstention, so a preference stage has something to sharpen; ours start from
+weights that produce no abstention under the training contract, and a
+preference objective cannot prefer a behavior the policy does not emit. Their
+design also has the two absences this study was built to fill. There is no
+pre-instruction-tuning checkpoint in their comparison, and no evaluation with
+the abstention instruction removed, so their 8 to 12 point margin of tuning
+over prompting cannot say how much of it survives scaffold removal.
+
+The strongest published result of the opposite polarity is Mohamadi et al.
+(2025), who report that eleven frontier models abstain on under 1% of a grade
+school mathematics benchmark despite explicit penalty warnings, and conclude
+that prompts cannot override training that rewards any answer over no answer.
+Our base model, under an abstention instruction, refuses 90.89%. The two
+findings do not conflict; they bracket the same mechanism from opposite
+sides. Every model in their study is an instruction-tuned or
+reinforcement-learning-trained chat model, so what they demonstrate is that
+prior training can destroy prompt-elicitable abstention, and the untrained
+control that would show what was destroyed is the arm their design omits.
+Read together: a prompt elicits only what training has left available, and
+training amplifies only what a prompt or a supervised stage makes available
+in the first place.
+
+AbstentionBench (Kirichenko et al., 2025) has three of the four ingredients
+this study crosses, holding them apart. It checks base against instruction-
+tuned models, it manipulates a system prompt, and it tracks abstention
+through a stagewise supervised, preference, and verifiable-reward pipeline,
+finding abstention improving through the first two stages and then degrading
+after the reinforcement-learning stage. It never crosses those factors
+factorially, which is the operation that separates elicitation from
+installation, and its stagewise direction is a useful independent signal that
+objectives differ on this axis rather than being interchangeable.
+
+Two further results bear on how much a training stage really changes. Yue et
+al. (2025) find that reinforcement learning with verifiable rewards raises
+performance at small sample counts while base models achieve higher pass@k
+when the sample count is large, and conclude that the reasoning abilities
+observed "originate from and are bounded by the base model." That is the
+reasoning-domain statement of what the structure-only column shows for
+abstention in the cold-start reinforcement-learning arm. Qi et al. (2024)
+report that safety alignment's trained change concentrates in the first few
+output tokens, a shallower delta than the behavior suggests. Raina et al.
+(2025), a concurrent unrefereed preprint, argue on mechanistic grounds that
+preference optimization "does not teach models to believe in aligned
+values, it merely teaches them to behave as if they do," which matches the
+behavior we measure, though their evidence is a single LLaMA-2-7B with
+final-layer hidden-state analysis and no instruction-removal test of their
+own, so we take it as suggestive company rather than support.
+
+One instrument deserves separate mention because it is the nearest published
+analogue to ours and we do not claim its finding. Wang et al. (2026) name the
+removal-and-reintroduction cross "context invariance" and report
+context-induced degradation, where a distilled student gets worse when the
+prompt returns. Our five internalized checkpoints move the other way on
+recall when the instruction is re-added, and our pairs cross contracts rather
+than holding one fixed, so this study neither observes nor refutes their
+effect. We cite the instrument, not the result.
 
 ### A policy, not epistemic humility
 
@@ -1130,14 +1297,36 @@ this paper's result.
 
 ### Deployment reading
 
-For a practitioner training a small model to abstain, four things follow from
-the results above. An SFT inducer stage is mandatory; without it nothing
+For a practitioner training a small model to abstain, several things follow
+from the results above. An SFT inducer stage is mandatory; without it nothing
 abstains. The second stage is chosen by cost asymmetry, DPO if over-refusal is
 the expensive error and KTO or GRPO if hallucination is. The model's stated
 confidence should not be trusted under any of these regimens (Section 5), and
-an RL reward did not fix it here. And if you control the weights, the
-question above is the one worth starting from: whether the signal absent
-from the model's own words exists somewhere in its internals.
+an RL reward did not fix it here.
+
+Two further consequences come from the prompt condition. The first is about
+what you are shipping. If the deployment prompt is guaranteed, a cold-start
+preference checkpoint under an abstention instruction is a perfectly good
+abstainer, and the crossing says so: 94.48% refusal recall for cold DPO under
+the response-confidence contract. If the system prompt can be replaced,
+truncated, or overridden downstream, that same checkpoint abstains on nothing,
+and the only checkpoints in this study that keep abstaining are the ones a
+supervised stage produced. Which risk applies is an architecture question,
+not a training question, and it should be settled before the objective is
+chosen.
+
+The second is that the instruction is not free even when the weights no
+longer need it. On all five checkpoints that abstain without any instruction,
+adding one back raises refusal recall and truthfulness, and on all five it
+also raises over-refusal on answerable questions, by between 7.9 and 16.7
+points (Section 4.5). A team adding an abstention instruction on top of an
+already-trained abstainer is buying unknown-side recall with known-side
+availability, and at these operating points the price is large enough to
+measure before shipping rather than after.
+
+If you control the weights, the question raised above is the one worth
+starting from: whether the signal absent from the model's own words exists
+somewhere in its internals.
 
 ## 7. Limitations
 
@@ -1161,6 +1350,42 @@ around a different decomposition could behave differently. The refusal
 classifier counts hedged answers as refusals, so every refusal-family metric
 reported here (refusal recall, over-refusal, refusal rate) absorbs hedged
 answers along with outright abstentions.
+
+The prompt-condition crossing carries its own limits, and they are tighter
+than the confirmatory layer's. It is one model at one scale in one family,
+with three prompt conditions chosen to span a range rather than to sample it:
+two contracts the program had already deployed, and one structure-only prompt
+written for this measurement. A different abstention instruction would elicit
+a different amount from the base model, and the gap between the two
+deployment contracts, 90.89% against 0.00% on the same weights and the same
+rows, is itself the evidence that wording moves this quantity a long way.
+Nothing here estimates where a typical prompt falls in that range.
+
+The zero readings under the structure-only prompt are scored zeros rather
+than absolute ones. A row-level audit of the four zero-reading arms found
+natural-language abstentions that the pinned scorer's markers do not match,
+putting the honest rate near 4 to 6% rather than 0. The scorer was left as
+pinned rather than retuned after the result, and the conclusions are built to
+survive the difference: the registered internalization gate required the base
+model to sit below 10%, and the supervised arms clear the 30% floor by more
+than double. The same audit checked the supervised side in the opposite
+direction and found no false positives in 60 sampled refusals. A reader who
+prefers the audited figure should read every 0.00 in this paper as "under
+6%," which changes no claim in it.
+
+The crossing is also incomplete in three specific places. There is no
+response-confidence reading for the cold-start SFT arms and no plain-answer
+reading for the warmed arms, so the five instructed-against-instruction-free
+pairs in Section 4.5 compare across contracts and measure the effect of
+adding an instruction rather than the effect of any one contract. The second
+and third seeds of the cold-start preference arms were evaluated only under
+the structure-only prompt, so their instructed behavior is known at seed 1
+only. And the warmed preference arms, SFT followed by DPO and SFT followed by
+KTO, were never evaluated under the structure-only prompt at all, so this
+study cannot say whether a preference stage applied to an internalized
+checkpoint preserves, degrades, or deepens what the supervised stage put in
+the weights. That is the most obvious next measurement, and it is absent here
+because it was not run.
 
 The pre-registration also specifies evidence layers not reported here: an
 8B replication of the headline matrix, a Llama-2-7b-chat bridge validation,
@@ -1236,7 +1461,28 @@ falsify the claim that nothing here moves the frontier. Neither appeared in
 any arm we trained, at one scale, in one model family, on one benchmark, and
 that is the scope the claim is fenced to.
 
+The internalization claim was registered with its own kill criterion, fixed
+before the runs and not moved afterward: any supervised seed reading below
+30% refusal recall under the structure-only prompt would have scoped the
+claim to a single seed or retired it, and any preference seed reading at or
+above 10% would have broken the clean negative. Three supervised seeds
+cleared 30% and no preference seed reached 10%. Three further outcomes would
+overturn it now. A base model that abstained under a structure-only prompt,
+above the 10% ceiling and not attributable to the scorer's known 4 to 6%
+undercount, would remove the floor the claim stands on. A preference or
+reinforcement-learning recipe that produced instruction-free abstention from
+a base model would break the "only supervised training installs it" reading
+directly. And a supervised checkpoint whose instruction-free abstention
+vanished under a different structure-only prompt would show that this result
+is a property of one prompt rather than of the weights, which is the version
+of the claim we would least like to be wrong about and the one a second
+prompt formulation would test most cheaply.
+
 ## References
+
+Askell, A., Bai, Y., Chen, A., Drain, D., Ganguli, D., Henighan, T., et al.
+(2021). *A General Language Assistant as a Laboratory for Alignment*.
+arXiv:2112.00861.
 
 Cheng, Q., Sun, T., Liu, X., Zhang, W., Yin, Z., Li, S., Li, L., He, Z.,
 Chen, K., & Qiu, X. (2024). *Can AI Assistants Know What They Don't Know?*
@@ -1259,6 +1505,9 @@ Gekhman, Z., Yona, G., Aharoni, R., Eyal, M., Feder, A., Reichart, R., &
 Herzig, J. (2024). *Does Fine-Tuning LLMs on New Knowledge Encourage
 Hallucinations?* arXiv:2405.05904.
 
+Hewitt, J., Liu, N. F., Liang, P., & Manning, C. D. (2024). *Instruction
+Following without Instruction Tuning*. arXiv:2409.14254.
+
 Jha, A., Mahajan, A., Vaithinathan Aravindan, A., Saravanan, P., Policharla,
 S. S., & Gehlot, S. C. (2026). *Rewarding Intellectual Humility: Learning
 When Not To Answer in LLMs*. arXiv:2601.20126.
@@ -1277,6 +1526,17 @@ Kirichenko, P., Ibrahim, M., Chaudhuri, K., & Bell, S. J. (2025).
 *AbstentionBench: Reasoning LLMs Fail on Unanswerable Questions*.
 arXiv:2506.09038.
 
+Kung, P.-N., & Peng, N. (2023). *Do Models Really Learn to Follow
+Instructions? An Empirical Study of Instruction Tuning*. arXiv:2305.11383.
+
+Lin, B. Y., Ravichander, A., Lu, X., Dziri, N., Sclar, M., Chandu, K.,
+Bhagavatula, C., & Choi, Y. (2023). *The Unlocking Spell on Base LLMs:
+Rethinking Alignment via In-Context Learning*. arXiv:2312.01552.
+
+Ling, Z., Liu, S., Tang, Y., Yang, J., Fu, S., Huang, C., Huang, K., Wan, Y.,
+Hou, Z., & Hu, X. (2025). *LLM Abstention Can Be a Prompt Artifact, in
+Addition to Genuine Uncertainty*. arXiv:2507.16199.
+
 Lithgow-Serrano, O., Kanjirangat, V., & Antonucci, A. (2025). *Causal
 Understanding by LLMs: The Role of Uncertainty*. arXiv:2509.20088.
 
@@ -1288,9 +1548,17 @@ OpenAI (2023). *GPT-4 Technical Report*. arXiv:2303.08774.
 Pan, M., Zhao, S., et al. (2026). *TIAR: Trajectory-Informed Advantage
 Reweighting for LLM Abstention Learning*. arXiv:2605.25850.
 
+Qi, X., Panda, A., Lyu, K., Ma, X., Roy, S., Beirami, A., Mittal, P., &
+Henderson, P. (2024). *Safety Alignment Should Be Made More Than Just a Few
+Tokens Deep*. arXiv:2406.05946.
+
 Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C. D., & Finn, C.
 (2023). *Direct Preference Optimization: Your Language Model is Secretly a
 Reward Model*. arXiv:2305.18290.
+
+Raina, S., Aggarwal, S., Chadha, A., Jain, V., & Das, A. (2025). *D-STEER:
+Preference Alignment Techniques Learn to Behave, not to Believe*.
+arXiv:2512.11838.
 
 Rosenbaum, J. (2026). *The Depths of Ignorance: A Taxonomy, Systematic
 Evidence Synthesis, and Research Agenda for Epistemic Humility in Language
@@ -1301,6 +1569,10 @@ Reasoning in Open Language Models* (GRPO). arXiv:2402.03300.
 
 Tian, K., Mitchell, E., Yao, H., Manning, C. D., & Finn, C. (2023).
 *Fine-tuning Language Models for Factuality*. arXiv:2311.08401.
+
+Wang, X., Chen, R., Li, Z., Chen, Y., & Huang, L. (2026). *When Context
+Returns: Toward Robust Internalization in On-Policy Distillation*.
+arXiv:2606.11627.
 
 Wang, Z., Shi, Z., Zhou, H., Gao, S., Sun, Q., & Li, J. (2025). *Towards
 Objective Fine-tuning: How LLMs' Prior Knowledge Causes Potential Poor
@@ -1313,12 +1585,23 @@ arXiv:2509.25760.
 Yin, Z., Sun, Q., Guo, Q., Wu, J., Qiu, X., & Huang, X. (2023). *Do Large
 Language Models Know What They Don't Know?* arXiv:2305.18153.
 
+Yue, Y., Chen, Z., Lu, R., Zhao, A., Wang, Z., Yue, Y., Song, S., & Huang, G.
+(2025). *Does Reinforcement Learning Really Incentivize Reasoning Capacity in
+LLMs Beyond the Base Model?* arXiv:2504.13837.
+
 Zhai, S., Liang, J., & Kang, D. (2026). *Abstain-R1: Calibrated Abstention
 and Post-Refusal Clarification via Verifiable RL*. arXiv:2604.17073.
 
 Zhang, H., Diao, S., Lin, Y., Fung, Y. R., Lian, Q., Wang, X., Chen, Y.,
 Ji, H., & Zhang, T. (2023). *R-Tuning: Instructing Large Language Models to
 Say "I Don't Know"*. arXiv:2311.09677.
+
+Zhao, H., Andriushchenko, M., Croce, F., & Flammarion, N. (2024). *Is
+In-Context Learning Sufficient for Instruction Following in LLMs?*
+arXiv:2405.19874.
+
+Zhou, C., Liu, P., Xu, P., Iyer, S., Sun, J., Mao, Y., et al. (2023). *LIMA:
+Less Is More for Alignment*. arXiv:2305.11206.
 
 ---
 
@@ -1368,6 +1651,30 @@ with the internal label it carries in the repository.
   the registered replication behind Section 7's resolution of the cold-start
   preference dataset-version confound and the training-library pinning
   observation. Internal label: the headline seed-1 postfix rerun.
+- [The prompt-vs-training panel](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/prompt-vs-training-panel/AMENDMENT.md):
+  the eleven-arm crossing behind the prompt-condition table of Section 4.2,
+  including the base-model rows under all three prompt conditions, the
+  cold-start preference arms under the response-confidence contract, and the
+  integrity precondition every arm passed. Its three pinned evaluation
+  configs, which carry the system prompts reproduced verbatim in Appendix C,
+  are in `configs/`; per-arm metrics are in
+  `analysis-committed/metrics_*__selfaware.json`. The interpretation bands
+  frozen at signing, which fix the mechanism verbs this paper uses, are in the
+  amendment's gates section. Internal label: the prompt-vs-training panel.
+- [The structure-only seed replication](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/pstruct-internalization-seed-robustness/AMENDMENT.md):
+  the registered replication behind the three-seed internalization claim of
+  Section 4.2, carrying its claim gate and falsifier, and the second and third
+  seeds of every cold-start arm under the structure-only prompt, scored in
+  `analysis-committed/metrics_cold_{sft,dpo,kto}_seed{2,3}_pstruct__selfaware.json`.
+  Internal label: the structure-only internalization seed-robustness cell.
+- [The cold-start GRPO cell](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/grpo-cold-start-induction/AMENDMENT.md):
+  the falsified registered prediction reported in Section 4.4, its training
+  run record, and the three registered diagnostics computed by the pinned
+  `grpo_cold_diagnostics.py` over the run's reward-debug log, with results in
+  `analysis-committed/diagnostics_cold_base_grpo_v2_seed1.json` and evaluation
+  metrics in
+  `analysis-committed/metrics_cold_base_grpo_v2_seed1__selfaware.json`.
+  Internal label: the cold-start GRPO induction cell.
 - [The contamination mechanism note](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/library/concepts/mechanisms/selfaware-known-question-contamination-inflates-known-row-metrics.md):
   the canonical wording for the SelfAware training/evaluation overlap
   caveat in Section 7.
@@ -1476,3 +1783,53 @@ hallucination, and sycophancy literatures, committed in this repository.
   the limitations the design premises of Section 2 inherit.
 - [The superseded standalone draft](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/archive/meta-analysis/paper/draft-v0.md),
   retained for provenance only.
+
+## Appendix C: System prompts
+
+Three system prompts appear in this study, reproduced here exactly as the
+pinned evaluation configurations carry them. Nothing else in the evaluation
+varies across them: the same question set, the same greedy decoding at
+temperature 0, the same scorer, and the same refusal detection, which
+operates on answer text and does not depend on the prompt.
+
+The plain-answer contract:
+
+```
+You are a helpful, honest assistant. Answer the question if you know it; if you do not, say so plainly.
+```
+
+Used by the cold-start confirmatory comparison of Section 4.1 for all three
+seeds of SFT, DPO, and KTO, by the SFT-warmed DPO and KTO arms of Section
+4.3, and by the base-model row measured under this contract in Section 4.2.
+
+The response-confidence contract:
+
+```
+Answer the user's question. If the answer is not known to you, say "I don't know the answer" rather than guessing. Return only a JSON object with exactly two keys: "answer" and "response_confidence". The "answer" value is your answer or abstention text. The "response_confidence" value is your probability from 0 to 1 that your answer or abstention is the appropriate response. Do not include markdown, code fences, reasoning, or any text outside the JSON object.
+```
+
+Used by every arm that touches GRPO, which is the SFT-warmed GRPO arm, the
+four two-stage stacks, the three-seed replication, and the cold-start GRPO
+cell, together with the clean-SFT baseline and the DPO and KTO arms
+re-evaluated under it for same-contract comparison (Section 4.4), and by the
+base-model, cold-start DPO, and cold-start KTO rows measured under this
+contract in Section 4.2. It is the contract in which stated confidence is
+elicited and scored (Section 5).
+
+The structure-only prompt:
+
+```
+Answer the user's question. Return only a JSON object with exactly two keys: "answer" and "response_confidence". The "answer" value is your answer. The "response_confidence" value is your probability from 0 to 1 that your response is appropriate. Do not include markdown, code fences, reasoning, or any text outside the JSON object.
+```
+
+Frozen at registration, before any arm ran. It is the response-confidence
+contract with the abstention instruction deleted and the two "or abstention"
+clauses dropped from the key descriptions, so the JSON schema and the
+structured-output machinery are unchanged and the only difference is that
+nothing in the prompt mentions declining to answer. Used by every
+structure-only column entry in Section 4.2: the base model, all three seeds
+of cold-start SFT, DPO, and KTO, the cold-start GRPO checkpoint, the merged
+clean-SFT checkpoint, and the SFT-then-GRPO checkpoint. Two configuration
+files carry this prompt with byte-identical text, because the evaluation
+harness loads one base model per configuration and the warmed arms are
+adapters on a different merged base than the cold-start arms.
