@@ -14,7 +14,9 @@ evidence_base: >
   caution_direction_L35.json / caution_perp_direction_L35.json. Steering:
   archive/experiment/phase1/probe/analysis/current_clean_grpo_v2_* (caution_residual_intervention,
   caution_perp_residual_intervention, known_overrefusal_native_l26_coeff_sweep,
-  l26_double_orthogonalized_panel_{a,b,c}_generation, knowledge_boundary_steer).
+  l26_double_orthogonalized_panel_{a,b,c}_generation, knowledge_boundary_steer);
+  Section 6 ablation headline (0.994 to 0.524, replication 0.536):
+  experiments/doubt-regulated-caution/AMENDMENT.md.
   Stated-confidence calibration: archive/experiment/phase1/eval/analysis/calibration_gap_*.json
   (clean_sft_grpo_v2_seed1, clean_sft_grpo_v3_seed1, contrastive_sft_seed1,
   contrastive_masked_sft_seed1). Behavior: archive/experiment/phase1/eval/results_amendment_*.
@@ -488,10 +490,10 @@ therefore do not include it among this paper's internal-confidence signals.
 The two-axis decomposition makes a causal prediction: intervening on the refusal
 axis should change the refuse/answer decision without changing what the model
 knows. A separate actuation study in this program establishes that the refusal
-axis is causally real but asymmetric: ablating it collapses over-refusal on
-known items from 0.994 to 0.030, and the effect is specific to that direction,
-while no intervention tried there installs appropriate abstention on genuine
-unknowns. The leverage is one-way: over-refusal can be relaxed; appropriate
+axis is causally real but asymmetric: ablating it cuts over-refusal on
+known items from 0.994 to 0.524, a result that replicated at 0.536 with
+specificity intact, while no intervention tried there installs appropriate
+abstention on genuine unknowns. The leverage is one-way: over-refusal can be relaxed; appropriate
 abstention cannot be written in.
 
 The one-way statement has since been stress-tested where it is most exposed. A
