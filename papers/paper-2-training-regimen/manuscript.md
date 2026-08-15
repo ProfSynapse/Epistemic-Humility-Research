@@ -40,16 +40,42 @@ Synaptic Labs
 
 Teaching a small language model to say "I don't know" is a post-training
 problem, and the field has four standard tools for it that have never been run
-against each other under fixed conditions. We run that comparison: supervised
+against each other under fixed conditions. We ran that comparison: supervised
 fine-tuning (SFT), direct preference optimization (DPO), Kahneman-Tversky
 optimization (KTO), and group relative policy optimization (GRPO, a
-reinforcement-learning method driven by a programmable reward). Each trains on
-the same model-specific known/unknown dataset, meaning one whose labels record
-what this particular model can and cannot answer, over the same small
-open-weights base (Qwen3-4B), and each is evaluated on one surface with exact
-paired row tests. The comparison yields a stage decomposition rather than a
-winner. Trained from the base model, only SFT *induces* abstention (refusal
-recall 87.9%, over-refusal 64.8%, three seeds); cold-start DPO and KTO refuse
+reinforcement-learning method driven by a programmable reward), each training
+on the same model-specific known/unknown dataset, meaning one whose labels
+record what this particular model can and cannot answer, over the same small
+open-weights base (Qwen3-4B), each evaluated on one surface with exact
+paired row tests. Every evaluation in that comparison ran under a system
+prompt that already told the model it could decline, as does nearly all of
+the published abstention-training work beside it, which leaves what the
+training installed and what the prompt elicited entangled. Crossing three
+prompt conditions with the base model and with checkpoints from every
+objective separates them (exploratory panel; refusal recall on 1,032
+unknown-labeled questions). Given the response-confidence contract the
+reinforcement-learning arms use, the base model refuses 90.89% of unknown
+questions with none of our training applied to it. Strip the abstention
+instruction down to a structure-only prompt and it refuses 0.00% (4 to 6% by
+a row-level audit of natural-language abstentions the pinned scorer does not
+match). Only SFT *internalizes* abstention, meaning the behavior survives the
+instruction's removal: 69.6, 76.9, and 79.4% refusal recall across three
+seeds under the structure-only prompt, from a replication registered before
+it ran, against 0.00% for all three DPO seeds, all three KTO seeds, and
+cold-start GRPO. One cold-start DPO checkpoint refuses
+nothing under the structure-only prompt and 94.48% under the
+response-confidence contract, the same weights read two ways. GRPO deepens
+what SFT installed, 77.4% instruction-free against the 69.5% of the
+checkpoint it started from, and installs nothing cold: trained from the
+base model under an appropriateness reward it reaches 85.66% recall with the
+instruction present, below the 90.89% that same instruction elicits from the
+base model, so it preserves and sharpens instruction-elicited abstention
+rather than inducing any. That cell's registered prediction was falsified and
+is reported as such.
+
+Under the plain-answer contract of the confirmatory comparison, where the
+base model refuses 0.00%, only SFT *induces* abstention (refusal recall
+87.9%, over-refusal 64.8%, three seeds); cold-start DPO and KTO refuse
 essentially nothing, falsifying the natural hypothesis that KTO's unpaired
 binary format makes it a native abstention trainer. Applied after an SFT
 warm-up, preference optimization *repositions* the boundary along a
@@ -58,16 +84,16 @@ conservatively; three seeds each), and GRPO under an appropriateness reward
 *amplifies* the routine to near-ceiling recall while re-inflating
 over-refusal, with truthfulness essentially flat under the shift (three
 seeds; exploratory throughout); stacking GRPO with DPO or KTO, in either
-order, does not escape the trade-off either.
-No
-objective, stack, or ordering moves the underlying discrimination frontier;
+order, does not escape the trade-off either. No objective, stack, or
+ordering moves the underlying discrimination frontier;
 each selects an operating point on the frontier the SFT stage defines. Stated
 confidence, measured after the same runs, carries a warning: every regimen's
 emitted confidence tracks the *decision to answer*, not the truth of the
 answer, so behavioral gains masquerade as confidence shifts. The practical
 conclusion here: report abstention training as an operating point with both
-error rates, choose the second stage by deployment cost asymmetry, and do not
-read the confidence number as knowledge.
+error rates under a named prompt condition, choose the second stage by
+deployment cost asymmetry, and do not read the confidence number as
+knowledge.
 
 ## 1. Introduction
 
@@ -139,28 +165,96 @@ shallowest and most direct approach available, L1: train the model's
 expressed confidence and refusal decisions themselves, rather than any
 deeper structure behind them.
 
+A refusal rate means something only relative to the prompt it was measured
+under, and that binds this study as tightly as the literature around it.
+Every evaluation reported below was produced under a system prompt that
+already tells the model it may decline. The cold-start comparison used a
+plain-answer contract, which instructs the model to say so plainly if it does
+not know the answer; the reinforcement-learning arms used a
+response-confidence contract, which instructs it to reply "I don't know the
+answer" rather than guess. The instruction was never removed at evaluation
+time, and the base model itself, meaning the Qwen3-4B checkpoint as it ships
+with none of our training applied, had never been evaluated under either
+contract anywhere in this research program. A refusal rate measured that way
+pools two different things:
+weights that carry an abstention policy, and weights that follow an
+instruction to abstain. Prompt and training are crossed factors, and only one
+margin of the table had been measured.
+
+The synthesis companion to this paper had recorded a version of the same hole
+in the published record. Its third verified gap notes that every result in the
+verifiable-reward abstention cluster is measured against its own prompting or
+cold-start baseline, on its own dataset, and none against the supervised and
+preference families on shared data (Rosenbaum, 2026). A prompting baseline
+compares a trained model against a prompted one. The cell underneath both,
+the base model under the same instruction, is the one nobody had filled.
+
+We filled it. Eleven evaluations crossed three prompt conditions, the two
+deployment contracts plus a structure-only prompt with every abstention
+affordance stripped out, against the base model and against
+checkpoints from each objective. The sharpest row belongs to cold-start DPO,
+the arm the confirmatory comparison reads as having learned nothing at all:
+under the structure-only prompt it refuses 0.00% of unknown questions, and
+under the response-confidence contract the same weights refuse 94.48%. The
+checkpoint did not change between those two numbers. Only the prompt did.
+Every 0.00% under the structure-only prompt is a scored zero: a row-level
+audit found natural-language abstentions the pinned scorer's markers do not
+match, which puts the honest rate near 4 to 6% for each arm reading zero,
+against the 30% floor the internalization claim had to clear. The
+scorer was left as pinned.
+
+Four words are kept apart for the rest of this paper. A prompt *elicits*
+behavior the weights already afford, and the model *complies* while the
+instruction is present; take the instruction away and the behavior leaves
+with it. Training *internalizes* behavior when the behavior survives the
+instruction's removal. *Induces* is used only where a training stage produced
+abstention that the measured base model did not produce under the same
+prompt, and it carries that prompt condition with it every time.
+
 What comes out is a decomposition by stage rather than a ranking. A single
-objective that both taught abstention from the base model and improved the
-model's underlying discrimination between answerable and unanswerable
-questions would have refuted that reading; no arm and no ordering we trained
-produced one. One prediction going in did fail, and its failure is the
-cleanest result in the study. Kahneman-Tversky optimization consumes exactly
-the unpaired binary labels a known/unknown split produces, which made it the
-natural candidate for a native abstention trainer. Trained from the base
-model, it refuses nothing at all.
+objective that both taught abstention from the base model and
+improved the model's underlying discrimination between answerable and
+unanswerable questions would have refuted that reading; no arm and no
+ordering we trained produced one. One prediction going in did fail, and its
+failure is the cleanest result in the study. Kahneman-Tversky optimization
+consumes exactly the unpaired binary labels a known/unknown split produces,
+which made it the natural candidate for a native abstention trainer. Trained
+from the base model, it refuses nothing at all.
+
+The prompt-condition crossing sorts the same objectives a second time, and
+the two sortings agree. Under the deployment prompts, only SFT induces
+abstention; with the instruction removed, only SFT-trained weights keep any,
+at 69.6 to 79.4% refusal recall across three seeds against 0.00% for every
+DPO and KTO seed. That claim carries its own registered falsifier, fixed
+before the run: any SFT seed below 30% under the structure-only prompt would
+have scoped the claim to a single seed or dropped it. None came near the
+floor. What the crossing changes is the reading of the reinforcement-learning
+arm. Cold-start GRPO under the appropriateness reward reaches 85.66% refusal
+recall, which fired its own registered falsifier for a no-induction
+prediction, and the base model under that identical instruction
+reaches 90.89%. The reward preserved and sharpened abstention the prompt was
+already eliciting. It induced none, and it internalized none: with the
+instruction removed, that checkpoint refuses 0.00%.
 
 Contributions:
 
-1. The first SFT / DPO / KTO / GRPO comparison on shared abstention data and a
+1. A crossing of prompt condition with training that separates elicited
+   abstention from internalized abstention: the base model measured
+   under each deployment contract, and every objective's checkpoints measured
+   under a structure-only prompt with the abstention affordance removed
+   (Section 4, exploratory tier). To our knowledge, no prior
+   abstention-training study reports both of those measurements.
+2. The first SFT / DPO / KTO / GRPO comparison on shared abstention data and a
    shared small open-weights base, with seed-level intervals and exact
    row-level paired transitions (Section 4). This runs, at the behavioral
    level, three of the experiments Section 2 identifies as absent from the
    literature.
-2. A stage decomposition of the regimen: SFT induces, preference optimization
-   repositions, GRPO amplifies. No objective or sequence we tested escapes
-   the recall/over-refusal trade-off; they select operating points on it
-   (Section 4).
-3. A stated-confidence measurement after the same runs showing that emitted
+3. A stage decomposition of the regimen under the deployment prompts: SFT
+   induces, preference optimization repositions, GRPO amplifies. No objective
+   or sequence we tested escapes the recall/over-refusal trade-off; they
+   select operating points on it (Section 4). With the instruction removed,
+   only what the SFT stage installed survives.
+4. A stated-confidence measurement after the same runs showing that emitted
    confidence tracks the decision to answer, not the truth of the answer, so
    repositioning toward answering masquerades as confidence (Sections 4.2
    and 5).
@@ -234,8 +328,8 @@ its recall/over-refusal numbers toward the middle of their range.
 
 The same synthesis verifies six experiments as absent from the literature as
 of this writing, by structured search and targeted spot-check. This study
-closes the first three of those gaps across a four-rung ladder, then climbs
-one further rung the synthesis's search did not cover.
+closes the first three of those gaps, then climbs two further rungs the
+synthesis's search did not cover.
 
 The first rung is KTO. It has never been applied to abstention, honesty, or
 calibration training, despite consuming exactly the unpaired binary labels a
@@ -262,6 +356,28 @@ A fourth rung goes beyond the synthesis's verified list. To our knowledge,
 no prior work stacks a verifiable-reward RL stage with a preference-optimization
 objective (DPO or KTO family) for abstention: this study runs GRPO combined
 with DPO and with KTO on the SFT-warmed base, in both orders.
+
+A fifth rung is the prompt condition itself, and it is a measurement gap
+rather than a missing arm. An abstention-training result is interpretable
+only against two readings the literature does not pair: the model as it stood
+before the training stage, measured under the same instruction, which says how
+much of the behavior the prompt would have elicited anyway, and the trained model
+measured with the instruction taken away, which says how much of it lives in
+the weights. Individual pieces exist. One entry in the verifiable-reward
+cluster measures its starting checkpoint with an explicit "I don't know"
+option offered, reaching 6.6% abstention on a medical multiple-choice set and
+0.03% on open-ended mathematics (Jha et al., 2026); another reports no
+prompted-only condition at all, since every arm in its comparison is a
+training intervention applied to one instruction-tuned checkpoint (Pan et
+al., 2026). The synthesis companion records the pattern across that whole
+cluster (Wei et al., 2025; Zhai et al., 2026; Mohamadi et al., 2025; Damani
+et al., 2025; Jha et al., 2026; Pan et al., 2026): every result is measured
+against its own prompting or cold-start baseline (Rosenbaum, 2026). To our
+knowledge no abstention-training study reports both readings. Without the
+first, a training effect cannot be separated from what the prompt would have
+elicited anyway; without the second, it cannot be separated from
+instruction-following. This study reports both on the exploratory tier
+(Section 4).
 
 One further gap closes by construction rather than by design. The synthesis
 records that the abstention-training literature concentrates on chat models
@@ -946,6 +1062,10 @@ Gekhman, Z., Yona, G., Aharoni, R., Eyal, M., Feder, A., Reichart, R., &
 Herzig, J. (2024). *Does Fine-Tuning LLMs on New Knowledge Encourage
 Hallucinations?* arXiv:2405.05904.
 
+Jha, A., Mahajan, A., Vaithinathan Aravindan, A., Saravanan, P., Policharla,
+S. S., & Gehlot, S. C. (2026). *Rewarding Intellectual Humility: Learning
+When Not To Answer in LLMs*. arXiv:2601.20126.
+
 Joshi, M., Choi, E., Weld, D. S., & Zettlemoyer, L. (2017). *TriviaQA: A
 Large Scale Distantly Supervised Challenge Dataset for Reading
 Comprehension*. arXiv:1705.03551.
@@ -967,6 +1087,9 @@ Mohamadi, M. A., Wang, T., & Li, Z. (2025). *Honesty over Accuracy:
 Trustworthy Language Models through Reinforced Hesitation*. arXiv:2511.11500.
 
 OpenAI (2023). *GPT-4 Technical Report*. arXiv:2303.08774.
+
+Pan, M., Zhao, S., et al. (2026). *TIAR: Trajectory-Informed Advantage
+Reweighting for LLM Abstention Learning*. arXiv:2605.25850.
 
 Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C. D., & Finn, C.
 (2023). *Direct Preference Optimization: Your Language Model is Secretly a
