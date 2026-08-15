@@ -1634,7 +1634,8 @@ with the internal label it carries in the repository.
 - The released datasets, on the Hugging Face Hub:
   [`epistemic-humility-phase1`](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1)
   carries the redistributable training and dev files every arm in Section 3.3
-  consumed (with `questions_frozen.json` and the build manifest; restricted
+  consumed, including the GRPO train and dev splits both GRPO training runs
+  used (with `questions_frozen.json` and the build manifest; restricted
   upstream sources are excluded, as its card states);
   [`epistemic-humility-phase1-evals`](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1-evals)
   carries the aggregate evaluation-analysis layer behind the cross-arm
@@ -1668,6 +1669,19 @@ with the internal label it carries in the repository.
   clean mainline.
   - [`eh-qwen3-4b-clean-sft-seed1-merged-16bit`](https://huggingface.co/professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit) at `ac361232c001af0ed5b0386b06dafc35d5cd31ea`
   - [`eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora) at `8914081dfcec4f1f025f2dbe4195d4f7aa8d210e`
+- GRPO three-seed replication checkpoints, the seed-2 and seed-3 arms behind
+  the Section 4.4 and Section 5 three-seed figures. Each adapter loads on its
+  own seed's merged base below, never on another seed's; per-seed lineage is a
+  registered rule of that replication. Internal label: GRPO three-seed
+  confirmatory block.
+  - [`eh-qwen3-4b-clean-sft-grpo-v2-seed2-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed2-lora) at `2390e893bfc92aefb3d14d30805b480e8a11fda7`
+  - [`eh-qwen3-4b-clean-sft-grpo-v2-seed3-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed3-lora) at `d9f24fdac820bff36e97daa6bea2fa9d0aa3a149`
+  - [`eh-qwen3-4b-clean-sft-seed2-merged-16bit`](https://huggingface.co/professorsynapse/eh-qwen3-4b-clean-sft-seed2-merged-16bit) at `4d526fddce37348a325f54127426fb15f9a77bbe`
+  - [`eh-qwen3-4b-clean-sft-seed3-merged-16bit`](https://huggingface.co/professorsynapse/eh-qwen3-4b-clean-sft-seed3-merged-16bit) at `b607b18bb0b0274b86be51d5dad29e4c2144ee2d`
+- The cold-start GRPO checkpoint of Section 4.1, single seed, exploratory.
+  Loads on the raw base, not on any merge. Internal label: cold-start GRPO
+  induction cell.
+  - [`eh-qwen3-4b-cold-grpo-v2-seed1-lora`](https://huggingface.co/professorsynapse/eh-qwen3-4b-cold-grpo-v2-seed1-lora) at `353b73c48a7d8865ad1e30e5ef5ee8b0776a3c6a`
 
 Dataset-version note for the cold-start preference seeds. The dev-split fix
 described in Section 7 is commit

@@ -553,6 +553,30 @@
     },
     {
       "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-15T22:32:16Z",
+      "falsifier": "No archived variant brings post-ablation known-item over-refusal below 0.30 under the archived instrument: 0.030 declared not recoverable and retired; paper 3 keeps the governed doubt-regulated-caution numbers either way.",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "persistence": {},
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "At least one archived variant (modal: caution_perp) reproduces post-ablation known-item over-refusal at or below 0.10, with baseline ~0.994 within 0.02.",
+      "question": "Does re-running the archived phase-1 caution/caution_perp ablation pipeline on clean_sft_grpo_v2_seed1 reproduce the un-re-derivable 0.994-to-0.030 over-refusal collapse, giving that figure a governed source or formally retiring it?",
+      "registered": true,
+      "slug": "caution-ablation-rederivation",
+      "status": "draft",
+      "title": "Re-deriving the archived caution-ablation over-refusal collapse",
+      "type": "eval",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "base_form": "clean-SFT merged-16bit, bf16, no quantization",
         "base_model": "unsloth/Qwen3-4B",
         "reference_substrate": {
