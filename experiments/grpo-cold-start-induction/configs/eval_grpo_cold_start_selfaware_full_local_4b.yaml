@@ -1,0 +1,83 @@
+# experiments/grpo-cold-start-induction/configs/eval_grpo_cold_start_selfaware_full_local_4b.yaml
+#
+# Full 3,369-row SelfAware eval for the cold-start (raw base -> GRPO v2, seed 1)
+# arm. Cloned from the SAME run_eval.py config schema every other GRPO-matrix
+# arm uses (experiments/grpo-three-seed-confirmatory/configs/eval_grpo3seed_
+# response_confidence_selfaware_clean_sft_grpo_v2_seed2_full_local_4b.yaml):
+# identical prompt/generation/confidence/bootstrap/vllm blocks, byte-for-byte,
+# per AMENDMENT.md "Design" ("the standard full SelfAware eval under the same
+# contract and scorer as the cold-start block... unchanged... do not build a
+# new eval"). Two fields differ from every sibling config, both structural
+# consequences of this arm having no SFT stage to merge:
+#   1. model_name is the raw foundation checkpoint hub id
+#      (unsloth/Qwen3-4B-bnb-4bit), not a merged run-directory path -- every
+#      other GRPO-matrix arm evaluates its GRPO/DPO/KTO LoRA against a MERGED
+#      SFT (or SFT->preference-stage) base; this arm's base IS the foundation
+#      model, so there is no merge step before either training or eval.
+#   2. arms[0].adapter is a KNOWN-INCOMPLETE PLACEHOLDER
+#      (<FILLED_AFTER_TRAINING>/final_model). Every sibling eval config in
+#      this repo (see experiments/grpo-three-seed-confirmatory/configs/) was
+#      materialized AFTER its training run completed, because the adapter
+#      path embeds a real run-start timestamp only the trainer assigns
+#      (training.output_dir + a `datetime.now()` subdirectory, train_grpo.py
+#      `run()`). This build task performs NO GPU/training work, so that
+#      timestamp cannot exist yet. FLAGGED FOR THE LEAD: before this eval can
+#      launch, substitute the placeholder with the real
+#      cold_base_grpo_v2_seed1_full/<timestamp>/final_model path once
+#      training (configs/grpo_cold_base_seed1_full.yaml) has completed --
+#      the same incremental-materialization step every other arm in this
+#      program already goes through, not a new eval mechanism.
+
+model_tag: qwen3-4b-cold-base-seed1
+model_name: unsloth/Qwen3-4B-bnb-4bit
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results_grpo_cold_start_induction_selfaware_full_4b
+
+prompt:
+  system: >-
+    Answer the user's question. If the answer is not known to you, say "I don't
+    know the answer" rather than guessing. Return only a JSON object with
+    exactly two keys: "answer" and "response_confidence". The "answer" value is
+    your answer or abstention text. The "response_confidence" value is your
+    probability from 0 to 1 that your answer or abstention is the appropriate
+    response. Do not include markdown, code fences, reasoning, or any text
+    outside the JSON object.
+
+generation:
+  enable_thinking: false
+  seed: 20240601
+  temperature: 0.0
+  max_new_tokens: 128
+  n_samples: 1
+  stated_confidence_structured_outputs: true
+  stated_confidence_field: response_confidence
+  stated_confidence_json_retries: 2
+
+confidence:
+  signal: self_consistency
+  n_samples: 1
+
+bootstrap:
+  n_resamples: 200
+  level: 0.95
+  seed: 12345
+
+vllm:
+  dtype: auto
+  gpu_memory_utilization: 0.40
+  max_lora_rank: 32
+  max_model_len: 2048
+
+arms:
+  - name: cold_base_grpo_v2_seed1
+    method: cold_base_grpo_v2
+    model: qwen3-4b-cold-base-seed1
+    # PLACEHOLDER (see header note 2): fill with the real absolute container
+    # path once training completes, matching every sibling arm's convention --
+    # /workspace/repo/scratch/schema_response_confidence/runs/cold_base_grpo_v2_seed1_full/<timestamp>/final_model
+    adapter: <FILLED_AFTER_TRAINING>/final_model
+
+eval_sets:
+  selfaware:
+    type: ood
+    path: ../../../../datasets/selfaware/SelfAware.json

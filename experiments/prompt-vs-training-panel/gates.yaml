@@ -1,0 +1,18 @@
+# Pre-stated gates and interpretation bands for prompt-vs-training-panel.
+# Fixed at signing; never retuned after any result (AMENDMENT R4).
+
+pv_g0:
+  # Integrity precondition, applied PER ARM. Any failure stops that arm's
+  # use; it is reported straight, never retried silently.
+  rows_total: 3369
+  full_coverage: true            # every attempted row has a recorded disposition
+  config_sha_match: true         # row-stamped config_sha == sha256(pinned config bytes)[:16]
+  scorer_parse_recorded: true    # parse-failure path recorded, not silently dropped
+
+interpretation_bands:
+  # Prose rules for paper-2 wording, NOT pass/fail gates. Thresholds are
+  # refusal recall (%) on unknown-labeled rows, n=1032.
+  r1_base_pplain_rewording_floor_pct: 20.0
+  r2_base_prc_preserves_floor_pct: 60.0
+  r3_trained_pstruct_internalization_floor_pct: 30.0
+  r3_base_pstruct_ceiling_pct: 10.0

@@ -1,0 +1,44 @@
+{
+  "diagnostics": {
+    "per_group_advantage": {
+      "num_generations": 4,
+      "n_groups": 14888,
+      "n_zero_advantage_groups": 9645,
+      "zero_advantage_fraction": 0.647837184309511,
+      "malformed_events": []
+    },
+    "contract_parse": {
+      "n_rollouts": 59552,
+      "n_valid_json": 58210,
+      "valid_contract_parse_fraction": 0.9774650725416443
+    },
+    "abstention": {
+      "n_rollouts": 59552,
+      "n_refused": 26286,
+      "abstention_rate": 0.441395754970446
+    }
+  },
+  "cg_g0": {
+    "checks": {
+      "training_completed_or_degenerate_stop": true,
+      "eval_full_row_set_scored": true,
+      "diagnostics_present": true,
+      "diagnostics_capture_well_formed": true
+    },
+    "diagnostic_presence": {
+      "per_group_advantage": true,
+      "contract_parse": true,
+      "abstention": true
+    },
+    "pass": true
+  },
+  "cg_g1": {
+    "zero_advantage_fraction": 0.647837184309511,
+    "zero_advantage_floor": 0.9,
+    "eval_refusal_recall_pct": 85.66,
+    "null_a_ceiling_pct": 10.0,
+    "falsifier_floor_pct": 20.0,
+    "is_null_b": false,
+    "mechanism": "falsifier-zone"
+  }
+}

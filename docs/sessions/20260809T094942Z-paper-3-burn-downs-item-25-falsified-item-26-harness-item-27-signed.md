@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-13T13:30:37Z'
+updated_at: '2026-08-14T16:29:08Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -356,6 +356,189 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 014-checkpoint
+  at: '2026-08-13T15:04:23Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Ship-shape sprint complete. Merged on PI approval: PR 452 paper-4 note,
+    PR 454 paper-2 close-out (GRPO report-as-extension lead ruling, two numeric-precision
+    fixes verified against in-paper tables, three-target calibration declaration,
+    self-containment pass). KG backfill for dial-logprob v1 v2 v3 lineage pushed direct
+    to main per precedent at a94310c3 with stale AMENDMENT status headers corrected.
+    Harvest-conflict source fixed for both hs23 and hs29 (stale item-27 worktree copies
+    synced to canonical, 22 litter files removed). Stale tuner-bump branch retired
+    with PI-run command. All five papers polish-complete; PI beginning manuscript
+    review. Open PI decision: T-arm gated confirmation cell, recommended before outreach.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 015-checkpoint
+  at: '2026-08-13T15:34:58Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'PI paper-2 review in progress via standing paper2-editor agent in paper2-review
+    worktree. Batches 1-4 applied and lead-verified: coupling-premise rewrite, pretraining-origin
+    correction per Kalai et al. evidence check, C1-C3 tag removal for standalone reading,
+    measurement-lessons subsection rewired into design-motivating arcs. Batch 5 buffered
+    pending editor idle: identify the synthesis as companion paper 1 at first mention,
+    and a manuscript-wide synthesis-not-journey sweep removing experiment-evolution
+    meta commentary (originally single seed since replicated, two reward revisions
+    tuned narration) while preserving exploratory-confirmatory tier labels and all
+    numbers. Two new cells registered as drafts with pre-stated predictions falsifiers
+    gates: `grpo-cold-start-induction` (Null-A vs Null-B distinction, CG-G1 90/10/20)
+    and `dial-logprob-t-deployed-confirmatory` (cap 12000, LT-G0/LT-G1 verbatim from
+    v3); cells-builder agent building instruments in background; signing awaits PI
+    approval after builder report.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 016-checkpoint
+  at: '2026-08-13T15:55:34Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'PI approved sign and launch of both new cells. Signed `dial-logprob-t-deployed-confirmatory`
+    and `grpo-cold-start-induction` via bin/exp sign with instrument pins recorded;
+    notebook launch entries written before launch; T cell running now via background
+    harness-builder (registered generation smoke then 12000-attempt run, LT-G0/LT-G1
+    fixed); cold GRPO queued behind it on the 3090. Paper-2 review continues: batch
+    6 (actual GRPO reward spec replacing textbook math) verified against both reward
+    source files, lead caught two v1 transcription errors (confident-wrong scope excludes
+    refusals; band term net values scaled by calibration weight 0.5) folded into batch
+    7 with figure work (green ideal-corner zones on four scatters, Figure 2 redesign
+    after lead verified it shows cold-start arms not warmed). PI rulings queued for
+    batch 8: name TRL and Unsloth stack in section 3.3, remove first-reward GRPO from
+    tables prose and figures (reward-sensitivity spread sentence dies with it, scope
+    sentence survives), tee up the four two-stage GRPO preference stacks in abstract
+    and section 3.1 with a to-our-knowledge novelty sentence since stacking is not
+    among paper 1 six verified gaps.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 017-checkpoint
+  at: '2026-08-13T18:17:23Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'T-cell `dial-logprob-t-deployed-confirmatory` run complete and lead-verified
+    from committed result JSON: LT-G0 all four pass (0 capture-integrity failures,
+    8621 attempted all covered, 1501 answered vs 1000 floor, fresh T dial OOF AUROC
+    0.7962), LT-G1 PASS with dial-minus-logprob margin +0.1393 CI [0.1031, 0.1755]
+    n_boot 2000, falsifier not fired, prediction near +0.15 landed. Resolution awaiting
+    PI approval. Cold GRPO `grpo-cold-start-induction` LAUNCHED after notebook entry
+    (background runner replicating three-seed-confirmatory container stack, GRPO_REWARD_DEBUG_PATH
+    diagnostics hook mandatory, TRL group-ordering early check). Paper-2 review batches
+    9-12 verified: quadrant figure convention per PI, probe purged entirely from paper
+    (PI ruling, question-only open question), epistemic-humility reframe applied with
+    L1 and coherence-axis framing from paper 1, journey narration swept from Limitations.
+    Batch 13 in flight: VOICE.md full audit (em-dash violations found by PI), definitional
+    verdict sharpening (regimens did not produce epistemic humility by program definition,
+    two-channel argument), duplicate open-question landing to collapse.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 018-checkpoint
+  at: '2026-08-13T18:26:17Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Paper-2 review batch 13 verified: zero em dashes after full VOICE.md audit,
+    discussion section retitled A policy not epistemic humility carrying the PI definitional
+    verdict (confidence channel no tracking at all, behavior channel inherited-and-frozen
+    tracking respent by later stages), duplicate open-question landing collapsed to
+    one statement plus backward pointer. All thirteen review batches applied and lead-verified
+    in the paper2-review worktree, uncommitted, awaiting PI full-diff and merge flow.
+    Cold GRPO training launched 18:19:49Z in detached container replicating warmed-arm
+    stack, launch health confirmed (GPU 90 percent, reward-debug JSONL growing, TRL
+    group-ordering assumption confirmed against real events), expected about 7 hours.
+    T-cell resolve approval still pending with PI.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 019-checkpoint
+  at: '2026-08-13T19:38:42Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'T cell dial-logprob-t-deployed-confirmatory RESOLVED with PI approval:
+    LT-G0 all pass, LT-G1 pass margin +0.1393 CI [0.1031, 0.1755] n=1501; evidence
+    PR 456 merged to main; paper 4 limitation 9 upgraded to the gated number; KG ingest
+    committed (3 typed nodes, checkpoint-dependence synthesis mechanism). Paper 2
+    review round 2 on branch paper2-review-r2, batches 14-20: Cheng preference-beats-SFT
+    requalified as sequential per library note 2401.13275; measurement-lessons paragraph
+    rewritten in failure terms; gaps section recast as four-rung ladder with stacks
+    as to-our-knowledge only; section 3.1 evidence layers restructured bare-for-all
+    then warmed-for-all then stacks with contract mapping fixed by arm type; stacking-novelty
+    sentence hardened to DPO or KTO family objective after lit sweep verdict HOLDS
+    (21 web queries; nearest miss CPT 2606.00869 uses plain CE for its pairwise stage,
+    lead-verified); ideal zones tightened to top-left grid cell on figs 1 and 3; fig
+    6 stack dots disambiguated; fig 10 decompressed and rebalanced label dropped;
+    text arrows removed. Batch 20 in flight: bar-chart ideal indicators and tick-label
+    padding. Buffered batch 21: real arrow glyphs in fig labels and a closeness-as-the-finding
+    sentence before the stacks table (PI kept table, declined forest plot). Cold GRPO
+    training cold_base_grpo_v2_seed1 still running, monitor healthy, ~3h remain; on
+    completion eval then CG-G0/CG-G1 adjudication. Open: PI merge approval for round-2
+    PR when batches settle; optional TIAR proper ingest; optional Jha citation add
+    when cold GRPO resolves.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 020-checkpoint
+  at: '2026-08-14T11:45:16Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Cold GRPO falsifier-zone result (recall 85.66 over-refusal 60.89) survived
+    red-team audit; audit surfaced that both eval contracts contain abstention instructions
+    and no raw-base eval exists anywhere. PI concern prompt-vs-training entanglement
+    led to new signed cell prompt-vs-training-panel: 11 arms crossing base plus trained
+    checkpoints with P-rc P-plain and new P-struct structure-only prompt, interpretation
+    bands R1-R4 frozen, four pinned configs, vLLM version pinned from eval container
+    logs. Launch awaiting PI approval. Process fix: launch_watch hook auto-arms docker-wait
+    sentinel plus standing Monitor; skill rule added. Cold GRPO resolve deferred until
+    panel base arms land. Seeds 2-3 replication and GRPO-first stacks deferred until
+    panel outcome.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 021-checkpoint
+  at: '2026-08-14T16:29:08Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Panel results through config 3: base P-plain recall 0.0 so R1 does not
+    fire and only-SFT claim survives its own contract; base P-rc 90.89 above cold
+    GRPO 85.66 so R2 fires (prompt-elicited, GRPO preserves-and-sharpens wording);
+    cold DPO and KTO reverse 0 to 94 across contracts, base-tracking everywhere. P-struct
+    internalization: base 0.0, DPO 0.0, KTO 0.0, GRPO 0.0, SFT 69.57 with R3 fired
+    - only SFT installs abstention in weights. PI rulings: no structure-only retraining
+    matrix (base has no signal, GRPO scaffolding necessary), abandon cold-GRPO seeds
+    2-3 training replication, scaffolded-training scaffold-removed-measurement frame.
+    New cell pstruct-internalization-seed-robustness signed and launch-approved (6
+    arms SFT DPO KTO seeds 2-3), queued behind panel config 4 (warmed pair) now running.
+    Next: warmed results, seed cell launch, full synthesis, resolves for three cells,
+    paper 2 reframe.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -438,3 +621,43 @@ _No summary yet._
 - at: `2026-08-13T13:30:37Z`
 - kind: `checkpoint`
 - summary: PR 451 v3 resolution merged to main at 992e5054 on PI approval. Paper 4 limitation 9 updated to record the v3 successor-cell outcome: raw-base margin measured gated and small in the ambiguous band, deployed margin still unmeasured after the registered power-floor stop; opened as PR 452 awaiting PI merge. Remaining sprint items: paper-2 GRPO framing decision, outreach email skeleton, librarian KG backfill for v2 and v3, harvest-conflict duplicate cleanup.
+### 014-checkpoint - Checkpoint
+
+- at: `2026-08-13T15:04:23Z`
+- kind: `checkpoint`
+- summary: Ship-shape sprint complete. Merged on PI approval: PR 452 paper-4 note, PR 454 paper-2 close-out (GRPO report-as-extension lead ruling, two numeric-precision fixes verified against in-paper tables, three-target calibration declaration, self-containment pass). KG backfill for dial-logprob v1 v2 v3 lineage pushed direct to main per precedent at a94310c3 with stale AMENDMENT status headers corrected. Harvest-conflict source fixed for both hs23 and hs29 (stale item-27 worktree copies synced to canonical, 22 litter files removed). Stale tuner-bump branch retired with PI-run command. All five papers polish-complete; PI beginning manuscript review. Open PI decision: T-arm gated confirmation cell, recommended before outreach.
+### 015-checkpoint - Checkpoint
+
+- at: `2026-08-13T15:34:58Z`
+- kind: `checkpoint`
+- summary: PI paper-2 review in progress via standing paper2-editor agent in paper2-review worktree. Batches 1-4 applied and lead-verified: coupling-premise rewrite, pretraining-origin correction per Kalai et al. evidence check, C1-C3 tag removal for standalone reading, measurement-lessons subsection rewired into design-motivating arcs. Batch 5 buffered pending editor idle: identify the synthesis as companion paper 1 at first mention, and a manuscript-wide synthesis-not-journey sweep removing experiment-evolution meta commentary (originally single seed since replicated, two reward revisions tuned narration) while preserving exploratory-confirmatory tier labels and all numbers. Two new cells registered as drafts with pre-stated predictions falsifiers gates: `grpo-cold-start-induction` (Null-A vs Null-B distinction, CG-G1 90/10/20) and `dial-logprob-t-deployed-confirmatory` (cap 12000, LT-G0/LT-G1 verbatim from v3); cells-builder agent building instruments in background; signing awaits PI approval after builder report.
+### 016-checkpoint - Checkpoint
+
+- at: `2026-08-13T15:55:34Z`
+- kind: `checkpoint`
+- summary: PI approved sign and launch of both new cells. Signed `dial-logprob-t-deployed-confirmatory` and `grpo-cold-start-induction` via bin/exp sign with instrument pins recorded; notebook launch entries written before launch; T cell running now via background harness-builder (registered generation smoke then 12000-attempt run, LT-G0/LT-G1 fixed); cold GRPO queued behind it on the 3090. Paper-2 review continues: batch 6 (actual GRPO reward spec replacing textbook math) verified against both reward source files, lead caught two v1 transcription errors (confident-wrong scope excludes refusals; band term net values scaled by calibration weight 0.5) folded into batch 7 with figure work (green ideal-corner zones on four scatters, Figure 2 redesign after lead verified it shows cold-start arms not warmed). PI rulings queued for batch 8: name TRL and Unsloth stack in section 3.3, remove first-reward GRPO from tables prose and figures (reward-sensitivity spread sentence dies with it, scope sentence survives), tee up the four two-stage GRPO preference stacks in abstract and section 3.1 with a to-our-knowledge novelty sentence since stacking is not among paper 1 six verified gaps.
+### 017-checkpoint - Checkpoint
+
+- at: `2026-08-13T18:17:23Z`
+- kind: `checkpoint`
+- summary: T-cell `dial-logprob-t-deployed-confirmatory` run complete and lead-verified from committed result JSON: LT-G0 all four pass (0 capture-integrity failures, 8621 attempted all covered, 1501 answered vs 1000 floor, fresh T dial OOF AUROC 0.7962), LT-G1 PASS with dial-minus-logprob margin +0.1393 CI [0.1031, 0.1755] n_boot 2000, falsifier not fired, prediction near +0.15 landed. Resolution awaiting PI approval. Cold GRPO `grpo-cold-start-induction` LAUNCHED after notebook entry (background runner replicating three-seed-confirmatory container stack, GRPO_REWARD_DEBUG_PATH diagnostics hook mandatory, TRL group-ordering early check). Paper-2 review batches 9-12 verified: quadrant figure convention per PI, probe purged entirely from paper (PI ruling, question-only open question), epistemic-humility reframe applied with L1 and coherence-axis framing from paper 1, journey narration swept from Limitations. Batch 13 in flight: VOICE.md full audit (em-dash violations found by PI), definitional verdict sharpening (regimens did not produce epistemic humility by program definition, two-channel argument), duplicate open-question landing to collapse.
+### 018-checkpoint - Checkpoint
+
+- at: `2026-08-13T18:26:17Z`
+- kind: `checkpoint`
+- summary: Paper-2 review batch 13 verified: zero em dashes after full VOICE.md audit, discussion section retitled A policy not epistemic humility carrying the PI definitional verdict (confidence channel no tracking at all, behavior channel inherited-and-frozen tracking respent by later stages), duplicate open-question landing collapsed to one statement plus backward pointer. All thirteen review batches applied and lead-verified in the paper2-review worktree, uncommitted, awaiting PI full-diff and merge flow. Cold GRPO training launched 18:19:49Z in detached container replicating warmed-arm stack, launch health confirmed (GPU 90 percent, reward-debug JSONL growing, TRL group-ordering assumption confirmed against real events), expected about 7 hours. T-cell resolve approval still pending with PI.
+### 019-checkpoint - Checkpoint
+
+- at: `2026-08-13T19:38:42Z`
+- kind: `checkpoint`
+- summary: T cell dial-logprob-t-deployed-confirmatory RESOLVED with PI approval: LT-G0 all pass, LT-G1 pass margin +0.1393 CI [0.1031, 0.1755] n=1501; evidence PR 456 merged to main; paper 4 limitation 9 upgraded to the gated number; KG ingest committed (3 typed nodes, checkpoint-dependence synthesis mechanism). Paper 2 review round 2 on branch paper2-review-r2, batches 14-20: Cheng preference-beats-SFT requalified as sequential per library note 2401.13275; measurement-lessons paragraph rewritten in failure terms; gaps section recast as four-rung ladder with stacks as to-our-knowledge only; section 3.1 evidence layers restructured bare-for-all then warmed-for-all then stacks with contract mapping fixed by arm type; stacking-novelty sentence hardened to DPO or KTO family objective after lit sweep verdict HOLDS (21 web queries; nearest miss CPT 2606.00869 uses plain CE for its pairwise stage, lead-verified); ideal zones tightened to top-left grid cell on figs 1 and 3; fig 6 stack dots disambiguated; fig 10 decompressed and rebalanced label dropped; text arrows removed. Batch 20 in flight: bar-chart ideal indicators and tick-label padding. Buffered batch 21: real arrow glyphs in fig labels and a closeness-as-the-finding sentence before the stacks table (PI kept table, declined forest plot). Cold GRPO training cold_base_grpo_v2_seed1 still running, monitor healthy, ~3h remain; on completion eval then CG-G0/CG-G1 adjudication. Open: PI merge approval for round-2 PR when batches settle; optional TIAR proper ingest; optional Jha citation add when cold GRPO resolves.
+### 020-checkpoint - Checkpoint
+
+- at: `2026-08-14T11:45:16Z`
+- kind: `checkpoint`
+- summary: Cold GRPO falsifier-zone result (recall 85.66 over-refusal 60.89) survived red-team audit; audit surfaced that both eval contracts contain abstention instructions and no raw-base eval exists anywhere. PI concern prompt-vs-training entanglement led to new signed cell prompt-vs-training-panel: 11 arms crossing base plus trained checkpoints with P-rc P-plain and new P-struct structure-only prompt, interpretation bands R1-R4 frozen, four pinned configs, vLLM version pinned from eval container logs. Launch awaiting PI approval. Process fix: launch_watch hook auto-arms docker-wait sentinel plus standing Monitor; skill rule added. Cold GRPO resolve deferred until panel base arms land. Seeds 2-3 replication and GRPO-first stacks deferred until panel outcome.
+### 021-checkpoint - Checkpoint
+
+- at: `2026-08-14T16:29:08Z`
+- kind: `checkpoint`
+- summary: Panel results through config 3: base P-plain recall 0.0 so R1 does not fire and only-SFT claim survives its own contract; base P-rc 90.89 above cold GRPO 85.66 so R2 fires (prompt-elicited, GRPO preserves-and-sharpens wording); cold DPO and KTO reverse 0 to 94 across contracts, base-tracking everywhere. P-struct internalization: base 0.0, DPO 0.0, KTO 0.0, GRPO 0.0, SFT 69.57 with R3 fired - only SFT installs abstention in weights. PI rulings: no structure-only retraining matrix (base has no signal, GRPO scaffolding necessary), abandon cold-GRPO seeds 2-3 training replication, scaffolded-training scaffold-removed-measurement frame. New cell pstruct-internalization-seed-robustness signed and launch-approved (6 arms SFT DPO KTO seeds 2-3), queued behind panel config 4 (warmed pair) now running. Next: warmed results, seed cell launch, full synthesis, resolves for three cells, paper 2 reframe.

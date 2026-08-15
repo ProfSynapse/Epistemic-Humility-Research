@@ -1,0 +1,16 @@
+# Pre-stated gates for pstruct-internalization-seed-robustness.
+# Fixed at signing; never retuned after any result.
+
+sr_g0:
+  # Integrity precondition, per arm (verbatim from prompt-vs-training-panel PV-G0).
+  rows_total: 3369
+  full_coverage: true
+  config_sha_match: true
+  scorer_parse_recorded: true
+
+sr_g1:
+  # Internalization seed-robustness. Thresholds reuse the panel's frozen R3
+  # values (30/10), unchanged.
+  sft_internalization_floor_pct: 30.0
+  base_pstruct_ceiling_pct: 10.0     # already measured: 0.0 (panel base_pstruct)
+  negative_arm_report_floor_pct: 10.0  # any DPO/KTO arm >= this is reported straight
