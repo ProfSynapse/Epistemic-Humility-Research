@@ -1294,16 +1294,12 @@ rows, is itself the evidence that wording moves this quantity a long way.
 Nothing here estimates where a typical prompt falls in that range.
 
 The zero readings under the structure-only prompt are scored zeros rather
-than absolute ones. A row-level audit of the four zero-reading arms found
-natural-language abstentions that the pinned scorer's markers do not match,
-putting the honest rate near 4 to 6% rather than 0. The scorer was left as
-pinned rather than retuned after the result, and the conclusions are built to
-survive the difference: the registered internalization gate required the base
-model to sit below 10%, and the supervised arms clear the 30% floor by more
-than double. The same audit checked the supervised side in the opposite
-direction and found no false positives in 60 sampled refusals. A reader who
-prefers the audited figure should read every 0.00 in this paper as "under
-6%," which changes no claim in it.
+than absolute ones: a row-level audit found abstentions the scorer's markers
+miss, putting the honest rate for those arms near 4 to 6%, and no false
+positives on the supervised side. A reader who prefers the audited figure
+should read every 0.00 in this paper as "under 6%," which changes no claim,
+since every threshold in play is cleared by a wide margin either way. The
+audit details live with the experiment records in Appendix A.
 
 The crossing is also incomplete in three specific places. There is no
 response-confidence reading for the cold-start SFT arms and no plain-answer
