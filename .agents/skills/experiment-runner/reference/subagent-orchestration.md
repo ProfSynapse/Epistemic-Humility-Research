@@ -68,6 +68,17 @@ correct run at step 4). Mitigations, all three:
   rows** before any verdict is written. The runner's numbers are a
   cross-check, not the source of record (twice now both computations agreed
   exactly; keep it that way by keeping them independent).
+- **The launch_watch hook only exists where the session started.** The
+  auto-arming hook (`.claude/hooks/launch_watch.sh`, PostToolUse on Bash)
+  loads from the SESSION's project dir at session start. A session started
+  from the frozen `/mnt/f` mirror runs with that mirror's `.claude/`, which
+  can silently predate the hook: no sentinel is written, no instruction is
+  injected, for the lead or any subagent, and nothing announces the absence
+  (confirmed 2026-08-15: a runner's merge container sat finished for 2h).
+  At session start, verify the ACTIVE project dir's hooks match canonical
+  (`ls "$CLAUDE_PROJECT_DIR/.claude/hooks/"` should list launch_watch.sh);
+  if not, ask the PI to sync them (hooks bind at next session start) and
+  treat the prose launch-turn-watcher rule as the only guard meanwhile.
 - **A quiet runner is not a dead run.** Check the GPU and the output
   directory before concluding anything: an idle notification with the GPU at
   70% means the background job is fine and the runner's turn simply ended.
