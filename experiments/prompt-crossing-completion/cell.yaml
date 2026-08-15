@@ -11,12 +11,17 @@ instrument:
   eval_set: selfaware   # full set, n=3369 per arm
   generation: {temperature: 0.0, enable_thinking: false, max_new_tokens: 128}
 
+# run_eval.py enforces one base model per config, and each seed's Amendment A
+# adapters sit on a different per-seed 16-bit SFT merge, so the seq block is
+# three per-seed configs (mirrors eval_amendment_a_selfaware_full precedent).
 run_order:
-  - {order: 1, config: configs/eval_crossing_seq_pstruct_local_4b.yaml,
-     arms: [seq_sft_dpo_seed1_pstruct, seq_sft_dpo_seed2_pstruct,
-            seq_sft_dpo_seed3_pstruct, seq_sft_kto_seed1_pstruct,
-            seq_sft_kto_seed2_pstruct, seq_sft_kto_seed3_pstruct]}
-  - {order: 2, config: configs/eval_crossing_coldsft_rc_local_4b.yaml,
+  - {order: 1, config: configs/eval_crossing_seq_pstruct_seed1_local_4b.yaml,
+     arms: [seq_sft_dpo_seed1_pstruct, seq_sft_kto_seed1_pstruct]}
+  - {order: 2, config: configs/eval_crossing_seq_pstruct_seed2_local_4b.yaml,
+     arms: [seq_sft_dpo_seed2_pstruct, seq_sft_kto_seed2_pstruct]}
+  - {order: 3, config: configs/eval_crossing_seq_pstruct_seed3_local_4b.yaml,
+     arms: [seq_sft_dpo_seed3_pstruct, seq_sft_kto_seed3_pstruct]}
+  - {order: 4, config: configs/eval_crossing_coldsft_rc_local_4b.yaml,
      arms: [cold_sft_seed1_rc, cold_sft_seed2_rc, cold_sft_seed3_rc]}
-  - {order: 3, config: configs/eval_crossing_warmed_pplain_local_4b.yaml,
+  - {order: 5, config: configs/eval_crossing_warmed_pplain_local_4b.yaml,
      arms: [clean_sft_merged_pplain, sft_grpo_v2_seed1_pplain]}

@@ -5803,20 +5803,34 @@
         "configs": [
           "cell.yaml",
           "gates.yaml",
-          "configs/eval_crossing_seq_pstruct_local_4b.yaml",
+          "configs/eval_crossing_seq_pstruct_seed1_local_4b.yaml",
+          "configs/eval_crossing_seq_pstruct_seed2_local_4b.yaml",
+          "configs/eval_crossing_seq_pstruct_seed3_local_4b.yaml",
           "configs/eval_crossing_coldsft_rc_local_4b.yaml",
           "configs/eval_crossing_warmed_pplain_local_4b.yaml"
         ],
+        "engine": {
+          "name": "vllm",
+          "version": "0.16.1.dev0+g89a77b108.d20260417"
+        },
         "modules": [],
         "persistence": {},
-        "pins": {}
+        "pins": {
+          "cell.yaml": "a5d987c5fd5572779dde569d7db46de34eda44bf963559d712d975ccb0256cc8",
+          "configs/eval_crossing_coldsft_rc_local_4b.yaml": "8fdc13e6c0fbff8f1e5eac434d77290ea2f426fb3c6f92c7da4be5b997bd964e",
+          "configs/eval_crossing_seq_pstruct_seed1_local_4b.yaml": "29cbffb958207a2420011d94ce2386aaa80c85e3665a2c830592187b30839fc0",
+          "configs/eval_crossing_seq_pstruct_seed2_local_4b.yaml": "de8f647975f8e6ea383f1e7e35ad12297334e5f59168994c7cadb629d2493356",
+          "configs/eval_crossing_seq_pstruct_seed3_local_4b.yaml": "c9a8bfd0bd99a3ea7e330af9338c1e8f57f02ef5d99615807e3fb593dca9faa3",
+          "configs/eval_crossing_warmed_pplain_local_4b.yaml": "ba2f4af692d0652bd536bc108a037a3642d718bd03fe41d7dca3ebc5a6870289",
+          "gates.yaml": "0d17029e09ed36d5ad5f99e6e29ed93814e2470be4833b54cce5372e71ddb161"
+        }
       },
       "kg": [],
       "prediction": "All six seq preference arms stay at or above the 30 percent internalization floor under P-struct (expected 40-80; DPO at/below parent, KTO near parent); cold SFT under response-confidence reads 85-95; warmed arms under plain-answer within about 10 points of their response-confidence readings.",
       "question": "Does a preference stage applied to an internalized SFT checkpoint preserve, erode, or deepen instruction-free abstention (warmed seq DPO/KTO under P-struct, three seeds each), and what do the missing contract-symmetric readings (cold SFT under response-confidence, warmed arms under plain-answer) show?",
       "registered": true,
       "slug": "prompt-crossing-completion",
-      "status": "draft",
+      "status": "signed",
       "title": "Completing the prompt-condition crossing",
       "type": "eval",
       "verdict": ""
