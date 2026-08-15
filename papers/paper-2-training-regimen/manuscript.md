@@ -564,7 +564,24 @@ rows under the same greedy decoding and the same scorer; a registered
 replication added six more arms at fresh seeds. The two deployment contracts
 are the ones already described. The third is a structure-only prompt: the
 same JSON output schema with every abstention affordance removed, so the
-model is told what shape to answer in and nothing at all about declining. An
+model is told what shape to answer in and nothing at all about declining.
+The three conditions, and what each elicits from the base model before any
+of our training, sit in one small table:
+
+| Prompt condition | Abstention clause | Base model: recall / over-refusal |
+|---|---|---|
+| Response-confidence | "If the answer is not known to you, say \"I don't know the answer\" rather than guessing." | 90.89 / 65.38 |
+| Plain-answer | "Answer the question if you know it; if you do not, say so plainly." | 0.00 / 0.04 |
+| Structure-only | none (JSON output schema only) | 0.00 / 0.09 |
+
+*Full prompt texts verbatim in Appendix C. Base rates are refusal recall on
+unknown-labeled rows and over-refusal on known-labeled rows, percent, from
+the exploratory panel; the two zeros are scored zeros, covered by the audit
+note under the checkpoint table below. The gap between the first two rows is
+the instrument's sharpest fact: an explicit refusal instruction and a soft
+one differ by the entire effect.*
+
+An
 integrity precondition, fixed before either run, required full row coverage
 and a matching configuration hash on every scored row of every arm. All
 seventeen arms passed it. The cold GRPO response-confidence cell is the one
