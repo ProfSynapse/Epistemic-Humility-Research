@@ -641,16 +641,12 @@ training verb in this paper states its prompt condition.
 Against that, the SFT rows separate. All three cold-SFT seeds keep most of
 their abstention when the instruction is taken away: 69.57, 76.94, and 79.36%
 refusal recall under the structure-only prompt, against 0.00% for all three
-DPO seeds and all three KTO seeds. The claim gate was registered before those
-runs: internalization counts only if all three SFT seeds read at or above 30%
-while the base reads under 10%, thresholds carried over unchanged from the
-panel that measured seed 1. All three cleared 30% by more than double, the
-base reads 0.00% scored and 4 to 6% audited, and no negative arm reached the
-10% report floor. The registered falsifier, any SFT seed below 30%, would
-have scoped this to a single seed or dropped it. Seeds 2 and 3 come from a
-replication registered before it ran, which is what makes the three-seed
-version of the claim confirmatory for internalization rather than a
-description of one lucky run.
+DPO seeds and all three KTO seeds. Seeds 2 and 3 come from a replication
+registered before it ran, with the pass thresholds fixed in advance, and
+every seed cleared its threshold by more than double: the three-seed claim
+is confirmatory for internalization, not a description of one lucky run.
+Section 7 states the registered thresholds and what would have overturned
+them.
 
 Two independent SFT recipes land in the same place: the cold-start seed-1
 adapter reads 69.57% and the separately built merged clean-SFT checkpoint
