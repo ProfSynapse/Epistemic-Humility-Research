@@ -68,6 +68,8 @@ relationships:
   confidence: medium
 ---
 
+*Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
+
 The bounded site sweep complicates, rather than settles, the picture behind
 [[caution-residual-ablation-relaxes-overrefusal-asymmetrically]]: on the
 trained clean-SFT-to-GRPO-v2 Qwen3-4B lineage, bare actuation (G1, held-out

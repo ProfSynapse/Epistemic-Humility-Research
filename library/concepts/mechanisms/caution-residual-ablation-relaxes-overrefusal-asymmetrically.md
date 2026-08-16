@@ -21,11 +21,22 @@ related:
 - '[[residual-stream]]'
 - '[[caution-install-bounded-site-sweep]]'
 - '[[caution-install-actuates-but-specificity-unresolved-on-trained-qwen3-4b]]'
+- '[[raw-theta-refusal-axis-ablation-rederives-archived-overrefusal-collapse]]'
 relationships:
 - type: supported_by
   target: '[[internal-paper3--knows-but-doesnt-say]]'
   target_id: paper:internal-paper3
   confidence: high
+- type: supported_by
+  target: '[[raw-theta-refusal-axis-ablation-rederives-archived-overrefusal-collapse]]'
+  target_id: mechanism:raw-theta-refusal-axis-ablation-rederives-archived-overrefusal-collapse
+  confidence: high
+  evidence:
+  - experiments/caution-ablation-rederivation/AMENDMENT.md#outcome (the
+    0.994-to-0.030 figure was found un-re-derivable by
+    write-direction-naming-battery; this cell re-derives it near-exactly,
+    0.994 -> 0.0298, under the archived instrument, giving it a governed
+    source for the first time)
 - type: related_to
   target: '[[caution-install-bounded-site-sweep]]'
   target_id: experiment:caution-install-bounded-site-sweep
@@ -60,6 +71,8 @@ relationships:
   target_id: term:residual-stream
   confidence: medium
 ---
+
+*Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
 
 Paper 3 Result 3 uses activation steering as a causal probe of the doubt/caution
 decomposition. Ablating the caution residual cuts over-refusal on known questions

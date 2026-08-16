@@ -42,4 +42,6 @@ verdict: 'Falsifier not fired: full refusal-axis ablation (legacy raw-theta caut
   component reproduces its own archived 0.524 confirming the 0.030/0.524 divergence
   is variant identity not error, and the re-derived figure remains exploratory pending
   a registered confirmatory step.'
-kg: []
+kg:
+- experiment:caution-ablation-rederivation
+- mechanism:raw-theta-refusal-axis-ablation-rederives-archived-overrefusal-collapse

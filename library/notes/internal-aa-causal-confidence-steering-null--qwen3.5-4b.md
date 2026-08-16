@@ -125,7 +125,7 @@ registered: the channel stays shut.
 AA is the opening cell of the Paper 5 line (reading vs. writing the trust
 axis) and the first of the family of resolved write-side nulls that must be
 read against the standing counterexample, Amendment AC
-([[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]), a
+([[ku-readout-coupling-actuates-selective-refusal-release]]), a
 closed-loop erase-and-write on a different axis (doubt-regulated caution) on a
 different checkpoint that DID actuate behavior. AA's own null motivated the
 direct follow-up, Amendment AB

@@ -17,7 +17,7 @@ polarity: prevents
 related:
 - '[[internal-ai-probe-as-reward-null--true-vs-permuted]]'
 - '[[propensity-direction-reads-but-does-not-actuate-fabrication]]'
-- '[[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]'
+- '[[ku-readout-coupling-actuates-selective-refusal-release]]'
 - '[[high-probe-accuracy-does-not-imply-causal-use]]'
 - '[[trust-axis-injection-does-not-move-answer-abstain-revise-behavior]]'
 - '[[group-relative-policy-optimization]]'
@@ -35,8 +35,8 @@ relationships:
   target_id: mechanism:propensity-direction-reads-but-does-not-actuate-fabrication
   confidence: high
 - type: related_to
-  target: '[[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]'
-  target_id: mechanism:doubt-regulated-caution-coupling-actuates-selective-refusal-release
+  target: '[[ku-readout-coupling-actuates-selective-refusal-release]]'
+  target_id: mechanism:ku-readout-coupling-actuates-selective-refusal-release
   confidence: high
 - type: related_to
   target: '[[high-probe-accuracy-does-not-imply-causal-use]]'
@@ -59,7 +59,7 @@ checkpoint and pool. This is the training-side sibling of
 injection-side null on a different axis) and, together with the trust-axis
 and text-injection nulls, must be read against Amendment AC's activation-
 coupling win
-([[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]) as
+([[ku-readout-coupling-actuates-selective-refusal-release]]) as
 evidence that this program's negative results are specific to the channel and
 axis tested, not a general claim that internal readouts are behaviorally
 inert.

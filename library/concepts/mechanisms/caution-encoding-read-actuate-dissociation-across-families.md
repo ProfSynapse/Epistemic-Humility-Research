@@ -62,6 +62,8 @@ relationships:
   confidence: high
 ---
 
+*Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
+
 `doubt-snap-cross-family-confirmatory`'s registered cross-family panel stopped
 every launched cell at the pre-outcome FIT dose-viability gate, before any
 held-out scoring. On its own that result is ambiguous between two stories:

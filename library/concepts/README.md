@@ -794,7 +794,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (538)
+## Mechanisms (cause -> effect) (540)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -902,7 +902,6 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[dormant-features-compensate-for-ablated-features]] : Ablation of the primary active causal sparse-autoencoder|SAE refusal feature set, removing their contribution to the refusal-direction **prevents** Previously z
 - [[dosed-detector-refusal-channel-drives-genuine-placebo-recruitment]] : Within the 15-seed matched-magnitude random-direction census, each accepted seed's automatic detector-v2 refusal screen fires on a variable count of the fixed S
 - [[doubt-gate-adds-sub-floor-selectivity-write-drives-abstention-lift]] : In a 2x2 factorial crossing {true doubt gate, fire-count-matched permuted gate} x {true c_hat caution direction, K=5 fresh random directions} plus baseline, sco
-- [[doubt-regulated-caution-coupling-actuates-selective-refusal-release]] : On clean-SFT -> GRPO-v2 seed1, erasing the caution_perp projection from the L35 residual stream at every position and writing a doubt-proportional setpoint in i
 - [[downstream-compensation-decorrelates-ablation-and-unembedding-importance-measures]] : Downstream hydra-effect compensatory response to an attention-layer ablation in chinchilla-7b **decreases** Weakens the correlation between ablation-based layer
 - [[dpo-acts-as-final-layer-steering-not-belief-change]] : Direct Preference Optimization (DPO) fine-tuning of a 7B LLaMA-family base model on preference pairs (OASST1, Anthropic HH); the mean final-layer hidden-state d
 - [[dpo-beta-should-follow-pair-quality]] : Preference-pair datasets mix closely matched informative pairs, easy high-gap pairs, and outliers under one static DPO beta. **causes** The same beta can under-
@@ -1022,6 +1021,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[knowledge-neurons-concentrated-upper-layers]] : Factual relational knowledge representation in pretrained Transformers **enables** Knowledge neurons identified by the attribution method are predominantly dist
 - [[knowledge-surgery-enables-targeted-fact-update]] : Directly modifying FFN value-slot weight vectors for approximately 4 identified knowledge neurons per fact **enables** Fact update success rate of 34.4% with mi
 - [[known-unknown-axis-does-not-carry-answer-correctness-at-deployment]] : In the wrong-answer-cell-power-fix experiment, the known-unknown axis (frozen L35 construction, refit fold-wise within each of 5 stratified folds to remove anch
+- [[ku-readout-coupling-actuates-selective-refusal-release]] : On clean-SFT -> GRPO-v2 seed1, erasing the caution_perp projection from the L35 residual stream at every position and writing a doubt-proportional setpoint in i
 - [[kuq-fit-direction-reverses-on-world-known-confident-wrongness]] : In margin-evidence-responsiveness-worldknown (M4-WK), the KUQ-fit c_hat direction (fit on answered-vs-refused known-unknown rows, the direction the framework's 
 - [[kv-memorization-gates-truth-encoding]] : Phase 1 of training: rapid key-value-associative-memory|key-value memorisation of subject-attribute associations within approximately 1000 batches, reaching abo
 - [[kv-sharing-off-ablation-breaks-baseline-substrate]] : Gemma-4-E4B-it's cross-layer KV-sharing (blocks 24-41 reading frozen K/V from donor blocks 22 and 23 through the cache object) is disabled with a registered, pr
@@ -1140,6 +1140,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[preference-data-intransitivity-hurts-dpo]] : Noisy, intransitive preference annotations from multiple human annotators in public datasets (SHP, OpenAssistant, ultrafeedback) **decreases** 'kahneman-tversky
 - [[preference-data-rewards-social-sycophancy]] : Preference datasets used in post-training (PRISM, UltraFeedback, LMSys-Chat-1M) contain personal-advice queries where human annotators systematically prefer res
 - [[preference-opt-reduces-abstention-overtax]] : Preference optimization (direct-preference-optimization, proximal-policy-optimization, BoN) applied on top of SFT-warmed abstention model **decreases** Reduced 
+- [[preference-stage-after-sft-partially-erodes-internalized-abstention]] : Applying a DPO or KTO preference-tuning stage to a checkpoint that already internalized cold-start SFT abstention (SFT -> DPO, SFT -> KTO, three seeds each), ev
 - [[pretrained-base-carries-broad-overt-unanswerability-code]] : Fitting a linear known/unknown probe (5-fold, out-of-fold, StandardScaler + L2 LogisticRegression C=0.5) per KUQ unanswerability flavor (ambiguous, controversia
 - [[pretrained-latent-representations-enable-calibration-generalization]] : 'gpt-3 pre-training encoding features that correlate with epistemic uncertainty over its own answers' **enables** A linear probe on GPT-3 embeddings can predict
 - [[pretraining-exposure-forms-persona-directions]] : Exposure to pretraining text under the next-token-prediction objective in early training checkpoints **enables** Linear persona-vectors|persona directions emerg
@@ -1172,6 +1173,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[random-direction-placebo-response-is-family-specific-in-sign]] : A magnitude-matched random_direction write (the registered placebo, same anchor and dose family as the real doubt-gated caution write) is applied to the confab 
 - [[random-direction-steering-breaks-alignment-safeguards]] : Adding a random, semantically empty direction vector to the residual stream via activation-steering, with no targeting of any refusal-related structure **enable
 - [[rank1-projection-sufficient-for-linear-concept-erasure]] : Applying a rank-1 orthogonal projection (removing a single direction found by rlace) to GloVe or BERT representations **enables** Any linear classifier's gender
+- [[raw-theta-refusal-axis-ablation-rederives-archived-overrefusal-collapse]] : Ablating the full refusal axis (raw-theta direction, legacy artifact name caution_direction_L35) versus its known-unknown-orthogonalized component (legacy artif
 - [[rc-prompt-elicits-near-ceiling-abstention-from-untrained-base]] : Evaluating the raw, untrained Qwen3-4B base (no adapter, no post-training of any kind) on the full SelfAware set under three prompt levels: the response-confide
 - [[rdo-reduces-capability-side-effects]] : Optimising a refusal-direction-optimization direction with an explicit retain loss (KL penalty on safe-prompt behaviour) rather than using directional-ablation 
 - [[reasoning-effort-reduces-value-leakage]] : Increasing reasoning effort or reasoning-trace length (e.g. Claude Opus max vs. high reasoning level) on the Donation Bet and Choosing Activities tasks. **decre

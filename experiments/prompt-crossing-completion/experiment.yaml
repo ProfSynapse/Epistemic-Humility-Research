@@ -45,4 +45,6 @@ verdict: 'Falsifier not fired: all six sequential preference arms retain interna
   abstention above the 30 percent floor under P-struct, but five of six show partial
   erosion (DPO spending far more internalization than KTO), and the gap-1 evals make
   Section 4.5 single-contract with both gap-1b arms inside the predicted band.'
-kg: []
+kg:
+- experiment:prompt-crossing-completion
+- mechanism:preference-stage-after-sft-partially-erodes-internalized-abstention

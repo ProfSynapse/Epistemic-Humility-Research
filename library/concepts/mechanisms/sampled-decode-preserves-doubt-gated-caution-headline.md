@@ -34,6 +34,8 @@ relationships:
   confidence: high
 ---
 
+*Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
+
 The resolved Qwen3-4B doubt-gated caution snap's headline
 (gated confab clean_tighten 73.5%, known-correct false-refusal 3.1%,
 [[doubt-gated-caution-tighten]]) was established under a single greedy

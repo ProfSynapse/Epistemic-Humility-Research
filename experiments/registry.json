@@ -581,7 +581,10 @@
           "gates.yaml": "cf1fc9f4f80f4ea3284e09d5b49b08a1f07bd50ca673fd021c7ae1ad4470d612"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:caution-ablation-rederivation",
+        "mechanism:raw-theta-refusal-axis-ablation-rederives-archived-overrefusal-collapse"
+      ],
       "prediction": "At least one archived variant (modal: caution_perp) reproduces post-ablation known-item over-refusal at or below 0.10, with baseline ~0.994 within 0.02.",
       "question": "Does re-running the archived phase-1 caution/caution_perp ablation pipeline on clean_sft_grpo_v2_seed1 reproduce the un-re-derivable 0.994-to-0.030 over-refusal collapse, giving that figure a governed source or formally retiring it?",
       "registered": true,
@@ -5865,7 +5868,10 @@
           "gates.yaml": "0d17029e09ed36d5ad5f99e6e29ed93814e2470be4833b54cce5372e71ddb161"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:prompt-crossing-completion",
+        "mechanism:preference-stage-after-sft-partially-erodes-internalized-abstention"
+      ],
       "prediction": "All six seq preference arms stay at or above the 30 percent internalization floor under P-struct (expected 40-80; DPO at/below parent, KTO near parent); cold SFT under response-confidence reads 85-95; warmed arms under plain-answer within about 10 points of their response-confidence readings.",
       "question": "Does a preference stage applied to an internalized SFT checkpoint preserve, erode, or deepen instruction-free abstention (warmed seq DPO/KTO under P-struct, three seeds each), and what do the missing contract-symmetric readings (cold SFT under response-confidence, warmed arms under plain-answer) show?",
       "registered": true,

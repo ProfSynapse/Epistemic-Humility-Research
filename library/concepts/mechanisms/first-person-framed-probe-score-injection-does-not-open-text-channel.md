@@ -18,7 +18,7 @@ related:
 - '[[internal-ab-first-person-injection--ambiguous-negative]]'
 - '[[trust-axis-injection-does-not-move-answer-abstain-revise-behavior]]'
 - '[[high-probe-accuracy-does-not-imply-causal-use]]'
-- '[[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]'
+- '[[ku-readout-coupling-actuates-selective-refusal-release]]'
 - '[[chain-of-thought-prompting]]'
 relationships:
 - type: supported_by
@@ -34,8 +34,8 @@ relationships:
   target_id: mechanism:high-probe-accuracy-does-not-imply-causal-use
   confidence: medium
 - type: related_to
-  target: '[[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]'
-  target_id: mechanism:doubt-regulated-caution-coupling-actuates-selective-refusal-release
+  target: '[[ku-readout-coupling-actuates-selective-refusal-release]]'
+  target_id: mechanism:ku-readout-coupling-actuates-selective-refusal-release
   confidence: high
 - type: related_to
   target: '[[chain-of-thought-prompting]]'
@@ -59,5 +59,5 @@ trust axis on Qwen3.5-4B; it is one more instance of the general pattern that
 an accurate, causally-connectable self-report does not by itself get used
 ([[high-probe-accuracy-does-not-imply-causal-use]]), and it stands in contrast
 to Amendment AC's successful activation-level erase-and-write
-([[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]) on a
+([[ku-readout-coupling-actuates-selective-refusal-release]]) on a
 different axis and write-form.

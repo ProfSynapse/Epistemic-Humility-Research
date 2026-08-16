@@ -44,6 +44,8 @@ relationships:
   - experiments/ungated-vs-gated-dose-matched/AMENDMENT.md#outcome (binding scope statement 2)
 ---
 
+*Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
+
 The headline hs20 dose-8 decoupling result
 ([[qwen35-4b-midband-write-decouples-refusal-from-format-collapse]]) could in
 principle come from two different places: the doubt gate could be doing the
