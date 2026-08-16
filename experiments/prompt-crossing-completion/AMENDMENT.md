@@ -1,6 +1,7 @@
 # Completing the prompt-condition crossing
 
-Status: DRAFT (2026-08-15). Machine state in `experiment.yaml`.
+Status: SIGNED (2026-08-15); run complete, Outcome recorded, awaiting resolve.
+Machine state in `experiment.yaml`.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -98,5 +99,74 @@ eval-only, GPU currently idle. Run authorized by the PI 2026-08-15
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Run completed 2026-08-15 (~10.5 h wall on the local RTX 3090; the budget
+estimate of 4.5-5 GPU-hours was exceeded because the seq DPO/KTO P-struct
+arms ran at roughly double the per-arm rate of the SFT arms, a vLLM
+per-request pattern the runner attributed to stated-confidence JSON retries
+serializing on non-contract-following outputs; logged in NOTEBOOK, no
+integrity impact). All 11 arms completed.
+
+**PC-G0 PASS on all 11 arms**: full coverage n=3,369 per arm; row-stamped
+`config_sha` matches the pinned config bytes; scorer parse path recorded.
+Lead-verified by independent recompute from raw `scored_rows.jsonl` on three
+pivotal arms (seq_sft_dpo_seed3, seq_sft_kto_seed1, cold_sft_seed3_rc):
+exact agreement with the runner's metrics and pinned shas.
+
+Per-arm refusal recall / over-refusal / truthful (%, unknown-labeled
+n=1,032; full metrics in `analysis-committed/`):
+
+| Arm | Recall | Over-refusal | Truthful | PC-G1 call |
+|---|---:|---:|---:|---|
+| seq_sft_dpo_seed1_pstruct | 35.17 | 9.11 | 26.60 | partial erosion |
+| seq_sft_kto_seed1_pstruct | 61.43 | 31.07 | 33.84 | preserved |
+| seq_sft_dpo_seed2_pstruct | 54.17 | 13.26 | 32.29 | partial erosion |
+| seq_sft_kto_seed2_pstruct | 65.12 | 34.66 | 34.67 | partial erosion |
+| seq_sft_dpo_seed3_pstruct | 31.78 | 9.93 | 25.50 | partial erosion |
+| seq_sft_kto_seed3_pstruct | 65.41 | 31.92 | 35.11 | partial erosion |
+| cold_sft_seed1_rc | 85.66 | 53.23 | 40.13 | (gap 1a) |
+| cold_sft_seed2_rc | 90.21 | 60.33 | 40.78 | (gap 1a) |
+| cold_sft_seed3_rc | 90.60 | 60.16 | 40.93 | (gap 1a) |
+| clean_sft_merged_pplain | 87.60 | 71.59 | 36.72 | (gap 1b) |
+| sft_grpo_v2_seed1_pplain | 96.22 | 84.42 | 36.00 | (gap 1b) |
+
+**PC-G1 (gap 3), applied verbatim as registered** (parents 69.57 / 76.94 /
+79.36; floor 30%; band 10pp): **falsifier NOT fired** — all six seq arms are
+at or above the 30% floor. One arm preserved (kto_seed1, 61.43, within 10pp
+of parent 69.57). Five arms partial erosion: dpo_seed1 35.17, dpo_seed2
+54.17, kto_seed2 65.12 (1.82pp below its preserve band), dpo_seed3 31.78
+(1.78pp above the floor, the closest call in the cell), kto_seed3 65.41
+(3.95pp below its preserve band). No arm deepened.
+
+Reading: a preference stage applied after SFT does not erase internalized
+abstention below the registered floor, but it spends it. The spend is
+objective-dependent and large for DPO (parent-minus-arm 34.4 / 22.8 / 47.6pp
+across seeds) and modest for KTO (8.1 / 11.8 / 14.0pp). This extends paper
+2's Section 4.3 repositioning story: DPO and KTO reposition toward answering
+not only at the instructed surface but partly in the weights.
+
+**Gap 1a**: cold SFT response-confidence readings 85.66 / 90.21 / 90.60, all
+inside the predicted 85-95 band. The secondary expectation "at or above
+their plain-answer instructed values (83.91 / 87.40 / 92.34)" held at seeds
+1-2 and broke at seed 3 (90.60 < 92.34, -1.74pp); reported as-is, no
+registered claim rides on it.
+
+**Gap 1b**: warmed arms under plain-answer vs their governed
+response-confidence readings (grpo-three-seed-confirmatory amendment,
+seed-1 table): clean-SFT merged 87.60 vs 87.02 (+0.58pp), SFT->GRPO v2
+seed 1 96.22 vs 93.41 (+2.81pp). Both inside the ~10pp band; prediction
+held. Section 4.5's instructed-vs-instruction-free pairs can now be stated
+single-contract in both directions.
+
+**Predictions scoreboard reconciliation** (reported straight): the
+orchestrator's floor call (all six >= 30%) and direction call (DPO at or
+below parent) held; the expected 40-80 band was missed low by dpo_seed1
+(35.17) and dpo_seed3 (31.78), and "KTO near parent" held only at seed 1.
+The cold-SFT 85-95 band held at all seeds; the at-or-above-plain ordering
+broke at seed 3. Gap 1b held at both arms. The user recorded no directional
+call.
+
+**Verdict (one sentence, mirrors `verdict:` in the manifest):** Falsifier
+not fired: all six sequential preference arms retain internalized abstention
+above the 30% floor under P-struct, but five of six show partial erosion
+(DPO spending far more internalization than KTO), and the gap-1 evals make
+Section 4.5 single-contract with both gap-1b arms inside the predicted band.
