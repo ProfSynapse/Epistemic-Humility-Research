@@ -63,4 +63,7 @@ verdict: 'Falsifier fired on both clauses: full refusal-axis ablation at the rul
   — the J-lens read-side band does not license a write site on this trained checkpoint,
   and the trained profile itself is flattened and deepened relative to raw-base (peak
   hs26 suppressed ~35 percent, peak now hs29).'
-kg: []
+kg:
+- experiment:jlens-trained-checkpoint-midband-ablation
+- mechanism:refusal-axis-readable-but-not-ablatable-at-midband
+- mechanism:training-flattens-and-deepens-jlens-workspace-band

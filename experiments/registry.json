@@ -4890,7 +4890,11 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:jlens-trained-checkpoint-midband-ablation",
+        "mechanism:refusal-axis-readable-but-not-ablatable-at-midband",
+        "mechanism:training-flattens-and-deepens-jlens-workspace-band"
+      ],
       "prediction": "The trained checkpoint keeps a J-lens interior band overlapping hs23-29 (interior max >= 1.5x early median), and full refusal-axis ablation at the rule-selected mid-band site collapses known-item over-refusal to <= 0.10 with specificity intact (induced refusal <= 0.05, known-correct drop <= 0.05).",
       "question": "Does training preserve the J-lens interior workspace band on clean_sft_grpo_v2_seed1, and does full refusal-axis ablation at a rule-selected mid-band site reproduce the governed late-site (L35) over-refusal collapse on the same trained checkpoint?",
       "registered": true,

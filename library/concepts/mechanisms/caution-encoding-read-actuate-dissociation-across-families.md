@@ -21,6 +21,7 @@ related:
 - '[[workspace-band-peak-location-is-family-relative]]'
 - '[[refused-vs-known-contrast-carries-norm-position-confound]]'
 - '[[auroc]]'
+- '[[refusal-axis-readable-but-not-ablatable-at-midband]]'
 relationships:
 - type: supported_by
   target: '[[doubt-snap-cross-family-confirmatory]]'
@@ -60,6 +61,12 @@ relationships:
   target: '[[auroc]]'
   target_id: metric:auroc
   confidence: high
+- type: related_to
+  target: '[[refusal-axis-readable-but-not-ablatable-at-midband]]'
+  target_id: mechanism:refusal-axis-readable-but-not-ablatable-at-midband
+  confidence: medium
+  evidence:
+  - experiments/jlens-trained-checkpoint-midband-ablation/AMENDMENT.md#outcome
 ---
 
 *Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
