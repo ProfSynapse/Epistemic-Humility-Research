@@ -1,6 +1,6 @@
 # Refusal-axis ablation fresh-seed confirmatory
 
-Status: SIGNED (2026-08-16, PI approval in-conversation). Machine state in `experiment.yaml`. Run in progress.
+Status: FALSIFIED (resolved 2026-08-16, PI approval in-conversation). Machine state in `experiment.yaml`.
 
 Keep this document the prose home for the experiment. The machine state lives
 in `experiment.yaml` and is never duplicated here.
@@ -111,4 +111,44 @@ RTX 3090, GPU currently idle. Requested by the PI 2026-08-16.
 
 ## Outcome
 
-Filled at resolve.
+Resolved 2026-08-16, PI approval in-conversation. All numbers recomputed by
+the lead from raw rows (analysis/intervention/.../rows.jsonl, 2148 rows =
+537 x 4 arms; exact agreement with the runner summary).
+
+RC-G0 (integrity): PASS. Per-seed lineage verified on disk pre-launch (seed-2
+merged base 20260731_232307, seed-2 GRPO-v2 adapter 20260804_131151);
+extraction 1233 rows exactly matching the frozen SelfAware manifest, manifest
+status ok with adapter tag clean_sft_grpo_v2_seed2; behavior cells
+known_refused n=161 / known_correct_answered n=376 (join exit 0, counts
+carried exactly into the direction fit); binding fit metadata exact (schema
+mechinterp-residual-caution-direction/v1, layer 35 / block 34, source h_lora,
+pos/neg cells as registered, construction AUROC 0.869); full coverage (537
+rows in every arm); baseline known-item over-refusal 1.0000 >= 0.97.
+
+RC-G1 (call): FALSIFIER FIRED. Post-ablation known-item over-refusal 0.5528
+>= 0.30. Per the gates fixed at signing: the seed-1 full refusal-axis
+collapse (0.994 -> 0.0298) is seed-1-specific; NO promotion of the collapse
+to paper 3 section 6 or paper 5 section 6.6. The registered prediction
+(0.03-0.08) and the orchestrator scoreboard call were wrong.
+
+Arm table (known_refused refusal/correct; known_correct_answered
+refusal/correct): baseline 1.0000/0.0000; 0.0027/0.9973. ablate
+0.5528/0.2919; 0.0133/0.9255. shift_minus2 0.5590/0.3106; 0.0000/0.9628.
+shift_plus2 1.0000/0.0000; 0.3617/0.6303.
+
+Descriptive observations (recorded, not claims): the refusal axis remains
+causally load-bearing at seed 2 (ablation releases 45.7pp of known-item
+refusals and lifts formerly refused knowns from 0 to 29.2 percent correct,
+with induced refusal on known-correct items 1.3 percent and a known-correct
+drop of 7.2pp). The seed-2 full-axis ablate value (0.5528) sits near seed-1's
+KU-orthogonalized component result (0.5238), and shift_minus2 (0.5590) is
+nearly identical to the ablate arm; whether the axis decomposes differently
+across seeds is a candidate follow-up question for a future registered cell,
+not a claim of this one.
+
+Verdict: Falsifier fired: with a valid instrument (RC-G0 pass, baseline
+1.000), full refusal-axis ablation on clean_sft_grpo_v2_seed2's own lineage
+leaves known-item over-refusal at 0.553, far above both the 0.10 confirmation
+bound and the 0.30 falsifier line, so the seed-1 0.994-to-0.030 collapse is
+seed-1-specific and no promotion to the papers occurs, while the axis itself
+remains causally load-bearing at seed 2.

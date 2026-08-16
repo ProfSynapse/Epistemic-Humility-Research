@@ -42,3 +42,45 @@ prompt block, arms, rows_filter, and sweep byte-identical; only
 model/adapter/direction/rows/output paths and the adapter tag differ.
 Extraction and behavior-rows outputs verified contained in this cell's
 gitignored analysis/. cell.yaml and gates.yaml written; signing next.
+
+## 2026-08-16 — lead recompute and RC-G1 adjudication (stage 4 complete)
+
+Recomputed from raw rows (analysis/intervention/.../rows.jsonl, 2148 rows =
+537 x 4 arms; exact agreement with summary.json):
+
+| arm | known_refused refusal / correct | known_correct_answered refusal / correct |
+|---|---|---|
+| baseline | 1.0000 / 0.0000 | 0.0027 / 0.9973 |
+| ablate | 0.5528 / 0.2919 | 0.0133 / 0.9255 |
+| shift_minus2 | 0.5590 / 0.3106 | 0.0000 / 0.9628 |
+| shift_plus2 | 1.0000 / 0.0000 | 0.3617 / 0.6303 |
+
+RC-G0: PASS. Per-seed lineage verified pre-launch; direction fit metadata
+verified (schema v1, L35/block 34, h_lora, known_refused n=161 /
+known_correct_answered n=376, counts exact-match stage 1); full coverage
+(537 rows in every arm); baseline known-item over-refusal 1.0000 >= 0.97.
+
+RC-G1: FALSIFIER FIRED. Post-ablation known-item over-refusal 0.5528 >=
+0.30. Per the gates fixed at signing: the seed-1 full-axis collapse
+(0.994 -> 0.0298) is seed-1-specific; NO promotion to paper 3 section 6 or
+paper 5 section 6.6. The registered prediction (0.03-0.08) and the
+orchestrator scoreboard call were both wrong; reported straight.
+
+Secondary observations (descriptive, no goalpost movement): the axis is
+still causally load-bearing at seed 2 (45.7pp release, 0 -> 29.2% correct
+on formerly refused knowns; induced refusal on knowns 1.3%; known-correct
+drop 7.2pp). Numerically the seed-2 full-axis ablate (0.5528) sits near
+seed-1's KU-orthogonalized component result (0.5238), and shift_minus2
+(0.5590) is nearly identical to ablate — a pattern the Outcome section
+should note as a candidate follow-up question, not a claim.
+
+Awaiting runner's final report for corroboration; Outcome + resolve
+pending PI approval.
+
+## 2026-08-16 — RESOLVED (falsified), PI approval in-conversation
+
+PI approved resolve ("we can resolve the cell as well"). Outcome written to
+AMENDMENT.md; verdict recorded in experiment.yaml via bin/exp resolve with
+terminal status falsified. Promotion does not occur; the 0.030 figure stays
+exploratory seed-1-only and every citing surface must note the registered
+failed confirmatory.
