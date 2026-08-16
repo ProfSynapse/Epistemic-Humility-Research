@@ -45,4 +45,6 @@ verdict: 'Falsifier fired: with a valid instrument (RC-G0 pass, baseline 1.000),
   line, so the seed-1 0.994-to-0.030 collapse is seed-1-specific and no promotion
   to the papers occurs, while the axis itself remains causally load-bearing at seed
   2.'
-kg: []
+kg:
+- experiment:refusal-axis-ablation-confirmatory
+- mechanism:full-refusal-axis-ablation-collapse-is-seed1-specific

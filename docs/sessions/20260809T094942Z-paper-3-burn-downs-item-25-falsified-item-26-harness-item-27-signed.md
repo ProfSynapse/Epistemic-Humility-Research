@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-16T11:45:49Z'
+updated_at: '2026-08-16T16:40:47Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -770,6 +770,57 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 032-checkpoint
+  at: '2026-08-16T12:54:21Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'refusal-axis-ablation-confirmatory RESOLVED FALSIFIED with PI approval:
+    RC-G0 pass, seed-2 full-axis ablate 0.553 vs 0.10 bound and 0.30 falsifier line,
+    collapse is seed-1-specific, no promotion to papers 3/5, axis still load-bearing
+    at seed 2 with 45.7pp release; seed-2 value near seed-1 KU-orthogonalized 0.524
+    flagged as follow-up question not claim. Aggregate summary committed to analysis-committed;
+    KG ingest delegated to librarian. jlens-trained-checkpoint-midband-ablation launched:
+    three runner STOPs adjudicated on record (HF token env, cached-credential read
+    denied by classifier resolved via library-internal auth, uid-1001 locks dir resolved
+    via cell-local HF_HUB_CACHE), then smoke crashed on PEFT merge leaving params
+    frozen; PI approved one-line requires_grad fix, driver repinned sha 23f46714,
+    committed, smoke re-running. First Nexus ritual fired in synaptic-labs vault:
+    folder The Biz/Epistemic Humility Research, workspace EHR Research with mandatory
+    tier-label convention, project Epistemic Humility Research Program id e2aa6060
+    with four milestone tasks, first journal state saved. Content candidate task parked
+    awaiting PI decision. Next: J-lens smoke verdict then profile, site rule, intervention;
+    paper-3 caveat sentence and paper-5 front-matter repairs parked.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 033-checkpoint
+  at: '2026-08-16T16:40:47Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'jlens-trained-checkpoint-midband-ablation RESOLVED FALSIFIED with PI approval:
+    JT-G0 pass including baseline 0.9940 exact; profile complete 1.97 GPU-h, band
+    present but flattened and deepened (hs26 peak suppressed 35 percent, peak now
+    hs29), first trained-checkpoint J-lens measurement; site rule fired hs17 independently
+    derived by runner and lead; hs17 ablation released zero refusals and induced refusal
+    on 48 percent of answered knowns while paired L35 released 163 of 168 same rows
+    - strongest same-checkpoint read-actuate depth dissociation in program; shift
+    minus2 releases more than ablate at hs17 recorded as wrinkle. Outcome written,
+    resolved falsified, aggregates committed, KG ingest delegated to second librarian
+    with root-scope warning. Runner diagnosed wake-misfire root cause: run_in_background
+    poll loops silently killed; switched to synchronous checks. Vault ritual fired
+    twice today: board task added for J-lens null, evening journal state saved covering
+    both falsified cells; two content candidates parked awaiting PI decision. Both
+    governed paper claims untouched; paper 3 late-site choice validated by the dissociation
+    result.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -942,3 +993,13 @@ _No summary yet._
 - at: `2026-08-16T11:45:49Z`
 - kind: `checkpoint`
 - summary: Signed and launched refusal-axis-ablation-confirmatory on branch exp/refusal-axis-ablation-confirmatory: cell.yaml gates.yaml written, 6 files pinned, prep-agent flags adjudicated in NOTEBOOK, runner delegated with lead disk watcher armed. Stages 1-3 complete and lead-verified: extraction 1233 rows matching frozen manifest, behavior cells known_refused 161 known_correct_answered 376, direction fit L35 h_lora schema v1 AUROC 0.869. Stage 4 four-arm intervention running in docker. Layer-methods survey adjudicated for PI: papers 3 and 4 not out of date vs paper 5 J-lens; read claims unaffected, site sweep already current, one cheap caveat sentence candidate for paper 3 pre-J-lens ablation site. PI approved queueing new exploratory cell: J-lens on trained checkpoint clean_sft_grpo_v2_seed1 plus rule-selected mid-band refusal-axis ablation with L35 comparator; design agent drafting proposal, lead to register with pre-stated site-selection rule and bring prediction falsifier budget to PI before launch. Nexus vault CLI confirmed reachable via powershell.exe from WSL.
+### 032-checkpoint - Checkpoint
+
+- at: `2026-08-16T12:54:21Z`
+- kind: `checkpoint`
+- summary: refusal-axis-ablation-confirmatory RESOLVED FALSIFIED with PI approval: RC-G0 pass, seed-2 full-axis ablate 0.553 vs 0.10 bound and 0.30 falsifier line, collapse is seed-1-specific, no promotion to papers 3/5, axis still load-bearing at seed 2 with 45.7pp release; seed-2 value near seed-1 KU-orthogonalized 0.524 flagged as follow-up question not claim. Aggregate summary committed to analysis-committed; KG ingest delegated to librarian. jlens-trained-checkpoint-midband-ablation launched: three runner STOPs adjudicated on record (HF token env, cached-credential read denied by classifier resolved via library-internal auth, uid-1001 locks dir resolved via cell-local HF_HUB_CACHE), then smoke crashed on PEFT merge leaving params frozen; PI approved one-line requires_grad fix, driver repinned sha 23f46714, committed, smoke re-running. First Nexus ritual fired in synaptic-labs vault: folder The Biz/Epistemic Humility Research, workspace EHR Research with mandatory tier-label convention, project Epistemic Humility Research Program id e2aa6060 with four milestone tasks, first journal state saved. Content candidate task parked awaiting PI decision. Next: J-lens smoke verdict then profile, site rule, intervention; paper-3 caveat sentence and paper-5 front-matter repairs parked.
+### 033-checkpoint - Checkpoint
+
+- at: `2026-08-16T16:40:47Z`
+- kind: `checkpoint`
+- summary: jlens-trained-checkpoint-midband-ablation RESOLVED FALSIFIED with PI approval: JT-G0 pass including baseline 0.9940 exact; profile complete 1.97 GPU-h, band present but flattened and deepened (hs26 peak suppressed 35 percent, peak now hs29), first trained-checkpoint J-lens measurement; site rule fired hs17 independently derived by runner and lead; hs17 ablation released zero refusals and induced refusal on 48 percent of answered knowns while paired L35 released 163 of 168 same rows - strongest same-checkpoint read-actuate depth dissociation in program; shift minus2 releases more than ablate at hs17 recorded as wrinkle. Outcome written, resolved falsified, aggregates committed, KG ingest delegated to second librarian with root-scope warning. Runner diagnosed wake-misfire root cause: run_in_background poll loops silently killed; switched to synchronous checks. Vault ritual fired twice today: board task added for J-lens null, evening journal state saved covering both falsified cells; two content candidates parked awaiting PI decision. Both governed paper claims untouched; paper 3 late-site choice validated by the dissociation result.

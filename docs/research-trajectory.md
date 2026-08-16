@@ -478,6 +478,44 @@ each other (PR #322).
 
 ---
 
+## Parked threads (captured 2026-08-16; papers-first, no new experiments for now)
+
+- **Seed decomposition of the refusal axis.** Two independently trained seeds of
+  the same recipe concentrate the refusal decision onto a single direction to
+  very different degrees: seed 1 full-axis ablation collapses known-item
+  over-refusal 0.994 to 0.0298 (exploratory), while the pre-registered seed-2
+  replication of that collapse left 0.5528 with the instrument passing every
+  integrity check, so the near-total collapse is seed-specific. The axis is
+  causally load-bearing at both seeds (seed 2 still releases 45.7 points of
+  refusals and recovers correct answers on 29.2 percent of formerly refused
+  knowns). Open question: how do individual training runs distribute the refusal
+  decision across directions, and is it meaningful that the seed-2 full-axis
+  residual (0.553) lands almost exactly on the seed-1 KU-orthogonalized
+  component residual (0.524)? Evidence:
+  `experiments/refusal-axis-ablation-confirmatory/AMENDMENT.md` (falsified,
+  resolved 2026-08-16). Disposition: folded into paper 3 Limitations as flagged
+  future work; a real answer needs a multi-seed decomposition study.
+- **Mid-band entanglement of the refusal axis on trained checkpoints.** At hs17
+  on clean_sft_grpo_v2_seed1 the refusal axis reads nearly as well as at the
+  governed late site (construction AUROC 0.8645 vs 0.8688), but full ablation
+  there releases zero of 168 known-item refusals (L35 releases 163 of 168 on
+  the same rows) and induces refusal on 48 percent of previously answered
+  knowns, while a minus-2-sigma displacement at the same site drops refusal to
+  0.714 and recovers correct answers on 21 percent of the same rows. Removal
+  and displacement are different operations at mid-depth: the direction is
+  entangled with signal that answering requires. Open questions: what shares
+  the axis at mid-depth, and does that entanglement explain why dosed writes
+  (paper 5) succeed mid-band while ablation does not? Also parked: the trained
+  J-lens profile is flattened and deepened relative to raw-base (hs26 peak
+  suppressed about 35 percent, peak moved to hs29), the first measurement of
+  training reshaping this geometry, worth a systematic training-stage sweep
+  someday. Evidence:
+  `experiments/jlens-trained-checkpoint-midband-ablation/AMENDMENT.md`
+  (falsified, resolved 2026-08-16). Disposition: folded into paper 5 sections
+  6.3 and 6.4 scoping; no new cell now.
+
+---
+
 ## Five-paper line (canonical as of 2026-07-01)
 
 | Paper | Scope | Draft |
