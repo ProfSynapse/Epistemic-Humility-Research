@@ -9,7 +9,7 @@ evidence_base: >
   Exploratory Paper-5 actuation arc. Governed source docs include
   experiments/causal-confidence-steering/AMENDMENT.md,
   AMENDMENT-AB-first-person-injection.md,
-  AMENDMENT-AC-doubt-regulated-caution.md,
+  experiments/doubt-regulated-caution/AMENDMENT.md (legacy label AMENDMENT-AC),
   AMENDMENT-AF-second-person-doubt-prime.md,
   AMENDMENT-AG-oracle-dissociation-prime.md,
   AMENDMENT-AH-divergent-pool-own-readout.md,

@@ -6357,6 +6357,30 @@
         "repo": "",
         "revision": ""
       },
+      "created_at": "2026-08-16T09:51:56Z",
+      "falsifier": "Post-ablation known-item over-refusal >= 0.30 on the fresh seed: collapse is seed-1-specific, no promotion; partial band (0.10,0.30) or specificity break also blocks promotion, reported straight.",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "persistence": {},
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "Ablate arm lands at or below 0.10 (modal 0.03-0.08) from a >=0.97 baseline with specificity intact on known_correct_answered.",
+      "question": "Does ablating a freshly fit refusal-axis direction on clean_sft_grpo_v2_seed2 (own per-seed lineage, same registered recipe as seed 1) reproduce the known-item over-refusal collapse at or below 0.10 with specificity intact, licensing promotion of the 0.030-class full-ablation figure into papers 3 and 5?",
+      "registered": true,
+      "slug": "refusal-axis-ablation-confirmatory",
+      "status": "draft",
+      "title": "Refusal-axis ablation fresh-seed confirmatory",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
       "inputs": [

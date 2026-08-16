@@ -143,10 +143,13 @@ saturated under sampled decode (instrument bug; fixed 2026-07-03 in
 + action rule) also leaves the channel shut. AA's conclusion extends to the strongest
 framing.
 
-**AC (POSITIVE, RQ4 Stage 1):** Doubt probe score coupled to the caution gate at
-inference time (not an emitted channel). Selectivity gap coupled−permuted +8.7pt, CI
-[+5.6, +12.0]. The doubt wire carries information about WHICH rows get released.
-Source: `AMENDMENT-AC-doubt-regulated-caution.md` §8.
+**AC (POSITIVE, RQ4 Stage 1):** KU (answerability) probe score coupled to the
+refusal-axis gate at inference time (not an emitted channel); legacy names
+`doubt probe` / `caution gate`, per `papers/common/terminology.md`. Selectivity
+gap coupled−permuted +8.7pt, CI [+5.6, +12.0]. The KU-readout wire carries
+information about WHICH rows get released.
+Source: `experiments/doubt-regulated-caution/AMENDMENT.md` (legacy label
+AMENDMENT-AC) §8.
 
 **AF (PASS, channel-authority):** Second-person system-prompt directive produces
 selective policy shifts. Selectivity gap +18.0pt over permuted, CI [+11.8, +24.7].
@@ -158,8 +161,9 @@ Source: `AMENDMENT-AF-second-person-doubt-prime.md` §8.
 **AG (PASS, asymmetric compliance, belief-vs-policy dissociation):** Inverted arm.
 G1a: induced refusal on known-correct +34.0pt, CI [+26.5, +41.5] (wrong muzzle
 obeyed). G1b: asymmetry +26.1pt, CI [+18.0, +34.6] (release resisted at +7.9pt).
-Instrumentation: doubt axis anti-semantic under primes; compliance travels through the
-caution axis (Δcaution AUROC 0.654). The model obeys external authority against its own
+Instrumentation: KU (answerability) readout anti-semantic under primes; compliance
+travels through the refusal-versus-confabulation contrast (legacy `caution` atlas
+axis; Δcaution AUROC 0.654). The model obeys external authority against its own
 knowledge: policy compliance without belief revision.
 Source: `AMENDMENT-AG-oracle-dissociation-prime.md` §9.
 
@@ -171,8 +175,9 @@ null; deprioritized while the focus is training-free).
 
 **Neutral-prepend control (AG §9.4, DONE 2026-07-03, PR #166):** the generic
 any-prepend component is real and large, but re-referenced to neutral the primes move
-the caution axis in the semantically correct directions (HIGH down, LOW up) while the
-doubt axis stays anti-semantic: the belief-vs-policy dissociation sharpened.
+the refusal-versus-confabulation contrast (legacy `caution` atlas axis) in the
+semantically correct directions (HIGH down, LOW up) while the KU (answerability)
+readout stays anti-semantic: the belief-vs-policy dissociation sharpened.
 
 **AH (H-COMPLIANCE, certified via Addendum A1):** the divergent-pool (probe ≠ gold)
 own-readout attribution design AF/AG called for. G2 release congruence is a precise
@@ -259,8 +264,8 @@ multilingual refusal/uncertainty tokens remain a separate follow-up screen, not 
 retroactive goalpost shift for this result.
 
 **Cross-family confirmatory fleet (NOT PROMOTED, resolved 2026-07-12):**
-doubt-snap-cross-family-confirmatory tested whether the doubt-gated caution snap
-(the AC/H4 mechanism) generalizes to at least 3 of 4 small-tier families
+doubt-snap-cross-family-confirmatory tested whether the answerability-gated
+abstention snap (the AC/H4 mechanism; legacy name `doubt-gated caution snap`) generalizes to at least 3 of 4 small-tier families
 (Qwen3.5-4B, Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3, Qwen3.5-9B) at the
 registered late write site. No cell reached held-out scoring: every launched
 cell stopped at the pre-outcome FIT dose-viability gate before the registered

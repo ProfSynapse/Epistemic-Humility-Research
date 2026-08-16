@@ -638,16 +638,17 @@ one differ by the entire effect.*
 
 Before any result was read, every arm was required to show full row
 coverage and a matching configuration hash on every scored row; all
-seventeen arms passed. The cold GRPO response-confidence entry comes from
+twenty-eight arms across the three contributing experiments passed. The
+cold GRPO response-confidence entry comes from
 that experiment's own evaluation, run under the same pinned instrument and
 held to the same checks.
 
 | Checkpoint | Response-confidence | Plain-answer | Structure-only |
 |---|---|---|---|
 | base model (no training) | 90.89 / 65.38 | 0.00 / 0.04 | 0.00 / 0.09 |
-| cold SFT seed 1 | - | - | 69.57 / 47.63 |
-| cold SFT seed 2 | - | - | 76.94 / 55.97 |
-| cold SFT seed 3 | - | - | 79.36 / 54.81 |
+| cold SFT seed 1 | 85.66 / 53.23 | - | 69.57 / 47.63 |
+| cold SFT seed 2 | 90.21 / 60.33 | - | 76.94 / 55.97 |
+| cold SFT seed 3 | 90.60 / 60.16 | - | 79.36 / 54.81 |
 | cold DPO seed 1 | 94.48 / 73.34 | - | 0.00 / 0.09 |
 | cold DPO seed 2 | - | - | 0.00 / 0.09 |
 | cold DPO seed 3 | - | - | 0.00 / 0.09 |
@@ -655,8 +656,14 @@ held to the same checks.
 | cold KTO seed 2 | - | - | 0.00 / 0.00 |
 | cold KTO seed 3 | - | - | 0.00 / 0.00 |
 | cold GRPO seed 1 | 85.66 / 60.89 | - | 0.00 / 0.09 |
-| clean SFT (merged) | - | - | 69.48 / 49.25 |
-| SFT then GRPO seed 1 | - | - | 77.42 / 58.71 |
+| clean SFT (merged) | - | 87.60 / 71.59 | 69.48 / 49.25 |
+| SFT then GRPO seed 1 | - | 96.22 / 84.42 | 77.42 / 58.71 |
+| SFT then DPO seed 1 | - | - | 35.17 / 9.11 |
+| SFT then DPO seed 2 | - | - | 54.17 / 13.26 |
+| SFT then DPO seed 3 | - | - | 31.78 / 9.93 |
+| SFT then KTO seed 1 | - | - | 61.43 / 31.07 |
+| SFT then KTO seed 2 | - | - | 65.12 / 34.66 |
+| SFT then KTO seed 3 | - | - | 65.41 / 31.92 |
 
 *Refusal recall / over-refusal, percent, on the full SelfAware set (1,032
 unknown-labeled and 2,337 known-labeled rows per arm). Exploratory tier
@@ -667,7 +674,8 @@ and the seed-1 DPO, KTO, and GRPO checkpoints) found natural-language
 abstentions that the pinned scorer's markers do not match, putting the honest
 rate near 4 to 6% for arms that read zero. The scorer was left as
 pinned rather than retuned, and the same audit found no false positives in 60
-sampled SFT-side refusals.*
+sampled SFT-side refusals. The six SFT-then-DPO and SFT-then-KTO
+structure-only rows are read in Section 4.3.*
 
 ![Grouped bar chart of unknown-question refusal recall by checkpoint and prompt condition, with the untrained base and cold DPO, KTO, and GRPO checkpoints all between 85 and 94 percent under the response-confidence contract and at zero under the other prompts, while cold SFT, merged clean SFT, and SFT-then-GRPO retain 69 to 77 percent under the structure-only prompt.](figures/fig-p1-11-prompt-crossing.png)
 
@@ -770,6 +778,21 @@ objectives landing on opposite ends of it. DPO buys back usefulness at the
 cost of abstention; KTO keeps the abstention and most of the tax. Neither
 improves the underlying discrimination; both move along the ROC curve the
 SFT stage defined.
+
+The repositioning is not confined to the instructed surface. Re-evaluating
+all six SFT-warmed checkpoints under the structure-only prompt, where
+nothing in the context asks for abstention, shows the preference stage also
+spends part of what the supervised stage put in the weights (exploratory,
+three seeds per arm; Section 4.2's table carries the rows). No arm falls to
+the base model's zero: every warmed checkpoint keeps a substantial
+instruction-free abstention policy. But against each seed's own SFT parent
+(69.57, 76.94, and 79.36% instruction-free recall), the DPO arms retain
+35.17, 54.17, and 31.78%, a loss of 22 to 48 points, while the KTO arms
+retain 61.43, 65.12, and 65.41%, a loss of 8 to 14 points. The two
+objectives differ in the weights the same way they differ at the surface:
+DPO spends far more of the internalized policy than KTO, and neither erases
+it. The operating-point trade-off above and this weights-level spend are
+the same repositioning seen at two depths.
 
 Under the stated-confidence contract, the same geometry reappears with a
 confidence signature attached: mean stated confidence is 0.423 for merged
@@ -969,14 +992,15 @@ verifiable-reward stage deepens what the supervised stage installed, from
 69.48 to 77.42% instruction-free recall on the checkpoint it was applied to,
 and installs nothing when applied to the base model instead. The cold-start
 preference checkpoints never leave the base model's instruction-free
-behavior at all. What a preference stage does to an *already internalized*
-policy is not something this study measured: the crossing covered the warmed
-layer only for the clean-SFT baseline and the GRPO arm, so the repositioning
-results in Section 4.3 stand as operating-point claims under the deployment
-prompt and carry no instruction-free reading. A practitioner choosing a
+behavior at all. And a preference stage applied to an *already internalized*
+policy partially spends it, by an amount that depends on the objective: the
+Section 4.3 crossing shows DPO giving back 22 to 48 points of
+instruction-free recall against each seed's SFT parent while KTO gives back
+8 to 14. A practitioner choosing a
 regimen for a setting where the deployment prompt cannot be guaranteed, or
-where a system prompt may be overwritten downstream, has one measured
-guarantee here and it comes from the supervised stage.
+where a system prompt may be overwritten downstream, should read the
+supervised stage as the source of the guarantee and the preference stage as
+a partial withdrawal against it, larger under DPO than under KTO.
 
 Re-adding the instruction to a checkpoint that already internalized
 abstention is not free either. On all five checkpoints that carry abstention
@@ -985,11 +1009,18 @@ without any instruction, putting an instruction back raises refusal recall
 and raises truthfulness. On all five it also raises over-refusal on known
 questions (47.6 to 64.3, 56.0 to 64.7, 54.8 to 65.3, 49.3 to 57.5, and 58.7
 to 66.6). The instruction buys unknown-side recall at a known-side cost even
-on weights that no longer need it to abstain. These five pairs are
-cross-contract readings: the three cold-SFT rows compare the structure-only
-prompt against the plain-answer contract and the two warmed rows against the
-response-confidence contract, so each pair measures the effect of adding an
-instruction rather than isolating one contract.
+on weights that no longer need it to abstain. The pattern does not depend on
+which instructed contract supplies the reading. Under the
+response-confidence contract the three cold-SFT seeds read 85.7, 90.2, and
+90.6% recall with over-refusal 53.2, 60.3, and 60.2; under the plain-answer
+contract the two warmed checkpoints read 87.6 and 96.2% recall with
+over-refusal 71.6 and 84.4. Every checkpoint therefore has an
+instructed-versus-instruction-free pair within a single contract, and every
+such pair shows the same core shape: recall up and over-refusal on knowns
+up. Truthfulness rises in four of the five single-contract pairs and dips
+slightly in the fifth (37.4 to 36.0 for SFT then GRPO under plain-answer),
+where the instruction pushes over-refusal high enough to start costing
+known-side answers.
 
 What the field should compare is not objectives but *regimens*, and regimens
 should be reported as operating points with both error rates and a named
@@ -1093,7 +1124,7 @@ stage, which bounds how much of the effect the prompt would have produced
 anyway, and the trained model measured with the instruction removed, which
 shows how much of it now lives in the weights. Neither is expensive. Both are
 evaluations against checkpoints that already exist, and in this study the
-whole crossing cost seventeen evaluation runs and no training at all. A result reported without
+whole crossing cost twenty-eight evaluation runs and no training at all. A result reported without
 the first cannot distinguish training from prompting; a result reported
 without the second cannot distinguish weights from compliance. Our own
 cold-start reinforcement-learning cell is the cautionary case: read on its
@@ -1301,19 +1332,12 @@ should read every 0.00 in this paper as "under 6%," which changes no claim,
 since every threshold in play is cleared by a wide margin either way. The
 audit details live with the experiment records in Appendix A.
 
-The crossing is also incomplete in three specific places. There is no
-response-confidence reading for the cold-start SFT arms and no plain-answer
-reading for the warmed arms, so the five instructed-against-instruction-free
-pairs in Section 4.5 compare across contracts and measure the effect of
-adding an instruction rather than the effect of any one contract. The second
+The crossing is also incomplete in one specific place. The second
 and third seeds of the cold-start preference arms were evaluated only under
 the structure-only prompt, so their instructed behavior is known at seed 1
-only. And the warmed preference arms, SFT followed by DPO and SFT followed by
-KTO, were never evaluated under the structure-only prompt at all, so this
-study cannot say whether a preference stage applied to an internalized
-checkpoint preserves, degrades, or deepens what the supervised stage put in
-the weights. That is the most obvious next measurement, and it is absent here
-because it was not run.
+only. Since both seed-1 cold preference arms track the base model closely
+under every prompt condition measured, little hangs on this cell, but it
+remains unmeasured.
 
 The pre-registration also specifies evidence layers not reported here: an
 8B replication of the headline matrix, a Llama-2-7b-chat bridge validation,
@@ -1595,6 +1619,16 @@ with the internal label it carries in the repository.
   seeds of every cold-start arm under the structure-only prompt, scored in
   `analysis-committed/metrics_cold_{sft,dpo,kto}_seed{2,3}_pstruct__selfaware.json`.
   Internal label: the structure-only internalization seed-robustness cell.
+- [The crossing completion](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/prompt-crossing-completion/AMENDMENT.md):
+  the eleven-arm cell that fills the remaining prompt-condition table
+  entries of Section 4.2: the six SFT-then-DPO and SFT-then-KTO seeds under
+  the structure-only prompt read in Section 4.3, the three cold-SFT seeds
+  under the response-confidence contract, and the two warmed checkpoints
+  under the plain-answer contract that make Section 4.5's
+  instructed-against-instruction-free pairs single-contract. Prompts are
+  byte-identical to the pinned panel and headline configs; per-arm metrics
+  are in `analysis-committed/metrics_*__selfaware.json`. Internal label:
+  the prompt-crossing completion cell.
 - [The cold-start GRPO cell](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/grpo-cold-start-induction/AMENDMENT.md):
   the falsified registered prediction reported in Section 4.1, its training
   run record, and the three registered diagnostics computed by the pinned
