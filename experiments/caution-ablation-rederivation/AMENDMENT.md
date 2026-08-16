@@ -102,4 +102,73 @@ PI 2026-08-15 ("can we re run the experiment where we got the .030").
 
 ## Outcome
 
-Filled at resolve.
+Run completed 2026-08-16 (~1.8 GPU-hours total on the local RTX 3090: two
+residual-intervention configs at ~49 min each, coeff sweep ~10.5 min). The
+run stopped twice pre-GPU on archival path breaks, both adjudicated by the
+lead before resuming (see NOTEBOOK.md): the legacy probe `backends` module
+had been renamed to `experiments/common/knowledge_probe/` with the compat
+wrapper never updated (fixed by one symlink after verifying the imported
+`render_probe_prompt` byte-identical to the June archived-run-era file by
+git lineage), and config 3's extraction/direction inputs had moved to
+`archive/experiment/phase1-data/probe/` (fixed by dir-name symlinks after
+verifying identical relative paths). Zero config or instrument-code bytes
+changed; all shims recorded in NOTEBOOK.md.
+
+**CA-G0 PASS on all three configs**: direction-file shas match the pins;
+archived config bytes verified unmodified (`diff -q` against archive
+originals, shas match the signed manifest); full coverage (2,164 rows per
+residual-intervention config = 541 rows x 4 arms; 768 units in the sweep
+= 96 rows x 8 arms); both no-intervention baselines reproduce known-item
+over-refusal at 0.9940 exactly (target 0.994 +/- 0.02). Lead-verified by
+independent recompute from raw rows on every arm of all three configs:
+exact agreement with the runner's reported rates.
+
+**Step-0 attribution (recorded pre-GPU, per the registered ordering):**
+the archived 0.994-to-0.030 figure traces to the RAW-THETA variant
+(`caution_direction_L35.json`, config 1), not caution_perp: archived
+session checkpoint 005-result reports raw-theta 0.994->0.030, and
+checkpoint 010-result reports caution_perp's own number as 0.994->0.524.
+(The amendment's citation of that session doc at `docs/sessions/...` is
+stale; it lives at `archive/docs/sessions/...` — noted, not edited.)
+
+Results (known_refused n=168; specificity control known_correct_answered
+n=373; aggregate JSONs in `analysis-committed/`):
+
+| Config / arm | Post-intervention known-item over-refusal | CA-G1 call |
+|---|---:|---|
+| raw-theta ablate | 0.994 -> **0.0298** (correct-on-derefusal 57.14%; specificity 0.9786) | **reproduced** (<= 0.10) |
+| caution_perp ablate | 0.994 -> 0.5238 (correct-per-derefused 68.75%; specificity 0.9732) | not the 0.030 source (>= 0.30); its own archived 0.524 replicated |
+| L26 sweep, best coeff 20.0 | 0.750 -> 0.5469 (unknown-side leak 6.25%) | descriptive only; not the 0.030 source (different pipeline, different 96-row cell structure) |
+
+**Falsifier NOT fired.** The raw-theta variant re-derives the archived
+collapse near-exactly under the archived instrument: the 0.030 figure now
+has a governed, freshly generated source. The shift arms also replicate
+the archived record (raw-theta -2sigma 0.6548; caution_perp -2sigma 0.869
+and +2sigma specificity 0.0697, matching archived 0.070).
+
+**Secondary question resolved:** the 0.030-vs-0.524 divergence was never
+drift or error — they are different variants' numbers. Raw-theta ablation
+collapses over-refusal to 0.030; the caution_perp/doubt-frame family sits
+at 0.52, both reproducing their own archived values. The registered
+frame-difference hypothesis is confirmed in the strongest form (variant
+identity).
+
+**Predictions scoreboard reconciliation (reported straight):** the
+headline call held (at least one archived variant reproduces <= 0.10 with
+baseline within 0.02 — baselines were exact), but the registrant's MODAL
+variant call was wrong: raw-theta reproduced, not caution_perp. The
+frame-difference explanation for the 0.524 divergence held. The user
+recorded no directional call.
+
+**Pre-stated scope holds:** this cell does NOT re-promote 0.030 into any
+paper on its own. Paper 3 keeps the governed doubt-regulated-caution
+numbers (0.994 -> 0.524, replication 0.536); promoting the re-derived
+0.030 would require a further registered confirmatory step.
+
+**Verdict (one sentence, mirrors `verdict:` in the manifest):** Falsifier
+not fired: the raw-theta caution ablation re-derives the archived
+0.994-to-0.030 over-refusal collapse near-exactly (0.0298, specificity
+intact) under the archived instrument, caution_perp reproduces its own
+archived 0.524 confirming the 0.030/0.524 divergence is variant identity
+not error, and the re-derived figure remains exploratory pending a
+registered confirmatory step.
