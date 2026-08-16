@@ -1,0 +1,24 @@
+# Pre-stated gates for jlens-trained-checkpoint-midband-ablation.
+# Fixed at signing; never retuned after any result.
+
+jt_g0:
+  # Integrity precondition (pre-outcome stop).
+  smoke: {cosine_min: 0.95, top10_overlap_min: 0.7}   # raw-base ref 0.9811 / 0.82
+  archived_inputs: {extraction_rows: 1233, known_refused: 168, known_correct_answered: 373,
+                    manifest_verified: true}
+  binding_fit_metadata: {pos_cell: known_refused, neg_cell: known_correct_answered,
+                         source: h_lora, layer: rule-selected}
+  baseline_reproduces: {target: 0.994, tolerance: 0.02}
+  full_coverage: true
+
+jt_g1:
+  # Calls, per branch; site fixed by the AMENDMENT's shallow-band-edge rule
+  # (interior grid {14,17,20,23,26,29}, >= 0.5x interior max, shallowest wins;
+  # no-interior-band branch -> fixed fallback hs23; void guard within 2 of hs35).
+  band_present_min_ratio: 1.5      # interior max >= 1.5x early-median ({2,5,8,11})
+  ablation:
+    reproduced_max: 0.10           # with specificity intact
+    specificity: {induced_refusal_max: 0.05, correct_rate_drop_max: 0.05}
+    partial_range: [0.10, 0.30]    # or specificity break: partial, reported
+    not_transferred_min: 0.30      # falsifier: collapse is late-site-specific
+  paired_l35_comparison: descriptive-only   # no gate; L35 sits at 0.0298

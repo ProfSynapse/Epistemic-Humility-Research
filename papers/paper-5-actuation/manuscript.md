@@ -1383,6 +1383,28 @@ family tested, but the specific "write near the eff-dim peak" account is
 currently scoped to raw-base Qwen3-4B and should not be read as a
 cross-family mechanism claim.
 
+The account has since had its first contact with a trained checkpoint, in an
+exploratory follow-up with its prediction and failure criterion stated before
+the run (`experiments/jlens-trained-checkpoint-midband-ablation`). Two
+results. First, training reshapes the band rather than erasing it: on the
+clean-SFT-then-GRPO checkpoint from the paper-3 line, the raw-base
+effective-dimension peak at hs26 is suppressed by roughly a third and the
+surviving profile is flatter and deeper, now peaking at hs29. This is the
+first measurement of training moving this geometry. Second, the surviving
+band did not license a write site. At its rule-selected shallow edge (hs17)
+the refusal axis reads nearly as well as at the late site (construction AUROC
+0.86 vs 0.87), but full ablation there released none of the over-refusal that
+the same operation at the late site removes (0 of 168 rows released, against
+163 of 168 at L35 on the same rows) and instead induced refusal on 48 percent
+of items the model previously answered. A minus-2-sigma displacement at the
+same site instead dropped refusal to 0.714 and recovered correct answers on
+21 percent of those rows, so at mid-depth removal and displacement are
+different operations: the direction is entangled with signal that answering
+requires. Read location and edit location come apart on the same checkpoint
+and the same axis. We read the J-space band as evidence about broadcast, not
+as a site license for writes, and the dosed-write mid-band results elsewhere
+in this paper do not imply that ablation transfers to those depths.
+
 ### 6.4 Limits
 
 This is an exploratory paper. The largest claims are qualitative and mechanistic,
@@ -1392,7 +1414,10 @@ not population effect-size estimates. Key limits:
 - some early negative cells carried instrument caveats later fixed in follow-up
   work;
 - the strongest positive J-space layer-site result is currently surface-local to
-  raw-base Qwen3-4B bf16;
+  raw-base Qwen3-4B bf16, and the one trained-checkpoint test so far (Section
+  6.3) found the band reshaped and its rule-selected mid-band site readable
+  but not ablatable, so J-space profiles should not be used to pick ablation
+  sites on trained checkpoints;
 - reward-channel evidence is single-seed;
 - token-target J-space writing has only tested the natural observed token bundle,
   not dense or multilingual alternatives;

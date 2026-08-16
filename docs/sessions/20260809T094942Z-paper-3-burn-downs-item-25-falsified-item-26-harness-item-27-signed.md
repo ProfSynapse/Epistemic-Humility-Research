@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-14T16:29:08Z'
+updated_at: '2026-08-16T16:40:47Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -539,6 +539,288 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 022-checkpoint
+  at: '2026-08-15T17:01:11Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Related-work sweep for paper-2 prompt-vs-training reframe completed and
+    merged. PR 458 merged (b8b520dc): panel + seed-robustness resolved, cold GRPO
+    falsified, plan doc, watcher infra. Internal library sweep plus external web sweep
+    both delivered and lead-verified: novelty verdict is that no prior work crosses
+    base/trained checkpoints with instructing/structure-only prompts using instruction-removal
+    survival as the internalization criterion; closest analogues Cheng 2401.13275
+    (prompted control but no base checkpoint and no removal test), AbstentionBench
+    2506.09038 (three of four ingredients never crossed), Wang 2606.11627 (context
+    invariance, nearest instrument), URIAL 2312.01552 (base leg), Jha 2601.20126 (exploration
+    starvation mechanism), Reinforced Hesitation 2511.11500 (mirror-image polarity,
+    reconciled as prior-training suppression). Verify-before-cite pass on 7 snippet
+    sources: SEAT 2506.14387 misuse warning (its base models are instruct models,
+    no pre-tuning baseline), Raina D-STEER precision fixes, Yue NeurIPS Oral quote
+    captured. Results-analyst check found NO Wang-style context-induced degradation
+    in our data; instruction raises recall and truthful on all internalized checkpoints
+    but raises over-refusal on knowns in all five internalized cells (operating-point
+    note for Act 3). PR 459 merged (f9b71053): 9-paper library ingest batch, 27 KG
+    atoms, TIAR verified no prompted-only baseline, validator 0 errors; registry drift
+    from untracked cold-GRPO dir healed by 458 merge; librarian correctly refused
+    registry prune. PR 460 merged: related-work memo at papers/paper-2-training-regimen/notes/related-work-prompt-vs-training-sweep.md.
+    Worktree and merged branches cleaned up. Next: KG ingest of the three verdicts
+    into the graph, then paper2-editor rewrite batches using the memo as related-work
+    spine.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 023-checkpoint
+  at: '2026-08-15T18:41:35Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'KG verdict ingest and paper-2 heavy rewrite completed. PR 461 open awaiting
+    merge approval: 3 experiment nodes + 3 mechanism nodes (only-sft-installs-abstention-in-weights
+    cross-experiment claim supported by all three cells), kg manifests updated, validators
+    clean, lead spot-checked numbers. Paper-2 rewrite executed in three batches by
+    paper2-editor on branch paper2/prompt-disentanglement-rewrite, PR 462 open awaiting
+    PI read and merge approval. Batch 1 abstract/intro/background with three-act shape
+    and reserved verbs; lead fixes bc59e68d. Batch 2 section-4 restructure with 13-row
+    prompt-condition table, cold-GRPO falsification per R2, why-no-bare-GRPO, instruction-cost
+    note; lead fixes d5d4f9ef scoping the instruction-strength claim and adding cold-GRPO
+    RC-cell provenance. Batch 3 discussion Act 3, related-work weave with four must-engage
+    reconciliations and citation guards (SEAT excluded, Raina unrefereed label, three
+    no-author preprints dropped, Chen deferred), limitations extended, registered
+    vs proposed falsifiers separated, three prompts byte-exact in new Appendix C (lead-verified
+    independently), references reconciled. Manuscript 1158 to 1835 lines, zero em
+    dashes, zero forward citations. Editor conflict adjudications recorded: R2 verb
+    stands verbatim with both directions printed; warmed-preference-under-P-struct
+    honestly reported as not measured. Follow-up queued: small ingest batch for Yue,
+    Kung-Peng, Zhao, Raina (cited on lead-verified arXiv abstracts, no library notes
+    yet). Pending PI: merge approvals for PR 461 and PR 462.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 024-checkpoint
+  at: '2026-08-15T19:50:09Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Full prompt-disentanglement arc closed and merged to main at 5c4d11b1.
+    PR 461 merged f0e80ef8 (three verdicts in KG). PR 462 merged 1a081c2d (paper-2
+    heavy rewrite, manuscript 1835 lines, draft-v3). PR 463 merged 5c4d11b1 (final
+    4-paper ingest: Yue, Kung-Peng, Zhao, Raina with D-STEER precision fixes and LOW
+    confidence; 5 new mechanisms). Every citation in the rewritten paper 2 now has
+    a library note behind it. All arc worktrees removed and merged branches deleted.
+    PI reading the rewritten manuscript next; the citation-provenance loop is closed.
+    Open threads for future sessions: papers 3/4/5 scoping sentences (behavioral surfaces
+    measured under abstention-permitting instruction), pre-existing r-tuning alias
+    collision KG331, structure-only SFT back-pocket cell, GRPO-to-DPO/KTO stacking
+    leg, orphaned figures cleanup, outreach email skeleton.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 025-checkpoint
+  at: '2026-08-15T20:34:34Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'PI read-feedback cycle on the merged paper-2 rewrite, all edits lead-authored
+    on branch paper2/abstract-slim, PR 464 open. Five feedback items so far: abstract
+    slimmed 560 to 278 words (band verbs retained); Introduction rewritten context-only
+    1574 to 900 words (results paragraphs cut, carried by Sections 4 and 7; KTO hypothesis
+    and audit scope verified covered elsewhere); prompt-condition definitions table
+    added at top of 4.2 (verbatim abstention clauses byte-checked against Appendix
+    C, base rates per prompt); the that-pair sentence in the cold-DPO paragraph unpacked
+    into plain statements; internalization gate paragraph in 4.2 compressed from registration
+    mechanics to two sentences with a Section 7 pointer (thresholds verified present
+    there). PR 464 accumulates all read-feedback commits; merge awaits PI word once
+    the read completes. All manuscript edits keep zero em dashes and the frozen band
+    verbs.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 026-checkpoint
+  at: '2026-08-15T20:50:33Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'PR 464 read-feedback cycle continued: built and wired two new section
+    4.2 figures (fig-p1-11 prompt-crossing, fig-p1-12 internalization-by-seed) with
+    jargon-free labels and captions, renumbered downstream figures 3-7 to 5-9, committed
+    script plus figures plus manuscript; rewrote the AbstentionBench related-work
+    paragraph in plain language after PI flagged it opaque. PR 464 merge still awaits
+    PI word.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 027-checkpoint
+  at: '2026-08-15T21:40:50Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Registered and signed prompt-crossing-completion (11 eval arms closing
+    paper-2 crossing gaps 3 and 1; per-seed config split, three SFT merge rebuilds
+    in flight, runner working). Staged private on HF: cold-GRPO seed-1 adapter, warmed
+    GRPO-v2 seeds 2-3 adapters, and (in flight) seed-2/3 clean-SFT merged bases per
+    PI ruling; GRPO train/dev files audited clean for phase1 dataset addition; publish
+    set awaits PI go. Paper-3 edit pass complete on branch paper3/edit-pass (46 arXiv
+    codes to author-year, jargon ban, voice pass, no numbers changed); surfaced pre-existing
+    provenance gap on the 0.994-to-0.030 ablation figure (no governed source; doubt-regulated-caution
+    supports 0.524 replicated 0.536) for PI adjudication.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 028-checkpoint
+  at: '2026-08-15T23:51:18Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'HF publish executed and recorded (5 weight repos public with cards, GRPO
+    splits in phase1 dataset, PR 464 carries release records and Appendix A extension).
+    Paper-3 PR 465 open with governed ablation number swapped in per PI ruling. Crossing
+    runner stalled 2h after seed-1 merge (docker-wait wake never fired); root cause
+    of missing guard: session project dir is the frozen mnt-f mirror whose .claude
+    predates the 2026-08-14 launch_watch hook, so the auto-watcher never loaded for
+    lead or subagents; prose launch-turn-watcher rule also not executed by lead at
+    spawn. Runner nudged and resuming; lead-owned polling watcher now armed (10-min
+    cadence, stall and completion detection); PI given the one-line hook-sync command
+    for the mirror, binds next session. Caution-ablation-rederivation registered and
+    queued.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 029-checkpoint
+  at: '2026-08-16T03:58:23Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Crossing-completion adjudicated and committed d0c14624: PC-G0 PASS x11
+    with lead recompute, falsifier not fired, kto_seed1 preserved, five seq arms partial
+    erosion with DPO spending far more internalization than KTO, gap-1a band held,
+    gap-1b both arms in band vs governed RC values 87.02 and 93.41. Resolve request
+    presented to PI, awaiting approval. Paper-2 update proposal presented: 4.3 erosion
+    finding, 4.5 single-contract, limitations paragraph replaced. Caution-ablation-rederivation
+    prepped and signed ba123076: three archived configs byte-identical and pinned,
+    direction shas verified, parity-locked engine exception, path-shim plan pre-declared
+    in cell.yaml for the emptied experiment/phase1/probe/analysis stub. Run delegated
+    to harness-builder caution-rederiv-runner with step-0 attribution before GPU and
+    CA-G0 baseline stop at 0.994 within 0.02; lead watcher armed same turn as launch.
+    PRs 464 and 465 still await PI merge approval and hook-sync cp command still with
+    PI.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 030-checkpoint
+  at: '2026-08-16T10:02:17Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'PI directives executed in full this morning. Both cells resolved with
+    approved verdicts. Naming purge at agreed scope: nine legacy-slugged amendments
+    annotated, rederivation prose switched to KU vocabulary, research-trajectory retired
+    terms fixed after the pre-commit checker flagged them, dangling AMENDMENT-AC filename
+    references in paper 5 and research-trajectory corrected to the governed path.
+    Series plan 0.030 attribution corrected from L26 sweep to full refusal-axis ablation
+    and marked re-derived. Paper 2 edited from the crossing results: 4.2 table extended
+    with six seq arms plus cold-SFT RC and warmed plain entries, 4.3 weights-level
+    erosion paragraph, 4.5 single-contract rewrite with the truthfulness dip reported
+    straight, limitations narrowed, Appendix A entry. KG ingest of both cells plus
+    mechanism rename to ku-readout-coupling done by librarian, validator zero errors.
+    PR 465 and PR 464 both MERGED to main with PI approval. refusal-axis-ablation-confirmatory
+    registered draft on seed-2 lineage with promotion gate RC-G1; confirmatory-prep
+    agent building stage configs, sign and launch with lead watcher next.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 031-checkpoint
+  at: '2026-08-16T11:45:49Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Signed and launched refusal-axis-ablation-confirmatory on branch exp/refusal-axis-ablation-confirmatory:
+    cell.yaml gates.yaml written, 6 files pinned, prep-agent flags adjudicated in
+    NOTEBOOK, runner delegated with lead disk watcher armed. Stages 1-3 complete and
+    lead-verified: extraction 1233 rows matching frozen manifest, behavior cells known_refused
+    161 known_correct_answered 376, direction fit L35 h_lora schema v1 AUROC 0.869.
+    Stage 4 four-arm intervention running in docker. Layer-methods survey adjudicated
+    for PI: papers 3 and 4 not out of date vs paper 5 J-lens; read claims unaffected,
+    site sweep already current, one cheap caveat sentence candidate for paper 3 pre-J-lens
+    ablation site. PI approved queueing new exploratory cell: J-lens on trained checkpoint
+    clean_sft_grpo_v2_seed1 plus rule-selected mid-band refusal-axis ablation with
+    L35 comparator; design agent drafting proposal, lead to register with pre-stated
+    site-selection rule and bring prediction falsifier budget to PI before launch.
+    Nexus vault CLI confirmed reachable via powershell.exe from WSL.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 032-checkpoint
+  at: '2026-08-16T12:54:21Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'refusal-axis-ablation-confirmatory RESOLVED FALSIFIED with PI approval:
+    RC-G0 pass, seed-2 full-axis ablate 0.553 vs 0.10 bound and 0.30 falsifier line,
+    collapse is seed-1-specific, no promotion to papers 3/5, axis still load-bearing
+    at seed 2 with 45.7pp release; seed-2 value near seed-1 KU-orthogonalized 0.524
+    flagged as follow-up question not claim. Aggregate summary committed to analysis-committed;
+    KG ingest delegated to librarian. jlens-trained-checkpoint-midband-ablation launched:
+    three runner STOPs adjudicated on record (HF token env, cached-credential read
+    denied by classifier resolved via library-internal auth, uid-1001 locks dir resolved
+    via cell-local HF_HUB_CACHE), then smoke crashed on PEFT merge leaving params
+    frozen; PI approved one-line requires_grad fix, driver repinned sha 23f46714,
+    committed, smoke re-running. First Nexus ritual fired in synaptic-labs vault:
+    folder The Biz/Epistemic Humility Research, workspace EHR Research with mandatory
+    tier-label convention, project Epistemic Humility Research Program id e2aa6060
+    with four milestone tasks, first journal state saved. Content candidate task parked
+    awaiting PI decision. Next: J-lens smoke verdict then profile, site rule, intervention;
+    paper-3 caveat sentence and paper-5 front-matter repairs parked.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 033-checkpoint
+  at: '2026-08-16T16:40:47Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'jlens-trained-checkpoint-midband-ablation RESOLVED FALSIFIED with PI approval:
+    JT-G0 pass including baseline 0.9940 exact; profile complete 1.97 GPU-h, band
+    present but flattened and deepened (hs26 peak suppressed 35 percent, peak now
+    hs29), first trained-checkpoint J-lens measurement; site rule fired hs17 independently
+    derived by runner and lead; hs17 ablation released zero refusals and induced refusal
+    on 48 percent of answered knowns while paired L35 released 163 of 168 same rows
+    - strongest same-checkpoint read-actuate depth dissociation in program; shift
+    minus2 releases more than ablate at hs17 recorded as wrinkle. Outcome written,
+    resolved falsified, aggregates committed, KG ingest delegated to second librarian
+    with root-scope warning. Runner diagnosed wake-misfire root cause: run_in_background
+    poll loops silently killed; switched to synchronous checks. Vault ritual fired
+    twice today: board task added for J-lens null, evening journal state saved covering
+    both falsified cells; two content candidates parked awaiting PI decision. Both
+    governed paper claims untouched; paper 3 late-site choice validated by the dissociation
+    result.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -661,3 +943,63 @@ _No summary yet._
 - at: `2026-08-14T16:29:08Z`
 - kind: `checkpoint`
 - summary: Panel results through config 3: base P-plain recall 0.0 so R1 does not fire and only-SFT claim survives its own contract; base P-rc 90.89 above cold GRPO 85.66 so R2 fires (prompt-elicited, GRPO preserves-and-sharpens wording); cold DPO and KTO reverse 0 to 94 across contracts, base-tracking everywhere. P-struct internalization: base 0.0, DPO 0.0, KTO 0.0, GRPO 0.0, SFT 69.57 with R3 fired - only SFT installs abstention in weights. PI rulings: no structure-only retraining matrix (base has no signal, GRPO scaffolding necessary), abandon cold-GRPO seeds 2-3 training replication, scaffolded-training scaffold-removed-measurement frame. New cell pstruct-internalization-seed-robustness signed and launch-approved (6 arms SFT DPO KTO seeds 2-3), queued behind panel config 4 (warmed pair) now running. Next: warmed results, seed cell launch, full synthesis, resolves for three cells, paper 2 reframe.
+### 022-checkpoint - Checkpoint
+
+- at: `2026-08-15T17:01:11Z`
+- kind: `checkpoint`
+- summary: Related-work sweep for paper-2 prompt-vs-training reframe completed and merged. PR 458 merged (b8b520dc): panel + seed-robustness resolved, cold GRPO falsified, plan doc, watcher infra. Internal library sweep plus external web sweep both delivered and lead-verified: novelty verdict is that no prior work crosses base/trained checkpoints with instructing/structure-only prompts using instruction-removal survival as the internalization criterion; closest analogues Cheng 2401.13275 (prompted control but no base checkpoint and no removal test), AbstentionBench 2506.09038 (three of four ingredients never crossed), Wang 2606.11627 (context invariance, nearest instrument), URIAL 2312.01552 (base leg), Jha 2601.20126 (exploration starvation mechanism), Reinforced Hesitation 2511.11500 (mirror-image polarity, reconciled as prior-training suppression). Verify-before-cite pass on 7 snippet sources: SEAT 2506.14387 misuse warning (its base models are instruct models, no pre-tuning baseline), Raina D-STEER precision fixes, Yue NeurIPS Oral quote captured. Results-analyst check found NO Wang-style context-induced degradation in our data; instruction raises recall and truthful on all internalized checkpoints but raises over-refusal on knowns in all five internalized cells (operating-point note for Act 3). PR 459 merged (f9b71053): 9-paper library ingest batch, 27 KG atoms, TIAR verified no prompted-only baseline, validator 0 errors; registry drift from untracked cold-GRPO dir healed by 458 merge; librarian correctly refused registry prune. PR 460 merged: related-work memo at papers/paper-2-training-regimen/notes/related-work-prompt-vs-training-sweep.md. Worktree and merged branches cleaned up. Next: KG ingest of the three verdicts into the graph, then paper2-editor rewrite batches using the memo as related-work spine.
+### 023-checkpoint - Checkpoint
+
+- at: `2026-08-15T18:41:35Z`
+- kind: `checkpoint`
+- summary: KG verdict ingest and paper-2 heavy rewrite completed. PR 461 open awaiting merge approval: 3 experiment nodes + 3 mechanism nodes (only-sft-installs-abstention-in-weights cross-experiment claim supported by all three cells), kg manifests updated, validators clean, lead spot-checked numbers. Paper-2 rewrite executed in three batches by paper2-editor on branch paper2/prompt-disentanglement-rewrite, PR 462 open awaiting PI read and merge approval. Batch 1 abstract/intro/background with three-act shape and reserved verbs; lead fixes bc59e68d. Batch 2 section-4 restructure with 13-row prompt-condition table, cold-GRPO falsification per R2, why-no-bare-GRPO, instruction-cost note; lead fixes d5d4f9ef scoping the instruction-strength claim and adding cold-GRPO RC-cell provenance. Batch 3 discussion Act 3, related-work weave with four must-engage reconciliations and citation guards (SEAT excluded, Raina unrefereed label, three no-author preprints dropped, Chen deferred), limitations extended, registered vs proposed falsifiers separated, three prompts byte-exact in new Appendix C (lead-verified independently), references reconciled. Manuscript 1158 to 1835 lines, zero em dashes, zero forward citations. Editor conflict adjudications recorded: R2 verb stands verbatim with both directions printed; warmed-preference-under-P-struct honestly reported as not measured. Follow-up queued: small ingest batch for Yue, Kung-Peng, Zhao, Raina (cited on lead-verified arXiv abstracts, no library notes yet). Pending PI: merge approvals for PR 461 and PR 462.
+### 024-checkpoint - Checkpoint
+
+- at: `2026-08-15T19:50:09Z`
+- kind: `checkpoint`
+- summary: Full prompt-disentanglement arc closed and merged to main at 5c4d11b1. PR 461 merged f0e80ef8 (three verdicts in KG). PR 462 merged 1a081c2d (paper-2 heavy rewrite, manuscript 1835 lines, draft-v3). PR 463 merged 5c4d11b1 (final 4-paper ingest: Yue, Kung-Peng, Zhao, Raina with D-STEER precision fixes and LOW confidence; 5 new mechanisms). Every citation in the rewritten paper 2 now has a library note behind it. All arc worktrees removed and merged branches deleted. PI reading the rewritten manuscript next; the citation-provenance loop is closed. Open threads for future sessions: papers 3/4/5 scoping sentences (behavioral surfaces measured under abstention-permitting instruction), pre-existing r-tuning alias collision KG331, structure-only SFT back-pocket cell, GRPO-to-DPO/KTO stacking leg, orphaned figures cleanup, outreach email skeleton.
+### 025-checkpoint - Checkpoint
+
+- at: `2026-08-15T20:34:34Z`
+- kind: `checkpoint`
+- summary: PI read-feedback cycle on the merged paper-2 rewrite, all edits lead-authored on branch paper2/abstract-slim, PR 464 open. Five feedback items so far: abstract slimmed 560 to 278 words (band verbs retained); Introduction rewritten context-only 1574 to 900 words (results paragraphs cut, carried by Sections 4 and 7; KTO hypothesis and audit scope verified covered elsewhere); prompt-condition definitions table added at top of 4.2 (verbatim abstention clauses byte-checked against Appendix C, base rates per prompt); the that-pair sentence in the cold-DPO paragraph unpacked into plain statements; internalization gate paragraph in 4.2 compressed from registration mechanics to two sentences with a Section 7 pointer (thresholds verified present there). PR 464 accumulates all read-feedback commits; merge awaits PI word once the read completes. All manuscript edits keep zero em dashes and the frozen band verbs.
+### 026-checkpoint - Checkpoint
+
+- at: `2026-08-15T20:50:33Z`
+- kind: `checkpoint`
+- summary: PR 464 read-feedback cycle continued: built and wired two new section 4.2 figures (fig-p1-11 prompt-crossing, fig-p1-12 internalization-by-seed) with jargon-free labels and captions, renumbered downstream figures 3-7 to 5-9, committed script plus figures plus manuscript; rewrote the AbstentionBench related-work paragraph in plain language after PI flagged it opaque. PR 464 merge still awaits PI word.
+### 027-checkpoint - Checkpoint
+
+- at: `2026-08-15T21:40:50Z`
+- kind: `checkpoint`
+- summary: Registered and signed prompt-crossing-completion (11 eval arms closing paper-2 crossing gaps 3 and 1; per-seed config split, three SFT merge rebuilds in flight, runner working). Staged private on HF: cold-GRPO seed-1 adapter, warmed GRPO-v2 seeds 2-3 adapters, and (in flight) seed-2/3 clean-SFT merged bases per PI ruling; GRPO train/dev files audited clean for phase1 dataset addition; publish set awaits PI go. Paper-3 edit pass complete on branch paper3/edit-pass (46 arXiv codes to author-year, jargon ban, voice pass, no numbers changed); surfaced pre-existing provenance gap on the 0.994-to-0.030 ablation figure (no governed source; doubt-regulated-caution supports 0.524 replicated 0.536) for PI adjudication.
+### 028-checkpoint - Checkpoint
+
+- at: `2026-08-15T23:51:18Z`
+- kind: `checkpoint`
+- summary: HF publish executed and recorded (5 weight repos public with cards, GRPO splits in phase1 dataset, PR 464 carries release records and Appendix A extension). Paper-3 PR 465 open with governed ablation number swapped in per PI ruling. Crossing runner stalled 2h after seed-1 merge (docker-wait wake never fired); root cause of missing guard: session project dir is the frozen mnt-f mirror whose .claude predates the 2026-08-14 launch_watch hook, so the auto-watcher never loaded for lead or subagents; prose launch-turn-watcher rule also not executed by lead at spawn. Runner nudged and resuming; lead-owned polling watcher now armed (10-min cadence, stall and completion detection); PI given the one-line hook-sync command for the mirror, binds next session. Caution-ablation-rederivation registered and queued.
+### 029-checkpoint - Checkpoint
+
+- at: `2026-08-16T03:58:23Z`
+- kind: `checkpoint`
+- summary: Crossing-completion adjudicated and committed d0c14624: PC-G0 PASS x11 with lead recompute, falsifier not fired, kto_seed1 preserved, five seq arms partial erosion with DPO spending far more internalization than KTO, gap-1a band held, gap-1b both arms in band vs governed RC values 87.02 and 93.41. Resolve request presented to PI, awaiting approval. Paper-2 update proposal presented: 4.3 erosion finding, 4.5 single-contract, limitations paragraph replaced. Caution-ablation-rederivation prepped and signed ba123076: three archived configs byte-identical and pinned, direction shas verified, parity-locked engine exception, path-shim plan pre-declared in cell.yaml for the emptied experiment/phase1/probe/analysis stub. Run delegated to harness-builder caution-rederiv-runner with step-0 attribution before GPU and CA-G0 baseline stop at 0.994 within 0.02; lead watcher armed same turn as launch. PRs 464 and 465 still await PI merge approval and hook-sync cp command still with PI.
+### 030-checkpoint - Checkpoint
+
+- at: `2026-08-16T10:02:17Z`
+- kind: `checkpoint`
+- summary: PI directives executed in full this morning. Both cells resolved with approved verdicts. Naming purge at agreed scope: nine legacy-slugged amendments annotated, rederivation prose switched to KU vocabulary, research-trajectory retired terms fixed after the pre-commit checker flagged them, dangling AMENDMENT-AC filename references in paper 5 and research-trajectory corrected to the governed path. Series plan 0.030 attribution corrected from L26 sweep to full refusal-axis ablation and marked re-derived. Paper 2 edited from the crossing results: 4.2 table extended with six seq arms plus cold-SFT RC and warmed plain entries, 4.3 weights-level erosion paragraph, 4.5 single-contract rewrite with the truthfulness dip reported straight, limitations narrowed, Appendix A entry. KG ingest of both cells plus mechanism rename to ku-readout-coupling done by librarian, validator zero errors. PR 465 and PR 464 both MERGED to main with PI approval. refusal-axis-ablation-confirmatory registered draft on seed-2 lineage with promotion gate RC-G1; confirmatory-prep agent building stage configs, sign and launch with lead watcher next.
+### 031-checkpoint - Checkpoint
+
+- at: `2026-08-16T11:45:49Z`
+- kind: `checkpoint`
+- summary: Signed and launched refusal-axis-ablation-confirmatory on branch exp/refusal-axis-ablation-confirmatory: cell.yaml gates.yaml written, 6 files pinned, prep-agent flags adjudicated in NOTEBOOK, runner delegated with lead disk watcher armed. Stages 1-3 complete and lead-verified: extraction 1233 rows matching frozen manifest, behavior cells known_refused 161 known_correct_answered 376, direction fit L35 h_lora schema v1 AUROC 0.869. Stage 4 four-arm intervention running in docker. Layer-methods survey adjudicated for PI: papers 3 and 4 not out of date vs paper 5 J-lens; read claims unaffected, site sweep already current, one cheap caveat sentence candidate for paper 3 pre-J-lens ablation site. PI approved queueing new exploratory cell: J-lens on trained checkpoint clean_sft_grpo_v2_seed1 plus rule-selected mid-band refusal-axis ablation with L35 comparator; design agent drafting proposal, lead to register with pre-stated site-selection rule and bring prediction falsifier budget to PI before launch. Nexus vault CLI confirmed reachable via powershell.exe from WSL.
+### 032-checkpoint - Checkpoint
+
+- at: `2026-08-16T12:54:21Z`
+- kind: `checkpoint`
+- summary: refusal-axis-ablation-confirmatory RESOLVED FALSIFIED with PI approval: RC-G0 pass, seed-2 full-axis ablate 0.553 vs 0.10 bound and 0.30 falsifier line, collapse is seed-1-specific, no promotion to papers 3/5, axis still load-bearing at seed 2 with 45.7pp release; seed-2 value near seed-1 KU-orthogonalized 0.524 flagged as follow-up question not claim. Aggregate summary committed to analysis-committed; KG ingest delegated to librarian. jlens-trained-checkpoint-midband-ablation launched: three runner STOPs adjudicated on record (HF token env, cached-credential read denied by classifier resolved via library-internal auth, uid-1001 locks dir resolved via cell-local HF_HUB_CACHE), then smoke crashed on PEFT merge leaving params frozen; PI approved one-line requires_grad fix, driver repinned sha 23f46714, committed, smoke re-running. First Nexus ritual fired in synaptic-labs vault: folder The Biz/Epistemic Humility Research, workspace EHR Research with mandatory tier-label convention, project Epistemic Humility Research Program id e2aa6060 with four milestone tasks, first journal state saved. Content candidate task parked awaiting PI decision. Next: J-lens smoke verdict then profile, site rule, intervention; paper-3 caveat sentence and paper-5 front-matter repairs parked.
+### 033-checkpoint - Checkpoint
+
+- at: `2026-08-16T16:40:47Z`
+- kind: `checkpoint`
+- summary: jlens-trained-checkpoint-midband-ablation RESOLVED FALSIFIED with PI approval: JT-G0 pass including baseline 0.9940 exact; profile complete 1.97 GPU-h, band present but flattened and deepened (hs26 peak suppressed 35 percent, peak now hs29), first trained-checkpoint J-lens measurement; site rule fired hs17 independently derived by runner and lead; hs17 ablation released zero refusals and induced refusal on 48 percent of answered knowns while paired L35 released 163 of 168 same rows - strongest same-checkpoint read-actuate depth dissociation in program; shift minus2 releases more than ablate at hs17 recorded as wrinkle. Outcome written, resolved falsified, aggregates committed, KG ingest delegated to second librarian with root-scope warning. Runner diagnosed wake-misfire root cause: run_in_background poll loops silently killed; switched to synchronous checks. Vault ritual fired twice today: board task added for J-lens null, evening journal state saved covering both falsified cells; two content candidates parked awaiting PI decision. Both governed paper claims untouched; paper 3 late-site choice validated by the dissociation result.

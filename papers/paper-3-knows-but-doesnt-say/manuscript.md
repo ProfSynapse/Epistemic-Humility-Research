@@ -1083,6 +1083,24 @@ signal the model already carries reaches its output.
   that bar: the GRPO confidence collapse of Section 7 replicated at two
   further seeds under a pre-stated non-collapse guard that did not trigger
   (Section 7, interventions 3-4). The rest of the pattern remains single-seed.
+- Seed dependence of the ablation geometry, now measured directly. How far the
+  refuse/answer decision concentrates onto a single direction is a property of
+  the individual training run, not the recipe. On this paper's seed, an
+  exploratory stronger variant of the Section 6 edit (removing the full raw
+  refusal direction rather than the knowledge-orthogonalized component behind
+  the 0.524/0.536 numbers) collapses over-refusal to 0.030. A pre-registered
+  replication of that collapse on a second seed of the identical recipe,
+  run with the same surgery on that seed's own lineage and with the
+  instrument passing every integrity check, instead left over-refusal at
+  0.553, meeting the replication's pre-stated failure criterion. The axis is
+  causally load-bearing at both seeds: the second seed still sheds 45.7
+  points of over-refusal and recovers correct answers on 29 percent of
+  formerly refused known items. But the near-total collapse is seed-specific,
+  and no cross-seed claim about it is made here. Why the second seed's
+  full-axis residual (0.553) lands almost exactly where this seed's
+  component-ablation residual does (0.524) is an open decomposition question
+  we flag for future work rather than pursue
+  (`experiments/refusal-axis-ablation-confirmatory`).
 - Training/evaluation overlap on known questions. Of the 3,369 SelfAware
   evaluation rows, 117 known (answerable) questions appear verbatim as
   training prompts in every gradient-training file the Section 7
