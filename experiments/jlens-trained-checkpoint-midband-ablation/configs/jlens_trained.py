@@ -107,6 +107,13 @@ def load_model(model_path: str, adapter_path: str | None = None,
 
         model = PeftModel.from_pretrained(base, adapter_path)
         model = model.merge_and_unload()
+        # PEFT freezes base weights (requires_grad=False) and merge_and_unload
+        # returns them still frozen; with every parameter frozen the forward
+        # builds no autograd graph and the JVP double-backward cannot run.
+        # Restore the pinned original's loaded state (all params grad-enabled;
+        # still read-only -- no optimizer step or .grad write ever occurs).
+        for _p in model.parameters():
+            _p.requires_grad_(True)
     else:
         model = base
     model.eval()

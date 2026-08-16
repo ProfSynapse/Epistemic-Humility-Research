@@ -4876,10 +4876,19 @@
         "pins": {
           "RUNBOOK.md": "19a8ed8915923fefb78d6733c154daa0dd06a65b1fc349d10c28df7b828d002e",
           "cell.yaml": "f94f273a86c1f0d0d4f4b327f65b1ca25c1db24404afeeaa1b1ff17217c7a5d7",
-          "configs/jlens_trained.py": "0735437be229107a08b8f73bcf752f703b4993fe0d88fb9c6252d720424ceee8",
+          "configs/jlens_trained.py": "23f46714dd8b7585427c8940ef2dc8f96bf757a9c3e88a880246ab81d440ad46",
           "configs/phase3_jlens_midband_refusal_axis_intervention_seed1.TEMPLATE.yaml": "0491610e52ffe3340cd591ca8386495a23d61a5d5c640c7e60e34f6531016522",
           "gates.yaml": "b76f22624e890a3f43ba54aecab149c692d1ef216627c0dd8d672498035c6d20"
-        }
+        },
+        "repins": [
+          {
+            "date": "2026-08-16T12:48:45Z",
+            "file": "configs/jlens_trained.py",
+            "new_sha256": "23f46714dd8b7585427c8940ef2dc8f96bf757a9c3e88a880246ab81d440ad46",
+            "old_sha256": "0735437be229107a08b8f73bcf752f703b4993fe0d88fb9c6252d720424ceee8",
+            "reason": "Pre-run instrument fix, PI-approved in-conversation 2026-08-16: PEFT merge_and_unload returns base weights frozen (requires_grad=False), so the forward built no autograd graph and the JVP double-backward crashed in the smoke stage. Re-enable requires_grad on all params after merge, restoring parity with the pinned original's loaded state; still read-only. No result existed before this fix (smoke is the go/no-go that caught it)."
+          }
+        ]
       },
       "kg": [],
       "prediction": "The trained checkpoint keeps a J-lens interior band overlapping hs23-29 (interior max >= 1.5x early median), and full refusal-axis ablation at the rule-selected mid-band site collapses known-item over-refusal to <= 0.10 with specificity intact (induced refusal <= 0.05, known-correct drop <= 0.05).",
