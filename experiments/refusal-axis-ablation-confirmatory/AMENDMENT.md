@@ -1,6 +1,6 @@
 # Refusal-axis ablation fresh-seed confirmatory
 
-Status: DRAFT (2026-08-16). Machine state in `experiment.yaml`.
+Status: SIGNED (2026-08-16, PI approval in-conversation). Machine state in `experiment.yaml`. Run in progress.
 
 Keep this document the prose home for the experiment. The machine state lives
 in `experiment.yaml` and is never duplicated here.

@@ -1,0 +1,50 @@
+# jlens-trained-checkpoint-midband-ablation: first J-lens run on a trained
+# checkpoint (clean_sft_grpo_v2_seed1) plus a rule-selected mid-band full
+# refusal-axis ablation compared row-paired against the governed L35
+# collapse on the same checkpoint. Exploratory tier; cannot move governed
+# paper numbers (pre-stated in AMENDMENT.md).
+
+instrument:
+  harness:
+    jlens: configs/jlens_trained.py            # adapted copy; pinned original untouched
+    fit: experiments/common/mechinterp/residual_caution_direction.py
+    intervention: experiments/common/mechinterp/residual_intervention_runner.py
+  engine_exception: parity-locked   # archived HF-transformers greedy stack for the
+                                    # ablation arms; J-lens is standalone read-only code
+  substrate: clean_sft_grpo_v2_seed1 (merged sft_schema_clean_seed1_full/20260623_123624
+    base + schema_clean_sft_grpo_v2_seed1_full/20260624_095831 adapter;
+    merge_and_unload in memory for the J-lens plain-bf16 graph)
+
+# The intervention config is a pinned {SITE}-parameterized TEMPLATE; the runner
+# instantiates it under analysis/ with the site chosen by the AMENDMENT's
+# pre-stated shallow-band-edge rule. The template's rows/direction lines ride
+# the legacy experiment/phase1/probe/analysis symlink chain (byte-parity with
+# the governed seed-1 config); those symlinks exist from the rederivation cell
+# and their presence is a launch-time environment check, not a config edit.
+
+run_order:
+  - {order: 0, step: corpus-build, gpu: false,
+     note: deterministic rebuild from the committed j-space manifest; HF token
+           required for the private staging pool; no prompt text committed}
+  - {order: 1, step: jlens-smoke, config: configs/jlens_trained.py, gpu: true,
+     note: JT-G0 go/no-go (cosine >= 0.95, top-10 overlap >= 0.7); fail = stop,
+           no ablation arms}
+  - {order: 2, step: jlens-profile, config: configs/jlens_trained.py, gpu: true,
+     note: identical raw-base settings (corpus, seed 20260707, 1000 prompts,
+           5 random dirs, 13-point grid, plain render, enable_thinking false)}
+  - {order: 3, step: site-rule, gpu: false,
+     note: apply the pre-stated shallow-band-edge rule (or no-interior-band
+           branch -> fallback hs23); record arithmetic in NOTEBOOK before any
+           intervention runs}
+  - {order: 4, step: direction-fits, gpu: false,
+     note: binding fit at the rule site from the ARCHIVED all-layer extraction
+           + archived behavior rows; descriptive interior fits reported only}
+  - {order: 5, config: configs/phase3_jlens_midband_refusal_axis_intervention_seed1.TEMPLATE.yaml,
+     gpu: true, arms: [baseline, ablate, shift_minus2, shift_plus2],
+     note: instantiated copy under analysis/; docker --user 1000:1000,
+           synchronous polling}
+  - {order: 6, step: paired-comparison, gpu: false,
+     note: row-paired vs the L35 rederivation rows on disk; pre-stated fallback
+           if absent = full re-run of the archived 4-arm config (~49 min),
+           using only its ablate arm (lead-adjudicated; runner has no
+           single-arm flag and the archived config is byte-pinned)}
