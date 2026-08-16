@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-16T16:40:47Z'
+updated_at: '2026-08-16T17:44:19Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -821,6 +821,31 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 034-checkpoint
+  at: '2026-08-16T17:44:19Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'PI approved capture-then-merge. Captured parked follow-up threads per
+    PI ruling instead of running new cells: docs/research-trajectory.md new Parked
+    threads section (seed decomposition of refusal axis; mid-band entanglement on
+    trained checkpoints), paper 3 sec 9 seed-dependence bullet distinguishing exploratory
+    0.030 full-axis collapse falsified at seed 2 (0.553) from governed orthogonalized
+    0.524/0.536, paper 5 sec 6.3/6.4 trained-checkpoint J-lens scoping (band flattened
+    deepened, hs17 readable AUROC 0.86 but ablation releases 0/168 vs 163/168 at L35,
+    induces refusal on 48 pct of answered knowns, band is broadcast evidence not a
+    write-site license). All numbers reverified against both AMENDMENT docs before
+    writing. Commit 719a050a passed all hooks. PR 466 created and merged to main (a4034e39)
+    with PI approval, carrying both falsified cells end-to-end (register sign run
+    resolve KG ingest) plus the captures. Branch deleted. Still parked for PI: two
+    vault content candidates (when your confirmatory fails; readable is not editable)
+    and whether paper 5 formally picks up band-reshaping beyond the limitations note.
+    Next: papers 1/4 passes, outreach email skeleton, exhaust packaging remain queued.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -1003,3 +1028,8 @@ _No summary yet._
 - at: `2026-08-16T16:40:47Z`
 - kind: `checkpoint`
 - summary: jlens-trained-checkpoint-midband-ablation RESOLVED FALSIFIED with PI approval: JT-G0 pass including baseline 0.9940 exact; profile complete 1.97 GPU-h, band present but flattened and deepened (hs26 peak suppressed 35 percent, peak now hs29), first trained-checkpoint J-lens measurement; site rule fired hs17 independently derived by runner and lead; hs17 ablation released zero refusals and induced refusal on 48 percent of answered knowns while paired L35 released 163 of 168 same rows - strongest same-checkpoint read-actuate depth dissociation in program; shift minus2 releases more than ablate at hs17 recorded as wrinkle. Outcome written, resolved falsified, aggregates committed, KG ingest delegated to second librarian with root-scope warning. Runner diagnosed wake-misfire root cause: run_in_background poll loops silently killed; switched to synchronous checks. Vault ritual fired twice today: board task added for J-lens null, evening journal state saved covering both falsified cells; two content candidates parked awaiting PI decision. Both governed paper claims untouched; paper 3 late-site choice validated by the dissociation result.
+### 034-checkpoint - Checkpoint
+
+- at: `2026-08-16T17:44:19Z`
+- kind: `checkpoint`
+- summary: PI approved capture-then-merge. Captured parked follow-up threads per PI ruling instead of running new cells: docs/research-trajectory.md new Parked threads section (seed decomposition of refusal axis; mid-band entanglement on trained checkpoints), paper 3 sec 9 seed-dependence bullet distinguishing exploratory 0.030 full-axis collapse falsified at seed 2 (0.553) from governed orthogonalized 0.524/0.536, paper 5 sec 6.3/6.4 trained-checkpoint J-lens scoping (band flattened deepened, hs17 readable AUROC 0.86 but ablation releases 0/168 vs 163/168 at L35, induces refusal on 48 pct of answered knowns, band is broadcast evidence not a write-site license). All numbers reverified against both AMENDMENT docs before writing. Commit 719a050a passed all hooks. PR 466 created and merged to main (a4034e39) with PI approval, carrying both falsified cells end-to-end (register sign run resolve KG ingest) plus the captures. Branch deleted. Still parked for PI: two vault content candidates (when your confirmatory fails; readable is not editable) and whether paper 5 formally picks up band-reshaping beyond the limitations note. Next: papers 1/4 passes, outreach email skeleton, exhaust packaging remain queued.
