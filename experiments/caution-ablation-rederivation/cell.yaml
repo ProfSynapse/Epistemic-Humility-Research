@@ -1,8 +1,37 @@
-# TODO: replace this placeholder with the pinned experiment instrument.
-# Keep this file in the experiment directory unless the runner skill for this
-# experiment type requires a different config layout.
-#
-# Before signing:
-# - fill the actual runner/tuner config
-# - list this file under experiment.yaml instrument.configs
-# - run `bin/exp sign <slug>` to pin the final bytes
+# caution-ablation-rederivation: provenance-repair re-run of the archived
+# caution/caution_perp ablation pipeline on clean_sft_grpo_v2_seed1, plus the
+# archived native-L26 coeff sweep, to either give the un-re-derivable
+# 0.994-to-0.030 over-refusal collapse a governed source or retire it.
+# Archived configs re-run VERBATIM (byte-identical copies in configs/); the
+# legacy machinery is the instrument under test (engine exception:
+# parity-locked, recorded in experiment.yaml).
+
+instrument:
+  harness:
+    residual_intervention: experiments/common/mechinterp/residual_intervention_runner.py
+    coeff_sweep: experiments/common/mechinterp/causal_pilot_sweep.py
+  engine_exception: parity-locked   # archived HF-transformers greedy stack, NOT vllm
+  checkpoint: clean_sft_grpo_v2_seed1 (published eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora)
+
+# Path shims (instrument environment, NOT config edits): the archived configs
+# reference inputs at experiment/phase1/probe/analysis/..., a tree emptied by
+# archival. Before launch, symlink these two names in
+# experiment/phase1/probe/analysis/ to their archived homes under
+# archive/experiment/phase1-data/probe/analysis/:
+#   current_clean_grpo_v2_caution_residual_direction/
+#   current_selfaware_behavior_rows/
+# Output roots (declared inside the configs, also under
+# experiment/phase1/probe/analysis/) are symlinked into this cell's gitignored
+# analysis/ dir so row-level generation text never lands in a trackable path.
+# Config bytes stay untouched per CA-G0.
+
+run_order:
+  - {order: 0, step: attribution, gpu: false,
+     note: reconstruct which archived variant most plausibly produced 0.030;
+           record in NOTEBOOK.md BEFORE any result exists}
+  - {order: 1, config: configs/phase3_current_clean_grpo_v2_caution_residual_intervention.yaml,
+     arms: [baseline, ablate, shift_minus2, shift_plus2]}
+  - {order: 2, config: configs/phase3_current_clean_grpo_v2_caution_perp_residual_intervention.yaml,
+     arms: [baseline, ablate, shift_minus2, shift_plus2]}
+  - {order: 3, config: configs/phase3_current_clean_grpo_v2_known_overrefusal_native_l26_coeff_sweep.yaml,
+     arms: [no_vector_baseline, activation_subtraction, coeffs_5_10_20_25]}

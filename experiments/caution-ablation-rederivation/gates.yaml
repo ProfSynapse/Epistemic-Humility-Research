@@ -1,3 +1,22 @@
-# TODO: replace this placeholder with pre-stated gates.
-# Gates must be fixed before launch and should define the pass/fail thresholds
-# and falsifier boundary used by the amendment.
+# Pre-stated gates for caution-ablation-rederivation.
+# Fixed at signing; never retuned after any result.
+
+ca_g0:
+  # Integrity precondition (pre-outcome stop, never patch-and-run).
+  direction_sha_match:
+    caution_direction_L35.json: 9eb2a8c91dd950e669065f7a80b1424a0c3c24c389ed2a9ea1f98f13072d8785
+    caution_perp_direction_L35.json: 41e13f41100756fd10a974af8a7724940348ab869f2045be62ad4e86a079ee64
+  archived_config_bytes_unmodified: true   # any incompatibility = stop and report
+  full_coverage: true                      # each config's declared row set
+  baseline_reproduces: {target: 0.994, tolerance: 0.02}
+  # Baseline drift outside tolerance = instrument-not-reproduced stop;
+  # ablation numbers from a drifted instrument are not interpretable.
+
+ca_g1:
+  # Reproduction call, per archived variant, on post-ablation known-item
+  # over-refusal. Thresholds fixed before the run.
+  reproduced_max: 0.10        # <= 0.10 = reproduced
+  partial_range: [0.10, 0.30] # exclusive band = partial, reported, no promotion
+  not_recoverable_min: 0.30   # >= 0.30 on ALL variants = falsifier: 0.030 retired
+  # Either way paper 3 keeps the governed doubt-regulated-caution numbers;
+  # this cell cannot move paper text on its own (pre-stated in AMENDMENT.md).

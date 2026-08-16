@@ -1,6 +1,6 @@
 # Re-deriving the archived caution-ablation over-refusal collapse
 
-Status: DRAFT (2026-08-15). Machine state in `experiment.yaml`.
+Status: SIGNED (2026-08-15). Machine state in `experiment.yaml`.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.

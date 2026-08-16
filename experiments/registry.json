@@ -560,17 +560,33 @@
       "falsifier": "No archived variant brings post-ablation known-item over-refusal below 0.30 under the archived instrument: 0.030 declared not recoverable and retired; paper 3 keeps the governed doubt-regulated-caution numbers either way.",
       "inputs": [],
       "instrument": {
-        "configs": [],
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "configs/phase3_current_clean_grpo_v2_caution_residual_intervention.yaml",
+          "configs/phase3_current_clean_grpo_v2_caution_perp_residual_intervention.yaml",
+          "configs/phase3_current_clean_grpo_v2_known_overrefusal_native_l26_coeff_sweep.yaml"
+        ],
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "Provenance repair of an archived legacy-machinery result: the archived HF-transformers greedy intervention stack IS the instrument under test; switching its generation engine would defeat the byte-faithful re-derivation."
+        },
         "modules": [],
         "persistence": {},
-        "pins": {}
+        "pins": {
+          "cell.yaml": "15a6a6f582b9c25db657ddb5ec673a605d09b257445bf65a959e0ce9ca23b6af",
+          "configs/phase3_current_clean_grpo_v2_caution_perp_residual_intervention.yaml": "7e0512432fb9dd36761f5f8bb6f325391aa775027d95be50b963938e8582ff33",
+          "configs/phase3_current_clean_grpo_v2_caution_residual_intervention.yaml": "9952c6948745f6b30f483bcc6a436d550ca05c7a1453c585fce67da4bba0fb29",
+          "configs/phase3_current_clean_grpo_v2_known_overrefusal_native_l26_coeff_sweep.yaml": "880798a0a3cd886d4ee70dcf1786ca6c3fbcea049bacfe21fb61bc36516e1d69",
+          "gates.yaml": "cf1fc9f4f80f4ea3284e09d5b49b08a1f07bd50ca673fd021c7ae1ad4470d612"
+        }
       },
       "kg": [],
       "prediction": "At least one archived variant (modal: caution_perp) reproduces post-ablation known-item over-refusal at or below 0.10, with baseline ~0.994 within 0.02.",
       "question": "Does re-running the archived phase-1 caution/caution_perp ablation pipeline on clean_sft_grpo_v2_seed1 reproduce the un-re-derivable 0.994-to-0.030 over-refusal collapse, giving that figure a governed source or formally retiring it?",
       "registered": true,
       "slug": "caution-ablation-rederivation",
-      "status": "draft",
+      "status": "signed",
       "title": "Re-deriving the archived caution-ablation over-refusal collapse",
       "type": "eval",
       "verdict": ""
