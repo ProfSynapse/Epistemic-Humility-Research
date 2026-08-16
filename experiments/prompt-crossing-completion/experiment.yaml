@@ -1,7 +1,7 @@
 slug: prompt-crossing-completion
 title: Completing the prompt-condition crossing
 type: eval
-status: signed
+status: resolved
 registered: true
 created_at: '2026-08-15T21:01:38Z'
 question: Does a preference stage applied to an internalized SFT checkpoint preserve,
@@ -41,5 +41,8 @@ instrument:
     name: vllm
     version: 0.16.1.dev0+g89a77b108.d20260417
 inputs: []
-verdict: ''
+verdict: 'Falsifier not fired: all six sequential preference arms retain internalized
+  abstention above the 30 percent floor under P-struct, but five of six show partial
+  erosion (DPO spending far more internalization than KTO), and the gap-1 evals make
+  Section 4.5 single-contract with both gap-1b arms inside the predicted band.'
 kg: []

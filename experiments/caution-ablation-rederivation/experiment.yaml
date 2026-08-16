@@ -1,7 +1,7 @@
 slug: caution-ablation-rederivation
 title: Re-deriving the archived caution-ablation over-refusal collapse
 type: eval
-status: signed
+status: resolved
 registered: true
 created_at: '2026-08-15T22:32:16Z'
 question: Does re-running the archived phase-1 caution/caution_perp ablation pipeline
@@ -36,5 +36,10 @@ instrument:
       HF-transformers greedy intervention stack IS the instrument under test; switching
       its generation engine would defeat the byte-faithful re-derivation.'
 inputs: []
-verdict: ''
+verdict: 'Falsifier not fired: full refusal-axis ablation (legacy raw-theta caution
+  direction) re-derives the archived 0.994-to-0.030 over-refusal collapse near-exactly
+  (0.0298, specificity intact) under the archived instrument, the KU-orthogonalized
+  component reproduces its own archived 0.524 confirming the 0.030/0.524 divergence
+  is variant identity not error, and the re-derived figure remains exploratory pending
+  a registered confirmatory step.'
 kg: []

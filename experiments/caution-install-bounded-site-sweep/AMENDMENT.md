@@ -12,6 +12,17 @@ locked headline matrix, never pooled with it, and a positive result is a lead
 requiring a confirmatory replication registered before running it (see
 Limitations).
 
+Naming note (2026-08-16, PI directive): this slug and this document's prose
+predate the program vocabulary rename recorded in
+`papers/common/terminology.md`. The slug is a LEGACY name kept verbatim per
+that file's usage rule 1. In running prose the constructs are now: doubt
+direction/axis/readout -> known-unknown (KU) direction / KU (answerability)
+readout; doubt gate -> KU readout gate; doubt-coupling -> KU-readout
+coupling; caution direction (refuse-vs-answer contrast among knowns) ->
+refusal axis; caution write -> IDK switch (validated actuator only) or
+boundary push (other dosed writes). Registered text below stays verbatim
+as signed.
+
 Tier 2, exploratory cell, per
 `.skills/experiment-runner/reference/amendment-vs-lab-notebook.md` decision
 question 2: this introduces a new cell reported as evidence, separately from the

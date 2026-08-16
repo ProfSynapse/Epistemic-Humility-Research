@@ -730,3 +730,16 @@ Falsifier not fired. Scoreboard reconciled straight, including the
 registrant's wrong modal-variant call (caution_perp predicted, raw-theta
 reproduced). Resolve awaits explicit PI approval; verdict text staged in
 the Outcome.
+
+## 2026-08-16 — naming pass (PI directive) and resolve
+
+Per the PI's directive this morning, running prose in this cell's
+AMENDMENT now uses the terminology.md vocabulary (refusal axis for the
+legacy caution direction; KU-orthogonalized component for caution_perp;
+KU-readout coupling for the doubt-regulated-caution comparison cell,
+whose slug stays verbatim). A dated naming note was added under the
+AMENDMENT Status line. The registered Prediction/Falsifier/Gates sections
+and the sign-pinned gates.yaml/experiment.yaml bytes retain their legacy
+phrases verbatim — pins are frozen; this entry is the record that those
+occurrences are legacy names. Resolve executed with explicit PI approval
+("Then resolve, merge and edit papers").

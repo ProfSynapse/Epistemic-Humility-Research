@@ -1,6 +1,6 @@
 # Completing the prompt-condition crossing
 
-Status: SIGNED (2026-08-15); run complete, Outcome recorded, awaiting resolve.
+Status: RESOLVED (2026-08-16, PI approval in-conversation). Run complete, Outcome recorded.
 Machine state in `experiment.yaml`.
 
 Keep this document the prose home for the experiment. The machine state lives in

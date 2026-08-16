@@ -1,6 +1,17 @@
 # Re-deriving the archived caution-ablation over-refusal collapse
 
-Status: SIGNED (2026-08-15). Machine state in `experiment.yaml`.
+Status: RESOLVED (2026-08-16, PI approval in-conversation; signed 2026-08-15). Machine state in `experiment.yaml`.
+
+Naming note (2026-08-16, PI directive): running prose in this program now
+uses the vocabulary of `papers/common/terminology.md` — the construct
+ablated here is the **refusal axis** (legacy artifact name: caution
+direction), its KU-orthogonalized companion is the legacy `caution_perp`,
+and the governed comparison cell `experiments/doubt-regulated-caution/` is
+the **KU-readout coupling** cell (the slug is a legacy name kept verbatim
+per usage rule 1). Registered sections below (Prediction, Falsifier,
+Gates) stay byte-verbatim as signed, including legacy names inside them;
+the same applies to the pinned `gates.yaml`/`experiment.yaml` comment
+text, whose bytes are frozen by the sign pins.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -12,7 +23,8 @@ to 0.030 on the clean_sft_grpo_v2_seed1 checkpoint) whose evidence chain was
 found un-re-derivable: the `write-direction-naming-battery` amendment
 documents that the figure's only sources are paper-3 prose and archived
 phase-1 intervention configs whose declared output paths no longer exist.
-The governed `doubt-regulated-caution` cell supports the same qualitative
+The governed KU-readout-coupling cell (slug `doubt-regulated-caution`,
+legacy name) supports the same qualitative
 claim at 0.994 to 0.524 (in-frame replication 0.536, specificity intact),
 and per the PI ruling of 2026-08-15 paper 3 now carries those governed
 numbers. The PI then asked for the archived pipeline to be RE-RUN so the
@@ -147,11 +159,12 @@ the archived record (raw-theta -2sigma 0.6548; caution_perp -2sigma 0.869
 and +2sigma specificity 0.0697, matching archived 0.070).
 
 **Secondary question resolved:** the 0.030-vs-0.524 divergence was never
-drift or error — they are different variants' numbers. Raw-theta ablation
-collapses over-refusal to 0.030; the caution_perp/doubt-frame family sits
-at 0.52, both reproducing their own archived values. The registered
-frame-difference hypothesis is confirmed in the strongest form (variant
-identity).
+drift or error — they are different variants' numbers. Full refusal-axis
+ablation (legacy raw-theta caution direction) collapses over-refusal to
+0.030; the KU-orthogonalized component (legacy `caution_perp`, the
+KU-readout-coupling family) sits at 0.52, both reproducing their own
+archived values. The registered frame-difference hypothesis is confirmed
+in the strongest form (variant identity).
 
 **Predictions scoreboard reconciliation (reported straight):** the
 headline call held (at least one archived variant reproduces <= 0.10 with
@@ -161,14 +174,15 @@ frame-difference explanation for the 0.524 divergence held. The user
 recorded no directional call.
 
 **Pre-stated scope holds:** this cell does NOT re-promote 0.030 into any
-paper on its own. Paper 3 keeps the governed doubt-regulated-caution
-numbers (0.994 -> 0.524, replication 0.536); promoting the re-derived
+paper on its own. Paper 3 keeps the governed KU-readout-coupling numbers
+(0.994 -> 0.524, replication 0.536); promoting the re-derived
 0.030 would require a further registered confirmatory step.
 
 **Verdict (one sentence, mirrors `verdict:` in the manifest):** Falsifier
-not fired: the raw-theta caution ablation re-derives the archived
-0.994-to-0.030 over-refusal collapse near-exactly (0.0298, specificity
-intact) under the archived instrument, caution_perp reproduces its own
-archived 0.524 confirming the 0.030/0.524 divergence is variant identity
-not error, and the re-derived figure remains exploratory pending a
-registered confirmatory step.
+not fired: full refusal-axis ablation (legacy raw-theta caution direction)
+re-derives the archived 0.994-to-0.030 over-refusal collapse near-exactly
+(0.0298, specificity intact) under the archived instrument, the
+KU-orthogonalized component reproduces its own archived 0.524 confirming
+the 0.030/0.524 divergence is variant identity not error, and the
+re-derived figure remains exploratory pending a registered confirmatory
+step.

@@ -284,3 +284,8 @@ only at seed 1.
 
 Outcome section written into AMENDMENT.md. Resolve awaits explicit PI
 approval per standing rule; verdict text staged in the Outcome.
+
+## 2026-08-16 — resolved
+
+Resolve executed with explicit PI approval ("Then resolve, merge and edit
+papers"). Verdict as staged in the Outcome; no content changes.

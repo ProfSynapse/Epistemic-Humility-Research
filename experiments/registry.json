@@ -586,10 +586,10 @@
       "question": "Does re-running the archived phase-1 caution/caution_perp ablation pipeline on clean_sft_grpo_v2_seed1 reproduce the un-re-derivable 0.994-to-0.030 over-refusal collapse, giving that figure a governed source or formally retiring it?",
       "registered": true,
       "slug": "caution-ablation-rederivation",
-      "status": "signed",
+      "status": "resolved",
       "title": "Re-deriving the archived caution-ablation over-refusal collapse",
       "type": "eval",
-      "verdict": ""
+      "verdict": "Falsifier not fired: full refusal-axis ablation (legacy raw-theta caution direction) re-derives the archived 0.994-to-0.030 over-refusal collapse near-exactly (0.0298, specificity intact) under the archived instrument, the KU-orthogonalized component reproduces its own archived 0.524 confirming the 0.030/0.524 divergence is variant identity not error, and the re-derived figure remains exploratory pending a registered confirmatory step."
     },
     {
       "checkpoint": {
@@ -5870,10 +5870,10 @@
       "question": "Does a preference stage applied to an internalized SFT checkpoint preserve, erode, or deepen instruction-free abstention (warmed seq DPO/KTO under P-struct, three seeds each), and what do the missing contract-symmetric readings (cold SFT under response-confidence, warmed arms under plain-answer) show?",
       "registered": true,
       "slug": "prompt-crossing-completion",
-      "status": "signed",
+      "status": "resolved",
       "title": "Completing the prompt-condition crossing",
       "type": "eval",
-      "verdict": ""
+      "verdict": "Falsifier not fired: all six sequential preference arms retain internalized abstention above the 30 percent floor under P-struct, but five of six show partial erosion (DPO spending far more internalization than KTO), and the gap-1 evals make Section 4.5 single-contract with both gap-1b arms inside the predicted band."
     },
     {
       "checkpoint": {
