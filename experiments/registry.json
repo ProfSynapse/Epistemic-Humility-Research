@@ -6367,17 +6367,35 @@
       "falsifier": "Post-ablation known-item over-refusal >= 0.30 on the fresh seed: collapse is seed-1-specific, no promotion; partial band (0.10,0.30) or specificity break also blocks promotion, reported straight.",
       "inputs": [],
       "instrument": {
-        "configs": [],
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "RUNBOOK.md",
+          "configs/extraction_hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed2_full.yaml",
+          "configs/behavior_rows_build_clean_sft_grpo_v2_seed2.py",
+          "configs/phase3_current_clean_grpo_v2_caution_residual_intervention_seed2.yaml"
+        ],
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "Fresh-seed confirmatory of an archived-instrument result: the archived HF-transformers greedy intervention stack is the instrument whose seed-1 result is being confirmed; changing engines would break comparability."
+        },
         "modules": [],
         "persistence": {},
-        "pins": {}
+        "pins": {
+          "RUNBOOK.md": "47cbc58c0cc403c755e719f0df5007b6336021e02a217faa37b9241f55d65256",
+          "cell.yaml": "0e70597c52351329cbc86b617435f465d0c99de078b8a12df75feab920da8a80",
+          "configs/behavior_rows_build_clean_sft_grpo_v2_seed2.py": "6da77fe199cdf849acb30bbe2865fc06af2b62bf238c80fa1406fc465139524d",
+          "configs/extraction_hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed2_full.yaml": "6dd625fd3edb7eb7f962c3481283fefeac9546c1e8114a946f898aa11abd4da7",
+          "configs/phase3_current_clean_grpo_v2_caution_residual_intervention_seed2.yaml": "fa2f5e289907ff237a47a35ede714e288e9a239d8bc6d4552d787be912ae079c",
+          "gates.yaml": "0daf7aeb14d30f251d9aa739cefa1bfad8514dd6d787cee37c810b0a922bf7cf"
+        }
       },
       "kg": [],
       "prediction": "Ablate arm lands at or below 0.10 (modal 0.03-0.08) from a >=0.97 baseline with specificity intact on known_correct_answered.",
       "question": "Does ablating a freshly fit refusal-axis direction on clean_sft_grpo_v2_seed2 (own per-seed lineage, same registered recipe as seed 1) reproduce the known-item over-refusal collapse at or below 0.10 with specificity intact, licensing promotion of the 0.030-class full-ablation figure into papers 3 and 5?",
       "registered": true,
       "slug": "refusal-axis-ablation-confirmatory",
-      "status": "draft",
+      "status": "signed",
       "title": "Refusal-axis ablation fresh-seed confirmatory",
       "type": "steer-cell",
       "verdict": ""

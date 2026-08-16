@@ -1,0 +1,78 @@
+# mechinterp dedicated SelfAware frozen-manifest hidden-state extraction, full run.
+#
+# SEED-2 mirror of the archived seed-1 config
+# (archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed1_full.yaml),
+# AMENDMENT.md stage 2 ("Extraction"). Only model/adapter/output paths changed;
+# extraction settings, selection manifest, and provenance shape are identical.
+#
+# Runs on experiments/common/knowledge_probe/hidden_state_probe.py (the live,
+# renamed home of the phase1_probe hidden-state harness; see commit d55b7d26).
+# This module is self-contained for the render path used here EXCEPT for
+# `_renderer_hash()`'s `from backends import _RENDER_MODES`, which the
+# rederivation cell (experiments/caution-ablation-rederivation) found broken
+# post-rename and fixed with one authorized symlink
+# (archive/experiment/phase1/probe/backends.py -> knowledge_probe/backends.py).
+# That symlink is a REPO-WIDE environment fix already authorized once; the
+# runner should confirm it still exists before launch rather than re-deriving
+# it (see this cell's RUNBOOK.md).
+#
+# PROMPT NOTE (flagged in the prep report, not resolved here): this config
+# omits `prompt:`, EXACTLY MIRRORING the seed-1 archived config, which also
+# has no `prompt:` block. hidden_state_probe.py's main() then falls back to
+# the generic default system prompt ("You are a helpful assistant. Answer the
+# question concisely.") for the rendered extraction prompt -- NOT the
+# response-confidence JSON-contract system prompt that produced the
+# known_refused / known_correct_answered behavior labels (the SelfAware full
+# eval's own prompt block, reused verbatim in the stage-4 intervention
+# config). This mismatch is already baked into the seed-1 lineage the
+# AMENDMENT asks this cell to mirror byte-for-byte; changing it here would be
+# an unauthorized recipe edit, not a substrate/path change. See NOTEBOOK.md
+# and the prep report for the full flag.
+
+model:
+  model_tag: qwen3-4b-clean-sft-grpo-v2-seed2-selfaware
+  # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-seed2-merged-16bit @ 4d526fddce37348a325f54127426fb15f9a77bbe
+  model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_clean_seed2_full/20260731_232307/Qwen3-4B-bnb-4bit/merged-16bit
+  revision: null
+  enable_thinking: false
+
+extraction:
+  layer_list: null
+  token_position_rule: final_prompt_token
+  compute_dtype: bfloat16
+  persist_dtype: float32
+  persistence_format: safetensors
+  device: cuda
+  persist_delta: true
+
+arms:
+  - name: clean_sft_merged_seed2_base
+    adapter_state: disabled
+    adapter: null
+  - name: clean_sft_grpo_v2_seed2
+    adapter_state: active
+    # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed2-lora @ 2390e893bfc92aefb3d14d30805b480e8a11fda7
+    adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed2_full/20260804_131151/final_model
+
+eval_arms_source: null
+
+selection:
+  source: selfaware_manifest
+  # Same frozen, checkpoint-agnostic SelfAware row manifest seed 1 used --
+  # dataset-level selection, not seed-specific.
+  manifest: experiments/common/artifacts/row_manifests/selfaware/mechinterp_selfaware_frozen_row_manifest.json
+
+output:
+  # Explicit root: the live PROBE_DIR default
+  # (experiments/common/artifacts/knowledge_probe/) is NOT gitignored, unlike
+  # the archived phase1-data mirror seed-1's extraction lives under. Point
+  # output at this cell's own gitignored analysis/ so the hidden-state rows
+  # (which carry question/answer text) never land somewhere trackable.
+  root: experiments/refusal-axis-ablation-confirmatory/analysis/hidden_states
+  hidden_states_subdir: hidden_states_selfaware_clean_sft_grpo_v2_seed2_full
+  manifest_filename: manifest.json
+  rows_filename: rows.jsonl
+
+manifest_provenance:
+  aligned_run_record_id: schema_clean_sft_grpo_v2_seed2_full
+  source_split: mechinterp-selfaware-frozen-row-manifest/v1
