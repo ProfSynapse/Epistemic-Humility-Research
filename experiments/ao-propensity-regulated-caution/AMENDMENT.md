@@ -8,6 +8,17 @@ corrected to match the machine state, which was already `null-result`.
 Tier-2 exploratory local mechanism evidence, never pooled with the locked
 Phase 1 matrix.
 
+Naming note (2026-08-16, PI directive): this slug and this document's prose
+predate the program vocabulary rename recorded in
+`papers/common/terminology.md`. The slug is a LEGACY name kept verbatim per
+that file's usage rule 1. In running prose the constructs are now: doubt
+direction/axis/readout -> known-unknown (KU) direction / KU (answerability)
+readout; doubt gate -> KU readout gate; doubt-coupling -> KU-readout
+coupling; caution direction (refuse-vs-answer contrast among knowns) ->
+refusal axis; caution write -> IDK switch (validated actuator only) or
+boundary push (other dosed writes). Registered text below stays verbatim
+as signed.
+
 Machine state lives in `experiment.yaml`; it is not duplicated here.
 
 ## Motivation and posture

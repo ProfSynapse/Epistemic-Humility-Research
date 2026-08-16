@@ -1,0 +1,79 @@
+# prompt-crossing-completion, Gap 3, seed 1 of 3: warmed sequential SFT->DPO
+# and SFT->KTO (Amendment A) under the P-struct prompt. Split from cell.yaml's
+# single-file grouping of all six seq arms: run_eval.py's VLLMGenerator
+# enforces one base model per config (archive/experiment/phase1/eval/run_eval.py
+# lines 256-272, "VLLMGenerator builds one base model per run; mixed arm model
+# labels are not supported here"), and each seed's Amendment A adapters were
+# trained on a DIFFERENT per-seed 16-bit merge of that seed's cold-start SFT
+# adapter, so all six arms cannot share one model_name. Split into three
+# per-seed files (seed1/seed2/seed3), matching the precedent structure of
+# archive/experiment/phase1/eval/config/eval_amendment_a_selfaware_full_local_4b.yaml
+# (seed 1: sft_merged + sft_dpo + sft_kto arms sharing one base). Prompt block
+# byte-identical to
+# experiments/prompt-vs-training-panel/configs/eval_panel_pstruct_warmed_local_4b.yaml.
+# Model base = the per-seed merged-16bit directory Amendment A trained its
+# seq adapters on (per
+# archive/experiment/phase1/eval/config/eval_amendment_a_selfaware_full_local_4b.yaml,
+# arms sft_dpo/sft_kto seed 1). NOT ON DISK as of this build (see report);
+# rebuild recipe: .tmp/merge_grouped_sft_lora_container.py, which calls
+# synaptic-tuner/shared/model_loading.merge_lora_checkpoint(
+# lora_path=synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/final_model,
+# output_path=.../Qwen3-4B-bnb-4bit/merged-16bit, max_seq_length=2048,
+# load_in_4bit=True).
+
+model_tag: qwen3-4b-seq-sft-dpo-kto-seed1-crossing-pstruct
+model_name: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results_prompt_crossing_completion_4b
+
+prompt:
+  system: >-
+    Answer the user's question. Return only a JSON object with exactly two
+    keys: "answer" and "response_confidence". The "answer" value is your
+    answer. The "response_confidence" value is your probability from 0 to 1
+    that your response is appropriate. Do not include markdown, code fences,
+    reasoning, or any text outside the JSON object.
+
+generation:
+  enable_thinking: false
+  seed: 20240601
+  temperature: 0.0
+  max_new_tokens: 128
+  n_samples: 1
+  stated_confidence_structured_outputs: true
+  stated_confidence_field: response_confidence
+  stated_confidence_json_retries: 2
+
+confidence:
+  signal: self_consistency
+  n_samples: 1
+
+bootstrap:
+  n_resamples: 200
+  level: 0.95
+  seed: 12345
+
+vllm:
+  dtype: auto
+  gpu_memory_utilization: 0.40
+  max_lora_rank: 32
+  max_model_len: 2048
+
+arms:
+  - name: seq_sft_dpo_seed1_pstruct
+    method: dpo
+    model: qwen3-4b-seq-sft-dpo-kto-seed1-crossing-pstruct
+    # Amendment A sequential SFT->DPO seed1 (docs/checkpoint-staging.md:
+    # eh-qwen3-4b-seq-sft-dpo-seed1-lora).
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed1/20260614_074933/final_model
+  - name: seq_sft_kto_seed1_pstruct
+    method: kto
+    model: qwen3-4b-seq-sft-dpo-kto-seed1-crossing-pstruct
+    # Amendment A sequential SFT->KTO seed1 (docs/checkpoint-staging.md:
+    # eh-qwen3-4b-seq-sft-kto-seed1-lora).
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed1/20260614_085358/final_model
+
+eval_sets:
+  selfaware:
+    type: ood
+    path: ../../../../datasets/selfaware/SelfAware.json

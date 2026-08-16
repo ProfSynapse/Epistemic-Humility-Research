@@ -42,6 +42,8 @@ relationships:
   confidence: high
 ---
 
+*Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
+
 Session-0036 category-geometry arm. The complement of the one-axis detection result:
 the shared trunk carries the answerable/unanswerable judgment, but each flavor
 arrives at it from its own angle and keeps a discriminative fingerprint after the

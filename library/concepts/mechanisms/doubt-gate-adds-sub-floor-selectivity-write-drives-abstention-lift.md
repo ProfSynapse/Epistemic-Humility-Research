@@ -54,6 +54,8 @@ relationships:
   confidence: medium
 ---
 
+*Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
+
 Registered successor to two prior gate-vs-write dissociations that ran at a
 single operating point each: `caution-write-selectivity-is-content-dependent-not-gate-created`
 (Qwen3.5-4B mid-band, permuted-gate reproduces most gated confab refusal) and

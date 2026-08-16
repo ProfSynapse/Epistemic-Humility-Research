@@ -24,7 +24,7 @@ related:
 - '[[trust-axis-injection-does-not-move-answer-abstain-revise-behavior]]'
 - '[[first-person-framed-probe-score-injection-does-not-open-text-channel]]'
 - '[[probe-agreement-reward-does-not-couple-policy-to-its-own-readout]]'
-- '[[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]'
+- '[[ku-readout-coupling-actuates-selective-refusal-release]]'
 relationships:
 - type: supported_by
   target: '[[internal-al-injection-null--true-checkpoint]]'
@@ -59,8 +59,8 @@ relationships:
   target_id: mechanism:probe-agreement-reward-does-not-couple-policy-to-its-own-readout
   confidence: high
 - type: related_to
-  target: '[[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]'
-  target_id: mechanism:doubt-regulated-caution-coupling-actuates-selective-refusal-release
+  target: '[[ku-readout-coupling-actuates-selective-refusal-release]]'
+  target_id: mechanism:ku-readout-coupling-actuates-selective-refusal-release
   confidence: high
 ---
 
@@ -86,7 +86,7 @@ Qwen3.5-4B), [[first-person-framed-probe-score-injection-does-not-open-text-chan
 AI, reward-channel training on the answerability axis). None of these generalizes
 into a claim that write-side activation edits fail as a class: Amendment AC's
 closed-loop erase-and-write on doubt-regulated caution
-([[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]) succeeded
+([[ku-readout-coupling-actuates-selective-refusal-release]]) succeeded
 on a different axis and checkpoint, so each null here is scoped to its own
 entry-point, axis, write-form, and population.
 </content>

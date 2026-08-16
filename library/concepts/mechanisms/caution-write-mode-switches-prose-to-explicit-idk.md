@@ -73,6 +73,8 @@ relationships:
     its unchanged registered thresholds)
 ---
 
+*Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
+
 Once the open-class form boundary is graded by a validated instrument instead
 of the under-detecting regex taxonomy, the mid-band caution write's
 intermediate-dose behavior turns out not to be gradedly hedging output at all.

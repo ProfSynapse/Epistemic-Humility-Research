@@ -54,6 +54,8 @@ relationships:
   confidence: high
 ---
 
+*Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
+
 M4c inverts M4-WK's audition: rather than testing whether a pre-fit ignorance
 direction responds to evidence, it fits a direction directly to the
 true-vs-false evidence contrast and asks whether that constructed direction

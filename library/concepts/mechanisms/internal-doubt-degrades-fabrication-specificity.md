@@ -37,6 +37,8 @@ relationships:
   confidence: medium
 ---
 
+*Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
+
 Session-0037 arm A
 (experiments/confab-mechanics-cpu-fleet/analysis-committed/confab-phenotypes/),
 on 309 baseline

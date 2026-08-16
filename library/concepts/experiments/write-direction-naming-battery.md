@@ -27,6 +27,7 @@ related:
 - '[[known-unknown-direction]]'
 - '[[idk-switch-naming-confirmatory]]'
 - '[[idk-switch]]'
+- '[[caution-ablation-rederivation]]'
 relationships:
 - type: built_on_by
   target: '[[idk-switch-naming-confirmatory]]'
@@ -39,6 +40,16 @@ relationships:
     point, run after form-judge-axis-g-rescore answered this experiment's own
     instrument-void axis-G question; this experiment's own outcome is
     unchanged and not reopened)
+- type: built_on_by
+  target: '[[caution-ablation-rederivation]]'
+  target_id: experiment:caution-ablation-rederivation
+  confidence: high
+  evidence:
+  - experiments/caution-ablation-rederivation/AMENDMENT.md Motivation and
+    posture (this experiment documented paper 3's cited 0.994-to-0.030
+    over-refusal collapse as un-re-derivable from its declared sources;
+    caution-ablation-rederivation re-runs the archived pipeline and repairs
+    the provenance)
 - type: related_to
   target: '[[idk-switch]]'
   target_id: term:idk-switch

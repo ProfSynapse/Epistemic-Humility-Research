@@ -1,0 +1,58 @@
+# Tier-2 REFINED B1: causal residual intervention on the DOUBT-ORTHOGONALIZED
+# caution direction (caution_perp). Raw-theta B1 (#110) was LOAD-BEARING but the
+# raw caution direction is ~83% aligned with the knowledge/doubt axis, so ablating
+# it also ablates most of doubt. caution_perp removes the rank-1 doubt direction
+# (perp fraction 0.558), isolating the caution-SPECIFIC gate. Question: does
+# ablating ONLY the caution-specific residual still drop over-refusal on
+# known_refused with specificity intact on known_correct_answered? If yes, the
+# caution gate (not doubt-thresholding) drives the over-refusal. The de-refused
+# correctness rate vs raw-theta's 57% attributes the residual: removing only the
+# spurious-caution component should de-refuse without disturbing genuine doubt.
+# Same model/adapter/prompt/rows as raw-theta B1; only the direction file differs.
+
+model:
+  # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit @ ac361232c001af0ed5b0386b06dafc35d5cd31ea
+  model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+  adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+  adapter_name: clean_sft_grpo_v2
+  torch_dtype: bfloat16
+  device_map: cuda
+  enable_thinking: false
+
+prompt:
+  system: >-
+    Answer the user's question. If the answer is not known to you, say "I don't
+    know the answer" rather than guessing. Return only a JSON object with
+    exactly two keys: "answer" and "response_confidence". The "answer" value is
+    your answer or abstention text. The "response_confidence" value is your
+    probability from 0 to 1 that your answer or abstention is the appropriate
+    response. Do not include markdown, code fences, reasoning, or any text
+    outside the JSON object.
+
+caution_direction: experiment/phase1/probe/analysis/current_clean_grpo_v2_caution_residual_direction/caution_perp_direction_L35.json
+
+rows: experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl
+
+rows_filter:
+  cells:
+    - known_refused
+    - known_correct_answered
+
+arms:
+  - arm_id: baseline
+    mode: baseline
+  - arm_id: ablate
+    mode: ablate
+  - arm_id: shift_minus2
+    mode: shift
+    alpha: -2.0
+  - arm_id: shift_plus2
+    mode: shift
+    alpha: 2.0
+
+sweep:
+  max_new_tokens: 96
+  max_rows: null
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_grpo_v2_caution_perp_residual_intervention
