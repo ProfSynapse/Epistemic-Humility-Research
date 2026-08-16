@@ -93,3 +93,94 @@ adapter path, which is why the flaw survived to the smoke. configs/
 jlens_trained.py repinned with reason; PI approval "yes patch" in
 conversation. No profile/ablation result existed before the fix — the smoke
 gate did its job.
+
+## 2026-08-16 — JT-G0 smoke adjudication: PASS (with a red flag investigated)
+
+Smoke on the trained substrate: mean cosine 0.9811, top-10 overlap 0.82,
+n_top1_match 3 — passes the pre-stated thresholds (>= 0.95 / >= 0.7).
+
+Red flag checked before accepting: the values match the archived raw-base
+smoke (jspace-jlens-r1/smoke_full.json) to ~7 significant figures, the
+signature one would expect if the wrong model had been loaded. Resolution:
+(1) the smoke JSON's model/adapter fields record the correct seed-1 trained
+paths; (2) the deterministic discriminator — cosine differs at the 8th
+decimal (0.981110656 trained vs 0.981110632 raw-base); with eager attention,
+the identical corpus, and the identical direction seed, bit-identical weights
+would reproduce bit-identically, so the differing tail digits prove different
+weights flowed through the JVP. Conclusion: the final-layer JVP-vs-unembed
+agreement is an architecture-dominated quantity nearly insensitive to
+checkpoint weights; it validates the machinery (its job), not substrate
+identity. GO for the profile stage. The profile itself is expected to be
+weight-sensitive; if it also reproduces raw-base values near-exactly, THAT
+would be a stop-and-investigate signal.
+
+## 2026-08-16 — profile complete; site-selection rule applied (runner-independent derivation)
+
+`profile_trained.json` status `complete`, all 13 grid points, 1.97 GPU-h.
+`effective_dim_frac_mean` per grid point (trained substrate):
+
+| hs | value |
+|----|-------|
+| 2  | 0.00448271316576592 |
+| 5  | 0.00471028697598680 |
+| 8  | 0.00349536536057271 |
+| 11 | 0.00451369007976061 |
+| 14 | 0.00348092307100229 |
+| 17 | 0.00442790107226492 |
+| 20 | 0.00512018870319814 |
+| 23 | 0.00661997357288143 |
+| 26 | 0.00693558681689027 |
+| 29 | 0.00734798221687554 |
+| 32 | 0.00610579375259764 |
+| 35 | 0.00234013859225889 |
+| 36 | 0.00100000000000051 |
+
+Applying the AMENDMENT's shallow-band-edge rule (RUNBOOK Stage 3.5 script,
+run verbatim by the runner directly against the JSON on disk, independent
+of the lead's own arithmetic):
+
+- Interior window {14, 17, 20, 23, 26, 29}. Interior max = 0.00734798
+  at hs29.
+- Early points {2, 5, 8, 11}. Early median = 0.00449820 (mean of the two
+  middle-sorted values 0.00448271 and 0.00451369).
+- Band test: interior_max >= 1.5 x early_median -> 0.00734798 >= 0.00674730
+  -> TRUE (band present, margin 0.00060068, i.e. the interior max clears
+  the 1.5x floor by about 9%; a narrow pass, not a comfortable one).
+  NO-INTERIOR-BAND branch does not fire.
+- Threshold = 0.5 x interior_max = 0.00367399.
+- Eligible interior points (value >= threshold): hs17 (0.00442790), hs20
+  (0.00512019), hs23 (0.00661997), hs26 (0.00693559), hs29 (0.00734798).
+  hs14 (0.00348092) is BELOW threshold, excluded.
+- Shallowest eligible = **hs17**.
+- VOID GUARD: |17 - 35| = 18 > 2, does not fire.
+
+SITE = hs17. Branch taken: shallow-band-edge rule (interior band present).
+
+Runner-independent result agrees exactly with the lead's disk-check
+arithmetic (interior max 0.00735 at hs29, early median 0.00450, threshold
+0.003674, eligible {17,20,23,26,29}, SITE=hs17) — no discrepancy, proceeding
+per brief rather than stopping.
+
+Script self-check: the same Stage-3.5 script, applied unmodified to the
+archived raw-base profile (`experiments/j-space-localization-qwen3-4b/
+analysis-committed/results/jspace-jlens-r1/profile_full.json`), reproduces
+interior_max=0.010573 (at hs26), early_median=0.002950, SITE=hs23 — exactly
+the AMENDMENT's stated sanity check ("applied to the raw-base profile this
+rule selects hs23"). This validates the runner's script implementation
+independent of the lead's numbers.
+
+Weight-sensitivity tripwire (lead's pre-stated check, independently
+re-verified): trained hs26=0.00693559 vs archived raw-base hs26=0.01057347
+— a ~34% divergence, not a near-exact reproduction. The interior peak
+location itself also shifted (raw-base peaks at hs26; trained profile
+peaks at hs29). Tripwire NOT triggered; profile is not a copy of the
+raw-base result. Proceeding to Stage 4 (direction fits) at layer 17,
+per brief.
+
+## 2026-08-16 — RESOLVED (falsified), PI approval in-conversation
+
+Lead recompute from raw rows agreed with runner at every gate. JT-G0 pass;
+JT-G1 falsifier fired on both clauses (hs17 ablate 1.0000 + specificity
+break 0.4799 induced / 0.4987 correct drop). Paired comparison: L35 releases
+163/168, hs17 releases 0/168 and newly refuses 179/373 answered knowns.
+Outcome written; resolved via bin/exp resolve --status falsified.

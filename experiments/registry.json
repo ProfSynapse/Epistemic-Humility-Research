@@ -4895,10 +4895,10 @@
       "question": "Does training preserve the J-lens interior workspace band on clean_sft_grpo_v2_seed1, and does full refusal-axis ablation at a rule-selected mid-band site reproduce the governed late-site (L35) over-refusal collapse on the same trained checkpoint?",
       "registered": true,
       "slug": "jlens-trained-checkpoint-midband-ablation",
-      "status": "signed",
+      "status": "falsified",
       "title": "J-lens on a trained checkpoint plus rule-selected mid-band refusal-axis ablation",
       "type": "eval",
-      "verdict": ""
+      "verdict": "Falsifier fired on both clauses: full refusal-axis ablation at the rule-selected J-lens mid-band site (hs17) on the trained checkpoint releases zero of the known-item over-refusal (1.000 vs the 0.30 falsifier line) and induces refusal on 48 percent of previously answered knowns, while the same operation at L35 releases 163 of 168 — the J-lens read-side band does not license a write site on this trained checkpoint, and the trained profile itself is flattened and deepened relative to raw-base (peak hs26 suppressed ~35 percent, peak now hs29)."
     },
     {
       "checkpoint": {
@@ -6444,7 +6444,10 @@
           "gates.yaml": "0daf7aeb14d30f251d9aa739cefa1bfad8514dd6d787cee37c810b0a922bf7cf"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:refusal-axis-ablation-confirmatory",
+        "mechanism:full-refusal-axis-ablation-collapse-is-seed1-specific"
+      ],
       "prediction": "Ablate arm lands at or below 0.10 (modal 0.03-0.08) from a >=0.97 baseline with specificity intact on known_correct_answered.",
       "question": "Does ablating a freshly fit refusal-axis direction on clean_sft_grpo_v2_seed2 (own per-seed lineage, same registered recipe as seed 1) reproduce the known-item over-refusal collapse at or below 0.10 with specificity intact, licensing promotion of the 0.030-class full-ablation figure into papers 3 and 5?",
       "registered": true,

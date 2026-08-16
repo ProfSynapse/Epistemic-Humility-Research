@@ -1,6 +1,6 @@
 # J-lens on a trained checkpoint plus rule-selected mid-band refusal-axis ablation
 
-Status: SIGNED (2026-08-16, PI approval in-conversation). Machine state in `experiment.yaml`. Queued to launch after the seed-2 confirmatory frees the GPU.
+Status: FALSIFIED (resolved 2026-08-16, PI approval in-conversation). Machine state in `experiment.yaml`.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -155,5 +155,64 @@ untouched by this cell (pre-stated; exploratory tier).
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-08-16, PI approval in-conversation. All numbers recomputed by
+the lead from raw rows; runner arithmetic independently agreed at every gate.
+
+JT-G0 (integrity): PASS. Smoke cosine 0.9811 / top-10 overlap 0.82 (>= 0.95 /
+0.7); the near-match to the raw-base smoke was investigated and is benign
+(tail digits differ at the 8th decimal, proving different weights flowed
+through; the final-layer JVP-vs-unembed agreement is architecture-dominated).
+One pre-run instrument fix, PI-approved and repinned before any result:
+re-enable requires_grad after PEFT merge_and_unload (instrument.repins).
+Archived inputs verified (1233 rows; cells 168/373); binding fit at the rule
+site carries the registered metadata (L17/block 16, h_lora, construction
+AUROC 0.8645); intervention full coverage (541 x 4 = 2164 rows); baseline
+known-item over-refusal 0.9940, exactly the archived floor.
+
+Profile (P1, band question): interior band PRESENT but narrowly (interior max
+0.00735 at hs29 vs 1.5x early-median threshold 0.00675) and RESHAPED by
+training: the raw-base peak at hs26 (0.01057) is suppressed ~35% (0.00694)
+and the remaining band is flatter and deeper (peak hs29). First J-lens
+measurement on a trained checkpoint. Per-point eff_dim_frac_mean:
+hs2 0.00448, hs5 0.00471, hs8 0.00350, hs11 0.00451, hs14 0.00348,
+hs17 0.00443, hs20 0.00512, hs23 0.00662, hs26 0.00694, hs29 0.00735,
+hs32 0.00611, hs35 0.00234, hs36 0.00100. Site rule (fixed at signing)
+selected hs17 (shallowest interior point >= 0.5x interior max); runner and
+lead derived hs17 independently, and the same script reproduces the
+registered raw-base sanity value (hs23) from the archived profile.
+
+JT-G1 (ablation at the rule site): FALSIFIER FIRED ON BOTH CLAUSES. Arm
+table (known_refused refusal/correct; known_correct_answered
+refusal/correct): baseline 0.9940/0.0000; 0.0000/1.0000. ablate
+1.0000/0.0000; 0.4799/0.5013. shift_minus2 0.7143/0.2143; 0.0080/0.9705.
+shift_plus2 1.0000/0.0000; 0.1635/0.8231. Ablating the refusal axis at hs17
+releases nothing (1.0000 >= 0.30, not-transferred) AND breaks specificity
+catastrophically (induced refusal on knowns 0.4799 > 0.05; correct drop
+0.4987 > 0.05).
+
+Paired row-level comparison vs the governed L35 ablation (same checkpoint,
+same 541 rows, same instrument, greedy deterministic): of 168 formerly
+refused knowns, L35 ablation releases 163, hs17 releases 0 (overlap 0); of
+373 answered knowns, hs17 newly refuses 179 that L35 leaves intact.
+Descriptive wrinkle recorded: shift_minus2 releases more than full ablation
+at hs17 (0.7143 vs 1.0000), suggesting the axis at this depth carries
+signal that answering requires — removal breaks answering while a dosed
+slide partially releases.
+
+Interpretation within this cell's exploratory scope: the refusal axis is
+READABLE at hs17 nearly as well as at L35 (AUROC 0.8645 vs 0.8688) but the
+causal handle does not transfer — the strongest same-checkpoint,
+same-axis demonstration of the read/actuate depth dissociation in the
+program. The J-lens band (present, flattened, deepened) did not license a
+write site on this trained checkpoint. Governed paper numbers are untouched
+(pre-stated); paper 3's late-site ablation stands validated as the site
+where the handle actually works, not a naive legacy choice.
+
+Verdict: Falsifier fired on both clauses: full refusal-axis ablation at the
+rule-selected J-lens mid-band site (hs17) on the trained checkpoint releases
+zero of the known-item over-refusal (1.000 vs the 0.30 falsifier line) and
+induces refusal on 48 percent of previously answered knowns, while the same
+operation at L35 releases 163 of 168 — the J-lens read-side band does not
+license a write site on this trained checkpoint, and the trained profile
+itself is flattened and deepened relative to raw-base (peak hs26 suppressed
+~35 percent, peak now hs29).

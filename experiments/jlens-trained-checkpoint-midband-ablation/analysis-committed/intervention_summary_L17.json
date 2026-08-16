@@ -1,0 +1,89 @@
+{
+ "analysis": {
+  "analysis_type": "mechinterp_residual_intervention",
+  "arms": [
+   "ablate",
+   "baseline",
+   "shift_minus2",
+   "shift_plus2"
+  ],
+  "by_arm": {
+   "ablate": {
+    "known_correct_answered": {
+     "correct_rate": 0.5013,
+     "n": 373,
+     "refusal_rate": 0.4799
+    },
+    "known_refused": {
+     "correct_rate": 0.0,
+     "n": 168,
+     "refusal_rate": 1.0
+    }
+   },
+   "baseline": {
+    "known_correct_answered": {
+     "correct_rate": 1.0,
+     "n": 373,
+     "refusal_rate": 0.0
+    },
+    "known_refused": {
+     "correct_rate": 0.0,
+     "n": 168,
+     "refusal_rate": 0.994
+    }
+   },
+   "shift_minus2": {
+    "known_correct_answered": {
+     "correct_rate": 0.9705,
+     "n": 373,
+     "refusal_rate": 0.008
+    },
+    "known_refused": {
+     "correct_rate": 0.2143,
+     "n": 168,
+     "refusal_rate": 0.7143
+    }
+   },
+   "shift_plus2": {
+    "known_correct_answered": {
+     "correct_rate": 0.8231,
+     "n": 373,
+     "refusal_rate": 0.1635
+    },
+    "known_refused": {
+     "correct_rate": 0.0,
+     "n": 168,
+     "refusal_rate": 1.0
+    }
+   }
+  },
+  "n_rows": 2164,
+  "ok": true,
+  "verdict": "NOT-LOAD-BEARING (single-site): ablating at the target layer barely moves known_refused refusal (0.99 -> 1.00, drop -0.01 < tol 0.15). The L35 caution read may be a correlate or re-derived downstream; next try a multi-layer ablation band."
+ },
+ "analysis_type": "mechinterp_residual_intervention_sweep",
+ "arms": [
+  "baseline",
+  "ablate",
+  "shift_minus2",
+  "shift_plus2"
+ ],
+ "caution_direction": "experiments/jlens-trained-checkpoint-midband-ablation/analysis/directions/caution_direction_L17_seed1.json",
+ "config": "/workspace/repo/experiments/jlens-trained-checkpoint-midband-ablation/analysis/intervention/instantiated_configs/phase3_jlens_midband_refusal_axis_intervention_seed1_L17.yaml",
+ "direction_layer": 17,
+ "fingerprint": "ecdd66f52b471954",
+ "max_new_tokens": 96,
+ "notice": "RESIDUAL_CAUTION_CAUSAL_INTERVENTION",
+ "ok": true,
+ "row_count": 541,
+ "rows": "experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl",
+ "rows_filter": {
+  "cells": [
+   "known_refused",
+   "known_correct_answered"
+  ]
+ },
+ "total_units": 2164,
+ "units_generated": 2164,
+ "units_resumed": 0
+}
