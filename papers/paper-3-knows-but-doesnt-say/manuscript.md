@@ -123,8 +123,7 @@ known from unknown questions any better than the model's own stated confidence
 does, there would be no gap to explain. If any of the seven interventions had
 produced a checkpoint that both behaved well and stated calibrated confidence, the
 gap would be an unsolved training problem rather than a property of the channel
-itself. Neither happened. Every result below was judged against a threshold fixed
-before the run, and Section 9 states those thresholds and which of them were missed.
+itself. Neither happened.
 
 A scope note before the results: this is a deep within-model mechanistic study of a
 single model (Qwen3-4B) at a single seed. We are explicit throughout about which
@@ -275,11 +274,11 @@ monotone across outcome groups (correct > wrong > refused > unknown; the
 correct-minus-wrong step stays positive with a CI that excludes zero under an
 out-of-fold reading of the axis). This monotone
 ordering, like the answerability identity below, is a single-model/single-population
-reading (Qwen3-4B, SelfAware); a pre-registered, methodologically parallel
+reading (Qwen3-4B, SelfAware); a methodologically parallel
 evidence-responsiveness test on a different Qwen lineage and a different error class
 (confident wrongness on answerable, world-known questions, rather than KUQ ignorance)
 found the analogous KUQ-fit direction's projection reverses in sign instead of
-ordering monotonically there, and a pre-registered constructive search for a portable
+ordering monotonically there, and a search for a portable
 evidence-responsive axis on that population recovered only generic retrieval-family
 geometry, not a specific evidence axis, so this ordering should not be assumed to
 transfer before it is tested directly.
