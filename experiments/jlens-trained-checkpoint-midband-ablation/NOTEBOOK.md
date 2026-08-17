@@ -184,3 +184,18 @@ JT-G1 falsifier fired on both clauses (hs17 ablate 1.0000 + specificity
 break 0.4799 induced / 0.4987 correct drop). Paired comparison: L35 releases
 163/168, hs17 releases 0/168 and newly refuses 179/373 answered knowns.
 Outcome written; resolved via bin/exp resolve --status falsified.
+
+## 2026-08-17 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-17). Built with the data-exhaust skill (aggregate-only: no question
+text, generation text, or hidden states; verify_exhaust.py PASS including
+the --experiment-dir completeness check). Contents: intervention_summary_L17.json,
+profile_trained.json, smoke_trained.json plus README + PROVENANCE (5 files,
+~17 KB), built at repo commit 7e3ded78.
+
+- HF repo: `professorsynapse/eh-jlens-trained-checkpoint-midband-ablation` (dataset)
+- HF revision: `58a0f3b1e4e7b9c4412a6b9a29d306856adaccaf`
+
+Card states the cell's terminal status (falsified, JT-G1 falsifier fired on
+both clauses) straight. Recorded in docs/public-artifacts.md.

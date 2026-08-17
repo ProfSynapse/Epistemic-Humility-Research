@@ -84,3 +84,17 @@ AMENDMENT.md; verdict recorded in experiment.yaml via bin/exp resolve with
 terminal status falsified. Promotion does not occur; the 0.030 figure stays
 exploratory seed-1-only and every citing surface must note the registered
 failed confirmatory.
+
+## 2026-08-17 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-17). Built with the data-exhaust skill (aggregate-only: no question
+text, generation text, or hidden states; verify_exhaust.py PASS including
+the --experiment-dir completeness check). Contents: intervention_summary_seed2.json
+plus README + PROVENANCE (3 files, ~10 KB), built at repo commit 7e3ded78.
+
+- HF repo: `professorsynapse/eh-refusal-axis-ablation-confirmatory` (dataset)
+- HF revision: `f929fa472c521e7233a4c65033a0ef89469747ef`
+
+Card states the cell's terminal status (falsified confirmatory, RC-G1
+falsifier fired) straight. Recorded in docs/public-artifacts.md.
