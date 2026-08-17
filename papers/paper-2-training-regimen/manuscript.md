@@ -1008,8 +1008,8 @@ answers, including on wrong answers and on unanswerable questions; refusals
 get near-zero confidence. Under the response-confidence contract the
 best-behaved checkpoint in the study, GRPO, emits confidence
 with standard deviation 0.013 across 3,369 rows: a near-constant value around
-0.8 whose AUROC against response appropriateness is 0.520, a coin flip. The
-observation replicates: across the three seeds the arm's mean
+0.8 whose AUROC against response appropriateness is 0.520, a coin flip.
+Across the three seeds the arm's mean
 stated confidence is 0.8146 (interval 0.8112 to 0.8191), the by-outcome
 profile stays flat at every seed (mean confidence differs by about one
 point on the 0-100 scale whether the answer is right, wrong, or refused),
