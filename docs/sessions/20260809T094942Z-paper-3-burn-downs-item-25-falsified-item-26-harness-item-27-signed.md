@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-17T14:12:58Z'
+updated_at: '2026-08-17T18:00:44Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -883,6 +883,30 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 036-checkpoint
+  at: '2026-08-17T18:00:44Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Exhaust uploads live and recorded, skill PR opened, confirmatory launched.
+    Both falsified-cell aggregate exhausts uploaded to HF with explicit PI permission:
+    eh-refusal-axis-ablation-confirmatory revision f929fa47 and eh-jlens-trained-checkpoint-midband-ablation
+    revision 58a0f3b1. Record step committed on main 7c134345 with NOTEBOOK entries
+    plus docs/public-artifacts.md rows. upload_exhaust.py stored-login fallback landed
+    as PR 472 on branch skill/exhaust-upload-stored-login commit 10e557af with mirrors
+    synced including codex pr-workflow catch-up; merge awaits PI approval. prompt-crossing-heldout-confirmatory
+    launched per PI approval: harness-builder runner phc-runner dispatched in background
+    for RUNBOOK stages 0-3, stage 0 verification then 7 primary configs 20 arms then
+    secondary 2 arms, est 11-14 GPU-h local 3090; stage 4 gate adjudication reserved
+    to lead. GPU verified idle 0 MiB pre-dispatch; 2-arm secondary reading confirmed
+    in signed AMENDMENT.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Monitor phc-runner; on completion lead recomputes PH-G0 and PH-G1 from raw scored
+    rows before any verdict; PR 472 merge pending PI approval
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -1075,3 +1099,10 @@ _No summary yet._
 - at: `2026-08-17T14:12:58Z`
 - kind: `checkpoint`
 - summary: Five-workstream burn-down day. Both LinkedIn null-result posts PI-approved (approval approved, status draft until scheduled). Adversarial reviews landed: paper 4 has 8 blockers (sec 6 contradicts the Gemma atlas signed doc twice, silently swaps a different four-family panel, orthogonal claim rides an unregistered diagnostic, 0.997-0.998 universality false vs own artifacts) but arithmetic fully clean over 20+ traced claims; paper 1 NOT ready (asserts preference optimization does not improve discrimination without computing any discrimination statistic while own CSV shows plus 7 Youden J for DPO/BoN, lead adjudication: J at single operating point cannot cleanly separate frontier movement from sliding so fix is indeterminacy not reversal; sec 7 calls P2/P3/P4 open when all three resolved; four of six literature gaps closed by own program). Paper 3 section 6 figures built and verified (fig-p2-06 ablation arms with 0.5238 read programmatically from committed artifact, fig-p2-07 bounded site sweep, branch paper3-section6-figures b09ac01e). Paper 5 front matter fixed: five legacy AMENDMENT-AB/AF/AG/AH/AI pseudo-filenames mapped to real experiment paths (branch paper5-frontmatter-fix 583c6223). Exhaust packaged build-verify only for both falsified cells, aggregate-only, dry-run cards awaiting PI upload approval; inventory found 40 terminal unpackaged cells and 4 terminal cells with no analysis-committed at all. Prompt-side promotion: PI chose route 1 held-out confirmatory; prompt-vs-training-panel stale DRAFT header corrected to RESOLVED; new cell prompt-crossing-heldout-confirmatory scaffolded and drafted (20 arms AmbigQA primary, C1 gap C2 internalization C3 parent-relative erosion floor bands drafted, unsigned, awaiting PI band approval). PI manually editing paper 2: hold all paper 2 changes until PI commits. Validator gap found: exp validate whitelist misses gitignored archive/ input paths, blocks fresh-worktree commits. pr-workflow skill updated with fresh-worktree gotcha. Pending PI decisions: paper 1 and 4 remediation go/no-go, PR approval for two verified branches, confirmatory bands, exhaust upload.
+### 036-checkpoint - Checkpoint
+
+- at: `2026-08-17T18:00:44Z`
+- kind: `checkpoint`
+- summary: Exhaust uploads live and recorded, skill PR opened, confirmatory launched. Both falsified-cell aggregate exhausts uploaded to HF with explicit PI permission: eh-refusal-axis-ablation-confirmatory revision f929fa47 and eh-jlens-trained-checkpoint-midband-ablation revision 58a0f3b1. Record step committed on main 7c134345 with NOTEBOOK entries plus docs/public-artifacts.md rows. upload_exhaust.py stored-login fallback landed as PR 472 on branch skill/exhaust-upload-stored-login commit 10e557af with mirrors synced including codex pr-workflow catch-up; merge awaits PI approval. prompt-crossing-heldout-confirmatory launched per PI approval: harness-builder runner phc-runner dispatched in background for RUNBOOK stages 0-3, stage 0 verification then 7 primary configs 20 arms then secondary 2 arms, est 11-14 GPU-h local 3090; stage 4 gate adjudication reserved to lead. GPU verified idle 0 MiB pre-dispatch; 2-arm secondary reading confirmed in signed AMENDMENT.
+- next steps:
+  - Monitor phc-runner; on completion lead recomputes PH-G0 and PH-G1 from raw scored rows before any verdict; PR 472 merge pending PI approval
