@@ -2929,10 +2929,10 @@
       "question": "Does fusing the answerability gate score into the correctness dial improve correctness triage on the deployed checkpoint's answerable items, or are the two axes non-redundant for that task?",
       "registered": true,
       "slug": "fusion-nonredundance-redo",
-      "status": "signed",
+      "status": "resolved",
       "title": "Gate-dial fusion non-redundance redo (registered CPU rerun)",
       "type": "probe-fit",
-      "verdict": ""
+      "verdict": "confirmed: fusing the gate score into the dial degrades correctness triage (Delta -0.0142, CI [-0.0214, -0.0074] excludes 0 on the negative side); gate and dial axes are non-redundant for correctness triage on the deployed checkpoint. FR-G0 pass, FR-G1 pass, FR-F1 not fired."
     },
     {
       "checkpoint": {
