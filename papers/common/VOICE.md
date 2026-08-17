@@ -258,3 +258,26 @@ After (house voice):
 > in 9 of 10 items, almost none are usable. Under condition B, the two come
 > apart. That decoupling is the finding. Whether it survives elsewhere is
 > registered as the next experiment, and its falsifier is already on file.
+
+## No research-journey narration (hard)
+
+The paper reports what is true at the resolution the evidence reached. It
+never narrates how the lab got there. This is "Synthesis, not journey"
+applied specifically to seeds and registrations.
+
+- A result is reported once, at its final seed count, as one story. Never a
+  seed-1 finding followed by a replication that confirms it, never a
+  before-and-after arc, never a subsection whose subject is the replication.
+- Per-number seed support is stated plainly and in place: "across three
+  seeds", "at seed 1 only", "the three-seed mean". That label does the work
+  a narrated arc would have done, in four words.
+- Registration mechanics stay out of the body. No "a replication registered
+  before any result existed", no "was registered as a secondary, descriptive
+  pattern", no account of which threshold was fixed when.
+- Nothing in this program is published, so nothing can be retracted or
+  withdrawn. A pattern that does not survive reseeding is simply not
+  reported as a finding: say what holds and at what seed support, and stop.
+- Registration bookkeeping lives in exactly two places. One compact
+  Limitations paragraph names which results are single-seed exploratory,
+  which carried registrations fixed before their runs, and which comparisons
+  are descriptive. The provenance appendix links the artifacts.
