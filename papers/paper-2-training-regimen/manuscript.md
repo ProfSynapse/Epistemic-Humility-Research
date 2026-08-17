@@ -67,11 +67,10 @@ operating point, with both error rates, under a named prompt condition.
 
 ## 1. Introduction
 
-Try this as a thought experiment. You ask a four-billion-parameter model for
-the release date of an obscure regional album, and it gives you one, to the
-day, in the same even tone it used a moment ago for the boiling point of
-water. Then you ask it something it does know, and if it has been trained to
-be careful, that is the one it declines. Nothing in either response marks
+Try this as a thought experiment. You ask a large language model (LLM) for
+the release date of an obscure regional album, and it gives you a confabulated one, in the same even tone it used a moment ago for the correct boiling point of
+water. Then you ask it something it demonstrably knows, and if it has been trained to
+be careful, the model abstains over cautiously. Nothing in either response marks
 which case you are in. The model has no difficulty producing the words "I
 don't know." What it lacks is any dependable coupling between those words and
 the state of not knowing.
