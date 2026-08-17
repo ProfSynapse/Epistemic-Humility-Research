@@ -119,8 +119,7 @@ untethered statue, right today and a runaway tomorrow.
 This paper measures the tether directly in one small instruction-tuned model. We
 read three signals on the same questions: a linear probe on hidden states, the
 confidence number the model states, and the answer-or-abstain decision it commits
-to. Inside the first of those, two directions turn out to do separate jobs, and
-Section 3 defines both. The known-unknown axis is fit as a known-versus-unknown
+to. Inside the first of those, two directions turn out to do separate jobs. The known-unknown axis is fit as a known-versus-unknown
 contrast over hidden states and read as graded answerability. The refusal axis is
 fit as a refuse-versus-answer contrast among questions the model can in fact
 answer.
@@ -128,14 +127,12 @@ answer.
 Four results follow from those readouts. The model distinguishes questions it can
 answer from questions it cannot, almost perfectly and internally, while the
 confidence it states sits flat across the same questions, so the failure is
-verbalization rather than representation. That internal signal is not one thing:
+verbalization rather than representation. The internal signal is not one thing:
 the graded knowledge axis and the refuse-or-answer decision come apart, and the
 behavior rides the second of them. The refusal axis is causally real, and the
 leverage over it runs one way, releasing over-refusal without being able to write
-appropriate abstention in. And seven training interventions fail to wire the
-knowledge signal into the stated channel, with three dissociations localizing the
-obstruction to the stated channel itself rather than to a shortfall of training
-budget.
+appropriate abstention in. Seven training interventions fail to wire the
+knowledge signal into the stated channel.
 
 Two outcomes would have overturned that thesis. If the probe had failed to separate
 known from unknown questions any better than the model's own stated confidence
