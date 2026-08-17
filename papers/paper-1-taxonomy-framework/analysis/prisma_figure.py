@@ -15,12 +15,14 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 OUT = Path(__file__).parent / "figures" / "prisma.png"
+# Second copy under the manuscript figure directory, where the paper embeds it.
+OUT_PAPER = Path(__file__).parent.parent / "figures" / "fig-prisma-flow.png"
 
 # evidence/prisma-flow.md — recomputable from raw reports, manifest, effects.csv
 QUERIES = 110          # sum of agent_queries frontmatter, reports 01-06
 ENTRIES = 93           # ^PAPER: entries across reports
 UNIQUE_ARXIV = 114     # deduplicated arXiv IDs in reports
-NON_ARXIV = 5          # gray literature + essay
+NON_ARXIV = 8          # gray literature, system/model cards, essay (prisma-flow.md)
 ADMITTED = 97          # library/manifest.yaml (search phases)
 BACKCITE_STUDIES = 4   # backward-citation pass admissions (prisma-flow.md)
 BACKCITE_CONTEXT = 20  # 19 arXiv context + 1 non-arXiv (Farquhar 2024)
@@ -38,16 +40,17 @@ MAIN = [
      f"{ENTRIES} per-paper entries in 6 raw reports\n"
      f"{UNIQUE_ARXIV} unique arXiv IDs + {NON_ARXIV} non-arXiv records"),
     ("Library admission",
-     f"{ADMITTED} papers admitted after dedup + eligibility screening\n"
-     "(93 search-surfaced + 4 verification/follow-up additions)\n"
+     f"{ADMITTED} arXiv papers admitted after dedup + eligibility screening\n"
+     f"({UNIQUE_ARXIV} surfaced - {NOT_ADMITTED} not admitted = 93 search-surfaced,\n"
+     "+ 4 verification/follow-up additions); non-arXiv records held separately\n"
      f"+ backward-citation pass: {BACKCITE_STUDIES} effect studies, "
-     f"{BACKCITE_CONTEXT} context refs (June 2026)"),
+     f"{BACKCITE_CONTEXT} context refs"),
     ("Quantitative extraction",
      f"{STUDIES} studies → {ROWS} effect rows in unified schema\n"
      f"+ {CONTEXT_CITED} papers cited as context/framework only"),
     ("PDF verification",
-     f"{VERIFIED}/{ROWS} rows verified · {CORRECTED} corrected · "
-     f"{EXCLUDED} excluded + removed (mis-attribution)\n"
+     f"{VERIFIED}/{ROWS} rows verified · {CORRECTED} corrected\n"
+     f"{EXCLUDED} row excluded and removed (mis-attribution)\n"
      "+ review pass: IPO arm extracted (2404.14723)"),
 ]
 
@@ -64,15 +67,15 @@ ax.axis("off")
 
 ys = [9.4, 7.5, 5.6, 3.7, 1.8]
 for i, ((title, body), y) in enumerate(zip(MAIN, ys)):
-    box = FancyBboxPatch((0.6, y - 0.62), 5.9, 1.32,
+    box = FancyBboxPatch((0.5, y - 0.62), 6.2, 1.32,
                          boxstyle="round,pad=0.12",
                          fc="#eef3fb", ec="#2b5797", lw=1.3)
     ax.add_patch(box)
-    ax.text(3.55, y + 0.42, title, ha="center", va="center",
+    ax.text(3.6, y + 0.42, title, ha="center", va="center",
             fontsize=10.5, fontweight="bold", color="#1a3a6b")
-    ax.text(3.55, y - 0.18, body, ha="center", va="center", fontsize=8.3)
+    ax.text(3.6, y - 0.18, body, ha="center", va="center", fontsize=7.9)
     if i < len(MAIN) - 1:
-        ax.add_patch(FancyArrowPatch((3.55, y - 0.78), (3.55, ys[i + 1] + 0.74),
+        ax.add_patch(FancyArrowPatch((3.6, y - 0.78), (3.6, ys[i + 1] + 0.74),
                                      arrowstyle="-|>", mutation_scale=16,
                                      color="#2b5797", lw=1.3))
 
@@ -84,17 +87,21 @@ for i, note in SIDE.items():
     ax.add_patch(box)
     ax.text(8.3, y + 0.04, note, ha="center", va="center", fontsize=7.4,
             color="#6b2413")
-    ax.add_patch(FancyArrowPatch((6.62, y), (6.96, y),
+    ax.add_patch(FancyArrowPatch((6.75, y), (6.96, y),
                                  arrowstyle="-|>", mutation_scale=12,
                                  color="#a33b1f", lw=1.1))
 
 ax.text(5.0, 10.35, "Evidence flow (retrospective reconstruction)",
         ha="center", fontsize=12, fontweight="bold")
 ax.text(5.0, 0.45,
-        "Counts recomputable from raw-reports/01–06, library/manifest.yaml, "
-        "effects.csv — see evidence/prisma-flow.md",
+        "Counts recomputable from raw-reports/01-06, library/manifest.yaml, "
+        "effects.csv; see evidence/prisma-flow.md",
         ha="center", fontsize=7.2, style="italic", color="#555555")
 
 OUT.parent.mkdir(exist_ok=True)
 fig.savefig(OUT, dpi=200, bbox_inches="tight")
 print(f"wrote {OUT}")
+
+OUT_PAPER.parent.mkdir(exist_ok=True)
+fig.savefig(OUT_PAPER, dpi=200, bbox_inches="tight")
+print(f"wrote {OUT_PAPER}")

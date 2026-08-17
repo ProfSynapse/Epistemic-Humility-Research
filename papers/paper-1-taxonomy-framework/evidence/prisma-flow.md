@@ -113,9 +113,13 @@ venue upgrade at BibTeX time.
 
 ## Post-admission corrections (verification pass, 2026-06-10)
 
-7 of the 49 retrospectively checked rows (~14%) changed under PDF
-verification — the per-row audit trail lives in `effects.csv` notes and
-`paper/TODO.md`:
+7 of the 55 rows the retrospective pass examined (~13%) changed under PDF
+verification. Recomputed 2026-08-17 against the current 78-row corpus: the 55
+are the 54 rows that were not born verified (78 minus the 12 own-reanalysis
+rows, the 8 backward-citation rows, the review-extracted IPO row, and the 3
+HypoTermInstruct rows) plus the one row the pass removed. The earlier "49"
+predated the post-freeze admissions. The per-row audit trail lives in
+`effects.csv` notes and `paper/TODO.md`:
 
 1. R-Tuning metric relabeled (accuracy → AP score)
 2. Wei sycophancy −8.8 re-attributed (Flan-PaLM-62B → 8B)

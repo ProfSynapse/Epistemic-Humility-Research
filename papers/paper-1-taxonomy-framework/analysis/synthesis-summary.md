@@ -4,7 +4,7 @@ Evidence rows: 78 from 39 studies. Rows verified against primary sources: 76 (37
 
 Rows per area: abstention 26, calibration 17, sycophancy 15, hallucination 12, methods 4, capability 2, knowledge-boundary 2.
 
-Method: vote counting + exact binomial sign test per claim family; descriptive normalization (relative % change) where baselines exist. Formal pooling deferred — variances are unreported in this literature.
+Method: vote counting + exact binomial sign test per claim family; descriptive normalization (relative % change) where baselines exist. Formal pooling deferred â€” variances are unreported in this literature.
 
 ## C1: instruction-tuning/RLHF degrades token-probability calibration
 
@@ -14,9 +14,10 @@ Method: vote counting + exact binomial sign test per claim family; descriptive n
 
 ## C2: preference-based methods beat SFT on abstention/truthfulness quality
 
-- Studies supporting: **2** | contradicting: **1** | sign-test p = 1.0000
+- Studies supporting: **2** | contradicting: **0** | sign-test p = 0.5000
 - Effect sizes: median |rel change| 5.0% [range -5.4%, 21.2%]
 - Rows: 2401.13275, 2404.14723, jmir-e76048
+- Studies with rows in both directions (netted to one vote): 2404.14723 (2 supporting / 1 contradicting rows)
 
 ## C3: preference optimization reduces SFT abstention over-refusal
 
@@ -82,9 +83,9 @@ These rows are in the corpus but outside every family selector; the family talli
 
 ## Variance-aware rows (the only ones in the corpus)
 
-- SycEval: sycophancy rate = 58.19 (persistence 78.5% (CI 77.2-79.8) — rare CI; VERIFIED 2026-06-10 (also progressive 43.52 / regressive 14.66))
+- SycEval: sycophancy rate = 58.19 (persistence 78.5% (CI 77.2-79.8) â€” rare CI; VERIFIED 2026-06-10 (also progressive 43.52 / regressive 14.66))
 - Base models not sycophantic: % match user view = 52.6 (CI 52.3-53.0; sycophancy appears only after feedback tuning)
-- Clinical SFT vs DPO: clinical reasoning accuracy = nan (p=0.003 — rare p-value; Mistral +7% p=0.004)
-- SaySelf (Xu, Wu et al.): ECE (per-sample absolute deviation) = 0.3558 (Table 1; 3-run averages, paired t-test p<0.05 vs all baselines (asterisks, no SDs). NB nonstandard ECE (Eq.4 per-sample MAD, not binned) — within-paper comparable only. Also beats R-Tuning (0.4141) and on 5/5 OOD sets. EMNLP 2024. Admitted 2026-06-11 via backward-citation pass.)
-- Machine Bullshit (Liang et al.): Bullshit Index (1-|r_pb(belief,claim)|) = 0.665 (Fig.3 +/-: 0.379+/-0.036 -> 0.665+/-0.051; paired bootstrap 10k: dBI=-0.285 95% CI [-0.355,-0.216] p<0.001 (sign = before-after). Treatment is LoRA RLHF on simulated IMMEDIATE user satisfaction (RLHS, arXiv:2501.08617), in-domain eval — not generic production RLHF. Admitted 2026-06-11 via backward-citation pass.)
+- Clinical SFT vs DPO: clinical reasoning accuracy = nan (p=0.003 â€” rare p-value; Mistral +7% p=0.004)
+- SaySelf (Xu, Wu et al.): ECE (per-sample absolute deviation) = 0.3558 (Table 1; 3-run averages, paired t-test p<0.05 vs all baselines (asterisks, no SDs). NB nonstandard ECE (Eq.4 per-sample MAD, not binned) â€” within-paper comparable only. Also beats R-Tuning (0.4141) and on 5/5 OOD sets. EMNLP 2024. Admitted 2026-06-11 via backward-citation pass.)
+- Machine Bullshit (Liang et al.): Bullshit Index (1-|r_pb(belief,claim)|) = 0.665 (Fig.3 +/-: 0.379+/-0.036 -> 0.665+/-0.051; paired bootstrap 10k: dBI=-0.285 95% CI [-0.355,-0.216] p<0.001 (sign = before-after). Treatment is LoRA RLHF on simulated IMMEDIATE user satisfaction (RLHS, arXiv:2501.08617), in-domain eval â€” not generic production RLHF. Admitted 2026-06-11 via backward-citation pass.)
 - Machine Bullshit (Liang et al.): deceptive positive claim rate (unknown-attribute scenarios) = 84.5 (Table 2 + section 4.1: 20.9 -> 84.5 (+/-2 SE over 5 rounds; chi2=1509 p<0.001); negative-attribute scenarios 11.8 -> 67.9; belief-claim Cramer V 0.575 -> 0.269 (5k bootstrap, p=0.0002). Same satisfaction-RLHF caveat as BI row. Admitted 2026-06-11 via backward-citation pass.)
