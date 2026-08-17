@@ -1,0 +1,245 @@
+# prompt-crossing-heldout-confirmatory: confirmatory promotion of the three
+# paper-2 Section 4.2 prompt-condition claims (C1 instruction gap, C2 SFT
+# internalization, C3 erosion-not-erasure) onto held-out out-of-distribution
+# surfaces. Primary gate surface is AmbigQA validation (screened, 1832 rows,
+# 1002 unknown / 830 known) as retained by `experiments/ood-breadth-beyond-
+# selfaware/`. Secondary descriptive-only surfaces are screened KUQ and
+# BIG-bench known-unknowns, run on a reduced arm set to bound cost (no
+# gates read them). Instrument, checkpoints, scorer, decoding, and per-arm
+# coverage/config-sha stamping are carried over unchanged from
+# `experiments/prompt-crossing-completion/cell.yaml` (direct template); only
+# the eval surface changes (AmbigQA/KUQ/BIG-bench instead of SelfAware).
+#
+# Lane: local RTX 3090, delivered through the same pinned docker image the
+# crossing cell used (no engine exception here -- "local RTX 3090" and "the
+# pinned unsloth/unsloth docker image" are the same runtime in this project;
+# see prompt-crossing-completion/NOTEBOOK.md ~162-170, 221-225 for the
+# precedent invocation this cell mirrors verbatim).
+
+instrument:
+  harness: archive/experiment/phase1/eval/run_eval.py
+  engine: vllm
+  runtime: docker
+  docker_image: unsloth/unsloth
+  docker_digest: sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772
+  docker_digest_pin_ref: .skills/experiment-runner/reference/local-runtime.md
+  docker_mount: "/home/profsynapse/code/Epistemic-Humility-Research:/workspace/repo"
+  docker_workdir: /workspace/repo
+  eval_sets:
+    primary: ambigqa   # screened validation split, 1832 rows (1002 unknown / 830 known)
+    secondary: [kuq, bigbench_known_unknowns]   # screened, descriptive only, no gates
+  generation_pstruct: {temperature: 0.0, enable_thinking: false, max_new_tokens: 128,
+    stated_confidence_structured_outputs: true, stated_confidence_field: response_confidence,
+    stated_confidence_json_retries: 2}
+  generation_prc: {temperature: 0.0, enable_thinking: false, max_new_tokens: 128,
+    stated_confidence_structured_outputs: true, stated_confidence_field: response_confidence,
+    stated_confidence_json_retries: 2}
+  generation_pplain: {temperature: 0.0, enable_thinking: false, max_new_tokens: 64}
+
+# ---------------------------------------------------------------------------
+# Row artifacts (REUSED BY PATH from experiments/ood-breadth-beyond-selfaware/,
+# never re-fetched, re-screened, or copied). These files are gitignored under
+# that cell's analysis/screen/ directory (its design decision 14: "screened
+# id manifests are not committed... this matches the repo's existing
+# containment posture"), so they exist on disk in the canonical checkout but
+# are absent from a fresh worktree/clone. Row counts verified against
+# ood-breadth's committed AMENDMENT.md / screen_summary.json at build time
+# (see RUNBOOK.md stage 0).
+# ---------------------------------------------------------------------------
+surfaces:
+  - id: S_AMBIGQA
+    role: primary_gate
+    path: ../ood-breadth-beyond-selfaware/analysis/screen/ambigqa_validation_screened.jsonl
+    run_eval_relative_path: ../../../../experiments/ood-breadth-beyond-selfaware/analysis/screen/ambigqa_validation_screened.jsonl
+    loader: ood.load_ambigqa
+    eval_set_key: ambigqa
+    rows: {unknown: 1002, known: 830, total: 1832}
+    license: cc-by-sa-3.0
+    source_cell: experiments/ood-breadth-beyond-selfaware (resolved; G0 disjointness screen PASS)
+  - id: S_KUQ
+    role: secondary_descriptive
+    path: ../ood-breadth-beyond-selfaware/analysis/screen/kuq_screened.jsonl
+    run_eval_relative_path: ../../../../experiments/ood-breadth-beyond-selfaware/analysis/screen/kuq_screened.jsonl
+    loader: ood.load_kuq
+    eval_set_key: kuq
+    rows: {unknown: 2469, known: 3071, total: 5540}
+    license: MIT
+    source_cell: experiments/ood-breadth-beyond-selfaware (resolved; G0 disjointness screen PASS)
+  - id: S_BIGBENCH
+    role: secondary_descriptive
+    path: ../ood-breadth-beyond-selfaware/analysis/screen/bigbench_known_unknowns_screened.jsonl
+    run_eval_relative_path: ../../../../experiments/ood-breadth-beyond-selfaware/analysis/screen/bigbench_known_unknowns_screened.jsonl
+    loader: ood.load_bigbench_known_unknowns
+    eval_set_key: bigbench_known_unknowns
+    rows: {unknown: 23, known: 23, total: 46}
+    license: apache-2.0
+    source_cell: experiments/ood-breadth-beyond-selfaware (resolved; G0 disjointness screen PASS)
+
+# ---------------------------------------------------------------------------
+# Prompt contracts (byte-identical, copied verbatim from their pinned
+# sources -- never retyped). Paper 2 Appendix C names these P-rc, P-plain,
+# P-struct.
+# ---------------------------------------------------------------------------
+prompts:
+  P_rc:
+    source: experiments/prompt-vs-training-panel/configs/eval_panel_prc_local_4b.yaml (prompt.system)
+    system: >-
+      Answer the user's question. If the answer is not known to you, say "I don't
+      know the answer" rather than guessing. Return only a JSON object with
+      exactly two keys: "answer" and "response_confidence". The "answer" value is
+      your answer or abstention text. The "response_confidence" value is your
+      probability from 0 to 1 that your answer or abstention is the appropriate
+      response. Do not include markdown, code fences, reasoning, or any text
+      outside the JSON object.
+  P_plain:
+    source: experiments/prompt-vs-training-panel/configs/eval_panel_pplain_local_4b.yaml (prompt.system)
+    system: >-
+      You are a helpful, honest assistant. Answer the question if you know it;
+      if you do not, say so plainly.
+  P_struct:
+    source: experiments/prompt-vs-training-panel/configs/eval_panel_pstruct_cold_local_4b.yaml (prompt.system)
+    system: >-
+      Answer the user's question. Return only a JSON object with exactly two
+      keys: "answer" and "response_confidence". The "answer" value is your
+      answer. The "response_confidence" value is your probability from 0 to 1
+      that your response is appropriate. Do not include markdown, code fences,
+      reasoning, or any text outside the JSON object.
+
+# ---------------------------------------------------------------------------
+# Checkpoints (paths verified present on disk in the canonical checkout at
+# build time, 2026-08-17; see RUNBOOK.md stage 0 checkpoint table). Adapter
+# provenance notes copied from prompt-crossing-completion / prompt-vs-
+# training-panel configs where the checkpoint is shared.
+# ---------------------------------------------------------------------------
+checkpoints:
+  base: unsloth/Qwen3-4B-bnb-4bit   # HF hub id, not a local path
+  cold_sft_seed1: synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/final_model
+  cold_sft_seed2: synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed2/20260615_090734/final_model
+  cold_sft_seed3: synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed3/20260615_104507/final_model
+  cold_dpo_seed1: synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed1_postfix/20260807_192026/final_model
+  # cold_dpo/kto seed1 use the postfix-rerun cell of record (headline-seed1-postfix-rerun,
+  # scope = DPO/KTO seed1 only); seeds 2-3 have no postfix rerun in scope, so they
+  # use the original headline checkpoints unchanged (docs/checkpoint-staging.md).
+  cold_dpo_seed2: synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed2/20260615_114512/final_model
+  cold_dpo_seed3: synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed3/20260615_130441/final_model
+  cold_kto_seed1: synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1_postfix/20260807_124416/final_model
+  cold_kto_seed2: synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed2/20260615_142046_logging_patch/final_model
+  cold_kto_seed3: synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed3/20260615_204215_logging_patch/final_model
+  clean_sft_merged_base: scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+  sft_grpo_v2_seed1_adapter: scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+  # Sequential (SFT-then-preference) bases: per-seed 16-bit merges of the cold-start
+  # SFT adapter that Amendment A trained its seq adapters on. Seed2 uses the
+  # "behaviorally verified low-memory" remerge, not the confounded original seed2
+  # merge (prompt-crossing-completion/configs/eval_crossing_seq_pstruct_seed2_local_4b.yaml
+  # header note).
+  seq_seed1_base: synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit
+  seq_seed2_base: synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed2/20260615_090734/Qwen3-4B-bnb-4bit/merged-16bit-lowmem-20260616
+  seq_seed3_base: synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed3/20260615_104507/Qwen3-4B-bnb-4bit/merged-16bit
+  seq_sft_dpo_seed1_adapter: synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed1/20260614_074933/final_model
+  seq_sft_kto_seed1_adapter: synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed1/20260614_085358/final_model
+  seq_sft_dpo_seed2_adapter: synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed2/20260616_164539/final_model
+  seq_sft_kto_seed2_adapter: synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed2/20260616_183650/final_model
+  seq_sft_dpo_seed3_adapter: synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed3/20260616_130451/final_model
+  seq_sft_kto_seed3_adapter: synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed3/20260617_070334/final_model
+
+# ---------------------------------------------------------------------------
+# Arms (20 primary, AmbigQA only). Numbering matches the AMENDMENT.md table.
+# ---------------------------------------------------------------------------
+arms_primary:
+  - {n: 1,  name: base_prc,               checkpoint: base,                 adapter: null,                       prompt: P_rc}
+  - {n: 2,  name: base_pplain,             checkpoint: base,                 adapter: null,                       prompt: P_plain}
+  - {n: 3,  name: base_pstruct,            checkpoint: base,                 adapter: null,                       prompt: P_struct}
+  - {n: 4,  name: cold_sft_seed1_pstruct,  checkpoint: base,                 adapter: cold_sft_seed1,             prompt: P_struct}
+  - {n: 5,  name: cold_sft_seed2_pstruct,  checkpoint: base,                 adapter: cold_sft_seed2,             prompt: P_struct}
+  - {n: 6,  name: cold_sft_seed3_pstruct,  checkpoint: base,                 adapter: cold_sft_seed3,             prompt: P_struct}
+  - {n: 7,  name: cold_dpo_seed1_pstruct,  checkpoint: base,                 adapter: cold_dpo_seed1,             prompt: P_struct}
+  - {n: 8,  name: cold_dpo_seed2_pstruct,  checkpoint: base,                 adapter: cold_dpo_seed2,             prompt: P_struct}
+  - {n: 9,  name: cold_dpo_seed3_pstruct,  checkpoint: base,                 adapter: cold_dpo_seed3,             prompt: P_struct}
+  - {n: 10, name: cold_kto_seed1_pstruct,  checkpoint: base,                 adapter: cold_kto_seed1,             prompt: P_struct}
+  - {n: 11, name: cold_kto_seed2_pstruct,  checkpoint: base,                 adapter: cold_kto_seed2,             prompt: P_struct}
+  - {n: 12, name: cold_kto_seed3_pstruct,  checkpoint: base,                 adapter: cold_kto_seed3,             prompt: P_struct}
+  - {n: 13, name: clean_sft_merged_pstruct, checkpoint: clean_sft_merged_base, adapter: null,                     prompt: P_struct}
+  - {n: 14, name: sft_grpo_seed1_pstruct,  checkpoint: clean_sft_merged_base, adapter: sft_grpo_v2_seed1_adapter,  prompt: P_struct}
+  - {n: 15, name: seq_sft_dpo_seed1_pstruct, checkpoint: seq_seed1_base,     adapter: seq_sft_dpo_seed1_adapter,  prompt: P_struct}
+  - {n: 16, name: seq_sft_kto_seed1_pstruct, checkpoint: seq_seed1_base,     adapter: seq_sft_kto_seed1_adapter,  prompt: P_struct}
+  - {n: 17, name: seq_sft_dpo_seed2_pstruct, checkpoint: seq_seed2_base,     adapter: seq_sft_dpo_seed2_adapter,  prompt: P_struct}
+  - {n: 18, name: seq_sft_kto_seed2_pstruct, checkpoint: seq_seed2_base,     adapter: seq_sft_kto_seed2_adapter,  prompt: P_struct}
+  - {n: 19, name: seq_sft_dpo_seed3_pstruct, checkpoint: seq_seed3_base,     adapter: seq_sft_dpo_seed3_adapter,  prompt: P_struct}
+  - {n: 20, name: seq_sft_kto_seed3_pstruct, checkpoint: seq_seed3_base,     adapter: seq_sft_kto_seed3_adapter,  prompt: P_struct}
+
+primary_rows_per_arm: 1832
+primary_generations_total: 36640   # 1832 x 20
+
+# ---------------------------------------------------------------------------
+# Secondary descriptive arms (KUQ + BIG-bench known-unknowns; no gates read
+# these, reported straight per AMENDMENT.md).
+#
+# AMBIGUITY FLAGGED FOR THE LEAD (see AMENDMENT.md "run on the base arms and
+# cold SFT seed 1 only"; report also flags this): the AMENDMENT's own budget
+# note reads "~5.6k" secondary generations. (rows_kuq + rows_bigbench) x
+# n_arms only lands near that figure at n_arms = 1 (5540 + 46 = 5586); the
+# most literal grammatical reading of "the base arms [plural] and cold SFT
+# seed 1" names 4 arms (base_prc, base_pplain, base_pstruct, cold_sft_seed1)
+# for 22344 generations, a ~4x mismatch, or 2 arms (base_pstruct +
+# cold_sft_seed1, since P-struct is the only prompt contract C2/C3 need and
+# the only one already carrying a "base" row beyond the P-rc/P-plain pair
+# that exists solely for the AmbigQA-only C1 claim) for 11172, a ~2x
+# mismatch. Built here as the 2-arm P-struct-only reading (closest to the
+# "descriptive... to bound cost" framing and the only reading under which
+# every secondary arm shares the claim the secondary surfaces exist to
+# sanity-check). NOT adjudicated by this build; confirm before signing.
+# ---------------------------------------------------------------------------
+arms_secondary:
+  - {name: base_pstruct,           checkpoint: base, adapter: null,             prompt: P_struct}
+  - {name: cold_sft_seed1_pstruct, checkpoint: base, adapter: cold_sft_seed1,   prompt: P_struct}
+
+secondary_rows_per_arm: 5586   # 5540 (KUQ) + 46 (BIG-bench)
+secondary_generations_total: 11172   # 5586 x 2 arms, under the built (2-arm) reading
+
+# ---------------------------------------------------------------------------
+# Config granularity: one config per (prompt contract, base checkpoint)
+# group, matching prompt-crossing-completion's precedent (run_eval.py's
+# VLLMGenerator enforces one base model per config -- see that cell's
+# configs/eval_crossing_seq_pstruct_seed1_local_4b.yaml header, quoting
+# archive/experiment/phase1/eval/run_eval.py lines 256-272). 7 primary
+# configs (covers all 20 arms) + 1 secondary config (2 arms x 2 surfaces).
+# ---------------------------------------------------------------------------
+configs:
+  granularity: prompt_x_base_checkpoint_groups
+  primary:
+    - {file: configs/eval_heldout_base_prc_local_4b.yaml,        arms: [base_prc]}
+    - {file: configs/eval_heldout_base_pplain_local_4b.yaml,     arms: [base_pplain]}
+    - {file: configs/eval_heldout_cold_pstruct_local_4b.yaml,    arms: [base_pstruct, cold_sft_seed1_pstruct, cold_sft_seed2_pstruct, cold_sft_seed3_pstruct, cold_dpo_seed1_pstruct, cold_dpo_seed2_pstruct, cold_dpo_seed3_pstruct, cold_kto_seed1_pstruct, cold_kto_seed2_pstruct, cold_kto_seed3_pstruct]}
+    - {file: configs/eval_heldout_warmed_pstruct_local_4b.yaml,  arms: [clean_sft_merged_pstruct, sft_grpo_seed1_pstruct]}
+    - {file: configs/eval_heldout_seq_pstruct_seed1_local_4b.yaml, arms: [seq_sft_dpo_seed1_pstruct, seq_sft_kto_seed1_pstruct]}
+    - {file: configs/eval_heldout_seq_pstruct_seed2_local_4b.yaml, arms: [seq_sft_dpo_seed2_pstruct, seq_sft_kto_seed2_pstruct]}
+    - {file: configs/eval_heldout_seq_pstruct_seed3_local_4b.yaml, arms: [seq_sft_dpo_seed3_pstruct, seq_sft_kto_seed3_pstruct]}
+  secondary:
+    - {file: configs/eval_heldout_secondary_pstruct_local_4b.yaml, arms: [base_pstruct, cold_sft_seed1_pstruct], eval_sets: [kuq, bigbench_known_unknowns]}
+
+# ---------------------------------------------------------------------------
+# Run order (primary first, gate-relevant; secondary last, descriptive-only)
+# ---------------------------------------------------------------------------
+run_order:
+  - {order: 1, config: configs/eval_heldout_base_prc_local_4b.yaml,
+     arms: [base_prc], purpose: "C1 gate: base P-rc"}
+  - {order: 2, config: configs/eval_heldout_base_pplain_local_4b.yaml,
+     arms: [base_pplain], purpose: "C1 gate: base P-plain"}
+  - {order: 3, config: configs/eval_heldout_cold_pstruct_local_4b.yaml,
+     arms: [base_pstruct, cold_sft_seed1_pstruct, cold_sft_seed2_pstruct, cold_sft_seed3_pstruct,
+            cold_dpo_seed1_pstruct, cold_dpo_seed2_pstruct, cold_dpo_seed3_pstruct,
+            cold_kto_seed1_pstruct, cold_kto_seed2_pstruct, cold_kto_seed3_pstruct],
+     purpose: "C1 base-pstruct row + C2 gate: cold SFT/DPO/KTO internalization"}
+  - {order: 4, config: configs/eval_heldout_warmed_pstruct_local_4b.yaml,
+     arms: [clean_sft_merged_pstruct, sft_grpo_seed1_pstruct],
+     purpose: "warmed-stack P-struct anchors (descriptive; not a C1/C2/C3 gate row)"}
+  - {order: 5, config: configs/eval_heldout_seq_pstruct_seed1_local_4b.yaml,
+     arms: [seq_sft_dpo_seed1_pstruct, seq_sft_kto_seed1_pstruct], purpose: "C3 gate: seed1"}
+  - {order: 6, config: configs/eval_heldout_seq_pstruct_seed2_local_4b.yaml,
+     arms: [seq_sft_dpo_seed2_pstruct, seq_sft_kto_seed2_pstruct], purpose: "C3 gate: seed2"}
+  - {order: 7, config: configs/eval_heldout_seq_pstruct_seed3_local_4b.yaml,
+     arms: [seq_sft_dpo_seed3_pstruct, seq_sft_kto_seed3_pstruct], purpose: "C3 gate: seed3"}
+  - {order: 8, config: configs/eval_heldout_secondary_pstruct_local_4b.yaml,
+     arms: [base_pstruct, cold_sft_seed1_pstruct], purpose: "secondary descriptive, KUQ + BIG-bench, no gate"}
+
+budget_gpu_hours: {low: 11, high: 14, basis: "AMENDMENT.md Budget section; comparable total generation volume to prompt-crossing-completion (37k, ~10.5h wall)"}
