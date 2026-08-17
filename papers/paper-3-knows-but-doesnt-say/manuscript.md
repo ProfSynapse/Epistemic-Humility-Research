@@ -898,7 +898,7 @@ trending toward opening. The β knob was the one lever that could have explained
 action decoupling as a KL artifact; it moved the policy and did not move the
 conditioning. We therefore record "says but doesn't act" as a **structural**
 property of the objective and the decode, not of the KL anchor. The implication is
-the experiment Section 8 sets out: the action and the stated scalar must be
+direct: the action and the stated scalar must be
 supervised against the model's own internal known-unknown axis directly, which no
 outcome or preference reward does. Tuning the reinforcement-learning knob is
 closed.
@@ -1004,72 +1004,44 @@ actually reads, is tied to neither. The model is, in the precise sense of the
 *Meno*, giving true opinions without the tether. Our six interventions are
 attempts to install the tether, and they fail.
 
-### Why the stated channel is the stubborn one
+### Why every objective fails on the same channel
 
-The internal axis survives training
-untouched (Section 4) and behavior is cheaply steerable (Section 6), yet the stated
-scalar resists every objective we tried. The dissociation explains why: outcome and
-preference rewards (DPO/KTO/GRPO) move behavior and leave the scalar collapsed
-because the scalar is a tiny part of the supervised signal; the one objective that
-moved the scalar (contrastive SFT) did so by entangling it with answer text, which
-trades behavior. No objective we tried supervises the stated scalar *against the
-right target directly*.
+The internal axis survives training untouched (Section 4) and behavior is
+cheaply steerable (Section 6), yet the stated scalar resists every objective we
+tried. Laid side by side, the failures take only two forms. Objectives that
+supervise the scalar weakly or indirectly (DPO, KTO, and GRPO under both reward
+recipes) leave it collapsed, because a near-constant is either reward-optimal
+or undisturbed by a sub-dominant term. The one objective that moved it,
+contrastive SFT, did so by entangling the scalar with the answer text, and paid
+for calibration with behavior; masking that text restored the behavior and
+destroyed the calibration. Nothing we tried supervises the stated scalar
+against the right target directly without touching the answer.
 
-### Distilling the internal axis into the stated channel does not route it there
+The strongest version of the attempt removes every excuse and still fails. The
+model already carries a near-calibrated internal estimate of appropriateness,
+so the natural repair is not to induce calibration from outcomes but to distill
+the internal axis into the stated channel: supervise the emitted scalar against
+the model's own internal readout, a dense, per-row, internally calibrated
+target (AUROC 0.997) deliberately decoupled from the answer text. (Weaker
+targets fail before the interesting question is reached: a rescaled probe
+output collapses onto its modal value, and rebalancing a near-degenerate source
+axis fabricates variance uncorrelated with knowledge, so the run distilled the
+per-row correctness axis directly; Section 7.) With the answer text held
+byte-identical to clean SFT, behavior passed and the action conditioned on
+knowledge strongly (+31.2 points), yet the distilled scalar collapsed onto the
+action itself: two emitted values, one per decision, and chance discrimination
+of correctness (Section 7, Table 3). The mirror follow-on, reinforcement
+learning from an already-calibrated base, kept the stated signal but not
+knowledge-conditioned action. Two opposite training pressures on the same
+channel fail the same way, and that points at the channel, not the objective: a
+single confidence token trained by next-token prediction collapses onto the
+lowest-entropy correlate available, whatever the target.
 
-The model already contains a near-calibrated aggregate estimate of
-appropriateness: the internal known-unknown axis (ECE 0.047 raw). The natural objective is
-therefore not to induce calibration from outcomes, but to *distill the internal axis
-into the stated channel*: supervise the emitted `response_confidence` toward the
-model's own known-unknown-axis readout, so the model learns to *say* what it already
-*represents*. This decouples the confidence target from the answer text (avoiding the
-answer-supervised trade) and supplies a dense, per-item, calibrated target (avoiding
-GRPO's out-competed confidence term). We ran it (Section 7, Table 3), and it
-failed in an informative way. This framing treats the known-unknown axis's
-calibrated appropriateness estimate as a stand-in for factual confidence,
-$P(\text{answer correct})$. A constructive search for a portable evidence-responsive
-axis on a different model and error-class population found only generic
-retrieval-family geometry rather than a specific evidence/correctness axis, so the
-identification should not be assumed to hold outside this population without a
-direct test.
-
-Two properties of the target are what make the result interpretable. A target that
-merely rescales the probe's appropriateness estimate
-(response_confidence = 0.1 + 0.8·appropriateness_p) collapses to a single emitted
-value (0.8765), because that target distribution is imbalanced: most known items
-are answerable, so most targets land in a high band, and cross-entropy is minimized
-by emitting that mode. Quantile-balancing the target onto a spread band would
-penalize a constant, but the source axis it would balance (appropriateness scored
-on all-appropriate clean-SFT completions) is itself near-degenerate, with 85% of
-rows at one ceiling value, so balancing fabricates variance uncorrelated with
-knowledge. The design therefore distills the probe's factual-correctness axis
-$P(\text{answer correct})$ *directly*: a genuinely per-row-varying, internally
-calibrated target (AUROC 0.997), with no balancing.
-
-That target is exactly what the objection above asks for, and the model still did not
-learn to say it. With the answer text held byte-identical to clean SFT, behavior
-passed 4/4 and the action conditioned on knowledge strongly (+31.2 pts), but the
-distilled scalar collapsed onto the *action*: two values, answer↔0.97 / abstain↔0.03,
-correctness AUROC 0.504 (Section 7, Table 3). Distilling a calibrated target into the
-single confidence token does not install calibration; it installs a re-description of
-the answer/abstain decision. Combined with the RL mirror, this is what
-moves the conclusion past "we have not yet found the right objective": two opposite
-training pressures on the same channel both fail, which points at the *channel*, not
-the objective.
-
-### The next experiment: an engine change, not another loss on the same token
-
-If a single confidence token trained by next-token cross-entropy collapses
-onto the lowest-entropy correlate available regardless of the target, the remedy is to
-stop emitting confidence from the language head: add a dedicated confidence head that
-reads the same hidden state the internal axis is fit on and is supervised by a
-regression (proper-score) loss against that axis, so the calibrated representation is
-routed to the readout directly rather than relayed through a token the language
-modeling objective keeps collapsing. Whether that works is open, and this paper's
-measurements are what would settle it: success means the stated channel clears both
-thresholds at once, ranking appropriateness at AUROC 0.62 or better with genuine
-discrimination rather than mere spread, while behavior stays where it was. That is
-the combination none of the six interventions achieved.
+One scope note on the target: it treats the internal axis's appropriateness
+estimate as a stand-in for factual confidence, and a constructive search for a
+portable evidence-responsive axis on a different model and error population
+found only generic retrieval-family geometry, so that identification is not
+assumed to hold beyond this population without a direct test.
 
 ### Three readings of the gap, in increasing strength
 
@@ -1091,8 +1063,8 @@ though: the readout covers overt unanswerability and not covert ambiguity, where
 base and trained checkpoints alike read at ≈ 0.63 (see *Where the internal readout
 fails* below).
 The unsolved part is the *readout*: coupling stated confidence and action to a
-signal that is linearly available inside. Training the readout failed here in
-seven variants; reading it directly with a probe trivially succeeds. Whether a
+signal that is linearly available inside. Training the readout failed in
+every variant we tried; reading it directly with a probe trivially succeeds. Whether a
 training-free probe readout can supply the calibrated filter and dial that output
 training could not, and whether it transfers across datasets, model sizes, and
 families, is the question this result opens and does not settle; the standard
@@ -1313,8 +1285,8 @@ every number to its artifact.
 
 Three outcomes would overturn the paper now. A training objective that couples the
 stated channel to the internal axis without paying for it in behavior would break
-the central negative directly, and the confidence-head design of Section 8 is the
-version of that test we would run first. A demonstration that the internal axis is
+the central negative directly, and the dedicated confidence head the Conclusion
+motivates is the version of that test we would run first. A demonstration that the internal axis is
 reading a lexical or stylistic correlate rather than answerability, on a
 surface-matched population, would undercut the gap by removing one of its two
 terms; the covert-ambiguity boundary of Section 8 is already the strongest evidence
