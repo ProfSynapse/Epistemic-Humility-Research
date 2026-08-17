@@ -48,4 +48,6 @@ verdict: 'confirmed: fusing the gate score into the dial degrades correctness tr
   (Delta -0.0142, CI [-0.0214, -0.0074] excludes 0 on the negative side); gate and
   dial axes are non-redundant for correctness triage on the deployed checkpoint. FR-G0
   pass, FR-G1 pass, FR-F1 not fired.'
-kg: []
+kg:
+- experiment:fusion-nonredundance-redo
+- mechanism:answerability-and-correctness-are-orthogonal-readout-axes
