@@ -1,0 +1,43 @@
+slug: base-refusal-direction-under-contract
+title: Base refusal direction under the response-confidence contract
+type: probe-fit
+status: signed
+registered: true
+created_at: '2026-08-17T23:06:16Z'
+question: Does a refusal direction fit on the raw Qwen3-4B base under the response-confidence
+  contract (the one condition where the base over-refuses, 65.38% of answerables)
+  point where the trained checkpoints' refusal axis points?
+prediction: 'Aligned: mean absolute cosine between the base-under-contract refusal
+  direction and the three trained-regimen refusal directions (clean SFT, SFT->GRPO-DPO,
+  SFT->GRPO-v2, L35) is >= 0.50, inside the trained-pair band (0.576-0.857 over a
+  ~0.014 permutation floor).'
+falsifier: 'Distinct: mean absolute cosine <= 0.20 with BR-G0 (fit integrity) passing;
+  the contract-elicited refusal direction is not the direction training consolidates,
+  sharpening the trained-checkpoint-construct claim. Between 0.20 and 0.50: indeterminate,
+  reported as such.'
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules: []
+  pins:
+    cell.yaml: aa2afdd91f4366b90876667c0f928c783f672e737a98f8742ae9ff6b9a3a0b49
+    gates.yaml: f2d67b0703de0250f1f1719d423fe52e1f2ed41902f6ff0ebfb11fe872e30270
+  persistence: {}
+  engine_exception:
+    kind: parity-locked
+    reason: 'No generation-bearing step: base P-rc behavior rows are governed reuse
+      from the resolved prompt-vs-training-panel cell''s retained scored_rows; extraction,
+      fit, and comparison use the same pinned stacks as the paper-3 Section 5 lineage,
+      which comparability requires.'
+inputs:
+- archive/experiment/phase1/eval/results_prompt_vs_training_panel_prc_4b/base_prc__selfaware/scored_rows.jsonl
+- experiments/common/readouts/amendment_u_unified_extract.py
+- experiments/common/knowledge_probe/hidden_state_probe.py
+- experiments/common/mechinterp/residual_caution_direction.py
+- papers/paper-3-knows-but-doesnt-say/analysis/provenance/p3_section5_provenance_20260704/reconstruct_section5_geometry.py
+verdict: ''
+kg: []

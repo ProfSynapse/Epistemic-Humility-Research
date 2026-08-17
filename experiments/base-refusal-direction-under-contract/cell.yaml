@@ -1,0 +1,31 @@
+# base-refusal-direction-under-contract: fit the refusal direction on the raw
+# Qwen3-4B base under the response-confidence contract and compare it to the
+# three trained-regimen refusal directions (paper-3 Section 5 lineage).
+# Engine exception parity-locked: no generation-bearing step (governed reuse of
+# resolved panel-cell scored rows); extraction/fit/compare use the paper-3
+# pinned stacks for comparability.
+
+instrument:
+  harness:
+    labels_join: stage-local CPU join over pinned scored_rows.jsonl
+    extraction: experiments/common/readouts/amendment_u_unified_extract.py
+    probe_stack: experiments/common/knowledge_probe/hidden_state_probe.py
+    fit: experiments/common/mechinterp/residual_caution_direction.py
+    trained_references: papers/paper-3-knows-but-doesnt-say/analysis/provenance/p3_section5_provenance_20260704/reconstruct_section5_geometry.py
+  engine_exception: parity-locked
+  substrate: raw Qwen3-4B base (hub-resolved exactly as the resolved
+    prompt-vs-training-panel base arm), P-rc render byte-identical to that cell
+
+run_order:
+  - {order: 1, step: labels_join, gpu: false,
+     input: archive/experiment/phase1/eval/results_prompt_vs_training_panel_prc_4b/base_prc__selfaware/scored_rows.jsonl}
+  - {order: 2, step: extraction, gpu: true,
+     note: L35 hidden states, base under P-rc render, stage-1 known rows}
+  - {order: 3, step: fit, gpu: false,
+     note: refuse-vs-answer logistic contrast among knowns, known-unknown-orthogonalized component}
+  - {order: 4, step: trained_references, gpu: false,
+     note: re-derive clean-SFT / SFT->GRPO-DPO / SFT->GRPO-v2 L35 refusal directions
+           via the committed Section 5 reconstruction script}
+  - {order: 5, step: compare, gpu: false,
+     note: abs cosines + permutation floor (Section 5 procedure) + known-unknown
+           orthogonality; committed output is counts/cosines/verdicts only}

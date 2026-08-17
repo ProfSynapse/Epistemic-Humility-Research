@@ -425,6 +425,46 @@
     },
     {
       "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-17T23:06:16Z",
+      "falsifier": "Distinct: mean absolute cosine <= 0.20 with BR-G0 (fit integrity) passing; the contract-elicited refusal direction is not the direction training consolidates, sharpening the trained-checkpoint-construct claim. Between 0.20 and 0.50: indeterminate, reported as such.",
+      "inputs": [
+        "archive/experiment/phase1/eval/results_prompt_vs_training_panel_prc_4b/base_prc__selfaware/scored_rows.jsonl",
+        "experiments/common/readouts/amendment_u_unified_extract.py",
+        "experiments/common/knowledge_probe/hidden_state_probe.py",
+        "experiments/common/mechinterp/residual_caution_direction.py",
+        "papers/paper-3-knows-but-doesnt-say/analysis/provenance/p3_section5_provenance_20260704/reconstruct_section5_geometry.py"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "No generation-bearing step: base P-rc behavior rows are governed reuse from the resolved prompt-vs-training-panel cell's retained scored_rows; extraction, fit, and comparison use the same pinned stacks as the paper-3 Section 5 lineage, which comparability requires."
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "aa2afdd91f4366b90876667c0f928c783f672e737a98f8742ae9ff6b9a3a0b49",
+          "gates.yaml": "f2d67b0703de0250f1f1719d423fe52e1f2ed41902f6ff0ebfb11fe872e30270"
+        }
+      },
+      "kg": [],
+      "prediction": "Aligned: mean absolute cosine between the base-under-contract refusal direction and the three trained-regimen refusal directions (clean SFT, SFT->GRPO-DPO, SFT->GRPO-v2, L35) is >= 0.50, inside the trained-pair band (0.576-0.857 over a ~0.014 permutation floor).",
+      "question": "Does a refusal direction fit on the raw Qwen3-4B base under the response-confidence contract (the one condition where the base over-refuses, 65.38% of answerables) point where the trained checkpoints' refusal axis points?",
+      "registered": true,
+      "slug": "base-refusal-direction-under-contract",
+      "status": "signed",
+      "title": "Base refusal direction under the response-confidence contract",
+      "type": "probe-fit",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "Qwen/Qwen3-4B",
         "revision": "PIN_AT_SIGN (exact hub commit sha; untrained base, no adapter, no merge)"
       },
@@ -6492,6 +6532,49 @@
       "title": "Raw-base AmbigQA boundary readout (pretraining-flavor vs training-warp fork)",
       "type": "probe-fit",
       "verdict": "Falsifier not fired; prediction supported. The raw pretrained base reads the AmbigQA boundary at 0.6338, within 0.006 of both trained checkpoints, so the known-unknown activation is flavor-specific to SelfAware-style unanswerability from pretraining, and the G7 non-transfer is not a post-training warp."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-17T23:06:16Z",
+      "falsifier": "Any pair in the rotated band (transfer AUROC < 0.85 with in-contract refit >= 0.95: direction moved) or the suppressed band (transfer < 0.85 with refit < 0.90: signal suppressed by the contract). Other degraded outcomes are partial, reported descriptively.",
+      "inputs": [
+        "experiments/common/readouts/amendment_u_unified_extract.py",
+        "experiments/common/readouts/amendment_u_two_signal_score.py",
+        "experiments/common/knowledge_probe/hidden_state_probe.py",
+        "experiments/prompt-vs-training-panel/configs/eval_panel_prc_local_4b.yaml",
+        "experiments/prompt-vs-training-panel/configs/eval_panel_pplain_local_4b.yaml",
+        "experiments/prompt-vs-training-panel/configs/eval_panel_pstruct_cold_local_4b.yaml",
+        "scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit",
+        "scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "Extraction-only cell, no generation-bearing step; known/unknown labels are dataset properties. Comparability with the neutral-prompt reference readings requires the same pinned extraction and probe stacks as the paper-3 lineage."
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "0ebd531af05c38c70d1f6cec0ce4e8907d8abe350e99525d04d920229d56c3d2",
+          "gates.yaml": "55ebbc30cc28c68cc29f9f8896c092db8ecba0ee02ed90aaec24f507cddf54ce"
+        }
+      },
+      "kg": [],
+      "prediction": "Contract-invariant: for every checkpoint-contract pair (base, clean-SFT seed 1, SFT->GRPO-v2 seed 1; P-rc, P-plain, P-struct), transfer AUROC drops <= 0.05 from that checkpoint's own neutral-prompt reference reading, re-derived in Stage 0 from the same extraction stack.",
+      "question": "Does the near-ceiling internal known-unknown readout survive a change of prompt contract? Transfer: does the neutral-prompt probe direction still rank known vs unknown on contract-conditioned activations? Presence: if transfer degrades, does refitting in-contract recover the separation?",
+      "registered": true,
+      "slug": "readout-under-contract-crossing",
+      "status": "signed",
+      "title": "Known-unknown readout under a change of prompt contract",
+      "type": "probe-fit",
+      "verdict": ""
     },
     {
       "checkpoint": {
