@@ -496,6 +496,21 @@ specificity intact, while no intervention tried there installs appropriate
 abstention on genuine unknowns. The leverage is one-way: over-refusal can be relaxed; appropriate
 abstention cannot be written in.
 
+![Refusal-axis ablation arm comparison, over-refusal versus specificity, and answer correctness after ablation](figures/fig-p2-06-refusal-axis-ablation.png)
+
+**Figure 8. Ablating the refusal axis relaxes over-refusal one-way.** Left:
+known-item refusal (over-refusal, orange) and known-correct-answered refusal
+(specificity control, green) across the baseline, ablate, and ±2σ shift arms
+of the KU-orthogonalized ("caution_perp") residual intervention at L35 on
+clean_sft_grpo_v2_seed1 (known_refused n=168, known_correct_answered n=373).
+Ablation collapses known-item over-refusal from 0.994 to 0.524 while
+known-correct-answered refusal stays at 0.00; the diamond marks the in-frame
+replication at 0.536 on a fresh registered cell with the same recipe. Right:
+answers produced by the ablated model are not just present but correct,
+peaking at a 0.327 correct rate over the full known_refused cell under
+ablation. Exploratory tier-2 evidence, single seed each; not part of the
+locked headline matrix.
+
 The one-way statement has since been stress-tested where it is most exposed. A
 pre-registered search tried to install abstention on this paper's trained
 checkpoint (clean SFT to GRPO-v2) by writing along the refusal axis: seven write
@@ -521,6 +536,24 @@ known-correct rows apiece, too few to measure harm against the floor of 35 rows
 fixed beforehand. The actuation is a lead worth following, not an installed
 capability, and turning it into a claim requires a replication registered before it
 runs.
+
+![Actuation rate and refusal-direction specificity across the bounded write-site sweep](figures/fig-p2-07-bounded-site-sweep.png)
+
+**Figure 9. The bounded search to install abstention actuates everywhere, but
+is specific nowhere it can be measured.** Left: held-out confabulation-to-refusal
+conversion rate (error bar: Wilson lower 95%) at each of the five sites that
+cleared dose viability, all at the anchor-onward write position, against the
+registered thresholds of 0.50 (rate) and 0.40 (Wilson lower bound). All five
+clear both thresholds by a wide margin. Right: the direction-specificity ratio
+(gated lift over the best permuted or positional-control draw lift) against
+the registered 3x pass threshold. Only hs35 clears it (12.18x); hs23 and hs29
+fail (1.50x, 1.52x); hs19 and hs34 have zero measured control-draw lift and so
+fail the pre-registered positivity guard outright. This is exploratory,
+single-seed evidence from a pre-registered search, not a headline result: the
+one site that writes specifically along the refusal direction (hs35) is the
+one site where the specificity guard on known-correct rows could not be
+adjudicated for want of rows, so the falsifier does not fire but the search
+does not overturn the one-way statement either.
 
 Two consequences carry forward. The causal dissociation confirms that the refusal
 axis is a mechanism of its own and not a re-reading of the known-unknown axis,
