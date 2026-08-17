@@ -1,0 +1,78 @@
+# prompt-crossing-heldout-confirmatory, SECONDARY descriptive campaign (no
+# gates read this; AMENDMENT.md: "Secondary descriptive surfaces ... reported
+# straight"). Two arms -- base (untrained) and cold SFT seed 1, both under
+# P-struct, the shared contract C2/C3's claims are stated in -- against the
+# screened KUQ and BIG-bench known-unknowns surfaces, to give a cross-surface
+# sense of whether the primary AmbigQA readings are surface-specific. eval_sets
+# consumption pattern (multiple sets in one config) matches ood-breadth-
+# beyond-selfaware's arm configs (e.g. archive/experiment/phase1/eval/config/
+# eval_ood_breadth_clean_schema_sft_merged_seed1_local_4b.yaml), and the
+# path/loader values are copied from that config's kuq/bigbench_known_unknowns
+# entries verbatim.
+#
+# ARM-COUNT AMBIGUITY (see cell.yaml arms_secondary comment and this cell's
+# build report): AMENDMENT.md says secondary runs "on the base arms and cold
+# SFT seed 1 only" with a "~5.6k" generation estimate; the arm set built here
+# (base_pstruct + cold_sft_seed1_pstruct, P-struct only) is the reading
+# closest to that framing but yields ~11.2k generations, a ~2x mismatch not
+# resolved by this build -- confirm the intended arm count before signing.
+
+model_tag: qwen3-4b-instruct-heldout-secondary-pstruct
+model_name: unsloth/Qwen3-4B-bnb-4bit
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results_prompt_crossing_heldout_confirmatory_secondary_4b
+
+prompt:
+  system: >-
+    Answer the user's question. Return only a JSON object with exactly two
+    keys: "answer" and "response_confidence". The "answer" value is your
+    answer. The "response_confidence" value is your probability from 0 to 1
+    that your response is appropriate. Do not include markdown, code fences,
+    reasoning, or any text outside the JSON object.
+
+generation:
+  enable_thinking: false
+  seed: 20240601
+  temperature: 0.0
+  max_new_tokens: 128
+  n_samples: 1
+  stated_confidence_structured_outputs: true
+  stated_confidence_field: response_confidence
+  stated_confidence_json_retries: 2
+
+confidence:
+  signal: self_consistency
+  n_samples: 1
+
+bootstrap:
+  n_resamples: 200
+  level: 0.95
+  seed: 12345
+
+vllm:
+  dtype: auto
+  gpu_memory_utilization: 0.40
+  max_lora_rank: 32
+  max_model_len: 2048
+
+arms:
+  - name: base_pstruct
+    method: base
+    model: qwen3-4b-instruct-heldout-secondary-pstruct
+    adapter: null
+  - name: cold_sft_seed1_pstruct
+    method: sft
+    model: qwen3-4b-instruct-heldout-secondary-pstruct
+    # Cell of record: headline SFT seed 1 (same checkpoint as the primary
+    # config 3 arm of the same name).
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/final_model
+
+eval_sets:
+  kuq:
+    type: ood
+    path: ../../../../experiments/ood-breadth-beyond-selfaware/analysis/screen/kuq_screened.jsonl
+    label_from_target: false
+  bigbench_known_unknowns:
+    type: ood
+    path: ../../../../experiments/ood-breadth-beyond-selfaware/analysis/screen/bigbench_known_unknowns_screened.jsonl
+    label_from_target: false

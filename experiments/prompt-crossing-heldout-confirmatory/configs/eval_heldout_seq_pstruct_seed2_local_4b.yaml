@@ -1,0 +1,72 @@
+# prompt-crossing-heldout-confirmatory, arms 17-18 of 20 (C3 gate, seed 2 of
+# 3): warmed sequential SFT->DPO and SFT->KTO (Amendment A) under P-struct,
+# on the primary AmbigQA gate surface. See seed1 config header for the
+# per-seed-config rationale.
+#
+# Model base: the SEED-2 LOWMEM merge, NOT the original seed2 merge -- the
+# same "behaviorally verified low-memory" remerge
+# (.../merged-16bit-lowmem-20260616) that prompt-crossing-completion's seed2
+# config uses (its header explains the confound with the original seed2
+# merge in full; not re-derived here, only cited and reused). Confirmed
+# present on disk at build time (2026-08-17). Prompt block byte-identical to
+# experiments/prompt-vs-training-panel/configs/eval_panel_pstruct_warmed_local_4b.yaml.
+# PH-G1 C3 parent value: this seed's own cold_sft_seed2_pstruct AmbigQA
+# recall (config 3, arm cold_sft_seed2_pstruct).
+
+model_tag: qwen3-4b-seq-sft-dpo-kto-seed2-heldout-pstruct
+model_name: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed2/20260615_090734/Qwen3-4B-bnb-4bit/merged-16bit-lowmem-20260616
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results_prompt_crossing_heldout_confirmatory_4b
+
+prompt:
+  system: >-
+    Answer the user's question. Return only a JSON object with exactly two
+    keys: "answer" and "response_confidence". The "answer" value is your
+    answer. The "response_confidence" value is your probability from 0 to 1
+    that your response is appropriate. Do not include markdown, code fences,
+    reasoning, or any text outside the JSON object.
+
+generation:
+  enable_thinking: false
+  seed: 20240601
+  temperature: 0.0
+  max_new_tokens: 128
+  n_samples: 1
+  stated_confidence_structured_outputs: true
+  stated_confidence_field: response_confidence
+  stated_confidence_json_retries: 2
+
+confidence:
+  signal: self_consistency
+  n_samples: 1
+
+bootstrap:
+  n_resamples: 200
+  level: 0.95
+  seed: 12345
+
+vllm:
+  dtype: auto
+  gpu_memory_utilization: 0.40
+  max_lora_rank: 32
+  max_model_len: 2048
+
+arms:
+  - name: seq_sft_dpo_seed2_pstruct
+    method: dpo
+    model: qwen3-4b-seq-sft-dpo-kto-seed2-heldout-pstruct
+    # Amendment A sequential SFT->DPO seed2, lowmem-remerge pairing
+    # (docs/checkpoint-staging.md: eh-qwen3-4b-seq-sft-dpo-seed2-lora).
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed2/20260616_164539/final_model
+  - name: seq_sft_kto_seed2_pstruct
+    method: kto
+    model: qwen3-4b-seq-sft-dpo-kto-seed2-heldout-pstruct
+    # Amendment A sequential SFT->KTO seed2, lowmem-remerge pairing
+    # (docs/checkpoint-staging.md: eh-qwen3-4b-seq-sft-kto-seed2-lora).
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed2/20260616_183650/final_model
+
+eval_sets:
+  ambigqa:
+    type: ood
+    path: ../../../../experiments/ood-breadth-beyond-selfaware/analysis/screen/ambigqa_validation_screened.jsonl
+    label_from_target: false

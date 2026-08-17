@@ -1,0 +1,77 @@
+slug: prompt-crossing-heldout-confirmatory
+title: 'Prompt-crossing held-out confirmatory: promoting the paper-2 prompt-condition
+  claims on out-of-distribution surfaces'
+type: eval
+status: signed
+registered: true
+created_at: '2026-08-17T14:04:19Z'
+question: Do the three exploratory prompt-condition claims of paper 2 Section 4.2
+  (instruction gap at base; SFT-only internalization under structure-only; erosion
+  not erasure after a preference stage) replicate on held-out out-of-distribution
+  known/unknown surfaces on the same Qwen3-4B checkpoints?
+prediction: On AmbigQA validation, base P-rc minus P-plain refusal-recall gap in 50-90pp;
+  every cold SFT seed P-struct recall 40-80% with base and every cold DPO/KTO seed
+  <= 10% scored; every seq preference arm at 40-100% of its same-seed cold-SFT parent.
+falsifier: Per-claim, fixed at signing - C1 gap < 15pp; C2 any cold SFT seed < 20%
+  or base > 15% or any cold DPO/KTO seed >= 20%; C3 any seq arm < 25% of its same-seed
+  parent (erasure).
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  engine:
+    name: vllm
+    version: 0.16.1.dev0+g89a77b108.d20260417
+  configs:
+  - cell.yaml
+  - gates.yaml
+  - configs/eval_heldout_base_prc_local_4b.yaml
+  - configs/eval_heldout_base_pplain_local_4b.yaml
+  - configs/eval_heldout_cold_pstruct_local_4b.yaml
+  - configs/eval_heldout_warmed_pstruct_local_4b.yaml
+  - configs/eval_heldout_seq_pstruct_seed1_local_4b.yaml
+  - configs/eval_heldout_seq_pstruct_seed2_local_4b.yaml
+  - configs/eval_heldout_seq_pstruct_seed3_local_4b.yaml
+  - configs/eval_heldout_secondary_pstruct_local_4b.yaml
+  modules: []
+  pins:
+    cell.yaml: 2294151019e9cd6fb5f256bccc1d28af681c6d48810b666b974a101914874fa5
+    gates.yaml: 51094db23f2a1c05c45021b3c9abe7306d3a48d49a282ede6df35def78ea2375
+    configs/eval_heldout_base_prc_local_4b.yaml: ff5cd8a485e267d87cbcfe1fdbaa313048614263a29c1d5e22f82334196af2dc
+    configs/eval_heldout_base_pplain_local_4b.yaml: 12a30ef7b69eba6989ef92ea905a4493923e35e770f504b95c408d05c45a3923
+    configs/eval_heldout_cold_pstruct_local_4b.yaml: 2ffff41ce48b09a9af803e3a0991389c38789356dda74e361d21644d7937459b
+    configs/eval_heldout_warmed_pstruct_local_4b.yaml: 176855c43631c3ab9a878d71973c07d61d693225d0602abf7d0e6d3387def93b
+    configs/eval_heldout_seq_pstruct_seed1_local_4b.yaml: 00e36147714fea8ed6c85e9b61b12bacca4bde9e5ba4eb304338a8c746c40f27
+    configs/eval_heldout_seq_pstruct_seed2_local_4b.yaml: 95c3ae828828aab0be480f6f3a364a6839e29979b9152cb70ffa46beae9f373b
+    configs/eval_heldout_seq_pstruct_seed3_local_4b.yaml: 1ed669226fdb84c6c6c2cde433ad6b84206d062e2411eac30209030ce6e6756d
+    configs/eval_heldout_secondary_pstruct_local_4b.yaml: 297432f3e222f627d13523aaa46a36bee755550111ab145d181b267065c64c4f
+  persistence: {}
+inputs:
+- experiments/ood-breadth-beyond-selfaware/analysis/screen/ambigqa_validation_screened.jsonl
+- experiments/ood-breadth-beyond-selfaware/analysis/screen/kuq_screened.jsonl
+- experiments/ood-breadth-beyond-selfaware/analysis/screen/bigbench_known_unknowns_screened.jsonl
+- archive/experiment/phase1/eval/run_eval.py
+- archive/experiment/phase1/eval/ood.py
+- archive/experiment/phase1/eval/scorers.py
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed2/20260615_090734/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed3/20260615_104507/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed1_postfix/20260807_192026/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed2/20260615_114512/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed3/20260615_130441/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1_postfix/20260807_124416/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed2/20260615_142046_logging_patch/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed3/20260615_204215_logging_patch/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed1/20260614_074933/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed2/20260616_164539/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed3/20260616_130451/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed1/20260614_085358/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed2/20260616_183650/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed3/20260617_070334/final_model
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed2/20260615_090734/Qwen3-4B-bnb-4bit/merged-16bit-lowmem-20260616
+- synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed3/20260615_104507/Qwen3-4B-bnb-4bit/merged-16bit
+- scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+- scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+verdict: ''
+kg: []
