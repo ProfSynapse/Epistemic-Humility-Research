@@ -8,12 +8,12 @@ target: arXiv (cs.CL / cs.AI / mechanistic interpretability)
 evidence_base: >
   Exploratory Paper-5 actuation arc. Governed source docs include
   experiments/causal-confidence-steering/AMENDMENT.md,
-  AMENDMENT-AB-first-person-injection.md,
+  experiments/first-person-injection/AMENDMENT.md (legacy label AMENDMENT-AB),
   experiments/doubt-regulated-caution/AMENDMENT.md (legacy label AMENDMENT-AC),
-  AMENDMENT-AF-second-person-doubt-prime.md,
-  AMENDMENT-AG-oracle-dissociation-prime.md,
-  AMENDMENT-AH-divergent-pool-own-readout.md,
-  AMENDMENT-AI-probe-as-reward.md,
+  experiments/second-person-doubt-prime/AMENDMENT.md (legacy label AMENDMENT-AF),
+  experiments/oracle-dissociation-prime/AMENDMENT.md (legacy label AMENDMENT-AG),
+  experiments/divergent-pool-own-readout/AMENDMENT.md (legacy label AMENDMENT-AH),
+  experiments/probe-as-reward/AMENDMENT.md (legacy label AMENDMENT-AI),
   experiments/doubt-gated-caution-tighten/AMENDMENT.md,
   experiments/j-space-localization-qwen3-4b/AMENDMENT.md,
   experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md,
