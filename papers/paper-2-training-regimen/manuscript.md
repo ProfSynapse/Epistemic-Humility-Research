@@ -485,8 +485,7 @@ ones before any training. The instruction elicits nothing from it on this
 surface, so every cold-start number below is measured against a floor of
 zero, and the induction claim is a claim about this contract. Under the
 response-confidence contract the same untrained weights refuse 90.89%
-(Section 4.2). The verb is contract-relative, and this layer's contract is the
-plain-answer one.
+(Section 4.2).
 
 Across three seeds on SelfAware, cold-start SFT reaches refusal recall 87.88%
 (95% seed interval 77.36 to 98.41) at over-refusal 64.77% (63.60 to 65.94),
@@ -531,10 +530,10 @@ would make it a native abstention trainer (Section 2). Fit between data format
 and objective is not sufficient. In this setting the preference objectives
 cannot conjure a refusal routine that the policy does not already express.
 That gives the first half of the stage decomposition: under a contract that
-elicits nothing from the untrained model, abstention has to be induced, and
+elicits nothing from the untrained model, abstention has to be *induced*, and
 among these objectives only SFT induces it.
 
-#### Cold-start GRPO: a surprise, and what it turned out to mean
+#### The Surprising Cold-start GRPO
 
 The fourth objective gets the same cold-start question: can the
 appropriateness reward teach abstention to the base model with no
@@ -546,12 +545,11 @@ registered prediction
 said no, expecting the run to starve for trainable signal. It was wrong on
 both counts, and not marginally: the run trained on real gradient, and the
 checkpoint reads refusal recall 85.66% under the response-confidence
-contract, far past the level fixed in advance as disproof. The
+contract, far past the level fixed in advance as disproof (The
 preregistered thresholds, training diagnostics, and run record are linked
-in Appendix A.
+in Appendix A).
 
-The prompt crossing of Section 4.2 supplies the control this experiment was
-designed without, and it changes what the 85.66% means. Under the identical contract, on the identical
+Under the identical contract, on the identical
 rows, the untrained base model reads 90.89%. The trained checkpoint is
 *below* its own starting point: across the run the operating point slid
 slightly toward answering on both sides of the ledger, recall 90.89 to 85.66
@@ -578,9 +576,7 @@ emits an abstention spontaneously, starving the algorithm of exploration
 signal, and a supervised abstention warm-up partially recovers it. The
 instruction is therefore doing structural work in these runs rather than
 contaminating them: it is the scaffolding that gives the reward something to
-reinforce. The posture this paper takes from that is scaffolded training with
-scaffold-removed measurement, which is what the structure-only column of
-Section 4.2 reports.
+reinforce.
 
 One disclosure belongs with every number in this experiment. Training rollouts were
 sampled at temperature 1.35 and evaluation is greedy, and the two regimes
@@ -593,11 +589,9 @@ here are regime-dependent, and rollout-side rates are not comparable to them.
 
 How much of the abstention measured above belongs to the training, and how
 much to the prompt that asked for it? Answering that takes a second factor.
-Eleven evaluations, on the exploratory tier and never pooled with the
-confirmatory layer above, crossed three prompt conditions with the untrained
+Seventeen exploratory evaluations crossed three prompt conditions with the untrained
 base model and with checkpoints from every objective, on the same SelfAware
-rows under the same greedy decoding and the same scorer; a registered
-replication added six more arms at fresh seeds. The two deployment contracts
+rows under the same greedy decoding and the same scorer. The two deployment contracts
 are the ones already described. The third is a structure-only prompt: the
 same JSON output schema with every abstention affordance removed, so the
 model is told what shape to answer in and nothing at all about declining.
@@ -670,7 +664,7 @@ instruction is removed. The base's response-confidence bar is the
 counterfactual, and the cold GRPO response-confidence value is that
 experiment's own evaluation, not re-run here.
 
-Read the base row first. The same untrained weights refuse almost every
+If you read the base row first, the same untrained weights refuse almost every
 unknown question under one contract and none at all under the other two. The
 response-confidence contract, which tells the model to say "I don't know the
 answer" rather than guess, elicits 90.89% refusal recall from a model trained
@@ -689,18 +683,13 @@ nothing, and under the response-confidence instruction it refuses more
 unknown questions than the untrained base model does under the same
 instruction, 94.48 against 90.89. Both readings are true of the same file on
 disk, so a claim that this arm learned abstention, or failed to, says
-nothing until it names the prompt it was measured under. This is why every
-training verb in this paper states its prompt condition.
+nothing until it names the prompt it was measured under.
 
 Against that, the SFT rows separate. All three cold-SFT seeds keep most of
 their abstention when the instruction is taken away: 69.57, 76.94, and 79.36%
 refusal recall under the structure-only prompt, against 0.00% for all three
-DPO seeds and all three KTO seeds. Seeds 2 and 3 come from a replication
-registered before it ran, with the pass thresholds fixed in advance, and
-every seed cleared its threshold by more than double: the three-seed claim
-is confirmatory for internalization, not a description of one lucky run.
-Section 7 states the registered thresholds and what would have overturned
-them.
+DPO seeds and all three KTO seeds. Seeds 2 and 3 saw
+every seed clear its threshold by more than double.
 
 ![Bar chart of structure-only refusal recall across thirteen checkpoints, with the three cold SFT seeds, merged clean SFT, and SFT-then-GRPO between 69 and 79 percent above a dashed 30 percent floor, and the base plus every cold DPO, KTO, and GRPO seed at zero below a dashed 10 percent ceiling.](figures/fig-p1-12-internalization-seeds.png)
 
@@ -718,13 +707,11 @@ recall to 77.42%, so the reward deepens what the supervised stage installed.
 Applied to the base model instead, the same reward installs nothing: the
 cold-start GRPO checkpoint reads 0.00% without the instruction (Section 4.1).
 
-This is what the reserved vocabulary is for. The response-confidence contract
+The response-confidence contract
 *elicits* abstention that the base weights already afford, and every
-cold-start preference checkpoint *complies* with it while it is present.
-Supervised fine-tuning *internalizes* abstention: the behavior survives the
-instruction's removal, on three seeds, in both directions. Under a contract
-that elicits nothing from the base, only SFT *induces* the behavior in the
-first place.
+cold-start preference checkpoint *complies* with it while it is present,
+while SFT *induces* abstention. The behavior survives the
+instruction's removal, on three seeds, in both directions.
 
 ### 4.3 Preference optimization repositions the boundary, on a trade-off
 
@@ -753,18 +740,15 @@ over-refusal, 80-100% recall); illustrative rather than quantitative.
 
 Across the available seeds the pattern is stable (three-seed SFT-DPO means:
 recall 52.81%, over-refusal 14.59%, truthfulness 31.18%; three-seed SFT-KTO:
-77.75%, 45.68%, 37.72%). This is the published trade-off of Section 2
-reproduced at 4B on an independent model family, with the two preference
-objectives landing on opposite ends of it. DPO buys back usefulness at the
+77.75%, 45.68%, 37.72%). DPO buys back usefulness at the
 cost of abstention; KTO keeps the abstention and most of the tax. Neither
 improves the underlying discrimination; both move along the ROC curve the
 SFT stage defined.
 
 The repositioning is not confined to the instructed surface. Re-evaluating
-all six SFT-warmed checkpoints under the structure-only prompt, where
+all six SFT-warmed checkpoints through an exploration under the structure-only prompt, where
 nothing in the context asks for abstention, shows the preference stage also
-spends part of what the supervised stage put in the weights (exploratory,
-three seeds per arm; Section 4.2's table carries the rows). No arm falls to
+spends part of what the supervised stage put in the weights. No arm falls to
 the base model's zero: every warmed checkpoint keeps a substantial
 instruction-free abstention policy. But against each seed's own SFT parent
 (69.57, 76.94, and 79.36% instruction-free recall), the DPO arms retain
@@ -787,7 +771,7 @@ Brier 0.566 vs 0.260), because a large share of those confident answers are
 wrong. The same checkpoint therefore reads as better calibrated or worse
 calibrated depending on the target, and repositioning toward answering *feels*
 like rising confidence from the outside. That is the overconfidence failure
-the first of the three background findings predicts (Section 2).
+the first of the three background findings predicts in Section 2.
 
 ![Grouped bar chart of stated-confidence metrics for merged SFT, SFT-DPO, and SFT-KTO under the answer-plus-confidence contract, with a small "0 = ideal" note tied to the axis for the lower-is-better metric groups.](figures/fig-p1-05-stated-confidence.png)
 
@@ -811,9 +795,7 @@ unanswerable.
 
 ### 4.4 GRPO amplifies the routine to near-ceiling recall
 
-GRPO is the third behavioral profile, distinct from both preference methods.
-Every GRPO number in this section is exploratory and single-seed, except the
-three-seed replication reported below. All
+GRPO is the third exploratory behavioral profile, distinct from both preference methods. All
 figures here use the response-confidence contract only, against a clean-SFT
 baseline re-evaluated under that same contract (recall 87.02%, over-refusal
 57.51%, truthful 40.58%). The same-contract DPO and KTO arms land at (87.11%, 56.18%, 40.69%)
@@ -852,7 +834,7 @@ the three-seed replication below confirms is essentially flat rather than a
 truthfulness gain. The appropriateness reward pays for refusing unknowns and
 the policy obliges, hard.
 
-The amplification drags over-refusal back up with it, to 66.62% against 52
+That same amplification drags over-refusal back up with it, to 66.62% against 52
 to 56% for the preference arms. GRPO undoes precisely the repositioning that
 DPO buys. This happens despite the reward's own asymmetry working against
 it: known-question refusal is the single worst-penalized behavior in the
@@ -864,14 +846,11 @@ order. All four two-stage stacks (DPO then GRPO, GRPO then DPO, KTO then GRPO,
 GRPO then KTO) land within 1.1 truthfulness points and about 6 over-refusal
 points (6.03 at the widest) of plain SFT-GRPO, and all of them sit on the same
 curve as every other arm (Figure 8). Ordering is a marginal adjustment to the
-operating point GRPO defines, at least at a resolution this layer can see:
-each stack was one run at one seed at this pass; the three-seed replication
-below sharpens the ordering comparison.
+operating point GRPO defines, at least at a resolution this layer can see.
 
 Two further limits belong on the GRPO result while it is being read. The
 truthfulness margin over the same-contract SFT baseline is small; at this
-single-seed pass it is measured without an interval around it (the
-three-seed replication below reports one). And every GRPO conclusion is
+single-seed pass it is measured without an interval around it. And every GRPO conclusion is
 conditional on the reward family tested, appropriateness-dominant with a
 confidence-shaping term. What this layer establishes is a direction rather
 than a magnitude: a programmable reward pushes the abstention routine
@@ -924,8 +903,7 @@ the same truthful band (clean_sft_dpo reads 41.32% at seed 2), so no
 truthfulness ordering is supportable at this resolution.
 
 Whether a preference stage placed before GRPO beats the same stage placed
-after it, on over-refusal, was registered as a secondary, descriptive
-pattern, and the two orderings resolve differently. For KTO the direction
+after it, on over-refusal and the two orderings resolve differently. For KTO the direction
 holds at all three seeds: GRPO-first beats GRPO-last by 5.78, 3.13, and 2.49
 points, shrinking but never crossing zero. For DPO it does not: the seed-1
 margin favored GRPO-first by 1.67 points, but both new seeds favor
@@ -963,11 +941,11 @@ taken away is a different sorting, and only the supervised stage survives it.
 A naive league table would crown GRPO (largest abstention shift) or DPO (best
 over-refusal), but the decomposition says the question "which objective wins"
 is malformed. The objectives do different jobs: an inducer is mandatory
-(without SFT nothing abstains), and the second stage is a policy knob whose
+(without SFT nothing abstains without a prompt), and the second stage is a policy knob whose
 setting depends on the deployment's asymmetric costs.
 
 The prompt-condition crossing puts a second, harder question underneath the
-first: which of those jobs leaves anything in the weights. Supervised
+first: which of those jobs leaves anything in the weights? Supervised
 fine-tuning installs a policy that runs without the instruction. A
 verifiable-reward stage deepens what the supervised stage installed, from
 69.48 to 77.42% instruction-free recall on the checkpoint it was applied to,
@@ -1026,7 +1004,7 @@ get near-zero confidence. Under the response-confidence contract the
 best-behaved checkpoint in the study, GRPO, emits confidence
 with standard deviation 0.013 across 3,369 rows: a near-constant value around
 0.8 whose AUROC against response appropriateness is 0.520, a coin flip. The
-observation replicates: across the three replication seeds the arm's mean
+observation replicates: across the three seeds the arm's mean
 stated confidence is 0.8146 (interval 0.8112 to 0.8191), the by-outcome
 profile stays flat at every seed (mean confidence differs by about one
 point on the 0-100 scale whether the answer is right, wrong, or refused),
@@ -1078,8 +1056,7 @@ and it can do nothing at all when there is no change to deepen.
 
 ### Scaffolded training, scaffold-removed measurement
 
-Every training run in this study used a prompt that asks for abstention, and
-that was necessary rather than incidental. Under a structure-only prompt the
+Every training run in this study needed to use a prompt that asks for abstention. Under a structure-only prompt the
 base model abstains on essentially nothing, so a reinforcement-learning stage
 sampling its own rollouts has no abstention to reinforce and no difference
 among rollouts to grade. Jha et al. (2026) report exactly this failure in
@@ -1157,22 +1134,6 @@ it, a stage that "improves abstention" could be improving either one. Its
 stagewise result is still useful to us as independent evidence that training
 objectives are not interchangeable on this axis.
 
-Two further results bear on how much a training stage really changes. Yue et
-al. (2025) find that reinforcement learning with verifiable rewards raises
-performance at small sample counts while base models achieve higher pass@k
-when the sample count is large, and conclude that the reasoning abilities
-observed "originate from and are bounded by the base model." That is the
-reasoning-domain statement of what the structure-only column shows for
-abstention in the cold-start reinforcement-learning arm. Qi et al. (2024)
-report that safety alignment's trained change concentrates in the first few
-output tokens, a shallower delta than the behavior suggests. Raina et al.
-(2025), a concurrent unrefereed preprint, argue on mechanistic grounds that
-preference optimization "does not teach models to believe in aligned
-values, it merely teaches them to behave as if they do," which matches the
-behavior we measure, though their evidence is a single LLaMA-2-7B with
-final-layer hidden-state analysis and no instruction-removal test of their
-own, so we take it as suggestive company rather than support.
-
 One instrument deserves separate mention because it is the nearest published
 analogue to ours and we do not claim its finding. Wang et al. (2026) name the
 removal-and-reintroduction cross "context invariance" and report
@@ -1180,13 +1141,13 @@ context-induced degradation, where a distilled student gets worse when the
 prompt returns. Our five internalized checkpoints move the other way on
 recall when the instruction is re-added, and our pairs cross contracts rather
 than holding one fixed, so this study neither observes nor refutes their
-effect. We cite the instrument, not the result.
+effect, only that LLMs are fickle and that our results may not generalize to other areas beyond epistemic humility.
 
 ### A policy, not epistemic humility
 
 This study is the strongest version of one way to install epistemic humility:
 pick the post-training objective that shapes the model's *expressed*
-epistemic state directly, and iterate. In the depth taxonomy synthesized in a
+epistemic state directly, and iterate. In the depth taxonomy synthesized in our
 companion paper (Rosenbaum, 2026), that is the shallowest level, L1: humility
 as a scalar (a confidence number or a refuse/answer decision), scored against
 how well it tracks the model's actual reliability. Training the expression
@@ -1232,46 +1193,6 @@ question that remains is whether the model carries an internal signal that
 could support it anyway. Nothing in these regimens was designed to measure
 that, and behavior alone cannot answer it.
 
-That verdict is exactly as fenced as the evidence behind it: four
-objectives, one model, one data construction. It says nothing about whether
-some other regimen, at some other scale, could install coherence between
-expression and internal state; that stronger claim, that behavioral
-post-training at L1 cannot do so no matter the objective or scale, is not
-this paper's result.
-
-### Deployment reading
-
-For a practitioner training a small model to abstain, several things follow
-from the results above. An SFT inducer stage is mandatory; without it nothing
-abstains. The second stage is chosen by cost asymmetry, DPO if over-refusal is
-the expensive error and KTO or GRPO if hallucination is. The model's stated
-confidence should not be trusted under any of these regimens (Section 5), and
-an RL reward did not fix it here.
-
-Two further consequences come from the prompt condition. The first is about
-what you are shipping. If the deployment prompt is guaranteed, a cold-start
-preference checkpoint under an abstention instruction is a perfectly good
-abstainer, and the crossing says so: 94.48% refusal recall for cold DPO under
-the response-confidence contract. If the system prompt can be replaced,
-truncated, or overridden downstream, that same checkpoint abstains on nothing,
-and the only checkpoints in this study that keep abstaining are the ones a
-supervised stage produced. Which risk applies is an architecture question,
-not a training question, and it should be settled before the objective is
-chosen.
-
-The second is that the instruction is not free even when the weights no
-longer need it. On all five checkpoints that abstain without any instruction,
-adding one back raises refusal recall and truthfulness, and on all five it
-also raises over-refusal on answerable questions, by between 7.9 and 16.7
-points (Section 4.5). A team adding an abstention instruction on top of an
-already-trained abstainer is buying unknown-side recall with known-side
-availability, and at these operating points the price is large enough to
-measure before shipping rather than after.
-
-If you control the weights, the question raised above is the one worth
-starting from: whether the signal absent from the model's own words exists
-somewhere in its internals.
-
 ## 7. Limitations
 
 This is a small-model, single-family study: Qwen3-4B with low-rank adaptation
@@ -1295,8 +1216,7 @@ classifier counts hedged answers as refusals, so every refusal-family metric
 reported here (refusal recall, over-refusal, refusal rate) absorbs hedged
 answers along with outright abstentions.
 
-The prompt-condition crossing carries its own limits, and they are tighter
-than the confirmatory layer's. It is one model at one scale in one family,
+The prompt-condition crossing carries its own limits. It is one model at one scale in one family,
 with three prompt conditions chosen to span a range rather than to sample it:
 two contracts the program had already deployed, and one structure-only prompt
 written for this measurement. A different abstention instruction would elicit
@@ -1382,34 +1302,6 @@ deltas match within 0.01 points, and the ordering deltas move by at most
 The numbers reported in Section 4.4 are the full-population numbers,
 carrying this caveat; the decontaminated cross-check above changes no
 conclusion.
-
-### What would overturn this
-
-The stage decomposition is a claim about what each objective can and cannot
-do, so it breaks on one counterexample of the right shape. A preference
-objective that induced abstention from a base model would falsify the
-induction half. An objective, ordering, or stack that raised refusal recall
-without paying for it in over-refusal on the same evaluation surface would
-falsify the claim that nothing here moves the frontier. Neither appeared in
-any arm we trained, at one scale, in one model family, on one benchmark, and
-that is the scope the claim is fenced to.
-
-The internalization claim carried preregistered pass and fail conditions,
-fixed before the runs and not moved afterward: any supervised seed reading below
-30% refusal recall under the structure-only prompt would have scoped the
-claim to a single seed or retired it, and any preference seed reading at or
-above 10% would have broken the clean negative. Three supervised seeds
-cleared 30% and no preference seed reached 10%. Three further outcomes would
-overturn it now. A base model that abstained under a structure-only prompt,
-above the 10% ceiling and not attributable to the scorer's known 4 to 6%
-undercount, would remove the floor the claim stands on. A preference or
-reinforcement-learning recipe that produced instruction-free abstention from
-a base model would break the "only supervised training installs it" reading
-directly. And a supervised checkpoint whose instruction-free abstention
-vanished under a different structure-only prompt would show that this result
-is a property of one prompt rather than of the weights, which is the version
-of the claim we would least like to be wrong about and the one a second
-prompt formulation would test most cheaply.
 
 ## References
 
