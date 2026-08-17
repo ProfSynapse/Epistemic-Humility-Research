@@ -287,22 +287,21 @@ no prior work stacks a verifiable-reward RL stage with a preference-optimization
 objective (DPO or KTO family) for abstention: this study runs GRPO combined
 with DPO and with KTO on the SFT-warmed base, in both orders.
 
-A fifth rung is the prompt condition itself, and it is a measurement gap
-rather than a missing arm. An abstention-training result is interpretable
+A fifth rung is the prompt condition itself. An abstention-training result is interpretable
 only against two readings the literature does not pair: the model as it stood
 before the training stage, measured under the same instruction, which says how
 much of the behavior the prompt would have elicited anyway, and the trained model
 measured with the instruction taken away, which says how much of it lives in
-the weights. Individual pieces exist. One entry in the verifiable-reward
-cluster measures its starting checkpoint with an explicit "I don't know"
+the weights. One entry in the verifiable-reward
+literature measures its starting checkpoint with an explicit "I don't know"
 option offered, reaching 6.6% abstention on a medical multiple-choice set and
 0.03% on open-ended mathematics (Jha et al., 2026); another reports no
 prompted-only condition at all, since every arm in its comparison is a
 training intervention applied to one instruction-tuned checkpoint (Pan et
-al., 2026). The synthesis companion records the pattern across that whole
+al., 2026). Rosenbaum (2026) records the pattern across that whole
 cluster (Wei et al., 2025; Zhai et al., 2026; Mohamadi et al., 2025; Damani
 et al., 2025; Jha et al., 2026; Pan et al., 2026): every result is measured
-against its own prompting or cold-start baseline (Rosenbaum, 2026). To our
+against its own prompting or cold-start baseline. To our
 knowledge no abstention-training study reports both readings. Without the
 first, a training effect cannot be separated from what the prompt would have
 elicited anyway; without the second, it cannot be separated from
