@@ -13,6 +13,7 @@ style of papers/paper-1-taxonomy-framework/analysis/prisma_figure.py. Regenerate
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import matplotlib
@@ -22,6 +23,7 @@ from matplotlib.lines import Line2D
 
 FIG_DIR = Path(__file__).resolve().parents[1] / "figures"
 FIG_DIR.mkdir(parents=True, exist_ok=True)
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 # --- palette (from build_paper1_figures.py COLORS + PNG_COLORS) --------------
 C = {
@@ -60,10 +62,10 @@ def _style(ax):
     ax.set_axisbelow(True)
 
 
-def _save(fig, name: str, suptitle: str | None = None):
+def _save(fig, name: str, suptitle: str | None = None, top: float = 0.93):
     if suptitle:
         fig.suptitle(suptitle, fontsize=13, fontweight="bold")
-        fig.tight_layout(rect=(0, 0, 1, 0.93))
+        fig.tight_layout(rect=(0, 0, 1, top))
     else:
         fig.tight_layout()
     fig.savefig(FIG_DIR / f"{name}.svg")
@@ -279,10 +281,169 @@ def fig5_margin_trajectory():
     _save(fig, "fig-p2-05-action-margin-trajectory")
 
 
+# ============================================ Figure 6 — refusal-axis ablation
+def fig6_refusal_axis_ablation():
+    # Provenance: primary arm data read programmatically from the committed
+    # artifact experiments/caution-ablation-rederivation/analysis-committed/
+    # config2_caution_perp_residual_intervention_summary.json — the
+    # KU-orthogonalized ("caution_perp") residual intervention at L35 on
+    # clean_sft_grpo_v2_seed1 (4 arms x known_refused/known_correct_answered,
+    # n=168/373 rows). This is the freshly re-derived source for paper 3's
+    # "0.994 to 0.524" figure (manuscript.md Section 6); AMENDMENT.md
+    # "Outcome" table row "caution_perp ablate" reports the same rate
+    # (0.5238, rounds to 0.524).
+    summary_path = (
+        REPO_ROOT
+        / "experiments/caution-ablation-rederivation/analysis-committed"
+        / "config2_caution_perp_residual_intervention_summary.json"
+    )
+    data = json.loads(summary_path.read_text())
+    arms = ["baseline", "ablate", "shift_minus2", "shift_plus2"]
+    arm_labels = ["baseline", "ablate", "shift\n−2σ", "shift\n+2σ"]
+    kr_refusal = [data["by_arm"][a]["known_refused"]["refusal_rate"] for a in arms]
+    ka_refusal = [data["by_arm"][a]["known_correct_answered"]["refusal_rate"] for a in arms]
+    kr_correct = [data["by_arm"][a]["known_refused"]["correct_rate"] for a in arms]
+
+    # In-frame replication (registered doubt-regulated-caution cell, same
+    # recipe, fresh row set): ablate arm known_refused refusal 0.994 -> 0.536.
+    # No analysis-committed JSON exists for experiments/doubt-regulated-caution/
+    # (untracked-outputs convention, see its AMENDMENT.md "Analysis outputs
+    # stay untracked"); hand-entered from AMENDMENT.md Section 8 Result table,
+    # "ablate" row (kr refusal 0.536, kr correct 0.327).
+    replication_kr_refusal_ablate = 0.536
+
+    import numpy as np
+    fig, (axA, axB) = plt.subplots(1, 2, figsize=(10.2, 4.6),
+                                    gridspec_kw={"wspace": 0.4})
+
+    x = np.arange(len(arms)); w = 0.34
+    b1 = axA.bar(x - w / 2, kr_refusal, w, label="known-item refusal (over-refusal)",
+                 color=C["orange"], zorder=3)
+    b2 = axA.bar(x + w / 2, ka_refusal, w, label="known-correct-answered refusal (specificity)",
+                 color=C["green"], zorder=3)
+    axA.set_xticks(x); axA.set_xticklabels(arm_labels)
+    axA.set_ylabel("refusal rate")
+    axA.set_ylim(0, 1.62)
+    _bar_labels(axA, b1); _bar_labels(axA, b2)
+    axA.scatter([1 + w / 2], [replication_kr_refusal_ablate], marker="D", s=50,
+                color=C["gate"], zorder=5)
+    axA.annotate(f"in-frame replication {replication_kr_refusal_ablate:.3f}",
+                 xy=(1 + w / 2, replication_kr_refusal_ablate),
+                 textcoords="offset points", xytext=(18, -32),
+                 fontsize=8, color=C["gate"], ha="left",
+                 arrowprops=dict(arrowstyle="->", color=C["gate"], lw=1.0))
+    axA.legend(frameon=False, fontsize=8.2, loc="upper center", ncol=1)
+    axA.set_title("Refusal-axis ablation relaxes over-refusal;\nspecificity stays intact", fontsize=11.5)
+    _style(axA)
+
+    b3 = axB.bar(arm_labels, kr_correct, color=C["blue"], width=0.6, zorder=3)
+    _bar_labels(axB, b3, fmt="{:.3f}")
+    axB.set_ylim(0, 0.5)
+    axB.set_ylabel("correct rate\n(known_refused cell, n=168)")
+    axB.set_title("Answers produced after ablation\nare correct, not just present", fontsize=11.5)
+    _style(axB)
+
+    # Manual layout: this figure's annotate() arrow makes matplotlib's
+    # tight_layout report itself unreliable, so margins are set explicitly
+    # rather than trusting tight_layout's automatic suptitle spacing.
+    fig.suptitle("Result 3 — the refusal axis is causally real, ablation is one-way",
+                 fontsize=13, fontweight="bold", y=0.99)
+    fig.subplots_adjust(left=0.08, right=0.97, top=0.76, bottom=0.11, wspace=0.4)
+    fig.savefig(FIG_DIR / "fig-p2-06-refusal-axis-ablation.svg")
+    fig.savefig(FIG_DIR / "fig-p2-06-refusal-axis-ablation.png", dpi=200)
+    plt.close(fig)
+    print("wrote fig-p2-06-refusal-axis-ablation.svg + .png")
+
+
+# ================================================ Figure 7 — bounded site sweep
+def fig7_bounded_site_sweep():
+    # Provenance: read programmatically from the committed artifact
+    # experiments/caution-install-bounded-site-sweep/analysis-committed/
+    # gate_report.json. Panel A: gates.g1_actuation.trained[site:anchor_onward]
+    # .rate / .wilson_lower_95 (held-out confab clean_tighten, n=154 per site).
+    # Panel B: gates.g3_direction_specificity.trained[site:anchor_onward]
+    # .ratio / .pass (gated lift over max permuted/positional-control draw
+    # lift; hs19 and hs34 have max_draw_lift == 0, serialized as ratio "inf"
+    # and failing the pre-registered positivity guard, not a finite ratio).
+    # Relative depth (hs / 36) per site is the AMENDMENT.md "Pre-registered
+    # search space" table (Section: Design > Pre-registered search space):
+    # hs19=0.528, hs23=0.639, hs29=0.806, hs34=0.944, hs35=0.972. Only these
+    # five of the seven registered sites cleared dose viability (hs13, hs16
+    # recorded NOT_RUN_no_usable_rung), and only at the anchor_onward write
+    # position.
+    gate_path = (
+        REPO_ROOT
+        / "experiments/caution-install-bounded-site-sweep/analysis-committed"
+        / "gate_report.json"
+    )
+    gates = json.loads(gate_path.read_text())["gates"]
+    sites = ["hs19", "hs23", "hs29", "hs34", "hs35"]
+    depth = {"hs19": 0.528, "hs23": 0.639, "hs29": 0.806, "hs34": 0.944, "hs35": 0.972}
+    g1 = gates["g1_actuation"]["trained"]
+    g3 = gates["g3_direction_specificity"]["trained"]
+
+    rate = [g1[f"{s}:anchor_onward"]["rate"] for s in sites]
+    wlo = [g1[f"{s}:anchor_onward"]["wilson_lower_95"] for s in sites]
+    x_labels = [f"{s}\n(depth {depth[s]:.2f})" for s in sites]
+
+    import numpy as np
+    fig, (axA, axB) = plt.subplots(1, 2, figsize=(9.6, 4.5))
+
+    x = np.arange(len(sites))
+    yerr = np.vstack([np.array(rate) - np.array(wlo), np.zeros(len(sites))])
+    bars = axA.bar(x, rate, color=C["blue"], width=0.58, zorder=3,
+                    yerr=yerr, capsize=4, ecolor=C["text"])
+    axA.axhline(0.50, ls="--", lw=1.1, color=C["gate"], zorder=2)
+    axA.axhline(0.40, ls=":", lw=1.0, color=C["gray"], zorder=2)
+    axA.text(4.35, 0.515, "rate threshold 0.50", fontsize=7.8, color=C["gate"], ha="right")
+    axA.text(4.35, 0.375, "Wilson-lower threshold 0.40", fontsize=7.8, color=C["gray"], ha="right")
+    axA.set_xticks(x); axA.set_xticklabels(x_labels, fontsize=9)
+    axA.set_ylabel("held-out confab → refusal rate\n(error bar: Wilson lower 95%)")
+    axA.set_ylim(0, 1.08)
+    _bar_labels(axA, bars)
+    axA.set_title("Every dose-viable site actuates\n(write position: anchor onward)")
+    _style(axA)
+
+    ratio_vals = []
+    is_finite = []
+    for s in sites:
+        r = g3[f"{s}:anchor_onward"]["ratio"]
+        if isinstance(r, (int, float)):
+            ratio_vals.append(r); is_finite.append(True)
+        else:
+            ratio_vals.append(0.0); is_finite.append(False)
+    passed = [g3[f"{s}:anchor_onward"]["pass"] for s in sites]
+    bar_cols = [C["green"] if p else C["gray"] for p in passed]
+    bars2 = axB.bar(x, ratio_vals, color=bar_cols, width=0.58, zorder=3)
+    for xi, (v, fin, p) in enumerate(zip(ratio_vals, is_finite, passed)):
+        if not fin:
+            axB.text(xi, 0.35, "undefined\n(fails\npositivity\nguard)", ha="center",
+                     va="bottom", fontsize=7.2, color=C["gate"])
+        else:
+            axB.text(xi, v + 0.3, f"{v:.2f}×", ha="center", va="bottom", fontsize=9)
+    axB.axhline(3.0, ls="--", lw=1.1, color=C["gate"], zorder=2)
+    axB.text(4.35, 3.15, "G3 pass threshold (3×)", fontsize=7.8, color=C["gate"], ha="right")
+    axB.set_xticks(x); axB.set_xticklabels([s for s in sites], fontsize=9)
+    axB.set_ylabel("gated lift / max control-draw lift")
+    axB.set_ylim(0, 14)
+    legend = [Line2D([0], [0], marker="s", color="w", markerfacecolor=C["green"],
+                     markersize=11, label="G3 pass (specific)"),
+              Line2D([0], [0], marker="s", color="w", markerfacecolor=C["gray"],
+                     markersize=11, label="G3 fail (not specific)")]
+    axB.legend(handles=legend, frameon=False, fontsize=8.2, loc="upper left")
+    axB.set_title("Only hs35 writes specifically\nalong the refusal direction")
+    _style(axB)
+
+    _save(fig, "fig-p2-07-bounded-site-sweep",
+          suptitle="Result 3 follow-on — the bounded search to install abstention")
+
+
 if __name__ == "__main__":
     fig1_internal_vs_stated()
     fig2_kl_dissociation()
     fig3_cell_confidence()
     fig4_confidence_vs_action()
     fig5_margin_trajectory()
+    fig6_refusal_axis_ablation()
+    fig7_bounded_site_sweep()
     print(f"\nAll figures written to {FIG_DIR}")
