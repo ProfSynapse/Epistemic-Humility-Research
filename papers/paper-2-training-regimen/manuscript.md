@@ -82,20 +82,19 @@ refusing questions they could answer have been described as polite liars
 (DeVilling, 2025): systems that misrepresent their own epistemic state
 because the training signal rewarded the appearance of knowledge over the
 admission of ignorance. Kalai et al. (2025) trace the incentive back past
-post-training, to cross-entropy pretraining and binary-graded evaluation
+post-training, to cross-entropy pretraining and binary-graded (thumbs up or down) evaluation
 under which a guess strictly dominates an abstention. Post-training did not
 create the incentive, but it remains the most directly adjustable stage, and
 the practical question becomes which post-training objective adjusts it
 best.
 
-Two things are already established about that question, and Section 2
-reviews the evidence for both. Post-training damages calibration: RLHF
-multiplied the GPT-4 base model's expected calibration error tenfold on an
-MMLU subset (OpenAI, 2023), instruction tuning sharpens confidence faster
+Two things are already established about that question. Post-training damages calibration: RLHF
+multiplied the GPT-4 base model's expected calibration error (ECE) tenfold on an
+MMLU subset (OpenAI, 2023). Furthermore, instruction-tuning sharpens confidence faster
 than accuracy warrants, and Kadavath et al. (2022) locate the mechanism in
 probability mass concentrating on high-reward outputs. The signal survives
 in the weights; only its expression is broken. And the converse holds:
-refusal-aware tuning (Zhang et al., 2023), factuality-aware DPO (Tian et
+refusal-aware tuning (Zhang et al., 2023), factuality-aware Direct Preference Optimization (DPO) (Tian et
 al., 2023), and related recipes deliberately move humility metrics in the
 right direction, often by large margins.
 
@@ -104,24 +103,17 @@ systematic synthesis of this literature, reported as a companion paper in
 this research program (Rosenbaum, 2026), extracted 78 quantitative effects
 from 39 studies and verified the absence directly: no published study runs
 supervised fine-tuning against the major preference objectives on one
-abstention dataset, and none applies Kahneman-Tversky optimization to
+abstention dataset, and, as of writing this, none applies Kahneman-Tversky optimization to
 abstention at all. This paper runs the missing comparison: supervised
 fine-tuning (SFT), direct preference optimization (DPO), Kahneman-Tversky
 optimization (KTO), and group relative policy optimization (GRPO), over one
 small open-weights base, with one model-specific known/unknown data
-construction and one measurement panel. In the depth taxonomy the companion
-synthesizes, this is the shallowest and most direct approach available, L1:
-train the model's expressed confidence and refusal decisions themselves.
+construction and one measurement panel.
 
-A refusal rate means something only relative to the prompt it was measured
-under, and that binds this study as tightly as the literature around it.
 Every evaluation reported below ran under a system prompt that already
-tells the model it may decline: a plain-answer contract for the cold-start
-comparison, a response-confidence contract for the reinforcement-learning
-arms. The base model, meaning the Qwen3-4B checkpoint with none of our
+tells the model it may decline. The base model, meaning the Qwen3-4B checkpoint with none of our
 training applied, had never been evaluated under either contract in this
-research program, and the companion synthesis records the same hole in the
-published record: every result in the verifiable-reward abstention cluster
+research program: every result in the verifiable-reward abstention cluster
 is measured against its own prompting or cold-start baseline, never against
 the base model under the same instruction (Rosenbaum, 2026). A refusal rate
 measured that way pools two different things, weights that carry an
@@ -130,12 +122,11 @@ and training are crossed factors, and only one margin of the table had been
 measured. An exploratory panel therefore crosses three prompt conditions,
 the two deployment contracts plus a structure-only prompt with every
 abstention affordance stripped out, with the base model and with
-checkpoints from every objective. Section 4 reports the crossing; what it
-changes is not the numbers but what the numbers mean.
+checkpoints from every objective.
 
 Four words are kept apart for the rest of this paper. A prompt *elicits*
 behavior the weights already afford, and the model *complies* while the
-instruction is present; take the instruction away and the behavior leaves
+instruction is present; take the instruction away and the behavior may leave
 with it. Training *internalizes* behavior when the behavior survives the
 instruction's removal. *Induces* is used only where a training stage
 produced abstention that the measured base model did not produce under the
@@ -166,13 +157,13 @@ Contributions:
 
 What does the published record already settle about training a model to
 abstain, and what does it leave open? Three findings from the synthesis
-introduced above fix this experiment's design, and two of its measurement
-lessons fix the reporting.
+introduced above fix this experiment's design, and two measurement
+lessons in development are worth explaining.
 
 The four objectives compared here differ in what they consume. SFT trains on
 target outputs directly: the model is shown the response wanted for each
 prompt and learns to reproduce it. DPO (Rafailov et al., 2023) trains on
-pairs, a preferred and a dispreferred response to the same prompt, shifting
+pairs, a preferred and not preferred response to the same prompt, shifting
 probability mass toward the preferred one without a separate reward model.
 KTO (Ethayarajh et al., 2024) drops the pairing requirement: each response is
 labeled desirable or undesirable on its own, and the loss may weight the two
@@ -183,7 +174,7 @@ all, only a scalar reward applied to completions the model samples for itself.
 
 Instruction tuning and RLHF degrade token-probability calibration, and the
 mechanism runs through the relationship between the tuning data and *this
-model's* knowledge. Fine-tuning on facts the model does not know causally
+model's* knowledge. Fine-tuning on facts the model does *not* know causally
 drives hallucination (Gekhman et al., 2024); data aligned with what it already
 knows induces overconfidence (Wang et al., 2025). That is why every successful
 abstention method builds *model-specific* training splits, and why this one
@@ -194,12 +185,7 @@ truthfulness quality. The anchor result is the model-specific tournament of
 Cheng et al. (2024), whose preference arms are initialized from their own
 supervised Idk-SFT model rather than trained from scratch: on data labeled
 by what that model in particular gets right, every preference arm beats the
-Idk-SFT stage it started from. The synthesis confirms the same staged
-pattern in a reanalysis of AbstentionBench (Kirichenko et al., 2025), a
-benchmark of questions that should not be answered at all, where a
-preference stage again follows, rather than replaces, SFT. The margin is
-modest: the median improvement is an order of magnitude smaller than the
-calibration damage above.
+Idk-SFT stage it started from.
 
 The improvement is also a trade rather than a gain. Reanalyzing the outputs
 Cheng et al. released, the synthesis finds DPO cutting SFT-induced
@@ -208,7 +194,7 @@ movement along a refusal ROC curve, the curve traced by sliding one threshold
 between catching more unanswerable questions and wrongly refusing more
 answerable ones, and not a better ability to tell the two kinds apart.
 
-### Two measurement lessons that fix the reporting
+### Two measurement lessons
 
 A model can fail the abstention task in two ways: by answering questions it
 cannot answer, or by refusing questions it can. The two failures are
@@ -221,7 +207,7 @@ refusal recall on unknown questions and over-refusal on known ones.
 
 Model-specific known/unknown labels are themselves noisy: in the released
 artifacts of the lineage this study follows, 42.9 to 51.3% of answers to
-questions labeled "unknown" were in fact correct. This study regenerates
+questions labeled "unknown" were in fact correct upon closer inspection. This study regenerates
 known/unknown labels fresh against the model under study rather than
 borrowing them, for exactly that reason (Section 3.2). The residual caveat
 carries forward wherever a borrowed-label result is cited: label noise pulls
@@ -247,8 +233,8 @@ reveals it. LIMA (Zhou et al., 2023) makes the same argument from the data
 side: a thousand curated examples suffice, because alignment is largely
 surfacing what pretraining already put there. Askell et al. (2021) run the
 relationship in the opposite direction, distilling a prompt's effect into
-weights so the behavior persists without it, which is exactly the operation
-supervised fine-tuning performs here.
+weights so the behavior persists without it, which, as we'll see, is exactly the operation
+supervised fine-tuning performs in this study.
 
 Two results bring this to the abstention surface directly. Ling et al. (2025)
 show that abstention can be driven by structural features of the prompt
@@ -273,10 +259,7 @@ the training data.
 
 ### The gaps this experiment closes
 
-The same synthesis verifies six experiments as absent from the literature as
-of this writing, by structured search and targeted spot-check. This study
-closes the first three of those gaps, then climbs two further rungs the
-synthesis's search did not cover.
+This study strives to close six separate rungs in the search for an answer to the question: "Can we train a model to induce coherent Epistemic Humility?"
 
 The first rung is KTO. It has never been applied to abstention, honesty, or
 calibration training, despite consuming exactly the unpaired binary labels a
