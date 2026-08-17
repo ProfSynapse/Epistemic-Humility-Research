@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-16T17:44:19Z'
+updated_at: '2026-08-17T14:12:58Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -846,6 +846,43 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 035-checkpoint
+  at: '2026-08-17T14:12:58Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Five-workstream burn-down day. Both LinkedIn null-result posts PI-approved
+    (approval approved, status draft until scheduled). Adversarial reviews landed:
+    paper 4 has 8 blockers (sec 6 contradicts the Gemma atlas signed doc twice, silently
+    swaps a different four-family panel, orthogonal claim rides an unregistered diagnostic,
+    0.997-0.998 universality false vs own artifacts) but arithmetic fully clean over
+    20+ traced claims; paper 1 NOT ready (asserts preference optimization does not
+    improve discrimination without computing any discrimination statistic while own
+    CSV shows plus 7 Youden J for DPO/BoN, lead adjudication: J at single operating
+    point cannot cleanly separate frontier movement from sliding so fix is indeterminacy
+    not reversal; sec 7 calls P2/P3/P4 open when all three resolved; four of six literature
+    gaps closed by own program). Paper 3 section 6 figures built and verified (fig-p2-06
+    ablation arms with 0.5238 read programmatically from committed artifact, fig-p2-07
+    bounded site sweep, branch paper3-section6-figures b09ac01e). Paper 5 front matter
+    fixed: five legacy AMENDMENT-AB/AF/AG/AH/AI pseudo-filenames mapped to real experiment
+    paths (branch paper5-frontmatter-fix 583c6223). Exhaust packaged build-verify
+    only for both falsified cells, aggregate-only, dry-run cards awaiting PI upload
+    approval; inventory found 40 terminal unpackaged cells and 4 terminal cells with
+    no analysis-committed at all. Prompt-side promotion: PI chose route 1 held-out
+    confirmatory; prompt-vs-training-panel stale DRAFT header corrected to RESOLVED;
+    new cell prompt-crossing-heldout-confirmatory scaffolded and drafted (20 arms
+    AmbigQA primary, C1 gap C2 internalization C3 parent-relative erosion floor bands
+    drafted, unsigned, awaiting PI band approval). PI manually editing paper 2: hold
+    all paper 2 changes until PI commits. Validator gap found: exp validate whitelist
+    misses gitignored archive/ input paths, blocks fresh-worktree commits. pr-workflow
+    skill updated with fresh-worktree gotcha. Pending PI decisions: paper 1 and 4
+    remediation go/no-go, PR approval for two verified branches, confirmatory bands,
+    exhaust upload.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -1033,3 +1070,8 @@ _No summary yet._
 - at: `2026-08-16T17:44:19Z`
 - kind: `checkpoint`
 - summary: PI approved capture-then-merge. Captured parked follow-up threads per PI ruling instead of running new cells: docs/research-trajectory.md new Parked threads section (seed decomposition of refusal axis; mid-band entanglement on trained checkpoints), paper 3 sec 9 seed-dependence bullet distinguishing exploratory 0.030 full-axis collapse falsified at seed 2 (0.553) from governed orthogonalized 0.524/0.536, paper 5 sec 6.3/6.4 trained-checkpoint J-lens scoping (band flattened deepened, hs17 readable AUROC 0.86 but ablation releases 0/168 vs 163/168 at L35, induces refusal on 48 pct of answered knowns, band is broadcast evidence not a write-site license). All numbers reverified against both AMENDMENT docs before writing. Commit 719a050a passed all hooks. PR 466 created and merged to main (a4034e39) with PI approval, carrying both falsified cells end-to-end (register sign run resolve KG ingest) plus the captures. Branch deleted. Still parked for PI: two vault content candidates (when your confirmatory fails; readable is not editable) and whether paper 5 formally picks up band-reshaping beyond the limitations note. Next: papers 1/4 passes, outreach email skeleton, exhaust packaging remain queued.
+### 035-checkpoint - Checkpoint
+
+- at: `2026-08-17T14:12:58Z`
+- kind: `checkpoint`
+- summary: Five-workstream burn-down day. Both LinkedIn null-result posts PI-approved (approval approved, status draft until scheduled). Adversarial reviews landed: paper 4 has 8 blockers (sec 6 contradicts the Gemma atlas signed doc twice, silently swaps a different four-family panel, orthogonal claim rides an unregistered diagnostic, 0.997-0.998 universality false vs own artifacts) but arithmetic fully clean over 20+ traced claims; paper 1 NOT ready (asserts preference optimization does not improve discrimination without computing any discrimination statistic while own CSV shows plus 7 Youden J for DPO/BoN, lead adjudication: J at single operating point cannot cleanly separate frontier movement from sliding so fix is indeterminacy not reversal; sec 7 calls P2/P3/P4 open when all three resolved; four of six literature gaps closed by own program). Paper 3 section 6 figures built and verified (fig-p2-06 ablation arms with 0.5238 read programmatically from committed artifact, fig-p2-07 bounded site sweep, branch paper3-section6-figures b09ac01e). Paper 5 front matter fixed: five legacy AMENDMENT-AB/AF/AG/AH/AI pseudo-filenames mapped to real experiment paths (branch paper5-frontmatter-fix 583c6223). Exhaust packaged build-verify only for both falsified cells, aggregate-only, dry-run cards awaiting PI upload approval; inventory found 40 terminal unpackaged cells and 4 terminal cells with no analysis-committed at all. Prompt-side promotion: PI chose route 1 held-out confirmatory; prompt-vs-training-panel stale DRAFT header corrected to RESOLVED; new cell prompt-crossing-heldout-confirmatory scaffolded and drafted (20 arms AmbigQA primary, C1 gap C2 internalization C3 parent-relative erosion floor bands drafted, unsigned, awaiting PI band approval). PI manually editing paper 2: hold all paper 2 changes until PI commits. Validator gap found: exp validate whitelist misses gitignored archive/ input paths, blocks fresh-worktree commits. pr-workflow skill updated with fresh-worktree gotcha. Pending PI decisions: paper 1 and 4 remediation go/no-go, PR approval for two verified branches, confirmatory bands, exhaust upload.

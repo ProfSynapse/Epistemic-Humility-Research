@@ -1,6 +1,8 @@
 # Prompt-vs-training disentanglement panel: base counterfactuals and instruction-free abstention
 
-Status: DRAFT (2026-08-14). Machine state in `experiment.yaml`.
+Status: RESOLVED (2026-08-15, PI approval in-conversation; header corrected
+2026-08-17 to match machine state, resolve commit 3867aca9). Run complete,
+Outcome recorded below. Machine state in `experiment.yaml`.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
