@@ -201,8 +201,8 @@ not, to our knowledge, been isolated for the abstention behavior specifically.
 
 A controlled comparison of training regimens (Rosenbaum, 2026b) establishes, on the
 same model and data, that cold-start SFT induces abstention (and over-refusal), and
-that DPO and KTO reposition the abstention boundary rather than inducing the
-behavior. That comparison also separates the prompt from the training for
+that DPO and KTO applied cold induce almost none of the behavior, while applied
+after SFT they reposition the boundary SFT installed. That comparison also separates the prompt from the training for
 reinforcement learning: GRPO applied cold, with no supervised stage, preserves and
 sharpens abstention the prompt has already elicited and internalizes none of it,
 while GRPO applied after SFT amplifies the trained routine, pushing refusal recall
@@ -308,12 +308,6 @@ in is a different class of experiment, with its own write sites, dose calibratio
 and validation, and the only installation evidence this paper reports is the
 bounded write-site sweep of Section 6.
 
-A third candidate direction is fenced out entirely. A confabulation-propensity
-read (which unanswerable items draw a fabricated answer rather than a refusal,
-residualized against the refusal axis) is specific to the most-trained checkpoint
-we examined, and writing along it does not causally convert confabulations into
-refusals, so it is not among this paper's internal-confidence signals.
-
 ### Calibration metrics
 
 For the stated channel we report: AUROC of the emitted
@@ -379,8 +373,7 @@ unknown questions at AUROC ≈ 0.997, while the emitted `response_confidence` sc
 ranks appropriateness barely above chance (AUROC ≈ 0.52). *Right:* on 360
 wrong-answered and 420 correct rows at deployment rendering, the internal axis's
 own readout stays near-calibrated (ECE ≈ 0.047 raw) where the stated scalar is
-badly miscalibrated (ECE ≈ 0.285). Both panels are single-seed, single-model reads
-on Qwen3-4B.
+badly miscalibrated (ECE ≈ 0.285).
 
 ### The gap is like-for-like, not a scoring artifact
 
@@ -438,8 +431,7 @@ by changing what the model represents.
 
 ### Scope of these readings
 
-Everything above is a single-model, single-population reading (Qwen3-4B on
-SelfAware), and one companion measurement marks where it stops. On a different Qwen
+One companion measurement marks where these readings stop. On a different Qwen
 lineage and a different error class, confident wrongness on answerable, world-known
 questions rather than ignorance of unanswerable ones, the analogous known-unknown
 direction's projection reverses in sign instead of ordering monotonically, and a
@@ -576,7 +568,7 @@ known-item over-refusal from 0.994 to 0.524 while refusal on the control items
 stays at 0.00; the diamond marks the in-frame replication at 0.536 under the same
 recipe. Right: the answers the ablated model produces are not merely present but
 correct, peaking at a 0.327 correct rate over the full known-refused cell under
-ablation. Exploratory, single-seed evidence at each arm.
+ablation.
 
 The one-way statement has been stress-tested where it is most exposed. A bounded
 search tried to install abstention on this paper's trained checkpoint by writing
@@ -612,8 +604,7 @@ clears it at 12.18x; two fail at 1.50x and 1.52x; two more have zero measured
 control-draw lift and so cannot evidence a claim of lift over noise at all. The one
 site that writes specifically along the refusal direction is the one site where
 harm to known-correct rows could not be adjudicated for want of rows, so the search
-neither overturns the one-way statement nor installs the behavior. Exploratory,
-single-seed evidence.
+neither overturns the one-way statement nor installs the behavior.
 
 Two consequences carry forward. The causal dissociation confirms that the refusal
 axis is a mechanism of its own and not a re-reading of the known-unknown axis,
@@ -631,27 +622,28 @@ opposite sides in a way that localizes the mechanism.
 
 ### The seven interventions
 
-#### Interventions 1–2: DPO and KTO
+#### Interventions 1–2: SFT-warmed DPO and KTO
 
 Preference training moves the behavior and leaves the stated confidence exactly
-where it was. Rosenbaum (2026b) shows that direct preference optimization (DPO;
-Rafailov et al., 2023) and Kahneman-Tversky optimization (KTO; Ethayarajh et al.,
-2024) reposition the abstention boundary rather than inducing abstention. On the
-confidence channel the emitted scalar remains a flat high value across outcome
-groups, with known-wrong answers drawing ≈ 0.83: repositioned behavior, unchanged
-stated confidence.
+where it was. Both arms here are two-stage stacks warmed from the same SFT
+checkpoint (SFT→DPO and SFT→KTO): Rosenbaum (2026b) shows that direct preference
+optimization (DPO; Rafailov et al., 2023) and Kahneman-Tversky optimization (KTO;
+Ethayarajh et al., 2024) applied after SFT reposition the abstention boundary SFT
+installed rather than inducing abstention of their own. On the confidence channel
+the emitted scalar remains a flat high value across outcome groups, with
+known-wrong answers drawing ≈ 0.83: repositioned behavior, unchanged stated
+confidence.
 
 #### Interventions 3–4: GRPO v1 and v2
 
 Reinforcement learning on the behavior leaves the stated scalar collapsed, and the
-collapse turns out to be what the objective rewards. Reward shaping over the
+collapse turns out to be what the objective rewards. Under reward shaping over the
 behavior with group relative policy optimization (GRPO, a reinforcement-learning
-method driven by a programmable reward; Shao et al., 2024)
-leaves the stated scalar
-collapsed: on the full evaluation GRPO-v2 emits mean ≈ 0.813 with std ≈ 0.013
+method driven by a programmable reward; Shao et al., 2024),
+on the full evaluation GRPO-v2 emits mean ≈ 0.813 with std ≈ 0.013
 (a near-constant ~0.8 regardless of input), ranks appropriateness at
 AUROC ≈ 0.520 with ECE ≈ 0.403, and ranks its own correct vs wrong among
-answered knowns at AUROC ≈ 0.521 (chance), all at seed 1. The diagnosis is an
+answered knowns at AUROC ≈ 0.521 (chance). The diagnosis is an
 incentive analysis, and it generalizes beyond this particular reward. The
 reward's confidence term shaped confidence toward fixed per-group targets (high
 when answering correctly, low when wrong), but the model cannot observe its own
@@ -664,7 +656,7 @@ specified.
 The collapse is not a property of one training run. Across three seeds of the same
 arm the emitted scalar takes between 4 and 85 distinct values over the whole
 3369-row evaluation, far short of the spread that a non-collapsed channel would
-show (exploratory, three seeds; the non-collapse threshold is in Section 9).
+show (three seeds; the non-collapse threshold is in Section 9).
 
 #### Intervention 5: GRPO v3, proper scoring
 
@@ -709,8 +701,7 @@ learning from a collapsed starting point.**
 
 Contrastive fine-tuning is the one intervention that installs stated calibration,
 and it pays for it in behavior; its masked twin recovers the behavior and loses the
-calibration. That pair is the localizing result, and it gets its own treatment
-next.
+calibration. That pair is the localizing result.
 
 ### The answer-supervision dissociation (the localizing result)
 
@@ -794,7 +785,6 @@ behavior with reinforcement learning, which is built for behavior shaping. We ra
 GRPO v3 (the same proper-scoring reward as intervention 5) on the answer-supervised
 base rather than the clean-SFT base, so that the KL anchor now references a
 *calibrated* policy and the dominant behavior reward attacks its over-refusal.
-Single seed, exploratory.
 
 The calibration half of the bet pays: training on the answer-supervised base *retains* stated
 calibration even as the policy moves well off its reference (final KL ≈ 0.97).
@@ -880,7 +870,7 @@ knowledge. But it does not *act* on it: the answer/abstain decision is decoupled
 from the very signal the model is now able to verbalize. "Knows but doesn't say"
 becomes, here, "says but doesn't act." That leaves one obvious alternative
 explanation: the KL anchor may simply be pinning the action to the
-answer-supervised model's over-refusing mode. Loosening the anchor settles it. For
+answer-supervised model's over-refusing mode. For
 the decoupling to be an anchor artifact, the action margin has to open to about
 14.5 points, the separation a passing behavior score implies.
 
@@ -917,8 +907,8 @@ stated confidence move on separate channels throughout. The stated channel is
 never coupled to the epistemic state in the first place unless supervision
 explicitly constructs the coupling, and the one supervision that constructs it
 does so by a binding (the wrong-answer text) that breaks behavior.
-This is a local claim about coupling in this model and channel: it does not deny
-that RLMF-style objectives can improve faithful uncertainty metrics, but it says
+This does not deny
+that RLMF-style objectives can improve faithful uncertainty metrics; it says
 that output-level improvement is not yet the same thing as wiring the model's
 internal signal to both action and stated confidence.
 
@@ -926,8 +916,8 @@ internal signal to both action and stated confidence.
 
 **Figure 11. The confidence channel and behavior fail in opposite arms.**
 Emitted-confidence spread (left), calibration against response appropriateness
-(center), and over-refusal (right) for the five confidence-channel arms
-(seed 1, exploratory). The RL arms (red) sit below the collapse threshold and at
+(center), and over-refusal (right) for the five confidence-channel arms.
+The RL arms (red) sit below the collapse threshold and at
 chance calibration with moderate over-refusal; the contrastive arms (green)
 calibrate the channel at behavioral cost; RL on the answer-supervised base
 (purple) keeps the calibration and worsens the behavior. No arm gets both halves
@@ -946,8 +936,8 @@ target is the probe's factual confidence $P(\text{answer correct})$ per row
 (AUROC ≈ 0.997 internally), clamped to $[0.02, 0.98]$; no balancing, no abstention
 inversion. The assistant *answer* text is byte-identical to clean SFT, so the
 knowledge-conditioned action is preserved by construction; only the confidence token
-is retargeted. Single seed, exploratory; the success and clear-negative levels
-fixed before the run are in Table 3.
+is retargeted. The success and clear-negative levels fixed before the run are in
+Table 3.
 
 The behavior half holds trivially and the calibration half lands below the negative
 threshold (Table 3). Because the answer text is untouched, the action channel conditions
@@ -990,9 +980,7 @@ two opposite training pressures (an outcome-aligned proper-scoring reward and a
 direct distillation of the very axis that is calibrated) localizes the bottleneck to
 the channel itself: a single confidence token trained by next-token cross-entropy
 collapses onto the lowest-entropy correlate available (the answer/abstain action),
-not the higher-entropy correctness signal. This is the motivation for Section 8's
-engine change: a dedicated confidence head supervised by a regression (proper-score)
-loss against the internal axis, rather than a token emitted by the language head.
+not the higher-entropy correctness signal.
 
 ## 8. Discussion
 
@@ -1030,9 +1018,7 @@ answer-supervised trade) and supplies a dense, per-item, calibrated target (avoi
 GRPO's out-competed confidence term). We ran it (Section 7, Table 3), and it
 failed in an informative way. This framing treats the known-unknown axis's
 calibrated appropriateness estimate as a stand-in for factual confidence,
-$P(\text{answer correct})$; that identification, like the axis's monotonicity in
-Section 4, is a single-model/single-population reading on Qwen3-4B/SelfAware, and a
-constructive search for a portable evidence-responsive
+$P(\text{answer correct})$. A constructive search for a portable evidence-responsive
 axis on a different model and error-class population found only generic
 retrieval-family geometry rather than a specific evidence/correctness axis, so the
 identification should not be assumed to hold outside this population without a
@@ -1100,15 +1086,14 @@ signal that is linearly available inside. Training the readout failed here in
 seven variants; reading it directly with a probe trivially succeeds. Whether a
 training-free probe readout can supply the calibrated filter and dial that output
 training could not, and whether it transfers across datasets, model sizes, and
-families, is the question this result opens and this single-model study does not
-settle; the standard probing cautions carry over to it, that a probe can read
+families, is the question this result opens and does not settle; the standard
+probing cautions carry over to it, that a probe can read
 knowledge recall rather than truth-tracking (Cheang et al., 2025), and that
 transfer must be tested rather than assumed.
 
 ### Implications beyond this model
 
-If the pattern generalizes (Section 9 is honest
-that we have not shown this), it reframes a common assumption in abstention training:
+If the pattern generalizes, it reframes a common assumption in abstention training:
 that teaching better behavior will produce better-calibrated confidence. Here the two
 are dissociable, and the confidence channel needs its own, internally-anchored
 supervision. It also tempers the "steer in humility at inference" hope: the easy
@@ -1195,14 +1180,11 @@ would. The one that held was that the answerability separation predates our
 training, with all four pretrain-only bases at or above 0.997. Appendix A maps
 every number to its artifact.
 
-- Single seed, single model. Every number is seed 1 on Qwen3-4B. The large
-  qualitative contrasts (0.997 vs 0.52; the answer-supervised →
-  answer-masked direction flip) are
+- Single seed, single model. The large qualitative contrasts (0.997 vs 0.52; the
+  answer-supervised → answer-masked direction flip) are
   unlikely to be seed noise, but the precise effect sizes are single-seed estimates
   and the whole pattern needs replication across seeds and at least one other model
-  family/size before any claim of generality. One component clears that bar:
-  the GRPO confidence collapse of Section 7 holds at three seeds. The rest of
-  the pattern remains single-seed.
+  family/size before any claim of generality.
 - Prompt-contract conditionality. Every readout here is measured under one
   prompt contract at a time (Section 3), and on this model the contract is not
   a detail: the same untrained base refuses nothing under the neutral
@@ -1277,34 +1259,28 @@ every number to its artifact.
   correlate. The causal results of Section 6 partly mitigate this for the
   refusal axis but not for the known-unknown axis.
 - The search for an abstention install is bounded, not exhaustive. The causal
-  results of Section 6 rest on the ablation arms plus a search over the
-  clean-SFT to GRPO-v2 checkpoint: seven write
-  sites spanning relative depth 0.361 to 0.972 at three-block resolution, two
-  write positions, an eight-rung dose ladder at each site, and three
-  magnitude-matched two-site combinations, of which two ran and one was
-  abandoned for want of usable sites. "Cannot install appropriate abstention"
+  results of Section 6 rest on the ablation arms plus the bounded write-site
+  search described there, run over the clean-SFT to GRPO-v2 checkpoint.
+  "Cannot install appropriate abstention"
   is therefore a statement about that searched space, not a proof of
   impossibility. Within the search the behavior actuated at all five sites that
   reached a usable dose, while only one of those wrote specifically along the
   refusal direction and none of them fired on enough known-correct rows to
   measure harm, so what remains open is an exploratory lead rather than a
   demonstrated install (Section 6).
-- The reinforcement-learning follow-on is single-seed and exploratory. The
-  GRPO-v3-on-answer-supervised result (Section 7, Table 2) is one seed of one
-  exploratory experiment, reported on its own; the confidence/action decoupling
-  should be read as a lead, not an established claim, until replicated. Its central
+- The reinforcement-learning follow-on's confidence/action decoupling
+  (Section 7, Table 2) should be read as a lead, not an established claim, until
+  replicated. Its central
   open question, whether the decoupling is structural or an artifact of the KL
   anchor, is settled within the experiment by a lower-KL (β 0.05) re-run: the
   action margin had to reach about +14.5 points
   to survive as an anchor artifact, and it moved only +0.17 pts (to +3.02) while
   the policy demonstrably loosened, so the decoupling is recorded as structural.
-  That resolves the artifact-versus-structural question here but does not lift the
-  single-seed caveat: the structural reading itself still wants replication across
+  The structural reading itself still wants replication across
   seeds and a larger model.
-- The probe-distillation result is single-seed and exploratory. It (Section 7,
-  Table 3) is one seed of one exploratory experiment, reported on
-  its own; "acts but doesn't say" and the channel-bottleneck
-  reading it supports should be read as a lead, not an established claim, until
+- The probe-distillation result (Section 7, Table 3) supports "acts but doesn't
+  say" and its channel-bottleneck
+  reading as a lead, not an established claim, until
   replicated. The emitted scalar landed below the 0.60 negative threshold, so the
   negative is on the record, but the *interpretation* (that the
   collapse is a property of a single token trained by cross-entropy rather than of
