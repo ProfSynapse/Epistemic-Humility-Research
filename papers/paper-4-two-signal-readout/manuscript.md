@@ -325,11 +325,9 @@ a falsifier stating what outcome would kill the claim, and predictions recorded 
 the run. At signing, every instrument file is pinned by content hash (SHA-256). After
 signing, gates and thresholds cannot move, and post-outcome changes to the registered
 surface are prohibited outright. Every *gated confirmatory* cell in this paper ran under
-that regime; two descriptive exceptions are named where they appear and never treated as
+that regime; one descriptive exception is named where it appears and never treated as
 gated evidence: the Jacobian-lens workspace localization (§4.6) is a read-only lab
-diagnostic with no registered gates, and the gate-dial fusion diagnostic behind §4.3's
-Δ −0.014 is an earlier, unregistered CPU diagnostic cited as prior fact rather than a
-signed cell of this program.
+diagnostic with no registered gates.
 
 Among the registered cells, three predictions were wrong in instructive ways. The
 orchestrator predicted the veto in a 0.65 to 0.85 band and the uncontrolled contrast landed
@@ -479,13 +477,14 @@ under 0.003), while the readouts taken from the generated answer are not (§4.5)
 quantities that live at different positions and respond differently to the same perturbation
 are not one quantity measured twice.
 
-A fusion diagnostic corroborates that reading without carrying its weight. Folding the gate
-score into the dial changed correctness triage by Δ **−0.014**, a degradation rather than a
-gain. That number comes from an earlier **unregistered** CPU diagnostic on the deployed
-checkpoint, with no signed gates and no result JSON of its own, cited as prior fact in the
-veto experiment's pre-registration; its CI is reported only as excluding 0, and correctness
-triage is the only quantity it measured. It is corroboration on one checkpoint for one task,
-not a geometric measurement, and we make no orthogonality claim on it.
+A registered fusion test corroborates that reading. Folding the gate score into the dial
+changes correctness triage by Δ **−0.0142** (bootstrap CI [−0.0214, −0.0074]), a
+degradation rather than a gain: the combined score triages correctness strictly worse than
+the dial alone (0.8044 vs 0.8186). The result comes from a registered, gated re-run on
+pinned inputs of the deployed checkpoint, which reproduced an earlier unregistered
+diagnostic to full precision. Correctness triage is the only quantity it measures; it is
+corroboration on one checkpoint for one task, not a geometric measurement, and we make no
+orthogonality claim on it.
 
 Keeping uncertainty sources separate has external support: Taparia et al. (2026)
 decompose LLM uncertainty into input, knowledge, and decoding components and argue that
@@ -1089,8 +1088,9 @@ its run. Descriptive or exploratory, never pooled with the above and labeled whe
 appear: the era ladder, the scale-sharpness observation, every deployed-checkpoint veto
 quantity (below its adequacy floor after the label re-grade), the depth and workspace
 profiles, the cross-checkpoint rotation and subspace follow-ups, and the atlas material in
-Appendix B. Unregistered and carrying the weakest warrant in the paper: the gate-dial fusion
-diagnostic behind Δ −0.014 (§4.3). Single-seed: every Qwen3-4B deep-dive number and both
+Appendix B. The gate-dial fusion result of §4.3 comes from a registered re-run (Δ −0.0142,
+CI [−0.0214, −0.0074]) of an earlier unregistered diagnostic, which it reproduces to full
+precision. Single-seed: every Qwen3-4B deep-dive number and both
 veto-decomposition follow-ups. Appendix A maps each of these to its artifact.
 
 ---
@@ -1195,7 +1195,7 @@ result JSONs directly:
 | SFT-rotation timeline diagnostic (§4.2, Appendix B) | `experiments/diag-item9-caution-assembly-timeline/analysis-committed/diag_item9_caution_timeline.md` (committed CV AUROC and rotation-cosine tables); harness `diag_item9_caution_timeline.py`, commit `a354ad73`; extraction commit `d5a90b3b` |
 | Jacobian-lens workspace localization (§4.6, Appendix B) | `experiments/j-space-localization-qwen3-4b/analysis-committed/results/jspace-jlens-r1/` (`smoke_full.json`, `h1_full.json`, `profile_full.json`; repo-root path, not under the probe dir) |
 | Jacobian-lens profile on the trained checkpoint (Appendix B scope fence) | `experiments/jlens-trained-checkpoint-midband-ablation/` (AMENDMENT.md Outcome and `experiment.yaml` verdict: falsifier fired on both clauses; the trained profile is flattened and deepened relative to raw base, the hs26 peak suppressed by roughly 35% with the peak relocated to hs29; repo-root path) |
-| Gate-dial fusion diagnostic (§4.3) | repository PR #128 (Stage 1/1.5 CPU diagnostics), cited as prior fact in the veto experiment's signed design (`experiments/unified-two-signal-dial-veto/AMENDMENT.md` §1.1); no standalone experiment directory, no signed gates, and no result JSON exist for this diagnostic, and its CI is reported only as "excludes 0", not numerically |
+| Gate-dial fusion, registered re-run (§4.3) | `experiments/fusion-nonredundance-redo/AMENDMENT.md` Outcome (FR-G0 parity and FR-G1 both pass; dial 0.8186, combined 0.8044, Δ −0.0142, CI [−0.0214, −0.0074]; byte-identical instrument snapshot pinned in the cell); supersedes and reproduces to full precision the unregistered Stage-1.5 diagnostic cited as prior fact in `experiments/unified-two-signal-dial-veto/AMENDMENT.md` §1.1 |
 | Boundary push (dosed write), §5 discussion (single-model steering result from our registered actuation experiments; no effect size is restated here) | `experiments/doubt-gated-caution-tighten/AMENDMENT.md` (G1/G2 Outcome) and `experiments/j-space-layer-contrast-rep2-multisource/AMENDMENT.md` (exploratory multi-source replication; its registered endpoint is a write-*site* contrast on a fresh 221-confabulation pool, hs29 tightening 92.8% against hs34's 73.8%, exact two-sided McNemar p = 4.5e-13, known-correct cost delta +1.43pp, not a re-measurement of the gated-write effect) |
 | Dial versus answer-span logprob, raw base, confirmatory (§4.2, §6 limitation 9) | `experiments/dial-logprob-baseline-v3/` (AMENDMENT.md Outcome and `experiment.yaml` verdict: LP3-G0 pass, LP3-G1 ambiguous band, margin +0.0118, paired 95% CI [-0.0122, +0.0359]; its T arm stopped at the registered power floor and reported no descriptive stats; repo-root path) |
 | Dial versus answer-span logprob, deployed checkpoint, confirmatory (§4.2, §6 limitation 9) | `experiments/dial-logprob-t-deployed-confirmatory/` (AMENDMENT.md Outcome and `experiment.yaml` verdict: LT-G0 and LT-G1 both pass, dial 0.7962 against logprob 0.6569, margin +0.1393, paired 95% CI [+0.1031, +0.1755], n = 1,501 answered rows; repo-root path) |
