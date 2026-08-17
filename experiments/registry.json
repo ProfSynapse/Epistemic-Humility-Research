@@ -2964,7 +2964,10 @@
           "two_signal_stage1p5_integration.py": "ba61ae9fbcbe6af04cce7a1d24b54024135add7040005aedacfdfd89a4556bfa"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:fusion-nonredundance-redo",
+        "mechanism:answerability-and-correctness-are-orthogonal-readout-axes"
+      ],
       "prediction": "Delta = AUROC(combined) - AUROC(dial) <= 0 (prior unregistered observation: -0.0142, CI [-0.0214, -0.0074]).",
       "question": "Does fusing the answerability gate score into the correctness dial improve correctness triage on the deployed checkpoint's answerable items, or are the two axes non-redundant for that task?",
       "registered": true,

@@ -794,7 +794,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (540)
+## Mechanisms (cause -> effect) (543)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -953,6 +953,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[flavor-specific-doubt-residuals-persist]] : Projecting the shared known/unknown trunk direction out of each unanswerability flavor's whitened doubt direction (L20/24/28, raw instruct base). **enables** Ea
 - [[form-taxonomy-pattern-battery-underdetects-epistemic-marking]] : write-direction-naming-battery's Arm A output-form taxonomy (form_taxonomy.py, a pattern-matched five-class F1-F5 classifier distinguishing committed assertions
 - [[format-induced-reasoning-trace-collapse]] : The format used to represent missing reasoning traces in fine-tuning data (empty-think: empty <think> block included; no-think: reasoning tags omitted entirely)
+- [[full-refusal-axis-ablation-collapse-is-seed1-specific]] : Full refusal-axis ablation (freshly fit raw mass-mean direction at L35, same registered recipe as the seed-1 rederivation) on known-item rows of clean_sft_grpo_
 - [[full-sft-on-noncompliance-data-causes-over-refusal]] : Full continued SFT of an instruction-tuned model on a noncompliance-only dataset (CoCoNot) without a contrastive compliance signal **enables** Model over-genera
 - [[functional-cooccurrence-drives-spatial-clustering]] : SAE features that tend to fire together within documents (functional co-occurrence, measured by phi-coefficient-cooccurrence) share semantic content **enables**
 - [[gemma-actuation-localizes-shallow-of-kv-seam]] : A dosed known-unknown direction is written into Gemma-4-E4B-it at shallow relative depth below its KV-sharing seam (D1/hs15, relative depth 0.357, both donor bl
@@ -1182,6 +1183,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[reasoning-hallucinations-cause-answer-hallucinations]] : A reasoning trace contains at least one hallucinated intermediate fact (labeled by a search-enabled Gemini-2.5-Flash verifier that may abstain when correctness 
 - [[reasoning-tasks-more-order-sensitive-than-semantic-tasks]] : Executing a frozen pretrained transformer's middle layers in reversed, random, or parallel order rather than the trained sequential order **increases** Mathemat
 - [[reasoning-training-decouples-decisiveness-from-confidence]] : Reasoning fine-tuning (SFT on chain-of-thought traces, knowledge distillation from a reasoning teacher) that optimizes for answer correctness rather than faithf
+- [[refusal-axis-readable-but-not-ablatable-at-midband]] : On the trained clean_sft_grpo_v2_seed1 checkpoint (SFT + GRPO-v2 seed 1 lineage), fitting and fully ablating the mass-mean refusal-axis direction (known_refused
 - [[refusal-direction-mediates-refusal]] : A one-dimensional refusal-direction in model activations is added, removed, or suppressed. **mediates** safety-refusal behavior increases or decreases.
 - [[refusal-directions-are-geometrically-distinct]] : Different refusal and non-compliance categories are represented in activation space. **complicates** A single refusal-direction account can be incomplete across
 - [[refusal-threshold-varies-by-unanswerability-flavor]] : Regressing refuse/answer behavior on caution boundary distance jointly with unanswerability flavor (942 eligible generations, instruction-tuned checkpoint on th
@@ -1303,6 +1305,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[token-frequency-neurons-shift-output-toward-unigram-distribution]] : A token frequency neuron boosts or suppresses each token's logit in proportion to that token's log corpus frequency **increases** The model's output distributio
 - [[tokenized-brier-score-is-proper-scoring-rule-for-verbalized-calibration]] : Fine-tuning an LLM on the tokenized Brier score loss, which penalizes the expected squared error between the model's confidence-token probability distribution a
 - [[training-away-sycophancy-reduces-but-does-not-eliminate-reward-tampering]] : Collecting 2,500 negative sycophancy examples from early-curriculum environments and fine-tuning the curriculum-trained model on them to suppress gaming behavio
+- [[training-flattens-and-deepens-jlens-workspace-band]] : SFT + GRPO-v2 training (clean_sft_grpo_v2_seed1 lineage) applied on top of raw-base Qwen3-4B, measured by re-running the identical J-lens effective-dimensionali
 - [[trajectory-informed-reweighting-improves-abstention-f1]] : Replacing the static ternary-reward GRPO abstention objective (truthrl, lambda=0) with trajectory-informed-advantage-reweighting at full inversion (lambda=1.0),
 - [[transformer-advantage-in-disentanglement]] : Transformer (GPT-2) architecture processing multi-task evidence-accumulation-task|evidence accumulation, whose attention mechanism can selectively route task-re
 - [[trigger-tokens-drive-safety-generalization]] : Presence of surface-form trigger tokens in jailbreak prompts that strongly activate the dominant-refusal-direction during safety fine-tuning **enables** Safety 
