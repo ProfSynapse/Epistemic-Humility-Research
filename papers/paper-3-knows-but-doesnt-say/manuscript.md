@@ -809,19 +809,25 @@ unknown-refused (0.54, an appropriate abstention) sits *above* unknown-wrong (0.
 a confident error). RL on a calibrated base preserves the confidence channel that
 RL on the flat base could not manufacture.
 
-But behavior does not repair, and *why* it does not is the result. Over-refusal
-gets *worse*, not better (90.76%, vs the answer-supervised arm's 79.2%; truthful 31.9, below the 35.6
-threshold). Decomposing the answer/abstain decision from the confidence scalar (Table
-2) shows the two channels have come apart. The confidence channel discriminates:
-among refusals, the stated scalar separates a correct refusal (an unknown) from a
-mistaken one (a known the model should have answered) at AUROC 0.62, and among
-answers it separates correct from wrong at AUROC 0.84. The *action* channel barely
-conditions on knowledge at all: the model answers knowns only 2.85 points more
-often than unknowns (9.2% vs 6.4%; p = 0.006, statistically real but practically
-negligible). The decision is ~97% a single knowledge-independent propensity and
-~3% knowledge.
+But the behavior half of the bet fails, and the way it fails is the central
+finding of this subsection. Over-refusal does not improve; it worsens (90.76%,
+against the answer-supervised base's 79.2%), and truthfulness lands at 31.9,
+below the 35.6 threshold. The informative part is why. Every response is two
+separable decisions: whether to answer or refuse (the action), and how much
+confidence to state (the scalar). Table 2 decomposes them, and after this
+training they run on different information. The confidence channel uses the
+model's knowledge: among refusals, the stated scalar separates an appropriate
+refusal (a true unknown) from a mistaken one (a known the model should have
+answered) at AUROC 0.62, and among answers it separates correct from wrong at
+AUROC 0.84. The action channel barely uses that knowledge at all: the model
+answers knowns only 2.85 points more often than unknowns (9.2% vs 6.4%;
+p = 0.006, statistically real and practically negligible). Put together, this
+checkpoint carries a usable knowledge signal and states it in its confidence,
+yet the decision to answer or refuse is roughly 97% a single
+knowledge-independent propensity applied to every question and only about 3%
+knowledge. The channel that acts has come apart from the channel that knows.
 
-Table 2. GRPO-v3 on the answer-supervised base: calibrated confidence,
+Table 2. Proper-scoring GRPO on the answer-supervised base: calibrated confidence,
 uncalibrated action (SelfAware, n = 3369; greedy unless noted).
 
 | channel | measurement | value |
