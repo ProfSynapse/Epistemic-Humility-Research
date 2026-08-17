@@ -1,0 +1,200 @@
+{
+  "analysis": "two_signal_mechanism_stage1p5_cpu_integration",
+  "instrument": "lab-notebook diagnostic (NOT an amendment)",
+  "checkpoint": "qwen3-4b clean-sft-merged-16bit + grpo-v2-lora (deployed)",
+  "gate_layer": 33,
+  "dial_layer": 22,
+  "n_T_answerable": 1488,
+  "n_T_correct": 988,
+  "n_T_wrong": 500,
+  "n_selfaware_unknown": 677,
+  "gate_transfer_health": {
+    "gate_on_T_mean_p_answerable": 0.9967,
+    "gate_on_T_median": 1.0,
+    "gate_on_T_frac_above_0.5": 0.998,
+    "selfaware_known_mean_p": 0.9718,
+    "selfaware_unknown_mean_p": 0.0235,
+    "note": "T is all-answerable; healthy transfer => gate_on_T concentrated high, near the SelfAware-known mean."
+  },
+  "part_b_correctness_triage": {
+    "auroc_dial_alone": 0.8186,
+    "auroc_gate_alone_for_correctness": 0.6653,
+    "auroc_combined_gate_plus_dial": 0.8044,
+    "delta_combined_minus_dial": -0.0142,
+    "delta_bootstrap_ci": {
+      "mean": -0.014201174060609724,
+      "ci_lo": -0.021415301705378607,
+      "ci_hi": -0.007375477261381513,
+      "n_boot": 2000
+    },
+    "integration_improves_correctness": false
+  },
+  "part_a_mixed_stream_frontier": [
+    {
+      "tau_gate": 0.0,
+      "coverage": 1.0,
+      "answered_accuracy": 0.4564,
+      "hallucination_rate_of_answered": 0.3127,
+      "answerable_recall": 1.0,
+      "unknown_abstain_rate": 0.0
+    },
+    {
+      "tau_gate": 0.05,
+      "coverage": 0.7012,
+      "answered_accuracy": 0.6509,
+      "hallucination_rate_of_answered": 0.0204,
+      "answerable_recall": 0.9993,
+      "unknown_abstain_rate": 0.9542
+    },
+    {
+      "tau_gate": 0.1,
+      "coverage": 0.697,
+      "answered_accuracy": 0.6547,
+      "hallucination_rate_of_answered": 0.0146,
+      "answerable_recall": 0.9993,
+      "unknown_abstain_rate": 0.9675
+    },
+    {
+      "tau_gate": 0.15,
+      "coverage": 0.6965,
+      "answered_accuracy": 0.6552,
+      "hallucination_rate_of_answered": 0.0139,
+      "answerable_recall": 0.9993,
+      "unknown_abstain_rate": 0.969
+    },
+    {
+      "tau_gate": 0.2,
+      "coverage": 0.6952,
+      "answered_accuracy": 0.6565,
+      "hallucination_rate_of_answered": 0.012,
+      "answerable_recall": 0.9993,
+      "unknown_abstain_rate": 0.9734
+    },
+    {
+      "tau_gate": 0.25,
+      "coverage": 0.6947,
+      "answered_accuracy": 0.6569,
+      "hallucination_rate_of_answered": 0.012,
+      "answerable_recall": 0.9987,
+      "unknown_abstain_rate": 0.9734
+    },
+    {
+      "tau_gate": 0.3,
+      "coverage": 0.6928,
+      "answered_accuracy": 0.6587,
+      "hallucination_rate_of_answered": 0.0093,
+      "answerable_recall": 0.9987,
+      "unknown_abstain_rate": 0.9793
+    },
+    {
+      "tau_gate": 0.35,
+      "coverage": 0.6928,
+      "answered_accuracy": 0.6587,
+      "hallucination_rate_of_answered": 0.0093,
+      "answerable_recall": 0.9987,
+      "unknown_abstain_rate": 0.9793
+    },
+    {
+      "tau_gate": 0.4,
+      "coverage": 0.6928,
+      "answered_accuracy": 0.6587,
+      "hallucination_rate_of_answered": 0.0093,
+      "answerable_recall": 0.9987,
+      "unknown_abstain_rate": 0.9793
+    },
+    {
+      "tau_gate": 0.45,
+      "coverage": 0.6928,
+      "answered_accuracy": 0.6587,
+      "hallucination_rate_of_answered": 0.0093,
+      "answerable_recall": 0.9987,
+      "unknown_abstain_rate": 0.9793
+    },
+    {
+      "tau_gate": 0.5,
+      "coverage": 0.6919,
+      "answered_accuracy": 0.6595,
+      "hallucination_rate_of_answered": 0.0087,
+      "answerable_recall": 0.998,
+      "unknown_abstain_rate": 0.9808
+    },
+    {
+      "tau_gate": 0.55,
+      "coverage": 0.6915,
+      "answered_accuracy": 0.66,
+      "hallucination_rate_of_answered": 0.0087,
+      "answerable_recall": 0.9973,
+      "unknown_abstain_rate": 0.9808
+    },
+    {
+      "tau_gate": 0.6,
+      "coverage": 0.6915,
+      "answered_accuracy": 0.66,
+      "hallucination_rate_of_answered": 0.0087,
+      "answerable_recall": 0.9973,
+      "unknown_abstain_rate": 0.9808
+    },
+    {
+      "tau_gate": 0.65,
+      "coverage": 0.6915,
+      "answered_accuracy": 0.66,
+      "hallucination_rate_of_answered": 0.0087,
+      "answerable_recall": 0.9973,
+      "unknown_abstain_rate": 0.9808
+    },
+    {
+      "tau_gate": 0.7,
+      "coverage": 0.6905,
+      "answered_accuracy": 0.6602,
+      "hallucination_rate_of_answered": 0.008,
+      "answerable_recall": 0.9966,
+      "unknown_abstain_rate": 0.9823
+    },
+    {
+      "tau_gate": 0.75,
+      "coverage": 0.6905,
+      "answered_accuracy": 0.6602,
+      "hallucination_rate_of_answered": 0.008,
+      "answerable_recall": 0.9966,
+      "unknown_abstain_rate": 0.9823
+    },
+    {
+      "tau_gate": 0.8,
+      "coverage": 0.6901,
+      "answered_accuracy": 0.6606,
+      "hallucination_rate_of_answered": 0.008,
+      "answerable_recall": 0.996,
+      "unknown_abstain_rate": 0.9823
+    },
+    {
+      "tau_gate": 0.85,
+      "coverage": 0.6891,
+      "answered_accuracy": 0.6615,
+      "hallucination_rate_of_answered": 0.008,
+      "answerable_recall": 0.9946,
+      "unknown_abstain_rate": 0.9823
+    },
+    {
+      "tau_gate": 0.9,
+      "coverage": 0.6868,
+      "answered_accuracy": 0.6631,
+      "hallucination_rate_of_answered": 0.0074,
+      "answerable_recall": 0.9919,
+      "unknown_abstain_rate": 0.9838
+    },
+    {
+      "tau_gate": 0.95,
+      "coverage": 0.6836,
+      "answered_accuracy": 0.6649,
+      "hallucination_rate_of_answered": 0.0061,
+      "answerable_recall": 0.9886,
+      "unknown_abstain_rate": 0.9867
+    }
+  ],
+  "verdict": {
+    "gate_transfers_cross_pool_and_cross_prompt": true,
+    "two_signals_are_orthogonal": true,
+    "summary": "GATE TRANSFERS: the SelfAware-fit answerability gate, applied COLD to T's prompt-anchor vectors (different question pool AND the forced-best-guess system prompt), scores all-answerable T items at mean P=0.9967 (frac>0.5=0.998) vs SelfAware unknowns 0.0235 \u2014 the cross-pool transfer assumption Stage 1.5 rests on HOLDS, de-risking Stage 2. PIPELINE WORKS: on the mixed stream the gate alone drives hallucination-of-answered from 0.31 (answer-everything) to ~0.01 at any tau in [0.1,0.95] while retaining ~99.9% of answerable items (near-perfect because the gate score is bimodal). SIGNALS ARE ORTHOGONAL: fusing the gate score into the dial does NOT improve correctness triage on answered items (combined 0.804 vs dial 0.819, delta -0.014, CI [-0.021,-0.007] \u2014 slightly NEGATIVE). The gate is near-useless for correctness ranking (0.665, ~the O answerability ceiling), so it only dilutes the dial. This is the O finding at per-item resolution: answerability and per-answer correctness are DIFFERENT axes. CONCLUSION: the two-signal mechanism is validated as a two-stage PIPELINE (gate abstains unanswerable -> dial surfaces calibrated trust on answered), NOT as a fused scalar; you need both stages precisely because neither does the other's job."
+  },
+  "limitation": "SelfAware-unknown items have no post-gen read, so the dial cannot veto a hallucination that slips the gate here; the dial-veto-on-unknowns path needs the Stage 2 single-stream GPU run."
+}
