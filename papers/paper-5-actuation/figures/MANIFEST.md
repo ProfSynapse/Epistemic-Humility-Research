@@ -183,3 +183,28 @@ extensions were considered for the original five and deliberately left out:
   (per-token cosine/top-k overlap smoke, cosine 0.9811, top-10 overlap 0.82)
   was read and confirmed but not plotted -- it is a scalar instrument-validity
   check, not a curve, and is better stated in prose than as a sixth figure.
+
+## Restructure figures (2026-08-17, `scripts/build_restructure_figures.py`)
+
+Both figures below are built by `scripts/build_restructure_figures.py`, which
+embeds a reproduction audit: at build time it re-derives every plotted median,
+IQR, span, sign count, gate rate, and effect ratio from the committed source
+artifacts and fails the build on any mismatch. The plotted numbers are also
+tabulated in `analysis/p5_new_figure_numbers.csv` (written by the
+results-analyst pass, not by the script).
+
+- `fig-p5-07-placebo-census.png` (Figure 7): three-family matched-magnitude
+  placebo null distributions. Source:
+  `experiments/placebo-seed-distribution-census/analysis-committed/census_report.json`
+  (`families.<name>.per_seed[*].delta_pts`, corrected final-rate-rule join),
+  verdict bands cross-checked against the cell's AMENDMENT.md Outcome.
+- `fig-p5-08-gemma-depth-ladder.png` (Figure 8): Gemma-4-E4B depth ladder with
+  per-site disposition and direction-specificity ratios. Sources:
+  `experiments/gemma4-e4b-kv-seam-quarantine/analysis-committed/gemma4-e4b/full_summary.shallow_ladder.json`
+  (hs15/hs18/hs20),
+  `.../full_summary.seam_pair.json` (hs22/hs24 rates and known-correct cost
+  control), `.../placebo_summary.hs22.seam_pair.json` (five accepted draws,
+  zero-lift denominator), and
+  `experiments/gemma4-e4b-pocket-ladder/analysis-committed` artifacts
+  (hs25/hs26/hs27). KV-seam shading is architectural background
+  (first_kv_shared_layer_idx = 24 of 42), not a gate.

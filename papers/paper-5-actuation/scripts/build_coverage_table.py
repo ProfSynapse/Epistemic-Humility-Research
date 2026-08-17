@@ -30,7 +30,8 @@ Two columns cannot be derived from YAML at all:
   prose, so it is necessarily hand-curated by reading the manuscript body
   (SECTION_MAP below), not computed from governed docs. It is verified
   against the section headers and inline citations current as of this
-  script's authorship (2026-08-11); re-verify after any section renumbering
+  script's authorship (2026-08-11; SECTION_MAP re-verified against the
+  2026-08-17 restructure numbering); re-verify after any section renumbering
   or Appendix A edit.
 - A handful of Appendix A slugs are `type: historical-amendment` migrations
   whose experiment.yaml explicitly instructs: "Do not infer missing machine
@@ -93,7 +94,7 @@ SECTION_MAP: dict[str, str] = {
     "qwen35-4b-midband-doubt-snap": "4.5",  # content @558-562, implicit precursor to -heldout
     "qwen35-4b-midband-heldout": "4.5",  # backtick @563
     "snap-seed-sampled-decode-replication": "4.5",  # backtick @568
-    "gate-contribution-factorial": "4.10",  # backtick @916
+    "gate-contribution-factorial": "4.8",
     "j-space-localization-qwen3-4b": "4.6",  # content @582-594
     "j-space-midband-dose-calibration-qwen3-4b": "4.6",  # content @596-598
     "j-space-calibrated-layer-contrast-qwen3-4b": "4.6",  # content @599-604
@@ -103,19 +104,27 @@ SECTION_MAP: dict[str, str] = {
     "h6-genstream-hook-firing-check": "6.4",  # content @1273-1287 (not in Results at all)
     "jspace-family-atlas": "6.3",  # backtick @1222
     "doubt-snap-cross-family-confirmatory": "6.5",  # backtick @1361
-    "dark-actuator-screen": "4.8",  # content @671-675
-    "aq-sycophancy-activation-actuator": "4.8",  # content @677-682
-    "rr-cross-family-raw-refusal": "4.9, 6.5",  # backtick @690, @1334
-    "rr2-mistral-adjudicated-refusal-confirm": "4.9, 6.5",  # backtick @697, @1334
-    "abstention-wide-instrument-calibration": "4.9, 6.5",  # backtick @723, @1341
-    "rr3-corrected-placebo-replication": "4.10, 6.5",  # backtick @785, @1335
-    "placebo-seed-distribution-census": "4.9, 4.10, 4.11, 6.5",  # backtick @765,881,929,986,998,1044
-    "placebo-signflip-question-type-analysis": "4.11",  # backtick @1025
+    "dark-actuator-screen": "4.7",  # folded sentence at end of 4.7 (restructure)
+    "aq-sycophancy-activation-actuator": "6.5",  # number-free future-work sentence, item 8
+    "rr-cross-family-raw-refusal": "4.8, 6.5",
+    "rr2-mistral-adjudicated-refusal-confirm": "4.8, 6.5",
+    "abstention-wide-instrument-calibration": "4.8, 6.5",
+    "rr3-corrected-placebo-replication": "4.8, 6.5",
+    "placebo-seed-distribution-census": "4.8, 6.5",
+    "placebo-signflip-question-type-analysis": "4.8",
     "margin-evidence-responsiveness-worldknown": "4.6, 6.4",  # backtick @592, @1269
     "evidence-response-direction-search": "NOT NARRATED IN BODY (front matter + Appendix A only; "
     "no flagged open-work item, unlike doubt-regulated-caution)",
-    "gemma4-e4b-kv-seam-quarantine": "4.12",  # content @1055-1082
-    "gemma4-e4b-pocket-ladder": "4.12",  # content @1108-1125
+    "gemma4-e4b-kv-seam-quarantine": "4.9",
+    "gemma4-e4b-pocket-ladder": "4.9",
+    # New Appendix A rows from the 2026-08-17 restructure:
+    "jlens-trained-checkpoint-midband-ablation": "6.3",
+    "correctness-direction-rotation": "6.5",
+    "correctness-subspace-overlap": "6.5",
+    "refusal-axis-ablation-confirmatory": "6.6",
+    "caution-install-bounded-site-sweep": "6.6",
+    "caution-ablation-rederivation": "NOT NARRATED IN BODY (front matter + Appendix A provenance row only)",
+    "idk-switch-naming-confirmatory": "4.5, 4.8",
 }
 
 APPENDIX_A_ROW_RE = re.compile(
