@@ -513,6 +513,25 @@ each other (PR #322).
   `experiments/jlens-trained-checkpoint-midband-ablation/AMENDMENT.md`
   (falsified, resolved 2026-08-16). Disposition: folded into paper 5 sections
   6.3 and 6.4 scoping; no new cell now.
+- **Is the confidence channel itself prompt-scaffolded?** (queued 2026-08-17)
+  Every stated-confidence number in paper 2 was produced under a contract that
+  also carries an abstention instruction, so the flat profile (near-constant
+  ~0.8, standard deviation 0.013, AUROC 0.520 against response
+  appropriateness) is only ever measured with the instruction present. But the
+  structure-only prompt retains the `response_confidence` JSON key and drops
+  only the abstention affordance, so every structure-only evaluation row
+  already on disk carries a stated-confidence value that nobody has looked at.
+  Open question: does the flat, uninformative confidence profile persist once
+  the abstention instruction is gone, or is the confidence channel itself
+  prompt-scaffolded in the same way the abstention behavior turned out to be?
+  Surface: the 13 existing structure-only arms among the 17 evaluations of
+  `experiments/prompt-vs-training-panel/AMENDMENT.md` (11 arms, 7 of them
+  P-struct) and `experiments/pstruct-internalization-seed-robustness/AMENDMENT.md`
+  (6 arms, all P-struct), plus the held-out AmbigQA arms once
+  `experiments/prompt-crossing-heldout-confirmatory/` resolves. Disposition:
+  CPU-only reanalysis of rows that already exist, no GPU and no new
+  generation, but it needs its own registered cell with predictions and a
+  falsifier stated before the analysis runs. PI approved queueing 2026-08-17.
 
 ---
 
