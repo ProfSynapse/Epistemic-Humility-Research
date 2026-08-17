@@ -136,7 +136,7 @@ knowledge signal into the stated channel.
 
 Two outcomes would have overturned that thesis. If the probe had failed to separate
 known from unknown questions any better than the model's own stated confidence
-does, there would be no gap to explain. If any of the seven interventions had
+does, there would be no gap to explain. If any of the six interventions had
 produced a checkpoint that both behaved well and stated calibrated confidence, the
 gap would be an unsolved training problem rather than a property of the channel
 itself. Neither happened.
@@ -380,7 +380,7 @@ badly miscalibrated (ECE ≈ 0.285).
 A skeptic could object
 that Figure 1 scores the two channels against different labels (the probe
 against known/unknown, the stated scalar against appropriateness). On the
-deployed GRPO-trained checkpoint (Section 7, intervention 4), both channels can
+deployed GRPO-trained checkpoint (Section 7, intervention 3), both channels can
 be scored against the *same* known/unknown label on the *same* joined rows
 (n = 1233): the L35 probe reads the boundary at AUROC 0.972 while the same
 checkpoint's own emitted confidence reads it at 0.637. The
@@ -426,7 +426,7 @@ Section 8 reports.
 Re-fitting the probe on each fine-tuned model's own activations gives essentially
 identical separation: clean SFT 0.9968, SFT→GRPO-DPO 0.9972, SFT→GRPO-v2 0.9971,
 against the base's 0.997. Training neither damages nor moves the internal
-representation. Whatever the seven interventions of Section 7 do, they do not do it
+representation. Whatever the six interventions of Section 7 do, they do not do it
 by changing what the model represents.
 
 ### Scope of these readings
@@ -617,10 +617,10 @@ unknowns, the remaining lever is training.
 
 If behavior is steerable and the internal signal is calibrated, the open question is
 whether *training* can make the model's *stated* confidence track appropriateness.
-We ran seven interventions. None closes the gap, and the last two close it from
+We ran six interventions. None closes the gap, and the last two close it from
 opposite sides in a way that localizes the mechanism.
 
-### The seven interventions
+### The six interventions
 
 #### Interventions 1–2: SFT-warmed DPO and KTO
 
@@ -634,13 +634,16 @@ the emitted scalar remains a flat high value across outcome groups, with
 known-wrong answers drawing ≈ 0.83: repositioned behavior, unchanged stated
 confidence.
 
-#### Interventions 3–4: GRPO v1 and v2
+#### Intervention 3: GRPO on the behavior reward
 
 Reinforcement learning on the behavior leaves the stated scalar collapsed, and the
-collapse turns out to be what the objective rewards. Under reward shaping over the
+collapse turns out to be what the objective rewards. The reward recipe went through
+more than one iteration before the deployed run; the body reports the deployed arm
+only, and Appendix A carries the iteration record. Under reward shaping over the
 behavior with group relative policy optimization (GRPO, a reinforcement-learning
 method driven by a programmable reward; Shao et al., 2024),
-on the full evaluation GRPO-v2 emits mean ≈ 0.813 with std ≈ 0.013
+on the full evaluation the deployed arm (checkpoint GRPO-v2, the checkpoint
+Sections 4–6 read) emits mean ≈ 0.813 with std ≈ 0.013
 (a near-constant ~0.8 regardless of input), ranks appropriateness at
 AUROC ≈ 0.520 with ECE ≈ 0.403, and ranks its own correct vs wrong among
 answered knowns at AUROC ≈ 0.521 (chance). The diagnosis is an
@@ -658,7 +661,7 @@ arm the emitted scalar takes between 4 and 85 distinct values over the whole
 3369-row evaluation, far short of the spread that a non-collapsed channel would
 show (three seeds; the non-collapse threshold is in Section 9).
 
-#### Intervention 5: GRPO v3, proper scoring
+#### Intervention 4: proper-scoring GRPO
 
 Making calibrated confidence the mathematical optimum of the reward does not
 produce calibrated confidence. If the fixed-target confidence term makes a constant
@@ -675,7 +678,7 @@ where $c$ is the emitted confidence and $a$ is the realized appropriateness of
 the completion. The expected reward $\mathbb{E}[r_{\text{conf}}]$ is uniquely
 maximized at $c = p(a = 1 \mid x)$: emitting the true probability of being
 appropriate is not merely encouraged but is the optimum, so a near-constant is
-provably sub-optimal. v3 adds exactly this term; by design it is sub-dominant
+provably sub-optimal. This arm adds exactly that term; by design it is sub-dominant
 to the behavior reward (confidence
 weight 1.2, explicitly kept below the behavior magnitudes so behavior is not traded
 away). The failure here is not a degenerate target. A preflight re-scoring of
@@ -697,7 +700,7 @@ cleanest form of the negative result: **even a reward for which calibrated
 confidence is the mathematical optimum fails to elicit it through reinforcement
 learning from a collapsed starting point.**
 
-#### Interventions 6–7: contrastive SFT, answer-supervised and answer-masked
+#### Interventions 5–6: contrastive SFT, answer-supervised and answer-masked
 
 Contrastive fine-tuning is the one intervention that installs stated calibration,
 and it pays for it in behavior; its masked twin recovers the behavior and loses the
@@ -782,7 +785,7 @@ make the model act on it. The answer-supervision result says a single SFT lever
 cannot buy calibration and behavior together, so the obvious next move is a
 *division of labour*: keep the answer-supervised calibration and repair its
 behavior with reinforcement learning, which is built for behavior shaping. We ran
-GRPO v3 (the same proper-scoring reward as intervention 5) on the answer-supervised
+the same proper-scoring GRPO reward (intervention 4) on the answer-supervised
 base rather than the clean-SFT base, so that the KL anchor now references a
 *calibrated* policy and the dominant behavior reward attacks its over-refusal.
 
@@ -791,7 +794,7 @@ calibration even as the policy moves well off its reference (final KL ≈ 0.97).
 The emitted scalar keeps AUROC → appropriateness 0.646, std 0.311, ECE 0.214, and
 the full ordering across outcome groups, including the very ordering the answer-masked variant
 inverted: unknown-refused (0.542) > unknown-answered-wrong (0.138). RL on a calibrated base preserves
-calibration where RL on the flat base (intervention 5) could not manufacture it;
+calibration where RL on the flat base (intervention 4) could not manufacture it;
 the base, not the reward, was the binding constraint for the confidence channel.
 This is the first direct evidence in this study that RL does not intrinsically
 *destroy* a calibrated stated-confidence channel: it fails only to create one.
@@ -902,7 +905,7 @@ RL on the answer-supervised base), no combination produced a checkpoint that
 both behaves well and states calibrated confidence, and the pattern is
 internally consistent: supervision can install a calibrated channel
 (the answer-supervised variant), RL preserves an installed channel (the
-follow-on above), RL cannot install one (interventions 3–5), and behavior and
+follow-on above), RL cannot install one (interventions 3–4), and behavior and
 stated confidence move on separate channels throughout. The stated channel is
 never coupled to the epistemic state in the first place unless supervision
 explicitly constructs the coupling, and the one supervision that constructs it
@@ -992,7 +995,7 @@ behavior). Section 4 makes the distinction concrete: the internal tether exists 
 its readout is near-calibrated in aggregate (ECE 0.047 raw), the performed behavior
 can be shaped (Sections 6 and 7), and the *stated* confidence, the channel a user
 actually reads, is tied to neither. The model is, in the precise sense of the
-*Meno*, giving true opinions without the tether. Our seven interventions are
+*Meno*, giving true opinions without the tether. Our six interventions are
 attempts to install the tether, and they fail.
 
 ### Why the stated channel is the stubborn one
@@ -1060,7 +1063,7 @@ modeling objective keeps collapsing. Whether that works is open, and this paper'
 measurements are what would settle it: success means the stated channel clears both
 thresholds at once, ranking appropriateness at AUROC 0.62 or better with genuine
 discrimination rather than mere spread, while behavior stays where it was. That is
-the combination none of the seven interventions achieved.
+the combination none of the six interventions achieved.
 
 ### Three readings of the gap, in increasing strength
 
@@ -1551,9 +1554,9 @@ protocol document and scored artifact:
 | §4 known-unknown-axis origin (raw base 0.997); §5 refusal axis unreadable on base (0 refusals in 1,233) | Amendment W | `experiments/base-model-training-free-mechanism/AMENDMENT.md` §7 | `papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_w_base_model_result.json` |
 | §5 knowledge-subspace erasure (LEACE) | Amendment AJ | `experiments/knowledge-subspace-erasure/AMENDMENT.md`; `archive/experiment/phase1/probe/amendments/amendment_aj_subspace_erasure.py`; `amendment_aj_addendum_gap_distribution.py` | `archive/experiment/phase1/probe/analysis/amendment_aj_subspace_erasure/` (`result.json`, `addendum_a1_gap_distribution.json`) |
 | §7 interventions 1–2 (DPO/KTO stated-confidence contract) | Amendment B | `experiments/stated-confidence-grpo/AMENDMENT.md` | `papers/paper-2-training-regimen/analysis/amendment_b_confidence_alignment_by_outcome.csv` |
-| §7 interventions 3–4 (GRPO v1/v2 collapse + incentive analysis) | Amendment E cells; Amendment J diagnostics / session 0026 | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
-| §7 intervention 5 (proper-scoring GRPO) | Amendment J (GRPO-v3) | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md`; reward `archive/experiment/phase1/grpo/humility_reward_v3.py`; preflight `archive/notes/experiments/computed-confidence-alignment-regimen.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v3_seed1.json`; `results_amendment_j_*` |
-| §7 interventions 6–7 (contrastive SFT, answer-supervised / answer-masked) | Amendments K and L | `experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md`; `experiments/answer-subspan-masked-contrastive-sft/AMENDMENT.md` | `calibration_gap_contrastive_sft_seed1.json`; `calibration_gap_contrastive_masked_sft_seed1.json`; `results_amendment_k_*`; `results_amendment_l_*` |
+| §7 intervention 3 (GRPO v1/v2 collapse + incentive analysis) | Amendment E cells; Amendment J diagnostics / session 0026 | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
+| §7 intervention 4 (proper-scoring GRPO) | Amendment J (GRPO-v3) | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md`; reward `archive/experiment/phase1/grpo/humility_reward_v3.py`; preflight `archive/notes/experiments/computed-confidence-alignment-regimen.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v3_seed1.json`; `results_amendment_j_*` |
+| §7 interventions 5–6 (contrastive SFT, answer-supervised / answer-masked) | Amendments K and L | `experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md`; `experiments/answer-subspan-masked-contrastive-sft/AMENDMENT.md` | `calibration_gap_contrastive_sft_seed1.json`; `calibration_gap_contrastive_masked_sft_seed1.json`; `results_amendment_k_*`; `results_amendment_l_*` |
 | §7 RL-on-calibrated-base follow-on, incl. the β 0.10 → 0.05 falsifier re-run (Table 2, Figs. 8–10; Fig. 11 spans arms) | Amendment N (incl. β 0.05 arm) | `experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md` (results tables §7) | result tables embedded in the amendment document; `results_amendment_n_*`; `action_conditioning_report.py`; run records under `archive/experiment/phase1/run_records/` |
 | §7 probe-axis distillation mirror (Table 3) | Amendment M, Revision 3 | `experiments/quantile-balanced-probe-distilled-sft/AMENDMENT.md` | `results_amendment_m_*_probe_factual_sft_seed1_merged_full_4b` |
 | §4 pretraining-origin test (four pretrain-only bases at 0.997+); §8 "paid for by pretraining" | Amendment Y | `experiments/pretrain-only-base-readout/AMENDMENT.md` (SUPPORTED 4/4) | `archive/experiment/phase1/probe/amendment_y_results/` |
