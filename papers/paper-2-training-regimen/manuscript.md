@@ -67,13 +67,11 @@ operating point, with both error rates, under a named prompt condition.
 
 ## 1. Introduction
 
-Try this as a thought experiment. You ask a large language model (LLM) for
-the release date of an obscure regional album, and it gives you a confabulated one, in the same even tone it used a moment ago for the correct boiling point of
-water. Then you ask it something it demonstrably knows, and if it has been trained to
-be careful, the model abstains over cautiously. Nothing in either response marks
-which case you are in. The model has no difficulty producing the words "I
+Imagine you ask a large language model (LLM) for
+the release date of an obscure regional album, and it gives you a confidently confabulated one in the same even tone it used a moment ago for the correct boiling point of
+water. So then you train it to properly say "I don't know", and it now correctly abstains the unknown question. Thinking all is well and good, again you ask it the boiling point of water, and the model abstains over cautiously. The model has no difficulty producing the words "I
 don't know." What it lacks is any dependable coupling between those words and
-the state of not knowing.
+the *state* of not knowing.
 
 The field treats installing that coupling as a training problem: repair the
 incentive during post-training and the coupling should follow. This paper
