@@ -324,11 +324,13 @@ behavioral move.
 
 ---
 
-## 3. Methods Overview
+## 3. Methods
 
 Every cell reported below was registered before it ran, with its predictions,
 falsifiers, gates, and controls frozen before any outcome was evaluated.
-Appendix A maps each claim to the governed document that registered it.
+Appendix A maps each claim to the governed document that registered it, and
+Appendix B gives the checkpoint and pinned revision behind each one, separating
+the substrates a multi-model cell declared from the ones it actually launched.
 
 Write sites are named by their raw
 hidden-state index (hs followed by the layer number) because that is how each
@@ -370,14 +372,25 @@ We tested four ways to route an epistemic readout into behavior.
 - Reward coupling: a reinforcement-learning reward computed from a frozen
   probe score read from the policy's own pre-generation hidden state.
 
+Two further operations on a fitted direction appear in the results on trained
+checkpoints, and they are not the same intervention. **Ablation** removes the
+state's component along the direction and leaves the rest of the residual
+stream untouched, so the model runs without whatever that direction carries.
+**Displacement** leaves that component in place and adds a fixed multiple of
+the direction on top of it, the multiple counted in standard deviations of the
+direction's own projection over the rows it was fit on, so a minus-two-sigma
+displacement subtracts two such units without erasing anything. Ablation asks
+what the model does when the direction is gone; displacement asks what it does
+when the direction is moved. Both are reported on the same refusal axis in
+Sections 6.3 and 6.6, and whether they agree turns out to depend on the site.
+
 ### 3.2 Readouts and directions
 
 The core readouts are the known-unknown (KU) direction and a refusal
 direction. In the gating experiments, the sensor is a standardized KU
 projection: confabulation-prone rows project lower on it than known-correct
-answered rows, so the gate fires when the negated projection exceeds a
-threshold selected on a fit split (the held-in rows used to choose thresholds
-and doses, never scored as a result). The actuator is a separate boundary-push direction, constructed by
+answered rows, so the gate fires when the negated projection exceeds a frozen
+threshold. The actuator is a separate boundary-push direction, constructed by
 orthogonalizing a raw refuse/control direction against the KU direction and
 confab-propensity controls. The raw direction is built the way refusal
 directions are built elsewhere (Arditi et al., 2024); the orthogonalization is
@@ -399,13 +412,233 @@ an intermediate band of layers rather than uniformly. We use the lens in two
 ways: first as a read-only localization diagnostic, and then backward as a
 source of token-target write directions.
 
-### 3.3 Outcomes and controls
+### 3.3 Fitting the directions
 
-The main behavioral outcome is **clean tightening**: a row that previously
-confabulated is converted into a naturally terminating, well-formed JSON refusal
-with a single answer field. The main cost outcome is **known-correct false
-refusal**: a row previously answered correctly is no longer a well-formed correct
-answer after intervention.
+Rows enter a fit by what the model does with them at baseline, in three roles:
+confabulation-prone rows (unanswerable questions it answers anyway),
+known-correct rows (answerable questions it answers correctly), and
+unknown-refused rows (unanswerable questions it declines). The
+confabulation-prone and known-correct roles are split, stratified by question
+category under a fixed seed, into a fit split of 40% and a held-out split of
+60%. Unknown-refused rows are never themselves gated or graded, so the whole
+role stays in the fit split as scaffolding. On the raw-base Qwen3-4B controller
+that split is 124 fit and 185 held-out confabulation rows, and 172 fit and 258
+held-out known-correct rows.
+
+Every direction here is read at one layer and one token position: the anchor,
+meaning the last prompt token, taken before the model has generated anything.
+The anchor is a function of the prompt alone, so the same position is defined
+identically in every arm.
+
+The known-unknown direction is a mass-mean contrast, the difference of two
+class means normalized to unit length: the mean anchor state over fit
+known-correct rows minus the mean over unknown-refused rows. On the raw-base
+Qwen3-4B controller it is fit at hidden state 34. The gate score is that
+direction's projection, standardized by the fit pool's own mean and standard
+deviation, clipped to plus or minus two, and negated, because
+confabulation-prone rows sit lower on it. The firing threshold is the Youden-J
+point of that score, the point maximizing true-positive minus false-positive
+rate, chosen on the fit split alone and frozen before a single held-out row is
+touched. Separating fit confabulation rows from fit known-correct rows, the
+score reaches AUROC 0.9955; the selected threshold catches 120 of 124 fit
+confabulations (96.8%) and flags 2 of 172 fit known-correct rows (1.2%). Every
+number Section 4.5 reports is measured on the held-out split that neither the
+direction fit nor the threshold choice ever saw.
+
+The raw direction the boundary push is built from is a second mass-mean
+contrast in the same anchor states, and it is not the same contrast: the mean
+over unknown-refused rows minus the mean over fit confabulation rows, which
+separates declining from confabulating among questions the model cannot
+answer. A third direction, confabulation propensity, is a standardized logistic
+classifier of the confabulation label over those same rows, with its solver
+seed pinned so that refitting reproduces the vector exactly. The boundary-push
+write direction is that raw refuse-versus-confabulate direction with its
+components along the other two removed, by Gram-Schmidt against the plane the
+two span. Propensity is carried only to define that plane; the gate does not
+read it.
+
+The refusal axis of Sections 6.3 and 6.6 is a different direction with a
+different fit, and it is fit on answerable questions rather than unanswerable
+ones: a mass-mean contrast between known items the model refuses and known
+items it answers correctly, taken at hidden state 35 on the trained checkpoint
+and unit-normalized. Its sigma, the scale a displacement is counted in, is the
+standard deviation of its own projection over those same rows.
+
+Directions are refit at each site rather than ported. The mid-band Qwen3.5-4B
+operating point carries its own directions, standardization constants, and
+threshold fit at hidden state 20; the Mistral-7B site at hidden state 16
+carries its own, rebuilt byte-identically from that family's own fit record;
+the layer sweeps of Section 4.6 carry one set per layer. No fitted vector
+crosses a family boundary anywhere in this paper.
+
+### 3.4 Dosing and operating points
+
+Two write laws appear below, and they measure dose differently.
+
+The erase-write law, which every gated controller result uses, removes the
+state's existing component along the write direction and installs a fixed
+setpoint in its place. The dose is therefore the realized projection onto the
+write direction after the write, and it is read back on dosed rows to confirm
+the write landed. That single quantity is registered two ways. At the raw-base
+Qwen3-4B late site it is registered as a raw projection value, dose 200, and
+read back at mean 200.11 on the pre-run smoke and mean 200.018 across the
+dose-matched comparison. At the mid-band sites it is registered as a multiple
+of sigma, the standard deviation of that direction's projection over the fit
+pool, which is what makes a setpoint comparable across layers and families
+whose residual streams differ in scale: Qwen3.5-4B at hidden state 20 runs at
+eight sigma, an absolute dose of 12.608, and Mistral-7B at hidden state 16 runs
+at twelve sigma, an absolute dose of 3.665. The absolute figure and the sigma
+multiple are one number written twice. The late-site dose has no sigma
+expression registered for it, which is why it is quoted as the projection value
+it was registered as and never converted.
+
+The additive law leaves the existing component alone and adds a fixed vector on
+top of it. It is used by the push of Section 4.2, where the dose is the
+raw-space projection gap between the confabulating mean and the refusing mean
+along that direction, the amount that moves an average confabulating row's
+reading onto the refusing population's mean; and by the displacements of
+Sections 6.3 and 6.6, where the dose is a stated number of sigma.
+
+Doses are chosen on the fit split, never on the rows a result is reported over,
+under a single rule. A ladder of candidate setpoints, fixed before the run, is
+applied to a small fit-split calibration subset at the candidate site. A rung
+is usable only if the read-back lands within tolerance on every dosed row, no
+dosed row degenerates, and fit-split confabulation clean tightening on the
+subset clears its registered floor: 50% in the layer and depth ladders, and 60%
+together with fit-split known-correct false refusal at or below 10% in the
+cross-family fleet. Selection among usable rungs is itself registered in
+advance, and it differs by design: the layer and depth ladders take the highest
+fit-split clean tightening, breaking ties on lower known-correct cost and then
+lower dose, while the cross-family fleet takes the lowest qualifying dose. If
+no rung on the registered ladder is usable, the arm stops there and is recorded
+as having no viable dose, before any held-out row is generated or scored. That
+stop is a pre-outcome rule rather than an outcome, and it is what ends the
+cross-family fleet's arms in Section 6.5 and the two deepest Gemma sites in
+Section 4.9.
+
+### 3.5 Outcome measures
+
+Different channels move different things, so no single outcome covers the
+results below.
+
+**Clean tightening** is the primary behavioral outcome of the write results: a
+row that previously confabulated now produces a single well-formed JSON object
+with exactly one answer field, that field's value is a refusal, generation
+terminated naturally before the token cap, and nothing follows the JSON. It is
+the strictest outcome in the paper, since a row that refuses in prose but
+breaks the output contract does not count.
+
+**Known-correct false refusal** is the matching cost outcome: a row that was a
+well-formed answer matching a gold alias at baseline is no longer one after the
+intervention. It counts refusals, wrong answers, and broken output alike, which
+is why Section 4.5 decomposes it once into those three parts.
+
+**Refusal**, where the text says refusal rather than clean tightening, is a
+format-agnostic reading of the same behavior: the generation contains one of
+three fixed English refusal forms, anywhere in the text and regardless of
+whether the JSON parses, with degenerate text excluded. Well-formedness is then
+reported as its own separate rate, which is what lets a result state that
+refusal and output corruption came apart.
+
+**Abstention** in Section 4.1 is the rate at which the model declines on
+unanswerable questions, read off the final output after a revision pass rather
+than the first pass, with accuracy on answerable questions carried alongside as
+a no-regression floor. The dial cells in the same section score
+appropriate-revision discrimination instead: the probability of revising given
+an initially wrong answer minus the probability of revising given an initially
+correct one.
+
+**Release** is baseline refusal rate minus the arm's refusal rate on the same
+population, the share of rows an intervention un-refuses. **Induced refusal**
+is its mirror, the arm's refusal rate minus baseline on a population that
+answered at baseline, the share an intervention muzzles.
+
+**Selectivity gap** is release on known items the model refused despite being
+able to answer them, minus release on unanswerable items it refused. A prompt
+that frees the first group without freeing the second scores high. Section
+4.3's headline is the true prompt's gap minus the permuted prompt's gap.
+
+**Congruence** is per-row agreement between what the policy did and what a
+fresh probe reads from that policy's own pre-generation state on that same row:
+either the probe reads unanswerable, at probability above one half, and the
+model refused, or the probe reads answerable and the model answered. An output
+that violates the schema counts as incongruent. It is the primary outcome of
+the reward experiment in Section 4.4, and it is deliberately not an accuracy
+measure: a policy can abstain well and still score low on it.
+
+**Contribution to selectivity** is the quantity that decides whether the gate
+or the write supplies selectivity at a given operating point. For one arm,
+selectivity is the magnitude of its effect on confabulation-prone rows minus
+the magnitude of its effect on known-correct rows, each effect being that arm's
+rate minus the undosed baseline rate on that population, taken in absolute
+value. The gate's contribution is then that quantity under the true gate minus
+the same quantity under a permuted gate, with the write held fixed.
+Magnitudes rather than raw rates are used because a mid-band write can suppress
+hedging rather than induce it, and a raw contrast flips sign in that regime
+while the underlying concentration of the effect on unknowns does not.
+
+**Hedged share** is the wide-instrument abstention rate on the
+confabulation-prone pool. The census of Section 4.8 reports, per random seed,
+the signed change in that share in percentage points against a shared undosed
+baseline measured on the same rows.
+
+**Over-refusal**, in Section 6.6, is the refusal rate on questions the model can
+answer, so a collapse in over-refusal is a release of behavior rather than a
+cost.
+
+**Degenerate output** is text that is empty, contains no alphanumeric
+character, is a single repeated n-gram, or whose parsed answer field is a
+dominant repeated unit. Degenerate rows never count as refusals or abstentions
+under any instrument here. A rise in the degeneracy rate above 5 points against
+baseline is a registered guard in the text and prompt channels, and zero
+degeneracy on dosed rows is a precondition for a dose to be usable at all.
+
+### 3.6 Scoring instruments
+
+Refusal is scored two ways across this paper, and which one a result rests on
+changes what the number means.
+
+The narrow instrument reads refusal from the model's own output and nothing
+else: a refusal value in the parsed JSON answer field, or one of three fixed
+English refusal forms in the text. It is what Sections 4.5, 4.6, 4.7 and 4.9
+score under, including the random-direction and permuted-gate controls behind
+the Section 4.5 headline and every clean-tightening rate in the layer and depth
+ladders.
+
+The wide instrument is a two-stage stack. First a frozen, deterministic pattern
+detector, widened beyond those three forms with abstention vocabulary compiled
+before launch from mined in-family idioms and published abstention phrase
+inventories; its rates are reported but do not decide anything. Then the
+primary lane: every row the detector marks non-refused is stripped of arm,
+dose, role, and source labels, shuffled under a fixed permutation, and graded
+as bare text by context-free adjudicators against a single registered rubric.
+A text counts as an abstention only if it declines to give the queried answer,
+or states unknowability or uncertainty as its answer, without also asserting a
+specific answer value; a hedge followed by a committed answer is not an
+abstention, and degenerate or empty text is not an abstention. The pool carries
+clear-positive and clear-negative decoys to certify adjudicator calibration
+before unblinding, and the graded manifest is hashed and committed before
+anything is unblinded. The final rate per row is detector-refused or
+adjudicated-abstention. The lane cannot widen the benefit vocabulary without
+widening the cost vocabulary by the same rule, because the adjudicator cannot
+tell a confabulation-prone row from a known-correct one. This stack is what
+every number in Section 4.8 rests on, and what the mid-band gate factorial
+reported in Sections 5 and 6.2 rests on.
+
+Sections 4.1 through 4.4 score under neither: each of the text, prompt, and
+reward channels uses the refusal grader registered in its own cell, applied to
+that cell's own final output. The two stacks are not interchangeable, and the
+size of the gap between them is itself measured in Section 4.8.
+
+### 3.7 Populations and controls
+
+Confabulation-prone rows come from the unanswerable split of
+Known-Unknown Questions (Amayuelas et al., 2023), whose per-row subtype labels
+(controversial, future-unknown, underspecified, and the rest) Section 4.8
+uses for its subtype breakdown. Known-correct rows come from PopQA (Mallen et
+al., 2022) and TriviaQA (Joshi et al., 2017), graded against gold answers.
+Every experiment below draws its rows from these three sources unless the text
+says otherwise.
 
 Controls are matched to the mechanism, and each control's metric and
 construction were declared before outcome evaluation, following the standard
@@ -417,13 +650,52 @@ caution that intervention conclusions are sensitive to exactly those choices
 - hidden-state write arms use random-direction controls and permuted gates;
 - J-space token-target arms use a matched random J-space direction.
 
-**Populations.** Confabulation-prone rows come from the unanswerable split of
-Known-Unknown Questions (Amayuelas et al., 2023), whose per-row subtype labels
-(controversial, future-unknown, underspecified, and the rest) Section 4.8
-uses for its subtype breakdown. Known-correct rows come from PopQA (Mallen et
-al., 2022) and TriviaQA (Joshi et al., 2017), graded against gold answers.
-Every experiment below draws its rows from these three sources unless the text
-says otherwise.
+A random-direction control writes a fixed random unit vector, drawn without
+reference to any data, on the same rows the true gate fired, at a magnitude
+matched to the realized projection the true write achieved. A permuted gate
+holds the number of dosed rows fixed and permutes which rows they are,
+assigning them uniformly at random across the combined confabulation-prone and
+known-correct pool under a fixed seed, with the real write direction unchanged.
+Permuting over the combined pool rather than over confabulation-prone rows
+alone keeps the fired mix at deployment proportions; permuting within a
+subsample would over-represent known-correct rows and flatter the gate.
+
+### 3.8 Statistical analysis
+
+Every binomial rate in this paper carries a Wilson 95% interval, and the
+registered gates are stated against both the point estimate and the relevant
+end of that interval, so a rate can clear its floor and still miss its gate.
+
+Paired binary comparisons between two interventions on the same rows use
+McNemar's test, evaluated as an exact two-sided binomial test on the discordant
+pairs. It certifies the gated versus unconditional contrast of Section 4.5,
+where 149 of 258 known-correct rows are discordant, and the mid-band versus
+late write-site contrast on the multi-source pool in Section 4.6, where 42 rows
+are discordant and all 42 break the same way. The latter was registered with a
+second clause the test alone does not supply: late-only failures had to
+outnumber mid-only failures at least three to one.
+
+A confidence interval on the difference between two independent proportions
+uses the Newcombe hybrid score interval, built from the two rates' own Wilson
+bounds rather than from a normal approximation, which is what Section 4.9
+reports for the well-formedness difference between the two key-value sharing
+conditions.
+
+Bootstrap intervals are percentile intervals, and the resampling unit follows
+what the quantity is a distribution over rather than being uniform across the
+paper:
+
+- Section 4.2's primary-minus-control kill difference resamples rows, 1,000
+  resamples;
+- Section 4.3's quantities all resample rows within cell, at 10,000 resamples
+  for the selectivity gap, the induced refusal, and the compliance asymmetry,
+  and over rows for the divergent-pool release congruence;
+- Section 4.4's congruence differential resamples rows in pairs matched across
+  the two training arms, 10,000 resamples;
+- Section 4.8's sign fractions resample seeds, not rows: each of the fifteen
+  seeds contributes one signed delta, and 10,000 resamples of those fifteen
+  signs give the interval. Each seed's own delta separately carries a row-level
+  Wilson interval, and the two levels are never pooled.
 
 ---
 
@@ -617,7 +889,7 @@ directions:
 At this write site (Qwen3-4B, L34) and dose (200), a registered comparison
 later established why this separation matters: an unconditional write damages
 60.1% of held-out known-correct rows versus 3.1% gated, a 57.0-point gap
-(McNemar's test for paired binary outcomes, p = 4.2e-43), while the gate
+(McNemar, p = 4.2e-43), while the gate
 costs the controller only 4.3 points of confab conversion (77.8% ungated
 versus 73.5% gated). The 60.1% figure is not a refusal rate; it decomposes as
 55.8 points clean false-refusal, 3.9 points answered-wrong, and 0.4 points
@@ -637,9 +909,9 @@ ungated arm damages most known-correct rows; the gated arm holds cost near
 its floor while giving up only 4.3 points of confab conversion.
 
 On held-out rows, the raw-base Qwen3-4B controller passed every registered gate.
-The gate separated the two populations on the fit split at AUROC 0.9955. On held-out rows, gated clean
-tightening was 136/185 = 73.5%, Wilson 95% confidence interval [66.7, 79.3]
-(the interval used for every binomial rate in this paper), clearing the >=60%
+Gated clean
+tightening was 136/185 = 73.5%, Wilson 95% confidence interval [66.7, 79.3],
+clearing the >=60%
 floor and the lower CI >50% requirement. Known-correct false refusal was
 8/258 = 3.1%, CI [1.6, 6.0], clearing the <=5% point floor and <10% upper CI
 requirement. A random-direction write on the same fired rows produced only
@@ -800,14 +1072,11 @@ refit at each family's own atlas-located workspace-band site, actuates refusal
 on Llama-3.2-3B and Mistral-7B-v0.3.
 
 The behavioral gates replicate on mistral, under an instrument built to catch
-this family's own abstention idioms. A narrow three-phrase canonical refusal
-detector does not count them, so mistral is scored on fresh held-out rows with
-two registered instruments at once: a widened automatic pattern detector, and
-a primary blinded adjudication lane in which context-free graders score bare,
-unlabeled generation text against a fixed abstention rubric, mixed with
-clear-positive and clear-negative decoy rows to certify grader calibration
-before unblinding. Under that stack the mistral controller clears both
-behavioral gates. Fired-confab adjudicated refusal is 911/1303 = 0.699 (Wilson
+this family's own abstention idioms. The three fixed refusal forms the narrow
+detector looks for do not count them, so mistral is scored on fresh held-out
+rows under the wide two-instrument stack, the widened pattern detector plus the
+blinded context-free adjudication lane. Under that stack the mistral controller
+clears both behavioral gates. Fired-confab adjudicated refusal is 911/1303 = 0.699 (Wilson
 95% CI [0.674, 0.723]) against a 0.60 floor, well-formedness holds at 0.987,
 and known-correct false refusal is 2/382 = 0.0052 (CI [0.0014, 0.019]) against
 a 0.05 ceiling. Those two legs have since reproduced exactly on every re-test
