@@ -1,6 +1,6 @@
 slug: j-space-cross-family-layer-contrast
 type: steer-cell
-status: signed
+status: resolved
 registered: true
 question: Does useful, selective J-space mid-band actuation (calibrated mid-band gated
   caution snap achieving held-out confab clean_tighten above a floor at low known-correct
@@ -245,19 +245,9 @@ inputs:
 - experiments/doubt-snap-cross-family-confirmatory/analysis-committed/gemma4_e4b_it
 - experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md
 - experiments/qwen35-4b-midband-heldout/AMENDMENT.md
-verdict: 'INCONCLUSIVE (interim, 2026-07-24): only 2 of 4 registered families ran
-  past G0, below the minimum denominator of 3, so the cross-family question is
-  unanswered in either direction. Of the 2 that ran, llama-3.2-3b cleared G1 at
-  hs17 (647/872 = 0.7420, Wilson [0.7119, 0.7699]) and mistral-7b-v03 missed the
-  0.50 floor marginally at hs15 (642/1312 = 0.4893, Wilson [0.4624, 0.5164],
-  interval straddles the floor). G2 PASSED on both as registered and those
-  passes stand, but are non-diagnostic: the dosed known-correct denominator is 0
-  by construction (fired 0/334 and 0/382), so they are evidence about baseline
-  malformedness only and must not be read as write selectivity. gemma4-e4b is a G0 stop
-  (use_cache=False corrupted hs25+ via KV sharing), so its 0/176 write null is
-  uninterpretable rather than negative. qwen35-4b is being run to reach the
-  registered denominator; this Outcome will be re-adjudicated on
-  cross_family_rollup.py at that point. See AMENDMENT.md "Outcome" for the three
-  registered-instrument defects found at resolve, including a conflict between
-  this file''s falsifier: field and AMENDMENT.md''s roll-up rule.'
+verdict: 'INCONCLUSIVE, closed 2026-08-18 without running the remaining families:
+  SUCCESS arithmetically unreachable (llama PASS, mistral FAIL, gemma G0 instrument
+  invalid), and the cross-family mid-band question was re-prosecuted under the corrected
+  wide instrument by the rr1-rr3 lineage and the qwen35 midband cells. Per-family
+  results stand as recorded.'
 kg: []
