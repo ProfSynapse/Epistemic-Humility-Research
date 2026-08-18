@@ -131,7 +131,9 @@ Qwen and stress-testing it on Mistral, Llama, and Gemma.
 
 The answer is that we can read the model's known-unknown state and wire it to
 the model's own refusal behavior, with no training and without the policy's
-cooperation. The wiring works only at the right operating point, meaning the
+cooperation. The paper builds a thermostat: the model already carries a
+working thermometer and never consults it, so we supply the wiring from the
+reading to the behavior it should govern. The wiring works only at the right operating point, meaning the
 site in the network where the write lands and the dose it is applied at, and
 those coordinates are model-specific. In the Qwen lineage a Jacobian-lens read
 of the model's workspace-like layers localized where the write works best
@@ -1381,6 +1383,22 @@ write-site bottleneck in particular is not specific to epistemic directions: a
 probe above 93% accuracy at every layer of a model can still produce near-zero
 steering effect at its own best layer, with steering success tracking
 alignment to the model's unembedding readout instead (Billa, 2026).
+
+In the language of the thermostat, the model carries a working thermometer,
+its known-unknown readout, and a heater it can run, its own refusal behavior,
+with nothing connecting them. Each failed route substitutes something else for
+that connection. Writing the reading back into the hidden state, or stating it
+in the context, shows the model its own thermometer and hopes (Sections 4.1
+and 4.2). A high-authority system prompt is someone turning the knob by hand:
+the room does change temperature, but nothing has come to regulate itself
+(Section 4.3). Rewarding agreement with the probe pays the model when the room
+is at the right temperature without teaching it to read the thermometer at all
+(Section 4.4). What works is to close the loop from outside, which is what a
+thermostat is: a sensor wired to an actuator, running with no one in the loop.
+The questions that remain are about installation. The operating point is where
+the thermostat is mounted and how hard it drives the heater; direction-
+specificity asks whether we are turning the knob or banging on the radiator,
+since a room can warm either way (Section 4.8).
 
 ### 6.2 Why the gate matters, and why its role changes with dose
 
