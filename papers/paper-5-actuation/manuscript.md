@@ -174,33 +174,37 @@ added known-correct cost (Section 4.6). A token-targeted J-space write, built to
 raise refusal tokens and lower answer-continuation tokens, actuates on its own
 but adds almost nothing on top of the gated write (Section 4.7).
 
-Across families, the guardrails travel and the coordinates do not. The benefit
-and cost gates replicate on Mistral; direction-specificity does not survive its
-strongest test there at any site we tried. Matched-magnitude random directions
-are not behaviorally inert in any family we measured, and their sign is a
-family property. And Gemma, reputed not to actuate at all, actuates in its
-shallow half: its inertness was a depth-coverage artifact (Sections 4.8 and
-4.9).
+Across families, the guardrails travel and the coordinates do not: on Mistral
+the benefit and cost gates replicate, while direction-specificity fails its
+strongest test at every site we tried. Even what a placebo control does to a
+model turns out to be a family property rather than a constant, so it has to be
+re-measured on each new one (Sections 4.8 and 4.9).
 
-In practice, five steps:
+In practice, the build sequence is:
 
-1. read the model's epistemic state externally;
-2. use that readout as a gate;
-3. write a calibrated policy direction only where the gate fires;
-4. choose a site where the write lands inside or near the workspace-like layer
-   band;
-5. keep random-direction, permuted-gate, and known-correct cost controls in
-   the loop, with the random-direction tolerance set against that family's own
-   measured null rather than against zero.
+1. **Find the read spot.** A per-family read panel sweeps the model's depth and
+   marks the band where its known-unknown state reads cleanly. That is where
+   the sensor goes.
+2. **Find the write spot and the dose.** Candidate write sites come from the
+   workspace-like band, and the dose is calibrated on the fit split at the site
+   you intend to use. Both are established on the model in front of you and
+   neither is ported from another.
+3. **Build the thermostat.** Threshold the readout, and where it fires, throw
+   the refusal write. That is the IDK switch, a name an operating point earns
+   by passing a confirmatory test rather than by being built this way.
+4. **Verify the wiring.** Check the write against a random direction judged
+   against that family's own measured null, against a permuted gate, and
+   against its cost on questions the model can answer, to confirm the effect
+   belongs to the direction you fitted and not to perturbation at that
+   magnitude.
 
-The evidence remains exploratory. Four families ran, and what replicated is the
-recipe's guardrails: the benefit and cost gates clear on Mistral and at several
-Gemma depths, and the baseline a placebo is judged against is now a measured,
-family-signed quantity rather than an assumed zero. What has not replicated is
-the headline actuator at its best operating point. The IDK switch and the
-J-space band are each one model's coordinates so far, and many results remain
-single-seed or specific to one write site. A cross-model replication of the
-full gated actuator is the next study.
+The evidence remains exploratory: the headline actuator's best operating point
+is so far one model's coordinates, and many results are single-seed or specific
+to one write site. What would move it from exploratory to confirmatory is
+already scoped, and it is a single test. A pre-registered cross-model
+replication of the full gated actuator, with the read spot and the write spot
+located by each new family's own panel and every gate fixed before the run,
+is what these claims are waiting on.
 
 ---
 
