@@ -78,92 +78,38 @@ feel.*
 
 ## Abstract
 
-A frozen small language model carries a near-perfect answerability readout in
-its hidden state before it generates, a separate correctness readout after, and
-a veto signal that ranks confabulations (fluent, specific answers to questions
-the model has no basis to answer) as low trust. Our earlier work established
-all three by reading the model from outside. Reading is not writing. Can those
-signals be written back into the model to make it act epistemically humble?
+A frozen small language model carries a near-perfect answerability readout in its
+hidden state before it generates. Reading is not writing. Can that signal be
+written back so the model acts on it? We tested five ways of routing the readout
+into behavior, all on frozen checkpoints.
 
-Across a sequence of pre-stated exploratory cells, the answer is mixed and
-mechanistically sharp. First, naive "turn the probe around" strategies mostly
-fail. Direct activation steering and within-generation text injection on the
-trust axes produced no behavioral effect; stronger first-person
-phrasing produced only a small gate-side trickle and no correctness-revision
-effect. A second, purpose-built push against a direction fit specifically to
-separate confabulations from honest refusals fared no better: calibrated to
-move the readout by exactly the amount needed and verified by read-back to
-have done so within 0.1%, it converted zero of 116 confabulations into
-refusals, the cleanest case we have of a direction moving by the commanded
-amount without the behavior following it. A
-high-authority second-person system prompt did move behavior, but a
-divergent-pool test showed the model was obeying the instruction rather than
-consulting its own readout. Even a reward equal to the model's own probe score
-failed to train readout consultation: the true-sensor arm was less congruent
-with its final readout than a permuted-sensor control.
+Every route that asks the policy to consult its own readout fails. Activation
+steering along the read directions and within-generation text injection produced no
+behavioral effect. A push against a direction built to separate confabulations
+(fluent answers to unanswerable questions) from honest refusals moved the
+readout to within 0.1% of the commanded amount and
+converted zero of 116 confabulations into refusals. High-authority system prompts
+did move behavior, by obedience rather than self-consultation. A reward equal to the
+model's own probe score left the true-sensor arm less congruent with its readout
+(59.75%) than a permuted-sensor control (76.75%).
 
-Second, hidden-state actuation does work when the problem is posed as a
-KU-gated controller rather than as an unconditional write, and it needs no
-training at all: every positive result below runs on a frozen, off-the-shelf
-checkpoint. A KU-gated boundary
-push (dosed write) on raw-base Qwen3-4B converted 136/185 held-out confabulations into
-clean refusals (73.5%, Wilson 95% CI [66.7, 79.3]) while producing 8/258
-false refusals on known-correct answers (3.1%, CI [1.6, 6.0]); random-direction
-and permuted-gate controls did not reproduce the result. Which component
-supplies that selectivity, however, is operating-point-dependent rather than a
-universal property of the write. At this same overdrive dose (L34, dose 200),
-a separate comparison shows an unconditional write damages 60.1%
-of held-out known-correct rows versus 3.1% gated, a 57.0-point gap (McNemar's
-paired test, p = 4.2e-43): here the gate is the sole source of selectivity. At
-mid-band doses (qwen hs20, relative depth 0.625 of the stack, absolute dose
-12.608; mistral hs16, relative depth 0.500, absolute dose 3.665), a controlled
-factorial found the
-write itself is already content-selective: a permuted-gate control reaches
-confab abstention 0.550-0.600 against the true gate's 0.689-0.694, and the
-KU-readout gate's own contribution to selectivity is real but sub-floor
-(0.148 qwen, 0.129 mistral, against a 0.20 floor). At mid-band the
-gate's role reduces to a modest selectivity increment plus cost governance,
-not the source of selectivity. The lesson is regime-dependent, not universal:
-overdrive makes the gate essential, mid-band lets the write self-sort with the
-gate tightening the margins.
+Actuation works when the readout gates an external write instead, and it needs no
+training. On raw-base Qwen3-4B, a gated dosed write converted 136/185 held-out
+confabulations into clean refusals (73.5%, 95% CI [66.7, 79.3]) at 8/258 false
+refusals on known-correct answers (3.1%). Which component supplies selectivity
+depends on the dose. At the overdrive dose, an unconditional write damages 60.1% of
+known-correct rows against 3.1% gated (57.0 points, p = 4.2e-43); at mid-band doses
+the write already sorts by content, and the gate's own contribution to selectivity
+is 0.148 on Qwen and 0.129 on Mistral. Where the write lands matters as much:
+inside the workspace-like layer band it reached 89.2% clean refusals against 66.5%
+just past it, +22.7 points for +0.78 points of cost.
 
-Third, write location matters. A Jacobian-lens diagnostic localized a
-workspace-like band in Qwen3-4B around hs23 to hs29, peaking at hs26, while
-the inherited L34 write site maps to hs34, just after that band. After
-layer-specific dose calibration, held-out mid-band writing beat the late
-reference: hs23 (relative depth 0.639) reached 165/185 clean refusals (89.2%)
-versus hs34 (relative depth 0.944) 123/185
-(66.5%), a +22.7 point gain with only +0.78 points known-correct cost. Using
-the same lens backward to target natural refusal tokens was not enough to
-improve the controller: a token-target direction was non-inert by itself
-(88/185 = 47.6%) but added only one extra clean refusal on top of the mid-band
-boundary push.
-
-Fourth, what transfers across model families is measured rather than assumed,
-and the measurement is itself a result. On Mistral-7B the same controller
-clears its benefit and cost gates under a wide, blinded abstention instrument
-(69.9% adjudicated refusal at 0.52% known-correct cost) and fails
-direction-specificity at every operating point tested, because a
-magnitude-matched random direction moves refusal behavior too. Fifteen fresh
-random seeds per family show why that is not noise: matched-magnitude random
-writes are sign-consistent within a family and opposite in sign across
-families, suppressing hedging in Qwen (median -6.0 points) and Llama (-7.67)
-while recruiting it in Mistral (+7.0). A raw increase in abstention rate
-therefore cannot certify that an intervention is coupled to the model's
-known-unknown state, and a placebo criterion has to be set against a
-family's own measured null rather than against zero. On Gemma-4-E4B, a depth
-ladder overturns that family's reputation for inertness: it clears the
-behavioral gates at four sites in a shallow band, and fails
-direction-specificity at every site tested above its key-value sharing seam.
-
-Together these results support a practical distinction: epistemic state is
-readable, externally usable, and sometimes writable, but not automatically
-consulted by the model's own policy. Productive actuation requires the right
-channel, the right gate, and the right write site, and none of it requires
-training the model. Training does not remove the causal handle either: on a
-trained checkpoint from a separate line, ablating a related refusal axis
-releases 45.7 points of known-item over-refusal on a fresh seed of the same
-recipe (Section 6.6).
+Benefit and cost carry to Mistral-7B (69.9% adjudicated refusal at 0.52%
+known-correct cost); direction-specificity does not, because matched-magnitude
+random writes are behaviorally active in every family measured, with a
+family-specific sign: they suppress hedging in Qwen (median -6.0 points) and Llama
+(-7.67) and recruit it in Mistral (+7.0). Most results here are single-model,
+single-seed, or specific to one write site.
 
 ---
 
@@ -1245,18 +1191,12 @@ nonspecific-perturbation response), rather than against a flat symmetric band
 or a single random seed. The three distributions above supply that null at
 fifteen seeds for the three families they cover.
 
-One qualification reaches backward from here. The random-direction and
-permuted-gate controls behind the Section 4.5 headline (13/185 clean tighten
-for the random direction, 59/258 known-correct cost for the permuted gate) and
-behind the Section 4.6 layer-site contrast were graded under the narrow
-detector, not the wide two-instrument stack, and neither has been re-scored
-under it. Given the undercount margins above, and given that qwen's own
+One finding from these distributions reaches backward: qwen's own
 wide-instrument placebo response at a different operating point is suppressive
-rather than confounding, there is no positive evidence that those specific
-controls are compromised. There is now a standing reason not to treat a small
-narrow-detector placebo delta as automatically clean: it should be read as
-provisional until re-checked under the wide instrument, and certainly before
-any of these results is promoted from exploratory to headline.
+rather than confounding, so nothing here indicates the narrow-detector
+controls behind Sections 4.5 and 4.6 were compromised. Those controls have not
+been re-scored under the wide two-instrument stack; that gap is recorded in
+Section 6.4.
 
 ### 4.9 Gemma's inertness was a depth-coverage artifact, not a family-specific null
 
