@@ -119,76 +119,68 @@ Ask a small language model a question it has no basis to answer, and its hidden
 state, read before it emits a token, will usually say so: a linear readout
 separates answerable from unanswerable items at near-ceiling accuracy while
 stated confidence stays flat and resists training (Rosenbaum, 2026c). The model
-then answers anyway. Read from outside, the signal supports a training-free
-trust pipeline (Rosenbaum, 2026d): the failure is coherence between the stated
-and the hidden signal, not absence of the signal (Rosenbaum, 2026a).
+then answers anyway. Read from outside, it composes with a post-generation
+correctness readout into a training-free trust pipeline (Rosenbaum, 2026d): the
+failure is coherence between the stated and the hidden signal, not absence of
+the signal (Rosenbaum, 2026a).
 
 All of that is reading. This paper asks the other direction: if the signal is
 there and accurate, can we make the model's generation policy consult it? We
-tested five routes into behavior on frozen checkpoints; they sort by how far
-each gets before breaking.
+tested five routes into behavior on frozen checkpoints, developing the work on
+Qwen and stress-testing it on Mistral, Llama, and Gemma.
 
-The most literal route is to write the readout back in, or to say it.
-Representation engineering treats reading and writing a direction as one method
-(Zou et al., 2023), but they come apart: across five models a probe above 93%
-accuracy at every layer produced near-zero steering effect at its own best layer
-(Billa, 2026). Writing the gate and dial directions into the residual stream
-where they read best, and injecting the readout as text mid-generation, passed
-no effect gate, and the strongest first-person phrasing recovered only a trickle
-of rule-following (Section 4.1). The sharper form uses a direction built for the
-job rather than fit to read, separating confabulations from honest refusals: a
-calibrated push against it moved the readout to within 0.1% of the commanded
-amount, verified by read-back, and converted zero of 116 confabulations (Section
-4.2). The readout moves; the behavior does not.
+The answer is that we can read the model's known-unknown state and wire it to
+the model's own refusal behavior, with no training and without the policy's
+cooperation. The wiring works only at the right operating point, meaning the
+site in the network where the write lands and the dose it is applied at, and
+those coordinates are model-specific. In the Qwen lineage a Jacobian-lens read
+of the model's workspace-like layers localized where the write works best
+(Section 4.6), and a mid-band operating point in that lineage was validated in
+a confirmatory naming experiment closely enough to earn a name of its own, the
+IDK switch (Section 4.5). Testing on other families then separates what travels
+from what does not: the recipe's guardrails replicate, while the coordinates,
+and even the baseline a placebo control has to be measured against, are
+family-signed, so site and dose have to be established fresh on each model
+(Sections 4.8 and 4.9). Done right, the wiring converts confabulations into
+refusals without driving up refusal on the questions the model can answer.
 
-Telling the model with authority works, but not for the reason we wanted. A
-system prompt handing the model a per-item certainty label moves behavior and
-beats a label-permuted placebo, but it moves behavior even when the
-labels are inverted, and on rows where the model's own readout and the gold
-label disagree, release congruence with that readout is a precise zero (Section
-4.3). Authority installs refusal from outside rather than making the model
-consult itself. Neither does training: rewarding the policy for agreeing with a
-frozen probe read from its own pre-generation state left the true-sensor arm
-less congruent with its own readout than a permuted-sensor control, 59.75%
-against 76.75% (Section 4.4).
-
-What works is to wire the consultation outside the policy: read the state
-externally, use that readout as a gate, and write a fixed behavioral move only
-where the gate fires. On frozen raw-base Qwen3-4B that converts 73.5% of
-held-out confabulations into clean refusals at 3.1% false refusal on
-known-correct rows, with no training (Section 4.5). Which component supplies
-selectivity depends on the dose: at an overdrive dose an unconditional write
-damages most known-correct rows and only the gate holds it off them; at a
-mid-band dose the write already sorts by content and the gate governs cost.
+The simpler routes into that behavior all fail, and they fail on substrates
+where the readout itself is near-ceiling. Representation engineering treats
+reading a direction and writing along it as one method (Zou et al., 2023), but
+the two come apart: across five models a probe above 93% accuracy at every
+layer produced near-zero steering effect at its own best layer (Billa, 2026).
+Writing the two readout directions back into the hidden state where they read
+best, and spelling the readout out in words as the model generates, each left
+behavior short of the effect threshold set in advance (Section 4.1). A
+direction fit for the job rather than for reading, separating fluent answers to
+unanswerable questions from honest refusals, moved the internal signal by the
+commanded amount and converted not a single one of those answers into a refusal
+(Section 4.2). A system prompt handing the model a per-item certainty label did
+move behavior, but it moved behavior even when the labels were inverted
+(Section 4.3). Rewarding the policy for agreeing with a frozen probe read from
+its own pre-generation state left the true-sensor arm less congruent with its
+own readout than a permuted-sensor control (Section 4.4). A readable direction
+is not automatically a usable actuator, and what makes it usable is the
+operating point rather than the direction.
 
 Where the write lands matters as much as what is written. The J-space read, a
 Jacobian-lens characterization of which layers carry a model's verbalizable,
-workspace-like representations (Gurnee et al., 2026), put that band well
-upstream of the inherited write site; moving the same regulated write into it
-bought 22.7 points of confabulation tightening for less than a point of
-known-correct cost (Section 4.6). The more literal J-space idea, a direction
-built to raise refusal tokens and lower answer-continuation tokens, actuates
-alone and is redundant on top of that write (Section 4.7).
+workspace-like representations (Gurnee et al., 2026), locates that band well
+upstream of the deeper site the gated write had been using, and moving the same
+write into the band converts substantially more confabulations at almost no
+added known-correct cost (Section 4.6). A token-targeted J-space write, built to
+raise refusal tokens and lower answer-continuation tokens, actuates on its own
+but adds almost nothing on top of the gated write (Section 4.7).
 
-Does the recipe travel? Benefit and cost gates replicate on Mistral-7B under a
-blinded wide instrument; direction-specificity does not survive its strongest
-test there at any site we tried. The reason is measurable: the random-direction
-null a placebo is supposed to sit against is not zero in any family we measured,
-and its sign is a family property: it suppresses hedging in Qwen and Llama and
-recruits it in Mistral (Section 4.8). Gemma, the family reputed not to
-actuate, actuates in its shallow half: its inertness was a depth-coverage
-artifact (Section 4.9).
+Across families, the guardrails travel and the coordinates do not. The benefit
+and cost gates replicate on Mistral; direction-specificity does not survive its
+strongest test there at any site we tried. Matched-magnitude random directions
+are not behaviorally inert in any family we measured, and their sign is a
+family property. And Gemma, reputed not to actuate at all, actuates in its
+shallow half: its inertness was a depth-coverage artifact (Sections 4.8 and
+4.9).
 
-That ladder is the paper's claim: a readable direction is not automatically a
-usable actuator, and what makes it usable is the operating point rather than the
-direction, the dose at which the write is applied and the site where it lands.
-An epistemic direction can be a strong, portable readout and still be a weak
-actuator, work through some routes into behavior and not others, or move target
-and non-target rows alike; where selectivity comes from, when it appears at all,
-is a property of the dose and the write site.
-
-The practitioner's version is a five-step recipe, short enough to state before
-the evidence for it:
+In practice, five steps:
 
 1. read the model's epistemic state externally;
 2. use that readout as a gate;
@@ -199,11 +191,14 @@ the evidence for it:
    the loop, with the random-direction tolerance set against that family's own
    measured null rather than against zero.
 
-The evidence remains exploratory: most experiments are single-model,
-single-seed, or surface-local. The pattern is stable enough to organize the
-next study, a larger cross-model replication of the gated workspace-band
-actuator plus sharper tests of whether denser token targets or different model
-families change the write/read relationship.
+The evidence remains exploratory. Four families ran, and what replicated is the
+recipe's guardrails: the benefit and cost gates clear on Mistral and at several
+Gemma depths, and the baseline a placebo is judged against is now a measured,
+family-signed quantity rather than an assumed zero. What has not replicated is
+the headline actuator at its best operating point. The IDK switch and the
+J-space band are each one model's coordinates so far, and many results remain
+single-seed or specific to one write site. A cross-model replication of the
+full gated actuator is the next study.
 
 ---
 
@@ -269,10 +264,6 @@ behavioral move.
 ---
 
 ## 3. Methods
-
-Appendix A maps each claim below to the governed document behind it, and
-Appendix B gives the checkpoint and pinned revision behind each one, separating
-the substrates a multi-model cell declared from the ones it actually launched.
 
 Write sites are named by their raw
 hidden-state index (hs followed by the layer number) because that is how each
