@@ -115,70 +115,80 @@ single-seed, or specific to one write site.
 
 ## 1. Introduction
 
-A small language model can represent what it knows internally while failing to
-verbalize or act on that state. That gap is where this work started. It is a
-failure of coherence between a model's stated signal and its hidden-state
-signal, the cross-cutting axis of a taxonomy of epistemic humility we set out
-separately, which runs from scalar calibration up to uncertainty over the
-objective itself (Rosenbaum, 2026a).
-Our diagnosis of the gap (Rosenbaum, 2026c) showed that answerability is linearly
-readable from hidden states at near-ceiling accuracy while stated confidence
-remains flat and training-resistant. The follow-up (Rosenbaum, 2026d) showed
-that two readable signals, answerability before generation and answer
-correctness after generation, compose into a training-free trust pipeline that
-generalizes across sizes, families, and sampled-decode seeds.
+Ask a small language model a question it has no basis to answer, and its hidden
+state, read before it emits a token, will usually say so: a linear readout
+separates answerable from unanswerable items at near-ceiling accuracy while
+stated confidence stays flat and resists training (Rosenbaum, 2026c). The model
+then answers anyway. Read from outside, the signal supports a training-free
+trust pipeline (Rosenbaum, 2026d): the failure is coherence between the stated
+and the hidden signal, not absence of the signal (Rosenbaum, 2026a).
 
-Those results are about reading. Actuation runs the other direction. If a model
-already contains a faithful epistemic signal, can we make its generation policy
-consult that signal? Can we steer the residual stream, inject the signal in text, reward
-agreement with it, or write into the workspace-like layer band where reportable
-representations live (Gurnee et al., 2026)?
+All of that is reading. This paper asks the other direction: if the signal is
+there and accurate, can we make the model's generation policy consult it? We
+tested five routes into behavior on frozen checkpoints; they sort by how far
+each gets before breaking.
 
-This is not a trivial extension of probing. A linear probe can be useful even if
-the model's policy never uses the direction it reads. Conversely, a direction can
-be behaviorally causal without being a faithful self-readout. Neither half is
-peculiar to this work. Representation engineering treats reading a concept
-direction and writing along it as one method (Zou et al., 2023), and a
-controlled study across five models finds the two can come apart sharply: a
-logistic probe above 93% accuracy at every layer produced near-zero steering
-effect at its own best-accuracy layer, while alignment with the model's own
-unembedding readout predicted steering success where probe accuracy did not
-(Billa, 2026). The claim the evidence supports is correspondingly narrow:
+The most literal route is to write the readout back in, or to say it.
+Representation engineering treats reading and writing a direction as one method
+(Zou et al., 2023), but they come apart: across five models a probe above 93%
+accuracy at every layer produced near-zero steering effect at its own best layer
+(Billa, 2026). Writing the gate and dial directions into the residual stream
+where they read best, and injecting the readout as text mid-generation, passed
+no effect gate, and the strongest first-person phrasing recovered only a trickle
+of rule-following (Section 4.1). The sharper form uses a direction built for the
+job rather than fit to read, separating confabulations from honest refusals: a
+calibrated push against it moved the readout to within 0.1% of the commanded
+amount, verified by read-back, and converted zero of 116 confabulations (Section
+4.2). The readout moves; the behavior does not.
 
-> **A readable direction is not automatically a usable actuator, and what
-> makes it usable is the operating point.** Epistemic directions can be
-> strong, portable readouts while remaining weak, channel-dependent, or
-> non-selective actuators; where selectivity comes from, when it appears at
-> all, is a property of the dose and the write site rather than of the
-> direction.
+Telling the model with authority works, but not for the reason we wanted. A
+system prompt handing the model a per-item certainty label moves behavior and
+beats a label-permuted placebo, but it moves behavior even when the
+labels are inverted, and on rows where the model's own readout and the gold
+label disagree, release congruence with that readout is a precise zero (Section
+4.3). Authority installs refusal from outside rather than making the model
+consult itself. Neither does training: rewarding the policy for agreeing with a
+frozen probe read from its own pre-generation state left the true-sensor arm
+less congruent with its own readout than a permuted-sensor control, 59.75%
+against 76.75% (Section 4.4).
 
-That thesis had an obvious way to be wrong. If writing a readable direction
-back into the residual stream at the layer where it reads best had moved
-behavior selectively, there would be no gap between reading and writing to
-report. Five experiments tested exactly that, across two independent
-activation-write attempts (one on the gate and dial directions themselves, one
-on a direction purpose-built to separate confabulations from honest refusals
-and verified by read-back to move by the commanded amount), text injection,
-system prompts, and reward, and none of them produced it.
+What works is to wire the consultation outside the policy: read the state
+externally, use that readout as a gate, and write a fixed behavioral move only
+where the gate fires. On frozen raw-base Qwen3-4B that converts 73.5% of
+held-out confabulations into clean refusals at 3.1% false refusal on
+known-correct rows, with no training (Section 4.5). Which component supplies
+selectivity depends on the dose: at an overdrive dose an unconditional write
+damages most known-correct rows and only the gate holds it off them; at a
+mid-band dose the write already sorts by content and the gate governs cost.
 
-Four findings follow, and they are the argument of the paper. Reading a
-direction is not writing it: five independent ways of routing the readout into
-behavior fail on the same substrates where the readout itself is near-ceiling.
-Direct activation writes do actuate, and there selectivity belongs to the
-operating point rather than to the direction, which is what the gated versus
-unconditional comparison, the dosed boundary push, and the one mid-band write
-validated closely enough to earn a name of its own each show from a different
-side. Where the write lands matters
-as much as what is written: the workspace-band depth rule holds on the model
-that produced it and gets its cross-family stress test on a fourth family's
-depth ladder. And what transfers across families is measured rather than
-assumed: benefit and cost gates replicate, direction-specificity does not
-survive its strongest test on every family, and the random-direction null a
-placebo control is supposed to sit against is itself family-signed, which
-makes the cross-family scope of the recipe a result in its own right.
+Where the write lands matters as much as what is written. The J-space read, a
+Jacobian-lens characterization of which layers carry a model's verbalizable,
+workspace-like representations (Gurnee et al., 2026), put that band well
+upstream of the inherited write site; moving the same regulated write into it
+bought 22.7 points of confabulation tightening for less than a point of
+known-correct cost (Section 4.6). The more literal J-space idea, a direction
+built to raise refusal tokens and lower answer-continuation tokens, actuates
+alone and is redundant on top of that write (Section 4.7).
 
-The practitioner's version of all four is a five-step recipe, and it is short
-enough to state before the evidence for it:
+Does the recipe travel? Benefit and cost gates replicate on Mistral-7B under a
+blinded wide instrument; direction-specificity does not survive its strongest
+test there at any site we tried. The reason is measurable: the random-direction
+null a placebo is supposed to sit against is not zero in any family we measured,
+and its sign is a family property: it suppresses hedging in Qwen and Llama and
+recruits it in Mistral (Section 4.8). Gemma, the family reputed not to
+actuate, actuates in its shallow half: its inertness was a depth-coverage
+artifact (Section 4.9).
+
+That ladder is the paper's claim: a readable direction is not automatically a
+usable actuator, and what makes it usable is the operating point rather than the
+direction, the dose at which the write is applied and the site where it lands.
+An epistemic direction can be a strong, portable readout and still be a weak
+actuator, work through some routes into behavior and not others, or move target
+and non-target rows alike; where selectivity comes from, when it appears at all,
+is a property of the dose and the write site.
+
+The practitioner's version is a five-step recipe, short enough to state before
+the evidence for it:
 
 1. read the model's epistemic state externally;
 2. use that readout as a gate;
@@ -188,17 +198,6 @@ enough to state before the evidence for it:
 5. keep random-direction, permuted-gate, and known-correct cost controls in
    the loop, with the random-direction tolerance set against that family's own
    measured null rather than against zero.
-
-Three strands of evidence sit beside that argument rather than inside it, and
-each is flagged where it lands. Two experiments of ours on the correctness
-axis, one measuring its rotation across a model's own training checkpoints and
-one asking whether a shared subspace explains its partial transfer between
-them, are why we expect that axis to generalize worse than the answerability
-axis this paper writes on (Section 6.5). An ablation of a refusal
-axis on a trained checkpoint is why we do not think training removes the
-causal handle (Section 6.6). And the per-family random-direction null
-distributions that the cross-family results lean on were measured as an
-instrument study in their own right rather than assumed (Section 4.8).
 
 The evidence remains exploratory: most experiments are single-model,
 single-seed, or surface-local. The pattern is stable enough to organize the
@@ -256,13 +255,12 @@ The cleanest positive evidence would satisfy three conditions:
   same action on rows where it is inappropriate.
 
 The specificity condition is the one the external literature has found hardest
-to satisfy, and the one that costs the cross-family results in Section 4.8
-their strongest claim: a random unit vector orthogonal to a fitted
-steering vector can produce behavioral effects statistically indistinguishable
-from the fitted vector itself across several traits and models (Venkatesh and
-Kurapath, 2026). Because intervention conclusions are also sensitive to metric
-and corruption choices (Zhang et al., 2023), every control below was frozen
-before outcome evaluation.
+to satisfy: a random unit vector orthogonal to a fitted steering vector can
+produce behavioral effects statistically indistinguishable from the fitted
+vector itself across several traits and models (Venkatesh and Kurapath, 2026).
+Because intervention conclusions are also sensitive to metric and corruption
+choices (Zhang et al., 2023), every control below was frozen before outcome
+evaluation.
 
 The successful cells below meet these conditions only when readout and write are
 separated: the readout gates the intervention, and the write supplies a fixed
@@ -1085,6 +1083,10 @@ different site and dose lands in the same place: the mid-band factorial's own
 direction-specificity leg reaches 2.03 on mistral against the same 3.0 floor,
 where qwen passes at 7.27. Mistral is readable everywhere we have looked and
 is not shown actuable by a direction-specific write at any site we have tried.
+That is the specificity condition of Section 2.2 going unmet, and it is what
+costs these cross-family results their strongest claim: benefit and cost
+replicate on Mistral, but without a specificity margin we cannot say the
+fitted known-unknown direction is what produced them.
 
 The reason a random direction can carry that much of the effect starts with
 the baseline it is measured against, and that baseline is family-graded.
