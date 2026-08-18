@@ -145,7 +145,7 @@ affected result.
 | Predictor | Call |
 |-----------|------|
 | orchestrator | WG-G0 passes (parity holds); WG-G1 holds (ratio >= 3.0); WG-G2 survives (CI excludes zero); WG-G3 holds (advantage keeps sign, CI excludes zero) |
-| user | WG-G0 "it works"; WG-G1 holds; WG-G2 survives; WG-G3 pending (gate added at harness review; call open until sign) |
+| user | WG-G0 "it works"; WG-G1 holds; WG-G2 survives; WG-G3 holds (call recorded 2026-08-18, before sign) |
 
 Calls recorded 2026-08-18, before any regeneration or scoring. The two
 predictors converged independently; both flagged WG-G0 as the leg carrying the
