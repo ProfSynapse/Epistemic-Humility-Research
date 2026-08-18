@@ -323,7 +323,7 @@ shared evaluation surface, and a metric panel that covers both halves of every
 trade-off the reanalyses in Section 2 exposed: refusal recall *and*
 over-refusal, truthfulness *and* correct-on-known, plus stated confidence.
 
-The study has three evidence layers:
+The study has four evidence layers:
 
 1. Cold-start comparison (three seeds, confirmatory): SFT, DPO, and KTO
    trained bare, from the base model, with seed-level intervals and exact
@@ -347,6 +347,25 @@ The study has three evidence layers:
    knowledge, no prior work stacks a verifiable-reward RL stage with a
    preference-optimization objective (DPO or KTO family) for abstention, in
    either order.
+4. Prompt-condition crossing (exploratory): the untrained base model and
+   checkpoints drawn from all three layers above, re-evaluated under three
+   prompt conditions on the same evaluation rows, under the same decoding and
+   the same scorer, with no further training. Answers how much of any
+   abstention measured in the layers above belongs to the instruction rather
+   than to the weights.
+
+The crossing is not a full grid, and the rule that decides its cells is fixed
+rather than opportunistic. A checkpoint is measured under a prompt condition
+only where that pairing answers a question already on the record: a
+counterfactual for a claim one of the first three layers makes, an
+instruction-free test for an arm those layers read as a success or as a
+failure, or a cell left open by an earlier crossing. Pairings that answer no
+such question are left unmeasured and are shown as blanks, never as estimates.
+Twenty-eight evaluation runs make up the crossing, contributed by three
+separate cells of eleven, six, and eleven arms. One further entry, the
+cold-start reinforcement-learning checkpoint under the response-confidence
+contract, is that arm's own evaluation under the same pinned instrument,
+reused rather than repeated.
 
 ### 3.2 Data construction
 
@@ -358,10 +377,14 @@ regenerated for the model under study (borrowed labels carry the 42.9 to
 factoid question
 answering drawn from the TriviaQA lineage (Joshi et al., 2017), a large
 collection of trivia questions with short factual answers. It answers each of
-20,000 sampled questions 32 times at temperature 1.0, and those 32 answers set
-the question's label: a question is "unknown" only if all 32
-sampled answers are wrong, "known" if at least 16 of the 32 are correct, and
-discarded otherwise. That yields 8,892 known, 7,103 unknown, and 4,005
+20,000 sampled questions 32 times at temperature 1.0 with nucleus sampling at
+0.9, plus once greedily, and those answers set the question's label: a
+question is "unknown" only if all 32 sampled answers are wrong, "known" if the
+greedy answer is correct and at least 16 of the 32 samples are correct, and
+discarded otherwise. A sampled answer counts as correct under the same
+word-bounded gold-alias rule that grades the evaluation (Section 3.5), so the
+label a question carries and the outcome it is later scored against are set by
+one grader. That yields 8,892 known, 7,103 unknown, and 4,005
 discarded. Sampling, grading, and thresholding is Cheng et al.'s recipe, and
 the divergence from it is deliberate. They binarize every question at a single
 accuracy threshold, and their ablations favor requiring every sample correct
@@ -388,11 +411,64 @@ The comparison should be read as a replication-style stress test of the
 known/unknown supervision idea at small scale, not a bit-for-bit reproduction
 of any prior stack.
 
+Adapter capacity is identical across the four objectives, and only each
+objective's own knobs differ:
+
+| Setting | SFT | DPO | KTO | GRPO |
+|---|---|---|---|---|
+| Learning rate | 2e-4 | 5e-6 | 1e-6 | 5e-6 |
+| Passes over the training file | 1 | 1 | 1 | 1 |
+| Batch size / gradient accumulation | 2 / 4 | 2 / 4 | 2 / 4 | 32 / 1 |
+| Beta | not applicable | 0.1 (sigmoid loss) | 0.1 | 0.1 |
+| Desirable / undesirable weight | not applicable | not applicable | 1.0 / 1.0 | not applicable |
+| Completions sampled per prompt | not applicable | not applicable | not applicable | 4 |
+| Temperature those completions are sampled at | not applicable | not applicable | not applicable | 1.35 |
+| LoRA rank / alpha / dropout | 32 / 64 / 0.05 | 32 / 64 / 0.05 | 32 / 64 / 0.05 | 32 / 64 / 0.05 |
+
+Beta is the strength of the pull holding the trained policy near the model it
+started from: larger beta means a more conservative update. Identical capacity
+means the same seven attention and feed-forward projections adapted at the
+same rank, at a 2,048-token context, on the same 4-bit base build, so an
+observed difference between arms cannot be a difference in how much the
+adapter could have learned. The preference objectives take their beta and
+their loss weights from their trainers' shipped defaults rather than from a
+tuned search, and the reinforcement arm is pinned at the same beta. GRPO
+sets no step cap: its budget is the single pass over the reinforcement-learning
+prompt file, 1,861 optimizer steps at this batch size and group size, with
+prompts capped at 512 tokens and sampled completions at 128. The learning rates
+sit two orders of magnitude apart across arms because the preference-class
+objectives take much smaller steps than supervised fine-tuning does; for the
+supervised and preference arms each rate is its trainer's shipped default,
+taken rather than searched for. The table gives each objective as run in the
+cold-start and SFT-warmed layers; the stacked arms chain two of these stages
+and reuse the same objectives at the same adapter budget, with batch size set
+by what fit in memory on the machine that ran them (KTO at 12 with
+accumulation 1, DPO at 2 with accumulation 4).
+
+A held-out development split of 1,600 of the 15,995 labeled questions is
+carved out before any training file is written. It is grouped by normalized
+question text, so a question duplicated under two source keys cannot land on
+both sides of the boundary, and it is the same split for every arm. Its only
+role is checkpoint selection, through early stopping on loss over that split.
+No number reported in this paper is scored on it.
+
 #### SFT, DPO, KTO
 
 SFT, DPO, and KTO are standard implementations of their objectives. Each is
 trained both cold (from base) and SFT-warmed (from the merged SFT
 checkpoint).
+
+Two supervised checkpoints run through this study, and they are different
+objects. The cold-start SFT arms train adapters on the plain-answer training
+file; a second stage under that contract trains a fresh adapter on a 16-bit
+merge of its own seed's cold-start SFT adapter, so the preference objective
+regularizes against the supervised policy rather than against the base model.
+The checkpoint called clean SFT (merged) is a separate supervised run on the
+response-confidence training file, whose targets carry a numeric confidence
+alongside the answer and whose supervision contains appropriate responses
+only, with no rejected completions. That run is merged back into a standalone
+16-bit model, and every GRPO-touching arm trains on it and is compared against
+it under the same contract.
 
 #### GRPO
 
@@ -442,8 +518,7 @@ The primary behavioral surface is SelfAware (Yin et al., 2023), a question set
 built to separate questions with answers from questions that have none: 3,369
 rows per seed, 1,032 unknown-labeled and 2,337 known-labeled. Scored rows
 carry row identity, label, refusal flag, correctness flag, and truthfulness
-flag, so two arms can be compared row by row rather than only in aggregate
-(McNemar and exact binomial tests on the rows where the two arms disagree).
+flag, so two arms can be compared row by row rather than only in aggregate.
 Primary metrics:
 
 - *Refusal recall:* % of unknown rows refused (higher is better).
@@ -454,8 +529,7 @@ Primary metrics:
 - *Truthful:* % of all rows either correctly answered (known) or correctly
   refused (unknown).
 
-Seed-level summaries report means and t-based 95% intervals over seed-level
-point estimates; with three seeds these are descriptive. Two output contracts
+Two output contracts
 are used and never pooled: a *plain-answer* contract, used by the cold-start
 layer and by the SFT-warmed layer's DPO and KTO arms, and a
 *response-confidence* contract, used by every GRPO-touching arm (the
@@ -470,16 +544,120 @@ answer is produced), *response appropriateness* (1 when the model did the
 right thing for the row: answered a known correctly or refused an unknown),
 and, restricted to the rows the model chose to answer,
 *correctness-given-answered* (1 when the answer given was actually right).
-Four calibration metrics are reported against these targets. The standard
+Five calibration metrics are reported against these targets. The standard
 deviation of
 emitted confidence detects collapse, the case where a model writes out the
 same number on every row. AUROC, the area under the receiver operating
 characteristic curve, asks how well confidence *ranks* rows, with 0.5
 meaning chance and 1.0 a perfect ordering; it is computed against
-appropriateness and against correctness-given-answered. ECE asks whether the
-confidence levels are right in absolute terms, and the Brier score, the mean
-squared error between the stated confidence and the outcome, penalizes both
-errors at once.
+appropriateness and against correctness-given-answered. ECE, the expected
+calibration error, asks whether the
+confidence levels are right in absolute terms. MAE, the mean absolute
+distance between the stated confidence and the target on a row, and the Brier
+score, the mean squared version of that distance, both penalize a confidence
+that is pointed the right way but pitched at the wrong level; the squared form
+punishes a large miss harder than the absolute form does.
+
+### 3.5 Scoring instruments
+
+Every metric above rests on three flags, refusal, correctness, and
+truthfulness, set by one pinned program over greedy decoding at temperature 0
+across the full evaluation set. What that program can and cannot see decides
+what the numbers mean.
+
+Refusal is detected by markers, not by a model or a classifier trained for the
+job. Four fixed phrases are matched case-insensitively as substrings of the
+answer text: "I don't know the answer", "I do not know the answer", "I am not
+sure what the answer is", and "beyond the scope of my knowledge". The
+abstention templates in the training data were written so that every phrasing
+contains one of those four, which is what keeps the detector aligned with the
+behavior it is meant to count. Under the response-confidence contract the
+detector additionally accepts a first-person "I do not know" or "I don't know"
+anywhere in the answer field, or an answer that opens with "abstain".
+
+Two consequences follow, and both cut. The added patterns match anywhere in
+the answer, so a response that states a fact but frames it with a first-person
+unknown is counted as a refusal: every refusal-family metric here (refusal
+recall, over-refusal, refusal rate) absorbs hedged answers along with outright
+abstentions. In the other direction, a natural-language abstention phrased
+outside the marker set is counted as an answer, which is the source of the
+scored zeros discussed in Section 4.2. The detector reads the answer text
+only, and knows nothing about the prompt, so an abstention produced with no
+instruction to abstain is still counted.
+
+The correctness flag is a word-bounded gold-alias match. Both the answer and
+each gold alias are normalized to lowercase alphanumeric tokens, and the
+answer counts as correct when a normalized alias appears in it as a complete
+token run rather than as a fragment of a longer word. Aliases come from the
+evaluation row where the row carries them, and otherwise from an alias file
+keyed on the normalized question. Unanswerable rows carry no aliases, so the
+correctness flag is defined only on answerable rows. Normalizer, marker set,
+and match rule are a verbatim port of the scorer used for the reanalyses in
+Section 2, held in place by a regression test that reproduces those published
+over-refusal figures on their original outputs, so a number here and a number
+quoted from that record sit on one scale.
+
+The truthfulness flag composes the other two rather than measuring anything
+new. A row is truthful when it is an unknown row that was refused, or a known
+row that was answered and graded correct. A known row that was refused is not
+truthful, and an unknown row answered correctly by luck is not truthful
+either, since the label says the model had no reliable basis for the answer.
+That composition is what makes the truthful rate a single number over a
+two-by-two grid of label against behavior, and it is also why the rate moves
+when either component moves.
+
+The known/unknown labels on the evaluation surface do not come from the
+model-specific construction of Section 3.2, which governs the training data
+only. They are the benchmark's own: SelfAware ships an answerable flag per
+question, answerable rows are read as known and unanswerable rows as unknown,
+with no regeneration and no probing of the model under test. The evaluation
+surface therefore asks a question the training labels cannot bias.
+
+### 3.6 Statistics, tiering, and interpretation bands
+
+Two interval constructions appear in this paper, both descriptive, and they
+are not the same construction. Across-seed summaries of the plain-answer arms
+report the mean and a t-based 95% interval over the three seed-level point
+estimates, at two degrees of freedom. Operating points on the
+response-confidence track report the three-seed mean with a percentile
+bootstrap over those same three seed-level values, which makes the interval
+bounded by the seed minimum and maximum by construction. With three seeds,
+neither is an inferential claim about the population of training runs; both
+say how far apart the three runs landed. Between-arm comparisons that need a
+test use McNemar and exact binomial tests on the rows where two arms disagree,
+computed on matched seeds and identical question sets, which is where the
+row-level scoring earns its keep.
+
+ECE is computed with ten equal-width bins over the unit interval, with the top
+bin closed at 1.0 so a stated confidence of exactly 1 lands somewhere. Within
+each bin the gap between mean stated confidence and the observed rate of the
+target outcome is taken in absolute value, and the bins are averaged weighted
+by how many rows fall in each.
+
+Every number in this paper carries one of two tiers, and the tier is a
+property of the surface that produced it, not of how the number turned out.
+Confirmatory numbers come from the pre-registered default matrix: fixed arms,
+fixed metrics, fixed seed count, and they are the only numbers stated here as
+claims. Exploratory numbers come from cells that each carry their own
+prediction, falsifier, and gates; they are labeled as exploratory wherever
+they appear, and they are never pooled with confirmatory numbers, averaged
+into them, or promoted by a favorable result. Promotion would take a fresh
+confirmatory replication, and none is claimed here.
+
+Four numeric bands decide which mechanism verb the prose may use for a
+measured checkpoint, and they are fixed rather than fitted. If the untrained
+base model refuses at least 20% of unknown questions under the plain-answer
+contract, the claim that only supervised training induces abstention is
+reworded, and the verb "induces" is retired for any instructed measurement. If
+the base refuses at least 60% under the response-confidence contract, an arm
+measured under that contract is described as preserving and sharpening
+instruction-elicited abstention rather than amplifying it. If a trained arm
+refuses at least 30% of unknown questions under the structure-only prompt
+while the base model stays under 10% there, that arm is described as
+internalizing abstention beyond instruction compliance; those two thresholds
+are the internalization floor and base ceiling drawn on Figure 4. An outcome
+that falls between bands is reported descriptively, with no mechanism verb at
+all.
 
 ## 4. Behavioral results: what the prompt elicits and what training installs
 
@@ -605,7 +783,7 @@ claims.
 
 How much of the abstention measured above belongs to the training, and how
 much to the prompt that asked for it? Answering that takes a second factor.
-Seventeen evaluations crossed three prompt conditions with the untrained
+Twenty-eight evaluations crossed three prompt conditions with the untrained
 base model and with checkpoints from every objective, on the same SelfAware
 rows under the same greedy decoding and the same scorer. The two deployment contracts
 are the ones already described. The third is a structure-only prompt: the
@@ -658,8 +836,8 @@ held to the same checks.
 
 *Refusal recall / over-refusal, percent, on the full SelfAware set (1,032
 unknown-labeled and 2,337 known-labeled rows per arm). Exploratory tier
-throughout; dashes are cells not measured, since each checkpoint was crossed
-only where a cell answered a registered question. Every 0.00 is a scored
+throughout; dashes are cells not measured, under the cell-selection rule of
+Section 3.1. Every 0.00 is a scored
 zero: a row-level audit of the panel's four zero readings (the base model
 and the seed-1 DPO, KTO, and GRPO checkpoints) found natural-language
 abstentions that the pinned scorer's markers do not match, putting the honest
@@ -1218,10 +1396,11 @@ preference results in the literature. The two output contracts
 intervention in its own right, and stated-confidence results are conditional
 on the contract. GRPO conclusions are conditional on the reward family
 tested (appropriateness-dominant with confidence shaping); a reward designed
-around a different decomposition could behave differently. The refusal
-classifier counts hedged answers as refusals, so every refusal-family metric
-reported here (refusal recall, over-refusal, refusal rate) absorbs hedged
-answers along with outright abstentions.
+around a different decomposition could behave differently. Refusal is a
+marker match rather than a judgment (Section 3.5), so the refusal-family
+metrics carry the width of that instrument in both directions: hedged answers
+are counted as refusals, and abstentions phrased outside the marker set are
+counted as answers.
 
 The prompt-condition crossing carries its own limits. It is one model at one scale in one family,
 with three prompt conditions chosen to span a range rather than to sample it:
