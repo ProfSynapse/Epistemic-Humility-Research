@@ -107,31 +107,65 @@ def behavior(results_dir: str) -> dict[str, float]:
     }
 
 
-def _shade_ideal_quadrant(ax) -> None:
-    """Flat-fill the panel's own upper-left quadrant (low over-refusal, high
-    recall) in translucent green: no fade, no marker, no boundary line drawn
-    at the midline itself. The quadrant boundary is the midpoint of
-    whatever range is actually plotted on each axis, so it moves with a
-    zoomed panel rather than pointing at a fixed data value that may sit
-    outside the view. Restores the caller's axis limits afterward so the
-    shading rectangle cannot expand the view via autoscale.
+IDEAL_ZONE_X_MAX = 20.0  # over-refusal (%) upper bound of the ideal zone
+IDEAL_ZONE_Y_MIN = 80.0  # refusal recall (%) lower bound of the ideal zone
+
+
+def _shade_ideal_zone(ax) -> None:
+    """Flat-fill the ideal operating zone in translucent green at FIXED data
+    coordinates (over-refusal <= 20%, recall >= 80%), matching the zone
+    fig-p1-01 and fig-p1-04 shade on their full 0-100 axes. Clips to the
+    current view; draws nothing if the zone is entirely outside it (a zoomed
+    panel must not relocate the zone onto non-ideal points). Restores the
+    caller's axis limits afterward so the rectangle cannot expand the view
+    via autoscale.
     """
     xlim, ylim = ax.get_xlim(), ax.get_ylim()
-    x_mid = (xlim[0] + xlim[1]) / 2
-    y_mid = (ylim[0] + ylim[1]) / 2
+    x_hi = min(IDEAL_ZONE_X_MAX, xlim[1])
+    y_lo = max(IDEAL_ZONE_Y_MIN, ylim[0])
+    if x_hi <= xlim[0] or y_lo >= ylim[1]:
+        return
     r, g, b = (c / 255 for c in IDEAL_GREEN_RGB)
     ax.add_patch(
         plt.Rectangle(
-            (xlim[0], y_mid),
-            x_mid - xlim[0],
-            ylim[1] - y_mid,
+            (xlim[0], y_lo),
+            x_hi - xlim[0],
+            ylim[1] - y_lo,
             facecolor=(r, g, b, IDEAL_QUADRANT_ALPHA),
             edgecolor="none",
             zorder=0,
         )
     )
+    r255 = "#%02x%02x%02x" % IDEAL_GREEN_RGB
+    ax.annotate(
+        "ideal",
+        (xlim[0] + 0.02 * (xlim[1] - xlim[0]), ylim[1] - 0.015 * (ylim[1] - ylim[0])),
+        fontsize=9,
+        fontweight="bold",
+        color=r255,
+        va="top",
+        zorder=1,
+    )
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
+
+
+def _note_ideal_offplot(ax) -> None:
+    """For panels zoomed past the ideal zone entirely: a quiet green arrow at
+    the left edge pointing off-plot toward it, instead of shading a false
+    in-view region."""
+    green = "#%02x%02x%02x" % IDEAL_GREEN_RGB
+    ax.annotate(
+        "ideal zone (recall ≥ 80%,\nover-refusal ≤ 20%)\nfar off-plot",
+        xy=(0.005, 0.52),
+        xycoords="axes fraction",
+        xytext=(0.075, 0.52),
+        textcoords="axes fraction",
+        fontsize=8,
+        color=green,
+        va="center",
+        arrowprops=dict(arrowstyle="->", color=green, lw=1.1),
+    )
 
 
 # ---------------------------------------------------------------- fig-p1-07
@@ -144,7 +178,7 @@ def fig_07_regimen_operating_points() -> None:
         # the crowded label text alone.
         ("clean_sft_merged", "SFT (baseline)", "baseline", "o", (6, -14)),
         ("clean_sft_dpo", "SFT→DPO", "pref", "o", (-16, 20)),
-        ("clean_sft_kto", "SFT→KTO", "pref", "o", (8, -6)),
+        ("clean_sft_kto", "SFT→KTO", "pref", "o", (-96, -8)),
         ("clean_sft_grpo_v2", "SFT→GRPO", "grpo", "o", (14, 22)),
         ("clean_sft_dpo_grpo", "DPO→GRPO", "stack", "s", (-48, 26)),
         ("clean_sft_grpo_dpo", "GRPO→DPO", "stack", "^", (-64, -26)),
@@ -181,9 +215,11 @@ def fig_07_regimen_operating_points() -> None:
         "(SelfAware, response-confidence contract, seed 1, exploratory)",
         fontsize=10.5,
     )
-    ax.set_xlim(48, 82)
+    # x extends to 0 so the fixed ideal zone (over-refusal <= 20, recall >= 80)
+    # stays in view; its emptiness under this contract is the point.
+    ax.set_xlim(0, 82)
     ax.set_ylim(78, 100)
-    _shade_ideal_quadrant(ax)
+    _shade_ideal_zone(ax)
     handles = [
         plt.Line2D([], [], marker="o", ls="", color=COLORS["baseline"], label="clean SFT baseline"),
         plt.Line2D([], [], marker="o", ls="", color=COLORS["pref"], label="preference stage (DPO/KTO)"),
@@ -288,7 +324,9 @@ def fig_10_three_seed_replication() -> None:
     y_pad = (max(y_vals) - min(y_vals)) * 0.18
     ax.set_xlim(min(x_vals) - x_pad, max(x_vals) + x_pad)
     ax.set_ylim(min(y_vals) - y_pad, max(y_vals) + y_pad)
-    _shade_ideal_quadrant(ax)
+    # this panel is zoomed to seed-CI resolution; the fixed ideal zone is far
+    # outside the view, so mark its direction instead of shading a false region
+    _note_ideal_offplot(ax)
     ax.set_xlabel("Over-refusal on known questions (%)")
     ax.set_ylabel("Refusal recall on unknown questions (%)")
     ax.set_title(
