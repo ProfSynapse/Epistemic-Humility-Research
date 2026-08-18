@@ -243,9 +243,10 @@ set of trivia questions used here without its evidence passages (Joshi et al.,
 2017), following the data-construction recipe of Cheng et al. (2024) rather than
 their released labels. Which questions count as unknown is a property of the model
 and not of the question, so the labels are made rather than borrowed: the base
-model answers each sampled question 32 times at temperature 1.0, a question is
-unknown only when all 32 answers are wrong and known when at least 16 are correct,
-and the middle band is discarded (Rosenbaum, 2026b). The out-of-distribution
+model answers each sampled question 32 times at temperature 1.0 with nucleus
+sampling at 0.9, plus once greedily; a question is unknown only when all 32
+sampled answers are wrong, known when the greedy answer is correct and at least
+16 of the 32 samples are, and the middle band is discarded (Rosenbaum, 2026b). The out-of-distribution
 evaluation is SelfAware (Yin et al.,
 2023), a benchmark of questions labeled answerable or unanswerable (n = 3369; 1032
 unknown-labeled, 2337 known-labeled), scored with this study's pinned evaluation
