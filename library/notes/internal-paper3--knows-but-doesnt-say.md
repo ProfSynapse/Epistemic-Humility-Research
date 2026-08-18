@@ -44,6 +44,8 @@ related:
 - '[[overt-vs-covert-unanswerability-is-the-boundary-not-flavor]]'
 - '[[caution-install-bounded-site-sweep]]'
 - '[[caution-install-actuates-but-specificity-unresolved-on-trained-qwen3-4b]]'
+- '[[base-refusal-direction-under-contract]]'
+- '[[contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis]]'
 relationships:
 - type: supports
   target: '[[verbalized-confidence-channel-bottleneck]]'
@@ -171,6 +173,24 @@ relationships:
   - "experiments/caution-install-bounded-site-sweep/AMENDMENT.md#outcome
     (Gate results, resolved 2026-08-13; G1 actuation clears broadly while
     G3 specificity and G2 selectivity remain unresolved)"
+- type: related_to
+  target: '[[base-refusal-direction-under-contract]]'
+  target_id: experiment:base-refusal-direction-under-contract
+  confidence: high
+  evidence:
+  - "experiments/base-refusal-direction-under-contract/AMENDMENT.md Motivation
+    and posture (Section 5 rules the refusal axis a trained-checkpoint
+    construct under the neutral extraction prompt and explicitly queues this
+    cell as the direct test of whether a base-under-contract refusal
+    direction points where the trained checkpoints' refusal axis points)"
+- type: related_to
+  target: '[[contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis]]'
+  target_id: mechanism:contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis
+  confidence: high
+  evidence:
+  - "experiments/base-refusal-direction-under-contract/AMENDMENT.md#outcome
+    (resolved 2026-08-18, DISTINCT, mean abs cos 0.0460; sharpens Section 5's
+    trained-checkpoint-construct claim for the refusal axis)"
 ---
 
 ## Summary

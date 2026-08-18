@@ -22,6 +22,8 @@ related:
 - '[[prompt-cannot-override-rlvr-abstention-deficit]]'
 - '[[abstention]]'
 - '[[prompt-crossing-heldout-confirmatory]]'
+- '[[base-refusal-direction-under-contract]]'
+- '[[contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis]]'
 relationships:
 - type: supported_by
   target: '[[prompt-crossing-heldout-confirmatory]]'
@@ -66,6 +68,25 @@ relationships:
     an explicit abstention prompt; this one is an untrained base's abstention
     behavior being entirely constituted by the prompt, with no trained prior
     to resist it)"
+- type: related_to
+  target: '[[base-refusal-direction-under-contract]]'
+  target_id: experiment:base-refusal-direction-under-contract
+  confidence: high
+  evidence:
+  - "experiments/base-refusal-direction-under-contract/AMENDMENT.md Motivation
+    and posture (this mechanism's near-ceiling base P-rc refuse-vs-answer
+    population, refusal recall 90.89, over-refusal 65.38% of answerables, is
+    the retained row set the direction-fit cell reuses as Stage-1 labels)"
+- type: related_to
+  target: '[[contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis]]'
+  target_id: mechanism:contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis
+  confidence: high
+  evidence:
+  - "the refusal direction fit on the same P-rc-elicited base population this
+    mechanism describes reads far from the trained checkpoints' shared
+    refusal axis (mean abs cos 0.0460); the prompt-elicited behavior and the
+    trained-installed direction are not the same mechanism at the
+    representation level"
 ---
 
 The `prompt-vs-training-panel` gives the program's first raw-base SelfAware

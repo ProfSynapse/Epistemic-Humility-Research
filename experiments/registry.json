@@ -453,7 +453,10 @@
           "gates.yaml": "f2d67b0703de0250f1f1719d423fe52e1f2ed41902f6ff0ebfb11fe872e30270"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:base-refusal-direction-under-contract",
+        "mechanism:contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis"
+      ],
       "prediction": "Aligned: mean absolute cosine between the base-under-contract refusal direction and the three trained-regimen refusal directions (clean SFT, SFT->GRPO-DPO, SFT->GRPO-v2, L35) is >= 0.50, inside the trained-pair band (0.576-0.857 over a ~0.014 permutation floor).",
       "question": "Does a refusal direction fit on the raw Qwen3-4B base under the response-confidence contract (the one condition where the base over-refuses, 65.38% of answerables) point where the trained checkpoints' refusal axis points?",
       "registered": true,

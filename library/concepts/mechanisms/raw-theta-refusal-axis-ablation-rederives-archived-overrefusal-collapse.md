@@ -20,6 +20,7 @@ related:
 - '[[write-direction-naming-battery]]'
 - '[[directional-ablation]]'
 - '[[refusal-direction]]'
+- '[[contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis]]'
 relationships:
 - type: supported_by
   target: '[[caution-ablation-rederivation]]'
@@ -53,6 +54,17 @@ relationships:
   target: '[[refusal-direction]]'
   target_id: term:refusal-direction
   confidence: medium
+- type: related_to
+  target: '[[contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis]]'
+  target_id: mechanism:contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis
+  confidence: medium
+  evidence:
+  - "this mechanism's clean_sft_grpo_v2_seed1 L35 raw-theta refusal axis is
+    one of the three trained reference directions the base-under-contract
+    comparison uses; that cell finds the base-under-contract direction far
+    from it in cosine (|cos| 0.0436 against the SFT-GRPO-v2 arm), a
+    geometric-distinctness complement to this mechanism's causal-ablation
+    validation of the same direction"
 ---
 
 Provenance-repair cell, resolved 2026-08-16: re-runs the archived phase-1 intervention pipeline byte-faithfully (frozen legacy mech-interp machinery, no modernization) to either recover a governed source for paper 3's cited 0.994-to-0.030 known-item over-refusal collapse, or formally retire it. The falsifier did not fire: the raw-theta variant (full refusal-axis ablation) reproduces the archived collapse near-exactly, while the known-unknown-orthogonalized (caution_perp) variant reproduces its own separately-governed 0.524, not the 0.030 figure. Both no-intervention baselines reproduce 0.994 within the +/-0.02 integrity gate, and every row set is at full declared coverage, lead-verified by independent recompute on every arm.

@@ -45,4 +45,6 @@ verdict: 'DISTINCT, prediction falsified: base P-rc refusal direction vs trained
   0.9509); trained pairs internally reproduced (0.6695/0.5720/0.8591 vs published
   0.6713/0.5762/0.8566); contract-elicited base refusal runs through a different direction
   than the trained axis, sharpening the trained-construct claim.'
-kg: []
+kg:
+- experiment:base-refusal-direction-under-contract
+- mechanism:contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis
