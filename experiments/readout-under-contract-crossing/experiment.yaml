@@ -46,4 +46,7 @@ verdict: 'Internal known-unknown readout survives every prompt contract in prese
   (in-contract refit >= 0.988) but its neutral-prompt direction transfers fully only
   to the plain contract, dropping 0.06-0.11 AUROC under P-rc and P-struct on all three
   checkpoints: partial transfer, no rotation, no suppression, falsifier not fired.'
-kg: []
+kg:
+- experiment:readout-under-contract-crossing
+- mechanism:known-unknown-direction-transfers-partially-across-prompt-contracts
+- mechanism:post-training-shrinks-known-unknown-contract-sensitivity

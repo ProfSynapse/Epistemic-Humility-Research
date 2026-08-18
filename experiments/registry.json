@@ -6624,7 +6624,11 @@
           "gates.yaml": "55ebbc30cc28c68cc29f9f8896c092db8ecba0ee02ed90aaec24f507cddf54ce"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:readout-under-contract-crossing",
+        "mechanism:known-unknown-direction-transfers-partially-across-prompt-contracts",
+        "mechanism:post-training-shrinks-known-unknown-contract-sensitivity"
+      ],
       "prediction": "Contract-invariant: for every checkpoint-contract pair (base, clean-SFT seed 1, SFT->GRPO-v2 seed 1; P-rc, P-plain, P-struct), transfer AUROC drops <= 0.05 from that checkpoint's own neutral-prompt reference reading, re-derived in Stage 0 from the same extraction stack.",
       "question": "Does the near-ceiling internal known-unknown readout survive a change of prompt contract? Transfer: does the neutral-prompt probe direction still rank known vs unknown on contract-conditioned activations? Presence: if transfer degrades, does refitting in-contract recover the separation?",
       "registered": true,
