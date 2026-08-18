@@ -74,7 +74,59 @@ gitignored `analysis/` dir.
 | orchestrator | Aligned: mean abs cosine lands in 0.55-0.75; BR-G0 passes cleanly |
 | user | |
 
+Scoreboard outcome: orchestrator WRONG on BR-G1 (called aligned 0.55-0.75;
+actual 0.0460, distinct), right on BR-G0 passing cleanly.
+
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-08-18: DISTINCT, prediction falsified. In the registered
+Section-5 shared-standardized frame (`caution_axis_transfer.py` procedure:
+L2 logistic C=0.5 per checkpoint, StandardScaler fit on the pooled known-row
+activations of all four compared arms, layer 35), the refusal direction fit
+on the raw base under the response-confidence contract has |cos| 0.0422 /
+0.0522 / 0.0436 against clean SFT, SFT-GRPO-DPO, and SFT-GRPO-v2
+respectively, mean 0.0460. The falsifier condition (mean <= 0.20 with BR-G0
+passing) fired; the prediction band (>= 0.50) was missed by an order of
+magnitude.
+
+Gate results:
+
+- BR-G0 PASS: 1,528 known-refused vs 359 known-correct-answered rows (floor
+  100 per class); base refuse-vs-answer direction held-out AUROC 0.9497
+  (first pass, per-fold frame) and 0.9509 (redo companion, same 5-fold
+  procedure), both >= 0.80. The distinct verdict is not a weak-fit artifact.
+- BR-G1 DISTINCT: mean |cos| 0.0460 <= distinct_max 0.20.
+- Instrument validation (required before the comparison counted): the redo
+  reproduced the published trained-pair cosines within 0.005
+  (0.6695/0.5720/0.8591 against published 0.6713/0.5762/0.8566); the fourth
+  arm joining the pooled scaler perturbs the frame only slightly.
+- Permutation floor, same single-shuffle-per-arm scheme as the pinned
+  script: base-vs-trained floor pairs 0.0366/0.0063/0.0122 (mean 0.0184);
+  overall 4-arm off-diagonal mean 0.0218. The observed base-vs-trained
+  cosines sit roughly 2-3x this noisy single-shuffle floor: close to
+  orthogonal, marginally above chance.
+
+Interpretation (the amendment's own pre-registered reading of this branch):
+the response-confidence contract does not recruit at inference time the
+direction training consolidates into weights. Contract-elicited refusal in
+the base runs through a different direction, and the paper-3 trained-
+construct claim sharpens: the shared refusal axis of the trained checkpoints
+is manufactured by training, not a latent base direction the prompt merely
+activates.
+
+Estimator ruling (made before the redo result was seen): the first-pass
+comparison used raw mass-mean directions, an estimator the registered bands
+were never calibrated against (its numbers: 0.1906/0.2069/0.2054, mean
+0.2010, with trained pairs at 0.92-0.98 and floor 0.0892 in that space).
+Those numbers are retained as DESCRIPTIVE ONLY in
+`analysis/br_compare_result.json`; adjudication used the Section-5 frame
+exclusively (`analysis/br_compare_transfer_frame.json`). Both estimators
+agree the base direction is far from the trained axes.
+
+Recorded caveats: (1) the base arm's negative class is known-correct-
+answered only, while the trained reference fits include known-answered-wrong
+rows in the negative class, because no known-answered-wrong rows exist in
+the base P-rc source extraction (a property of the data, not a convention
+choice); (2) the permutation floor is the pinned script's single shuffle per
+arm, noisy by construction; (3) single seed, exploratory tier, reported
+separately from any headline.
