@@ -6096,7 +6096,12 @@
           "gates.yaml": "51094db23f2a1c05c45021b3c9abe7306d3a48d49a282ede6df35def78ea2375"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:prompt-crossing-heldout-confirmatory",
+        "mechanism:rc-prompt-elicits-near-ceiling-abstention-from-untrained-base",
+        "mechanism:only-sft-installs-abstention-in-weights",
+        "mechanism:preference-stage-after-sft-partially-erodes-internalized-abstention"
+      ],
       "prediction": "On AmbigQA validation, base P-rc minus P-plain refusal-recall gap in 50-90pp; every cold SFT seed P-struct recall 40-80% with base and every cold DPO/KTO seed <= 10% scored; every seq preference arm at 40-100% of its same-seed cold-SFT parent.",
       "question": "Do the three exploratory prompt-condition claims of paper 2 Section 4.2 (instruction gap at base; SFT-only internalization under structure-only; erosion not erasure after a preference stage) replicate on held-out out-of-distribution known/unknown surfaces on the same Qwen3-4B checkpoints?",
       "registered": true,
