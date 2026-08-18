@@ -536,8 +536,8 @@ grader as the unhooked baseline, over the two cells the arm addresses:
 known-refused rows, where the effect is expected, and known-answered-correct rows,
 which serve as the specificity control that a working edit must leave alone.
 
-The bounded search of Section 6 writes rather than removes, and its space was fixed
-on four axes before any of it ran. Seven write sites span relative depth 0.361 to
+The bounded search of Section 6 writes rather than removes, over a space defined
+on four axes. Seven write sites span relative depth 0.361 to
 0.972 of the network, spaced roughly three decoder blocks apart across the
 candidate band plus three reference sites, so the search resolves sites at
 three-block granularity and claims nothing finer. Two write positions: the anchor
@@ -549,7 +549,7 @@ and absolute doses therefore do not port. A rung is usable only when the written
 state reads back within 5% relative plus 0.5 absolute on every dosed row, no row
 collapses, and the fit-split conversion rate is at least 0.50; a site with no usable
 rung leaves the search at calibration and records no behavioral result at all.
-Three two-site pairs complete the space, chosen by a rule fixed in advance, with the
+Three two-site pairs complete the space, chosen by a fixed rule, with the
 total commanded displacement magnitude-matched to the best single site by splitting
 its calibrated dose across the two members, so that a pair result cannot be extra
 dose wearing another name.
@@ -600,8 +600,7 @@ Permutation floors are refits of the same estimator on shuffled labels, reported
 beside the measured quantity in the same units rather than converted into a
 p-value.
 
-Every pass and fail threshold in this paper was fixed before the run it judges, and
-none moved afterward. Section 9 lists them.
+Every pass and fail threshold used in this paper is listed in Section 9.
 
 ### Scope
 
@@ -618,6 +617,56 @@ which. The distinction is not cosmetic. On this model the abstention an
 instruction elicits swings from none of the unknown questions to most of them on
 prompt wording alone (Rosenbaum, 2026b), so a claim about what the model does or
 does not do holds under the contract it was measured on.
+
+### How this research was conducted with AI
+
+This paper is produced by a human principal investigator working with a
+frontier language model (Claude, Anthropic) as a research orchestrator, which
+dispatches specialized AI agents for bounded pieces of work. The work mixes
+three kinds of instrument: probes fit on hidden states, causal interventions
+written through forward hooks on the residual stream, and training runs that
+test whether an objective can couple the stated channel to the internal one.
+Each kind carries its own way to fool yourself, and the division of labor
+below exists to keep all three auditable.
+
+Every reported cell, a probe fit, a geometry comparison, an intervention arm,
+or a training run, is a governed unit of work: a directory holding a signed
+design document that states a hypothesis, gates with numeric thresholds, a
+falsifier, and predictions recorded before the run, together with a
+machine-readable manifest and the instrument code pinned by content hash at
+signing. After signing, thresholds and the registered surface cannot move.
+The bounded write-site search of Section 6 is the clearest instance: its
+search axes, its usable-rung criteria, and its conversion and specificity
+thresholds are part of that signed design, so the search space could not be
+narrowed after seeing which sites actuated.
+
+The trust boundary is explicit. The AI side builds the probe-fitting,
+geometry, and intervention harnesses against the locked design, extracts and
+hashes hidden states, launches and monitors training runs, computes the
+calibration and discriminability metrics described above, drafts this
+manuscript, and red-teams its own findings before they are reported. The
+human side holds everything with consequence: approving and signing designs,
+authorizing every compute launch, adjudicating gate outcomes when a
+threshold is missed or a falsifier fires, merging evidence into the record,
+and deciding verdicts.
+
+Three controls keep that division honest. Adversarial review sends results,
+especially a clean causal dissociation or a large effect size, to a separate
+agent briefed to refute them: oracle leaks, circular scoring, an unearned
+name for a direction, or a specificity claim the data cannot support.
+Read-before-cite requires that any claim about a prior probe, direction, or
+run trace to its signed design document rather than to a paraphrased memory
+of it, because a plausible-but-wrong account of an earlier geometry result
+is a more dangerous artifact than an absent one. Provenance by construction
+ties every reported number to the artifact that produced it: extractions and
+instruments are content-hashed at signing, checkpoints are pinned by
+revision, and Appendix A maps every number in this paper back to the
+extraction, probe, or intervention run that generated it.
+
+This workflow does not substitute for scientific judgment. It is a
+discipline for keeping AI participation in the research auditable, so that
+every axis, every cosine, and every intervention result in this paper
+carries a durable line back to the bytes that produced it.
 
 ## 4. Result 1: The model represents what it does not know, and does not report it
 
@@ -749,18 +798,9 @@ requires retrieving the competing answers the question admits, which is a
 retrieval act rather than a reading of the prompt. A model that never notices the
 ambiguity has nothing about it to represent.
 
-Two caveats bound this. The atlas is exploratory and carries a known confound: the
-labeled unknown categories are stylistically distinctive question types, so a
-within-dataset known-versus-unknown probe may ride surface style in part, and while
-free cross-dataset transfer argues against a pure dataset artifact it does not
-eliminate style as a shared carrier. A style-controlled experiment, matching
-surface form while varying the category, is the natural confirmatory follow-up, and
-none of the atlas is a claim until it runs.
-Second, nothing here
-tests whether the gap is trainable. We did not attempt to install the missing
-signal, so whether targeted training or a retrieval-augmented read could supply it
-is open, and it is a different question from this paper's, which is whether a
-signal the model already carries reaches its output.
+Two caveats bound this atlas, a style confound in the labeled categories and
+an open question about whether the gap is trainable; both are detailed in
+Section 9.
 
 ### Scope of these readings
 
@@ -937,7 +977,7 @@ installed capability.
 specific nowhere it can be measured.** Left: held-out confabulation-to-refusal
 conversion rate (error bar: Wilson lower 95%) at each of the five sites that
 cleared dose viability, all at the anchor-onward write position, against the 0.50
-rate and 0.40 lower-bound thresholds fixed before the run. All five clear both by a
+rate and 0.40 lower-bound thresholds. All five clear both by a
 wide margin. Right: the direction-specificity ratio, gated lift over the best
 permuted or positional-control draw lift, against the 3x pass threshold. One site
 clears it at 12.18x; two fail at 1.50x and 1.52x; two more have zero measured
@@ -1058,8 +1098,7 @@ low confidence, not the wrong answer. This is a clean single-variable comparison
 only difference is whether the wrong answer is in the loss.
 
 Table 1. The answer-supervision dissociation (SelfAware, n = 3369; single seed
-each). Thresholds in the second column were fixed before the runs and are listed
-in Section 9.
+each). Thresholds in the second column are listed in Section 9.
 
 | metric | threshold | clean-SFT base | **answer-supervised** | **answer-masked** |
 |---|---|---|---|---|
@@ -1287,8 +1326,7 @@ inversion. The target is a dense per-row form of the same knowledge signal the
 internal axis separates at AUROC ≈ 0.997, computed from sampled behavior rather
 than read from hidden states. The assistant *answer* text is byte-identical to clean SFT, so the
 knowledge-conditioned action is preserved by construction; only the confidence token
-is retargeted. The success and clear-negative levels fixed before the run are in
-Table 3.
+is retargeted. The success and clear-negative levels are in Table 3.
 
 The behavior half holds trivially and the calibration half lands below the negative
 threshold (Table 3). Because the answer text is untouched, the action channel conditions
@@ -1440,13 +1478,9 @@ and was a clear negative below 0.60; the three-seed GRPO check counted as
 non-collapse above 200 distinct emitted values; the write-site sweep required
 0.50 conversion with a 0.40 lower bound, a 3x direction-specificity ratio, and
 at least 35 known-correct rows for harm adjudication; and the second-seed
-ablation counted as a failure to replicate at or above 0.30. Of the four
-predictions registered alongside those thresholds, three were wrong (the axis
-did not rank the model's own correct answers above its wrong ones,
-distillation did not lift the stated scalar, and the bounded search actuated
-at five sites where we predicted none would) and one held (the answerability
-separation predates training). How each arm stands against each threshold is
-reported where the arm is, and Appendix A maps every number to its artifact.
+ablation counted as a failure to replicate at or above 0.30. How each arm
+stands against each threshold is reported where the arm is, and Appendix A
+maps every number to its artifact.
 
 - Single seed, single model. The large qualitative contrasts (0.997 vs 0.52; the
   answer-supervised → answer-masked direction flip) are
@@ -1505,6 +1539,16 @@ reported where the arm is, and Appendix A maps every number to its artifact.
   differenced here.
 - SelfAware-only OOD surface. Behavior and stated-calibration numbers are on one
   OOD benchmark. Generalization to other known/unknown surfaces is untested.
+- The overt-unanswerability atlas of Section 4 carries a style confound and is
+  exploratory: the six labeled unknown categories are stylistically
+  distinctive question types, so a within-dataset known-versus-unknown probe
+  may ride surface style in part; free cross-dataset transfer argues against
+  a pure dataset artifact but does not eliminate style as a shared carrier,
+  and a style-controlled experiment matching surface form while varying the
+  category is the natural confirmatory follow-up. Separately, nothing in
+  this paper tests whether the covert-ambiguity gap is trainable: no attempt
+  was made to install the missing signal, so whether targeted training or a
+  retrieval-augmented read could supply it is open.
 - Knowledge erasure is linear-only. The stronger reducibility test is now
   done: certified linear erasure (LEACE) of the full answerability concept
   leaves the refusal readout at 0.858 held-out (baseline 0.912), with the
@@ -1783,26 +1827,26 @@ protocol document and scored artifact:
 
 | Paper section | Internal label | Protocol / notes | Primary artifacts |
 |---|---|---|---|
-| §3 methods (locked eval harness; stated-scalar readout; hidden-state extraction `55254a04aa1f`) | probe program / locked eval harness | `archive/experiment/phase1/eval/run_eval.py`; `archive/experiment/phase1/eval/analysis/calibration_gap_report.py` | `experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/` |
-| §4 internal-vs-stated gap; like-for-like on the GRPO-v2 checkpoint (Fig. 2) | probe program (Amendments L/M lineage; refusal-vs-known-unknown note); session 20260627T093723Z | `archive/notes/experiments/caution-vs-doubt-knowledge-gate.md`; `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md` checkpoints 002–004 | `experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/` (`a3_h_base_probe.json`, `c2_*.json`, `a1a2_h_lora.json`); `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
-| §5 geometry and Figs. 3–4 (two-axis projection scatter; cross-regimen axis stability); §6 steering arms | probe program | `archive/experiment/phase1/probe/paper3_section5_geometry.py`; independent reconstruction `papers/paper-3-knows-but-doesnt-say/analysis/provenance/p3_section5_provenance_20260704/reconstruct_section5_geometry.py`; `caution_direction_L35.json`; `caution_perp_direction_L35.json`; `caution_axis_transfer.json` | `archive/experiment/phase1/probe/analysis/current_clean_grpo_v2_*` (interventions, coefficient sweeps, generation panels) |
-| §6 ablation headline re-derived under the archived instrument (0.994 to 0.5238 for the KU-orthogonalized component, correct rate 0.3274 over the full known_refused cell; raw-theta variant 0.994 to 0.0298) | caution-ablation-rederivation | `experiments/caution-ablation-rederivation/AMENDMENT.md` (Outcome; falsifier not fired, resolved 2026-08-16) | `experiments/caution-ablation-rederivation/analysis-committed/` |
-| §6, §9 second-seed full-axis ablation (post-ablation over-refusal 0.5528; 45.7pp shed; 29.2% correct on formerly refused knowns; seed-1 0.030 collapse not promoted) | refusal-axis-ablation-confirmatory | `experiments/refusal-axis-ablation-confirmatory/AMENDMENT.md` (Outcome; FALSIFIED, resolved 2026-08-16) | `experiments/refusal-axis-ablation-confirmatory/analysis-committed/intervention_summary_seed2.json`; row-level arm tables in the amendment document |
-| §4 known-unknown-axis origin (raw base 0.997); §5 refusal axis unreadable on base (0 refusals in 1,233) | Amendment W | `experiments/base-model-training-free-mechanism/AMENDMENT.md` §7 | `papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_w_base_model_result.json` |
-| §5 knowledge-subspace erasure (LEACE) | Amendment AJ | `experiments/knowledge-subspace-erasure/AMENDMENT.md`; `archive/experiment/phase1/probe/amendments/amendment_aj_subspace_erasure.py`; `amendment_aj_addendum_gap_distribution.py` | `archive/experiment/phase1/probe/analysis/amendment_aj_subspace_erasure/` (`result.json`, `addendum_a1_gap_distribution.json`) |
-| §7 interventions 1–2 (DPO/KTO stated-confidence contract) | Amendment B | `experiments/stated-confidence-grpo/AMENDMENT.md` | `papers/paper-2-training-regimen/analysis/amendment_b_confidence_alignment_by_outcome.csv` |
-| §7 intervention 3 (GRPO v1/v2 collapse + incentive analysis) | Amendment E cells; Amendment J diagnostics / session 0026 | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
-| §7 intervention 4 (proper-scoring GRPO) | Amendment J (GRPO-v3) | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md`; reward `archive/experiment/phase1/grpo/humility_reward_v3.py`; preflight `archive/notes/experiments/computed-confidence-alignment-regimen.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v3_seed1.json`; `results_amendment_j_*` |
-| §7 interventions 5–6 (contrastive SFT, answer-supervised / answer-masked) | Amendments K and L | `experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md`; `experiments/answer-subspan-masked-contrastive-sft/AMENDMENT.md` | `calibration_gap_contrastive_sft_seed1.json`; `calibration_gap_contrastive_masked_sft_seed1.json`; `results_amendment_k_*`; `results_amendment_l_*` |
-| §7 RL-on-calibrated-base follow-on, incl. the β 0.10 → 0.05 falsifier re-run (Table 2, Figs. 8–10; Fig. 11 spans arms) | Amendment N (incl. β 0.05 arm) | `experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md` (results tables §7) | result tables embedded in the amendment document; `results_amendment_n_*`; `action_conditioning_report.py`; run records under `archive/experiment/phase1/run_records/` |
-| §7 probe-axis distillation mirror (Table 3) | Amendment M, Revision 3 | `experiments/quantile-balanced-probe-distilled-sft/AMENDMENT.md` | `results_amendment_m_*_probe_factual_sft_seed1_merged_full_4b` |
-| §4 pretraining-origin test (four pretrain-only bases at 0.997+); §8 "paid for by pretraining" | Amendment Y | `experiments/pretrain-only-base-readout/AMENDMENT.md` (SUPPORTED 4/4) | `archive/experiment/phase1/probe/amendment_y_results/` |
-| §3, §9 axis-level correct-vs-wrong discrimination (0.5597 against the emitted 0.5207; exploratory same-state probe 0.6769; calibration contrast +0.2373) | Tier-2 exploratory amendment, wrong-answer-cell-power-fix | `experiments/wrong-answer-cell-power-fix/AMENDMENT.md` (resolved falsified 2026-08-09; render-vs-power confound, §2.6) | `experiments/wrong-answer-cell-power-fix/analysis-committed/real_run_results.{json,md}` |
-| §4 scope-of-readings block (0.997-axis ordering not assumed portable); §8 the $P(\text{answer correct})$ identification caution; §9 naming caution from a different lineage (Qwen3.5-4B hs20) | evidence-responsiveness rebase (M4-WK) and constructive direction search (M4c), both null-result | `experiments/margin-evidence-responsiveness-worldknown/AMENDMENT.md` (Outcome); `experiments/evidence-response-direction-search/AMENDMENT.md` (Outcome) | `experiments/margin-evidence-responsiveness-worldknown/analysis-committed/`; `experiments/evidence-response-direction-search/analysis-committed/` |
-| §4 covert-ambiguity boundary: AmbigQA held-out 0.6279 / 0.6349 against the registered 0.90 floor; per-flavor atlas (six KUQ strata at 0.98–0.999, AmbigQA peak 0.6590 across 37 layers); raw-base replication at 0.6338 | OOD breadth cell (G7); flavor atlas (Tier-3 exploratory); raw-base AmbigQA readout (Tier-3) | `experiments/ood-breadth-beyond-selfaware/AMENDMENT.md` (G7 FAIL on both arms); `experiments/flavor-atlas-rawbase/AMENDMENT.md`; `experiments/rawbase-ambigqa-boundary-readout/AMENDMENT.md` | `experiments/ood-breadth-beyond-selfaware/analysis-committed/`; `experiments/flavor-atlas-rawbase/analysis-committed/`; `experiments/rawbase-ambigqa-boundary-readout/analysis-committed/` |
-| §6 bounded abstention-install site sweep (falsifier silent, one-way statement stands; exploratory anchor-onward actuation lead); §9 searched-space bound | Tier-2 exploratory amendment, `caution-install-bounded-site-sweep` | `experiments/caution-install-bounded-site-sweep/AMENDMENT.md` (Outcome; resolved 2026-08-13: falsifier silent, the registered prediction's no-actuation clause failed at all five dose-viable cells) | `experiments/caution-install-bounded-site-sweep/analysis-committed/gate_report.json`; `experiments/caution-install-bounded-site-sweep/analysis-committed/trained/` |
-| §5 base refusal direction under the deployment contract (mean \|cos\| 0.046 to the trained axes; BR-G0 AUROC 0.9509 on 1,528/359 rows; aligned prediction falsified) | Tier-2 exploratory cell, `base-refusal-direction-under-contract` | `experiments/base-refusal-direction-under-contract/AMENDMENT.md` (Outcome; resolved falsified 2026-08-18) | `experiments/base-refusal-direction-under-contract/scripts/br_compare_transfer_frame.py`; committed counts/cosines in the amendment document |
-| §9 training/evaluation overlap sensitivity (decontaminated n = 3,252; twelve gated cells unchanged) | this paper's own pinned sensitivity script | `papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.py` | `papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.csv` |
+| Section 3 methods (locked eval harness; stated-scalar readout; hidden-state extraction `55254a04aa1f`) | probe program / locked eval harness | `archive/experiment/phase1/eval/run_eval.py`; `archive/experiment/phase1/eval/analysis/calibration_gap_report.py` | `experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/` |
+| Section 4 internal-vs-stated gap; like-for-like on the GRPO-v2 checkpoint (Fig. 2) | probe program (Amendments L/M lineage; refusal-vs-known-unknown note); session 20260627T093723Z | `archive/notes/experiments/caution-vs-doubt-knowledge-gate.md`; `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md` checkpoints 002–004 | `experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/` (`a3_h_base_probe.json`, `c2_*.json`, `a1a2_h_lora.json`); `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
+| Section 5 geometry and Figs. 3–4 (two-axis projection scatter; cross-regimen axis stability); Section 6 steering arms | probe program | `archive/experiment/phase1/probe/paper3_section5_geometry.py`; independent reconstruction `papers/paper-3-knows-but-doesnt-say/analysis/provenance/p3_section5_provenance_20260704/reconstruct_section5_geometry.py`; `caution_direction_L35.json`; `caution_perp_direction_L35.json`; `caution_axis_transfer.json` | `archive/experiment/phase1/probe/analysis/current_clean_grpo_v2_*` (interventions, coefficient sweeps, generation panels) |
+| Section 6 ablation headline re-derived under the archived instrument (0.994 to 0.5238 for the KU-orthogonalized component, correct rate 0.3274 over the full known_refused cell; raw-theta variant 0.994 to 0.0298) | caution-ablation-rederivation | `experiments/caution-ablation-rederivation/AMENDMENT.md` (Outcome; falsifier not fired, resolved 2026-08-16) | `experiments/caution-ablation-rederivation/analysis-committed/` |
+| Section 6, Section 9 second-seed full-axis ablation (post-ablation over-refusal 0.5528; 45.7pp shed; 29.2% correct on formerly refused knowns; seed-1 0.030 collapse not promoted) | refusal-axis-ablation-confirmatory | `experiments/refusal-axis-ablation-confirmatory/AMENDMENT.md` (Outcome; FALSIFIED, resolved 2026-08-16) | `experiments/refusal-axis-ablation-confirmatory/analysis-committed/intervention_summary_seed2.json`; row-level arm tables in the amendment document |
+| Section 4 known-unknown-axis origin (raw base 0.997); Section 5 refusal axis unreadable on base (0 refusals in 1,233) | Amendment W | `experiments/base-model-training-free-mechanism/AMENDMENT.md` Section 7 | `papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_w_base_model_result.json` |
+| Section 5 knowledge-subspace erasure (LEACE) | Amendment AJ | `experiments/knowledge-subspace-erasure/AMENDMENT.md`; `archive/experiment/phase1/probe/amendments/amendment_aj_subspace_erasure.py`; `amendment_aj_addendum_gap_distribution.py` | `archive/experiment/phase1/probe/analysis/amendment_aj_subspace_erasure/` (`result.json`, `addendum_a1_gap_distribution.json`) |
+| Section 7 interventions 1–2 (DPO/KTO stated-confidence contract) | Amendment B | `experiments/stated-confidence-grpo/AMENDMENT.md` | `papers/paper-2-training-regimen/analysis/amendment_b_confidence_alignment_by_outcome.csv` |
+| Section 7 intervention 3 (GRPO v1/v2 collapse + incentive analysis) | Amendment E cells; Amendment J diagnostics / session 0026 | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
+| Section 7 intervention 4 (proper-scoring GRPO) | Amendment J (GRPO-v3) | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md`; reward `archive/experiment/phase1/grpo/humility_reward_v3.py`; preflight `archive/notes/experiments/computed-confidence-alignment-regimen.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v3_seed1.json`; `results_amendment_j_*` |
+| Section 7 interventions 5–6 (contrastive SFT, answer-supervised / answer-masked) | Amendments K and L | `experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md`; `experiments/answer-subspan-masked-contrastive-sft/AMENDMENT.md` | `calibration_gap_contrastive_sft_seed1.json`; `calibration_gap_contrastive_masked_sft_seed1.json`; `results_amendment_k_*`; `results_amendment_l_*` |
+| Section 7 RL-on-calibrated-base follow-on, incl. the β 0.10 → 0.05 falsifier re-run (Table 2, Figs. 8–10; Fig. 11 spans arms) | Amendment N (incl. β 0.05 arm) | `experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md` (results tables Section 7) | result tables embedded in the amendment document; `results_amendment_n_*`; `action_conditioning_report.py`; run records under `archive/experiment/phase1/run_records/` |
+| Section 7 probe-axis distillation mirror (Table 3) | Amendment M, Revision 3 | `experiments/quantile-balanced-probe-distilled-sft/AMENDMENT.md` | `results_amendment_m_*_probe_factual_sft_seed1_merged_full_4b` |
+| Section 4 pretraining-origin test (four pretrain-only bases at 0.997+); Section 8 "paid for by pretraining" | Amendment Y | `experiments/pretrain-only-base-readout/AMENDMENT.md` (SUPPORTED 4/4) | `archive/experiment/phase1/probe/amendment_y_results/` |
+| Section 3, Section 9 axis-level correct-vs-wrong discrimination (0.5597 against the emitted 0.5207; exploratory same-state probe 0.6769; calibration contrast +0.2373) | Tier-2 exploratory amendment, wrong-answer-cell-power-fix | `experiments/wrong-answer-cell-power-fix/AMENDMENT.md` (resolved falsified 2026-08-09; render-vs-power confound, Section 2.6) | `experiments/wrong-answer-cell-power-fix/analysis-committed/real_run_results.{json,md}` |
+| Section 4 scope-of-readings block (0.997-axis ordering not assumed portable); Section 8 the $P(\text{answer correct})$ identification caution; Section 9 naming caution from a different lineage (Qwen3.5-4B hs20) | evidence-responsiveness rebase (M4-WK) and constructive direction search (M4c), both null-result | `experiments/margin-evidence-responsiveness-worldknown/AMENDMENT.md` (Outcome); `experiments/evidence-response-direction-search/AMENDMENT.md` (Outcome) | `experiments/margin-evidence-responsiveness-worldknown/analysis-committed/`; `experiments/evidence-response-direction-search/analysis-committed/` |
+| Section 4 covert-ambiguity boundary: AmbigQA held-out 0.6279 / 0.6349 against the registered 0.90 floor; per-flavor atlas (six KUQ strata at 0.98–0.999, AmbigQA peak 0.6590 across 37 layers); raw-base replication at 0.6338 | OOD breadth cell (G7); flavor atlas (Tier-3 exploratory); raw-base AmbigQA readout (Tier-3) | `experiments/ood-breadth-beyond-selfaware/AMENDMENT.md` (G7 FAIL on both arms); `experiments/flavor-atlas-rawbase/AMENDMENT.md`; `experiments/rawbase-ambigqa-boundary-readout/AMENDMENT.md` | `experiments/ood-breadth-beyond-selfaware/analysis-committed/`; `experiments/flavor-atlas-rawbase/analysis-committed/`; `experiments/rawbase-ambigqa-boundary-readout/analysis-committed/` |
+| Section 6 bounded abstention-install site sweep (falsifier silent, one-way statement stands; exploratory anchor-onward actuation lead); Section 9 searched-space bound | Tier-2 exploratory amendment, `caution-install-bounded-site-sweep` | `experiments/caution-install-bounded-site-sweep/AMENDMENT.md` (Outcome; resolved 2026-08-13: falsifier silent, the registered prediction's no-actuation clause failed at all five dose-viable cells) | `experiments/caution-install-bounded-site-sweep/analysis-committed/gate_report.json`; `experiments/caution-install-bounded-site-sweep/analysis-committed/trained/` |
+| Section 5 base refusal direction under the deployment contract (mean \|cos\| 0.046 to the trained axes; BR-G0 AUROC 0.9509 on 1,528/359 rows; aligned prediction falsified) | Tier-2 exploratory cell, `base-refusal-direction-under-contract` | `experiments/base-refusal-direction-under-contract/AMENDMENT.md` (Outcome; resolved falsified 2026-08-18) | `experiments/base-refusal-direction-under-contract/scripts/br_compare_transfer_frame.py`; committed counts/cosines in the amendment document |
+| Section 9 training/evaluation overlap sensitivity (decontaminated n = 3,252; twelve gated cells unchanged) | this paper's own pinned sensitivity script | `papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.py` | `papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.csv` |
 
 Vocabulary note: reader-facing prose in this paper follows the rename
 in `papers/common/terminology.md`, the canonical mapping from the prior

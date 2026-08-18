@@ -96,9 +96,9 @@ refusal-aware tuning (Zhang et al., 2023), factuality-aware Direct Preference Op
 al., 2023), and related recipes deliberately move humility metrics in the
 right direction, often by large margins.
 
-Which objective to use has never been tested under fixed conditions. Our
-systematic synthesis of this literature, reported as a companion paper in
-this research program (Rosenbaum, 2026), extracted 78 quantitative effects
+Which objective to use has never been tested under fixed conditions. A
+systematic synthesis of this literature (Rosenbaum, 2026) extracted 78
+quantitative effects
 from 39 studies and verified the absence directly: no published study runs
 supervised fine-tuning against the major preference objectives on one
 abstention dataset, and, as of writing this, none applies Kahneman-Tversky optimization to
@@ -154,8 +154,8 @@ Contributions:
 ## 2. Background
 
 What does the published record already settle about training a model to
-abstain, and what does it leave open? Three findings from the synthesis
-introduced above fix this experiment's design, and two measurement
+abstain, and what does it leave open? Three findings from Rosenbaum's (2026)
+synthesis fix this experiment's design, and two measurement
 lessons in development are worth explaining.
 
 The four objectives compared here differ in what they consume. SFT trains on
@@ -186,7 +186,7 @@ by what that model in particular gets right, every preference arm beats the
 Idk-SFT stage it started from.
 
 3. The improvement is also a trade rather than a gain. Reanalyzing the outputs
-Cheng et al. released, the synthesis finds DPO cutting SFT-induced
+Cheng et al. released, Rosenbaum (2026) finds DPO cutting SFT-induced
 over-refusal nearly in half while giving up a third of refusal recall. That is
 movement along a refusal ROC curve, the curve traced by sliding one threshold
 between catching more unanswerable questions and wrongly refusing more
@@ -195,7 +195,7 @@ answerable ones, and not a better ability to tell the two kinds apart.
 
 4. A model can fail the abstention task in two ways: by answering questions it
 cannot answer, or by refusing questions it can. The two failures are
-independent. Across the 20 models in the synthesis's reanalysis, how often a
+independent. Across the 20 models in Rosenbaum's (2026) reanalysis, how often a
 model catches unknown questions is unrelated to how often its refusals are
 warranted (Spearman $\rho = -0.05$). A single blended abstention score can
 therefore give the same grade to a model that hallucinates and a model that
@@ -596,6 +596,52 @@ each bin the gap between mean stated confidence and the observed rate of the
 target outcome is taken in absolute value, and the bins are averaged weighted
 by how many rows fall in each.
 
+### 3.7 How this research was conducted with AI
+
+A human principal investigator directs this study together with a frontier
+language model (Claude, Anthropic) acting as a research orchestrator that
+dispatches specialized AI agents for bounded pieces of work. Four training
+objectives, three seeds apiece, two held-out replication surfaces, and a
+prompt-condition crossing produce a large number of training runs,
+evaluation passes, and scoring jobs to launch, monitor, and reconcile
+consistently; the division of labor below is what keeps that volume
+auditable rather than merely fast.
+
+Every cell in this study's evidence layers is a governed unit of work: a
+directory holding a signed design document that states a hypothesis, gates
+with numeric thresholds, a falsifier, and predictions recorded before the
+run, together with a machine-readable manifest and the instrument code
+pinned by content hash at signing. After signing, thresholds and the
+registered surface cannot move. Confirmatory and exploratory cells both go
+through this process; only their pooling status differs (Section 3.1), and
+neither is reported without it.
+
+The trust boundary is explicit. The AI side builds the training and
+evaluation harnesses against the locked design, launches and monitors the
+runs, computes the metric panel of Section 3.4, drafts this manuscript, and
+red-teams its own findings before they are reported. The human side holds
+everything with consequence: approving and signing designs, authorizing
+every compute launch, adjudicating gate outcomes when a threshold is missed
+or a falsifier fires, merging evidence into the record, and deciding
+verdicts.
+
+Three controls keep that division honest. Adversarial review sends results,
+especially favorable ones, to a separate agent briefed to refute them:
+oracle leaks, circular scoring, goalpost drift, and statistical errors.
+Read-before-cite requires that any claim about a prior run trace to its
+signed design document rather than to a paraphrased memory of it, because a
+plausible-but-wrong account of an earlier result is a more dangerous
+artifact than an absent one. Provenance by construction ties every reported
+number to the artifact that produced it: instruments are content-hashed at
+signing, checkpoints are pinned by revision, and Appendix A maps every
+number in this paper back to the metrics file, run record, or checkpoint
+that generated it.
+
+This workflow does not substitute for scientific judgment. It is a
+discipline for keeping AI participation in the research auditable, so that
+every number here carries a durable line back to the bytes that produced it
+and every prediction was written down before the run that tested it.
+
 ## 4. Behavioral results: what the prompt elicits and what training induces
 
 Can an objective teach abstention to a model that has none, can it move an
@@ -662,12 +708,12 @@ among these objectives only SFT induces it.
 The fourth objective gets the same cold-start question: can the
 appropriateness reward teach abstention to the base model with no
 supervised stage at all, the way SFT can and the preference objectives
-cannot? The
-registered prediction
-said no, expecting the run to starve for trainable signal. It was wrong on
-both counts, and not marginally: the run trained on real gradient, and the
-checkpoint reads refusal recall 85.66% under the response-confidence
-contract, far past the level fixed in advance as disproof (This was exploratory so we do not pool with the SFT/DPO/KTO results above).
+cannot? Going in, the prediction was no, expecting the run to starve for
+trainable signal. It was wrong on both counts, and not marginally: the run
+trained on real gradient, and the checkpoint reads refusal recall 85.66%
+under the response-confidence contract, well past the threshold set to
+disprove induction (this layer is exploratory, reported separately from the
+SFT/DPO/KTO results above).
 
 Under the identical contract, on the identical
 rows, the untrained base model reads 90.89%. The trained checkpoint is
@@ -794,8 +840,8 @@ preference seed registers at all.
 ![Bar chart of structure-only refusal recall across thirteen checkpoints, with the three cold SFT seeds, merged clean SFT, and SFT-then-GRPO between 69 and 79 percent above a dashed 30 percent floor, and the base plus every cold DPO, KTO, and GRPO seed at zero below a dashed 10 percent ceiling.](figures/fig-p1-12-internalization-seeds.png)
 
 **Figure 4. Instruction-free internalization by seed** (structure-only
-prompt; dashed lines are the preregistered 30% internalization floor and
-10% base ceiling). All three cold-SFT seeds, the merged clean-SFT
+prompt; dashed lines mark the 30% internalization floor and the 10% base
+ceiling). All three cold-SFT seeds, the merged clean-SFT
 checkpoint, and SFT-then-GRPO clear the floor; the base and every cold DPO,
 KTO, and GRPO seed read 0.00% scored, about 4 to 6% by the row-level audit,
 under the ceiling either way.
@@ -813,34 +859,33 @@ cold-start preference checkpoint *complies* with it while it is present,
 while SFT *induces* abstention. The behavior survives the
 instruction's removal, on three seeds, in both directions.
 
-Those three readings were then put to a registered held-out test on a surface
-none of these checkpoints had been evaluated on: the AmbigQA validation split
-(Min et al., 2020) as retained by this study, 1,832 rows per arm (1,002
+Those three readings were then put to a held-out test on a surface none of
+these checkpoints had been evaluated on: the AmbigQA validation split (Min et
+al., 2020) as retained by this study, 1,832 rows per arm (1,002
 unknown-labeled, 830 known-labeled), twenty arms under the same decoding and
-the same scorer, with prediction bands fixed before the run.
+the same scorer.
 
-This exploratory result showed that the instruction gap replicates at 70.26 points: the untrained base reads
-70.26% refusal recall under the response-confidence contract and 0.00% under
-plain-answer, inside the registered 50 to 90 point band (the SelfAware gap
-reads 90.89). The internalization signature replicates seed for seed: cold
-SFT reads 56.39, 63.47, and 61.58% under the structure-only prompt, inside
-the registered 40 to 80 band, while the base and all six cold DPO and KTO
-seeds read at most 0.10%. Over-refusal travels with recall here as it does
-everywhere else in this paper (73.73% for the base under response-confidence,
-58.92 to 66.39% for the SFT seeds under structure-only), so the new surface
-changes no trade-off conclusion.
+This exploratory result confirms the pattern above. The instruction gap
+replicates at 70.26 points: the untrained base reads 70.26% refusal recall
+under the response-confidence contract and 0.00% under plain-answer (the
+SelfAware gap reads 90.89). The internalization signature replicates seed for
+seed: cold SFT reads 56.39, 63.47, and 61.58% under the structure-only
+prompt, while the base and all six cold DPO and KTO seeds read at most
+0.10%. Over-refusal travels with recall here as it does everywhere else in
+this paper (73.73% for the base under response-confidence, 58.92 to 66.39%
+for the SFT seeds under structure-only), so the new surface changes no
+trade-off conclusion.
 
 The third reading, erosion without erasure, holds with a sharpening the
 SelfAware panel had only suggested. Against each seed's own SFT parent on the
 same surface, SFT-then-KTO retains 90.1, 83.8, and 78.6% of instruction-free
-recall, inside the registered 40 to 100% retention band, while SFT-then-DPO
-retains 28.9, 32.6, and 28.4%, below that band's floor on every seed though
-above the 25% erasure floor on every seed. The retention claim is therefore
-reported as partial rather than promoted, but the shape of the partial is
-itself the finding: on a held-out surface the pairwise objective strips
-roughly seven tenths of what the supervised stage installed and the unpaired
-objective strips roughly two tenths, on every seed, with neither erasing it.
-Section 4.3 returns to this asymmetry.
+recall. SFT-then-DPO retains 28.9, 32.6, and 28.4%, low enough on every seed
+that the retention claim for DPO is reported as partial rather than
+promoted, though still above the 25% level that would count as full erasure.
+The shape of that partial is itself the finding: on a held-out surface the
+pairwise objective strips roughly seven tenths of what the supervised stage
+installed and the unpaired objective strips roughly two tenths, on every
+seed, with neither erasing it. Section 4.3 returns to this asymmetry.
 
 ### 4.3 Preference optimization repositions the boundary, on a trade-off
 
@@ -936,10 +981,9 @@ baseline re-evaluated under that same contract (recall 87.02%, over-refusal
 reason: the GRPO reward is appropriateness-dominant with a confidence-shaping
 term that reads the stated-confidence field, and only the response-confidence
 contract asks the model to emit that field, so the whole GRPO family trains and
-evaluates under it. The pre-registered matrix behind Sections 4.1 and 4.3 was
-fixed on the plain-answer contract before any GRPO arm existed, so its baselines
-are re-run under the response-confidence contract for a like-for-like
-comparison. The same-contract DPO and KTO arms land at (87.11%, 56.18%, 40.69%)
+evaluates under it. Sections 4.1 and 4.3 use the plain-answer contract, set
+before GRPO entered the design, so their baselines are re-run here under the
+response-confidence contract for a like-for-like comparison. The same-contract DPO and KTO arms land at (87.11%, 56.18%, 40.69%)
 and (81.01%, 52.37%, 39.36%). These rows are comparable to each other and not to
 the seed-level numbers above.
 
@@ -1022,13 +1066,11 @@ direction does not survive reseeding: seed 1 favors GRPO-first by 1.67
 points, and both other seeds favor GRPO-last, by 0.17 and 2.18 points. No
 DPO ordering pattern holds, and the KTO pattern is descriptive.
 
-Two further limits belong on the GRPO result while it is being read. The
-truthfulness margin over the clean-SFT baseline is small: against the
+The truthfulness margin over the clean-SFT baseline is small: against the
 same-seed clean-SFT bases (40.58%, 41.17%, 40.55%, mean 40.77%), the
 three-seed GRPO mean of 41.17% is +0.40 percentage points, a flat band rather
-than a truthfulness gain. And every GRPO conclusion is
-conditional on the reward family tested, appropriateness-dominant with a
-confidence-shaping term. What this layer establishes is a direction rather
+than a truthfulness gain (the reward-family scope of this GRPO result is
+discussed in Section 7). What this layer establishes is a direction rather
 than a magnitude: a programmable reward pushes the abstention routine
 further out along the frontier the SFT stage set, rather than off it.
 
@@ -1078,22 +1120,15 @@ signature is the same fact
 from the other side, where repositioning toward answering *looks like* rising
 confidence while correctness-conditioned calibration worsens.
 
-One scope condition binds all of this. Every stated-confidence number in this
-study was produced under a contract that also carries an abstention
-instruction, because the confidence field and the abstention clause live in
-the same system prompt. The structure-only rows do carry a stated-confidence
-field, since that prompt keeps the confidence key and drops only the
-abstention clause, but no analysis of that channel has been run in this study,
-so nothing here says whether the confidence channel behaves differently once
-the abstention instruction is gone. What the crossing shows is
-that the behavior it accompanies can be almost entirely the prompt's doing
-(Section 4.2), which is a reason to read a confidence number as conditional
-on its contract rather than as a property of the checkpoint.
+Every stated-confidence number in this study was produced under a contract
+that also carries an abstention instruction, so it is read as conditional on
+its contract rather than as a property of the checkpoint; the untested
+structure-only confidence channel is discussed in Section 7.
 
 The practitioner's warning holds regardless of what produces it: under every
 regimen tested here, the stated confidence number reports what the model
-*did*, not what it *knows*: performed, not possessed, in the vocabulary a
-companion paper (Rosenbaum, 2026) uses for exactly this gap.
+*did*, not what it *knows*: performed, not possessed, in the vocabulary
+Rosenbaum (2026) uses for exactly this gap.
 
 ## 6. Discussion
 
@@ -1210,8 +1245,8 @@ effect, only that LLMs are fickle and that our results may not generalize to oth
 
 This study is the strongest version of one way to install epistemic humility:
 pick the post-training objective that shapes the model's *expressed*
-epistemic state directly, and iterate. In the depth taxonomy synthesized in our
-companion paper (Rosenbaum, 2026), that is the shallowest level, L1: humility
+epistemic state directly, and iterate. In the depth taxonomy of
+Rosenbaum (2026), that is the shallowest level, L1: humility
 as a scalar (a confidence number or a refuse/answer decision), scored against
 how well it tracks the model's actual reliability. Training the expression
 directly, at L1, with four objectives and a controlled comparison, is close
@@ -1223,8 +1258,8 @@ reposition it along the recall/over-refusal trade-off; GRPO amplifies it.
 Every regimen we trained lands somewhere on the same fixed frontier, and
 every model we shipped, whatever the regimen, sits at some point along it:
 under-refusing or over-refusing relative to that frontier, never off it.
-None of the four objectives moved the frontier itself (Section 4), and the
-companion paper's cross-cutting *coherence axis* names exactly what none of
+None of the four objectives moved the frontier itself (Section 4), and
+Rosenbaum's (2026) cross-cutting *coherence axis* names exactly what none of
 them touched: whether the expressed state is tethered to something real
 inside the model, or merely produced on cue. Untethered, it is Plato's
 version of the same problem, restated for language models: a true belief not
@@ -1233,9 +1268,9 @@ wander tomorrow. Four
 rounds of policy tuning at L1 never tests whether the statue is tied down; it
 only rearranges where the statue stands.
 
-The companion paper's definition gives that test a verdict rather than a
+Rosenbaum's (2026) definition gives that test a verdict rather than a
 question: epistemic humility is an expressed epistemic state that tracks the
-model's actual reliability (Rosenbaum, 2026). Measured against that
+model's actual reliability. Measured against that
 definition, this study's two expressed channels fail in different ways. The
 confidence channel fails outright: under the best-behaved regimen in the
 study, stated confidence sits at a near-constant 0.8 whether the answer is
@@ -1274,7 +1309,12 @@ about this setting and recipe family, not contradictions of sequential
 preference results in the literature. The two output contracts
 (plain-answer and response-confidence) are never pooled, but each is an
 intervention in its own right, and stated-confidence results are conditional
-on the contract. GRPO conclusions are conditional on the reward family
+on the contract: the confidence field and the abstention clause live in the
+same system prompt in every contract tested, the structure-only prompt keeps
+the confidence key but drops the abstention clause, and no analysis of that
+channel was run, so nothing here says whether stated confidence behaves
+differently once the abstention instruction is gone. GRPO conclusions are
+conditional on the reward family
 tested (appropriateness-dominant with confidence shaping); a reward designed
 around a different decomposition could behave differently. Refusal is a
 marker match rather than a judgment (Section 3.5), so the refusal-family
@@ -1284,7 +1324,7 @@ counted as answers.
 
 The prompt-condition crossing carries its own limits. It is one model at one scale in one family,
 with three prompt conditions chosen to span a range rather than to sample it:
-two contracts the program had already deployed, and one structure-only prompt
+two contracts already used earlier in this study, and one structure-only prompt
 written for this measurement. A different abstention instruction would elicit
 a different amount from the base model, and the gap between the two
 deployment contracts, 90.89% against 0.00% on the same weights and the same
@@ -1338,7 +1378,7 @@ only in training-library version moved truthfulness and correct-on-known by
 2 to 4 points, so pinning the training library, not only the base model and
 hyperparameters, measurably matters at this scale.
 
-Model-specific known/unknown labels are noisy (the synthesis measured 42.9
+Model-specific known/unknown labels are noisy (Rosenbaum, 2026, measured 42.9
 to 51.3% of "unknown" answers being correct in released artifacts of the
 lineage we follow), which flattens all recall/over-refusal numbers toward
 the middle; our labels are regenerated per-model but not immune to the same
