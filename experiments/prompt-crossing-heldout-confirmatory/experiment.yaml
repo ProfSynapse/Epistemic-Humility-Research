@@ -84,4 +84,8 @@ verdict: 'C1 and C2 confirmed and promoted at exploratory-companion strength: C1
   lead recomputed all 20 arms from raw scored rows matching metrics exactly. Secondary
   descriptive: internalization generalizes to KUQ (88.34) and BIG-bench (100.0) with
   base at 0.00 on both.'
-kg: []
+kg:
+- experiment:prompt-crossing-heldout-confirmatory
+- mechanism:rc-prompt-elicits-near-ceiling-abstention-from-untrained-base
+- mechanism:only-sft-installs-abstention-in-weights
+- mechanism:preference-stage-after-sft-partially-erodes-internalized-abstention

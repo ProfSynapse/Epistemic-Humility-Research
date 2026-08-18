@@ -25,7 +25,18 @@ related:
 - '[[idk-sft]]'
 - '[[refusal-aware-instruction-tuning]]'
 - '[[abstention]]'
+- '[[prompt-crossing-heldout-confirmatory]]'
 relationships:
+- type: supported_by
+  target: '[[prompt-crossing-heldout-confirmatory]]'
+  target_id: experiment:prompt-crossing-heldout-confirmatory
+  confidence: high
+  evidence:
+  - "experiments/prompt-crossing-heldout-confirmatory/experiment.yaml (verdict:
+    C2 confirmed and promoted, cold SFT seeds 56.39/63.47/61.58 inside the
+    registered 40-80 band on held-out AmbigQA, base P-struct 0.00, all six
+    cold DPO/KTO seeds at or below 0.10; F2 not fired; secondary descriptive
+    generalization to KUQ 88.34 and BIG-bench 100.0, base 0.00 on both)"
 - type: supported_by
   target: '[[prompt-vs-training-panel]]'
   target_id: experiment:prompt-vs-training-panel
@@ -126,5 +137,10 @@ observation.
 GRPO, by [[grpo-cold-start-induction]]. Contrast:
 [[icl-only-alignment-matches-sft-rlhf-quality]] (URIAL: prompting alone
 matches trained quality); here, for DPO/KTO/GRPO from a cold start, trained
-behavior does not exceed prompted behavior. Source of truth: the three
-experiments' AMENDMENT.md Outcome sections, all resolved 2026-08-14.
+behavior does not exceed prompted behavior. Confirmed and promoted to
+exploratory-companion tier off SelfAware by
+[[prompt-crossing-heldout-confirmatory]] on held-out AmbigQA (cold SFT seeds
+56.39/63.47/61.58 vs base/DPO/KTO at or below 0.10), with secondary
+descriptive generalization to KUQ and BIG-bench, resolved 2026-08-17/18.
+Source of truth: the three experiments' AMENDMENT.md Outcome sections, all
+resolved 2026-08-14.

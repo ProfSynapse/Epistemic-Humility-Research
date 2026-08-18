@@ -21,7 +21,17 @@ related:
 - '[[only-sft-installs-abstention-in-weights]]'
 - '[[prompt-cannot-override-rlvr-abstention-deficit]]'
 - '[[abstention]]'
+- '[[prompt-crossing-heldout-confirmatory]]'
 relationships:
+- type: supported_by
+  target: '[[prompt-crossing-heldout-confirmatory]]'
+  target_id: experiment:prompt-crossing-heldout-confirmatory
+  confidence: high
+  evidence:
+  - "experiments/prompt-crossing-heldout-confirmatory/experiment.yaml (verdict:
+    C1 confirmed and promoted, instruction gap 70.26pp on held-out AmbigQA,
+    base P-rc 70.26 vs P-plain 0.00, inside the registered 50-90pp band; F1
+    not fired)"
 - type: supported_by
   target: '[[prompt-vs-training-panel]]'
   target_id: experiment:prompt-vs-training-panel
@@ -81,4 +91,7 @@ trained arm's internalization claim in [[only-sft-installs-abstention-in-weights
 is scored.
 
 **Lineage:** established in [[prompt-vs-training-panel]], signed and
-resolved 2026-08-14, scaffolded from the cold-GRPO red-team audit.
+resolved 2026-08-14, scaffolded from the cold-GRPO red-team audit. Confirmed
+and promoted to exploratory-companion tier on held-out AmbigQA by
+[[prompt-crossing-heldout-confirmatory]] (base P-rc minus P-plain gap
+70.26pp, resolved 2026-08-17/18).

@@ -19,7 +19,19 @@ related:
 - '[[direct-preference-optimization]]'
 - '[[kahneman-tversky-optimization]]'
 - '[[context-invariance]]'
+- '[[prompt-crossing-heldout-confirmatory]]'
 relationships:
+- type: supported_by
+  target: '[[prompt-crossing-heldout-confirmatory]]'
+  target_id: experiment:prompt-crossing-heldout-confirmatory
+  confidence: medium
+  evidence:
+  - "experiments/prompt-crossing-heldout-confirmatory/experiment.yaml (verdict:
+    C3 partial, no promotion, F3 not fired on held-out AmbigQA; seq SFT-KTO
+    retains 90.1/83.8/78.6 percent of same-seed cold-SFT parent recall, inside
+    the 40-100 promotion band; seq SFT-DPO retains 28.9/32.6/28.4 percent,
+    below the 40 percent promotion band but above the 25 percent erasure
+    floor, reproducing the DPO-erodes-more-than-KTO asymmetry off SelfAware)"
 - type: supported_by
   target: '[[prompt-crossing-completion]]'
   target_id: experiment:prompt-crossing-completion
@@ -52,4 +64,4 @@ relationships:
 
 **Why it matters here:** this extends paper 2's Section 4.3 repositioning story from the instructed surface into the weights themselves. DPO and KTO were already known to reposition a cold-start model toward answering at the instructed surface; this shows that when applied to a warmed, internalized checkpoint they partly reposition the internalized behavior too, and DPO spends far more of it than KTO.
 
-**Lineage:** contrasts with [[only-sft-installs-abstention-in-weights]] (the cold-start finding that DPO/KTO from scratch install nothing that survives instruction removal); this mechanism shows the same two objectives behave differently once there is internalized abstention already present to spend. Source of truth: `experiments/prompt-crossing-completion/AMENDMENT.md`, Outcome section, resolved 2026-08-16.
+**Lineage:** contrasts with [[only-sft-installs-abstention-in-weights]] (the cold-start finding that DPO/KTO from scratch install nothing that survives instruction removal); this mechanism shows the same two objectives behave differently once there is internalized abstention already present to spend. Tested for confirmatory promotion on held-out AmbigQA by [[prompt-crossing-heldout-confirmatory]]: the asymmetry reproduces (seq SFT-KTO 90.1/83.8/78.6 percent of parent, seq SFT-DPO 28.9/32.6/28.4 percent of parent) but stays exploratory tier, partial with no promotion, since F3 does not fire yet SFT-DPO falls short of the 40 percent promotion band. Source of truth: `experiments/prompt-crossing-completion/AMENDMENT.md`, Outcome section, resolved 2026-08-16, and `experiments/prompt-crossing-heldout-confirmatory/experiment.yaml` (verdict field), resolved 2026-08-17/18.

@@ -19,6 +19,7 @@ related:
 - '[[pstruct-internalization-seed-robustness]]'
 - '[[context-invariance]]'
 - '[[prompt-cannot-override-rlvr-abstention-deficit]]'
+- '[[prompt-crossing-heldout-confirmatory]]'
 relationships:
 - type: builds_on
   target: '[[grpo-cold-start-induction]]'
@@ -51,6 +52,15 @@ relationships:
   - experiments/prompt-vs-training-panel/AMENDMENT.md#outcome (one-sentence
     verdict; abstention claims are meaningful only relative to the prompt
     condition unless training has internalized the behavior)
+- type: related_to
+  target: '[[prompt-crossing-heldout-confirmatory]]'
+  target_id: experiment:prompt-crossing-heldout-confirmatory
+  confidence: high
+  evidence:
+  - "experiments/prompt-crossing-heldout-confirmatory/experiment.yaml (verdict:
+    confirmatory promotion route for this panel's C1/C2 findings on held-out
+    AmbigQA, base P-rc minus P-plain gap 70.26pp, cold SFT seeds
+    56.39/63.47/61.58, both bands cleared)"
 - type: related_to
   target: '[[prompt-cannot-override-rlvr-abstention-deficit]]'
   target_id: mechanism:prompt-cannot-override-rlvr-abstention-deficit
