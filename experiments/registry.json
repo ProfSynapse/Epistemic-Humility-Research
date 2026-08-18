@@ -458,10 +458,10 @@
       "question": "Does a refusal direction fit on the raw Qwen3-4B base under the response-confidence contract (the one condition where the base over-refuses, 65.38% of answerables) point where the trained checkpoints' refusal axis points?",
       "registered": true,
       "slug": "base-refusal-direction-under-contract",
-      "status": "signed",
+      "status": "falsified",
       "title": "Base refusal direction under the response-confidence contract",
       "type": "probe-fit",
-      "verdict": ""
+      "verdict": "DISTINCT, prediction falsified: base P-rc refusal direction vs trained refusal axes mean abs cos 0.0460 (0.0422/0.0522/0.0436) in the registered Section-5 shared-standardized frame, under the 0.20 distinct bound; BR-G0 pass (1528/359 rows, held-out AUROC 0.9509); trained pairs internally reproduced (0.6695/0.5720/0.8591 vs published 0.6713/0.5762/0.8566); contract-elicited base refusal runs through a different direction than the trained axis, sharpening the trained-construct claim."
     },
     {
       "checkpoint": {
