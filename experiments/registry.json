@@ -7289,7 +7289,11 @@
           "scripts/score_stated_confidence.py": "80eb4c093f442b35a46c6c348470f038f0b9198c5424a126ca70bbf33bf5ce62"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:stated-confidence-under-pstruct",
+        "mechanism:pstruct-stated-confidence-miscalibrated-near-chance",
+        "mechanism:sft-lineage-installs-confidence-refusal-coupling"
+      ],
       "prediction": "P1: confidence-correctness AUROC on answered rows in [0.55, 0.80] for at least two-thirds of trained P-struct arms. P2: 10-bin ECE >= 0.15 on at least half of trained arms. P3: refused rows carry lower median stated confidence than answered rows in at least two-thirds of trained arms.",
       "question": "Does the stated-confidence channel emitted under the structure-only prompt (P-struct) — captured across 20 arms of the prompt-crossing held-out confirmatory campaign but never analyzed (paper 2's recorded scope condition) — carry information about answer correctness and refusal behavior, or is it schema-compliance noise?",
       "registered": true,
