@@ -245,7 +245,7 @@ half, and what is known about writing along these axes is taken up in the discus
 
 ---
 
-## 3. Setup
+## 3. Methods
 
 ### Models
 
@@ -255,6 +255,21 @@ checkpoint (clean supervised fine-tune → GRPO). The size study uses the raw Qw
 1.7B / 4B / 8B / 14B. The cross-family study uses four ungated instruction-tuned bases at
 comparable scale (Llama-3.2-3B, Ministral-3-3B, Qwen3.5-4B, and Gemma-4-E4B), read
 training-free, exactly as the base-model condition.
+
+The pretraining contrast reads four *pre-instruction* bases matched to those families
+(Qwen3.5-4B-Base, Gemma-4-E4B-pt, Llama-3.2-3B, and Olmo-3-7B) plus one instruct sibling
+run through the identical pipeline (Olmo-3-7B-Instruct). The era ladder adds four
+historical bases below them, GPT-2-XL, Pythia-2.8B, Llama-2-7B, and OLMo-2-7B, so its
+eight rungs are those four plus the four pre-instruction bases at the modern end.
+
+Pretrained bases mostly ship no chat template, so every base cell is prompted on the same
+plain-completion surface: a fixed 5-shot block of five hand-written general-knowledge
+question/answer exemplars, none of them drawn from any evaluation pool, followed by the
+target question and a bare answer cue, with the continuation parsed at the first line
+after that cue. Instruct cells use their own chat template. The base-versus-instruct
+contrast therefore differs in prompt surface as well as in weights, which is why one
+pre-instruction base is also read under its shipped chat template as a dual-render
+control.
 
 ### Data and labels
 
@@ -268,7 +283,27 @@ detected by a refusal classifier, and §4.5 and Limitation 4 discuss an audited 
 that detection specific to one checkpoint). This gives three groups for the
 correctness axis: correct answers, wrong answers, and confident confabulations.
 
-### Readout recipe
+Whether the model answered at all is therefore an instrument reading, and both the
+hallucination class and every answered-row count depend on it. The detector that produced
+the labels is narrow by construction: a case-insensitive match against four fixed refusal
+phrases, widened for the stated-confidence answer format by three first-person patterns
+(two spellings of "I do not know", and a leading "abstain"). A generation that matches
+none of them and parses to a non-empty answer counts as an answer. That instrument has a
+blind spot, and on the deployed checkpoint it dominates: a re-grade of that checkpoint's
+archived answer text against a second, wider refusal instrument (a literal re-scoring of
+the stored strings, nothing regenerated) flips 109 of the 121 rows the narrow detector had
+counted as answers into explicit refusals, a flip rate of 90.1% (95% CI [84.3%, 95.0%])
+reproduced row for row by an independent re-derivation. The mechanism is a contraction the
+narrow marker list does not carry, and 108 of the 109 are one verbatim trained refusal
+template. Neither detector contains the other: 125 rows run the opposite way, refused
+under the narrow instrument and answered under the wide one. That is why the deployed
+checkpoint has two row censuses (Appendix B.1): the *inclusive* census keeps the rows both
+detectors call answers, and the *strict* census removes four further rows carrying one
+refusal template that both detectors miss. The same re-grade on the generations behind the
+raw-base, cross-size, and cross-family numbers flips between 0.05% and 3.82% of rows,
+because the untrained bases never emit the template that defeats the narrow detector.
+
+### Probe fitting and readout protocol
 
 For each item we run a single forward pass over the concatenated
 [prompt + answer] sequence and cache residual-stream activations at every layer at two
@@ -282,12 +317,96 @@ confidence interval. When a dial fit on one condition is evaluated on another, i
 floor (at least 30 wrong answers and at least 50 hallucinations) before a probe verdict is
 reported.
 
+What a probe emits is a probability, not a margin. The dial's score on an answer is the
+fitted P(correct) in [0,1], out of fold for the correct and wrong rows it was fit on, and
+from the same probe fit on all of them and applied cold for rows outside that fit
+(confabulations, known-answered rows on another pool). A **dial mean** for a group is the
+arithmetic mean of that probability over the group's rows, which is why group means are
+directly comparable to each other and to the 0-to-1 scale of a trust number.
+
+Layer selection is part of the fit, and it is not held out. Every layer's probe is fit
+under one 5-fold split fixed by a pinned seed, so all layers are scored on identical folds;
+the out-of-fold AUROC is computed at every layer, and the reported readout is the maximum
+of that per-layer surface. The gate's best layer and the dial's best layer are selected
+independently this way, and in the post-versus-pre comparison each position is taken at its
+own argmax. A reported best-layer AUROC is therefore a maximum over layers evaluated on the
+same folds that selected it, not a score on layers held out from selection: it carries the
+optimistic bias that implies, and no multiplicity correction is applied across the sweep.
+The veto does not sweep its own layer; it reads the dial at the layer the dial's own sweep
+selected.
+
 One scoring asymmetry runs through every veto number and should be read into all of them.
 The veto contrast is scored by a dial fit on that same model's correct-versus-wrong rows,
 so the correct side is scored out-of-fold while the confabulation side, for which the dial
 was never given a label, is scored cold. The two sides of the veto contrast are not held
 out under the same protocol. The dial's own correct-versus-wrong AUROC is out-of-fold on
 both sides.
+
+### Baselines and controls
+
+Three comparators fence the readouts: what the question's words alone predict, what the
+answer's length alone predicts, and what the model's own output probabilities already
+supply. Each is computed on exactly the rows of the readout it bounds.
+
+The **question-surface bound** asks how much of the gate a text classifier can recover with
+no access to the model. Questions are turned into TF-IDF features (term frequency-inverse
+document frequency: each word is weighted by how often it occurs in the question against
+how rare it is across the pool), using word unigrams and bigrams that appear in at least
+two questions, and fed to a logistic regression (C=1.0). It is scored by stratified 5-fold
+cross-validation over the same frozen pool of 1,233 questions (556 answerable, 677
+unanswerable) that the gate cells read. The reported **0.964 ± 0.016** is the mean and
+standard deviation of AUROC across those five folds, not a bootstrap interval; a
+character-n-gram variant of the same classifier reads 0.965 ± 0.017, so the bound does not
+turn on the feature choice. Run instead from question text against answer correctness, the
+same classifier gives the dial's corresponding bound of 0.75 to 0.78 per family.
+
+The **length-only baseline** asks whether the veto is reading how long an answer is rather
+than what it says. Because the dial reads a hidden state at the last answer content token,
+that token's position encodes answer length, so answer length is itself usable as a score:
+its AUROC is computed directly from the answer's token count, with the failure class as the
+positive class, on exactly the rows the veto is scored on. Where a contrast is
+length-matched, the matching is 1:1 nearest-neighbour on answer token count within a
+3-token caliper, with unmatched rows dropped, so the two classes hold near-identical length
+distributions and the same baseline has no length signal left to read. The probe refit on a
+matched slice follows that construction's own recipe rather than the one above: principal
+components of the same post-answer hidden states, then a logistic regression with balanced
+class weights, fit inside each fold with nothing carried across folds.
+
+The **answer-span log-probability competitor** is the cheapest internal trust number a
+practitioner already has: the model's own probability of the answer it just produced. Both
+comparisons run on a fresh single-pass generation that returns, from one call, the
+generated token identifiers, the log-probability of each sampled token, and the hidden
+states the dial reads, so the string graded for correctness, the span the log-probabilities
+cover, and the vector the dial reads are the same object rather than three re-tokenizations
+of it. The primary score is length-normalized, the mean per-token log-probability over the
+answer span, delimited at the same last content token the dial reads; the sum and the
+minimum over that span are computed alongside it and carry no gate. The dial is refit out
+of fold on those same rows, so both scores rank an identical set of answered rows.
+
+### Statistical analysis
+
+Every interval on a single AUROC in this paper is a nonparametric percentile bootstrap over
+rows: 2,000 resamples drawn with replacement, the AUROC recomputed on each resample from
+the fixed out-of-fold scores, and the 2.5th and 97.5th percentiles reported as the 95%
+interval, with resamples that lose a class discarded. The resampling seed is pinned per
+cell. Two cells depart from that count: the veto-decomposition confirmatory draws 1,000
+resamples within each class, and the deployed checkpoint's label re-grade draws 10,000.
+
+The three differences the paper reports with an interval (post-generation minus
+pre-generation, dial minus answer-span log-probability, combined minus dial) are all one
+set of rows scored two ways, so each is a **paired** bootstrap: every iteration resamples
+the row indices once and recomputes both AUROCs on that identical resample, and the
+interval is the 2.5th and 97.5th percentiles of the per-iteration difference. Resampling
+the two scores independently would discard the correlation between them and overstate the
+uncertainty on the difference. The veto's margin over the length-only baseline is
+constructed the same way.
+
+Expected calibration error (ECE), the gap between the probability the dial states and the
+accuracy it delivers, is computed on the out-of-fold P(correct) at the selected
+post-generation layer: the scores are sorted into 15 equal-width bins spanning 0 to 1, each
+non-empty bin contributes the absolute difference between its mean predicted probability
+and the fraction of its answers that are correct, and the bins are averaged weighted by how
+many rows each holds.
 
 ### Pre-registered gates
 
@@ -477,7 +596,12 @@ under 0.003), while the readouts taken from the generated answer are not (§4.5)
 quantities that live at different positions and respond differently to the same perturbation
 are not one quantity measured twice.
 
-A registered fusion test corroborates that reading. Folding the gate score into the dial
+A registered fusion test corroborates that reading. The fusion is not a hand-chosen
+weighting: a second logistic regression is fit out of fold over two scalars, the gate
+probe's P(answerable) read at the prompt anchor (fit on the answerability pool and applied
+cold to these items) and the dial's out-of-fold P(correct) read after the answer, and its
+out-of-fold score is what the paired bootstrap compares against the dial alone. Folding the
+gate score into the dial
 changes correctness triage by Δ **−0.0142** (bootstrap CI [−0.0214, −0.0074]), a
 degradation rather than a gain: the combined score triages correctness strictly worse than
 the dial alone (0.8044 vs 0.8186). The result comes from a registered, gated re-run on
@@ -572,8 +696,7 @@ contrast separates the hypotheses: the identical three-readout panel on four
 **pre-instruction** bases matched to the four families (Qwen3.5-4B-Base, Gemma-4-E4B-pt,
 Llama-3.2-3B, Olmo-3-7B), with the primary hypothesis that the answerability gate is already
 present before any post-training, and the falsifier that a base reads below 0.75 while its
-instruct sibling reads 0.95 or above. Base models were prompted with a k-shot plain-text
-render, since they have no chat template; one dual-render control and one same-pipeline
+instruct sibling reads 0.95 or above. One dual-render control and one same-pipeline
 instruct sibling complete the design.
 
 **Table 2. Pretrain-only bases (greedy, single pipeline; AUROC at each model's best layer).**
@@ -750,7 +873,7 @@ them from good answers at roughly **0.99** as reported, because the post-generat
 state still holds the gate's own axis.
 
 A genuine content core survives both controls. On a fresh 192-token generation with 1:1
-caliper matching on answer length and both classes restricted to answerable questions, the
+length matching within a 3-token caliper and both classes restricted to answerable questions, the
 controlled contrast is wrong answers against correct answers on answerable questions, 65
 matched pairs, out-of-fold, with length-only AUROC at chance on that slice (0.493). On that
 slice the veto reads AUROC **0.737** (CI [0.650, 0.815]), a margin of **+0.244** over the
@@ -1044,8 +1167,7 @@ We state these plainly; several are the reason specific claims are scoped as the
    the raw base. The dial is bounded below by a question-surface text baseline (0.75 to 0.78
    per family). The cheapest internal competitor, the model's own length-normalized
    log-probabilities over the answer span, is measured under registered gates on both
-   checkpoints, each on a fresh single-pass generation that caches token IDs at the source
-   so the answer span is exact (§4.2). On the raw base the margin is **+0.012** (paired 95%
+   checkpoints (§4.2). On the raw base the margin is **+0.012** (paired 95%
    CI [-0.012, +0.036]), inside the band the cell had pre-registered as ambiguous: sequence
    probability captures essentially all of the dial's separation there, and what this paper
    establishes on the raw base is the readout's cross-model geometry, its post-answer read
