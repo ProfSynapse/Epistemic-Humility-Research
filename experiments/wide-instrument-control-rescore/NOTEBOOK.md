@@ -14,3 +14,21 @@ in `experiment.yaml`.
   on the local 3090, WG-G0 parity stop-check, Stage 1 blinded pool build,
   lead commits the adjudication pool manifest before any grading agent is
   dispatched.
+- 2026-08-18 (launch attempt 1): runner stopped pre-GPU on unmet offline
+  prerequisites — the two phase-1 probe pool files
+  (ah_main/gen_A0/rows.jsonl, ak_stage1/ak_stage1_pool.jsonl) were absent
+  from this checkout's archive path. Lead certified byte-identical copies in
+  other cells' gitignored staging against the committed sha256 records in
+  j-space-localization-qwen3-4b analysis-committed (h1_full.json ah_a0_rows
+  2771091c…, ak_stage1_pool 48654798…) and restored them (user executed the
+  copies; destination covered by .gitignore line 24). Mechanical RUNBOOK
+  corrections, no design change: stale status-draft note replaced with the
+  sign date; offline-prep order corrected to extract-before-materialize
+  (materialize_rows.py reads the extract manifest, and the extractors'
+  docstrings say step 1/3); PYTHONPATH instruction added for the archived
+  extractors' amendment_ah_stage0_extract import gap, in preference to
+  editing the archived scripts. Note: bin/exp sign regenerated
+  instrument.pins from configs+modules, dropping the RUNBOOK and the two
+  cross-cell wide-stack pins from experiment.yaml; the wide-stack shas
+  remain recorded in the signed AMENDMENT text, which stays the pin of
+  record for those two files.
