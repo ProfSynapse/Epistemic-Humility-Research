@@ -7484,6 +7484,35 @@
     },
     {
       "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": ""
+      },
+      "created_at": "2026-08-18T21:26:34Z",
+      "falsifier": "WG-G1 effect ratio below 3.0 at the Section 4.5 operating point, or WG-G2 permuted-gate degradation CI including zero - either upgrades the Section 6.4 gap to a substantive limitation and blocks promotion of the affected result.",
+      "inputs": [
+        "experiments/doubt-gated-caution-tighten/analysis-committed/full_summary.json",
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json",
+        "experiments/abstention-wide-instrument-calibration/detector_v2_patterns.yaml",
+        "experiments/abstention-wide-instrument-calibration/grader.py"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "persistence": {},
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "Both control conclusions survive at both operating points - the wide-instrument effect ratio (gated lift over random-direction lift) is at least 3.0, and the permuted-gate cost/selectivity degradation holds with a bootstrap CI excluding zero.",
+      "question": "Do the narrow-detector control conclusions behind paper 5 Sections 4.5 and 4.6 (random-direction placebo carries far less than the gated write; the permuted gate degrades cost and selectivity) survive re-scoring under the pinned wide two-instrument stack (detector_v2 plus blinded context-free LLM grading), after faithful regeneration of the arms from the committed pipelines?",
+      "registered": true,
+      "slug": "wide-instrument-control-rescore",
+      "status": "draft",
+      "title": "Wide-instrument re-score of the gated-controller and layer-contrast controls (Qwen3-4B)",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "Qwen/Qwen3.5-4B",
         "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
       },
