@@ -15,12 +15,12 @@ evidence_base: >
   experiments/residual-catch-veto-coverage/,
   experiments/ap-veto-length-balanced-confirmatory/,
   experiments/dial-logprob-baseline-v3/, experiments/dial-logprob-t-deployed-confirmatory/,
-  experiments/xdataset-probe-transfer/, experiments/j-space-localization-qwen3-4b/, and the
-  four-family workspace atlas cells (experiments/jspace-family-atlas/,
+  experiments/xdataset-probe-transfer/, and the
+  four-family atlas cells (experiments/jspace-family-atlas/,
   experiments/gemma-4-e4b-family-atlas/, experiments/qwen3-4b-family-atlas/). Full
   text-to-artifact mapping in Appendix A.
 notes: >
-  Standalone contribution; it cites the companion diagnosis paper, Knows but Doesn't Say,
+  Standalone contribution; it cites Rosenbaum (2026c), Knows but Doesn't Say,
   for the representation-versus-verbalization gap it builds on. Primary Qwen3-4B numbers come
   from single greedy decodes under pool-shuffle and decode seed 20260630; the cross-family
   dial and veto magnitudes come from sampled decoding across seeds 20260701, 20260702, and
@@ -81,7 +81,7 @@ The natural first hypothesis is that this is an *ignorance* problem (the model d
 represent its own uncertainty) and the natural fix is *training*: fine-tune it to abstain
 (Zhang et al., 2023; Yang et al., 2023; Cheng et al., 2024), or optimize a
 preference/reward signal toward calibrated confidence (Lin et al., 2022; Liu et al., 2026).
-Our companion diagnosis, [*Knows but Doesn't Say*](../paper-3-knows-but-doesnt-say/manuscript.md),
+Rosenbaum (2026c)
 tests and rejects the first hypothesis and finds the second insufficient. A linear probe on
 the base model's internal activations separates answerable from *overtly* unanswerable
 questions almost perfectly (AUROC 0.997) with a well-calibrated readout (ECE 0.004), while
@@ -106,7 +106,7 @@ defined across *models*. Robustness has a second dimension, the **evaluation sur
 which we have since measured separately: the gate and dial travel across sizes, families,
 and pretraining stages, and the gate's breadth stops at questions whose unanswerability is
 covert rather than marked on their surface, where the same readout reads roughly 0.63
-(companion diagnosis, *Where the internal readout fails*). Three contributions over the
+(Rosenbaum, 2026c). Three contributions over that
 diagnosis:
 
 1. A second axis. Answerability ("*can* this be answered?") is not the same as
@@ -125,25 +125,26 @@ diagnosis:
    (about 0.74) with the question's carried answerability. The gate/dial-versus-veto split
    is the paper's central finding.
 
-3. A generality claim. The companion diagnosis established its gap on a single model from a
+3. A generality claim. Rosenbaum (2026c) established that gap on a single model from a
    single family; this paper breaks that boundary. The readout is training-free (it reads
    off the raw instruction-tuned base), size-robust (1.7B to 14B), replicates across four
    model families, and predates post-training entirely. The two axes generalize across every
    *model* dimension we varied, and not across every *evaluation surface*: the gate's
    separation is near-saturated on overtly unanswerable questions and collapses on covertly
-   ambiguous ones (companion diagnosis, *Where the internal readout fails*). The veto is the
+   ambiguous ones (Rosenbaum, 2026c). The veto is the
    readout that must be validated per model.
 
 Four facts fence those claims. The dial has a cheap internal competitor, the model's own
 answer-span log-probabilities, and its margin over that competitor is checkpoint-dependent. So every deployed-checkpoint quantity carries two disclosures: a
-hallucination-label re-grade that leaves that cell's veto below its own adequacy floor, and
+hallucination-label re-grade that leaves the deployed checkpoint's veto below the row floor
+these readouts require, and
 SelfAware train/eval contamination in that checkpoint's training lineage. And where in the
 network the two axes sit is characterized descriptively, with no gate and no claim resting
 on it.
 
 The framing throughout is *readout, not training*. Our training does not create the trust
 signal. It installs behavioral abstention, and whether it also sharpens one part of the
-signal, the veto, is unresolved under corrected labels (§4.4).
+signal, the veto, is unresolved under corrected labels (Section 4.4).
 
 ---
 
@@ -161,11 +162,11 @@ examples, producing 8 unique confidence values across 12 datasets (Shrivastava e
 calibrated than the token probabilities, which RLHF itself degrades (Tian et al., 2023).
 The channel is trainable in at least one setting: GPT-3 can be fine-tuned to verbalize
 calibrated uncertainty on arithmetic (Lin et al., 2022), the trained-calibration
-precedent whose small-model analog our companion paper tests and finds wanting. Recent
+precedent whose small-model analog Rosenbaum (2026c) tests and finds wanting. Recent
 faithful-uncertainty work makes the target sharper by asking whether expressed
 uncertainty tracks intrinsic uncertainty, and shows that metacognitive RL can improve
-that output metric (Gani et al., 2026; Liu et al., 2026; Yona et al., 2026). Our
-companion diagnosis localizes why the channel fails in this model family (the internal
+that output metric (Gani et al., 2026; Liu et al., 2026; Yona et al., 2026). That same
+diagnosis localizes why the channel fails in this model family (the internal
 estimate is calibrated; the emitted token is not), and this paper is the constructive
 complement: bypass the token.
 
@@ -193,13 +194,13 @@ produced answer is itself correct).
 The strongest counter-result gets its full weight: Cheang et al. (2025) argue internal
 states mainly encode knowledge *recall* rather than truthfulness, and show that
 hallucinations drawing on parametric associations evade probe detectors (AUROC 0.46 to
-0.69) that catch unassociated ones; our construct decomposition (§4.5) applies the same
+0.69) that catch unassociated ones; our construct decomposition (Section 4.5) applies the same
 discipline to our own headline, separating carried nuisance from the smaller content
 core that survives control. What differentiates this paper from the probing line: we
 read *answerability* (a property of the question, before generation) and *per-answer
 correctness* (a property of the produced answer, after it) as distinct axes at distinct
-token positions, and we measure that readout's robustness surface (size, family, decode,
-seed, pretraining stage) under pre-registered gates.
+token positions, and we measure that readout's robustness surface across size, family,
+decode, seed, and pretraining stage.
 
 ### Reading after the answer
 
@@ -209,7 +210,7 @@ truthfulness information peaks at the exact answer tokens (probe AUC 0.85 to 0.9
 datasets; Orgad et al., 2024), semantic-entropy probes trained at both a post-response
 token and a pre-generation token give a direct external post-vs-pre contrast (Kossen et
 al., 2024), and Azaria and Mitchell (2023) likewise probe the statement's own tokens. We
-test this contrast directly, as a within-run paired comparison on the same rows (§4.2).
+test this contrast directly, as a within-run paired comparison on the same rows (Section 4.2).
 
 ### Abstention and selective prediction
 
@@ -231,8 +232,7 @@ without training, by thresholding an answerability axis the base model already c
 Reading a direction out of activations is
 one half of representation engineering (Zou et al., 2023) and writing along it
 (steering) is the other (Turner et al., 2023); this paper is strictly the *reading*
-half, and what is known about writing along these axes is taken up in the discussion
-(§5).
+half.
 
 ---
 
@@ -270,29 +270,18 @@ answer aliases into *correct* / *wrong*. Intrinsic answerable-vs-unanswerable st
 the hallucination class come from SelfAware (Yin et al., 2023): questions it marks unanswerable, when the model
 answers them anyway, are labeled *hallucinations* (a structural label: the model produced
 a confident answer to a question with no answer; whether the model "answered" is itself
-detected by a refusal classifier, and §4.5 and Limitation 4 discuss an audited artifact in
-that detection specific to one checkpoint). This gives three groups for the
+detected by a refusal classifier, and Section 4.5 and Limitation 4 discuss an audited
+artifact in that detection specific to one checkpoint). This gives three groups for the
 correctness axis: correct answers, wrong answers, and confident confabulations.
 
 Whether the model answered at all is therefore an instrument reading, and both the
-hallucination class and every answered-row count depend on it. The detector that produced
-the labels is narrow by construction: a case-insensitive match against four fixed refusal
-phrases, widened for the stated-confidence answer format by three first-person patterns
-(two spellings of "I do not know", and a leading "abstain"). A generation that matches
-none of them and parses to a non-empty answer counts as an answer. That instrument has a
-blind spot, and on the deployed checkpoint it dominates: a re-grade of that checkpoint's
-archived answer text against a second, wider refusal instrument (a literal re-scoring of
-the stored strings, nothing regenerated) flips 109 of the 121 rows the narrow detector had
-counted as answers into explicit refusals, a flip rate of 90.1% (95% CI [84.3%, 95.0%])
-reproduced row for row by an independent re-derivation. The mechanism is a contraction the
-narrow marker list does not carry, and 108 of the 109 are one verbatim trained refusal
-template. Neither detector contains the other: 125 rows run the opposite way, refused
-under the narrow instrument and answered under the wide one. That is why the deployed
-checkpoint has two row censuses (Appendix B.1): the *inclusive* census keeps the rows both
-detectors call answers, and the *strict* census removes four further rows carrying one
-refusal template that both detectors miss. The same re-grade on the generations behind the
-raw-base, cross-size, and cross-family numbers flips between 0.05% and 3.82% of rows,
-because the untrained bases never emit the template that defeats the narrow detector.
+hallucination class and every answered-row count depend on it. Refusal is detected by
+string match: a case-insensitive test against four fixed refusal phrases, widened for the
+stated-confidence format by three first-person patterns. A generation matching none of them
+that parses to a non-empty answer counts as an answer. The deployed checkpoint is
+additionally scored under a second, wider detector; the two instruments disagree on that
+checkpoint, which is why it carries two row censuses (inclusive and strict, Appendix B.1).
+The size and direction of the disagreement are quantified in Limitations.
 
 ### Probe fitting and readout protocol
 
@@ -326,12 +315,27 @@ optimistic bias that implies, and no multiplicity correction is applied across t
 The veto does not sweep its own layer; it reads the dial at the layer the dial's own sweep
 selected.
 
-One scoring asymmetry runs through every veto number.
-The veto contrast is scored by a dial fit on that same model's correct-versus-wrong rows,
-so the correct side is scored out-of-fold while the confabulation side, for which the dial
-was never given a label, is scored cold. The two sides of the veto contrast are not held
-out under the same protocol. The dial's own correct-versus-wrong AUROC is out-of-fold on
-both sides.
+One scoring asymmetry runs through every veto number, and it is worth walking through
+slowly, because it fixes what a veto AUROC can mean.
+
+The dial is fit on two kinds of row and no others: answers the model got right and answers
+it got wrong. Confabulations never enter that fit, because a question with no answer has no
+correct-or-wrong label to give the probe. Follow two rows through the scoring pipeline.
+The first is a correct answer to an answerable question, say a capital-city question the
+model gets right. That row is in the dial's training pool, so the five-fold split puts it in
+exactly one held-out fold; the probe that scores it was fit on the other four folds and has
+never seen it. Its score is out of fold. The second is a confident answer to a question with
+no answer, say an invented tournament whose winner the model names anyway. That row is not
+in the training pool at all, so there is no fold to hold it out of. It is scored by a probe
+fit on the whole correct-versus-wrong pool, a probe that has seen no confabulation of any
+kind. Its score is out of population.
+
+A veto contrast puts those two rows on opposite sides of one AUROC. One side is scored under
+cross-validation; the other is scored cold, by a probe shown no example of the class it is
+being asked to rank. This is not a defect that could be fixed by a better split, since the
+confabulation side has no label to hold out, but it does mean the two sides of a veto
+contrast are not held out under the same protocol. The dial's own correct-versus-wrong AUROC
+is out-of-fold on both sides.
 
 ### Baselines and controls
 
@@ -399,25 +403,16 @@ non-empty bin contributes the absolute difference between its mean predicted pro
 and the fraction of its answers that are correct, and the bins are averaged weighted by how
 many rows each holds.
 
-### Pre-registered gates
+### Reporting bars
 
-Every evidence cell locked its gates, success rule, and
-falsifier before running, and none moved afterward. The cross-size and cross-family cells
-shared three identical gates: gate, dial, and veto readouts each at AUROC at or above 0.65
-with a bootstrap CI excluding 0.50, the veto primary; cross-family success was pre-defined as
-the veto passing on at least 3 of 4 families, falsified by failure on 2 or more. The
-seed-robustness replication gated only the dial and veto, because the gate reads a
-position sampling never touches and was declared an invariance check in advance; its
-seed-stability rules were locked too (a family is a seed-stable dial pass at 3 of 3
-seeds, a seed-stable veto pass at 2 of 3 or better, and the per-seed veto majority may
-never drop below 3 of 4). The pretrain-only contrast set a stricter gate bar (0.90), with
-the falsifier that a base reads below 0.75 while its instruct sibling reads 0.95 or
-above. The one registered threshold this paper's own cells missed is the dial's
-calibration threshold (ECE below 0.15), missed on both checkpoints: 0.151 on the raw base
-and 0.168 on the deployed checkpoint. Both dial cells registered
-that threshold as reported-only rather than as a green-light gate, so neither miss changes
-a verdict; we report the dial as a ranker, not a probability, and those misses are part of
-why. Scaling sharpness was declared descriptive-only in advance.
+A readout counts as reading its axis when its AUROC is at or above 0.65 and its bootstrap
+CI excludes 0.50; that is the pass bar drawn on every figure showing the three readouts
+together. Under sampled decoding a family's veto counts as seed-stable when it clears that
+bar on at least two of three seeds, and its dial when it clears on all three. The
+pretrain-only contrast holds the gate to a stricter 0.90. The dial is held to a calibration
+bar as well, expected calibration error below 0.15, and misses it on both checkpoints (0.151
+on the raw base, 0.168 on the deployed checkpoint), which is why we report the dial as a
+ranker rather than a probability.
 
 ### How this research was conducted with AI
 
@@ -435,9 +430,8 @@ a falsifier stating what outcome would kill the claim, and predictions recorded 
 the run. At signing, every instrument file is pinned by content hash (SHA-256). After
 signing, gates and thresholds cannot move, and post-outcome changes to the registered
 surface are prohibited outright. Every *gated confirmatory* cell in this paper ran under
-that regime; one descriptive exception is named where it appears and never treated as
-gated evidence: the Jacobian-lens workspace localization (§4.6) is a read-only lab
-diagnostic with no registered gates.
+that regime; the descriptive exceptions are labeled where they appear and never treated as
+gated evidence.
 
 The trust boundary is explicit. The AI side builds harnesses against the locked design,
 runs and monitors experiments, computes results, drafts documents (including this one),
@@ -452,7 +446,7 @@ Three controls do most of the work of keeping the AI honest:
    separate red-team agent briefed to refute: oracle leaks, circular evaluation, goalpost
    drift, provenance holes, statistical errors. Section 4.5's decomposition is this control
    operating in public: a too-good margin triggered the audit that found the length confound
-   behind a pair of passing gates, and the audit of the pre-registered fix found the
+   behind a pair of passing gates, and the audit of the fix found the
    answerability carry that cut an inflated headline to an honest 0.74.
 
 2. Read-before-cite. Signed design documents are the sole source of truth for what
@@ -499,8 +493,9 @@ that causally gate refusal at the knowledge boundary. What is new here is the st
 which it saturates and how far it travels. Of the three readouts this
 axis is the most robust: it reads 0.996 to 0.999 on every instruction-tuned
 model in this paper, across four sizes and four families, and 0.991 on the oldest base in
-the era ladder (§4.4). It is not a single-layer phenomenon anywhere either, saturating by
-roughly 20% of depth and holding to the last block in every family we profiled (§4.6).
+the era ladder (Section 4.4). It is not a single-layer phenomenon anywhere either, saturating
+by roughly 20% of depth and holding to the last block in every family we profiled
+(Section 4.6).
 
 That travel is across models, and it has a known edge across
 evaluation surfaces: every unanswerable question in this pool is *overtly* unanswerable,
@@ -551,12 +546,11 @@ sequence probability captures essentially all of the dial's separation, and the 
 value there is its cross-model geometry, its post-answer read advantage, and its veto
 behavior, not a margin over logprobs. On the deployed abstention-trained
 checkpoint the dial's measured advantage is large: AUROC 0.796 against the logprob's 0.657,
-a margin of **+0.139** with a paired 95% CI of [+0.103, +0.176] at n=1,501 answered rows,
-which passed its pre-registered gate.
+a margin of **+0.139** with a paired 95% CI of [+0.103, +0.176] at n=1,501 answered rows.
 
 One honest caveat carried from the start: the dial *ranks* correctness well but is not a
 calibrated *probability* (ECE 0.151 on the raw base and 0.168 on the deployed checkpoint,
-against the 0.15 threshold of §3), and the ranking-versus-calibration distinction is standard
+against the 0.15 bar of Section 3), and the ranking-versus-calibration distinction is standard
 (Guo et al., 2017; Ulmer et al., 2024), so we claim the ranking and not the probability.
 
 ### 4.3 The two axes are non-redundant: a pipeline, not a fused scalar
@@ -566,11 +560,11 @@ axes, and two dissociations show it before any fusion test is needed. They
 read at different token positions, one before the answer exists and one after it, and the
 post-beats-pre gain (+0.065) says the two positions are not interchangeable. They also fall
 into different robustness classes: the gate is invariant to decoding (across-seed range
-under 0.003), while the readouts taken from the generated answer are not (§4.5). Two
+under 0.003), while the readouts taken from the generated answer are not (Section 4.5). Two
 quantities that live at different positions and respond differently to the same perturbation
 are not one quantity measured twice.
 
-A registered fusion test corroborates that reading. The fusion is not a hand-chosen
+A fusion test corroborates that reading. The fusion is not a hand-chosen
 weighting: a second logistic regression is fit out of fold over two scalars, the gate
 probe's P(answerable) read at the prompt anchor (fit on the answerability pool and applied
 cold to these items) and the dial's out-of-fold P(correct) read after the answer, and its
@@ -598,12 +592,22 @@ one score:
 - Stage 2, dial + veto: for questions that pass the gate, generate the answer, then read
   the correctness dial at the post-answer token and surface it as the trust number.
   Confident confabulations that slipped the gate tend to land at the bottom of the dial,
-  partly on answer content and partly on carried answerability (§4.5).
+  partly on answer content and partly on carried answerability (Section 4.5).
 
 ### 4.4 The readout is a property of the representation, not of training
 
 The gate and the dial do not depend on any training of ours, on model scale, on model
 family, or on post-training having happened at all.
+
+The evidence for that comes in two shapes, and they do different jobs. Breadth is what makes
+the finding general: the same three-readout panel is read across four Qwen3 sizes and across
+five instruction-tuned models drawn from four independent lineages, so what it describes is
+a property of small language models rather than of one release. Depth is what makes it
+mechanistic: Qwen3-4B is the model carrying the full instrument suite, so the mechanism
+results (post beats pre, the fusion test, the dial against the model's own
+log-probabilities, the veto decomposition) are all measured there. Neither half stands
+alone. The deep dive would be one model's quirk without the breadth panel, and the breadth
+panel would be four saturated AUROCs with no account of what they are made of.
 
 #### Training-free
 
@@ -614,16 +618,16 @@ release, so the phrase means "no abstention fine-tuning and no reinforcement lea
 ours," **not** "no training ever." What our training adds is behavioral abstention, not the
 readable signal. Whether it also *sharpens* the veto is unresolved: the mean trust the dial
 assigns to confident confabulations reads **0.271** on the base and **0.183** after
-training, but the trained side rests on twelve rows under the inclusive census, below that
-cell's own adequacy floor of 50, so the comparison is descriptive and cannot settle the
-question (the strict census and its disclosure are in Appendix B).
+training, but the trained side rests on twelve rows under the inclusive census, well below
+the 50-row floor these readouts require, so the comparison is descriptive and cannot settle
+the question (the strict census and its disclosure are in Appendix B).
 
 #### Flat across scale
 
 Across the Qwen3 family at 1.7B, 4B, 8B, and 14B, the training-free
-readout passes all three gates at every size, with the gate saturated near 0.997 and the
-dial between 0.82 and 0.86 throughout (Figure 2, left). The veto is the series that moves
-(§4.5).
+readout clears the pass bar on all three readouts at every size, with the gate saturated
+near 0.997 and the dial between 0.82 and 0.86 throughout (Figure 2, left). The veto is the
+series that moves (Section 4.5).
 
 ![Gate, dial, and veto AUROC across four Qwen3 sizes and across four families](figures/fig-p4-04-fragile-axis.png)
 
@@ -636,29 +640,32 @@ panels are single greedy decodes; the sampled-decoding veto is Figure 6.
 
 #### Flat across families
 
-A cross-family read of four independent
-families training-free (Llama-3.2-3B, Ministral-3-3B, Qwen3.5-4B, Gemma-4-E4B). The gate is
-near-saturated in all four (0.997 to 0.998) and the dial ranges 0.818 to 0.861 (Table 1,
-Figure 3). These two axes are *family-general*: the ability to read "can I answer this?" at
+Four further instruction-tuned bases are read training-free at comparable scale
+(Llama-3.2-3B, Ministral-3-3B, Qwen3.5-4B, Gemma-4-E4B), which with the Qwen3-4B deep-dive
+base makes five models spanning four independent lineages. The gate is near-saturated in
+every one of them (0.997 to 0.998) and the dial ranges 0.818 to 0.861 (Table 1, Figure 3).
+These two axes are *family-general*: the ability to read "can I answer this?" at
 the anchor and "is this answer right?" after the answer is not a Qwen idiosyncrasy, it is a
 property of instruction-tuned small language models across four independent lineages.
 
 ![Gate, dial, and veto AUROC bars with confidence intervals for four model families](figures/fig-p4-05-cross-family-readout.png)
 
 **Figure 3. Cross-family training-free readout.** Gate, dial, and hallucination-veto
-AUROC for each of the four families, with bootstrap 95% CI error bars, the 0.65 pass
+AUROC for each of the four cross-family models, with bootstrap 95% CI error bars, the 0.65 pass
 bar, and the 0.50 chance line; PASS/FAIL is annotated on each family's veto bar. Gate
 and dial saturate near 1.0 and roughly 0.82 to 0.86 in every family; the veto is the bar
 that varies under this single greedy decode, failing only on Llama.
 
-**Table 1. Cross-family training-free gate and dial (AUROC; 95% bootstrap CI).**
+**Table 1. Training-free gate and dial across five models (AUROC; 95% bootstrap CI).** The
+Qwen3-4B row is the deep-dive base of Sections 4.1 and 4.2, restated here as point estimates.
 
-| Model | hidden dim | Gate | Dial |
-|---|---|---|---|
-| Llama-3.2-3B | 3072 | 0.997 [.995,.999] | 0.861 [.844,.879] |
-| Ministral-3-3B | 3072 | 0.997 [.995,.999] | 0.818 [.797,.839] |
-| Qwen3.5-4B | 2560 | 0.998 [.997,.999] | 0.827 [.806,.848] |
-| Gemma-4-E4B | 2560 | 0.998 [.997,.999] | 0.818 [.794,.840] |
+| Model | Gate | Dial |
+|---|---|---|
+| Llama-3.2-3B | 0.997 [.995,.999] | 0.861 [.844,.879] |
+| Ministral-3-3B | 0.997 [.995,.999] | 0.818 [.797,.839] |
+| Qwen3.5-4B | 0.998 [.997,.999] | 0.827 [.806,.848] |
+| Gemma-4-E4B | 0.998 [.997,.999] | 0.818 [.794,.840] |
+| Qwen3-4B (deep dive) | 0.997 | 0.834 |
 
 #### Present before post-training
 
@@ -666,10 +673,9 @@ Every base above is a vendor *post-trained* instruct
 release, which leaves open that instruction tuning installs the signal. A
 contrast separates the hypotheses: the identical three-readout panel on four
 **pre-instruction** bases matched to the four families (Qwen3.5-4B-Base, Gemma-4-E4B-pt,
-Llama-3.2-3B, Olmo-3-7B), with the primary hypothesis that the answerability gate is already
-present before any post-training, and the falsifier that a base reads below 0.75 while its
-instruct sibling reads 0.95 or above. One dual-render control and one same-pipeline
-instruct sibling complete the design.
+Llama-3.2-3B, Olmo-3-7B), asking whether the answerability gate is already there before any
+post-training. One dual-render control and one same-pipeline instruct sibling complete the
+design.
 
 **Table 2. Pretrain-only bases (greedy, single pipeline; AUROC at each model's best layer).**
 
@@ -682,15 +688,14 @@ instruct sibling complete the design.
 | Olmo-3-7B (base) | 0.9975 | 0.8442 | 0.8029 | 0.7912 |
 | Olmo-3-7B-Instruct (same pipeline) | 0.9979 | 0.8103 | 0.7306 | 0.6741 |
 
-The hypothesis is supported 4 of 4 and the falsifier fired on 0 of 4 pairs. Every
-pre-instruction base reads the gate at 0.997 or above, indistinguishable from the instruct
-releases, and the veto clears its bar on all four bases (0.666 to 0.874). The boundary
+All four pre-instruction bases read the gate at 0.997 or above, indistinguishable from the
+instruct releases, and the veto clears its bar on all four (0.666 to 0.874). The boundary
 signal is not installed by post-training; it is already in the pretrained representation,
 and instruction tuning at most re-renders it. What pretraining supplies is specifically an
 *overt*-unanswerability signal rather than an answerability signal in general: the same
 pretrained base reads covertly ambiguous questions at roughly 0.63, within 0.006 of the
-trained checkpoints (companion diagnosis, *Where the internal readout fails*). This
-confirms, in hidden states and under a pre-registered falsifier, a pattern reported at the
+trained checkpoints (Rosenbaum, 2026c). This
+confirms, in hidden states, a pattern reported at the
 output level: pretraining builds calibration and post-training erodes it (OpenAI, 2023; Zhu
 et al., 2023; He et al., 2023; Xiao et al., 2025), and knowledge-boundary directions found
 in a base model causally control the chat sibling's refusals (Ferrando et al., 2024).
@@ -713,7 +718,10 @@ modern bases (Figure 4). The raw gate is nearly era-flat (0.991 to 0.998) and si
 above the question-surface text bound the whole way down. What improves across eras is the
 *within-SelfAware* control (roughly 0.59 on the two oldest rungs, rising to 0.71 to 0.82
 from Llama-2 onward): the in-distribution separation of confident hallucinations from known
-answers, not the gross answerable/unanswerable split.
+answers, not the gross answerable/unanswerable split. The hidden-state readout on this pool
+survives lexical, over-refusal, and cross-regimen controls, but its measured boundary falls
+where a question's surface stops marking it as unanswerable, so part of what the gate reads
+is that surface (Rosenbaum, 2026c).
 
 ![Gate, dial, and veto AUROC across eight era-ladder rungs with the surface-text bound](figures/fig-p4-09-era-ladder.png)
 
@@ -725,15 +733,6 @@ the 0.65 pass bar, and the question-surface TF-IDF bound on the gate (0.964 ± 0
 are drawn; the gate series is era-flat at 0.991 to 0.998 and clears the text bound by roughly
 0.03 on every rung, while the veto is the series that moves (0.666 to 0.874). Descriptive
 only: no era claim rests on this ladder.
-
-One registered control package of ours pushes back on that bound, and it has weakened since.
-It found that the latent known-versus-unknown readout on this pool survives lexical, over-refusal,
-and cross-regimen controls, which reads the text bound as pool-difficulty context rather
-than a full explanation of the hidden-state signal. The readout's measured boundary falls exactly where a question's surface stops marking it as
-unanswerable, which is positive evidence that part of what the gate reads is the question's
-surface, and the exploratory atlas that located the boundary carries its own registered
-style confound, because the labeled unknown categories are stylistically distinctive
-question types (companion diagnosis, *Where the internal readout fails*).
 
 ### 4.5 The veto: what it catches, where it holds, what it is made of
 
@@ -855,39 +854,28 @@ population are answers to unanswerable questions, so the 65-pair slice holds **z
 confabulation rows. What it measures is the dial's read on the model's own wrong answers to
 answerable questions, not on confident fabrication. The controlled 0.737 also sits below the
 raw base's own dial on the structurally matched contrast (correct versus wrong on answerable
-questions, 0.834, §4.2), so controlling both nuisances does not merely shrink the veto's
+questions, 0.834, Section 4.2), so controlling both nuisances does not merely shrink the veto's
 headline, it puts the surviving content read below the plain correctness dial.
 
 #### Scope of the deployed-checkpoint readings
 
-Three fences apply to every deployed-checkpoint
-veto quantity above, and none of them applies to the raw-base, cross-size, or cross-family
-numbers, which are structurally immune because none of them trains on these questions.
+The deployed checkpoint has twelve hallucination rows, not 121. A re-grade of that
+checkpoint's archived answer text found that 109 of the 121 rows a narrow refusal detector
+had counted as answers were explicit trained refusals, leaving twelve genuine hallucination
+rows under the inclusive census. Twelve is well below the 50-row floor these readouts
+require, so every deployed-checkpoint veto quantity here is descriptive rather than a
+measured result. At that n the dial separates correct
+answers from confabulations at 0.9067 (CI [0.8133, 0.9705]), and the within-SelfAware
+control (known-answered versus unknown-answered, same dataset) reads 0.8140 (CI [0.6953,
+0.9127]), both descriptive. The dataset-shift rebuttal that control supplies therefore rests
+on a separation of roughly 0.74 to 0.81. A stricter row census exists and is reported in
+Appendix B, where its own recomputability limit is stated.
 
-First, the hallucination labels on that checkpoint were re-graded, and the count collapsed.
-Of the 121 rows a narrow refusal detector had counted as answers, 109 were explicit trained
-refusals, leaving twelve genuine hallucination rows under the inclusive census against that
-cell's own pre-registered floor of 50. The signed experiment's primary verdict is
-accordingly below its adequacy floor and descriptive, not a gated pass. At that n the dial
-separates correct answers from confabulations at 0.9067 (CI [0.8133, 0.9705]), and the
-within-SelfAware control (known-answered versus unknown-answered, same dataset) reads 0.8140
-(CI [0.6953, 0.9127]), both descriptive. The dataset-shift rebuttal that control supplies
-therefore rests on a separation of roughly 0.74 to 0.81. A stricter row census exists and is
-reported in Appendix B, where its own recomputability limit is stated.
-
-Second, the training lineage behind that checkpoint (clean supervised fine-tune → GRPO)
-carries SelfAware train/eval contamination, resolved in a separate confirmatory block: 117
-distinct SelfAware known/answerable evaluation questions appear verbatim in the training
-prompts used across the SFT/DPO/KTO/GRPO stages, with zero unanswerable questions among
-them. The within-SelfAware control and the deployed checkpoint's gate confirmation (0.999)
-sit on the contaminated known-answered side. A clean-subset sensitivity computation
-accompanies this paper: excluding the 61 contaminated rows among the 276 known-answered rows
-moves the gate confirmation from 0.999 to 0.998 and the control from 0.814 to 0.804, and
-every recomputable deployed-checkpoint quantity shifts by at most 0.011.
-
-Third, the deployed checkpoint's veto has not been decomposed the way the raw base's was. We
-read it as sharing that structure because its contrast is built identically, which is an
-inference and not a measurement.
+Two further fences bound these same readings, and both are stated with their numbers in
+Section 6: the checkpoint's training lineage carries SelfAware train/eval contamination, and
+its veto has not been decomposed the way the raw base's was. None of the three touches the
+raw-base, cross-size, or cross-family numbers, which are structurally immune because none of
+them trains on these questions.
 
 ### 4.6 Where the readout lives, descriptively
 
@@ -918,19 +906,16 @@ are jitter on a plateau; the dial concentrates in an overlapping mid-to-late reg
 Llama's argmax at L25/28 near the unembedding. Descriptive only, replotted from the
 cross-family replication's per-layer AUROC surfaces.
 
-Three exploratory observations from independent instruments give that picture context. A from-scratch Jacobian lens (Gurnee et
-al., 2026), validated against the model's own logit lens before anything was read from it,
-puts Qwen3-4B's *verbalizable workspace* at hidden states 23 to 29 of 36, which the dial's
-band overlaps and the gate's saturation point sits far below. A capture-only atlas run on
-four families (a different four, overlapping this paper's panel on Llama and Gemma only)
-reproduces the same motif four times out of four: representation-variance dimensionality
-peaks in the first 10 to 15% of depth and collapses, while the epistemic contrasts become
-simultaneously readable across a wide mid-band that opens well after that collapse. And the
-prediction that readability would instead coincide with the dimensionality peak, registered
-before those runs, failed in all four families and fired one cell's pre-registered falsifier
-at the peak itself (controls, per-family failure modes, and the reconciliation between the
-two instruments are in Appendix B). None of this explains why the dial reads better after the
-answer than before it. That mechanism question stays open.
+Two exploratory observations from a separate instrument give that picture context. A
+capture-only atlas run on four families (a different four, overlapping this paper's panel on
+Llama and Gemma only) reproduces the same motif four times out of four:
+representation-variance dimensionality peaks in the first 10 to 15% of depth and collapses,
+while the epistemic contrasts become simultaneously readable across a wide mid-band that
+opens well after that collapse. And the expectation that readability would instead coincide
+with the dimensionality peak failed in all four families: on the fourth, at the peak itself,
+two of the three axes read below the threshold that defines the band (controls and
+per-family failure modes are in Appendix B). None of this explains why the dial reads better
+after the answer than before it. That mechanism question stays open.
 
 ---
 
@@ -938,19 +923,21 @@ answer than before it. That mechanism question stays open.
 
 ### Epistemic state as a readout, not a training outcome
 
-The companion diagnosis
+Rosenbaum (2026c)
 showed the internal answerability estimate is calibrated while the emitted one is flat, and
 that our training cannot reconcile them through the confidence token. This paper's
 constructive result is the other side of that coin: because the signal is *in the
 representation*, it can be *read* even when it cannot be *trained into the token*. The most
 useful part of epistemic humility for a small model (a thresholdable "should I answer, and
 how much should you trust this?") is available from a frozen model with a linear probe.
+Whether writing to these axes rather than thresholding on them changes outcomes is future
+work.
 
 ### What training is for
 
 Our training is not wasted, but its role is narrow and specific: it installs
 autonomous behavioral abstention, and it may *sharpen the veto*, though that comparison sits
-below its cell's adequacy floor and cannot settle the question (§4.4). It does
+below the row floor these readouts require and cannot settle the question (Section 4.4). It does
 not create the gate, the dial, or the veto, and the pretrain-only contrast sharpens the
 negative half further: the signal predates not just our training but *any* post-training
 (gate 0.997+ on four pre-instruction bases), and generic vendor post-training does not
@@ -969,7 +956,7 @@ four sizes, and pretrained weights that have had no post-training at all; over t
 they look like general properties of small language models. The range has an outer edge on
 the third dimension, the evaluation surface: the gate's separation holds wherever the
 question's own surface marks it as unanswerable and falls to roughly 0.63 where the
-ambiguity is covert (companion diagnosis, *Where the internal readout fails*). "Can I
+ambiguity is covert (Rosenbaum, 2026c). "Can I
 distrust my own confident fabrication?" is present across the same families (seed-stable 4
 of 4 under sampled decoding) but far noisier: strong on Gemma, decode- and seed-sensitive
 elsewhere, and non-monotonic in scale. And the construct decomposition says what the fragile
@@ -981,19 +968,6 @@ future mechanistic work (why do some models' confabulations read as low-trust to
 correctness axis on any decode, while others' depend on which confabulation the decoder
 happens to produce?).
 
-### Why not just steer?
-
-Our registered actuation experiments found the answerability axis is causally
-steerable, but *asymmetrically*: excess refusal could be relaxed, and pushing along the
-axis did not install missing abstention under an ungated write. Whether a write *gated* on
-the model's own answerability readout escapes that asymmetry is actuation work, not
-reading work, and outside this paper's scope; the registered result there is conditional,
-ungated steering could not install missing abstention, but a gated write can, on one model.
-This paper deploys a *gate* (threshold-and-abstain) rather than a write because
-of that scope, not because writing is impossible: the read-and-threshold pipeline
-developed here is validated across four families and four sizes, while the gated-write
-result is validated on one model at one scale.
-
 ### The deployable pipeline
 
 Putting the pieces together (Figure 9), a small language model can carry a training-free
@@ -1003,7 +977,7 @@ every instruction-tuned model here), and it is validated only on questions that 
 answerable or *overtly* unanswerable. Stage 2 generates, reads the correctness dial at the
 post-answer token, and surfaces it as a *ranked* trust number, not a calibrated probability.
 The veto rides inside stage 2 as the backstop for confabulations that slipped the gate, and
-it inherits both qualifications from §4.5: validate it per model and per decode
+it inherits both qualifications from Section 4.5: validate it per model and per decode
 configuration and report it with seed spread, and do not read its headline separation as a
 pure content signal.
 
@@ -1015,12 +989,12 @@ generates an answer, which then passes through the dial and veto (correctness, r
 the post-answer token) to surface a trust number or flag a vetoed confabulation.
 
 Two engineering notes fall out of the results. Keep the axes *separate*: fusing them costs
-correctness ranking (§4.3). And *refit the dial per checkpoint*: the correctness direction
-does not transport cold (0.679, §4.2) even though the axis persists. The gate is the cheaper
+correctness ranking (Section 4.3). And *refit the dial per checkpoint*: the correctness direction
+does not transport cold (0.679, Section 4.2) even though the axis persists. The gate is the cheaper
 half in both senses, since a gate probe fit on one dataset applies cold to another at 0.983
-in a registered cross-dataset transfer, though both endpoints of that transfer are
-overt-unanswerability surfaces and the transport stops there (companion diagnosis, *Where the
-internal readout fails*). Two cautions from the literature bound the whole pipeline: the
+in a cross-dataset transfer, though both endpoints of that transfer are
+overt-unanswerability surfaces and the transport stops there (Rosenbaum, 2026c). Two cautions
+from the literature bound the whole pipeline: the
 probe must stay a held-out *readout* and never a training signal, because training a model
 against a lie detector can teach evasion instead of honesty (Cundy and Gleave, 2025); and the
 readout is the cheap option, a linear probe in place of the 5-to-10-fold sampling cost of
@@ -1031,13 +1005,14 @@ deploys an internal-state probe as its production abstention gate.
 
 ## 6. Limitations
 
-To reach this point we needed to perform a lot of exploratory and failed experiments, as well as problems we found when red-teaming our results::
+Reaching these results required exploratory work, failed runs, and red-team findings; the
+ones that bound the claims are listed here.
 
 1. Seed coverage is partial. The three-seed sampled-decoding replication makes the
    *cross-family* dial and veto magnitudes seed-robust and quantifies their spread. The core
    Qwen3-4B deep-dive numbers (dial 0.834, veto deltas, the +0.065 post-beats-pre gain) rest
    on a single pinned decode seed: the near-saturated effects (gate 0.997) are low seed-risk,
-   and §4.5's spread measurements bound how much the seed-sensitive axes move, but a
+   and Section 4.5's spread measurements bound how much the seed-sensitive axes move, but a
    multi-seed pass on the deep-dive checkpoint itself has not been run.
 2. Base-model reads are render-sensitive, and the text baseline is high. The
    scoping worry that the axes might reflect upstream instruction tuning is closed by the
@@ -1047,38 +1022,46 @@ To reach this point we needed to perform a lot of exploratory and failed experim
    0.964, so margins over that baseline, not raw AUROCs, are the honest effect sizes for the
    gate.
 3. The dial ranks, it does not calibrate. ECE 0.151 on the raw base and 0.168 on the
-   deployed checkpoint, against a 0.15 threshold each cell registered as reported-only
-   (§3). We claim a *ranked* trust number, not a stated probability; a probability
-   deliverable would need a downstream calibration map. We have built such a map on the
-   *gate* axis in a registered companion experiment (a trained head reaches cold-transfer
+   deployed checkpoint, against the 0.15 bar of Section 3. We claim a *ranked* trust number,
+   not a stated probability; a probability deliverable would need a downstream calibration
+   map. We have built such a map on the *gate* axis (a trained head reaches cold-transfer
    AUROC 0.983 with ECE 0.023; that figure is a different measurement from the cross-dataset
-   probe transfer in §5, which happens to read the same value); an equivalent calibrated head
-   for the dial has not been built.
-4. Structural hallucination label, decomposed but ungraded. "unanswerable question and
-   model answered = hallucination" is structural, not human-graded. Two pre-registered
-   follow-ups decomposed what the veto reads on that label (answer length and carried
-   answerability, around a 0.74 content core; §4.5). A re-grade of this label partly
-   closes that gap on the deployed checkpoint, and shows the detector
-   failure is severe but checkpoint-specific: 109 of that cell's 121 labeled hallucination
-   rows were trained refusals misread as answers by a narrow detector, leaving its primary
-   verdict below its adequacy floor. The same re-grade on the sibling lineages behind this
-   paper's raw-base and cross-family numbers found forward flip rates of 0.05% (the
+   probe transfer in Section 5, which happens to read the same value); an equivalent
+   calibrated head for the dial has not been built.
+4. Structural hallucination label, decomposed but ungraded, and the two refusal detectors
+   disagree on one checkpoint. "unanswerable question and model answered = hallucination" is
+   structural, not human-graded. Two follow-ups decomposed what the veto reads on that label
+   (answer length and carried answerability, around a 0.74 content core; Section 4.5). The
+   detector disagreement of Section 3 is severe but checkpoint-specific. Re-scoring the
+   deployed checkpoint's archived answer text against the wider detector (a literal re-scoring
+   of the stored strings, nothing regenerated) flips 109 of the 121 rows the narrow detector
+   had counted as answers into explicit refusals: a flip rate of 90.1% (95% CI [84.3%,
+   95.0%]), reproduced row for row by an independent re-derivation. The mechanism is a
+   contraction the narrow marker list does not carry, and 108 of the 109 are one verbatim
+   trained refusal template. Neither detector contains the other: 125 rows run the opposite
+   way, refused under the narrow instrument and answered under the wide one. The consequence
+   for the claims is the twelve-row census of Section 4.5, which puts the deployed
+   checkpoint's veto below the row floor. The same re-grade on the sibling lineages behind
+   this paper's raw-base and cross-family numbers found forward flip rates of 0.05% (the
    base-model dial cell, gold-answerable QA only, no unknown population, so an
    instrument-agreement figure rather than one comparable to the deployed-checkpoint rate),
    2.36% (the raw-base whole-mechanism cell), and 1.75%, 3.82%, and 2.54% (the cross-size
-   sweep at 1.7B, 8B, and 14B), so those numbers stand uncorrected. A human-graded audit of a
+   sweep at 1.7B, 8B, and 14B), because the untrained bases never emit the template that
+   defeats the narrow detector, so those numbers stand uncorrected. A human-graded audit of a
    sample of the structural labels themselves, as opposed to a second detector, remains
    undone.
 5. Cross-dataset reference in the veto, and carried answerability. The headline veto
    contrasts PopQA/TriviaQA *correct* against SelfAware *hallucinations*. The
    within-SelfAware control on the trained checkpoint reads 0.74 to 0.81 (descriptive at the
-   corrected n; see Limitation 4; distinct from the §4.5 content-trust core 0.737, a raw-base
-   number) and bounds the dataset-shift concern only that far; it also shares the
+   corrected n; see Limitation 4; distinct from the Section 4.5 content-trust core 0.737, a
+   raw-base number) and bounds the dataset-shift concern only that far; it also shares the
    unanswerable-question structure, so it does not control answerability carry. The
    answerability-controlled contrast exists only at small scale (65 matched pairs, veto
-   0.737) and on a single seed, so a multi-seed replication could pull it below its own
-   gates. A within-source, answerability-controlled correct-versus-hallucination contrast at
-   headline scale has not been run.
+   0.737) and on a single seed, so a multi-seed replication could pull it below the pass bar.
+   A within-source, answerability-controlled correct-versus-hallucination contrast at
+   headline scale has not been run. The deployed checkpoint's veto has not been decomposed at
+   all; we read it as sharing the raw base's structure because its contrast is built
+   identically, which is an inference and not a measurement.
 6. Deployed-checkpoint train/eval contamination. The training pipeline behind the
    deployed checkpoint (clean supervised fine-tune → GRPO) carries SelfAware train/eval
    contamination, resolved in a separate confirmatory block: 117 distinct
@@ -1105,19 +1088,18 @@ To reach this point we needed to perform a lot of exploratory and failed experim
 9. The dial's margin over the model's own logprobs is checkpoint-dependent, and small on
    the raw base. The dial is bounded below by a question-surface text baseline (0.75 to 0.78
    per family). The cheapest internal competitor, the model's own length-normalized
-   log-probabilities over the answer span, is measured under registered gates on both
-   checkpoints (§4.2). On the raw base the margin is **+0.012** (paired 95%
-   CI [-0.012, +0.036]), inside the band the cell had pre-registered as ambiguous: sequence
+   log-probabilities over the answer span, is measured on both
+   checkpoints (Section 4.2). On the raw base the margin is **+0.012** (paired 95%
+   CI [-0.012, +0.036]), an ambiguous result: sequence
    probability captures essentially all of the dial's separation there, and what this paper
    establishes on the raw base is the readout's cross-model geometry, its post-answer read
    advantage, and its veto behavior, not a win over logprobs. Zenn and Geiping (2026)
-   predicted a real within-dataset signal from sequence probability, and that prediction
-   held against the cell's own pre-registered call of 0.60 to 0.72 for the base-arm logprob
-   AUROC, which was wrong and is recorded as such. On the deployed abstention-trained
+   predicted a real within-dataset signal from sequence probability, and on this checkpoint
+   it is there. On the deployed abstention-trained
    checkpoint the picture reverses: the dial reads 0.7962 against the logprob's 0.6569, a
    margin of **+0.139** (paired 95% CI [+0.103, +0.176]) at 1,501 answered rows and zero
-   capture-integrity failures, passing its pre-registered gate. The
-   checkpoint dependence is therefore gated on both sides: ambiguous on the raw base, large
+   capture-integrity failures. The
+   checkpoint dependence is therefore measured on both sides: ambiguous on the raw base, large
    on the deployed checkpoint, where abstention training has reshaped output probabilities
    while the internal read retains its separation.
 10. Evaluation-surface breadth. Every gate number in this paper is measured on questions
@@ -1126,9 +1108,8 @@ To reach this point we needed to perform a lot of exploratory and failed experim
     surface where it does not (AmbigQA, naturally occurring questions whose unanswerability
     is referential underspecification rather than an absent fact) and found close to
     uninformative there, at roughly 0.63 on pretrained and trained checkpoints alike, with
-    transfer near chance in both directions
-    ([*Knows but Doesn't Say*](../paper-3-knows-but-doesnt-say/manuscript.md), *Where the
-    internal readout fails*). The dividing line is overt versus covert, not ambiguity as
+    transfer near chance in both directions (Rosenbaum, 2026c). The dividing line is overt
+    versus covert, not ambiguity as
     such: questions explicitly labeled ambiguous still separate cleanly when their ambiguity
     is marked on the surface. Those cells read a different prompt render and the bf16 build
     of this paper's Qwen3-4B substrate rather than the 4-bit build read here, and this
@@ -1147,9 +1128,9 @@ replication, the pretrain-only contrast, the veto-decomposition follow-ups, and 
 dial-versus-logprob comparisons, each with its gates, falsifier, and predictions fixed before
 its run. Descriptive or exploratory, never pooled with the above and labeled where they
 appear: the era ladder, the scale-sharpness observation, every deployed-checkpoint veto
-quantity (below its adequacy floor after the label re-grade), the depth and workspace
+quantity (below the row floor after the label re-grade), the depth
 profiles, the cross-checkpoint rotation and subspace follow-ups, and the atlas material in
-Appendix B. The gate-dial fusion result of §4.3 comes from a registered re-run (Δ −0.0142,
+Appendix B. The gate-dial fusion result of Section 4.3 comes from a registered re-run (Δ −0.0142,
 CI [−0.0214, −0.0074]) of an earlier unregistered diagnostic, which it reproduces to full
 precision. Single-seed: every Qwen3-4B deep-dive number and both
 veto-decomposition follow-ups. Appendix A maps each of these to its artifact.
@@ -1163,8 +1144,8 @@ in the representation and can be read out. An answerability **gate** at the prom
 (AUROC 0.997 on overtly unanswerable questions, roughly 0.03 above what the question's
 surface text alone supplies) and a per-answer correctness **dial** after the answer (0.834,
 better after the answer than before it) compose into a two-stage pipeline that needs no
-fine-tuning, is size-robust from 1.7B to 14B, replicates across four model families, and, by
-the pre-registered pretrain-only contrast, is present *before any post-training at all*,
+fine-tuning, is size-robust from 1.7B to 14B, replicates across four model families, and is
+present *before any post-training at all*,
 readable descriptively as far back as GPT-2-XL. That breadth runs across models and not
 across evaluation surfaces: on covertly ambiguous questions the same readout falls to roughly
 0.63.
@@ -1195,7 +1176,6 @@ separate, and know which model's veto you can trust.
 - Gani et al. (2026). Quantifying Faithful Confidence Expression in Large Reasoning Models. arXiv:2606.03969.
 - Geifman and El-Yaniv (2019). SelectiveNet: A Deep Neural Network with an Integrated Reject Option. arXiv:1901.09192.
 - Guo et al. (2017). On Calibration of Modern Neural Networks. arXiv:1706.04599.
-- Gurnee et al. (2026). Verbalizable Representations Form a Global Workspace in Language Models. Transformer Circuits. https://transformer-circuits.pub/2026/workspace/index.html.
 - He et al. (2023). Investigating Uncertainty Calibration of Aligned Language Models under the Multiple-Choice Setting. arXiv:2310.11732.
 - Joshi et al. (2017). TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension. arXiv:1705.03551.
 - Kadavath et al. (2022). Language Models (Mostly) Know What They Know. arXiv:2207.05221.
@@ -1212,6 +1192,7 @@ separate, and know which model's veto you can trust.
 - OpenAI (2023). GPT-4 Technical Report. arXiv:2303.08774.
 - Orgad et al. (2024). LLMs Know More Than They Show: On the Intrinsic Representation of LLM Hallucinations. arXiv:2410.02707.
 - Rafailov et al. (2023). Direct Preference Optimization: Your Language Model is Secretly a Reward Model. arXiv:2305.18290.
+- Rosenbaum, J. (2026c). Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model. Paper in this research program.
 - Shao et al. (2024). DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv:2402.03300.
 - Shrivastava et al. (2023). Llamas Know What GPTs Don't Show: Surrogate Models for Confidence Estimation. arXiv:2311.08877.
 - Slobodkin et al. (2023). The Curious Case of Hallucinatory (Un)answerability: Finding Truths in the Hidden States of Over-Confident Large Language Models. arXiv:2310.11877.
@@ -1241,37 +1222,34 @@ result JSONs directly:
 
 | Result surface | Artifact (under `papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/`) |
 |---|---|
-| Correctness dial, base model (§4.2) | `amendment_s_stage2_result.json` |
-| Correctness dial, deployed checkpoint (§4.2) | `amendment_t_stage2_result.json` |
-| Correctness-direction cross-checkpoint rotation, null result (§4.2, Appendix B) | `experiments/correctness-direction-rotation/AMENDMENT.md` (Outcome section; repo-root path, not under the probe dir) |
-| Correctness discriminative-subspace overlap across checkpoints, null result (§4.2, Appendix B) | `experiments/correctness-subspace-overlap/AMENDMENT.md` (Outcome section; repo-root path, not under the probe dir) |
-| Hallucination veto, deployed checkpoint (§4.5, Appendix B) | `amendment_u_two_signal_result.json` |
-| Training-free whole mechanism, raw base (§4.4) | `amendment_w_base_model_result.json` |
-| Cross-size sweep, 1.7B/8B/14B (§4.4, §4.5) | `amendment_x_qwen3-{1.7b,8b,14b}-bnb-4bit_result.json` |
-| Cross-family replication (§4.4, §4.5) | `amendment_z_{llama-3.2-3b,ministral-3-3b,qwen3.5-4b,gemma-4-e4b}_result.json` |
-| Pretrain-only bases + era ladder (§4.4) | `amendment_y_results/` (per-cell result JSONs + extraction manifest), with the signed design and Outcome in `experiments/pretrain-only-base-readout/AMENDMENT.md` (repo-root path, not under the probe dir); the era-ladder year labels and the TF-IDF bound 0.964 ± 0.016 are that document's Arm B table and report rule |
-| Sampled-decode seed-robustness (§4.5) | `experiments/sampled-decode-seed-robustness/artifacts/` (per family × seed JSONs `amendment_sr_{family}_seed{N}_result.json`; repo-root path, not under the probe dir); per-family across-seed ranges 0.04 to 0.15 are that document's summary table |
-| Veto construct decomposition, residual-coverage + length-balanced confirmatory (§4.5) | `experiments/residual-catch-veto-coverage/` and `experiments/ap-veto-length-balanced-confirmatory/` (AMENDMENT.md outcome sections; repo-root paths) |
+| Correctness dial, base model (Section 4.2) | `amendment_s_stage2_result.json` |
+| Correctness dial, deployed checkpoint (Section 4.2) | `amendment_t_stage2_result.json` |
+| Correctness-direction cross-checkpoint rotation, null result (Section 4.2, Appendix B) | `experiments/correctness-direction-rotation/AMENDMENT.md` (Outcome section; repo-root path, not under the probe dir) |
+| Correctness discriminative-subspace overlap across checkpoints, null result (Section 4.2, Appendix B) | `experiments/correctness-subspace-overlap/AMENDMENT.md` (Outcome section; repo-root path, not under the probe dir) |
+| Hallucination veto, deployed checkpoint (Section 4.5, Appendix B) | `amendment_u_two_signal_result.json` |
+| Training-free whole mechanism, raw base (Section 4.4) | `amendment_w_base_model_result.json` |
+| Cross-size sweep, 1.7B/8B/14B (Section 4.4, Section 4.5) | `amendment_x_qwen3-{1.7b,8b,14b}-bnb-4bit_result.json` |
+| Cross-family replication (Section 4.4, Section 4.5) | `amendment_z_{llama-3.2-3b,ministral-3-3b,qwen3.5-4b,gemma-4-e4b}_result.json` |
+| Pretrain-only bases + era ladder (Section 4.4) | `amendment_y_results/` (per-cell result JSONs + extraction manifest), with the signed design and Outcome in `experiments/pretrain-only-base-readout/AMENDMENT.md` (repo-root path, not under the probe dir); the era-ladder year labels and the TF-IDF bound 0.964 ± 0.016 are that document's Arm B table and report rule |
+| Sampled-decode seed-robustness (Section 4.5) | `experiments/sampled-decode-seed-robustness/artifacts/` (per family × seed JSONs `amendment_sr_{family}_seed{N}_result.json`; repo-root path, not under the probe dir); per-family across-seed ranges 0.04 to 0.15 are that document's summary table |
+| Veto construct decomposition, residual-coverage + length-balanced confirmatory (Section 4.5) | `experiments/residual-catch-veto-coverage/` and `experiments/ap-veto-length-balanced-confirmatory/` (AMENDMENT.md outcome sections; repo-root paths) |
 | Veto decomposition numbers table (Figure 7) | `papers/paper-4-two-signal-readout/analysis/veto_decomposition_numbers.csv` (one row per component with its source file and line; the carried-answerability row carries no CI because the source reports none) |
-| SFT-rotation timeline diagnostic (§4.2, Appendix B) | `experiments/diag-item9-caution-assembly-timeline/analysis-committed/diag_item9_caution_timeline.md` (committed CV AUROC and rotation-cosine tables); harness `diag_item9_caution_timeline.py`, commit `a354ad73`; extraction commit `d5a90b3b` |
-| Jacobian-lens workspace localization (§4.6, Appendix B) | `experiments/j-space-localization-qwen3-4b/analysis-committed/results/jspace-jlens-r1/` (`smoke_full.json`, `h1_full.json`, `profile_full.json`; repo-root path, not under the probe dir) |
-| Jacobian-lens profile on the trained checkpoint (Appendix B scope fence) | `experiments/jlens-trained-checkpoint-midband-ablation/` (AMENDMENT.md Outcome and `experiment.yaml` verdict: falsifier fired on both clauses; the trained profile is flattened and deepened relative to raw base, the hs26 peak suppressed by roughly 35% with the peak relocated to hs29; repo-root path) |
-| Gate-dial fusion, registered re-run (§4.3) | `experiments/fusion-nonredundance-redo/AMENDMENT.md` Outcome (FR-G0 parity and FR-G1 both pass; dial 0.8186, combined 0.8044, Δ −0.0142, CI [−0.0214, −0.0074]; byte-identical instrument snapshot pinned in the cell); supersedes and reproduces to full precision the unregistered Stage-1.5 diagnostic cited as prior fact in `experiments/unified-two-signal-dial-veto/AMENDMENT.md` §1.1 |
-| Boundary push (dosed write), §5 discussion (single-model steering result from our registered actuation experiments; no effect size is restated here) | `experiments/doubt-gated-caution-tighten/AMENDMENT.md` (G1/G2 Outcome) and `experiments/j-space-layer-contrast-rep2-multisource/AMENDMENT.md` (exploratory multi-source replication; its registered endpoint is a write-*site* contrast on a fresh 221-confabulation pool, hs29 tightening 92.8% against hs34's 73.8%, exact two-sided McNemar p = 4.5e-13, known-correct cost delta +1.43pp, not a re-measurement of the gated-write effect) |
-| Dial versus answer-span logprob, raw base, confirmatory (§4.2, §6 limitation 9) | `experiments/dial-logprob-baseline-v3/` (AMENDMENT.md Outcome and `experiment.yaml` verdict: LP3-G0 pass, LP3-G1 ambiguous band, margin +0.0118, paired 95% CI [-0.0122, +0.0359]; its T arm stopped at the registered power floor and reported no descriptive stats; repo-root path) |
-| Dial versus answer-span logprob, deployed checkpoint, confirmatory (§4.2, §6 limitation 9) | `experiments/dial-logprob-t-deployed-confirmatory/` (AMENDMENT.md Outcome and `experiment.yaml` verdict: LT-G0 and LT-G1 both pass, dial 0.7962 against logprob 0.6569, margin +0.1393, paired 95% CI [+0.1031, +0.1755], n = 1,501 answered rows; repo-root path) |
-| Predecessor logprob-baseline cells, superseded by the two rows above and not cited in the text (§6 limitation 9) | `experiments/dial-logprob-baseline/` and `experiments/dial-logprob-baseline-v2/` (both stopped at their own pre-registered answer-span round-trip integrity gate; retained for provenance only; repo-root paths) |
-| Corrected hallucination labels behind the §4.4 and §4.5 deployed-checkpoint descriptives and the Appendix B figure | `experiments/unified-two-signal-dial-veto/analysis-committed/ug3_corrected_rescore.json`, snapshotted for the figure build at `papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/ug3_corrected_rescore.json`; the inclusive (n=12) and strict (n=8) census rows are that experiment's corrigendum table |
-| Cross-dataset gate transfer, KUQ → SelfAware (§5) | `experiments/xdataset-probe-transfer/` (repo-root path) |
-| Latent-knowledge control package (§4.4) | `experiments/selfaware-latent-knowledge-controls/` (repo-root path) |
-| Calibrated gate head (§6, limitation 3) | `experiments/aux-head-trainable-readout/` (repo-root path) |
-| Natural-answer generalization instrument, signed and shelved (§6, limitation 7) | `experiments/natural-answer-generalization/` (repo-root path) |
-| Deployed-checkpoint SelfAware train/eval contamination (§4.5, §6 limitation 6) | `experiments/grpo-three-seed-confirmatory/` (NOTEBOOK.md RED-TEAM PASS Finding 1 and the 2026-08-07 clean-subset sensitivity addendum; `analysis/clean_subset_sensitivity.py`; repo-root path) |
-| Clean-subset contamination sensitivity (§4.5, §6 limitation 6) | `papers/paper-4-two-signal-readout/analysis/clean_subset_sensitivity_p4.py` with results in `clean_subset_sensitivity_p4.csv` (repo-root paths) |
-| Cross-family workspace-geometry atlas, four families (§4.6, Appendix B) | `experiments/jspace-family-atlas/`, `experiments/gemma-4-e4b-family-atlas/` (including the 2026-07-20 anisotropy-control lab-notebook reanalysis), and `experiments/qwen3-4b-family-atlas/` (AMENDMENT.md Outcome sections; repo-root paths) |
+| SFT-rotation timeline diagnostic (Section 4.2, Appendix B) | `experiments/diag-item9-caution-assembly-timeline/analysis-committed/diag_item9_caution_timeline.md` (committed CV AUROC and rotation-cosine tables); harness `diag_item9_caution_timeline.py`, commit `a354ad73`; extraction commit `d5a90b3b` |
+| Gate-dial fusion, registered re-run (Section 4.3) | `experiments/fusion-nonredundance-redo/AMENDMENT.md` Outcome (FR-G0 parity and FR-G1 both pass; dial 0.8186, combined 0.8044, Δ −0.0142, CI [−0.0214, −0.0074]; byte-identical instrument snapshot pinned in the cell); supersedes and reproduces to full precision the unregistered Stage-1.5 diagnostic cited as prior fact in `experiments/unified-two-signal-dial-veto/AMENDMENT.md` Section 1.1 |
+| Dial versus answer-span logprob, raw base, confirmatory (Section 4.2, Section 6 limitation 9) | `experiments/dial-logprob-baseline-v3/` (AMENDMENT.md Outcome and `experiment.yaml` verdict: LP3-G0 pass, LP3-G1 ambiguous band, margin +0.0118, paired 95% CI [-0.0122, +0.0359]; its T arm stopped at the registered power floor and reported no descriptive stats; repo-root path) |
+| Dial versus answer-span logprob, deployed checkpoint, confirmatory (Section 4.2, Section 6 limitation 9) | `experiments/dial-logprob-t-deployed-confirmatory/` (AMENDMENT.md Outcome and `experiment.yaml` verdict: LT-G0 and LT-G1 both pass, dial 0.7962 against logprob 0.6569, margin +0.1393, paired 95% CI [+0.1031, +0.1755], n = 1,501 answered rows; repo-root path) |
+| Predecessor logprob-baseline cells, superseded by the two rows above and not cited in the text (Section 6 limitation 9) | `experiments/dial-logprob-baseline/` and `experiments/dial-logprob-baseline-v2/` (both stopped at their own pre-registered answer-span round-trip integrity gate; retained for provenance only; repo-root paths) |
+| Corrected hallucination labels behind the Section 4.4 and Section 4.5 deployed-checkpoint descriptives and the Appendix B figure | `experiments/unified-two-signal-dial-veto/analysis-committed/ug3_corrected_rescore.json`, snapshotted for the figure build at `papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/ug3_corrected_rescore.json`; the inclusive (n=12) and strict (n=8) census rows are that experiment's corrigendum table |
+| Cross-dataset gate transfer, KUQ → SelfAware (Section 5) | `experiments/xdataset-probe-transfer/` (repo-root path) |
+| Latent-knowledge control package (Section 4.4) | `experiments/selfaware-latent-knowledge-controls/` (repo-root path) |
+| Calibrated gate head (Section 6, limitation 3) | `experiments/aux-head-trainable-readout/` (repo-root path) |
+| Natural-answer generalization instrument, signed and shelved (Section 6, limitation 7) | `experiments/natural-answer-generalization/` (repo-root path) |
+| Deployed-checkpoint SelfAware train/eval contamination (Section 6 limitation 6) | `experiments/grpo-three-seed-confirmatory/` (NOTEBOOK.md RED-TEAM PASS Finding 1 and the 2026-08-07 clean-subset sensitivity addendum; `analysis/clean_subset_sensitivity.py`; repo-root path) |
+| Clean-subset contamination sensitivity (Section 6 limitation 6) | `papers/paper-4-two-signal-readout/analysis/clean_subset_sensitivity_p4.py` with results in `clean_subset_sensitivity_p4.csv` (repo-root paths) |
+| Cross-family geometry atlas, four families (Section 4.6, Appendix B) | `experiments/jspace-family-atlas/`, `experiments/gemma-4-e4b-family-atlas/` (including the 2026-07-20 anisotropy-control lab-notebook reanalysis), and `experiments/qwen3-4b-family-atlas/` (AMENDMENT.md Outcome sections; repo-root paths) |
 | Prompt-surface residualization control and the four surface-matched sibling controls (Appendix B) | `experiments/family-atlas-surface-residualization-control/` plus `experiments/family-atlas-surface-{diversity,matched-pool,matched-json-completion,matched-vllm}-control/` (AMENDMENT.md Outcome sections; repo-root paths) |
-| Evaluation-surface boundary of the answerability readout, overt vs covert (§6 limitation 10; reported in full by the companion diagnosis) | `experiments/ood-breadth-beyond-selfaware/`, `experiments/rawbase-ambigqa-boundary-readout/`, and `experiments/flavor-atlas-rawbase/` (AMENDMENT.md and NOTEBOOK.md adjudication entries; repo-root paths) |
-| Companion manuscript (references) | `papers/paper-3-knows-but-doesnt-say/manuscript.md` (repo-root path) |
+| Evaluation-surface boundary of the answerability readout, overt vs covert (Section 6 limitation 10; reported in full by Rosenbaum, 2026c) | `experiments/ood-breadth-beyond-selfaware/`, `experiments/rawbase-ambigqa-boundary-readout/`, and `experiments/flavor-atlas-rawbase/` (AMENDMENT.md and NOTEBOOK.md adjudication entries; repo-root paths) |
+| Rosenbaum (2026c) manuscript (references) | `papers/paper-3-knows-but-doesnt-say/manuscript.md` (repo-root path) |
 
 Provenance note: every `amendment_z_*.json` result file, every sampled-decode
 seed-robustness (`amendment_sr_*`) artifact, and every pretrain-only (`amendment_y_*`)
@@ -1336,7 +1314,7 @@ inclusive census (rows counted as answers by *both* detectors) holds twelve rows
 that both detectors miss, leaving eight: veto 0.8639 (CI [0.7384, 0.9498]), hallucination
 dial mean 0.274, within-SelfAware control 0.7369 (CI [0.5947, 0.8549]). A fully corrected
 within-SelfAware control reads 0.7500 (CI [0.6073, 0.8678]). All of these sit below the
-cell's own adequacy floor of 50 and are descriptive. Against the deployed checkpoint's
+50-row floor these readouts require and are descriptive. Against the deployed checkpoint's
 wrong-answer dial mean of 0.353, the inclusive census puts confabulations clearly lower
 (0.183) and the strict census puts them only marginally lower (0.274).
 
@@ -1345,10 +1323,10 @@ selection is not independently recomputable. The template that identifies those 
 never recorded in a pinned artifact, and the script that produced the census is gitignored
 and absent from disk, so the strict-census numbers rest on the committed corrigendum JSON
 alone and could not be recomputed under the clean-subset contamination sensitivity analysis
-(§6, limitation 6). The two censuses disagree on the direction of one comparison: under the
+(Section 6, limitation 6). The two censuses disagree on the direction of one comparison: under the
 inclusive census the trained checkpoint's confabulation dial mean falls from the base's 0.271
 to 0.183, and under the strict census it does not fall at all (0.274). That disagreement is
-the reason §4.4 reports the training-sharpens question as unresolved rather than answered in
+the reason Section 4.4 reports the training-sharpens question as unresolved rather than answered in
 either direction.
 
 ![Raw-base veto AUROC against the pass bar, beside the confabulation dial-mean before and after training](figures/fig-p4-03-training-sharpens.png)
@@ -1357,12 +1335,12 @@ either direction.
 sample size.** Left: the raw-base hallucination-veto AUROC (0.754) clears the 0.65 pass bar
 with no abstention training of ours. Right: the mean dial score on confident confabulations,
 0.271 on the raw base against 0.183 (inclusive census, n=12) and 0.274 (strict census, n=8)
-on the deployed checkpoint; both trained-side bars sit below this cell's adequacy floor of
-50, so the before-after comparison is descriptive and the strict census shows no fall.
+on the deployed checkpoint; both trained-side bars sit below the 50-row floor these readouts
+require, so the before-after comparison is descriptive and the strict census shows no fall.
 
 ### B.2 Why a correctness probe must be refit per checkpoint
 
-Three exploratory diagnostics stand behind the refit rule in §4.2. The first
+Three exploratory diagnostics stand behind the refit rule in Section 4.2. The first
 tracked the known-versus-unknown (answerability) direction across four training stages in a
 shared basis fit once on the raw checkpoint and found one dominant event rather than gradual
 drift: the direction rotates nearly orthogonally at instruction SFT (raw-to-SFT cosine 0.05
@@ -1394,35 +1372,14 @@ recovers about as much of the deployed checkpoint's correctness signal (AUROC 0.
 base model's own top eight discriminative directions do (0.74). All three are exploratory,
 single model, and never pooled with the confirmatory numbers.
 
-### B.3 The workspace band and the four-family atlas
+### B.3 The four-family atlas
 
-The Jacobian lens (Gurnee et al., 2026) is a first-order estimate of how a layer's
-residual-stream state causally shapes the final-token logits, unembedded into vocabulary
-space. We implemented it from scratch and validated it against the model's own logit lens at
-the final layer before reading anything from it (mean cosine 0.9811, mean top-10 overlap
-0.82, n = 1000 prompts). On Qwen3-4B the effective dimensionality of the readout stays near
-floor through the first half of the network, rises sharply at hidden state 23, peaks at
-hidden state 26, and falls back toward the output layers: a workspace-like band at hidden
-states 23 through 29 of 36, roughly 60 to 80% of depth. The profile was sampled on a coarse,
-roughly-every-third-layer grid, so onset and peak are read off the nearest sampled point and
-are unresolved to within about ±3 layers.
-
-Four scope fences apply. The run characterized the refusal and known-unknown directions used
-in our registered actuation experiments, not this paper's gate and dial probes, so the claim
-is band overlap and never that the dial itself was verbalized under the lens. The run used
-the bf16 sibling of the bnb-4bit base (same architecture and configuration, different
-quantization). The profile is a raw-base reading that does not carry to a trained checkpoint:
-a later experiment recomputed it on the deployed abstention-trained checkpoint and found the
-profile flattened and deepened, the raw base's hs26 peak suppressed by roughly 35% and the
-peak relocated to hs29, and that experiment's registered falsifier fired on both clauses when
-a write was attempted at the read-side band. And it is exploratory throughout.
-
-A separate capture-only atlas instrument read four families, which are *not* the four
+A capture-only atlas instrument read four families, which are *not* the four
 families of the cross-family panel: `unsloth/Llama-3.2-3B-Instruct`,
 `mistralai/Mistral-7B-Instruct-v0.3`, `google/gemma-4-E4B-it`, and the raw `unsloth/Qwen3-4B`
 base, so the two panels overlap on Llama and Gemma only, and the atlas's Mistral and Qwen
-substrates differ from the readout panel's in size and generation. Every cell is exploratory,
-each with its own registered prediction and falsifier. In each family the effective
+substrates differ from the readout panel's in size and generation. Every cell is exploratory.
+In each family the effective
 dimensionality of representation variance over the epistemic pool peaks in the first 10 to
 15% of depth (llama layer 4 of 28; mistral layer 3 of 32; gemma hidden state 4 of 42;
 qwen3-4b hidden state 5 of 36, at 0.139 of depth) and collapses thereafter, while the three
@@ -1436,9 +1393,9 @@ axes also clear 0.80 marginally at hidden states 4 to 6, at the dimensionality p
 carried by a raw-refusal read barely over the line (0.8005, 0.8087, 0.8015); raw refusal then
 drops back under 0.80 across hidden states 7 to 12 before the contiguous band opens at 13.
 What holds in all four families is that the sustained band lives after the collapse, not that
-no layer before it ever clears. The registered prediction that readability would coincide
-with a dimensionality peak (an interior "workspace band") failed in all four families, and on
-the fourth it fired that cell's pre-registered falsifier on the profile limb: at the
+no layer before it ever clears. The expectation that readability would coincide
+with a dimensionality peak (an interior band of simultaneously readable axes) failed in all
+four families, and on the fourth it failed sharply enough to kill the account: at the
 dimensionality peak itself, two of the three axes read below the bar
 (refusal-versus-confabulation 0.670, raw refusal 0.737).
 
@@ -1455,25 +1412,15 @@ still clear 0.80: hidden states 14 to 18 and 36 to 40. Layer coordinates do not 
 across families, and neither do the control's failure modes, but the decoupling motif has
 replicated four of four times.
 
-The Qwen3-4B row reconciles with the Jacobian-lens picture rather than contradicting it, and
-the reconciliation was registered before the atlas ran. The two instruments measure different
-quantities: the lens profiles the dimensionality of what a layer can express in vocabulary
-space, while the atlas profiles the dimensionality of representation variance over the
-epistemic pool. The atlas cell's pre-run prediction was that the lens's interior peak at
-hidden states 23 to 29 would not reproduce in the atlas profile, and it did not: the atlas
-profile peaks early-exterior at hidden state 5. The two instruments dissociate on where the
-peak sits and agree on where the axes read, since the atlas's own readable band on this model,
-hidden states 22 to 36, sits on top of the lens band.
-
 The observation constrains where a deployed readout should be fit (the compression regime,
 not the dimensionality peak) and is consistent with the view that these readouts are late,
 low-dimensional summaries of an already-made assessment rather than participants in a
-high-dimensional deliberative workspace. Two deflationary alternatives have been tested
+high-dimensional deliberation. Two deflationary alternatives have been tested
 against it. The anisotropy-artifact account (mid-band outlier eigendirections suppressing the
 dimensionality estimator) was rejected on the gemma captures: the early peak survives
 whitening, top-k eigendirection removal (k up to 8), winsorizing, and a rank-based
 spectral-entropy estimator, with its margin compressed but its location unmoved. The
-prompt-surface account was then tested in a registered control that removes, by cross-fitted
+prompt-surface account was then tested in a control that removes, by cross-fitted
 linear residualization, the activation variance predictable from the prompt's surface form.
 The peak did not move: gemma stays at hidden state 4 (0.095 of depth) and qwen3-4b at hidden
 state 5 (0.139), in the full-fit and the 50% stability profiles alike, with the treatment's
@@ -1481,6 +1428,6 @@ strength established rather than assumed (early combined-surface out-of-fold R²
 gemma and 0.447 on qwen, against 20-permutation 95th percentiles of 0.204 and 0.042). What
 that rejects is a *linear* prompt-surface encoding as the explanation of the early peak, not
 every nonlinear encoding of the token sequence. Four sibling controls that would have varied
-the prompt surface directly rather than residualizing it each stopped at their own registered
-yield or surface-balance gate before any peak profile could be computed, and returned
+the prompt surface directly rather than residualizing it each stopped at their own
+yield or surface-balance bar before any peak profile could be computed, and returned
 indeterminate nulls, so the surface-matched arm of this question is open.
