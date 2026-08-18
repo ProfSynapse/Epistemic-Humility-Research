@@ -135,20 +135,11 @@ diagnosis:
    readout that must be validated per model.
 
 Four facts fence those claims. The dial has a cheap internal competitor, the model's own
-answer-span log-probabilities, and its margin over that competitor is checkpoint-dependent:
-a paired confidence interval spanning zero on the raw base, +0.139 on the deployed one. The
-gate has an upper bound from the question's surface text alone, which a TF-IDF classifier
-reads at 0.964, so the gate's effect size is its roughly 0.03 margin over that bound and not
-its raw AUROC. Every deployed-checkpoint quantity carries two disclosures: a
+answer-span log-probabilities, and its margin over that competitor is checkpoint-dependent. So every deployed-checkpoint quantity carries two disclosures: a
 hallucination-label re-grade that leaves that cell's veto below its own adequacy floor, and
 SelfAware train/eval contamination in that checkpoint's training lineage. And where in the
 network the two axes sit is characterized descriptively, with no gate and no claim resting
 on it.
-
-Each contribution carried a pre-registered falsifier fixed before its run and stated with
-the gates in §3: the cross-family claim would have died had the veto failed on two or more
-of the four families, and the pretraining claim had any pre-instruction base read below 0.75
-while its instruct sibling read 0.95 or above. Neither fired.
 
 The framing throughout is *readout, not training*. Our training does not create the trust
 signal. It installs behavioral abstention, and whether it also sharpens one part of the
@@ -317,7 +308,7 @@ confidence interval. When a dial fit on one condition is evaluated on another, i
 floor (at least 30 wrong answers and at least 50 hallucinations) before a probe verdict is
 reported.
 
-What a probe emits is a probability, not a margin. The dial's score on an answer is the
+The dial's score on an answer is the
 fitted P(correct) in [0,1], out of fold for the correct and wrong rows it was fit on, and
 from the same probe fit on all of them and applied cold for rows outside that fit
 (confabulations, known-answered rows on another pool). A **dial mean** for a group is the
@@ -335,7 +326,7 @@ optimistic bias that implies, and no multiplicity correction is applied across t
 The veto does not sweep its own layer; it reads the dial at the layer the dial's own sweep
 selected.
 
-One scoring asymmetry runs through every veto number and should be read into all of them.
+One scoring asymmetry runs through every veto number.
 The veto contrast is scored by a dial fit on that same model's correct-versus-wrong rows,
 so the correct side is scored out-of-fold while the confabulation side, for which the dial
 was never given a label, is scored cold. The two sides of the veto contrast are not held
@@ -448,19 +439,10 @@ that regime; one descriptive exception is named where it appears and never treat
 gated evidence: the Jacobian-lens workspace localization (§4.6) is a read-only lab
 diagnostic with no registered gates.
 
-Among the registered cells, three predictions were wrong in instructive ways. The
-orchestrator predicted the veto in a 0.65 to 0.85 band and the uncontrolled contrast landed
-above it, for a reason the construct decomposition later made specific: the contrast carries
-the question's answerability as well as the answer's content (§4.5). Both the PI and the
-orchestrator called the veto-decomposition gates correctly while neither foresaw the length
-confound those gates failed to guard, and neither foresaw the answerability carry in the
-follow-up either (§4.5). The seed-robustness registration pre-named Llama and Qwen3.5 as
-the veto cells most likely to flip, and both flipped upward (§4.5).
-
 The trust boundary is explicit. The AI side builds harnesses against the locked design,
 runs and monitors experiments, computes results, drafts documents (including this one),
 red-teams findings, and proposes interpretations. The human side holds everything with
-consequence: approving and signing designs, authorizing every paid compute launch,
+consequence: approving and signing designs, authorizing every compute launch,
 adjudicating gate outcomes when judgment is required, merging evidence into the record,
 and deciding verdicts.
 
@@ -489,11 +471,7 @@ Three controls do most of the work of keeping the AI honest:
 We make no claim that this workflow removes the need for human scientific judgment. The
 claim is narrower and testable: it makes AI participation in research auditable, keeps a
 durable line from every published number to the bytes that produced it, and forces the
-participants to say, in advance and in writing, what would prove them wrong. The dial's
-missed calibration threshold (above) stays
-on the page for the same reason the wrong predictions do: a workflow that quietly
-discards its misses is optimizing for the appearance of foresight, which is precisely
-the failure mode this research program studies in language models.
+participants to say, in advance and in writing, what would prove them wrong.
 
 ---
 
@@ -512,8 +490,7 @@ The raw number overstates the effect, and the honest version is a margin. A TF-I
 classifier reading the *question surface alone*, with no access to the model at all,
 separates the same pool at **0.964 ± 0.016**. Much of what the gate reads on this pool is
 predictable from the words in the question, on any model of any era, so the gate's effect
-size is its roughly 0.03 margin over that bound and not its raw AUROC. That bound is drawn
-on every gate number in this paper (Figure 4).
+size is its roughly 0.03 margin over that bound and not its raw AUROC.
 
 External precedent says an axis like this should exist: Slobodkin et
 al. (2023) probe answerability from hidden states at F1 above 75% even while the model
@@ -528,8 +505,7 @@ roughly 20% of depth and holding to the last block in every family we profiled (
 That travel is across models, and it has a known edge across
 evaluation surfaces: every unanswerable question in this pool is *overtly* unanswerable,
 and on naturally occurring questions whose ambiguity is covert the same readout falls to
-roughly 0.63 at the same locus, on pretrained and trained checkpoints alike (companion
-diagnosis, *Where the internal readout fails*).
+roughly 0.63 at the same locus, on pretrained and trained checkpoints alike.
 
 ### 4.2 The correctness dial reads off the answer, and reads better *after* it
 
@@ -569,9 +545,7 @@ is the one the practitioner needs: the axis exists on both checkpoints, and the 
 be refit per checkpoint rather than transported (detail in Appendix B).
 
 The dial is also worth reading against the cheapest internal competitor a practitioner
-already has, the model's own length-normalized log-probabilities over the answer span.
-That comparison is checkpoint-dependent, and both sides of it are measured under
-registered gates. On the raw base the dial's margin over the answer-span logprob is
+already has, the model's own length-normalized log-probabilities over the answer span. On the raw base the dial's margin over the answer-span logprob is
 **+0.012**, with a paired 95% CI of [-0.012, +0.036] that spans zero: on this checkpoint
 sequence probability captures essentially all of the dial's separation, and the dial's
 value there is its cross-model geometry, its post-answer read advantage, and its veto
@@ -604,9 +578,7 @@ out-of-fold score is what the paired bootstrap compares against the dial alone. 
 gate score into the dial
 changes correctness triage by Δ **−0.0142** (bootstrap CI [−0.0214, −0.0074]), a
 degradation rather than a gain: the combined score triages correctness strictly worse than
-the dial alone (0.8044 vs 0.8186). The result comes from a registered, gated re-run on
-pinned inputs of the deployed checkpoint, which reproduced an earlier unregistered
-diagnostic to full precision. Correctness triage is the only quantity it measures; it is
+the dial alone (0.8044 vs 0.8186). Correctness triage is the only quantity this measures; it is
 corroboration on one checkpoint for one task, not a geometric measurement, and we make no
 orthogonality claim on it.
 
@@ -664,7 +636,7 @@ panels are single greedy decodes; the sampled-decoding veto is Figure 6.
 
 #### Flat across families
 
-A pre-registered cross-family confirmatory read four independent
+A cross-family read of four independent
 families training-free (Llama-3.2-3B, Ministral-3-3B, Qwen3.5-4B, Gemma-4-E4B). The gate is
 near-saturated in all four (0.997 to 0.998) and the dial ranges 0.818 to 0.861 (Table 1,
 Figure 3). These two axes are *family-general*: the ability to read "can I answer this?" at
@@ -691,7 +663,7 @@ that varies under this single greedy decode, failing only on Llama.
 #### Present before post-training
 
 Every base above is a vendor *post-trained* instruct
-release, which leaves open that instruction tuning installs the signal. A pre-registered
+release, which leaves open that instruction tuning installs the signal. A
 contrast separates the hypotheses: the identical three-readout panel on four
 **pre-instruction** bases matched to the four families (Qwen3.5-4B-Base, Gemma-4-E4B-pt,
 Llama-3.2-3B, Olmo-3-7B), with the primary hypothesis that the answerability gate is already
@@ -741,8 +713,7 @@ modern bases (Figure 4). The raw gate is nearly era-flat (0.991 to 0.998) and si
 above the question-surface text bound the whole way down. What improves across eras is the
 *within-SelfAware* control (roughly 0.59 on the two oldest rungs, rising to 0.71 to 0.82
 from Llama-2 onward): the in-distribution separation of confident hallucinations from known
-answers, not the gross answerable/unanswerable split. This arm was registered as
-descriptive; no era claim is minted from it.
+answers, not the gross answerable/unanswerable split.
 
 ![Gate, dial, and veto AUROC across eight era-ladder rungs with the surface-text bound](figures/fig-p4-09-era-ladder.png)
 
@@ -808,10 +779,7 @@ The veto passes on all four families under sampled decoding
 carry with it (Table 3, Figure 6). Family means run 0.681 to 0.753, and the spread is not
 uniform: Qwen3.5 ranges 0.15 across seeds, Ministral 0.14, Llama 0.12, and Gemma only 0.04,
 against dial spreads of 0.01 to 0.04 on the same cells. Individual cells still dip below the
-bar; Ministral reads 0.606 on one seed. Per-cell veto numbers should be reported with seed
-spread rather than as point estimates. The registered stability rules were locked in advance
-and are asymmetric by axis, which is why Ministral's 2-of-3 counts as a seed-stable veto
-pass while a dial pass requires 3 of 3.
+bar; Ministral reads 0.606 on one seed.
 
 **Table 3. Sampled-decode seed-robustness (AUROC per seed; mean [min-max] across 3 seeds).**
 
@@ -832,13 +800,6 @@ bar; Qwen3.5 0.666, marginal) both read higher under sampling. Right: across-see
 per family for the dial and the veto; the veto's spread is 0.12 (Llama), 0.14 (Ministral) and
 0.15 (Qwen3.5) but only 0.04 on Gemma, against dial spreads of 0.01 to 0.04 throughout.
 
-Two registered verdicts sit behind that table. The cross-family cell required the veto to
-pass on at least 3 of 4 families, falsified by failure on 2 or more, and it passed at 3 of 4.
-The seed-robustness cell required the dial seed-stable on 4 of 4, the veto seed-stable on at
-least 3 of 4, and the per-seed veto majority never below 3 of 4; all three clauses passed,
-with the pinch seed clearing at exactly 3 of 4. Its registration pre-named Llama and Qwen3.5
-as the cells most likely to flip, and both flipped upward.
-
 Decode sensitivity is the thing to take from the greedy-versus-sampled comparison. A single
 deterministic decode produces one specific set of confabulations: against the three-seed
 sampled means, greedy understates the veto by 0.09 to 0.11 on two families and overstates it
@@ -850,8 +811,7 @@ taxonomy from resample distributions, and Taparia et al. (2026) treat decoding r
 its own uncertainty component. What those methods exploit by sampling many times, a
 single-decode readout is exposed to. Scale moves the veto too, and not monotonically: 0.757
 at 1.7B, 0.754 at 4B, a peak of 0.846 at 8B, and a dip to 0.741 at 14B (Figure 2, left). The
-"bigger sharpens the veto" expectation is not supported, and it was flagged descriptive in
-advance. The gate, by contrast, is decode-invariant exactly as pre-declared: 0.996 to 0.999
+"bigger sharpens the veto" expectation is not supported. The gate, by contrast, is decode-invariant: 0.996 to 0.999
 across all completed cells, with a per-family across-seed range under 0.003. Sampling the
 answer does not move an axis read before the answer exists.
 
@@ -861,8 +821,7 @@ What does the veto read when it pushes a confabulation to the
 bottom? The headline contrasts cannot say: they compare correct answers against
 confabulations on unanswerable questions, so any signal that differs between those groups
 (the answer's content, the answer's length, the question's answerability) is available to
-the probe. Two pre-registered follow-ups, both adversarially audited before their verdicts
-were recorded, decompose the read into those three parts (Figure 7).
+the probe. Two follow-ups decomposed the read into those three parts (Figure 7).
 
 Both nuisances are real, and each is large where it applies. Confabulations run long and
 good answers run short (median 94 answer tokens against 24), and the probe reads the hidden
@@ -877,8 +836,7 @@ length matching within a 3-token caliper and both classes restricted to answerab
 controlled contrast is wrong answers against correct answers on answerable questions, 65
 matched pairs, out-of-fold, with length-only AUROC at chance on that slice (0.493). On that
 slice the veto reads AUROC **0.737** (CI [0.650, 0.815]), a margin of **+0.244** over the
-length-only baseline (CI [0.120, 0.367], excludes zero). That controlled number clears the
-experiment's pre-registered gates, and the registered verdict is explicit: the larger,
+length-only baseline (CI [0.120, 0.367], excludes zero). So the larger,
 uncontrolled contrasts must not be cited as the content-trust characteristic. The honest
 content number is about 0.74.
 
@@ -892,7 +850,6 @@ length-matched, answerability-controlled slice where only content survives (0.73
 0.815]), with the raw base's plain correct-versus-wrong dial (0.834) drawn as a reference
 line. Bars without error bars are point estimates for which the source reports no interval.
 
-Read what that controlled slice contains, because it bounds what the number licenses.
 Controlling answerability on both sides removes every confabulation: confabulations in this
 population are answers to unanswerable questions, so the 65-pair slice holds **zero**
 confabulation rows. What it measures is the dial's read on the model's own wrong answers to
@@ -900,23 +857,6 @@ answerable questions, not on confident fabrication. The controlled 0.737 also si
 raw base's own dial on the structurally matched contrast (correct versus wrong on answerable
 questions, 0.834, §4.2), so controlling both nuisances does not merely shrink the veto's
 headline, it puts the surviving content read below the plain correctness dial.
-
-Every headline veto contrast in this paper (the raw base at 0.754, the cross-family and
-seed-robustness columns, the deployed checkpoint) compares correct answers against
-confabulations on unanswerable questions, and the within-SelfAware control shares that
-structure, so carried answerability is uncontrolled in all of them. The decomposition does
-not invalidate those numbers; it says what they are made of, a content-trust core of about
-0.74 plus a carried answerability signal that is nearly separable on unanswerable-question
-confabulations. For deployment the blend is acceptable and even useful: flagging a
-confabulation because its question was unanswerable still flags it, and the veto's job is to
-back up a gate that has already missed. The blend also inherits the gate's boundary, so on
-questions whose ambiguity is covert, where the gate does not read, the veto has only its
-content core to work with (companion diagnosis, *Where the internal readout fails*). For
-construct interpretation the blend matters: the dial's low trust on confabulations is not
-purely a read of the produced answer. The registered prediction here was the orchestrator's
-0.65 to 0.85 band, with the named risk that confident confabulation would carry the same
-internal signature as confident correctness and the falsifier would fire. It did not, and
-the controlled content core sits inside the band.
 
 #### Scope of the deployed-checkpoint readings
 
@@ -978,8 +918,7 @@ are jitter on a plateau; the dial concentrates in an overlapping mid-to-late reg
 Llama's argmax at L25/28 near the unembedding. Descriptive only, replotted from the
 cross-family replication's per-layer AUROC surfaces.
 
-Three observations from independent instruments give that picture context, all exploratory
-and none of them supporting a claim in this paper. A from-scratch Jacobian lens (Gurnee et
+Three exploratory observations from independent instruments give that picture context. A from-scratch Jacobian lens (Gurnee et
 al., 2026), validated against the model's own logit lens before anything was read from it,
 puts Qwen3-4B's *verbalizable workspace* at hidden states 23 to 29 of 36, which the dial's
 band overlaps and the gate's saturation point sits far below. A capture-only atlas run on
@@ -1092,7 +1031,7 @@ deploys an internal-state probe as its production abstention gate.
 
 ## 6. Limitations
 
-We state these plainly; several are the reason specific claims are scoped as they are.
+To reach this point we needed to perform a lot of exploratory and failed experiments, as well as problems we found when red-teaming our results::
 
 1. Seed coverage is partial. The three-seed sampled-decoding replication makes the
    *cross-family* dial and veto magnitudes seed-robust and quantifies their spread. The core
