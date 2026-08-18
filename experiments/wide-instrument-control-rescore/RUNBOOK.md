@@ -1,8 +1,8 @@
 # RUNBOOK: wide-instrument-control-rescore
 
-Build-time note: this cell is still `status: draft` (not signed). This
-RUNBOOK documents the launch sequence the harness was built for; it does not
-itself authorize a launch. GPU steps run on the local 3090; no cloud spend.
+Signed 2026-08-18 (see `experiment.yaml` and NOTEBOOK). This RUNBOOK
+documents the launch sequence; launch authorization is recorded in the
+NOTEBOOK entry. GPU steps run on the local 3090; no cloud spend.
 
 ## Stop rule (hard, pre-stated)
 
@@ -21,14 +21,23 @@ staging repo access, local alias checkout, GPU anchor extraction):
 
 ```bash
 # doubt-gated-caution-tighten (4.5 cell)
+# ORDER CORRECTED at launch (2026-08-18): extract BEFORE materialize —
+# materialize_rows.py reads the extract manifest
+# (analysis/l34_anchor_extract_manifest.json) to attach category_canon per
+# row, and the extractors' own docstrings ("Offline prep step 1/3") agree.
+# Both extractors also import amendment_ah_stage0_extract from
+# archive/experiment/phase1/probe/amendments/, which is not on the sys.path
+# they set up themselves; run them with PYTHONPATH pointing at that
+# directory rather than editing the archived scripts (keeps their recorded
+# shas untouched).
 cd experiments/doubt-gated-caution-tighten
+PYTHONPATH=/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/amendments python extract_l34_anchor.py   # GPU, writes analysis/l34_anchor_extract*.{safetensors,json}
 python materialize_rows.py          # private HF staging repo + local alias checkout
-python extract_l34_anchor.py        # GPU, writes analysis/l34_anchor_extract*.{safetensors,json}
 
 # j-space-midband-write-sweep-qwen3-4b (predecessor feeding the 4.6 cell's `pipeline` import)
 cd ../j-space-midband-write-sweep-qwen3-4b
+PYTHONPATH=/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/amendments python extract_layer_sweep_anchor.py   # GPU, writes analysis/layer_sweep_anchor_extract.safetensors
 python materialize_rows.py
-python extract_layer_sweep_anchor.py   # GPU, writes analysis/layer_sweep_anchor_extract.safetensors
 ```
 
 `pipeline_rescore.py` checks for these files and refuses with an actionable
