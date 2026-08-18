@@ -1,0 +1,146 @@
+# RUNBOOK: wide-instrument-control-rescore
+
+Build-time note: this cell is still `status: draft` (not signed). This
+RUNBOOK documents the launch sequence the harness was built for; it does not
+itself authorize a launch. GPU steps run on the local 3090; no cloud spend.
+
+## Stop rule (hard, pre-stated)
+
+WG-G0 (parity) is a pre-outcome stop. If `score_parity.py` reports
+`"verdict": "regeneration-invalid"`, STOP: do not run `score_wide.py`, do not
+report any wide number, and record the cell as a negative-feasibility result
+(`analysis-committed/` gets no promoted numbers). This is not a configuration
+to retune — see AMENDMENT.md "Gates" WG-G0 and the project's amendment-vs-
+lab-notebook discipline on pre-stated gates.
+
+## 0. Prerequisites this RUNBOOK does not perform
+
+Both source cells' generation entry points need gitignored, never-committed
+local artifacts this build task did not and could not produce (private HF
+staging repo access, local alias checkout, GPU anchor extraction):
+
+```bash
+# doubt-gated-caution-tighten (4.5 cell)
+cd experiments/doubt-gated-caution-tighten
+python materialize_rows.py          # private HF staging repo + local alias checkout
+python extract_l34_anchor.py        # GPU, writes analysis/l34_anchor_extract*.{safetensors,json}
+
+# j-space-midband-write-sweep-qwen3-4b (predecessor feeding the 4.6 cell's `pipeline` import)
+cd ../j-space-midband-write-sweep-qwen3-4b
+python materialize_rows.py
+python extract_layer_sweep_anchor.py   # GPU, writes analysis/layer_sweep_anchor_extract.safetensors
+```
+
+`pipeline_rescore.py` checks for these files and refuses with an actionable
+error (not a silent skip) if either is missing.
+
+## 1. Stage 0: regenerate both cells' arms (GPU, local 3090)
+
+```bash
+cd experiments/wide-instrument-control-rescore
+python pipeline_rescore.py --cell both --dose 200 --i-know-this-is-the-real-regeneration-run
+```
+
+Verifies pins for both source cells (and the 4.6 predecessor) against their
+own `experiment.yaml` `instrument.pins`, fails loudly on any mismatch before
+touching the GPU. Writes:
+- `analysis/regenerated/cell_45_doubt_gated_caution_tighten/{full_summary.json,rows_with_generation.jsonl,provenance.json}`
+- `analysis/regenerated/cell_46_j_space_calibrated_layer_contrast/{full_summary.json,rows_with_generation.jsonl,provenance.json}`
+
+Known pin gap (see `pipeline_rescore.py` module docstring and this build's
+report): `doubt-gated-caution-tighten/experiment.yaml` does not pin
+`pipeline.py` itself. The driver verifies what IS pinned and records current
+sha256 for the rest without fabricating a comparison; sanity-check this
+before trusting the regeneration matches what Section 4.5 originally ran.
+
+Run `--cell 45` / `--cell 46` separately if you want to free GPU memory
+between the two model loads (each cell's `regenerate_*` already frees CUDA
+memory internally between its own passes, but not across the two functions
+in one process).
+
+## 2. WG-G0: parity check (CPU, seconds)
+
+```bash
+python score_parity.py
+```
+
+Defaults read straight from the real regenerated + committed paths (no
+flags needed if step 1 used its defaults). Writes
+`analysis/parity_report.json`. Exit code 1 and `stage_1_authorized: false`
+on any arm outside +/-2.0pp — STOP here per the stop rule above.
+
+## 3. Stage 1: build the blinded pool (CPU, seconds)
+
+```bash
+python score_wide.py build-pool
+```
+
+Writes shard pool files under `analysis/shards/` (gitignored) and
+`analysis-committed/adjudication_pool_manifest.json`. **The lead must `git
+add` and commit that manifest BEFORE dispatching any grading agent** — the
+unblinding-order guarantee (ported from `abstention-wide-instrument-
+calibration/apply_adjudication.py`) refuses to unblind a shard whose
+graded-file sha256 was committed before the pool manifest itself was
+committed. This build does not commit anything to git (STEP ZERO
+invariant); that commit is the lead's action.
+
+## 4. Real grading (external, NOT performed by any script in this cell)
+
+For each shard file `analysis/shards/<shard_id>.jsonl`: dispatch a
+context-free agent (no experiment context, the registered rubric from
+`abstention-wide-instrument-calibration/AMENDMENT.md` "Registered
+adjudication rubric" verbatim, the bare `{opaque_id, text}` pool only, an
+explicit instruction not to build a pattern matcher) and collect its
+`{opaque_id, is_abstention}` JSONL output. Then, per shard:
+
+```bash
+python -c "
+import sys; sys.path.insert(0, 'experiments/abstention-wide-instrument-calibration')
+import apply_adjudication as aa
+aa.cmd_commit_hash(...)   # or use that module's own CLI directly
+"
+# or, simpler, reuse that cell's own CLI directly:
+cd experiments/abstention-wide-instrument-calibration
+python apply_adjudication.py commit-hash --shard-id <shard_id> \
+  --graded-file <path> --committed-dir ../wide-instrument-control-rescore/analysis-committed
+```
+
+Commit each graded file's sha256 to
+`analysis-committed/adjudication_graded_manifest.json` (in THIS cell's
+directory, not the calibration cell's own) BEFORE reading that shard's id
+map, then assemble `{shard_id: {"graded_file": path, "attempt": 1}}` into a
+grading-manifest JSON for step 5.
+
+## 5. Apply + gate arithmetic (CPU, seconds)
+
+```bash
+python score_wide.py apply --grading-manifest <path-to-grading-manifest.json>
+```
+
+Verifies committed hashes, joins, computes CG1 per shard (regrade-once /
+void-cell-terminal per the registered rule), and if CG1 passes, computes
+WG-G1 and WG-G2 from the unblinded wide rates. Writes
+`analysis/wide_gates_report.json`.
+
+Two flagged, unresolved-by-this-build items live in that report (see
+`score_wide.py` module docstring):
+1. WG-G1/WG-G2 as literally worded only cover the 4.5 cell's arm
+   vocabulary; the 4.6 cell's wide-rescored hs23-vs-hs34 comparison is
+   reported under `cell_46_layer_contrast_wide` with NO pass/fail verdict,
+   since no WG-gate in AMENDMENT.md's "Gates" section literally names it.
+2. WG-G2's "selectivity gap" has no registered formula; this build's
+   `assumed_selectivity_gap_definition` is a documented guess, and its CI
+   is a point-estimate combination only (not a proper joint bootstrap CI —
+   see the module docstring for what's missing).
+
+## CPU smoke test (already run by this build, not a real-launch step)
+
+```bash
+python score_parity.py --cell-45-committed <fixture> --cell-45-regen <fixture> ...
+python score_wide.py apply --dry-run --cell-45-rows <fixture> --cell-46-rows <fixture>
+```
+
+`--dry-run` mocks grading with `detector_v2.is_refused_v2` as the oracle —
+no network call, not a stand-in for a real context-free agent's judgment,
+only a plumbing check. See this build's final report for measured
+wall-clock and the fixture paths used.
