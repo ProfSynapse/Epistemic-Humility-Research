@@ -794,7 +794,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (544)
+## Mechanisms (cause -> effect) (546)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -1023,6 +1023,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[knowledge-neurons-concentrated-upper-layers]] : Factual relational knowledge representation in pretrained Transformers **enables** Knowledge neurons identified by the attribution method are predominantly dist
 - [[knowledge-surgery-enables-targeted-fact-update]] : Directly modifying FFN value-slot weight vectors for approximately 4 identified knowledge neurons per fact **enables** Fact update success rate of 34.4% with mi
 - [[known-unknown-axis-does-not-carry-answer-correctness-at-deployment]] : In the wrong-answer-cell-power-fix experiment, the known-unknown axis (frozen L35 construction, refit fold-wise within each of 5 stratified folds to remove anch
+- [[known-unknown-direction-transfers-partially-across-prompt-contracts]] : Projecting each checkpoint's neutral-extraction-prompt known-unknown direction (fit at L35, RU-G0 parity-checked against the paper-3 Section-4 reading within 0.
 - [[ku-readout-coupling-actuates-selective-refusal-release]] : On clean-SFT -> GRPO-v2 seed1, erasing the caution_perp projection from the L35 residual stream at every position and writing a doubt-proportional setpoint in i
 - [[kuq-fit-direction-reverses-on-world-known-confident-wrongness]] : In margin-evidence-responsiveness-worldknown (M4-WK), the KUQ-fit c_hat direction (fit on answered-vs-refused known-unknown rows, the direction the framework's 
 - [[kv-memorization-gates-truth-encoding]] : Phase 1 of training: rapid key-value-associative-memory|key-value memorisation of subject-attribute associations within approximately 1000 batches, reaching abo
@@ -1132,6 +1133,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[post-generation-veto-is-rederived-not-carried]] : Generation of an answer between the pre-generation anchor read and the post-generation veto read (cross-position probe transfer, axis geometry, and residualizat
 - [[post-grpo-preference-stage-recovers-over-refusal-without-reopening-unknown]] : a DPO preference-tuning stage applied after GRPO (clean_sft_grpo_dpo), evaluated against its own same-seed pre-DPO GRPO base **enables** over-refusal decreases 
 - [[post-training-does-not-sharpen-knowledge-boundary-veto]] : Comparing the hallucination-veto AUROC on four pretrain-only base models against their vendor-post-trained instruct siblings (Qwen3.5-4B, gemma-4-E4B, Llama-3.2
+- [[post-training-shrinks-known-unknown-contract-sensitivity]] : Post-training progression across the three readout-under-contract-crossing checkpoints in fixed order: raw base, then clean-SFT (merged), then SFT->GRPO-v2, hol
 - [[ppo-clip-prevents-large-policy-updates]] : 'clipped-surrogate-objective bounding the probability ratio within [1-epsilon, 1+epsilon]' **prevents** Policy updates remain within a trust region without requ
 - [[ppo-ptx-mitigates-alignment-tax]] : Mixing pretraining distribution gradients into PPO updates (PPO-ptx) **prevents** Performance regressions on public NLP benchmarks captured by the alignment-tax
 - [[pre-generation-commitment-signal-predicts-confabulation]] : Matching confabulating and refusing rows 1-to-1 on caution boundary distance within each unanswerability flavor (removing the threshold explanation), then probi

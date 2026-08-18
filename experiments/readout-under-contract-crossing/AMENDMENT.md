@@ -1,6 +1,6 @@
 # Known-unknown readout under a change of prompt contract
 
-Status: resolved 2026-08-18 (partial transfer; prediction did not hold, falsifier did not fire; see Outcome). Header previously stale boilerplate reading "draft (not signed)"; machine state was already `signed`.
+Status: resolved 2026-08-18 (partial transfer; prediction did not hold, falsifier did not fire; see Outcome). The header carried stale pre-sign boilerplate until resolve; machine state was already `signed`.
 
 Machine state lives in `experiment.yaml` and is never duplicated here.
 
