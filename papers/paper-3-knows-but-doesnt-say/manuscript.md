@@ -1493,14 +1493,29 @@ maps every number to its artifact.
   extraction prompt and over-refuses 65.38% of answerable questions under a
   contract that instructs it to say when it does not know (Rosenbaum, 2026b).
   Two claims inherit that conditionality directly. The stated-confidence gap is
-  measured under the deployment contract only. The trained-checkpoint-construct
+  measured under the deployment contract only, and whether it survives a change
+  of contract is untested. The trained-checkpoint-construct
   claim for the refusal axis (Section 5) holds under the neutral extraction
   prompt, where the base produces no over-refusal for a direction to be fit on;
   the follow-up in Section 5, fitting a base refusal direction under the
   deployment contract, found it nearly orthogonal to the trained axis, so that
-  claim now rests on a measurement rather than on an absence. Whether the
-  stated-confidence gap and the internal known-unknown readout survive a change
-  of contract remains untested.
+  claim now rests on a measurement rather than on an absence.
+  The internal known-unknown readout was measured under four contracts (the
+  neutral extraction prompt; a plain-prose contract asking the model to answer
+  if it knows and to say so plainly if it does not; the deployment contract
+  asking for a JSON answer and a confidence scalar; and that same JSON contract
+  with its abstention wording removed) on the base, clean SFT and SFT→GRPO-v2
+  checkpoints, over the same 3,369 SelfAware rows. The signal is present under
+  all four: a probe fit on activations rendered inside a contract separates
+  known from unknown at AUROC 0.988 to 0.994 on every checkpoint under every
+  contract. What the contract moves is where that signal sits. The axis fit
+  under the neutral prompt carries to the plain-prose contract untouched,
+  ranking the same rows at AUROC 0.9996 to 0.9997 on all three checkpoints, and
+  loses 0.06 to 0.11 AUROC under the two JSON contracts, on every checkpoint.
+  Training shrinks that sensitivity rather than causing it: under the deployment
+  contract the loss falls from 0.105 on the base to 0.079 after SFT and 0.061
+  after GRPO. The readout itself travels; the particular direction reported
+  here is a coordinate fixed by the contract it was read under.
 - Seed dependence of the ablation geometry. How far the refuse/answer decision
   concentrates onto a single direction is a property of the individual training
   run, not the recipe: the full-axis edit that collapses over-refusal to 0.030
@@ -1846,6 +1861,7 @@ protocol document and scored artifact:
 | Section 4 covert-ambiguity boundary: AmbigQA held-out 0.6279 / 0.6349 against the registered 0.90 floor; per-flavor atlas (six KUQ strata at 0.98–0.999, AmbigQA peak 0.6590 across 37 layers); raw-base replication at 0.6338 | OOD breadth cell (G7); flavor atlas (Tier-3 exploratory); raw-base AmbigQA readout (Tier-3) | `experiments/ood-breadth-beyond-selfaware/AMENDMENT.md` (G7 FAIL on both arms); `experiments/flavor-atlas-rawbase/AMENDMENT.md`; `experiments/rawbase-ambigqa-boundary-readout/AMENDMENT.md` | `experiments/ood-breadth-beyond-selfaware/analysis-committed/`; `experiments/flavor-atlas-rawbase/analysis-committed/`; `experiments/rawbase-ambigqa-boundary-readout/analysis-committed/` |
 | Section 6 bounded abstention-install site sweep (falsifier silent, one-way statement stands; exploratory anchor-onward actuation lead); Section 9 searched-space bound | Tier-2 exploratory amendment, `caution-install-bounded-site-sweep` | `experiments/caution-install-bounded-site-sweep/AMENDMENT.md` (Outcome; resolved 2026-08-13: falsifier silent, the registered prediction's no-actuation clause failed at all five dose-viable cells) | `experiments/caution-install-bounded-site-sweep/analysis-committed/gate_report.json`; `experiments/caution-install-bounded-site-sweep/analysis-committed/trained/` |
 | Section 5 base refusal direction under the deployment contract (mean \|cos\| 0.046 to the trained axes; BR-G0 AUROC 0.9509 on 1,528/359 rows; aligned prediction falsified) | Tier-2 exploratory cell, `base-refusal-direction-under-contract` | `experiments/base-refusal-direction-under-contract/AMENDMENT.md` (Outcome; resolved falsified 2026-08-18) | `experiments/base-refusal-direction-under-contract/scripts/br_compare_transfer_frame.py`; committed counts/cosines in the amendment document |
+| Section 9 known-unknown readout under four prompt contracts (refit 0.988 to 0.994 everywhere; neutral axis transfers at 0.9996 to plain, drops 0.06 to 0.11 under the JSON contracts; partial transfer) | Tier-2 exploratory cell, `readout-under-contract-crossing` | `experiments/readout-under-contract-crossing/AMENDMENT.md` (Outcome; resolved 2026-08-18) | `experiments/readout-under-contract-crossing/scripts/score_contract_crossing.py`; committed AUROC tables in the amendment document |
 | Section 9 training/evaluation overlap sensitivity (decontaminated n = 3,252; twelve gated cells unchanged) | this paper's own pinned sensitivity script | `papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.py` | `papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.csv` |
 
 Vocabulary note: reader-facing prose in this paper follows the rename
