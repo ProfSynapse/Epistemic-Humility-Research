@@ -10,6 +10,25 @@ in `experiment.yaml`.
 
 **Tier 3, bookkeeping only, no goalpost implications.** `AMENDMENT.md`'s header claimed a draft/not-signed (or otherwise stale) status that contradicted `experiment.yaml`'s machine state (`status: signed`), which has read verdict "not yet resolved (Outcome placeholder correctly still open)" on record. Corrected the AMENDMENT.md header ("Status:" line) to match the machine state. Follows the precedent set by `gemma-4-e4b-family-atlas/AMENDMENT.md`'s 2026-07-20 header correction. No signed content (question, prediction, falsifier, gates, Outcome) touched.
 
+### 2026-08-18 - PI reconsideration: park UPHELD after an aborted launch relay
+
+The lead recommended launch on 2026-08-18 based on an incomplete read (the
+companion surface-control cell's status "resolved" was read without its
+INDETERMINATE verdict, and the 2026-08-10 decline entry below was not
+surfaced), and the PI approved on that brief. The harness runner's preflight
+caught the contradiction with the entry below and stopped before any GPU
+verb, weight download, or disk write; nothing was spent. Presented with the
+full record (the surface control's C2/C3 failures, the S2 style-construct
+near-collinearity on these pools, and the decline below), the PI ruled the
+park UPHELD. The relaunch condition is unchanged: a surface-matched-pool
+design reviving the observational route. The surface-matched redesign is
+noted as a candidate post-publication follow-up. Preflight facts recorded
+for any future launch: pinned docker image digest verified, all three panel
+shas verified against cell.yaml/gates.yaml pins, HF cache holds metadata
+only for the pt checkpoint (~15-16 GB download still required), and the
+filesystem was at 98% (23G free) at the time of the check. All pins intact;
+no gate, band, or registered constant changes.
+
 ### 2026-08-10T23:58Z - PI decision: launch declined, cell parked (signed, unlaunched)
 
 PI ruling recorded by the lead. The upstream style-control cell
