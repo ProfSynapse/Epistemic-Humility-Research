@@ -302,6 +302,11 @@ python3 .agents/skills/knowledge-graph/scripts/analyze_kg.py --root library
 
 # d. make the new notes findable by ./search (the indexer reads GIT-TRACKED
 #    files via `git ls-files`, so stage the new .md before reindexing).
+#    WORKTREE EXCEPTION: if you are a subagent in an isolated worktree under a
+#    no-git-beyond-fetch/checkout instruction, SKIP this step entirely (no git
+#    add, no reindex). The lead imports your files into the canonical checkout
+#    and reindexes there; a worktree reindex on the slow mount only creates
+#    lock contention and exceeds your git authorization.
 git add library/notes/<id>--*.md library/concepts/**/<new-slugs>.md
 python3 .agents/skills/knowledge-graph/scripts/kg_index.py
 ```
