@@ -131,10 +131,11 @@ Contributions:
    the unifying tension they jointly produce: stated humility and calibrated
    humility are trained by the same methods in opposite directions, and no
    study measures both after the same run (Section 4).
-4. **A verified gap analysis**: six specific, falsifiable claims about
+4. **A gap analysis**: six specific, falsifiable claims about
    experiments absent from the literature, established by structured
-   searches and re-verified by targeted spot-checks as this paper was
-   finalized, with no closures found (Section 5).
+   searches with their queries and a per-gap confidence rating logged, the
+   first two of them surviving an adversarial refutation attempt
+   (Section 5).
 5. **A theoretical framework** (expression policy over a fixed epistemic
    signal) stated as four testable propositions, with the research agenda they generate
 (Section 6).
@@ -218,7 +219,11 @@ sanctioned direction-based vote count (McKenzie & Brennan, 2023). The
 underlying files are committed with the paper: an extracted evidence table
 carrying one row per effect, a method-reanalysis table, and the deterministic
 analysis scripts that regenerate every number reported here. Appendix A maps
-each reported quantity to the artifact it comes from.
+each reported quantity to the artifact it comes from. The protocols behind
+those artifacts sit in the three appendices after it: search and corpus
+construction in Appendix B, the extraction schema and verification rules in
+Appendix C, and the sensitivity analyses, the reanalysis protocols, and the
+audits in Appendix D.
 
 Three studies' released artifacts were additionally *reanalyzed* rather than
 merely extracted: the released per-output files of the model-specific IDK
@@ -233,8 +238,11 @@ five claim families below rest partly on them.
 
 A claim family is a statement about the direction of an effect, backed by
 counting the extracted rows that support or contradict it, with an exact
-binomial sign test where the count permits. Five families, labeled C1 through
-C5, survive the corpus.
+binomial sign test where the count permits. Membership is fixed by the table
+rather than by judgment: each family carries a filter over the extracted
+rows' comparison, area, and metric fields, a row enters a family only by
+matching that family's filter, and the rows that match no filter are listed
+in Appendix D. Five families, labeled C1 through C5, survive the corpus.
 
 ### Claim 1 (C1): Instruction tuning and RLHF degrade token-probability calibration
 
@@ -286,7 +294,10 @@ independent lineage with the same staged structure. The Tulu-3 project
 releases the intermediate checkpoints of its post-training pipeline, so
 consecutive stages of one lineage can be compared directly: DPO is the stage
 that follows SFT there, and it beats SFT on abstention recall by a paired
-median of +0.08 at 8B ($p = 5.5 \times 10^{-4}$, our reanalysis).
+median of +0.08 at 8B, improving on 24 of the 29 benchmark subsets where the
+two stages differ at all (exact two-sided binomial sign test on the paired
+per-subset deltas of our reanalysis, $p = 5.5 \times 10^{-4}$, uncorrected
+across that reanalysis's twelve stage-by-metric tests).
 The corpus contains exactly one comparison in which a preference method
 skips SFT entirely: KTO applied directly to the pretrained base beats the SFT model on TruthfulQA
 (a benchmark of questions people commonly answer falsely) by +9.3 points, versus +2.2 for KTO applied on top
@@ -355,7 +366,9 @@ safety examples induce exaggerated refusal of benign prompts; Bianchi et al.,
 downstream: single-scalar abstention metrics hide which failure a model makes
 (recall and precision are decoupled across 20 models, Spearman
 $\rho = -0.05$), and model-specific known/unknown labels are themselves noisy
-(42.9 to 51.3% of answers on unknown-labeled questions were in fact correct).
+(42.9 to 51.3% of answers on unknown-labeled questions were in fact correct,
+graded by whole-word match against the gold answer aliases the source dataset
+ships with each question).
 
 C3 therefore claims less than that preference optimization leaves
 discrimination untouched. What the corpus supports is that the trade dominates
@@ -393,7 +406,8 @@ across a 50-fold parameter increase. The training side is the Tulu-3 8B
 lineage, which releases consecutive post-training checkpoints, so the SFT and
 DPO stages can be compared cell by cell: over the 30 subsets present at every
 stage (MMLU History dropped), the paired median delta from SFT to DPO is
-+0.08 ($p = 5.5 \times 10^{-4}$). One quantity is a between-model difference
++0.08 (exact two-sided binomial sign test on the paired per-subset deltas,
+$p = 5.5 \times 10^{-4}$). One quantity is a between-model difference
 of medians, the other a within-lineage paired median, on cell sets that
 differ by one subset, so the four-to-one ratio is a rough juxtaposition of two
 differently estimated numbers rather than one controlled measurement. The
@@ -477,9 +491,11 @@ humility.
 The gap analysis was run the opposite way from the rest of the synthesis:
 instead of searching for what the literature contains, it searched for studies
 that *should* exist and do not. Each gap is a falsifiable claim about absence
-as of this writing: the structured searches established each absence, and
-targeted recency spot-checks as the paper was finalized confirmed none had
-closed. Six were verified:
+as of this writing. Two of the structured searches carried an explicit gap
+analysis, and each absence below traces to one of them, with the queries run
+and a confidence rating logged per gap; an adversarial pass over the first two
+gaps then tried to refute them from independent searches and failed. Those are
+the recorded absence checks. Six gaps stand:
 
 - **Gap 1: KTO has never been applied to abstention, honesty, or calibration
   training** (high confidence; zero hits across targeted searches, and the KTO
@@ -1248,6 +1264,82 @@ sensitivity check admits the two nearest harms to C5, the reasoning-RL and
 the satisfaction-RLHF rows, as training interventions: the family then
 carries two contradicting votes, so its direction survives while its
 unanimity does not.
+
+### The reanalysis protocols
+
+Two of the three reanalyses carry claim-family weight, and both recompute
+from the authors' own released files.
+
+Cheng et al. release one file of model outputs per training method for
+Llama-2-7b-chat, each covering the same 11,313 test questions, so the five
+methods are scored on an identical question set
+(`analysis/reanalyze_idk_outputs.py`, writing
+`evidence/idk-method-reanalysis.csv`). Each record holds the question, the
+training target, and the model's generation. The known/unknown label is not a
+field in the release: it is recovered from the target, which is a long-form
+answer for the questions the authors' pipeline marked known and a fixed
+refusal template for the ones it marked unknown. One detector does both jobs,
+a case-insensitive match against four fixed phrases from that refusal
+template family, applied to the target to get the label and to the generation
+to get the behavior. The resulting split is identical across all five files:
+6,216 unknown-labeled and 5,097 known-labeled questions, for $n = 11{,}313$.
+Refusal recall is refusals among unknown-labeled questions, over-refusal is
+refusals among known-labeled questions, and Youden's $J$ is the first minus
+the second.
+
+Correctness is graded against gold answers, not by a judge model. Those
+11,313 questions are the TriviaQA unfiltered no-context validation split,
+matched to the release on normalized question text with complete coverage,
+and each carries the dataset's own list of answer aliases. A generation
+counts as correct when any alias appears in it as a whole-word span, both
+sides normalized to lowercase alphanumeric tokens first; for the
+hindsight-relabeling method, the confidence-conditioning instruction that
+wraps the question is stripped before the alias lookup. Run over answered
+unknown-labeled questions, that grader produces the label-noise range C3
+reports: 42.88% of Idk-DPO's answers on unknown-labeled questions were
+correct, rising to 51.31% for Idk-HIR. Because the labels are reconstructed
+from released targets rather than read from the authors' internal
+known/unknown assignment, our recomputed truthful rates come out lower than
+the published ones and rank the five methods differently, so this reanalysis
+is used for the recall and over-refusal decomposition the original paper does
+not report, never to restate its headline.
+
+AbstentionBench releases a results table rather than generations: 624 rows
+covering 23 models on up to 31 benchmark subsets, one abstention operating
+point per model and subset, with no per-question outputs and no variances
+(`analysis/abstentionbench_reanalysis.py`, writing
+`evidence/abstentionbench-reanalysis.md`). Abstention recall is the share of
+unanswerable questions a model abstains on; abstention precision is the share
+of its abstentions that land on genuinely unanswerable questions, so low
+precision is over-refusal. Each subset belongs to exactly one scenario type in
+the release, so every comparison is paired inside identical (subset, scenario)
+cells and every cross-model summary is restricted to the subsets its models
+share, which holds the scenario mix identical across whatever is being
+compared.
+
+Two 30-subset sets appear in Section 4, and they are not the same 30. The
+Tulu-3 ladder comparison keeps the cells present at all four released stages
+of the lineage (base, SFT, DPO, and PPO with verifiable rewards), which is 30
+of 31 subsets at 8B, MMLU History being absent at the base checkpoint. The
+scale sweep keeps the cells present for all three Llama 3.1 Instruct sizes,
+also 30 of 31, UMWP being absent at 405B. The 20-model correlation drops the three
+models the release covers on three or four subsets only (TinyLlamaChat and
+the two o1 reasoning-effort API variants) and takes per-model medians over
+the 27 subsets the remaining 20 all share; Spearman $\rho$ between median
+recall and median precision across those 20 models is $-0.05$ ($p = 0.82$).
+
+The SFT-to-DPO result is a paired sign test. Deltas are taken cell by cell
+across the 8B ladder's 30 shared subsets, the sign of each delta is the
+observation, ties are dropped, and an exact two-sided binomial test runs on
+what remains: 24 subsets improve, 5 worsen, 1 ties, so $n = 29$ and
+$p = 5.5 \times 10^{-4}$. That test is run for three stage contrasts on two
+metrics at each of two scales, twelve tests, and every $p$-value is reported
+uncorrected. Two of the twelve clear a Bonferroni threshold for twelve tests
+($0.05 / 12 = 0.0042$): the 8B recall gains from SFT to DPO and from SFT to
+PPO. The units these tests treat as exchangeable are benchmark subsets inside
+one lineage, not independent draws from a population, and each ladder is a
+single lineage run without seeds, so the 8B and 70B ladders are reported as
+separate replications and never pooled.
 
 ### The FActScore audit
 
