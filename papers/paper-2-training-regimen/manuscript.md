@@ -1058,7 +1058,7 @@ answered known), not a fraction of all known rows; per-arm denominators are
 in the underlying run records, and these seed-1 values rest on the committed
 aggregate CSV rather than raw per-row counts.*
 
-![Scatter plot of every response-confidence-contract arm in recall and over-refusal, with preference arms clustered near the SFT baseline and all GRPO arms and stacks displaced up and to the right along the same curve; a translucent green upper-left quadrant marks the direction of the ideal operating point.](figures/fig-p1-07-regimen-operating-points.png)
+![Scatter plot of every response-confidence-contract arm in recall and over-refusal, with preference arms clustered near the SFT baseline and all GRPO arms and stacks displaced up and to the right along the same curve; a translucent green zone at the far left marks the fixed ideal operating region, over-refusal below 20 percent and recall above 80 percent, which no arm approaches.](figures/fig-p1-07-regimen-operating-points.png)
 
 **Figure 8. GRPO amplifies the abstention routine; stacks stay on its
 frontier.** Operating points of all response-confidence-contract arms
@@ -1066,9 +1066,10 @@ frontier.** Operating points of all response-confidence-contract arms
 The preference arms cluster with the SFT baseline; the GRPO arms and every
 stack shift up-right: more recall, more over-refusal. No combination of
 stages escapes the bargain; each picks a spot on the same curve. The green
-quadrant marks the direction of the ideal operating point (high
-unknown-question refusal, low over-refusal); its boundaries are the panel
-midlines, illustrative rather than quantitative.
+zone is the ideal operating region of Figures 1 and 5 (over-refusal below
+20 percent, refusal recall above 80 percent, illustrative rather than a
+claimed threshold); the horizontal axis extends to zero to keep it in view,
+and no arm under this contract approaches it.
 
 GRPO *amplifies* the abstention routine. Across three seeds the plain
 SFT-then-GRPO arm reads refusal recall 94.25% (95% interval 93.41 to 95.06),
@@ -1139,7 +1140,7 @@ slice of the evaluation questions inflates the absolute known-row numbers above
 without changing any of the deltas or outcomes reported here; Section 7
 states the size of the overlap and its bound.
 
-![Scatter plot of the five GRPO-touching arms' three-seed mean operating points with bootstrap-CI error bars, each connected by a dotted line to its seed-1 point; a translucent green upper-left quadrant marks the direction of the ideal operating point.](figures/fig-p1-10-three-seed-replication.png)
+![Scatter plot of the five GRPO-touching arms' three-seed mean operating points with bootstrap-CI error bars, each connected by a dotted line to its seed-1 point; a green arrow at the left edge points toward the ideal operating region, which lies far outside the zoomed view.](figures/fig-p1-10-three-seed-replication.png)
 
 **Figure 9. The five GRPO-touching arms hold one operating point across
 seeds.** Exploratory
@@ -1150,9 +1151,10 @@ interval bounded by the seed minimum and maximum rather than an inferential
 one; the open circle is that arm's seed-1 point (Figure 8). Every seed-1
 point sits inside or near its arm's three-seed
 interval, so the operating points are not a single-seed
-artifact. The green quadrant marks the direction of the ideal operating
-point (high unknown-question refusal, low over-refusal); its boundaries are
-the panel midlines, illustrative rather than quantitative.
+artifact. The panel is zoomed to seed-interval resolution; the ideal
+operating region of Figures 1 and 5 (over-refusal below 20 percent, recall
+above 80 percent) lies far outside the view, in the direction of the green
+arrow.
 
 SFT induces the behavior, preference optimization repositions it, GRPO
 amplifies it, all of it measured under a prompt that asks for abstention.
