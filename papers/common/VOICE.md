@@ -24,24 +24,38 @@ The first sentence hedges because the author is nervous. The second is honest
 because the claim is fenced. Nervous hedging is banned. Fenced claims are the
 house style.
 
-## The empirical spine: predictions on the page
+## Registration machinery stays offstage (hard)
 
-Every experiment in this program registers, before the run, a prediction from
-the human PI and a prediction from the AI orchestrator, plus a falsifier and
-gates that cannot move afterward. The papers show this machinery instead of
-hiding it.
+Every experiment in this program registers predictions, falsifiers, and gates
+before its run. The repository holds that machinery and the provenance
+appendix points to it. The paper does not perform it. Everything is
+inspectable, so body prose carries only the headlines, the major beats, and
+the final data; anything with baggage points to the appendix or Limitations,
+where the baggage is stated once.
 
-- Registered predictions appear in the text, including the misses. A wrong
-  prediction is content, not embarrassment: an arc where a prediction failed
-  twice before a null resolved cleanly is the method doing its job, and it
-  reads that way on the page.
-- Nulls are reported in the main text with the same care as wins. A
-  well-characterized null (the dose curve, the collapse point, the decomposed
-  failure) earns its numbers on the page.
-- Every headline result names its kill criterion: what outcome, registered in
-  advance, would have falsified it. If a result survived a falsifier, say
-  what the falsifier was.
-- Exploratory and confirmatory are never blended. Say which one a number is.
+- Registration machinery enters body prose only when it changed the claim: a
+  falsifier fired, a gate failed and demoted a number, an adequacy floor was
+  missed and a verdict became descriptive. Then say what happened and what
+  the reader must now believe, in plain language, without the bookkeeping
+  vocabulary.
+- Never report that a falsifier did not fire, that a gate passed, or that an
+  arm "was registered as descriptive so no claim is made". Passing machinery
+  is silent machinery: the number would not be on the page otherwise, and
+  narrating the non-event is metacommentary.
+- "A pre-registered X" and its variants ("a registered replication", "fixed
+  in advance", "locked before the run", "adversarially audited before the
+  verdict") are banned in body prose and figure captions. No one talks like
+  that in a research paper. If tier or registration status genuinely matters
+  to the reader, it lives in the Limitations section or the provenance
+  appendix.
+- Prediction scoreboards (who called what band, what flipped which way) never
+  appear in the paper. They live in the signed experiment docs.
+- Nulls are still reported in the main text with the same care as wins; a
+  well-characterized null earns its numbers on the page. It is reported as a
+  finding, not narrated as a registration event.
+- Exploratory versus confirmatory status is stated where it bounds a claim
+  ("single seed", "one model"), in plain scope words, and the full tier
+  bookkeeping lives in one compact Limitations paragraph.
 
 ## Synthesis, not journey
 
@@ -55,20 +69,35 @@ page:
   the finding, full stop. Do not print the old number and narrate its
   correction; the provenance trail holds that history for anyone who wants
   it.
-- Registered predictions, gate misses, and falsifiers appear as compact
-  registered facts (a sentence, a table row), not as story arcs. "One
-  registered gate missed, by 0.001" is synthesis. Three paragraphs on how we
-  first believed X, then discovered Y, then reran Z is a lab chronicle and
+- Gate misses and fired falsifiers that changed a claim appear as compact
+  facts (a sentence, a table row), not as story arcs. Three paragraphs on how
+  we first believed X, then discovered Y, then reran Z is a lab chronicle and
   belongs in the repo.
-- The one place process is narrated is the AI-workflow methods section,
-  because there the workflow IS the subject. Everywhere else, results
-  sections state what is true and how we know, not the order in which we
-  learned it.
+- The AI-workflow methods section reports the workflow as method: who does
+  what, where the trust boundary sits, what the controls are. No worked
+  examples of what happened on this paper, no prediction scoreboards, no
+  misses retold. Everywhere else, results sections state what is true and
+  how we know, not the order in which we learned it.
 - Never explain science to scientists. Do not tell the reader why
   pre-registration matters, why falsifiers are stated, or why a miss is
   reported ("we state them because each could have fired" is a lecture).
   State the falsifier, state whether it fired, move on. The machinery shows
   its virtue by being used, not by being praised.
+
+## Limitations live in the Limitations section (hard)
+
+A limitation, disclosure, contamination note, scope fence, or instrument
+caveat is stated once, in the Limitations section, quantified. Methods and
+Results may point there ("limitations discussed in Section 6") but never
+narrate the limitation in place, unless the number on the page is unreadable
+without it; then one clause carries the essential fact and the full account
+still lives in Limitations.
+
+Methods sections describe instruments and procedures as they finally stood.
+A number that is a finding (a flip rate, a re-grade outcome, a sensitivity
+delta) is Results or Limitations content, never Methods content. The journey
+to the final method is not narrated in Methods; if the path matters, it is a
+Limitations note.
 
 ## Sentence mechanics (this is most of the voice)
 
@@ -149,7 +178,10 @@ reasoning, not handed conclusions to trust.
   the current argument depends on.
 - Back-citation only. Published or earlier-released program papers may be
   cited where genuinely needed, sparingly: over-citing our own prior work
-  reads as marketing and breaks standalone reading. Unpublished or
+  reads as marketing and breaks standalone reading. Cite them exactly like
+  any external paper, by author and year. Never "the companion", "the
+  companion diagnosis", "the program", "the synthesis", or another
+  manuscript's section title as a citation handle. Unpublished or
   later-numbered program papers are never mentioned, teased, or cited.
   Future work is described as future work, without naming a manuscript.
 - No repeated openings. Each paper's abstract and introduction are written
@@ -175,6 +207,9 @@ render there.
 ## Vocabulary and punctuation rules (hard)
 
 - No em dashes. Use commas, colons, parentheses, or a new sentence.
+- Section cross-references are spelled out: "Section 4.2", never the silcrow
+  ("§4.2"). Same in figure captions and appendices, and consistently across
+  every paper in the series.
 - Never the phrase "load-bearing".
 - Banned hedge-stack words: "may perhaps", "could potentially", "seems to
   suggest", "arguably". One qualifier per claim, chosen precisely.
@@ -232,9 +267,10 @@ reader needs.
   internal PR numbers. Describe the thing instead: "a pre-registered
   follow-up experiment", "the registered replication", "a pre-recorded
   adversarial audit".
-- Pre-registration language is welcome; it is standard science vocabulary
-  and stands on its own. What it cannot do is lean on the repo ("see the
-  amendment document for details") to complete a claim.
+- Registration vocabulary is repository vocabulary (see "Registration
+  machinery stays offstage"). Body prose describes an experiment by what it
+  measured, never by its registration status, and never leans on the repo
+  ("see the amendment document for details") to complete a claim.
 - Repository pointers live in exactly one place: the provenance appendix,
   which maps each reported number to its artifact for readers who do go
   look. Body text never depends on that appendix to be understood.
@@ -271,9 +307,10 @@ applied specifically to seeds and registrations.
 - Per-number seed support is stated plainly and in place: "across three
   seeds", "at seed 1 only", "the three-seed mean". That label does the work
   a narrated arc would have done, in four words.
-- Registration mechanics stay out of the body. No "a replication registered
-  before any result existed", no "was registered as a secondary, descriptive
-  pattern", no account of which threshold was fixed when.
+- Registration mechanics stay out of the body and out of figure captions.
+  No "a replication registered before any result existed", no "was
+  registered as a secondary, descriptive pattern", no account of which
+  threshold was fixed when, no "the falsifier did not fire".
 - Nothing in this program is published, so nothing can be retracted or
   withdrawn. A pattern that does not survive reseeding is simply not
   reported as a finding: say what holds and at what seed support, and stop.
