@@ -6629,10 +6629,10 @@
       "question": "Does the near-ceiling internal known-unknown readout survive a change of prompt contract? Transfer: does the neutral-prompt probe direction still rank known vs unknown on contract-conditioned activations? Presence: if transfer degrades, does refitting in-contract recover the separation?",
       "registered": true,
       "slug": "readout-under-contract-crossing",
-      "status": "signed",
+      "status": "resolved",
       "title": "Known-unknown readout under a change of prompt contract",
       "type": "probe-fit",
-      "verdict": ""
+      "verdict": "Internal known-unknown readout survives every prompt contract in presence (in-contract refit >= 0.988) but its neutral-prompt direction transfers fully only to the plain contract, dropping 0.06-0.11 AUROC under P-rc and P-struct on all three checkpoints: partial transfer, no rotation, no suppression, falsifier not fired."
     },
     {
       "checkpoint": {
@@ -7254,6 +7254,33 @@
       "title": "Protocol Amendment B: Stated Confidence and GRPO Calibration Reward",
       "type": "historical-amendment",
       "verdict": "SIGNED OFF for stated-confidence measurement and reporting; GRPO/RLVR authorization prospective only, requires separate launch decision."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-18T14:14:41Z",
+      "falsifier": "F1: AUROC <= 0.55 on ALL trained P-struct arms (channel carries no correctness information under the structure-only contract). F2: refused rows carry HIGHER median confidence in a majority of trained arms.",
+      "inputs": [
+        "archive/experiment/phase1/eval/results_prompt_crossing_heldout_confirmatory_4b",
+        "archive/experiment/phase1/eval/results_prompt_crossing_completion_4b"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "persistence": {},
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "P1: confidence-correctness AUROC on answered rows in [0.55, 0.80] for at least two-thirds of trained P-struct arms. P2: 10-bin ECE >= 0.15 on at least half of trained arms. P3: refused rows carry lower median stated confidence than answered rows in at least two-thirds of trained arms.",
+      "question": "Does the stated-confidence channel emitted under the structure-only prompt (P-struct) — captured across 20 arms of the prompt-crossing held-out confirmatory campaign but never analyzed (paper 2's recorded scope condition) — carry information about answer correctness and refusal behavior, or is it schema-compliance noise?",
+      "registered": true,
+      "slug": "stated-confidence-under-pstruct",
+      "status": "draft",
+      "title": "Stated confidence under the structure-only contract: the unanalyzed channel",
+      "type": "eval",
+      "verdict": ""
     },
     {
       "checkpoint": {

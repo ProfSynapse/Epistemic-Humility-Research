@@ -1,7 +1,7 @@
 slug: readout-under-contract-crossing
 title: Known-unknown readout under a change of prompt contract
 type: probe-fit
-status: signed
+status: resolved
 registered: true
 created_at: '2026-08-17T23:06:16Z'
 question: 'Does the near-ceiling internal known-unknown readout survive a change of
@@ -42,5 +42,8 @@ inputs:
 - experiments/prompt-vs-training-panel/configs/eval_panel_pstruct_cold_local_4b.yaml
 - scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
 - scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
-verdict: ''
+verdict: 'Internal known-unknown readout survives every prompt contract in presence
+  (in-contract refit >= 0.988) but its neutral-prompt direction transfers fully only
+  to the plain contract, dropping 0.06-0.11 AUROC under P-rc and P-struct on all three
+  checkpoints: partial transfer, no rotation, no suppression, falsifier not fired.'
 kg: []
