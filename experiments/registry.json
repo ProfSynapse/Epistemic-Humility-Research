@@ -6101,10 +6101,10 @@
       "question": "Do the three exploratory prompt-condition claims of paper 2 Section 4.2 (instruction gap at base; SFT-only internalization under structure-only; erosion not erasure after a preference stage) replicate on held-out out-of-distribution known/unknown surfaces on the same Qwen3-4B checkpoints?",
       "registered": true,
       "slug": "prompt-crossing-heldout-confirmatory",
-      "status": "signed",
+      "status": "resolved",
       "title": "Prompt-crossing held-out confirmatory: promoting the paper-2 prompt-condition claims on out-of-distribution surfaces",
       "type": "eval",
-      "verdict": ""
+      "verdict": "C1 and C2 confirmed and promoted at exploratory-companion strength: C1 instruction gap 70.26pp on held-out AmbigQA (base P-rc 70.26 vs P-plain 0.00, band 50-90pp); C2 SFT internalization signature with cold SFT seeds 56.39/63.47/61.58 in the 40-80 band, base P-struct 0.00 and all six cold DPO/KTO seeds at or below 0.10. C3 partial, no promotion, F3 not fired: seq SFT-KTO retains 90.1/83.8/78.6 percent of same-seed parent recall (in the 40-100 band), seq SFT-DPO retains 28.9/32.6/28.4 percent (below the 40 percent promotion band, above the 25 percent erasure floor). PH-G0 pass: full coverage 1832 rows on all 20 primary arms, config shas match pinned bytes, lead recomputed all 20 arms from raw scored rows matching metrics exactly. Secondary descriptive: internalization generalizes to KUQ (88.34) and BIG-bench (100.0) with base at 0.00 on both."
     },
     {
       "checkpoint": {

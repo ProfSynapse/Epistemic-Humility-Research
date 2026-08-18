@@ -2,7 +2,7 @@ slug: prompt-crossing-heldout-confirmatory
 title: 'Prompt-crossing held-out confirmatory: promoting the paper-2 prompt-condition
   claims on out-of-distribution surfaces'
 type: eval
-status: signed
+status: resolved
 registered: true
 created_at: '2026-08-17T14:04:19Z'
 question: Do the three exploratory prompt-condition claims of paper 2 Section 4.2
@@ -73,5 +73,15 @@ inputs:
 - synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed3/20260615_104507/Qwen3-4B-bnb-4bit/merged-16bit
 - scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
 - scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
-verdict: ''
+verdict: 'C1 and C2 confirmed and promoted at exploratory-companion strength: C1 instruction
+  gap 70.26pp on held-out AmbigQA (base P-rc 70.26 vs P-plain 0.00, band 50-90pp);
+  C2 SFT internalization signature with cold SFT seeds 56.39/63.47/61.58 in the 40-80
+  band, base P-struct 0.00 and all six cold DPO/KTO seeds at or below 0.10. C3 partial,
+  no promotion, F3 not fired: seq SFT-KTO retains 90.1/83.8/78.6 percent of same-seed
+  parent recall (in the 40-100 band), seq SFT-DPO retains 28.9/32.6/28.4 percent (below
+  the 40 percent promotion band, above the 25 percent erasure floor). PH-G0 pass:
+  full coverage 1832 rows on all 20 primary arms, config shas match pinned bytes,
+  lead recomputed all 20 arms from raw scored rows matching metrics exactly. Secondary
+  descriptive: internalization generalizes to KUQ (88.34) and BIG-bench (100.0) with
+  base at 0.00 on both.'
 kg: []
