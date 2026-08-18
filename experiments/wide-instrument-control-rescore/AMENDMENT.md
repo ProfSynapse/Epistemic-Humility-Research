@@ -70,6 +70,12 @@ Estimated grading volume: on the order of 2,500-3,500 grader calls across both
 source cells' arms (non-refused rows only reach the grading lane). GPU cost:
 regeneration only, local 3090, no cloud spend.
 
+Exhaust retention (lesson from this cell's own scoping): at resolve, the
+regenerated rows and their wide-instrument grades are packaged as HF data
+exhaust through the data-exhaust skill (license gate permitting), so the rows
+this cell regenerates outlive its gitignored analysis directory and no future
+cell has to regenerate them again.
+
 ## Prediction
 
 Under the wide instrument, both narrow-detector control conclusions survive at
@@ -114,8 +120,19 @@ limitation and blocks promotion of the affected result.
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | |
-| user | |
+| orchestrator | WG-G0 passes (parity holds); WG-G1 holds (ratio >= 3.0); WG-G2 survives (CI excludes zero) |
+| user | WG-G0 "it works"; WG-G1 holds; WG-G2 survives |
+
+Calls recorded 2026-08-18, before any regeneration or scoring. The two
+predictors converged independently; both flagged WG-G0 as the leg carrying the
+real uncertainty (months-later regeneration on a possibly drifted CUDA stack).
+
+## Scope confirmation (2026-08-18, PI)
+
+Option A confirmed: the 4.5 cell (`doubt-gated-caution-tighten`) plus the
+primary 4.6 contrast (`j-space-calibrated-layer-contrast-qwen3-4b`) only. The
+two 4.6 same-model replications are out of scope for this cell and may be
+covered by a follow-up if this cell's result warrants it.
 
 ## Outcome
 
