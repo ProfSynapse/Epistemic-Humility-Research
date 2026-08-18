@@ -7272,19 +7272,32 @@
       ],
       "instrument": {
         "configs": [],
-        "modules": [],
-        "persistence": {},
-        "pins": {}
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "No generation-bearing step anywhere in this cell; it is CPU-only re-analysis of scored_rows.jsonl artifacts already produced and scored by the prompt-crossing held-out confirmatory campaign under that campaign's own pinned engine. Re-generating would break comparability with the rows the paper-2 scope condition refers to."
+        },
+        "modules": [
+          "scripts/score_stated_confidence.py"
+        ],
+        "persistence": {
+          "scripts/score_stated_confidence.py": {
+            "measured_smoke_wall_clock_s": 0.7,
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "scripts/score_stated_confidence.py": "80eb4c093f442b35a46c6c348470f038f0b9198c5424a126ca70bbf33bf5ce62"
+        }
       },
       "kg": [],
       "prediction": "P1: confidence-correctness AUROC on answered rows in [0.55, 0.80] for at least two-thirds of trained P-struct arms. P2: 10-bin ECE >= 0.15 on at least half of trained arms. P3: refused rows carry lower median stated confidence than answered rows in at least two-thirds of trained arms.",
       "question": "Does the stated-confidence channel emitted under the structure-only prompt (P-struct) — captured across 20 arms of the prompt-crossing held-out confirmatory campaign but never analyzed (paper 2's recorded scope condition) — carry information about answer correctness and refusal behavior, or is it schema-compliance noise?",
       "registered": true,
       "slug": "stated-confidence-under-pstruct",
-      "status": "draft",
+      "status": "resolved",
       "title": "Stated confidence under the structure-only contract: the unanalyzed channel",
       "type": "eval",
-      "verdict": ""
+      "verdict": "Under the structure-only contract the stated-confidence channel is not noise but is severely miscalibrated on every trained arm (ECE 0.55-0.85), discriminates near chance except in SFT-lineage sequential arms (best 0.72), and couples to refusal only where SFT is in the lineage: DPO/KTO barely refuse, and GRPO refuses at high stated confidence. P2 held; P1 and P3 did not; neither falsifier fired."
     },
     {
       "checkpoint": {

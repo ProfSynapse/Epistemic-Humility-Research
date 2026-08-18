@@ -1,0 +1,28 @@
+# Pre-stated gates for stated-confidence-under-pstruct.
+# Fixed at signing; never retuned after any result.
+
+sc_g0:
+  # Integrity precondition (pre-outcome stop).
+  full_row_coverage: 1832          # per included AmbigQA arm
+  parse_rate_min: 0.95             # usable stated_confidence per arm
+  arm_exclusion: below-floor arms are excluded and named in the Outcome
+  indeterminate_if_excluded_arms_exceed: 4   # of the 18 P-struct arms
+
+sc_g1:
+  # Banded quantities only (see AMENDMENT feasibility-peek disclosure:
+  # arm-level mean confidences are descriptive-only, never banded).
+  p1_discrimination:
+    metric: confidence-correctness AUROC on answered rows (refused == false)
+    band: [0.55, 0.80]
+    holds_if: at least two-thirds of trained P-struct arms inside the band
+  p2_calibration:
+    metric: 10-bin equal-width ECE on answered rows vs correct
+    threshold_min: 0.15
+    holds_if: at least half of trained P-struct arms at or above threshold
+  p3_refusal_separation:
+    metric: median stated_confidence (refused) - median stated_confidence (answered)
+    holds_if: negative in at least two-thirds of trained P-struct arms
+  falsifiers:
+    f1: AUROC <= 0.55 on ALL trained P-struct arms
+    f2: p3 metric positive (refused higher) in a majority of trained arms
+  outside_every_band: reported descriptively; neither confirming nor falsifying
