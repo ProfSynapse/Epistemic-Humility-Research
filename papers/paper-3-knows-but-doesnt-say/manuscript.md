@@ -863,9 +863,17 @@ That is a statement about a prompt as much as about a model. Under a deployment
 contract that explicitly instructs the model to say it does not know rather than
 guess, the same untrained base over-refuses 65.38% of answerable questions
 (Rosenbaum, 2026b), which is the population a refuse-versus-answer contrast needs.
-Whether a refusal direction fit on the base under that contract points where the
-trained checkpoints' refusal axis points is a direct test that has not been run,
-and nothing here claims its outcome.
+We ran that direct test. A refusal direction fit on the raw base under that
+contract separates its refusals from its answers well (held-out AUROC 0.95 on
+1,528 refused versus 359 answered known questions), yet in the same shared-frame
+procedure as the cross-regimen comparison above it is nearly orthogonal to all
+three trained refusal directions: mean |cos| = 0.046 (range 0.042 to 0.052),
+roughly twice the permutation floor, against 0.572 to 0.859 for the trained
+pairs in the same frame. The contract elicits refusal through a different
+direction than the one training builds. This is a single-seed exploratory
+reading, but it strengthens rather than weakens the claim of this subsection:
+the shared refusal axis of the trained checkpoints is manufactured by training,
+not a latent base direction that the deployment prompt merely activates.
 
 The asymmetry between the two axes is therefore a finding about what abstention
 training adds under a fixed prompt contract. Training does not create the
@@ -1451,10 +1459,14 @@ reported where the arm is, and Appendix A maps every number to its artifact.
   extraction prompt and over-refuses 65.38% of answerable questions under a
   contract that instructs it to say when it does not know (Rosenbaum, 2026b).
   Two claims inherit that conditionality directly. The stated-confidence gap is
-  measured under the deployment contract, and the trained-checkpoint-construct
+  measured under the deployment contract only. The trained-checkpoint-construct
   claim for the refusal axis (Section 5) holds under the neutral extraction
-  prompt, where the base produces no over-refusal for a direction to be fit on.
-  Whether either survives a change of contract is untested.
+  prompt, where the base produces no over-refusal for a direction to be fit on;
+  the follow-up in Section 5, fitting a base refusal direction under the
+  deployment contract, found it nearly orthogonal to the trained axis, so that
+  claim now rests on a measurement rather than on an absence. Whether the
+  stated-confidence gap and the internal known-unknown readout survive a change
+  of contract remains untested.
 - Seed dependence of the ablation geometry. How far the refuse/answer decision
   concentrates onto a single direction is a property of the individual training
   run, not the recipe: the full-axis edit that collapses over-refusal to 0.030
@@ -1789,6 +1801,7 @@ protocol document and scored artifact:
 | §4 scope-of-readings block (0.997-axis ordering not assumed portable); §8 the $P(\text{answer correct})$ identification caution; §9 naming caution from a different lineage (Qwen3.5-4B hs20) | evidence-responsiveness rebase (M4-WK) and constructive direction search (M4c), both null-result | `experiments/margin-evidence-responsiveness-worldknown/AMENDMENT.md` (Outcome); `experiments/evidence-response-direction-search/AMENDMENT.md` (Outcome) | `experiments/margin-evidence-responsiveness-worldknown/analysis-committed/`; `experiments/evidence-response-direction-search/analysis-committed/` |
 | §4 covert-ambiguity boundary: AmbigQA held-out 0.6279 / 0.6349 against the registered 0.90 floor; per-flavor atlas (six KUQ strata at 0.98–0.999, AmbigQA peak 0.6590 across 37 layers); raw-base replication at 0.6338 | OOD breadth cell (G7); flavor atlas (Tier-3 exploratory); raw-base AmbigQA readout (Tier-3) | `experiments/ood-breadth-beyond-selfaware/AMENDMENT.md` (G7 FAIL on both arms); `experiments/flavor-atlas-rawbase/AMENDMENT.md`; `experiments/rawbase-ambigqa-boundary-readout/AMENDMENT.md` | `experiments/ood-breadth-beyond-selfaware/analysis-committed/`; `experiments/flavor-atlas-rawbase/analysis-committed/`; `experiments/rawbase-ambigqa-boundary-readout/analysis-committed/` |
 | §6 bounded abstention-install site sweep (falsifier silent, one-way statement stands; exploratory anchor-onward actuation lead); §9 searched-space bound | Tier-2 exploratory amendment, `caution-install-bounded-site-sweep` | `experiments/caution-install-bounded-site-sweep/AMENDMENT.md` (Outcome; resolved 2026-08-13: falsifier silent, the registered prediction's no-actuation clause failed at all five dose-viable cells) | `experiments/caution-install-bounded-site-sweep/analysis-committed/gate_report.json`; `experiments/caution-install-bounded-site-sweep/analysis-committed/trained/` |
+| §5 base refusal direction under the deployment contract (mean \|cos\| 0.046 to the trained axes; BR-G0 AUROC 0.9509 on 1,528/359 rows; aligned prediction falsified) | Tier-2 exploratory cell, `base-refusal-direction-under-contract` | `experiments/base-refusal-direction-under-contract/AMENDMENT.md` (Outcome; resolved falsified 2026-08-18) | `experiments/base-refusal-direction-under-contract/scripts/br_compare_transfer_frame.py`; committed counts/cosines in the amendment document |
 | §9 training/evaluation overlap sensitivity (decontaminated n = 3,252; twelve gated cells unchanged) | this paper's own pinned sensitivity script | `papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.py` | `papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.csv` |
 
 Vocabulary note: reader-facing prose in this paper follows the rename
