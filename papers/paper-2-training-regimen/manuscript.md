@@ -1320,8 +1320,9 @@ the cold preference arms state mean confidence around 0.94 while answering
 correctly on 8.5 to 10% of those rows. Confidence separates correct answers
 from wrong ones at AUROC 0.49 to 0.57 under most regimens, near chance, rising
 to a weak 0.72 at best where preference optimization follows an SFT warm-up.
-The pairing of near-zero confidence with refusal survives only where SFT is in
-the lineage: cold DPO and cold KTO refuse 1 to 2 rows of 1,832 here, and
+The pairing of near-zero confidence with refusal comes from SFT and survives
+a DPO or KTO stage on top of it, but not GRPO, and never appears without SFT:
+cold DPO and cold KTO refuse 1 to 2 rows of 1,832 here, and
 SFT-then-GRPO refuses 71% of rows while stating mean confidence 0.81 with no
 separation at all between the rows it refuses and the rows it answers. That is
 one pass on one pool, reported apart from the headline comparison. GRPO
