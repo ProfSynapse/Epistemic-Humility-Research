@@ -1120,10 +1120,10 @@ signature is the same fact
 from the other side, where repositioning toward answering *looks like* rising
 confidence while correctness-conditioned calibration worsens.
 
-Every stated-confidence number in this study was produced under a contract
+Every stated-confidence number above was produced under a contract
 that also carries an abstention instruction, so it is read as conditional on
-its contract rather than as a property of the checkpoint; the untested
-structure-only confidence channel is discussed in Section 7.
+its contract rather than as a property of the checkpoint; the structure-only
+confidence channel is measured separately and reported in Section 7.
 
 The practitioner's warning holds regardless of what produces it: under every
 regimen tested here, the stated confidence number reports what the model
@@ -1310,10 +1310,22 @@ preference results in the literature. The two output contracts
 (plain-answer and response-confidence) are never pooled, but each is an
 intervention in its own right, and stated-confidence results are conditional
 on the contract: the confidence field and the abstention clause live in the
-same system prompt in every contract tested, the structure-only prompt keeps
-the confidence key but drops the abstention clause, and no analysis of that
-channel was run, so nothing here says whether stated confidence behaves
-differently once the abstention instruction is gone. GRPO conclusions are
+same system prompt in every contract tested, while the structure-only prompt
+keeps the confidence key and drops the abstention clause. A single pass over
+that channel, covering the base model and seventeen trained checkpoints on the
+same 1,832 held-out AmbigQA rows per arm used in Section 4.2, finds the number
+degraded rather than absent once the abstention instruction is gone. Every
+trained checkpoint is badly calibrated (ECE 0.55 to 0.85), and the base and
+the cold preference arms state mean confidence around 0.94 while answering
+correctly on 8.5 to 10% of those rows. Confidence separates correct answers
+from wrong ones at AUROC 0.49 to 0.57 under most regimens, near chance, rising
+to a weak 0.72 at best where preference optimization follows an SFT warm-up.
+The pairing of near-zero confidence with refusal survives only where SFT is in
+the lineage: cold DPO and cold KTO refuse 1 to 2 rows of 1,832 here, and
+SFT-then-GRPO refuses 71% of rows while stating mean confidence 0.81 with no
+separation at all between the rows it refuses and the rows it answers. That is
+one pass on one pool, reported apart from the headline comparison. GRPO
+conclusions are
 conditional on the reward family
 tested (appropriateness-dominant with confidence shaping); a reward designed
 around a different decomposition could behave differently. Refusal is a
@@ -1631,6 +1643,11 @@ with the internal label it carries in the repository.
   per-arm metrics in `results_prompt_crossing_heldout_confirmatory_4b/` and
   `results_prompt_crossing_heldout_confirmatory_secondary_4b/`. Internal
   label: the prompt-crossing held-out confirmatory.
+- [The structure-only stated-confidence pass](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/stated-confidence-under-pstruct/AMENDMENT.md):
+  the Section 7 reading of the confidence channel with the abstention clause
+  removed (calibration, discrimination, and refusal-confidence coupling per
+  arm), scored by `scripts/score_stated_confidence.py` over the held-out
+  crossing rows above. Internal label: stated-confidence-under-pstruct.
 - [The cold-start GRPO cell](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/grpo-cold-start-induction/AMENDMENT.md):
   the falsified registered prediction reported in Section 4.1, its training
   run record, and the three registered diagnostics computed by the pinned
