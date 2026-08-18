@@ -702,7 +702,7 @@ publishing on arXiv in English regardless of lab origin; non-archival
 native-language theses and proceedings remain unscreened. The reanalyses
 cover three studies' artifacts, not the corpus. The propositions of Section 6 are a reading of observational syntheses, not
 established results: this program's empirical work treats P2, P3, and P4 as
-hypotheses with pre-registered falsifiers, not as conclusions.
+hypotheses with stated falsifiers, not as conclusions.
 
 Finally, reflexivity, disclosed in the spirit of the paper's subject: this
 synthesis was produced with a large language model in the loop at nearly
