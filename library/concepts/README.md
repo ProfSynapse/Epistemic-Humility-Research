@@ -794,7 +794,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (546)
+## Mechanisms (cause -> effect) (548)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -1159,6 +1159,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[propensity-direction-reads-but-does-not-actuate-fabrication]] : Subtracting the raw-space preimage of the L24 caution-residualized confabulation-propensity direction from the residual stream at generation time (pre-generatio
 - [[proper-scoring-rule-rl-reward-calibrates-verbalized-confidence]] : Using the log-likelihood of the correct answer under a surrogate forecaster as the PPO reward for a long-form generation policy (instead of binary correctness),
 - [[proper-scoring-sft-calibration-transfers-to-unseen-confidence-formats]] : Fine-tuning on numerical verbalized confidence (0-100%) using a proper scoring rule (tokenized Brier score) **enables** The resulting calibration transfers to l
+- [[pstruct-stated-confidence-miscalibrated-near-chance]] : Scoring the stated_confidence field emitted under the structure-only P-struct prompt contract (JSON schema present, no abstention affordance in the prompt) agai
 - [[question-difficulty-alone-predicts-llm-confidence]] : Training the auxiliary calibrator on the question text only, with the LLM's generated answer omitted. **enables** The calibrator already attains respectable cal
 - [[question-familiarity-draws-confabulation-at-matched-doubt]] : Higher surface familiarity of an unanswerable question (corpus-internal token frequency and neighbor proxies), with internal doubt level held fixed by caution-d
 - [[qwen-midband-commitment-margins-miss-separation-floor]] : In the margin-mapping experiment (M1), per-row commitment margins (the minimum ladder dose along the frozen Qwen3.5-4B hs20 c_hat direction, reference dose_abs 
@@ -1269,6 +1270,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[sft-cold-start-enables-rlvr-clarification]] : Supervised fine-tuning on structured abstention-and-clarification traces before GRPO training **enables** Post-refusal clarification quality (U-Clar) is preserv
 - [[sft-knowledge-state-shifts-during-training]] : Supervised fine-tuning causes the model's internal knowledge state to evolve, turning some initially-unknown questions into answerable ones **increases** Traini
 - [[sft-known-examples-improve-knowledge-utilization]] : 'supervised-finetuning on examples within the model''s knowledge-boundary (Known examples in slick)' **increases** Better test-time accuracy on held-out questio
+- [[sft-lineage-installs-confidence-refusal-coupling]] : Measuring, under the structure-only P-struct contract on the same 1,832-row AmbigQA arms, the direction of stated-confidence separation between refused and answ
 - [[sft-rotates-boundary-readout-rl-rides-it]] : Instruction supervised fine-tuning applied to a base model whose answerability (known-vs-unknown) readout is already present at full strength. **mediates** The 
 - [[sft-suppresses-honesty-expression]] : Domain-specific supervised-finetuning perturbs neurons that govern the expression of knowledge-boundary awareness **prevents** The model produces confident fabr
 - [[sft-unknown-examples-drive-hallucination]] : 'supervised-finetuning on examples outside the model''s knowledge-boundary (Unknown examples in slick)' **increases** Increased hallucination on closed-book QA 

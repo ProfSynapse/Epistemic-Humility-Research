@@ -20,7 +20,17 @@ related:
 - '[[only-sft-installs-abstention-in-weights]]'
 - '[[preference-stage-after-sft-partially-erodes-internalized-abstention]]'
 - '[[context-invariance]]'
+- '[[stated-confidence-under-pstruct]]'
 relationships:
+- type: built_on_by
+  target: '[[stated-confidence-under-pstruct]]'
+  target_id: experiment:stated-confidence-under-pstruct
+  confidence: high
+  evidence:
+  - "experiments/stated-confidence-under-pstruct/AMENDMENT.md Motivation and
+    posture (CPU-only re-analysis of this cell's existing 18 P-struct-bearing
+    arms x 1,832 AmbigQA rows, scoring the stated_confidence field this cell
+    captured but did not analyze; no new generation)"
 - type: builds_on
   target: '[[prompt-vs-training-panel]]'
   target_id: experiment:prompt-vs-training-panel

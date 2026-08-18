@@ -26,6 +26,8 @@ related:
 - '[[refusal-aware-instruction-tuning]]'
 - '[[abstention]]'
 - '[[prompt-crossing-heldout-confirmatory]]'
+- '[[stated-confidence-under-pstruct]]'
+- '[[sft-lineage-installs-confidence-refusal-coupling]]'
 relationships:
 - type: supported_by
   target: '[[prompt-crossing-heldout-confirmatory]]'
@@ -37,6 +39,16 @@ relationships:
     registered 40-80 band on held-out AmbigQA, base P-struct 0.00, all six
     cold DPO/KTO seeds at or below 0.10; F2 not fired; secondary descriptive
     generalization to KUQ 88.34 and BIG-bench 100.0, base 0.00 on both)"
+- type: related_to
+  target: '[[sft-lineage-installs-confidence-refusal-coupling]]'
+  target_id: mechanism:sft-lineage-installs-confidence-refusal-coupling
+  confidence: medium
+  evidence:
+  - "experiments/stated-confidence-under-pstruct/AMENDMENT.md Reading (the same
+    SFT-lineage-vs-not partition this mechanism draws for refusal recall under
+    P-struct also splits the confidence-refusal coupling: cold SFT and
+    sequential SFT-DPO/SFT-KTO couple refusal to low stated confidence, cold
+    DPO/KTO and SFT-GRPO do not)"
 - type: supported_by
   target: '[[prompt-vs-training-panel]]'
   target_id: experiment:prompt-vs-training-panel
@@ -142,5 +154,10 @@ exploratory-companion tier off SelfAware by
 [[prompt-crossing-heldout-confirmatory]] on held-out AmbigQA (cold SFT seeds
 56.39/63.47/61.58 vs base/DPO/KTO at or below 0.10), with secondary
 descriptive generalization to KUQ and BIG-bench, resolved 2026-08-17/18.
+The same SFT-lineage-vs-not split recurs one level deeper in
+[[stated-confidence-under-pstruct]]: it is not just refusal recall that only
+SFT-lineage checkpoints retain under P-struct, but the coupling between
+stated confidence and refusal itself (see
+[[sft-lineage-installs-confidence-refusal-coupling]]), resolved 2026-08-18.
 Source of truth: the three experiments' AMENDMENT.md Outcome sections, all
 resolved 2026-08-14.

@@ -210,6 +210,15 @@ Paper 2 Section 5 scope condition (the "captured but never analyzed"
 stated-confidence channel under structure-only) can now cite this
 measurement. Exploratory; reported separately from the headline matrix.
 
+### Precision note (2026-08-18, lead, same day as resolve)
+
+The Reading shorthand "the coupling exists only where SFT is in the training
+lineage" is loose: SFT->GRPO has SFT in its lineage yet shows zero
+separation. The precise decomposition, fully supported by the table above:
+SFT installs the coupling; a subsequent DPO or KTO stage preserves it; a
+subsequent GRPO stage erases it; cold preference training alone induces
+neither refusal nor coupling. No number or gate outcome changes.
+
 One-sentence verdict (also in `verdict:`): under the structure-only
 contract the stated-confidence channel is not noise but is severely
 miscalibrated on every trained arm (ECE 0.55-0.85), discriminates near
