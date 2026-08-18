@@ -271,17 +271,18 @@ behavioral move.
 
 ## 3. Methods
 
-Write sites are named by their raw hidden-state index, hs followed by the
-layer number. Raw indices are not comparable across families with different
-block counts, and several comparisons here are cross-family, so we also give
-relative depth, the layer index divided by the model's number of hidden
-layers, wherever a site is compared against a site in another family. Block
-counts, each read from the checkpoint's own configuration file, are:
-Llama-3.2-3B 28, Mistral-7B-Instruct-v0.3 32, Qwen3.5-4B 32, Qwen3-4B 36,
-Gemma-4-E4B 42. Llama's hs20 and Qwen3.5-4B's hs20 are the same integer and
-not the same depth, relative depth 0.714 versus 0.625, and on present evidence
-they fall on opposite sides of the band in which any family we tested has
-actuated.
+Five intervention routes run below: the four channels of Section 3.1, and the
+gated controller built from the first of them. Sections 3.5 through 3.8 are
+shared apparatus and hold for all five, so the table names only where each
+route's own machinery is defined and where its results appear.
+
+| Intervention | Channel | Methods | Results |
+|---|---|---|---|
+| 1. Ungated write of a fitted direction | Activation writes | 3.2, 3.3, 3.4 | 4.1, 4.2 |
+| 2. Readout rendered into the generation trace | Within-generation text injection | 3.1 | 4.1 |
+| 3. Readout rendered as an instruction before generation | High-authority system prompts | 3.1 | 4.3 |
+| 4. Reward computed from the policy's own readout | Reward coupling | 3.1 | 4.4 |
+| 5. Gated hidden-state controller, its write site localized by the J-lens | Activation writes, gated | 3.2, 3.3, 3.4 | 4.5, 4.6, 4.7 |
 
 ### 3.1 Channels
 
@@ -419,7 +420,20 @@ carries its own, rebuilt byte-identically from that family's own fit record;
 the layer sweeps of Section 4.6 carry one set per layer. No fitted vector
 crosses a family boundary anywhere in this paper.
 
-### 3.4 Dosing and operating points
+### 3.4 Write sites, dosing, and operating points
+
+Write sites are named by their raw hidden-state index, hs followed by the
+layer number. Raw indices are not comparable across families with different
+block counts, and several comparisons here are cross-family, so we also give
+relative depth, the layer index divided by the model's number of hidden
+layers, wherever a site is compared against a site in another family. Block
+counts, each read from the checkpoint's own configuration file, are:
+Llama-3.2-3B 28, Mistral-7B-Instruct-v0.3 32, Qwen3.5-4B 32, Qwen3-4B 36,
+Gemma-4-E4B 42. Llama's hs20 and Qwen3.5-4B's hs20 are the same integer and
+not the same depth, relative depth 0.714 versus 0.625, and on present evidence
+they fall on opposite sides of the band in which any family we tested has
+actuated. A site together with the dose
+written at it is an operating point.
 
 Two write laws appear below, and they measure dose differently.
 
