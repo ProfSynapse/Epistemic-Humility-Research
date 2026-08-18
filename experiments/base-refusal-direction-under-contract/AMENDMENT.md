@@ -1,6 +1,6 @@
 # Base refusal direction under the response-confidence contract
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: resolved 2026-08-18 (falsified; see Outcome).
 
 Machine state lives in `experiment.yaml` and is never duplicated here.
 

@@ -794,7 +794,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (543)
+## Mechanisms (cause -> effect) (544)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -873,6 +873,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[consistency-over-verbalization-arithmetic]] : Using self-consistency response consistency rather than direct verbalized-confidence for arithmetic reasoning tasks like gsm8k **increases** 'auroc improves fro
 - [[context-distillation-approaches-prompted-performance]] : Applying context-distillation to internalize an HHH prompt into a 13B or 52B language model's weights, then comparing the context-distilled model against the sa
 - [[context-reintroduction-degrades-distilled-student]] : Training a context-free student to internalize privileged context via standard on-policy-distillation (optimizing only privileged fidelity), then reintroducing 
+- [[contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis]] : Fitting a refusal direction on the raw, untrained Qwen3-4B base under the response-confidence contract (P-rc, the one prompt condition where the base over-refus
 - [[contrastive-activation-addition-steers-alignment-behaviors]] : A contrastive-activation-addition vector is computed from contrasting behavior examples. **enables** Alignment-relevant behaviors shift during evaluation or gen
 - [[conversational-role-cue-flips-factuality-representation]] : A model engaging in a multi-turn conversation that cues a role incompatible with standard factuality (e.g., asserting opposite-day answers, roleplaying as a dei
 - [[correctness-direction-weakly-identified-defeats-cosine-rotation-probe]] : Fitting a per-stage logistic-regression correctness (correct-vs-wrong) direction in a shared raw-basis PCA-128 subspace at each of four training stages (raw bas

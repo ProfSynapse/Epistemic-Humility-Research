@@ -20,6 +20,7 @@ related:
 - '[[context-invariance]]'
 - '[[prompt-cannot-override-rlvr-abstention-deficit]]'
 - '[[prompt-crossing-heldout-confirmatory]]'
+- '[[base-refusal-direction-under-contract]]'
 relationships:
 - type: builds_on
   target: '[[grpo-cold-start-induction]]'
@@ -69,6 +70,15 @@ relationships:
   - experiments/prompt-vs-training-panel/AMENDMENT.md#outcome (mirror polarity;
     that mechanism is prompts failing to override a trained always-answer prior,
     this panel is an untrained base's abstention being entirely prompt-carried)
+- type: related_to
+  target: '[[base-refusal-direction-under-contract]]'
+  target_id: experiment:base-refusal-direction-under-contract
+  confidence: high
+  evidence:
+  - "experiments/base-refusal-direction-under-contract/experiment.yaml inputs
+    (Stage 1 known-refused vs known-answered labels join from this panel's
+    governed retained scored_rows, base P-rc arm, SelfAware n=3369; no fresh
+    generation in the downstream cell)"
 ---
 
 Exploratory (tier-2) measurement cell that crosses three prompt levels
