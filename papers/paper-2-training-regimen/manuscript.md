@@ -908,6 +908,43 @@ cold-start preference checkpoint *complies* with it while it is present,
 while SFT *induces* abstention. The behavior survives the
 instruction's removal, on three seeds, in both directions.
 
+Those three readings were then put to a registered held-out test on a surface
+none of these checkpoints had been evaluated on: the AmbigQA validation split
+(Min et al., 2020) as retained by this study, 1,832 rows per arm (1,002
+unknown-labeled, 830 known-labeled), twenty arms under the same decoding and
+the same scorer, with prediction bands fixed before the run. The result is an
+exploratory-tier companion to the crossing above and is never pooled with the
+headline matrix.
+
+The instruction gap replicates at 70.26 points: the untrained base reads
+70.26% refusal recall under the response-confidence contract and 0.00% under
+plain-answer, inside the registered 50 to 90 point band (the SelfAware gap
+reads 90.89). The internalization signature replicates seed for seed: cold
+SFT reads 56.39, 63.47, and 61.58% under the structure-only prompt, inside
+the registered 40 to 80 band, while the base and all six cold DPO and KTO
+seeds read at most 0.10%. Over-refusal travels with recall here as it does
+everywhere else in this paper (73.73% for the base under response-confidence,
+58.92 to 66.39% for the SFT seeds under structure-only), so the new surface
+changes no trade-off conclusion.
+
+The third reading, erosion without erasure, holds with a sharpening the
+SelfAware panel had only suggested. Against each seed's own SFT parent on the
+same surface, SFT-then-KTO retains 90.1, 83.8, and 78.6% of instruction-free
+recall, inside the registered 40 to 100% retention band, while SFT-then-DPO
+retains 28.9, 32.6, and 28.4%, below that band's floor on every seed though
+above the 25% erasure floor on every seed. The retention claim is therefore
+reported as partial rather than promoted, and the shape of the partial is
+itself the finding: on a held-out surface the pairwise objective strips
+roughly seven tenths of what the supervised stage installed and the unpaired
+objective strips roughly two tenths, on every seed, with neither erasing it.
+Section 4.3 returns to this asymmetry.
+
+Two secondary surfaces, run on two arms only to bound generality, extend the
+internalization reading descriptively: on a screened known-unknown question
+set and on the BIG-bench known-unknowns task, the seed-1 cold-SFT checkpoint
+reads 88.34% and 100% instruction-free refusal recall where the base reads
+0.00% on both.
+
 ### 4.3 Preference optimization repositions the boundary, on a trade-off
 
 Applied after SFT, the preference methods do real work, but the work is
@@ -951,7 +988,12 @@ instruction-free abstention policy. But against each seed's own SFT parent
 retain 61.43, 65.12, and 65.41%, a loss of 8 to 14 points. The two
 objectives differ in the weights the same way they differ at the surface:
 DPO spends far more of the internalized policy than KTO, and neither erases
-it. The operating-point trade-off above and this weights-level spend are
+it. The held-out replication of Section 4.2 sharpens the contrast: against
+same-seed parents on a surface none of the arms had seen, the KTO stack
+retains 79 to 90% of instruction-free recall on every seed while the DPO
+stack retains 29 to 33%, so how much of the installed policy each objective
+spends is a property of the objective, not of the evaluation surface. The
+operating-point trade-off above and this weights-level spend are
 the same repositioning seen at two depths.
 
 Under the stated-confidence contract, the same geometry reappears with a
@@ -1564,6 +1606,9 @@ Addition to Genuine Uncertainty*. arXiv:2507.16199.
 Lithgow-Serrano, O., Kanjirangat, V., & Antonucci, A. (2025). *Causal
 Understanding by LLMs: The Role of Uncertainty*. arXiv:2509.20088.
 
+Min, S., Michael, J., Hajishirzi, H., & Zettlemoyer, L. (2020). *AmbigQA:
+Answering Ambiguous Open-domain Questions*. In Proceedings of EMNLP 2020.
+
 Mohamadi, M. A., Wang, T., & Li, Z. (2025). *Honesty over Accuracy:
 Trustworthy Language Models through Reinforced Hesitation*. arXiv:2511.11500.
 
@@ -1701,6 +1746,15 @@ with the internal label it carries in the repository.
   byte-identical to the pinned panel and headline configs; per-arm metrics
   are in `analysis-committed/metrics_*__selfaware.json`. Internal label:
   the prompt-crossing completion cell.
+- [The held-out crossing confirmatory](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/prompt-crossing-heldout-confirmatory/AMENDMENT.md):
+  the registered held-out replication reported at the end of Section 4.2 and
+  in Section 4.3: twenty arms on the retained AmbigQA validation split plus
+  two secondary arms on the screened known-unknown set and BIG-bench
+  known-unknowns, resolved with the instruction-gap and internalization
+  readings confirmed and the retention reading partial. Scored rows and
+  per-arm metrics in `results_prompt_crossing_heldout_confirmatory_4b/` and
+  `results_prompt_crossing_heldout_confirmatory_secondary_4b/`. Internal
+  label: the prompt-crossing held-out confirmatory.
 - [The cold-start GRPO cell](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/grpo-cold-start-induction/AMENDMENT.md):
   the falsified registered prediction reported in Section 4.1, its training
   run record, and the three registered diagnostics computed by the pinned
