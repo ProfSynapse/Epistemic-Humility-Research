@@ -66,6 +66,16 @@ fixed permutation, clear-positive and clear-negative decoys included, graded
 manifest hashed and committed before unblinding. No instrument component is
 refit or retuned for this cell.
 
+Two harness-review notes, recorded before any run. First, Stage 0 captures
+per-row generation text by tee-ing the source cells' own pinned functions via
+import (the committed CLI entry points aggregate and discard row text); the
+run therefore includes an internal-consistency check in addition to WG-G0:
+the narrow summary recomputed from the teed rows must equal the run's own
+aggregate exactly, else the capture is not trusted. Second, the
+known-population coverage caveat documented in the wide-instrument
+calibration cell (decoys carved from known-correct rows are excluded from
+every scored rate) carries over here unchanged and is read the same way.
+
 Estimated grading volume: on the order of 2,500-3,500 grader calls across both
 source cells' arms (non-refused rows only reach the grading lane). GPU cost:
 regeneration only, local 3090, no cloud spend.
@@ -86,12 +96,14 @@ gap) with a bootstrap CI excluding zero.
 
 ## Falsifier
 
-Either control conclusion reverses under the wide instrument: WG-G1's effect
+Any control conclusion reverses under the wide instrument: WG-G1's effect
 ratio lands below 3.0 at the 4.5 operating point (specificity of the Section
-4.5 result does not survive the instrument change), or WG-G2's permuted-gate
-degradation CI includes zero (the gate's contribution is a narrow-detector
-artifact). Either firing upgrades the Section 6.4 gap to a substantive
-limitation and blocks promotion of the affected result.
+4.5 result does not survive the instrument change), WG-G2's permuted-gate
+cost-excess CI includes zero (the gate's contribution is a narrow-detector
+artifact), or WG-G3's layer-site advantage loses its sign or its CI includes
+zero (the 4.6 conclusion is instrument-dependent). Any firing upgrades the
+Section 6.4 gap to a substantive limitation and blocks promotion of the
+affected result.
 
 ## Gates
 
@@ -108,10 +120,22 @@ limitation and blocks promotion of the affected result.
   over undosed baseline), computed as in RR3. PASS at >= 3.0. The
   random-direction lift is also reported signed, against the census
   expectation that qwen's placebo response is suppressive.
-- WG-G2 (permuted-gate contribution): wide-instrument known-correct cost under
-  permuted gate minus cost under true gate, and the selectivity gap, each with
-  bootstrap 95% CI. PASS if the cost excess is positive with CI excluding
-  zero (anchor: narrow-detector cost excess 22.9% - 3.1% = 19.8 points).
+- WG-G2 (permuted-gate contribution): the gated quantity is the wide-instrument
+  known-correct cost excess, permuted-gate cost minus true-gate cost, on rows
+  paired by row key (decoy carving is per-arm, so pairing is by explicit key
+  intersection with drop counts reported). PASS if the cost excess is positive
+  with paired bootstrap 95% CI excluding zero (anchor: narrow-detector cost
+  excess 22.9% - 3.1% = 19.8 points). The confabulation-tightening difference
+  between the arms is reported descriptively and is not gated.
+- WG-G3 (layer-site conclusion, added at harness review 2026-08-18, before
+  any regeneration or scoring): the Section 4.6 cell has no placebo arms, so
+  WG-G1/WG-G2 literally cover only the 4.5 cell; this gate covers 4.6. PASS if
+  the wide-instrument hs23-vs-hs34 clean-tightening advantage retains its
+  positive sign with paired bootstrap 95% CI excluding zero (anchor:
+  narrow-detector +22.7 points). WG-G0 parity for this cell spans all four
+  regenerated layers (hs23/26/29/34; the committed pipeline regenerates all
+  four with no subset flag), while Stage 1 wide scoring remains hs23/hs34 per
+  the confirmed scope.
 - Indeterminate: if the wide-instrument grading lane fails its own decoy
   calibration, the cell records instrument-invalid, reports nothing, and may
   be re-run after the lane is fixed; this is not a gate outcome.
@@ -120,8 +144,8 @@ limitation and blocks promotion of the affected result.
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | WG-G0 passes (parity holds); WG-G1 holds (ratio >= 3.0); WG-G2 survives (CI excludes zero) |
-| user | WG-G0 "it works"; WG-G1 holds; WG-G2 survives |
+| orchestrator | WG-G0 passes (parity holds); WG-G1 holds (ratio >= 3.0); WG-G2 survives (CI excludes zero); WG-G3 holds (advantage keeps sign, CI excludes zero) |
+| user | WG-G0 "it works"; WG-G1 holds; WG-G2 survives; WG-G3 pending (gate added at harness review; call open until sign) |
 
 Calls recorded 2026-08-18, before any regeneration or scoring. The two
 predictors converged independently; both flagged WG-G0 as the leg carrying the
