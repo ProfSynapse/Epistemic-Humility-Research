@@ -93,10 +93,32 @@ error (not a silent skip) if either is missing.
 
 ## 1. Stage 0: regenerate both cells' arms (GPU, local 3090)
 
+Launch-time correction 6 (2026-08-19): the tuner submodule at current main
+(1dac0202) carries a device-mismatch regression introduced 2026-08-11 by
+7a62da5 in MechInterp/intervention/hooks.py — the added pre-edit readback
+snapshot passes the raw stored direction (`self.direction.detach().to(
+torch.float64)`, dtype converted, device NOT) into `_projections`, so a
+CPU-resident direction against cuda hidden states crashes `model.generate()`
+on the first dosed row. Both source cells originally ran BEFORE that commit,
+so the parity-locked engine rule resolves this environment-only: run each
+cell's regeneration under the tuner sha its own evidence commit pinned
+(neither contains the snapshot code — verified zero `pre_proj` occurrences):
+
 ```bash
 cd experiments/wide-instrument-control-rescore
-python pipeline_rescore.py --cell both --dose 200 --i-know-this-is-the-real-regeneration-run
+# cell 45 under its original tuner (root evidence commit b99126f0):
+git -C ../../synaptic-tuner checkout 6ea93a2fa7af2abc5f8c4500ff300550f9de8488
+python pipeline_rescore.py --cell 45 --dose 200 --i-know-this-is-the-real-regeneration-run
+# cell 46 under its original tuner (root evidence commit e38646f6):
+git -C ../../synaptic-tuner checkout f09db5f920fc356be710f3f7b9b631eeff9ef9e4
+python pipeline_rescore.py --cell 46 --dose 200 --i-know-this-is-the-real-regeneration-run
+# restore the submodule to the repo's pinned state afterwards:
+git -C ../../synaptic-tuner checkout 1dac0202dee1b604d170e4b4a24353fe296d1475
 ```
+
+These submodule checkouts are working-tree state only (no commits anywhere);
+provenance.json records the tuner sha each cell actually ran under. The
+`--cell both` form is superseded for this launch.
 
 Verifies pins for both source cells (and the 4.6 predecessor) against their
 own `experiment.yaml` `instrument.pins`, fails loudly on any mismatch before

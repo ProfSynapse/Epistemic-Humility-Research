@@ -84,3 +84,20 @@ in `experiment.yaml`.
   — the extractor merges the mined rows by design, no pin or script
   touched. Correction-4 run order in RUNBOOK section 0 amended to put
   mining before extraction.
+- 2026-08-19 (launch attempt 6 ruling): Stage 0 crashed on the first
+  dosed row inside the tuner submodule at current main —
+  MechInterp/intervention/hooks.py device mismatch (CPU direction vs
+  cuda hidden) in the pre-edit readback snapshot ADDED 2026-08-11 by
+  tuner commit 7a62da5. Both source cells originally ran before that
+  commit (4.5 evidence committed 2026-07-07, 4.6 2026-07-08), so this is
+  a regression-by-upgrade, and the parity-locked engine rule resolves it
+  environment-only: regenerate cell 45 under tuner 6ea93a2f (the sha
+  pinned by its evidence commit b99126f0) and cell 46 under f09db5f9
+  (pinned by e38646f6), then restore the submodule pointer (1dac0202).
+  Both historical shas verified free of the snapshot code (zero pre_proj
+  occurrences). Submodule checkouts are working-tree only; per-cell
+  provenance.json records the tuner sha actually run. Separately: the
+  device bug in tuner main deserves an upstream fix (one line, align
+  device in the snapshot path) — parked as follow-up, not part of this
+  cell. GPU work is currently ON HOLD at the user's request; relaunch
+  order goes out when the user releases the GPU.
