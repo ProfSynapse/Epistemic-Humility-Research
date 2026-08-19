@@ -32,3 +32,18 @@ in `experiment.yaml`.
   cross-cell wide-stack pins from experiment.yaml; the wide-stack shas
   remain recorded in the signed AMENDMENT text, which stays the pin of
   record for those two files.
+- 2026-08-18 (launch attempt 2): runner stopped pre-GPU again — the July
+  archive relocation (commit 0723c329, pure R100 renames) moved
+  amendment_s_correctness_probe_extract.py into
+  probe/legacy-wrapper-tree/, breaking the archived extractors' bare-name
+  import. Lead ruling: environment-only fix, PYTHONPATH extended to
+  amendments + legacy-wrapper-tree + repo root. Verification chain: the
+  relocated file is a compatibility wrapper delegating to the promoted
+  experiments/common/readouts implementation; the untracked probe-root
+  backends.py the runner flagged as unrelated cruft is in fact
+  byte-identical (sha edb42095) to experiments/common/knowledge_probe/
+  backends.py, which defines the render_probe_prompt the chain needs, so
+  it was left in place; full import chain proven on CPU
+  (load_baseline_system_prompt importable) before relaunch. No archived
+  script edited; WG-G0 parity remains the arbiter of regeneration
+  fidelity against the committed rows.
