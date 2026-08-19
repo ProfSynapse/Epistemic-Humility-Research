@@ -40,6 +40,17 @@ staging repo access, local alias checkout, GPU anchor extraction):
 # satisfies the chain's bare `from backends import render_probe_prompt`;
 # leave it in place. WG-G0 parity remains the arbiter of whether the
 # promoted implementations regenerate the committed rows faithfully.
+#
+# Launch-time correction 3 (2026-08-19): amendment_ah_stage0_extract.py:55
+# hardcodes the pre-rename path experiments/doubt-regulated-caution/
+# phase3_ac_doubt_coupled_intervention.yaml (commit d55b7d26 dropped the
+# phase3_ prefix, R078 — NOT a pure rename). The helper reads only
+# prompt.system, verified byte-identical (463 chars) between the
+# pre-rename blob and the tracked successor, with no other AC_CONFIG
+# consumer. Fix per the h9-propensity-reading-gate precedent
+# (NOTEBOOK.md:125-145 there): shim the old path with an untracked
+# verbatim copy of the tracked ac_doubt_coupled_intervention.yaml. Never
+# commit the shim; edit only the tracked file.
 export WICR_PP=/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/amendments:/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/legacy-wrapper-tree:/home/profsynapse/code/Epistemic-Humility-Research
 cd experiments/doubt-gated-caution-tighten
 PYTHONPATH=$WICR_PP python extract_l34_anchor.py   # GPU, writes analysis/l34_anchor_extract*.{safetensors,json}
