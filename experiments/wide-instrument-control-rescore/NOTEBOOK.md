@@ -47,3 +47,13 @@ in `experiment.yaml`.
   (load_baseline_system_prompt importable) before relaunch. No archived
   script edited; WG-G0 parity remains the arbiter of regeneration
   fidelity against the committed rows.
+- 2026-08-19 (launch attempt 3): third pre-GPU stop, same class — the
+  archived helper hardcodes the pre-rename AC config path (d55b7d26
+  dropped the phase3_ prefix; R078, not a pure rename). Lead verified the
+  helper's sole read, prompt.system, is byte-identical (463 chars) across
+  the rename with no other AC_CONFIG consumer, and ruled for the
+  h9-propensity-reading-gate precedent: an untracked verbatim shim of the
+  tracked yaml at the old expected path, placed by the user. Two sibling
+  experiments hit and fixed this same break independently — the archived
+  phase-1 launch surface has now cost three stops in one cell; flagged
+  for a durable note in the experiments skill after this cell resolves.
