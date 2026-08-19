@@ -57,3 +57,19 @@ in `experiment.yaml`.
   experiments hit and fixed this same break independently — the archived
   phase-1 launch surface has now cost three stops in one cell; flagged
   for a durable note in the experiments skill after this cell resolves.
+- 2026-08-19 (launch attempt 4): anchor extract SUCCEEDED (176s, 1427
+  vectors: 89 known-correct + 1029 unknown-refused + 309 confab), then
+  materialize stopped on the missing gitignored mining output
+  (mined_a0_known_correct_rows.jsonl — question text for the 341 mined
+  known-correct rows; 430-89=341 matches the reported missing_question
+  exactly). Lead ruling: authorize a rerun of the cell's own
+  mine_known_correct.py — greedy decode, question text carried verbatim
+  from expansion_candidates.jsonl, committed split_manifest.json pins the
+  341 row keys, and materialize fail-closes on coverage drift, so the
+  rerun cannot silently substitute. Its missing input
+  expansion_candidates.jsonl restored from the divergent-pool-own-readout
+  mirror (13,496 rows = mirror manifest n_total_expansion; sha256
+  2886a602a2d8eca90bec2346ba21dc33ad8437d23d57755afb4b731ca063f3e5),
+  copy executed by the user. RUNBOOK section 0 gains the mining step as
+  correction 4. The j-space cell's materialize reuses the same mined file
+  via its fallback path, so one mining run covers both source cells.
