@@ -73,3 +73,14 @@ in `experiment.yaml`.
   copy executed by the user. RUNBOOK section 0 gains the mining step as
   correction 4. The j-space cell's materialize reuses the same mined file
   via its fallback path, so one mining run covers both source cells.
+- 2026-08-19 (launch attempt 5, in flight): mining completed exactly on
+  target (341/341); both cells' materialize passed fail-closed
+  (missing_question=0, 739 rows each). pipeline_rescore's first attempt
+  failed fast (~8s, pre-GPU) on a KeyError for the first mined row_key:
+  the 4.5 anchor extract had run BEFORE mining, so its safetensors
+  covered only the original 89 known-correct rows. Runner re-ran the
+  same authorized extract command unchanged with the mined file now
+  present (startup log shows known_correct_answered=430); lead ratified
+  — the extractor merges the mined rows by design, no pin or script
+  touched. Correction-4 run order in RUNBOOK section 0 amended to put
+  mining before extraction.

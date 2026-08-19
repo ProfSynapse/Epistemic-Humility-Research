@@ -54,10 +54,18 @@ staging repo access, local alias checkout, GPU anchor extraction):
 # expansion_candidates.jsonl is restored from the divergent-pool-own-
 # readout phase1-migrated mirror (13,496 rows, matching the mirror
 # manifest's n_total_expansion; sha256 2886a602a2d8eca90bec2346ba21dc33
-# ad8437d23d57755afb4b731ca063f3e5). Run order: after the anchor extract,
-# run `python mine_known_correct.py`, then `python materialize_rows.py`
-# and require its printed missing_question=0. The j-space cell's
-# materialize reuses the same mined file via its fallback path.
+# ad8437d23d57755afb4b731ca063f3e5). Run order (corrected at launch,
+# attempt 5): `python mine_known_correct.py` FIRST, then the anchor
+# extract, then `python materialize_rows.py` requiring its printed
+# missing_question=0. The extractor merges analysis/
+# mined_a0_known_correct_rows.jsonl into its row set when present
+# (select_rows), and pipeline.py loads l34_anchor_extract.safetensors as
+# the sole anchor source — an extract run before mining covers only the
+# original 89 known-correct rows and pipeline_rescore later fails with a
+# KeyError on the first mined row_key. If extraction already ran before
+# mining, re-run the same extract command unchanged; its startup log must
+# show known_correct_answered=430. The j-space cell's materialize reuses
+# the same mined file via its fallback path.
 #
 # Launch-time correction 3 (2026-08-19): amendment_ah_stage0_extract.py:55
 # hardcodes the pre-rename path experiments/doubt-regulated-caution/
