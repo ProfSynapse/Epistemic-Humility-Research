@@ -27,16 +27,27 @@ staging repo access, local alias checkout, GPU anchor extraction):
 # row, and the extractors' own docstrings ("Offline prep step 1/3") agree.
 # Both extractors also import amendment_ah_stage0_extract from
 # archive/experiment/phase1/probe/amendments/, which is not on the sys.path
-# they set up themselves; run them with PYTHONPATH pointing at that
-# directory rather than editing the archived scripts (keeps their recorded
-# shas untouched).
+# they set up themselves; run them with PYTHONPATH rather than editing the
+# archived scripts (keeps their recorded shas untouched). PYTHONPATH needs
+# THREE directories (launch-time correction 2, 2026-08-18): amendments/
+# (the extractor's helper module), legacy-wrapper-tree/ (the archived tree
+# was rewritten as compatibility wrappers before archival — commit 0723c329
+# relocated amendment_s_correctness_probe_extract.py there as a pure R100
+# rename), and the repo root (the wrappers delegate to the promoted
+# implementations under experiments/common/ via namespace-package imports).
+# The untracked probe-root backends.py is NOT cruft: it is byte-identical
+# to experiments/common/knowledge_probe/backends.py (sha edb42095…) and
+# satisfies the chain's bare `from backends import render_probe_prompt`;
+# leave it in place. WG-G0 parity remains the arbiter of whether the
+# promoted implementations regenerate the committed rows faithfully.
+export WICR_PP=/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/amendments:/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/legacy-wrapper-tree:/home/profsynapse/code/Epistemic-Humility-Research
 cd experiments/doubt-gated-caution-tighten
-PYTHONPATH=/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/amendments python extract_l34_anchor.py   # GPU, writes analysis/l34_anchor_extract*.{safetensors,json}
+PYTHONPATH=$WICR_PP python extract_l34_anchor.py   # GPU, writes analysis/l34_anchor_extract*.{safetensors,json}
 python materialize_rows.py          # private HF staging repo + local alias checkout
 
 # j-space-midband-write-sweep-qwen3-4b (predecessor feeding the 4.6 cell's `pipeline` import)
 cd ../j-space-midband-write-sweep-qwen3-4b
-PYTHONPATH=/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/amendments python extract_layer_sweep_anchor.py   # GPU, writes analysis/layer_sweep_anchor_extract.safetensors
+PYTHONPATH=$WICR_PP python extract_layer_sweep_anchor.py   # GPU, writes analysis/layer_sweep_anchor_extract.safetensors
 python materialize_rows.py
 ```
 
