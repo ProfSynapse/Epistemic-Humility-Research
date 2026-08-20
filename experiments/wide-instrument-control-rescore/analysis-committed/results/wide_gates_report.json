@@ -1,0 +1,195 @@
+{
+  "WG1_random_direction_specificity": {
+    "baseline_confab_tighten_wide": {
+      "n": 185,
+      "rate": 0.11351351351351352,
+      "successes": 21,
+      "wilson_ci_95": [
+        0.07545368763448693,
+        0.16729734334659027
+      ]
+    },
+    "effect_ratio": 14.5,
+    "gated_confab_tighten_wide": {
+      "n": 185,
+      "rate": 0.7405405405405405,
+      "successes": 137,
+      "wilson_ci_95": [
+        0.6729377073531784,
+        0.7983571055327248
+      ]
+    },
+    "gated_lift_over_baseline": 0.6270270270270271,
+    "note": "single random_direction arm (not RR3's K>=3 fresh-seed max); ratio = gated_lift / |random_lift|, RR3's formula specialized to K=1 per this cell's registered single-arm design. Rates here are UNPAIRED per-arm wide rates (each arm's own denominator), unlike WG2's paired bootstrap.",
+    "pass": true,
+    "random_direction_confab_tighten_wide": {
+      "n": 185,
+      "rate": 0.07027027027027027,
+      "successes": 13,
+      "wilson_ci_95": [
+        0.04152295900807136,
+        0.1165009146002592
+      ]
+    },
+    "random_direction_lift_over_baseline_signed": -0.043243243243243246
+  },
+  "WG2_permuted_gate_contribution": {
+    "assumed_selectivity_gap_definition": "(gated_confab_tighten - permuted_confab_tighten) + (permuted_known_cost - gated_known_cost); NOT a registered AMENDMENT.md formula, see module docstring ambiguity #2.",
+    "cost_excess_bootstrap": {
+      "bootstrap_ci": [
+        0.14832535885167467,
+        0.2631578947368421
+      ],
+      "ci": 0.95,
+      "n": 209,
+      "n_resamples": 10000,
+      "point_diff": 0.2057416267942584,
+      "seed": 20260818
+    },
+    "cost_excess_pairing": {
+      "dropped_from_gated_only": 23,
+      "dropped_from_permuted_only": 23,
+      "n_paired": 209
+    },
+    "cost_excess_pass": true,
+    "gated_confab_tighten_wide": {
+      "n": 185,
+      "rate": 0.7405405405405405,
+      "successes": 137,
+      "wilson_ci_95": [
+        0.6729377073531784,
+        0.7983571055327248
+      ]
+    },
+    "gated_known_cost_wide": {
+      "n": 232,
+      "rate": 0.021551724137931036,
+      "successes": 5,
+      "wilson_ci_95": [
+        0.00923990708986426,
+        0.049449768974332446
+      ]
+    },
+    "permuted_gate_confab_tighten_wide": {
+      "n": 185,
+      "rate": 0.4,
+      "successes": 74,
+      "wilson_ci_95": [
+        0.33213231902702467,
+        0.47193612954849895
+      ]
+    },
+    "permuted_gate_known_cost_wide": {
+      "n": 232,
+      "rate": 0.22844827586206898,
+      "successes": 53,
+      "wilson_ci_95": [
+        0.17910768931871895,
+        0.28663509979879814
+      ]
+    },
+    "selectivity_gap_ci_note": "Point estimate only in this build; a proper joint CI needs both bootstraps drawn with paired resample indices per resample_index (not just summed point estimates) -- left for the real-run scorer to finish, flagged, not fabricated here.",
+    "selectivity_gap_point": 0.5462821673347988,
+    "tighten_drop_pairing": {
+      "dropped_from_gated_only": 0,
+      "dropped_from_permuted_only": 0,
+      "n_paired": 185
+    }
+  },
+  "applied_summary": {
+    "n_applied_rows": 2677,
+    "shards": {
+      "WICR45_shard_00": {
+        "cell": "WICR45",
+        "cg1": {
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 1.0,
+          "passed": true,
+          "shard_id": "WICR45_shard_00",
+          "status": "PASS"
+        }
+      },
+      "WICR45_shard_01": {
+        "cell": "WICR45",
+        "cg1": {
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 1.0,
+          "passed": true,
+          "shard_id": "WICR45_shard_01",
+          "status": "PASS"
+        }
+      },
+      "WICR46_shard_00": {
+        "cell": "WICR46",
+        "cg1": {
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 1.0,
+          "passed": true,
+          "shard_id": "WICR46_shard_00",
+          "status": "PASS"
+        }
+      },
+      "WICR46_shard_01": {
+        "cell": "WICR46",
+        "cg1": {
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 1.0,
+          "passed": true,
+          "shard_id": "WICR46_shard_01",
+          "status": "PASS"
+        }
+      }
+    },
+    "voided_cells": []
+  },
+  "cell_46_layer_contrast_wide": {
+    "layers": {
+      "hs23": {
+        "confab_tighten_wide": {
+          "n": 185,
+          "rate": 0.8918918918918919,
+          "successes": 165,
+          "wilson_ci_95": [
+            0.8389203056065041,
+            0.928919558084012
+          ]
+        },
+        "known_correct_cost_wide": {
+          "n": 231,
+          "rate": 0.025974025974025976,
+          "successes": 6,
+          "wilson_ci_95": [
+            0.011957301272794908,
+            0.055498670514492345
+          ]
+        }
+      },
+      "hs34": {
+        "confab_tighten_wide": {
+          "n": 185,
+          "rate": 0.6648648648648648,
+          "successes": 123,
+          "wilson_ci_95": [
+            0.5941027066954847,
+            0.7289195807881117
+          ]
+        },
+        "known_correct_cost_wide": {
+          "n": 231,
+          "rate": 0.017316017316017316,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.006753942965300817,
+            0.043669261183398075
+          ]
+        }
+      }
+    },
+    "note": "Informational only -- no WG-gate in AMENDMENT.md's Gates section literally covers this quantity (see module docstring ambiguity #1). Not pass/failed here."
+  },
+  "dry_run": false
+}

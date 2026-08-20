@@ -2,7 +2,7 @@ slug: wide-instrument-control-rescore
 title: Wide-instrument re-score of the gated-controller and layer-contrast controls
   (Qwen3-4B)
 type: steer-cell
-status: signed
+status: resolved
 registered: true
 created_at: '2026-08-18T21:26:34Z'
 question: Do the narrow-detector control conclusions behind paper 5 Sections 4.5 and
@@ -74,5 +74,8 @@ inputs:
 - experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json
 - experiments/abstention-wide-instrument-calibration/detector_v2_patterns.yaml
 - experiments/abstention-wide-instrument-calibration/grader.py
-verdict: ''
+verdict: Both control conclusions survive the wide two-instrument re-score - WG-G1
+  effect ratio 14.5, WG-G2 cost excess +20.6pp with CI excluding zero, WG-G3 layer
+  advantage +22.7pp with CI excluding zero - closing the paper 5 Section 6.4 instrument
+  gap.
 kg: []

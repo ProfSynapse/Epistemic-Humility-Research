@@ -1,0 +1,50 @@
+{
+  "n_applied_rows": 2677,
+  "shards": {
+    "WICR45_shard_00": {
+      "cell": "WICR45",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "passed": true,
+        "shard_id": "WICR45_shard_00",
+        "status": "PASS"
+      }
+    },
+    "WICR45_shard_01": {
+      "cell": "WICR45",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "passed": true,
+        "shard_id": "WICR45_shard_01",
+        "status": "PASS"
+      }
+    },
+    "WICR46_shard_00": {
+      "cell": "WICR46",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "passed": true,
+        "shard_id": "WICR46_shard_00",
+        "status": "PASS"
+      }
+    },
+    "WICR46_shard_01": {
+      "cell": "WICR46",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "passed": true,
+        "shard_id": "WICR46_shard_01",
+        "status": "PASS"
+      }
+    }
+  },
+  "voided_cells": []
+}

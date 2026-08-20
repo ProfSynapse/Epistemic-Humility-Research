@@ -6,6 +6,30 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-08-20 (resolve): Grading and gates complete; cell RESOLVED, prediction
+  confirmed on all legs. Four context-free grading agents (one per shard,
+  rubric rr2-verbatim, no pattern matching, no id-map access, counts-only
+  reports) returned complete gradings: 737/735/719/718 rows, 4/6/7/3
+  abstention-true respectively; the lead independently recounted every file
+  (coverage exact, strict booleans) before pinning its sha256 via
+  apply_adjudication commit-hash. Unblinding order held: pool manifest
+  merged first (PR #526), graded-file hashes merged second (PR #527,
+  b849b70c), id maps read only afterward by score_wide apply. CG1 passed
+  all four shards at attempt 1 with decoy agreement 1.0/1.0 both
+  directions; 2,677 core rows applied, zero voided. Gates: WG-G1 PASS
+  (effect ratio 14.5; random-direction lift -4.3pp, suppressive); WG-G2
+  PASS (paired cost excess +20.6pp, CI [+14.8, +26.3], n=209); WG-G3 PASS
+  (paired hs23-hs34 advantage +22.70pp, CI [+16.2, +29.7], n=185, zero
+  drops — computed by the lead with the cell-pinned bootstrap machinery,
+  seed 20260818, since the scorer reports the 4.6 contrast informationally
+  only; analysis-committed/results/wg_g3_paired_bootstrap.json). Only 5 of
+  2,677 core rows gained abstention beyond detector_v2; the grading
+  agents' other 15 positives were exactly the 15 clear-positive decoys.
+  Reports promoted to analysis-committed/results/. Both predictors' four
+  calls all correct. Follow-ups owed: HF exhaust packaging per the
+  registered exhaust-retention clause (pending license gate + dry-run-card
+  approval), the durable experiments-skill note on the archived phase-1
+  launch surface, and the one-line upstream tuner device fix.
 - 2026-08-18: Signed. All four scoreboard calls recorded before sign
   (orchestrator: G0 passes, G1 holds, G2 survives, G3 holds; user: G0 "it
   works", G1 holds, G2 survives, G3 holds). Launch pre-confirmed by the user
