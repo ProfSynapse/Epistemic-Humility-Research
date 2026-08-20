@@ -164,7 +164,7 @@ added known-correct cost (Section 4.6). Interestingly, a token-targeted J-space 
 raise refusal tokens and lower answer-continuation tokens, actuates on its own
 but adds almost nothing on top of the gated write (Section 4.7).
 
-Across families, we can consistently wire the readout (Known-Unkown or KU) to the behavior (the "I don't know" or IDK switch), but the coordinates do not. In practice, the build sequence is:
+Across families, we can consistently wire the readout (Known-Unknown or KU) to the behavior (the "I don't know" or IDK switch), but the coordinates do not. In practice, the build sequence is:
 
 1. **Find the read spot.** A per-family read panel sweeps the model's depth and
    marks the band where its known-unknown state reads cleanly. That is where
@@ -264,7 +264,7 @@ We tested four ways to route an epistemic readout into behavior.
   rendered as a second-person system instruction before generation.
 - Reward coupling: a reinforcement-learning reward computed from a frozen
   probe score read from the policy's own pre-generation hidden state.
-  - Activation writes: interventions that modify the residual stream along a
+- Activation writes: interventions that modify the residual stream along a
   fitted direction at a specified layer and token scope, either by adding a
   scaled copy of the direction or, in the erase-write form used for most
   results here, by removing the state's existing component along that direction and
@@ -354,9 +354,11 @@ false-positive rate is largest, chosen on the fit split alone and frozen
 before a single held-out row is touched. Separating fit confabulation rows
 from fit known-correct rows, the score reaches AUROC 0.9955; the selected
 threshold catches 120 of 124 fit confabulations (96.8%) and flags 2 of 172 fit
-known-correct rows (1.2%). On the split it was chosen on, in other words, the
-gate separates the two populations almost perfectly and fires on very few rows
-it should not, which means we can precisely target confabulations without causing over-refusal on knowns.
+known-correct rows (1.2%).
+
+That is a fit-split figure and nothing more. Every number Section 4.5 reports
+is measured on the held-out split that neither the direction fit nor the
+threshold choice ever saw.
 
 The raw direction the boundary push is built from is a second mass-mean
 contrast in the same anchor states, and it is not the same contrast: the mean
