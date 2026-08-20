@@ -675,7 +675,15 @@ row was scored.
 
 Start with the most direct question the readout results raise: if the gate and
 dial directions are readable, can we write them back into the model, while it
-is generating text, at the positions where they read best? That premise, that
+is generating text, at the positions where they read best? As a reminder, the
+gate is the answerability readout scored before generation, and the dial is
+the correctness readout scored after a first answer and aimed at revision
+behavior (Rosenbaum, 2026d). The grid below tests both because they are that
+paper's two deployable readouts, and writing each back in at its own read
+position is the direct test of whether the site that reads best is also the
+site that writes best. The dial does not return after this section; the
+controller work in the rest of the paper follows the gate lineage only. That
+premise, that
 the best read site is the best write site, is one an independent study has
 since tested directly and rejected: probe
 accuracy does not predict steering success, and the layer where a probe reads
