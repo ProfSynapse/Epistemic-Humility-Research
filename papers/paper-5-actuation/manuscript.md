@@ -675,7 +675,7 @@ row was scored.
 
 Start with the most direct question the readout results raise: if the gate and
 dial directions are readable, can we write them back into the model at the
-positions where they read best? That premise, that the best read site is the best write
+positions where they read best? When it's generating text. That premise, that the best read site is the best write
 site, is one an independent study has since tested directly and rejected: probe
 accuracy does not predict steering success, and the layer where a probe reads
 best can produce no steering effect at all (Billa, 2026). Steerability also
