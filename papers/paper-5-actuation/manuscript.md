@@ -1507,11 +1507,15 @@ not population effect-size estimates. Key limits:
 - reward-channel evidence is single-seed;
 - token-target J-space writing has only tested the natural observed token bundle,
   not dense or multilingual alternatives;
-- the random-direction and permuted-gate controls in Sections 4.5 and 4.6 were
-  graded under the narrow refusal detector and have not been re-scored under
-  the wide two-instrument stack used for the cross-family work in Section 4.8;
-  a flat, family-agnostic placebo tolerance is now known to be miscalibrated
-  to at least one family's baseline hedging rate;
+- the random-direction and permuted-gate controls in Sections 4.5 and 4.6, and
+  the hs23-versus-hs34 layer-site contrast, have been re-scored under the wide
+  two-instrument stack used for the cross-family work in Section 4.8
+  (`experiments/wide-instrument-control-rescore`); all three conclusions
+  survive unchanged (random-direction specificity ratio 14.5 against a 3.0
+  floor, permuted-gate cost excess +20.6pp with 95% CI [+14.8, +26.3],
+  layer-site advantage +22.70pp with 95% CI [+16.2, +29.7]), closing this gap.
+  A flat, family-agnostic placebo tolerance is nonetheless known to be
+  miscalibrated to at least one family's baseline hedging rate;
 - random-direction placebo response is high-variance across random seeds at
   matched magnitude. At one fixed mistral operating point, three fresh seeds
   produced confabulation lifts spanning -7.4 to +21.8 points, a 29-point
@@ -1961,8 +1965,6 @@ gap between prediction and result without consulting the text.
   score it under the wide two-instrument stack, before claiming or ruling out
   cross-family direction-specificity for that family. Its placebo null is
   measured and suppressive, so it cannot serve as a null control.
-- Re-score the Section 4.5 and 4.6 random-direction and permuted-gate controls
-  under the wide two-instrument stack before promoting either result.
 - The `doubt-regulated-caution` cell (trained-lineage predecessor context) and
   the `evidence-response-direction-search` null remain front-matter and
   Appendix A entries only, per the paper's raw-base scope.
