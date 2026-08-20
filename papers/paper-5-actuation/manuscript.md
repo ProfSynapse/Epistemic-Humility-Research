@@ -973,6 +973,17 @@ direction gets its own vocabulary and the control gets none, which is what
 licenses reading the tokens as a statement about what each direction is
 rather than an artifact of the lens.
 
+![FIG-P5-09: Top verbalized J-lens tokens per fitted direction and layer, Qwen3-4B raw-base](figures/fig-p5-09-jspace-tokens.png)
+**Figure 9.** What the J-lens finds, per direction and layer (hs30-36,
+Qwen3-4B raw-base, same-substrate bf16 H1 readout): the known-unknown
+direction verbalizes toward answer/reply tokens in two scripts (answer,
+reply), the caution and orthogonalized caution-write directions toward
+first-person, absence, error, and impossibility tokens (I, empty,
+impossible), and the confabulation-propensity negative control does not
+verbalize cleanly. Chinese-script and Latin tokens are ranked together;
+parenthetical glosses in the figure appear only for terms translated in the
+source amendment's Outcome (`experiments/j-space-localization-qwen3-4b`).
+
 A direction that verbalizes toward answer/reply tokens is
 tracking answerability, not a self-directed uncertainty state, and a later
 experiment on world-known items, where the error is a confidently wrong answer
@@ -1320,42 +1331,49 @@ Taken together, the channels sort by how far each one gets before it breaks.
 | Cross-family, Llama-3.2-3B | A gated write at its atlas-band sites failed on format collapse before the refusal floor; a wide-instrument re-run confirmed the failure is not a detector-coverage artifact |
 | Cross-family, Gemma-4-E4B | Behavioral gates pass at four of the eight depths tested; no tested site reaches the direction-specificity floor |
 
-Four readings come out of that grid. The first is the read/write split itself:
-every channel that routes the readout into behavior through text, authority, or
-reward either fails outright or moves behavior for a reason other than the
-model consulting its own state, and it fails on substrates where the same
-readout separates known from unknown items at near-ceiling accuracy. The
-second is that selectivity is not a property of the direction. At an overdrive
-dose the identical write damages most known-correct rows unless a gate holds
-it off them; at a mid-band dose the same write already sorts by content and
-the gate's measured contribution to selectivity is 0.148 on qwen and 0.129 on
-mistral, both under the 0.20 floor set for it, while its contribution
-to cost control is what keeps false refusals near their floor. One mechanism,
-two regimes, opposite attributions.
+Five readings come out of that grid.
 
-The third is that where the write lands is as consequential as what is
-written. Moving the same regulated boundary push from just past the
-workspace-like band into it buys 22.7 points of confabulation tightening on
-Qwen3-4B for less than a point of known-correct cost, and the advantage
-survives replication on a harder pool once the reference site is pulled off
-its own ceiling. On gemma the same lesson arrives as a boundary: the
-family clears the behavioral gates across a band that stops well short of the
-depths the qwen write sites sit at, and every site above its key-value sharing
-seam either fails direction-specificity or never reaches a usable dose.
+1. **The read/write split itself.** Handing the model its own readout, as
+   injected text, as an authoritative claim, or as a training reward, does
+   not make behavior track it: every such channel either fails outright or
+   moves behavior for reasons unrelated to the model consulting its own
+   state. And this happens on substrates where the same readout separates
+   known from unknown items at near-ceiling accuracy, so the signal is
+   present; the tested channels do not make the policy use it.
 
-The fourth is the scope of the recipe, which the cross-family work makes into
-a measurement rather than an assumption. Benefit and cost gates travel:
-mistral clears both under a blinded instrument at 69.9% graded refusal
-and 0.52% known-correct cost. Direction-specificity does not: it fails on
-mistral at three independent operating points, and on gemma at both above-seam
-sites where a usable dose existed. The reason it fails is measurable rather
-than mysterious, and it is the last reading: a matched-magnitude random
-direction is not behaviorally inert in any family tested, and its sign is a
-family property, suppressing hedging in qwen and llama and recruiting it in
-mistral. Any future direction-specificity claim has to be checked against
-that measured null.
+2. **Selectivity is not a property of the direction.** At an overdrive dose
+   the identical write damages most known-correct rows unless a gate holds
+   it off them; at a mid-band dose the same write already sorts by content
+   and the gate's measured contribution to selectivity is 0.148 on qwen and
+   0.129 on mistral, both under the 0.20 floor set for it, while its
+   contribution to cost control is what keeps false refusals near their
+   floor. One mechanism, two regimes, opposite attributions.
 
-The controller these results support is the five-step recipe stated in the
+3. **Where the write lands is as consequential as what is written.** Moving
+   the same regulated boundary push from just past the workspace-like band
+   into it buys 22.7 points of confabulation tightening on Qwen3-4B for less
+   than a point of known-correct cost, and the advantage survives
+   replication on a harder pool once the reference site is pulled off its
+   own ceiling. On gemma the same lesson arrives as a boundary: the family
+   clears the behavioral gates across a band that stops well short of the
+   depths the qwen write sites sit at, and every site above its key-value
+   sharing seam either fails direction-specificity or never reaches a usable
+   dose.
+
+4. **Benefit and cost travel; direction-specificity does not.** The
+   cross-family work makes the recipe's scope a measurement rather than an
+   assumption: mistral clears benefit and cost under a blinded instrument at
+   69.9% graded refusal and 0.52% known-correct cost, while
+   direction-specificity fails on mistral at three independent operating
+   points and on gemma at both above-seam sites where a usable dose existed.
+
+5. **The reason specificity fails is measured, not mysterious.** A
+   matched-magnitude random direction is not behaviorally inert in any
+   family tested, and its sign is a family property, suppressing hedging in
+   qwen and llama and recruiting it in mistral. Any future
+   direction-specificity claim has to be checked against that measured null.
+
+The controller these results support is the four-step recipe stated in the
 introduction. It is closer to a control system than to a prompt: the model's
 policy does not need to endorse or understand the sensor, because the
 controller is what uses the sensor.
@@ -1427,6 +1445,13 @@ accuracy-versus-effect frontier that work on collateral damage in activation
 steering characterizes (Nguyen et al., 2026); the gate is one way of moving
 along that frontier without lowering the dose.
 
+The decomposition runs on qwen and mistral because they are the only two
+families with a certified gated operating point to take apart: llama's
+controller has never cleared its behavioral gates at any site (Section 4.8),
+and gemma's actuating sites either fail direction-specificity or pass it
+only degenerately, so neither offers an operating point where a gate
+contribution could be attributed.
+
 ### 6.3 Why J-space matters, and where the account is scoped
 
 The J-space diagnostic gives a mechanistic explanation for one repeated pattern:
@@ -1452,29 +1477,6 @@ family tested, but the specific "write near the eff-dim peak" account is
 currently scoped to raw-base Qwen3-4B and should not be read as a
 cross-family mechanism claim.
 
-The account has also been measured once on a trained checkpoint, in an
-exploratory follow-up whose prediction and failure criterion were fixed before
-the run. Two results. First, training reshapes the band rather than erasing
-it, and what survives is a narrow band rather than a pronounced one: on a
-supervised-fine-tuned-then-reinforcement-trained checkpoint of the same base
-model, the raw-base effective-dimension peak at hs26 is suppressed by roughly
-a third and the surviving profile is flatter and deeper, with its interior
-maximum of 0.00735 at hs29 clearing the band threshold of 0.00675 by a small
-margin. Second, the surviving
-band did not license a write site. At its rule-selected shallow edge (hs17)
-the refusal axis reads nearly as well as at the late site (construction AUROC
-0.86 vs 0.87), but full ablation there released none of the over-refusal that
-the same operation at the late site removes (0 of 168 rows released, against
-163 of 168 at L35 on the same rows) and instead induced refusal on 48 percent
-of items the model previously answered. A minus-2-sigma displacement at the
-same site instead dropped refusal to 0.714 and recovered correct answers on
-21 percent of those rows, so at mid-depth removal and displacement are
-different operations: the direction is entangled with signal that answering
-requires. Read location and edit location come apart on the same checkpoint
-and the same axis. We read the J-space band as evidence about broadcast, not
-as a site license for writes, and the dosed-write mid-band results elsewhere
-in this paper do not imply that ablation transfers to those depths.
-
 ### 6.4 Limits
 
 This is an exploratory paper. The largest claims are qualitative and mechanistic,
@@ -1482,8 +1484,8 @@ not population effect-size estimates. Key limits:
 
 - many actuation results are single-model or single-family;
 - the strongest positive J-space layer-site result is currently surface-local to
-  raw-base Qwen3-4B bf16, and the one trained-checkpoint test so far (Section
-  6.3) found the band reshaped and its rule-selected mid-band site readable
+  raw-base Qwen3-4B bf16, and the one trained-checkpoint test so far (Appendix
+  A) found the band reshaped and its rule-selected mid-band site readable
   but not ablatable, so J-space profiles should not be used to pick ablation
   sites on trained checkpoints;
 - reward-channel evidence is single-seed;
@@ -1874,7 +1876,7 @@ Generated by `papers/paper-5-actuation/scripts/build_coverage_table.py` (determi
 | `evidence-response-direction-search` | null-result | `Qwen/Qwen3.5-4B` @ `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` | 1 declared / 1 launched (single-substrate cell) | NOT NARRATED IN BODY (front matter + Appendix A only; no flagged open-work item, unlike doubt-regulated-caution) |
 | `gemma4-e4b-kv-seam-quarantine` | resolved | `google/gemma-4-E4B-it` @ `fee6332c1abaafb77f6f9624236c63aa2f1d0187` | 1 declared / 1 launched (single-substrate cell) | 4.8, Appendix F |
 | `gemma4-e4b-pocket-ladder` | resolved | `google/gemma-4-E4B-it` @ `fee6332c1abaafb77f6f9624236c63aa2f1d0187` | 1 declared / 1 launched (single-substrate cell) | 4.8, Appendix F |
-| `jlens-trained-checkpoint-midband-ablation` | falsified | `clean_sft_grpo_v2_seed1 (local lineage: sft_schema_clean_seed1_full/20260623_123624 merged-16bit base + schema_clean_sft_grpo_v2_seed1_full/20260624_095831 final_model adapter)` @ `local run dirs pinned in configs; published mirror eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora` | 1 declared / 1 launched (single-substrate cell) | 6.3 |
+| `jlens-trained-checkpoint-midband-ablation` | falsified | `clean_sft_grpo_v2_seed1 (local lineage: sft_schema_clean_seed1_full/20260623_123624 merged-16bit base + schema_clean_sft_grpo_v2_seed1_full/20260624_095831 final_model adapter)` @ `local run dirs pinned in configs; published mirror eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora` | 1 declared / 1 launched (single-substrate cell) | 6.4 (limits bullet only; body narration cut per PI ruling 2026-08-20 -- Appendix A carries the numbers) |
 | `correctness-direction-rotation` | null-result | checkpoint.repo (verbatim): "local four-stage set (see cell.yaml stages; raw + partrue identities pinned at staging per A3)". DECLARED in cell.yaml: LogisticRegression(saga, tol=1e-3) | DECLARED 1 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "CD-G1 not met (later transitions 0.449/0.330 vs the 0.85 floor) and falsifier not fired (raw->cleansft 0.192); pre-registered readings exhausted; post-hoc: correctness direction too weakly identified (split-half floor 0...." | 6.5 |
 | `correctness-subspace-overlap` | null-result | `reused five-stage/checkpoint tensor set (see cell.yaml data.stages); no new checkpoint identity, CPU-only reuse of CD and Amendment S/T on-disk extractions` (revision not recorded) | 1 declared / 1 launched (single-substrate cell) | 6.5 |
 | `refusal-axis-ablation-confirmatory` | falsified | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: clean_sft_grpo_v2_seed2 on its own per-seed merged base (published pins 2390e893 adapter, 4d526fdd base; local run dirs 20260804_131151 and 20260731_232307) | DECLARED 1 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Falsifier fired: with a valid instrument (RC-G0 pass, baseline 1.000), full refusal-axis ablation on clean_sft_grpo_v2_seed2's own lineage leaves known-item over-refusal at 0.553, far above both the 0.10 confirmation bou..." | 6.6 |

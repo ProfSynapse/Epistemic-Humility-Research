@@ -120,7 +120,7 @@ SECTION_MAP: dict[str, str] = {
     "gemma4-e4b-kv-seam-quarantine": "4.8, Appendix F",
     "gemma4-e4b-pocket-ladder": "4.8, Appendix F",
     # New Appendix A rows from the 2026-08-17 restructure:
-    "jlens-trained-checkpoint-midband-ablation": "6.3",
+    "jlens-trained-checkpoint-midband-ablation": "6.4 (limits bullet only; body narration cut per PI ruling 2026-08-20 -- Appendix A carries the numbers)",
     "correctness-direction-rotation": "6.5",
     "correctness-subspace-overlap": "6.5",
     "refusal-axis-ablation-confirmatory": "6.6",
