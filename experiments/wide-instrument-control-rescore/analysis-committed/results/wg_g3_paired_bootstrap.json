@@ -1,0 +1,27 @@
+{
+  "anchor_narrow_pp": 22.7,
+  "bootstrap": {
+    "bootstrap_ci": [
+      0.16216216216216217,
+      0.29729729729729726
+    ],
+    "ci": 0.95,
+    "n": 185,
+    "n_resamples": 10000,
+    "point_diff": 0.22702702702702704,
+    "seed": 20260818
+  },
+  "ci_excludes_zero": true,
+  "gate": "WG-G3 (layer-site conclusion): wide-instrument hs23-vs-hs34 clean-tightening advantage, paired bootstrap 95 CI",
+  "hs23_rate": 0.8918918918918919,
+  "hs34_rate": 0.6648648648648648,
+  "method_note": "computed with the cell-pinned score_wide._wide_rate_flags / paired_flag_lists / stats_lib.bootstrap_paired_diff_ci, seed 20260818, 10000 resamples, identical to the WG-G2 machinery; argument order (hs34, hs23) because bootstrap_paired_diff_ci returns rate(b)-rate(a).",
+  "pairing": {
+    "dropped_from_hs23_only": 0,
+    "dropped_from_hs34_only": 0,
+    "n_paired": 185
+  },
+  "pass": true,
+  "sign_positive": true,
+  "statistic": "rate(hs23 confab tighten wide) - rate(hs34 confab tighten wide), rows paired by row_key"
+}

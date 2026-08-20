@@ -1,6 +1,7 @@
 # Wide-instrument re-score of the gated-controller and layer-contrast controls (Qwen3-4B)
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: resolved 2026-08-20. Verdict: prediction confirmed; all gates pass
+(see Outcome).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -160,5 +161,71 @@ covered by a follow-up if this cell's result warrants it.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-08-20. Verdict: prediction CONFIRMED — both narrow-detector
+control conclusions survive the wide two-instrument re-score at both
+operating points; no falsifier fires; the Section 6.4 gap closes.
+
+Gate results (machine reports promoted to `analysis-committed/results/`;
+rates below are quoted from `wide_gates_report.json` and
+`wg_g3_paired_bootstrap.json`):
+
+- WG-G0 (parity): PASS, `verdict: parity_holds`, `stage_1_authorized: true`.
+  Every regenerated arm in both cells matched its committed narrow-detector
+  rate to 0.0pp (13/13 rate pairs byte-exact), under the per-cell historical
+  tuner pins of NOTEBOOK launch-correction 6. `results/parity_report.json`.
+- CG1 (grading-lane calibration): PASS on all four shards at attempt 1 —
+  clear-negative and clear-positive decoy agreement both 1.0 on every
+  shard, no voided cells, 2,677 core rows applied.
+- WG-G1 (random-direction specificity): PASS. Wide gated confab tightening
+  74.05% (137/185, Wilson 95% [67.3, 79.8]) vs undosed baseline 11.35%
+  (21/185): gated lift +62.7pp. Random-direction 7.03% (13/185): lift
+  -4.3pp, suppressive, matching the census expectation quoted in the gate
+  text. Effect ratio 14.5 against the 3.0 threshold.
+- WG-G2 (permuted-gate contribution): PASS. Paired known-correct cost
+  excess (permuted minus gated) +20.6pp, paired bootstrap 95% CI
+  [+14.8, +26.3], n=209 paired rows (23 dropped from each side by the
+  per-arm decoy carve, reported not hidden), seed 20260818; narrow anchor
+  +19.8pp. Descriptively (not gated): the permuted gate also drops confab
+  tightening to 40.0% vs the true gate's 74.05% (paired n=185, zero
+  drops). The harness build's two flagged ambiguities stand as flagged:
+  the selectivity-gap formula is unregistered, so its point estimate
+  (+54.6pp) is reported without a verdict and without a joint CI.
+- WG-G3 (layer-site conclusion): PASS. Wide clean tightening hs23 89.19%
+  (165/185) vs hs34 66.49% (123/185); paired advantage +22.70pp — equal
+  to the narrow anchor — with paired bootstrap 95% CI [+16.2, +29.7],
+  n=185, zero pairing drops. Computed by the lead with the cell-pinned
+  machinery (score_wide `_wide_rate_flags`/`paired_flag_lists`,
+  stats_lib `bootstrap_paired_diff_ci`, seed 20260818, 10,000 resamples),
+  since the harness scorer reports the 4.6 contrast informationally only;
+  `results/wg_g3_paired_bootstrap.json` records the computation.
+
+Instrument-change magnitude: across all 2,677 core rows, exactly 5 gained
+adjudicated-abstention beyond detector_v2 (the grading agents' remaining 15
+positive labels were the 15 clear-positive decoys, all caught). At these
+operating points the wide instrument barely moves qwen raw-base rates,
+consistent with the wide-instrument calibration cell's family-specificity
+reading.
+
+Scoreboard: both predictors (orchestrator and user) called all four gates
+correctly; the shared flag on WG-G0 as the risk-bearing leg was borne out
+in process (six pre-GPU launch corrections) but not in outcome (parity
+byte-exact).
+
+Process record: the six launch corrections (artifact restores, import-path
+extensions, config shim, mining rerun and its ordering fix, per-cell tuner
+pins) are documented in NOTEBOOK.md and RUNBOOK.md; none edited a pinned
+script or moved a goalpost. The registered unblinding order held: pool
+manifest committed (PR #526) before any grading; graded-file sha256s
+committed (PR #527) before any id map was read; four context-free grading
+agents (rubric rr2-verbatim, no pattern matching, counts-only reporting)
+each passed an independent lead recount before hash commit.
+
+Exhaust retention: the packaging of regenerated rows and wide grades via
+the data-exhaust skill, registered above, is owed at this resolve and
+remains open pending the license gate and user approval of the dry-run
+card; tracked as this cell's follow-up, not dropped.
+
+One-sentence summary (also in `verdict:`): Both control conclusions survive
+the wide two-instrument re-score — WG-G1 effect ratio 14.5, WG-G2 cost
+excess +20.6pp with CI excluding zero, WG-G3 layer advantage +22.7pp with
+CI excluding zero — closing the paper 5 Section 6.4 instrument gap.

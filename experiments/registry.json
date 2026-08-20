@@ -7553,10 +7553,10 @@
       "question": "Do the narrow-detector control conclusions behind paper 5 Sections 4.5 and 4.6 (random-direction placebo carries far less than the gated write; the permuted gate degrades cost and selectivity) survive re-scoring under the pinned wide two-instrument stack (detector_v2 plus blinded context-free LLM grading), after faithful regeneration of the arms from the committed pipelines?",
       "registered": true,
       "slug": "wide-instrument-control-rescore",
-      "status": "signed",
+      "status": "resolved",
       "title": "Wide-instrument re-score of the gated-controller and layer-contrast controls (Qwen3-4B)",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "Both control conclusions survive the wide two-instrument re-score - WG-G1 effect ratio 14.5, WG-G2 cost excess +20.6pp with CI excluding zero, WG-G3 layer advantage +22.7pp with CI excluding zero - closing the paper 5 Section 6.4 instrument gap."
     },
     {
       "checkpoint": {

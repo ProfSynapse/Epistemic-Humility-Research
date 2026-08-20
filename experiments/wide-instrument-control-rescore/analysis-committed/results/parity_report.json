@@ -1,0 +1,162 @@
+{
+  "cells": {
+    "doubt-gated-caution-tighten": {
+      "arms": [
+        {
+          "arm": "gated",
+          "metrics": {
+            "confab_tighten": {
+              "committed_rate_pct": 73.5135,
+              "diff_pp": 0.0,
+              "pass": true,
+              "regenerated_rate_pct": 73.5135,
+              "tolerance_pp": 2.0
+            },
+            "known_correct_cost_control": {
+              "committed_rate_pct": 3.1008,
+              "diff_pp": 0.0,
+              "pass": true,
+              "regenerated_rate_pct": 3.1008,
+              "tolerance_pp": 2.0
+            }
+          },
+          "pass": true
+        },
+        {
+          "arm": "random_direction",
+          "metrics": {
+            "confab_tighten": {
+              "committed_rate_pct": 7.027,
+              "diff_pp": 0.0,
+              "pass": true,
+              "regenerated_rate_pct": 7.027,
+              "tolerance_pp": 2.0
+            },
+            "known_correct_cost_control": {
+              "committed_rate_pct": 2.3256,
+              "diff_pp": 0.0,
+              "pass": true,
+              "regenerated_rate_pct": 2.3256,
+              "tolerance_pp": 2.0
+            }
+          },
+          "pass": true
+        },
+        {
+          "arm": "permuted_gate",
+          "metrics": {
+            "confab_tighten": {
+              "committed_rate_pct": 40.0,
+              "diff_pp": 0.0,
+              "pass": true,
+              "regenerated_rate_pct": 40.0,
+              "tolerance_pp": 2.0
+            },
+            "known_correct_cost_control": {
+              "committed_rate_pct": 22.8682,
+              "diff_pp": 0.0,
+              "pass": true,
+              "regenerated_rate_pct": 22.8682,
+              "tolerance_pp": 2.0
+            }
+          },
+          "pass": true
+        }
+      ],
+      "committed_path": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/doubt-gated-caution-tighten/analysis-committed/full_summary.json",
+      "pass": true,
+      "regenerated_path": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/wide-instrument-control-rescore/analysis/regenerated/cell_45_doubt_gated_caution_tighten/full_summary.json"
+    },
+    "j-space-calibrated-layer-contrast-qwen3-4b": {
+      "arms": [
+        {
+          "arm": "hs23",
+          "metrics": {
+            "confab_tighten": {
+              "committed_rate_pct": 89.1892,
+              "diff_pp": 0.0,
+              "pass": true,
+              "regenerated_rate_pct": 89.1892,
+              "tolerance_pp": 2.0
+            },
+            "known_correct_cost_control": {
+              "committed_rate_pct": 3.4884,
+              "diff_pp": 0.0,
+              "pass": true,
+              "regenerated_rate_pct": 3.4884,
+              "tolerance_pp": 2.0
+            }
+          },
+          "pass": true
+        },
+        {
+          "arm": "hs26",
+          "metrics": {
+            "confab_tighten": {
+              "committed_rate_pct": 81.0811,
+              "diff_pp": 0.0,
+              "pass": true,
+              "regenerated_rate_pct": 81.0811,
+              "tolerance_pp": 2.0
+            },
+            "known_correct_cost_control": {
+              "committed_rate_pct": 3.1008,
+              "diff_pp": 0.0,
+              "pass": true,
+              "regenerated_rate_pct": 3.1008,
+              "tolerance_pp": 2.0
+            }
+          },
+          "pass": true
+        },
+        {
+          "arm": "hs29",
+          "metrics": {
+            "confab_tighten": {
+              "committed_rate_pct": 88.1081,
+              "diff_pp": 0.0,
+              "pass": true,
+              "regenerated_rate_pct": 88.1081,
+              "tolerance_pp": 2.0
+            },
+            "known_correct_cost_control": {
+              "committed_rate_pct": 3.876,
+              "diff_pp": 0.0,
+              "pass": true,
+              "regenerated_rate_pct": 3.876,
+              "tolerance_pp": 2.0
+            }
+          },
+          "pass": true
+        },
+        {
+          "arm": "hs34",
+          "metrics": {
+            "confab_tighten": {
+              "committed_rate_pct": 66.4865,
+              "diff_pp": 0.0,
+              "pass": true,
+              "regenerated_rate_pct": 66.4865,
+              "tolerance_pp": 2.0
+            },
+            "known_correct_cost_control": {
+              "committed_rate_pct": 2.7132,
+              "diff_pp": 0.0,
+              "pass": true,
+              "regenerated_rate_pct": 2.7132,
+              "tolerance_pp": 2.0
+            }
+          },
+          "pass": true
+        }
+      ],
+      "committed_path": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json",
+      "pass": true,
+      "regenerated_path": "/home/profsynapse/code/Epistemic-Humility-Research/experiments/wide-instrument-control-rescore/analysis/regenerated/cell_46_j_space_calibrated_layer_contrast/full_summary.json"
+    }
+  },
+  "overall_pass": true,
+  "stage_1_authorized": true,
+  "tolerance_pp": 2.0,
+  "verdict": "parity_holds"
+}
