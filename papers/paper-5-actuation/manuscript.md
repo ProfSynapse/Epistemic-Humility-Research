@@ -1140,11 +1140,17 @@ write at matched magnitude pushes qwen hedging down, while the gated write
 pushes it up. A confound that a placebo is meant to catch would push the same
 way as the true write, and this one pushes the opposite way. That comparison is
 measured at the same Qwen3.5-4B mid-band operating point where the census
-placebo was dosed. At that operating point, and only there, the write's
-effect can be attributed to the fitted direction rather than to perturbation
-in general. Whether the same holds for the raw-base Qwen3-4B late-site
-controller of Section 4.5, a different model and a different write site, is
-unmeasured.
+placebo was dosed, and there the write's effect can be attributed to the
+fitted direction rather than to perturbation in general. The same opposition
+has since been measured at the raw-base Qwen3-4B late-site controller of
+Sections 4.5 through 4.7, a different model and a different write site: under
+the wide-instrument re-score of that cell (Section 6.4), the gated write
+lifts confabulation abstention by 62.7 points while the matched-magnitude
+random direction moves it 4.3 points down, an effect ratio of 14.5 against
+the 3.0 floor. The sign-opposition holds at both qwen operating points. What
+the late site still lacks is a seed distribution: one committed random draw
+has been dosed there, against the fifteen the census supplies at the
+mid-band point.
 
 #### Mistral
 
@@ -1188,7 +1194,8 @@ A caution travels with llama's entry in the placebo census below, and it
 applies well beyond llama. Read-optimal and actuate-optimal depth are
 separately measured quantities in this paper, and for llama they are not the
 same site: that distribution was measured at its read-selected site, relative
-depth 0.714, while llama's own gated write ran at relative depth 0.607. The
+depth 0.714, while the one llama write that has cleared a held-out abstention
+floor ran at relative depth 0.607 (Section 6.5). The
 llama null is a null at the read site, not at the write site, and nothing here
 measures what a random direction does at the depth where llama would actually
 be written to.
@@ -1595,8 +1602,14 @@ partial transfer between checkpoints, and found at most one weak shared
 direction, with the transferable signal diffuse across the base model's
 activation span rather than concentrated in any small discriminative subspace;
 its own reliability limb turned out to be unreachable for any signal, which
-makes it an instrument-limited null rather than an answer. Both are
-exploratory, single-model, and not cross-family claims. Together they are a
+makes it an instrument-limited null rather than an answer. A third experiment
+built on both and ran the same instruments up a 1.7B/8B/14B ladder of one
+model lineage: correctness-direction identifiability rises monotonically with
+scale at the layer where the dial reads best at each scale (a crystallization
+index climbing from -0.06 through +0.09 to +0.24), but not at fixed relative
+depth, so any sharpening with scale is conditional on per-scale layer choice.
+All three are exploratory results on one lineage, not cross-family claims.
+Together they are a
 reason to expect the two readouts to generalize differently: this paper's
 gated write rides the crisp, portable answerability axis, and any future
 actuation work built on the correctness axis instead should be treated, going
@@ -1614,62 +1627,70 @@ supply that null at fifteen seeds for the three families they cover.
 
 Recommended escalation, in order of priority:
 
-1. Same-model replication: re-run the gated mid-band versus late layer-site
-   contrast on a fresh held-out split or newly staged rows for Qwen3-4B bf16.
-   Section 4.6 already reports two such replications for the layer-site
-   contrast itself.
-2. Cross-model workspace localization: run the J-lens profile and direction
-   verbalization on at least one Qwen size neighbor and two non-Qwen families.
-3. Mistral direction-specificity, at a different operating point. Every
-   mistral test so far ran at one fixed site and dose (hs16, relative depth
-   0.500, 12 sigma), where benefit and cost reproduce cleanly and
-   direction-specificity fails because the random-direction response at that
-   site is both large and high-variance. Repeating that operating point is not
-   expected to change the outcome, and neither is drawing more random seeds:
-   the maximum random lift over fifteen seeds (+20.3 points) is close to the
-   maximum over three (+21.8). A future attempt needs a different write site
-   or dose where the random-direction response is smaller or more stable, with
-   its placebo criterion set against that family's measured null
-   distribution.
-4. Llama's gated write, which has not yet produced a scored held-out pass
-   under the wide instrument. Its placebo null is now measured and suppressive
-   (12 of 15 seeds negative, median -7.67), so llama is not a null control and
-   a future attempt cannot register a flat tolerance against zero. Note also
-   that the llama null was measured at its read-selected site rather than at
-   the shallower site where its own write has cleared gates.
-5. Per-family write sites rather than one universal depth. A prior
-   cross-family attempt at a fixed late write site across qwen, llama,
-   mistral, and a larger qwen tier was not promoted: every launched arm
-   stopped at a pre-outcome dose-viability rule before held-out scoring (peak
-   fit-split clean tightening 32.6% qwen small tier, 18.4% llama, 0.0%
-   mistral, 5.75% qwen mid tier, all below the 60% floor), while a companion
-   audit found the refusal-versus-confabulation encoding linearly readable in
-   all four families at 0.84 to 0.99 AUROC. The direction reads everywhere
-   tested and actuates at that site only in the Qwen lineage, which turns the
-   open question from whether the controller works cross-family into which
-   family-relative site it works at. The family atlas (Section 6.3) already
-   supplies candidate sites for llama and mistral.
-6. Gemma's key-value sharing seam: the coverage question is closed (Section
+1. Finish the per-family write-site roll-up. The site question is no longer
+   whether one universal depth works. A fixed late write site actuates only
+   in the Qwen lineage, while the refusal-versus-confabulation encoding reads
+   linearly in all four families audited, and a held-out contrast at each
+   family's own profile-selected mid-band site has since run on two of the
+   four registered families: llama cleared its pre-registered abstention
+   floor at its own mid-band site (0.742 against a 0.50 floor) and mistral
+   missed the same floor marginally (0.489, with its confidence interval
+   straddling the floor). The registered roll-up rule declares fewer than
+   three families inconclusive, so the cross-family question is still
+   unanswered in either direction. The concrete ask is to complete that
+   denominator under the revised instrument, and to attach the placebo arm
+   the mid-band cells did not carry.
+2. Direction verbalization and workspace localization beyond the Qwen
+   lineage. The J-lens layer profile has now run on llama and mistral, and
+   their profile-selected mid-band sites are the ones dosed in item 1. What
+   has not been run on any family outside the Qwen lineage is the
+   verbalization step, asking whether the tokens a family's own write
+   direction pushes are the same interpretable refusal vocabulary, and no
+   profile yet exists for a larger or smaller member of any family.
+3. Mistral direction-specificity, at a different operating point. Mistral's
+   benefit and cost reproduce cleanly, but every direction-specificity test
+   so far ran at its one certified operating point, where the
+   random-direction response is both large and high-variance. Repeating that
+   point is not expected to change the outcome, and neither is drawing more
+   random seeds: the maximum random lift over fifteen seeds is close to the
+   maximum over three. A descriptive one-seed-per-rung dose ladder at the
+   same site found random lifts inside the envelope at every rung, which is
+   either a lead worth chasing or one more instance of single-seed
+   instability; either way, a future attempt needs an operating point where
+   the nonspecific response is small or stable, with its placebo criterion
+   registered against the family's measured null distribution there.
+4. A llama operating point worth a held-out stage. The wide-instrument
+   retest of llama's atlas sites forecloses the current ladder: no dose both
+   clears the pre-registered abstention floor and leaves output well-formed,
+   so a held-out pass is not reachable at those sites and a future attempt
+   needs a different site or dose shape. The pieces a successor needs are in
+   place: llama's placebo null is measured and suppressive, so llama is not
+   a null control and a flat tolerance against zero is the wrong criterion,
+   and the one llama write that has cleared a held-out abstention floor, at
+   the mid-band site in item 1, has never been given a placebo arm.
+5. Gemma's key-value sharing seam: the coverage question is closed (Section
    4.8 and Appendix F) and the mechanism question is not. It cannot be settled
    by writing to
    more above-seam sites, because relative depth and sharing status are the
    same variable across all of them; it needs an ablation that suppresses key
    and value sharing without breaking the model, which the one built here did
    not manage.
-7. Dense-token screen: separately screen abstract or multilingual token
-   bundles before any causal hybrid run. Do not alter the natural-token result
-   post hoc.
-8. Adjacent behavioral axes. An interim pilot on an answer-sycophancy
+6. Dense-token screen: separately screen abstract or multilingual token
+   bundles before any causal hybrid run, as a follow-on to the natural-token
+   result in Section 4.7.
+7. Adjacent behavioral axes. An interim pilot on an answer-sycophancy
    direction found it readable while its actuator failed to beat a matched
    control. It is not a governed result and carries no evidence here, but the
    pattern it points at, a readable behavioral direction that does not become
    a clean actuator, is the one this paper documents on epistemic directions,
    and it is worth a dedicated test on its own terms.
 
-The success criterion for the next paper-quality claim should be stricter than
-this one: same-model replication plus at least two-family support for the
-workspace-band advantage, with pre-stated cost guards and placebo controls
-set against each family's measured null.
+The success criterion for the next paper-quality claim should be stricter
+than this one, and its same-model leg is already met: the workspace-band
+advantage has replicated same-model at meaningful magnitude (Section 4.6).
+What a successor has to add is support in at least two families, with
+pre-stated cost guards and placebo controls set against each family's
+measured null.
 
 ### 6.6 Training does not remove the causal handle
 
@@ -1711,6 +1732,40 @@ leverage over refusal, and it does not appear to remove it either.
 
 ---
 
+### 6.7 The recipe, and how to run it yourself
+
+The build sequence stated in the introduction survives everything above, so
+it is worth restating with the results attached to each step. First, find
+the read spot: a per-family read panel sweeps depth and marks where the
+known-unknown state reads cleanly, and this step has not failed on any
+family tested, including the families whose writes fail. Second, find the
+write spot and the dose: candidate sites come from the family's own
+workspace-band profile, never ported from another family, and the dose is
+calibrated on the fit split at the site to be used; this is the step where
+families diverge, and the failures in Section 4.8 happen downstream of
+reading, at site choice or at verification, never at the read panel. Third,
+build the thermostat: threshold the readout and couple it to the write; at
+overdrive doses the gate is the sole source of selectivity, and at mid-band
+doses the write self-sorts and the gate mainly holds cost down (Section
+6.2). Fourth, verify the wiring, which the results sharpen into three named
+controls: a matched-magnitude random direction judged against the family's
+own measured null distribution, since both the sign and the spread of the
+nonspecific response are family-specific; a permuted gate; and the cost on
+questions the model answers correctly.
+
+Everything needed to run this is public. The repository at
+github.com/ProfSynapse/Epistemic-Humility-Research holds one directory per
+experiment under `experiments/`, each with its signed pre-registration
+(prediction, falsifier, and gates fixed before the run, with the outcome
+appended to the same document), a machine-readable manifest, pinned
+instrument configs, and the committed summary artifacts the numbers in this
+paper are drawn from; Appendix A maps every claim in the body to the
+governed document behind it. The figure and table build scripts live beside
+this manuscript and rebuild every figure from those committed artifacts, and
+the row-level generation exhaust behind the terminal experiments is being
+published as Hugging Face datasets indexed in the repository's
+`docs/public-artifacts.md`.
+
 ## 7. Conclusion
 
 Small language models can know internally that they do not know, and external
@@ -1728,12 +1783,14 @@ and the gate mainly holds cost down.
 What could still take that apart is specific. The strongest form of the
 direction-specificity test already fails on two of the four families here, and
 matched-magnitude random directions move abstention in every family measured,
-in a family-specific direction. If the qwen controller's sign-opposition to
-its own family's random-direction null does not survive a test at the raw-base
-operating point, or if a per-family site search fails to recover selective
-actuation on mistral and llama, then what this paper reports is a
-Qwen-lineage result with a well-characterized instrument attached, not a
-recipe. That is the test the next study should try to fail.
+in a family-specific direction. The qwen controller's sign-opposition to its
+own family's random-direction null has now held at both of its operating
+points, including the raw-base one, but the raw-base measurement rests on a
+single random draw rather than a seed distribution. If a full null
+distribution at that site overturns the sign, or if a per-family site search
+fails to recover selective actuation on mistral and llama, then what this
+paper reports is a Qwen-lineage result with a well-characterized instrument
+attached, not a recipe. That is the test the next study should try to fail.
 
 ---
 
@@ -1815,6 +1872,7 @@ and its recorded status.
 | An instrument-validity check found neither of two candidate mid-generation (answer-window) steering harnesses certified: an optimized-decode implementation never fires its hook during cached decode (0 decode-step calls, 25/25 prompts checked), voiding an earlier answer-window result as an instrumentation artifact rather than a causal null; a plain-inference implementation fires every decode step and lands the write within tolerance on all positions before the steered trajectory diverges, but its cross-trajectory readback fails to certify once tokens diverge | `experiments/h6-genstream-hook-firing-check/AMENDMENT.md` Outcome | Instrument-validity check; no behavioral steering evidence reported |
 | Cross-family atlas: eff_dim_frac peaks early (0.09-0.14 depth) in both llama and mistral, not interior as predicted; read panel still delivers a usable per-family interior band (llama L15-23, mistral L7-27) | `experiments/jspace-family-atlas/AMENDMENT.md` Outcome | Prediction failed; read panel delivered |
 | Cross-family confirmatory fleet (qwen/llama/mistral, universal-depth write site) NOT PROMOTED: every cell stopped at FIT dose-viability before held-out; companion c_hat audit shows the encoding readable in all four families while late-site writes actuate only in the Qwen lineage | `experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md` Outcome | Not promoted; write-site problem, not a family-mechanism null |
+| Held-out contrast at per-family profile-selected mid-band sites ran on 2 of 4 registered families: llama hs17 clean tightening 0.7420 (Wilson [0.7119, 0.7699]) clears the 0.50 floor while mistral hs15 0.4893 [0.4624, 0.5164] misses it marginally with the interval straddling the floor; the registered roll-up rule declares fewer than three families INCONCLUSIVE, so the cross-family mid-band question is unanswered in either direction; the dosed known-correct cost gate was non-diagnostic (the KU gate fired on 0 known-correct rows in every family measured) and the mid-band writes carried no random-direction arm | `experiments/j-space-cross-family-layer-contrast/AMENDMENT.md` Outcome | Resolved INCONCLUSIVE; closed without running the remaining families |
 | Dark-candidate screen validates positive boundary-push lever but promotes no dark candidates | `experiments/dark-actuator-screen/AMENDMENT.md` Outcome | Supporting null |
 | Answer-sycophancy pilot found a readable direction but no clean actuator against a matched control; carries no body evidence, referenced only as future work in Section 6.5 | `experiments/aq-sycophancy-activation-actuator/AMENDMENT.md` Outcome | Unsigned interim pilot (draft, not a governed result) |
 | Initial cross-family run: gated write does not actuate FIT-viable canonical clean refusal at either atlas-located non-Qwen site under the locked three-phrase detector; llama fails on format collapse before the refusal floor, mistral peaks 0.579 vs the 0.60 floor with the miss substantially canonical-phrase coverage | `experiments/rr-cross-family-raw-refusal/AMENDMENT.md` Outcome | Exploratory falsification (detector-vocabulary scope disclosed; superseded by the RR2 wide-instrument re-read on mistral and the llama wide-instrument retest) |
@@ -1831,6 +1889,7 @@ and its recorded status.
 | J-lens profile on a trained checkpoint: the interior band is present but narrowly (interior max 0.00735 at hs29 against a 0.00675 threshold) and reshaped, with the raw-base hs26 peak suppressed ~35% and the profile flatter and deeper; the rule-selected mid-band site (hs17) reads the refusal axis nearly as well as the late site (AUROC 0.8645 vs 0.8688) but full ablation there releases 0 of 168 formerly refused knowns against 163 of 168 at L35 and induces refusal on 48% of previously answered knowns | `experiments/jlens-trained-checkpoint-midband-ablation/AMENDMENT.md` Outcome | Falsified on both clauses; the read-side band does not license a write site |
 | Correctness-direction rotation across a model's own training checkpoints: cross-stage cosines 0.192, 0.449, 0.330, none reaching the 0.85 stability floor, against a within-stage split-half floor of 0.174 and readout AUROC flat near 0.80, so direction identity is not measurable at any transition at these sample sizes | `experiments/correctness-direction-rotation/AMENDMENT.md` Outcome | Null result; instrument-limited (motivation only, Section 6.5) |
 | Correctness discriminative-subspace overlap between checkpoints: k=1 shared direction above its permutation null (0.00896 vs 95th percentile 0.00472), k>=4 inside the null, transferable signal diffuse rather than concentrated (recovery 0.742 against a random-slice floor of 0.701); the reliability limb was shown estimator-structurally unreachable for any signal | `experiments/correctness-subspace-overlap/AMENDMENT.md` Outcome | Null result; instrument-limited (motivation only, Section 6.5) |
+| Correctness-geometry scale ladder (1.7B/8B/14B, one lineage): direction identifiability rises monotonically with scale at the per-scale best-dial layer (crystallization index -0.062, +0.086, +0.240; Delta_c 0.302 clearing both sigma readings) but not at fixed relative depth (dips at 14B), so sharpening with scale is confirmed only conditional on per-scale layer choice | `experiments/correctness-geometry-scale-ladder/AMENDMENT.md` Outcome | Resolved; registered middle ground M3 (conditional confirmation) |
 | Full refusal-axis ablation on a fresh seed of the trained checkpoint releases 45.7 points of known-item over-refusal and recovers correct answers on 29.2% of released rows, with 1.3% induced refusal and a 7.2 point correct-rate drop on the known-correct control; post-ablation over-refusal 0.5528 against a registered 0.10 confirmation bound and 0.30 falsifier line, so the registered prediction missed and the magnitude of the release is seed-dependent | `experiments/refusal-axis-ablation-confirmatory/AMENDMENT.md` Outcome | Falsifier fired; the axis remains causal at this seed, the collapse magnitude does not replicate |
 | The archived full-ablation pipeline re-derives under its own instrument on the first seed, with the orthogonalized component reproducing its own separate archived value: the divergence between the two figures is variant identity, not drift or error. Run configurations survive under `archive/experiment/phase1/probe/config/`; row-level outputs stay untracked under public-repo containment | `experiments/caution-ablation-rederivation/AMENDMENT.md` Outcome | Resolved; provenance repair, no promotion on its own |
 | The separate installation question Section 6.6 declines to answer: a bounded pre-registered site sweep on the trained lineage found actuation clearing its held-out gate at all five dose-viable sites, with selectivity not adjudicable at any of them and direction-specificity passing at one site only, so no site satisfies the registered conjunction | `experiments/caution-install-bounded-site-sweep/AMENDMENT.md` Outcome | Resolved; exploratory lead requiring confirmatory replication, no numbers carried into the body |
@@ -1868,6 +1927,7 @@ Generated by `papers/paper-5-actuation/scripts/build_coverage_table.py` (determi
 | `h6-genstream-hook-firing-check` | resolved | `unsloth/Qwen3-4B` @ `64033659d5caf1b8ed7f929b29de705e93a4d468` | 1 declared / 1 launched (single-substrate cell) | 6.4 |
 | `jspace-family-atlas` | resolved | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: unsloth/Llama-3.2-3B-Instruct (llama32_3b_instruct) @ 006f5dcd1393c3add266de40994ba96225e9689d; mistralai/Mistral-7B-Instruct-v0.3 (mistral7b_instruct_v03) @ c170c708c41dac9275d15a8fff4eca08d52bab71 | DECLARED 2 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "prediction failed in both families because the eff_dim_frac profile peaks early (0.09-0.14 depth) rather than interior, while the read panel delivered the intended per-family layer map with an interior band (llama 15-23,..." | 6.3 |
 | `doubt-snap-cross-family-confirmatory` | resolved | checkpoint.repo (verbatim): "cross-family matrix"; checkpoint.revision (verbatim): "see model_matrix.yaml". DECLARED in cell.yaml, model_matrix.yaml: unsloth/Llama-3.2-3B-Instruct [small] (llama32_3b_instruct) @ 006f5dcd1393c3add266de40994ba96225e9689d; unsloth/Llama-3.1-8B-Instruct [mid] (llama31_8b_instruct) @ 4699cc75b550f9c6f3173fb80f4703b62d946aa5; mistralai/Mistral-7B-Instruct-v0.3 [small] (mistral7b_instruct_v03) @ c170c708c41dac9275d15a8fff4eca08d52bab71; mistralai/Ministral-8B-Instruct-2410 [mid] (ministral8b_instruct_2410) @ 2f494a194c5b980dfb9772cb92d26cbb671fce5a; Qwen/Qwen3.5-4B [small] (qwen35_4b) @ 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a; Qwen/Qwen3.5-9B [mid] (qwen35_9b) @ c202236235762e1c871ad0ccb60c8ee5ba337b9a; google/gemma-4-E4B-it [small] (gemma4_e4b_it) @ fee6332c1abaafb77f6f9624236c63aa2f1d0187; google/gemma-3-12b-it [mid] (gemma3_12b_it) @ 96b6f1eccf38110c56df3a15bffe176da04bfd80 | DECLARED 8 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "not promoted: all four launched cells stopped at the registered pre-outcome FIT dose-viability rule at the 0.94-depth write site (peaks 0.326/0.184/0.000 small tier, 0.058 mid tier); the c_hat audit and the qwen35_4b mid..." | 6.5 |
+| `j-space-cross-family-layer-contrast` | resolved | `cross-family (4 checkpoints; see families/*.yaml and AMENDMENT.md "Family table")` @ `raw-base bf16 instruct, no adapter, no 4-bit quantization, no task training, per family` | 1 declared / 1 launched (single-substrate cell) | 6.5 |
 | `dark-actuator-screen` | null-result | `unsloth/Qwen3-4B-bnb-4bit` @ `raw-base (no adapter; checkpoint_tag "raw-base" per AK Stage 1 manifest)` | 1 declared / 1 launched (single-substrate cell) | 4.7 |
 | `aq-sycophancy-activation-actuator` | draft | `Qwen/Qwen3-4B` @ `1cfa9a7208912126459214e8b04321603b3df60c` | 1 declared / 1 launched (single-substrate cell) | 6.5 |
 | `rr-cross-family-raw-refusal` | falsified | checkpoint.repo (verbatim): "cross-family (two atlas-mapped substrates)"; checkpoint.revision (verbatim): "see cell.yaml families (revisions pinned from fleet model_matrix.yaml at sign)". DECLARED in cell.yaml: unsloth/Llama-3.2-3B-Instruct @ 006f5dcd1393c3add266de40994ba96225e9689d; mistralai/Mistral-7B-Instruct-v0.3 @ c170c708c41dac9275d15a8fff4eca08d52bab71; confirmatory execution model (batch verbs for baseline/capture; mechinterp steer for writes) | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Falsified, both families shape F: the doubt-gated caution write does not actuate FIT-viable canonical clean refusal at either atlas-located non-Qwen site; llama fails on format collapse before the refusal floor (robust t..." | 4.8, 6.5 |
@@ -1884,10 +1944,11 @@ Generated by `papers/paper-5-actuation/scripts/build_coverage_table.py` (determi
 | `jlens-trained-checkpoint-midband-ablation` | falsified | `clean_sft_grpo_v2_seed1 (local lineage: sft_schema_clean_seed1_full/20260623_123624 merged-16bit base + schema_clean_sft_grpo_v2_seed1_full/20260624_095831 final_model adapter)` @ `local run dirs pinned in configs; published mirror eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora` | 1 declared / 1 launched (single-substrate cell) | 6.4 (limits bullet only; body narration cut per PI ruling 2026-08-20 -- Appendix A carries the numbers) |
 | `correctness-direction-rotation` | null-result | checkpoint.repo (verbatim): "local four-stage set (see cell.yaml stages; raw + partrue identities pinned at staging per A3)". DECLARED in cell.yaml: LogisticRegression(saga, tol=1e-3) | DECLARED 1 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "CD-G1 not met (later transitions 0.449/0.330 vs the 0.85 floor) and falsifier not fired (raw->cleansft 0.192); pre-registered readings exhausted; post-hoc: correctness direction too weakly identified (split-half floor 0...." | 6.5 |
 | `correctness-subspace-overlap` | null-result | `reused five-stage/checkpoint tensor set (see cell.yaml data.stages); no new checkpoint identity, CPU-only reuse of CD and Amendment S/T on-disk extractions` (revision not recorded) | 1 declared / 1 launched (single-substrate cell) | 6.5 |
+| `correctness-geometry-scale-ladder` | resolved | `reused three Amendment X raw-instruct-base extractions (see cell.yaml data.scales); unsloth/Qwen3-{1.7B,8B,14B}-bnb-4bit, no adapter, CPU-only reuse of on-disk tensors, no new checkpoint identity` (revision not recorded) | 1 declared / 1 launched (single-substrate cell) | 6.5 |
 | `refusal-axis-ablation-confirmatory` | falsified | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: clean_sft_grpo_v2_seed2 on its own per-seed merged base (published pins 2390e893 adapter, 4d526fdd base; local run dirs 20260804_131151 and 20260731_232307) | DECLARED 1 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Falsifier fired: with a valid instrument (RC-G0 pass, baseline 1.000), full refusal-axis ablation on clean_sft_grpo_v2_seed2's own lineage leaves known-item over-refusal at 0.553, far above both the 0.10 confirmation bou..." | 6.6 |
 | `caution-ablation-rederivation` | resolved | UNRESOLVED -- checkpoint.repo empty in experiment.yaml; fallback file(s) inspected (cell.yaml) but no recognizable checkpoint declaration found (repo/model/substrate/family/cell_id, or families.*.id) | UNRESOLVED (hand-read AMENDMENT.md required) | NOT NARRATED IN BODY (front matter + Appendix A provenance row only) |
 | `caution-install-bounded-site-sweep` | resolved | `professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora` @ `8914081dfcec4f1f025f2dbe4195d4f7aa8d210e` | 1 declared / 1 launched (single-substrate cell) | 6.6 |
-| `wide-instrument-control-rescore` | resolved | `unsloth/Qwen3-4B` (revision not recorded) | 1 declared / 1 launched (single-substrate cell) | 6.4 |
+| `wide-instrument-control-rescore` | resolved | `unsloth/Qwen3-4B` (revision not recorded) | 1 declared / 1 launched (single-substrate cell) | 4.8, 6.4 |
 
 <!-- END GENERATED: substrate-coverage-table -->
 

@@ -108,7 +108,7 @@ SECTION_MAP: dict[str, str] = {
     "aq-sycophancy-activation-actuator": "6.5",  # number-free future-work sentence, item 8
     "rr-cross-family-raw-refusal": "4.8, 6.5",
     "llama-atlas-gated-wide-instrument-retest": "4.8",  # content in the cross-family spectrum paragraph
-    "wide-instrument-control-rescore": "6.4",  # wide two-instrument re-score of the 6.4 control conclusions
+    "wide-instrument-control-rescore": "4.8, 6.4",  # wide re-score of the 6.4 controls; 4.8 qwen sign-opposition at the raw-base point
     "rr2-mistral-adjudicated-refusal-confirm": "4.8, 6.5",
     "abstention-wide-instrument-calibration": "4.8, 6.5",
     "rr3-corrected-placebo-replication": "4.8, 6.5",
@@ -123,6 +123,8 @@ SECTION_MAP: dict[str, str] = {
     "jlens-trained-checkpoint-midband-ablation": "6.4 (limits bullet only; body narration cut per PI ruling 2026-08-20 -- Appendix A carries the numbers)",
     "correctness-direction-rotation": "6.5",
     "correctness-subspace-overlap": "6.5",
+    "correctness-geometry-scale-ladder": "6.5",  # scale-conditional sharpening, opening paragraph
+    "j-space-cross-family-layer-contrast": "6.5",  # per-family mid-band held-out contrast (items 1/2/4); pointed to from the 4.8 llama caution
     "refusal-axis-ablation-confirmatory": "6.6",
     "caution-install-bounded-site-sweep": "6.6",
     "caution-ablation-rederivation": "NOT NARRATED IN BODY (front matter + Appendix A provenance row only)",
