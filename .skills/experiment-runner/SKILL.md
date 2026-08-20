@@ -37,6 +37,7 @@ Always choose the narrowest reference needed for the task:
 | Design or trust a cost/harm gate whose denominator may include unfired/undosed rows | [reference/gate-diagnosticity.md](reference/gate-diagnosticity.md) |
 | Select a generation or hidden-state backend (vLLM-first policy, parity exceptions, structured outputs, bridge smokes) | [reference/batched-generation.md](reference/batched-generation.md) |
 | Plan archived legacy mechinterp causal-pilot sweeps | [reference/legacy-mechinterp-causal-pilot-sweeps.md](reference/legacy-mechinterp-causal-pilot-sweeps.md) |
+| Relaunch archived phase-1 probe machinery (regeneration / re-score / parity cells) | [reference/archived-phase1-launch-surface.md](reference/archived-phase1-launch-surface.md) |
 | Record durable research-session memory | [reference/research-sessions.md](reference/research-sessions.md) |
 | Audit experiment/session provenance before migration | `python3 .agents/skills/experiment-runner/scripts/provenance_audit.py [--json]` |
 | Orchestrate a GPU-runner subagent (watchers, messaging, division of labor) | [reference/subagent-orchestration.md](reference/subagent-orchestration.md) |
