@@ -514,8 +514,9 @@ changes what the number means.
 
 The narrow instrument reads refusal from the model's own output and nothing
 else: a refusal value in the parsed JSON answer field, or one of three fixed
-English refusal forms in the text. It is what Sections 4.5, 4.6, 4.7 and 4.9
-score under, including the random-direction and permuted-gate controls behind
+English refusal forms in the text. It is what Sections 4.5, 4.6 and 4.7 score
+under, along with the gemma depth ladder reported in Section 4.8 and Appendix
+F, including the random-direction and permuted-gate controls behind
 the Section 4.5 headline and every clean-tightening rate in the layer and depth
 ladders.
 
@@ -536,8 +537,9 @@ anything is unblinded. The final rate per row is detector-refused or
 grader-marked abstention. The lane cannot widen the benefit vocabulary without
 widening the cost vocabulary by the same rule, because a grader cannot
 tell a confabulation-prone row from a known-correct one. This stack is what
-every number in Section 4.8 rests on, and what the mid-band gate factorial
-reported in Sections 5 and 6.2 rests on.
+every cross-family number in Section 4.8 rests on, apart from the gemma depth
+ladder, and what the mid-band gate factorial reported in Sections 5 and 6.2
+rests on.
 
 Sections 4.1 through 4.4 score under neither: each of the text, prompt, and
 reward channels uses the refusal grader defined in its own cell, applied to
@@ -602,7 +604,7 @@ outnumber mid-only failures at least three to one.
 
 A confidence interval on the difference between two independent proportions
 uses the Newcombe hybrid score interval, built from the two rates' own Wilson
-bounds rather than from a normal approximation, which is what Section 4.9
+bounds rather than from a normal approximation, which is what Appendix F
 reports for the well-formedness difference between the two key-value sharing
 conditions.
 
@@ -1108,6 +1110,30 @@ indistinguishable from any sufficiently hard push, and nothing would tie the
 behavior to the epistemic content the direction was fit on. The two claims
 can come apart, and on mistral they do.
 
+#### Qwen 3.5
+
+The qwen results in this section are the Qwen3.5-4B lineage written at its
+mid-band site, hs20 at relative depth 0.625, not the raw-base Qwen3-4B
+late-site controller of Sections 4.5 through 4.7; the behavioral gates at that
+operating point are reported in Section 4.5. Direction-specificity passes
+there, at 7.27 against a 3.0 floor.
+
+The measured placebo null reported below cuts the other way for qwen, and
+strengthens the specificity reading at that operating point. Because qwen's
+placebo response is suppressive, the IDK switch's recruitment of refusals is
+sign-opposed to the family's response to a nonspecific perturbation: a random
+write at matched magnitude pushes qwen hedging down, while the gated write
+pushes it up. A confound that a placebo is meant to catch would push the same
+way as the true write, and this one pushes the opposite way. That comparison is
+measured at the same Qwen3.5-4B mid-band operating point where the census
+placebo was dosed. At that operating point, and only there, the write's
+effect can be attributed to the fitted direction rather than to perturbation
+in general. Whether the same holds for the raw-base Qwen3-4B late-site
+controller of Section 4.5, a different model and a different write site, is
+unmeasured.
+
+#### Mistral
+
 The behavioral gates replicate on mistral, under an instrument built to catch
 this family's own abstention idioms. The three fixed refusal forms the narrow
 detector looks for do not count them, so mistral is scored on fresh held-out
@@ -1132,10 +1158,8 @@ The shortfall is not an artifact of how the ratio was built, surviving a
 detector-only construction, a mean-of-seeds denominator, and a pre-recorded
 adversarial audit across six attack surfaces (Appendix A).
 
-Set beside the other families, that result is one point on a spectrum rather
-than half of a pass-fail split. Qwen passes direction-specificity, at 7.27
-against the same 3.0 floor. Mistral actuates, with its benefit and cost gates
-clearing, but reaches only 1.87 here and 2.03 at an independent site and dose.
+#### Llama
+
 Llama is not shown actuable at the sites tested at all: its gated write failed
 on format collapse before reaching the refusal floor, and a dedicated
 wide-instrument re-run confirmed that failure is real rather than a
@@ -1144,18 +1168,61 @@ the narrow detector missed, lifting the best well-formed rung from 32.8% to
 45.7%, but no well-formed rung reaches the 0.60 floor: the only doses that
 push refusal past 0.5 break the output format and drag known-correct false
 refusal up with them. Unlike mistral, whose narrow miss was substantially
-vocabulary coverage, llama's failure survives the instrument upgrade. Gemma
-actuates in a shallow band, and no site tested for specificity there reaches
-the floor (Section 4.9).
+vocabulary coverage, llama's failure survives the instrument upgrade.
 
-The reason a random direction can carry that much of the effect starts with
-the baseline it is measured against, and that baseline is family-graded.
-Wide-instrument confabulation abstention with no intervention at all is
-0.104 on Qwen3.5-4B, 0.164 on Llama-3.2-3B, and 0.280 on Mistral-7B-v0.3,
-against 0.044, 0.036, and 0.159 under the narrow canonical detector: undercounts
-of 6.1, 12.9, and 12.2 points. A flat, small, symmetric no-op tolerance is the
-wrong instrument for a family whose baseline sits at 0.280, and it was
-inherited from a Qwen-scale world where the baseline looked like zero.
+A caution travels with llama's entry in the placebo census below, and it
+applies well beyond llama. Read-optimal and actuate-optimal depth are
+separately measured quantities in this paper, and for llama they are not the
+same site: that distribution was measured at its read-selected site, relative
+depth 0.714, while llama's own gated write ran at relative depth 0.607. The
+llama null is a null at the read site, not at the write site, and nothing here
+measures what a random direction does at the depth where llama would actually
+be written to.
+
+#### Gemma
+
+Gemma-4-E4B carried a reputation as the one family that does not actuate. That
+reputation rested on a narrow base. Every prior write attempt on this substrate
+sat at relative depth 0.81 or deeper, on an architecture whose upper 18 blocks
+read their key and value tensors from two frozen donor blocks rather than
+computing their own, and nothing had ever been written into the shallow half
+of the model. The question is therefore not whether gemma actuates but whether
+it had ever been given the chance.
+
+A depth ladder on the unmodified model, key-value sharing left on, answers the
+coverage question. Actuation is present, shallow, and uneven. At relative
+depth 0.357 the fitted known-unknown direction clears both held-out
+behavioral gates with the widest margin measured on this family, 78.6% clean
+tightening (Wilson 95% CI [71.8, 84.1]) against a 1.1% known-correct
+false-refusal cost. Behavioral gates pass at four of the eight depths tested,
+and the two deepest sites in the cross-family operating range never reach a
+usable dose at all. Gemma's reputation as the one family that does not actuate
+was built entirely on sites deeper than any of these. The per-site ladder is in
+Appendix F.
+
+Direction-specificity is where that picture stops. Neither above-seam site that
+reached a usable dose passes its placebo control, and the two shallow passes do
+not repair that: the 0.357 site carried the behavioral gates only, with no
+placebo arm run at all, and the 0.524 placebo is a degenerate pass in which all
+five accepted random draws produced exactly zero lift. What the ladder establishes
+is that gemma clears behavioral gates in a shallow band. What it does not
+establish is that any of those writes is direction-specific. That leaves the
+coverage question closed and the mechanism question open: across gemma's whole
+above-seam band relative depth and sharing status are the same variable, so no
+result there can say which of the two produced the falloff, and the control
+built to separate them broke the substrate it was meant to probe (Appendix F).
+
+#### The placebo picture
+
+The reason a random direction can carry as much of the effect as it does on
+mistral starts with the baseline it is measured against, and that baseline is
+family-graded. Wide-instrument confabulation abstention with no intervention
+at all is 0.104 on Qwen3.5-4B, 0.164 on Llama-3.2-3B, and 0.280 on
+Mistral-7B-v0.3, against 0.044, 0.036, and 0.159 under the narrow canonical
+detector: undercounts of 6.1, 12.9, and 12.2 points. A flat, small, symmetric
+no-op tolerance is the wrong instrument for a family whose baseline sits at
+0.280, and it was inherited from a Qwen-scale world where the baseline looked
+like zero.
 
 The stronger measurement is the shape of the random-direction null itself: a
 census of fifteen fresh random seeds per family, each written at that family's
@@ -1183,20 +1250,11 @@ negative), Llama suppresses it despite having been run as a null control
 (median -7.67, 12 of 15), and Mistral recruits it (median +7.0, 12 of 15
 positive, exactly the 80% boundary).
 
-Two cautions travel with that picture. Mistral's verdict is a boundary
-verdict: its margin over an indeterminate call is a single seed, its three
-weakest positive seeds (+1.0, +1.33, +1.67) are individually within paired
-noise, and the result is sensitive to the mined-idiom vocabulary the widened
-detector uses.
-
-The second caution is about where a null is measured, and it applies well
-beyond llama. Read-optimal and actuate-optimal depth are separately measured
-quantities in this paper, and for llama they are not the same site: the
-distribution above was measured at its read-selected site, relative depth
-0.714, while llama's own gated write ran at relative depth 0.607. The llama
-null is a null at the read site, not at the write site, and nothing here
-measures what a random direction does at the depth where llama would actually
-be written to.
+A caution travels with that picture on the mistral side. Mistral's verdict is
+a boundary verdict: its margin over an indeterminate call is a single seed, its
+three weakest positive seeds (+1.0, +1.33, +1.67) are individually within
+paired noise, and the result is sensitive to the mined-idiom vocabulary the
+widened detector uses.
 
 That random writes move abstention at all has a mechanical explanation and a
 methodological consequence. Abstention is causally reachable at matched
@@ -1219,20 +1277,6 @@ from it, which makes the fitted vector non-identifiable as the cause of its
 own effect (Venkatesh and Kurapath, 2026). A measured per-family null is the
 operational answer we can offer to that problem.
 
-For qwen, the measured null cuts the other way and strengthens the
-specificity reading at one operating point. Because qwen's placebo response is
-suppressive, the IDK switch's recruitment of refusals is sign-opposed to the
-family's response to a nonspecific perturbation: a random write at matched
-magnitude pushes qwen hedging down, while the gated write pushes it up. A
-confound that a placebo is meant to catch would push the same way as the true
-write, and this one pushes the opposite way. That comparison is measured at
-the Qwen3.5-4B mid-band operating point (hs20, relative depth 0.625) where the
-census placebo was dosed. At that operating point, and only there, the write's
-effect can be attributed to the fitted direction rather than to perturbation
-in general. Whether the same holds for the raw-base Qwen3-4B late-site
-controller of Section 4.5, a different model and a different write site, is
-unmeasured.
-
 The family-level sign is not evenly distributed inside a family. Broken down
 by question type within the known-unknown pool, one subtype carries qwen's
 entire suppression (future-unknown items, -24.7 points against -2.8 or smaller
@@ -1246,78 +1290,14 @@ unanswerability is most legible from surface form alone. Question type does
 not explain away the cross-family sign difference at the family level, but the
 sign is not homogeneous within a family either.
 
-### 4.9 Gemma's inertness was a depth-coverage artifact, not a family-specific null
+#### Where that leaves the map
 
-Gemma-4-E4B carried a reputation as the one family that does not actuate. That
-reputation rested on a narrow base. Every prior write attempt on this substrate
-sat at relative depth 0.81 or deeper, on an architecture whose upper 18 blocks
-read their key and value tensors from two frozen donor blocks rather than
-computing their own, and nothing had ever been written into the shallow half
-of the model. The question is therefore not whether gemma actuates but whether
-it had ever been given the chance.
-
-A depth ladder on the unmodified model, key-value sharing left on, answers the
-coverage question. Actuation is present, shallow, and uneven. At relative
-depth 0.357 the fitted known-unknown direction clears both held-out
-behavioral gates with the widest margin measured on this family, 78.6% clean
-tightening (Wilson 95% CI [71.8, 84.1]) against a 1.1% known-correct
-false-refusal cost. Two sites just below the midpoint, relative depth 0.429
-and 0.476, fail the clean-tightening floor outright at 44.6% and 40.5%.
-Relative depth 0.524 clears both gates again at 58.9% clean tightening and
-0.4% cost. The site immediately downstream of both donor blocks,
-relative depth 0.571, clears them a third time at 73.2% clean tightening and
-3.3% cost. Relative depth 0.595 clears them at 79.2% (CI [72.4, 84.6]) and
-3.3% cost (CI [1.8, 6.2]). The two deepest sites in the cross-family operating
-range, relative depth 0.619 and 0.643, never reach a usable dose at all: their
-best fit-split tightening rates top out at 37.5% and 25.0% against a 50%
-usability floor. Gemma's reputation as the one family that does not actuate
-was built entirely on sites deeper than any of these.
-
-![FIG-P5-08: Gemma-4-E4B depth ladder, actuation outcome versus relative depth with pass/fail per site](figures/fig-p5-08-gemma-depth-ladder.png)
-**Figure 8.** Gemma-4-E4B is not architecturally inert, and where it actuates
-depends on depth: relative depths 0.357, 0.524, 0.571, and 0.595 clear the
-held-out clean-tightening and known-correct cost gates, 0.429 and 0.476 fall
-below the tightening floor, and 0.619 and 0.643 never reach a usable dose.
-Direction-specificity does not follow from behavioral clearance, and no site
-tested for it reaches the three-fold floor: the two sites above the
-key-value sharing seam fail at effect ratios of 1.139 and 1.279, and the one
-below it has no defined ratio because every accepted random draw produced zero
-lift.
-
-Direction-specificity is where that picture stops. Both above-seam sites that
-reached a usable dose failed their placebo control: at relative depth 0.571
-the single worst magnitude-matched random draw reproduced 88% of the fitted
-direction's effect, and at 0.595 the worst of five draws reproduced 78%, an
-effect ratio of 1.279 against a three-fold floor. At both sites a random
-direction of the same magnitude does most of what the fitted direction does,
-so neither site shows that the behavior change belongs to the fitted
-direction rather than to perturbation at that magnitude. The two shallow passes do not repair that: the
-0.357 site carried the behavioral gates only, with no placebo arm run
-at all, and the 0.524 placebo is a degenerate pass in which all five accepted
-random draws produced exactly zero lift, which the design requires reporting
-under the degenerate label rather than as a large specificity ratio. What the
-ladder establishes is that gemma clears behavioral gates in a shallow band.
-What it does not establish is that any of those writes is direction-specific.
-
-The direct test of the seam mechanism, the same write with key-value sharing
-switched off, could not run: turning sharing off breaks the undosed model
-before any write is applied, taking known-correct rows from perfectly
-well-formed to entirely malformed and raising per-token negative
-log-likelihood on the reference completions from 3.53 to 12.33 (Appendix A).
-A parallel calibration sweep at the original above-seam site found no usable
-dose in either sharing condition, so the deep-site null that gave gemma its
-reputation reproduced unchanged alongside the new shallow-band result.
-
-That leaves the coverage question closed and the mechanism question open, for
-a structural reason rather than a want of data. Every site of the cross-family
-operating range above gemma's seam has now been measured, and none produced
-direction-specific actuation. But across that whole band relative depth and
-sharing status are the same variable on this architecture, so no result there
-can say which of the two produced the falloff: gemma's decay with depth could
-equally be the generic decay every other family here shows past its own
-productive band, with no seam mechanism required. Isolating the seam still
-requires a working sharing-on against sharing-off contrast, and the one built
-for it broke the substrate it was meant to probe.
+Read together, the four families fall along a spectrum rather than splitting
+into pass and fail. Qwen passes direction-specificity against the 3.0 floor.
+Mistral actuates, with its benefit and cost gates clearing, but reaches only
+1.87 at the site tested here and 2.03 at an independent site and dose. Llama
+is not shown actuable at the sites tested at all. Gemma actuates in a shallow
+band, and no site tested for specificity there reaches the floor.
 
 ---
 
@@ -1568,7 +1548,7 @@ controls before it ran, and no threshold was retuned afterward. What that
 machinery covers is uneven, and the unevenness is itself a limit. The Section
 4.5 headline, its dose-matched comparison, its held-out mid-band transfer and
 its sampled-decode replication each carry gates fixed before their runs, as do
-the cross-family and depth-ladder results in Sections 4.8 and 4.9. The reward
+the cross-family and depth-ladder results in Section 4.8. The reward
 and text-injection channels are single-seed. The Section 4.2 push, the Gemma
 shallow-band passes, and the correctness-axis measurements in Section 6.5 are
 exploratory, single-model, and unreplicated. Reading the cross-family sign map
@@ -1663,7 +1643,8 @@ Recommended escalation, in order of priority:
    family-relative site it works at. The family atlas (Section 6.3) already
    supplies candidate sites for llama and mistral.
 6. Gemma's key-value sharing seam: the coverage question is closed (Section
-   4.9) and the mechanism question is not. It cannot be settled by writing to
+   4.8 and Appendix F) and the mechanism question is not. It cannot be settled
+   by writing to
    more above-seam sites, because relative depth and sharing status are the
    same variable across all of them; it needs an ablation that suppresses key
    and value sharing without breaking the model, which the one built here did
@@ -1891,8 +1872,8 @@ Generated by `papers/paper-5-actuation/scripts/build_coverage_table.py` (determi
 | `placebo-signflip-question-type-analysis` | resolved | checkpoint.repo (verbatim): "(none; CPU-only re-read of persisted artifacts, no model loaded)". DECLARED in cell.yaml: none; qwen35-4b; mistral7b-v03 | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Question type does not explain the cross-family placebo sign difference (registered mechanism falsifier untriggered; M1 doubt-axis separation confirmed in all three families under the frozen gate's operational convention..." | 4.8 |
 | `margin-evidence-responsiveness-worldknown` | null-result | `Qwen/Qwen3.5-4B` @ `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` | 1 declared / 1 launched (single-substrate cell) | 4.6, 6.4 |
 | `evidence-response-direction-search` | null-result | `Qwen/Qwen3.5-4B` @ `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` | 1 declared / 1 launched (single-substrate cell) | NOT NARRATED IN BODY (front matter + Appendix A only; no flagged open-work item, unlike doubt-regulated-caution) |
-| `gemma4-e4b-kv-seam-quarantine` | resolved | `google/gemma-4-E4B-it` @ `fee6332c1abaafb77f6f9624236c63aa2f1d0187` | 1 declared / 1 launched (single-substrate cell) | 4.9 |
-| `gemma4-e4b-pocket-ladder` | resolved | `google/gemma-4-E4B-it` @ `fee6332c1abaafb77f6f9624236c63aa2f1d0187` | 1 declared / 1 launched (single-substrate cell) | 4.9 |
+| `gemma4-e4b-kv-seam-quarantine` | resolved | `google/gemma-4-E4B-it` @ `fee6332c1abaafb77f6f9624236c63aa2f1d0187` | 1 declared / 1 launched (single-substrate cell) | 4.8, Appendix F |
+| `gemma4-e4b-pocket-ladder` | resolved | `google/gemma-4-E4B-it` @ `fee6332c1abaafb77f6f9624236c63aa2f1d0187` | 1 declared / 1 launched (single-substrate cell) | 4.8, Appendix F |
 | `jlens-trained-checkpoint-midband-ablation` | falsified | `clean_sft_grpo_v2_seed1 (local lineage: sft_schema_clean_seed1_full/20260623_123624 merged-16bit base + schema_clean_sft_grpo_v2_seed1_full/20260624_095831 final_model adapter)` @ `local run dirs pinned in configs; published mirror eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora` | 1 declared / 1 launched (single-substrate cell) | 6.3 |
 | `correctness-direction-rotation` | null-result | checkpoint.repo (verbatim): "local four-stage set (see cell.yaml stages; raw + partrue identities pinned at staging per A3)". DECLARED in cell.yaml: LogisticRegression(saga, tol=1e-3) | DECLARED 1 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "CD-G1 not met (later transitions 0.449/0.330 vs the 0.85 floor) and falsifier not fired (raw->cleansft 0.192); pre-registered readings exhausted; post-hoc: correctness direction too weakly identified (split-half floor 0...." | 6.5 |
 | `correctness-subspace-overlap` | null-result | `reused five-stage/checkpoint tensor set (see cell.yaml data.stages); no new checkpoint identity, CPU-only reuse of CD and Amendment S/T on-disk extractions` (revision not recorded) | 1 declared / 1 launched (single-substrate cell) | 6.5 |
@@ -1906,7 +1887,8 @@ Generated by `papers/paper-5-actuation/scripts/build_coverage_table.py` (determi
 ## Appendix C. Figure Plan
 
 Every figure is built from committed aggregate artifacts and referenced
-inline in Section 4: Figures 1-6 by
+inline in Section 4, except Figure 8, which is referenced inline in Appendix F:
+Figures 1-6 by
 `papers/paper-5-actuation/scripts/build_figures.py` and Figures 7-8 by
 `papers/paper-5-actuation/scripts/build_restructure_figures.py`, whose
 embedded reproduction audits re-verify every plotted number against its
@@ -1983,3 +1965,66 @@ refusal at or below 10% in the cross-family fleet. Selection among usable rungs
 differs by design: the layer and depth ladders take the highest fit-split clean
 tightening, breaking ties on lower known-correct cost and then on lower dose,
 while the cross-family fleet takes the lowest qualifying dose.
+
+## Appendix F. Gemma Depth Ladder and the Key-Value-Sharing Seam
+
+Section 4.8 reports gemma's depth ladder in summary. This appendix carries the
+per-site detail, the placebo arms behind the specificity verdict, and the
+control built to isolate the key-value sharing seam.
+
+The ladder ran on the unmodified model with key-value sharing left on, at eight
+sites. Relative depth 0.357 is the best of them, at 78.6% clean tightening
+(Wilson 95% CI [71.8, 84.1]) against a 1.1% known-correct false-refusal cost.
+Two sites just below the midpoint, relative depth 0.429 and 0.476, fail the
+clean-tightening floor outright at 44.6% and 40.5%. Relative depth 0.524 clears
+both gates again at 58.9% clean tightening and 0.4% cost. The site immediately
+downstream of both donor blocks, relative depth 0.571, clears them a third time
+at 73.2% clean tightening and 3.3% cost. Relative depth 0.595 clears them at
+79.2% (CI [72.4, 84.6]) and 3.3% cost (CI [1.8, 6.2]). The two deepest sites in
+the cross-family operating range, relative depth 0.619 and 0.643, never reach a
+usable dose at all: their best fit-split tightening rates top out at 37.5% and
+25.0% against a 50% usability floor.
+
+![FIG-P5-08: Gemma-4-E4B depth ladder, actuation outcome versus relative depth with pass/fail per site](figures/fig-p5-08-gemma-depth-ladder.png)
+**Figure 8.** Gemma-4-E4B is not architecturally inert, and where it actuates
+depends on depth: relative depths 0.357, 0.524, 0.571, and 0.595 clear the
+held-out clean-tightening and known-correct cost gates, 0.429 and 0.476 fall
+below the tightening floor, and 0.619 and 0.643 never reach a usable dose.
+Direction-specificity does not follow from behavioral clearance, and no site
+tested for it reaches the three-fold floor: the two sites above the
+key-value sharing seam fail at effect ratios of 1.139 and 1.279, and the one
+below it has no defined ratio because every accepted random draw produced zero
+lift.
+
+Both above-seam sites that reached a usable dose failed their placebo control:
+at relative depth 0.571 the single worst magnitude-matched random draw
+reproduced 88% of the fitted direction's effect, and at 0.595 the worst of five
+draws reproduced 78%, an effect ratio of 1.279 against a three-fold floor. At
+both sites a random direction of the same magnitude does most of what the
+fitted direction does, so neither site shows that the behavior change belongs
+to the fitted direction rather than to perturbation at that magnitude. The two
+shallow passes do not repair that: the 0.357 site carried the behavioral gates
+only, with no placebo arm run at all, and the 0.524 placebo is a degenerate
+pass in which all five accepted random draws produced exactly zero lift, which
+the design requires reporting under the degenerate label rather than as a large
+specificity ratio.
+
+The direct test of the seam mechanism, the same write with key-value sharing
+switched off, could not run: turning sharing off breaks the undosed model
+before any write is applied, taking known-correct rows from perfectly
+well-formed to entirely malformed and raising per-token negative
+log-likelihood on the reference completions from 3.53 to 12.33 (Appendix A).
+A parallel calibration sweep at the original above-seam site found no usable
+dose in either sharing condition, so the deep-site null that gave gemma its
+reputation reproduced unchanged alongside the new shallow-band result.
+
+That leaves the coverage question closed and the mechanism question open, for
+a structural reason rather than a want of data. Every site of the cross-family
+operating range above gemma's seam has now been measured, and none produced
+direction-specific actuation. But across that whole band relative depth and
+sharing status are the same variable on this architecture, so no result there
+can say which of the two produced the falloff: gemma's decay with depth could
+equally be the generic decay every other family here shows past its own
+productive band, with no seam mechanism required. Isolating the seam still
+requires a working sharing-on against sharing-off contrast, and the one built
+for it broke the substrate it was meant to probe.
