@@ -1105,7 +1105,10 @@ write site chosen fresh for each family. Before any write is designed, a read
 panel sweeps the family's depth and marks the interior band of layers where
 the known-unknown, refusal-versus-confabulation, and raw-refusal readouts all
 read well together, and the candidate write site comes from that band. We
-call that pre-write panel the family's atlas.
+call that pre-write panel the family's atlas. Gemma-4-E4B entered the
+program later and is reported alongside them, and the qwen lineage supplies
+the reference point the others are measured against; the four families are
+taken in turn below.
 
 Replication here means two different claims, and the test was built to keep
 them apart. The weaker claim is behavioral: on this family, the gated write
@@ -1121,7 +1124,7 @@ indistinguishable from any sufficiently hard push, and nothing would tie the
 behavior to the epistemic content the direction was fit on. The two claims
 can come apart, and on mistral they do.
 
-#### Qwen 3.5
+#### Qwen3.5
 
 The qwen results in this section are the Qwen3.5-4B lineage written at its
 mid-band site, hs20 at relative depth 0.625, not the raw-base Qwen3-4B
@@ -1306,7 +1309,9 @@ sign is not homogeneous within a family either.
 Read together, the four families fall along a spectrum rather than splitting
 into pass and fail. Qwen passes direction-specificity against the 3.0 floor.
 Mistral actuates, with its benefit and cost gates clearing, but reaches only
-1.87 at the site tested here and 2.03 at an independent site and dose. Llama
+1.87 at the site tested here and 2.03 on an independent re-measurement at the
+same operating point, on fresh rows under a stricter fifteen-seed
+denominator. Llama
 is not shown actuable at the sites tested at all. Gemma actuates in a shallow
 band, and no site tested for specificity there reaches the floor.
 
