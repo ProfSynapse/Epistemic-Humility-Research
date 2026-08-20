@@ -836,8 +836,10 @@ reinforcement-learning recipe, group-relative policy optimization (Shao et
 al., 2024), which scores a group of sampled completions against each other
 rather than against a learned value model. In
 the TRUE arm, reward agreement was computed from a frozen probe read from the
-policy's own pre-generation state. In the PERMUTED arm, the sensor was
-permuted within class. The primary held-out metric was congruence between the
+policy's own pre-generation state. In the PERMUTED arm, each row's sensor score
+was swapped with another row's from the same gold answerability class (seed
+fixed), preserving the reward's per-class statistics while severing the link
+between the score and the row's own state. The primary held-out metric was congruence between the
 final policy behavior and the arm's own freshly refit eval probe.
 
 The instrument was valid: both arms completed all 2934 scheduled steps, no
