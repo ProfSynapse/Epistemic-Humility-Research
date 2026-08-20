@@ -6,6 +6,21 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-08-20 (exhaust published): the registered exhaust-retention clause is
+  fulfilled. Both shapes built through the data-exhaust skill, license gate
+  fully clear (kuq MIT, selfaware Apache-2.0 with disclosure, popqa/triviaqa
+  text-free; zero FalseQA lineage present, zero exclusions), both dirs
+  verified by verify_exhaust.py and independently re-verified by the lead
+  (row counts and the 2,677 core-scored / 5 adjudicated-abstention numbers
+  reproduce the resolve exactly). User approved the dry-run card; the
+  subagent's upload attempt was permission-blocked in its own session and
+  correctly stopped, so the lead ran both uploads. Published: aggregate
+  professorsynapse/eh-wide-instrument-control-rescore revision
+  808c48766db67ad1beb4e1f169de6c7b1fd5e6df (8 files, analysis-committed
+  mirror); rows professorsynapse/eh-wide-instrument-control-rescore-rows
+  revision 8e93cba04e994617cfb227a6de5d5b2ada42aaa6 (4,430 rows: WICR45
+  1,772 + WICR46 2,658, wide-instrument fields joined from the pinned
+  lane). Both recorded in docs/public-artifacts.md.
 - 2026-08-20 (resolve): Grading and gates complete; cell RESOLVED, prediction
   confirmed on all legs. Four context-free grading agents (one per shard,
   rubric rr2-verbatim, no pattern matching, no id-map access, counts-only
