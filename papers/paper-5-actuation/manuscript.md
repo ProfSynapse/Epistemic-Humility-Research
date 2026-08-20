@@ -1009,15 +1009,13 @@ write cannot show a 10-point gain over a reference with less than 6 points
 left to give, so that miss is a property of the pool rather than evidence of
 an absent effect.
 
-On a pool mined from three independent sources, the reference falls to 73.8%
-of 221 confabulations, well off ceiling, and the advantage returns at close to
-its original size: hs29 reaches 92.8%, a 19.0 point gain, with 42 of the 221
-rows breaking toward the mid-band write on a paired comparison and none
-breaking the other way (exact paired test, p = 4.5e-13). Known-correct cost
-there is 2.8% mid-band against 1.4% late, a 1.4 point gap that is also an
-absolute doubling. Pulled off its ceiling, the reference site shows the
-mid-band advantage at close to the magnitude the original contrast reported,
-at a cost that stays small in absolute terms while doubling in relative ones.
+On a pool mined from three independent sources, the late reference site falls
+to 73.8% of 221 confabulations, well off its ceiling, and the advantage
+returns at close to its original size: hs29 reaches 92.8%, a 19.0 point gain.
+The paired comparison is one-sided: on 42 of the 221 rows the mid-band write
+converts a confabulation the late write misses, and on none does the reverse
+happen (exact paired test, p = 4.5e-13). Known-correct cost stays small on
+both arms, 2.8% at the mid-band against 1.4% late.
 
 ![FIG-P5-05: Read-only J-lens workspace band versus write-site behavioral effect across three disjoint pools](figures/fig-p5-05-localization.png)
 **Figure 5.** Left: the read-only Jacobian-lens effective-dimension profile
