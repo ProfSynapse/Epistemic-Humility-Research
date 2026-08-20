@@ -1094,6 +1094,20 @@ the known-unknown, refusal-versus-confabulation, and raw-refusal readouts all
 read well together, and the candidate write site comes from that band. We
 call that pre-write panel the family's atlas.
 
+Replication here means two different claims, and the test was built to keep
+them apart. The weaker claim is behavioral: on this family, the gated write
+produces enough refusal on fired confabulations without refusing
+known-corrects or degrading output. The stronger claim is direction
+specificity: the fitted direction's content, not the push itself, earns the
+effect. A dosed write into the residual stream is a blunt instrument, and
+refusal is a behavior a model can be shoved into for many reasons, so each
+family's protocol also doses a magnitude-matched random direction at the same
+site and requires the fitted direction to beat it by a registered margin.
+Without that bar, a caution direction that actuates refusal would be
+indistinguishable from any sufficiently hard push, and nothing would tie the
+behavior to the epistemic content the direction was fit on. The two claims
+can come apart, and on mistral they do.
+
 The behavioral gates replicate on mistral, under an instrument built to catch
 this family's own abstention idioms. The three fixed refusal forms the narrow
 detector looks for do not count them, so mistral is scored on fresh held-out
