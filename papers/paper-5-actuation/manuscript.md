@@ -250,14 +250,21 @@ route's own machinery is defined and where its results appear.
 | 1. Ungated write of a fitted direction | Activation writes | 3.2, 3.3, 3.4 | 4.1, 4.2 |
 | 2. Readout rendered into the generation trace | Within-generation text injection | 3.1 | 4.1 |
 | 3. Readout rendered as an instruction before generation | High-authority system prompts | 3.1 | 4.3 |
-| 4. Reward computed from the policy's own readout | Reward coupling | 3.1 | 4.4 |
+| 4. Reward computed from the policy's own readout during training | Reward coupling | 3.1 | 4.4 |
 | 5. Gated hidden-state controller, its write site localized by the J-lens | Activation writes, gated | 3.2, 3.3, 3.4 | 4.5, 4.6, 4.7 |
 
 ### 3.1 Channels
 
 We tested four ways to route an epistemic readout into behavior.
 
-- Activation writes: interventions that modify the residual stream along a
+- Within-generation text injection: probe scores rendered into a thinking or
+  revision trace as text, either as terse telemetry or as first-person prose
+  with explicit action rules.
+- High-authority system prompts: the same kind of state-derived label
+  rendered as a second-person system instruction before generation.
+- Reward coupling: a reinforcement-learning reward computed from a frozen
+  probe score read from the policy's own pre-generation hidden state.
+  - Activation writes: interventions that modify the residual stream along a
   fitted direction at a specified layer and token scope, either by adding a
   scaled copy of the direction or, in the erase-write form used for most
   results here, by removing the state's existing component along that direction and
@@ -272,16 +279,9 @@ We tested four ways to route an epistemic readout into behavior.
   mid-generation write timed to the point where the model commits to an
   answer was also attempted, but is not reported as a result because an
   instrument-validity check found it uncertified (Section 6.4).
-- Within-generation text injection: probe scores rendered into a thinking or
-  revision trace as text, either as terse telemetry or as first-person prose
-  with explicit action rules.
-- High-authority system prompts: the same kind of state-derived label
-  rendered as a second-person system instruction before generation.
-- Reward coupling: a reinforcement-learning reward computed from a frozen
-  probe score read from the policy's own pre-generation hidden state.
 
 Two further operations on a fitted direction appear in the results on trained
-checkpoints, and they are not the same intervention. **Ablation** removes the
+checkpoints. **Ablation** removes the
 state's component along the direction and leaves the rest of the residual
 stream untouched, so the model runs without whatever that direction carries.
 **Displacement** leaves that component in place and adds a fixed multiple of
@@ -356,11 +356,7 @@ from fit known-correct rows, the score reaches AUROC 0.9955; the selected
 threshold catches 120 of 124 fit confabulations (96.8%) and flags 2 of 172 fit
 known-correct rows (1.2%). On the split it was chosen on, in other words, the
 gate separates the two populations almost perfectly and fires on very few rows
-it should not.
-
-That is a fit-split figure and nothing more. Every number Section 4.5 reports
-is measured on the held-out split that neither the direction fit nor the
-threshold choice ever saw.
+it should not, which means we can precisely target confabulations without causing over-refusal on knowns.
 
 The raw direction the boundary push is built from is a second mass-mean
 contrast in the same anchor states, and it is not the same contrast: the mean
