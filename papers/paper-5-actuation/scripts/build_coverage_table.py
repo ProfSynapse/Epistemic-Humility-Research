@@ -107,6 +107,8 @@ SECTION_MAP: dict[str, str] = {
     "dark-actuator-screen": "4.7",  # folded sentence at end of 4.7 (restructure)
     "aq-sycophancy-activation-actuator": "6.5",  # number-free future-work sentence, item 8
     "rr-cross-family-raw-refusal": "4.8, 6.5",
+    "llama-atlas-gated-wide-instrument-retest": "4.8",  # content in the cross-family spectrum paragraph
+    "wide-instrument-control-rescore": "6.4",  # wide two-instrument re-score of the 6.4 control conclusions
     "rr2-mistral-adjudicated-refusal-confirm": "4.8, 6.5",
     "abstention-wide-instrument-calibration": "4.8, 6.5",
     "rr3-corrected-placebo-replication": "4.8, 6.5",
