@@ -1144,14 +1144,9 @@ the narrow detector missed, lifting the best well-formed rung from 32.8% to
 45.7%, but no well-formed rung reaches the 0.60 floor: the only doses that
 push refusal past 0.5 break the output format and drag known-correct false
 refusal up with them. Unlike mistral, whose narrow miss was substantially
-vocabulary coverage, llama's failure survives the instrument upgrade. Gemma actuates in a shallow band, and no
-site tested for specificity there reaches the floor (Section 4.9). Mistral is
-readable everywhere we have looked and is not shown actuable by a
-direction-specific write at any site we have tried. That is the specificity
-condition of Section 2.2 going unmet, and it is what costs these cross-family
-results their strongest claim: benefit and cost replicate on Mistral, but
-without a specificity margin we cannot say the fitted known-unknown direction
-is what produced them.
+vocabulary coverage, llama's failure survives the instrument upgrade. Gemma
+actuates in a shallow band, and no site tested for specificity there reaches
+the floor (Section 4.9).
 
 The reason a random direction can carry that much of the effect starts with
 the baseline it is measured against, and that baseline is family-graded.
