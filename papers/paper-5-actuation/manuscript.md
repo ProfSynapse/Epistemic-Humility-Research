@@ -383,8 +383,7 @@ standard deviation of its own projection over those same rows.
 Directions are refit at each site rather than ported. The mid-band Qwen3.5-4B
 operating point carries its own directions, standardization constants, and
 threshold fit at hidden state 20; the Mistral-7B site at hidden state 16
-carries its own, rebuilt byte-identically from that family's own fit record;
-the layer sweeps of Section 4.6 carry one set per layer. No fitted vector
+carries its own. No fitted vector
 crosses a family boundary anywhere in this paper.
 
 ### 3.4 Write sites, dosing, and operating points
@@ -402,9 +401,9 @@ they fall on opposite sides of the band in which any family we tested has
 actuated. A site together with the dose
 written at it is an operating point.
 
-Two write laws appear below, and they measure dose differently.
+Two write laws are worth enumerating that measure dose differently.
 
-The erase-write law, which every gated controller result uses, removes the
+1. The erase-write law, which every gated controller result uses, removes the
 state's existing component along the write direction and installs a fixed
 setpoint in its place. The dose is therefore the realized projection onto the
 write direction after the write, and it is read back on dosed rows to confirm
@@ -420,7 +419,7 @@ at twelve sigma, an absolute dose of 3.665. The absolute figure and the sigma
 multiple are one number written twice. The late-site dose has no sigma
 expression, which is why it is quoted as the raw projection value throughout.
 
-The additive law leaves the existing component alone and adds a fixed vector on
+2. The additive law leaves the existing component alone and adds a fixed vector on
 top of it. It is used by the push of Section 4.2, where the dose is the
 raw-space projection gap between the confabulating mean and the refusing mean
 along that direction, the amount that moves an average confabulating row's
@@ -434,11 +433,7 @@ rung is usable only if the read-back lands within tolerance on every dosed row,
 no dosed row degenerates, and fit-split confabulation clean tightening clears
 its floor; Appendix E gives the floors, which differ between the layer and
 depth ladders and the cross-family fleet, and the rule for choosing among
-usable rungs. If no rung on the ladder is usable, the arm stops there and is
-recorded as having no viable dose, before any held-out row is generated or
-scored. That stop is a pre-outcome rule rather than an outcome, and it is what
-ends the cross-family fleet's arms in Section 6.5 and the two deepest Gemma
-sites in Section 4.9.
+usable rungs.
 
 ### 3.5 Outcome measures
 
