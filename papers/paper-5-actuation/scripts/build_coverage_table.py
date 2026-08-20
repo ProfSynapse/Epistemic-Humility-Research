@@ -117,8 +117,8 @@ SECTION_MAP: dict[str, str] = {
     "margin-evidence-responsiveness-worldknown": "4.6, 6.4",  # backtick @592, @1269
     "evidence-response-direction-search": "NOT NARRATED IN BODY (front matter + Appendix A only; "
     "no flagged open-work item, unlike doubt-regulated-caution)",
-    "gemma4-e4b-kv-seam-quarantine": "4.9",
-    "gemma4-e4b-pocket-ladder": "4.9",
+    "gemma4-e4b-kv-seam-quarantine": "4.8, Appendix F",
+    "gemma4-e4b-pocket-ladder": "4.8, Appendix F",
     # New Appendix A rows from the 2026-08-17 restructure:
     "jlens-trained-checkpoint-midband-ablation": "6.3",
     "correctness-direction-rotation": "6.5",
