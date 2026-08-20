@@ -1,0 +1,26 @@
+[
+  {
+    "committed_at": "2026-08-20T13:12:04.079307+00:00",
+    "file_name": "WICR45_shard_01_graded.jsonl",
+    "sha256": "163f139ddb4dbca290bd283348ac11f64899acc5ea00f23a299154bceb41b266",
+    "shard_id": "WICR45_shard_01"
+  },
+  {
+    "committed_at": "2026-08-20T13:12:26.761296+00:00",
+    "file_name": "WICR45_shard_00_graded.jsonl",
+    "sha256": "f88e0561fb1fbafab127324da22694b7677328797121feedbd11c3ec1c908699",
+    "shard_id": "WICR45_shard_00"
+  },
+  {
+    "committed_at": "2026-08-20T13:12:26.823836+00:00",
+    "file_name": "WICR46_shard_01_graded.jsonl",
+    "sha256": "696afc1d9e965a9b6fb771d0d2f7d51ba12067b5cddfc9994bc85b94bf1f6bf1",
+    "shard_id": "WICR46_shard_01"
+  },
+  {
+    "committed_at": "2026-08-20T13:13:20.079797+00:00",
+    "file_name": "WICR46_shard_00_graded.jsonl",
+    "sha256": "78cb8db4002752381843ff3fc779e18c6695efa78ede99dceb6303ceb77ff4c2",
+    "shard_id": "WICR46_shard_00"
+  }
+]
