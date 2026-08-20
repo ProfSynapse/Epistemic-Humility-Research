@@ -674,9 +674,10 @@ row was scored.
 ### 4.1 Directly writing or telling the model its readout mostly fails
 
 Start with the most direct question the readout results raise: if the gate and
-dial directions are readable, can we write them back into the model at the
-positions where they read best? When it's generating text. That premise, that the best read site is the best write
-site, is one an independent study has since tested directly and rejected: probe
+dial directions are readable, can we write them back into the model, while it
+is generating text, at the positions where they read best? That premise, that
+the best read site is the best write site, is one an independent study has
+since tested directly and rejected: probe
 accuracy does not predict steering success, and the layer where a probe reads
 best can produce no steering effect at all (Billa, 2026). Steerability also
 tracks how separable the two activation clusters are along the fitted
@@ -684,7 +685,12 @@ difference direction rather than how accurately a classifier can be fit (Braun
 et al., 2025).
 
 On Qwen3.5-4B, an 8-cell steering grid crossed two signals (gate/dial), two
-positions (anchor/end), and two channels (activation write/text injection). None
+positions (anchor/end), and two channels (activation write/text injection).
+Text injection means rendering the probe's own score as tokens and splicing
+them into the model's thinking or revision trace, so the model's own
+certainty reading about itself becomes part of what it is generating; the
+first round used a terse, telemetry-style rendering, `[internal: {signal}
+{score:.2f} — {interp}]`. None
 of the eight cells produced an effect that met the threshold set for it in
 advance. Gate-at-anchor activation steering was flat across
 the alpha sweep; dial-at-end activation steering was flat; text-injection cells
@@ -692,8 +698,10 @@ were also flat under their own metrics. The signal is present and the
 tested channels do not make the policy use it, which is the read/write split
 in its simplest form.
 
-A natural objection is that the text was phrased unnaturally. We therefore tested
-stronger first-person phrasing: "I am X% sure..." plus an explicit action rule.
+A natural objection is that the text was phrased unnaturally: that terse
+telemetry note reads like a log line, not something the model would say to
+itself. We therefore tested stronger first-person phrasing in its place: "I am
+X% sure..." plus an explicit action rule.
 The result remained negative. The gate cell showed a small, real trickle of
 rule-following (+2.0 points abstention, CI excluding zero) but missed the +10
 point gate by a factor of five. Dial cells did not improve revision behavior:
