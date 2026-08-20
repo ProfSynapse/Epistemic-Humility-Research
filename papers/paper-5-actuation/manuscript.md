@@ -952,12 +952,26 @@ band it locates then supplies the candidate write sites.
 
 The instrument passed a correctness smoke: the final-layer J-lens closely
 matched the direct unembed baseline over 1000 prompts, with mean cosine 0.9811,
-mean top-10 overlap 0.82, and top-1 match 3/5 over five random directions. The
-direction-verbalization read then found that
-boundary-push-like directions verbalized as first-person,
-absence, error, and impossibility tokens, while the known-unknown direction
-verbalized more as answer/reply tokens. That readout says something about what
-the direction is: a direction that verbalizes toward answer/reply tokens is
+mean top-10 overlap 0.82, and top-1 match 3/5 over five random directions.
+
+The verbalization read is only worth trusting if it is direction-specific.
+The lens itself is direction-blind: it applies the same readout, over the same
+1000 prompts, to whatever vector it is handed, so if every direction fit at
+this site came back with the same hedge-flavored vocabulary, the tokens would
+be a fact about the instrument or the layer, not about the directions. Four
+directions fit at the same L34 site went in together: the known-unknown
+direction, the caution (answer-versus-refuse) direction, the orthogonalized
+caution write direction, and the confabulation-propensity direction carried
+as a negative control. The read splits them cleanly. The caution and
+caution-write directions verbalize as first-person, absence, error, and
+impossibility tokens (I, empty, error, impossible); the known-unknown
+direction verbalizes as answer/reply tokens; and the negative control does
+not verbalize cleanly at all, coming back as noisy unrelated fragments. Each
+direction gets its own vocabulary and the control gets none, which is what
+licenses reading the tokens as a statement about what each direction is
+rather than an artifact of the lens.
+
+A direction that verbalizes toward answer/reply tokens is
 tracking answerability, not a self-directed uncertainty state, and a later
 experiment on world-known items, where the error is a confidently wrong answer
 rather than acknowledged ignorance, characterizes it the same way, closer to
