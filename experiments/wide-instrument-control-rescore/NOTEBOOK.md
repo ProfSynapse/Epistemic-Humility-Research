@@ -101,3 +101,19 @@ in `experiment.yaml`.
   device in the snapshot path) — parked as follow-up, not part of this
   cell. GPU work is currently ON HOLD at the user's request; relaunch
   order goes out when the user releases the GPU.
+- 2026-08-20: Stage 0 + WG-G0 + Stage 1 COMPLETE under the correction-6
+  per-cell tuner pins. WG-G0 verdict parity_holds, stage_1_authorized
+  true: every arm in both cells regenerated at exactly 0.0pp from the
+  committed rates (4.5: gated 73.5135/3.1008, random 7.027/2.3256,
+  permuted 40.0/22.8682; 4.6: hs23 89.1892/3.4884, hs26 81.0811/3.1008,
+  hs29 88.1081/3.876, hs34 66.4865/2.7132 — confab_tighten/cost pairs in
+  %). Lead spot-verified the parity report and both regenerated
+  summaries independently. Blinded pool built: 2909 rows (2677 core +
+  217 clear-negative decoys + 15 clear-positive decoys) across 4 shards
+  (WICR45_shard_00/01, WICR46_shard_00/01; 737/735/719/718), seed
+  20260818. Submodule restored to 1dac0202 before scoring. This entry
+  accompanies the commit of adjudication_pool_manifest.json (sha256
+  489e34293eb3f3b28ecf59a45b2b7a1ba1da9c56753b84c67bce313561b616a2),
+  which per the unblinding-order guarantee must precede any graded-file
+  hash commit. Next: dispatch 4 context-free grading agents per RUNBOOK
+  section 4.
