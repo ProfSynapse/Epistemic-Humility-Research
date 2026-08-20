@@ -797,7 +797,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (551)
+## Mechanisms (cause -> effect) (552)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -962,6 +962,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[full-refusal-axis-ablation-collapse-is-seed1-specific]] : Full refusal-axis ablation (freshly fit raw mass-mean direction at L35, same registered recipe as the seed-1 rederivation) on known-item rows of clean_sft_grpo_
 - [[full-sft-on-noncompliance-data-causes-over-refusal]] : Full continued SFT of an instruction-tuned model on a noncompliance-only dataset (CoCoNot) without a contrastive compliance signal **enables** Model over-genera
 - [[functional-cooccurrence-drives-spatial-clustering]] : SAE features that tend to fire together within documents (functional co-occurrence, measured by phi-coefficient-cooccurrence) share semantic content **enables**
+- [[gated-controller-and-layer-site-controls-survive-wide-instrument]] : `wide-instrument-control-rescore` regenerates the doubt-gated-caution-tighten (Section 4.5, gated / random_direction / permuted_gate arms on the 185 confabulati
 - [[gemma-actuation-localizes-shallow-of-kv-seam]] : A dosed known-unknown direction is written into Gemma-4-E4B-it at shallow relative depth below its KV-sharing seam (D1/hs15, relative depth 0.357, both donor bl
 - [[gemma-quarantined-pocket-shows-no-direction-specific-actuation]] : A fitted known-unknown direction is dosed into Gemma-4-E4B-it at each of three sites one to three blocks deeper into the KV-sharing seam's quarantined region th
 - [[gender-bias-spans-many-directions]] : Gender information encoded in glove-word-embeddings **enables** Single-direction projection (e.g. he-she) leaves substantial residual linear gender signal; full

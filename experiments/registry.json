@@ -7548,7 +7548,10 @@
           "stats_lib.py": "74f262ac733c61d2ef0fc5c3b37178f96b7c25022d461114fe46f4d1bdaae0f6"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:wide-instrument-control-rescore",
+        "mechanism:gated-controller-and-layer-site-controls-survive-wide-instrument"
+      ],
       "prediction": "Both control conclusions survive at both operating points - the wide-instrument effect ratio (gated lift over random-direction lift) is at least 3.0, and the permuted-gate cost/selectivity degradation holds with a bootstrap CI excluding zero.",
       "question": "Do the narrow-detector control conclusions behind paper 5 Sections 4.5 and 4.6 (random-direction placebo carries far less than the gated write; the permuted gate degrades cost and selectivity) survive re-scoring under the pinned wide two-instrument stack (detector_v2 plus blinded context-free LLM grading), after faithful regeneration of the arms from the committed pipelines?",
       "registered": true,
