@@ -308,12 +308,16 @@ def fig5_localization():
     axA.axvspan(23, 29, color=C_MID, alpha=0.15, label="workspace-like band (hs 23-29)")
     peak_l = layers[int(np.argmax(eff_dim))]
     axA.plot([peak_l], [max(eff_dim)], "o", color=C_MID, ms=9, zorder=5)
-    axA.text(peak_l, max(eff_dim) + 0.0006, f"peak hs={peak_l}", ha="center", fontsize=8.5, color=C_MID)
+    # headroom scaled to the data span so the peak annotation and legend fit
+    # inside the axes instead of spilling into the title
+    span = max(eff_dim) - min(eff_dim)
+    axA.set_ylim(top=max(eff_dim) + span * 0.30)
+    axA.text(peak_l, max(eff_dim) + span * 0.07, f"peak hs={peak_l}", ha="center", fontsize=8.5, color=C_MID)
     axA.axvline(34, color=C_LATE, ls="--", lw=1.3, alpha=0.8)
     axA.text(34.3, max(eff_dim) * 0.55, "L34 write\nsite", fontsize=8, color=C_LATE)
     axA.set_xlabel("layer (hs index)")
     axA.set_ylabel("effective dimension (fraction of hidden dim)")
-    axA.set_title("Read-only diagnostic: a workspace-like\nlow-dimensional band, read-only, no gates", fontsize=10)
+    axA.set_title("Read-only diagnostic: a workspace-like\nlow-dimensional band, read-only, no gates", fontsize=10, pad=10)
     axA.legend(frameon=False, fontsize=8, loc="upper right")
 
     # B: write-site behavioral localization across 3 disjoint pools
