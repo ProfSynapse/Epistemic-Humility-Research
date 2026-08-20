@@ -1246,14 +1246,6 @@ unanswerability is most legible from surface form alone. Question type does
 not explain away the cross-family sign difference at the family level, but the
 sign is not homogeneous within a family either.
 
-(nothing; the paragraph moves to Section 6.5 per R12-b)
-
-One finding reaches backward. Qwen's wide-instrument placebo response is
-suppressive rather than confounding, so nothing here indicates the
-narrow-detector controls behind Sections 4.5 and 4.6 were compromised. Those
-controls have not been re-scored under the wide stack; that gap is recorded in
-Section 6.4.
-
 ### 4.9 Gemma's inertness was a depth-coverage artifact, not a family-specific null
 
 Gemma-4-E4B carried a reputation as the one family that does not actuate. That
