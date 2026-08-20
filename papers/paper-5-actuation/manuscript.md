@@ -1074,11 +1074,11 @@ headline effect on the majority of model-task pairs once evaluated across
 dozens of models (Queiroz Da Silva et al., 2025), so this was a real test
 rather than a formality. It asked whether the same KU-gated boundary push
 actuates refusal on Llama-3.2-3B and Mistral-7B-v0.3, refit from scratch at a
-write site chosen for each family by its atlas: a read panel, run across the
-model's depth before any write is designed, that marks the interior band of
-layers where the known-unknown, refusal-versus-confabulation, and raw-refusal
-readouts all read well together, and takes the candidate write site from that
-band.
+write site chosen fresh for each family. Before any write is designed, a read
+panel sweeps the family's depth and marks the interior band of layers where
+the known-unknown, refusal-versus-confabulation, and raw-refusal readouts all
+read well together, and the candidate write site comes from that band. We
+call that pre-write panel the family's atlas.
 
 The behavioral gates replicate on mistral, under an instrument built to catch
 this family's own abstention idioms. The three fixed refusal forms the narrow
