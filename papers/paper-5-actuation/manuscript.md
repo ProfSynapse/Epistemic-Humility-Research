@@ -116,11 +116,10 @@ single-seed, or specific to one write site.
 ## 1. Introduction
 
 Ask a small language model a question it has no basis to answer, and its hidden
-state, read before it emits a token, will usually say so: a linear readout
+state, read before it emits a single token, will usually say so: a linear readout
 separates answerable from unanswerable items at near-ceiling accuracy while
 stated confidence stays flat and resists training (Rosenbaum, 2026c). The model
-then answers anyway. Read from outside, it composes with a post-generation
-correctness readout into a training-free trust pipeline (Rosenbaum, 2026d): the
+then answers anyway. The
 failure is coherence between the stated and the hidden signal, not absence of
 the signal (Rosenbaum, 2026a).
 
@@ -131,35 +130,26 @@ Qwen and stress-testing it on Mistral, Llama, and Gemma.
 
 The answer is that we can read the model's known-unknown state and wire it to
 the model's own refusal behavior, with no training and without the policy's
-cooperation. The paper builds a thermostat: the model already carries a
-working thermometer and never consults it, so we supply the wiring from the
+cooperation. In other words, we can build a thermostat: the model already carries a
+working thermometer and never consults it to regulate its "temperature", so we supply the wiring from the
 reading to the behavior it should govern. The wiring works only at the right operating point, meaning the
 site in the network where the write lands and the dose it is applied at, and
-those coordinates are model-specific. In the Qwen lineage a Jacobian-lens read
-of the model's workspace-like layers localized where the write works best
-(Section 4.6), and a mid-band operating point in that lineage was validated in
-a confirmatory naming experiment closely enough to earn a name of its own, the
-IDK switch (Section 4.5). Testing on other families then separates what travels
-from what does not: the recipe's guardrails replicate, while the coordinates,
-and even the baseline a placebo control has to be measured against, are
-family-signed, so site and dose have to be established fresh on each model
-(Sections 4.8 and 4.9). Done right, the wiring converts confabulations into
+those coordinates are model-specific. Done right, the wiring converts confabulations into
 refusals without driving up refusal on the questions the model can answer.
 
-The simpler routes into that behavior all fail, and they fail on substrates
-where the readout itself is near-ceiling. Representation engineering treats
+The more conventional routes into that behavior all fail. Representation engineering treats
 reading a direction and writing along it as one method (Zou et al., 2023), but
 the two come apart: across five models a probe above 93% accuracy at every
 layer produced near-zero steering effect at its own best layer (Billa, 2026).
 Writing the two readout directions back into the hidden state where they read
 best, and spelling the readout out in words as the model generates, each left
-behavior short of the effect threshold set in advance (Section 4.1). A
+behavior short of the effect threshold (Section 4.1). A
 direction fit for the job rather than for reading, separating fluent answers to
 unanswerable questions from honest refusals, moved the internal signal by the
-commanded amount and converted not a single one of those answers into a refusal
+commanded amount and converted not a single one of those answers into an abstention
 (Section 4.2). A system prompt handing the model a per-item certainty label did
-move behavior, but it moved behavior even when the labels were inverted
-(Section 4.3). Rewarding the policy for agreeing with a frozen probe read from
+move behavior, but it moved behavior in precisely the direction we prompted, and nothing to do with the internal signal
+(Section 4.3). Lastly, rewarding the policy for agreeing with a frozen probe through training read from
 its own pre-generation state left the true-sensor arm less congruent with its
 own readout than a permuted-sensor control (Section 4.4). A readable direction
 is not automatically a usable actuator, and what makes it usable is the
@@ -168,43 +158,27 @@ operating point rather than the direction.
 Where the write lands matters as much as what is written. The J-space read, a
 Jacobian-lens characterization of which layers carry a model's verbalizable,
 workspace-like representations (Gurnee et al., 2026), locates that band well
-upstream of the deeper site the gated write had been using, and moving the same
+upstream of the deeper site the original gated write had been using, and moving the same
 write into the band converts substantially more confabulations at almost no
-added known-correct cost (Section 4.6). A token-targeted J-space write, built to
+added known-correct cost (Section 4.6). Interestingly, a token-targeted J-space write, built to
 raise refusal tokens and lower answer-continuation tokens, actuates on its own
 but adds almost nothing on top of the gated write (Section 4.7).
 
-Across families, the guardrails travel and the coordinates do not: on Mistral
-the benefit and cost gates replicate, while direction-specificity fails its
-strongest test at every site we tried. Even what a placebo control does to a
-model turns out to be a family property rather than a constant, so it has to be
-re-measured on each new one (Sections 4.8 and 4.9).
-
-In practice, the build sequence is:
+Across families, we can consistently wire the readout (Known-Unkown or KU) to the behavior (the "I don't know" or IDK switch), but the coordinates do not. In practice, the build sequence is:
 
 1. **Find the read spot.** A per-family read panel sweeps the model's depth and
    marks the band where its known-unknown state reads cleanly. That is where
    the sensor goes.
 2. **Find the write spot and the dose.** Candidate write sites come from the
    workspace-like band, and the dose is calibrated on the fit split at the site
-   you intend to use. Both are established on the model in front of you and
-   neither is ported from another.
+   you intend to use.
 3. **Build the thermostat.** Threshold the readout, and where it fires, throw
-   the refusal write. That is the IDK switch, a name an operating point earns
-   by passing a confirmatory test rather than by being built this way.
+   the refusal write. That is the IDK switch.
 4. **Verify the wiring.** Check the write against a random direction judged
    against that family's own measured null, against a permuted gate, and
    against its cost on questions the model can answer, to confirm the effect
    belongs to the direction you fitted and not to perturbation at that
    magnitude.
-
-The evidence remains exploratory: the headline actuator's best operating point
-is so far one model's coordinates, and many results are single-seed or specific
-to one write site. What would move it from exploratory to confirmatory is
-already scoped, and it is a single test. A pre-registered cross-model
-replication of the full gated actuator, with the read spot and the write spot
-located by each new family's own panel and every gate fixed before the run,
-is what these claims are waiting on.
 
 ---
 
@@ -233,26 +207,21 @@ model refuses or fabricates (Ferrando et al., 2024).
 
 That distinction motivates the present study. External reading can support a
 classifier, a monitor, or an abstention wrapper, but it does not prove the model's
-own policy uses the signal. Abstention itself is also not a solved problem an
-external controller would be redundant with: the design space is wide (Wen et
-al., 2024), training a model to say "I don't know" is a substantial project in
-its own right (Cheng et al., 2024), and reasoning post-training degrades
-abstention rather than fixing it (Kirichenko et al., 2025). Actuation asks whether the internal state can be
-made causal for behavior.
+own policy uses the signal.
 
 ### 2.2 What would count as use?
 
-We treat "use of an internal readout" as stronger than behavior change. A system
-prompt that says "you do not know this" and causes refusal is an actuator, but it
+We treat "use of an internal readout" as stronger than behavior change. For example, a system
+prompt that injects "you do not know this" and causes refusal is an actuator, but it
 does not show the model consulted its own state. Likewise, a reward that improves
 abstention behavior may train surface heuristics rather than readout alignment.
 
 The cleanest positive evidence would satisfy three conditions:
 
-- alignment: the intervention is computed from the model's own state, not
+- **alignment**: the intervention is computed from the model's own state, not
   from gold labels;
-- specificity: a permuted or random control does not reproduce the effect;
-- selectivity: the intervention moves target failures without imposing the
+- **specificity**: a permuted or random control does not reproduce the effect;
+- **selectivity**: the intervention moves target failures without imposing the
   same action on rows where it is inappropriate.
 
 The specificity condition is the one the external literature has found hardest
