@@ -879,10 +879,11 @@ later established why this separation matters: an unconditional write damages
 costs the controller only 4.3 points of confab conversion (77.8% ungated
 versus 73.5% gated). The 60.1% figure is not a refusal rate; it decomposes as
 55.8 points clean false-refusal, 3.9 points answered-wrong, and 0.4 points
-degenerate output. At this specific write site and dose, which the margin
-theory identifies as an overdrive operating point, the gate is the sole
+degenerate output. At this specific write site and dose, the gate is the sole
 source of selectivity: the write, left unconditional, damages most
-known-correct rows. This is the collateral-damage trade-off that additive
+known-correct rows. We label a dose this strong, high enough to flip
+known-correct rows as well as confabulations, an overdrive operating point;
+Section 6.2 gives the qualitative account behind the label. This is the collateral-damage trade-off that additive
 steering methods are known to face at effective magnitudes (Nguyen et al.,
 2026), and that norm-violating writes in particular incur as outright
 capability collapse (Dang and Ngo, 2026). What the gate buys here is a way to
