@@ -1139,13 +1139,7 @@ clearing, but reaches only 1.87 here and 2.03 at an independent site and dose.
 Llama is not shown actuable at the site tested at all: its gated write failed
 on format collapse before reaching the refusal floor, and it has not been
 re-run under the wide instrument. Gemma actuates in a shallow band, and no
-site tested for specificity there reaches the floor (Section 4.9). Mistral is
-readable everywhere we have looked and is not shown actuable by a
-direction-specific write at any site we have tried. That is the specificity
-condition of Section 2.2 going unmet, and it is what costs these cross-family
-results their strongest claim: benefit and cost replicate on Mistral, but
-without a specificity margin we cannot say the fitted known-unknown direction
-is what produced them.
+site tested for specificity there reaches the floor (Section 4.9).
 
 The reason a random direction can carry that much of the effect starts with
 the baseline it is measured against, and that baseline is family-graded.
