@@ -998,7 +998,9 @@ that a readout of what the model is prepared to verbalize is a better one.
 
 The layer-site advantage is real and direction-stable on raw-base Qwen3-4B,
 but its size cannot be read off a reference site sitting near its own ceiling.
-Two same-model replications on fresh confabulations measure that dependence.
+Two same-model replications on fresh confabulations measure that dependence,
+each with the same success bar registered before the run: the best mid-band
+site must beat the late reference by at least 10 points on clean tightening.
 
 On a pool drawn from a single source, the late reference site refuses 94.1% of
 306 rows, leaving 5.9 points of arithmetic headroom against the 10-point bar,
