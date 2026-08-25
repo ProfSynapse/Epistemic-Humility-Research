@@ -5257,25 +5257,26 @@
       ],
       "instrument": {
         "configs": [
-          "experiments/llama-hs17-direction-specificity/cell.yaml",
-          "experiments/llama-hs17-direction-specificity/gates.yaml",
-          "experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/layers/hs17/u_d_hs17.json",
-          "experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/layers/hs17/c_hat_hs17.json",
-          "experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/gate_fit_layers.json",
-          "experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/build_manifest_layers.json",
-          "experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/full_summary.json",
-          "experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/reused_rows_manifest.json"
+          "cell.yaml",
+          "gates.yaml"
         ],
+        "engine_exception": {
+          "kind": "intervention",
+          "reason": "Per-row KU-gated activation write at hs17 via the tuner mechinterp InterventionHook path, the engine the parent j-space-cross-family-layer-contrast arms registered; arm comparability with the frozen parent result requires the identical engine (batched-generation.md decision table: per-row hooks/activation writing)."
+        },
         "modules": [],
         "persistence": {},
-        "pins": {}
+        "pins": {
+          "cell.yaml": "b5af1649a6434ebc219ccab6914053783c56979b1808b2cccd1f0567b876dfaa",
+          "gates.yaml": "94ce682aefe9ef074b373962318f3699c414c3f753cfb94e0eeb7aee70148a22"
+        }
       },
       "kg": [],
       "prediction": "The gated write replicates above the 0.50 floor and clears the 3.0 effect ratio against the strongest of fifteen random directions.",
       "question": "Is llama's hs17 mid-band gated-write behavioral pass (held-out clean_tighten 0.742) direction-specific against fifteen matched-magnitude fresh random directions?",
       "registered": true,
       "slug": "llama-hs17-direction-specificity",
-      "status": "draft",
+      "status": "signed",
       "title": "Llama hs17 mid-band direction-specificity census",
       "type": "steer-cell",
       "verdict": ""
