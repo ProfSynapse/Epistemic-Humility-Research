@@ -123,7 +123,7 @@ are fixed at sign; an ambiguous result is reported as ambiguous.
 | Predictor | Call |
 |-----------|------|
 | orchestrator | Replicates and passes the 3.0 ratio (llama hs17 is direction-specific) — ~55% |
-| user | |
+| user | "Replicates + specific" (recorded 2026-08-25, selected from the pre-stated outcome menu) |
 
 ## Outcome
 
