@@ -101,7 +101,7 @@ ambiguous.
 | Predictor | Call |
 |-----------|------|
 | orchestrator | Both gates pass (suppressive sign holds; ratio survives max-over-15) — ~75% |
-| user | |
+| user | "Both gates pass" (recorded 2026-08-25, selected from the pre-stated outcome menu) |
 
 ## Outcome
 
