@@ -1,0 +1,25 @@
+# Pinned instrument for qwen3-4b-l34-placebo-seed-census.
+# Census-only cell: gated arm and baseline are frozen from the parent re-score;
+# this cell generates only the fifteen fresh random-direction arms.
+substrate:
+  repo: unsloth/Qwen3-4B
+  revision: raw-base (no adapter; bf16, no 4-bit quantization)  # doubt-gated-caution-tighten pin
+site:
+  layer: hs34  # layer index 33
+  hidden_dim: 2560
+frozen_reuse:
+  parents: [doubt-gated-caution-tighten, wide-instrument-control-rescore]
+  directions:
+    u_d: experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json
+    c_hat: experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json
+  gate_fit: experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json
+  standardization: experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json
+  historical_random_draw: experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json  # seed 20260707; reported alongside, NOT one of the 15
+  frozen_arm_results: experiments/wide-instrument-control-rescore/analysis-committed/results/wide_gates_report.json  # gated 137/185, baseline 21/185
+  scoring: wicr wide two-instrument stack + census apply_adjudication.py tooling, fresh id salt
+arms:
+  - id: arm_random_k (k = 1..15)
+    intervention: wicr random_direction arm pathway with the direction replaced by a fresh random unit direction (np.random.RandomState(seed).normal(size=2560), unit-normalized); dose_target 200.0, generation contract and scoring unchanged
+    seeds: gates.yaml seeds.random_census
+    rows: the wicr 185-row confab wide-instrument population
+lane: local RTX 3090 or Modal; fixed at launch approval
