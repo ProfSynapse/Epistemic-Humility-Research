@@ -5247,6 +5247,41 @@
     },
     {
       "checkpoint": {
+        "repo": "unsloth/Llama-3.2-3B-Instruct",
+        "revision": "raw-base (bf16 instruct, no adapter, no 4-bit quantization)"
+      },
+      "created_at": "2026-08-25T15:38:56Z",
+      "falsifier": "Arm-1 held-out clean_tighten < 0.50 (replication failure), or max over the 15 seeds of |random lift| >= gated lift / 3, i.e. effect ratio < 3.0.",
+      "inputs": [
+        "experiments/j-space-cross-family-layer-contrast"
+      ],
+      "instrument": {
+        "configs": [
+          "experiments/llama-hs17-direction-specificity/cell.yaml",
+          "experiments/llama-hs17-direction-specificity/gates.yaml",
+          "experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/layers/hs17/u_d_hs17.json",
+          "experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/layers/hs17/c_hat_hs17.json",
+          "experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/gate_fit_layers.json",
+          "experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/build_manifest_layers.json",
+          "experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/full_summary.json",
+          "experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/reused_rows_manifest.json"
+        ],
+        "modules": [],
+        "persistence": {},
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "The gated write replicates above the 0.50 floor and clears the 3.0 effect ratio against the strongest of fifteen random directions.",
+      "question": "Is llama's hs17 mid-band gated-write behavioral pass (held-out clean_tighten 0.742) direction-specific against fifteen matched-magnitude fresh random directions?",
+      "registered": true,
+      "slug": "llama-hs17-direction-specificity",
+      "status": "draft",
+      "title": "Llama hs17 mid-band direction-specificity census",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "Qwen/Qwen3.5-4B",
         "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
       },

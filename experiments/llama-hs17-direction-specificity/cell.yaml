@@ -1,0 +1,33 @@
+# Pinned instrument for llama-hs17-direction-specificity.
+# Reuse-only cell: every direction, gate fit, dose, and row pool is frozen from
+# the parent experiment; this cell adds arms, never re-fits anything.
+substrate:
+  repo: unsloth/Llama-3.2-3B-Instruct
+  revision: raw-base (bf16 instruct, no adapter, no 4-bit quantization)
+  family_pin: experiments/j-space-cross-family-layer-contrast/families/llama-3.2-3b.yaml
+site:
+  layer: hs17
+  hidden_dim: 3072
+  relative_depth: 0.607  # 17/28
+frozen_reuse:
+  parent: j-space-cross-family-layer-contrast
+  directions:
+    u_d: experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/layers/hs17/u_d_hs17.json
+    c_hat: experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/layers/hs17/c_hat_hs17.json
+  gate_fit: experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/gate_fit_layers.json
+  standardization: experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/build_manifest_layers.json
+  dose_source: experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/full_summary.json  # /layers/hs17/dose_target
+  row_pools: experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/reused_rows_manifest.json
+  scoring_path: parent run_contrast.py clean_tighten metric, unchanged
+arms:
+  - id: arm0_baseline
+    intervention: none
+    rows: confab_held_out (872) + known_correct_answered_held_out (334)
+  - id: arm1_gated_replication
+    intervention: KU-gated c_hat write, dose_target 4.954897429720482, fresh decode seed
+    rows: confab_held_out (872) + known_correct_answered_held_out (334)
+  - id: arm2_random_census
+    intervention: arm1 pathway with c_hat replaced by fresh random unit direction (np.random.RandomState(seed).normal(size=3072), unit-normalized); KU gate, dose, generation contract unchanged
+    seeds: gates.yaml seeds.random_census (K=15)
+    rows: confab_held_out (872)
+lane: local RTX 3090 or Modal; fixed at launch approval
