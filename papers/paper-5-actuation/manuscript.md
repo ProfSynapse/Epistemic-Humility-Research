@@ -214,8 +214,7 @@ The cleanest positive evidence would satisfy three conditions:
 - **alignment**: the intervention is computed from the model's own state, not
   from gold labels;
 - **specificity**: a permuted or random control does not reproduce the effect;
-- **selectivity**: the intervention moves target failures without imposing the
-  same action on rows where it is inappropriate.
+- **selectivity**: the intervention reduces confabulations without causing over-refusal on knowns.
 
 The specificity condition is the one the external literature has found hardest
 to satisfy: a random unit vector orthogonal to a fitted steering vector can
@@ -250,14 +249,14 @@ route's own machinery is defined and where its results appear.
 
 We tested four ways to route an epistemic readout into behavior.
 
-- Within-generation text injection: probe scores rendered into a thinking or
+1. **Within-generation text injection**: probe scores rendered into a thinking or
   revision trace as text, either as terse telemetry or as first-person prose
   with explicit action rules.
-- High-authority system prompts: the same kind of state-derived label
+2. **High-authority system prompts**: the same kind of state-derived label
   rendered as a second-person system instruction before generation.
-- Reward coupling: a reinforcement-learning reward computed from a frozen
+3. **Reward coupling**: a reinforcement-learning reward computed from a frozen
   probe score read from the policy's own pre-generation hidden state.
-- Activation writes: interventions that modify the residual stream along a
+4. **Activation writes**: interventions that modify the residual stream along a
   fitted direction at a specified layer and token scope, either by adding a
   scaled copy of the direction or, in the erase-write form used for most
   results here, by removing the state's existing component along that direction and
@@ -295,8 +294,7 @@ threshold. The actuator is a separate boundary-push direction, constructed by
 orthogonalizing a raw refuse/control direction against the KU direction and
 the classifier control described in Section 3.3. The raw direction is built the way refusal
 directions are built elsewhere (Arditi et al., 2024); the orthogonalization is
-a guard against the gate and the actuator collapsing into one axis, and it is
-worth saying plainly that it does not buy representational independence, since
+a guard against the gate and the actuator collapsing into one axis, which does not buy representational independence, since
 ablating one orthogonal refusal direction measurably changes another
 (Wollschläger et al., 2025), and refusal is not well captured by any single
 direction (Joad et al., 2026). Later J-space experiments reuse per-layer
@@ -334,7 +332,7 @@ identically in every arm.
 The known-unknown direction is a mass-mean contrast, meaning the difference
 between two class means, normalized to unit length: the mean anchor state over
 fit known-correct rows minus the mean over unknown-refused rows. On the
-raw-base Qwen3-4B controller it is fit at hidden state 34.
+raw-base Qwen3-4B controller it is fit at hidden state 34 to start.
 
 The gate score turns that direction into one number per row. It is the row's
 projection onto the direction, standardized by the fit pool's own mean and
@@ -349,12 +347,12 @@ from fit known-correct rows, the score reaches AUROC 0.9955; the selected
 threshold catches 120 of 124 fit confabulations (96.8%) and flags 2 of 172 fit
 known-correct rows (1.2%).
 
-That is a fit-split figure and nothing more. Every number Section 4.5 reports
+Every number Section 4.5 reports
 is measured on the held-out split that neither the direction fit nor the
 threshold choice ever saw.
 
 The raw direction the boundary push is built from is a second mass-mean
-contrast in the same anchor states, and it is not the same contrast: the mean
+contrast in the same anchor states, which is not the same contrast: the mean
 over unknown-refused rows minus the mean over fit confabulation rows, which
 separates declining from confabulating among questions the model cannot
 answer. A third direction is a standardized logistic classifier of the confabulation
@@ -392,7 +390,7 @@ Gemma-4-E4B 42. Llama's hs20 and Qwen3.5-4B's hs20 are the same integer and
 not the same depth, relative depth 0.714 versus 0.625, and on present evidence
 they fall on opposite sides of the band in which any family we tested has
 actuated. A site together with the dose
-written at it is an operating point.
+written at it is an *operating point*.
 
 Two write laws are worth enumerating that measure dose differently.
 
@@ -463,7 +461,7 @@ correct one.
 **Release** is baseline refusal rate minus the arm's refusal rate on the same
 population, the share of rows an intervention un-refuses. **Induced refusal**
 is its mirror, the arm's refusal rate minus baseline on a population that
-answered at baseline, the share an intervention muzzles.
+answered at baseline, or the share an intervention muzzles.
 
 **Selectivity gap** is release on known items the model refused despite being
 able to answer them, minus release on unanswerable items it refused. A prompt
@@ -591,9 +589,7 @@ McNemar's test, evaluated as an exact two-sided binomial test on the discordant
 pairs. It certifies the gated versus unconditional contrast of Section 4.5,
 where 149 of 258 known-correct rows are discordant, and the mid-band versus
 late write-site contrast on the multi-source pool in Section 4.6, where 42 rows
-are discordant and all 42 break the same way. The latter carries a
-second clause the test alone does not supply: late-only failures had to
-outnumber mid-only failures at least three to one.
+are discordant and all 42 break the same way.
 
 A confidence interval on the difference between two independent proportions
 uses the Newcombe hybrid score interval, built from the two rates' own Wilson
@@ -662,6 +658,8 @@ judgment auditable: a reader can follow any number in this paper back to the
 bytes that produced it and the document that fixed its gates before a single
 row was scored.
 
+When reviewing this paper we recommend you point your AI agent of choice at it to help navigate and reproduce any of our findings.
+
 ---
 
 ## 4. Results
@@ -676,11 +674,12 @@ the correctness readout scored after a first answer and aimed at revision
 behavior (Rosenbaum, 2026d). The grid below tests both because they are that
 paper's two deployable readouts, and writing each back in at its own read
 position is the direct test of whether the site that reads best is also the
-site that writes best. The dial does not return after this section; the
-controller work in the rest of the paper follows the gate lineage only. That
+site that writes best (The dial does not return after this section; the
+controller work in the rest of the paper follows the gate lineage only). 
+
+That
 premise, that
-the best read site is the best write site, is one an independent study has
-since tested directly and rejected: probe
+the best read site is the best write site, is one an independent study has tested directly and rejected: probe
 accuracy does not predict steering success, and the layer where a probe reads
 best can produce no steering effect at all (Billa, 2026). Steerability also
 tracks how separable the two activation clusters are along the fitted
@@ -729,9 +728,7 @@ confabulation-propensity direction; it is
 distinct from the known-unknown axis used everywhere else in this paper and
 from the boundary-push write direction of Section 4.5. It was fit on a
 checkpoint trained with reinforcement learning, the same checkpoint whose
-reward-trained arm is evaluated in Section 4.4 below, where it produced 116
-confabulations under the checkpoint's own generation policy on a fixed
-question set.
+reward-trained arm is evaluated in Section 4.4 below.
 
 If the direction is causally upstream of the fabricate-versus-refuse choice,
 subtracting it from the residual stream at generation time, at a magnitude
@@ -746,10 +743,9 @@ baseline confabulations, and a three-point dose ladder at half and double the
 calibrated magnitude converted only one of 30 pushed confabulations at the
 highest dose tested. The primary arm's kills minus the permuted control's
 kills came to exactly zero, with a bootstrap 95% confidence interval of
-[0.00, 0.00]. By the criteria fixed before the run, this is a negative
-result on both the reach and the specificity leg.
+[0.00, 0.00]. Therefore, this result is negative on both the reach and the specificity leg.
 
-The null is not an instrumentation failure. A read-back check on the pushed
+The null was not an instrumentation failure. A read-back check on the pushed
 rows found the confabulation-propensity projection moved by -2.7133 against a
 commanded -2.7110, a ratio of 1.0008: the push landed almost exactly where it
 was aimed. Unpushed rows showed a projection shift of exactly 0.0000, and
@@ -790,7 +786,7 @@ probe-aligned instruction was also a correct oracle instruction. The follow-up
 inverted the labels. The model obeyed the wrong muzzle strongly: induced refusal
 on known-correct answered rows rose by +34.0 points, CI [+26.5, +41.5]. It
 resisted the wrong pro-answer instruction more strongly: unknown-refused release
-was +7.9 points. The asymmetry, +26.1 points, passed its locked gate.
+was +7.9 points.
 
 Internal-state instrumentation sharpened the picture. The known-unknown
 direction did not move semantically with the prompt; compliance traveled
@@ -827,7 +823,7 @@ question here is narrower and harder: not whether reward
 moves the behavior, but whether it makes the policy consult its own
 hidden-state readout. The probe-as-reward cell took two checkpoints that had
 been supervised fine-tuned on clean data and trained both with the same
-reinforcement-learning recipe, group-relative policy optimization (Shao et
+reinforcement-learning recipe, group-relative policy optimization (GRPO, Shao et
 al., 2024), which scores a group of sampled completions against each other
 rather than against a learned value model. In
 the TRUE arm, reward agreement was computed from a frozen probe read from the
@@ -863,7 +859,7 @@ al., 2024). The controller below applies the same read-then-write logic at the
 level of whole questions, and separates the two roles into two different
 directions:
 
-1. a KU readout gate decides which rows look like confabulations;
+1. a KU readout gate decides which rows look like they will be confabulations;
 2. a fixed boundary push (dosed write) writes only those fired rows to a
    selected refusal setpoint.
 
@@ -945,10 +941,6 @@ the broadcast it is trying to change. A Jacobian-lens characterization tests
 that by asking whether the L34 site lies inside or outside the band, and the
 band it locates then supplies the candidate write sites.
 
-The instrument passed a correctness smoke: the final-layer J-lens closely
-matched the direct unembed baseline over 1000 prompts, with mean cosine 0.9811,
-mean top-10 overlap 0.82, and top-1 match 3/5 over five random directions.
-
 The verbalization read is only worth trusting if it is direction-specific.
 The lens itself is direction-blind: it applies the same readout, over the same
 1000 prompts, to whatever vector it is handed, so if every direction fit at
@@ -989,8 +981,7 @@ A fixed absolute dose is the wrong instrument for comparing sites, and that is
 itself a finding about how these writes behave. Additive steering loses
 coherence once its magnitude leaves the range the residual stream tolerates
 (Dang and Ngo, 2026), and dose 200 does exactly that at the two shallowest
-candidates: hs23 and hs26 both collapsed, and the sweep stopped at its
-instrument-validity rule. Doses are calibrated per site on the fit split
+candidates: hs23 and hs26 both collapsed. Doses are calibrated per site on the fit split
 instead, which recovered usable non-collapsing setpoints at hs23=25, hs26=75,
 hs29=125, and hs34=175. Each site can then be compared at a dose it can
 actually carry.
@@ -1115,14 +1106,13 @@ site and requires the fitted direction to beat it by a registered margin.
 Without that bar, a caution direction that actuates refusal would be
 indistinguishable from any sufficiently hard push, and nothing would tie the
 behavior to the epistemic content the direction was fit on. The two claims
-can come apart, and on mistral they do.
+can come apart.
 
 #### Qwen3.5
 
 The qwen results in this section are the Qwen3.5-4B lineage written at its
 mid-band site, hs20 at relative depth 0.625, not the raw-base Qwen3-4B
-late-site controller of Sections 4.5 through 4.7; the behavioral gates at that
-operating point are reported in Section 4.5. Direction-specificity passes
+late-site controller of Sections 4.5 through 4.7. Direction-specificity passes
 there, at 7.27 against a 3.0 floor.
 
 The measured placebo null reported below cuts the other way for qwen, and
@@ -1135,7 +1125,7 @@ way as the true write, and this one pushes the opposite way. That comparison is
 measured at the same Qwen3.5-4B mid-band operating point where the census
 placebo was dosed, and there the write's effect can be attributed to the
 fitted direction rather than to perturbation in general. The same opposition
-has since been measured at the raw-base Qwen3-4B late-site controller of
+has been measured at the raw-base Qwen3-4B late-site controller of
 Sections 4.5 through 4.7, a different model and a different write site: under
 the wide-instrument re-score of that cell (Section 6.4), the gated write
 lifts confabulation abstention by 62.7 points while the matched-magnitude
@@ -1147,11 +1137,11 @@ mid-band point.
 
 #### Mistral
 
-The behavioral gates replicate on mistral, under an instrument built to catch
+The behavioral gates replicate on Mistral, under an instrument built to catch
 this family's own abstention idioms. The three fixed refusal forms the narrow
-detector looks for do not count them, so mistral is scored on fresh held-out
+detector looks for do not count them, so Mistral is scored on fresh held-out
 rows under the wide two-instrument stack, the widened pattern detector plus the
-blinded context-free LLM-grading lane. Under that stack the mistral controller
+blinded context-free LLM-grading lane. Under that stack the Mistral controller
 clears both behavioral gates. Fired-confab graded refusal is 911/1303 = 0.699 (Wilson
 95% CI [0.674, 0.723]) against a 0.60 floor, well-formedness holds at 0.987,
 and known-correct false refusal is 2/382 = 0.0052 (CI [0.0014, 0.019]) against
@@ -1166,7 +1156,7 @@ On mistral the gated lift is +40.9 points (baseline 375/1312 = 0.286, gated
 911/1312 = 0.694), while the largest random lift across fifteen fresh seeds is
 +20.3 points and across the three seeds used for the ratio test +21.8, putting
 the ratio at 1.87 against a 3.0 floor. The fitted direction does roughly twice
-what the best random direction does: a real effect, and well short of the bar.
+what the best random direction does: a real effect, but also well short of the bar.
 The shortfall is not an artifact of how the ratio was built, surviving a
 detector-only construction, a mean-of-seeds denominator, and a pre-recorded
 adversarial audit across six attack surfaces (Appendix A).
@@ -1180,7 +1170,7 @@ detector-coverage artifact. The wide instrument does credit abstention idioms
 the narrow detector missed, lifting the best well-formed rung from 32.8% to
 45.7%, but no well-formed rung reaches the 0.60 floor: the only doses that
 push refusal past 0.5 break the output format and drag known-correct false
-refusal up with them. Unlike mistral, whose narrow miss was substantially
+refusal up with them. Unlike Mistral, whose narrow miss was substantially
 vocabulary coverage, llama's failure survives the instrument upgrade.
 
 A caution travels with llama's entry in the placebo census below, and it
