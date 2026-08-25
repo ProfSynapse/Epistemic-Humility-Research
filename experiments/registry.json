@@ -6373,25 +6373,26 @@
       ],
       "instrument": {
         "configs": [
-          "experiments/qwen3-4b-l34-placebo-seed-census/cell.yaml",
-          "experiments/qwen3-4b-l34-placebo-seed-census/gates.yaml",
-          "experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json",
-          "experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json",
-          "experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json",
-          "experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json",
-          "experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json",
-          "experiments/wide-instrument-control-rescore/analysis-committed/results/wide_gates_report.json"
+          "cell.yaml",
+          "gates.yaml"
         ],
+        "engine_exception": {
+          "kind": "intervention",
+          "reason": "Per-row gated activation write at hs34 via the tuner mechinterp InterventionHook path, the engine of the 4.5-cell arms that wide-instrument-control-rescore re-scored; the fresh random arms must run the identical engine as the frozen gated/baseline arms they are compared to (batched-generation.md decision table: per-row hooks/activation writing)."
+        },
         "modules": [],
         "persistence": {},
-        "pins": {}
+        "pins": {
+          "cell.yaml": "f817ccc894824a6cd8008aa95cb1b62a5961a2720192f1234d7bee654c03069f",
+          "gates.yaml": "81316abe82e0477bfd68402f4ec735e34a6595cbcb93c0a9717964a475f5ca49"
+        }
       },
       "kg": [],
       "prediction": "All fifteen random lifts stay small: effect ratio >= 3.0 on the max-over-15 denominator, and >= 12/15 seeds suppressive (negative).",
       "question": "Does the raw-base Qwen3-4B L34 direction-specificity result (effect ratio 14.5 on one random draw) survive a fifteen-fresh-seed random-direction distribution?",
       "registered": true,
       "slug": "qwen3-4b-l34-placebo-seed-census",
-      "status": "draft",
+      "status": "signed",
       "title": "Raw-base Qwen3-4B L34 random-direction seed census",
       "type": "steer-cell",
       "verdict": ""

@@ -17,9 +17,16 @@ frozen_reuse:
   historical_random_draw: experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json  # seed 20260707; reported alongside, NOT one of the 15
   frozen_arm_results: experiments/wide-instrument-control-rescore/analysis-committed/results/wide_gates_report.json  # gated 137/185, baseline 21/185
   scoring: wicr wide two-instrument stack + census apply_adjudication.py tooling, fresh id salt
+frozen_reuse_sha256:
+  u_d: 52a1b13261a51c9706e7df76202f685eb11a702c19c36db16afa9beecc98a334
+  c_hat: fe01624adb5bc4ad74a411bedb3bf5ad837fd4cc38ad179f4eb301b3db6426da
+  gate_fit: edb883acaa6cf0824b4f418460d652d2d2e83bb3c781c1bf5bfdcff5121616bb
+  standardization: 224664daab1a113cc4fa4004869f6c079ff374cf320cb1db90c472262af70e53
+  historical_random_draw: 9a6ae4824eea7aed69e099704709cd6eda8c4c1b8c7457f5e6e63cb1c31315b0
+  frozen_arm_results: 6902cdf47a78ef80ed228345864b513a6a156d73834cfe96959fd20a6606d037
 arms:
   - id: arm_random_k (k = 1..15)
     intervention: wicr random_direction arm pathway with the direction replaced by a fresh random unit direction (np.random.RandomState(seed).normal(size=2560), unit-normalized); dose_target 200.0, generation contract and scoring unchanged
     seeds: gates.yaml seeds.random_census
     rows: the wicr 185-row confab wide-instrument population
-lane: local RTX 3090 or Modal; fixed at launch approval
+lane: local RTX 3090 (user-approved 2026-08-25)

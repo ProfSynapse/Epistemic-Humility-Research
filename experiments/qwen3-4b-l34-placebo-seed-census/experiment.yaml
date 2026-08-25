@@ -1,31 +1,34 @@
 slug: qwen3-4b-l34-placebo-seed-census
 title: Raw-base Qwen3-4B L34 random-direction seed census
 type: steer-cell
-status: draft
+status: signed
 registered: true
 created_at: '2026-08-25T15:38:56Z'
-question: Does the raw-base Qwen3-4B L34 direction-specificity result (effect ratio 14.5 on one random
-  draw) survive a fifteen-fresh-seed random-direction distribution?
-prediction: 'All fifteen random lifts stay small: effect ratio >= 3.0 on the max-over-15 denominator,
-  and >= 12/15 seeds suppressive (negative).'
-falsifier: Any seed's |lift over the frozen 0.1135 baseline| >= 20.9 points (effect ratio < 3.0), weakening
-  the late-site specificity claim to its single-draw form.
+question: Does the raw-base Qwen3-4B L34 direction-specificity result (effect ratio
+  14.5 on one random draw) survive a fifteen-fresh-seed random-direction distribution?
+prediction: 'All fifteen random lifts stay small: effect ratio >= 3.0 on the max-over-15
+  denominator, and >= 12/15 seeds suppressive (negative).'
+falsifier: Any seed's |lift over the frozen 0.1135 baseline| >= 20.9 points (effect
+  ratio < 3.0), weakening the late-site specificity claim to its single-draw form.
 checkpoint:
   repo: unsloth/Qwen3-4B
   revision: raw-base (no adapter; bf16, no 4-bit quantization)
 instrument:
   configs:
-  - experiments/qwen3-4b-l34-placebo-seed-census/cell.yaml
-  - experiments/qwen3-4b-l34-placebo-seed-census/gates.yaml
-  - experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json
-  - experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json
-  - experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json
-  - experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json
-  - experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json
-  - experiments/wide-instrument-control-rescore/analysis-committed/results/wide_gates_report.json
+  - cell.yaml
+  - gates.yaml
   modules: []
-  pins: {}
+  pins:
+    cell.yaml: f817ccc894824a6cd8008aa95cb1b62a5961a2720192f1234d7bee654c03069f
+    gates.yaml: 81316abe82e0477bfd68402f4ec735e34a6595cbcb93c0a9717964a475f5ca49
   persistence: {}
+  engine_exception:
+    kind: intervention
+    reason: 'Per-row gated activation write at hs34 via the tuner mechinterp InterventionHook
+      path, the engine of the 4.5-cell arms that wide-instrument-control-rescore re-scored;
+      the fresh random arms must run the identical engine as the frozen gated/baseline
+      arms they are compared to (batched-generation.md decision table: per-row hooks/activation
+      writing).'
 inputs:
 - experiments/doubt-gated-caution-tighten
 - experiments/wide-instrument-control-rescore
