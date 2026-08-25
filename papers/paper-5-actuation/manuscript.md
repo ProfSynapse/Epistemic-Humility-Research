@@ -97,20 +97,12 @@ Actuation works when the readout gates an external write instead, and it needs n
 training. On raw-base Qwen3-4B, a gated dosed write converted 136/185 held-out
 confabulations into clean refusals (73.5%, 95% CI [66.7, 79.3]) at 8/258 false
 refusals on known-correct answers (3.1%). Which component supplies selectivity
-depends on the dose. At the overdrive dose, an unconditional write damages 60.1% of
+depends on the dose. At a high enough dose, an unconditional write damages 60.1% of
 known-correct rows against 3.1% gated (57.0 points, p = 4.2e-43); at mid-band doses
 the write already sorts by content, and the gate's own contribution to selectivity
 is 0.148 on Qwen and 0.129 on Mistral. Where the write lands matters as much:
 inside the workspace-like layer band it reached 89.2% clean refusals against 66.5%
 just past it, +22.7 points for +0.78 points of cost.
-
-Benefit and cost carry to Mistral-7B (69.9% graded refusal at 0.52%
-known-correct cost); direction-specificity does not, because matched-magnitude
-random writes are behaviorally active in every family measured, with a
-family-specific sign: they suppress hedging in Qwen (median -6.0 points) and Llama
-(-7.67) and recruit it in Mistral (+7.0). Most results here are single-model,
-single-seed, or specific to one write site.
-
 ---
 
 ## 1. Introduction
