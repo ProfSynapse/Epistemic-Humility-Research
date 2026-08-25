@@ -1,6 +1,6 @@
 # Llama hs17 mid-band direction-specificity census
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: SIGNED 2026-08-25 (lead + user; configs sha-pinned via bin/exp sign). Exploratory cell.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
