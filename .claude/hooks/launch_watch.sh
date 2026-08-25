@@ -43,6 +43,15 @@ esac
 case "$cmd" in
   *"modal run"*|*"modal deploy"*|*"hf jobs run"*|*"huggingface-cli jobs run"*|*"sbatch "*) is_launch=cloud ;;
 esac
+# Local GPU runner launches (2026-08-25 gap: a builder's bare python realness-flag
+# background launch matched no pattern, so neither the builder nor the lead got the
+# watch instruction and a crashed run sat undetected until the user asked for progress).
+# This repo's harness convention gates every real GPU run behind an explicit realness
+# flag; detect those, plus nohup'd python as a generic long-run signature.
+case "$cmd" in
+  *"confirm-gpu-go"*|*"i-know-this-is-the-real"*) is_launch=local ;;
+  *"nohup "*python*) is_launch=local ;;
+esac
 
 [ -z "$is_launch" ] && exit 0
 
@@ -75,7 +84,8 @@ fi
     echo "A detached docker-wait watcher was AUTO-ARMED. Completion sentinel (appears when the container exits, with its exit code):"
     echo "  $sentinel"
   else
-    echo "No --name found (or cloud launch): no docker-wait could be auto-armed. Sentinel dir: $watch_dir"
+    echo "No --name found (or cloud/local launch): no docker-wait could be auto-armed. Sentinel dir: $watch_dir"
+    echo "For a LOCAL runner launch: the watch condition is the run's own log/summary artifact (log gone silent >10min = dead; summary file written = done)"
   fi
   echo "REQUIRED NOW, in this same turn:"
   echo "  - If you are the LEAD session: arm a Monitor on the sentinel path (or on the job's completion condition) so completion re-invokes you. Do not rely on any runner's report."
