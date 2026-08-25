@@ -19,7 +19,7 @@ evidence_base: >
   experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md,
   experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md,
   experiments/j-space-token-targeted-refusal-qwen3-4b/AMENDMENT.md,
-  experiments/rr2-mistral-adjudicated-refusal-confirm/AMENDMENT.md,
+  experiments/rr2-Mistral-adjudicated-refusal-confirm/AMENDMENT.md,
   experiments/abstention-wide-instrument-calibration/AMENDMENT.md,
   experiments/rr-cross-family-raw-refusal/AMENDMENT.md,
   experiments/rr3-corrected-placebo-replication/AMENDMENT.md,
@@ -1152,7 +1152,7 @@ Direction-specificity does not clear, and it fails at the strongest form we
 have tested it in. The test is a ratio: the gated arm's lift in confabulation
 abstention over its undosed baseline must be at least three times the largest
 lift a magnitude-matched random direction produces at the same site and dose.
-On mistral the gated lift is +40.9 points (baseline 375/1312 = 0.286, gated
+On Mistral the gated lift is +40.9 points (baseline 375/1312 = 0.286, gated
 911/1312 = 0.694), while the largest random lift across fifteen fresh seeds is
 +20.3 points and across the three seeds used for the ratio test +21.8, putting
 the ratio at 1.87 against a 3.0 floor. The fitted direction does roughly twice
@@ -1171,16 +1171,16 @@ the narrow detector missed, lifting the best well-formed rung from 32.8% to
 45.7%, but no well-formed rung reaches the 0.60 floor: the only doses that
 push refusal past 0.5 break the output format and drag known-correct false
 refusal up with them. Unlike Mistral, whose narrow miss was substantially
-vocabulary coverage, llama's failure survives the instrument upgrade.
+vocabulary coverage, Llama's failure survives the instrument upgrade.
 
-A caution travels with llama's entry in the placebo census below, and it
-applies well beyond llama. Read-optimal and actuate-optimal depth are
-separately measured quantities in this paper, and for llama they are not the
+A caution travels with Llama's entry in the placebo census below, and it
+applies well beyond Llama. Read-optimal and actuate-optimal depth are
+separately measured quantities in this paper, and for Llama they are not the
 same site: that distribution was measured at its read-selected site, relative
-depth 0.714, while the one llama write that has cleared a held-out abstention
+depth 0.714, while the one Llama write that has cleared a held-out abstention
 floor ran at relative depth 0.607 (Section 6.5). The
-llama null is a null at the read site, not at the write site, and nothing here
-measures what a random direction does at the depth where llama would actually
+Llama null is a null at the read site, not at the write site, and nothing here
+measures what a random direction does at the depth where Llama would actually
 be written to.
 
 #### Gemma
@@ -1219,7 +1219,7 @@ built to separate them broke the substrate it was meant to probe (Appendix F).
 #### The placebo picture
 
 The reason a random direction can carry as much of the effect as it does on
-mistral starts with the baseline it is measured against, and that baseline is
+Mistral starts with the baseline it is measured against, and that baseline is
 family-graded. Wide-instrument confabulation abstention with no intervention
 at all is 0.104 on Qwen3.5-4B, 0.164 on Llama-3.2-3B, and 0.280 on
 Mistral-7B-v0.3, against 0.044, 0.036, and 0.159 under the narrow canonical
@@ -1254,7 +1254,7 @@ negative), Llama suppresses it despite having been run as a null control
 (median -7.67, 12 of 15), and Mistral recruits it (median +7.0, 12 of 15
 positive, exactly the 80% boundary).
 
-A caution travels with that picture on the mistral side. Mistral's verdict is
+A caution travels with that picture on the Mistral side. Mistral's verdict is
 a boundary verdict: its margin over an indeterminate call is a single seed, its
 three weakest positive seeds (+1.0, +1.33, +1.67) are individually within
 paired noise, and the result is sensitive to the mined-idiom vocabulary the
@@ -1284,7 +1284,7 @@ operational answer we can offer to that problem.
 The family-level sign is not evenly distributed inside a family. Broken down
 by question type within the known-unknown pool, one subtype carries qwen's
 entire suppression (future-unknown items, -24.7 points against -2.8 or smaller
-elsewhere) and is also mistral's single largest recruitment delta (+11.8
+elsewhere) and is also Mistral's single largest recruitment delta (+11.8
 points): the extreme mover in both families, in opposite directions. That this
 subtype is the extreme mover is at least consistent with its construction. The
 dataset's authors report future-unknown as the category models classify most
@@ -1340,7 +1340,7 @@ Five readings come out of that grid.
    the identical write damages most known-correct rows unless a gate holds
    it off them; at a mid-band dose the same write already sorts by content
    and the gate's measured contribution to selectivity is 0.148 on qwen and
-   0.129 on mistral, both under the 0.20 floor set for it, while its
+   0.129 on Mistral, both under the 0.20 floor set for it, while its
    contribution to cost control is what keeps false refusals near their
    floor. One mechanism, two regimes, opposite attributions.
 
@@ -1357,15 +1357,15 @@ Five readings come out of that grid.
 
 4. **Benefit and cost travel; direction-specificity does not.** The
    cross-family work makes the recipe's scope a measurement rather than an
-   assumption: mistral clears benefit and cost under a blinded instrument at
+   assumption: Mistral clears benefit and cost under a blinded instrument at
    69.9% graded refusal and 0.52% known-correct cost, while
-   direction-specificity fails on mistral at three independent operating
+   direction-specificity fails on Mistral at three independent operating
    points and on gemma at both above-seam sites where a usable dose existed.
 
 5. **The reason specificity fails is measured, not mysterious.** A
    matched-magnitude random direction is not behaviorally inert in any
    family tested, and its sign is a family property, suppressing hedging in
-   qwen and llama and recruiting it in mistral. Any future
+   qwen and Llama and recruiting it in Mistral. Any future
    direction-specificity claim has to be checked against that measured null.
 
 The controller these results support is the four-step recipe stated in the
@@ -1424,13 +1424,13 @@ at Qwen3-4B / L34 / dose 200, it damages 60.1% of known-correct rows, and the
 gate is the sole reason the controller does not. At a mid-band dose, above
 typical confab margins but below typical known margins, the write is already
 content-selective: a permuted-gate control
-reaches confab abstention 0.550 qwen / 0.600 mistral against the true gate's
+reaches confab abstention 0.550 qwen / 0.600 Mistral against the true gate's
 0.689 / 0.694, so most of the abstention lift survives with no gate at all.
 The gate's residual mid-band role is real but modest: its own contribution to
-selectivity is 0.148 qwen / 0.129 mistral, both sub-floor against a 0.20
+selectivity is 0.148 qwen / 0.129 Mistral, both sub-floor against a 0.20
 floor, plus cost governance that does matter against the 0.05
 ceiling: known false refusal under the true gate is 0.042 qwen /
-0.005 mistral versus 0.050 / 0.039 under a permuted gate. This is still the
+0.005 Mistral versus 0.050 / 0.039 under a permuted gate. This is still the
 same separation used in ordinary control systems, sensor, controller,
 actuator, but which part of the system supplies selectivity is
 dose-dependent: at overdrive the controller (gate) does the selecting, and at
@@ -1440,8 +1440,8 @@ accuracy-versus-effect frontier that work on collateral damage in activation
 steering characterizes (Nguyen et al., 2026); the gate is one way of moving
 along that frontier without lowering the dose.
 
-The decomposition runs on qwen and mistral because they are the only two
-families with a certified gated operating point to take apart: llama's
+The decomposition runs on qwen and Mistral because they are the only two
+families with a certified gated operating point to take apart: Llama's
 controller has never cleared its behavioral gates at any site (Section 4.8),
 and gemma's actuating sites either fail direction-specificity or pass it
 only degenerately, so neither offers an operating point where a gate
@@ -1462,12 +1462,12 @@ not that it is the same band at the same depth. The calibrated
 layer contrast supports that account on raw-base Qwen3-4B, but a cross-family
 atlas test of the account's own predicted shape did not hold: the
 effective-dimensionality profile that motivated
-"write near the interior peak" instead peaks early in both llama (layer 4 of
-28, 0.14 depth) and mistral (layer 3 of 32, 0.09 depth), not inside the
+"write near the interior peak" instead peaks early in both Llama (layer 4 of
+28, 0.14 depth) and Mistral (layer 3 of 32, 0.09 depth), not inside the
 predicted interior band. The atlas's read panel still delivers a usable,
 family-specific interior band where known-unknown, the refusal-versus-confabulation
-contrast, and raw-refusal readouts all clear 0.80 held-out AUROC simultaneously (llama layers 15-23,
-mistral layers 7-27), so a readable workspace-like band exists in every
+contrast, and raw-refusal readouts all clear 0.80 held-out AUROC simultaneously (Llama layers 15-23,
+Mistral layers 7-27), so a readable workspace-like band exists in every
 family tested, but the specific "write near the eff-dim peak" account is
 currently scoped to raw-base Qwen3-4B and should not be read as a
 cross-family mechanism claim.
@@ -1496,7 +1496,7 @@ not population effect-size estimates. Key limits:
   A flat, family-agnostic placebo tolerance is nonetheless known to be
   miscalibrated to at least one family's baseline hedging rate;
 - random-direction placebo response is high-variance across random seeds at
-  matched magnitude. At one fixed mistral operating point, three fresh seeds
+  matched magnitude. At one fixed Mistral operating point, three fresh seeds
   produced confabulation lifts spanning -7.4 to +21.8 points, a 29-point
   spread from seed choice alone, and high variance is the documented condition
   of steering effects generally rather than a quirk of this control:
@@ -1615,8 +1615,8 @@ Recommended escalation, in order of priority:
    in the Qwen lineage, while the refusal-versus-confabulation encoding reads
    linearly in all four families audited, and a held-out contrast at each
    family's own profile-selected mid-band site has since run on two of the
-   four registered families: llama cleared its pre-registered abstention
-   floor at its own mid-band site (0.742 against a 0.50 floor) and mistral
+   four registered families: Llama cleared its pre-registered abstention
+   floor at its own mid-band site (0.742 against a 0.50 floor) and Mistral
    missed the same floor marginally (0.489, with its confidence interval
    straddling the floor). The registered roll-up rule declares fewer than
    three families inconclusive, so the cross-family question is still
@@ -1624,7 +1624,7 @@ Recommended escalation, in order of priority:
    denominator under the revised instrument, and to attach the placebo arm
    the mid-band cells did not carry.
 2. Direction verbalization and workspace localization beyond the Qwen
-   lineage. The J-lens layer profile has now run on llama and mistral, and
+   lineage. The J-lens layer profile has now run on Llama and Mistral, and
    their profile-selected mid-band sites are the ones dosed in item 1. What
    has not been run on any family outside the Qwen lineage is the
    verbalization step, asking whether the tokens a family's own write
@@ -1642,14 +1642,14 @@ Recommended escalation, in order of priority:
    instability; either way, a future attempt needs an operating point where
    the nonspecific response is small or stable, with its placebo criterion
    registered against the family's measured null distribution there.
-4. A llama operating point worth a held-out stage. The wide-instrument
-   retest of llama's atlas sites forecloses the current ladder: no dose both
+4. A Llama operating point worth a held-out stage. The wide-instrument
+   retest of Llama's atlas sites forecloses the current ladder: no dose both
    clears the pre-registered abstention floor and leaves output well-formed,
    so a held-out pass is not reachable at those sites and a future attempt
    needs a different site or dose shape. The pieces a successor needs are in
-   place: llama's placebo null is measured and suppressive, so llama is not
+   place: Llama's placebo null is measured and suppressive, so Llama is not
    a null control and a flat tolerance against zero is the wrong criterion,
-   and the one llama write that has cleared a held-out abstention floor, at
+   and the one Llama write that has cleared a held-out abstention floor, at
    the mid-band site in item 1, has never been given a placebo arm.
 5. Gemma's key-value sharing seam: the coverage question is closed (Section
    4.8 and Appendix F) and the mechanism question is not. It cannot be settled
@@ -1771,7 +1771,7 @@ own family's random-direction null has now held at both of its operating
 points, including the raw-base one, but the raw-base measurement rests on a
 single random draw rather than a seed distribution. If a full null
 distribution at that site overturns the sign, or if a per-family site search
-fails to recover selective actuation on mistral and llama, then what this
+fails to recover selective actuation on Mistral and Llama, then what this
 paper reports is a Qwen-lineage result with a well-characterized instrument
 attached, not a recipe. That is the test the next study should try to fail.
 
@@ -1845,7 +1845,7 @@ and its recorded status.
 | Same mid-band operating point transfers to held-out (refused 0.678, well-formed 0.977, known cost 0.039), promoting it from an in-sample selection to a held-out claim | `experiments/qwen35-4b-midband-heldout/AMENDMENT.md` Outcome | Held-out pass |
 | The overdrive headline (73.5%/3.1%) survives temperature-0.7 sampled decoding with majority-vote aggregation (69.5% pooled conversion, all 5 seeds above floor, cost 4.65%) | `experiments/snap-seed-sampled-decode-replication/AMENDMENT.md` Outcome | Decode-robustness pass |
 | The name IDK switch for the dosed write at the Qwen3.5-4B hs20 operating point is earned by a fresh-seed sampled-decode confirmatory passing all three registered name-earning gates: endpoint IDK jump +0.6125 with paired-bootstrap CI lower bound 0.5650 against a 0.15 floor, hedged share falling at both dosed arms, and placebo inside the 0.05 band | `experiments/idk-switch-naming-confirmatory/AMENDMENT.md` Outcome | Confirmatory naming cell, resolved |
-| Mid-band gate-contribution factorial falsifies "the gate supplies selectivity" as a universal claim in both families: permuted-gate confab abstention 0.550 qwen / 0.600 mistral vs true gate 0.689/0.694; Gap_Sel(c_hat) 0.148/0.129 sub-floor vs a 0.20 floor; S1 direction-specificity passes qwen (7.27) and fails mistral (2.03) | `experiments/gate-contribution-factorial/AMENDMENT.md` Outcome | Registered falsification of the universal-gate claim |
+| Mid-band gate-contribution factorial falsifies "the gate supplies selectivity" as a universal claim in both families: permuted-gate confab abstention 0.550 qwen / 0.600 Mistral vs true gate 0.689/0.694; Gap_Sel(c_hat) 0.148/0.129 sub-floor vs a 0.20 floor; S1 direction-specificity passes qwen (7.27) and fails Mistral (2.03) | `experiments/gate-contribution-factorial/AMENDMENT.md` Outcome | Registered falsification of the universal-gate claim |
 | J-lens localized workspace-like band to hs=23-29, peak hs=26; L34 maps after band | `experiments/j-space-localization-qwen3-4b/AMENDMENT.md` Outcome | Exploratory diagnostic |
 | Layer-specific calibration recovered non-collapsing setpoints | `experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md` Outcome | FIT-only pass |
 | Held-out mid-band layer contrast: hs23 89.2% vs hs34 66.5% | `experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md` Outcome | Exploratory pass |
@@ -1853,18 +1853,18 @@ and its recorded status.
 | Same-model replication 2 (multi-source pool, off ceiling): hs29 92.76% vs hs34 73.76%, +19.0pp, paired McNemar p = 4.5e-13 (42 late-only vs 0 mid-only discordants); known-correct cost gap +1.43pp (2.81% vs 1.38%, disclosed as an absolute doubling) | `experiments/j-space-layer-contrast-rep2-multisource/AMENDMENT.md` Outcome | Registered full pass |
 | Natural token-target J-space write was non-inert but redundant with `c_hat` | `experiments/j-space-token-targeted-refusal-qwen3-4b/AMENDMENT.md` Outcome | Exploratory falsification |
 | An instrument-validity check found neither of two candidate mid-generation (answer-window) steering harnesses certified: an optimized-decode implementation never fires its hook during cached decode (0 decode-step calls, 25/25 prompts checked), voiding an earlier answer-window result as an instrumentation artifact rather than a causal null; a plain-inference implementation fires every decode step and lands the write within tolerance on all positions before the steered trajectory diverges, but its cross-trajectory readback fails to certify once tokens diverge | `experiments/h6-genstream-hook-firing-check/AMENDMENT.md` Outcome | Instrument-validity check; no behavioral steering evidence reported |
-| Cross-family atlas: eff_dim_frac peaks early (0.09-0.14 depth) in both llama and mistral, not interior as predicted; read panel still delivers a usable per-family interior band (llama L15-23, mistral L7-27) | `experiments/jspace-family-atlas/AMENDMENT.md` Outcome | Prediction failed; read panel delivered |
-| Cross-family confirmatory fleet (qwen/llama/mistral, universal-depth write site) NOT PROMOTED: every cell stopped at FIT dose-viability before held-out; companion c_hat audit shows the encoding readable in all four families while late-site writes actuate only in the Qwen lineage | `experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md` Outcome | Not promoted; write-site problem, not a family-mechanism null |
-| Held-out contrast at per-family profile-selected mid-band sites ran on 2 of 4 registered families: llama hs17 clean tightening 0.7420 (Wilson [0.7119, 0.7699]) clears the 0.50 floor while mistral hs15 0.4893 [0.4624, 0.5164] misses it marginally with the interval straddling the floor; the registered roll-up rule declares fewer than three families INCONCLUSIVE, so the cross-family mid-band question is unanswered in either direction; the dosed known-correct cost gate was non-diagnostic (the KU gate fired on 0 known-correct rows in every family measured) and the mid-band writes carried no random-direction arm | `experiments/j-space-cross-family-layer-contrast/AMENDMENT.md` Outcome | Resolved INCONCLUSIVE; closed without running the remaining families |
+| Cross-family atlas: eff_dim_frac peaks early (0.09-0.14 depth) in both Llama and Mistral, not interior as predicted; read panel still delivers a usable per-family interior band (Llama L15-23, Mistral L7-27) | `experiments/jspace-family-atlas/AMENDMENT.md` Outcome | Prediction failed; read panel delivered |
+| Cross-family confirmatory fleet (qwen/Llama/Mistral, universal-depth write site) NOT PROMOTED: every cell stopped at FIT dose-viability before held-out; companion c_hat audit shows the encoding readable in all four families while late-site writes actuate only in the Qwen lineage | `experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md` Outcome | Not promoted; write-site problem, not a family-mechanism null |
+| Held-out contrast at per-family profile-selected mid-band sites ran on 2 of 4 registered families: Llama hs17 clean tightening 0.7420 (Wilson [0.7119, 0.7699]) clears the 0.50 floor while Mistral hs15 0.4893 [0.4624, 0.5164] misses it marginally with the interval straddling the floor; the registered roll-up rule declares fewer than three families INCONCLUSIVE, so the cross-family mid-band question is unanswered in either direction; the dosed known-correct cost gate was non-diagnostic (the KU gate fired on 0 known-correct rows in every family measured) and the mid-band writes carried no random-direction arm | `experiments/j-space-cross-family-layer-contrast/AMENDMENT.md` Outcome | Resolved INCONCLUSIVE; closed without running the remaining families |
 | Dark-candidate screen validates positive boundary-push lever but promotes no dark candidates | `experiments/dark-actuator-screen/AMENDMENT.md` Outcome | Supporting null |
 | Answer-sycophancy pilot found a readable direction but no clean actuator against a matched control; carries no body evidence, referenced only as future work in Section 6.5 | `experiments/aq-sycophancy-activation-actuator/AMENDMENT.md` Outcome | Unsigned interim pilot (draft, not a governed result) |
-| Initial cross-family run: gated write does not actuate FIT-viable canonical clean refusal at either atlas-located non-Qwen site under the locked three-phrase detector; llama fails on format collapse before the refusal floor, mistral peaks 0.579 vs the 0.60 floor with the miss substantially canonical-phrase coverage | `experiments/rr-cross-family-raw-refusal/AMENDMENT.md` Outcome | Exploratory falsification (detector-vocabulary scope disclosed; superseded by the RR2 wide-instrument re-read on mistral and the llama wide-instrument retest) |
-| Llama wide-instrument retest: shape F robust to the certified wide instrument; the wide stack credits idioms the narrow detector missed (best well-formed rung 0.328 -> 0.457) but no well-formed rung reaches the 0.60 floor, and the rungs above 0.5 are format-broken with runaway known-correct false refusal; at the well-formed peak the effect is direction-specific (ratio 3.73) | `experiments/llama-atlas-gated-wide-instrument-retest/AMENDMENT.md` Outcome | Exploratory confirmation (R1: llama not a coverage artifact) |
-| Mistral cross-family gated write cleared benefit (69.9% adjudicated refusal) and cost (0.52% known-correct) gates under a wide blinded instrument but failed the flat 2-point placebo tolerance (+7.39pp random-direction lift) | `experiments/rr2-mistral-adjudicated-refusal-confirm/AMENDMENT.md` Outcome | Exploratory falsification (placebo-criterion design flaw, not benefit/cost) |
-| Wide-instrument baseline hedging and placebo response are family-graded and family-signed (qwen -5.13pp suppression, mistral +7.39pp recruitment); flat placebo tolerances must be registered per-family | `experiments/abstention-wide-instrument-calibration/AMENDMENT.md` Outcome | Exploratory instrument calibration, resolved |
-| Corrected effect-ratio placebo criterion (>= 3x max-over-K fresh-seed random lift) still falsified mistral direction-specificity (ratio 1.87) while reproducing RR2's benefit (69.9% adjudicated refusal) and cost (0.52% known-correct) exactly; red-team certified robust to detector-only and mean-of-K denominators; mistral's random-direction lift spans -7.4 to +21.8pp across three fresh seeds; llama rider placebo response is null at matched magnitude, completing the three-family sign map | `experiments/rr3-corrected-placebo-replication/AMENDMENT.md` Outcome | Exploratory falsification (corrected-criterion re-adjudication of the RR2 claim, benefit/cost intact) |
-| Multi-seed placebo census (K=15 fresh seeds per family at matched magnitude, S=300 paired rows, blinded adjudication in 18 shards) resolved all three families' random-direction placebo as sign-consistent rather than seed noise: qwen suppression SURVIVES (14/15 negative, median -6.0), mistral recruitment SURVIVES at the 12/15 boundary (median +7.0, falsifying both predictors' registered seed-noise call), null-control llama shows a newly discovered negative sign (12/15, median -7.67); historical single-seed values sit at the 53rd percentile; a post-unblind final-rate-rule join correction moved two verdicts against the predictions, both report versions committed, red-team certified legitimate | `experiments/placebo-seed-distribution-census/AMENDMENT.md` Outcome | Exploratory placebo-distribution census, resolved (revises the RR3 llama-null leg) |
-| Within-kuq subtype breakdown: question type does not explain the cross-family placebo sign difference at the family level, but one subtype (future-unknown) carries qwen's entire suppression (-24.7pp) and is also mistral's largest recruitment delta (+11.8pp) | `experiments/placebo-signflip-question-type-analysis/AMENDMENT.md` Outcome | Resolved; subtype-inert reading falsified for qwen |
+| Initial cross-family run: gated write does not actuate FIT-viable canonical clean refusal at either atlas-located non-Qwen site under the locked three-phrase detector; Llama fails on format collapse before the refusal floor, Mistral peaks 0.579 vs the 0.60 floor with the miss substantially canonical-phrase coverage | `experiments/rr-cross-family-raw-refusal/AMENDMENT.md` Outcome | Exploratory falsification (detector-vocabulary scope disclosed; superseded by the RR2 wide-instrument re-read on Mistral and the Llama wide-instrument retest) |
+| Llama wide-instrument retest: shape F robust to the certified wide instrument; the wide stack credits idioms the narrow detector missed (best well-formed rung 0.328 -> 0.457) but no well-formed rung reaches the 0.60 floor, and the rungs above 0.5 are format-broken with runaway known-correct false refusal; at the well-formed peak the effect is direction-specific (ratio 3.73) | `experiments/Llama-atlas-gated-wide-instrument-retest/AMENDMENT.md` Outcome | Exploratory confirmation (R1: Llama not a coverage artifact) |
+| Mistral cross-family gated write cleared benefit (69.9% adjudicated refusal) and cost (0.52% known-correct) gates under a wide blinded instrument but failed the flat 2-point placebo tolerance (+7.39pp random-direction lift) | `experiments/rr2-Mistral-adjudicated-refusal-confirm/AMENDMENT.md` Outcome | Exploratory falsification (placebo-criterion design flaw, not benefit/cost) |
+| Wide-instrument baseline hedging and placebo response are family-graded and family-signed (qwen -5.13pp suppression, Mistral +7.39pp recruitment); flat placebo tolerances must be registered per-family | `experiments/abstention-wide-instrument-calibration/AMENDMENT.md` Outcome | Exploratory instrument calibration, resolved |
+| Corrected effect-ratio placebo criterion (>= 3x max-over-K fresh-seed random lift) still falsified Mistral direction-specificity (ratio 1.87) while reproducing RR2's benefit (69.9% adjudicated refusal) and cost (0.52% known-correct) exactly; red-team certified robust to detector-only and mean-of-K denominators; Mistral's random-direction lift spans -7.4 to +21.8pp across three fresh seeds; Llama rider placebo response is null at matched magnitude, completing the three-family sign map | `experiments/rr3-corrected-placebo-replication/AMENDMENT.md` Outcome | Exploratory falsification (corrected-criterion re-adjudication of the RR2 claim, benefit/cost intact) |
+| Multi-seed placebo census (K=15 fresh seeds per family at matched magnitude, S=300 paired rows, blinded adjudication in 18 shards) resolved all three families' random-direction placebo as sign-consistent rather than seed noise: qwen suppression SURVIVES (14/15 negative, median -6.0), Mistral recruitment SURVIVES at the 12/15 boundary (median +7.0, falsifying both predictors' registered seed-noise call), null-control Llama shows a newly discovered negative sign (12/15, median -7.67); historical single-seed values sit at the 53rd percentile; a post-unblind final-rate-rule join correction moved two verdicts against the predictions, both report versions committed, red-team certified legitimate | `experiments/placebo-seed-distribution-census/AMENDMENT.md` Outcome | Exploratory placebo-distribution census, resolved (revises the RR3 Llama-null leg) |
+| Within-kuq subtype breakdown: question type does not explain the cross-family placebo sign difference at the family level, but one subtype (future-unknown) carries qwen's entire suppression (-24.7pp) and is also Mistral's largest recruitment delta (+11.8pp) | `experiments/placebo-signflip-question-type-analysis/AMENDMENT.md` Outcome | Resolved; subtype-inert reading falsified for qwen |
 | Criterion (d) (evidence-responsiveness) is not licensed on the world-known error class for the named KU direction (primary transfer void, population reversal) or for a world-known-specific refit (specificity leg passes, collapse leg fails); a coherence/saturation ceiling limits refusal to 12.75% of world-known confabs before generation degenerates | `experiments/margin-evidence-responsiveness-worldknown/AMENDMENT.md` Outcome | Null result; retires mentalistic naming with a completed (d) adjudication |
 | A constructive search for a specific evidence-response axis (d_ev) fires at baseline but is indistinguishable from covariance-shaped random directions and weaker than the native ignorance-fit direction; it reconstructs retrieval-family geometry, not a specific evidence-responsive axis | `experiments/evidence-response-direction-search/AMENDMENT.md` Outcome | Null result; strengthens the fragmentation reading |
 | Gemma's cross-family inert reputation was a depth-coverage artifact: below-seam sites at relative depth 0.357 and 0.524 clear held-out clean-tightening and known-correct cost floors, the former with no placebo arm registered and the latter with a degenerate placebo pass (all 5 accepted draws produced zero lift, reported under the degenerate label and never as a large specificity ratio); the seam-adjacent site (relative depth 0.571) clears the same floors but fails direction-specificity (worst placebo draw reproduces 88% of the effect); a sharing-off precondition control broke the model's own baseline (known-correct well-formedness 0% to 100% malformed, NLL 3.53 to 12.33) before the sharing-on/sharing-off contrast could run, leaving the KV-quarantine account supported but not established | `experiments/gemma4-e4b-kv-seam-quarantine/AMENDMENT.md` Outcome | Exploratory, resolved; quarantine hypothesis open |
@@ -1900,7 +1900,7 @@ Generated by `papers/paper-5-actuation/scripts/build_coverage_table.py` (determi
 | `qwen35-4b-midband-heldout` | resolved | `Qwen/Qwen3.5-4B` @ `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` | 1 declared / 1 launched (single-substrate cell) | 4.5 |
 | `snap-seed-sampled-decode-replication` | resolved | `unsloth/Qwen3-4B` @ `raw-base (no adapter; bf16, no 4-bit quantization)` | 1 declared / 1 launched (single-substrate cell) | 4.5 |
 | `idk-switch-naming-confirmatory` | resolved | `Qwen/Qwen3.5-4B` @ `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` | 1 declared / 1 launched (single-substrate cell) | 4.5, 4.8 |
-| `gate-contribution-factorial` | falsified | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: Qwen/Qwen3.5-4B @ 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a; mistralai/Mistral-7B-Instruct-v0.3 @ c170c708c41dac9275d15a8fff4eca08d52bab71 | DECLARED 2 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Gate axis falsified on both families: the dosed c_hat write alone drives most of the abstention lift (permuted-gate confab abstention 0.550 qwen / 0.600 mistral vs baselines 0.083 / 0.282); the true doubt gate adds a rea..." | 4.8 |
+| `gate-contribution-factorial` | falsified | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: Qwen/Qwen3.5-4B @ 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a; Mistralai/Mistral-7B-Instruct-v0.3 @ c170c708c41dac9275d15a8fff4eca08d52bab71 | DECLARED 2 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Gate axis falsified on both families: the dosed c_hat write alone drives most of the abstention lift (permuted-gate confab abstention 0.550 qwen / 0.600 Mistral vs baselines 0.083 / 0.282); the true doubt gate adds a rea..." | 4.8 |
 | `j-space-localization-qwen3-4b` | resolved | `unsloth/Qwen3-4B` (revision not recorded) | 1 declared / 1 launched (single-substrate cell) | 4.6 |
 | `j-space-midband-dose-calibration-qwen3-4b` | resolved | `unsloth/Qwen3-4B` @ `raw-base (bf16, no adapter, no 4-bit quantization)` | 1 declared / 1 launched (single-substrate cell) | 4.6 |
 | `j-space-calibrated-layer-contrast-qwen3-4b` | resolved | `unsloth/Qwen3-4B` @ `raw-base (bf16, no adapter, no 4-bit quantization)` | 1 declared / 1 launched (single-substrate cell) | 4.6 |
@@ -1908,18 +1908,18 @@ Generated by `papers/paper-5-actuation/scripts/build_coverage_table.py` (determi
 | `j-space-layer-contrast-rep2-multisource` | resolved | `unsloth/Qwen3-4B` @ `raw-base (bf16, no adapter, no 4-bit quantization)` | 1 declared / 1 launched (single-substrate cell) | 4.6 |
 | `j-space-token-targeted-refusal-qwen3-4b` | falsified | `unsloth/Qwen3-4B` @ `raw-base (bf16, no adapter, no 4-bit quantization)` | 1 declared / 1 launched (single-substrate cell) | 4.7 |
 | `h6-genstream-hook-firing-check` | resolved | `unsloth/Qwen3-4B` @ `64033659d5caf1b8ed7f929b29de705e93a4d468` | 1 declared / 1 launched (single-substrate cell) | 6.4 |
-| `jspace-family-atlas` | resolved | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: unsloth/Llama-3.2-3B-Instruct (llama32_3b_instruct) @ 006f5dcd1393c3add266de40994ba96225e9689d; mistralai/Mistral-7B-Instruct-v0.3 (mistral7b_instruct_v03) @ c170c708c41dac9275d15a8fff4eca08d52bab71 | DECLARED 2 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "prediction failed in both families because the eff_dim_frac profile peaks early (0.09-0.14 depth) rather than interior, while the read panel delivered the intended per-family layer map with an interior band (llama 15-23,..." | 6.3 |
-| `doubt-snap-cross-family-confirmatory` | resolved | checkpoint.repo (verbatim): "cross-family matrix"; checkpoint.revision (verbatim): "see model_matrix.yaml". DECLARED in cell.yaml, model_matrix.yaml: unsloth/Llama-3.2-3B-Instruct [small] (llama32_3b_instruct) @ 006f5dcd1393c3add266de40994ba96225e9689d; unsloth/Llama-3.1-8B-Instruct [mid] (llama31_8b_instruct) @ 4699cc75b550f9c6f3173fb80f4703b62d946aa5; mistralai/Mistral-7B-Instruct-v0.3 [small] (mistral7b_instruct_v03) @ c170c708c41dac9275d15a8fff4eca08d52bab71; mistralai/Ministral-8B-Instruct-2410 [mid] (ministral8b_instruct_2410) @ 2f494a194c5b980dfb9772cb92d26cbb671fce5a; Qwen/Qwen3.5-4B [small] (qwen35_4b) @ 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a; Qwen/Qwen3.5-9B [mid] (qwen35_9b) @ c202236235762e1c871ad0ccb60c8ee5ba337b9a; google/gemma-4-E4B-it [small] (gemma4_e4b_it) @ fee6332c1abaafb77f6f9624236c63aa2f1d0187; google/gemma-3-12b-it [mid] (gemma3_12b_it) @ 96b6f1eccf38110c56df3a15bffe176da04bfd80 | DECLARED 8 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "not promoted: all four launched cells stopped at the registered pre-outcome FIT dose-viability rule at the 0.94-depth write site (peaks 0.326/0.184/0.000 small tier, 0.058 mid tier); the c_hat audit and the qwen35_4b mid..." | 6.5 |
+| `jspace-family-atlas` | resolved | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: unsloth/Llama-3.2-3B-Instruct (Llama32_3b_instruct) @ 006f5dcd1393c3add266de40994ba96225e9689d; Mistralai/Mistral-7B-Instruct-v0.3 (Mistral7b_instruct_v03) @ c170c708c41dac9275d15a8fff4eca08d52bab71 | DECLARED 2 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "prediction failed in both families because the eff_dim_frac profile peaks early (0.09-0.14 depth) rather than interior, while the read panel delivered the intended per-family layer map with an interior band (Llama 15-23,..." | 6.3 |
+| `doubt-snap-cross-family-confirmatory` | resolved | checkpoint.repo (verbatim): "cross-family matrix"; checkpoint.revision (verbatim): "see model_matrix.yaml". DECLARED in cell.yaml, model_matrix.yaml: unsloth/Llama-3.2-3B-Instruct [small] (Llama32_3b_instruct) @ 006f5dcd1393c3add266de40994ba96225e9689d; unsloth/Llama-3.1-8B-Instruct [mid] (Llama31_8b_instruct) @ 4699cc75b550f9c6f3173fb80f4703b62d946aa5; Mistralai/Mistral-7B-Instruct-v0.3 [small] (Mistral7b_instruct_v03) @ c170c708c41dac9275d15a8fff4eca08d52bab71; Mistralai/Ministral-8B-Instruct-2410 [mid] (ministral8b_instruct_2410) @ 2f494a194c5b980dfb9772cb92d26cbb671fce5a; Qwen/Qwen3.5-4B [small] (qwen35_4b) @ 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a; Qwen/Qwen3.5-9B [mid] (qwen35_9b) @ c202236235762e1c871ad0ccb60c8ee5ba337b9a; google/gemma-4-E4B-it [small] (gemma4_e4b_it) @ fee6332c1abaafb77f6f9624236c63aa2f1d0187; google/gemma-3-12b-it [mid] (gemma3_12b_it) @ 96b6f1eccf38110c56df3a15bffe176da04bfd80 | DECLARED 8 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "not promoted: all four launched cells stopped at the registered pre-outcome FIT dose-viability rule at the 0.94-depth write site (peaks 0.326/0.184/0.000 small tier, 0.058 mid tier); the c_hat audit and the qwen35_4b mid..." | 6.5 |
 | `j-space-cross-family-layer-contrast` | resolved | `cross-family (4 checkpoints; see families/*.yaml and AMENDMENT.md "Family table")` @ `raw-base bf16 instruct, no adapter, no 4-bit quantization, no task training, per family` | 1 declared / 1 launched (single-substrate cell) | 6.5 |
 | `dark-actuator-screen` | null-result | `unsloth/Qwen3-4B-bnb-4bit` @ `raw-base (no adapter; checkpoint_tag "raw-base" per AK Stage 1 manifest)` | 1 declared / 1 launched (single-substrate cell) | 4.7 |
 | `aq-sycophancy-activation-actuator` | draft | `Qwen/Qwen3-4B` @ `1cfa9a7208912126459214e8b04321603b3df60c` | 1 declared / 1 launched (single-substrate cell) | 6.5 |
-| `rr-cross-family-raw-refusal` | falsified | checkpoint.repo (verbatim): "cross-family (two atlas-mapped substrates)"; checkpoint.revision (verbatim): "see cell.yaml families (revisions pinned from fleet model_matrix.yaml at sign)". DECLARED in cell.yaml: unsloth/Llama-3.2-3B-Instruct @ 006f5dcd1393c3add266de40994ba96225e9689d; mistralai/Mistral-7B-Instruct-v0.3 @ c170c708c41dac9275d15a8fff4eca08d52bab71; confirmatory execution model (batch verbs for baseline/capture; mechinterp steer for writes) | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Falsified, both families shape F: the doubt-gated caution write does not actuate FIT-viable canonical clean refusal at either atlas-located non-Qwen site; llama fails on format collapse before the refusal floor (robust t..." | 4.8, 6.5 |
-| `llama-atlas-gated-wide-instrument-retest` | resolved | `unsloth/Llama-3.2-3B-Instruct` @ `006f5dcd1393c3add266de40994ba96225e9689d` | 1 declared / 1 launched (single-substrate cell) | 4.8 |
-| `rr2-mistral-adjudicated-refusal-confirm` | falsified | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: mistralai/Mistral-7B-Instruct-v0.3 @ c170c708c41dac9275d15a8fff4eca08d52bab71; direct InterventionHook/GenerationInterventionController/RunLog driving (RR precedent, not the mechinterp-steer YAML recipe path) | DECLARED 2 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Falsified on the placebo leg: the blinded adjudicated instrument confirms idiom-inclusive mistral refusal at 0.699 with pristine cost, vindicating the RR detector-width caveat, but a magnitude-matched random direction li..." | 4.8, 6.5 |
-| `abstention-wide-instrument-calibration` | resolved | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: qwen35-4b; llama32-3b; mistral7b-v03 | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Resolved: wide-instrument baseline abstention is family-graded (qwen 0.104, llama 0.164, mistral 0.280) and placebo response is family-specific in sign (qwen suppresses -5.13 points where mistral recruits +7.39), so the ..." | 4.8, 6.5 |
-| `rr3-corrected-placebo-replication` | falsified | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: mistralai/Mistral-7B-Instruct-v0.3 @ c170c708c41dac9275d15a8fff4eca08d52bab71; mistral7b_instruct_v03; unsloth/Llama-3.2-3B-Instruct @ 006f5dcd1393c3add266de40994ba96225e9689d | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "FALSIFIED under the corrected effect-ratio placebo criterion: the mistral gated caution write is not direction-specific (effect ratio 1.87 < 3.0, max fresh-seed random lift +21.8 points) while benefit and cost reproduce ..." | 4.8, 6.5 |
-| `placebo-seed-distribution-census` | resolved | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: family id `qwen35-4b` (HF repo/revision resolves via the fleet model_matrix.yaml); family id `mistral7b-v03` (HF repo/revision resolves via the fleet model_matrix.yaml); family id `llama32-3b` (HF repo/revision resolves via the fleet model_matrix.yaml) | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "At matched magnitude, random-direction placebos are sign-consistent rather than seed noise in all three families: qwen suppression SURVIVES robustly (14/15 negative, median -6.0), mistral recruitment SURVIVES at the exac..." | 4.8, 6.5 |
-| `placebo-signflip-question-type-analysis` | resolved | checkpoint.repo (verbatim): "(none; CPU-only re-read of persisted artifacts, no model loaded)". DECLARED in cell.yaml: none; qwen35-4b; mistral7b-v03 | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Question type does not explain the cross-family placebo sign difference (registered mechanism falsifier untriggered; M1 doubt-axis separation confirmed in all three families under the frozen gate's operational convention..." | 4.8 |
+| `rr-cross-family-raw-refusal` | falsified | checkpoint.repo (verbatim): "cross-family (two atlas-mapped substrates)"; checkpoint.revision (verbatim): "see cell.yaml families (revisions pinned from fleet model_matrix.yaml at sign)". DECLARED in cell.yaml: unsloth/Llama-3.2-3B-Instruct @ 006f5dcd1393c3add266de40994ba96225e9689d; Mistralai/Mistral-7B-Instruct-v0.3 @ c170c708c41dac9275d15a8fff4eca08d52bab71; confirmatory execution model (batch verbs for baseline/capture; mechinterp steer for writes) | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Falsified, both families shape F: the doubt-gated caution write does not actuate FIT-viable canonical clean refusal at either atlas-located non-Qwen site; Llama fails on format collapse before the refusal floor (robust t..." | 4.8, 6.5 |
+| `Llama-atlas-gated-wide-instrument-retest` | resolved | `unsloth/Llama-3.2-3B-Instruct` @ `006f5dcd1393c3add266de40994ba96225e9689d` | 1 declared / 1 launched (single-substrate cell) | 4.8 |
+| `rr2-Mistral-adjudicated-refusal-confirm` | falsified | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: Mistralai/Mistral-7B-Instruct-v0.3 @ c170c708c41dac9275d15a8fff4eca08d52bab71; direct InterventionHook/GenerationInterventionController/RunLog driving (RR precedent, not the mechinterp-steer YAML recipe path) | DECLARED 2 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Falsified on the placebo leg: the blinded adjudicated instrument confirms idiom-inclusive Mistral refusal at 0.699 with pristine cost, vindicating the RR detector-width caveat, but a magnitude-matched random direction li..." | 4.8, 6.5 |
+| `abstention-wide-instrument-calibration` | resolved | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: qwen35-4b; Llama32-3b; Mistral7b-v03 | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Resolved: wide-instrument baseline abstention is family-graded (qwen 0.104, Llama 0.164, Mistral 0.280) and placebo response is family-specific in sign (qwen suppresses -5.13 points where Mistral recruits +7.39), so the ..." | 4.8, 6.5 |
+| `rr3-corrected-placebo-replication` | falsified | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: Mistralai/Mistral-7B-Instruct-v0.3 @ c170c708c41dac9275d15a8fff4eca08d52bab71; Mistral7b_instruct_v03; unsloth/Llama-3.2-3B-Instruct @ 006f5dcd1393c3add266de40994ba96225e9689d | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "FALSIFIED under the corrected effect-ratio placebo criterion: the Mistral gated caution write is not direction-specific (effect ratio 1.87 < 3.0, max fresh-seed random lift +21.8 points) while benefit and cost reproduce ..." | 4.8, 6.5 |
+| `placebo-seed-distribution-census` | resolved | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: family id `qwen35-4b` (HF repo/revision resolves via the fleet model_matrix.yaml); family id `Mistral7b-v03` (HF repo/revision resolves via the fleet model_matrix.yaml); family id `Llama32-3b` (HF repo/revision resolves via the fleet model_matrix.yaml) | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "At matched magnitude, random-direction placebos are sign-consistent rather than seed noise in all three families: qwen suppression SURVIVES robustly (14/15 negative, median -6.0), Mistral recruitment SURVIVES at the exac..." | 4.8, 6.5 |
+| `placebo-signflip-question-type-analysis` | resolved | checkpoint.repo (verbatim): "(none; CPU-only re-read of persisted artifacts, no model loaded)". DECLARED in cell.yaml: none; qwen35-4b; Mistral7b-v03 | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Question type does not explain the cross-family placebo sign difference (registered mechanism falsifier untriggered; M1 doubt-axis separation confirmed in all three families under the frozen gate's operational convention..." | 4.8 |
 | `margin-evidence-responsiveness-worldknown` | null-result | `Qwen/Qwen3.5-4B` @ `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` | 1 declared / 1 launched (single-substrate cell) | 4.6, 6.4 |
 | `evidence-response-direction-search` | null-result | `Qwen/Qwen3.5-4B` @ `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` | 1 declared / 1 launched (single-substrate cell) | NOT NARRATED IN BODY (front matter + Appendix A only; no flagged open-work item, unlike doubt-regulated-caution) |
 | `gemma4-e4b-kv-seam-quarantine` | resolved | `google/gemma-4-E4B-it` @ `fee6332c1abaafb77f6f9624236c63aa2f1d0187` | 1 declared / 1 launched (single-substrate cell) | 4.8, Appendix F |
@@ -1998,9 +1998,9 @@ gap between prediction and result without consulting the text.
   per-family measured null distribution the census supplies at fifteen seeds
   (Section 4.8), for example via a percentile-based tolerance or a
   sign-opposition criterion, not a flat symmetric tolerance and not a single
-  seed. The per-family wide-instrument baselines (qwen 0.104, llama 0.164,
-  mistral 0.280) still anchor the recruitment-versus-suppression axis.
-- Run llama's gated boundary push at its own actuation-selected site, and
+  seed. The per-family wide-instrument baselines (qwen 0.104, Llama 0.164,
+  Mistral 0.280) still anchor the recruitment-versus-suppression axis.
+- Run Llama's gated boundary push at its own actuation-selected site, and
   score it under the wide two-instrument stack, before claiming or ruling out
   cross-family direction-specificity for that family. Its placebo null is
   measured and suppressive, so it cannot serve as a null control.
