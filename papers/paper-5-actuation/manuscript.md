@@ -103,6 +103,7 @@ the write already sorts by content, and the gate's own contribution to selectivi
 is 0.148 on Qwen and 0.129 on Mistral. Where the write lands matters as much:
 inside the workspace-like layer band it reached 89.2% clean refusals against 66.5%
 just past it, +22.7 points for +0.78 points of cost.
+
 ---
 
 ## 1. Introduction
