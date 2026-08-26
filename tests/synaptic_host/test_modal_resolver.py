@@ -19,6 +19,7 @@ from synaptic_tuner.api.v1.modal import (
     ModalRuntimeLockV1,
     ModalSecretProfileV1,
     VerifiedModalDeploymentIdentityV1,
+    modal_function_name,
 )
 from synaptic_host.modal_resolver import (
     ModalProviderStateV1,
@@ -28,9 +29,10 @@ from synaptic_host.modal_resolver import (
 
 
 def profile() -> ModalProviderProfileV1:
+    deployment_ref = "modal-deployment-" + "1" * 32
     return ModalProviderProfileV1(
-        "modal-a10-v1", "synaptic-training-v1", "run_sft_v1", "1",
-        "im-runtime-1",
+        "modal-a10-v1", "synaptic-training-v1",
+        modal_function_name(deployment_ref), deployment_ref,
         "engine://tuner/execution/providers/modal/modal-runtime-v1.lock.json",
         "synaptic-training-control-v1", "synaptic-training-artifacts-v1",
         (ModalSecretProfileV1(
@@ -85,8 +87,8 @@ def test_provider_state_round_trip_is_exact_and_secret_free() -> None:
     assert "token-value" not in encoded
     assert ModalProviderStateV1.from_mapping(value.to_dict()) == value
     changed = value.to_dict()
-    changed["selection"]["image_id"] = "im-substituted"
-    with pytest.raises(ValueError, match="profile differs"):
+    changed["selection"]["image_digest"] = "a" * 64
+    with pytest.raises(ValueError, match="packaged runtime lock"):
         ModalProviderStateV1.from_mapping(changed)
 
 

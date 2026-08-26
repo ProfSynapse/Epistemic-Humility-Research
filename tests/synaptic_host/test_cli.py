@@ -10,7 +10,7 @@ from synaptic_host.modal_provider import ModalHostConfigV1
 
 def config():
     return ModalHostConfigV1(
-        "main", "modal-a10-v1", "1", "control", "artifacts", "runtime",
+        "main", "modal-a10-v1", "control", "artifacts", "runtime",
         ("HF_TOKEN", "SYNAPTIC_EVIDENCE_MAC_KEY"),
         {"PATH": "/opt/conda/bin:/usr/bin"}, 3600, 100, "USD",
     )
@@ -19,6 +19,7 @@ def config():
 def test_cli_exposes_clean_provider_and_training_verbs_only() -> None:
     parser = _parser()
     assert parser.parse_args(["provider", "deploy"]).provider_command == "deploy"
+    assert parser.parse_args(["provider", "deploy", "--adopt-empty"]).adopt_empty is True
     assert parser.parse_args(["provider", "preflight"]).provider_command == "preflight"
     assert parser.parse_args(["training", "start", "--config", "x.json"]).training_command == "start"
     assert parser.parse_args(["training", "preflight", "--config", "x.json"]).training_command == "preflight"

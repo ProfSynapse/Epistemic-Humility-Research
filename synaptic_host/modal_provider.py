@@ -27,6 +27,7 @@ from synaptic_tuner.api.v1.modal import (
     MountedModalWorkerV1,
     SubprocessSftRunner,
     build_modal_deployment,
+    modal_function_name,
 )
 
 from .modal_resolver import ModalProviderStateV1, _closed, _read_json, _text
@@ -37,7 +38,6 @@ from .security import FileHmacAuthenticator
 class ModalHostConfigV1:
     environment_name: str
     profile: str
-    function_version: str
     control_volume_name: str
     artifact_volume_name: str
     runtime_secret_name: str
@@ -49,13 +49,11 @@ class ModalHostConfigV1:
 
     def __post_init__(self) -> None:
         for name in (
-            "environment_name", "profile", "function_version",
+            "environment_name", "profile",
             "control_volume_name", "artifact_volume_name",
             "runtime_secret_name", "currency",
         ):
             object.__setattr__(self, name, _text(getattr(self, name), name))
-        if self.function_version != "1":
-            raise ValueError("clean Modal v1 deployment requires initial function version 1")
         if self.control_volume_name == self.artifact_volume_name:
             raise ValueError("Modal volumes must differ")
         keys = tuple(self.runtime_secret_keys)
@@ -90,7 +88,7 @@ class ModalHostConfigV1:
         )
         if root["schema_version"] != "synaptic-modal-host/v1":
             raise ValueError("unsupported Modal host config schema")
-        deployment = _closed(root["deployment"], {"function_version", "timeout_seconds"}, "deployment")
+        deployment = _closed(root["deployment"], {"timeout_seconds"}, "deployment")
         volumes = _closed(root["volumes"], {"control_name", "artifact_name"}, "volumes")
         secret = _closed(root["runtime_secret"], {"name", "required_keys"}, "runtime secret")
         budget = _closed(root["budget"], {"maximum_cost_minor_units", "currency"}, "budget")
@@ -98,7 +96,6 @@ class ModalHostConfigV1:
             raise ValueError("Modal secret keys and runtime environment are malformed")
         return cls(
             environment_name=root["environment_name"], profile=root["profile"],
-            function_version=deployment["function_version"],
             control_volume_name=volumes["control_name"],
             artifact_volume_name=volumes["artifact_name"],
             runtime_secret_name=secret["name"],
@@ -122,7 +119,6 @@ class ModalHostConfigV1:
         value = {
             "environment_name": self.environment_name,
             "profile": self.profile,
-            "function_version": self.function_version,
             "control_volume_name": self.control_volume_name,
             "artifact_volume_name": self.artifact_volume_name,
             "runtime_secret_name": self.runtime_secret_name,
@@ -137,10 +133,73 @@ class ModalHostConfigV1:
         ).hexdigest()
 
 
+@dataclass(frozen=True, slots=True)
+class ModalDeploymentJournalV1:
+    """Host authority for exactly one resumable provider deployment."""
+
+    config_digest: str
+    deployment_ref: str
+    function_name: str
+    resource_policy: str
+
+    def __post_init__(self) -> None:
+        if (
+            not isinstance(self.config_digest, str)
+            or len(self.config_digest) != 64
+            or any(character not in "0123456789abcdef" for character in self.config_digest)
+        ):
+            raise ValueError("deployment journal config digest is invalid")
+        expected = modal_function_name(self.deployment_ref)
+        if self.function_name != expected:
+            raise ValueError("deployment journal function identity changed")
+        if self.resource_policy not in {"create", "adopt-empty"}:
+            raise ValueError("deployment journal resource policy is invalid")
+
+    @classmethod
+    def create(
+        cls, config: ModalHostConfigV1, *, adopt_empty: bool
+    ) -> "ModalDeploymentJournalV1":
+        if type(config) is not ModalHostConfigV1:
+            raise TypeError("exact Modal host config is required")
+        deployment_ref = "modal-deployment-" + secrets.token_hex(16)
+        return cls(
+            config.digest, deployment_ref, modal_function_name(deployment_ref),
+            "adopt-empty" if adopt_empty else "create",
+        )
+
+    @classmethod
+    def from_mapping(
+        cls, value: Mapping[str, object]
+    ) -> "ModalDeploymentJournalV1":
+        root = _closed(
+            value,
+            {
+                "schema_version", "config_digest", "deployment_ref",
+                "function_name", "resource_policy",
+            },
+            "Modal deployment journal",
+        )
+        if root["schema_version"] != "synaptic-modal-deployment-journal/v1":
+            raise ValueError("unsupported Modal deployment journal schema")
+        return cls(
+            root["config_digest"], root["deployment_ref"],
+            root["function_name"], root["resource_policy"],
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": "synaptic-modal-deployment-journal/v1",
+            "config_digest": self.config_digest,
+            "deployment_ref": self.deployment_ref,
+            "function_name": self.function_name,
+            "resource_policy": self.resource_policy,
+        }
+
+
 def _atomic_json(path: Path, value: Mapping[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists() or path.is_symlink():
-        raise FileExistsError("provider state already exists")
+        raise FileExistsError("durable host record already exists")
     temporary = path.parent / ("." + path.name + "." + secrets.token_hex(8) + ".tmp")
     payload = json.dumps(value, sort_keys=True, separators=(",", ":"), indent=2) + "\n"
     descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
@@ -157,8 +216,7 @@ def _atomic_json(path: Path, value: Mapping[str, object]) -> None:
 
 def _opaque_ref(kind: str, *values: str) -> str:
     payload = "\0".join(_text(value, f"{kind} identity component") for value in values)
-    prefix = "im-" if kind == "image" else f"modal-{kind}-"
-    return prefix + hashlib.sha256(payload.encode("utf-8")).hexdigest()[:32]
+    return f"modal-{kind}-" + hashlib.sha256(payload.encode("utf-8")).hexdigest()[:32]
 
 
 
@@ -229,20 +287,77 @@ class ExplicitModalHostSession:
             self.binding.account_ref, workspace_name, environment_name, self.binding.client_ref,
         )
 
+    def _optional_volume(self, name: str):
+        try:
+            value = self.sdk.Volume.from_name(
+                name, version=1, create_if_missing=False,
+                environment_name=self.config.environment_name,
+                client=self.client,
+            )
+            value.hydrate(self.client)
+            if value.is_hydrated is not True:
+                raise ValueError
+            return value
+        except self.sdk.exception.NotFoundError:
+            return None
+        except Exception:
+            raise ValueError("Modal volume observation failed") from None
+
+    def _optional_secret(self):
+        try:
+            value = self.sdk.Secret.from_name(
+                self.config.runtime_secret_name,
+                environment_name=self.config.environment_name,
+                required_keys=list(self.config.runtime_secret_keys),
+                client=self.client,
+            )
+            value.hydrate(self.client)
+            if value.is_hydrated is not True:
+                raise ValueError
+            return value
+        except self.sdk.exception.NotFoundError:
+            return None
+        except Exception:
+            raise ValueError("Modal secret observation failed") from None
+
+    def _app_exists(self) -> bool:
+        try:
+            self.sdk.App.lookup(
+                "synaptic-training-v1",
+                environment_name=self.config.environment_name,
+                create_if_missing=False,
+                client=self.client,
+            )
+            return True
+        except self.sdk.exception.NotFoundError:
+            return False
+        except Exception:
+            raise ValueError("Modal application observation failed") from None
+
+    @staticmethod
+    def _volume_is_empty(volume: object) -> bool:
+        try:
+            return next(volume.iterdir("/", recursive=True), None) is None
+        except Exception:
+            raise ValueError("Modal volume inventory failed") from None
+
     def facade(self, state: ModalProviderStateV1) -> ExplicitModal154ReadFacade:
         if state.binding != self.binding:
             raise ValueError("authenticated Modal session differs from provider state")
 
         def deployment_observer(**arguments):
-            function = self.sdk.Function.from_name(
-                arguments["app_name"], arguments["function_name"],
-                version=int(state.selection.function_version),
-                environment_name=arguments["environment_name"],
-                client=arguments["client"],
-            )
-            function.hydrate()
-            if not function.is_hydrated:
-                raise ValueError("Modal function did not hydrate")
+            if set(arguments) != {
+                "client", "app_name", "function_name", "environment_name",
+            }:
+                raise ValueError("Modal deployment observation is malformed")
+            if (
+                arguments["client"] is not self.client
+                or arguments["app_name"] != state.selection.app_name
+                or arguments["function_name"] != state.selection.function_name
+                or arguments["environment_name"]
+                != state.selection.environment_ref
+            ):
+                raise ValueError("Modal deployment observation changed")
             return state.selection
 
         return ExplicitModal154ReadFacade(
@@ -261,32 +376,84 @@ class ExplicitModalHostSession:
         context: ProjectContext,
         authenticator: FileHmacAuthenticator,
         hf_token: str,
+        adopt_empty: bool = False,
     ) -> ModalProviderStateV1:
+        if type(adopt_empty) is not bool:
+            raise TypeError("adopt_empty must be an exact boolean")
         state_path = context.state_root / "modal" / "provider-state.json"
+        journal_path = context.state_root / "modal" / "deployment-journal.json"
         if state_path.exists() or state_path.is_symlink():
             raise FileExistsError("Modal provider is already deployed for this host")
         if not hf_token:
-            raise ValueError("HF_TOKEN is required to create the named Modal Secret")
+            raise ValueError("HF_TOKEN is required to bind the named Modal Secret")
+
+        control = self._optional_volume(self.config.control_volume_name)
+        artifact = self._optional_volume(self.config.artifact_volume_name)
+        runtime_secret = self._optional_secret()
+        app_exists = self._app_exists()
+        if journal_path.exists() or journal_path.is_symlink():
+            journal = ModalDeploymentJournalV1.from_mapping(
+                _read_json(journal_path)
+            )
+            if journal.config_digest != self.config.digest:
+                raise ValueError("deployment journal differs from host config")
+            if adopt_empty and journal.resource_policy != "adopt-empty":
+                raise ValueError("deployment journal resource policy changed")
+        else:
+            if adopt_empty:
+                if control is None or artifact is None or runtime_secret is None:
+                    raise ValueError("adopt-empty requires every named resource")
+                if (
+                    not self._volume_is_empty(control)
+                    or not self._volume_is_empty(artifact)
+                ):
+                    raise ValueError("adopt-empty requires empty Modal volumes")
+            elif any(
+                value is not None
+                for value in (control, artifact, runtime_secret)
+            ) or app_exists:
+                raise ValueError("Modal deployment resource collision")
+            journal = ModalDeploymentJournalV1.create(
+                self.config, adopt_empty=adopt_empty
+            )
+            _atomic_json(journal_path, journal.to_dict())
+
         authenticator.initialize()
         runtime_lock = ModalRuntimeLockV1.packaged()
-        self.sdk.Volume.objects.create(
-            self.config.control_volume_name, version=1, allow_existing=False,
-            environment_name=self.config.environment_name, client=self.client,
-        )
-        self.sdk.Volume.objects.create(
-            self.config.artifact_volume_name, version=1, allow_existing=False,
-            environment_name=self.config.environment_name, client=self.client,
-        )
-        self.sdk.Secret.objects.create(
-            self.config.runtime_secret_name,
-            {
-                "HF_TOKEN": hf_token,
-                "SYNAPTIC_EVIDENCE_MAC_KEY": authenticator.encoded_key,
-            },
-            allow_existing=False,
-            environment_name=self.config.environment_name,
-            client=self.client,
-        )
+        if journal.resource_policy == "adopt-empty":
+            if control is None or artifact is None or runtime_secret is None:
+                raise ValueError("adopted Modal resource disappeared")
+            if (
+                not self._volume_is_empty(control)
+                or not self._volume_is_empty(artifact)
+            ):
+                raise ValueError("adopted Modal volume is no longer empty")
+        else:
+            if control is None:
+                control = self.sdk.Volume.objects.create(
+                    self.config.control_volume_name, version=1,
+                    allow_existing=False,
+                    environment_name=self.config.environment_name,
+                    client=self.client,
+                )
+            if artifact is None:
+                artifact = self.sdk.Volume.objects.create(
+                    self.config.artifact_volume_name, version=1,
+                    allow_existing=False,
+                    environment_name=self.config.environment_name,
+                    client=self.client,
+                )
+            if runtime_secret is None:
+                runtime_secret = self.sdk.Secret.objects.create(
+                    self.config.runtime_secret_name,
+                    {
+                        "HF_TOKEN": hf_token,
+                        "SYNAPTIC_EVIDENCE_MAC_KEY": authenticator.encoded_key,
+                    },
+                    allow_existing=False,
+                    environment_name=self.config.environment_name,
+                    client=self.client,
+                )
         remote_auth = EnvironmentHmacAuthenticator(
             environment_key="SYNAPTIC_EVIDENCE_MAC_KEY",
             key_ref=authenticator.key_ref,
@@ -305,6 +472,8 @@ class ExplicitModalHostSession:
             sdk=self.sdk, client=self.client,
             environment_name=self.config.environment_name,
             spec=ModalDeploymentSpecV1(
+                deployment_ref=journal.deployment_ref,
+                function_name=journal.function_name,
                 registry_reference=runtime_lock.registry_reference,
                 control_volume_name=self.config.control_volume_name,
                 artifact_volume_name=self.config.artifact_volume_name,
@@ -321,33 +490,27 @@ class ExplicitModalHostSession:
             client=self.client,
             strategy="recreate",
         )
-        image_id = _opaque_ref(
-            "image", runtime_lock.registry_reference, self.config.digest
-        )
         exact_function = self.sdk.Function.from_name(
-            "synaptic-training-v1", "run_sft_v1", version=1,
+            "synaptic-training-v1", journal.function_name,
             environment_name=self.config.environment_name,
             client=self.client,
         )
-        exact_function.hydrate()
-        if not exact_function.is_hydrated:
-            raise ValueError("deployed function did not bind initial version 1")
+        exact_function.hydrate(self.client)
+        if exact_function.is_hydrated is not True:
+            raise ValueError("deployed function did not hydrate by exact name")
         for volume_name in (
             self.config.control_volume_name, self.config.artifact_volume_name,
         ):
-            volume = self.sdk.Volume.from_name(
-                volume_name, version=1,
-                environment_name=self.config.environment_name,
-                client=self.client,
-            )
-            volume.hydrate()
-            if not volume.is_hydrated:
-                raise ValueError("deployed Modal volume did not hydrate")
+            if self._optional_volume(volume_name) is None:
+                raise ValueError("deployed Modal volume disappeared")
         profile = ModalProviderProfileV1(
-            self.config.profile, "synaptic-training-v1", "run_sft_v1",
-            self.config.function_version, image_id,
+            self.config.profile,
+            "synaptic-training-v1",
+            journal.function_name,
+            journal.deployment_ref,
             "engine://tuner/execution/providers/modal/modal-runtime-v1.lock.json",
-            self.config.control_volume_name, self.config.artifact_volume_name,
+            self.config.control_volume_name,
+            self.config.artifact_volume_name,
             (ModalSecretProfileV1(
                 self.config.runtime_secret_name, self.config.runtime_secret_keys
             ),),

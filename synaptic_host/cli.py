@@ -57,7 +57,8 @@ def _parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
     provider = commands.add_parser("provider")
     provider_commands = provider.add_subparsers(dest="provider_command", required=True)
-    provider_commands.add_parser("deploy")
+    deploy = provider_commands.add_parser("deploy")
+    deploy.add_argument("--adopt-empty", action="store_true")
     provider_commands.add_parser("preflight")
     training = commands.add_parser("training")
     training_commands = training.add_subparsers(dest="training_command", required=True)
@@ -99,19 +100,20 @@ def _hf_token() -> str:
     return value
 
 
-def _provider_deploy(context: ProjectContext) -> int:
+def _provider_deploy(context: ProjectContext, *, adopt_empty: bool = False) -> int:
     config = ModalHostConfigV1.load(context)
     session = _sdk_session(context, config)
     auth = FileHmacAuthenticator.from_context(context)
     state = session.deploy(
         context=context, authenticator=auth,
+        adopt_empty=adopt_empty,
         hf_token=_hf_token(),
     )
     _json({
         "schema_version": "synaptic-command-result/v1",
         "status": "deployed", "profile": state.profile.profile,
-        "function_version": state.selection.function_version,
-        "image_id": state.selection.image_id,
+        "deployment_ref": state.selection.deployment_ref,
+        "function_name": state.selection.function_name,
     })
     return 0
 
@@ -301,7 +303,10 @@ def main(argv: list[str] | None = None) -> int:
     parsed = _parser().parse_args(arguments)
     context = _context()
     if parsed.command == "provider":
-        return _provider_deploy(context) if parsed.provider_command == "deploy" else _provider_preflight(context)
+        return (
+            _provider_deploy(context, adopt_empty=parsed.adopt_empty)
+            if parsed.provider_command == "deploy" else _provider_preflight(context)
+        )
     if parsed.training_command == "start":
         return _training_preflight(context, parsed.config, start=True)
     if parsed.training_command == "preflight":

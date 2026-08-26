@@ -13,12 +13,16 @@ def config() -> ModalHostConfigV1:
     return ModalHostConfigV1.from_mapping({
         "schema_version": "synaptic-modal-host/v1",
         "environment_name": "main", "profile": "modal-a10-v1",
-        "deployment": {"function_version": "1", "timeout_seconds": 3600},
+        "deployment": {"timeout_seconds": 3600},
         "volumes": {"control_name": "control-v1", "artifact_name": "artifact-v1"},
         "runtime_secret": {"name": "runtime-v1", "required_keys": ["HF_TOKEN", "SYNAPTIC_EVIDENCE_MAC_KEY"]},
         "runtime_environment": {"PATH": "/opt/conda/bin:/usr/bin", "LANG": "C.UTF-8"},
         "budget": {"maximum_cost_minor_units": 100, "currency": "USD"},
     })
+
+
+class FakeNotFound(Exception):
+    pass
 
 
 class FakeObject:
@@ -63,6 +67,8 @@ class FakeVolume(FakeObject):
 
     @classmethod
     def from_name(cls, name, **kwargs):
+        if name not in cls.registry:
+            raise FakeNotFound
         return cls.registry[name]
 
     def read_file(self, path):
@@ -85,6 +91,8 @@ class FakeSecret:
 
     @classmethod
     def from_name(cls, name, **kwargs):
+        if name not in cls.registry:
+            raise FakeNotFound
         assert set(FakeSecret.registry[name]) == {"HF_TOKEN", "SYNAPTIC_EVIDENCE_MAC_KEY"}
         return FakeObject("st-" + name, name)
 
@@ -110,11 +118,15 @@ class FakeFunction(FakeObject):
 
     @classmethod
     def from_name(cls, app_name, function_name, **kwargs):
-        assert kwargs["version"] == 1
+        assert "version" not in kwargs
+        if cls.current is None or cls.current.name != function_name:
+            raise FakeNotFound
         return cls.current
 
 
 class FakeApp:
+    deployed = False
+    fail_once = False
     def __init__(self, name, **kwargs):
         self.name = name
         self.image = kwargs["image"]
@@ -128,10 +140,22 @@ class FakeApp:
 
     def deploy(self, **kwargs):
         assert kwargs["name"] == "synaptic-training-v1"
+        if type(self).fail_once:
+            type(self).fail_once = False
+            raise RuntimeError("simulated deploy interruption")
+        type(self).deployed = True
         return self
+
+    @classmethod
+    def lookup(cls, name, **kwargs):
+        assert name == "synaptic-training-v1"
+        if not cls.deployed:
+            raise FakeNotFound
+        return cls(name, image=FakeImage("im-existing"))
 
 
 class FakeSdk:
+    exception = type("FakeException", (), {"NotFoundError": FakeNotFound})
     __version__ = "1.5.4"
     Client = FakeClient
     Workspace = FakeWorkspace
@@ -152,6 +176,8 @@ def clear_fakes():
     FakeVolume.registry.clear()
     FakeSecret.registry.clear()
     FakeFunction.current = None
+    FakeApp.deployed = False
+    FakeApp.fail_once = False
 
 
 def project_context(tmp_path: Path) -> ProjectContext:
@@ -168,14 +194,8 @@ def test_host_config_is_closed_and_budget_bounded() -> None:
     value = config()
     assert value.currency == "USD"
     assert len(value.digest) == 64
-    with pytest.raises(ValueError, match="initial function version"):
-        ModalHostConfigV1(
-            value.environment_name, value.profile, "2",
-            value.control_volume_name, value.artifact_volume_name,
-            value.runtime_secret_name, value.runtime_secret_keys,
-            value.runtime_environment, value.timeout_seconds,
-            value.maximum_cost_minor_units, value.currency,
-        )
+    changed = config().digest
+    assert changed == value.digest
 
 
 def test_explicit_session_deploys_once_and_writes_only_host_state(tmp_path: Path) -> None:
@@ -185,16 +205,64 @@ def test_explicit_session_deploys_once_and_writes_only_host_state(tmp_path: Path
     )
     authenticator = FileHmacAuthenticator.from_context(context)
     state = session.deploy(context=context, authenticator=authenticator, hf_token="hf-value")
-    assert state.selection.image_id.startswith("im-")
-    assert state.selection.function_version == "1"
+    assert state.selection.deployment_ref.startswith("modal-deployment-")
+    assert state.selection.function_name.endswith(state.selection.deployment_ref[-32:])
     assert state.control_volume_id.startswith("modal-volume-")
     assert (context.state_root / "modal" / "provider-state.json").is_file()
+    assert (context.state_root / "modal" / "deployment-journal.json").is_file()
     assert not (context.engine_root / ".synaptic").exists()
     assert session.facade(state).bound_scope() == (
         session.binding.account_ref, "workspace", "main", session.binding.client_ref
     )
     with pytest.raises(FileExistsError, match="already deployed"):
         session.deploy(context=context, authenticator=authenticator, hf_token="hf-value")
+
+
+def test_deploy_resumes_exact_journal_after_interruption(tmp_path: Path) -> None:
+    context = project_context(tmp_path)
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(),
+        token_id="token-id", token_secret="token-secret",
+    )
+    authenticator = FileHmacAuthenticator.from_context(context)
+    FakeApp.fail_once = True
+    with pytest.raises(RuntimeError, match="interruption"):
+        session.deploy(
+            context=context, authenticator=authenticator, hf_token="hf-value"
+        )
+    journal = context.state_root / "modal" / "deployment-journal.json"
+    assert journal.is_file()
+    state = session.deploy(
+        context=context, authenticator=authenticator, hf_token="hf-value"
+    )
+    assert state.selection.deployment_ref in journal.read_text(encoding="utf-8")
+    assert (context.state_root / "modal" / "provider-state.json").is_file()
+
+
+def test_adopt_empty_reuses_exact_resources_without_overwriting_secret(tmp_path: Path) -> None:
+    context = project_context(tmp_path)
+    FakeVolume.registry.update({
+        "control-v1": FakeVolume("vo-control-v1", "control-v1"),
+        "artifact-v1": FakeVolume("vo-artifact-v1", "artifact-v1"),
+    })
+    existing_secret = {
+        "HF_TOKEN": "existing-token",
+        "SYNAPTIC_EVIDENCE_MAC_KEY": "existing-key",
+    }
+    FakeSecret.registry["runtime-v1"] = dict(existing_secret)
+    FakeApp.deployed = True
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(),
+        token_id="token-id", token_secret="token-secret",
+    )
+    state = session.deploy(
+        context=context,
+        authenticator=FileHmacAuthenticator.from_context(context),
+        hf_token="unused-during-adoption",
+        adopt_empty=True,
+    )
+    assert state.selection.deployment_ref.startswith("modal-deployment-")
+    assert FakeSecret.registry["runtime-v1"] == existing_secret
 
 
 def test_session_accepts_one_explicit_client_loaded_from_host_config() -> None:

@@ -3,7 +3,6 @@
   "environment_name": "main",
   "profile": "modal-a10-v1",
   "deployment": {
-    "function_version": "1",
     "timeout_seconds": 3600
   },
   "volumes": {

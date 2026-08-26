@@ -114,8 +114,7 @@ class ModalProviderStateV1:
         if (
             self.selection.app_name != self.profile.app_name
             or self.selection.function_name != self.profile.function_name
-            or self.selection.function_version != self.profile.function_version
-            or self.selection.image_id != self.profile.image_id
+            or self.selection.deployment_ref != self.profile.deployment_ref
         ):
             raise ValueError("provider profile differs from deployment selection")
         runtime = ModalRuntimeLockV1.packaged()
@@ -176,8 +175,7 @@ class ModalProviderStateV1:
                 "deployment": {
                     "app_name": self.profile.app_name,
                     "function_name": self.profile.function_name,
-                    "function_version": self.profile.function_version,
-                    "image_id": self.profile.image_id,
+                    "deployment_ref": self.profile.deployment_ref,
                 },
                 "runtime_lock": self.profile.runtime_lock_ref,
                 "volumes": {
