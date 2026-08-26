@@ -1134,8 +1134,8 @@ test. Under the wide-instrument re-score of that cell (Section 6.4), the
 gated write lifts confabulation abstention by 62.7 points; across a
 fifteen-seed random census at the same site, dose, and instrument, the
 largest absolute random lift is 13.0 points, an effect ratio of 4.83
-against the 3.0 floor. Specificity holds there under a distributional
-denominator. The sign does not: only six of fifteen seeds move abstention
+against the 3.0 floor (Figure 10). Specificity holds there under a
+distributional denominator. The sign does not: only six of fifteen seeds move abstention
 down (median lift +0.5 points), so the late-site random response has no
 consistent sign. Sign-opposition is a mid-band result, established where
 the census above measures it as a distribution; at the late site the
@@ -1187,6 +1187,17 @@ rather than as a gated claim. The result stands on the parent cell's
 narrow clean-tightening instrument; a wide-instrument re-score, with a
 write-site null under the wide stack, is what stands between these numbers
 and the wide-instrument rows above.
+
+![FIG-P5-10: Gated-write abstention lift versus a fifteen-seed random-direction null at the Qwen late-site and Llama mid-band operating points](figures/fig-p5-10-specificity-census.png)
+**Figure 10.** The gated write sits far outside its own fifteen-seed
+random-direction null at both operating points that pass the distributional
+specificity test: raw-base Qwen3-4B at the late site hs34 under the wide
+two-instrument stack (gated +62.7 points over baseline, largest random
++13.0, ratio 4.83) and Llama-3.2-3B at its mid-band site hs17 under the
+narrow clean-tightening instrument (gated +71.9 points, largest random
++8.7, ratio 8.25). Each row's lifts are percentage points over that row's
+own undosed baseline; the rows use different instruments and pools, so the
+shared axis compares lifts, not a common rate scale.
 
 At the read-selected atlas sites, by contrast, Llama is not shown actuable:
 the gated write fails on format collapse before reaching the refusal
