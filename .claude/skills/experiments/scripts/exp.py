@@ -67,6 +67,16 @@ TERMINAL_STATUSES = frozenset({"resolved", "null-result", "falsified"})
 # instrument executes must say up front how it survives a kill.
 PERSISTENCE_MODES = ("incremental", "short-run")
 
+# Cutoff date (UTC, ISO date) for the structural text-capture requirement: an
+# experiment whose created_at is on/after this date must declare
+# `text_capture` (see _text_capture_problems). Experiments predating this
+# field, or created before the cutoff, are exempt so the pre-existing
+# registry never starts failing validate retroactively.
+TEXT_CAPTURE_REQUIRED_FROM = "2026-08-26"
+# Literal accepted values; `textless: <non-empty reason>` is the third,
+# free-text-suffixed option (see _text_capture_problems).
+TEXT_CAPTURE_LITERAL_VALUES = ("enabled", "not-applicable")
+
 GENERATED_HEADER = "GENERATED - do not edit; run bin/exp regen and stage the result"
 
 # GitHub project the pr field links into (used only for REGISTRY.md rendering).
@@ -176,6 +186,7 @@ def _manifest_template(slug: str, exp_type: str, title: str | None = None) -> di
         "question": "",
         "prediction": "",
         "falsifier": "",
+        "text_capture": "enabled",
         "checkpoint": {"repo": "", "revision": ""},
         "instrument": {
             "configs": [],
@@ -503,6 +514,80 @@ def _unfilled_outcome_problems(exp_dir: Path, data: dict) -> list[str]:
     return []
 
 
+def _parse_created_at(value: object) -> "object | None":
+    """Best-effort parse of a manifest's created_at into an aware datetime.
+
+    Returns None for a missing/blank/unparseable value -- callers treat that
+    as "predates the field" rather than raising, so a malformed date is
+    conservatively exempted rather than blocking an unrelated commit.
+    """
+    if not isinstance(value, str) or not value.strip():
+        return None
+    from datetime import datetime, timezone
+
+    text = value.strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+def _text_capture_problems(data: dict) -> list[str]:
+    """Return hard-error problems for a missing/invalid `text_capture`.
+
+    Structural enforcement of the data-exhaust build-time rule
+    (`.skills/data-exhaust/SKILL.md`): a generation harness must persist
+    per-row text unless the experiment explicitly declares otherwise.
+    Enforced only for experiments whose `created_at` is on/after
+    TEXT_CAPTURE_REQUIRED_FROM -- an experiment with no `created_at`
+    (predates that manifest field) or one before the cutoff is exempt, so
+    the pre-existing registry never starts failing validate retroactively.
+    `bin/exp new` scaffolds `text_capture: enabled` by default, so a
+    normally-scaffolded new experiment satisfies this with no extra step;
+    the sanctioned opt-outs are `not-applicable` (no generation happens at
+    all, e.g. a pure analysis/probe-fit pass) and `textless: <non-empty
+    reason>` (generation happens but text capture is deliberately,
+    auditably disabled -- see `experiments/common/runlog_contract.py`,
+    whose `open_generation_runlog` folds that same reason into the run
+    log's own meta fingerprint). This is a hard error, not a warning: unlike
+    the persistence/header/outcome checks above, there is no legacy cohort
+    to protect once an experiment is new enough to be in scope.
+    """
+    created_at = _parse_created_at(data.get("created_at"))
+    if created_at is None:
+        return []
+    from datetime import datetime, timezone
+
+    cutoff = datetime.fromisoformat(TEXT_CAPTURE_REQUIRED_FROM).replace(tzinfo=timezone.utc)
+    if created_at < cutoff:
+        return []
+
+    value = data.get("text_capture")
+    if not (isinstance(value, str) and value.strip()):
+        return [
+            "text_capture is required for experiments created on/after "
+            f"{TEXT_CAPTURE_REQUIRED_FROM} (see .skills/data-exhaust/SKILL.md's "
+            "build-time requirement and experiments/common/runlog_contract.py); "
+            "set it to 'enabled', 'not-applicable', or 'textless: <reason>'"
+        ]
+    v = value.strip()
+    if v in TEXT_CAPTURE_LITERAL_VALUES:
+        return []
+    if v.startswith("textless:") and v[len("textless:") :].strip():
+        return []
+    return [
+        f"text_capture value {value!r} is invalid -- must be 'enabled', "
+        "'not-applicable', or 'textless: <non-empty reason>' (see "
+        ".skills/data-exhaust/SKILL.md's build-time requirement and "
+        "experiments/common/runlog_contract.py)"
+    ]
+
+
 def _is_untracked_data_input(rel: str) -> bool:
     """True when an input path lives under an experiment's gitignored data dir.
 
@@ -614,6 +699,12 @@ def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[s
     # human transcription, not automation (see _unfilled_outcome_problems).
     for p in _unfilled_outcome_problems(mpath.parent, data):
         print(f"exp validate: warning: {slug}: {p}", file=sys.stderr)
+
+    # Structural text-capture guard (hard error, not warning-only): an
+    # experiment new enough to be in scope must declare text_capture. See
+    # _text_capture_problems.
+    for p in _text_capture_problems(data):
+        err(p)
 
     inputs = data.get("inputs", []) or []
     if not isinstance(inputs, list):

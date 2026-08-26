@@ -44,6 +44,17 @@ below. Harness builders and pre-sign reviewers both check this: a CPU smoke
 that asserts the persistence schema (text present, sub-grade dict intact)
 is part of the standard suite.
 
+This rule is now structurally enforced, not just procedural. Generation
+harnesses open their row-level run log through
+`experiments/common/runlog_contract.py`'s `open_generation_runlog`, which
+refuses to accept any record missing non-empty text unless the harness
+declares a `textless_reason` (durably recorded in the log's own meta
+fingerprint). `bin/exp validate` separately requires every experiment's
+`experiment.yaml` to carry a top-level `text_capture` field
+(`enabled`, `not-applicable`, or `textless: <reason>`); a missing or invalid
+value is a hard error. `textless:` is the only sanctioned opt-out from
+either layer -- there is no way to omit text capture silently.
+
 ## Start here
 
 | Task | Do |

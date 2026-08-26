@@ -88,6 +88,7 @@ created_at: "YYYY-MM-DDTHH:MM:SSZ"  # filled by `exp new`
 question: <one sentence>
 prediction: <one sentence>       # required to sign
 falsifier: <one sentence>        # required to sign
+text_capture: enabled | not-applicable | "textless: <reason>"  # see below; scaffolded as `enabled`
 checkpoint: {repo: ..., revision: ...}   # optional
 instrument:
   configs: [cell.yaml, gates.yaml]       # instrument files pinned at signing
@@ -172,6 +173,22 @@ and confirm a branch performs the registered stages. Library-only modules
 (no `if __name__` guard, no CLI) count as unreachable unless a pinned driver
 module demonstrably invokes them for real data; check that the driver exists
 before signing, not after.
+
+### Text capture (data-exhaust build-time rule)
+
+`text_capture` declares whether this experiment's generation harness, if any,
+persists per-row generation text -- the data-exhaust build-time requirement
+(`.skills/data-exhaust/SKILL.md`) made structural. `exp new` scaffolds
+`enabled`; a generation-bearing harness should open its row-level run log
+through `experiments/common/runlog_contract.py`'s `open_generation_runlog`,
+which enforces this at write time. Set `not-applicable` for an experiment
+with no generation step at all (pure analysis, probe-fit over existing
+extractions). Set `textless: <non-empty reason>` only when generation
+happens but text capture is deliberately disabled; the same reason must be
+passed to `open_generation_runlog`'s `textless_reason`, which folds it into
+the run log's own meta fingerprint. `bin/exp validate` requires this field
+(hard error, not a warning) for any experiment whose `created_at` is on or
+after the requirement's effective date; earlier experiments are exempt.
 
 ## Lifecycle
 
@@ -294,7 +311,7 @@ executes the mirror under `.agents/skills/experiments/scripts/exp.py`.
 | `bin/exp list [--status S] [--type T]` | table of slug/type/status/question |
 | `bin/exp show <slug>` | pretty-print the manifest and resolved instrument paths |
 | `bin/exp resolve <slug> --verdict "..." [--status null-result\|falsified]` | stamp verdict, flip to a terminal status, print the kg-ingest checklist |
-| `bin/exp validate` | validate every manifest (schema, status, pins, inputs, kg ids, slug match); passes on an empty experiments/ |
+| `bin/exp validate` | validate every manifest (schema, status, pins, inputs, kg ids, slug match, text_capture); passes on an empty experiments/ |
 | `bin/exp regen [--check]` | regenerate REGISTRY.md + registry.json; `--check` fails if the committed registry is stale |
 
 `type` is one of `steer-cell`, `training-run`, `eval`, `probe-fit`,
