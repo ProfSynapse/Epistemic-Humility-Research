@@ -96,6 +96,7 @@ def test_training_input_is_closed_and_requires_complete_runtime_hyperparameters(
     value = training_input("project://data/train.jsonl")
     parsed, policy = StrictModalTrainingResolver._request(value)
     assert parsed["method"] == "sft"
+    assert parsed["model"]["load_in_4bit"] is False
     assert policy.required_kinds == ("training_lineage", "final_model")
     changed = dict(value, wrapper_specific_fix=True)
     with pytest.raises(ValueError, match="unknown"):
@@ -105,6 +106,13 @@ def test_training_input_is_closed_and_requires_complete_runtime_hyperparameters(
     incomplete["sft"].pop("lora_rank")
     with pytest.raises(ValueError, match="missing required"):
         StrictModalTrainingResolver._request(incomplete)
+    explicit = training_input("project://data/train.jsonl")
+    explicit["model"]["load_in_4bit"] = True
+    assert StrictModalTrainingResolver._request(explicit)[0]["model"]["load_in_4bit"] is True
+    invalid = training_input("project://data/train.jsonl")
+    invalid["model"]["load_in_4bit"] = "false"
+    with pytest.raises(ValueError, match="load_in_4bit"):
+        StrictModalTrainingResolver._request(invalid)
 
 
 def test_config_loader_accepts_only_the_host_training_root(tmp_path: Path) -> None:
@@ -272,6 +280,7 @@ def test_resolver_binds_dataset_source_provider_budget_and_resources(tmp_path: P
     ))
     resolved = resolver.resolve(request, context=context)
     config = resolved.resolved_config.to_dict()
+    assert config["model"]["load_in_4bit"] is False
     assert config["dataset"]["revision"] == "b" * 40
     assert config["dataset"]["content_digest"] == hashlib.sha256(dataset.read_bytes()).hexdigest()
     assert resolved.execution_source.run_id == "run-1"

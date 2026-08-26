@@ -288,9 +288,20 @@ class StrictModalTrainingResolver:
         if root["schema_version"] != "synaptic-training-input/v1" or root["method"] != "sft":
             raise ValueError("unsupported training input schema or method")
         _text(root["provider_profile"], "provider_profile")
-        model = _closed(root["model"], {"ref", "revision", "tokenizer_revision"}, "model")
-        for name, value in model.items():
-            _text(value, f"model.{name}")
+        if not isinstance(root["model"], Mapping):
+            raise ValueError("model contains missing or unknown fields")
+        model = dict(root["model"])
+        required_model = {"ref", "revision", "tokenizer_revision"}
+        if not required_model.issubset(model) or not set(model).issubset(
+            required_model | {"load_in_4bit"}
+        ):
+            raise ValueError("model contains missing or unknown fields")
+        for name in required_model:
+            _text(model[name], f"model.{name}")
+        load_in_4bit = model.setdefault("load_in_4bit", False)
+        if not isinstance(load_in_4bit, bool):
+            raise ValueError("model.load_in_4bit must be a boolean")
+        root["model"] = model
         dataset = _closed(root["dataset"], {"ref"}, "dataset")
         dataset_ref = _text(dataset["ref"], "dataset.ref")
         if not dataset_ref.startswith("project://"):
