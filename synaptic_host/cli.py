@@ -20,6 +20,7 @@ from synaptic_tuner.api.v1.modal import (
     compose_modal_training_operations,
 )
 
+from .artifacts import ArtifactDestinationsV1, HostArtifactPublisherV1
 from .modal_provider import ExplicitModalHostSession, ModalHostConfigV1
 from .modal_resolver import ModalProviderStateV1, ModalTrainingIntentV1, StrictModalTrainingResolver
 from .security import BoundedGrantProvider, FileHmacAuthenticator, ScopedGitRemoteReader, utc_now
@@ -71,6 +72,9 @@ def _parser() -> argparse.ArgumentParser:
     outcome.add_argument("--run-id", required=True)
     reverify = training_commands.add_parser("reverify")
     reverify.add_argument("--run-id", required=True)
+    publish = training_commands.add_parser("publish")
+    publish.add_argument("--run-id", required=True)
+    publish.add_argument("--destination", required=True)
     return parser
 
 
@@ -191,6 +195,12 @@ def _operations(
         maximum_cost_minor_units=config.maximum_cost_minor_units,
         currency=config.currency, clock=utc_now,
     )
+    artifact_publisher = HostArtifactPublisherV1(
+        context=context,
+        repository=repository,
+        destinations=ArtifactDestinationsV1.load(context),
+        hf_token=_hf_token,
+    )
     ports = HostPorts(
         lifecycle=repository,
         runs=UnavailableRuns(),
@@ -202,6 +212,7 @@ def _operations(
         git_remote=ScopedGitRemoteReader(),
         modal_reads=session.facade(state),
         training_resolver=resolver,
+        artifact_publisher=artifact_publisher,
     )
     operations = compose_modal_training_operations(
         context=context, host_ports=ports, provider_config=state.profile
@@ -319,6 +330,50 @@ def _training_outcome(
     return 0 if outcome.success else 3
 
 
+def _training_publish(context: ProjectContext, run_id: str, destination: str) -> int:
+    config = ModalHostConfigV1.load(context)
+    state = ModalProviderStateV1.load(context)
+    session = _sdk_session(context, config)
+    repository = SqliteTrainingRepository.from_context(context, clock=utc_now)
+    project_ref = "epistemic-humility-research"
+    record = repository.load(project_ref, run_id)
+    preparation = repository.load_modal_preparation(project_ref, run_id)
+    if record is None or preparation is None:
+        raise ValueError("run was not found")
+    api, _, _ = _operations(
+        context,
+        config=config,
+        state=state,
+        session=session,
+        resolver=DeferredResolver(),
+        audience_ref=f"{project_ref}/{run_id}",
+    )
+    receipt = api.publish(
+        TrainingSubmission(
+            RunRef(run_id, project_ref),
+            preparation.public_plan_fingerprint,
+            record.updated_at,
+        ),
+        destination,
+    )
+    _json({
+        "schema_version": "synaptic-command-result/v1",
+        "status": "published",
+        "run_id": run_id,
+        "destination_ref": receipt.destination_ref,
+        "artifacts": [
+            {
+                "kind": item.kind,
+                "uri": item.uri,
+                "sha256": item.sha256,
+                "size": item.size,
+            }
+            for item in receipt.artifacts
+        ],
+    })
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
     parsed = _parser().parse_args(arguments)
@@ -333,6 +388,8 @@ def main(argv: list[str] | None = None) -> int:
         return _training_preflight(context, parsed.config, start=True)
     if parsed.training_command == "preflight":
         return _training_preflight(context, parsed.config, start=False)
+    if parsed.training_command == "publish":
+        return _training_publish(context, parsed.run_id, parsed.destination)
     return _training_outcome(
         context, parsed.run_id, reverify=parsed.training_command == "reverify"
     )

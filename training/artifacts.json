@@ -1,0 +1,9 @@
+{
+  "destinations": {
+    "local-default": {
+      "kind": "local",
+      "root": "project://.synaptic/artifacts"
+    }
+  },
+  "schema_version": "synaptic-artifact-destinations/v1"
+}

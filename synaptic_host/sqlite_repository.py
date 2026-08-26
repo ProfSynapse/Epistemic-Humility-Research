@@ -137,6 +137,18 @@ class SqliteTrainingRepository(ModalTrainingRepository):
                     expires_at TEXT NOT NULL,
                     PRIMARY KEY (purpose, challenge_nonce)
                 );
+                CREATE TABLE IF NOT EXISTS artifact_publications (
+                    project_ref TEXT NOT NULL,
+                    run_id TEXT NOT NULL,
+                    plan_fingerprint TEXT NOT NULL,
+                    destination_ref TEXT NOT NULL,
+                    receipt_json BLOB NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY (project_ref, run_id, destination_ref),
+                    FOREIGN KEY (project_ref, run_id)
+                        REFERENCES lifecycle_records(project_ref, run_id)
+                        ON DELETE RESTRICT
+                );
                 """
             )
             existing = connection.execute(
@@ -526,6 +538,60 @@ class SqliteTrainingRepository(ModalTrainingRepository):
                 bytes(row["preparation_json"])
             )
         )
+
+    def load_artifact_publication(
+        self, project_ref: str, run_id: str, destination_ref: str
+    ) -> bytes | None:
+        connection = self._connect()
+        try:
+            row = connection.execute(
+                """
+                SELECT receipt_json FROM artifact_publications
+                WHERE project_ref = ? AND run_id = ? AND destination_ref = ?
+                """,
+                (project_ref, run_id, destination_ref),
+            ).fetchone()
+        finally:
+            connection.close()
+        return None if row is None else bytes(row["receipt_json"])
+
+    def commit_artifact_publication(
+        self, project_ref: str, run_id: str, plan_fingerprint: str,
+        destination_ref: str, receipt_json: bytes,
+    ) -> bytes:
+        if not isinstance(receipt_json, bytes) or not receipt_json:
+            raise TypeError("canonical publication receipt bytes are required")
+        with self._transaction() as connection:
+            loaded = self._load_in(connection, project_ref, run_id)
+            if loaded is None:
+                raise RunNotFound("run was not found")
+            record = loaded[1]
+            if (
+                record.phase is not LifecyclePhase.SUCCEEDED
+                or record.verification.value != "verified"
+            ):
+                raise InvalidTransition("only verified succeeded runs may be published")
+            prior = connection.execute(
+                """
+                SELECT plan_fingerprint, receipt_json FROM artifact_publications
+                WHERE project_ref = ? AND run_id = ? AND destination_ref = ?
+                """,
+                (project_ref, run_id, destination_ref),
+            ).fetchone()
+            if prior is not None:
+                if prior["plan_fingerprint"] == plan_fingerprint and bytes(prior["receipt_json"]) == receipt_json:
+                    return bytes(prior["receipt_json"])
+                raise InvalidTransition("artifact publication collision")
+            connection.execute(
+                """
+                INSERT INTO artifact_publications(
+                    project_ref, run_id, plan_fingerprint, destination_ref,
+                    receipt_json, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (project_ref, run_id, plan_fingerprint, destination_ref, receipt_json, self.clock()),
+            )
+            return receipt_json
 
     def admit(
         self,
