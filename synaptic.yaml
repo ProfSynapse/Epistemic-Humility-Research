@@ -10,7 +10,7 @@ engine:
   path: project://synaptic-tuner
 
 paths:
-  configs: project://experiments
+  configs: project://training
   artifacts: project://.synaptic/artifacts
   state: project://.synaptic/state
   tracking: project://.synaptic/tracking

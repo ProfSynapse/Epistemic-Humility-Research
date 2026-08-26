@@ -1,0 +1,28 @@
+{
+  "schema_version": "synaptic-modal-host/v1",
+  "environment_name": "main",
+  "profile": "modal-a10-v1",
+  "deployment": {
+    "function_version": "1",
+    "timeout_seconds": 3600
+  },
+  "volumes": {
+    "control_name": "synaptic-training-control-v1",
+    "artifact_name": "synaptic-training-artifacts-v1"
+  },
+  "runtime_secret": {
+    "name": "synaptic-training-runtime-v1",
+    "required_keys": [
+      "HF_TOKEN",
+      "SYNAPTIC_EVIDENCE_MAC_KEY"
+    ]
+  },
+  "runtime_environment": {
+    "PATH": "/opt/conda/bin:/usr/local/bin:/usr/bin:/bin",
+    "LANG": "C.UTF-8"
+  },
+  "budget": {
+    "maximum_cost_minor_units": 100,
+    "currency": "USD"
+  }
+}

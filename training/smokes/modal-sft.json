@@ -1,0 +1,43 @@
+{
+  "schema_version": "synaptic-training-input/v1",
+  "method": "sft",
+  "provider_profile": "modal-a10-v1",
+  "model": {
+    "ref": "HuggingFaceTB/SmolLM2-135M-Instruct",
+    "revision": "12fd25f77366fa6b3b4b768ec3050bf629380bac",
+    "tokenizer_revision": "12fd25f77366fa6b3b4b768ec3050bf629380bac"
+  },
+  "dataset": {
+    "ref": "project://training/fixtures/modal-smoke.jsonl"
+  },
+  "sft": {
+    "batch_size": 1,
+    "gradient_accumulation_steps": 1,
+    "learning_rate": 0.0002,
+    "max_steps": 1,
+    "max_seq_length": 512,
+    "seed": 3407,
+    "save_steps": 1,
+    "save_total_limit": 1,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.0,
+    "lora_target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj"
+    ],
+    "use_dora": false,
+    "use_rslora": false,
+    "init_lora_weights": true,
+    "split_dataset": false
+  },
+  "artifacts": {
+    "required_kinds": [
+      "training_lineage",
+      "final_model"
+    ],
+    "retain_checkpoints": false
+  }
+}
