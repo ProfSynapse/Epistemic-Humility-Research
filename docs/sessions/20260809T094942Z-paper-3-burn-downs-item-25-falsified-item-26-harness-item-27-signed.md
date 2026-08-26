@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-26T17:31:51Z'
+updated_at: '2026-08-26T22:45:03Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -1633,6 +1633,26 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 070-checkpoint
+  at: '2026-08-26T22:45:03Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Wide-rescore adjudication lane completed and cell resolved Outcome A.
+    All 19 shards graded by context-free opus graders, each lead-verified and workdir-audited,
+    all sha256 hashes committed pre-unblinding (86c8dc07). CG1 19/19 PASS attempt
+    1, pooled clear-positive 534/691. Gates: WR-G1 0.7305 PASS, WR-G2 net wide lift
+    0.6319 PASS, WR-G3 effect ratio 9.34 PASS, WR-G4 NOT-ADJUDICABLE fired 0/334 as
+    pre-stated. Lead re-derived every number from raw artifacts, exact match. Recorded
+    arm0 duplicate-row anomaly (25 dup row_keys, 24/24 blind regrade agreement, no
+    number moved). Resolved via bin/exp, tuner gitlink bumped to 6b01834b, PR 562
+    opened for PI review. Next: merge on approval, then KG ingest, paper 5 section
+    4.8 and 6.5 update, data-exhaust packaging.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -1999,3 +2019,8 @@ _No summary yet._
 - at: `2026-08-26T17:31:51Z`
 - kind: `checkpoint`
 - summary: Wide-rescore cell llama-hs17-wide-instrument-rescore signed (outcome A both scoreboards, engine exception intervention, probe PASS with six sha matches and 872/334 pools verified) and GPU run launched on the 3090 with lead-owned monitor; run healthy at arm 5 of 17, every runlog row carries out_text plus full sub-grades via the new fail-closed contract. Structural text-capture guard merged (EHR PR 561 and tuner PR 155): RunLog required_fields, open_generation_runlog wrapper with auditable textless opt-out, exp validate errors on new cells missing text_capture, scaffold default enabled. Aggregate exhaust uploaded for both resolved cells (llama rev f2e4c860, census rev 9dccf161) and recorded via PR 558; fig-p5-10 specificity census figure built with reproduction audit and merged via PR 560; j-space KG backfill verified against AMENDMENT and committed 2ef2ef40. Known open items: 13 pre-existing repin test failures in test_exp.py broken by the engine-gate ruling, tuner gitlink bump rides the resolve PR, one transient CUDA monitor false alarm traced to pipe garble not the log. Next: on RUN-COMPLETE re-derive WR-G1 bridge, run wide scoring and detector pass, blinded adjudication lane with fresh graders and hash-commit before unblinding, then gate table to PI.
+### 070-checkpoint - Checkpoint
+
+- at: `2026-08-26T22:45:03Z`
+- kind: `checkpoint`
+- summary: Wide-rescore adjudication lane completed and cell resolved Outcome A. All 19 shards graded by context-free opus graders, each lead-verified and workdir-audited, all sha256 hashes committed pre-unblinding (86c8dc07). CG1 19/19 PASS attempt 1, pooled clear-positive 534/691. Gates: WR-G1 0.7305 PASS, WR-G2 net wide lift 0.6319 PASS, WR-G3 effect ratio 9.34 PASS, WR-G4 NOT-ADJUDICABLE fired 0/334 as pre-stated. Lead re-derived every number from raw artifacts, exact match. Recorded arm0 duplicate-row anomaly (25 dup row_keys, 24/24 blind regrade agreement, no number moved). Resolved via bin/exp, tuner gitlink bumped to 6b01834b, PR 562 opened for PI review. Next: merge on approval, then KG ingest, paper 5 section 4.8 and 6.5 update, data-exhaust packaging.
