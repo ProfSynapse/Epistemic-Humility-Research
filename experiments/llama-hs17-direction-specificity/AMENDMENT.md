@@ -127,5 +127,46 @@ are fixed at sign; an ambiguous result is reported as ambiguous.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+**Resolved 2026-08-25 — prediction confirmed. Llama's hs17 write replicates
+and is direction-specific.**
+
+Full 17-arm run on the local RTX 3090 (lane approved 2026-08-25), raw-base
+bf16, frozen parent instruments, fresh decode seed. Evidence:
+`analysis-committed/llama-3.2-3b/specificity_summary.json`; gate numbers
+re-derived independently by the lead from the raw per-arm runlogs (exact
+match).
+
+| Gate | Registered criterion | Result | Disposition |
+|------|----------------------|--------|-------------|
+| LG-G1 (replication) | arm-1 held-out `clean_tighten` ≥ 0.50 | 635/872 = **0.7282** (Wilson 95% [0.6977, 0.7567]) | **PASS** |
+| LG-G2 (direction-specificity) | effect ratio ≥ 3.0 | gated lift 0.7190 / max abs random lift 0.0872 = **8.25** | **PASS** |
+| LG-G3 (known-correct cost) | fired-rows point ≤ 0.05 AND Wilson-upper < 0.15; floor fired-N ≥ 22 | KU gate fired **0/334** known-correct rows | **NOT-ADJUDICABLE** (as pre-stated expected outcome) |
+
+Supporting numbers:
+
+- Arm 0 undosed baseline: confab 8/872 = 0.0092; known-correct
+  companion 0/334 malformed-tighten.
+- Arm 1 vs parent: 0.7282 here vs 0.7420 in the parent
+  (`j-space-cross-family-layer-contrast`); Wilson CIs overlap — consistent
+  replication under a fresh decode seed.
+- Random census (K=15, seeds 910001..910015, matched dose and KU gate, gate
+  fired 870/872 in every dosed arm): strongest arm 84/872 = 0.0963 (seed
+  910010); per-seed signed lifts median +0.0023, signs 9 positive / 5
+  negative / 1 zero. No random direction approaches the gated effect.
+- LG-G3 companion (descriptive only, not a cost claim): unconditional
+  known-correct false-refusal 0/334 in arm 1.
+
+Scoreboard: both calls correct — user ("Replicates + specific") and
+orchestrator (~55% on the same outcome).
+
+One-sentence summary (manifest `verdict:`): llama hs17 gated write
+replicates held-out (0.7282 ≥ 0.50) and is direction-specific against 15
+matched-dose random directions (effect ratio 8.25 ≥ 3.0); known-correct cost
+gate NOT-ADJUDICABLE (KU fired 0/334), as pre-registered.
+
+Run incidents (harness, not design; details in `NOTEBOOK.md`): two crashes
+before the clean pass — a missing scratch `backends.py` import binding, and a
+pre-existing tuner readback-snapshot device bug fixed in Synaptic-Tuner
+PR #154 (worktree submodule at fix commit 3a21774d; gitlink unchanged pending
+that PR's merge). The run resumed from per-arm checkpoints; all 17 arms
+completed on the fixed code path.

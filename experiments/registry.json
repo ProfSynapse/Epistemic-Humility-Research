@@ -5276,10 +5276,10 @@
       "question": "Is llama's hs17 mid-band gated-write behavioral pass (held-out clean_tighten 0.742) direction-specific against fifteen matched-magnitude fresh random directions?",
       "registered": true,
       "slug": "llama-hs17-direction-specificity",
-      "status": "signed",
+      "status": "resolved",
       "title": "Llama hs17 mid-band direction-specificity census",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "llama hs17 gated write replicates held-out (0.7282 >= 0.50, LG-G1 PASS) and is direction-specific against 15 matched-dose random directions (effect ratio 8.25 >= 3.0, LG-G2 PASS); known-correct cost gate NOT-ADJUDICABLE (KU fired 0/334), as pre-registered."
     },
     {
       "checkpoint": {
