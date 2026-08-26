@@ -226,3 +226,40 @@ results-analyst pass, not by the script).
   pyftsubset of Noto Sans CJK SC (SIL OFL 1.1, license and provenance in
   `assets/LICENSE-NotoSansCJK-OFL.txt` and the build script header; source-font
   sha256 recorded there).
+
+## fig-p5-10-specificity-census.png
+
+Two direction-specificity seed censuses side by side: each write's
+confabulation-tightening lift over its own undosed baseline against a
+15-seed matched-dose random-direction null, at the Qwen3-4B late site
+(hs34/L34, wide two-instrument refusal-rate metric) and the Llama-3.2-3B
+mid-band site (hs17, clean_tighten metric). Built by
+`papers/paper-5-actuation/scripts/build_specificity_census_fig.py`
+(deterministic apart from cosmetic seed-dot jitter, fixed RNG seeds in the
+script; CPU only, no network).
+
+- Source: `experiments/llama-hs17-direction-specificity/analysis-committed/llama-3.2-3b/specificity_summary.json`
+  -- amendment: `experiments/llama-hs17-direction-specificity/AMENDMENT.md`
+  (Outcome section: LG-G1 replication PASS 0.7282, LG-G2 direction-specificity
+  PASS, effect ratio 8.25). Fields used: `arm0_baseline.confab.rate`,
+  `arm1_gated_replication.confab.rate`, `arm2_random_census.<seed>.rate`
+  for all 15 seeds (910001-910015); per-seed lifts are recomputed as
+  `arm2_random_census[seed].rate - arm0_baseline.confab.rate`, not read from
+  the JSON's own `companion_descriptive` block, though the two agree exactly.
+- Source: `experiments/qwen3-4b-l34-placebo-seed-census/analysis-committed/wide_gates_report.json`
+  -- amendment: `experiments/qwen3-4b-l34-placebo-seed-census/AMENDMENT.md`
+  (Outcome section: QG-G1 distributional specificity PASS, effect ratio 4.83;
+  QG-G2 sign-consistency FAIL, 6/15 negative). Fields used:
+  `QG_G1_distributional_specificity.frozen_baseline_rate`,
+  `.frozen_gated_lift_over_baseline`, and `per_seed.<seed>.confab_tighten_wide.rate`
+  for all 15 seeds (920001-920015); per-seed lifts are recomputed the same
+  way and cross-checked against the JSON's own `lift_over_baseline_signed`
+  field (exact match).
+- The two rows plot pp lift on a shared x-axis but different instruments,
+  metrics, and baselines; the figure and its axis label say so directly, and
+  each row is labeled with its own site, instrument, and N. The build script
+  embeds a reproduction audit: every plotted lift, median, IQR, span, sign
+  count, and effect ratio is recomputed from the two JSONs above and asserted
+  against the governed AMENDMENT.md Outcome numbers, failing loudly on any
+  mismatch. QG-G2's sign-consistency failure is not plotted here; this figure
+  is scoped to QG-G1/LG-G2 (distributional direction-specificity) only.
