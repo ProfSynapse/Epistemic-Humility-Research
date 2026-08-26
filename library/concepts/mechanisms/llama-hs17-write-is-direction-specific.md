@@ -15,9 +15,18 @@ effect: "The gated write replicates the floor-clearing behavior (held-out clean_
 polarity: enables
 related:
 - '[[llama-hs17-direction-specificity]]'
+- '[[j-space-cross-family-layer-contrast]]'
 - '[[caution-encoding-read-actuate-dissociation-across-families]]'
 - '[[known-unknown-direction]]'
 relationships:
+- type: derived_from
+  target: '[[j-space-cross-family-layer-contrast]]'
+  target_id: experiment:j-space-cross-family-layer-contrast
+  confidence: high
+  evidence:
+  - experiments/llama-hs17-direction-specificity/AMENDMENT.md (Lineage; the
+    write, gate, dose, and directions are frozen artifacts reused verbatim
+    from that experiment's resolved INCONCLUSIVE llama arm)
 - type: supported_by
   target: '[[llama-hs17-direction-specificity]]'
   target_id: experiment:llama-hs17-direction-specificity
