@@ -30,7 +30,7 @@
     ],
     "use_dora": false,
     "use_rslora": false,
-    "init_lora_weights": "true",
+    "init_lora_weights": true,
     "split_dataset": false
   },
   "artifacts": {
