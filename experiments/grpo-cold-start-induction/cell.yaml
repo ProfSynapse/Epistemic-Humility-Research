@@ -1,0 +1,118 @@
+# grpo-cold-start-induction instrument config, pinned at build.
+# Single arm: raw base Qwen3-4B -> GRPO v2 (rebalanced reward), seed 1, no
+# SFT warm-up. Clones the pinned SFT-warmed GRPO instrument
+# (experiments/grpo-three-seed-confirmatory/cell.yaml `clean_sft_grpo_v2` arm)
+# with only the source substituted (AMENDMENT.md "Design"). This build task
+# performs NO GPU/training work; `lane` below is descriptive only and does
+# not authorize a launch.
+
+apiVersion: lab-cell/v1
+experiment: grpo-cold-start-induction
+lane: local-3090   # GPU launch requires explicit PI approval; NOT authorized by this file
+model_family: qwen3-4b
+foundation_model: unsloth/Qwen3-4B-bnb-4bit   # same hub id as
+                                                # dial-logprob-baseline-v3 cell.yaml's
+                                                # s_base_primary arm and
+                                                # grpo-three-seed-confirmatory's
+                                                # foundation_model field
+seed: 1
+
+arm:
+  id: cold_base_grpo_v2
+  stage: 1                    # no SFT stage precedes this arm -- cold start
+  source: foundation          # raw base, NOT merged(clean_sft) -- the one
+                               # substitution AMENDMENT.md "Design" calls out
+  trainer: synaptic-tuner/Trainers/grpo/train_grpo.py
+  trainer_config: configs/grpo_cold_base_seed1_full.yaml
+  dataset: grpo                # same grpo_train.jsonl as clean_sft_grpo_v2
+  reward_variant: v2           # rebalanced reward, unchanged
+  terminal: true
+  per_device_train_batch_size: 32
+  num_generations: 4
+  # Step budget: not set independently. num_train_epochs 1 + the identical
+  # grpo_train.jsonl (14,888 rows, gates.yaml frozen audit in
+  # grpo-three-seed-confirmatory/cell.yaml) + batch 32 / grad-accum 1
+  # reproduces the warmed v2 arm's ~465-step budget automatically (AMENDMENT.md
+  # "Design"), verified by the config-diff smoke test
+  # (test_cold_trainer_config_differs_from_warmed_sibling_only_in_source_and_seed).
+
+# Docker launch pattern, verbatim from grpo-three-seed-confirmatory cell.yaml
+# (itself from archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md:62-75).
+launch:
+  image: unsloth/unsloth:latest
+  workdir: /workspace/repo
+  mount: <REPO_ROOT>:/workspace/repo
+  train_flags: [--no-dashboard, --quiet]
+  eval_entrypoint: run_eval.py
+  eval_flags: [--live-vllm]
+  env_vars:
+    # NOT a submodule change: humility_reward_v2.py (this repo, not
+    # synaptic-tuner) already writes one JSON debug event per reward call when
+    # this is set -- see grpo_cold_diagnostics.py module docstring for the
+    # full mechanism. Path is per-run; the launcher fills a real path under
+    # this cell's analysis/ dir before starting training.
+    GRPO_REWARD_DEBUG_PATH: analysis/reward_debug/cold_base_grpo_v2_seed1.jsonl
+
+# Diagnostics capture plan (AMENDMENT.md "Design", pre-registered, reported
+# UNCONDITIONALLY regardless of outcome). All three are captured WITHOUT any
+# synaptic-tuner change and WITHOUT any new trainer callback: they are derived
+# post hoc, by grpo_cold_diagnostics.py, from the GRPO_REWARD_DEBUG_PATH JSONL
+# that humility_reward_v2.py's `epistemic_humility_reward` (a project reward
+# file, not a submodule file) ALREADY writes when the env var above is set.
+diagnostics:
+  capture_mechanism: >-
+    GRPO_REWARD_DEBUG_PATH env var (set above), read by the pinned custom
+    reward file's existing `_write_debug_rows` hook -- no trainer code change,
+    no new callback registered with GRPOTrainer.
+  source_file: archive/experiment/phase1/grpo/humility_reward_v2.py
+  post_hoc_module: grpo_cold_diagnostics.py
+  items:
+    - id: per_group_zero_advantage_fraction
+      description: >-
+        fraction of per-prompt reward groups (num_generations=4 consecutive
+        rollouts, TRL's own per-step completions ordering) whose reward range
+        is ~0 across the group -- computed by
+        grpo_cold_diagnostics.per_group_advantage_stats from the debug JSONL's
+        `reward` field, chunked by num_generations.
+      cg_gate: CG-G1
+      cg_g1_floor: 0.90
+    - id: valid_contract_parse_fraction
+      description: >-
+        fraction of ALL rollouts whose completion parses as the exact
+        {"answer": ..., "response_confidence": ...} contract -- the debug
+        JSONL's `valid_json` field (humility_reward.parse_completion),
+        computed by grpo_cold_diagnostics.valid_contract_parse_fraction.
+      cg_gate: CG-G0(diagnostics_present)
+    - id: abstention_rate_in_rollouts
+      description: >-
+        fraction of ALL rollouts whose parsed answer text is a refusal
+        (humility_reward.is_refusal) -- the debug JSONL's `refused` field,
+        computed by grpo_cold_diagnostics.abstention_rate.
+      cg_gate: CG-G0(diagnostics_present)
+  known_gap: >-
+    grpo_cold_diagnostics.py does NOT itself parse run_eval.py's results
+    directory for eval_refusal_recall_pct (the CG-G1 mechanism call's other
+    input); the launcher reads that number from the standard eval summary
+    (same field name grpo-three-seed-confirmatory/gates.yaml derives its own
+    thresholds from: refusal_recall_pct) and passes it via
+    --eval-refusal-recall-pct. Flagged for the lead in NOTEBOOK.md.
+
+# Eval stage: the SAME run_eval.py instrument and config schema every other
+# GRPO-matrix arm uses (AMENDMENT.md "Design": "the standard full SelfAware
+# eval under the same contract and scorer as the cold-start block... do not
+# build a new eval"). No new eval mechanism; only a new per-arm config file,
+# same as every sibling arm in experiments/grpo-three-seed-confirmatory/configs/.
+eval:
+  config: configs/eval_grpo_cold_start_selfaware_full_local_4b.yaml
+  eval_population: selfaware-full-3369
+  known_gap: >-
+    the eval config's arms[0].adapter is a documented placeholder
+    (<FILLED_AFTER_TRAINING>/final_model) until training produces a real run
+    directory -- see the eval config's own header note and
+    test_cold_eval_config_loads_and_flags_its_own_placeholder.
+
+# Public repo: no row text, no scratch model paths beyond what is already
+# published elsewhere in this program's configs (checkpoint paths only).
+containment:
+  commit: [aggregate_diagnostics_json, gate_results]
+  never_commit: [reward_debug_jsonl, generation_text, training_logs, question_text, answer_text]

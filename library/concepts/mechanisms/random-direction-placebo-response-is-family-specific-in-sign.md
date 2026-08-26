@@ -18,6 +18,7 @@ related:
 - '[[random-direction-placebo-recruits-additional-wide-instrument-abstention]]'
 - '[[undosed-wide-instrument-baseline-abstention-is-family-graded]]'
 - '[[abstention]]'
+- '[[qwen-l34-random-direction-sign-is-a-draw-level-accident]]'
 relationships:
 - type: supported_by
   target: '[[abstention-wide-instrument-calibration]]'
@@ -37,6 +38,14 @@ relationships:
   target: '[[abstention]]'
   target_id: term:abstention
   confidence: medium
+- type: related_to
+  target: '[[qwen-l34-random-direction-sign-is-a-draw-level-accident]]'
+  target_id: mechanism:qwen-l34-random-direction-sign-is-a-draw-level-accident
+  confidence: high
+  evidence:
+  - experiments/qwen3-4b-l34-placebo-seed-census/AMENDMENT.md#outcome
+    (QG-G2; narrows this mechanism's qwen evidence base, see status note
+    below)
 ---
 
 Extends, rather than contradicts, `random-direction-placebo-recruits-additional-wide-instrument-abstention`:
@@ -52,3 +61,18 @@ adjudication turns on this signed reading: under a signed interpretation the
 qwen delta does not fire the registered ">= 5 points" trigger, because its
 own stated consequent ("perturbation-recruited hedging") is a claim a
 suppression directly contradicts.
+
+**Status note (2026-08-26):** a separate single random-direction draw at
+qwen's late write site (hs34, `wide-instrument-control-rescore`'s WG-G1, a
+different operating point from the pooled reading above) had also shown a
+suppressive sign (-4.3pp) and was read as corroborating this mechanism.
+`qwen3-4b-l34-placebo-seed-census` tested that specific draw against fourteen
+fresh matched-dose seeds at the same site and found the sign is not
+distribution-consistent there (6/15 negative, 9/15 positive, median +0.5pp):
+the hs34 draw was a draw-level accident, not a second confirmation of this
+mechanism (see
+[[qwen-l34-random-direction-sign-is-a-draw-level-accident]]). This
+mechanism's own qwen evidence, from `abstention-wide-instrument-calibration`
+and `placebo-seed-distribution-census`'s 14/15-seed census at that pooled
+operating point, is unaffected; only the hs34-specific corroboration is
+retired.

@@ -1,0 +1,18 @@
+# Pinned instrument for fusion-nonredundance-redo: verbatim rerun of the
+# committed CPU diagnostic, no code changes.
+runner: python3
+script: experiments/common/mechinterp/two_signal_stage1p5_integration.py
+args:
+  gate-dir: archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+  dial-dir: archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2
+  gate-layer: 33
+  dial-layer: 22
+  seed: 20260630
+  n-boot: 2000
+  out: experiments/fusion-nonredundance-redo/analysis-committed/fusion_nonredundance_redo_result.json
+notes: >-
+  Inputs are the dirs recorded by the committed stage-1 JSON, at the
+  post-reorg phase1-data prefix (same path migration as the paper-3 geometry
+  artifacts). CPU-only; no new generation; aggregates-only output. Run with
+  PYTHONPATH=.:archive/experiment/phase1/probe/legacy-wrapper-tree (import
+  environment only; the instrument code is unmodified).

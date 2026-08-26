@@ -59,9 +59,17 @@ from sweep_lib import (  # noqa: E402
 )
 from materialize_configs import steer_config_dict  # noqa: E402
 from gate_scoring import gate_score_for_rows  # noqa: E402
+from extract_anchor import _raw_base_joined_rows  # noqa: E402
 
 
 def held_out_rows(substrate: str) -> list[dict]:
+    # F8 completion (third consumer, PI-approved repin 2026-08-11): raw_base
+    # has no split manifest by design -- its registered population is rep2's
+    # verified 221-row anchor pool, sourced exactly as extract_anchor.py and
+    # dose_calibrate.py already do (all split="held_out", role "confab";
+    # hard-fails on missing text or wrong roles). Trained path unchanged.
+    if substrate == "raw_base":
+        return _raw_base_joined_rows()
     rows = {r["row_key"]: r for r in load_jsonl(rows_with_text_path(substrate))}
     split_manifest = load_split_manifest(substrate)
     split = split_manifest.get("rows", [])
@@ -154,6 +162,17 @@ def run(args: argparse.Namespace) -> int:
                 print(f"[held-out:{args.substrate}] {key}: NOT_RUN (no cached gate scores)", flush=True)
                 continue
             rows_scored = [dict(r, **scores[r["row_key"]]) for r in rows if r["row_key"] in scores]
+            # The tuner smoke gate probes the first rows of the file. Put
+            # gate-active rows first so it probes real write rows, not the
+            # natural baseline projection of inactive rows (which the smoke
+            # mismeasures as off-target movement). Same fix as
+            # aq-sycophancy-activation-actuator; repin audit 2026-08-11.
+            rows_scored.sort(
+                key=lambda r: (
+                    not (float(r["gate_score"]) >= float(r["gate_tau"])),
+                    str(r["row_key"]),
+                )
+            )
             rows_path = ANALYSIS / f"held_out_rows_{args.substrate}_{site.name}_{position}.jsonl"
             rows_path.write_text("\n".join(json.dumps(r) for r in rows_scored) + "\n")
             tau = next(iter(scores.values()))["gate_tau"]

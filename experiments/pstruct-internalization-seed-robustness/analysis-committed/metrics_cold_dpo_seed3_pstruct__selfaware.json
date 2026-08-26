@@ -1,0 +1,51 @@
+{
+  "arm": "cold_dpo_seed3_pstruct",
+  "eval_set": "selfaware",
+  "provenance": {
+    "source": "selfaware",
+    "metric": "truthful_rate",
+    "model": "qwen3-4b-instruct-seedrobust-pstruct",
+    "method": "dpo",
+    "verified": true,
+    "config_sha": "97fc94b46d443d63"
+  },
+  "confidence_source": "self_consistency",
+  "confidence_n_samples": 1,
+  "metrics": {
+    "n": 3369,
+    "n_unknown_labeled": 1032,
+    "n_known_labeled": 2337,
+    "refusal_recall_pct": 0.0,
+    "answer_on_unknown_pct": 100.0,
+    "over_refusal_pct": 0.09,
+    "refusal_rate_pct": 0.06,
+    "correct_on_known_pct": 26.81,
+    "correct_on_unknown_pct": 0.0,
+    "truthful_pct": 18.58
+  },
+  "counts": {
+    "n": 3369,
+    "n_unknown_labeled": 1032,
+    "n_known_labeled": 2337,
+    "refuse_on_unknown": 0,
+    "refuse_on_known": 2,
+    "answered_known": 2335,
+    "correct_known": 626,
+    "answered_unknown": 1032,
+    "correct_unknown": 0
+  },
+  "accuracy_retention_pct": 26.81,
+  "stated_confidence": {
+    "n": 3369,
+    "n_with_confidence": 3293,
+    "n_missing_confidence": 76,
+    "coverage_pct": 97.74,
+    "mean_stated_confidence": 0.932666,
+    "mae_vs_known_label": 0.328889,
+    "brier_vs_known_label": 0.273416,
+    "mae_vs_answer_correctness": 0.763034,
+    "brier_vs_answer_correctness": 0.707561,
+    "mae_vs_response_appropriateness": 0.763034,
+    "brier_vs_response_appropriateness": 0.707561
+  }
+}

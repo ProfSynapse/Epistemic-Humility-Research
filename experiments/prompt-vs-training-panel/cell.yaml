@@ -1,0 +1,29 @@
+# prompt-vs-training-panel: declarative arm map. The three eval configs under
+# configs/ are the runnable instrument; this file records the crossing and the
+# registered run order. Pinned at signing with the configs.
+
+instrument:
+  harness: archive/experiment/phase1/eval/run_eval.py
+  engine: vllm            # program default for generation-bearing evals; no exception
+  eval_set: selfaware     # full set, n=3369 per arm
+  generation: {temperature: 0.0, enable_thinking: false, max_new_tokens: 128}
+
+prompt_levels:
+  P-rc: configs/eval_panel_prc_local_4b.yaml       # response-confidence contract, verbatim
+  P-plain: configs/eval_panel_pplain_local_4b.yaml # plain-answer harness default, pinned explicitly
+  # P-struct splits into two configs because run_eval.py loads one model_name
+  # per config: cold arms sit on the raw bnb-4bit base, warmed arms on the
+  # merged clean-SFT seed-1 base. Prompt text byte-identical across the two.
+  P-struct-cold: configs/eval_panel_pstruct_cold_local_4b.yaml
+  P-struct-warmed: configs/eval_panel_pstruct_warmed_local_4b.yaml
+
+# Registered run order: config-level launches; arms 1-2 (base counterfactuals)
+# unblock the cold-GRPO resolve first.
+run_order:
+  - {order: 1, config: P-rc, arms: [base_prc, cold_dpo_seed1_prc, cold_kto_seed1_prc]}
+  - {order: 2, config: P-plain, arms: [base_pplain]}
+  - {order: 3, config: P-struct-cold, arms: [base_pstruct, cold_sft_seed1_pstruct, cold_dpo_seed1_pstruct, cold_kto_seed1_pstruct, cold_grpo_seed1_pstruct]}
+  - {order: 4, config: P-struct-warmed, arms: [clean_sft_merged_pstruct, clean_sft_grpo_v2_seed1_pstruct]}
+
+# Adapter/checkpoint identities live in the configs; cell-of-record provenance
+# for each is recorded in NOTEBOOK.md with the establishing doc line.

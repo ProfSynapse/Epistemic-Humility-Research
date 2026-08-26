@@ -19,11 +19,41 @@ related:
 - '[[entity-recognition-direction-gates-refusal-vs-hallucination]]'
 - '[[refusal-direction]]'
 - '[[residual-stream]]'
+- '[[caution-install-bounded-site-sweep]]'
+- '[[caution-install-actuates-but-specificity-unresolved-on-trained-qwen3-4b]]'
+- '[[raw-theta-refusal-axis-ablation-rederives-archived-overrefusal-collapse]]'
 relationships:
 - type: supported_by
   target: '[[internal-paper3--knows-but-doesnt-say]]'
   target_id: paper:internal-paper3
   confidence: high
+- type: supported_by
+  target: '[[raw-theta-refusal-axis-ablation-rederives-archived-overrefusal-collapse]]'
+  target_id: mechanism:raw-theta-refusal-axis-ablation-rederives-archived-overrefusal-collapse
+  confidence: high
+  evidence:
+  - experiments/caution-ablation-rederivation/AMENDMENT.md#outcome (the
+    0.994-to-0.030 figure was found un-re-derivable by
+    write-direction-naming-battery; this cell re-derives it near-exactly,
+    0.994 -> 0.0298, under the archived instrument, giving it a governed
+    source for the first time)
+- type: related_to
+  target: '[[caution-install-bounded-site-sweep]]'
+  target_id: experiment:caution-install-bounded-site-sweep
+  confidence: high
+  evidence:
+  - experiments/caution-install-bounded-site-sweep/AMENDMENT.md#outcome
+    (falsifier does not fire on the trained clean-SFT-to-GRPO-v2 lineage;
+    this asymmetry survives the bounded search as an exploratory lead, see
+    [[caution-install-actuates-but-specificity-unresolved-on-trained-qwen3-4b]])
+- type: related_to
+  target: '[[caution-install-actuates-but-specificity-unresolved-on-trained-qwen3-4b]]'
+  target_id: mechanism:caution-install-actuates-but-specificity-unresolved-on-trained-qwen3-4b
+  confidence: medium
+  evidence:
+  - experiments/caution-install-bounded-site-sweep/AMENDMENT.md#outcome (G1
+    actuation clears broadly while G3 specificity and G2 selectivity remain
+    unresolved, complicating rather than settling the raw-base asymmetry)
 - type: related_to
   target: '[[answerability-subspace-erasure-degrades-answerability-behavior]]'
   target_id: mechanism:answerability-subspace-erasure-degrades-answerability-behavior
@@ -42,6 +72,8 @@ relationships:
   confidence: medium
 ---
 
+*Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
+
 Paper 3 Result 3 uses activation steering as a causal probe of the doubt/caution
 decomposition. Ablating the caution residual cuts over-refusal on known questions
 0.994 to 0.030 with clean specificity (correct-on-known preserved), but no
@@ -49,3 +81,17 @@ intervention tried induces appropriate abstention on true unknowns. The control 
 asymmetric: excess caution can be relaxed, missing caution cannot be installed by
 steering. This mirrors the behavioral asymmetry that motivates reading (not steering)
 the internal axes as the deployment route.
+
+**Bounded search status (2026-08-13):** [[caution-install-bounded-site-sweep]]
+gave this claim its first pre-registered bounded test on the trained
+clean-SFT-to-GRPO-v2 lineage: seven write sites, two write positions, an
+eight-rung dose ladder, and three magnitude-matched two-site pairs. The
+falsifier did not fire, so the asymmetry survives as stated here. It
+survives with a complication, not a clean reproduction: G1 actuation
+cleared at every dose-viable site (five of five, held-out confab
+clean_tighten 0.870-0.955), so raw refusal-inducing actuation is not scarce
+on this lineage; the falsifier stayed silent because G3 direction
+specificity passed at only one of those sites and G2 selectivity could not
+be adjudicated at any of them (see
+[[caution-install-actuates-but-specificity-unresolved-on-trained-qwen3-4b]]).
+Tier 2, exploratory; a lead, not a claim.

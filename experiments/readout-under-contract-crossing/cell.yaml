@@ -1,0 +1,26 @@
+# readout-under-contract-crossing: measure whether the L35 known-unknown
+# readout survives a change of prompt contract on base, clean-SFT seed 1, and
+# SFT->GRPO-v2 seed 1. Extraction-only; engine exception parity-locked (no
+# generation-bearing step; labels are dataset properties).
+
+instrument:
+  harness:
+    extraction: experiments/common/readouts/amendment_u_unified_extract.py
+    transfer_scoring: experiments/common/readouts/amendment_u_two_signal_score.py
+    refit: experiments/common/knowledge_probe/hidden_state_probe.py
+  engine_exception: parity-locked
+  contracts: neutral (reference) + P-rc / P-plain / P-struct, renders resolved
+    byte-identically from the pinned prompt-vs-training-panel configs
+  substrate: raw Qwen3-4B base (hub-resolved as the panel base arm);
+    clean-SFT seed 1 merged; SFT->GRPO-v2 seed 1 (paths in experiment.yaml inputs)
+
+run_order:
+  - {order: 1, step: stage0_neutral_references, gpu: true,
+     note: neutral-prompt extraction x3 checkpoints + CV refit; RU-G0 parity
+           within 0.01 of each reference reading}
+  - {order: 2, step: contract_extractions, gpu: true,
+     note: 3 checkpoints x 3 contracts, L35, last-prompt-token, same stack}
+  - {order: 3, step: transfer_scoring, gpu: false}
+  - {order: 4, step: refit_scoring, gpu: false}
+  - {order: 5, step: adjudicate, gpu: false,
+     note: per-pair bands per gates.yaml; committed output AUROCs/drops/counts/verdicts only}

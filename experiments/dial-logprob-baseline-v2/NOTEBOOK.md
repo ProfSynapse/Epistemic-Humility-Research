@@ -88,3 +88,52 @@ in `experiment.yaml`.
     `python3 -m pytest experiments/dial-logprob-baseline-v2/test_lp_v2_smoke.py -v`
     and `python3 experiments/dial-logprob-baseline-v2/lp_v2_harness.py --dry-run`
     to reproduce).
+
+## 2026-08-13T00:55Z — Launch (PI-approved)
+
+PI approved the run launch (2026-08-13, "1 yes" on the decision board:
+launch dial-logprob-baseline-v2 now that the GPU is free after item-27).
+Pre-launch state: status signed; smoke suite and --dry-run previously
+verified (see prior entry); --dry-run re-run just now resolves every
+input (S cached rows 1836 lines, T cached rows 8548 lines, T
+merged-16bit + adapter fingerprints, dial refit module). Local lane,
+host GPU, one GPU job at a time (GPU idle at launch). Launching both
+arms via lp_v2_harness.py with registered defaults (seed and n_boot from
+cell.yaml); append+resume runlog under gitignored analysis/.
+
+Launch note: two aborted invocations before the live run, neither touching
+any row: (1) missing required --arm flag (harness printed usage and
+exited); (2) HF hub lock PermissionError — the shared HF cache's .locks/
+dir is owned by the item-27 container uid, blocking lock creation. Live
+run launched with HF_HUB_OFFLINE=1, which loads the S checkpoint from the
+existing local cache — exactly the "as-cached" identity the manifest pins.
+Arms run sequentially: s_base_primary then t_deployed_descriptive
+(PID 354440, log analysis/logs/run_20260813T002936Z.log).
+
+## 2026-08-13T02:05Z — Run complete: LP-G0 data-stage stop on BOTH arms (lead adjudication; verdict lifted to PI)
+
+Both arms ran to completion (43 min total, sequential S then T) and both
+stopped at LP-G0, the registered pre-outcome integrity gate:
+
+- S base: sub-criterion (a) FAIL — dial refit 0.8395 vs signed 0.834,
+  |diff| 0.0055 > 0.002 tolerance; (b) PASS — 1836/1836 rows; (c) FAIL —
+  282/1836 rows (15.4%) fail the byte-for-byte answer_text round-trip.
+- T deployed: (a) FAIL — 0.8164 vs signed 0.819, |diff| 0.0026 > 0.002;
+  (b) PASS — 1488/1488; (c) FAIL — 93/1488 (6.3%) round-trip failures.
+
+Registered discipline (AMENDMENT Design + LP-G0): "any mismatch is a
+data-stage stop, not a result." The harness computed downstream margins
+before halting; per registration those numbers are NOT results and are
+not to be cited. Both committed JSONs carry gate_verdict
+stopped_at_lp_g0=true.
+
+Reading (not a verdict): v2 was the clean redo built to eliminate v1's
+0.9% (30/3324) round-trip failure; its own stronger byte-for-byte check
+failed at 15.4%/6.3%, an order of magnitude larger, and the dial-refit
+reproduction missed tolerance on both arms. The caches were generated in
+June under a different torch/transformers/bitsandbytes stack; the run
+executed under torch 2.10.0+cu128 with the S checkpoint loaded
+HF_HUB_OFFLINE from the as-cached snapshot. Exact greedy-decode
+reproduction across a quantized-kernel stack upgrade is the natural
+suspect, but no diagnostic has been run — this stays a hypothesis, not a
+finding. Verdict wording and terminal status lifted to the PI.

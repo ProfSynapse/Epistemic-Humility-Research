@@ -52,7 +52,7 @@ Rules:
 | Internal-vs-stated gap; training resistance; channel bottleneck | 3 | |
 | Internal anatomy: uncertainty axis, refusal axis (reading claims only) | 3 | Census (docs/review/paper3-direction-provenance-2026-07-10.md): the uncertainty reading is base/pretrain-validated but IS the answerability gate under another name (state the identity, do not double-count); the refusal-axis reading is real but trained-checkpoint-only (base never refuses), scope sentence must say so |
 | Confab-propensity direction | 5 only | Census verdict: NOT safe as a paper 3 result (reading numbers ungoverned, checkpoint-specific to the most-trained checkpoint, governed causal outcome null). Paper 3 gets at most a one-line forward pointer |
-| Caution-ablation steering result (over-refusal 0.994 to 0.030) | 5 | Currently argued inside paper 3 section 6 (census flag A3); under the ownership rule it moves to 5, paper 3 keeps one summarizing sentence + citation |
+| Caution-ablation steering result (over-refusal 0.994 to 0.030) | 5 | EXECUTED 2026-08-13 (PI ruling: "I would keep it in 5 our main point is that we don't need training BUT we do want to show it can survive training"). Paper 5 §6.6 now carries the result as trained-checkpoint durability evidence alongside the paper's raw-base headline; paper 3 section 6 keeps two summarizing sentences + citation to paper 5 §6.6, down from the prior two-paragraph treatment. Provenance RESOLVED 2026-08-16 by `experiments/caution-ablation-rederivation/AMENDMENT.md` (Outcome), which corrects the 2026-08-13 caveat's attribution: 0.994 to 0.030 is FULL refusal-axis ablation (legacy raw-theta caution direction, L35 residual intervention config in `archive/experiment/phase1/probe/config/grpo-v2-residual-repair/`), NOT the L26 coeff sweep (re-run in the same cell; its best coefficient reaches only 0.547). The re-derivation reproduced 0.030 at 0.0298 with specificity intact and baselines at 0.9940 exactly, so the figure now has a governed source and is no longer prose-only; it remains exploratory pending the registered confirmatory step. 0.994 to 0.524/0.536 is the KU-orthogonalized component ablation (legacy `caution_perp`, `experiments/doubt-regulated-caution/AMENDMENT.md` §1/§7-8), and the rederivation reproduced its 0.524 as well: the two figures are DIFFERENT interventions, variant identity, not a numeric contradiction. Neither paper's number changed as part of this update. |
 | Answerability gate, correctness dial, veto + decomposition (content core ~0.74) | 4 | Current after the 2026-07-10 revision arc |
 | Cross-size, cross-family, seed-robustness, pretrain-origin of the readout | 4 | |
 | Correctness-direction cross-checkpoint rotation and discriminative-subspace-overlap nulls (dial cold-transfer mechanism) | 4 | Both exploratory Tier-2 nulls; paper 5 §6.5 cites the pair as cross-family motivation only, never re-argued |
@@ -72,10 +72,15 @@ settled on.
 
 ### Paper 2 (training regimen)
 
-Headline matrix ran under the locked protocol. Open: GRPO framing decision
-(report-as-extension vs register a confirmatory arm); consistency check of
-calibration metrics with paper 4's dial scoping; voice/self-containment pass
-(it predates the VOICE.md rules).
+Headline matrix ran under the locked protocol. All three open items closed
+2026-08-13: GRPO framing decided report-as-extension (no confirmatory arm
+registered; boundary was already explicit throughout, two numeric-precision
+fixes in section 4.3); calibration-metric consistency with paper 4's dial
+scoping fixed (section 3.4 now declares all three confidence targets, with
+correctness-given-answered scoped to answered rows); voice/self-containment
+pass done (two internal artifact pointers moved to Appendix A; voice
+mechanics already clean). Declined: the reconciliation doc's suggested
+forward-citation of paper 4 (violates series no-forward-citation rule).
 
 ### Paper 3 (diagnosis)
 

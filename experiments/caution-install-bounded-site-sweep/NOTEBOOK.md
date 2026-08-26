@@ -6,6 +6,385 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-12T16:55Z - Stage 7 trained COMPLETE (exit 0, 25/25 invocations); launching raw_base controls (lead)
+
+All trained control invocations finished across the two crash recoveries;
+analysis-committed/trained/controls_summary.json written. Descriptive
+shape recorded for stage 9 (NOT adjudicated here): random-direction draws
+near zero at hs19/hs34 (0/154 all draws) and hs35 (2-11/154), but
+high-variance at hs23 (98, 7, 38 of 154) and hs29 (8, 29, 92 of 154);
+permuted_gate uniformly ~36-41% across sites (comparable to the ~37%
+dosed-row fraction); raw_write_pos_ctrl strongly depth-dependent (5% at
+hs29 to 91% at hs23). Gated stage-6 rates for comparison: 87-95%.
+
+Launching run_controls.py --substrate raw_base under the pinned image
+(digest re-verified before the launch verb). This entry precedes the
+launch.
+
+### 2026-08-12T15:05Z - Second host crash killed stage 7 mid-run; relaunching trained controls (lead)
+
+Host crashed again mid-stage-7 (no exit_code written; detached wrapper died
+with the host). State: 16 control invocations complete (hs19, hs23, hs29
+full sets; hs34 permuted_gate); hs34 raw_write_pos_ctrl interrupted with
+129 rows persisted; all completed artifacts intact; GPU idle. Relaunching
+run_controls.py --substrate trained under the pinned image (digest
+re-verified before the launch verb); resume by row_key continues the
+interrupted invocation. This entry precedes the launch.
+
+### 2026-08-12T02:45Z - Host restart killed stage 7 mid-run; relaunching trained controls (lead)
+
+The host machine restarted ~21:29 local, killing the stage-7 container
+(log exit_code 125, docker-kill artifact). State assessment: 3 control
+invocations complete (hs19 permuted_gate, raw_write_pos_ctrl, random_1);
+random_2 interrupted with 150 rows persisted; all completed stage outputs
+and the repo intact; GPU idle. run_steer resumes by row_key from persisted
+output.jsonl, so the relaunch re-verifies completed runs and continues
+random_2 from its written rows. Relaunching run_controls.py --substrate
+trained under the pinned image, digest re-verified before the launch verb.
+This entry precedes the launch.
+
+### 2026-08-12T00:35Z - Stage 6 COMPLETE both substrates (exit 0); launching stage 7 run_controls trained (lead)
+
+Stage 6 raw_base finished exit 0: hs23:anchor, hs23:anchor_onward,
+hs29:anchor_onward all rc=0; hs29:anchor correctly NOT_RUN (dose not
+selected at stage 5); analysis-committed/raw_base/held_out_summary.json
+written. Stage 6 is complete on both substrates with zero smoke failures
+after the three PI-approved repairs.
+
+Launching stage 7 run_controls.py --substrate trained (permuted_gate /
+random_direction / orthogonalized control runs on cells stage 6 recorded
+RAN), detached under the pinned image, digest re-verified before the
+launch verb; raw_base leg to follow on completion. One GPU job at a time
+preserved (stage-6 container exited; docker ps checked). This entry
+precedes the launch.
+
+### 2026-08-11T23:58Z - Stage 6 trained summary WRITTEN (exit 0); F8 third-consumer fix (PI-approved); launching raw_base leg
+
+The stage-6 trained summarize relaunch resumed from the 5 completed cells
+and wrote analysis-committed/trained/held_out_summary.json, exit 0. Stage 6
+trained is COMPLETE.
+
+First raw_base launch attempt failed loudly: run_held_out.py still required
+a raw_base split manifest, which does not exist by design -- the 2026-08-10
+F8 wiring pass converted extract_anchor.py and dose_calibrate.py to source
+raw_base rows from rep2's verified 221-row anchor pool but missed this
+third consumer. Launch-prep item 2 (materialize_rows_with_text_raw_base.py)
+run first: 221/221 row_keys resolved, sha recorded in its own output,
+file staged world-readable under analysis/ (gitignored).
+
+PI-approved repin (third mid-run instrument repair, same audit process):
+held_out_rows() now routes raw_base through
+extract_anchor._raw_base_joined_rows() -- identical sourcing to the other
+two consumers, hard-failing verification included; trained path
+byte-identical. exp validate passes. Launching the raw_base held-out leg
+under the pinned image (digest re-verified before the launch verb). This
+entry precedes the launch.
+
+### 2026-08-11T23:32Z - Stage 6 trained cells ALL rc=0; summary-write crash fixed (PI-approved); relaunching summarize pass
+
+The stage-6 trained rerun (20:16Z launch, post smoke-fix) completed all 5
+viable cells rc=0 with zero smoke failures -- the gate-active-first fix is
+confirmed in production. Every behavioral output row is on disk. The
+process then exited 1 at the final step: held_out_summary.json failed
+write_json fail-closed on NaN, because wilson_ci_point(0,0) returns NaN
+Wilson bounds for the baseline_undosed arm's F12 fired-only block, whose
+denominator is zero by construction (strength 0.0 fires no rows). This
+would recur on the raw_base leg identically.
+
+PI-approved fix (second mid-run instrument repair, same audit process):
+sweep_lib.py wilson_ci_point now records the undefined case as None with
+n=0; defined rates byte-identical. Pin updated with append-only repins
+entry; exp validate passes. Relaunching stage 6 trained to resume from the
+completed rows and write the summary (short pass, no regeneration), then
+the raw_base leg. Digest re-verified before each launch verb. This entry
+precedes the launches.
+
+### 2026-08-11T17:58Z - Stage 6 smoke false-failure diagnosed and fixed (PI-approved); relaunching trained leg
+
+Stage 6 trained (16:57Z launch) exited 0 but all 5 viable cells failed the
+tuner per-cell smoke rc=4 (write_ok true, parity_ok false) and were skipped;
+zero behavioral rows generated, summary recorded the refusals. Opus
+diagnosis (read-only), lead-verified at source: the tuner smoke's
+off-target metric reports the NATURAL projection of gate-inactive rows onto
+the direction (no before/after comparison), so any gated smoke arm fails
+the 1e-3 tolerance on ~1-sigma natural projections. Stage 4 passed because
+its ungated arm made the check vacuous; stage 6 is the first gated arm
+through this smoke. Write fidelity at selected doses is excellent
+(rel. error <= 0.36% vs 5% bar). Prior in-program occurrence with the same
+fix: aq-sycophancy-activation-actuator (rows sorted gate-active-first).
+
+Fix, PI-approved this hour: run_held_out.py now sorts the generated rows
+file gate-active-first so the smoke probes real write rows.
+Analysis-neutral: greedy decode, batch 1, order-independent aggregation.
+The stage-6 smoke is not a registered gate quantity (g0e reads the stage-4
+report). Pin updated with manual append-only repins audit entry in
+experiment.yaml (bin/exp repin refuses on running status by design;
+convention followed verbatim); exp validate passes. Tuner-side metric fix
+approved as follow-up on a submodule branch, NOT checked out into the
+running environment until this cell's sequence completes.
+
+Relaunching stage 6 trained under the same pinned image (digest re-verified
+before the launch verb). This entry precedes the launch.
+
+### 2026-08-11T17:12Z - Stage 6 launch addendum: per-substrate flag; transient GPU error
+
+Two launch corrections to the entry below. First attempt failed at container
+start with a transient NVIDIA toolkit error (nvidia-container-cli ldcache:
+ldconfig terminated signal 9), immediately after the stage-5 container
+exited; retry started cleanly. Second, `run_held_out.py` requires
+`--substrate {trained,raw_base}` (the usage error consumed one container
+start); stage 6 therefore runs per-substrate like stage 5. Trained leg
+launched 16:57Z detached under the same pinned image (digest re-verified
+before each attempt); raw_base leg follows on completion. Container up,
+model loading.
+
+### 2026-08-11T17:05Z - Stage 5 raw_base COMPLETE (exit 0); launching stage 6 run_held_out (lead)
+
+Stage 5 `dose_calibrate.py --substrate raw_base` finished exit 0 in ~40 min
+(launched 16:22Z). Registered two-site reference scope (hs23, hs29 x two
+positions = 4 cells) all dispositioned;
+`analysis-committed/raw_base/dose_disposition.json` written. Shape notes for
+stage-9 adjudication (recorded, not adjudicated): hs29:anchor
+NOT_RUN_no_usable_rung on raw_base as well (cross-substrate repeat of the
+anchor-position pattern); hs23:anchor SELECTED on a single usable rung
+(ratio 0.554) with high recorded known-correct cost at n_records=24;
+both anchor_onward spans SELECTED cleanly (6 and 4 usable rungs).
+
+Runner subagent remains dormant (same notification-loss issue); lead
+launches the next stage in the signed sequence directly:
+`run_held_out.py` (stage 6: held-out ladder at selected doses, every viable
+cell, plus raw-base anchors) via `docker_launch.sh` under the pinned image
+`unsloth/unsloth@sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`
+(digest to be re-verified char-for-char immediately before the launch verb).
+Pre-launch checks: GPU free, analysis dirs world-writable (verified this
+morning, unchanged). One GPU job at a time preserved. This entry precedes
+the launch.
+
+### 2026-08-11T17:35Z - Stage 5 trained COMPLETE (exit 0); launching stage 5 raw_base (lead)
+
+Stage 5 `dose_calibrate.py --substrate trained` finished exit 0 after ~5.3 h
+(launched 12:16Z). All 14 site x span cells dispositioned;
+`analysis-committed/trained/dose_disposition.json` written. Shape note for
+stage-9 adjudication (recorded, not adjudicated here): three anchor-position
+spans (hs29, hs34, hs35) report NOT_RUN_no_usable_rung; all seven
+anchor_onward spans SELECTED with 4-7 usable rungs; hs23:anchor and the
+remaining anchor spans selected normally.
+
+The runner subagent's wake signal did not fire (known notification-loss
+issue; lead-side watcher observed completion). Per the standing
+lead-monitors directive, the lead is launching the next stage in the signed
+sequence directly: `dose_calibrate.py --substrate raw_base` via
+`docker_launch.sh` under the pinned image
+`unsloth/unsloth@sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`
+(digest re-verified char-for-char this launch). Pre-launch checks: GPU free
+(no experiment container up), analysis/ and analysis-committed/ world-
+writable. One GPU job at a time preserved. This entry precedes the launch.
+
+### 2026-08-11T12:14Z - Stage 4 (write_smoke) COMPLETE, both substrates, exit 0
+
+Ran in foreground succession (bounded timeouts), standard pre-launch checks
+passed before each: `write_smoke.py --substrate trained
+--i-know-this-runs-on-gpu` (exit 0, all 14 site x position combos
+hs{13,16,19,23,29,34,35} x {anchor, anchor_onward} passed=True) then
+`--substrate raw_base` (exit 0, all 4 combos hs{23,29} x {anchor,
+anchor_onward} passed=True). 18/18 site x position write-accuracy checks
+passed (n_rows=8, write_rel_tol=0.05, write_abs_floor=0.5 each). Wrote
+`write_smoke_report.json` under both substrates' `analysis-committed/`
+dirs. G0e is stage-9 / lead adjudication scope; this records the script's
+own computed pass/fail per cell. Per `smoke` block in cell.yaml, this
+proves write accuracy only, not behavioral effect. Proceeding to stage 5
+(dose_calibrate, GPU) -- the largest single stage by budget (~6,900
+generation-equivalents), so this one launches via the backgrounded sidecar
+watcher plus the 30-minute staleness fallback rather than foreground.
+
+### 2026-08-11T12:08Z - Stage 3 FULLY COMPLETE (both substrates, all three components)
+
+Remaining stage-3 items run in quick foreground succession (bounded
+timeouts, no notification dependency -- catches completion directly):
+
+- `alin_profile.py --substrate raw_base` (docker, pinned image): exit 0.
+  A_lin hs23=0.0, hs29=0.0226 (n=221). Wrote
+  `analysis-committed/raw_base/alin_profile.json`.
+- `build_random_directions.py --substrate trained` (host, CPU, pure numpy):
+  exit 0. All 7 sites got 3 accepted draws each under SC1 hygiene (void
+  counts 3-12 per site). Wrote
+  `analysis-committed/trained/random_direction_ledger.json`.
+- `build_random_directions.py --substrate raw_base` (host): exit 0. Both
+  sites got 3 accepted draws each (voids 4-5). Wrote
+  `analysis-committed/raw_base/random_direction_ledger.json`.
+
+Stage 3 (build_directions + alin_profile + build_random_directions) is now
+complete for both substrates. Proceeding immediately to stage 4
+(write_smoke, GPU) per PI priority directive -- no idle wait between
+stages.
+
+### 2026-08-11T09:24Z - Stage 3 (alin_profile, trained substrate) COMPLETE, exit 0
+
+Launched via `docker_launch.sh alin_profile.py --substrate trained` (pinned
+image, CPU compute, loads the model's final-norm + lm_head tensors only via
+transformers/peft -- routed through the pinned container for environment-pin
+fidelity even though it never touches the GPU compute-wise). Standard
+pre-launch checks passed (digest, GPU idle, world-writable, preflight).
+Completed within about a minute of model load, exit 0. A_lin (top-1
+logit-lens accuracy) per site, n=3955: hs13=0.0, hs16=0.0, hs19=0.0,
+hs23=0.0, hs29=0.9937, hs34=0.9992, hs35=1.0. Wrote
+`analysis-committed/trained/alin_profile.json`. Recorded as computed; the
+`confound_rule` (|A_lin_a - A_lin_b| > 0.10) application to specific
+contrasts is stage-9 / lead adjudication scope.
+
+Note: this stage's per-stage watcher notification was again delayed by
+several hours (same class of issue), discovered only via a lead disk check
+and PI-directed priority nudge. Going forward, short CPU-adjacent stages are
+run with a bounded foreground timeout where practical (catching completion
+directly, no notification dependency); only genuinely long GPU stages use
+the backgrounded sidecar watcher, now paired with a 30-minute run-log
+staleness fallback per lead instruction.
+
+### 2026-08-11T09:22Z - Stage 3 (build_directions, raw_base substrate) COMPLETE, exit 0
+
+Launched via the detached log+`.exit_code` pattern (CPU, direct on host,
+`python3 build_directions.py --substrate raw_base`; no GPU/docker needed --
+import-only, no fitting). Completed within the same minute, exit 0. Both
+sites IMPORTED cleanly from `j-space-midband-write-sweep-qwen3-4b`'s
+committed directions (hs23 tau=0.139240, hs29 tau=0.120912; c_hat/u_d
+sha256 prefixes recorded in the log only). Wrote
+`analysis-committed/raw_base/build_gate_manifest.json`. Stage 3 is now
+complete for both substrates. G0c/G0d for raw_base are N/A-imported per
+design (the source amendment's own G0d governs; not silently defaulted).
+Formal gate adjudication is stage-9 / lead scope.
+
+### 2026-08-11T09:25Z - Stage-3 diagnosis: NOT stalled, completed exit 0 at ~02:14-ish; lead's disk check looked in the wrong tree
+
+Lead flagged the stage-3 (`build_directions.py --substrate trained`)
+in-harness background task as apparently stalled ~7h with no visible output,
+because the disk check looked under `analysis/`. Retrieved the task's
+captured stdout directly: `EXIT:0`, all 7 sites (hs13/16/19/23/29/34/35)
+G0c=True (two-fit reproducibility and roundtrip both pass) and G0d=True
+(gate AUC range 0.9722-0.9985, floor 0.90), `n_known_fit=184
+n_confab_fit=106 n_unknown_refused=3236`, and the final write line for
+`analysis-committed/trained/build_gate_manifest.json` present. Stage 3
+(trained) is genuinely complete, not stalled -- its outputs live under
+`directions/trained/<site>/` and `analysis-committed/trained/`, a different
+subtree than the GPU stages' `analysis/extract_*` outputs, which is why the
+prior disk check found nothing. Formal G0c/G0d gate adjudication remains
+stage-9 / lead scope; this entry records the script's own computed numbers.
+
+Root cause of the visibility gap: the in-harness background-task
+completion notification for this run was delayed by roughly 7 hours (same
+class of issue as the Monitor delay on stage 2 trained), not an actual
+crash or hang. Per lead instruction, going forward every stage -- CPU or
+GPU -- launches via the detached-log + `.exit_code`-sidecar pattern under
+`analysis/logs/` (never an opaque in-harness background task), with a
+`run_in_background` Bash watcher polling that sidecar, so state is always
+disk-verifiable independent of any notification path.
+
+Stage 3 raw_base substrate had NOT yet been run in this session as of this
+check: its two direction files under `directions/raw_base/hs{23,29}/`
+predate this sweep's stage-1 launch by several hours (mtime 2026-08-10
+11:02, before mine_pool's 18:11 resume) and no
+`analysis-committed/raw_base/build_gate_manifest.json` exists, so they are
+leftover artifacts from earlier launch-prep wiring (BLOCKER #8), not this
+run's output. No double-run risk: launching stage 3 raw_base now via the
+standard detached pattern.
+
+### 2026-08-10T22:28Z - Stage 2 (extract_anchor, raw_base substrate) COMPLETE, exit 0
+
+Launched 22:23:34Z via `docker_launch.sh extract_anchor.py --substrate
+raw_base --i-know-this-runs-on-gpu` (container
+`caution-install-sweep-extract_anchor-20260810T222334Z`), after the standard
+pre-launch checks: image digest re-verified char-for-char, GPU idle / zero
+other containers, world-writable dirs re-confirmed (the just-completed
+trained-substrate output dir `analysis/extract_trained/` landed at 755,
+owned by the container's uid 1001 and not host-chmod-able, but not in this
+launch's write path so not a blocker), preflight exit 0.
+
+Completed 22:28Z, exit code 0. 222 output files (221 safetensors +
+manifest.json) under `analysis/extract_raw_base/`. Anchor pool provenance:
+rep2's registered 221-row multi-source held-out confab pool. G0b
+seam-continuity check: min_cos=0.9999999999999998, pass=True. Container
+exited and was removed; GPU confirmed released. Both substrates are now
+extracted. Formal gate adjudication is stage-9 / lead scope.
+
+### 2026-08-10T21:24Z - Stage 2 (extract_anchor, trained substrate) COMPLETE, exit 0
+
+Launched 20:46:20Z via `docker_launch.sh extract_anchor.py --substrate trained
+--i-know-this-runs-on-gpu` (container
+`caution-install-sweep-extract_anchor-20260810T204620Z`), after the standard
+pre-launch checks: image digest re-verified char-for-char, GPU idle / zero
+other containers, `analysis/` and `analysis-committed/` world-writable
+recursively, preflight exit 0.
+
+Completed 21:24Z, exit code 0. Captured 3955/3955 rows (capture_rate
+1.0000). G0b seam-continuity check (cache-condition invariance, 32-row fixed
+seeded subset): min_cos=0.9999999999999998 over 1184 (row, hidden-state)
+pairs, pass=True. Outputs at
+`experiments/caution-install-bounded-site-sweep/analysis/extract_trained/`
+(3955 safetensors files + manifest.json). Container exited and was removed
+(`--rm`); GPU confirmed released. Formal G0b gate adjudication is stage-9 /
+lead scope; this entry records the script's own computed numbers only.
+
+Note: the interval Monitor watching this stage fired correctly but its
+notification was delayed (arrived only after the stage had long finished,
+per a known upstream Claude Code notification-delivery issue). Per lead
+instruction, subsequent stages use a `run_in_background` Bash watcher polling
+the `.exit_code` sidecar / worker PID every 60s instead of the Monitor tool.
+
+### 2026-08-10T18:20Z - Terminology annotation added to AMENDMENT.md (semantic only, no goalpost moved)
+
+Per PI direction (2026-08-10), added the additive "Terminology annotation"
+section to AMENDMENT.md recording that this cell's working label "caution"
+predates the 2026-08-10 terminology ruling and renders in program prose as
+"abstention install" / "answerability-gated abstention snap". Signed text,
+slug, filenames, config keys, gates, question, prediction, falsifier, and
+all registered constants untouched and verbatim. AMENDMENT.md is not an
+sha-pinned instrument file, so no repin is involved; `bin/exp validate`
+remains OK. Committed with the results PR.
+
+### 2026-08-10T18:10Z - Host restart during Stage 1: container lost, checkpoint intact, resumed
+
+A host restart after the main-sweep launch (prior entry, 16:50Z) killed the
+Stage 1 (`mine_pool.py --substrate trained`) container that had been running.
+On session resume: `docker ps -a` showed zero running GPU containers for this
+cell (only an unrelated `thd-test-pg` postgres container up); `nvidia-smi`
+confirmed the GPU idle (0% util, 0 MiB used, no compute processes). The
+Stage 1 checkpoint (`analysis/mined_known_generations_private.jsonl`) survived
+the restart intact at 906 rows.
+
+Standing pre-launch check found one violation: `analysis/logs` was `755` (not
+world-writable), while `analysis/`, `analysis/smoke`, and
+`analysis-committed/` were already `777`. Fixed with `chmod a+rwx` on the
+directory (directories only, via `find -type d -exec chmod`; the checkpoint
+file itself is owned by the container's uid 1001 and not chmod-able by the
+host user, which is expected and fine since the same container user will
+reopen and append to it). No file content touched; row count reconfirmed at
+906 immediately before and after the permission fix, unchanged. Preflight
+(`run_sweep.py preflight`) re-passed, exit 0.
+
+Image digest re-verified char-for-char against `cell.yaml
+execution.runtime_image_digest` / `experiment.yaml instrument.runtime_image_digest`
+(`sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`,
+matches local `unsloth/unsloth:latest` image id `f21629b9ae4e`). Zero other
+GPU containers running; GPU idle before relaunch. Resuming Stage 1 via the
+registered detached launch path (`docker_launch.sh mine_pool.py --substrate
+trained --i-know-this-runs-on-gpu`); resume-from-checkpoint is the registered
+behavior, verified by the live kill-resume drill earlier today (16:17Z-16:28Z
+entries above).
+
+### 2026-08-10T16:50Z - Main sweep launch: PI approved, status flipped to running
+
+PI approved the main sweep after merging PR #432. Registered budget 16 to
+26 GPU-h on the local 3090, one GPU job at a time, pinned image digest
+sha256:f21629b9ae4e re-verified at dispatch. experiment.yaml status set
+signed -> running before the launch verb, per the launch guard. Dispatch
+state: canonical main == origin/main (40f01e35), preflight exit 0,
+docker_launch.sh mode 755, analysis/ and analysis-committed/
+world-writable recursively (standing pre-launch check). Stages run as
+registered via docker_launch.sh. The 36 drill rows in the stage-1
+checkpoint are legitimate resume state, not cleared:
+resume-from-checkpoint is the registered behavior and was verified by the
+drill below. Run record and gate adjudication follow at completion; this
+entry and the status flip are committed with the results PR.
+
 ### 2026-08-10T16:28Z - Item-27 kill-resume drill: PASSED. Resume verified, no recompute, no duplicates, clean stop
 
 Third attempt, after lead adjudication of the prior entry: `analysis/` and
@@ -1083,3 +1462,150 @@ under "Registration notes for the lead": the burn-down row 27 wording (N1) and
 the finding that the historical write site is one decoder block later than the
 program's inherited site and therefore sits outside the adjudicated search space
 (N2).
+
+## 2026-08-12T20:40Z — Mid-run repair #4 (PI-approved, Option B): raw_base pos_ctrl readout import in run_controls.py; raw_base controls relaunch
+
+Stage-7 raw_base controls (launched 20260812T190559Z) exited 1 after 1
+completed invocation (hs23 permuted_gate, preserved on disk):
+FileNotFoundError on `directions/raw_base/hs23/source_directions/pos_ctrl_hs23.json`.
+Root cause is the fourth F8-class raw_base consumer gap: run_controls.py
+built the pos_ctrl readout path unconditionally under the local
+`directions/<substrate>/<site>/source_directions/` tree, but raw_base never
+fits pos_ctrl — BLOCKER #8 import posture; build_directions.py writes no
+raw_base `source_directions/` by design.
+
+PI presented two options; approved Option B ("b is fine"): route the
+raw_base pos_ctrl readout to the SOURCE amendment's committed, already-gated
+artifact `experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/<site>/source_directions/pos_ctrl_<site>.json`
+— the same import-not-refit pattern already used for c_hat/u_d via
+`sweep_lib.raw_base_direction_import`. The registered orthogonalization
+control (AMENDMENT Controls) carries no substrate carve-out, so this keeps
+the full control battery on both substrates. Trained path byte-identical.
+No threshold, band, seed, or gate touched.
+
+Repin (manual append-only entry, `bin/exp repin` refuses on running
+status): run_controls.py 48d2f0fd → 28d867ca. `exp validate` OK (109).
+CPU smoke-harness pass OK (0.11s, gpu_touched false).
+
+Relaunching stage-7 raw_base controls now (same image digest, verified
+below; resume-by-row_key skips the completed hs23 permuted_gate rows).
+
+## 2026-08-12T23:20Z — Stage-7 raw_base controls COMPLETE; stage-8 lead adjudications; stage-8 trained launch
+
+Stage-7 raw_base controls finished clean (all invocations rc=0, container
+exited, `analysis-committed/raw_base/controls_summary.json` written).
+Cells: hs23:anchor, hs23:anchor_onward, hs29:anchor_onward RAN;
+hs29:anchor NOT_RUN_no_held_out_run (consistent with the stage-6
+disposition). Repair #4's imported pos_ctrl readout ran clean at all
+three cells (smoke passed each time). Counts (confab clean_tighten /221):
+hs23:anchor permuted 117, pos_ctrl 78, random [5, 67, 68];
+hs23:anchor_onward permuted 192, pos_ctrl 187, random [64, 44, 83];
+hs29:anchor_onward permuted 200, pos_ctrl 61, random [48, 3, 23];
+baseline_undosed 6/221 everywhere. Stage 7 is now complete on BOTH
+substrates.
+
+Stage-8 lead adjudications of run_pairs.py's two flagged ambiguities
+(protocol interpretation, lead scope; no registered quantity moved):
+1. Magnitude split: EQUAL split of the best single site's calibrated
+   setpoint across the two members (setpoint/2 each, converted to each
+   site's own gain). The registration (cell.yaml multi_site.magnitude_match;
+   AMENDMENT Axis 4) binds only that TOTAL commanded displacement is
+   magnitude-matched to the best single site with readback verified at
+   both members; equal split is the plainest reading of "split across".
+2. Partition and ranking: in-band = site-table status `new_in_band`
+   (hs13/hs16/hs19) per the registered site-table vocabulary — hs23
+   `anchor_band_upper_edge` is NOT in-band; rank key =
+   fit_confab_clean_tighten (the key the registered dose selection_rule
+   already uses); lowest/highest = relative_depth.
+3. Substrate scope: pairs run on TRAINED only. Axis 4's eligibility is
+   "cleared dose viability on Axis 3"; raw_base doses are imported per
+   BLOCKER #8, never Axis-3 calibrated, so raw_base sites cannot be
+   eligible, and the axis's question (bounded search for transfer) is a
+   trained-lineage question. Budget row 8 (3 pairs x 400 rows) carries no
+   raw-base term.
+
+Launching stage 8 `run_pairs.py --substrate trained` now (same pinned
+image digest, verified at launch).
+
+## 2026-08-13T00:05Z — Stage-8 pairs COMPLETE (trained); pair-1 NOT-RUN disposition; stage-9 adjudication next
+
+Stage 8 ran clean (exit 0, 15 min, pairs_summary.json written). Eligible
+sites: hs19, hs23, hs29, hs34, hs35 (Axis-3 dose-viable, per
+dose_disposition.json).
+
+Pair dispositions:
+- best_in_band_x_second_best_in_band: NOT-RUN, insufficient in-band
+  viable sites (only hs19 of the in-band trio hs13/hs16/hs19 cleared
+  Axis-3 dose viability; the registered insufficient-sites disposition
+  applies to this rule). run_pairs.py silently omits the pair from
+  pairs_summary.json rather than recording NOT-RUN; disposition is
+  recorded HERE as the governed record. No gate scores on pairs
+  (G3 companion reporting only), so no pin change warranted mid-run.
+- best_in_band_x_best_out_of_band: hs19 x hs23, equal-split setpoint
+  33.90 each, readback within tolerance 1.0 at both members.
+  confab clean_tighten: anchor 6/149 (4.0%), anchor_onward 148/149
+  (99.3%).
+- lowest_eligible_x_highest_eligible: hs19 x hs35, equal-split setpoint
+  66.55 each, readback within tolerance 1.0 at both members.
+  confab clean_tighten: anchor 8/149 (5.4%), anchor_onward 149/149
+  (100%).
+
+All GPU stages (4-8) of the item-27 sequence are now complete on both
+substrates. Proceeding to stage 9 `adjudicate_gates.py` (CPU, G1-G4
+scoring). Gate adjudication and verdict are lead scope; verdict lifts to
+the PI.
+
+## 2026-08-13T00:45Z — Stage-9 adjudication (lead): gate verdicts, G4 position adjudication, falsifier disposition
+
+`adjudicate_gates.py` ran clean (CPU); `analysis-committed/gate_report.json`
+written. Lead adjudications on the report:
+
+1. G0 integrity: ALL PASS both substrates (incl. containment scan, 20
+   files, 0 violations).
+2. Dose viability: 5 trained cells SELECTED (all anchor_onward);
+   every non-selected cell is a recorded NOT_RUN_no_usable_rung WITH its
+   full 8-rung table in dose_disposition.json (verified for all 14
+   trained + 4 raw_base cells). The gate_report "reading" completeness
+   condition is satisfied.
+3. G1 actuation: PASS at all five selected cells (rates 0.870-0.955,
+   Wilson lower 0.808-0.909, n=154). The registered prediction's G1
+   clause ("no registered site and position clears G1") is WRONG.
+4. G2 selectivity: NOT-ADJUDICABLE (vacuous) at all five cells:
+   n_fired_known 4-20, below the registered floor of 35 (AMENDMENT
+   G2 three-way disposition). Per registration, this may not be cited as
+   evidence of harmlessness.
+5. G3 direction specificity: PASS at hs35:anchor_onward only
+   (ratio 12.18 >= 3.0). FAIL hs23 (1.50) and hs29 (1.52). FAIL hs19 and
+   hs34 under the pre-registered positivity guard (2026-08-10, NEW
+   DEFECT #1 in adjudicate_gates.py: max_draw_lift == 0 cannot evidence
+   a 3x-over-noise-floor claim); their draw lifts were all exactly 0.
+6. G4 substrate anchor: HOLDS — lead adjudication on position scope.
+   The published reference rates (rep2 194/221, 205/221) were produced
+   with the write applied anchor_onward
+   (j-space-layer-contrast-rep2-multisource/AMENDMENT.md line 177:
+   "Fired rows receive the frozen c_hat erase-write at the calibrated
+   setpoint, anchor_onward"). The paired-replication comparison G4
+   registers is therefore defined at anchor_onward only:
+   hs23 0.8824 IN [0.8281, 0.9147]; hs29 0.9140 IN [0.8856, 0.9549].
+   The raw_base hs23:anchor cell (0.5385) is an operating point the
+   source never published; it is recorded as an exploratory positional
+   variant, NOT a G4 quantity. The script's g4_holding=false ANDed
+   containment across positions including this unregistered comparison;
+   the adjudicated G4 verdict is HOLDS. No goalpost moved: the gate's
+   registered quantity is reproduction of the published rates, which
+   exist only at anchor_onward.
+7. Falsifier: DOES NOT FIRE. The only G3-passing cell
+   (hs35:anchor_onward) has G2 NOT-ADJUDICABLE, and the falsifier
+   requires G1 pass AND adjudicable G2 AND G3 pass at one registered
+   cell. No cell satisfies the conjunction.
+8. dose_selection_overlap disclosure (24/221 = 10.9%) carried in the
+   report per the 2026-08-10 pre-run NOTEBOOK caveat.
+
+Net reading lifted to the PI: paper 3's bounded-search statement is NOT
+overturned (falsifier silent), the instrument is valid (G4 holds), but
+the registered prediction failed its G1 clause — installation actuates
+at every viable site at the anchor_onward position (87-95%), with
+direction specificity clearing at one site (hs35) and selectivity
+unmeasurable at these firing rates. Exploratory lead; promotion requires
+confirmatory replication per the registered rule. Resolution wording and
+terminal status await PI decision.

@@ -1,0 +1,83 @@
+slug: wide-instrument-control-rescore
+title: Wide-instrument re-score of the gated-controller and layer-contrast controls
+  (Qwen3-4B)
+type: steer-cell
+status: resolved
+registered: true
+created_at: '2026-08-18T21:26:34Z'
+question: Do the narrow-detector control conclusions behind paper 5 Sections 4.5 and
+  4.6 (random-direction placebo carries far less than the gated write; the permuted
+  gate degrades cost and selectivity) survive re-scoring under the pinned wide two-instrument
+  stack (detector_v2 plus blinded context-free LLM grading), after faithful regeneration
+  of the arms from the committed pipelines?
+prediction: Both control conclusions survive at both operating points - the wide-instrument
+  effect ratio (gated lift over random-direction lift) is at least 3.0, and the permuted-gate
+  cost/selectivity degradation holds with a bootstrap CI excluding zero.
+falsifier: WG-G1 effect ratio below 3.0 at the Section 4.5 operating point, or WG-G2
+  permuted-gate degradation CI including zero - either upgrades the Section 6.4 gap
+  to a substantive limitation and blocks promotion of the affected result.
+checkpoint:
+  repo: unsloth/Qwen3-4B
+  revision: ''
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - stats_lib.py
+  - provenance.py
+  - pipeline_rescore.py
+  - score_parity.py
+  - score_wide.py
+  pins:
+    cell.yaml: 3abd9c828f3206390c7533b09e143f0ccd3135db97f981fd1f72d5924ec3758a
+    gates.yaml: 41fdf16d96d7e44c7162d3befe5ca47ae3b5e9c695f725259efbd6c1d0bf2881
+    stats_lib.py: 74f262ac733c61d2ef0fc5c3b37178f96b7c25022d461114fe46f4d1bdaae0f6
+    provenance.py: 789b5c985f709ade68d008e616752e4ea800d4f03744dbc35f44f7523c20e395
+    pipeline_rescore.py: 8cb2fb3ebba30f691a69e39726c928ed836489d0709d6f3643f765cbd16cec77
+    score_parity.py: d9b981b5b59b1a010896bedbd488fd6e318e26630bd78e991b461027e7d76e1a
+    score_wide.py: 0cdc4e2d36eaefcda31ecd916fc448d0bee5e7047c22b1c5b8c838de87624c2d
+  persistence:
+    stats_lib.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.008
+      note: import-only bootstrap/CI helpers.
+    provenance.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.016
+      note: import-only sha-recording helpers.
+    pipeline_rescore.py:
+      persistence: incremental
+      checkpoint_path: experiments/wide-instrument-control-rescore/analysis/regenerated/
+      note: restartable at cell granularity via --cell 45 / --cell 46 (each cell writes
+        its own output directory); each regeneration function frees CUDA memory internally
+        but there is no intra-cell checkpoint, so a mid-cell crash reruns that cell.
+    score_parity.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.046
+      note: CPU, rereads regenerated and committed summaries each invocation.
+    score_wide.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.116
+      note: dry-run smoke timing (mocked grader); the real grading pass is resumable
+        at the pool-file level because grades append per row_key and rescore skips
+        already-graded keys.
+  engine_exception:
+    kind: parity-locked
+    reason: 'Regeneration fidelity is the point of WG-G0: Stage 0 imports and drives
+      the source cells'' own committed pipelines (import plus monkeypatch tee) so
+      the generation engine, sampling settings, and intervention stack are inherited
+      from those pipelines byte-for-byte. Switching engines would invalidate the parity
+      gate and with it every downstream wide-instrument comparison.'
+inputs:
+- experiments/doubt-gated-caution-tighten/analysis-committed/full_summary.json
+- experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json
+- experiments/abstention-wide-instrument-calibration/detector_v2_patterns.yaml
+- experiments/abstention-wide-instrument-calibration/grader.py
+verdict: Both control conclusions survive the wide two-instrument re-score - WG-G1
+  effect ratio 14.5, WG-G2 cost excess +20.6pp with CI excluding zero, WG-G3 layer
+  advantage +22.7pp with CI excluding zero - closing the paper 5 Section 6.4 instrument
+  gap.
+kg:
+- experiment:wide-instrument-control-rescore
+- mechanism:gated-controller-and-layer-site-controls-survive-wide-instrument

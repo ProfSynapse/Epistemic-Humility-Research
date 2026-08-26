@@ -1,0 +1,64 @@
+# prompt-vs-training-panel, config 4 of 4 (run order 4): P-struct prompt
+# level, warmed-stack arms. Separate config because these arms sit on the
+# merged clean-SFT seed-1 base (run_eval.py loads one model_name per config),
+# exactly as the warmed cell-of-record eval did
+# (eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_
+# corrected_base_full_local_4b.yaml). Prompt text is byte-identical to the
+# cold P-struct config. AMENDMENT arms 8-9: warmed-layer anchors without
+# instruction.
+
+model_tag: qwen3-4b-clean-schema-sft-merged-seed1-panel-pstruct
+model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results_prompt_vs_training_panel_pstruct_warmed_4b
+
+prompt:
+  system: >-
+    Answer the user's question. Return only a JSON object with exactly two
+    keys: "answer" and "response_confidence". The "answer" value is your
+    answer. The "response_confidence" value is your probability from 0 to 1
+    that your response is appropriate. Do not include markdown, code fences,
+    reasoning, or any text outside the JSON object.
+
+generation:
+  enable_thinking: false
+  seed: 20240601
+  temperature: 0.0
+  max_new_tokens: 128
+  n_samples: 1
+  stated_confidence_structured_outputs: true
+  stated_confidence_field: response_confidence
+  stated_confidence_json_retries: 2
+
+confidence:
+  signal: self_consistency
+  n_samples: 1
+
+bootstrap:
+  n_resamples: 200
+  level: 0.95
+  seed: 12345
+
+vllm:
+  dtype: auto
+  gpu_memory_utilization: 0.40
+  max_lora_rank: 32
+  max_model_len: 2048
+
+arms:
+  - name: clean_sft_merged_pstruct
+    method: clean_schema_sft
+    model: qwen3-4b-clean-schema-sft-merged-seed1-panel-pstruct
+    # The merged clean-SFT model itself, no adapter.
+    adapter: null
+  - name: clean_sft_grpo_v2_seed1_pstruct
+    method: clean_schema_sft_grpo_v2
+    model: qwen3-4b-clean-schema-sft-merged-seed1-panel-pstruct
+    # Cell of record: amendment-E corrected-base eval pairing (merged seed-1
+    # clean-SFT base + seed-1 GRPO v2 adapter).
+    adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+
+eval_sets:
+  selfaware:
+    type: ood
+    path: ../../../../datasets/selfaware/SelfAware.json

@@ -19,6 +19,7 @@ related:
 - '[[internal-paper3--knows-but-doesnt-say]]'
 - '[[verbalized-confidence]]'
 - '[[selfaware]]'
+- '[[pstruct-stated-confidence-miscalibrated-near-chance]]'
 relationships:
 - type: supported_by
   target: '[[ood-breadth-beyond-selfaware]]'
@@ -27,6 +28,15 @@ relationships:
   evidence:
   - "experiments/ood-breadth-beyond-selfaware/NOTEBOOK.md 2026-08-09T16:45Z
     Stage 8 (G5 verdict, per-arm AUROC/std pairs)"
+- type: related_to
+  target: '[[pstruct-stated-confidence-miscalibrated-near-chance]]'
+  target_id: mechanism:pstruct-stated-confidence-miscalibrated-near-chance
+  confidence: medium
+  evidence:
+  - "experiments/stated-confidence-under-pstruct/AMENDMENT.md Design (same
+    AmbigQA stated-confidence channel and rows as this mechanism's surface,
+    now scored under the structure-only P-struct contract for calibration
+    and discrimination rather than variance)"
 - type: related_to
   target: '[[internal-paper3--knows-but-doesnt-say]]'
   target_id: paper:internal-paper3

@@ -11,11 +11,18 @@ import argparse
 import csv
 import json
 import math
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import mean, stdev
 
 from PIL import Image, ImageDraw, ImageFont
+
+THIS_DIR = Path(__file__).resolve().parent
+if str(THIS_DIR) not in sys.path:
+    sys.path.insert(0, str(THIS_DIR))
+
+from ideal_zone import IDEAL_GREEN_RGB, IDEAL_QUADRANT_ALPHA
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -88,6 +95,7 @@ PNG_COLORS = {
     "paper": (255, 255, 255),
     "panel": (255, 255, 255),
 }
+IDEAL_GREEN_SVG = f"rgb({IDEAL_GREEN_RGB[0]},{IDEAL_GREEN_RGB[1]},{IDEAL_GREEN_RGB[2]})"
 
 SELF_AWARE_SEED_NAMES = {
     1: "results_selfaware_full_seed1_all_arms_4b_20260615_2148",
@@ -573,6 +581,39 @@ def _svg_escape(text: object) -> str:
     )
 
 
+def _svg_ideal_quadrant_elements(left: float, top: float, plot_w: float, plot_h: float) -> list[str]:
+    """Flat top-left-grid-cell wash for the hand-rolled SVG panels: one
+    translucent green rectangle over the panel's own top-left grid cell
+    (over-refusal 0-20% of the plotted range, recall 80-100% of the plotted
+    range), no fade, no boundary line drawn. Followed by an explicit
+    marker/label at the true ideal corner itself, which for these two
+    figures is exactly the plot's top-left pixel (over-refusal 0, recall
+    100 are both in view)."""
+    color = f"rgb({IDEAL_GREEN_RGB[0]},{IDEAL_GREEN_RGB[1]},{IDEAL_GREEN_RGB[2]})"
+    cell_w, cell_h = plot_w * 0.2, plot_h * 0.2
+    return [
+        f'<rect x="{left}" y="{top}" width="{cell_w}" height="{cell_h}" '
+        f'fill="{color}" opacity="{IDEAL_QUADRANT_ALPHA}"/>',
+        f'<circle cx="{left}" cy="{top}" r="7" fill="{color}" stroke="#ffffff" stroke-width="2"/>',
+        _svg_text(left + 26, top + 5, "ideal", 13, "start"),
+    ]
+
+
+def _svg_dashed_hline(x0: float, x1: float, y: float, color: str = IDEAL_GREEN_SVG, width: float = 2.4, dash: str = "7,5") -> str:
+    """Quiet dashed horizontal tick for bar-chart "ideal" indicators (a
+    conceptual target, never an invented numeric threshold)."""
+    return f'<line x1="{x0:.1f}" y1="{y:.1f}" x2="{x1:.1f}" y2="{y:.1f}" stroke="{color}" stroke-width="{width}" stroke-dasharray="{dash}"/>'
+
+
+def _svg_dashed_rect(x0: float, y0: float, x1: float, y1: float, color: str = IDEAL_GREEN_SVG, width: float = 2.0, dash: str = "6,4") -> str:
+    """Dashed outline over an existing bar, marking its "ideal" shape (e.g.
+    the whole bar, colored as correct, not a different height)."""
+    return (
+        f'<rect x="{x0:.1f}" y="{y0:.1f}" width="{x1 - x0:.1f}" height="{y1 - y0:.1f}" '
+        f'fill="none" stroke="{color}" stroke-width="{width}" stroke-dasharray="{dash}"/>'
+    )
+
+
 def _write_svg(path: Path, width: int, height: int, elements: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     body = "\n".join(elements)
@@ -657,11 +698,21 @@ def _draw_axes(
 ) -> None:
     if bottom_pad is None:
         bottom_pad = 82 if x_label else 68
-    _draw_card(draw, (left - 24, top - 24, left + width + 24, top + height + bottom_pad))
-    for tick in range(0, int(y_max) + 1, y_tick_step):
+    # Left margin is sized to the widest y-tick label so the number always
+    # clears the card border with visible padding, rather than a fixed
+    # offset that straddles the frame once labels get wide (e.g. 4-digit
+    # row counts on the "Rows per seed" panel).
+    y_ticks = list(range(0, int(y_max) + 1, y_tick_step))
+    tick_font = _font(16)
+    text_gap = 12
+    frame_pad = 16
+    max_tick_w = max((_text_size(draw, str(tick), tick_font)[0] for tick in y_ticks), default=0)
+    left_margin = text_gap + max_tick_w + frame_pad
+    _draw_card(draw, (left - left_margin, top - 24, left + width + 24, top + height + bottom_pad))
+    for tick in y_ticks:
         y = top + height - int((tick / y_max) * height)
         draw.line((left, y, left + width, y), fill=PNG_COLORS["grid"], width=1)
-        _draw_text(draw, (left - 18, y), str(tick), _font(16), fill=PNG_COLORS["muted"], anchor="rm")
+        _draw_text(draw, (left - text_gap, y), str(tick), tick_font, fill=PNG_COLORS["muted"], anchor="rm")
     if show_x_ticks:
         for tick in range(0, int(x_max) + 1, x_tick_step):
             x = left + int((tick / x_max) * width)
@@ -694,6 +745,48 @@ def _plot_point(x: float, y: float, left: int, top: int, width: int, height: int
     return left + int((x / x_max) * width), top + height - int((y / y_max) * height)
 
 
+def _draw_ideal_zone_shading(img: Image.Image, left: int, top: int, width: int, height: int) -> None:
+    """Flat translucent-green wash over the panel's top-left grid cell
+    (over-refusal 0-20% of the plotted range, recall 80-100% of the plotted
+    range): a single alpha, no fade, no boundary line drawn at the cell
+    edge. Painted before the axis grid/points so it sits behind the data."""
+    cell_w, cell_h = int(width * 0.2), int(height * 0.2)
+    overlay = Image.new("RGBA", (cell_w, cell_h), (*IDEAL_GREEN_RGB, int(IDEAL_QUADRANT_ALPHA * 255)))
+    img.paste(overlay, (left, top), overlay)
+
+
+def _draw_ideal_zone_marker(draw: ImageDraw.ImageDraw, left: int, top: int) -> None:
+    """Explicit marker/label at the ideal corner itself. For these two
+    figures the corner (0% over-refusal, 100% recall) is exactly the
+    plot's top-left pixel, since neither uses a zoomed axis range."""
+    r = 9
+    draw.ellipse((left - r, top - r, left + r, top + r), fill=IDEAL_GREEN_RGB, outline=(255, 255, 255), width=2)
+    _draw_text(draw, (left + 16, top + 2), "ideal", _font(16, bold=True), fill=IDEAL_GREEN_RGB, anchor="la")
+
+
+def _draw_dashed_hline(draw: ImageDraw.ImageDraw, x0: float, x1: float, y: float, color, width: int = 2, dash: int = 7, gap: int = 5) -> None:
+    """Quiet dashed horizontal tick, used for bar-chart "ideal" indicators
+    (a conceptual target, never an invented numeric threshold)."""
+    x = x0
+    while x < x1:
+        draw.line((x, y, min(x + dash, x1), y), fill=color, width=width)
+        x += dash + gap
+
+
+def _draw_dashed_rect(draw: ImageDraw.ImageDraw, box: tuple[float, float, float, float], color, width: int = 2, dash: int = 7, gap: int = 5) -> None:
+    """Dashed outline over an existing bar, used to mark its "ideal" shape
+    (e.g. the whole bar, not just its top sliver, colored as correct)."""
+    x0, y0, x1, y1 = box
+    _draw_dashed_hline(draw, x0, x1, y0, color, width, dash, gap)
+    _draw_dashed_hline(draw, x0, x1, y1, color, width, dash, gap)
+    y = y0
+    while y < y1:
+        y_end = min(y + dash, y1)
+        draw.line((x0, y, x0, y_end), fill=color, width=width)
+        draw.line((x1, y, x1, y_end), fill=color, width=width)
+        y += dash + gap
+
+
 def write_tradeoff_png(path: Path, seed_rows: list[SeedMetricRow]) -> None:
     img, draw = _new_chart()
     _draw_title(draw, "Cold-start SelfAware abstention tradeoff", "SFT learns refusal; cold-start preference arms mostly answer everything")
@@ -708,6 +801,8 @@ def write_tradeoff_png(path: Path, seed_rows: list[SeedMetricRow]) -> None:
         y_label="Unknown-question refusal recall (%)",
     )
     _paste_y_axis_label(img, y_label, left, top, plot_h)
+    _draw_ideal_zone_shading(img, left, top, plot_w, plot_h)
+    _draw_ideal_zone_marker(draw, left, top)
     for arm, label in (("sft", "SFT"), ("dpo", "DPO"), ("kto", "KTO")):
         arm_rows = [row for row in seed_rows if row.arm == arm]
         color = PNG_COLORS[arm]
@@ -819,18 +914,36 @@ def write_metric_bar_png(path: Path, summary_rows: list[dict[str, object]]) -> N
     _save_png(img, path)
 
 
+TRANSITION_PAIR_LABELS = {"sft->dpo": "SFT vs cold DPO", "sft->kto": "SFT vs cold KTO"}
+TRANSITION_LOSS_COLOR = (174, 83, 56)
+TRANSITION_CORRECT_COLOR = (47, 111, 78)
+
+
+def _transition_pair_means(transition_rows: list[dict[str, object]], pair: str) -> dict[str, float]:
+    pair_rows = [row for row in transition_rows if row["pair"] == pair]
+    unknown_lost = mean(float(row["unknown_a_refused_b_answered"]) for row in pair_rows)
+    converted_total = mean(float(row["known_a_refused_b_answered"]) for row in pair_rows)
+    converted_correct = mean(float(row["known_a_refused_b_correct"]) for row in pair_rows)
+    return {
+        "unknown_lost": unknown_lost,
+        "converted_total": converted_total,
+        "converted_correct": converted_correct,
+        "converted_wrong": converted_total - converted_correct,
+    }
+
+
 def write_transition_png(path: Path, transition_rows: list[dict[str, object]]) -> None:
     img, draw = _new_chart(1500, 900)
-    _draw_title(draw, "SFT refusal transitions under cold-start preference arms", "Most converted refusals do not become correct known answers")
+    _draw_title(
+        draw,
+        "SFT refusals vs. cold-start DPO and KTO",
+        "Reopened over-refusals mostly become wrong answers, not correct ones",
+    )
     left, top, plot_w, plot_h = 125, 160, 980, 560
     pairs = ["sft->dpo", "sft->kto"]
-    series = [
-        ("unknown_a_refused_b_answered", "Unknown refusals lost", (174, 83, 56)),
-        ("known_a_refused_b_answered", "Known refusals converted", (68, 105, 151)),
-        ("known_a_refused_b_correct", "Converted and correct", (47, 111, 78)),
-    ]
-    max_val = max(float(row[key]) for row in transition_rows if row["pair"] in pairs for key, _, _ in series)
-    y_max = math.ceil(max_val / 250) * 250
+    by_pair = {pair: _transition_pair_means(transition_rows, pair) for pair in pairs}
+    y_max_raw = max(max(v["unknown_lost"], v["converted_total"]) for v in by_pair.values())
+    y_max = math.ceil(y_max_raw / 250) * 250
     y_label = _draw_axes(
         draw,
         left,
@@ -843,29 +956,68 @@ def write_transition_png(path: Path, transition_rows: list[dict[str, object]]) -
         x_max=100,
         y_tick_step=250,
         show_x_ticks=False,
-        bottom_pad=92,
     )
     _paste_y_axis_label(img, y_label, left, top, plot_h)
-    rows_by_pair = {pair: [row for row in transition_rows if row["pair"] == pair] for pair in pairs}
     group_w = plot_w / len(pairs)
-    bar_w = 62
+    bar_w = 90
     for p_i, pair in enumerate(pairs):
         center = left + group_w * (p_i + 0.5)
-        _draw_text(draw, (center, top + plot_h + 32), pair.upper(), _font(20, bold=True), anchor="mm")
-        pair_rows = rows_by_pair[pair]
-        for s_i, (key, _label, color) in enumerate(series):
-            val = mean([float(row[key]) for row in pair_rows])
-            x0 = int(center + (s_i - 1) * (bar_w + 26) - bar_w / 2)
-            y0 = top + plot_h - int(val / y_max * plot_h)
-            draw.rounded_rectangle((x0, y0, x0 + bar_w, top + plot_h), radius=7, fill=color)
-            _draw_text(draw, (x0 + bar_w / 2, y0 - 10), f"{val:.0f}", _font(17, bold=True), fill=color, anchor="mm")
+        _draw_text(draw, (center, top + plot_h + 26), TRANSITION_PAIR_LABELS[pair], _font(20, bold=True), anchor="mm")
+        v = by_pair[pair]
+        # Bar 1: unknown refusals lost (loss only, single segment).
+        x0 = int(center - bar_w - 20)
+        y0 = top + plot_h - int(v["unknown_lost"] / y_max * plot_h)
+        draw.rounded_rectangle((x0, y0, x0 + bar_w, top + plot_h), radius=7, fill=TRANSITION_LOSS_COLOR)
+        _draw_text(draw, (x0 + bar_w / 2, y0 - 10), f"{v['unknown_lost']:.0f}", _font(17, bold=True), fill=TRANSITION_LOSS_COLOR, anchor="mm")
+        _draw_text(draw, (x0 + bar_w / 2, top + plot_h + 54), "unknown lost", _font(13), fill=PNG_COLORS["muted"], anchor="mm")
+        # Bar 2: over-refusals converted to answers, stacked wrong (bottom) / correct (top).
+        x1 = int(center + 20)
+        y_total = top + plot_h - int(v["converted_total"] / y_max * plot_h)
+        y_wrong_top = top + plot_h - int(v["converted_wrong"] / y_max * plot_h)
+        draw.rectangle((x1, y_wrong_top, x1 + bar_w, top + plot_h), fill=TRANSITION_LOSS_COLOR)
+        draw.rounded_rectangle((x1, y_total, x1 + bar_w, y_wrong_top + 8), radius=7, fill=TRANSITION_CORRECT_COLOR)
+        pct_correct = 100.0 * v["converted_correct"] / v["converted_total"] if v["converted_total"] else 0.0
+        _draw_text(draw, (x1 + bar_w / 2, y_total - 10), f"{v['converted_correct']:.0f} correct ({pct_correct:.1f}%)", _font(15, bold=True), fill=TRANSITION_CORRECT_COLOR, anchor="mm")
+        _draw_text(draw, (x1 + bar_w / 2, top + plot_h + 54), "converted", _font(13), fill=PNG_COLORS["muted"], anchor="mm")
+        # Ideal indicators (conceptual targets, not invented numbers): the
+        # "unknown lost" bar's ideal is zero height, marked at the baseline;
+        # the "converted" bar's ideal is the same total height but entirely
+        # in the correct color, marked with a dashed outline over the whole
+        # bar (the color that should fill it, not a different height).
+        _draw_dashed_hline(draw, x0 - 4, x0 + bar_w + 4, top + plot_h, IDEAL_GREEN_RGB, width=3, dash=8, gap=5)
+        _draw_dashed_rect(draw, (x1 - 3, y_total - 3, x1 + bar_w + 3, top + plot_h + 3), IDEAL_GREEN_RGB, width=2, dash=7, gap=5)
     legend_x, legend_y = 1160, 170
-    _draw_card(draw, (1135, 140, 1445, 315))
-    for i, (_key, label, color) in enumerate(series):
-        y = legend_y + i * 45
+    _draw_card(draw, (1135, 140, 1445, 390))
+    legend_rows = [
+        (TRANSITION_LOSS_COLOR, "Unknown refusals lost / still-wrong answers (loss)"),
+        (TRANSITION_CORRECT_COLOR, "Converted and correct (the only gain)"),
+    ]
+    for i, (color, label) in enumerate(legend_rows):
+        y = legend_y + i * 60
         draw.rounded_rectangle((1165, y - 13, 1194, y + 16), radius=5, fill=color)
-        _draw_text(draw, (1210, y + 5), label, _font(18), anchor="la")
+        for line_i, line in enumerate(_wrap_legend_text(label, 26)):
+            _draw_text(draw, (1210, y + 5 + line_i * 22), line, _font(16), anchor="la")
+    ideal_y = legend_y + 2 * 60
+    _draw_dashed_hline(draw, 1165, 1194, ideal_y, IDEAL_GREEN_RGB, width=3, dash=6, gap=4)
+    for line_i, line in enumerate(_wrap_legend_text("Dashed: ideal is 0 unknown lost, all converted rows correct", 26)):
+        _draw_text(draw, (1210, ideal_y - 8 + line_i * 22), line, _font(16), fill=IDEAL_GREEN_RGB, anchor="la")
     _save_png(img, path)
+
+
+def _wrap_legend_text(text: str, width: int) -> list[str]:
+    words = text.split()
+    lines: list[str] = []
+    current = ""
+    for word in words:
+        candidate = f"{current} {word}".strip()
+        if len(candidate) > width and current:
+            lines.append(current)
+            current = word
+        else:
+            current = candidate
+    if current:
+        lines.append(current)
+    return lines
 
 
 def write_amendment_tradeoff_png(path: Path, amendment_rows: list[dict[str, object]]) -> None:
@@ -882,6 +1034,8 @@ def write_amendment_tradeoff_png(path: Path, amendment_rows: list[dict[str, obje
         y_label="Unknown-question refusal recall (%)",
     )
     _paste_y_axis_label(img, y_label, left, top, plot_h)
+    _draw_ideal_zone_shading(img, left, top, plot_w, plot_h)
+    _draw_ideal_zone_marker(draw, left, top)
 
     def family(arm: str) -> str:
         if arm.startswith("sft_dpo"):
@@ -896,8 +1050,8 @@ def write_amendment_tradeoff_png(path: Path, amendment_rows: list[dict[str, obje
         draw.ellipse((x - 13, y - 13, x + 13, y + 13), fill=PNG_COLORS[fam], outline=PNG_COLORS["axis"], width=2)
     callouts = [
         ("Merged SFT", "high refusal,\nhigh over-refusal", "sft_merged", 1000, 185),
-        ("SFT -> DPO", "lower over-refusal,\nmore unknown losses", "dpo", 1000, 310),
-        ("SFT -> KTO", "more abstention,\nless correction", "kto", 1000, 435),
+        ("SFT → DPO", "lower over-refusal,\nmore unknown losses", "dpo", 1000, 310),
+        ("SFT → KTO", "more abstention,\nless correction", "kto", 1000, 435),
     ]
     _draw_card(draw, (980, 145, 1330, 565))
     for title, body, color_key, x, y in callouts:
@@ -921,23 +1075,30 @@ def write_stated_confidence_png(path: Path, confidence_rows: list[dict[str, obje
         x_label="",
         y_label="Score (0-100)",
         show_x_ticks=False,
-        bottom_pad=104,
+        bottom_pad=120,
     )
     _paste_y_axis_label(img, y_label, left, top, plot_h)
-    arms = [("merged SFT", "Merged SFT", "sft_merged"), ("SFT -> DPO", "SFT -> DPO", "dpo"), ("SFT -> KTO", "SFT -> KTO", "kto")]
+    # Ideal indicator: a small note tied to the axis, not a fake mid-chart
+    # line, since 0 is only the ideal for the lower-is-better metric groups
+    # (each already tagged "lower is better" below its bars). Placed in the
+    # bottom margin under the y-axis origin, clear of the bars themselves.
+    _draw_text(draw, (left, top + plot_h + 100), "0 = ideal (lower-is-better metrics)", _font(13), fill=IDEAL_GREEN_RGB, anchor="lm")
+    arms = [("merged SFT", "Merged SFT", "sft_merged"), ("SFT -> DPO", "SFT → DPO", "dpo"), ("SFT -> KTO", "SFT → KTO", "kto")]
     metrics = [
-        ("mean_stated_confidence", "Mean\nconfidence", 100),
-        ("mae_vs_known_label", "MAE vs\nknown label", 100),
-        ("mae_vs_answer_correctness", "MAE vs\ncorrectness", 100),
-        ("brier_vs_answer_correctness", "Brier vs\ncorrectness", 100),
+        ("mean_stated_confidence", "Mean\nconfidence", 100, False),
+        ("mae_vs_known_label", "MAE vs\nknown label", 100, True),
+        ("mae_vs_answer_correctness", "MAE vs\ncorrectness", 100, True),
+        ("brier_vs_answer_correctness", "Brier vs\ncorrectness", 100, True),
     ]
     by_arm = {str(row["arm"]): row for row in confidence_rows}
     group_w = plot_w / len(metrics)
     bar_w = 44
-    for g, (metric, label, scale) in enumerate(metrics):
+    for g, (metric, label, scale, lower_is_better) in enumerate(metrics):
         center = left + group_w * (g + 0.5)
         for line_i, line in enumerate(label.split("\n")):
             _draw_text(draw, (center, top + plot_h + 28 + line_i * 22), line, _font(18, bold=True), anchor="mm")
+        if lower_is_better:
+            _draw_text(draw, (center, top + plot_h + 74), "lower is better", _font(13), fill=PNG_COLORS["muted"], anchor="mm")
         for i, (arm, _label, color_key) in enumerate(arms):
             raw = float(by_arm[arm][metric])
             val = raw * scale
@@ -975,7 +1136,7 @@ def write_confidence_alignment_png(path: Path, alignment_rows: list[dict[str, ob
         bottom_pad=128,
     )
     _paste_y_axis_label(img, y_label, left, top, plot_h)
-    arms = [("merged SFT", "Merged SFT", "sft_merged"), ("SFT -> DPO", "SFT -> DPO", "dpo"), ("SFT -> KTO", "SFT -> KTO", "kto")]
+    arms = [("merged SFT", "Merged SFT", "sft_merged"), ("SFT -> DPO", "SFT → DPO", "dpo"), ("SFT -> KTO", "SFT → KTO", "kto")]
     buckets = [
         ("known_correct_answer", "Known\ncorrect\nanswer"),
         ("known_wrong_answer", "Known\nwrong\nanswer"),
@@ -984,12 +1145,25 @@ def write_confidence_alignment_png(path: Path, alignment_rows: list[dict[str, ob
         ("unknown_answer", "Unknown\nanswer"),
     ]
     by_key = {(str(row["arm"]), str(row["bucket"])): row for row in alignment_rows}
+    # Ideal indicators: qualitative step pattern, not invented numbers. High
+    # for a correct answer, low for a wrong answer or an answered unknown
+    # question, near-zero for a refusal (known or unknown). Heights are
+    # illustrative placement only (top band vs axis floor), never printed.
+    ideal_ticks = {
+        "known_correct_answer": 90,
+        "known_wrong_answer": 18,
+        "known_over_refusal": 4,
+        "unknown_refusal": 4,
+        "unknown_answer": 18,
+    }
     group_w = plot_w / len(buckets)
     bar_w = 42
     for g, (bucket, label) in enumerate(buckets):
         center = left + group_w * (g + 0.5)
         for line_i, line in enumerate(label.split("\n")):
             _draw_text(draw, (center, top + plot_h + 28 + line_i * 20), line, _font(16, bold=True), anchor="mm")
+        group_x0 = center - group_w / 2 + 10
+        group_x1 = center + group_w / 2 - 10
         for i, (arm, _label, color_key) in enumerate(arms):
             row = by_key.get((arm, bucket))
             if not row:
@@ -1001,14 +1175,20 @@ def write_confidence_alignment_png(path: Path, alignment_rows: list[dict[str, ob
             draw.rounded_rectangle((x0, y0, x0 + bar_w, top + plot_h), radius=6, fill=PNG_COLORS[color_key])
             if val >= 7:
                 _draw_text(draw, (x0 + bar_w / 2, y0 - 8), f"{val:.0f}", _font(14, bold=True), fill=PNG_COLORS[color_key], anchor="mm")
+        ideal_y = top + plot_h - int(ideal_ticks[bucket] / 100 * plot_h)
+        _draw_dashed_hline(draw, group_x0, group_x1, ideal_y, IDEAL_GREEN_RGB, width=3, dash=8, gap=5)
     legend_x, legend_y = 1385, 170
-    _draw_card(draw, (1360, 140, 1640, 315))
+    _draw_card(draw, (1360, 140, 1640, 350))
     for i, (_arm, label, color_key) in enumerate(arms):
         y = legend_y + i * 43
         draw.rounded_rectangle((1390, y - 13, 1418, y + 15), radius=5, fill=PNG_COLORS[color_key])
         _draw_text(draw, (1433, y + 5), label, _font(18), anchor="la")
-    _draw_card(draw, (1360, 365, 1640, 650))
-    _draw_text(draw, (1390, 405), "Interpretation", _font(22, bold=True), anchor="la")
+    ideal_legend_y = legend_y + 3 * 43
+    _draw_dashed_hline(draw, 1390, 1418, ideal_legend_y, IDEAL_GREEN_RGB, width=3, dash=6, gap=4)
+    _draw_text(draw, (1433, ideal_legend_y + 5), "Dashed tick = ideal", _font(18), fill=IDEAL_GREEN_RGB, anchor="la")
+    _draw_text(draw, (1433, ideal_legend_y + 27), "confidence for this outcome", _font(14), fill=IDEAL_GREEN_RGB, anchor="la")
+    _draw_card(draw, (1360, 400, 1640, 685))
+    _draw_text(draw, (1390, 428), "Interpretation", _font(22, bold=True), anchor="la")
     notes = [
         "Known correct answers",
         "should be high.",
@@ -1020,7 +1200,7 @@ def write_confidence_alignment_png(path: Path, alignment_rows: list[dict[str, ob
         "bad boundary behavior."
     ]
     for i, note in enumerate(notes):
-        _draw_text(draw, (1390, 442 + i * 24), note, _font(17), fill=PNG_COLORS["muted"], anchor="la")
+        _draw_text(draw, (1390, 465 + i * 24), note, _font(17), fill=PNG_COLORS["muted"], anchor="la")
     _save_png(img, path)
 
 
@@ -1054,6 +1234,7 @@ def write_tradeoff_figure(path: Path, seed_rows: list[SeedMetricRow]) -> None:
         elements.append(f'<line x1="{left}" y1="{y:.1f}" x2="{left + plot_w}" y2="{y:.1f}" stroke="#dddddd"/>')
         elements.append(_svg_text(x, top + plot_h + 22, str(tick), 11))
         elements.append(_svg_text(left - 20, y + 4, str(tick), 11, "end"))
+    elements.extend(_svg_ideal_quadrant_elements(left, top, plot_w, plot_h))
     for arm in ("sft", "dpo", "kto"):
         arm_rows = [row for row in seed_rows if row.arm == arm]
         color = COLORS[arm]
@@ -1125,18 +1306,16 @@ def write_metric_bar_figure(path: Path, summary_rows: list[dict[str, object]]) -
 
 
 def write_transition_figure(path: Path, transition_rows: list[dict[str, object]]) -> None:
-    width, height = 860, 520
+    width, height = 860, 540
     left, top, plot_w, plot_h = 95, 70, 570, 340
     pairs = ["sft->dpo", "sft->kto"]
-    series = [
-        ("unknown_a_refused_b_answered", "Unknown refusals lost", "#b85c38"),
-        ("known_a_refused_b_answered", "Known refusals converted", "#4f78a8"),
-        ("known_a_refused_b_correct", "Converted and correct", "#2f6f4e"),
-    ]
-    max_val = max(float(row[key]) for row in transition_rows if row["pair"] in pairs for key, _, _ in series)
-    y_max = math.ceil(max_val / 250) * 250
+    by_pair = {pair: _transition_pair_means(transition_rows, pair) for pair in pairs}
+    y_max_raw = max(max(v["unknown_lost"], v["converted_total"]) for v in by_pair.values())
+    y_max = math.ceil(y_max_raw / 250) * 250
+    loss_color, correct_color = "rgb(174,83,56)", "rgb(47,111,78)"
     elements = [
-        _svg_text(width / 2, 34, "What SFT refusals become under cold-start preference arms", 20),
+        _svg_text(width / 2, 26, "SFT refusals vs. cold-start DPO and KTO", 16),
+        _svg_text(width / 2, 46, "Reopened over-refusals mostly become wrong answers, not correct ones", 12, "middle"),
         f'<text x="24" y="{top + plot_h / 2:.1f}" transform="rotate(-90 24 {top + plot_h / 2:.1f})" '
         'font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#202020">Rows per seed</text>',
         f'<rect x="{left}" y="{top}" width="{plot_w}" height="{plot_h}" fill="#fafafa" stroke="#202020"/>',
@@ -1145,26 +1324,46 @@ def write_transition_figure(path: Path, transition_rows: list[dict[str, object]]
         y = top + plot_h - tick / y_max * plot_h
         elements.append(f'<line x1="{left}" y1="{y:.1f}" x2="{left + plot_w}" y2="{y:.1f}" stroke="#dddddd"/>')
         elements.append(_svg_text(left - 18, y + 4, str(tick), 11, "end"))
-    rows_by_pair = {pair: [row for row in transition_rows if row["pair"] == pair] for pair in pairs}
     group_w = plot_w / len(pairs)
-    bar_w = 24
+    bar_w = 40
     for p_i, pair in enumerate(pairs):
         pair_center = left + group_w * (p_i + 0.5)
-        elements.append(_svg_text(pair_center, top + plot_h + 28, pair.upper(), 12))
-        pair_rows = rows_by_pair[pair]
-        for s_i, (key, _label, color) in enumerate(series):
-            vals = [float(row[key]) for row in pair_rows]
-            val = mean(vals)
-            x = pair_center + (s_i - 1) * (bar_w + 12) - bar_w / 2
-            y = top + plot_h - val / y_max * plot_h
-            h = val / y_max * plot_h
-            elements.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w}" height="{h:.1f}" fill="{color}"/>')
-            elements.append(_svg_text(x + bar_w / 2, y - 6, f"{val:.0f}", 10))
+        elements.append(_svg_text(pair_center, top + plot_h + 26, TRANSITION_PAIR_LABELS[pair], 13))
+        v = by_pair[pair]
+        # Bar 1: unknown refusals lost.
+        x0 = pair_center - bar_w - 14
+        y0 = top + plot_h - v["unknown_lost"] / y_max * plot_h
+        h0 = v["unknown_lost"] / y_max * plot_h
+        elements.append(f'<rect x="{x0:.1f}" y="{y0:.1f}" width="{bar_w}" height="{h0:.1f}" fill="{loss_color}"/>')
+        elements.append(_svg_text(x0 + bar_w / 2, y0 - 6, f"{v['unknown_lost']:.0f}", 10))
+        elements.append(_svg_text(x0 + bar_w / 2, top + plot_h + 48, "unknown lost", 9))
+        # Bar 2: over-refusals converted, stacked wrong (bottom) / correct (top).
+        x1 = pair_center + 14
+        y_total = top + plot_h - v["converted_total"] / y_max * plot_h
+        y_wrong_top = top + plot_h - v["converted_wrong"] / y_max * plot_h
+        elements.append(f'<rect x="{x1:.1f}" y="{y_wrong_top:.1f}" width="{bar_w}" height="{top + plot_h - y_wrong_top:.1f}" fill="{loss_color}"/>')
+        elements.append(f'<rect x="{x1:.1f}" y="{y_total:.1f}" width="{bar_w}" height="{y_wrong_top - y_total:.1f}" fill="{correct_color}"/>')
+        pct_correct = 100.0 * v["converted_correct"] / v["converted_total"] if v["converted_total"] else 0.0
+        elements.append(_svg_text(x1 + bar_w / 2, y_total - 6, f"{v['converted_correct']:.0f} correct ({pct_correct:.1f}%)", 10))
+        elements.append(_svg_text(x1 + bar_w / 2, top + plot_h + 48, "converted", 9))
+        # Ideal indicators: zero unknown-refusals lost (baseline tick), and
+        # all converted rows correct (dashed outline over the whole bar).
+        elements.append(_svg_dashed_hline(x0 - 3, x0 + bar_w + 3, top + plot_h, width=2.6))
+        elements.append(_svg_dashed_rect(x1 - 3, y_total - 3, x1 + bar_w + 3, top + plot_h + 3))
     legend_x, legend_y = 690, 110
-    for i, (_key, label, color) in enumerate(series):
-        y = legend_y + i * 34
+    legend_rows = [
+        (loss_color, "Unknown refusals lost /", "still-wrong answers (loss)"),
+        (correct_color, "Converted and correct", "(the only gain)"),
+    ]
+    for i, (color, line1, line2) in enumerate(legend_rows):
+        y = legend_y + i * 50
         elements.append(f'<rect x="{legend_x}" y="{y - 10}" width="18" height="18" fill="{color}"/>')
-        elements.append(_svg_text(legend_x + 28, y + 4, label, 12, "start"))
+        elements.append(_svg_text(legend_x + 28, y + 4, line1, 11, "start"))
+        elements.append(_svg_text(legend_x + 28, y + 20, line2, 11, "start"))
+    ideal_y = legend_y + 2 * 50
+    elements.append(_svg_dashed_hline(legend_x, legend_x + 18, ideal_y - 1, width=2.6))
+    elements.append(_svg_text(legend_x + 28, ideal_y + 4, "Dashed: ideal is 0 unknown lost,", 11, "start"))
+    elements.append(_svg_text(legend_x + 28, ideal_y + 20, "all converted rows correct", 11, "start"))
     _write_svg(path, width, height, elements)
 
 
@@ -1185,6 +1384,7 @@ def write_amendment_tradeoff_figure(path: Path, amendment_rows: list[dict[str, o
         elements.append(f'<line x1="{left}" y1="{y:.1f}" x2="{left + plot_w}" y2="{y:.1f}" stroke="#dddddd"/>')
         elements.append(_svg_text(x, top + plot_h + 22, str(tick), 11))
         elements.append(_svg_text(left - 20, y + 4, str(tick), 11, "end"))
+    elements.extend(_svg_ideal_quadrant_elements(left, top, plot_w, plot_h))
     def family(arm: str) -> str:
         if arm.startswith("sft_dpo"):
             return "dpo"
@@ -1197,7 +1397,7 @@ def write_amendment_tradeoff_figure(path: Path, amendment_rows: list[dict[str, o
         elements.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="8" fill="{COLORS[fam]}" stroke="#202020" opacity="0.85"/>')
         elements.append(_svg_text(x + 12, y - 8, _svg_escape(row["source"]), 10, "start"))
     legend_x, legend_y = 640, 110
-    labels = [("sft_merged", "Merged SFT"), ("dpo", "SFT -> DPO"), ("kto", "SFT -> KTO")]
+    labels = [("sft_merged", "Merged SFT"), ("dpo", "SFT → DPO"), ("kto", "SFT → KTO")]
     for i, (key, label) in enumerate(labels):
         y = legend_y + i * 28
         elements.append(f'<circle cx="{legend_x + 8}" cy="{y}" r="7" fill="{COLORS[key]}" stroke="#202020"/>')
@@ -1207,26 +1407,35 @@ def write_amendment_tradeoff_figure(path: Path, amendment_rows: list[dict[str, o
 
 def write_stated_confidence_figure(path: Path, confidence_rows: list[dict[str, object]]) -> None:
     width, height = 860, 520
-    left, top, plot_w, plot_h = 95, 70, 570, 340
+    left, top, plot_w, plot_h = 95, 90, 570, 320
     arms = ["merged SFT", "SFT -> DPO", "SFT -> KTO"]
+    # Lookup keys stay ASCII to match the confidence_rows "arm" values; the
+    # legend draws the display label below instead of the raw key.
+    arm_labels = {"merged SFT": "merged SFT", "SFT -> DPO": "SFT → DPO", "SFT -> KTO": "SFT → KTO"}
     colors = {
         "merged SFT": COLORS["sft_merged"],
         "SFT -> DPO": COLORS["dpo"],
         "SFT -> KTO": COLORS["kto"],
     }
     metrics = [
-        ("refusal_recall_pct", "Refusal recall"),
-        ("over_refusal_pct", "Over-refusal"),
-        ("correct_on_known_pct", "Correct known"),
-        ("mean_stated_confidence", "Mean confidence"),
+        ("mean_stated_confidence", "Mean confidence", False),
+        ("mae_vs_known_label", "MAE vs known label", True),
+        ("mae_vs_answer_correctness", "MAE vs correctness", True),
+        ("brier_vs_answer_correctness", "Brier vs correctness", True),
     ]
     by_arm = {str(row["arm"]): row for row in confidence_rows}
     elements = [
         _svg_text(width / 2, 34, "Stated-confidence profile", 20),
-        _svg_text(width / 2, 492, "Metric", 14),
+        _svg_text(width / 2, 50, "Mean confidence is scaled to 0-100; MAE/Brier are shown as error rates x100", 12, "middle"),
+        _svg_text(width / 2, 495, "Metric", 14),
         f'<text x="24" y="{top + plot_h / 2:.1f}" transform="rotate(-90 24 {top + plot_h / 2:.1f})" '
-        'font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#202020">Rate (%) or confidence x100</text>',
+        'font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#202020">Score (0-100)</text>',
         f'<rect x="{left}" y="{top}" width="{plot_w}" height="{plot_h}" fill="#fafafa" stroke="#202020"/>',
+        # Ideal indicator: a small note tied to the axis, not a fake
+        # mid-chart line, since 0 is only the ideal for the lower-is-better
+        # metric groups (each already tagged "lower is better" below).
+        # Placed in the bottom margin under the axis origin, clear of bars.
+        _svg_text(left, top + plot_h + 68, "0 = ideal (lower-is-better metrics)", 10, "start"),
     ]
     for tick in range(0, 101, 20):
         y = top + plot_h - tick / 100 * plot_h
@@ -1234,23 +1443,24 @@ def write_stated_confidence_figure(path: Path, confidence_rows: list[dict[str, o
         elements.append(_svg_text(left - 18, y + 4, str(tick), 11, "end"))
     group_w = plot_w / len(metrics)
     bar_w = 26
-    for g, (metric, label) in enumerate(metrics):
+    for g, (metric, label, lower_is_better) in enumerate(metrics):
         center = left + group_w * (g + 0.5)
         elements.append(_svg_text(center, top + plot_h + 28, label, 11))
+        if lower_is_better:
+            elements.append(_svg_text(center, top + plot_h + 42, "lower is better", 9))
         for i, arm in enumerate(arms):
             raw = float(by_arm[arm][metric])
-            val = raw * 100 if metric == "mean_stated_confidence" else raw
+            val = raw * 100
             x = center + (i - 1) * (bar_w + 8) - bar_w / 2
             y = top + plot_h - val / 100 * plot_h
             h = val / 100 * plot_h
             elements.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w}" height="{h:.1f}" fill="{colors[arm]}"/>')
-            label_text = f"{raw:.2f}" if metric == "mean_stated_confidence" else f"{raw:.0f}"
-            elements.append(_svg_text(x + bar_w / 2, y - 6, label_text, 10))
+            elements.append(_svg_text(x + bar_w / 2, y - 6, f"{val:.0f}", 10))
     legend_x, legend_y = 690, 110
     for i, arm in enumerate(arms):
         y = legend_y + i * 30
         elements.append(f'<rect x="{legend_x}" y="{y - 10}" width="18" height="18" fill="{colors[arm]}"/>')
-        elements.append(_svg_text(legend_x + 28, y + 4, arm, 12, "start"))
+        elements.append(_svg_text(legend_x + 28, y + 4, arm_labels[arm], 12, "start"))
     elements.append(_svg_text(legend_x, legend_y + 116, "Coverage is ~100% for all arms", 12, "start"))
     _write_svg(path, width, height, elements)
 

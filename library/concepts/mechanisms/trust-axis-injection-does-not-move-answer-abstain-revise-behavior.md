@@ -19,7 +19,7 @@ related:
 - '[[answerability-and-correctness-are-orthogonal-readout-axes]]'
 - '[[high-probe-accuracy-does-not-imply-causal-use]]'
 - '[[first-person-framed-probe-score-injection-does-not-open-text-channel]]'
-- '[[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]'
+- '[[ku-readout-coupling-actuates-selective-refusal-release]]'
 - '[[activation-steering]]'
 - '[[chain-of-thought-prompting]]'
 relationships:
@@ -40,8 +40,8 @@ relationships:
   target_id: mechanism:first-person-framed-probe-score-injection-does-not-open-text-channel
   confidence: high
 - type: related_to
-  target: '[[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]'
-  target_id: mechanism:doubt-regulated-caution-coupling-actuates-selective-refusal-release
+  target: '[[ku-readout-coupling-actuates-selective-refusal-release]]'
+  target_id: mechanism:ku-readout-coupling-actuates-selective-refusal-release
   confidence: high
 - type: related_to
   target: '[[activation-steering]]'
@@ -64,7 +64,7 @@ meeting the coherence floor, so FALSIFIER-1 fired and the position-asymmetry
 gate (AA-G5) had nothing to test. This is scoped to the gate/dial trust axis
 on Qwen3.5-4B specifically; it does not generalize to every write-side
 activation edit, since Amendment AC's doubt-regulated caution coupling
-([[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]), on
+([[ku-readout-coupling-actuates-selective-refusal-release]]), on
 a different axis and checkpoint, does actuate behavior. The direct follow-up,
 Amendment AB, tests whether AA's text channel specifically was shut by a
 framing artifact rather than genuine channel absence

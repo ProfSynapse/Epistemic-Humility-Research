@@ -425,6 +425,49 @@
     },
     {
       "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-17T23:06:16Z",
+      "falsifier": "Distinct: mean absolute cosine <= 0.20 with BR-G0 (fit integrity) passing; the contract-elicited refusal direction is not the direction training consolidates, sharpening the trained-checkpoint-construct claim. Between 0.20 and 0.50: indeterminate, reported as such.",
+      "inputs": [
+        "archive/experiment/phase1/eval/results_prompt_vs_training_panel_prc_4b/base_prc__selfaware/scored_rows.jsonl",
+        "experiments/common/readouts/amendment_u_unified_extract.py",
+        "experiments/common/knowledge_probe/hidden_state_probe.py",
+        "experiments/common/mechinterp/residual_caution_direction.py",
+        "papers/paper-3-knows-but-doesnt-say/analysis/provenance/p3_section5_provenance_20260704/reconstruct_section5_geometry.py"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "No generation-bearing step: base P-rc behavior rows are governed reuse from the resolved prompt-vs-training-panel cell's retained scored_rows; extraction, fit, and comparison use the same pinned stacks as the paper-3 Section 5 lineage, which comparability requires."
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "aa2afdd91f4366b90876667c0f928c783f672e737a98f8742ae9ff6b9a3a0b49",
+          "gates.yaml": "f2d67b0703de0250f1f1719d423fe52e1f2ed41902f6ff0ebfb11fe872e30270"
+        }
+      },
+      "kg": [
+        "experiment:base-refusal-direction-under-contract",
+        "mechanism:contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis"
+      ],
+      "prediction": "Aligned: mean absolute cosine between the base-under-contract refusal direction and the three trained-regimen refusal directions (clean SFT, SFT->GRPO-DPO, SFT->GRPO-v2, L35) is >= 0.50, inside the trained-pair band (0.576-0.857 over a ~0.014 permutation floor).",
+      "question": "Does a refusal direction fit on the raw Qwen3-4B base under the response-confidence contract (the one condition where the base over-refuses, 65.38% of answerables) point where the trained checkpoints' refusal axis points?",
+      "registered": true,
+      "slug": "base-refusal-direction-under-contract",
+      "status": "falsified",
+      "title": "Base refusal direction under the response-confidence contract",
+      "type": "probe-fit",
+      "verdict": "DISTINCT, prediction falsified: base P-rc refusal direction vs trained refusal axes mean abs cos 0.0460 (0.0422/0.0522/0.0436) in the registered Section-5 shared-standardized frame, under the 0.20 distinct bound; BR-G0 pass (1528/359 rows, held-out AUROC 0.9509); trained pairs internally reproduced (0.6695/0.5720/0.8591 vs published 0.6713/0.5762/0.8566); contract-elicited base refusal runs through a different direction than the trained axis, sharpening the trained-construct claim."
+    },
+    {
+      "checkpoint": {
         "repo": "Qwen/Qwen3-4B",
         "revision": "PIN_AT_SIGN (exact hub commit sha; untrained base, no adapter, no merge)"
       },
@@ -550,6 +593,49 @@
       "title": "Amendment AA — Causal confidence steering: writing the trust axis (Paper 5)",
       "type": "historical-amendment",
       "verdict": "FALSIFIER-1 — the channel stays shut; no effect gate passed in any of the 8 cells; latent gate/dial info does not translate into answer/abstain/revise behavior under either injection arm."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-15T22:32:16Z",
+      "falsifier": "No archived variant brings post-ablation known-item over-refusal below 0.30 under the archived instrument: 0.030 declared not recoverable and retired; paper 3 keeps the governed doubt-regulated-caution numbers either way.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "configs/phase3_current_clean_grpo_v2_caution_residual_intervention.yaml",
+          "configs/phase3_current_clean_grpo_v2_caution_perp_residual_intervention.yaml",
+          "configs/phase3_current_clean_grpo_v2_known_overrefusal_native_l26_coeff_sweep.yaml"
+        ],
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "Provenance repair of an archived legacy-machinery result: the archived HF-transformers greedy intervention stack IS the instrument under test; switching its generation engine would defeat the byte-faithful re-derivation."
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "15a6a6f582b9c25db657ddb5ec673a605d09b257445bf65a959e0ce9ca23b6af",
+          "configs/phase3_current_clean_grpo_v2_caution_perp_residual_intervention.yaml": "7e0512432fb9dd36761f5f8bb6f325391aa775027d95be50b963938e8582ff33",
+          "configs/phase3_current_clean_grpo_v2_caution_residual_intervention.yaml": "9952c6948745f6b30f483bcc6a436d550ca05c7a1453c585fce67da4bba0fb29",
+          "configs/phase3_current_clean_grpo_v2_known_overrefusal_native_l26_coeff_sweep.yaml": "880798a0a3cd886d4ee70dcf1786ca6c3fbcea049bacfe21fb61bc36516e1d69",
+          "gates.yaml": "cf1fc9f4f80f4ea3284e09d5b49b08a1f07bd50ca673fd021c7ae1ad4470d612"
+        }
+      },
+      "kg": [
+        "experiment:caution-ablation-rederivation",
+        "mechanism:raw-theta-refusal-axis-ablation-rederives-archived-overrefusal-collapse"
+      ],
+      "prediction": "At least one archived variant (modal: caution_perp) reproduces post-ablation known-item over-refusal at or below 0.10, with baseline ~0.994 within 0.02.",
+      "question": "Does re-running the archived phase-1 caution/caution_perp ablation pipeline on clean_sft_grpo_v2_seed1 reproduce the un-re-derivable 0.994-to-0.030 over-refusal collapse, giving that figure a governed source or formally retiring it?",
+      "registered": true,
+      "slug": "caution-ablation-rederivation",
+      "status": "resolved",
+      "title": "Re-deriving the archived caution-ablation over-refusal collapse",
+      "type": "eval",
+      "verdict": "Falsifier not fired: full refusal-axis ablation (legacy raw-theta caution direction) re-derives the archived 0.994-to-0.030 over-refusal collapse near-exactly (0.0298, specificity intact) under the archived instrument, the KU-orthogonalized component reproduces its own archived 0.524 confirming the 0.030/0.524 divergence is variant identity not error, and the re-derived figure remains exploratory pending a registered confirmatory step."
     },
     {
       "checkpoint": {
@@ -768,12 +854,12 @@
           "probe_stage_a.py": "3d5e2f4db244ad47477dad6cae31452594e28b331a4ca532ccc39f640bf52417",
           "probe_stage_b.py": "a139b16223d30fa0214c8efbc32562b367d0ef15084a8b8c2f9c1e520eb94c9b",
           "render_sweep.py": "2dbca966807da00c35085e5c7d598a390e9defd0e0cb0e3bd87731bdc9eeef39",
-          "run_controls.py": "48d2f0fd45b6cc3abce16f2607681edfe340b940fe27df5a7ba1fe3330587188",
-          "run_held_out.py": "d006ce42e8dd00bfc428474f12e4276ef190ba3042be5016a273aa0945965250",
+          "run_controls.py": "28d867ca066f95f9a309b7ee279ea5c2be82f3afcd6f2200e9c438362ba160c5",
+          "run_held_out.py": "b0a59a6ac3a9c6ee4b25c32ab561a235942a1a14e5fe3bc888bcd345dadc7bed",
           "run_pairs.py": "f9a438b8a5f42d00dd7beedb2fd5d95f579c3e0ed98ccc86d8cce15343867a8c",
           "run_sweep.py": "ab6a4d74bca82df5aca1fed98dc8683dab682b8acd40babdf88e9818055a0e6a",
           "split_fit_heldout.py": "f550c5a087287b80f450002db30aaf6197b76e2d8193b4df7a658a04f43f22af",
-          "sweep_lib.py": "e6bc601866bf7d96cd36c7d1d4246313176b7334f36f05e0190a5fba82b0dd60",
+          "sweep_lib.py": "f928b9856c8dca995c659f4316e9585ce3d445122582567b02dda9c8d6932ee6",
           "write_smoke.py": "a022a71b118a848dd05eb6bc5300a92f540b4e0e7631075f88b2ba5babc9ac34"
         },
         "repins": [
@@ -797,22 +883,53 @@
             "new_sha256": "04726d66aa399a15a8ca0848bf714444e68ac5dec142beb6a618e02868e51c94",
             "old_sha256": "none (new module, added post-signing pre-run)",
             "reason": "new launch-prep staging module added post-signing, pre-run: materializes the registered raw_base anchor input analysis/rows_with_text_raw_base.jsonl from rep2 committed manifest plus git-tracked datasets. Pure input staging, no gate quantity or protocol constant involved; verified by exact match of exclusion_resolution_counts, per-source counts, and category_canon against rep2 manifest."
+          },
+          {
+            "date": "2026-08-11T17:55:00Z",
+            "file": "run_held_out.py",
+            "new_sha256": "d89fdf55497e1cd6ff1b657fb2c2b31897488feaaa4187037cdadb024c0f37d9",
+            "old_sha256": "d006ce42e8dd00bfc428474f12e4276ef190ba3042be5016a273aa0945965250",
+            "reason": "Stage-6 smoke false-failure fix, PI-approved mid-run (bin/exp repin refuses on running status; manual append-only entry per its convention). The tuner per-cell smoke mismeasures off-target movement as the natural projection of gate-inactive rows (synaptic-tuner hooks.py, no before/after), so all 5 viable trained cells failed rc=4 with write_ok true and zero rows generated. Fix sorts the generated held-out rows file gate-active-first so the smoke probes real write rows -- the exact fix validated in aq-sycophancy-activation-actuator. Analysis-neutral (greedy decode, batch 1, order-independent aggregation). The stage-6 smoke is not a registered gate quantity (g0e reads the stage-4 report); no threshold, band, seed, or gate touched. No behavioral artifact from the failed attempt existed to discard."
+          },
+          {
+            "date": "2026-08-11T23:30:00Z",
+            "file": "sweep_lib.py",
+            "new_sha256": "f928b9856c8dca995c659f4316e9585ce3d445122582567b02dda9c8d6932ee6",
+            "old_sha256": "e6bc601866bf7d96cd36c7d1d4246313176b7334f36f05e0190a5fba82b0dd60",
+            "reason": "Stage-6 summary write crash fix, PI-approved mid-run. All 5 trained cells completed rc=0 with all output rows on disk, but held_out_summary.json failed write_json fail-closed: wilson_ci_point(0,0) returns NaN Wilson bounds for the baseline_undosed arm, whose F12 fired-only block has a zero denominator by construction (strength 0.0 -> no fired rows). Fix renders the undefined case as None with n=0 recorded; defined rates unchanged. Pure summary rendering; no threshold, band, seed, or gate touched; no behavioral row affected."
+          },
+          {
+            "date": "2026-08-11T23:55:00Z",
+            "file": "run_held_out.py",
+            "new_sha256": "b0a59a6ac3a9c6ee4b25c32ab561a235942a1a14e5fe3bc888bcd345dadc7bed",
+            "old_sha256": "d89fdf55497e1cd6ff1b657fb2c2b31897488feaaa4187037cdadb024c0f37d9",
+            "reason": "F8 completion, PI-approved mid-run: the 2026-08-10 F8 wiring pass routed raw_base row sourcing through sweep_lib.raw_base_anchor_pool() for extract_anchor.py and dose_calibrate.py but missed run_held_out.py, which still required a raw_base split manifest that does not exist by design. held_out_rows() now routes raw_base through the same verified pool join (extract_anchor._raw_base_joined_rows: all 221 rows split=held_out, role confab, hard-fails on missing text or wrong roles). Trained path byte-identical. No threshold, band, seed, or gate touched."
+          },
+          {
+            "date": "2026-08-12T20:35:00Z",
+            "file": "run_controls.py",
+            "new_sha256": "28d867ca066f95f9a309b7ee279ea5c2be82f3afcd6f2200e9c438362ba160c5",
+            "old_sha256": "48d2f0fd45b6cc3abce16f2607681edfe340b940fe27df5a7ba1fe3330587188",
+            "reason": "F8-class raw_base consumer gap, fourth instance, PI-approved mid-run (Option B). run_controls.py built the pos_ctrl readout path under directions/<substrate>/<site>/source_directions/ unconditionally, but raw_base never fits pos_ctrl (BLOCKER #8 import posture; build_directions.py writes no raw_base source_directions/), so the raw_write_pos_ctrl control crashed FileNotFoundError after the hs23 permuted_gate invocation completed. Fix routes the raw_base pos_ctrl readout to the SOURCE amendment j-space-midband-write-sweep-qwen3-4b committed, already-gated artifact (analysis-committed/layers/<site>/source_directions/pos_ctrl_<site>.json), the same import-not-refit pattern already used for c_hat/u_d via sweep_lib.raw_base_direction_import. Trained path byte-identical. No threshold, band, seed, or gate touched."
           }
         ],
         "runtime_image_digest": "sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772"
       },
-      "kg": [],
+      "kg": [
+        "experiment:caution-install-bounded-site-sweep",
+        "mechanism:caution-install-actuates-but-specificity-unresolved-on-trained-qwen3-4b"
+      ],
       "posture": "exploratory",
       "prediction": "The null survives on the trained checkpoint. No registered site and position clears G1 on the trained lineage, while the raw-base anchor arms at hs23 and hs29 reproduce their published rates inside their Wilson intervals. If anything clears G1, it is an in-band site between hs13 and hs23 rather than hs34.",
       "question": "Does the raw-base answerability-gated caution snap, the one mechanism in this program with a governed installation success, transfer to the trained clean-SFT to GRPO-v2 checkpoint; and if not, does a bounded search over seven write sites, two write positions, an eight-rung ratio-normalized dose ladder, and three magnitude-matched two-site combinations find a site where caution can be installed on genuine unknowns?",
       "registered": true,
       "sign_blocked_on": "CLEARED 2026-08-09T02:10Z: P2/P3/P4 passed at the probe (NOTEBOOK 2026-08-09T00:15:59Z); P1 satisfied by count under the pre-stated census criterion (NOTEBOOK census adjudication entry: 260 actual confabs over the full 3496 >= 250 registered floor). Signing authorized.",
       "slug": "caution-install-bounded-site-sweep",
-      "status": "signed",
+      "status": "resolved",
       "tier": 2,
       "title": "Bounded caution-install site sweep on the trained Qwen3-4B lineage",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "falsifier silent and G4 anchors reproduce, but G1 actuation clears at all five viable anchor_onward sites with G3 specificity at hs35 only and G2 selectivity vacuous, so paper 3 stands and the installation result is an exploratory lead requiring confirmatory replication"
     },
     {
       "checkpoint": {
@@ -1476,15 +1593,135 @@
           "lp_v2_harness.py": "401fa6a616a14f2642de065f5b6e9708decce55a4351d5456cbba3454fe14d24"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:dial-logprob-baseline-v2",
+        "experiment:dial-logprob-baseline",
+        "mechanism:reproduction-bet-causes-generation-capture-round-trip-failure"
+      ],
       "prediction": "CONFIRMATION CELL (PI-adopted framing, 2026-08-11, from draft sec.7): a fresh blind guess is not possible here because v1's own descriptive numbers are already known and cited in this cell's own design (AMENDMENT.md sec.2) -- re-stating v1's falsified blind 0.60-0.72 call would not be honest pre-registration. The stated prediction is that v1's descriptive read holds at exact (gated) precision: S base margin lands near +0.014, most likely still inside the pre-stated LP-G1 ambiguous band (LP-G1 most likely does NOT pass); T deployed margin confirms clearly positive, near +0.158.",
       "question": "What is the correctness dial's margin over the model's own answer-span token log-probabilities (length-normalized mean, primary) on the exact rows the dial was measured on (amendment S base population primary; amendment T deployed arm descriptive)?",
       "registered": true,
       "slug": "dial-logprob-baseline-v2",
-      "status": "signed",
+      "status": "resolved",
       "title": "Dial token-logprob baseline, clean redo (generation-time token-ID cache)",
       "type": "probe-fit",
-      "verdict": ""
+      "verdict": "both arms stopped at the LP-G0 integrity gate (dial-refit reproduction outside tolerance; 15.4%/6.3% byte-for-byte round-trip failures), so the cell records a data-stage stop with no reportable comparison, the same verdict class as v1"
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-13T10:07:05Z",
+      "falsifier": "(1) Dial-novelty, verbatim from v1/v2: primary-variant logprob AUROC at or above dial AUROC on the S base arm (margin <= 0), paired 95% CI excluding 0 in that direction. (2) The fresh-generation posture fails its own LP3-G0 integrity gate, showing the failure class was never reproduction and sending the design back for diagnosis rather than a fourth same-shape run.",
+      "inputs": [
+        "experiments/common/readouts/amendment_s_correctness_probe_extract.py",
+        "experiments/common/readouts/amendment_t_correctness_readout_deployment_extract.py",
+        "experiments/common/readouts/amendment_s_correctness_probe_score.py",
+        "experiments/common/knowledge_probe/backends.py",
+        "archive/experiment/phase1/eval/scorers.py",
+        "experiments/dial-logprob-baseline-v2/AMENDMENT.md",
+        "experiments/dial-logprob-baseline-v2/cell.yaml",
+        ".skills/experiment-runner/reference/batched-generation.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "engine": {
+          "name": "vllm",
+          "version": "0.27.1"
+        },
+        "modules": [
+          "lp_v3_harness.py"
+        ],
+        "persistence": {
+          "lp_v3_harness.py": {
+            "checkpoint_path": "experiments/dial-logprob-baseline-v3/analysis/",
+            "note": "directory prefix, not a single file -- per arm, the module writes a resumable (chunked append+flush) generation runlog experiments/dial-logprob-baseline-v3/analysis/<arm>/runlog/<arm>_generation.jsonl, a resumable (per-row append+flush) extraction runlog experiments/dial-logprob-baseline-v3/analysis/<arm>/runlog/<arm>_extraction.jsonl, and the extraction phase's safetensors shards + rows.jsonl under experiments/dial-logprob-baseline-v3/analysis/<arm>/tensors/. --phase generate|extract|score lets a real launch run each phase as a separate process invocation (recommended for guaranteed GPU memory release between the vLLM engine and the HF teacher-forced pass; --phase all runs all three in one process with best-effort cleanup -- see lp_v3_harness.py module docstring and NOTEBOOK.md).",
+            "persistence": "incremental"
+          }
+        },
+        "pins": {
+          "cell.yaml": "133c3a80fb390aa99f5c88ede4f78d014efe5bdfd4f79be7addb6f3a89ecc07c",
+          "gates.yaml": "4f0f9c7be1ab679b1371f188eb108d8f05390a3be50cac6433658053a8b7284e",
+          "lp_v3_harness.py": "1f3c0d47116a998b89fac2735f489091928c9fc69d7a2c0e995dd50f1215c906"
+        }
+      },
+      "kg": [
+        "experiment:dial-logprob-baseline-v3",
+        "experiment:dial-logprob-baseline",
+        "experiment:dial-logprob-baseline-v2",
+        "mechanism:self-consistent-single-pass-capture-eliminates-reproduction-bet-round-trip-failure",
+        "mechanism:qwen3-4b-dial-margin-over-logprob-remains-ambiguous-on-fresh-generation"
+      ],
+      "prediction": "Disclosure per v2 precedent: no fresh blind guess is possible (v1 descriptive read and v2's non-result unblinded numbers were seen). Stated prediction: S base margin lands inside the ambiguous band (near +0.02, between 0 and +0.05), LP3-G1 most likely does NOT pass; T deployed margin clearly positive, near +0.15.",
+      "question": "Verbatim from v1/v2: does the fitted correctness dial beat the model's own sequence probability (length-normalized mean answer-span token logprob) at ranking the correctness of the model's own answers, by the registered margin?",
+      "registered": true,
+      "slug": "dial-logprob-baseline-v3",
+      "status": "resolved",
+      "title": "Dial token-logprob baseline v3: fresh self-consistent generation, no reproduction bet",
+      "type": "probe-fit",
+      "verdict": "S arm: LP3-G0 pass, LP3-G1 ambiguous band (margin +0.0118, CI [-0.0122,+0.0359]); neither falsifier fired; integrity clean (v2 failure class eliminated). T arm: registered data-stage stop at the power floor (710 answered < 1000); descriptive stats not reported."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-13T15:20:18Z",
+      "falsifier": "Primary-variant logprob AUROC at or above the dial AUROC (margin <= 0) with paired 95% CI excluding 0 in that direction; or the instrument fails its own LT-G0 integrity gate.",
+      "inputs": [
+        "experiments/common/readouts/amendment_s_correctness_probe_extract.py",
+        "experiments/common/readouts/amendment_t_correctness_readout_deployment_extract.py",
+        "experiments/common/readouts/amendment_s_correctness_probe_score.py",
+        "experiments/common/knowledge_probe/backends.py",
+        "archive/experiment/phase1/eval/scorers.py",
+        "experiments/dial-logprob-baseline-v3/AMENDMENT.md",
+        "experiments/dial-logprob-baseline-v3/cell.yaml",
+        "experiments/dial-logprob-baseline-v3/gates.yaml",
+        "experiments/dial-logprob-baseline-v3/lp_v3_harness.py",
+        ".skills/experiment-runner/reference/batched-generation.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "engine": {
+          "name": "vllm",
+          "version": "0.27.1"
+        },
+        "modules": [
+          "lp_t_harness.py"
+        ],
+        "persistence": {
+          "lp_t_harness.py": {
+            "checkpoint_path": "experiments/dial-logprob-t-deployed-confirmatory/analysis/",
+            "note": "directory prefix, not a single file -- for the single arm, the module writes a resumable (chunked append+flush) generation runlog experiments/dial-logprob-t-deployed-confirmatory/analysis/t_deployed_confirmatory/runlog/t_deployed_confirmatory_generation.jsonl, a resumable (per-row append+flush) extraction runlog experiments/dial-logprob-t-deployed-confirmatory/analysis/t_deployed_confirmatory/runlog/t_deployed_confirmatory_extraction.jsonl, and the extraction phase's safetensors shards + rows.jsonl under experiments/dial-logprob-t-deployed-confirmatory/analysis/t_deployed_confirmatory/tensors/. --phase generate|extract|score lets a real launch run each phase as a separate process invocation (recommended for guaranteed GPU memory release between the vLLM engine and the HF teacher-forced pass, especially for this checkpoint where v3's NOTEBOOK.md flagged tighter headroom); --phase all runs all three in one process with best-effort cleanup -- see lp_t_harness.py module docstring.",
+            "persistence": "incremental"
+          }
+        },
+        "pins": {
+          "cell.yaml": "2863815042b6754448696a6170a105ed28eddbae4451ba3e12e942aecb6fad9b",
+          "gates.yaml": "45aaebb81b046f1e22cfba5140045b5fbc49be96ea10ae1421fffb7c26df34a4",
+          "lp_t_harness.py": "2295c7145feaf94a8b5119252613d2dffdf35fd1dccb2611aba347770e26aa6b"
+        }
+      },
+      "kg": [
+        "experiment:dial-logprob-t-deployed-confirmatory",
+        "mechanism:qwen3-4b-dial-margin-over-logprob-large-on-deployed-checkpoint",
+        "mechanism:dial-margin-over-logprob-is-checkpoint-dependent"
+      ],
+      "prediction": "Disclosure: v1 descriptive (+0.158, round-trip caveat) and v2 unblinded stopped-cell margin (+0.1747) have been seen. Stated prediction: T-arm margin clearly positive near +0.15, LT-G1 PASS.",
+      "question": "Does the fitted correctness dial beat the deployed checkpoint's own length-normalized answer-span token logprob at ranking the correctness of its own answers, by the registered +0.05 margin, at adequate power (>=1000 answered rows)?",
+      "registered": true,
+      "slug": "dial-logprob-t-deployed-confirmatory",
+      "status": "resolved",
+      "title": "Dial vs token-logprob on the deployed checkpoint: gated confirmation at adequate power",
+      "type": "probe-fit",
+      "verdict": "On the deployed abstention-trained checkpoint the dial beats the model's own answer-span logprob by a gated margin of +0.1393 (95% CI [0.1031, 0.1755], n=1,501); LT-G0 and LT-G1 both pass."
     },
     {
       "checkpoint": {
@@ -2695,6 +2932,56 @@
     },
     {
       "checkpoint": {
+        "repo": "qwen3-4b clean-sft-merged-16bit + grpo-v2-lora (deployed; existing extractions only)",
+        "revision": "extraction__55254a04aa1f (gate) / amendment_t stage2 (dial)"
+      },
+      "created_at": "2026-08-17T22:39:21Z",
+      "falsifier": "Delta >= +0.020 with the paired bootstrap CI excluding 0: the gate adds real correctness information beyond the dial.",
+      "inputs": [
+        "archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f",
+        "archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2",
+        "experiments/unified-two-signal-dial-veto/artifacts/two_signal_stage1p5_integration.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "No generation-bearing step exists: the cell is a CPU rerun of a committed diagnostic over cached hidden-state extractions only, and its FR-G0 validity gate requires byte-identical instrument parity with the PR #128 run it re-registers. No engine is invoked."
+        },
+        "modules": [
+          "two_signal_stage1p5_integration.py"
+        ],
+        "persistence": {
+          "two_signal_stage1p5_integration.py": {
+            "measured_smoke_wall_clock_s": 16.3,
+            "note": "byte-identical snapshot of experiments/common/mechinterp/two_signal_stage1p5_integration.py (sha ba61ae9f...); single deterministic CPU pass (seed 20260630); a kill loses nothing, rerun from scratch reproduces byte-identical aggregates. Requires PYTHONPATH=.:archive/experiment/phase1/probe/legacy-wrapper-tree (post-reorg import environment; no code change).",
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "cell.yaml": "f5980c4c0f8d1e1cb0c2f994ac28f2197d523cf8af304f5bce66bd12c4fcebab",
+          "gates.yaml": "857295d61e8c81713428896babbf5b948fff6c2a57594e4f00d1e515610bfd6b",
+          "two_signal_stage1p5_integration.py": "ba61ae9fbcbe6af04cce7a1d24b54024135add7040005aedacfdfd89a4556bfa"
+        }
+      },
+      "kg": [
+        "experiment:fusion-nonredundance-redo",
+        "mechanism:answerability-and-correctness-are-orthogonal-readout-axes"
+      ],
+      "prediction": "Delta = AUROC(combined) - AUROC(dial) <= 0 (prior unregistered observation: -0.0142, CI [-0.0214, -0.0074]).",
+      "question": "Does fusing the answerability gate score into the correctness dial improve correctness triage on the deployed checkpoint's answerable items, or are the two axes non-redundant for that task?",
+      "registered": true,
+      "slug": "fusion-nonredundance-redo",
+      "status": "resolved",
+      "title": "Gate-dial fusion non-redundance redo (registered CPU rerun)",
+      "type": "probe-fit",
+      "verdict": "confirmed: fusing the gate score into the dial degrades correctness triage (Delta -0.0142, CI [-0.0214, -0.0074] excludes 0 on the negative side); gate and dial axes are non-redundant for correctness triage on the deployed checkpoint. FR-G0 pass, FR-G1 pass, FR-F1 not fired."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
@@ -3464,6 +3751,71 @@
       "title": "Protocol Amendment F: GRPO-Centered Three-Stage Stacking",
       "type": "historical-amendment",
       "verdict": "SIGNED OFF (2026-06-24) for exploratory local seed-1 three-stage stacking over the clean Amendment E lineage."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-13T15:20:18Z",
+      "falsifier": "Cold-start GRPO induces abstention: eval refusal recall >= 20% with over-refusal reported alongside — falsifying the generalized 'only SFT induces abstention from the base model' reading.",
+      "inputs": [
+        "experiments/grpo-three-seed-confirmatory/AMENDMENT.md",
+        "experiments/grpo-three-seed-confirmatory/cell.yaml",
+        "experiments/grpo-three-seed-confirmatory/gates.yaml",
+        "experiments/grpo-three-seed-confirmatory/configs/grpo_schema_clean_sft_merged_seed2_v2_full.yaml",
+        "experiments/grpo-three-seed-confirmatory/configs/eval_grpo3seed_response_confidence_selfaware_clean_sft_grpo_v2_seed2_full_local_4b.yaml",
+        "experiments/grpo-centered-stacking/RUNBOOK.md",
+        "synaptic-tuner/Trainers/grpo/train_grpo.py",
+        "synaptic-tuner/Trainers/grpo/src/rewards.py",
+        "archive/experiment/phase1/grpo/humility_reward_v2.py",
+        "archive/experiment/phase1/grpo/humility_reward.py",
+        "archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md",
+        "archive/experiment/phase1/eval/run_eval.py",
+        "experiments/dial-logprob-baseline-v3/AMENDMENT.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "configs/grpo_cold_base_seed1_full.yaml",
+          "configs/eval_grpo_cold_start_selfaware_full_local_4b.yaml"
+        ],
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "The cold-vs-warmed comparison is only valid if the cold arm uses the identical trainer + rollout stack as the SFT-warmed GRPO arms it is compared to (grpo-three-seed-confirmatory's clean_sft_grpo_v2 arm and its stacked siblings); switching the rollout engine to vLLM would confound the comparison with an instrument change. The rollout engine is train_grpo.py's own TRL GRPOTrainer generation path, not vLLM. The eval stage separately reuses the matrix's own eval instrument (run_eval.py) for the same parity reason -- AMENDMENT.md \"Design\", \"Engine exception\"."
+        },
+        "modules": [
+          "grpo_cold_diagnostics.py"
+        ],
+        "persistence": {
+          "grpo_cold_diagnostics.py": {
+            "measured_smoke_wall_clock_s": 2.0,
+            "note": "CPU-only, single-pass read of a GRPO_REWARD_DEBUG_PATH JSONL plus one JSON write; not incremental (a kill mid-run just means rerun it once the JSONL and eval summary exist). Measured 0.207s over a realistically-sized synthetic fixture (465 events x 128 rows/event, 15.66MB, matching the ~465-step budget the cold arm inherits from the warmed v2 arm's dataset/batch/epoch config) via test_grpo_cold_diagnostics_smoke.py's fixture harness; declared value includes safety margin for a larger real production debug file.",
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "cell.yaml": "82b7d84b41813b7dbc5d91e05a6de8eb361d4b4e11f21c1bcc2e1ee3bc878872",
+          "configs/eval_grpo_cold_start_selfaware_full_local_4b.yaml": "ae148cbfb5072c17cb5f02fdd9ebff7fbdcf158fcbd4618f4a34312ebf286bfc",
+          "configs/grpo_cold_base_seed1_full.yaml": "2aee428220f58ffcfe6776b4f1e6c40299feb4f908ebc40fdf94cdaa434d2b5f",
+          "gates.yaml": "853e4eff13af55b43b95b22decbf47542d76306f5f87a6f31af6265a1052826a",
+          "grpo_cold_diagnostics.py": "68c283e363f34b2a540eb3767ffc4a7a803c92eed9352741d7d37a3c365a7878"
+        }
+      },
+      "kg": [
+        "experiment:grpo-cold-start-induction",
+        "mechanism:cold-grpo-falsifier-fires-but-reclassified-as-prompt-preservation",
+        "mechanism:only-sft-installs-abstention-in-weights"
+      ],
+      "prediction": "Eval refusal recall below 10% (cold DPO/KTO read ~0%), with Null-B (no trainable signal: >=90% of training groups at zero advantage) as the modal mechanism.",
+      "question": "Can GRPO under the rebalanced (v2) appropriateness reward induce abstention when trained from the raw Qwen3-4B base with no SFT warm-up, completing paper 2's cold-start comparison across all four objectives?",
+      "registered": true,
+      "slug": "grpo-cold-start-induction",
+      "status": "falsified",
+      "title": "Cold-start GRPO: can the appropriateness reward induce abstention from the base model?",
+      "type": "training-run",
+      "verdict": "Cold-start GRPO trained on real gradient (not Null-B) and fired the registered >=20 percent falsifier at 85.66 percent eval recall, but the panel base counterfactual (90.89 under the same instruction, 0 without it) shows the reward preserved and sharpened prompt-elicited abstention rather than inducing any; the registered prediction is falsified and the induction framing retired."
     },
     {
       "checkpoint": {
@@ -4311,9 +4663,9 @@
       "question": "Does useful, selective J-space mid-band actuation (calibrated mid-band gated caution snap achieving held-out confab clean_tighten above a floor at low known-correct cost) generalize across model families, or is it specific to Qwen3 lineage?",
       "registered": true,
       "slug": "j-space-cross-family-layer-contrast",
-      "status": "signed",
+      "status": "resolved",
       "type": "steer-cell",
-      "verdict": "INCONCLUSIVE (interim, 2026-07-24): only 2 of 4 registered families ran past G0, below the minimum denominator of 3, so the cross-family question is unanswered in either direction. Of the 2 that ran, llama-3.2-3b cleared G1 at hs17 (647/872 = 0.7420, Wilson [0.7119, 0.7699]) and mistral-7b-v03 missed the 0.50 floor marginally at hs15 (642/1312 = 0.4893, Wilson [0.4624, 0.5164], interval straddles the floor). G2 PASSED on both as registered and those passes stand, but are non-diagnostic: the dosed known-correct denominator is 0 by construction (fired 0/334 and 0/382), so they are evidence about baseline malformedness only and must not be read as write selectivity. gemma4-e4b is a G0 stop (use_cache=False corrupted hs25+ via KV sharing), so its 0/176 write null is uninterpretable rather than negative. qwen35-4b is being run to reach the registered denominator; this Outcome will be re-adjudicated on cross_family_rollup.py at that point. See AMENDMENT.md \"Outcome\" for the three registered-instrument defects found at resolve, including a conflict between this file's falsifier: field and AMENDMENT.md's roll-up rule."
+      "verdict": "INCONCLUSIVE, closed 2026-08-18 without running the remaining families: SUCCESS arithmetically unreachable (llama PASS, mistral FAIL, gemma G0 instrument invalid), and the cross-family mid-band question was re-prosecuted under the corrected wide instrument by the rr1-rr3 lineage and the qwen35 midband cells. Per-family results stand as recorded."
     },
     {
       "checkpoint": {
@@ -4589,6 +4941,64 @@
     },
     {
       "checkpoint": {
+        "repo": "clean_sft_grpo_v2_seed1 (local lineage: sft_schema_clean_seed1_full/20260623_123624 merged-16bit base + schema_clean_sft_grpo_v2_seed1_full/20260624_095831 final_model adapter)",
+        "revision": "local run dirs pinned in configs; published mirror eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora"
+      },
+      "created_at": "2026-08-16T11:50:52Z",
+      "falsifier": "Mid-band ablate known-item over-refusal >= 0.30 (collapse is late-site-specific; J-lens guidance does not transfer to writes on this trained checkpoint), or a specificity break at the mid-band site (induced refusal > 0.05 or known-correct drop > 0.05) while the collapse holds.",
+      "inputs": [
+        "archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f",
+        "archive/experiment/phase1-data/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl",
+        "experiments/caution-ablation-rederivation/analysis/current_clean_grpo_v2_caution_residual_intervention/rows.jsonl",
+        "experiments/j-space-localization-qwen3-4b/analysis-committed/corpus/jlens_corpus_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "RUNBOOK.md",
+          "configs/jlens_trained.py",
+          "configs/phase3_jlens_midband_refusal_axis_intervention_seed1.TEMPLATE.yaml"
+        ],
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "Ablation arms must be comparable to the governed L35 collapse on the same checkpoint: archived HF-transformers greedy intervention stack retained. J-lens is standalone read-only code kept outside the tuner by design."
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "RUNBOOK.md": "19a8ed8915923fefb78d6733c154daa0dd06a65b1fc349d10c28df7b828d002e",
+          "cell.yaml": "f94f273a86c1f0d0d4f4b327f65b1ca25c1db24404afeeaa1b1ff17217c7a5d7",
+          "configs/jlens_trained.py": "23f46714dd8b7585427c8940ef2dc8f96bf757a9c3e88a880246ab81d440ad46",
+          "configs/phase3_jlens_midband_refusal_axis_intervention_seed1.TEMPLATE.yaml": "0491610e52ffe3340cd591ca8386495a23d61a5d5c640c7e60e34f6531016522",
+          "gates.yaml": "b76f22624e890a3f43ba54aecab149c692d1ef216627c0dd8d672498035c6d20"
+        },
+        "repins": [
+          {
+            "date": "2026-08-16T12:48:45Z",
+            "file": "configs/jlens_trained.py",
+            "new_sha256": "23f46714dd8b7585427c8940ef2dc8f96bf757a9c3e88a880246ab81d440ad46",
+            "old_sha256": "0735437be229107a08b8f73bcf752f703b4993fe0d88fb9c6252d720424ceee8",
+            "reason": "Pre-run instrument fix, PI-approved in-conversation 2026-08-16: PEFT merge_and_unload returns base weights frozen (requires_grad=False), so the forward built no autograd graph and the JVP double-backward crashed in the smoke stage. Re-enable requires_grad on all params after merge, restoring parity with the pinned original's loaded state; still read-only. No result existed before this fix (smoke is the go/no-go that caught it)."
+          }
+        ]
+      },
+      "kg": [
+        "experiment:jlens-trained-checkpoint-midband-ablation",
+        "mechanism:refusal-axis-readable-but-not-ablatable-at-midband",
+        "mechanism:training-flattens-and-deepens-jlens-workspace-band"
+      ],
+      "prediction": "The trained checkpoint keeps a J-lens interior band overlapping hs23-29 (interior max >= 1.5x early median), and full refusal-axis ablation at the rule-selected mid-band site collapses known-item over-refusal to <= 0.10 with specificity intact (induced refusal <= 0.05, known-correct drop <= 0.05).",
+      "question": "Does training preserve the J-lens interior workspace band on clean_sft_grpo_v2_seed1, and does full refusal-axis ablation at a rule-selected mid-band site reproduce the governed late-site (L35) over-refusal collapse on the same trained checkpoint?",
+      "registered": true,
+      "slug": "jlens-trained-checkpoint-midband-ablation",
+      "status": "falsified",
+      "title": "J-lens on a trained checkpoint plus rule-selected mid-band refusal-axis ablation",
+      "type": "eval",
+      "verdict": "Falsifier fired on both clauses: full refusal-axis ablation at the rule-selected J-lens mid-band site (hs17) on the trained checkpoint releases zero of the known-item over-refusal (1.000 vs the 0.30 falsifier line) and induces refusal on 48 percent of previously answered knowns, while the same operation at L35 releases 163 of 168 — the J-lens read-side band does not license a write site on this trained checkpoint, and the trained profile itself is flattened and deepened relative to raw-base (peak hs26 suppressed ~35 percent, peak now hs29)."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
@@ -4834,6 +5244,45 @@
       "title": "Llama atlas-sited gated caution ladder, wide-instrument retest",
       "type": "steer-cell",
       "verdict": "R1 confirmed (2026-07-19): llama shape F robust to the certified wide instrument; falsifier fired on zero rungs (well-formed peak hs20 dose 12 wide 0.457 [0.416,0.497] vs 0.60 floor); CG1 8/8 PASS attempt 1; cross-cohort baseline agreement 0.1624 vs 0.164; rr's locked verdict unchanged."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Llama-3.2-3B-Instruct",
+        "revision": "raw-base (bf16 instruct, no adapter, no 4-bit quantization)"
+      },
+      "created_at": "2026-08-25T15:38:56Z",
+      "falsifier": "Arm-1 held-out clean_tighten < 0.50 (replication failure), or max over the 15 seeds of |random lift| >= gated lift / 3, i.e. effect ratio < 3.0.",
+      "inputs": [
+        "experiments/j-space-cross-family-layer-contrast"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "engine_exception": {
+          "kind": "intervention",
+          "reason": "Per-row KU-gated activation write at hs17 via the tuner mechinterp InterventionHook path, the engine the parent j-space-cross-family-layer-contrast arms registered; arm comparability with the frozen parent result requires the identical engine (batched-generation.md decision table: per-row hooks/activation writing)."
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "b5af1649a6434ebc219ccab6914053783c56979b1808b2cccd1f0567b876dfaa",
+          "gates.yaml": "94ce682aefe9ef074b373962318f3699c414c3f753cfb94e0eeb7aee70148a22"
+        }
+      },
+      "kg": [
+        "experiment:llama-hs17-direction-specificity",
+        "mechanism:llama-hs17-write-is-direction-specific"
+      ],
+      "prediction": "The gated write replicates above the 0.50 floor and clears the 3.0 effect ratio against the strongest of fifteen random directions.",
+      "question": "Is llama's hs17 mid-band gated-write behavioral pass (held-out clean_tighten 0.742) direction-specific against fifteen matched-magnitude fresh random directions?",
+      "registered": true,
+      "slug": "llama-hs17-direction-specificity",
+      "status": "resolved",
+      "title": "Llama hs17 mid-band direction-specificity census",
+      "type": "steer-cell",
+      "verdict": "llama hs17 gated write replicates held-out (0.7282 >= 0.50, LG-G1 PASS) and is direction-specific against 15 matched-dose random directions (effect ratio 8.25 >= 3.0, LG-G2 PASS); known-correct cost gate NOT-ADJUDICABLE (KU fired 0/334), as pre-registered."
     },
     {
       "checkpoint": {
@@ -5580,6 +6029,250 @@
         "repo": "",
         "revision": ""
       },
+      "created_at": "2026-08-15T21:01:38Z",
+      "falsifier": "Any seq preference arm below 30 percent P-struct refusal recall: preference-after-SFT erodes internalized abstention below the registered floor and Section 4.3 must add an erosion finding.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "configs/eval_crossing_seq_pstruct_seed1_local_4b.yaml",
+          "configs/eval_crossing_seq_pstruct_seed2_local_4b.yaml",
+          "configs/eval_crossing_seq_pstruct_seed3_local_4b.yaml",
+          "configs/eval_crossing_coldsft_rc_local_4b.yaml",
+          "configs/eval_crossing_warmed_pplain_local_4b.yaml"
+        ],
+        "engine": {
+          "name": "vllm",
+          "version": "0.16.1.dev0+g89a77b108.d20260417"
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "a5d987c5fd5572779dde569d7db46de34eda44bf963559d712d975ccb0256cc8",
+          "configs/eval_crossing_coldsft_rc_local_4b.yaml": "8fdc13e6c0fbff8f1e5eac434d77290ea2f426fb3c6f92c7da4be5b997bd964e",
+          "configs/eval_crossing_seq_pstruct_seed1_local_4b.yaml": "29cbffb958207a2420011d94ce2386aaa80c85e3665a2c830592187b30839fc0",
+          "configs/eval_crossing_seq_pstruct_seed2_local_4b.yaml": "de8f647975f8e6ea383f1e7e35ad12297334e5f59168994c7cadb629d2493356",
+          "configs/eval_crossing_seq_pstruct_seed3_local_4b.yaml": "c9a8bfd0bd99a3ea7e330af9338c1e8f57f02ef5d99615807e3fb593dca9faa3",
+          "configs/eval_crossing_warmed_pplain_local_4b.yaml": "ba2f4af692d0652bd536bc108a037a3642d718bd03fe41d7dca3ebc5a6870289",
+          "gates.yaml": "0d17029e09ed36d5ad5f99e6e29ed93814e2470be4833b54cce5372e71ddb161"
+        }
+      },
+      "kg": [
+        "experiment:prompt-crossing-completion",
+        "mechanism:preference-stage-after-sft-partially-erodes-internalized-abstention"
+      ],
+      "prediction": "All six seq preference arms stay at or above the 30 percent internalization floor under P-struct (expected 40-80; DPO at/below parent, KTO near parent); cold SFT under response-confidence reads 85-95; warmed arms under plain-answer within about 10 points of their response-confidence readings.",
+      "question": "Does a preference stage applied to an internalized SFT checkpoint preserve, erode, or deepen instruction-free abstention (warmed seq DPO/KTO under P-struct, three seeds each), and what do the missing contract-symmetric readings (cold SFT under response-confidence, warmed arms under plain-answer) show?",
+      "registered": true,
+      "slug": "prompt-crossing-completion",
+      "status": "resolved",
+      "title": "Completing the prompt-condition crossing",
+      "type": "eval",
+      "verdict": "Falsifier not fired: all six sequential preference arms retain internalized abstention above the 30 percent floor under P-struct, but five of six show partial erosion (DPO spending far more internalization than KTO), and the gap-1 evals make Section 4.5 single-contract with both gap-1b arms inside the predicted band."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-17T14:04:19Z",
+      "falsifier": "Per-claim, fixed at signing - C1 gap < 15pp; C2 any cold SFT seed < 20% or base > 15% or any cold DPO/KTO seed >= 20%; C3 any seq arm < 25% of its same-seed parent (erasure).",
+      "inputs": [
+        "experiments/ood-breadth-beyond-selfaware/analysis/screen/ambigqa_validation_screened.jsonl",
+        "experiments/ood-breadth-beyond-selfaware/analysis/screen/kuq_screened.jsonl",
+        "experiments/ood-breadth-beyond-selfaware/analysis/screen/bigbench_known_unknowns_screened.jsonl",
+        "archive/experiment/phase1/eval/run_eval.py",
+        "archive/experiment/phase1/eval/ood.py",
+        "archive/experiment/phase1/eval/scorers.py",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed2/20260615_090734/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed3/20260615_104507/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed1_postfix/20260807_192026/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed2/20260615_114512/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed3/20260615_130441/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1_postfix/20260807_124416/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed2/20260615_142046_logging_patch/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed3/20260615_204215_logging_patch/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed1/20260614_074933/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed2/20260616_164539/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed3/20260616_130451/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed1/20260614_085358/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed2/20260616_183650/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed3/20260617_070334/final_model",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed2/20260615_090734/Qwen3-4B-bnb-4bit/merged-16bit-lowmem-20260616",
+        "synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed3/20260615_104507/Qwen3-4B-bnb-4bit/merged-16bit",
+        "scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit",
+        "scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "configs/eval_heldout_base_prc_local_4b.yaml",
+          "configs/eval_heldout_base_pplain_local_4b.yaml",
+          "configs/eval_heldout_cold_pstruct_local_4b.yaml",
+          "configs/eval_heldout_warmed_pstruct_local_4b.yaml",
+          "configs/eval_heldout_seq_pstruct_seed1_local_4b.yaml",
+          "configs/eval_heldout_seq_pstruct_seed2_local_4b.yaml",
+          "configs/eval_heldout_seq_pstruct_seed3_local_4b.yaml",
+          "configs/eval_heldout_secondary_pstruct_local_4b.yaml"
+        ],
+        "engine": {
+          "name": "vllm",
+          "version": "0.16.1.dev0+g89a77b108.d20260417"
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "2294151019e9cd6fb5f256bccc1d28af681c6d48810b666b974a101914874fa5",
+          "configs/eval_heldout_base_pplain_local_4b.yaml": "12a30ef7b69eba6989ef92ea905a4493923e35e770f504b95c408d05c45a3923",
+          "configs/eval_heldout_base_prc_local_4b.yaml": "ff5cd8a485e267d87cbcfe1fdbaa313048614263a29c1d5e22f82334196af2dc",
+          "configs/eval_heldout_cold_pstruct_local_4b.yaml": "2ffff41ce48b09a9af803e3a0991389c38789356dda74e361d21644d7937459b",
+          "configs/eval_heldout_secondary_pstruct_local_4b.yaml": "297432f3e222f627d13523aaa46a36bee755550111ab145d181b267065c64c4f",
+          "configs/eval_heldout_seq_pstruct_seed1_local_4b.yaml": "00e36147714fea8ed6c85e9b61b12bacca4bde9e5ba4eb304338a8c746c40f27",
+          "configs/eval_heldout_seq_pstruct_seed2_local_4b.yaml": "95c3ae828828aab0be480f6f3a364a6839e29979b9152cb70ffa46beae9f373b",
+          "configs/eval_heldout_seq_pstruct_seed3_local_4b.yaml": "1ed669226fdb84c6c6c2cde433ad6b84206d062e2411eac30209030ce6e6756d",
+          "configs/eval_heldout_warmed_pstruct_local_4b.yaml": "176855c43631c3ab9a878d71973c07d61d693225d0602abf7d0e6d3387def93b",
+          "gates.yaml": "51094db23f2a1c05c45021b3c9abe7306d3a48d49a282ede6df35def78ea2375"
+        }
+      },
+      "kg": [
+        "experiment:prompt-crossing-heldout-confirmatory",
+        "mechanism:rc-prompt-elicits-near-ceiling-abstention-from-untrained-base",
+        "mechanism:only-sft-installs-abstention-in-weights",
+        "mechanism:preference-stage-after-sft-partially-erodes-internalized-abstention"
+      ],
+      "prediction": "On AmbigQA validation, base P-rc minus P-plain refusal-recall gap in 50-90pp; every cold SFT seed P-struct recall 40-80% with base and every cold DPO/KTO seed <= 10% scored; every seq preference arm at 40-100% of its same-seed cold-SFT parent.",
+      "question": "Do the three exploratory prompt-condition claims of paper 2 Section 4.2 (instruction gap at base; SFT-only internalization under structure-only; erosion not erasure after a preference stage) replicate on held-out out-of-distribution known/unknown surfaces on the same Qwen3-4B checkpoints?",
+      "registered": true,
+      "slug": "prompt-crossing-heldout-confirmatory",
+      "status": "resolved",
+      "title": "Prompt-crossing held-out confirmatory: promoting the paper-2 prompt-condition claims on out-of-distribution surfaces",
+      "type": "eval",
+      "verdict": "C1 and C2 confirmed and promoted at exploratory-companion strength: C1 instruction gap 70.26pp on held-out AmbigQA (base P-rc 70.26 vs P-plain 0.00, band 50-90pp); C2 SFT internalization signature with cold SFT seeds 56.39/63.47/61.58 in the 40-80 band, base P-struct 0.00 and all six cold DPO/KTO seeds at or below 0.10. C3 partial, no promotion, F3 not fired: seq SFT-KTO retains 90.1/83.8/78.6 percent of same-seed parent recall (in the 40-100 band), seq SFT-DPO retains 28.9/32.6/28.4 percent (below the 40 percent promotion band, above the 25 percent erasure floor). PH-G0 pass: full coverage 1832 rows on all 20 primary arms, config shas match pinned bytes, lead recomputed all 20 arms from raw scored rows matching metrics exactly. Secondary descriptive: internalization generalizes to KUQ (88.34) and BIG-bench (100.0) with base at 0.00 on both."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-14T11:15:06Z",
+      "falsifier": "Instrument-level only: any arm failing PV-G0 (incomplete coverage, config-sha mismatch, or scorer parse-path failure) is a stop reported straight; interpretation bands R1-R4 are frozen at signing.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "configs/eval_panel_prc_local_4b.yaml",
+          "configs/eval_panel_pplain_local_4b.yaml",
+          "configs/eval_panel_pstruct_cold_local_4b.yaml",
+          "configs/eval_panel_pstruct_warmed_local_4b.yaml"
+        ],
+        "engine": {
+          "name": "vllm",
+          "version": "0.16.1.dev0+g89a77b108.d20260417"
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "6ab13728b9f6867ff9d8ea63c8d308490ee3ba79822f7c4a91fb318933bb8eb3",
+          "configs/eval_panel_pplain_local_4b.yaml": "030e9c1f814d20219e54a526a644bff7c6e701a46a24d5d5ccf4be25a9c44659",
+          "configs/eval_panel_prc_local_4b.yaml": "7ae53fcdbbe76d8589b0799abcc1f682475824017c1b68e03f95e452263617c0",
+          "configs/eval_panel_pstruct_cold_local_4b.yaml": "ec81bd46bb3c5beae1a232e3221520aed2f0c8fb978ce0e108b75e6dcec07289",
+          "configs/eval_panel_pstruct_warmed_local_4b.yaml": "68ec1a299d37a9f091a4fa28d917fb1e1bc40e8976b4ab43f42f7464a317ee8b",
+          "gates.yaml": "fdee6209666da0da33e73350651b887a6de5964056a3cb8ddca9d033f6bc268a"
+        },
+        "repins": [
+          {
+            "date": "2026-08-14T11:50:48Z",
+            "file": "configs/eval_panel_prc_local_4b.yaml",
+            "new_sha256": "7ae53fcdbbe76d8589b0799abcc1f682475824017c1b68e03f95e452263617c0",
+            "old_sha256": "5c71acff6d4609bbb1f79a7c371da3bf3388eac92bf949ec03be8205f732156c",
+            "reason": "Pre-launch harness-validation repair: run_eval.py requires each arm's model label to equal the config's model_tag (run_eval.py:263-272); arms carried sibling-config labels and every launch failed at validation before engine init (zero run artifacts). Arm model labels set to each config's model_tag; no design change."
+          },
+          {
+            "date": "2026-08-14T11:50:48Z",
+            "file": "configs/eval_panel_pplain_local_4b.yaml",
+            "new_sha256": "030e9c1f814d20219e54a526a644bff7c6e701a46a24d5d5ccf4be25a9c44659",
+            "old_sha256": "c80a3046b1ce219b08b6083c3773f402269ed7b76ef285012f1fd79f660fc28f",
+            "reason": "Pre-launch harness-validation repair: run_eval.py requires each arm's model label to equal the config's model_tag (run_eval.py:263-272); arms carried sibling-config labels and every launch failed at validation before engine init (zero run artifacts). Arm model labels set to each config's model_tag; no design change."
+          },
+          {
+            "date": "2026-08-14T11:50:48Z",
+            "file": "configs/eval_panel_pstruct_cold_local_4b.yaml",
+            "new_sha256": "ec81bd46bb3c5beae1a232e3221520aed2f0c8fb978ce0e108b75e6dcec07289",
+            "old_sha256": "05bab0eb93cd173dc37bd697a8b3302223a56c6948da5a3979dc10f17af21ed9",
+            "reason": "Pre-launch harness-validation repair: run_eval.py requires each arm's model label to equal the config's model_tag (run_eval.py:263-272); arms carried sibling-config labels and every launch failed at validation before engine init (zero run artifacts). Arm model labels set to each config's model_tag; no design change."
+          },
+          {
+            "date": "2026-08-14T11:50:48Z",
+            "file": "configs/eval_panel_pstruct_warmed_local_4b.yaml",
+            "new_sha256": "68ec1a299d37a9f091a4fa28d917fb1e1bc40e8976b4ab43f42f7464a317ee8b",
+            "old_sha256": "cdd71421fa9863cd5037066f77e390b2f5e971422df788c3d94c341bf23b8ad3",
+            "reason": "Pre-launch harness-validation repair: run_eval.py requires each arm's model label to equal the config's model_tag (run_eval.py:263-272); arms carried sibling-config labels and every launch failed at validation before engine init (zero run artifacts). Arm model labels set to each config's model_tag; no design change."
+          }
+        ]
+      },
+      "kg": [
+        "experiment:prompt-vs-training-panel",
+        "mechanism:rc-prompt-elicits-near-ceiling-abstention-from-untrained-base",
+        "mechanism:only-sft-installs-abstention-in-weights"
+      ],
+      "prediction": "Base+P-rc recall lands 55-80% and base+P-struct under 10%, while cold-SFT+P-struct retains over half its instructed recall (training internalizes for SFT; cold GRPO is compliance-heavy).",
+      "question": "How much of the program's measured abstention is carried by the eval prompt's abstention instruction versus by training, measured by crossing raw-base and trained checkpoints with instructed and structure-only prompts?",
+      "registered": true,
+      "slug": "prompt-vs-training-panel",
+      "status": "resolved",
+      "title": "Prompt-vs-training disentanglement panel: base counterfactuals and instruction-free abstention",
+      "type": "eval",
+      "verdict": "The RC contract alone elicits near-ceiling abstention from the untrained base (recall 90.89) while plain and structure-only prompts elicit none (0.00 scored, ~4-6 audited); only SFT-trained weights carry abstention without the instruction (69.6, deepened to 77.4 by GRPO on top), so training-regimen abstention claims are meaningful only relative to prompt condition."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-14T14:26:10Z",
+      "falsifier": "Any SFT seed below 30% P-struct recall (internalization not seed-robust; paper 2 scopes or drops the claim); any DPO/KTO arm at or above 10% breaks the negative and is reported straight.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "configs/eval_seedrobust_pstruct_local_4b.yaml"
+        ],
+        "engine": {
+          "name": "vllm",
+          "version": "0.16.1.dev0+g89a77b108.d20260417"
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "a5ffed28a209c43b3f4fb0ace7ca962868054941b4a45d9477c56c9274ca3242",
+          "configs/eval_seedrobust_pstruct_local_4b.yaml": "97fc94b46d443d631f6b7bb5590bf854a347e59cc9ffc194b0542469063171e6",
+          "gates.yaml": "fcf65c917690a60d7930a7ebe90678bb72c64f90a4299aa13f8aaa063ee1d124"
+        }
+      },
+      "kg": [
+        "experiment:pstruct-internalization-seed-robustness",
+        "mechanism:only-sft-installs-abstention-in-weights"
+      ],
+      "prediction": "Both SFT seeds land at or above the 30% internalization floor (expected 55-80%), and all four DPO/KTO arms land below 10% (base-tracking).",
+      "question": "Is the panel's instruction-free abstention internalization finding (cold SFT retains 69.6% recall under a structure-only prompt while the base reads 0.0%) robust across the remaining headline seeds, for SFT and for the DPO/KTO negatives?",
+      "registered": true,
+      "slug": "pstruct-internalization-seed-robustness",
+      "status": "resolved",
+      "title": "Instruction-free abstention internalization: seed robustness of the P-struct readout",
+      "type": "eval",
+      "verdict": "Instruction-free abstention internalization is seed-robust: all three cold-SFT seeds retain 69.6-79.4 percent refusal recall under the structure-only prompt while all DPO/KTO seeds read 0.00, making only-SFT-installs-abstention a three-seed claim in both directions."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
       "inputs": [],
@@ -5704,6 +6397,48 @@
       "title": "Qwen3-4B family atlas",
       "type": "probe-fit",
       "verdict": "FALSIFIER FIRED on the profile limb: eff_dim_frac peaks early-exterior at hs5/36 (depth 0.139), the 4th family (after llama, mistral, gemma) with an early-exterior dimensionality peak decoupled from a healthy interior three-axis read band (hs22-36 clear >=0.80 on doubt/caution/raw_refusal; caution+raw_refusal carry the band over their controls, doubt is norm/position confounded as in the other three families). Scoreboard: orchestrator WIN (early-exterior + J-lens-non-reproduction sub-call both correct) / user LOSS on the registered eff_dim_frac-peak call, with credit that the user's interior intuition is vindicated on the read panel. The eff_dim_frac profile and the read-axis panel dissociate cleanly on this family, resolving the apparent tension with j-space-localization-qwen3-4b's interior J-lens peak."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (no adapter; bf16, no 4-bit quantization)"
+      },
+      "created_at": "2026-08-25T15:38:56Z",
+      "falsifier": "Any seed's |lift over the frozen 0.1135 baseline| >= 20.9 points (effect ratio < 3.0), weakening the late-site specificity claim to its single-draw form.",
+      "inputs": [
+        "experiments/doubt-gated-caution-tighten",
+        "experiments/wide-instrument-control-rescore",
+        "experiments/placebo-seed-distribution-census"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "engine_exception": {
+          "kind": "intervention",
+          "reason": "Per-row gated activation write at hs34 via the tuner mechinterp InterventionHook path, the engine of the 4.5-cell arms that wide-instrument-control-rescore re-scored; the fresh random arms must run the identical engine as the frozen gated/baseline arms they are compared to (batched-generation.md decision table: per-row hooks/activation writing)."
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "f817ccc894824a6cd8008aa95cb1b62a5961a2720192f1234d7bee654c03069f",
+          "gates.yaml": "81316abe82e0477bfd68402f4ec735e34a6595cbcb93c0a9717964a475f5ca49"
+        }
+      },
+      "kg": [
+        "experiment:qwen3-4b-l34-placebo-seed-census",
+        "mechanism:qwen-l34-random-direction-specificity-survives-seed-census",
+        "mechanism:qwen-l34-random-direction-sign-is-a-draw-level-accident"
+      ],
+      "prediction": "All fifteen random lifts stay small: effect ratio >= 3.0 on the max-over-15 denominator, and >= 12/15 seeds suppressive (negative).",
+      "question": "Does the raw-base Qwen3-4B L34 direction-specificity result (effect ratio 14.5 on one random draw) survive a fifteen-fresh-seed random-direction distribution?",
+      "registered": true,
+      "slug": "qwen3-4b-l34-placebo-seed-census",
+      "status": "resolved",
+      "title": "Raw-base Qwen3-4B L34 random-direction seed census",
+      "type": "steer-cell",
+      "verdict": "qwen3-4b hs34 gated-write specificity survives a 15-seed matched-dose random census (max abs lift 13.0pp, effect ratio 4.83 >= 3.0, QG-G1 PASS) but the historical draw suppressive sign is not distribution-consistent (6/15 negative vs >=12 required, QG-G2 FAIL): specificity claim upgraded to distributional form, sign-opposition claim retired."
     },
     {
       "checkpoint": {
@@ -5936,6 +6671,98 @@
       "title": "Raw-base AmbigQA boundary readout (pretraining-flavor vs training-warp fork)",
       "type": "probe-fit",
       "verdict": "Falsifier not fired; prediction supported. The raw pretrained base reads the AmbigQA boundary at 0.6338, within 0.006 of both trained checkpoints, so the known-unknown activation is flavor-specific to SelfAware-style unanswerability from pretraining, and the G7 non-transfer is not a post-training warp."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-17T23:06:16Z",
+      "falsifier": "Any pair in the rotated band (transfer AUROC < 0.85 with in-contract refit >= 0.95: direction moved) or the suppressed band (transfer < 0.85 with refit < 0.90: signal suppressed by the contract). Other degraded outcomes are partial, reported descriptively.",
+      "inputs": [
+        "experiments/common/readouts/amendment_u_unified_extract.py",
+        "experiments/common/readouts/amendment_u_two_signal_score.py",
+        "experiments/common/knowledge_probe/hidden_state_probe.py",
+        "experiments/prompt-vs-training-panel/configs/eval_panel_prc_local_4b.yaml",
+        "experiments/prompt-vs-training-panel/configs/eval_panel_pplain_local_4b.yaml",
+        "experiments/prompt-vs-training-panel/configs/eval_panel_pstruct_cold_local_4b.yaml",
+        "scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit",
+        "scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "Extraction-only cell, no generation-bearing step; known/unknown labels are dataset properties. Comparability with the neutral-prompt reference readings requires the same pinned extraction and probe stacks as the paper-3 lineage."
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "0ebd531af05c38c70d1f6cec0ce4e8907d8abe350e99525d04d920229d56c3d2",
+          "gates.yaml": "55ebbc30cc28c68cc29f9f8896c092db8ecba0ee02ed90aaec24f507cddf54ce"
+        }
+      },
+      "kg": [
+        "experiment:readout-under-contract-crossing",
+        "mechanism:known-unknown-direction-transfers-partially-across-prompt-contracts",
+        "mechanism:post-training-shrinks-known-unknown-contract-sensitivity"
+      ],
+      "prediction": "Contract-invariant: for every checkpoint-contract pair (base, clean-SFT seed 1, SFT->GRPO-v2 seed 1; P-rc, P-plain, P-struct), transfer AUROC drops <= 0.05 from that checkpoint's own neutral-prompt reference reading, re-derived in Stage 0 from the same extraction stack.",
+      "question": "Does the near-ceiling internal known-unknown readout survive a change of prompt contract? Transfer: does the neutral-prompt probe direction still rank known vs unknown on contract-conditioned activations? Presence: if transfer degrades, does refitting in-contract recover the separation?",
+      "registered": true,
+      "slug": "readout-under-contract-crossing",
+      "status": "resolved",
+      "title": "Known-unknown readout under a change of prompt contract",
+      "type": "probe-fit",
+      "verdict": "Internal known-unknown readout survives every prompt contract in presence (in-contract refit >= 0.988) but its neutral-prompt direction transfers fully only to the plain contract, dropping 0.06-0.11 AUROC under P-rc and P-struct on all three checkpoints: partial transfer, no rotation, no suppression, falsifier not fired."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-16T09:51:56Z",
+      "falsifier": "Post-ablation known-item over-refusal >= 0.30 on the fresh seed: collapse is seed-1-specific, no promotion; partial band (0.10,0.30) or specificity break also blocks promotion, reported straight.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "RUNBOOK.md",
+          "configs/extraction_hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed2_full.yaml",
+          "configs/behavior_rows_build_clean_sft_grpo_v2_seed2.py",
+          "configs/phase3_current_clean_grpo_v2_caution_residual_intervention_seed2.yaml"
+        ],
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "Fresh-seed confirmatory of an archived-instrument result: the archived HF-transformers greedy intervention stack is the instrument whose seed-1 result is being confirmed; changing engines would break comparability."
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "RUNBOOK.md": "47cbc58c0cc403c755e719f0df5007b6336021e02a217faa37b9241f55d65256",
+          "cell.yaml": "0e70597c52351329cbc86b617435f465d0c99de078b8a12df75feab920da8a80",
+          "configs/behavior_rows_build_clean_sft_grpo_v2_seed2.py": "6da77fe199cdf849acb30bbe2865fc06af2b62bf238c80fa1406fc465139524d",
+          "configs/extraction_hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed2_full.yaml": "6dd625fd3edb7eb7f962c3481283fefeac9546c1e8114a946f898aa11abd4da7",
+          "configs/phase3_current_clean_grpo_v2_caution_residual_intervention_seed2.yaml": "fa2f5e289907ff237a47a35ede714e288e9a239d8bc6d4552d787be912ae079c",
+          "gates.yaml": "0daf7aeb14d30f251d9aa739cefa1bfad8514dd6d787cee37c810b0a922bf7cf"
+        }
+      },
+      "kg": [
+        "experiment:refusal-axis-ablation-confirmatory",
+        "mechanism:full-refusal-axis-ablation-collapse-is-seed1-specific"
+      ],
+      "prediction": "Ablate arm lands at or below 0.10 (modal 0.03-0.08) from a >=0.97 baseline with specificity intact on known_correct_answered.",
+      "question": "Does ablating a freshly fit refusal-axis direction on clean_sft_grpo_v2_seed2 (own per-seed lineage, same registered recipe as seed 1) reproduce the known-item over-refusal collapse at or below 0.10 with specificity intact, licensing promotion of the 0.030-class full-ablation figure into papers 3 and 5?",
+      "registered": true,
+      "slug": "refusal-axis-ablation-confirmatory",
+      "status": "falsified",
+      "title": "Refusal-axis ablation fresh-seed confirmatory",
+      "type": "steer-cell",
+      "verdict": "Falsifier fired: with a valid instrument (RC-G0 pass, baseline 1.000), full refusal-axis ablation on clean_sft_grpo_v2_seed2's own lineage leaves known-item over-refusal at 0.553, far above both the 0.10 confirmation bound and the 0.30 falsifier line, so the seed-1 0.994-to-0.030 collapse is seed-1-specific and no promotion to the papers occurs, while the axis itself remains causally load-bearing at seed 2."
     },
     {
       "checkpoint": {
@@ -6515,6 +7342,50 @@
     },
     {
       "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-08-18T14:14:41Z",
+      "falsifier": "F1: AUROC <= 0.55 on ALL trained P-struct arms (channel carries no correctness information under the structure-only contract). F2: refused rows carry HIGHER median confidence in a majority of trained arms.",
+      "inputs": [
+        "archive/experiment/phase1/eval/results_prompt_crossing_heldout_confirmatory_4b",
+        "archive/experiment/phase1/eval/results_prompt_crossing_completion_4b"
+      ],
+      "instrument": {
+        "configs": [],
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "No generation-bearing step anywhere in this cell; it is CPU-only re-analysis of scored_rows.jsonl artifacts already produced and scored by the prompt-crossing held-out confirmatory campaign under that campaign's own pinned engine. Re-generating would break comparability with the rows the paper-2 scope condition refers to."
+        },
+        "modules": [
+          "scripts/score_stated_confidence.py"
+        ],
+        "persistence": {
+          "scripts/score_stated_confidence.py": {
+            "measured_smoke_wall_clock_s": 0.7,
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "scripts/score_stated_confidence.py": "80eb4c093f442b35a46c6c348470f038f0b9198c5424a126ca70bbf33bf5ce62"
+        }
+      },
+      "kg": [
+        "experiment:stated-confidence-under-pstruct",
+        "mechanism:pstruct-stated-confidence-miscalibrated-near-chance",
+        "mechanism:sft-lineage-installs-confidence-refusal-coupling"
+      ],
+      "prediction": "P1: confidence-correctness AUROC on answered rows in [0.55, 0.80] for at least two-thirds of trained P-struct arms. P2: 10-bin ECE >= 0.15 on at least half of trained arms. P3: refused rows carry lower median stated confidence than answered rows in at least two-thirds of trained arms.",
+      "question": "Does the stated-confidence channel emitted under the structure-only prompt (P-struct) — captured across 20 arms of the prompt-crossing held-out confirmatory campaign but never analyzed (paper 2's recorded scope condition) — carry information about answer correctness and refusal behavior, or is it schema-compliance noise?",
+      "registered": true,
+      "slug": "stated-confidence-under-pstruct",
+      "status": "resolved",
+      "title": "Stated confidence under the structure-only contract: the unanalyzed channel",
+      "type": "eval",
+      "verdict": "Under the structure-only contract the stated-confidence channel is not noise but is severely miscalibrated on every trained arm (ECE 0.55-0.85), discriminates near chance except in SFT-lineage sequential arms (best 0.72), and couples to refusal only where SFT is in the lineage: DPO/KTO barely refuse, and GRPO refuses at high stated confidence. P2 held; P1 and P3 did not; neither falsifier fired."
+    },
+    {
+      "checkpoint": {
         "repo": "Qwen/Qwen3.5-4B",
         "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
       },
@@ -6691,6 +7562,85 @@
       "title": "Amendment U — Unified Single-Stream Two-Signal Mechanism (Dial-Veto on Unknowns)",
       "type": "historical-amendment",
       "verdict": "CORRECTED BY CORRIGENDUM (2026-07-18): U-G3 hallucination labels were ~90% detector-artifact refusals (confirmed flip rate 90.1%); under corrected labels (n=12 instrument-corrected / n=8 census-corrected vs the pre-stated >=50 floor) U-G3 is UNPOWERED per the cell's own data-stage stop, descriptive AUROC 0.9067 / 0.8639; U-G1 stands (0.999). Original signed reading retained in AMENDMENT.md section 7: SUCCESS, U-G3 AUROC 0.980."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": ""
+      },
+      "created_at": "2026-08-18T21:26:34Z",
+      "falsifier": "WG-G1 effect ratio below 3.0 at the Section 4.5 operating point, or WG-G2 permuted-gate degradation CI including zero - either upgrades the Section 6.4 gap to a substantive limitation and blocks promotion of the affected result.",
+      "inputs": [
+        "experiments/doubt-gated-caution-tighten/analysis-committed/full_summary.json",
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json",
+        "experiments/abstention-wide-instrument-calibration/detector_v2_patterns.yaml",
+        "experiments/abstention-wide-instrument-calibration/grader.py"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "Regeneration fidelity is the point of WG-G0: Stage 0 imports and drives the source cells' own committed pipelines (import plus monkeypatch tee) so the generation engine, sampling settings, and intervention stack are inherited from those pipelines byte-for-byte. Switching engines would invalidate the parity gate and with it every downstream wide-instrument comparison."
+        },
+        "modules": [
+          "stats_lib.py",
+          "provenance.py",
+          "pipeline_rescore.py",
+          "score_parity.py",
+          "score_wide.py"
+        ],
+        "persistence": {
+          "pipeline_rescore.py": {
+            "checkpoint_path": "experiments/wide-instrument-control-rescore/analysis/regenerated/",
+            "note": "restartable at cell granularity via --cell 45 / --cell 46 (each cell writes its own output directory); each regeneration function frees CUDA memory internally but there is no intra-cell checkpoint, so a mid-cell crash reruns that cell.",
+            "persistence": "incremental"
+          },
+          "provenance.py": {
+            "measured_smoke_wall_clock_s": 0.016,
+            "note": "import-only sha-recording helpers.",
+            "persistence": "short-run"
+          },
+          "score_parity.py": {
+            "measured_smoke_wall_clock_s": 0.046,
+            "note": "CPU, rereads regenerated and committed summaries each invocation.",
+            "persistence": "short-run"
+          },
+          "score_wide.py": {
+            "measured_smoke_wall_clock_s": 0.116,
+            "note": "dry-run smoke timing (mocked grader); the real grading pass is resumable at the pool-file level because grades append per row_key and rescore skips already-graded keys.",
+            "persistence": "short-run"
+          },
+          "stats_lib.py": {
+            "measured_smoke_wall_clock_s": 0.008,
+            "note": "import-only bootstrap/CI helpers.",
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "cell.yaml": "3abd9c828f3206390c7533b09e143f0ccd3135db97f981fd1f72d5924ec3758a",
+          "gates.yaml": "41fdf16d96d7e44c7162d3befe5ca47ae3b5e9c695f725259efbd6c1d0bf2881",
+          "pipeline_rescore.py": "8cb2fb3ebba30f691a69e39726c928ed836489d0709d6f3643f765cbd16cec77",
+          "provenance.py": "789b5c985f709ade68d008e616752e4ea800d4f03744dbc35f44f7523c20e395",
+          "score_parity.py": "d9b981b5b59b1a010896bedbd488fd6e318e26630bd78e991b461027e7d76e1a",
+          "score_wide.py": "0cdc4e2d36eaefcda31ecd916fc448d0bee5e7047c22b1c5b8c838de87624c2d",
+          "stats_lib.py": "74f262ac733c61d2ef0fc5c3b37178f96b7c25022d461114fe46f4d1bdaae0f6"
+        }
+      },
+      "kg": [
+        "experiment:wide-instrument-control-rescore",
+        "mechanism:gated-controller-and-layer-site-controls-survive-wide-instrument"
+      ],
+      "prediction": "Both control conclusions survive at both operating points - the wide-instrument effect ratio (gated lift over random-direction lift) is at least 3.0, and the permuted-gate cost/selectivity degradation holds with a bootstrap CI excluding zero.",
+      "question": "Do the narrow-detector control conclusions behind paper 5 Sections 4.5 and 4.6 (random-direction placebo carries far less than the gated write; the permuted gate degrades cost and selectivity) survive re-scoring under the pinned wide two-instrument stack (detector_v2 plus blinded context-free LLM grading), after faithful regeneration of the arms from the committed pipelines?",
+      "registered": true,
+      "slug": "wide-instrument-control-rescore",
+      "status": "resolved",
+      "title": "Wide-instrument re-score of the gated-controller and layer-contrast controls (Qwen3-4B)",
+      "type": "steer-cell",
+      "verdict": "Both control conclusions survive the wide two-instrument re-score - WG-G1 effect ratio 14.5, WG-G2 cost excess +20.6pp with CI excluding zero, WG-G3 layer advantage +22.7pp with CI excluding zero - closing the paper 5 Section 6.4 instrument gap."
     },
     {
       "checkpoint": {

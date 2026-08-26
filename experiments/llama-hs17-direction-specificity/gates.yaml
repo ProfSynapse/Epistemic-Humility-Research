@@ -1,0 +1,33 @@
+# Pre-stated gates for llama-hs17-direction-specificity.
+# Fixed before launch; see AMENDMENT.md "Gates" for prose. No post-hoc edits.
+gates:
+  - id: LG-G1
+    name: replication
+    role: gating
+    metric: heldout_confab_clean_tighten_arm1
+    population: confab_held_out (n=872, parent reused_rows_manifest.json)
+    threshold: ">= 0.50"
+    on_fail: cell resolves as replication failure; LG-G2 still computed and reported, no specificity claim of either sign
+  - id: LG-G2
+    name: direction_specificity
+    role: primary
+    metric: effect_ratio
+    definition: (arm1_rate - arm0_rate) / max_k(abs(armk_rate - arm0_rate)), k = 1..15 random seeds
+    threshold: ">= 3.0"
+    denominator_convention: absolute value per wide-instrument-control-rescore K=1 specialization; suppressive random lifts do not shrink the denominator
+    companion_descriptive: per-seed signed lifts, sign counts, median (placebo-census summary shape; non-gating)
+  - id: LG-G3
+    name: known_correct_cost_dosed_rows_only
+    role: cost
+    metric: false_refusal_rate_on_fired_known_correct_rows_arm1
+    population: subset of known_correct_answered_held_out (n=334) on which the KU gate FIRED in arm 1
+    threshold: "point <= 0.05 AND wilson95_upper < 0.15"
+    adjudicability_floor: fired_n >= 22  # smallest N with wilson_upper(0,N) = z^2/(N+z^2) < 0.15 at z=1.96
+    below_floor_disposition: NOT-ADJUDICABLE (distinct from PASS and FAIL)
+    companion_descriptive: unconditional 334-row rate (descriptive only, never a cost claim)
+seeds:
+  random_census: [910001, 910002, 910003, 910004, 910005, 910006, 910007, 910008, 910009, 910010, 910011, 910012, 910013, 910014, 910015]
+  excluded_historical: [20260707]
+dose:
+  dose_target: 4.954897429720482  # parent full_summary.json /layers/hs17/dose_target
+  readback_mean_reference: 4.968763927602852

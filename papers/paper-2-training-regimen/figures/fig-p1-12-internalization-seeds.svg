@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="640" viewBox="0 0 1300 640">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="650.0" y="24.0" font-family="Arial, sans-serif" font-size="17" text-anchor="middle" fill="#202020">Instruction-free internalization by seed</text>
+<text x="650.0" y="42.0" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#202020">Structure-only prompt, refusal recall on unknown-labeled rows (%)</text>
+<text x="22" y="260.0" transform="rotate(-90 22 260.0)" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#202020">Refusal recall (%)</text>
+<rect x="110" y="60" width="900" height="400" fill="#fafafa" stroke="#202020"/>
+<line x1="110" y1="460.0" x2="1010" y2="460.0" stroke="#dddddd"/>
+<text x="96.0" y="464.0" font-family="Arial, sans-serif" font-size="9" text-anchor="end" fill="#202020">0</text>
+<line x1="110" y1="380.0" x2="1010" y2="380.0" stroke="#dddddd"/>
+<text x="96.0" y="384.0" font-family="Arial, sans-serif" font-size="9" text-anchor="end" fill="#202020">20</text>
+<line x1="110" y1="300.0" x2="1010" y2="300.0" stroke="#dddddd"/>
+<text x="96.0" y="304.0" font-family="Arial, sans-serif" font-size="9" text-anchor="end" fill="#202020">40</text>
+<line x1="110" y1="220.0" x2="1010" y2="220.0" stroke="#dddddd"/>
+<text x="96.0" y="224.0" font-family="Arial, sans-serif" font-size="9" text-anchor="end" fill="#202020">60</text>
+<line x1="110" y1="140.0" x2="1010" y2="140.0" stroke="#dddddd"/>
+<text x="96.0" y="144.0" font-family="Arial, sans-serif" font-size="9" text-anchor="end" fill="#202020">80</text>
+<line x1="110" y1="60.0" x2="1010" y2="60.0" stroke="#dddddd"/>
+<text x="96.0" y="64.0" font-family="Arial, sans-serif" font-size="9" text-anchor="end" fill="#202020">100</text>
+<rect x="128.6" y="460.0" width="32" height="0.0" fill="rgb(92, 99, 112)"/>
+<text x="144.6" y="455.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">0.0</text>
+<text x="144.6" y="476.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">base</text>
+<rect x="197.8" y="181.7" width="32" height="278.3" fill="rgb(47, 111, 78)"/>
+<text x="213.8" y="176.7" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">69.6</text>
+<text x="213.8" y="476.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">cold SFT</text>
+<text x="213.8" y="487.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">seed 1</text>
+<rect x="267.1" y="152.2" width="32" height="307.8" fill="rgb(47, 111, 78)"/>
+<text x="283.1" y="147.2" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">76.9</text>
+<text x="283.1" y="476.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">cold SFT</text>
+<text x="283.1" y="487.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">seed 2</text>
+<rect x="336.3" y="142.6" width="32" height="317.4" fill="rgb(47, 111, 78)"/>
+<text x="352.3" y="137.6" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">79.4</text>
+<text x="352.3" y="476.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">cold SFT</text>
+<text x="352.3" y="487.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">seed 3</text>
+<rect x="405.5" y="460.0" width="32" height="0.0" fill="rgb(68, 105, 151)"/>
+<text x="421.5" y="455.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">0.0</text>
+<text x="421.5" y="476.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">cold DPO</text>
+<text x="421.5" y="487.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">seed 1</text>
+<rect x="474.8" y="460.0" width="32" height="0.0" fill="rgb(68, 105, 151)"/>
+<text x="490.8" y="455.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">0.0</text>
+<text x="490.8" y="476.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">cold DPO</text>
+<text x="490.8" y="487.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">seed 2</text>
+<rect x="544.0" y="460.0" width="32" height="0.0" fill="rgb(68, 105, 151)"/>
+<text x="560.0" y="455.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">0.0</text>
+<text x="560.0" y="476.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">cold DPO</text>
+<text x="560.0" y="487.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">seed 3</text>
+<rect x="613.2" y="460.0" width="32" height="0.0" fill="rgb(174, 83, 56)"/>
+<text x="629.2" y="455.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">0.0</text>
+<text x="629.2" y="476.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">cold KTO</text>
+<text x="629.2" y="487.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">seed 1</text>
+<rect x="682.5" y="460.0" width="32" height="0.0" fill="rgb(174, 83, 56)"/>
+<text x="698.5" y="455.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">0.0</text>
+<text x="698.5" y="476.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">cold KTO</text>
+<text x="698.5" y="487.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">seed 2</text>
+<rect x="751.7" y="460.0" width="32" height="0.0" fill="rgb(174, 83, 56)"/>
+<text x="767.7" y="455.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">0.0</text>
+<text x="767.7" y="476.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">cold KTO</text>
+<text x="767.7" y="487.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">seed 3</text>
+<rect x="820.9" y="460.0" width="32" height="0.0" fill="rgb(178, 58, 72)"/>
+<text x="836.9" y="455.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">0.0</text>
+<text x="836.9" y="476.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">cold GRPO</text>
+<text x="836.9" y="487.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">seed 1</text>
+<rect x="890.2" y="182.1" width="32" height="277.9" fill="rgb(47, 111, 78)"/>
+<text x="906.2" y="177.1" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">69.5</text>
+<text x="906.2" y="476.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">clean-SFT</text>
+<text x="906.2" y="487.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">merged</text>
+<rect x="959.4" y="150.3" width="32" height="309.7" fill="rgb(178, 58, 72)"/>
+<text x="975.4" y="145.3" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">77.4</text>
+<text x="975.4" y="476.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">SFT→GRPO</text>
+<text x="975.4" y="487.0" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#202020">seed 1</text>
+<line x1="110.0" y1="340.0" x2="1010.0" y2="340.0" stroke="rgb(201,151,58)" stroke-width="2.0" stroke-dasharray="8,5"/>
+<text x="629.2" y="332.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">internalization floor 30% (preregistered)</text>
+<line x1="110.0" y1="420.0" x2="1010.0" y2="420.0" stroke="rgb(92, 99, 112)" stroke-width="2.0" stroke-dasharray="8,5"/>
+<text x="629.2" y="412.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">base ceiling 10% (preregistered)</text>
+<rect x="1030" y="91" width="16" height="16" fill="rgb(92, 99, 112)"/>
+<text x="1054.0" y="104.0" font-family="Arial, sans-serif" font-size="11" text-anchor="start" fill="#202020">base</text>
+<rect x="1030" y="117" width="16" height="16" fill="rgb(47, 111, 78)"/>
+<text x="1054.0" y="130.0" font-family="Arial, sans-serif" font-size="11" text-anchor="start" fill="#202020">SFT-lineage</text>
+<rect x="1030" y="143" width="16" height="16" fill="rgb(68, 105, 151)"/>
+<text x="1054.0" y="156.0" font-family="Arial, sans-serif" font-size="11" text-anchor="start" fill="#202020">DPO</text>
+<rect x="1030" y="169" width="16" height="16" fill="rgb(174, 83, 56)"/>
+<text x="1054.0" y="182.0" font-family="Arial, sans-serif" font-size="11" text-anchor="start" fill="#202020">KTO</text>
+<rect x="1030" y="195" width="16" height="16" fill="rgb(178, 58, 72)"/>
+<text x="1054.0" y="208.0" font-family="Arial, sans-serif" font-size="11" text-anchor="start" fill="#202020">GRPO-touching</text>
+<text x="650.0" y="628.0" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#202020">0.00 non-SFT bars: descriptive scorer-scope audit puts honest recall at ~4-6%, still below the 10% ceiling</text>
+</svg>

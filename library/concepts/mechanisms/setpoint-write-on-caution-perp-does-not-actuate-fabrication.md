@@ -49,6 +49,8 @@ relationships:
 contradicted-by: []
 ---
 
+*Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
+
 Amendment AN (2026-07-06, AI-TRUE checkpoint, local 3090, single seed) selected
 rows with the confabulation-propensity sensor (prop_z >= 1.00,
 [[confab-propensity-push-reaches-confab-cloud]]) and applied an erase-and-write

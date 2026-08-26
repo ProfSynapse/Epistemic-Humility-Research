@@ -190,7 +190,18 @@ kg:
   status: canonical
 cause: "<what is done>."
 effect: "<what results>."
-polarity: enables          # increases | decreases | enables | prevents | mediates
+# Optional, forward-only. A magnitude with no source fails the commit (KG124),
+# so never add `coefficient` without `coefficient_source`. Do not backfill.
+# coefficient: 19.8
+# coefficient_units: "percentage points of answer-matching rate, 8B to 62B"
+# coefficient_source: "2308.03958 Section 2, Figure 2"
+polarity: enables          # REQUIRED, closed vocabulary, ERROR if wrong.
+                           # increases | decreases | enables | prevents | mediates
+                           # causes | modulates | trades_off | redistributes | limits
+                           # complicates | decouples | explains
+                           # Definitions: library/SCHEMA.md "polarity is a closed
+                           # vocabulary". Nulls and confounds belong in the last
+                           # three, not squeezed into `decreases`.
 related:
 - '[[<arxiv>--<slug>]]'
 - '[[<atom-in-cause-or-effect>]]'
@@ -291,6 +302,11 @@ python3 .agents/skills/knowledge-graph/scripts/analyze_kg.py --root library
 
 # d. make the new notes findable by ./search (the indexer reads GIT-TRACKED
 #    files via `git ls-files`, so stage the new .md before reindexing).
+#    WORKTREE EXCEPTION: if you are a subagent in an isolated worktree under a
+#    no-git-beyond-fetch/checkout instruction, SKIP this step entirely (no git
+#    add, no reindex). The lead imports your files into the canonical checkout
+#    and reindexes there; a worktree reindex on the slow mount only creates
+#    lock contention and exceeds your git authorization.
 git add library/notes/<id>--*.md library/concepts/**/<new-slugs>.md
 python3 .agents/skills/knowledge-graph/scripts/kg_index.py
 ```

@@ -1,0 +1,75 @@
+slug: grpo-cold-start-induction
+title: 'Cold-start GRPO: can the appropriateness reward induce abstention from the
+  base model?'
+type: training-run
+status: falsified
+registered: true
+created_at: '2026-08-13T15:20:18Z'
+question: Can GRPO under the rebalanced (v2) appropriateness reward induce abstention
+  when trained from the raw Qwen3-4B base with no SFT warm-up, completing paper 2's
+  cold-start comparison across all four objectives?
+prediction: 'Eval refusal recall below 10% (cold DPO/KTO read ~0%), with Null-B (no
+  trainable signal: >=90% of training groups at zero advantage) as the modal mechanism.'
+falsifier: 'Cold-start GRPO induces abstention: eval refusal recall >= 20% with over-refusal
+  reported alongside — falsifying the generalized ''only SFT induces abstention from
+  the base model'' reading.'
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  - configs/grpo_cold_base_seed1_full.yaml
+  - configs/eval_grpo_cold_start_selfaware_full_local_4b.yaml
+  modules:
+  - grpo_cold_diagnostics.py
+  pins:
+    cell.yaml: 82b7d84b41813b7dbc5d91e05a6de8eb361d4b4e11f21c1bcc2e1ee3bc878872
+    gates.yaml: 853e4eff13af55b43b95b22decbf47542d76306f5f87a6f31af6265a1052826a
+    configs/grpo_cold_base_seed1_full.yaml: 2aee428220f58ffcfe6776b4f1e6c40299feb4f908ebc40fdf94cdaa434d2b5f
+    configs/eval_grpo_cold_start_selfaware_full_local_4b.yaml: ae148cbfb5072c17cb5f02fdd9ebff7fbdcf158fcbd4618f4a34312ebf286bfc
+    grpo_cold_diagnostics.py: 68c283e363f34b2a540eb3767ffc4a7a803c92eed9352741d7d37a3c365a7878
+  engine_exception:
+    kind: parity-locked
+    reason: The cold-vs-warmed comparison is only valid if the cold arm uses the identical
+      trainer + rollout stack as the SFT-warmed GRPO arms it is compared to (grpo-three-seed-confirmatory's
+      clean_sft_grpo_v2 arm and its stacked siblings); switching the rollout engine
+      to vLLM would confound the comparison with an instrument change. The rollout
+      engine is train_grpo.py's own TRL GRPOTrainer generation path, not vLLM. The
+      eval stage separately reuses the matrix's own eval instrument (run_eval.py)
+      for the same parity reason -- AMENDMENT.md "Design", "Engine exception".
+  persistence:
+    grpo_cold_diagnostics.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 2.0
+      note: CPU-only, single-pass read of a GRPO_REWARD_DEBUG_PATH JSONL plus one
+        JSON write; not incremental (a kill mid-run just means rerun it once the JSONL
+        and eval summary exist). Measured 0.207s over a realistically-sized synthetic
+        fixture (465 events x 128 rows/event, 15.66MB, matching the ~465-step budget
+        the cold arm inherits from the warmed v2 arm's dataset/batch/epoch config)
+        via test_grpo_cold_diagnostics_smoke.py's fixture harness; declared value
+        includes safety margin for a larger real production debug file.
+inputs:
+- experiments/grpo-three-seed-confirmatory/AMENDMENT.md
+- experiments/grpo-three-seed-confirmatory/cell.yaml
+- experiments/grpo-three-seed-confirmatory/gates.yaml
+- experiments/grpo-three-seed-confirmatory/configs/grpo_schema_clean_sft_merged_seed2_v2_full.yaml
+- experiments/grpo-three-seed-confirmatory/configs/eval_grpo3seed_response_confidence_selfaware_clean_sft_grpo_v2_seed2_full_local_4b.yaml
+- experiments/grpo-centered-stacking/RUNBOOK.md
+- synaptic-tuner/Trainers/grpo/train_grpo.py
+- synaptic-tuner/Trainers/grpo/src/rewards.py
+- archive/experiment/phase1/grpo/humility_reward_v2.py
+- archive/experiment/phase1/grpo/humility_reward.py
+- archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md
+- archive/experiment/phase1/eval/run_eval.py
+- experiments/dial-logprob-baseline-v3/AMENDMENT.md
+verdict: Cold-start GRPO trained on real gradient (not Null-B) and fired the registered
+  >=20 percent falsifier at 85.66 percent eval recall, but the panel base counterfactual
+  (90.89 under the same instruction, 0 without it) shows the reward preserved and
+  sharpened prompt-elicited abstention rather than inducing any; the registered prediction
+  is falsified and the induction framing retired.
+kg:
+- experiment:grpo-cold-start-induction
+- mechanism:cold-grpo-falsifier-fires-but-reclassified-as-prompt-preservation
+- mechanism:only-sft-installs-abstention-in-weights

@@ -21,6 +21,8 @@ related:
 - '[[workspace-band-peak-location-is-family-relative]]'
 - '[[refused-vs-known-contrast-carries-norm-position-confound]]'
 - '[[auroc]]'
+- '[[refusal-axis-readable-but-not-ablatable-at-midband]]'
+- '[[llama-hs17-write-is-direction-specific]]'
 relationships:
 - type: supported_by
   target: '[[doubt-snap-cross-family-confirmatory]]'
@@ -60,7 +62,23 @@ relationships:
   target: '[[auroc]]'
   target_id: metric:auroc
   confidence: high
+- type: related_to
+  target: '[[refusal-axis-readable-but-not-ablatable-at-midband]]'
+  target_id: mechanism:refusal-axis-readable-but-not-ablatable-at-midband
+  confidence: medium
+  evidence:
+  - experiments/jlens-trained-checkpoint-midband-ablation/AMENDMENT.md#outcome
+- type: related_to
+  target: '[[llama-hs17-write-is-direction-specific]]'
+  target_id: mechanism:llama-hs17-write-is-direction-specific
+  confidence: high
+  evidence:
+  - experiments/llama-hs17-direction-specificity/AMENDMENT.md#outcome
+    (LG-G1, LG-G2; llama's mid-band hs17 write, verified direction-specific
+    2026-08-25, updates the reading at that site)
 ---
+
+*Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
 
 `doubt-snap-cross-family-confirmatory`'s registered cross-family panel stopped
 every launched cell at the pre-outcome FIT dose-viability gate, before any

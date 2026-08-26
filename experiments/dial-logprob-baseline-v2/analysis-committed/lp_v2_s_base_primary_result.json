@@ -1,0 +1,37 @@
+{
+  "arm": "s_base_primary",
+  "lp_g0": {
+    "dial_repro_ok": false,
+    "dial_refit_auroc": 0.8395,
+    "dial_signed_auroc": 0.834,
+    "row_count_ok": true,
+    "n_rows": 1836,
+    "n_rows_expected": 1836,
+    "n_roundtrip_fail": 282,
+    "pass": false
+  },
+  "variant_aurocs": {
+    "mean_answer_span": {
+      "auroc": 0.8176414670658682,
+      "n": 1836
+    },
+    "sum_answer_span": {
+      "auroc": 0.7874663173652695,
+      "n": 1836
+    },
+    "min_answer_span": {
+      "auroc": 0.8309094311377244,
+      "n": 1836
+    }
+  },
+  "dial_minus_primary_logprob_margin": 0.0219,
+  "margin_bootstrap_ci": {
+    "n_boot_effective": 2000,
+    "ci_lo": -0.0024656425272646526,
+    "ci_hi": 0.04688440504493366,
+    "mean": 0.021999156154270394
+  },
+  "gate_verdict": {
+    "stopped_at_lp_g0": true
+  }
+}

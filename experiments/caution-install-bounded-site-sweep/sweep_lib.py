@@ -703,9 +703,16 @@ wilson_ci = wilson_interval  # (lo, hi) = wilson_ci(successes, n)
 
 
 def wilson_ci_point(successes: int, n: int) -> dict:
+    # n == 0: the rate is undefined; record None (JSON-compliant) rather than
+    # NaN bounds, which write_json rejects fail-closed. First hit by stage 6's
+    # baseline_undosed arm (strength 0.0 -> zero gate-fired rows), whose F12
+    # fired-only block has an empty denominator by construction.
+    if not n:
+        return {"n": 0, "successes": successes, "rate": None,
+                "wilson_lower_95": None, "wilson_upper_95": None}
     lo, hi = wilson_interval(successes, n)
-    rate = successes / n if n else None
-    return {"n": n, "successes": successes, "rate": rate, "wilson_lower_95": lo, "wilson_upper_95": hi}
+    return {"n": n, "successes": successes, "rate": successes / n,
+            "wilson_lower_95": lo, "wilson_upper_95": hi}
 
 
 # --------------------------------------------------------------------------

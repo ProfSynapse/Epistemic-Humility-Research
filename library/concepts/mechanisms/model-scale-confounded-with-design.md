@@ -11,7 +11,7 @@ kg:
   status: canonical
 cause: Comparing MLLMs that differ simultaneously in parameter count, architecture, training data, visual encoder, and post-training strategy
 effect: Parameter count alone does not explain false-option-rejection rankings; smaller, better-designed models match or beat larger ones, so scale cannot be isolated as the driver
-polarity: neutral
+polarity: decouples
 related:
 - '[[2509.09658--humblebench-epistemic-humility-multimodal]]'
 - '[[false-option-rejection]]'

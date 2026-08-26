@@ -1,0 +1,77 @@
+# prompt-vs-training-panel, config 3 of 4 (run order 3): P-struct prompt
+# level, cold-stack arms (all sit on the raw bnb-4bit base). The minimal
+# structure-only prompt: identical machinery to P-rc, with every abstention
+# affordance removed ("if not known, say I don't know" instruction deleted;
+# "or abstention" clauses deleted from both key descriptions). Frozen at
+# signing. Arms 3-7 of the AMENDMENT: spontaneous-abstention floor (base)
+# and the internalization test for every cold-trained objective.
+
+model_tag: qwen3-4b-instruct-panel-pstruct
+model_name: unsloth/Qwen3-4B-bnb-4bit
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results_prompt_vs_training_panel_pstruct_cold_4b
+
+prompt:
+  system: >-
+    Answer the user's question. Return only a JSON object with exactly two
+    keys: "answer" and "response_confidence". The "answer" value is your
+    answer. The "response_confidence" value is your probability from 0 to 1
+    that your response is appropriate. Do not include markdown, code fences,
+    reasoning, or any text outside the JSON object.
+
+generation:
+  enable_thinking: false
+  seed: 20240601
+  temperature: 0.0
+  max_new_tokens: 128
+  n_samples: 1
+  stated_confidence_structured_outputs: true
+  stated_confidence_field: response_confidence
+  stated_confidence_json_retries: 2
+
+confidence:
+  signal: self_consistency
+  n_samples: 1
+
+bootstrap:
+  n_resamples: 200
+  level: 0.95
+  seed: 12345
+
+vllm:
+  dtype: auto
+  gpu_memory_utilization: 0.40
+  max_lora_rank: 32
+  max_model_len: 2048
+
+arms:
+  - name: base_pstruct
+    method: base
+    model: qwen3-4b-instruct-panel-pstruct
+    adapter: null
+  - name: cold_sft_seed1_pstruct
+    method: sft
+    model: qwen3-4b-instruct-panel-pstruct
+    # Cell of record: headline SFT seed 1 (run_records/sft__4b__headline__seed1.json;
+    # not in postfix-rerun scope, trained after the dev-split fix).
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/final_model
+  - name: cold_dpo_seed1_pstruct
+    method: dpo
+    model: qwen3-4b-instruct-panel-pstruct
+    # Cell of record: postfix-rerun DPO r2 (NOTEBOOK.md ~167, AMENDMENT.md ~330).
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed1_postfix/20260807_192026/final_model
+  - name: cold_kto_seed1_pstruct
+    method: kto
+    model: qwen3-4b-instruct-panel-pstruct
+    # Cell of record: postfix-rerun KTO compliant relaunch (NOTEBOOK.md ~128, ~143).
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1_postfix/20260807_124416/final_model
+  - name: cold_grpo_seed1_pstruct
+    method: cold_base_grpo_v2
+    model: qwen3-4b-instruct-panel-pstruct
+    # Cell of record: grpo-cold-start-induction training run.
+    adapter: /workspace/repo/scratch/schema_response_confidence/runs/cold_base_grpo_v2_seed1_full/20260813_182012/final_model
+
+eval_sets:
+  selfaware:
+    type: ood
+    path: ../../../../datasets/selfaware/SelfAware.json

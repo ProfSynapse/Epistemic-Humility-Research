@@ -55,6 +55,8 @@ relationships:
   confidence: medium
 ---
 
+*Legacy naming note (2026-08-16): this note's title/slug predates the program's vocabulary rename; see `papers/common/terminology.md` for current running-prose terms (known-unknown direction, KU readout gate, refusal axis, KU-readout coupling, IDK switch). The slug stays verbatim under usage rule 1.*
+
 The session-0038 Stage 1 census on the Amendment AI TRUE A0 pre-generation
 surface (1,662 rows, seed 20260705) found that caution and propensity are each
 low-rank discriminative readouts: in PCA-128 space their permutation-controlled

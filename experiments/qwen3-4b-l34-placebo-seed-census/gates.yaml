@@ -1,0 +1,25 @@
+# Pre-stated gates for qwen3-4b-l34-placebo-seed-census.
+# Fixed before launch; see AMENDMENT.md "Gates" for prose. No post-hoc edits.
+gates:
+  - id: QG-G1
+    name: distributional_specificity
+    role: primary
+    metric: effect_ratio
+    definition: 0.6270270270270271 (frozen wicr gated lift) / max_k(abs(random_lift_k)), k = 1..15; lifts over the frozen 21/185 = 0.11351351351351352 baseline
+    threshold: ">= 3.0"
+    equivalent_form: every abs(random lift) < 0.209 (20.9 points)
+    frozen_inputs: gated 137/185 and baseline 21/185 from wide-instrument-control-rescore analysis-committed/results/wide_gates_report.json (reused, not re-run)
+  - id: QG-G2
+    name: sign_consistency
+    role: secondary
+    metric: count of seeds with negative signed lift
+    threshold: ">= 12 of 15"
+    convention: placebo-seed-distribution-census 12/15 boundary; adjudicated independently of QG-G1, reported straight either way
+seeds:
+  random_census: [920001, 920002, 920003, 920004, 920005, 920006, 920007, 920008, 920009, 920010, 920011, 920012, 920013, 920014, 920015]
+  excluded_historical: [20260707]
+dose:
+  dose_target: 200.0  # doubt-gated-caution-tighten cell.yaml late-site dose
+population:
+  rows: the wicr 185-row confab wide-instrument population, unchanged
+  scoring: wide two-instrument stack, fresh id salt, decoy-audited shards (census apply_adjudication.py tooling); unpaired per-arm rates (WG-G1 construction)

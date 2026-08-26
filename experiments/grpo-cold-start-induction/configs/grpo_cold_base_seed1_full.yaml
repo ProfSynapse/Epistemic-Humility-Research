@@ -1,0 +1,114 @@
+# grpo-cold-start-induction: cold-start GRPO (raw base -> GRPO v2, seed 1) full local run.
+# Cloned from the pinned SFT-warmed instrument
+# (experiments/grpo-three-seed-confirmatory/configs/grpo_schema_clean_sft_merged_seed2_v2_full.yaml,
+# itself cloned from the seed-1 precedent
+# archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_full.yaml)
+# per AMENDMENT.md "Design": "cloning the pinned SFT-warmed GRPO instrument
+# with only the source substituted... Single difference: source is the raw
+# base (Qwen3-4B), not merged(clean_sft)." Concretely, two fields differ from
+# the clean_sft_grpo_v2 seed-1/seed-2/seed-3 siblings, and nothing else:
+#   1. model.model_name is the raw foundation checkpoint (unsloth/Qwen3-4B-bnb-4bit,
+#      the SAME hub id used by dial-logprob-baseline-v3's s_base_primary arm
+#      and by grpo-three-seed-confirmatory cell.yaml's foundation_model field),
+#      not a merged clean-SFT run directory -- there is no SFT stage to merge.
+#   2. model.lora_path is null (train_grpo.py's run() branches on this: null ->
+#      load_model_and_tokenizer straight from model_name; non-null -> merge an
+#      SFT LoRA first via load_from_sft_checkpoint). Cold start means this
+#      branch must NOT fire.
+# seed: 1 and lora.random_state: 1 per the established convention (lead ruling,
+# grpo-three-seed-confirmatory NOTEBOOK.md 2026-07-31: "lora.random_state
+# mirrors the seed number"). This does NOT collide with the existing
+# schema_clean_sft_grpo_v2_seed1_full warmed run: output_dir and the LoRA
+# weights are entirely separate artifacts (different source model), only the
+# RNG seed value is shared, which is the registered convention, not a bug.
+# Dataset, reward (v2, unchanged), and every training hyperparameter below are
+# IDENTICAL to the clean_sft_grpo_v2 arm (batch 32, num_generations 4, LR
+# 5.0e-6, beta 0.1, 1 epoch) -- AMENDMENT.md "Design": "identical in every
+# field except source... and seed 1". Because num_train_epochs/dataset/batch
+# are unchanged, the step budget (~465 steps: 14888-row grpo_train.jsonl /
+# batch 32, gradient_accumulation 1) matches the warmed v2 arm's automatically;
+# no separate calculation was needed.
+model:
+  model_name: "unsloth/Qwen3-4B-bnb-4bit"
+  lora_path: null
+  max_seq_length: 2048
+  dtype: null
+  load_in_4bit: true
+  chat_template: "native"
+
+lora:
+  r: 32
+  lora_alpha: 64
+  lora_dropout: 0.05
+  bias: "none"
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  use_gradient_checkpointing: "unsloth"
+  random_state: 1
+  use_rslora: false
+  use_dora: false
+
+training:
+  output_dir: "/workspace/repo/scratch/schema_response_confidence/runs/cold_base_grpo_v2_seed1_full"
+  per_device_train_batch_size: 32
+  gradient_accumulation_steps: 1
+  num_generations: 4
+  max_prompt_length: 512
+  max_completion_length: 128
+  temperature: 1.35
+  learning_rate: 5.0e-6
+  weight_decay: 0.0
+  warmup_ratio: 0.0
+  lr_scheduler_type: "linear"
+  num_train_epochs: 1
+  max_steps: 0
+  beta: 0.1
+  fp16: false
+  bf16: true
+  optim: "adamw_8bit"
+  logging_steps: 25
+  save_steps: 500
+  save_total_limit: 3
+  report_to: "none"
+  use_gspo: false
+  chat_template_kwargs:
+    enable_thinking: false
+  extra_args:
+    top_p: 1.0
+    top_k: 0
+    min_p: 0.0
+
+dataset:
+  dataset_name: null
+  dataset_file: null
+  local_file: "/workspace/repo/scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train.jsonl"
+  num_proc: 1
+  prompt_column: "prompt"
+
+schema:
+  tool_schema_path: null
+
+rewards:
+  items: []
+  custom:
+    enabled: true
+    module: null
+    file: "/workspace/repo/archive/experiment/phase1/grpo/humility_reward_v2.py"
+    functions:
+      - name: "epistemic_humility_reward"
+        weight: 1.0
+        params: {}
+
+wandb:
+  enabled: false
+  project: null
+  run_name: null
+  entity: null
+
+seed: 1

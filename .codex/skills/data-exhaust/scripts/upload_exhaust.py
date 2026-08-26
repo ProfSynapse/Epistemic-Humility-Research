@@ -83,13 +83,22 @@ def main(argv: list[str] | None = None) -> int:
         print("[upload-exhaust] DRY RUN -- no network calls made. Pass --live to actually upload.")
         return 0
 
-    if not os.environ.get("HF_TOKEN"):
-        print("[upload-exhaust] FATAL: HF_TOKEN not in environment", file=sys.stderr)
-        return 2
-
     from huggingface_hub import HfApi
 
     api = HfApi()
+    # Auth: HF_TOKEN env if present, else huggingface_hub's stored login
+    # (huggingface-cli login). The library resolves the credential internally;
+    # this script never reads, prints, or logs the token value either way.
+    if not os.environ.get("HF_TOKEN"):
+        try:
+            api.whoami()
+        except Exception:
+            print(
+                "[upload-exhaust] FATAL: no HF_TOKEN in environment and no "
+                "usable stored login (huggingface-cli login)",
+                file=sys.stderr,
+            )
+            return 2
     api.create_repo(repo_id, repo_type="dataset", exist_ok=True, private=args.private)
     commit_info = api.upload_folder(
         folder_path=str(dataset_dir),

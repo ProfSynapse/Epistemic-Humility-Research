@@ -1,0 +1,63 @@
+slug: dial-logprob-t-deployed-confirmatory
+title: 'Dial vs token-logprob on the deployed checkpoint: gated confirmation at adequate
+  power'
+type: probe-fit
+status: resolved
+registered: true
+created_at: '2026-08-13T15:20:18Z'
+question: Does the fitted correctness dial beat the deployed checkpoint's own length-normalized
+  answer-span token logprob at ranking the correctness of its own answers, by the
+  registered +0.05 margin, at adequate power (>=1000 answered rows)?
+prediction: 'Disclosure: v1 descriptive (+0.158, round-trip caveat) and v2 unblinded
+  stopped-cell margin (+0.1747) have been seen. Stated prediction: T-arm margin clearly
+  positive near +0.15, LT-G1 PASS.'
+falsifier: Primary-variant logprob AUROC at or above the dial AUROC (margin <= 0)
+  with paired 95% CI excluding 0 in that direction; or the instrument fails its own
+  LT-G0 integrity gate.
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - lp_t_harness.py
+  pins:
+    cell.yaml: 2863815042b6754448696a6170a105ed28eddbae4451ba3e12e942aecb6fad9b
+    gates.yaml: 45aaebb81b046f1e22cfba5140045b5fbc49be96ea10ae1421fffb7c26df34a4
+    lp_t_harness.py: 2295c7145feaf94a8b5119252613d2dffdf35fd1dccb2611aba347770e26aa6b
+  engine:
+    name: vllm
+    version: 0.27.1
+  persistence:
+    lp_t_harness.py:
+      persistence: incremental
+      checkpoint_path: experiments/dial-logprob-t-deployed-confirmatory/analysis/
+      note: directory prefix, not a single file -- for the single arm, the module
+        writes a resumable (chunked append+flush) generation runlog experiments/dial-logprob-t-deployed-confirmatory/analysis/t_deployed_confirmatory/runlog/t_deployed_confirmatory_generation.jsonl,
+        a resumable (per-row append+flush) extraction runlog experiments/dial-logprob-t-deployed-confirmatory/analysis/t_deployed_confirmatory/runlog/t_deployed_confirmatory_extraction.jsonl,
+        and the extraction phase's safetensors shards + rows.jsonl under experiments/dial-logprob-t-deployed-confirmatory/analysis/t_deployed_confirmatory/tensors/.
+        --phase generate|extract|score lets a real launch run each phase as a separate
+        process invocation (recommended for guaranteed GPU memory release between
+        the vLLM engine and the HF teacher-forced pass, especially for this checkpoint
+        where v3's NOTEBOOK.md flagged tighter headroom); --phase all runs all three
+        in one process with best-effort cleanup -- see lp_t_harness.py module docstring.
+inputs:
+- experiments/common/readouts/amendment_s_correctness_probe_extract.py
+- experiments/common/readouts/amendment_t_correctness_readout_deployment_extract.py
+- experiments/common/readouts/amendment_s_correctness_probe_score.py
+- experiments/common/knowledge_probe/backends.py
+- archive/experiment/phase1/eval/scorers.py
+- experiments/dial-logprob-baseline-v3/AMENDMENT.md
+- experiments/dial-logprob-baseline-v3/cell.yaml
+- experiments/dial-logprob-baseline-v3/gates.yaml
+- experiments/dial-logprob-baseline-v3/lp_v3_harness.py
+- .skills/experiment-runner/reference/batched-generation.md
+verdict: On the deployed abstention-trained checkpoint the dial beats the model's
+  own answer-span logprob by a gated margin of +0.1393 (95% CI [0.1031, 0.1755], n=1,501);
+  LT-G0 and LT-G1 both pass.
+kg:
+- experiment:dial-logprob-t-deployed-confirmatory
+- mechanism:qwen3-4b-dial-margin-over-logprob-large-on-deployed-checkpoint
+- mechanism:dial-margin-over-logprob-is-checkpoint-dependent

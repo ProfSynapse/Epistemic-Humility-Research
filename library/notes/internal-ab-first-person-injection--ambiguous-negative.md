@@ -142,5 +142,5 @@ literature mechanism
 [[high-probe-accuracy-does-not-imply-causal-use]]. AB's finding is scoped to
 the CoT text-injection write-form only; it says nothing about activation-level
 writes, where Amendment AC's doubt-regulated caution coupling
-([[doubt-regulated-caution-coupling-actuates-selective-refusal-release]])
+([[ku-readout-coupling-actuates-selective-refusal-release]])
 stands as the program's write-side win.

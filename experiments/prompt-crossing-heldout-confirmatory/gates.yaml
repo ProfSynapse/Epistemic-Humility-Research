@@ -1,0 +1,62 @@
+# Pre-stated gates for prompt-crossing-heldout-confirmatory.
+# Fixed at signing; never retuned after any result. Verbatim from AMENDMENT.md
+# "## Gates", "## Prediction", and "## Falsifier" sections -- nothing added,
+# tightened, or loosened here.
+
+ph_g0:
+  # Integrity, precondition for any reading (AMENDMENT.md "PH-G0").
+  full_row_coverage: true            # every arm at its surface's full retained n
+  rows_primary_ambigqa: 1832         # 1002 unknown + 830 known
+  rows_secondary_kuq: 5540           # 2469 unknown + 3071 known
+  rows_secondary_bigbench: 46        # 23 unknown + 23 known
+  config_sha_match: true             # row-stamped config_sha == pinned config bytes
+  scorer_parse_path_recorded: true
+  lead_recompute_min_arms: 2         # lead recomputes at least two pivotal arms from raw scored rows
+
+ph_g1:
+  # Per-claim prediction bands and falsifiers, applied verbatim
+  # (AMENDMENT.md "## Prediction", "## Falsifier"). Between falsifier and
+  # prediction band is "partial", reported straight with no promotion.
+  c1_instruction_gap:
+    metric: base_P-rc_refusal_recall_minus_base_P-plain_refusal_recall_pct_on_ambigqa
+    prediction_band_pp: [50, 90]
+    falsifier_f1: "< 15pp kills C1 promotion"
+    falsifier_threshold_pp: 15
+  c2_sft_internalization:
+    metric: P-struct_scored_refusal_recall_pct_on_ambigqa
+    prediction:
+      cold_sft_each_seed_band_pct: [40, 80]
+      base_ceiling_pct: 10
+      cold_dpo_kto_each_seed_ceiling_pct: 10
+    falsifier_f2: >-
+      kills C2 promotion if: any cold SFT seed P-struct recall < 20%, OR base
+      P-struct scored recall > 15%, OR any cold DPO/KTO seed P-struct scored
+      recall >= 20%
+    falsifier_thresholds:
+      cold_sft_seed_floor_pct: 20
+      base_ceiling_pct: 15
+      cold_dpo_kto_seed_ceiling_pct: 20
+    scorer_scope_caveat: >-
+      Carried from the panel: the pinned markers undercount natural-language
+      abstention under P-struct by roughly 4-6pp on SelfAware. Scored zeros
+      are read with that audit note; the F2 base threshold (15%) already
+      clears it. The scorer is not retuned.
+  c3_erosion_not_erasure:
+    metric: seq_arm_P-struct_recall_as_pct_of_same-seed_cold-SFT_parent_recall_same_surface
+    prediction_band_pct_of_parent: [40, 100]
+    falsifier_f3: "< 25% of same-seed cold-SFT parent on the same surface (erasure)"
+    falsifier_threshold_pct_of_parent: 25
+    parent_definition: same-seed cold-SFT P-struct recall on the same held-out surface (AmbigQA), not the SelfAware parent value used by prompt-crossing-completion's PC-G1
+
+promotion_contract: >-
+  If PH-G1 passes, the three claims are promoted to confirmatory tier scoped
+  as "Qwen3-4B, held-out surfaces", reported as a confirmatory companion to
+  the Section 4.2 exploratory table, never pooled with it and never pooled
+  with the locked headline matrix. If any falsifier fires, the affected claim
+  stays exploratory and the failure is reported with the same prominence as
+  a pass. No goalpost moves after signing. Each claim promotes or fails
+  independently; partial outcomes reported per-claim.
+
+secondary_surfaces_kuq_bigbench:
+  gated: false
+  reporting: descriptive_only_straight

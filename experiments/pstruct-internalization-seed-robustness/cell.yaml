@@ -1,0 +1,16 @@
+# pstruct-internalization-seed-robustness: single-config cell. The runnable
+# instrument is configs/eval_seedrobust_pstruct_local_4b.yaml (six arms, all
+# on the raw bnb-4bit base, P-struct prompt byte-identical to
+# prompt-vs-training-panel). Seed-1 rows live in the panel cell and are not
+# re-measured here.
+
+instrument:
+  harness: archive/experiment/phase1/eval/run_eval.py
+  engine: vllm
+  eval_set: selfaware   # full set, n=3369 per arm
+  generation: {temperature: 0.0, enable_thinking: false, max_new_tokens: 128}
+
+run_order:
+  - {order: 1, config: configs/eval_seedrobust_pstruct_local_4b.yaml,
+     arms: [cold_sft_seed2_pstruct, cold_sft_seed3_pstruct, cold_dpo_seed2_pstruct,
+            cold_dpo_seed3_pstruct, cold_kto_seed2_pstruct, cold_kto_seed3_pstruct]}

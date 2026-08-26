@@ -1,7 +1,7 @@
 slug: dial-logprob-baseline-v2
 title: Dial token-logprob baseline, clean redo (generation-time token-ID cache)
 type: probe-fit
-status: signed
+status: resolved
 registered: true
 created_at: '2026-08-11T12:18:33Z'
 question: What is the correctness dial's margin over the model's own answer-span token
@@ -53,5 +53,10 @@ inputs:
 - experiments/common/readouts/amendment_t_correctness_readout_deployment_extract.py
 - experiments/common/knowledge_probe/backends.py
 - docs/preparation/amendment-draft-dial-logprob-baseline-v2.md
-verdict: ''
-kg: []
+verdict: both arms stopped at the LP-G0 integrity gate (dial-refit reproduction outside
+  tolerance; 15.4%/6.3% byte-for-byte round-trip failures), so the cell records a
+  data-stage stop with no reportable comparison, the same verdict class as v1
+kg:
+- experiment:dial-logprob-baseline-v2
+- experiment:dial-logprob-baseline
+- mechanism:reproduction-bet-causes-generation-capture-round-trip-failure

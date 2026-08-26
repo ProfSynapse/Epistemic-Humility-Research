@@ -69,6 +69,74 @@ Mechanism nodes are `claim`-like: they carry `cause`, `effect`, `polarity`
 descriptive fields, `supported_by` edges to the papers that evidence them, and
 `related_to` edges to the concept atoms named in cause/effect.
 
+### `polarity` is a closed vocabulary (enforced)
+
+`polarity` is REQUIRED on every mechanism atom and must be one of the thirteen
+values below. The vocabulary lives in the skill's
+`references/edge-ontology.yaml` under `field_vocabularies.mechanism.polarity`;
+the validator fails the commit on a missing, non-string, or off-vocabulary value
+(codes KG120 / KG121 / KG122, severity ERROR).
+
+| Value | Use when |
+|---|---|
+| `increases` | Cause raises the magnitude or rate of the effect. |
+| `decreases` | Cause lowers the magnitude or rate of the effect. |
+| `enables` | Cause makes the effect possible without forcing it. |
+| `prevents` | Cause blocks the effect from occurring. |
+| `mediates` | Cause carries or routes an effect originating elsewhere. |
+| `causes` | Cause produces the effect directly (strong form of `enables`). |
+| `modulates` | Cause changes the effect with no fixed sign. |
+| `trades_off` | Cause improves one quantity at the measured expense of another. |
+| `redistributes` | Cause reallocates a fixed quantity rather than adding or removing. |
+| `limits` | Cause bounds how far the effect can go, without reducing it. |
+| `complicates` | Finding confounds or undercuts an interpretation; no causal sign asserted. |
+| `decouples` | Finding asserts two quantities are NOT coupled. |
+| `explains` | Cause accounts for an effect observed elsewhere; explanatory, not causal-magnitude. |
+
+The last three carry most of the program's null and confound results, so reach
+for them rather than forcing a null into `decreases`. Adding a fourteenth value
+is a deliberate schema change: edit the ontology and add a `changelog` entry.
+
+### Quantified mechanisms (optional)
+
+A mechanism may carry its effect size. All three fields are optional, but a
+magnitude with no provenance is exactly the claim this program does not accept,
+so `coefficient` hard-requires `coefficient_source` (KG124, ERROR).
+
+```yaml
+coefficient: 19.8                    # bare number, ERROR if non-numeric (KG123)
+coefficient_units: "percentage points of answer-matching rate, PaLM 8B to 62B"
+coefficient_source: "2308.03958 Section 2, Figure 2"   # table/figure/section, never a bare paper id
+```
+
+Do not backfill the qualitative atoms. Add a coefficient when the mechanism is
+cited with a number in a manuscript, or when a new ingest reads one off a table.
+
+### Bitemporal fields on `kg` (optional)
+
+Two clocks, routinely confused. World time is when the claim HOLDS; belief time
+is when WE held it. A result measured on one checkpoint stays true of that
+checkpoint forever, even after we stop treating it as the current reading.
+
+```yaml
+kg:
+  id: mechanism:example
+  type: mechanism
+  status: deprecated
+  valid_from: 2026-07-24        # WORLD: the claim holds from here
+  valid_until: 2026-08-01       # WORLD: absent means open-ended
+  recorded_at: 2026-07-25       # BELIEF: when it entered the graph
+  deprecated_by: mechanism:successor
+  superseded_at: 2026-08-13     # BELIEF: when we stopped holding it
+```
+
+`superseded_at` requires `deprecated_by` (KG124, ERROR): a supersession stamp
+with no successor says a claim died without saying what replaced it. Setting
+`deprecated_by` without `superseded_at` is a warning (KG125), not a failure.
+
+All dates accept `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, or an ISO timestamp, quoted or
+unquoted (KG123, ERROR otherwise).
+
 ## Edge object shape
 
 ```yaml

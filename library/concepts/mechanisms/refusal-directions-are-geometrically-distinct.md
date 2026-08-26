@@ -18,6 +18,7 @@ related:
   - '[[refusal-direction]]'
   - '[[safety-refusal]]'
   - '[[abstention]]'
+  - '[[contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis]]'
 relationships:
   - type: supported_by
     target: '[[2602.02132--more-to-refusal-than-single-direction]]'
@@ -35,6 +36,14 @@ relationships:
     target: '[[abstention]]'
     target_id: term:abstention
     confidence: medium
+  - type: related_to
+    target: '[[contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis]]'
+    target_id: mechanism:contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis
+    confidence: medium
+    evidence:
+    - "within-program, within-checkpoint-family instance of this caveat: a
+      prompt-elicited base refusal direction is near-orthogonal to the
+      trained checkpoints' shared refusal axis, mean abs cos 0.0460"
 ---
 
 This mechanism records the caveat that refusal-like behaviors may not share a

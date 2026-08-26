@@ -28,6 +28,9 @@ related:
 - '[[activation-addition]]'
 - '[[steering-vector]]'
 - '[[residual-stream]]'
+- '[[jlens-trained-checkpoint-midband-ablation]]'
+- '[[refusal-axis-readable-but-not-ablatable-at-midband]]'
+- '[[training-flattens-and-deepens-jlens-workspace-band]]'
 relationships:
 - type: supported_by
   target: '[[j-space-localization-qwen3-4b]]'
@@ -101,6 +104,20 @@ relationships:
   target: '[[residual-stream]]'
   target_id: term:residual-stream
   confidence: medium
+- type: tested_by
+  target: '[[jlens-trained-checkpoint-midband-ablation]]'
+  target_id: experiment:jlens-trained-checkpoint-midband-ablation
+  confidence: high
+  evidence:
+  - "experiments/jlens-trained-checkpoint-midband-ablation/AMENDMENT.md#outcome (falsifier fired on both clauses: hs17 ablation releases 0/168 known-item over-refusals vs L35's 163/168)"
+- type: related_to
+  target: '[[refusal-axis-readable-but-not-ablatable-at-midband]]'
+  target_id: mechanism:refusal-axis-readable-but-not-ablatable-at-midband
+  confidence: high
+- type: related_to
+  target: '[[training-flattens-and-deepens-jlens-workspace-band]]'
+  target_id: mechanism:training-flattens-and-deepens-jlens-workspace-band
+  confidence: medium
 ---
 
 The J-space mediated actuation-fragility mechanism is a proposed explanation
@@ -158,3 +175,17 @@ adding a second, independent confirmation that the J-lens's effective-
 dimensionality peak and this participation-ratio profile's peak are not the
 same signal on this substrate: readability and this profile's notion of
 dimensionality dissociate even when measured on the identical checkpoint.
+
+`jlens-trained-checkpoint-midband-ablation` moves the mechanism onto a
+trained checkpoint for the first time, and onto a full refusal-axis ablation
+rather than a raw-base steering write. Training does not remove the interior
+band, but suppresses and deepens it
+([[training-flattens-and-deepens-jlens-workspace-band]]), and a rule-selected
+mid-band site inside that band (hs17) reads the refusal axis nearly as well
+as the governed late write site L35 (construction AUROC 0.8645 vs 0.8688) yet
+releases none of the known-item over-refusal collapse L35 releases almost
+completely, while inducing refusal on 47.99% of previously answered knowns
+([[refusal-axis-readable-but-not-ablatable-at-midband]]). This is the
+program's strongest same-checkpoint, same-axis instance of the mismatch this
+mechanism proposes: a workspace-band read site is demonstrably not a write
+site, not merely a weaker one.

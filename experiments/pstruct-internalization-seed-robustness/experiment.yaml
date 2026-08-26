@@ -1,0 +1,40 @@
+slug: pstruct-internalization-seed-robustness
+title: 'Instruction-free abstention internalization: seed robustness of the P-struct
+  readout'
+type: eval
+status: resolved
+registered: true
+created_at: '2026-08-14T14:26:10Z'
+question: Is the panel's instruction-free abstention internalization finding (cold
+  SFT retains 69.6% recall under a structure-only prompt while the base reads 0.0%)
+  robust across the remaining headline seeds, for SFT and for the DPO/KTO negatives?
+prediction: Both SFT seeds land at or above the 30% internalization floor (expected
+  55-80%), and all four DPO/KTO arms land below 10% (base-tracking).
+falsifier: Any SFT seed below 30% P-struct recall (internalization not seed-robust;
+  paper 2 scopes or drops the claim); any DPO/KTO arm at or above 10% breaks the negative
+  and is reported straight.
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  - configs/eval_seedrobust_pstruct_local_4b.yaml
+  modules: []
+  pins:
+    cell.yaml: a5ffed28a209c43b3f4fb0ace7ca962868054941b4a45d9477c56c9274ca3242
+    gates.yaml: fcf65c917690a60d7930a7ebe90678bb72c64f90a4299aa13f8aaa063ee1d124
+    configs/eval_seedrobust_pstruct_local_4b.yaml: 97fc94b46d443d631f6b7bb5590bf854a347e59cc9ffc194b0542469063171e6
+  persistence: {}
+  engine:
+    name: vllm
+    version: 0.16.1.dev0+g89a77b108.d20260417
+inputs: []
+verdict: 'Instruction-free abstention internalization is seed-robust: all three cold-SFT
+  seeds retain 69.6-79.4 percent refusal recall under the structure-only prompt while
+  all DPO/KTO seeds read 0.00, making only-SFT-installs-abstention a three-seed claim
+  in both directions.'
+kg:
+- experiment:pstruct-internalization-seed-robustness
+- mechanism:only-sft-installs-abstention-in-weights

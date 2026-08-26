@@ -64,6 +64,11 @@ Z = {
 }
 W = load("amendment_w_base_model_result.json")
 U = load("amendment_u_two_signal_result.json")
+# 2026-07-18 hallucination-label re-grade for the deployed-checkpoint veto cell.
+# Set A (instrument-corrected, n=12) and Set B (census-corrected, n=8) supersede the
+# pre-correction hallucination group; both sit below that cell's >=50 adequacy floor,
+# so the panel that uses them is annotated descriptive/unpowered.
+UC = load("ug3_corrected_rescore.json")
 S = load("amendment_s_stage2_result.json")
 T = load("amendment_t_stage2_result.json")
 X = {
@@ -81,7 +86,7 @@ def z_triplet(d: dict):
 
 
 # =========================================================================
-# FIG 1 — cross-family two-signal readout (the confirmatory hero)
+# FIG 5 — cross-family two-signal readout (the confirmatory hero)
 # =========================================================================
 def fig1_cross_family():
     # order families by veto ascending -> makes the variation legible
@@ -122,7 +127,7 @@ def fig1_cross_family():
                  fontsize=11.5)
     ax.legend(loc="lower center", ncol=3, frameon=False, fontsize=9, bbox_to_anchor=(0.5, -0.22))
     fig.tight_layout()
-    fig.savefig(OUT / "fig-p3-01-cross-family-readout.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p4-05-cross-family-readout.png", bbox_inches="tight")
     plt.close(fig)
 
 
@@ -160,12 +165,12 @@ def fig2_dial_distribution():
                  fontsize=11.5)
     ax.legend(loc="upper right", frameon=False, fontsize=9)
     fig.tight_layout()
-    fig.savefig(OUT / "fig-p3-02-dial-distribution.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p4-02-dial-distribution.png", bbox_inches="tight")
     plt.close(fig)
 
 
 # =========================================================================
-# FIG 3 — the veto is the fragile axis across BOTH size and family
+# FIG 4 — the veto is the fragile axis across BOTH size and family
 # =========================================================================
 def fig3_fragile_axis():
     import numpy as np
@@ -213,12 +218,12 @@ def fig3_fragile_axis():
     fig.suptitle("The gate and dial are stable; the veto is the fragile axis — in both directions",
                  fontsize=12, y=1.02)
     fig.tight_layout()
-    fig.savefig(OUT / "fig-p3-03-fragile-axis.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p4-04-fragile-axis.png", bbox_inches="tight")
     plt.close(fig)
 
 
 # =========================================================================
-# FIG 4 — reading AFTER the answer beats reading before (S, T)
+# FIG 1 — reading AFTER the answer beats reading before (S, T)
 # =========================================================================
 def fig4_post_beats_pre():
     import numpy as np
@@ -242,12 +247,12 @@ def fig4_post_beats_pre():
     fig.suptitle("Per-answer correctness reads best AFTER the answer, peaking mid-network",
                  fontsize=12, y=1.02)
     fig.tight_layout()
-    fig.savefig(OUT / "fig-p3-04-post-beats-pre.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p4-01-post-beats-pre.png", bbox_inches="tight")
     plt.close(fig)
 
 
 # =========================================================================
-# FIG 5 — training SHARPENS, does not CREATE the veto (W -> U)
+# FIG 3 — training does not CREATE the veto; sharpening is unpowered (W -> corrected U)
 # =========================================================================
 def fig5_training_sharpens():
     import numpy as np
@@ -266,25 +271,39 @@ def fig5_training_sharpens():
     axA.set_ylabel("hallucination-veto AUROC"); axA.set_ylim(0, 1.05)
     axA.set_title("the veto EXISTS untrained", fontsize=10.5)
 
-    # B: hallucination dial-mean base -> trained (lower = more distrusted)
+    # B: hallucination dial-mean, raw base vs deployed checkpoint under the corrected
+    # 2026-07-18 hallucination labels (Set A n=12, Set B n=8). Both trained-side bars are
+    # descriptive: they sit below the veto cell's own >=50 adequacy floor.
     base_h = W["descriptive"]["dial_mean_hallucination"]
-    train_h = U["U_G2_descriptive"]["dial_mean_hallucination"]
-    axB.bar([0, 1], [base_h, train_h], color=[C_MUTE, C_VETO], width=0.6)
-    for xi, v in zip([0, 1], [base_h, train_h]):
+    set_a = UC["set_A_instrument_corrected"]
+    set_b = UC["set_B_census_corrected"]
+    bars_h = [base_h, set_a["dial_mean_hallucination"], set_b["dial_mean_hallucination"]]
+    labels_h = [
+        "raw base",
+        f"trained,\nSet A (n={set_a['n_hallucination']})",
+        f"trained,\nSet B (n={set_b['n_hallucination']})",
+    ]
+    axB.bar([0, 1, 2], bars_h, color=[C_MUTE, C_VETO, C_VETO], width=0.6)
+    for xi, v in zip([0, 1, 2], bars_h):
         axB.text(xi, v + 0.008, f"{v:.3f}", ha="center", va="bottom", fontsize=10)
-    axB.set_xticks([0, 1]); axB.set_xticklabels(["raw base", "after training"])
-    axB.set_ylabel("dial score on confident hallucinations"); axB.set_ylim(0, 0.35)
-    axB.set_title("training pushes confabulations\ntoward zero trust", fontsize=10.5)
+    axB.set_xticks([0, 1, 2]); axB.set_xticklabels(labels_h, fontsize=8.5)
+    axB.set_ylabel("dial score on confident hallucinations"); axB.set_ylim(0, 0.42)
+    axB.set_title("training's effect on confabulation trust:\ndescriptive, below the adequacy floor",
+                  fontsize=10.5)
+    axB.text(1.5, 0.395, f"trained bars descriptive: n={set_a['n_hallucination']}/"
+                         f"{set_b['n_hallucination']} vs a registered floor of "
+                         f"{UC['adequacy_floor_hallucinations']}",
+             ha="center", va="top", fontsize=8, color="#444")
 
-    fig.suptitle("Training does not create the trust signal: it sharpens the veto (Qwen3-4B)",
+    fig.suptitle("Training does not create the trust signal; whether it sharpens the veto is unpowered (Qwen3-4B)",
                  fontsize=12, y=1.02)
     fig.tight_layout()
-    fig.savefig(OUT / "fig-p3-05-training-sharpens.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p4-03-training-sharpens.png", bbox_inches="tight")
     plt.close(fig)
 
 
 # =========================================================================
-# FIG 6 — the two-stage pipeline schematic
+# FIG 7 — the two-stage pipeline schematic
 # =========================================================================
 def fig6_pipeline():
     fig, ax = plt.subplots(figsize=(10.5, 3.6))
@@ -315,12 +334,12 @@ def fig6_pipeline():
     ax.set_title("The deployable two-stage pipeline: gate abstains, dial surfaces trust and vetoes hallucination",
                  fontsize=11.5, y=1.04)
     fig.tight_layout()
-    fig.savefig(OUT / "fig-p3-06-pipeline.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p4-07-pipeline.png", bbox_inches="tight")
     plt.close(fig)
 
 
 # =========================================================================
-# FIG 7 — cross-family depth profile: gate plateau vs localized dial band
+# FIG 6 — cross-family depth profile: gate plateau vs localized dial band
 # =========================================================================
 # family palette (consistent across both panels)
 C_FAM = {
@@ -395,14 +414,14 @@ def fig7_depth_profile():
                  "(dots = argmax layer; bars = within-tolerance span)",
                  fontsize=11.5, y=1.06)
     fig.tight_layout()
-    fig.savefig(OUT / "fig-p3-07-depth-profile.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p4-06-depth-profile.png", bbox_inches="tight")
     plt.close(fig)
 
     # provenance printout: recomputed spans backing the paper text
     for fam, d in Z.items():
         glo, ghi, gam, gn = _span(d, "X_G1_gate", GATE_TOL)
         dlo, dhi, dam, dn = _span(d, "X_G2_dial", DIAL_TOL)
-        print(f"  fig7 {fam}: gate plateau L{glo}-{ghi}/{gn} (argmax L{gam}), "
+        print(f"  fig6 {fam}: gate plateau L{glo}-{ghi}/{gn} (argmax L{gam}), "
               f"dial band L{dlo}-{dhi}/{dn} (argmax L{dam})")
 
 

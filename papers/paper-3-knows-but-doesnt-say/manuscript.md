@@ -1,8 +1,8 @@
 ---
 title: "Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model"
 author: "Joseph Rosenbaum (Synaptic Labs)"
-status: draft-v2 (axis-level revision 2026-08-09; the wrong-answer-cell power fix falsified the correct-vs-wrong discrimination claim at the known-unknown axis, Section 4/9)
-date: 2026-08-09
+status: draft-v3 (restructured 2026-08-17 around the four-beat result order: definitions-and-naming block moved into Section 3, Section 5 rebuilt around the two-axis geometry and axis-stability figures, research-journey narration removed per papers/common/VOICE.md, registration bookkeeping consolidated into Section 9; previously draft-v2, axis-level revision 2026-08-09)
+date: 2026-08-17
 repository: https://github.com/ProfSynapse/Epistemic-Humility-Research
 target: arXiv (cs.CL / cs.AI)
 evidence_base: >
@@ -14,7 +14,16 @@ evidence_base: >
   caution_direction_L35.json / caution_perp_direction_L35.json. Steering:
   archive/experiment/phase1/probe/analysis/current_clean_grpo_v2_* (caution_residual_intervention,
   caution_perp_residual_intervention, known_overrefusal_native_l26_coeff_sweep,
-  l26_double_orthogonalized_panel_{a,b,c}_generation, knowledge_boundary_steer).
+  l26_double_orthogonalized_panel_{a,b,c}_generation, knowledge_boundary_steer);
+  Section 6 ablation headline (0.994 to 0.524, replication 0.536):
+  experiments/doubt-regulated-caution/AMENDMENT.md, re-derived under the archived
+  instrument in experiments/caution-ablation-rederivation/AMENDMENT.md (Outcome,
+  2026-08-16; caution_perp ablate 0.994 to 0.5238, correct rate 0.3274 over the
+  full known_refused cell). Second-seed full-axis ablation (Section 6, Section 9):
+  experiments/refusal-axis-ablation-confirmatory/AMENDMENT.md (Outcome, FALSIFIED
+  2026-08-16; post-ablation over-refusal 0.5528, 45.7pp shed, 29.2 percent correct
+  on formerly refused knowns). Bounded write-site sweep (Section 6):
+  `experiments/caution-install-bounded-site-sweep/AMENDMENT.md` (Outcome, 2026-08-13).
   Stated-confidence calibration: archive/experiment/phase1/eval/analysis/calibration_gap_*.json
   (clean_sft_grpo_v2_seed1, clean_sft_grpo_v3_seed1, contrastive_sft_seed1,
   contrastive_masked_sft_seed1). Behavior: archive/experiment/phase1/eval/results_amendment_*.
@@ -26,25 +35,21 @@ notes: >
   artifact above. All experiments are single-seed (seed 1), Qwen3-4B, evaluated on
   SelfAware (n=3369) unless stated otherwise (the GRPO confidence collapse
   carries a three-seed replication citation, Section 7); this is a
-  within-model mechanistic study, not a multi-seed effect-size estimate. Figures
-  marked "directional" originally rested on small wrong-answer cells (n=16 on
-  the held-in TriviaQA known set); a powered re-estimate
-  (experiments/wrong-answer-cell-power-fix/, resolved falsified 2026-08-09,
-  n=360 wrong / 420 correct at deployment rendering) found the known-unknown
+  within-model mechanistic study, not a multi-seed effect-size estimate. The
+  axis-level correct-versus-wrong reading comes from
+  experiments/wrong-answer-cell-power-fix/ (resolved falsified 2026-08-09,
+  n=360 wrong / 420 correct at deployment rendering): the known-unknown
   axis does not discriminate the model's own correct versus wrong answers any
-  better than the stated channel (Section 4, Section 9), while the calibration
-  contrast survives. Companion papers: the program's taxonomy and
-  evidence-synthesis paper, [*The Depths of Ignorance: A Taxonomy, Systematic
-  Evidence Synthesis, and Research Agenda for Epistemic Humility in Language
-  Models*](../paper-1-taxonomy-framework/manuscript.md) (superseded source
-  draft retained at archive/meta-analysis/paper/draft-v0.md), defines the
-  coherence axis this paper
-  measures; the SFT/DPO/KTO/GRPO regimen experiment, [*Teaching Small Language
-  Models to Say I Don't Know: A Controlled Comparison of SFT, DPO, KTO, and
-  GRPO on Model-Specific Abstention Data*](../paper-2-training-regimen/manuscript.md),
-  supplies the DPO/KTO behavior results referenced in Section 7. This paper is
-  the third in the series; the training-free readout line it motivates is
-  developed in subsequent program work.
+  better than the stated channel (Section 3, Section 9), while the calibration
+  contrast holds. Earlier program papers are cited author-year and carry
+  References entries: Rosenbaum (2026a), *The Depths of Ignorance*, defines the
+  coherence axis this paper measures (superseded source draft retained at
+  archive/meta-analysis/paper/draft-v0.md); Rosenbaum (2026b), *Teaching Small
+  Language Models to Say I Don't Know*, supplies the DPO/KTO behavior results
+  referenced in Section 7. Citations are author-year throughout; the References
+  section is one-to-one with in-text citations. Registration mechanics
+  (pre-stated thresholds and what would have overturned each result) are
+  confined to Section 9 and Appendix A.
   draft-v1 (2026-07-02) absorbs the confidence-channel and probe-coda depth
   (old regimen-paper Sections 7-8): the RL-collapse incentive analysis, the
   Brier proper-scoring equation and its full negative, precise
@@ -67,221 +72,302 @@ rather than possessing it. We separate the two in a small instruction-tuned mode
 (Qwen3-4B) by reading three signals on the same questions: an *internal* confidence
 axis recovered by a linear probe on hidden states, the *stated* confidence the
 model verbalizes as a number, and the *behavior* it commits to (answer or abstain).
-On a known/unknown question split (SelfAware, n=3369), the internal axis separates
-known from unknown items at AUROC ≈ 0.997 and is well-calibrated by a one-dimensional
-readout (ECE ≈ 0.047), while the stated confidence the same model emits ranks
-appropriateness at AUROC ≈ 0.52–0.56 (barely above chance) and is collapsed
-near a constant (≈ 0.82, std ≈ 0.01–0.03). The model represents what it does not know;
-it does not report it. By "knows" we mean this internal recognition of which
-questions are answerable, not verified self-knowledge that the model's own answer
-is correct. We make four contributions. (1) We quantify this
-representation–verbalization gap and show the relevant items are not internally
-confused: questions the model over-refuses despite knowing them sit at an internal
-"known" position. (2) We resolve the internal geometry into two correlated but
-separable axes: a graded *known-unknown (answerability) axis* (how known an item
-is; previously called the doubt axis) and a partially
-independent *refusal axis* (the refuse/answer decision); raw cosine overstates
-their collinearity at −0.83, but held-out discriminability after orthogonalization
-shows a genuine refusal-specific component (refuse/answer AUROC ≈ 0.80 after
-projecting out the known-unknown axis). (3) We place the two axes in the program's anatomy: the
-known-unknown axis is the answerability separation itself, present untrained (0.997 on the
-raw base, 0.997+ on four pretrain-only bases), while the refusal axis is a construct of the
-trained model alone, unreadable on a base that never refuses; training does not
-create the known-unknown axis, but it does create the refusal axis. That separation is
-reliable across *overt* kinds of unanswerability and is not universal: on covertly
-ambiguous natural questions it falls to ≈ 0.63, on trained checkpoints and on the
-raw base alike (Section 8). A pre-registered actuation study confirms the
-refusal axis is causally real and one-way (ablation collapses over-refusal on
-known questions from 0.994 to 0.030, yet no intervention installs appropriate
-abstention on genuine unknowns). (4) We show the stated
-confidence gap survives seven training interventions (DPO, KTO, GRPO v1/v2/v3, and
-two contrastive-SFT variants), and we localize the mechanism with a clean
-single-variable dissociation: contrastive SFT installs stated calibration only when
-it also supervises the wrong-answer text (which degrades behavior), and masking
-that text recovers behavior but destroys the calibration. The verbalized
-confidence channel is decoupled from the internal one, and current training
-objectives move behavior or stated confidence but do not couple them. We argue the
-remaining route is to supervise the stated channel *toward the model's own
-calibrated internal axis*, and we frame that experiment.
+On a known/unknown question split (SelfAware, n = 3369), the internal axis
+separates known from unknown items at AUROC 0.997 and is near-calibrated in
+aggregate (ECE 0.047 raw), while the stated confidence ranks appropriateness at
+AUROC 0.52 to 0.56, collapsed near a constant (0.82, std 0.01 to 0.03). The model
+represents what it does not know and does not report it. By "knows" we mean recognition of which questions are
+answerable, not verified self-knowledge that its own answer is correct.
+
+Four results follow. Questions the model over-refuses despite knowing them sit at
+an internal "known" position, so the failure is verbalization, not representation.
+The internal signal resolves into two separable axes, a graded known-unknown axis
+and a refusal axis that still predicts refusal at AUROC 0.80 once the first is
+projected out. Their origins differ: the known-unknown axis reads 0.997 on the raw
+untrained base and on four pretrain-only bases, while under this harness's neutral
+prompt a refusal axis can be fit only after abstention training. That axis is
+causally real but one-way: steering relaxes over-refusal and cannot install
+abstention. The
+readout covers overtly unanswerable questions and falls to 0.63 where ambiguity is
+covert. Six training interventions across preference, reinforcement-learning and
+supervised objectives leave the gap open, and one single-variable comparison shows
+why: contrastive fine-tuning installs stated calibration only by
+supervising the wrong-answer text, which breaks behavior, and masking that text
+restores behavior and destroys the calibration. Current objectives move behavior or
+stated confidence without coupling either to the internal signal.
 
 ## 1. Introduction
 
 The dominant way to teach a language model epistemic humility is to teach it to
-*act* humble: to abstain when it should, to hedge, to say "I don't know." The
-taxonomy paper's review of the training literature
-([*The Depths of Ignorance*](../paper-1-taxonomy-framework/manuscript.md)) shows that
-almost all of this work is measured at a single depth (a scalar confidence or a
-binary abstention) and that one axis is almost entirely unmeasured: *coherence*,
-whether the model's stated epistemic signal, its token-level signal, and its
-hidden-state signal actually agree.
-[*The Depths of Ignorance*](../paper-1-taxonomy-framework/manuscript.md) names the
-distinction with Plato's image from the *Meno*: a true opinion not tethered to
-a reason is like one of the statues of Daedalus, apt to run away. A humility
-behavior not anchored to the model's internal state is an untethered statue:
-right today, a runaway under
-distribution shift.
+*act* humble: to abstain when it should, to hedge, to say "I don't know." A review
+of that training literature (Rosenbaum, 2026a) finds that almost all of it is
+measured at a single depth, a scalar confidence or a binary abstention, and that
+one axis goes almost entirely unmeasured: *coherence*, whether the model's stated
+epistemic signal, its token-level signal, and its hidden-state signal actually
+agree.
 
-This paper measures that axis directly in one model and reports what we found: the
-tether is missing, and ordinary training does not install it. Concretely, the model
-already holds a calibrated internal estimate of what it knows, but the number it
-states is decoupled from that estimate, and seven training interventions that move
-its behavior or its stated number fail to couple the two.
+Try the distinction as a thought experiment. You ask a model a question that has no
+settled answer, and it declines to answer. From the decline alone you cannot tell
+whether the model recognized the question as unanswerable or whether declining is a
+habit it acquired in training that happens to fire here. The two are
+indistinguishable at the output and come apart the moment the input distribution
+shifts. Rosenbaum (2026a) names this with Plato's image from the *Meno*: a true
+opinion not tethered to a reason is like one of the statues of Daedalus, apt to run
+away. A humility behavior not anchored to the model's internal state is an
+untethered statue, right today and a runaway tomorrow.
 
-Our contributions, each a section below:
+This paper measures the tether directly in one small instruction-tuned model. We
+read three signals on the same questions: a linear probe on hidden states, the
+confidence number the model states, and the answer-or-abstain decision it commits
+to. Inside the first of those, two directions turn out to do separate jobs. The known-unknown axis is fit as a known-versus-unknown
+contrast over hidden states and read as graded answerability. The refusal axis is
+fit as a refuse-versus-answer contrast among questions the model can in fact
+answer.
 
-- The gap (Section 4). A linear probe on hidden states separates known from
-  unknown questions at AUROC ≈ 0.997 and is calibrated to ECE ≈ 0.047 by a 1-D
-  readout; the model's *stated* confidence on the same items ranks appropriateness
-  at ≈ 0.52–0.56 and is near-constant. The over-refused-but-known items are
-  internally "known," so the failure is verbalization, not representation. The
-  axis is not created by our training: the same separation reads at 0.997
-  untrained on the raw base and at 0.997+ on four pretrain-only bases. Nor is it
-  universal across kinds of unanswerability: it holds wherever the question is
-  overtly unanswerable and falls to ≈ 0.63 where the unanswerability is covert
-  (Section 8).
-- The geometry (Section 5). The internal signal decomposes into a graded
-  *known-unknown axis* and a separable *refusal axis*. We show why the naive measurement
-  (raw cosine = −0.83, "they're the same axis") is wrong and the held-out
-  orthogonalization measurement (refusal-specific refuse/answer AUROC ≈ 0.80) is
-  right, a methodological caution about cosine in high-dimensional activation
-  space. The refusal axis, unlike the known-unknown axis, is a construct of the trained model alone: a base
-  that never refuses offers no refuse/answer contrast to read.
-- Causal status, imported (Section 6). A pre-registered actuation study
-  establishes that the refusal axis is causally real but asymmetric: ablating the
-  refusal direction collapses over-refusal on known items (0.994 → 0.030) with
-  clean specificity, while no intervention tried there installs abstention on
-  true unknowns. Section 6 states that conclusion and what it licenses.
-- Training resistance and a localizing dissociation (Section 7). The stated-
-  confidence gap survives DPO, KTO, GRPO v1/v2/v3, and contrastive SFT. A clean
-  dissociation between answer-supervised and answer-masked contrastive SFT shows
-  the calibration signal contrastive SFT installs is carried by supervising the
-  wrong answer itself: keep it and behavior breaks; remove it and calibration
-  breaks.
+Four results follow from those readouts. The model distinguishes questions it can
+answer from questions it cannot, almost perfectly and internally, while the
+confidence it states sits flat across the same questions, so the failure is
+verbalization rather than representation. The internal signal is not one thing:
+the graded knowledge axis and the refuse-or-answer decision come apart, and the
+behavior rides the second of them. The refusal axis is causally real, and the
+leverage over it runs one way, releasing over-refusal without being able to write
+appropriate abstention in. Six training interventions fail to wire the
+knowledge signal into the stated channel.
 
-Two follow-on cells then close off the obvious repairs from both sides. Reinforcement
-learning on the calibrated (answer-supervised) base retains stated calibration but
-cannot install knowledge-conditioned action ("says but doesn't act"), and the result
-survives halving the KL anchor: the decoupling is structural, not an anchor
-artifact. Its mirror (distilling the model's own calibrated internal axis
-directly into the stated confidence token by SFT) preserves the
-knowledge-conditioned action but cannot
-install stated calibration: the distilled scalar collapses onto the answer/abstain
-action ("acts but doesn't say"). We then argue (Section 8) that two opposite training
-pressures failing on the same channel localize the bottleneck to the channel
-itself (a single confidence token emitted by the language head and trained by
-next-token cross-entropy), and that the productive move is therefore an engine
-change: a dedicated
-confidence head supervised by a regression loss against the internal axis, not another
-objective on the same token.
+Two outcomes would have overturned that thesis. If the probe had failed to separate
+known from unknown questions any better than the model's own stated confidence
+does, there would be no gap to explain. If any of the six interventions had
+produced a checkpoint that both behaved well and stated calibrated confidence, the
+gap would be an unsolved training problem rather than a property of the channel
+itself. Neither happened.
 
-A scope note before the results: this is a deep within-model mechanistic study of a
-single model (Qwen3-4B) at a single seed. We are explicit throughout about which
-numbers are robust population reads (n ≈ 3369) and which are directional small-cell
-estimates, and Section 9 collects the threats to validity. The claims we stand
-behind are qualitative and large in magnitude (0.997 vs 0.52; the
-answer-supervised → answer-masked direction flip); the claims we flag are the
-precise effect sizes.
+The scope is one model (Qwen3-4B), one seed, one evaluation surface: a deep
+within-model mechanistic study rather than an effect-size estimate. Where evidence
+from another model lineage bears on a claim, we say so and fence the claim to the
+population it was measured on; transfer is tested where stated and assumed nowhere.
+Section 9 collects the threats to validity. Two companion sources supply results
+this paper builds on: a controlled comparison of abstention training regimens on the
+same model and data (Rosenbaum, 2026b), and our own actuation experiments on the
+refusal axis, reported in Section 6.
 
 ## 2. Related work and positioning
 
 ### The coherence axis
 
-The taxonomy paper
-([*The Depths of Ignorance*](../paper-1-taxonomy-framework/manuscript.md)) introduces
-a "Depths of Ignorance" taxonomy (L1 calibration, L2 structured ignorance, L3
-distributional signatures, L4 objective uncertainty) and a cross-cutting
-coherence/faithfulness axis, and documents that
-the training literature clusters at L1 and almost never measures coherence. The
-first systematic framework for "faithful calibration" finds that token-probability,
-hidden-state, and sampled-consistency estimators of internal confidence diverge on
-the same traces [arXiv:2606.03969], and multiple groups find that more inference-
-time reasoning impairs calibration rather than helping [arXiv:2508.15050,
-arXiv:2506.18183]. This paper is the empirical instantiation of the coherence
-axis of [*The Depths of Ignorance*](../paper-1-taxonomy-framework/manuscript.md) on
-one model: we measure stated vs internal directly and ask whether training
-couples them.
+Rosenbaum (2026a) introduces a "Depths of Ignorance" taxonomy (L1 calibration, L2
+structured ignorance, L3 distributional signatures, L4 objective uncertainty) and a
+cross-cutting coherence/faithfulness axis, and documents that the training
+literature clusters at L1 and almost never measures coherence. The first systematic
+framework for "faithful calibration" finds that token-probability, hidden-state,
+and sampled-consistency estimators of internal confidence diverge on the same
+traces (Gani et al., 2026), and multiple groups find that more inference-time
+reasoning impairs calibration rather than helping (Lacombe et al., 2025; Mei et
+al., 2025). This paper is the empirical instantiation of that coherence axis on one
+model: we measure stated against internal directly and ask whether training couples
+them.
 
 ### Latent knowledge and probing
 
-A line of work shows that a model's hidden states
-linearly encode whether it is being truthful or whether it knows an answer
-[arXiv:2304.13734, arXiv:2212.03827, arXiv:2310.06824, arXiv:2207.05221], with
-theoretical grounding for why such directions are linear [arXiv:2403.03867] and
-evidence that truth directions generalize across tasks [arXiv:2407.08582]; a
-mechanistic literature localizes factual recall itself to identifiable components
-[arXiv:2202.05262, arXiv:2104.08696, arXiv:2309.08600]. Two findings are directly
+A line of work shows that a model's hidden states linearly encode whether it is
+being truthful or whether it knows an answer (Azaria and Mitchell, 2023; Burns et
+al., 2022; Marks and Tegmark, 2023; Kadavath et al., 2022), with theoretical
+grounding for why such directions are linear (Jiang et al., 2024) and evidence that
+truth directions generalize across tasks (Liu et al., 2024); a mechanistic
+literature localizes factual recall itself to identifiable components (Meng et al.,
+2022; Dai et al., 2021; Cunningham et al., 2023). Two findings are directly
 concurrent with ours: a linear probe reads answerability even while the output
-hallucinates [arXiv:2310.11877], and internal truthfulness readouts exceed what
-outputs express [arXiv:2410.02707]; a complementary result shows fine-tuning
-*suppresses* rather than destroys the boundary-tracking structure
-[arXiv:2511.12991]. Our internal axis is in this family (a logistic probe on
-residual activations). Our question is downstream of probing: granting that the
-knowledge is decodable, *why does the model not say it*, and can training make it
-say it? The training-resistance depth (seven objectives on one model, with refit
-probes held fixed) is the part this literature has not measured.
+hallucinates (Slobodkin et al., 2023), and internal truthfulness readouts exceed
+what outputs express (Orgad et al., 2024); a complementary result shows fine-tuning
+*suppresses* rather than destroys the boundary-tracking structure (Shi et al.,
+2025). Our internal axis is in this family (a logistic probe on residual
+activations). Our question is downstream of probing: granting that the knowledge is
+decodable, *why does the model not say it*, and can training make it say it? The
+training-resistance depth (six objectives on one model, with refit probes held
+fixed) is the part this literature has not measured.
 
 ### Activation steering
 
-Inference-time intervention along a learned direction can
-change model behavior [arXiv:2306.03341, arXiv:2308.10248, arXiv:2312.06681], and
-humility-adjacent behaviors such as
-sycophancy live in steerable internal subspaces [arXiv:2604.03147]. Closest to our
-result, refusal itself is mediated by a single causally steerable direction
-[arXiv:2406.11717] (though single-direction framings deserve caution
-[arXiv:2602.02132], and intervention conclusions are sensitive to methodological
-choices [arXiv:2309.16042]). The pre-registered actuation study uses steering as a
-causal probe of our two-axis decomposition; Section 6 imports its
-conclusion, a clean asymmetry that, to our knowledge, has not been isolated for
-the abstention behavior specifically.
+Inference-time intervention along a learned direction can change model behavior (Li
+et al., 2023; Turner et al., 2023; Panickssery et al., 2023), and humility-adjacent
+behaviors such as sycophancy live in steerable internal subspaces (Sun et al.,
+2026). Closest to our result, refusal itself is mediated by a single causally
+steerable direction (Arditi et al., 2024), though single-direction framings deserve
+caution (Joad et al., 2026) and intervention conclusions are sensitive to
+methodological choices (Zhang and Nanda, 2023). We use steering the same way, as a
+causal probe of our two-axis decomposition; the asymmetry Section 6 reports has
+not, to our knowledge, been isolated for the abstention behavior specifically.
 
 ### Abstention and preference training
 
-The program's training-regimen
-experiment
-([*Teaching Small Language Models to Say I Don't Know*](../paper-2-training-regimen/manuscript.md))
-establishes, on the same model and data, that cold-start SFT induces abstention
-(and over-refusal), and that DPO and KTO reposition the abstention boundary
-rather than inducing the behavior. The broader literature agrees that training moves
-*abstention behavior*: IDK-labeled fine-tuning and honesty alignment install
-refusal (with over-refusal as the standard side effect) [arXiv:2312.07000,
-arXiv:2401.13275, arXiv:2603.17504], while reasoning-focused post-training
-degrades it [arXiv:2506.09038]; surveys catalogue the design space
-[arXiv:2407.18418]. A separate line trains models to *verbalize* confidence
-[arXiv:2205.14334, arXiv:2306.13063, arXiv:2405.20974, arXiv:2405.21028,
-arXiv:2406.08391], typically reporting improved calibration on the trained
-distribution without testing whether the emitted scalar tracks the model's
-internal state (the coherence question this paper measures). Two newer RL
-variants sharpen the contrast: Rewarding Doubt optimizes a logarithmic scoring
-rule for direct confidence expression [arXiv:2503.02623], while RLMF uses
+A controlled comparison of training regimens (Rosenbaum, 2026b) establishes, on the
+same model and data, that cold-start SFT induces abstention (and over-refusal), and
+that DPO and KTO applied cold induce almost none of the behavior, while applied
+after SFT they reposition the boundary SFT installed. That comparison also separates the prompt from the training for
+reinforcement learning: GRPO applied cold, with no supervised stage, preserves and
+sharpens abstention the prompt has already elicited and internalizes none of it,
+while GRPO applied after SFT amplifies the trained routine, pushing refusal recall
+toward ceiling and over-refusal up with it. The broader literature agrees that training moves *abstention behavior*:
+fine-tuning on "I don't know" labels and honesty alignment install refusal, with
+over-refusal as the standard side effect (Yang et al., 2023; Cheng et al., 2024;
+Uluoglakci and Taskaya Temizel, 2026), while reasoning-focused post-training
+degrades it (Kirichenko et al., 2025); surveys catalogue the design space (Wen et
+al., 2024). A separate line trains models to *verbalize* confidence (Lin et al.,
+2022; Xiong et al., 2023; Xu et al., 2024; Stengel-Eskin et al., 2024; Kapoor et
+al., 2024), typically reporting improved calibration on the trained distribution
+without testing whether the emitted scalar tracks the model's internal state, which
+is the coherence question this paper measures. Two newer reinforcement-learning
+variants sharpen the contrast: Bani-Harouni et al. (2025) optimize a logarithmic
+scoring rule for direct confidence expression, and Liu et al. (2026) use
 metacognitive self-judgment to improve faithful uncertainty expression over
-standard RL [arXiv:2606.32032]. We treat these as positive controls for what
+standard reinforcement learning. We treat these as positive controls for what
 output-policy training can move, not as evidence that the emitted channel is
 coupled to a hidden-state answerability or correctness signal. Consistent with our
-RL nulls, ternary abstention rewards under GRPO also fail to couple abstention to
-confidence [arXiv:2511.11500], and there are structural reasons to expect the
-output channel to resist: calibrated models must hallucinate at a floor set by
-their miscalibration [arXiv:2311.14648], alignment stages degrade calibration
-[arXiv:2311.13240], and fine-tuning perturbs overlapping representations rather
-than writing new signal [arXiv:2604.15574].
-This paper builds on
-[*Teaching Small Language Models to Say I Don't Know*](../paper-2-training-regimen/manuscript.md)
-by asking what happens to the *confidence* channel under those and further
-objectives, and by adding the GRPO and contrastive-SFT cells.
+own negative reinforcement-learning results, ternary abstention rewards under GRPO
+also fail to couple abstention to confidence (Mohamadi et al., 2025), and there are
+structural reasons to expect the output channel to resist: calibrated models must
+hallucinate at a floor set by their miscalibration (Kalai and Vempala, 2023),
+alignment stages degrade calibration (Zhu et al., 2023), and fine-tuning perturbs
+overlapping representations rather than writing new signal (Kaplan et al., 2026).
+This paper builds on Rosenbaum (2026b) by asking what happens to the *confidence*
+channel under those and further objectives, and by adding the GRPO and
+contrastive-SFT arms.
 
-## 3. Setup
+## 3. Methods
 
-### Model and data
+### Model, data, and checkpoints
 
 All experiments use `unsloth/Qwen3-4B-bnb-4bit` with LoRA
 adapters (r = 32, α = 64, dropout = 0.05, all-linear targets). Training data for the
-abstention/confidence cells is built from TriviaQA-RC (no-context)
-[arXiv:1705.03551] following the
-Cheng recipe (reusing the data-construction recipe, not released labels). The
-out-of-distribution evaluation is SelfAware [arXiv:2305.18153] (n = 3369; 1032
-unknown-labeled, 2337
-known-labeled), scored with the locked-training-regimen eval harness. Probe and geometry work
+abstention and confidence arms is built from TriviaQA-RC, a reading-comprehension
+set of trivia questions used here without its evidence passages (Joshi et al.,
+2017), following the data-construction recipe of Cheng et al. (2024) rather than
+their released labels. Which questions count as unknown is a property of the model
+and not of the question, so the labels are made rather than borrowed: the base
+model answers each sampled question 32 times at temperature 1.0 with nucleus
+sampling at 0.9, plus once greedily; a question is unknown only when all 32
+sampled answers are wrong, known when the greedy answer is correct and at least
+16 of the 32 samples are, and the middle band is discarded (Rosenbaum, 2026b). The out-of-distribution
+evaluation is SelfAware (Yin et al.,
+2023), a benchmark of questions labeled answerable or unanswerable (n = 3369; 1032
+unknown-labeled, 2337 known-labeled), scored with this study's pinned evaluation
+harness. On SelfAware the known/unknown label is the benchmark's own answerable
+flag rather than a model-specific probe: an answerable question is known and an
+unanswerable one is unknown, and only the answerable rows carry the gold aliases
+that correctness is graded against.
+
+Every arm trains a low-rank adapter over that same base. The supervised arms adapt
+the 4-bit base directly; the reinforcement-learning arms adapt a merged 16-bit
+checkpoint of a supervised arm, which is both the policy they optimize and the
+reference policy their KL term anchors to. Probe and geometry work
 uses hidden-state extractions from the merged models, best layer L35 unless
 noted (Appendix A pins the harness, extraction, and artifacts).
+
+### Training arms
+
+The eight training runs share the base model, the adapter geometry above, seed 1,
+and the evaluation contract described next. What varies is the objective, what
+supervises the answer, and what supervises the stated scalar.
+
+Supervised fine-tuning (SFT) is the common ancestor of six of the eight. It
+receives direct targets, answer the known questions and refuse the unknown ones,
+with the loss taken over the assistant turn only: one epoch, per-device batch 10,
+learning rate 2e-4, warmup ratio 0.03, linear schedule, 8-bit AdamW, bf16.
+
+Direct preference optimization (DPO) and Kahneman-Tversky optimization (KTO) are
+applied after SFT, warmed from that merged checkpoint. DPO consumes the same rows
+as chosen and rejected pairs, KTO the same rows as unpaired desirable and
+undesirable examples. Neither supervises the stated scalar with anything the
+supervised stage did not already supply. Rosenbaum (2026b) publishes both recipes
+in full.
+
+Group relative policy optimization (GRPO) on the behavior reward samples four
+completions per prompt at temperature 1.35 and reinforces each in proportion to
+how far its reward sits above the group mean, at learning rate 5e-6 with a KL
+coefficient of 0.1 and no supervised targets at all. Its reward is a dominant
+behavior term plus a sub-dominant confidence term. The behavior term pays +2.0
+for a correct answer on a known question, −0.8 for a wrong one, −2.0 for refusing
+one, +1.2 for
+abstaining on an unknown question and −1.2 for answering one, ±0.8 on ambiguous
+rows, and −2.4 for output that is not valid JSON. The confidence term is worth at
+most 0.6 and scores the emitted scalar against a fixed target keyed to the outcome
+the completion turned out to have: 0.82 for a correct known answer or a correct
+abstention, 0.18 to 0.22 for the penalized outcomes, 0.45 to 0.50 for ambiguous
+ones, falling linearly through zero at one tolerance (0.2)
+from the target to −0.6 at two or more, with an emitted exact 0 or 1 drawing a
+separate −1.0.
+
+Proper-scoring GRPO changes one file and nothing else: same base, same data, same
+hyperparameters, same behavior term. Its confidence term is a Brier proper score
+of the emitted scalar against a per-question target, taken as the sampled group's
+mean realized appropriateness for that prompt, and its weight rises from 0.6 to
+1.2, still below the behavior magnitudes so behavior is not traded away. The
+penalty on exact 0 or 1 is kept; the pressure against high confidence is dropped,
+so a question the model reliably answers may legitimately draw a high number.
+
+Contrastive SFT, answer-supervised, mirrors the clean-SFT recipe exactly and
+differs only in its dataset: 29,338 rows split by role into appropriate
+(n = 14,395, confidence targets in [0.70, 0.90], mean 0.801), inappropriate
+(n = 14,395, targets in [0.10, 0.35], mean 0.226), and ambiguous (n = 548, targets
+in [0.35, 0.60], mean 0.473). The assistant-turn loss mask covers the entire JSON
+object, so on an inappropriate row the model is trained on the wrong-answer text
+as well as on the low confidence.
+
+Contrastive SFT, answer-masked, is that run with one bit changed. A per-row
+sub-span loss mask drops the rendered answer value out of the loss on
+inappropriate rows only, leaving appropriate and ambiguous rows fully
+supervised. The confidence values and the message text are identical to the
+answer-supervised dataset, so the difference between the two runs is exactly
+whether the wrong answer is in the loss.
+
+Probe-distillation SFT keeps the clean-SFT completions byte-identical and replaces
+only the stated-confidence target. Each row is supervised toward the model's own
+per-row factual estimate, the Laplace-smoothed correct-answer rate over the same 32
+samples the knowledge labeling draws, $(k+1)/(n+2)$, clamped to $[0.02, 0.98]$ to
+keep the target off the endpoints. The target is used as it stands: no quantile
+transform, no rebalancing, no inversion on abstention rows, because rescaling an
+already-calibrated probability would decalibrate it.
+
+Reinforcement learning on the answer-supervised base is the proper-scoring reward
+again, at the same hyperparameters, run over the answer-supervised contrastive
+checkpoint instead of the clean-SFT one. That substitution is the whole
+manipulation: the reference policy the KL term anchors to is now a calibrated
+model. A second run repeats it with the KL coefficient halved from 0.1 to 0.05.
+
+### Generation and scoring
+
+Every checkpoint is read under one output contract. A system instruction asks the
+model to answer the question or to say it does not know rather than guess, and to
+return a JSON object with exactly two keys: an `answer` string carrying the answer
+or the abstention, and a `response_confidence` in [0,1] carrying the model's stated
+probability that its response is the appropriate one. Generation is greedy
+(temperature 0, top-p 1, one sample per question), thinking mode off, capped at 128
+new tokens, at a fixed decode seed, with constrained decoding for the JSON envelope
+and up to two retries when the envelope fails to parse.
+
+A generation counts as carrying a stated confidence only when its payload is a JSON
+object with exactly those two keys, a string answer, and a numeric confidence
+inside [0,1]. Anything else is recorded as missing a confidence and the raw text is
+scored as the answer, so a parse failure lowers coverage rather than silently
+becoming a number. Refusal is a marker match over the answer
+text, with first-person unknown variants also accepted for JSON-contract answers. Correctness is
+word-bounded gold-alias membership: answer and aliases are normalized to lowercase
+alphanumeric tokens, and the answer is correct when any normalized alias appears in
+it as a whole token run.
+
+Those two judgments cross the known/unknown label into the four cells the behavior
+metrics aggregate. Refusal recall is refusals on unknown-labeled rows over all
+unknown-labeled rows. Over-refusal is refusals on known-labeled rows over all
+known-labeled rows. Correct-on-known is correct answers over answered known rows.
+The truthful rate is correct answers on knowns plus refusals on unknowns, over
+every row.
+
+Appropriateness is the one binary the stated channel is scored against, and it is
+the per-row form of that truthful rate: a response is appropriate when it refuses
+an unknown-labeled question or answers a known-labeled one correctly, and
+inappropriate otherwise, which covers wrong answers, answers to unknown questions,
+and refusals of known ones. Scoring against appropriateness rather than against
+correctness is what lets a correct abstention count as an outcome the model may
+reasonably state high confidence in.
 
 ### Three readouts on the same questions
 
@@ -289,127 +375,357 @@ noted (Appendix A pins the harness, extraction, and artifacts).
   activations to separate known-answerable from unknown questions, read at the
   generation position. Reported as known/unknown AUROC and as the calibration (ECE)
   of a 1-D readout along the axis.
-- *Stated confidence.* The model is prompted to return JSON with an `answer` and a
-  `response_confidence` ∈ [0,1] (its stated probability that its response is
-  appropriate). We read the emitted scalar directly from scored rows.
+- *Stated confidence.* The `response_confidence` scalar the model emits under the
+  contract above, read directly from scored rows.
 - *Behavior.* Whether the model answered or abstained, and whether the answer was
   correct, summarized as truthful_rate, correct_on_known, over_refusal (refusal on
   known), and refusal_recall (refusal on unknown).
+
+### The two internal axes
+
+Two directions in the residual stream do separate jobs in this paper. Each is
+named for the contrast it was fit on, and each is fenced to what that contrast
+licenses.
+
+#### The known-unknown axis
+
+The known-unknown axis is fit as a known-versus-unknown contrast over hidden
+states at the generation position and read as a graded answerability score: how
+far a question sits from the pole occupied by questions the model cannot answer.
+It reads answerability, not self-correctness, and the distinction is measurable
+rather than definitional. Asked whether the model's own answer is right, the axis
+is no better informed than the number the model says out loud: on 360
+wrong-answered and 420 correct rows, it ranks correct against wrong at AUROC
+0.5597 (CI 0.5185 to 0.5993) where the emitted scalar reads 0.5207, a gap of
++0.0390 whose confidence interval includes zero. The correctness signal is in the
+model but not on this axis: an exploratory probe fit directly on the same hidden
+states reaches AUROC 0.6769, so correct-versus-wrong is linearly present in the
+residual stream at this position. Every claim this paper makes about the
+known-unknown axis is therefore a claim about recognizing which questions are
+answerable, and none is a claim that the model verifies its own answers.
+
+Those correct-versus-wrong and calibration figures are measured under the
+deployment prompt on a population that is 54% correct. Internal-channel numbers
+extracted under the harness's neutral default prompt sit on a 96%-correct
+population, so render surface and statistical power differ together between the
+two; this paper never differences an internal-channel reading across that
+boundary.
+
+#### The refusal axis
+
+The refusal axis is fit as a refuse-versus-answer contrast among items the model
+knows: the positive class is questions it could answer and refused anyway, the
+negative class is questions it could answer and did. The name claims that fit and
+the causal handle Section 6 demonstrates, and nothing past them. It is not a claim
+that the model holds a disposition toward caution, and not a claim of conditional
+switching control over refusal.
+
+The scope of the causal handle needs stating precisely, because two different
+things can be meant by controlling a behavior through a direction. This paper's
+causal evidence concerns removal: what happens to refusal when a fitted read-side
+direction is taken out of the residual stream of this model. Writing a disposition
+in is a different class of experiment, with its own write sites, dose calibration,
+and validation, and the only installation evidence this paper reports is the
+bounded write-site sweep of Section 6.
+
+### Fitting the internal axes
+
+Hidden states are read from the residual stream of the adapted model at the
+generation position (the last prompt token, where the model's state can be read
+before it begins to answer), one vector per question per layer, over all 37 layers
+of the network.
+
+The known/unknown separation is measured layer by layer with an L2-regularized
+logistic probe from the residual vector to the benchmark's known/unknown label
+(inverse regularization strength C = 0.5, up to 2000 iterations), scored as
+held-out ROC-AUC under 5-fold stratified cross-validation at a fixed shuffle seed.
+The reported layer is the argmax of that held-out curve across the 37 layers, which
+lands at L35 on this model. The scan is what picks the layer, and it is rerun on
+each new checkpoint or model rather than ported: no layer choice in this paper is
+inherited from another family.
+
+For the geometry and intervention work the same two cells define a direction rather
+than a classifier. The known-unknown direction is the unit mass-mean difference
+$\mathrm{unit}(\bar h_{\text{known,answered,correct}} - \bar h_{\text{unknown,refused}})$
+at L35. On the checkpoint Sections 4 to 6 read, those cells hold 373 and 676 rows
+respectively, with 168 known-refused rows as the third cell.
+
+The refuse-versus-answer contrast is fit in two forms, both at L35 and both over
+known-labeled rows only. The mass-mean form,
+$\bar h_{\text{known,refused}} - \bar h_{\text{known,answered,correct}}$, is the
+direction the geometry and the intervention arms consume, because a difference of
+means carries a magnitude the write hook can dose against. The logistic form is an
+L2 probe (C = 0.5) from the residual vector to the refuse-or-answer label, fit in a
+frame standardized on the pooled known-row activations of every checkpoint being
+compared, and it is used wherever directions fit on different checkpoints have to
+be read in one coordinate system.
+
+The calibration of the known-unknown axis is measured through a one-dimensional
+readout rather than through the high-dimensional probe. Each row is projected onto the axis, a
+one-dimensional logistic maps that projection to a probability, and every score is
+taken out of fold under 5-fold stratified cross-validation, with the axis anchors
+themselves recomputed inside each fold from training rows only. Refitting the
+anchors matters: the positive anchor is a cell that also sits in the scored
+population, so a frozen axis would score rows that helped define it. Expected
+calibration error uses 15 equal-width bins over [0,1], and is reported both raw and
+importance-reweighted to a reference base rate, because ECE moves with the correct
+rate of the population it is measured on while AUROC does not.
+
+The over-refusal position of Section 4 uses the same probe trained on the two clean
+cells alone, known-answered and unknown-refused, and scored on the held-out
+known-refused rows; their mean probability is reported as a position on the 0 to 1
+scale those two anchors span.
+
+### Axis geometry
+
+Cosine is reported raw and whitened. The whitened form uses the pooled
+within-class covariance over the three behavior cells, shrunk toward its scaled
+identity as $(1-\lambda)S + \lambda(\mathrm{tr}\,S/d)I$ with $\lambda = 0.1$, and
+takes the Mahalanobis cosine in that frame. Raw cosine in activation space is
+dominated by a few shared high-variance dimensions, so it reads two directions as
+more collinear than a distance-aware metric does.
+
+The knowledge-orthogonal component of the refusal axis is the residual after
+removing the rank-1 known-unknown direction,
+$c_{\perp} = c - (c \cdot \hat u)\hat u$, for $c$ the raw mass-mean refusal
+direction and $\hat u$ the unit known-unknown direction. Orientation is preserved,
+so a positive projection still means more refusal and the shift arms keep their
+sign convention. The residual fraction reported in Section 5 is
+$\lVert c_{\perp}\rVert / \lVert c \rVert$.
+
+Whether a direction still reads its own target once another is projected out is
+measured by held-out discriminability rather than by cosine.
+Predicting refuse against answer among known rows, every AUROC is 5-fold held out
+with the directions refit inside each fold on training rows and the held-out knowns
+scored by projection, with the two large classes subsampled to 300 rows each and
+four fold seeds reported as a range. A stronger version removes not one direction
+but everything a linear probe can use: certified linear erasure of the
+answerability concept (LEACE), fit out of fold with an empirical erasure
+certificate, against an equal-rank random-direction eraser pushed through the same
+whitening as the control.
+
+Cross-checkpoint agreement compares refusal directions fit independently on each
+training regimen in the shared standardized frame, by absolute cosine. The floor is
+the identical fit with the refuse-or-answer labels permuted within each checkpoint,
+so it measures how much cosine this fitting procedure manufactures at this
+dimensionality when there is no signal to find, rather than how much two arbitrary
+vectors agree.
+
+The two-axis scatter of Figures 3 and 4 projects every extracted row on the
+checkpoint onto the unit known-unknown direction (horizontal) and the unit refusal
+direction (vertical), both computed from the three cells above, and colors each
+point by its outcome group. Rows outside those three fitting cells, wrong-answered
+knowns among them, are projected and plotted without having entered either fit.
+
+### Intervention instrument
+
+An intervention arm is a forward hook on the output of one decoder block that
+rewrites the residual stream while the model generates. The hook fires at every
+position, all prompt positions during prefill and each new position during
+decoding, so the edit shapes the whole trajectory rather than one token.
+
+Two write modes appear in Section 6. Ablation removes the component along the
+fitted unit direction at each position,
+$h \leftarrow h - (h \cdot \hat\theta)\hat\theta$. A shift displaces the state
+along it, $h \leftarrow h + \alpha\sigma\hat\theta$, where $\sigma$ is the fitted
+direction's own scale and $\alpha$ is expressed in units of $\sigma$ and may be
+negative; the ±2σ arms bracket the ablation on either side. A baseline arm
+registers no hook and runs the identical rows, so every comparison is within
+checkpoint and within row set. Behavior under intervention is re-scored by the same
+grader as the unhooked baseline, over the two cells the arm addresses:
+known-refused rows, where the effect is expected, and known-answered-correct rows,
+which serve as the specificity control that a working edit must leave alone.
+
+The bounded search of Section 6 writes rather than removes, over a space defined
+on four axes. Seven write sites span relative depth 0.361 to
+0.972 of the network, spaced roughly three decoder blocks apart across the
+candidate band plus three reference sites, so the search resolves sites at
+three-block granularity and claims nothing finer. Two write positions: the anchor
+token alone, and the anchor plus every decode step. Eight dose rungs per site, each
+a ratio from 0.100 to 2.000 of that site's own median anchor activation norm
+measured under its own condition, since a per-site calibration on this model family
+had already recovered an eight-fold spread of absolute setpoints across four sites
+and absolute doses therefore do not port. A rung is usable only when the written
+state reads back within 5% relative plus 0.5 absolute on every dosed row, no row
+collapses, and the fit-split conversion rate is at least 0.50; a site with no usable
+rung leaves the search at calibration and records no behavioral result at all.
+Three two-site pairs complete the space, chosen by a fixed rule, with the
+total commanded displacement magnitude-matched to the best single site by splitting
+its calibrated dose across the two members, so that a pair result cannot be extra
+dose wearing another name.
+
+Success is measured held out, on a 40% fit split stratified by category at a fixed
+seed. The success event is conversion: an unanswerable question the undosed
+checkpoint answers anyway, turned by the intervention into a well-formed refusal.
+Direction specificity is a ratio, the gated lift under the fitted direction over
+the largest gated lift produced by any control condition, whether a random
+direction drawn afresh or the same direction with the gate's fire set permuted.
+Random draws are accepted only when their absolute cosine against both fitted
+directions is at most 0.015 and their magnitude matches by readback, and voided
+draws are recorded rather than discarded. Harm to answers the model should have
+given is adjudicated only where at least 35 known-correct rows fire, below which a
+95% upper bound tight enough to matter is unreachable and the check is recorded as
+not adjudicable, which is neither a pass nor evidence of harmlessness.
 
 ### Calibration metrics
 
 For the stated channel we report: AUROC of the emitted
 scalar at ranking *response appropriateness* (the headline coherence number), the
 standard deviation of the emitted scalar (a collapse detector), expected
-calibration error against appropriateness (ECE), and the per-behavior-cell mean of
-the emitted scalar (does the model state higher confidence when it is actually
+calibration error against appropriateness (ECE), and the mean emitted scalar within each
+outcome group (does the model state higher confidence when it is actually
 right/appropriate?). For the internal channel we report known/unknown AUROC and the
 1-D readout's ECE.
 
+### Statistics
+
+AUROC throughout is the rank statistic, the probability that a randomly drawn
+positive scores above a randomly drawn negative with ties counted at half, so it is
+threshold-free and invariant to the base rate of the population it is computed on.
+
+Confidence intervals are percentile bootstrap over the per-question outcome vector,
+resampling rows with replacement at a fixed seed: 200 resamples for the behavior
+rates the evaluation harness reports, 2000 for the axis-level readout numbers of
+Section 4. Where two channels are compared on the same rows, the interval is a
+paired bootstrap, resampling the row index once and recomputing both channels on
+that resample, so the interval sits on the difference rather than on two
+independently drawn estimates.
+
+Comparisons of one rate between two groups of rows, the answer-rate margin between
+known and unknown questions in Section 7 among them, use a pooled two-proportion z
+test with a two-sided normal approximation; the z and p reported there are that
+test.
+
+Permutation floors are refits of the same estimator on shuffled labels, reported
+beside the measured quantity in the same units rather than converted into a
+p-value.
+
+Every pass and fail threshold used in this paper is listed in Section 9.
+
 ### Scope
 
-Single seed (seed 1), single model. We treat large qualitative contrasts
-as the findings and flag precise effect sizes as single-seed estimates (Section 9).
+Single seed (seed 1), single model, one evaluation surface. The large qualitative
+contrasts are what this paper claims; precise effect sizes are single-seed
+estimates (Section 9).
+
+Every readout is a reading under a stated prompt contract rather than a
+context-free property of the model. Stated-confidence and behavior numbers come
+from the deployment contract that asks for a JSON answer and a
+`response_confidence` scalar; hidden-state extractions are rendered under either
+that contract or the harness's neutral default prompt, and each result names
+which. The distinction is not cosmetic. On this model the abstention an
+instruction elicits swings from none of the unknown questions to most of them on
+prompt wording alone (Rosenbaum, 2026b), so a claim about what the model does or
+does not do holds under the contract it was measured on.
+
+### How this research was conducted with AI
+
+This paper is produced by a human principal investigator working with a
+frontier language model (Claude, Anthropic) as a research orchestrator, which
+dispatches specialized AI agents for bounded pieces of work. The work mixes
+three kinds of instrument: probes fit on hidden states, causal interventions
+written through forward hooks on the residual stream, and training runs that
+test whether an objective can couple the stated channel to the internal one.
+Each kind carries its own way to fool yourself, and the division of labor
+below exists to keep all three auditable.
+
+Every reported cell, a probe fit, a geometry comparison, an intervention arm,
+or a training run, is a governed unit of work: a directory holding a signed
+design document that states a hypothesis, gates with numeric thresholds, a
+falsifier, and predictions recorded before the run, together with a
+machine-readable manifest and the instrument code pinned by content hash at
+signing. After signing, thresholds and the registered surface cannot move.
+The bounded write-site search of Section 6 is the clearest instance: its
+search axes, its usable-rung criteria, and its conversion and specificity
+thresholds are part of that signed design, so the search space could not be
+narrowed after seeing which sites actuated.
+
+The trust boundary is explicit. The AI side builds the probe-fitting,
+geometry, and intervention harnesses against the locked design, extracts and
+hashes hidden states, launches and monitors training runs, computes the
+calibration and discriminability metrics described above, drafts this
+manuscript, and red-teams its own findings before they are reported. The
+human side holds everything with consequence: approving and signing designs,
+authorizing every compute launch, adjudicating gate outcomes when a
+threshold is missed or a falsifier fires, merging evidence into the record,
+and deciding verdicts.
+
+Three controls keep that division honest. Adversarial review sends results,
+especially a clean causal dissociation or a large effect size, to a separate
+agent briefed to refute them: oracle leaks, circular scoring, an unearned
+name for a direction, or a specificity claim the data cannot support.
+Read-before-cite requires that any claim about a prior probe, direction, or
+run trace to its signed design document rather than to a paraphrased memory
+of it, because a plausible-but-wrong account of an earlier geometry result
+is a more dangerous artifact than an absent one. Provenance by construction
+ties every reported number to the artifact that produced it: extractions and
+instruments are content-hashed at signing, checkpoints are pinned by
+revision, and Appendix A maps every number in this paper back to the
+extraction, probe, or intervention run that generated it.
+
+This workflow does not substitute for scientific judgment. It is a
+discipline for keeping AI participation in the research auditable, so that
+every axis, every cosine, and every intervention result in this paper
+carries a durable line back to the bytes that produced it.
 
 ## 4. Result 1: The model represents what it does not know, and does not report it
 
-The headline contrast is between two readouts of the same model on the same
-questions.
+Two readouts of the same model on the same questions disagree almost completely.
+Internally, the model separates questions it can answer from questions it cannot at
+**AUROC ≈ 0.997** at the best layer (L35). Out loud, the confidence it states sits
+at about 0.81 whether it was right, wrong, or refused, and ranks response
+appropriateness at **AUROC ≈ 0.52**. The model knows what it does not know, and
+does not say it.
 
-### The internal readout
+### The measurements behind those two numbers
 
-The known-unknown-axis probe separates known from unknown questions at
-**AUROC ≈ 0.997** at the best layer (L35), and this is a property of the internal
-state rather than surface vocabulary: the residual probe beats a lexical baseline
-(≈ 0.964) by +0.033. A one-dimensional logistic
-readout along the known-unknown axis, refit fold-wise to avoid anchor leakage
-(5-fold stratified CV, held-out projections), is **calibrated in aggregate
-(ECE ≈ 0.047 raw)** on a powered re-estimate (below), and its projection is
-monotone across behavior cells (correct > wrong > refused > unknown; the
-correct-minus-wrong step stays positive with a CI that excludes zero under an
-out-of-fold reading of the axis). This monotone
-ordering, like the answerability identity below, is a single-model/single-population
-reading (Qwen3-4B, SelfAware); a pre-registered, methodologically parallel
-evidence-responsiveness test on a different Qwen lineage and a different error class
-(confident wrongness on answerable, world-known questions, rather than KUQ ignorance)
-found the analogous KUQ-fit direction's projection reverses in sign instead of
-ordering monotonically there, and a pre-registered constructive search for a portable
-evidence-responsive axis on that population recovered only generic retrieval-family
-geometry, not a specific evidence axis, so this ordering should not be assumed to
-transfer before it is tested directly.
+The internal number reads the model's state rather than the question's vocabulary.
+The residual probe's 0.997 beats a lexical baseline fit on the question text at
+0.964, a margin of +0.033. A one-dimensional logistic readout along the
+known-unknown axis, refit fold-wise on held-out projections, is calibrated in
+aggregate at ECE 0.047 raw, and its projection orders the outcome groups
+monotonically: correct above wrong above refused above unknown, with the
+correct-minus-wrong step positive and its confidence interval excluding zero under
+an out-of-fold reading of the axis.
 
-### The stated readout
+The stated number fails on both counts at once. Across the 780 answered-known rows
+at deployment rendering the emitted scalar has mean 0.8212 and standard deviation
+0.0175, a near-constant regardless of input. Against realized appropriateness its
+expected calibration error is 0.2847, against the axis readout's 0.0474 on the same
+population, a gap of +0.2373 (CI 0.1853 to 0.2769) that excludes zero. On the full
+SelfAware evaluation the trained models' emitted scalar ranks appropriateness at
+AUROC 0.52 to 0.56 (Section 7). The discriminating signal exists internally; the
+verbalized number is a collapsed near-constant.
 
-The same model's emitted `response_confidence` is collapsed near a
-constant (mean ≈ 0.8212 with std ≈ 0.0175 on the 780 answered-known rows at
-deployment rendering) and ranks its own correct vs wrong answers at
-**AUROC ≈ 0.5207 with ECE ≈ 0.2847**, on 420 correct / 360 wrong rows, a
-24-fold increase in the wrong-answered cell over the original n = 16 estimate
-(AUROC ≈ 0.559, ECE ≈ 0.142). That original estimate's extraction manifest was
-95.9% correct on its answered-known population; the deployment population is
-53.8% correct, so the two are not comparable as a pure power correction. On the
-full SelfAware evaluation the trained models' emitted scalar
-ranks appropriateness at **AUROC ≈ 0.52–0.56** (Section 7). Per behavior
-cell the emitted number is nearly flat (≈ 0.81 whether the model was right, wrong,
-or refused).
+![Internal versus stated confidence, two readouts of one model](figures/fig-p2-01-internal-vs-stated-gap.png)
 
-So for the known-versus-unknown question, the discriminating signal exists
-internally and the verbalized number is a collapsed near-constant: the model
-*knows* what it does not know, but does not *say* it. Whether it also knows
-which of its own answers is right is a narrower claim, and a powered,
-pre-registered re-estimate overturns it at the axis level: the known-unknown axis's own
-readout does not rank the model's correct versus wrong answers any better than
-the collapsed stated scalar does (AUROC 0.5597, CI 0.5185-0.5993, vs the
-emitted scalar's 0.5207; gap +0.0390, CI includes zero, on 360 wrong-answered
-rows at deployment rendering versus the original 16). The correctness signal
-is not absent from the model: an unregistered, ungated context probe fit
-directly on the same hidden states reaches AUROC 0.6769, so correct-versus-wrong
-is linearly present in the residual stream at this position; the known-unknown
-axis specifically does not carry it forward to deployment. That correct-versus-wrong
-discrimination was the re-estimate's registered prediction, and it was falsified.
-The calibration side of the original contrast survives and widens under power:
-the axis's own readout stays near-calibrated (ECE 0.0474 raw) against the
-emitted scalar's ECE 0.2847, a gap of +0.2373 (CI 0.1853-0.2769, excludes
-zero). Because the original internal-channel numbers were extracted under the
-harness's neutral default prompt on a 96%-correct strata-selected population
-while the re-estimate renders under the deployment prompt at 54% correct, the
-drop from the (unpublished) 0.649 internal comparator to 0.5597 is power and
-render-surface confounded and is never differenced as a pure power
-correction.
+**Figure 1. What the model represents and what it states are two different
+numbers.** Two readouts of the same model on the same SelfAware questions
+(n=3369). *Left:* the internal known-unknown-axis probe (L35) separates known from
+unknown questions at AUROC ≈ 0.997, while the emitted `response_confidence` scalar
+ranks appropriateness barely above chance (AUROC ≈ 0.52). *Right:* on 360
+wrong-answered and 420 correct rows at deployment rendering, the internal axis's
+own readout stays near-calibrated (ECE ≈ 0.047 raw) where the stated scalar is
+badly miscalibrated (ECE ≈ 0.285).
 
-![[figures/fig-p2-01-internal-vs-stated-gap.png]]
-
-**Figure 1. The internal–stated confidence gap.** Two readouts of the same model
-on the same SelfAware questions (n=3369). *Left:* the internal known-unknown-axis probe
-(L35) separates known from unknown questions at AUROC ≈ 0.997, while the emitted
-`response_confidence` scalar ranks appropriateness barely above chance
-(AUROC ≈ 0.52). *Right:* on a powered re-estimate (360 wrong-answered rows at
-deployment rendering, up from the original 16), the internal axis's own readout
-stays near-calibrated (ECE ≈ 0.047 raw) where the stated scalar is badly
-miscalibrated (ECE ≈ 0.285); this calibration contrast survives and widens
-under power. The same re-estimate found that this axis does not rank the
-model's own correct versus wrong answers any better than the collapsed stated
-scalar does (AUROC 0.56 vs 0.52, gap CI includes zero); the correctness signal
-is linearly present elsewhere in the residual stream (unregistered context
-probe, AUROC 0.68) but is not carried by this axis at deployment.
 ### The gap is like-for-like, not a scoring artifact
 
 A skeptic could object
 that Figure 1 scores the two channels against different labels (the probe
 against known/unknown, the stated scalar against appropriateness). On the
-deployed GRPO-trained checkpoint (Section 7, intervention 4), both channels can
+deployed GRPO-trained checkpoint (Section 7, intervention 3), both channels can
 be scored against the *same* known/unknown label on the *same* joined rows
 (n = 1233): the L35 probe reads the boundary at AUROC 0.972 while the same
 checkpoint's own emitted confidence reads it at 0.637. The
 calibration side of the contrast is equally stark: a linear readout along the
-internal axis is near-calibrated (ECE ≈ 0.047 raw, measured on Section 4's
-correct/wrong population rather than on this paragraph's joined rows), while the emitted
+internal axis is near-calibrated (ECE ≈ 0.047 raw, measured on the correct/wrong
+population of Section 3 rather than on this paragraph's joined rows), while the emitted
 channel's ECE against appropriateness on the full evaluation is 0.403. The
 emitted scalar does carry *some* boundary information when scored against the
 label it is best at (0.637 > chance): the gap is not that the stated channel
 is empty, but that it says a fraction of what the states contain.
 
-![[figures/fig-p1-09-knows-vs-says.png]]
+![Probe and emitted confidence read the same boundary on the same rows](figures/fig-p1-09-knows-vs-says.png)
 
 **Figure 2. The model knows more than it says: like-for-like on one
 checkpoint.** On the same GRPO-trained checkpoint and the same evaluation rows,
@@ -427,51 +743,118 @@ known-*refused* items sit at ≈ 0.25–0.28, far from the unknown pole. Over-re
 phenomenon over items the model internally recognizes as known, not suppression of
 a genuine internal "I don't know."
 
+### The separation predates our training
+
+The separation is not something our training created. The same known/unknown probe
+reads at 0.997 untrained on the raw Qwen3-4B base (no instruction tuning, no
+adapter) and at 0.997 or higher on four pretrain-only base models spanning families
+and eras. We fit the axis on trained checkpoints because that is where this paper's
+questions live; the signal itself is a property of pretraining. Its scope is
+narrower than answerability in general: it covers questions whose surface marks
+them as unanswerable, and not questions whose ambiguity is covert, a boundary
+mapped below.
+
 ### The internal signal survives training
 
-Re-fitting the probe on each fine-tuned
-model's own activations gives essentially identical separation: clean SFT 0.9968,
-SFT→GRPO-DPO 0.9972, SFT→GRPO-v2 0.9971, all vs base 0.997. Training does not damage or move the internal
-representation; it leaves the gap intact.
+Re-fitting the probe on each fine-tuned model's own activations gives essentially
+identical separation: clean SFT 0.9968, SFT→GRPO-DPO 0.9972, SFT→GRPO-v2 0.9971,
+against the base's 0.997. Training neither damages nor moves the internal
+representation. Whatever the six interventions of Section 7 do, they do not do it
+by changing what the model represents.
 
-### The known-unknown axis is the answerability readout, and it predates our training
+### The readout covers overt unanswerability, not covert ambiguity
 
-One
-identity, stated explicitly so the research program does not count a single signal
-twice: the known-unknown axis is the same known-versus-unknown separation that a
-separate training-free readout line in this program deploys as a binary
-answerability gate, read here as graded confidence instead. And the separation is
-not something our training created. The same
-known/unknown probe reads at 0.997 untrained on the raw Qwen3-4B base (no
-instruction tuning, no adapter) and at 0.997 or higher on four pretrain-only base
-models spanning families and eras, a registered pretraining-origin test whose
-falsifier fired on none of the four bases (Appendix A). We fit the axis on trained
-checkpoints because that is where this paper's questions live; the signal itself is
-a pretraining-origin property. Its scope is narrower than answerability in general:
-it covers questions whose surface marks them as unanswerable, and not questions
-whose ambiguity is covert, a boundary Section 8 reports.
+Three follow-on experiments map the boundary of the readout reported here, and it
+is narrower than "unanswerability." A breadth test extended the
+internal panel to AmbigQA, a set of naturally occurring questions whose
+unanswerability is referential underspecification (the question does not pin down
+which of several things it is asking about) rather than an absent fact. The same
+probe protocol at the same position reads the answerability boundary there at only
+0.6279 (clean SFT) and 0.6349 (SFT to GRPO-v2), held out on a 2,748-row panel,
+against a 0.90 floor that both arms miss by a wide margin.
+
+An exploratory atlas on the raw base then locates the boundary. Probes fit on each
+of six labeled categories of unanswerable question (the ambiguous, controversial,
+counterfactual, false-assumption, future-unknown and unsolved-problem strata of the
+Known-Unknown Questions dataset) separate their own unknowns from the known pool at
+0.98 to 0.999 best-layer held-out AUROC, and each of them reads every other
+category, and SelfAware, at 0.83 or better. AmbigQA is the exception in both
+directions: it peaks at 0.6590 across all 37 layers, and transfers into it and out
+of it sit near chance. The dividing line is therefore not the category of
+unanswerability but whether it is *overt or covert*. The readout is reliable
+wherever the question's surface marks it as unanswerable, including questions
+labeled ambiguous when that ambiguity is overt, and it is close to uninformative
+where the ambiguity is covert.
+
+This failure is not something training did. On the identical panel, position and
+probe protocol, the raw pretrained base reads AmbigQA at 0.6338, within 0.006 of
+both trained checkpoints, so post-training neither installed the information nor
+destroyed it. The pretraining-origin reading of
+Section 4 survives with its scope corrected: what pretraining supplies is an
+overt-unanswerability signal, not an answerability signal in general. Covert referential ambiguity is a distinct and harder
+hallucination surface, and plausibly so. Judging a question overtly unanswerable
+can be done from the question itself, whereas judging it covertly ambiguous
+requires retrieving the competing answers the question admits, which is a
+retrieval act rather than a reading of the prompt. A model that never notices the
+ambiguity has nothing about it to represent.
+
+Two caveats bound this atlas, a style confound in the labeled categories and
+an open question about whether the gap is trainable; both are detailed in
+Section 9.
+
+### Scope of these readings
+
+One companion measurement marks where these readings stop. On a different Qwen
+lineage and a different error class, confident wrongness on answerable, world-known
+questions rather than ignorance of unanswerable ones, the analogous known-unknown
+direction's projection reverses in sign instead of ordering monotonically, and a
+search for a portable evidence-responsive axis on that population recovered only
+generic retrieval-family geometry rather than a specific evidence axis. The
+monotone ordering and the answerability reading should not be assumed to transfer
+to another lineage or another error class before they are tested there directly.
 
 ## 5. Result 2: The internal signal is two axes, a graded known-unknown axis and a separable refusal axis
 
-Reading "how known is this item" and "did the model refuse" as one axis would be
-the parsimonious story, and the first measurement appears to support it: the raw
-mass-mean cosine between the refusal direction (refuse vs answer among knowns) and
-the knowledge/known-unknown direction is **−0.83**, i.e. nearly collinear, opposite sign.
-Under that reading,
-refusal is simply the low-known tail of a single graded known-unknown axis.
+The internal signal is not one thing. Two structures live in it: a graded
+known-unknown axis that scores how answerable a question is, and a refusal axis
+that carries the refuse-or-answer decision. The behavior rides the second. The two
+are correlated, because both are elevated on the low-known tail, and they are
+separable, because removing either one leaves the other reading its own target.
 
-That reading is an artifact of the instrument. Raw cosine in high-dimensional
+![Scatter of per-question projections on the known-unknown axis against the refusal axis, with correct, wrong, refused-though-known and unknown items colored separately](figures/fig-p3-08-two-axis-geometry.png)
+
+**Figure 3. The refuse-or-answer decision is a second dimension, not a position on
+the first.** Per-question projections on one checkpoint (clean SFT to GRPO-v2),
+with the known-unknown axis horizontal (low values are questions the model can
+answer) and the refusal axis vertical, each point colored by its outcome group:
+correct, wrong, refused-though-known, and unknown. Known-answered and
+known-refused items share the answerable end of the horizontal axis and come apart
+on the vertical one. That vertical separation is what the orthogonalized
+discriminability below measures at AUROC 0.798.
+
+![Cosine similarity between refusal directions fit independently on each pair of training checkpoints, all well above a random-direction floor](figures/fig-p3-09-axis-stability.png)
+
+**Figure 4. The refusal axis is one stable direction across training regimens, not
+an artifact of a single run.** Refusal directions fit independently on the SFT,
+SFT-to-GRPO-DPO, and SFT-to-GRPO-v2 checkpoints, compared by absolute cosine
+similarity. Cross-regimen agreement averages 0.701 against a random-direction floor
+of 0.014, with the two reinforcement-learning checkpoints agreeing most closely at
+0.857, while each direction stays close to orthogonal to its own checkpoint's
+known-unknown axis (|cos| ≈ 0.04 to 0.09).
+
+### The two axes are separable
+
+Raw mass-mean cosine between the refusal direction and the known-unknown direction
+is −0.83, which reads as nearly collinear, but raw cosine in high-dimensional
 activation space is dominated by a few shared high-variance dimensions and
-overstates collinearity. Whitening the covariance (shrinkage λ = 0.1) drops the
-cosine to **−0.61** on the full sample (subsampling to 300/300 for the AUROC
-protocol gives −0.56 to −0.61 depending on subsample seed), and the refusal
-direction retains a substantial component off the known-unknown axis: its **residual
-fraction is 0.557** (≈ 55.7% of the refusal direction's length, ≈ 31% of its
-variance, is known-unknown-orthogonal; subsample-invariant). Full cells for the geometry
-are 168 known-refused, 373 known-answered, and 676 unknown-refused, with the two
-large cells subsampled to 300/300 for the AUROC protocol; the covariance is
-pooled within-class and shrinkage-whitened; all discriminability numbers are
-5-fold held-out.
+overstates collinearity. Whitening the covariance (shrinkage λ = 0.1) puts the
+cosine at **−0.61** on the full sample (−0.56 to −0.61 when the two large classes
+are subsampled to 300/300 for the AUROC protocol), and the refusal direction keeps
+a substantial component off the known-unknown axis: its **residual fraction is
+0.557**, so about 55.7% of its length and about 31% of its variance is
+known-unknown-orthogonal, invariant to subsample. Class counts for the geometry are
+168 known-refused, 373 known-answered, and 676 unknown-refused, and every
+discriminability number below is 5-fold held-out.
 
 The decisive test is held-out discriminability after orthogonalization. Predicting
 refuse (1) vs answer (0) among known items:
@@ -479,129 +862,194 @@ refuse (1) vs answer (0) among known items:
 | direction | held-out refuse/answer AUROC, mean (range over 4 fold seeds) |
 |---|---|
 | knowledge/known-unknown axis alone | 0.866 (0.861–0.872) (strong: refuse = less-known) |
-| refusal orthogonalized to the known-unknown axis (`caution_perp`) | **0.798 (0.788–0.826)** |
+| refusal axis orthogonalized to the known-unknown axis | **0.798 (0.788–0.826)** |
 | full refusal axis | 0.885 (0.881–0.892) |
 
 Removing the *entire* rank-1 known-unknown direction barely dents refuse/answer
-separability (0.885 → 0.798, means over fold seeds), so the refuse/answer decision
-is not confined to the known-unknown axis: a genuine refusal-specific gate exists (an
-independent reconstruction reproduces the pipeline and supplies the fold-seed
-spread). The two are correlated
-(both are elevated on the low-known tail) but separable.
-
-### Method lesson
-
-Raw cosine said "one axis" (−0.83); held-out discriminability
-after orthogonalization says "two axes." The reliable instrument for "is direction
-B reducible to direction A" is not cosine but whether B still discriminates its
-target after A is projected out. Stronger whitening monotonically pushes the cosine
-−0.83 → −0.61 → toward 0, re-validating an independent near-orthogonality estimate
-(≈ 0.02) from a separate analysis. The stronger reducibility test, certified
-linear erasure of the full answerability concept (LEACE), confirms this: erasing
-everything a linear probe can use to read known/unknown (probe AUROC 0.996 to
-0.496 post-erasure) costs the refusal readout 5.4 ± 0.6 points of 91, leaving
-refuse/answer discrimination at 0.858 held-out. The refusal axis's linear separability is not carried
-by the knowledge readout, which contributes only a small quantified share.
+separability, 0.885 to 0.798 as means over fold seeds, so the refuse/answer
+decision is not confined to the known-unknown axis: a refusal-specific mechanism
+exists, and an independent reconstruction of the pipeline reproduces it and
+supplies the fold-seed spread. The stronger reducibility test agrees. Certified
+linear erasure of the full answerability concept (LEACE), which removes everything
+a linear probe can use to read known from unknown (probe AUROC 0.996 to 0.496
+post-erasure), costs the refusal readout 5.4 ± 0.6 points of 91 and leaves
+refuse/answer discrimination at 0.858 held-out. The refusal axis's linear
+separability is not carried by the knowledge readout, which contributes a small and
+quantified share. Cosine is the wrong instrument for asking whether one direction
+reduces to another; whether it still discriminates its target once the other is
+projected out is the right one.
 
 ### The refusal axis is shared across training regimens
 
-The refusal direction
-recovered independently from SFT, GRPO-DPO, and GRPO-v2 models points the same way
-(mean cross-regimen |cos| = 0.701 vs a random floor of 0.014; GRPO-DPO ↔ GRPO-v2 =
-0.857) and is approximately orthogonal to the knowledge axis within each model
-(|cos| ≈ 0.04–0.09). The refusal axis is a single,
-stable, knowledge-orthogonal internal mechanism, not an artifact of one training
-run. Each of those readings is fit on its own checkpoint's activations; no single
-common checkpoint carries all of them.
+The refusal direction recovered independently from the SFT, GRPO-DPO, and GRPO-v2
+models points the same way (mean cross-regimen |cos| = 0.701 against a random floor
+of 0.014; GRPO-DPO to GRPO-v2 = 0.857) and stays approximately orthogonal to the
+knowledge axis within each model (|cos| ≈ 0.04 to 0.09). This is one stable,
+knowledge-orthogonal internal mechanism rather than an artifact of one training
+run. Each reading is fit on its own checkpoint's activations; no single common
+checkpoint carries all of them.
 
-### The refusal axis is a trained-checkpoint construct, and cannot be anything else
+### The refusal axis is a trained-checkpoint construct
 
-The
-refusal direction is defined by a refuse-versus-answer contrast among items the
-model knows, and that contrast only exists once a model over-refuses. The raw base
-never does: on the 1,233-question known/unknown surface of the base-model readout,
-it refused zero questions, so there is no base-model refusal direction to fit, for
-this model or for any model that never abstains (Appendix A). The asymmetry
-between the two axes is therefore itself a finding about what abstention training
-adds. Training does not create the known-unknown axis (the answerability separation is already at
-ceiling in the raw base and in pretrain-only bases, Section 4); it does create
-the refusal axis. Every refusal-axis number in this paper is a property of the trained,
-post-abstention checkpoints, and we make no base-model claim for the refusal axis.
+The refusal direction is defined by a refuse-versus-answer contrast among items the
+model knows, and that contrast only exists once a model over-refuses. Under this
+harness's neutral extraction prompt the raw base never does: across the
+1,233-question known/unknown surface of the base-model readout it refused zero
+questions, so no base refusal direction can be fit there. Every refusal-axis number
+in this paper is a property of the trained, post-abstention checkpoints, and we
+make no base-model claim for the refusal axis.
 
-The program has also examined a third candidate direction, a
-confabulation-propensity read (which unanswerable items draw a fabricated answer
-rather than a refusal, residualized against the refusal axis). It is checkpoint-specific to
-the program's most-trained checkpoint, and in the pre-registered actuation study
-writing along it does not causally convert confabulations into refusals; we
-therefore do not include it among this paper's internal-confidence signals.
+That is a statement about a prompt as much as about a model. Under a deployment
+contract that explicitly instructs the model to say it does not know rather than
+guess, the same untrained base over-refuses 65.38% of answerable questions
+(Rosenbaum, 2026b), which is the population a refuse-versus-answer contrast needs.
+We ran that direct test. A refusal direction fit on the raw base under that
+contract separates its refusals from its answers well (held-out AUROC 0.95 on
+1,528 refused versus 359 answered known questions), yet in the same shared-frame
+procedure as the cross-regimen comparison above it is nearly orthogonal to all
+three trained refusal directions: mean |cos| = 0.046 (range 0.042 to 0.052),
+roughly twice the permutation floor, against 0.572 to 0.859 for the trained
+pairs in the same frame. The contract elicits refusal through a different
+direction than the one training builds. This is a single-seed exploratory
+reading, but it strengthens rather than weakens the claim of this subsection:
+the shared refusal axis of the trained checkpoints is manufactured by training,
+not a latent base direction that the deployment prompt merely activates.
+
+The asymmetry between the two axes is therefore a finding about what abstention
+training adds under a fixed prompt contract. Training does not create the
+known-unknown axis, which is already at ceiling in the raw base and in pretrain-only
+bases (Section 4). What it creates is the over-refusal on which a refusal axis can
+be fit under the neutral prompt at all.
 
 ## 6. Result 3: The refusal axis is causally real, and the leverage is one-way
 
 The two-axis decomposition makes a causal prediction: intervening on the refusal
-axis should change the refuse/answer decision without changing what the model
-knows. Testing that prediction by steering is actuation work, and it was run as a
-separate pre-registered actuation study, which
-establishes the result this paper's argument needs: ablating the refusal direction
-collapses over-refusal on known items from 0.994 to 0.030 with clean specificity,
-the known-unknown-orthogonalized component alone carries a large share of that effect, and
-no intervention tried there (including steering the knowledge axis directly)
-installs appropriate abstention on genuine unknowns. The leverage is one-way:
-over-refusal can be relaxed; appropriate abstention cannot be written in.
+axis should change the refuse-or-answer decision without changing what the model
+knows. Our actuation experiments bear that out, and they also bound it. Ablating
+the knowledge-orthogonalized component of the refusal axis cuts over-refusal on
+known items from 0.994 to 0.524 with specificity intact, and a repeat of the same
+recipe lands at 0.536. On a second seed of that recipe, ablating the full axis
+still sheds 45.7 points of over-refusal and recovers correct answers on 29 percent
+of formerly refused knowns, while the near-total collapse seen on this paper's seed
+does not reproduce and is treated as seed-specific throughout (Section 9). No
+intervention we tried installs appropriate abstention on genuine unknowns. The
+leverage is one-way: over-refusal can be relaxed; appropriate abstention cannot be
+written in.
 
-Two consequences carry forward here. The causal dissociation confirms that the
-refusal axis is a mechanism of its own and not a re-reading of the known-unknown axis, closing
-Section 5's reading-side case from the intervention side. And the asymmetry frames
-Section 7: if inference-time control can relax over-refusal but cannot install the
-abstention humility actually needs on novel unknowns, the remaining lever is
-training, and Section 7 reports what training does and does not deliver.
+![Refusal-axis ablation arm comparison, over-refusal versus specificity, and answer correctness after ablation](figures/fig-p2-06-refusal-axis-ablation.png)
+
+**Figure 5. Ablating the refusal axis relaxes over-refusal one-way.** Left:
+refusal on known items (over-refusal, orange) and refusal on known items the model
+answers correctly (the specificity control, green) across the baseline, ablate, and
+±2σ shift arms of the residual intervention on the knowledge-orthogonalized
+component of the refusal axis, at L35 on the seed-1 SFT-to-GRPO-v2 checkpoint (168
+known-refused items, 373 known-answered-correct controls). Ablation collapses
+known-item over-refusal from 0.994 to 0.524 while refusal on the control items
+stays at 0.00; the diamond marks the in-frame replication at 0.536 under the same
+recipe. Right: the answers the ablated model produces are not merely present but
+correct, peaking at a 0.327 correct rate over the full known-refused cell under
+ablation.
+
+The one-way statement has been stress-tested where it is most exposed. A bounded
+search tried to install abstention on this paper's trained checkpoint by writing
+along the refusal axis: seven write sites spanning relative depth 0.361 to 0.972 at
+three-block resolution, two write positions, an eight-rung dose ladder at each
+site, and three magnitude-matched two-site combinations, of which two ran and one
+was abandoned for want of usable sites.
+
+Every site that reached a usable dose actuated the behavior. Five of the seven did,
+all at the write position running from the pre-answer anchor token onward and none
+at the anchor position alone, and those five converted held-out confabulations into
+clean refusals on 87.0% to 95.5% of items, with lower confidence bounds of 80.8% to
+90.9%. What they did not do is why the one-way statement survives. Only one of the
+five wrote specifically along the refusal direction rather than along a generic
+perturbation, and at none of them could we tell whether the write damaged answers
+the model should have given: each fired on only 4 to 20 known-correct rows, too few
+to measure harm. Overturning the one-way statement takes a single condition doing
+three things at once, actuating the behavior, doing so specifically along the
+refusal direction, and leaving the answers the model should have given intact, and
+no condition did all three. The actuation is a lead worth following, not an
+installed capability.
+
+![Actuation rate and refusal-direction specificity across the bounded write-site sweep](figures/fig-p2-07-bounded-site-sweep.png)
+
+**Figure 6. The bounded search to install abstention actuates everywhere, and is
+specific nowhere it can be measured.** Left: held-out confabulation-to-refusal
+conversion rate (error bar: Wilson lower 95%) at each of the five sites that
+cleared dose viability, all at the anchor-onward write position, against the 0.50
+rate and 0.40 lower-bound thresholds. All five clear both by a
+wide margin. Right: the direction-specificity ratio, gated lift over the best
+permuted or positional-control draw lift, against the 3x pass threshold. One site
+clears it at 12.18x; two fail at 1.50x and 1.52x; two more have zero measured
+control-draw lift and so cannot evidence a claim of lift over noise at all. The one
+site that writes specifically along the refusal direction is the one site where
+harm to known-correct rows could not be adjudicated for want of rows, so the search
+neither overturns the one-way statement nor installs the behavior.
+
+Two consequences carry forward. The causal dissociation confirms that the refusal
+axis is a mechanism of its own and not a re-reading of the known-unknown axis,
+closing from the intervention side the case Section 5 made from the reading side.
+And the asymmetry narrows what is left to try: if inference-time control can relax
+over-refusal but cannot install the abstention humility actually needs on novel
+unknowns, the remaining lever is training.
 
 ## 7. Result 4: Training does not close the stated-confidence gap, and a dissociation shows why
 
 If behavior is steerable and the internal signal is calibrated, the open question is
 whether *training* can make the model's *stated* confidence track appropriateness.
-We ran seven interventions. None closes the gap, and the last two close it from
+We ran six interventions. None closes the gap, and the last two close it from
 opposite sides in a way that localizes the mechanism.
 
-### The seven interventions
+### The six interventions
 
-#### Interventions 1–2: DPO and KTO
+#### Interventions 1–2: SFT-warmed DPO and KTO
 
-The training-regimen
-paper ([*Teaching Small Language Models to Say I Don't Know*](../paper-2-training-regimen/manuscript.md))
-shows that DPO [arXiv:2305.18290] and KTO [arXiv:2402.01306] reposition the abstention boundary rather than inducing abstention;
-on the confidence channel the emitted scalar remains a flat high value across
-outcome cells (e.g. known-wrong ≈ 0.83): repositioned behavior, unchanged
-stated confidence.
+Preference training moves the behavior and leaves the stated confidence exactly
+where it was. Both arms here are two-stage stacks warmed from the same SFT
+checkpoint (SFT→DPO and SFT→KTO): Rosenbaum (2026b) shows that direct preference
+optimization (DPO; Rafailov et al., 2023) and Kahneman-Tversky optimization (KTO;
+Ethayarajh et al., 2024) applied after SFT reposition the abstention boundary SFT
+installed rather than inducing abstention of their own. On the confidence channel
+the emitted scalar remains a flat high value across outcome groups, with
+known-wrong answers drawing ≈ 0.83: repositioned behavior, unchanged stated
+confidence.
 
-#### Interventions 3–4: GRPO v1 and v2
+#### Intervention 3: GRPO on the behavior reward
 
-Reward shaping over the behavior (GRPO [arXiv:2402.03300]) leaves the stated scalar
-collapsed: on the full evaluation GRPO-v2 emits mean ≈ 0.813 with std ≈ 0.013
+Reinforcement learning on the behavior leaves the stated scalar collapsed, and the
+collapse turns out to be what the objective rewards. The reward recipe went through
+more than one iteration before the deployed run; the body reports the deployed arm
+only, and Appendix A carries the iteration record. Under reward shaping over the
+behavior with group relative policy optimization (GRPO, a reinforcement-learning
+method driven by a programmable reward; Shao et al., 2024),
+on the full evaluation the deployed arm (checkpoint GRPO-v2, the checkpoint
+Sections 4–6 read) emits mean ≈ 0.813 with std ≈ 0.013
 (a near-constant ~0.8 regardless of input), ranks appropriateness at
 AUROC ≈ 0.520 with ECE ≈ 0.403, and ranks its own correct vs wrong among
 answered knowns at AUROC ≈ 0.521 (chance). The diagnosis is an
 incentive analysis, and it generalizes beyond this particular reward. The
-reward's confidence term shaped confidence toward fixed per-cell targets (high
+reward's confidence term shaped confidence toward fixed per-group targets (high
 when answering correctly, low when wrong), but the model cannot observe its own
 correctness at generation time, and on the held-in distribution it is trained
 against, roughly 96% of its answered known rows are correct (373/388 in the
-behavior subset of the same artifact); emitting the majority-cell constant is
-therefore reward-optimal. Collapse is not a training accident. It is the
-optimum of the objective as specified. The collapse itself has since
-replicated beyond this seed: a registered three-seed extension of the GRPO
-lineage retrained the arm at two fresh seeds and evaluated a pre-stated
-non-collapse guard (more than 200 distinct emitted confidence values on any
-retrained arm); the guard did not trigger, with distinct-value counts
-ranging 4 to 85 across all retrained arms, so the emitted scalar stays
-collapsed at every seed tested (exploratory three-seed evidence, reported
-separately from this paper's single-seed cells; see Appendix A).
+behavior subset of the same artifact); emitting the constant that fits the majority of rows is therefore reward-optimal.
+Collapse is not a training accident. It is the optimum of the objective as
+specified.
 
-#### Intervention 5: GRPO v3, proper scoring
+The collapse is not a property of one training run. Across three seeds of the same
+arm the emitted scalar takes between 4 and 85 distinct values over the whole
+3369-row evaluation, far short of the spread that a non-collapsed channel would
+show (three seeds; the non-collapse threshold is in Section 9).
 
-If the fixed-target confidence term makes a
-constant reward-optimal, the obvious repair (and the one the verifiable-RL
-literature reaches for [arXiv:2507.16806, arXiv:2503.02623]) is to make
-calibration itself the optimum: replace the fixed targets with a Brier proper score of emitted
+#### Intervention 4: proper-scoring GRPO
+
+Making calibrated confidence the mathematical optimum of the reward does not
+produce calibrated confidence. If the fixed-target confidence term makes a constant
+reward-optimal, the obvious repair, and the one the verifiable-reward literature
+reaches for (Damani et al., 2025; Bani-Harouni et al., 2025), is to make
+calibration itself the optimum:
+replace the fixed targets with a Brier proper score (a scoring rule whose expected
+value is best when the stated probability equals the true one) of emitted
 confidence against realized appropriateness,
 
 $$r_{\text{conf}} = 1 - (c - a)^2, \qquad c \in [0, 1],\; a \in \{0, 1\},$$
@@ -610,32 +1058,33 @@ where $c$ is the emitted confidence and $a$ is the realized appropriateness of
 the completion. The expected reward $\mathbb{E}[r_{\text{conf}}]$ is uniquely
 maximized at $c = p(a = 1 \mid x)$: emitting the true probability of being
 appropriate is not merely encouraged but is the optimum, so a near-constant is
-provably sub-optimal. v3 adds exactly this term; by design it is sub-dominant
+provably sub-optimal. This arm adds exactly that term; by design it is sub-dominant
 to the behavior reward (confidence
 weight 1.2, explicitly kept below the behavior magnitudes so behavior is not traded
-away). Importantly, the
-failure here is not a degenerate target: a CPU preflight re-scoring 19,904 real
-rollouts confirmed the per-prompt targets have real dynamic range (group-target
-std 0.320 over 4211 prompts, 65.6% in [0.2,0.8]) and that emitting the calibrated
-target strictly beats a flat 0.82 on 4211/4211 prompts (mean Brier gain +0.394).
-Yet after training,
+away). The failure here is not a degenerate target. A preflight re-scoring of
+19,904 real rollouts confirmed the per-prompt targets have real dynamic range
+(group-target std 0.320 over 4211 prompts, 65.6% in [0.2,0.8]) and that emitting
+the calibrated target strictly beats a flat 0.82 on all 4211 prompts (mean Brier
+gain +0.394). Yet after training,
 behavior is fine (truthful 40.99, correct_on_known 52.52, over_refusal 65.13,
 refusal_recall 92.34) while the stated scalar stays high and flat (mean ≈ 0.849,
 std ≈ 0.027) and still ranks appropriateness at AUROC ≈ 0.522 with ECE 0.440.
-A proper score with verified
-per-prompt dynamic range, kept sub-dominant to the behavior reward to preserve
-behavior, still does not move the three-token confidence readout: the
-proper-scoring optimum exists in theory, but gradient ascent from a collapsed
-initialization does not find it: the policy stays in the constant-confidence
-basin, and the behavior terms it is also earning give it no reason to leave.
-This is the cleanest form of the negative result: **even a reward for which
-calibrated confidence is the mathematical optimum fails to elicit it through RL
-from this initialization.**
+Take that result one step at a time. The reward's optimum is a calibrated
+confidence, and we verified that the per-prompt targets vary enough for the optimum
+to be worth reaching. The policy nonetheless does not reach it. It begins training
+already emitting a near-constant, and from that starting point the confidence term
+offers only a small local gradient, while the behavior terms it is simultaneously
+earning are satisfied where it already sits. So it stays put. The optimum exists in
+theory and gradient ascent does not find it from this initialization. That is the
+cleanest form of the negative result: **even a reward for which calibrated
+confidence is the mathematical optimum fails to elicit it through reinforcement
+learning from a collapsed starting point.**
 
-#### Interventions 6–7: contrastive SFT, answer-supervised and answer-masked
+#### Interventions 5–6: contrastive SFT, answer-supervised and answer-masked
 
-These two variants are the
-dissociation, treated in full below.
+Contrastive fine-tuning is the one intervention that installs stated calibration,
+and it pays for it in behavior; its masked twin recovers the behavior and loses the
+calibration. That pair is the localizing result.
 
 ### The answer-supervision dissociation (the localizing result)
 
@@ -648,10 +1097,10 @@ removes the wrong-answer text from the loss, so inappropriate rows supervise onl
 low confidence, not the wrong answer. This is a clean single-variable comparison: the
 only difference is whether the wrong answer is in the loss.
 
-Table 1. The answer-supervision dissociation (SelfAware, n = 3369; gates fixed
-in the pre-registered design).
+Table 1. The answer-supervision dissociation (SelfAware, n = 3369; single seed
+each). Thresholds in the second column are listed in Section 9.
 
-| metric | gate | clean-SFT base | **answer-supervised** | **answer-masked** |
+| metric | threshold | clean-SFT base | **answer-supervised** | **answer-masked** |
 |---|---|---|---|---|
 | emitted AUROC → appropriateness | ≥ 0.62 | ≈ 0.52 | **0.684 ✓** | **0.552 ✗** |
 | emitted std (collapse detector) | ≥ 0.10 | ≈ 0.05 | 0.309 | 0.180 |
@@ -664,13 +1113,13 @@ in the pre-registered design).
 | refusal_recall_pct | ≥ 82.0 | 87.02 | 83.72 ✓ | 93.51 ✓ |
 
 
-The answer-supervised variant installs stated calibration (AUROC 0.684, large cell
-separations, the only arm to beat chance at ranking correct vs wrong among answered
+The answer-supervised variant installs stated calibration (AUROC 0.684, wide separations between
+outcome groups, the only arm to beat chance at ranking correct vs wrong among answered
 knowns at AUROC 0.789) but breaks behavior (over-refuses, correctness falls). The
 answer-masked variant recovers behavior fully (it matches or exceeds the
 clean-SFT base on every behavior metric) but the stated calibration collapses
 back toward
-baseline (AUROC 0.552; the unknown cell-mean ordering inverts, the model stating
+baseline (AUROC 0.552; the unknown group-mean ordering inverts, the model stating
 *higher* confidence when it answers an unknown wrong, 0.696, than when it correctly
 refuses, 0.666). Note that the answer-masked variant is not collapsed to a constant
 (std 0.180 ≫ base 0.05): it emits *spread* confidence that does not *discriminate*.
@@ -691,68 +1140,73 @@ binding is what makes the stated scalar track appropriateness. Remove the answer
 the loss (the answer-masked variant) and behavior heals, but the confidence token
 loses the thing it was conditioned on, so discrimination returns to baseline. Under a
 single SFT lever, stated calibration and behavior are in tension: you can buy one or
-the other, not both. This is why we report the answer-masked variant as a successful
-behavior cell and a failed calibration cell rather than a success: calibration over
-sycophancy.
+the other, not both. The answer-masked variant is therefore a behavior success and a
+calibration failure, and we score it that way rather than counting the recovered
+behavior as a win.
 
-![[figures/fig-p2-02-answer-supervision-dissociation.png]]
+![Calibration against behavior for each training arm](figures/fig-p2-02-answer-supervision-dissociation.png)
 
-**Figure 3. The answer-supervision dissociation: a single SFT lever cannot buy
+**Figure 7. The answer-supervision dissociation: a single SFT lever cannot buy
 calibration and behavior together.** *Left:* the calibration–behavior trade-off.
 Each arm is one point: x = stated calibration (emitted AUROC → appropriateness,
-gate 0.62), y = behavior (truthful %, gate 35.6). The answer-supervised variant
-sits bottom-right (good calibration, broken behavior); the answer-masked variant
-sits top-left (good behavior, calibration back at baseline); base is bad on both.
-The quadrant lines are the protocol gates; no arm reaches the pass quadrant
-(top-right). *Right:* the four behavior metrics by arm, showing the answer-supervised
+threshold 0.62), y = behavior (truthful %, threshold 35.6). The answer-supervised
+variant sits bottom-right (good calibration, broken behavior); the answer-masked
+variant sits top-left (good behavior, calibration back at baseline); base is bad on
+both. The quadrant lines are the two thresholds; no arm reaches the passing
+quadrant (top-right). *Right:* the four behavior metrics by arm, showing the answer-supervised
 over-refusal spike and correctness drop that masking the answer recovers. Data:
 Table 1.
 
 ### The SFT→RL follow-on: a second dissociation, confidence vs action
 
-The
-answer-supervision result says a single SFT lever cannot buy calibration and
-behavior together. The obvious next move is a *division of labour*: keep the
-answer-supervised calibration and repair its behavior with reinforcement learning,
-which is built for behavior shaping. We ran GRPO v3 (the same proper-scoring reward
-as intervention 5) on the answer-supervised base rather than the clean-SFT base, so
-that the KL anchor now references a *calibrated* policy and the dominant behavior
-reward attacks its over-refusal. This is an
-exploratory single-seed cell, reported separately from the locked matrix.
+Reinforcement learning on a calibrated base keeps the calibration and still cannot
+make the model act on it. The answer-supervision result says a single SFT lever
+cannot buy calibration and behavior together, so the obvious next move is a
+*division of labour*: keep the answer-supervised calibration and repair its
+behavior with reinforcement learning, which is built for behavior shaping. We ran
+the same proper-scoring GRPO reward (intervention 4) on the answer-supervised
+base rather than the clean-SFT base, so that the KL anchor now references a
+*calibrated* policy and the dominant behavior reward attacks its over-refusal.
 
 The calibration half of the bet pays: training on the answer-supervised base *retains* stated
 calibration even as the policy moves well off its reference (final KL ≈ 0.97).
 The emitted scalar keeps AUROC → appropriateness 0.646, std 0.311, ECE 0.214, and
-the full cell ordering, including the very ordering the answer-masked variant
+the full ordering across outcome groups, including the very ordering the answer-masked variant
 inverted: unknown-refused (0.542) > unknown-answered-wrong (0.138). RL on a calibrated base preserves
-calibration where RL on the flat base (intervention 5) could not manufacture it;
+calibration where RL on the flat base (intervention 4) could not manufacture it;
 the base, not the reward, was the binding constraint for the confidence channel.
 This is the first direct evidence in this study that RL does not intrinsically
 *destroy* a calibrated stated-confidence channel: it fails only to create one.
 
-![[figures/fig-p2-03-answer-supervised-cell-confidence.png]]
+![Mean emitted confidence per outcome group](figures/fig-p2-03-answer-supervised-cell-confidence.png)
 
-**Figure 4. GRPO on the answer-supervised base retains stated calibration: the
-emitted scalar tracks outcome.** Mean emitted `response_confidence` per behavior
-cell (greedy). The full ordering is preserved (high for known-correct, low for
+**Figure 8. GRPO on the answer-supervised base retains stated calibration: the
+emitted scalar tracks outcome.** Mean emitted `response_confidence` per outcome
+group (greedy). The full ordering is preserved (high for known-correct, low for
 unknown-wrong), including the exact ordering the answer-masked variant inverted:
 unknown-refused (0.54, an appropriate abstention) sits *above* unknown-wrong (0.14,
 a confident error). RL on a calibrated base preserves the confidence channel that
 RL on the flat base could not manufacture.
 
-But behavior does not repair, and *why* it does not is the result. Over-refusal
-gets *worse*, not better (90.76%, vs the answer-supervised arm's 79.2%; truthful 31.9, below the 35.6
-gate). Decomposing the answer/abstain decision from the confidence scalar (Table
-2) shows the two channels have come apart. The confidence channel discriminates:
-among refusals, the stated scalar separates a correct refusal (an unknown) from a
-mistaken one (a known the model should have answered) at AUROC 0.62, and among
-answers it separates correct from wrong at AUROC 0.84. The *action* channel barely
-conditions on knowledge at all: the model answers knowns only 2.85 points more
-often than unknowns (9.2% vs 6.4%; p = 0.006, statistically real but practically
-negligible). The decision is ~97% a single knowledge-independent propensity and
-~3% knowledge.
+But the behavior half of the bet fails, and the way it fails is the central
+finding of this subsection. Over-refusal does not improve; it worsens (90.76%,
+against the answer-supervised base's 79.2%), and truthfulness lands at 31.9,
+below the 35.6 threshold. The informative part is why. Every response is two
+separable decisions: whether to answer or refuse (the action), and how much
+confidence to state (the scalar). Table 2 decomposes them, and after this
+training they run on different information. The confidence channel uses the
+model's knowledge: among refusals, the stated scalar separates an appropriate
+refusal (a true unknown) from a mistaken one (a known the model should have
+answered) at AUROC 0.62, and among answers it separates correct from wrong at
+AUROC 0.84. The action channel barely uses that knowledge at all: the model
+answers knowns only 2.85 points more often than unknowns (9.2% vs 6.4%;
+p = 0.006, statistically real and practically negligible). Put together, this
+checkpoint carries a usable knowledge signal and states it in its confidence,
+yet the decision to answer or refuse is roughly 97% a single
+knowledge-independent propensity applied to every question and only about 3%
+knowledge. The channel that acts has come apart from the channel that knows.
 
-Table 2. GRPO-v3 on the answer-supervised base: calibrated confidence,
+Table 2. Proper-scoring GRPO on the answer-supervised base: calibrated confidence,
 uncalibrated action (SelfAware, n = 3369; greedy unless noted).
 
 | channel | measurement | value |
@@ -762,11 +1216,11 @@ uncalibrated action (SelfAware, n = 3369; greedy unless noted).
 | action | answer-rate margin, P(answer\|known) − P(answer\|unknown) | **+2.85 pts** (p = 0.006) |
 | action | same margin at temperature 1.35 (training temperature) | +6.5 pts |
 | action | same margin over training (1861 steps, binned) | +2.5 → ~+7 pts, never opens |
-| action | same margin, lower-KL re-run (β 0.05, greedy); pre-reg. falsifier ≥ ~14.5 | **+3.02 pts** (p = 0.004), falsifier fired → structural |
+| action | same margin, lower-KL re-run (β 0.05, greedy); needed ≥ ~14.5 pts to survive as a KL artifact | **+3.02 pts** (p = 0.004): decoupling recorded as structural |
 
-![[figures/fig-p2-04-confidence-vs-action.png]]
+![Confidence channel discrimination against action-channel margin](figures/fig-p2-04-confidence-vs-action.png)
 
-**Figure 5. Calibrated confidence, uncalibrated action.** The two channels of the
+**Figure 9. Calibrated confidence, uncalibrated action.** The two channels of the
 policy from GRPO on the answer-supervised base have come apart. *Left:* the confidence channel discriminates:
 the emitted scalar separates appropriate from mistaken refusals (AUROC 0.62) and
 correct from wrong answers (AUROC 0.84), both above chance. *Right:* the action
@@ -787,13 +1241,13 @@ isn't there. And across all 1861 training steps the action margin never opened
 (−1.28 mean reward) and refusing an unknown (+2.10) moved the *global* answer rate,
 not the conditioning.
 
-![[figures/fig-p2-05-action-margin-trajectory.png]]
+![Known and unknown answer rates across training steps](figures/fig-p2-05-action-margin-trajectory.png)
 
-**Figure 6. The action margin never opens during training.** Answer rate for
+**Figure 10. The action margin never opens during training.** Answer rate for
 known vs unknown rollouts (temperature 1.35) binned across the 1861-step run of
 GRPO on the answer-supervised base. Both bands drift down together as the global answer rate falls; the knowledge
 margin between them (shaded) stays at ≈ +5–8 points throughout and never widens.
-A policy that passes the behavior gate would need the margin to open to ≈ +14.5
+A policy that passed the behavior threshold would need the margin to open to ≈ +14.5
 points and the bands to separate; neither happens. The reward differential
 between refusing a known and refusing an unknown moved the *global* propensity,
 not the knowledge conditioning.
@@ -802,30 +1256,31 @@ The reading extends this paper's thesis by one layer. The model knows internally
 (Section 4) and, after answer-supervised SFT, *says* it: the confidence scalar tracks
 knowledge. But it does not *act* on it: the answer/abstain decision is decoupled
 from the very signal the model is now able to verbalize. "Knows but doesn't say"
-becomes, here, "says but doesn't act." Whether this last gap is structural or an
-artifact of the KL anchor pinning the action to the answer-supervised over-refusing mode is a
-question we pre-registered a falsifier for and then tested with a lower-KL
-(β 0.05) re-run: the action margin must open to ≥ ~14.5 points (the separation
-the behavior gate implies) or we record the decoupling as structural.
+becomes, here, "says but doesn't act." That leaves one obvious alternative
+explanation: the KL anchor may simply be pinning the action to the
+answer-supervised model's over-refusing mode. For
+the decoupling to be an anchor artifact, the action margin has to open to about
+14.5 points, the separation a passing behavior score implies.
 
-### The falsifier fired: the decoupling is structural
+### Loosening the anchor: the decoupling is structural
 
 Halving the KL anchor
 (β 0.1 → 0.05) demonstrably loosened the policy: train-time KL roughly doubled
 (≈ 0.97 → ≈ 1.91), so the policy moved markedly further from the
 answer-supervised base. Yet the greedy eval is a near-exact overlay of the β 0.1 run: truthful 31.9%
 (unchanged), over-refusal 90.59% (vs 90.76%), and the confidence channel still
-calibrated (AUROC 0.648 vs 0.646, ECE 0.212 vs 0.214, cells ordered). The action margin moved by **0.17
-points**, from +2.85 to **+3.02 pts** (z = 2.90, p = 0.004), against the ~14.5
-it would need to clear the behavior gate, and the training-trajectory margin
-stayed in
-the same +5–9 pt band throughout, never trending toward opening. The β knob was the
-one lever that could have explained the action decoupling as a KL artifact; it moved
-the policy and did not move the conditioning. We therefore record "says but doesn't
-act" as a **structural** property of the objective-and-decode, not of the KL anchor.
-The implication is the experiment Section 8 sets out: the action and the stated
-scalar must be supervised against the model's own internal known-unknown axis directly,
-which no outcome or preference reward does. Tuning the RL knob is closed.
+calibrated (AUROC 0.648 vs 0.646, ECE 0.212 vs 0.214, the same ordering across
+outcome groups). The action margin moved by **0.17 points**, from +2.85 to **+3.02
+pts** (z = 2.90, p = 0.004), against the ~14.5 it would have needed, and the
+training-trajectory margin stayed in the same +5 to +9 pt band throughout, never
+trending toward opening. The β knob was the one lever that could have explained the
+action decoupling as a KL artifact; it moved the policy and did not move the
+conditioning. We therefore record "says but doesn't act" as a **structural**
+property of the objective and the decode, not of the KL anchor. The implication is
+direct: the action and the stated scalar must be
+supervised against the model's own internal known-unknown axis directly, which no
+outcome or preference reward does. Tuning the reinforcement-learning knob is
+closed.
 
 ### Where this leaves confidence training
 
@@ -835,22 +1290,22 @@ RL on the answer-supervised base), no combination produced a checkpoint that
 both behaves well and states calibrated confidence, and the pattern is
 internally consistent: supervision can install a calibrated channel
 (the answer-supervised variant), RL preserves an installed channel (the
-follow-on above), RL cannot install one (interventions 3–5), and behavior and
+follow-on above), RL cannot install one (interventions 3–4), and behavior and
 stated confidence move on separate channels throughout. The stated channel is
 never coupled to the epistemic state in the first place unless supervision
 explicitly constructs the coupling, and the one supervision that constructs it
 does so by a binding (the wrong-answer text) that breaks behavior.
-This is a local claim about coupling in this model and channel: it does not deny
-that RLMF-style objectives can improve faithful uncertainty metrics, but it says
+This does not deny
+that RLMF-style objectives can improve faithful uncertainty metrics; it says
 that output-level improvement is not yet the same thing as wiring the model's
 internal signal to both action and stated confidence.
 
-![[figures/fig-p1-08-confidence-channel.png]]
+![Confidence spread, calibration and over-refusal across five arms](figures/fig-p1-08-confidence-channel.png)
 
-**Figure 7. The confidence channel and behavior fail in opposite arms.**
+**Figure 11. The confidence channel and behavior fail in opposite arms.**
 Emitted-confidence spread (left), calibration against response appropriateness
-(center), and over-refusal (right) for the five confidence-channel arms
-(seed 1, exploratory). The RL arms (red) sit below the collapse gate and at
+(center), and over-refusal (right) for the five confidence-channel arms.
+The RL arms (red) sit below the collapse threshold and at
 chance calibration with moderate over-refusal; the contrastive arms (green)
 calibrate the channel at behavioral cost; RL on the answer-supervised base
 (purple) keeps the calibration and worsens the behavior. No arm gets both halves
@@ -858,22 +1313,23 @@ right.
 
 ### The SFT-distillation mirror: a third dissociation, action vs stated confidence
 
-The RL follow-on gives "says but doesn't act." Its mirror is the obvious
-SFT route to the same goal from the other side: instead of installing the scalar
-and repairing behavior, *preserve* the clean-SFT behavior and install the scalar by
-distilling the model's own calibrated internal axis into it directly. We supervised
-the stated `response_confidence` on clean-SFT data with a scalar-only loss whose
-target is the probe's factual confidence $P(\text{answer correct})$ per row
-(AUROC ≈ 0.997 internally), clamped to $[0.02, 0.98]$; no balancing, no abstention
-inversion. The assistant *answer* text is byte-identical to clean SFT, so the
+Distilling the model's own calibrated knowledge signal straight into the stated
+confidence token keeps the behavior and installs no calibration at all. The RL
+follow-on gives "says but doesn't act"; its mirror is the obvious SFT route to the
+same goal from the other side: instead of installing the scalar and repairing
+behavior, *preserve* the clean-SFT behavior and install the scalar directly. We
+supervised the stated `response_confidence` on clean-SFT data with a scalar-only
+loss whose target is the per-row factual confidence of Section 3, the
+Laplace-smoothed correct-answer rate over the same 32 samples that define the
+knowledge labels, clamped to $[0.02, 0.98]$; no balancing, no abstention
+inversion. The target is a dense per-row form of the same knowledge signal the
+internal axis separates at AUROC ≈ 0.997, computed from sampled behavior rather
+than read from hidden states. The assistant *answer* text is byte-identical to clean SFT, so the
 knowledge-conditioned action is preserved by construction; only the confidence token
-is retargeted. This too
-is an exploratory single-seed cell, reported separately from the locked matrix, with
-the gate pre-registered: success = emitted AUROC → correctness ≥ 0.70, falsifier
-< 0.60.
+is retargeted. The success and clear-negative levels are in Table 3.
 
-The behavior half holds trivially and the calibration half fails: the falsifier
-fired (Table 3). Because the answer text is untouched, the action channel conditions
+The behavior half holds trivially and the calibration half lands below the negative
+threshold (Table 3). Because the answer text is untouched, the action channel conditions
 on knowledge *strongly*: the answer-rate margin is **+31.2 pts** (known 37.7% vs
 unknown 6.5%; z = 18.6), the widest in this paper and a full behavior pass 4/4. But
 the distilled scalar did not learn correctness. It collapsed onto the **action**:
@@ -884,17 +1340,17 @@ appropriateness 0.501; emitted → appropriateness 0.526; ECE 0.408. The emitted
 is large (0.42) precisely *because* it splits on the answer/abstain action, not
 because it discriminates correctness: the same "variance is not calibration" caution
 as the answer-masked variant, in its sharpest form. A scalar-only SFT loss with a
-genuinely calibrated, per-row-varying target (the source axis ranks correctness at
-AUROC 0.997) still installs only a re-description of the action the model already
-takes, not the correctness the target encodes.
+genuinely calibrated, per-row-varying target still installs only a
+re-description of the action the model already takes, not the state the target
+encodes.
 
-Table 3. Probe-axis distillation: distilling the calibrated internal axis into
-the stated scalar by SFT (SelfAware, n = 3369; greedy).
+Table 3. Probe distillation: distilling the model's own sampled factual
+confidence into the stated scalar by SFT (SelfAware, n = 3369; greedy).
 
 | channel | measurement | value |
 |---|---|---|
 | action | answer-rate margin, P(answer\|known) − P(answer\|unknown) | **+31.2 pts** (z = 18.6); behavior 4/4 ✓ |
-| confidence | emitted AUROC → correctness (pre-reg. success ≥ 0.70, falsifier < 0.60) | **0.504**; falsifier fired ✗ |
+| confidence | emitted AUROC → correctness (set in advance: success ≥ 0.70, clear negative < 0.60) | **0.504**; clear negative ✗ |
 | confidence | distinct emitted values across 3369 rows | **3** (0.9706 answer / 0.0294 abstain, correctness-blind) |
 | confidence | ECE → appropriateness | 0.408 |
 
@@ -905,98 +1361,68 @@ RL on the calibrated base keeps the *stated* calibration and cannot
 install knowledge-conditioned *action*: "says but doesn't act." SFT distillation
 into the scalar keeps the knowledge-conditioned *action* and cannot
 install *stated* calibration: "acts but doesn't say." Neither the RL route nor the
-scalar-SFT route succeeds in routing the calibrated internal known-unknown axis (AUROC 0.997)
-into the verbalized single-token confidence readout. That the same channel resists
-two opposite training pressures (an outcome-aligned proper-scoring reward and a
-direct distillation of the very axis that is calibrated) localizes the bottleneck to
+scalar-SFT route succeeds in routing the model's calibrated knowledge signal, the
+one its internal axis reads at AUROC 0.997, into the verbalized single-token
+confidence readout. That the same channel resists two opposite training pressures
+(an outcome-aligned proper-scoring reward and a direct distillation of the model's
+own calibrated per-question confidence) localizes the bottleneck to
 the channel itself: a single confidence token trained by next-token cross-entropy
 collapses onto the lowest-entropy correlate available (the answer/abstain action),
-not the higher-entropy correctness signal. This is the motivation for Section 8's
-engine change: a dedicated confidence head supervised by a regression (proper-score)
-loss against the internal axis, rather than a token emitted by the language head.
+not the higher-entropy correctness signal.
 
 ## 8. Discussion
 
 ### Possessed vs performed humility, measured
 
-The taxonomy paper
-([*The Depths of Ignorance*](../paper-1-taxonomy-framework/manuscript.md)) framed the
-distinction between humility a model possesses (tethered to its internal state)
-and humility it merely performs (untethered behavior). Section 4 makes the distinction concrete: the
-internal tether exists and is calibrated (ECE 0.047), the performed behavior can be
-shaped (Sections 6–7), and the *stated* confidence (the channel a user actually
-reads) is tied to neither. The model is, in the precise sense of the *Meno*, giving
-true opinions without the tether; our seven interventions are attempts to install
-the tether, and they fail.
+Rosenbaum (2026a) framed the distinction between humility a model possesses
+(tethered to its internal state) and humility it merely performs (untethered
+behavior). Section 4 makes the distinction concrete: the internal tether exists and
+its readout is near-calibrated in aggregate (ECE 0.047 raw), the performed behavior
+can be shaped (Sections 6 and 7), and the *stated* confidence, the channel a user
+actually reads, is tied to neither. The model is, in the precise sense of the
+*Meno*, giving true opinions without the tether. Our six interventions are
+attempts to install the tether, and they fail.
 
-### Why the stated channel is the stubborn one
+### Why every objective fails on the same channel
 
-The internal axis survives training
-untouched (Section 4) and behavior is cheaply steerable (Section 6, established in
-the actuation study), yet the stated
-scalar resists every objective we tried. The dissociation explains why: outcome and
-preference rewards (DPO/KTO/GRPO) move behavior and leave the scalar collapsed
-because the scalar is a tiny part of the supervised signal; the one objective that
-moved the scalar (contrastive SFT) did so by entangling it with answer text, which
-trades behavior. No objective we tried supervises the stated scalar *against the
-right target directly*.
+The internal axis survives training untouched (Section 4) and behavior is
+cheaply steerable (Section 6), yet the stated scalar resists every objective we
+tried. Laid side by side, the failures take only two forms. Objectives that
+supervise the scalar weakly or indirectly (DPO, KTO, and GRPO under both reward
+recipes) leave it collapsed, because a near-constant is either reward-optimal
+or undisturbed by a sub-dominant term. The one objective that moved it,
+contrastive SFT, did so by entangling the scalar with the answer text, and paid
+for calibration with behavior; masking that text restored the behavior and
+destroyed the calibration. Nothing we tried supervises the stated scalar
+against the right target directly without touching the answer.
 
-### The implied experiment, run and resolved: probe distillation does not route the axis into the scalar
+The strongest version of the attempt removes every excuse and still fails. The
+model already carries a near-calibrated internal estimate of appropriateness,
+so the natural repair is not to induce calibration from outcomes but to distill
+that estimate into the stated channel: supervise the emitted scalar against the
+model's own per-question factual confidence, a dense, per-row, calibrated target
+deliberately decoupled from the answer text and drawn from the same sampling
+that defines the knowledge labels. (Weaker
+targets fail before the interesting question is reached: a rescaled probe
+output collapses onto its modal value, and rebalancing a near-degenerate source
+axis fabricates variance uncorrelated with knowledge, so the run distilled the
+per-row factual confidence directly; Section 7.) With the answer text held
+byte-identical to clean SFT, behavior passed and the action conditioned on
+knowledge strongly (+31.2 points), yet the distilled scalar collapsed onto the
+action itself: two emitted values, one per decision, and chance discrimination
+of correctness (Section 7, Table 3). The mirror follow-on, reinforcement
+learning from an already-calibrated base, kept the stated signal but not
+knowledge-conditioned action. Two opposite training pressures on the same
+channel fail the same way, and that points at the channel, not the objective: a
+single confidence token trained by next-token prediction collapses onto the
+lowest-entropy correlate available, whatever the target.
 
-The model already contains a calibrated estimate of
-appropriateness: the internal known-unknown axis (ECE 0.047). The natural objective is
-therefore not to induce calibration from outcomes, but to *distill the internal axis
-into the stated channel*: supervise the emitted `response_confidence` toward the
-model's own known-unknown-axis readout, so the model learns to *say* what it already
-*represents*. This decouples the confidence target from the answer text (avoiding the
-answer-supervised trade) and supplies a dense, per-item, calibrated target (avoiding
-GRPO's out-competed confidence term). We ran it (Section 7, Table 3), and it
-failed in an informative way. This framing treats the known-unknown axis's
-calibrated appropriateness estimate as a stand-in for factual confidence,
-$P(\text{answer correct})$; that identification, like the axis's monotonicity in
-Section 4, is a single-model/single-population reading on Qwen3-4B/SelfAware, and the
-pre-registered constructive search for a portable evidence-responsive
-axis on a different model and error-class population found only generic
-retrieval-family geometry rather than a specific evidence/correctness axis, so the
-identification should not be assumed to hold outside this population without a
-direct test.
-
-The design needed two corrections on the way, both instructive. First, a *naive*
-probe-scaled target (response_confidence = 0.1 + 0.8·appropriateness_p) collapses to
-a single emitted value (0.8765) because the target *distribution* is imbalanced: most
-known items are answerable, so most targets land in a high band, and cross-entropy is
-minimized by emitting that mode. The intended fix was to quantile-balance the target onto a spread band so that
-emitting a constant is penalized; but a CPU preflight on the real pool showed the
-*source* axis it balanced (appropriateness on all-appropriate clean-SFT
-completions) is itself near-degenerate (85% of rows at one ceiling value), so balancing fabricates
-knowledge-uncorrelated variance. The signed design therefore distills the
-probe's factual-correctness axis $P(\text{answer correct})$ *directly*: a genuinely
-per-row-varying, internally calibrated target (AUROC 0.997), no balancing.
-
-That target is exactly what the objection above asks for, and the model still did not
-learn to say it. With the answer text held byte-identical to clean SFT, behavior
-passed 4/4 and the action conditioned on knowledge strongly (+31.2 pts), but the
-distilled scalar collapsed onto the *action*: two values, answer↔0.97 / abstain↔0.03,
-correctness AUROC 0.504 (Section 7, Table 3). Distilling a calibrated target into the
-single confidence token does not install calibration; it installs a re-description of
-the answer/abstain decision. Combined with the RL mirror, this is what
-moves the conclusion past "we have not yet found the right objective": two opposite
-training pressures on the same channel both fail, which points at the *channel*, not
-the objective.
-
-### The next experiment: an engine change, not another loss on the same token
-
-If a single confidence token trained by next-token cross-entropy collapses
-onto the lowest-entropy correlate available regardless of the target, the remedy is to
-stop emitting confidence from the language head: add a dedicated confidence head that
-reads the same hidden state the internal axis is fit on and is supervised by a
-regression (proper-score) loss against that axis, so the calibrated representation is
-routed to the readout directly rather than relayed through a token the LM objective
-keeps collapsing. Like all training cells here this requires a new pre-registered protocol
-revision and inherits this paper's measurement: success means the stated channel
-finally clears both the calibration gate (AUROC → appropriateness ≥ 0.62, with
-discrimination, not just spread) and the behavior gate at once, the cell none of the
-seven interventions could be.
+One scope note: the repair reads the internal axis's appropriateness estimate
+as evidence the model carries distillable factual confidence, and a constructive
+search for a
+portable evidence-responsive axis on a different model and error population
+found only generic retrieval-family geometry, so that identification is not
+assumed to hold beyond this population without a direct test.
 
 ### Three readings of the gap, in increasing strength
 
@@ -1005,135 +1431,139 @@ any evaluation of "does the model know what it knows" that reads only output
 channels understates what the model knows, badly: the same checkpoint scores
 0.637 or 0.972 on the same rows depending on whether one reads its statements
 or its states (Section 4, Figure 2). Second, as *mechanism*: the training arms
-decompose as *policy over a fixed epistemic signal*. SFT installs a refusal
-routine gated on the signal; preference and reward objectives re-gate the
-routine ([*Teaching Small Language Models to Say I Don't Know*](../paper-2-training-regimen/manuscript.md));
-none of them touches the signal, which is why the refit
-probes are identical across arms (Section 4) while refusal rates move by tens
-of points. Third, as *strategy*: the expensive part of epistemic humility (the
+decompose as *policy over a fixed epistemic signal*. SFT installs a refusal routine
+that keys on the signal; preference and reward objectives move the threshold that
+routine fires at (Rosenbaum, 2026b); none of them touches the signal, which is why
+the refit probes are identical across arms (Section 4) while refusal rates move by
+tens of points. Third, as *strategy*: the expensive part of epistemic humility (the
 internal knowledge-boundary signal) is already paid for by pretraining:
 the same answerability readout is present in pretrain-only base weights, before
 any instruction tuning or preference training, replicated across four bases
 spanning families and eras (Appendix A). What pretraining pays for is bounded,
 though: the readout covers overt unanswerability and not covert ambiguity, where
-base and trained checkpoints alike read at ≈ 0.63 (see *Where the internal readout
-fails* below).
+base and trained checkpoints alike read at ≈ 0.63 (Section 4).
 The unsolved part is the *readout*: coupling stated confidence and action to a
-signal that is linearly available inside. Training the readout failed here in
-seven variants; reading it directly with a probe trivially succeeds. Whether a
-training-free probe readout can supply the calibrated gate and dial that output
+signal that is linearly available inside. Training the readout failed in
+every variant we tried; reading it directly with a probe trivially succeeds. Whether a
+training-free probe readout can supply the calibrated filter and dial that output
 training could not, and whether it transfers across datasets, model sizes, and
-families, is the question this result opens and this single-model study does not
-settle; the standard probing cautions (a probe can
-read recall rather than truth-tracking [arXiv:2510.09033]; transfer must be
-tested, not assumed)
-carry over to it.
+families, is the question this result opens and does not settle; the standard
+probing cautions carry over to it, that a probe can read
+knowledge recall rather than truth-tracking (Cheang et al., 2025), and that
+transfer must be tested rather than assumed.
 
 ### Implications beyond this model
 
-If the pattern generalizes (Section 9 is honest
-that we have not shown this), it reframes a common assumption in abstention training:
+If the pattern generalizes, it reframes a common assumption in abstention training:
 that teaching better behavior will produce better-calibrated confidence. Here the two
 are dissociable, and the confidence channel needs its own, internally-anchored
 supervision. It also tempers the "steer in humility at inference" hope: the easy
 steering direction (less over-refusal) is the opposite of what novel unknowns
-require (appropriate abstention), and the actuation study could not install the
-hard direction.
-
-### Where the internal readout fails: covert ambiguity
-
-Three follow-on cells map the boundary of the readout reported here, and it is
-narrower than "unanswerability." In a pre-registered breadth cell extending the
-internal panel to AmbigQA, a surface of naturally occurring questions whose
-unanswerability is referential underspecification rather than an absent fact, the
-same probe protocol at the same locus reads the answerability boundary at only
-0.6279 (clean SFT) and 0.6349 (SFT→GRPO-v2) held-out on a 2,748-row panel, against
-a registered floor of 0.90 that both arms missed. An
-exploratory per-flavor atlas on the raw base then locates the boundary. Probes fit
-on each of six labeled categories of unanswerable question (KUQ's ambiguous,
-controversial, counterfactual, false-assumption, future-unknown and
-unsolved-problem strata) separate their own unknowns from the known pool at 0.98 to
-0.999 best-layer held-out AUROC, and each of them reads every other category, and
-SelfAware, at 0.83 or better. AmbigQA is the exception in both directions: it peaks
-at 0.6590 across all 37 layers, and transfers into it and out of it sit near chance.
-The dividing line is therefore
-not flavor but *overt versus covert*. The readout is reliable wherever the question's
-surface marks it as unanswerable, including questions labeled ambiguous when that
-ambiguity is overt, and it is close to uninformative where the ambiguity is covert.
-
-This failure is not something training did. In a registered raw-base replication on
-the identical panel, locus and probe
-protocol, the raw pretrained base reads AmbigQA at 0.6338, within 0.006 of both
-trained checkpoints, so post-training neither installed the information nor
-destroyed it. The
-pretraining-origin reading of Section 4 survives with its scope corrected: what
-pretraining supplies is an overt-unanswerability signal, not an answerability
-signal in general. Covert referential ambiguity is a distinct and harder
-hallucination surface, and plausibly so. Judging a question overtly unanswerable
-can be done from the question itself, whereas judging it covertly ambiguous
-requires retrieving the competing answers the question admits, which is a
-retrieval act rather than a reading of the prompt. A model that never notices the
-ambiguity has nothing about it to represent.
-
-Two caveats bound this. The atlas is exploratory and carries a registered style
-confound: the labeled unknown categories are stylistically distinctive question
-types, so a within-dataset known-versus-unknown probe may ride surface style in
-part, and while free cross-dataset transfer argues against a pure dataset artifact
-it does not eliminate style as a shared carrier; a style-controlled cell (surface
-form matched, flavor varied) is the natural confirmatory follow-up and must be
-registered before any of the atlas is promoted to a claim. Second, nothing here
-tests whether the gap is trainable. We did not attempt to install the missing
-signal, so whether targeted training or a retrieval-augmented read could supply it
-is open, and it is a different question from this paper's, which is whether a
-signal the model already carries reaches its output.
+require (appropriate abstention), and the bounded search of Section 6 could not
+install the hard direction.
 
 ## 9. Limitations
 
-- Single seed, single model. Every number is seed 1 on Qwen3-4B. The large
-  qualitative contrasts (0.997 vs 0.52; the answer-supervised →
-  answer-masked direction flip) are
+Every result here is exploratory and single-seed on Qwen3-4B unless it says
+otherwise: the GRPO confidence collapse is three-seed, and the refusal-axis
+ablation carries a second seed of one recipe. Comparisons between arms are
+descriptive rather than powered tests. Every number was judged against
+thresholds fixed before its run, and none moved afterward: stated calibration
+required appropriateness AUROC at or above 0.62 with standard deviation at or
+above 0.10 (spread without discrimination is not calibration); behavior
+required truthfulness at or above 35.6%, correct-on-known at or above 42.2%,
+over-refusal at or below 67.5%, and refusal recall at or above 82.0% (the
+Table 1 scoring); probe distillation succeeded at self-correctness AUROC 0.70
+and was a clear negative below 0.60; the three-seed GRPO check counted as
+non-collapse above 200 distinct emitted values; the write-site sweep required
+0.50 conversion with a 0.40 lower bound, a 3x direction-specificity ratio, and
+at least 35 known-correct rows for harm adjudication; and the second-seed
+ablation counted as a failure to replicate at or above 0.30. How each arm
+stands against each threshold is reported where the arm is, and Appendix A
+maps every number to its artifact.
+
+- Single seed, single model. The large qualitative contrasts (0.997 vs 0.52; the
+  answer-supervised → answer-masked direction flip) are
   unlikely to be seed noise, but the precise effect sizes are single-seed estimates
   and the whole pattern needs replication across seeds and at least one other model
-  family/size before any claim of generality. One component has since cleared
-  that bar: the GRPO confidence collapse of Section 7 replicated at two
-  further seeds under a pre-stated non-collapse guard that did not trigger
-  (Section 7, interventions 3-4). The rest of the pattern remains single-seed.
+  family/size before any claim of generality.
+- Prompt-contract conditionality. Every readout here is measured under one
+  prompt contract at a time (Section 3), and on this model the contract is not
+  a detail: the same untrained base refuses nothing under the neutral
+  extraction prompt and over-refuses 65.38% of answerable questions under a
+  contract that instructs it to say when it does not know (Rosenbaum, 2026b).
+  Two claims inherit that conditionality directly. The stated-confidence gap is
+  measured under the deployment contract only, and whether it survives a change
+  of contract is untested. The trained-checkpoint-construct
+  claim for the refusal axis (Section 5) holds under the neutral extraction
+  prompt, where the base produces no over-refusal for a direction to be fit on;
+  the follow-up in Section 5, fitting a base refusal direction under the
+  deployment contract, found it nearly orthogonal to the trained axis, so that
+  claim now rests on a measurement rather than on an absence.
+  The internal known-unknown readout was measured under four contracts (the
+  neutral extraction prompt; a plain-prose contract asking the model to answer
+  if it knows and to say so plainly if it does not; the deployment contract
+  asking for a JSON answer and a confidence scalar; and that same JSON contract
+  with its abstention wording removed) on the base, clean SFT and SFT→GRPO-v2
+  checkpoints, over the same 3,369 SelfAware rows. The signal is present under
+  all four: a probe fit on activations rendered inside a contract separates
+  known from unknown at AUROC 0.988 to 0.994 on every checkpoint under every
+  contract. What the contract moves is where that signal sits. The axis fit
+  under the neutral prompt carries to the plain-prose contract untouched,
+  ranking the same rows at AUROC 0.9996 to 0.9997 on all three checkpoints, and
+  loses 0.06 to 0.11 AUROC under the two JSON contracts, on every checkpoint.
+  Training shrinks that sensitivity rather than causing it: under the deployment
+  contract the loss falls from 0.105 on the base to 0.079 after SFT and 0.061
+  after GRPO. The readout itself travels; the particular direction reported
+  here is a coordinate fixed by the contract it was read under.
+- Seed dependence of the ablation geometry. How far the refuse/answer decision
+  concentrates onto a single direction is a property of the individual training
+  run, not the recipe: the full-axis edit that collapses over-refusal to 0.030
+  on this seed leaves it at 0.553 on a second seed of the identical recipe,
+  with the instrument passing every integrity check (Section 6). The axis does
+  causal work at both seeds; the near-total collapse is seed-specific, and no
+  cross-seed claim is made for it. Why the second seed's full-axis residual
+  lands almost exactly where this seed's component-ablation residual does is an
+  open decomposition question we flag rather than pursue.
 - Training/evaluation overlap on known questions. Of the 3,369 SelfAware
   evaluation rows, 117 known (answerable) questions appear verbatim as
   training prompts in every gradient-training file the Section 7
   interventions consume (115 of the same 117 for the probe-distilled arm);
   no unknown (unanswerable) question leaks. The consequence is bounded the
-  same way as in the training-regimen paper: metrics computed over
+  same way as in Rosenbaum (2026b): metrics computed over
   unknown-labeled rows are identical on the decontaminated population by
   construction (verified per run), while absolute known-row levels shift
   (correct-on-known falls 3.7 to 5.2 points, over-refusal rises 0.7 to 2.0
-  points across the eight Section 7 runs). Recomputing every gated Table 1
-  cell on the decontaminated population (n = 3,252) flips no reading: all
-  twelve pass/fail cells stay on the same side of their gates, the tightest
-  surviving margin being the clean-SFT base's correct-on-known at 43.03
-  against its 42.2 gate. The dissociation story is unaffected.
-- Wrong-answer-cell discrimination, resolved. A powered, pre-registered re-estimate
-  replaced the original n = 16 directional read with 360 wrong-answered / 420
-  correct rows at deployment rendering. At the axis level the finding
-  falsifies: the known-unknown axis's own readout ranks the model's correct
-  versus wrong answers at AUROC 0.5597 (CI 0.5185-0.5993), a gap of only
-  +0.0390 over the emitted scalar (CI includes zero), so this axis does not
-  discriminate the model's own correctness any better than what it states.
-  The correctness signal is not absent from the model: an unregistered,
-  ungated context probe fit directly on the same hidden states reaches AUROC
-  0.6769, so correct-versus-wrong is linearly present in the residual stream;
-  the known-unknown axis specifically does not carry it forward to
-  deployment. The calibration contrast survives and widens under power
-  (internal ECE 0.0474 raw vs emitted ECE 0.2847 raw, gap +0.2373, CI
-  0.1853-0.2769, excludes zero). The full-eval AUROC numbers (n ≈ 3369, known
-  versus unknown) are unaffected. Old and new internal-channel numbers are
-  not differenced as a pure power correction: the original n = 16 extraction
-  was rendered under the harness's neutral default prompt on a 96%-correct
-  strata-selected population, while the re-estimate renders under the
-  deployment prompt on a 54%-correct population, so render surface and power
-  are confounded in any before/after comparison of the internal channel.
+  points across the eight Section 7 runs). Recomputing every thresholded
+  entry of Table 1 on the decontaminated population (n = 3,252) flips no
+  reading: all twelve pass/fail entries stay on the same side of their
+  thresholds, the tightest surviving margin being the clean-SFT base's
+  correct-on-known at 43.03 against its 42.2 threshold. The dissociation
+  story is unaffected.
+- The known-unknown axis reads answerability, not self-correctness. At
+  deployment rendering the axis ranks the model's own correct versus wrong
+  answers at AUROC 0.5597 (CI 0.5185-0.5993), no better informed than the
+  emitted scalar, while an exploratory probe fit directly on the same hidden
+  states reaches 0.6769: correct-versus-wrong is linearly present in the
+  residual stream, and this axis does not carry it forward (Section 3). The
+  calibration contrast (internal ECE 0.0474 raw against emitted 0.2847, gap CI
+  excluding zero) and the known-versus-unknown numbers are unaffected. Internal
+  readings under the harness's neutral prompt and these deployment-rendered
+  readings sit on differently selected populations, so render surface and
+  statistical power are confounded between them and the two are never
+  differenced here.
 - SelfAware-only OOD surface. Behavior and stated-calibration numbers are on one
   OOD benchmark. Generalization to other known/unknown surfaces is untested.
+- The overt-unanswerability atlas of Section 4 carries a style confound and is
+  exploratory: the six labeled unknown categories are stylistically
+  distinctive question types, so a within-dataset known-versus-unknown probe
+  may ride surface style in part; free cross-dataset transfer argues against
+  a pure dataset artifact but does not eliminate style as a shared carrier,
+  and a style-controlled experiment matching surface form while varying the
+  category is the natural confirmatory follow-up. Separately, nothing in
+  this paper tests whether the covert-ambiguity gap is trainable: no attempt
+  was made to install the missing signal, so whether targeted training or a
+  retrieval-augmented read could supply it is open.
 - Knowledge erasure is linear-only. The stronger reducibility test is now
   done: certified linear erasure (LEACE) of the full answerability concept
   leaves the refusal readout at 0.858 held-out (baseline 0.912), with the
@@ -1146,55 +1576,48 @@ signal the model already carries reaches its output.
 - Probe could read outcome leakage. The internal axis is fit on activations; we
   control for lexical baselines and fit the readout without correct/wrong leakage,
   but probe-based "knowledge" claims always carry the risk that the probe reads a
-  correlate. The causal steering results summarized in Section 6 (from the
-  actuation study) partly mitigate this for the
+  correlate. The causal results of Section 6 partly mitigate this for the
   refusal axis but not for the known-unknown axis.
-- The imported steering evidence is single-site / few-layer. The causal
-  results Section 6 summarizes come from the actuation study and rest
-  on interventions at a small number of sites and layers, so "cannot install
-  appropriate abstention" is a statement about the interventions tried there, not a proof of
-  impossibility.
-- The SFT→RL confidence/action result is single-seed and exploratory. The
-  GRPO-v3-on-answer-supervised cell (Section 7, Table 2) is one seed of one
-  exploratory pre-registered cell, reported separately from the locked matrix; the confidence/action decoupling
-  should be read as a lead, not an established claim, until replicated. Its central
-  open question (whether the decoupling is structural or an artifact of the KL
-  anchor) was settled within the cell by a pre-registered lower-KL (β 0.05) re-run:
-  the falsifier (action margin ≥ ~14.5 points), fixed in advance, fired: the margin
-  moved only +0.17 pts (to +3.02) while the policy demonstrably loosened, so the
-  decoupling is recorded as structural. This resolves the artifact-vs-structural
-  question for this single-seed cell but does not lift the single-seed caveat: the
-  structural reading itself still wants replication across seeds and a larger model.
-- The probe-distillation cell is single-seed and exploratory. The
-  probe-distillation result (Section 7, Table 3) is one seed of one exploratory
-  pre-registered cell, reported separately from the locked matrix; "acts but doesn't say" and the channel-bottleneck
-  reading it supports should be read as a lead, not an established claim, until
-  replicated. The pre-registered calibration falsifier (AUROC → correctness < 0.60)
-  fired, so the negative is on the record, but the *interpretation* (that the
-  collapse is a property of the single-token-via-CE channel rather than of this
-  particular target or recipe) is what the proposed confidence-head experiment is
-  designed to test, and is not yet established.
-- Naming caution from a different lineage. A dedicated, pre-registered
-  naming-earnability test on a
-  different model and direction lineage (Qwen3.5-4B, hs20, not this paper's
-  Qwen3-4B L35 known-unknown axis) found the mentalistic "doubt" name not earned on
-  evidence-responsiveness: the transfer test voided on population reversal (the
-  KUQ-fit direction reads reversed on a world-known confident-wrong error class),
-  and the natively refit direction passed specificity but failed the
-  projection-collapse leg, with the margin channel instrument-void.
-  A follow-on constructive search for a direction built to maximize the evidence
-  contrast fired at baseline but was indistinguishable from covariance-shaped
-  random directions and recovered generic retrieval-family geometry rather than a
-  specific evidence axis. Neither result is a direct test of this paper's known-unknown axis;
-  they transfer as a naming caution by methodology, not as a falsification of the
-  identity or monotonicity claims made here.
+- The search for an abstention install is bounded, not exhaustive. "Cannot
+  install appropriate abstention" is a statement about the searched space of
+  Section 6, not a proof of impossibility; what remains open there is an
+  exploratory lead rather than a demonstrated install.
+- The reinforcement-learning follow-on's confidence/action decoupling
+  (Section 7, Table 2) is a lead, not an established claim, until replicated.
+  Whether it was a KL-anchor artifact is settled within the experiment by the
+  lower-KL re-run (Section 7); whether it holds beyond this seed and model is
+  not.
+- The probe-distillation result (Section 7, Table 3) supports "acts but
+  doesn't say" as a lead on the same terms. The negative is on the record; the
+  interpretation, that the collapse is a property of a single
+  cross-entropy-trained token rather than of this target or recipe, is what a
+  dedicated-head design (Conclusion) would test, and is not yet established.
+- A naming caution from a different model lineage. On a different model and
+  direction lineage (Qwen3.5-4B, hidden state 20, not this paper's L35 axis), a
+  test of whether a mentalistic "doubt" name is earned found that it is not, at
+  least on responsiveness to evidence, and a follow-on search for an
+  evidence-specific direction recovered only generic retrieval-family geometry.
+  Neither is a direct test of this paper's axis; they transfer as a caution
+  about naming, by methodology, not as a refutation of the identity or
+  monotonicity claims made here.
+
+Three outcomes would overturn the paper now. A training objective that couples the
+stated channel to the internal axis without paying for it in behavior would break
+the central negative directly, and the dedicated confidence head the Conclusion
+motivates is the version of that test we would run first. A demonstration that the internal axis is
+reading a lexical or stylistic correlate rather than answerability, on a
+surface-matched population, would undercut the gap by removing one of its two
+terms; the covert-ambiguity boundary of Section 4 is already the strongest evidence
+that the readout is narrower than it looks. And a replication at other seeds, or in
+another model family, in which the stated channel is not collapsed would confine
+this paper's finding to one checkpoint, which is the outcome its single-seed scope
+leaves most open.
 
 ## 10. Conclusion
 
 In one small instruction-tuned model, epistemic humility is three things that do not
-agree: a calibrated internal estimate of what the model knows, a behavior that the
-actuation study shows can
-be cheaply steered down (but not up) along a separable refusal axis, and a stated
+agree: a calibrated internal estimate of what the model knows, a behavior that can
+be cheaply steered down, but not up, along a separable refusal axis, and a stated
 confidence number that tracks neither and resists every training objective we tried
 to fix it with. The decisive evidence is a single-variable dissociation: contrastive
 SFT can install stated calibration only by supervising the wrong-answer text, which
@@ -1202,8 +1625,8 @@ breaks behavior, and masking that text restores behavior while destroying the
 calibration. The model knows but does not say, and current objectives move what it
 says or what it does without coupling them. Two mirror follow-ons sharpen rather than
 close the gap: reinforcement learning on a calibrated base keeps the stated signal but
-not knowledge-conditioned action, and distilling the calibrated internal axis directly
-into the stated confidence token keeps the action but collapses the scalar onto
+not knowledge-conditioned action, and distilling the model's own calibrated factual
+confidence into the stated confidence token keeps the action but collapses the scalar onto
 it: two opposite pressures, the same channel, the same failure. Because the calibrated
 signal already exists inside the model and the obstruction is now localized to the
 single-token confidence channel, the route this paper motivates is not another
@@ -1213,9 +1636,10 @@ hidden state the internal axis is fit on, supervised by a regression loss agains
 ## Data and code availability
 
 All training configs, eval configs, reward definitions, probe/geometry/steering
-scripts, governed protocol amendments, and per-cell calibration reports are in the
+scripts, registered protocol documents, and per-run calibration reports are in the
 repository [https://github.com/ProfSynapse/Epistemic-Humility-Research] under
-`archive/experiment/phase1/`, `docs/protocols/`, and `experiments/<slug>/`. The per-cell stated-confidence
+`archive/experiment/phase1/`, `docs/protocols/`, and `experiments/<slug>/`. The
+per-run stated-confidence
 calibration reports are at `archive/experiment/phase1/eval/analysis/calibration_gap_*.json`;
 the internal-axis and steering artifacts are under
 `archive/experiment/phase1/probe/analysis/`.
@@ -1230,61 +1654,185 @@ directions with fit metadata; replicate the internal-axis readout without GPU
 extraction), and `professorsynapse/eh-readout-rows` (per-question
 question/answer/grade rows behind the readout results).
 
-Restricted or gitignored datasets (e.g. bridge
-sets) are not redistributed. This is draft-v1; numbers are current as of 2026-07-02.
+Restricted or gitignored datasets (bridge sets, for instance) are not
+redistributed. Numbers are current as of this writing and are refreshed in the
+repository as further replications resolve.
 
 ## References
 
-(Compiled 2026-07-04 from the program's knowledge-graph library; every entry
-has an ingested note under `library/notes/`. Cited inline as [arXiv:id].)
+Arditi, A., Obeso, O., Syed, A., Paleka, D., Panickssery, N., Gurnee, W., &
+Nanda, N. (2024). *Refusal in Language Models Is Mediated by a Single
+Direction*. arXiv:2406.11717.
 
-- Arditi et al. (2024). Refusal in Language Models Is Mediated by a Single Direction. arXiv:2406.11717.
-- Azaria et al. (2023). The Internal State of an LLM Knows When It's Lying. arXiv:2304.13734.
-- Bani-Harouni et al. (2025). Rewarding Doubt: A Reinforcement Learning Approach to Calibrated Confidence Expression of Large Language Models. arXiv:2503.02623.
-- Burns et al. (2022). Discovering Latent Knowledge in Language Models Without Supervision. arXiv:2212.03827.
-- Cheang et al. (2025). Do LLMs Really Know What They Don't Know? Internal States Mainly Reflect Knowledge Recall Rather Than Truthfulness. arXiv:2510.09033.
-- Cheng et al. (2024). Can AI Assistants Know What They Don't Know?. arXiv:2401.13275.
-- Cunningham et al. (2023). Sparse Autoencoders Find Highly Interpretable Features in Language Models. arXiv:2309.08600.
-- Dai et al. (2021). Knowledge Neurons in Pretrained Transformers. arXiv:2104.08696.
-- Damani et al. (2025). Beyond Binary Rewards: Training LMs to Reason About Their Uncertainty. arXiv:2507.16806.
-- Ethayarajh et al. (2024). KTO: Model Alignment as Prospect Theoretic Optimization. arXiv:2402.01306.
-- Gani et al. (2026). Quantifying Faithful Confidence Expression in Large Reasoning Models. arXiv:2606.03969.
-- Jiang et al. (2024). On the Origins of Linear Representations in Large Language Models. arXiv:2403.03867.
-- Joad et al. (2026). There Is More to Refusal in Large Language Models than a Single Direction. arXiv:2602.02132.
-- Joshi et al. (2017). TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension. arXiv:1705.03551.
-- Kadavath et al. (2022). Language Models (Mostly) Know What They Know. arXiv:2207.05221.
-- Kalai and Vempala (2023). Calibrated Language Models Must Hallucinate. arXiv:2311.14648.
-- Kaplan et al. (2026). Why Fine-Tuning Encourages Hallucinations and How to Fix It. arXiv:2604.15574.
-- Kapoor et al. (2024). Large Language Models Must Be Taught to Know What They Don't Know. arXiv:2406.08391.
-- Kirichenko et al. (2025). AbstentionBench: Reasoning LLMs Fail on Unanswerable Questions. arXiv:2506.09038.
-- Lacombe et al. (2025). Don't Think Twice! Over-Reasoning Impairs Confidence Calibration. arXiv:2508.15050.
-- Li et al. (2023). Inference-Time Intervention: Eliciting Truthful Answers from a Language Model. arXiv:2306.03341.
-- Lin et al. (2022). Teaching Models to Express Their Uncertainty in Words. arXiv:2205.14334.
-- Liu et al. (2026). Reinforcement Learning with Metacognitive Feedback Elicits Faithful Uncertainty Expression in LLMs. arXiv:2606.32032.
-- Liu et al. (2024). On the Universal Truthfulness Hyperplane Inside LLMs. arXiv:2407.08582.
-- Marks et al. (2023). The Geometry of Truth: Emergent Linear Structure in Large Language Model Representations of True/False Datasets. arXiv:2310.06824.
-- Mei et al. (2025). Reasoning about Uncertainty: Do Reasoning Models Know When They Don't Know?. arXiv:2506.18183.
-- Meng et al. (2022). Locating and Editing Factual Associations in GPT. arXiv:2202.05262.
-- Mohamadi et al. (2025). Honesty over Accuracy: Trustworthy Language Models through Reinforced Hesitation. arXiv:2511.11500.
-- Orgad et al. (2024). LLMs Know More Than They Show: On the Intrinsic Representation of LLM Hallucinations. arXiv:2410.02707.
-- Panickssery et al. (2023). Steering Llama 2 via Contrastive Activation Addition. arXiv:2312.06681.
-- Rafailov et al. (2023). Direct Preference Optimization: Your Language Model is Secretly a Reward Model. arXiv:2305.18290.
-- Rosenbaum (2026). The Depths of Ignorance: A Taxonomy, Systematic Evidence Synthesis, and Research Agenda for Epistemic Humility in Language Models. Companion draft, this repository: [papers/paper-1-taxonomy-framework/manuscript.md](../paper-1-taxonomy-framework/manuscript.md).
-- Rosenbaum (2026). Teaching Small Language Models to Say I Don't Know: A Controlled Comparison of SFT, DPO, KTO, and GRPO on Model-Specific Abstention Data. Companion draft, this repository: [papers/paper-2-training-regimen/manuscript.md](../paper-2-training-regimen/manuscript.md).
-- Shao et al. (2024). DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv:2402.03300.
-- Shi et al. (2025). Fine-Tuned LLMs Know They Don't Know: A Parameter-Efficient Approach to Recovering Honesty. arXiv:2511.12991.
-- Slobodkin et al. (2023). The Curious Case of Hallucinatory (Un)answerability: Finding Truths in the Hidden States of Over-Confident Large Language Models. arXiv:2310.11877.
-- Stengel-Eskin et al. (2024). LACIE: Listener-Aware Finetuning for Confidence Calibration in Large Language Models. arXiv:2405.21028.
-- Sun et al. (2026). Valence-Arousal Subspace in LLMs: Circular Emotion Geometry and Multi-Behavioral Control. arXiv:2604.03147.
-- Turner et al. (2023). Steering Language Models With Activation Engineering. arXiv:2308.10248.
-- Uluoglakci et al. (2026). Inducing Epistemological Humility in Large Language Models: A Targeted SFT Approach to Reducing Hallucination. arXiv:2603.17504.
-- Wen et al. (2024). Know Your Limits: A Survey of Abstention in Large Language Models. arXiv:2407.18418.
-- Xiong et al. (2023). Can LLMs Express Their Uncertainty? An Empirical Evaluation of Confidence Elicitation in LLMs. arXiv:2306.13063.
-- Xu et al. (2024). SaySelf: Teaching LLMs to Express Confidence with Self-Reflective Rationales. arXiv:2405.20974.
-- Yang et al. (2023). Alignment for Honesty. arXiv:2312.07000.
-- Yin et al. (2023). Do Large Language Models Know What They Don't Know?. arXiv:2305.18153.
-- Zhang et al. (2023). Towards Best Practices of Activation Patching in Language Models: Metrics and Methods. arXiv:2309.16042.
-- Zhu et al. (2023). On the Calibration of Large Language Models and Alignment. arXiv:2311.13240.
+Azaria, A., & Mitchell, T. (2023). *The Internal State of an LLM Knows When
+It's Lying*. arXiv:2304.13734.
+
+Bani-Harouni, D., Pellegrini, C., Stangel, P., Ozsoy, E., Zaripova, K., Navab,
+N., & Keicher, M. (2025). *Rewarding Doubt: A Reinforcement Learning Approach
+to Calibrated Confidence Expression of Large Language Models*.
+arXiv:2503.02623.
+
+Burns, C., Ye, H., Klein, D., & Steinhardt, J. (2022). *Discovering Latent
+Knowledge in Language Models Without Supervision*. arXiv:2212.03827.
+
+Cheang, C. S., Chan, H. P., Zhang, W., & Deng, Y. (2025). *Do LLMs Really Know
+What They Don't Know? Internal States Mainly Reflect Knowledge Recall Rather
+Than Truthfulness*. arXiv:2510.09033.
+
+Cheng, Q., Sun, T., Liu, X., Zhang, W., Yin, Z., Li, S., Li, L., He, Z.,
+Chen, K., & Qiu, X. (2024). *Can AI Assistants Know What They Don't Know?*
+arXiv:2401.13275.
+
+Cunningham, H., Ewart, A., Riggs, L., Huben, R., & Sharkey, L. (2023). *Sparse
+Autoencoders Find Highly Interpretable Features in Language Models*.
+arXiv:2309.08600.
+
+Dai, D., Dong, L., Hao, Y., Sui, Z., Chang, B., & Wei, F. (2021). *Knowledge
+Neurons in Pretrained Transformers*. arXiv:2104.08696.
+
+Damani, M., Puri, I., Slocum, S., Shenfeld, I., Choshen, L., Kim, Y., &
+Andreas, J. (2025). *Beyond Binary Rewards: Training LMs to Reason About
+Their Uncertainty*. arXiv:2507.16806.
+
+Ethayarajh, K., Xu, W., Muennighoff, N., Jurafsky, D., & Kiela, D. (2024).
+*KTO: Model Alignment as Prospect Theoretic Optimization*. arXiv:2402.01306.
+
+Gani, A., Meskin, A., Liu, G. K.-M., & Cohan, A. (2026). *Quantifying Faithful
+Confidence Expression in Large Reasoning Models*. arXiv:2606.03969.
+
+Jiang, Y., Rajendran, G., Ravikumar, P., Aragam, B., & Veitch, V. (2024). *On
+the Origins of Linear Representations in Large Language Models*.
+arXiv:2403.03867.
+
+Joad, F., Hawasly, M., Boughorbel, S., Durrani, N., & Sencar, H. T. (2026).
+*There Is More to Refusal in Large Language Models than a Single Direction*.
+arXiv:2602.02132.
+
+Joshi, M., Choi, E., Weld, D. S., & Zettlemoyer, L. (2017). *TriviaQA: A
+Large Scale Distantly Supervised Challenge Dataset for Reading
+Comprehension*. arXiv:1705.03551.
+
+Kadavath, S., et al. (2022). *Language Models (Mostly) Know What They Know*.
+arXiv:2207.05221.
+
+Kalai, A. T., & Vempala, S. S. (2023). *Calibrated Language Models Must
+Hallucinate*. arXiv:2311.14648.
+
+Kaplan, G., Gekhman, Z., Zhu, Z., Rozner, L., Reif, Y., Swayamdipta, S.,
+Hoiem, D., & Schwartz, R. (2026). *Why Fine-Tuning Encourages Hallucinations
+and How to Fix It*. arXiv:2604.15574.
+
+Kapoor, S., Gruver, N., Roberts, M., Collins, K., Pal, A., Bhatt, U., Weller,
+A., Dooley, S., Goldblum, M., & Wilson, A. G. (2024). *Large Language Models
+Must Be Taught to Know What They Don't Know*. arXiv:2406.08391.
+
+Kirichenko, P., Ibrahim, M., Chaudhuri, K., & Bell, S. J. (2025).
+*AbstentionBench: Reasoning LLMs Fail on Unanswerable Questions*.
+arXiv:2506.09038.
+
+Lacombe, R., Wu, K., & Dilworth, E. (2025). *Don't Think Twice! Over-Reasoning
+Impairs Confidence Calibration*. arXiv:2508.15050.
+
+Li, K., Patel, O., Viégas, F., Pfister, H., & Wattenberg, M. (2023).
+*Inference-Time Intervention: Eliciting Truthful Answers from a Language
+Model*. arXiv:2306.03341.
+
+Lin, S., Hilton, J., & Evans, O. (2022). *Teaching Models to Express Their
+Uncertainty in Words*. arXiv:2205.14334.
+
+Liu, G. K.-M., Caciularu, A., Yona, G., Szpektor, I., & Cohan, A. (2026).
+*Reinforcement Learning with Metacognitive Feedback Elicits Faithful
+Uncertainty Expression in LLMs*. arXiv:2606.32032.
+
+Liu, J., Chen, S., Cheng, Y., & He, J. (2024). *On the Universal Truthfulness
+Hyperplane Inside LLMs*. arXiv:2407.08582.
+
+Marks, S., & Tegmark, M. (2023). *The Geometry of Truth: Emergent Linear
+Structure in Large Language Model Representations of True/False Datasets*.
+arXiv:2310.06824.
+
+Mei, Z., Zhang, C., Yin, T., Lidard, J., Shorinwa, O., & Majumdar, A. (2025).
+*Reasoning about Uncertainty: Do Reasoning Models Know When They Don't Know?*
+arXiv:2506.18183.
+
+Meng, K., Bau, D., Andonian, A., & Belinkov, Y. (2022). *Locating and Editing
+Factual Associations in GPT*. arXiv:2202.05262.
+
+Mohamadi, M. A., Wang, T., & Li, Z. (2025). *Honesty over Accuracy:
+Trustworthy Language Models through Reinforced Hesitation*. arXiv:2511.11500.
+
+Orgad, H., Toker, M., Gekhman, Z., Reichart, R., Szpektor, I., Kotek, H., &
+Belinkov, Y. (2024). *LLMs Know More Than They Show: On the Intrinsic
+Representation of LLM Hallucinations*. arXiv:2410.02707.
+
+Panickssery, N., Gabrieli, N., Schulz, J., Tong, M., Hubinger, E., & Turner,
+A. M. (2023). *Steering Llama 2 via Contrastive Activation Addition*.
+arXiv:2312.06681.
+
+Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C. D., & Finn, C.
+(2023). *Direct Preference Optimization: Your Language Model is Secretly a
+Reward Model*. arXiv:2305.18290.
+
+Rosenbaum, J. (2026a). *The Depths of Ignorance: A Taxonomy, Systematic
+Evidence Synthesis, and Research Agenda for Epistemic Humility in Language
+Models*. Companion paper, this research program.
+
+Rosenbaum, J. (2026b). *Teaching Small Language Models to Say I Don't Know: A
+Controlled Comparison of SFT, DPO, KTO, and GRPO on Model-Specific Abstention
+Data*. Companion paper, this research program.
+
+Shao, Z., et al. (2024). *DeepSeekMath: Pushing the Limits of Mathematical
+Reasoning in Open Language Models* (GRPO). arXiv:2402.03300.
+
+Shi, Z., Wang, Z., Chen, T., Gao, S., Zhou, H., Sun, Q., & Li, J. (2025).
+*Fine-Tuned LLMs Know They Don't Know: A Parameter-Efficient Approach to
+Recovering Honesty*. arXiv:2511.12991.
+
+Slobodkin, A., Goldman, O., Caciularu, A., Dagan, I., & Ravfogel, S. (2023).
+*The Curious Case of Hallucinatory (Un)answerability: Finding Truths in the
+Hidden States of Over-Confident Large Language Models*. arXiv:2310.11877.
+
+Stengel-Eskin, E., Hase, P., & Bansal, M. (2024). *LACIE: Listener-Aware
+Finetuning for Confidence Calibration in Large Language Models*.
+arXiv:2405.21028.
+
+Sun, L., Yan, L., Lu, X., Lee, A., Zhang, J., & Shao, J. (2026).
+*Valence-Arousal Subspace in LLMs: Circular Emotion Geometry and
+Multi-Behavioral Control*. arXiv:2604.03147.
+
+Turner, A. M., Thiergart, L., Leech, G., Udell, D., Vazquez, J. J., Mini, U.,
+& MacDiarmid, M. (2023). *Steering Language Models With Activation
+Engineering*. arXiv:2308.10248.
+
+Uluoglakci, C., & Taskaya Temizel, T. (2026). *Inducing Epistemological
+Humility in Large Language Models: A Targeted SFT Approach to Reducing
+Hallucination*. arXiv:2603.17504.
+
+Wen, B., Yao, J., Feng, S., Xu, C., Tsvetkov, Y., Howe, B., & Wang, L. L.
+(2024). *Know Your Limits: A Survey of Abstention in Large Language Models*.
+arXiv:2407.18418.
+
+Xiong, M., Hu, Z., Lu, X., Li, Y., Fu, J., He, J., & Hooi, B. (2023). *Can
+LLMs Express Their Uncertainty? An Empirical Evaluation of Confidence
+Elicitation in LLMs*. arXiv:2306.13063.
+
+Xu, T., Wu, S., Diao, S., Liu, X., Wang, X., Chen, Y., & Gao, J. (2024).
+*SaySelf: Teaching LLMs to Express Confidence with Self-Reflective
+Rationales*. arXiv:2405.20974.
+
+Yang, Y., Chern, E., Qiu, X., Neubig, G., & Liu, P. (2023). *Alignment for
+Honesty*. arXiv:2312.07000.
+
+Yin, Z., Sun, Q., Guo, Q., Wu, J., Qiu, X., & Huang, X. (2023). *Do Large
+Language Models Know What They Don't Know?* arXiv:2305.18153.
+
+Zhang, F., & Nanda, N. (2023). *Towards Best Practices of Activation Patching
+in Language Models: Metrics and Methods*. arXiv:2309.16042.
+
+Zhu, C., Xu, B., Wang, Q., Zhang, Y., & Mao, Z. (2023). *On the Calibration of
+Large Language Models and Alignment*. arXiv:2311.13240.
+
+---
 
 ## Appendix A: Provenance (internal labels to artifacts)
 
@@ -1294,24 +1842,29 @@ protocol document and scored artifact:
 
 | Paper section | Internal label | Protocol / notes | Primary artifacts |
 |---|---|---|---|
-| §3 setup (locked eval harness; stated-scalar readout; hidden-state extraction `55254a04aa1f`) | probe program / locked eval harness | `archive/experiment/phase1/eval/run_eval.py`; `archive/experiment/phase1/eval/analysis/calibration_gap_report.py` | `experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/` |
-| §4 internal-vs-stated gap; like-for-like on the GRPO-v2 checkpoint (Fig. 2) | probe program (Amendments L/M lineage; refusal-vs-known-unknown note); session 20260627T093723Z | `archive/notes/experiments/caution-vs-doubt-knowledge-gate.md`; `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md` checkpoints 002–004 | `experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/` (`a3_h_base_probe.json`, `c2_*.json`, `a1a2_h_lora.json`); `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
-| §5–6 geometry; §6 imported steering summary (actuation study) | probe program | `archive/experiment/phase1/probe/paper3_section5_geometry.py`; independent reconstruction `papers/paper-3-knows-but-doesnt-say/analysis/provenance/p3_section5_provenance_20260704/reconstruct_section5_geometry.py`; `caution_direction_L35.json`; `caution_perp_direction_L35.json`; `caution_axis_transfer.json` | `archive/experiment/phase1/probe/analysis/current_clean_grpo_v2_*` (interventions, coefficient sweeps, generation panels; reported as results of the actuation study) |
-| §4 known-unknown-axis origin (raw base 0.997); §5 refusal axis unreadable on base (0 refusals in 1,233) | Amendment W | `experiments/base-model-training-free-mechanism/AMENDMENT.md` §7 | `papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_w_base_model_result.json` |
-| §5 knowledge-subspace erasure (LEACE) | Amendment AJ | `experiments/knowledge-subspace-erasure/AMENDMENT.md`; `archive/experiment/phase1/probe/amendments/amendment_aj_subspace_erasure.py`; `amendment_aj_addendum_gap_distribution.py` | `archive/experiment/phase1/probe/analysis/amendment_aj_subspace_erasure/` (`result.json`, `addendum_a1_gap_distribution.json`) |
-| §7 interventions 1–2 (DPO/KTO stated-confidence contract) | Amendment B | `experiments/stated-confidence-grpo/AMENDMENT.md` | `papers/paper-2-training-regimen/analysis/amendment_b_confidence_alignment_by_outcome.csv` |
-| §7 interventions 3–4 (GRPO v1/v2 collapse + incentive analysis) | Amendment E cells; Amendment J diagnostics / session 0026 | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
-| §7 intervention 5 (proper-scoring GRPO) | Amendment J (GRPO-v3) | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md`; reward `archive/experiment/phase1/grpo/humility_reward_v3.py`; preflight `archive/notes/experiments/computed-confidence-alignment-regimen.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v3_seed1.json`; `results_amendment_j_*` |
-| §7 interventions 6–7 (contrastive SFT, answer-supervised / answer-masked) | Amendments K and L | `experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md`; `experiments/answer-subspan-masked-contrastive-sft/AMENDMENT.md` | `calibration_gap_contrastive_sft_seed1.json`; `calibration_gap_contrastive_masked_sft_seed1.json`; `results_amendment_k_*`; `results_amendment_l_*` |
-| §7 RL-on-calibrated-base follow-on, incl. the β 0.10 → 0.05 falsifier re-run (Table 2, Figs. 4–6; Fig. 7 spans arms) | Amendment N (incl. β 0.05 arm) | `experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md` (results tables §7) | result tables embedded in the amendment document; `results_amendment_n_*`; `action_conditioning_report.py`; run records under `archive/experiment/phase1/run_records/` |
-| §7 probe-axis distillation mirror (Table 3) | Amendment M, Revision 3 | `experiments/quantile-balanced-probe-distilled-sft/AMENDMENT.md` | `results_amendment_m_*_probe_factual_sft_seed1_merged_full_4b` |
-| §4 pretraining-origin test (four pretrain-only bases at 0.997+); §8 "paid for by pretraining" | Amendment Y | `experiments/pretrain-only-base-readout/AMENDMENT.md` (SUPPORTED 4/4) | `archive/experiment/phase1/probe/amendment_y_results/` |
-| §4, §9 wrong-answer-cell power fix (axis-level correct-vs-wrong discrimination re-estimate; falsifies the n=16 read, calibration contrast survives) | Tier-2 exploratory amendment, wrong-answer-cell-power-fix | `experiments/wrong-answer-cell-power-fix/AMENDMENT.md` (resolved falsified 2026-08-09; render-vs-power confound, §2.6) | `experiments/wrong-answer-cell-power-fix/analysis-committed/real_run_results.{json,md}` |
-| §4 monotonicity transfer caution (0.997-axis ordering not assumed portable); §8 the $P(\text{answer correct})$ identification caution; §9 naming caution from a different lineage (Qwen3.5-4B hs20) | evidence-responsiveness rebase (M4-WK) and constructive direction search (M4c), both null-result | `experiments/margin-evidence-responsiveness-worldknown/AMENDMENT.md` (Outcome); `experiments/evidence-response-direction-search/AMENDMENT.md` (Outcome) | `experiments/margin-evidence-responsiveness-worldknown/analysis-committed/`; `experiments/evidence-response-direction-search/analysis-committed/` |
-| §8 covert-ambiguity boundary: AmbigQA held-out 0.6279 / 0.6349 against the registered 0.90 floor; per-flavor atlas (six KUQ strata at 0.98–0.999, AmbigQA peak 0.6590 across 37 layers); raw-base replication at 0.6338 | OOD breadth cell (G7); flavor atlas (Tier-3 exploratory); raw-base AmbigQA readout (Tier-3) | `experiments/ood-breadth-beyond-selfaware/AMENDMENT.md` (G7 FAIL on both arms); `experiments/flavor-atlas-rawbase/AMENDMENT.md`; `experiments/rawbase-ambigqa-boundary-readout/AMENDMENT.md` | `experiments/ood-breadth-beyond-selfaware/analysis-committed/`; `experiments/flavor-atlas-rawbase/analysis-committed/`; `experiments/rawbase-ambigqa-boundary-readout/analysis-committed/` |
-| §9 training/evaluation overlap sensitivity (decontaminated n = 3,252; twelve gated cells unchanged) | this paper's own pinned sensitivity script | `papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.py` | `papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.csv` |
+| Section 3 methods (locked eval harness; stated-scalar readout; hidden-state extraction `55254a04aa1f`) | probe program / locked eval harness | `archive/experiment/phase1/eval/run_eval.py`; `archive/experiment/phase1/eval/analysis/calibration_gap_report.py` | `experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/` |
+| Section 4 internal-vs-stated gap; like-for-like on the GRPO-v2 checkpoint (Fig. 2) | probe program (Amendments L/M lineage; refusal-vs-known-unknown note); session 20260627T093723Z | `archive/notes/experiments/caution-vs-doubt-knowledge-gate.md`; `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md` checkpoints 002–004 | `experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/` (`a3_h_base_probe.json`, `c2_*.json`, `a1a2_h_lora.json`); `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
+| Section 5 geometry and Figs. 3–4 (two-axis projection scatter; cross-regimen axis stability); Section 6 steering arms | probe program | `archive/experiment/phase1/probe/paper3_section5_geometry.py`; independent reconstruction `papers/paper-3-knows-but-doesnt-say/analysis/provenance/p3_section5_provenance_20260704/reconstruct_section5_geometry.py`; `caution_direction_L35.json`; `caution_perp_direction_L35.json`; `caution_axis_transfer.json` | `archive/experiment/phase1/probe/analysis/current_clean_grpo_v2_*` (interventions, coefficient sweeps, generation panels) |
+| Section 6 ablation headline re-derived under the archived instrument (0.994 to 0.5238 for the KU-orthogonalized component, correct rate 0.3274 over the full known_refused cell; raw-theta variant 0.994 to 0.0298) | caution-ablation-rederivation | `experiments/caution-ablation-rederivation/AMENDMENT.md` (Outcome; falsifier not fired, resolved 2026-08-16) | `experiments/caution-ablation-rederivation/analysis-committed/` |
+| Section 6, Section 9 second-seed full-axis ablation (post-ablation over-refusal 0.5528; 45.7pp shed; 29.2% correct on formerly refused knowns; seed-1 0.030 collapse not promoted) | refusal-axis-ablation-confirmatory | `experiments/refusal-axis-ablation-confirmatory/AMENDMENT.md` (Outcome; FALSIFIED, resolved 2026-08-16) | `experiments/refusal-axis-ablation-confirmatory/analysis-committed/intervention_summary_seed2.json`; row-level arm tables in the amendment document |
+| Section 4 known-unknown-axis origin (raw base 0.997); Section 5 refusal axis unreadable on base (0 refusals in 1,233) | Amendment W | `experiments/base-model-training-free-mechanism/AMENDMENT.md` Section 7 | `papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_w_base_model_result.json` |
+| Section 5 knowledge-subspace erasure (LEACE) | Amendment AJ | `experiments/knowledge-subspace-erasure/AMENDMENT.md`; `archive/experiment/phase1/probe/amendments/amendment_aj_subspace_erasure.py`; `amendment_aj_addendum_gap_distribution.py` | `archive/experiment/phase1/probe/analysis/amendment_aj_subspace_erasure/` (`result.json`, `addendum_a1_gap_distribution.json`) |
+| Section 7 interventions 1–2 (DPO/KTO stated-confidence contract) | Amendment B | `experiments/stated-confidence-grpo/AMENDMENT.md` | `papers/paper-2-training-regimen/analysis/amendment_b_confidence_alignment_by_outcome.csv` |
+| Section 7 intervention 3 (GRPO v1/v2 collapse + incentive analysis) | Amendment E cells; Amendment J diagnostics / session 0026 | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
+| Section 7 intervention 4 (proper-scoring GRPO) | Amendment J (GRPO-v3) | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md`; reward `archive/experiment/phase1/grpo/humility_reward_v3.py`; preflight `archive/notes/experiments/computed-confidence-alignment-regimen.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v3_seed1.json`; `results_amendment_j_*` |
+| Section 7 interventions 5–6 (contrastive SFT, answer-supervised / answer-masked) | Amendments K and L | `experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md`; `experiments/answer-subspan-masked-contrastive-sft/AMENDMENT.md` | `calibration_gap_contrastive_sft_seed1.json`; `calibration_gap_contrastive_masked_sft_seed1.json`; `results_amendment_k_*`; `results_amendment_l_*` |
+| Section 7 RL-on-calibrated-base follow-on, incl. the β 0.10 → 0.05 falsifier re-run (Table 2, Figs. 8–10; Fig. 11 spans arms) | Amendment N (incl. β 0.05 arm) | `experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md` (results tables Section 7) | result tables embedded in the amendment document; `results_amendment_n_*`; `action_conditioning_report.py`; run records under `archive/experiment/phase1/run_records/` |
+| Section 7 probe-axis distillation mirror (Table 3) | Amendment M, Revision 3 | `experiments/quantile-balanced-probe-distilled-sft/AMENDMENT.md` | `results_amendment_m_*_probe_factual_sft_seed1_merged_full_4b` |
+| Section 4 pretraining-origin test (four pretrain-only bases at 0.997+); Section 8 "paid for by pretraining" | Amendment Y | `experiments/pretrain-only-base-readout/AMENDMENT.md` (SUPPORTED 4/4) | `archive/experiment/phase1/probe/amendment_y_results/` |
+| Section 3, Section 9 axis-level correct-vs-wrong discrimination (0.5597 against the emitted 0.5207; exploratory same-state probe 0.6769; calibration contrast +0.2373) | Tier-2 exploratory amendment, wrong-answer-cell-power-fix | `experiments/wrong-answer-cell-power-fix/AMENDMENT.md` (resolved falsified 2026-08-09; render-vs-power confound, Section 2.6) | `experiments/wrong-answer-cell-power-fix/analysis-committed/real_run_results.{json,md}` |
+| Section 4 scope-of-readings block (0.997-axis ordering not assumed portable); Section 8 the $P(\text{answer correct})$ identification caution; Section 9 naming caution from a different lineage (Qwen3.5-4B hs20) | evidence-responsiveness rebase (M4-WK) and constructive direction search (M4c), both null-result | `experiments/margin-evidence-responsiveness-worldknown/AMENDMENT.md` (Outcome); `experiments/evidence-response-direction-search/AMENDMENT.md` (Outcome) | `experiments/margin-evidence-responsiveness-worldknown/analysis-committed/`; `experiments/evidence-response-direction-search/analysis-committed/` |
+| Section 4 covert-ambiguity boundary: AmbigQA held-out 0.6279 / 0.6349 against the registered 0.90 floor; per-flavor atlas (six KUQ strata at 0.98–0.999, AmbigQA peak 0.6590 across 37 layers); raw-base replication at 0.6338 | OOD breadth cell (G7); flavor atlas (Tier-3 exploratory); raw-base AmbigQA readout (Tier-3) | `experiments/ood-breadth-beyond-selfaware/AMENDMENT.md` (G7 FAIL on both arms); `experiments/flavor-atlas-rawbase/AMENDMENT.md`; `experiments/rawbase-ambigqa-boundary-readout/AMENDMENT.md` | `experiments/ood-breadth-beyond-selfaware/analysis-committed/`; `experiments/flavor-atlas-rawbase/analysis-committed/`; `experiments/rawbase-ambigqa-boundary-readout/analysis-committed/` |
+| Section 6 bounded abstention-install site sweep (falsifier silent, one-way statement stands; exploratory anchor-onward actuation lead); Section 9 searched-space bound | Tier-2 exploratory amendment, `caution-install-bounded-site-sweep` | `experiments/caution-install-bounded-site-sweep/AMENDMENT.md` (Outcome; resolved 2026-08-13: falsifier silent, the registered prediction's no-actuation clause failed at all five dose-viable cells) | `experiments/caution-install-bounded-site-sweep/analysis-committed/gate_report.json`; `experiments/caution-install-bounded-site-sweep/analysis-committed/trained/` |
+| Section 5 base refusal direction under the deployment contract (mean \|cos\| 0.046 to the trained axes; BR-G0 AUROC 0.9509 on 1,528/359 rows; aligned prediction falsified) | Tier-2 exploratory cell, `base-refusal-direction-under-contract` | `experiments/base-refusal-direction-under-contract/AMENDMENT.md` (Outcome; resolved falsified 2026-08-18) | `experiments/base-refusal-direction-under-contract/scripts/br_compare_transfer_frame.py`; committed counts/cosines in the amendment document |
+| Section 9 known-unknown readout under four prompt contracts (refit 0.988 to 0.994 everywhere; neutral axis transfers at 0.9996 to plain, drops 0.06 to 0.11 under the JSON contracts; partial transfer) | Tier-2 exploratory cell, `readout-under-contract-crossing` | `experiments/readout-under-contract-crossing/AMENDMENT.md` (Outcome; resolved 2026-08-18) | `experiments/readout-under-contract-crossing/scripts/score_contract_crossing.py`; committed AUROC tables in the amendment document |
+| Section 9 training/evaluation overlap sensitivity (decontaminated n = 3,252; twelve gated cells unchanged) | this paper's own pinned sensitivity script | `papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.py` | `papers/paper-3-knows-but-doesnt-say/analysis/clean_subset_sensitivity_p3.csv` |
 
-Vocabulary note: reader-facing prose in this paper follows the program-wide rename
+Vocabulary note: reader-facing prose in this paper follows the rename
 in `papers/common/terminology.md`, the canonical mapping from the prior
 "doubt"-family names (doubt axis, doubt direction, doubt readout) to the
 known-unknown vocabulary used throughout. Governed filenames, artifact names, and
@@ -1321,13 +1874,12 @@ file's usage rule 1.
 Governance notes: Amendments B/E/J/K/L/M/N are exploratory single-seed evidence
 cells with pre-stated predictions and falsifiers, reported here as exploratory
 and never pooled with the pre-registered headline matrix (PROTOCOL v0.3, signed
-2026-06-10), whose confirmatory surface belongs to the training-regimen paper
-([*Teaching Small Language Models to Say I Don't Know*](../paper-2-training-regimen/manuscript.md)).
-The Section 7 seed-robustness citation for the GRPO confidence collapse comes
-from the signed, resolved three-seed extension
-([the GRPO three-seed replication](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/main/experiments/grpo-three-seed-confirmatory/AMENDMENT.md),
-G4 non-collapse guard not triggered, distinct-value range 4 to 85 against a
-200-value trigger), likewise exploratory and never pooled. The Section 9
-overlap sensitivity is computed by this paper's own pinned script
+2026-06-10), whose confirmatory surface belongs to Rosenbaum (2026b). The
+Section 7 seed-robustness citation for the GRPO confidence collapse comes from
+the signed, resolved three-seed extension
+(`experiments/grpo-three-seed-confirmatory/AMENDMENT.md`, G4 non-collapse guard
+not triggered, distinct-value range 4 to 85 against a 200-value trigger),
+likewise exploratory and never pooled. The Section 9 overlap sensitivity is
+computed by this paper's own pinned script
 (`analysis/clean_subset_sensitivity_p3.py`), reusing that experiment's
 exclusion-set derivation.

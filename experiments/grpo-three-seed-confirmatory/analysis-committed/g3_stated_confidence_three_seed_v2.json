@@ -1,0 +1,2234 @@
+{
+  "description": "Three-seed stated-confidence summary, grpo-three-seed-confirmatory block, v2 with the seed-1 data gap closed. Seed-1 recovered from the phase1-migrated copies of the amendment-e/f full SelfAware evals (see docstring of this script for provenance and verification). Exploratory response-confidence track (not the PROTOCOL v0.3 headline).",
+  "bootstrap": {
+    "method": "seed-level resample with replacement",
+    "n_resamples": 10000,
+    "random_state": 12345,
+    "level": 0.95
+  },
+  "seed1_recovery": {
+    "recovered_from": "phase1-migrated copies (experiments/probe-scaled-response-confidence and experiments/grpo-centered-stacking); see script docstring",
+    "verification": "mean_stated_confidence and brier_vs_response_appropriateness in every recovered metrics.json matched the pre-existing committed seed-1 values (sourced from selfaware_full_run_comparison_grouped.csv) exactly for all 8 arms; clean_sft_grpo_v2 by-outcome recomputation matched calibration_gap_clean_sft_grpo_v2_seed1.json exactly"
+  },
+  "arms": {
+    "clean_sft_merged": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.748489,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.407146,
+          "brier_vs_known_label": 0.221093,
+          "mae_vs_answer_correctness": 0.687903,
+          "brier_vs_answer_correctness": 0.50185,
+          "mae_vs_response_appropriateness": 0.549708,
+          "brier_vs_response_appropriateness": 0.363656,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "experiments/probe-scaled-response-confidence/analysis/phase1-migrated/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_4b/clean_schema_sft_merged_seed1__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.732394,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.413418,
+          "brier_vs_known_label": 0.218876,
+          "mae_vs_answer_correctness": 0.672962,
+          "brier_vs_answer_correctness": 0.478421,
+          "mae_vs_response_appropriateness": 0.540516,
+          "brier_vs_response_appropriateness": 0.345974,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_seed2_merged_full_4b/clean_schema_sft_merged_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.72235,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.412765,
+          "brier_vs_known_label": 0.2129,
+          "mae_vs_answer_correctness": 0.662798,
+          "brier_vs_answer_correctness": 0.462932,
+          "mae_vs_response_appropriateness": 0.54345,
+          "brier_vs_response_appropriateness": 0.343585,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_seed3_merged_full_4b/clean_schema_sft_merged_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.734411,
+          "ci95": [
+            0.72235,
+            0.7484889999999998
+          ],
+          "values": [
+            0.748489,
+            0.732394,
+            0.72235
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "mean": 0.41110966666666665,
+          "ci95": [
+            0.407146,
+            0.413418
+          ],
+          "values": [
+            0.407146,
+            0.413418,
+            0.412765
+          ]
+        },
+        "brier_vs_known_label": {
+          "mean": 0.217623,
+          "ci95": [
+            0.2129,
+            0.221093
+          ],
+          "values": [
+            0.221093,
+            0.218876,
+            0.2129
+          ]
+        },
+        "mae_vs_answer_correctness": {
+          "mean": 0.6745543333333334,
+          "ci95": [
+            0.662798,
+            0.687903
+          ],
+          "values": [
+            0.687903,
+            0.672962,
+            0.662798
+          ]
+        },
+        "brier_vs_answer_correctness": {
+          "mean": 0.48106766666666667,
+          "ci95": [
+            0.46293200000000007,
+            0.50185
+          ],
+          "values": [
+            0.50185,
+            0.478421,
+            0.462932
+          ]
+        },
+        "mae_vs_response_appropriateness": {
+          "mean": 0.544558,
+          "ci95": [
+            0.540516,
+            0.549708
+          ],
+          "values": [
+            0.549708,
+            0.540516,
+            0.54345
+          ]
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.35107166666666667,
+          "ci95": [
+            0.343585,
+            0.363656
+          ],
+          "values": [
+            0.363656,
+            0.345974,
+            0.343585
+          ]
+        }
+      }
+    },
+    "clean_sft_dpo": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.812083,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.388214,
+          "brier_vs_known_label": 0.237608,
+          "mae_vs_answer_correctness": 0.737985,
+          "brier_vs_answer_correctness": 0.587379,
+          "mae_vs_response_appropriateness": 0.55829,
+          "brier_vs_response_appropriateness": 0.407684,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "experiments/probe-scaled-response-confidence/analysis/phase1-migrated/eval/results_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_full_4b/clean_schema_sft_dpo_seed1_corrected_base__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.785407,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.404246,
+          "brier_vs_known_label": 0.238581,
+          "mae_vs_answer_correctness": 0.72608,
+          "brier_vs_answer_correctness": 0.560416,
+          "mae_vs_response_appropriateness": 0.550417,
+          "brier_vs_response_appropriateness": 0.384753,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_seed2_full_4b/clean_schema_sft_dpo_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.823374,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.396328,
+          "brier_vs_known_label": 0.256813,
+          "mae_vs_answer_correctness": 0.761131,
+          "brier_vs_answer_correctness": 0.621616,
+          "mae_vs_response_appropriateness": 0.563334,
+          "brier_vs_response_appropriateness": 0.423819,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_seed3_full_4b/clean_schema_sft_dpo_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.8069546666666666,
+          "ci95": [
+            0.7854069999999999,
+            0.8233739999999999
+          ],
+          "values": [
+            0.812083,
+            0.785407,
+            0.823374
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "mean": 0.39626266666666665,
+          "ci95": [
+            0.388214,
+            0.40424599999999994
+          ],
+          "values": [
+            0.388214,
+            0.404246,
+            0.396328
+          ]
+        },
+        "brier_vs_known_label": {
+          "mean": 0.24433400000000002,
+          "ci95": [
+            0.237608,
+            0.256813
+          ],
+          "values": [
+            0.237608,
+            0.238581,
+            0.256813
+          ]
+        },
+        "mae_vs_answer_correctness": {
+          "mean": 0.741732,
+          "ci95": [
+            0.72608,
+            0.7611310000000001
+          ],
+          "values": [
+            0.737985,
+            0.72608,
+            0.761131
+          ]
+        },
+        "brier_vs_answer_correctness": {
+          "mean": 0.5898036666666666,
+          "ci95": [
+            0.560416,
+            0.621616
+          ],
+          "values": [
+            0.587379,
+            0.560416,
+            0.621616
+          ]
+        },
+        "mae_vs_response_appropriateness": {
+          "mean": 0.557347,
+          "ci95": [
+            0.550417,
+            0.563334
+          ],
+          "values": [
+            0.55829,
+            0.550417,
+            0.563334
+          ]
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.40541866666666665,
+          "ci95": [
+            0.38475300000000007,
+            0.423819
+          ],
+          "values": [
+            0.407684,
+            0.384753,
+            0.423819
+          ]
+        }
+      }
+    },
+    "clean_sft_kto": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.852712,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.366099,
+          "brier_vs_known_label": 0.241556,
+          "mae_vs_answer_correctness": 0.756954,
+          "brier_vs_answer_correctness": 0.632411,
+          "mae_vs_response_appropriateness": 0.576121,
+          "brier_vs_response_appropriateness": 0.451579,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "experiments/probe-scaled-response-confidence/analysis/phase1-migrated/eval/results_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_full_4b/clean_schema_sft_kto_seed1_corrected_base__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.820285,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.371389,
+          "brier_vs_known_label": 0.226638,
+          "mae_vs_answer_correctness": 0.742144,
+          "brier_vs_answer_correctness": 0.597393,
+          "mae_vs_response_appropriateness": 0.575731,
+          "brier_vs_response_appropriateness": 0.43098,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_seed2_full_4b/clean_schema_sft_kto_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.848534,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.367643,
+          "brier_vs_known_label": 0.240395,
+          "mae_vs_answer_correctness": 0.757081,
+          "brier_vs_answer_correctness": 0.629833,
+          "mae_vs_response_appropriateness": 0.572549,
+          "brier_vs_response_appropriateness": 0.445301,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_seed3_full_4b/clean_schema_sft_kto_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.8405103333333334,
+          "ci95": [
+            0.820285,
+            0.852712
+          ],
+          "values": [
+            0.852712,
+            0.820285,
+            0.848534
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "mean": 0.368377,
+          "ci95": [
+            0.366099,
+            0.371389
+          ],
+          "values": [
+            0.366099,
+            0.371389,
+            0.367643
+          ]
+        },
+        "brier_vs_known_label": {
+          "mean": 0.23619633333333334,
+          "ci95": [
+            0.226638,
+            0.241556
+          ],
+          "values": [
+            0.241556,
+            0.226638,
+            0.240395
+          ]
+        },
+        "mae_vs_answer_correctness": {
+          "mean": 0.7520596666666667,
+          "ci95": [
+            0.742144,
+            0.757081
+          ],
+          "values": [
+            0.756954,
+            0.742144,
+            0.757081
+          ]
+        },
+        "brier_vs_answer_correctness": {
+          "mean": 0.619879,
+          "ci95": [
+            0.597393,
+            0.632411
+          ],
+          "values": [
+            0.632411,
+            0.597393,
+            0.629833
+          ]
+        },
+        "mae_vs_response_appropriateness": {
+          "mean": 0.5748003333333332,
+          "ci95": [
+            0.572549,
+            0.576121
+          ],
+          "values": [
+            0.576121,
+            0.575731,
+            0.572549
+          ]
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.44262,
+          "ci95": [
+            0.43098,
+            0.451579
+          ],
+          "values": [
+            0.451579,
+            0.43098,
+            0.445301
+          ]
+        }
+      }
+    },
+    "clean_sft_grpo_v2": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.813382,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.377254,
+          "brier_vs_known_label": 0.225621,
+          "mae_vs_answer_correctness": 0.733038,
+          "brier_vs_answer_correctness": 0.581405,
+          "mae_vs_response_appropriateness": 0.555011,
+          "brier_vs_response_appropriateness": 0.403378,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "experiments/probe-scaled-response-confidence/analysis/phase1-migrated/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b/clean_schema_sft_grpo_v2_seed1_corrected_base__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.819148,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.377046,
+          "brier_vs_known_label": 0.229254,
+          "mae_vs_answer_correctness": 0.738746,
+          "brier_vs_answer_correctness": 0.590955,
+          "mae_vs_response_appropriateness": 0.553736,
+          "brier_vs_response_appropriateness": 0.405945,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_v2_seed2_full_4b/clean_schema_sft_grpo_v2_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.81125,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.37858,
+          "brier_vs_known_label": 0.225539,
+          "mae_vs_answer_correctness": 0.735058,
+          "brier_vs_answer_correctness": 0.582017,
+          "mae_vs_response_appropriateness": 0.55471,
+          "brier_vs_response_appropriateness": 0.401669,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_v2_seed3_full_4b/clean_schema_sft_grpo_v2_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.8145933333333334,
+          "ci95": [
+            0.8112499999999999,
+            0.8191479999999999
+          ],
+          "values": [
+            0.813382,
+            0.819148,
+            0.81125
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "mean": 0.3776266666666667,
+          "ci95": [
+            0.377046,
+            0.3785800000000001
+          ],
+          "values": [
+            0.377254,
+            0.377046,
+            0.37858
+          ]
+        },
+        "brier_vs_known_label": {
+          "mean": 0.22680466666666665,
+          "ci95": [
+            0.22553900000000002,
+            0.22925399999999999
+          ],
+          "values": [
+            0.225621,
+            0.229254,
+            0.225539
+          ]
+        },
+        "mae_vs_answer_correctness": {
+          "mean": 0.735614,
+          "ci95": [
+            0.733038,
+            0.738746
+          ],
+          "values": [
+            0.733038,
+            0.738746,
+            0.735058
+          ]
+        },
+        "brier_vs_answer_correctness": {
+          "mean": 0.5847923333333332,
+          "ci95": [
+            0.581405,
+            0.590955
+          ],
+          "values": [
+            0.581405,
+            0.590955,
+            0.582017
+          ]
+        },
+        "mae_vs_response_appropriateness": {
+          "mean": 0.5544856666666668,
+          "ci95": [
+            0.553736,
+            0.555011
+          ],
+          "values": [
+            0.555011,
+            0.553736,
+            0.55471
+          ]
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.403664,
+          "ci95": [
+            0.401669,
+            0.405945
+          ],
+          "values": [
+            0.403378,
+            0.405945,
+            0.401669
+          ]
+        }
+      }
+    },
+    "clean_sft_dpo_grpo": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.844615,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.367674,
+          "brier_vs_known_label": 0.237392,
+          "mae_vs_answer_correctness": 0.757912,
+          "brier_vs_answer_correctness": 0.627629,
+          "mae_vs_response_appropriateness": 0.559076,
+          "brier_vs_response_appropriateness": 0.428793,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "experiments/grpo-centered-stacking/analysis/phase1-migrated/eval/results_amendment_f_response_confidence_selfaware_clean_sft_dpo_grpo_seed1_full_4b/clean_sft_dpo_grpo_seed1__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.804318,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.380904,
+          "brier_vs_known_label": 0.223576,
+          "mae_vs_answer_correctness": 0.726308,
+          "brier_vs_answer_correctness": 0.56898,
+          "mae_vs_response_appropriateness": 0.551748,
+          "brier_vs_response_appropriateness": 0.39442,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_grpo_seed2_full_4b/clean_sft_dpo_grpo_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.864085,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.363642,
+          "brier_vs_known_label": 0.246813,
+          "mae_vs_answer_correctness": 0.779571,
+          "brier_vs_answer_correctness": 0.662741,
+          "mae_vs_response_appropriateness": 0.567207,
+          "brier_vs_response_appropriateness": 0.450378,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_grpo_seed3_full_4b/clean_sft_dpo_grpo_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.8376726666666666,
+          "ci95": [
+            0.804318,
+            0.8640849999999999
+          ],
+          "values": [
+            0.844615,
+            0.804318,
+            0.864085
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "mean": 0.37074,
+          "ci95": [
+            0.363642,
+            0.38090399999999996
+          ],
+          "values": [
+            0.367674,
+            0.380904,
+            0.363642
+          ]
+        },
+        "brier_vs_known_label": {
+          "mean": 0.235927,
+          "ci95": [
+            0.223576,
+            0.24681300000000003
+          ],
+          "values": [
+            0.237392,
+            0.223576,
+            0.246813
+          ]
+        },
+        "mae_vs_answer_correctness": {
+          "mean": 0.754597,
+          "ci95": [
+            0.726308,
+            0.7795710000000001
+          ],
+          "values": [
+            0.757912,
+            0.726308,
+            0.779571
+          ]
+        },
+        "brier_vs_answer_correctness": {
+          "mean": 0.6197833333333334,
+          "ci95": [
+            0.56898,
+            0.662741
+          ],
+          "values": [
+            0.627629,
+            0.56898,
+            0.662741
+          ]
+        },
+        "mae_vs_response_appropriateness": {
+          "mean": 0.5593436666666667,
+          "ci95": [
+            0.551748,
+            0.567207
+          ],
+          "values": [
+            0.559076,
+            0.551748,
+            0.567207
+          ]
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.4245303333333333,
+          "ci95": [
+            0.39442,
+            0.450378
+          ],
+          "values": [
+            0.428793,
+            0.39442,
+            0.450378
+          ]
+        }
+      }
+    },
+    "clean_sft_kto_grpo": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.862188,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.359593,
+          "brier_vs_known_label": 0.240801,
+          "mae_vs_answer_correctness": 0.771751,
+          "brier_vs_answer_correctness": 0.652958,
+          "mae_vs_response_appropriateness": 0.566456,
+          "brier_vs_response_appropriateness": 0.447663,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "experiments/grpo-centered-stacking/analysis/phase1-migrated/eval/results_amendment_f_response_confidence_selfaware_clean_sft_kto_grpo_seed1_full_4b/clean_sft_kto_grpo_seed1__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.811934,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.377559,
+          "brier_vs_known_label": 0.225152,
+          "mae_vs_answer_correctness": 0.728382,
+          "brier_vs_answer_correctness": 0.575975,
+          "mae_vs_response_appropriateness": 0.552325,
+          "brier_vs_response_appropriateness": 0.399918,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_grpo_seed2_full_4b/clean_sft_kto_grpo_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.804362,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.380922,
+          "brier_vs_known_label": 0.223673,
+          "mae_vs_answer_correctness": 0.72673,
+          "brier_vs_answer_correctness": 0.569482,
+          "mae_vs_response_appropriateness": 0.554611,
+          "brier_vs_response_appropriateness": 0.397362,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_grpo_seed3_full_4b/clean_sft_kto_grpo_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.8261613333333333,
+          "ci95": [
+            0.8043619999999999,
+            0.8621880000000001
+          ],
+          "values": [
+            0.862188,
+            0.811934,
+            0.804362
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "mean": 0.3726913333333333,
+          "ci95": [
+            0.359593,
+            0.380922
+          ],
+          "values": [
+            0.359593,
+            0.377559,
+            0.380922
+          ]
+        },
+        "brier_vs_known_label": {
+          "mean": 0.22987533333333332,
+          "ci95": [
+            0.223673,
+            0.24080099999999996
+          ],
+          "values": [
+            0.240801,
+            0.225152,
+            0.223673
+          ]
+        },
+        "mae_vs_answer_correctness": {
+          "mean": 0.7422876666666666,
+          "ci95": [
+            0.72673,
+            0.771751
+          ],
+          "values": [
+            0.771751,
+            0.728382,
+            0.72673
+          ]
+        },
+        "brier_vs_answer_correctness": {
+          "mean": 0.5994716666666667,
+          "ci95": [
+            0.569482,
+            0.652958
+          ],
+          "values": [
+            0.652958,
+            0.575975,
+            0.569482
+          ]
+        },
+        "mae_vs_response_appropriateness": {
+          "mean": 0.5577973333333333,
+          "ci95": [
+            0.552325,
+            0.566456
+          ],
+          "values": [
+            0.566456,
+            0.552325,
+            0.554611
+          ]
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.414981,
+          "ci95": [
+            0.397362,
+            0.447663
+          ],
+          "values": [
+            0.447663,
+            0.399918,
+            0.397362
+          ]
+        }
+      }
+    },
+    "clean_sft_grpo_dpo": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.866301,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.359085,
+          "brier_vs_known_label": 0.24355,
+          "mae_vs_answer_correctness": 0.771673,
+          "brier_vs_answer_correctness": 0.656138,
+          "mae_vs_response_appropriateness": 0.560948,
+          "brier_vs_response_appropriateness": 0.445413,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "experiments/grpo-centered-stacking/analysis/phase1-migrated/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_dpo_seed1_full_4b/clean_sft_grpo_dpo_seed1__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.854713,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.369179,
+          "brier_vs_known_label": 0.246173,
+          "mae_vs_answer_correctness": 0.77378,
+          "brier_vs_answer_correctness": 0.650773,
+          "mae_vs_response_appropriateness": 0.559863,
+          "brier_vs_response_appropriateness": 0.436857,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_dpo_seed2_full_4b/clean_sft_grpo_dpo_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.863594,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.371076,
+          "brier_vs_known_label": 0.255632,
+          "mae_vs_answer_correctness": 0.791474,
+          "brier_vs_answer_correctness": 0.67603,
+          "mae_vs_response_appropriateness": 0.566368,
+          "brier_vs_response_appropriateness": 0.450923,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_dpo_seed3_full_4b/clean_sft_grpo_dpo_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.861536,
+          "ci95": [
+            0.854713,
+            0.866301
+          ],
+          "values": [
+            0.866301,
+            0.854713,
+            0.863594
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "mean": 0.36644666666666664,
+          "ci95": [
+            0.35908500000000004,
+            0.371076
+          ],
+          "values": [
+            0.359085,
+            0.369179,
+            0.371076
+          ]
+        },
+        "brier_vs_known_label": {
+          "mean": 0.24845166666666665,
+          "ci95": [
+            0.24355000000000002,
+            0.255632
+          ],
+          "values": [
+            0.24355,
+            0.246173,
+            0.255632
+          ]
+        },
+        "mae_vs_answer_correctness": {
+          "mean": 0.7789756666666667,
+          "ci95": [
+            0.7716730000000002,
+            0.791474
+          ],
+          "values": [
+            0.771673,
+            0.77378,
+            0.791474
+          ]
+        },
+        "brier_vs_answer_correctness": {
+          "mean": 0.6609803333333334,
+          "ci95": [
+            0.650773,
+            0.67603
+          ],
+          "values": [
+            0.656138,
+            0.650773,
+            0.67603
+          ]
+        },
+        "mae_vs_response_appropriateness": {
+          "mean": 0.562393,
+          "ci95": [
+            0.559863,
+            0.566368
+          ],
+          "values": [
+            0.560948,
+            0.559863,
+            0.566368
+          ]
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.4443976666666667,
+          "ci95": [
+            0.436857,
+            0.450923
+          ],
+          "values": [
+            0.445413,
+            0.436857,
+            0.450923
+          ]
+        }
+      }
+    },
+    "clean_sft_grpo_kto": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.864039,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.359006,
+          "brier_vs_known_label": 0.241555,
+          "mae_vs_answer_correctness": 0.766135,
+          "brier_vs_answer_correctness": 0.648684,
+          "mae_vs_response_appropriateness": 0.566077,
+          "brier_vs_response_appropriateness": 0.448626,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "experiments/grpo-centered-stacking/analysis/phase1-migrated/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_kto_seed1_full_4b/clean_sft_grpo_kto_seed1__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.866364,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.358143,
+          "brier_vs_known_label": 0.242367,
+          "mae_vs_answer_correctness": 0.769657,
+          "brier_vs_answer_correctness": 0.653881,
+          "mae_vs_response_appropriateness": 0.563623,
+          "brier_vs_response_appropriateness": 0.447847,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_kto_seed2_full_4b/clean_sft_grpo_kto_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.86618,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.35824,
+          "brier_vs_known_label": 0.242405,
+          "mae_vs_answer_correctness": 0.77383,
+          "brier_vs_answer_correctness": 0.657996,
+          "mae_vs_response_appropriateness": 0.567546,
+          "brier_vs_response_appropriateness": 0.451711,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_kto_seed3_full_4b/clean_sft_grpo_kto_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.8655276666666666,
+          "ci95": [
+            0.864039,
+            0.866364
+          ],
+          "values": [
+            0.864039,
+            0.866364,
+            0.86618
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "mean": 0.358463,
+          "ci95": [
+            0.35814299999999993,
+            0.359006
+          ],
+          "values": [
+            0.359006,
+            0.358143,
+            0.35824
+          ]
+        },
+        "brier_vs_known_label": {
+          "mean": 0.242109,
+          "ci95": [
+            0.241555,
+            0.242405
+          ],
+          "values": [
+            0.241555,
+            0.242367,
+            0.242405
+          ]
+        },
+        "mae_vs_answer_correctness": {
+          "mean": 0.7698740000000001,
+          "ci95": [
+            0.7661349999999999,
+            0.7738299999999999
+          ],
+          "values": [
+            0.766135,
+            0.769657,
+            0.77383
+          ]
+        },
+        "brier_vs_answer_correctness": {
+          "mean": 0.6535203333333334,
+          "ci95": [
+            0.648684,
+            0.657996
+          ],
+          "values": [
+            0.648684,
+            0.653881,
+            0.657996
+          ]
+        },
+        "mae_vs_response_appropriateness": {
+          "mean": 0.5657486666666667,
+          "ci95": [
+            0.563623,
+            0.567546
+          ],
+          "values": [
+            0.566077,
+            0.563623,
+            0.567546
+          ]
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.44939466666666666,
+          "ci95": [
+            0.44784700000000005,
+            0.451711
+          ],
+          "values": [
+            0.448626,
+            0.447847,
+            0.451711
+          ]
+        }
+      }
+    }
+  },
+  "by_outcome": {
+    "clean_sft_merged": {
+      "seed1": {
+        "known_answered_wrong": {
+          "n": 524,
+          "mean": 0.7171593511450381
+        },
+        "known_correct_answered": {
+          "n": 469,
+          "mean": 0.7176083155650319
+        },
+        "known_refused": {
+          "n": 1344,
+          "mean": 0.7672200148809525
+        },
+        "unknown_answered_wrong": {
+          "n": 134,
+          "mean": 0.719239552238806
+        },
+        "unknown_refused": {
+          "n": 898,
+          "mean": 0.7592301781737193
+        },
+        "_n_rows": 3369,
+        "_path": "experiments/probe-scaled-response-confidence/analysis/phase1-migrated/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_4b/clean_schema_sft_merged_seed1__selfaware/scored_rows.jsonl"
+      },
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 517,
+          "mean": 0.7152290135396518
+        },
+        "known_correct_answered": {
+          "n": 459,
+          "mean": 0.7181093681917211
+        },
+        "known_refused": {
+          "n": 1361,
+          "mean": 0.7394775165319618
+        },
+        "unknown_answered_wrong": {
+          "n": 104,
+          "mean": 0.7164817307692307
+        },
+        "unknown_refused": {
+          "n": 928,
+          "mean": 0.7404162715517242
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_seed2_merged_full_4b/clean_schema_sft_merged_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 503,
+          "mean": 0.7190200795228628
+        },
+        "known_correct_answered": {
+          "n": 455,
+          "mean": 0.7204720879120879
+        },
+        "known_refused": {
+          "n": 1379,
+          "mean": 0.725535170413343
+        },
+        "unknown_answered_wrong": {
+          "n": 121,
+          "mean": 0.7195024793388429
+        },
+        "unknown_refused": {
+          "n": 911,
+          "mean": 0.720681668496158
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_seed3_merged_full_4b/clean_schema_sft_merged_seed3__selfaware/scored_rows.jsonl"
+      },
+      "three_seed": {
+        "known_answered_wrong": {
+          "mean": 0.7171361480691844,
+          "ci95": [
+            0.7152290135396518,
+            0.7190200795228628
+          ],
+          "values": [
+            0.7171593511450381,
+            0.7152290135396518,
+            0.7190200795228628
+          ]
+        },
+        "known_correct_answered": {
+          "mean": 0.7187299238896138,
+          "ci95": [
+            0.7176083155650318,
+            0.7204720879120879
+          ],
+          "values": [
+            0.7176083155650319,
+            0.7181093681917211,
+            0.7204720879120879
+          ]
+        },
+        "known_refused": {
+          "mean": 0.7440775672754191,
+          "ci95": [
+            0.7255351704133431,
+            0.7672200148809525
+          ],
+          "values": [
+            0.7672200148809525,
+            0.7394775165319618,
+            0.725535170413343
+          ]
+        },
+        "unknown_answered_wrong": {
+          "mean": 0.7184079207822932,
+          "ci95": [
+            0.7164817307692307,
+            0.719502479338843
+          ],
+          "values": [
+            0.719239552238806,
+            0.7164817307692307,
+            0.7195024793388429
+          ]
+        },
+        "unknown_refused": {
+          "mean": 0.7401093727405339,
+          "ci95": [
+            0.720681668496158,
+            0.7592301781737193
+          ],
+          "values": [
+            0.7592301781737193,
+            0.7404162715517242,
+            0.720681668496158
+          ]
+        }
+      }
+    },
+    "clean_sft_dpo": {
+      "seed1": {
+        "known_answered_wrong": {
+          "n": 552,
+          "mean": 0.7633826086956522
+        },
+        "known_correct_answered": {
+          "n": 472,
+          "mean": 0.7644483050847457
+        },
+        "known_refused": {
+          "n": 1313,
+          "mean": 0.838005559786748
+        },
+        "unknown_answered_wrong": {
+          "n": 133,
+          "mean": 0.7609458646616541
+        },
+        "unknown_refused": {
+          "n": 899,
+          "mean": 0.8367020022246942
+        },
+        "_n_rows": 3369,
+        "_path": "experiments/probe-scaled-response-confidence/analysis/phase1-migrated/eval/results_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_full_4b/clean_schema_sft_dpo_seed1_corrected_base__selfaware/scored_rows.jsonl"
+      },
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 559,
+          "mean": 0.7160949910554562
+        },
+        "known_correct_answered": {
+          "n": 470,
+          "mean": 0.7126285106382979
+        },
+        "known_refused": {
+          "n": 1308,
+          "mean": 0.8221200305810398
+        },
+        "unknown_answered_wrong": {
+          "n": 110,
+          "mean": 0.7142272727272727
+        },
+        "unknown_refused": {
+          "n": 922,
+          "mean": 0.8209380694143167
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_seed2_full_4b/clean_schema_sft_dpo_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 586,
+          "mean": 0.722817747440273
+        },
+        "known_correct_answered": {
+          "n": 474,
+          "mean": 0.7212006329113925
+        },
+        "known_refused": {
+          "n": 1277,
+          "mean": 0.8789660140955365
+        },
+        "unknown_answered_wrong": {
+          "n": 152,
+          "mean": 0.7427578947368421
+        },
+        "unknown_refused": {
+          "n": 880,
+          "mean": 0.8786231818181818
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_seed3_full_4b/clean_schema_sft_dpo_seed3__selfaware/scored_rows.jsonl"
+      },
+      "three_seed": {
+        "known_answered_wrong": {
+          "mean": 0.7340984490637937,
+          "ci95": [
+            0.716094991055456,
+            0.7633826086956522
+          ],
+          "values": [
+            0.7633826086956522,
+            0.7160949910554562,
+            0.722817747440273
+          ]
+        },
+        "known_correct_answered": {
+          "mean": 0.7327591495448121,
+          "ci95": [
+            0.7126285106382979,
+            0.7644483050847457
+          ],
+          "values": [
+            0.7644483050847457,
+            0.7126285106382979,
+            0.7212006329113925
+          ]
+        },
+        "known_refused": {
+          "mean": 0.8463638681544414,
+          "ci95": [
+            0.8221200305810398,
+            0.8789660140955365
+          ],
+          "values": [
+            0.838005559786748,
+            0.8221200305810398,
+            0.8789660140955365
+          ]
+        },
+        "unknown_answered_wrong": {
+          "mean": 0.739310344041923,
+          "ci95": [
+            0.7142272727272726,
+            0.7609458646616541
+          ],
+          "values": [
+            0.7609458646616541,
+            0.7142272727272727,
+            0.7427578947368421
+          ]
+        },
+        "unknown_refused": {
+          "mean": 0.8454210844857308,
+          "ci95": [
+            0.8209380694143166,
+            0.8786231818181817
+          ],
+          "values": [
+            0.8367020022246942,
+            0.8209380694143167,
+            0.8786231818181818
+          ]
+        }
+      }
+    },
+    "clean_sft_kto": {
+      "seed1": {
+        "known_answered_wrong": {
+          "n": 623,
+          "mean": 0.841392937399679
+        },
+        "known_correct_answered": {
+          "n": 490,
+          "mean": 0.829191836734694
+        },
+        "known_refused": {
+          "n": 1224,
+          "mean": 0.8641408496732026
+        },
+        "unknown_answered_wrong": {
+          "n": 196,
+          "mean": 0.8263959183673469
+        },
+        "unknown_refused": {
+          "n": 836,
+          "mean": 0.8643691387559809
+        },
+        "_n_rows": 3369,
+        "_path": "experiments/probe-scaled-response-confidence/analysis/phase1-migrated/eval/results_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_full_4b/clean_schema_sft_kto_seed1_corrected_base__selfaware/scored_rows.jsonl"
+      },
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 601,
+          "mean": 0.78776306156406
+        },
+        "known_correct_answered": {
+          "n": 474,
+          "mean": 0.7776970464135021
+        },
+        "known_refused": {
+          "n": 1262,
+          "mean": 0.8578377179080825
+        },
+        "unknown_answered_wrong": {
+          "n": 148,
+          "mean": 0.7875189189189189
+        },
+        "unknown_refused": {
+          "n": 884,
+          "mean": 0.8171067873303167
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_seed2_full_4b/clean_schema_sft_kto_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 598,
+          "mean": 0.8331484949832776
+        },
+        "known_correct_answered": {
+          "n": 480,
+          "mean": 0.8209433333333334
+        },
+        "known_refused": {
+          "n": 1259,
+          "mean": 0.8628160444797458
+        },
+        "unknown_answered_wrong": {
+          "n": 173,
+          "mean": 0.8081312138728324
+        },
+        "unknown_refused": {
+          "n": 859,
+          "mean": 0.8618664726426076
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_seed3_full_4b/clean_schema_sft_kto_seed3__selfaware/scored_rows.jsonl"
+      },
+      "three_seed": {
+        "known_answered_wrong": {
+          "mean": 0.8207681646490056,
+          "ci95": [
+            0.78776306156406,
+            0.841392937399679
+          ],
+          "values": [
+            0.841392937399679,
+            0.78776306156406,
+            0.8331484949832776
+          ]
+        },
+        "known_correct_answered": {
+          "mean": 0.8092774054938432,
+          "ci95": [
+            0.7776970464135021,
+            0.8291918367346941
+          ],
+          "values": [
+            0.829191836734694,
+            0.7776970464135021,
+            0.8209433333333334
+          ]
+        },
+        "known_refused": {
+          "mean": 0.8615982040203436,
+          "ci95": [
+            0.8578377179080826,
+            0.8641408496732025
+          ],
+          "values": [
+            0.8641408496732026,
+            0.8578377179080825,
+            0.8628160444797458
+          ]
+        },
+        "unknown_answered_wrong": {
+          "mean": 0.8073486837196994,
+          "ci95": [
+            0.7875189189189188,
+            0.8263959183673469
+          ],
+          "values": [
+            0.8263959183673469,
+            0.7875189189189189,
+            0.8081312138728324
+          ]
+        },
+        "unknown_refused": {
+          "mean": 0.8477807995763017,
+          "ci95": [
+            0.8171067873303167,
+            0.8643691387559809
+          ],
+          "values": [
+            0.8643691387559809,
+            0.8171067873303167,
+            0.8618664726426076
+          ]
+        }
+      }
+    },
+    "clean_sft_grpo_v2": {
+      "seed1": {
+        "known_answered_wrong": {
+          "n": 360,
+          "mean": 0.8200130555555556
+        },
+        "known_correct_answered": {
+          "n": 420,
+          "mean": 0.8222395238095238
+        },
+        "known_refused": {
+          "n": 1557,
+          "mean": 0.8109272318561337
+        },
+        "unknown_answered_wrong": {
+          "n": 68,
+          "mean": 0.8123544117647059
+        },
+        "unknown_refused": {
+          "n": 964,
+          "mean": 0.8110851659751038
+        },
+        "_n_rows": 3369,
+        "_path": "experiments/probe-scaled-response-confidence/analysis/phase1-migrated/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b/clean_schema_sft_grpo_v2_seed1_corrected_base__selfaware/scored_rows.jsonl"
+      },
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 357,
+          "mean": 0.8205820728291318
+        },
+        "known_correct_answered": {
+          "n": 420,
+          "mean": 0.8224716666666667
+        },
+        "known_refused": {
+          "n": 1560,
+          "mean": 0.8172026282051282
+        },
+        "unknown_answered_wrong": {
+          "n": 59,
+          "mean": 0.8193305084745762
+        },
+        "unknown_refused": {
+          "n": 973,
+          "mean": 0.820296300102775
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_v2_seed2_full_4b/clean_schema_sft_grpo_v2_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 329,
+          "mean": 0.8168945288753799
+        },
+        "known_correct_answered": {
+          "n": 403,
+          "mean": 0.8184746898263028
+        },
+        "known_refused": {
+          "n": 1605,
+          "mean": 0.8091764485981309
+        },
+        "unknown_answered_wrong": {
+          "n": 51,
+          "mean": 0.8131999999999999
+        },
+        "unknown_refused": {
+          "n": 981,
+          "mean": 0.8096793068297655
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_v2_seed3_full_4b/clean_schema_sft_grpo_v2_seed3__selfaware/scored_rows.jsonl"
+      },
+      "three_seed": {
+        "known_answered_wrong": {
+          "mean": 0.8191632190866892,
+          "ci95": [
+            0.8168945288753799,
+            0.8205820728291316
+          ],
+          "values": [
+            0.8200130555555556,
+            0.8205820728291318,
+            0.8168945288753799
+          ]
+        },
+        "known_correct_answered": {
+          "mean": 0.8210619601008311,
+          "ci95": [
+            0.8184746898263028,
+            0.8224716666666666
+          ],
+          "values": [
+            0.8222395238095238,
+            0.8224716666666667,
+            0.8184746898263028
+          ]
+        },
+        "known_refused": {
+          "mean": 0.8124354362197975,
+          "ci95": [
+            0.8091764485981309,
+            0.8172026282051282
+          ],
+          "values": [
+            0.8109272318561337,
+            0.8172026282051282,
+            0.8091764485981309
+          ]
+        },
+        "unknown_answered_wrong": {
+          "mean": 0.8149616400797607,
+          "ci95": [
+            0.8123544117647059,
+            0.8193305084745762
+          ],
+          "values": [
+            0.8123544117647059,
+            0.8193305084745762,
+            0.8131999999999999
+          ]
+        },
+        "unknown_refused": {
+          "mean": 0.8136869243025481,
+          "ci95": [
+            0.8096793068297655,
+            0.820296300102775
+          ],
+          "values": [
+            0.8110851659751038,
+            0.820296300102775,
+            0.8096793068297655
+          ]
+        }
+      }
+    },
+    "clean_sft_dpo_grpo": {
+      "seed1": {
+        "known_answered_wrong": {
+          "n": 386,
+          "mean": 0.8342958549222799
+        },
+        "known_correct_answered": {
+          "n": 425,
+          "mean": 0.8436505882352942
+        },
+        "known_refused": {
+          "n": 1526,
+          "mean": 0.8462098951507208
+        },
+        "unknown_answered_wrong": {
+          "n": 69,
+          "mean": 0.8284391304347827
+        },
+        "unknown_refused": {
+          "n": 963,
+          "mean": 0.8478077881619938
+        },
+        "_n_rows": 3369,
+        "_path": "experiments/grpo-centered-stacking/analysis/phase1-migrated/eval/results_amendment_f_response_confidence_selfaware_clean_sft_dpo_grpo_seed1_full_4b/clean_sft_dpo_grpo_seed1__selfaware/scored_rows.jsonl"
+      },
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 375,
+          "mean": 0.8092717333333334
+        },
+        "known_correct_answered": {
+          "n": 424,
+          "mean": 0.8099228773584907
+        },
+        "known_refused": {
+          "n": 1538,
+          "mean": 0.8028968140442132
+        },
+        "unknown_answered_wrong": {
+          "n": 58,
+          "mean": 0.8096689655172413
+        },
+        "unknown_refused": {
+          "n": 974,
+          "mean": 0.8018951745379878
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_grpo_seed2_full_4b/clean_sft_dpo_grpo_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 404,
+          "mean": 0.8326824257425743
+        },
+        "known_correct_answered": {
+          "n": 422,
+          "mean": 0.837358767772512
+        },
+        "known_refused": {
+          "n": 1511,
+          "mean": 0.8747371277299802
+        },
+        "unknown_answered_wrong": {
+          "n": 77,
+          "mean": 0.8361220779220779
+        },
+        "unknown_refused": {
+          "n": 955,
+          "mean": 0.874581780104712
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_grpo_seed3_full_4b/clean_sft_dpo_grpo_seed3__selfaware/scored_rows.jsonl"
+      },
+      "three_seed": {
+        "known_answered_wrong": {
+          "mean": 0.8254166713327292,
+          "ci95": [
+            0.8092717333333334,
+            0.83429585492228
+          ],
+          "values": [
+            0.8342958549222799,
+            0.8092717333333334,
+            0.8326824257425743
+          ]
+        },
+        "known_correct_answered": {
+          "mean": 0.8303107444554323,
+          "ci95": [
+            0.8099228773584907,
+            0.8436505882352942
+          ],
+          "values": [
+            0.8436505882352942,
+            0.8099228773584907,
+            0.837358767772512
+          ]
+        },
+        "known_refused": {
+          "mean": 0.8412812789749714,
+          "ci95": [
+            0.8028968140442133,
+            0.8747371277299804
+          ],
+          "values": [
+            0.8462098951507208,
+            0.8028968140442132,
+            0.8747371277299802
+          ]
+        },
+        "unknown_answered_wrong": {
+          "mean": 0.8247433912913674,
+          "ci95": [
+            0.8096689655172412,
+            0.8361220779220778
+          ],
+          "values": [
+            0.8284391304347827,
+            0.8096689655172413,
+            0.8361220779220779
+          ]
+        },
+        "unknown_refused": {
+          "mean": 0.8414282476015645,
+          "ci95": [
+            0.8018951745379878,
+            0.874581780104712
+          ],
+          "values": [
+            0.8478077881619938,
+            0.8018951745379878,
+            0.874581780104712
+          ]
+        }
+      }
+    },
+    "clean_sft_kto_grpo": {
+      "seed1": {
+        "known_answered_wrong": {
+          "n": 365,
+          "mean": 0.8624602739726027
+        },
+        "known_correct_answered": {
+          "n": 421,
+          "mean": 0.8618541567695962
+        },
+        "known_refused": {
+          "n": 1551,
+          "mean": 0.8623350096711799
+        },
+        "unknown_answered_wrong": {
+          "n": 77,
+          "mean": 0.8606519480519481
+        },
+        "unknown_refused": {
+          "n": 955,
+          "mean": 0.8621151832460734
+        },
+        "_n_rows": 3369,
+        "_path": "experiments/grpo-centered-stacking/analysis/phase1-migrated/eval/results_amendment_f_response_confidence_selfaware_clean_sft_kto_grpo_seed1_full_4b/clean_sft_kto_grpo_seed1__selfaware/scored_rows.jsonl"
+      },
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 409,
+          "mean": 0.8229146699266503
+        },
+        "known_correct_answered": {
+          "n": 427,
+          "mean": 0.8296093676814988
+        },
+        "known_refused": {
+          "n": 1501,
+          "mean": 0.8057227181878747
+        },
+        "unknown_answered_wrong": {
+          "n": 69,
+          "mean": 0.828
+        },
+        "unknown_refused": {
+          "n": 963,
+          "mean": 0.807963655244029
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_grpo_seed2_full_4b/clean_sft_kto_grpo_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 365,
+          "mean": 0.8129556164383561
+        },
+        "known_correct_answered": {
+          "n": 418,
+          "mean": 0.8128480861244018
+        },
+        "known_refused": {
+          "n": 1554,
+          "mean": 0.8013421492921492
+        },
+        "unknown_answered_wrong": {
+          "n": 71,
+          "mean": 0.8123309859154929
+        },
+        "unknown_refused": {
+          "n": 961,
+          "mean": 0.8017017689906347
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_grpo_seed3_full_4b/clean_sft_kto_grpo_seed3__selfaware/scored_rows.jsonl"
+      },
+      "three_seed": {
+        "known_answered_wrong": {
+          "mean": 0.8327768534458698,
+          "ci95": [
+            0.8129556164383561,
+            0.8624602739726027
+          ],
+          "values": [
+            0.8624602739726027,
+            0.8229146699266503,
+            0.8129556164383561
+          ]
+        },
+        "known_correct_answered": {
+          "mean": 0.8347705368584989,
+          "ci95": [
+            0.812848086124402,
+            0.8618541567695962
+          ],
+          "values": [
+            0.8618541567695962,
+            0.8296093676814988,
+            0.8128480861244018
+          ]
+        },
+        "known_refused": {
+          "mean": 0.8231332923837346,
+          "ci95": [
+            0.8013421492921492,
+            0.8623350096711798
+          ],
+          "values": [
+            0.8623350096711799,
+            0.8057227181878747,
+            0.8013421492921492
+          ]
+        },
+        "unknown_answered_wrong": {
+          "mean": 0.833660977989147,
+          "ci95": [
+            0.8123309859154929,
+            0.8606519480519482
+          ],
+          "values": [
+            0.8606519480519481,
+            0.828,
+            0.8123309859154929
+          ]
+        },
+        "unknown_refused": {
+          "mean": 0.8239268691602457,
+          "ci95": [
+            0.8017017689906347,
+            0.8621151832460733
+          ],
+          "values": [
+            0.8621151832460734,
+            0.807963655244029,
+            0.8017017689906347
+          ]
+        }
+      }
+    },
+    "clean_sft_grpo_dpo": {
+      "seed1": {
+        "known_answered_wrong": {
+          "n": 410,
+          "mean": 0.8581475609756098
+        },
+        "known_correct_answered": {
+          "n": 440,
+          "mean": 0.8622738636363637
+        },
+        "known_refused": {
+          "n": 1487,
+          "mean": 0.8686381304640215
+        },
+        "unknown_answered_wrong": {
+          "n": 69,
+          "mean": 0.8579028985507247
+        },
+        "unknown_refused": {
+          "n": 963,
+          "mean": 0.868605088265836
+        },
+        "_n_rows": 3369,
+        "_path": "experiments/grpo-centered-stacking/analysis/phase1-migrated/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_dpo_seed1_full_4b/clean_sft_grpo_dpo_seed1__selfaware/scored_rows.jsonl"
+      },
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 373,
+          "mean": 0.8034380697050938
+        },
+        "known_correct_answered": {
+          "n": 422,
+          "mean": 0.8230616113744076
+        },
+        "known_refused": {
+          "n": 1542,
+          "mean": 0.8685904020752271
+        },
+        "unknown_answered_wrong": {
+          "n": 55,
+          "mean": 0.8055199999999999
+        },
+        "unknown_refused": {
+          "n": 977,
+          "mean": 0.8688257932446264
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_dpo_seed2_full_4b/clean_sft_grpo_dpo_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 362,
+          "mean": 0.7830121546961326
+        },
+        "known_correct_answered": {
+          "n": 413,
+          "mean": 0.7941559322033899
+        },
+        "known_refused": {
+          "n": 1562,
+          "mean": 0.8877784891165174
+        },
+        "unknown_answered_wrong": {
+          "n": 54,
+          "mean": 0.7983333333333333
+        },
+        "unknown_refused": {
+          "n": 978,
+          "mean": 0.8877216768916156
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_dpo_seed3_full_4b/clean_sft_grpo_dpo_seed3__selfaware/scored_rows.jsonl"
+      },
+      "three_seed": {
+        "known_answered_wrong": {
+          "mean": 0.8148659284589455,
+          "ci95": [
+            0.7830121546961326,
+            0.8581475609756098
+          ],
+          "values": [
+            0.8581475609756098,
+            0.8034380697050938,
+            0.7830121546961326
+          ]
+        },
+        "known_correct_answered": {
+          "mean": 0.8264971357380538,
+          "ci95": [
+            0.7941559322033899,
+            0.8622738636363637
+          ],
+          "values": [
+            0.8622738636363637,
+            0.8230616113744076,
+            0.7941559322033899
+          ]
+        },
+        "known_refused": {
+          "mean": 0.875002340551922,
+          "ci95": [
+            0.8685904020752271,
+            0.8877784891165174
+          ],
+          "values": [
+            0.8686381304640215,
+            0.8685904020752271,
+            0.8877784891165174
+          ]
+        },
+        "unknown_answered_wrong": {
+          "mean": 0.8205854106280194,
+          "ci95": [
+            0.7983333333333333,
+            0.8579028985507247
+          ],
+          "values": [
+            0.8579028985507247,
+            0.8055199999999999,
+            0.7983333333333333
+          ]
+        },
+        "unknown_refused": {
+          "mean": 0.8750508528006927,
+          "ci95": [
+            0.868605088265836,
+            0.8877216768916156
+          ],
+          "values": [
+            0.868605088265836,
+            0.8688257932446264,
+            0.8877216768916156
+          ]
+        }
+      }
+    },
+    "clean_sft_grpo_kto": {
+      "seed1": {
+        "known_answered_wrong": {
+          "n": 468,
+          "mean": 0.8633371794871796
+        },
+        "known_correct_answered": {
+          "n": 453,
+          "mean": 0.8640613686534216
+        },
+        "known_refused": {
+          "n": 1416,
+          "mean": 0.8642419491525425
+        },
+        "unknown_answered_wrong": {
+          "n": 107,
+          "mean": 0.8618897196261682
+        },
+        "unknown_refused": {
+          "n": 925,
+          "mean": 0.8643210810810812
+        },
+        "_n_rows": 3369,
+        "_path": "experiments/grpo-centered-stacking/analysis/phase1-migrated/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_kto_seed1_full_4b/clean_sft_grpo_kto_seed1__selfaware/scored_rows.jsonl"
+      },
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 464,
+          "mean": 0.8659685344827587
+        },
+        "known_correct_answered": {
+          "n": 445,
+          "mean": 0.8660741573033708
+        },
+        "known_refused": {
+          "n": 1428,
+          "mean": 0.8665166666666667
+        },
+        "unknown_answered_wrong": {
+          "n": 85,
+          "mean": 0.8660941176470589
+        },
+        "unknown_refused": {
+          "n": 947,
+          "mean": 0.8664880675818374
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_kto_seed2_full_4b/clean_sft_grpo_kto_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 413,
+          "mean": 0.8636157384987895
+        },
+        "known_correct_answered": {
+          "n": 428,
+          "mean": 0.8634665887850468
+        },
+        "known_refused": {
+          "n": 1496,
+          "mean": 0.8675727941176472
+        },
+        "unknown_answered_wrong": {
+          "n": 84,
+          "mean": 0.8636869047619048
+        },
+        "unknown_refused": {
+          "n": 948,
+          "mean": 0.8665459915611815
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_kto_seed3_full_4b/clean_sft_grpo_kto_seed3__selfaware/scored_rows.jsonl"
+      },
+      "three_seed": {
+        "known_answered_wrong": {
+          "mean": 0.8643071508229093,
+          "ci95": [
+            0.8633371794871797,
+            0.8659685344827587
+          ],
+          "values": [
+            0.8633371794871796,
+            0.8659685344827587,
+            0.8636157384987895
+          ]
+        },
+        "known_correct_answered": {
+          "mean": 0.8645340382472798,
+          "ci95": [
+            0.8634665887850468,
+            0.8660741573033709
+          ],
+          "values": [
+            0.8640613686534216,
+            0.8660741573033708,
+            0.8634665887850468
+          ]
+        },
+        "known_refused": {
+          "mean": 0.8661104699789521,
+          "ci95": [
+            0.8642419491525425,
+            0.8675727941176472
+          ],
+          "values": [
+            0.8642419491525425,
+            0.8665166666666667,
+            0.8675727941176472
+          ]
+        },
+        "unknown_answered_wrong": {
+          "mean": 0.8638902473450439,
+          "ci95": [
+            0.8618897196261682,
+            0.866094117647059
+          ],
+          "values": [
+            0.8618897196261682,
+            0.8660941176470589,
+            0.8636869047619048
+          ]
+        },
+        "unknown_refused": {
+          "mean": 0.8657850467413667,
+          "ci95": [
+            0.8643210810810812,
+            0.8665459915611815
+          ],
+          "values": [
+            0.8643210810810812,
+            0.8664880675818374,
+            0.8665459915611815
+          ]
+        }
+      }
+    }
+  },
+  "flags": []
+}

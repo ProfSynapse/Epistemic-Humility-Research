@@ -1,0 +1,34 @@
+# Pre-stated gates for fusion-nonredundance-redo. Fixed before launch.
+# Delta = AUROC(combined gate+dial) - AUROC(dial alone), part B of the
+# committed stage-1.5 instrument, paired bootstrap CI (n_boot 2000).
+gates:
+  FR-G0:
+    kind: instrument-validity
+    rule: >-
+      dial-alone AUROC within +/-0.005 of 0.8186 (the committed diagnostic's
+      value on the identical pinned inputs) and the 5-fold OOF structure
+      executes with no degenerate fold.
+    on_fail: instrument invalid; no claim either way.
+  FR-G1:
+    kind: confirmation
+    rule: delta < +0.010
+    consequence: >-
+      non-redundance for correctness triage confirmed under registration;
+      paper 4 section 4.3 quotes the registered delta with its numeric CI and
+      drops the weaker-warrant caveat.
+  FR-F1:
+    kind: falsifier
+    rule: delta >= +0.020 AND paired bootstrap CI excludes 0
+    consequence: >-
+      the gate adds real correctness information beyond the dial; the
+      fusion-cost sentence is removed and non-redundance rests on the
+      position/robustness dissociation alone.
+  indeterminate:
+    rule: +0.010 <= delta < +0.020, or CI includes 0 above +0.010
+    consequence: >-
+      report straight; dissociation-first wording retained; delta quoted
+      descriptively.
+prior_unregistered_observation:
+  delta: -0.0142
+  ci: [-0.0214, -0.0074]
+  source: experiments/unified-two-signal-dial-veto/artifacts/two_signal_stage1p5_integration.json

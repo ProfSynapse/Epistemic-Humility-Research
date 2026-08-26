@@ -84,11 +84,27 @@ kg:
   deprecated_by: claim:dpo-reduces-abstention-v2
 ```
 
+Record `superseded_at` alongside it so the belief-time window closes:
+
+```yaml
+kg:
+  id: claim:dpo-reduces-abstention-v1
+  type: claim
+  status: deprecated
+  deprecated_by: claim:dpo-reduces-abstention-v2
+  superseded_at: 2026-08-13
+```
+
 Rules:
 
 - `kg.deprecated_by` holds the `kg.id` of the successor note. It is the
   canonical machine pointer; the search indexer synthesizes a `superseded_by`
   edge from it automatically.
+- `kg.superseded_at` is the BELIEF-time date the note stopped being held. It
+  requires `deprecated_by` (KG124, ERROR); setting `deprecated_by` without it
+  warns (KG125). Together with the world-time pair `valid_from` / `valid_until`
+  this lets a reader ask what the program believed on a given date, rather than
+  only what it believes now. See `library/SCHEMA.md` for the full field set.
 - Always set `kg.status: deprecated` alongside `kg.deprecated_by` (the tooling
   treats a bare pointer as deprecated, but the explicit status keeps the note
   readable).

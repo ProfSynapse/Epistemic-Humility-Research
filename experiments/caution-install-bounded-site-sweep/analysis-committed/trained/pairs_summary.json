@@ -1,0 +1,80 @@
+{
+  "substrate": "trained",
+  "eligible_sites": [
+    "hs19",
+    "hs23",
+    "hs29",
+    "hs34",
+    "hs35"
+  ],
+  "pairs": {
+    "best_in_band_x_best_out_of_band": {
+      "site_a": "hs19",
+      "site_b": "hs23",
+      "total_setpoint": 67.80356286621094,
+      "setpoint_a": 33.90178143310547,
+      "setpoint_b": 33.90178143310547,
+      "gain_a": 12.32975975071062,
+      "gain_b": 9.735272265003047,
+      "n_fired": 157,
+      "positions": {
+        "anchor": {
+          "n_records": 157,
+          "confab_held_out": {
+            "n": 149,
+            "successes": 6,
+            "rate": 0.040268456375838924,
+            "wilson_lower_95": 0.018583664554936298,
+            "wilson_upper_95": 0.08506351003627446
+          },
+          "frac_readback_within_tol": 1.0
+        },
+        "anchor_onward": {
+          "n_records": 157,
+          "confab_held_out": {
+            "n": 149,
+            "successes": 148,
+            "rate": 0.9932885906040269,
+            "wilson_lower_95": 0.9629657210400326,
+            "wilson_upper_95": 0.9988143179022451
+          },
+          "frac_readback_within_tol": 1.0
+        }
+      }
+    },
+    "lowest_eligible_x_highest_eligible": {
+      "site_a": "hs19",
+      "site_b": "hs35",
+      "total_setpoint": 133.09682693481446,
+      "setpoint_a": 66.54841346740723,
+      "setpoint_b": 66.54841346740723,
+      "gain_a": 24.20303344421994,
+      "gain_b": 4.484569787895861,
+      "n_fired": 157,
+      "positions": {
+        "anchor": {
+          "n_records": 157,
+          "confab_held_out": {
+            "n": 149,
+            "successes": 8,
+            "rate": 0.053691275167785234,
+            "wilson_lower_95": 0.027453913454500024,
+            "wilson_upper_95": 0.10236414655010606
+          },
+          "frac_readback_within_tol": 1.0
+        },
+        "anchor_onward": {
+          "n_records": 157,
+          "confab_held_out": {
+            "n": 149,
+            "successes": 149,
+            "rate": 1.0,
+            "wilson_lower_95": 0.9748654816489752,
+            "wilson_upper_95": 1.0
+          },
+          "frac_readback_within_tol": 1.0
+        }
+      }
+    }
+  }
+}

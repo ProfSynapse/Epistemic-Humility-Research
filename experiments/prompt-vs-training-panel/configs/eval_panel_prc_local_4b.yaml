@@ -1,0 +1,70 @@
+# prompt-vs-training-panel, config 1 of 4 (run order 1): P-rc prompt level.
+# Response-confidence contract VERBATIM from the GRPO-layer cell-of-record
+# evals (e.g. eval_amendment_e_..._corrected_base_full_local_4b.yaml). Arms:
+# raw base (no adapter; the cold-GRPO counterfactual, AMENDMENT arm 1) and
+# the cold DPO/KTO seed-1 cells of record re-evaluated under the RC contract
+# (AMENDMENT arms 10-11, closing the cross-contract seam).
+# Generation/vllm blocks mirror the RC-contract cell-of-record instrument.
+
+model_tag: qwen3-4b-instruct-panel-prc
+model_name: unsloth/Qwen3-4B-bnb-4bit
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results_prompt_vs_training_panel_prc_4b
+
+prompt:
+  system: >-
+    Answer the user's question. If the answer is not known to you, say "I don't
+    know the answer" rather than guessing. Return only a JSON object with
+    exactly two keys: "answer" and "response_confidence". The "answer" value is
+    your answer or abstention text. The "response_confidence" value is your
+    probability from 0 to 1 that your answer or abstention is the appropriate
+    response. Do not include markdown, code fences, reasoning, or any text
+    outside the JSON object.
+
+generation:
+  enable_thinking: false
+  seed: 20240601
+  temperature: 0.0
+  max_new_tokens: 128
+  n_samples: 1
+  stated_confidence_structured_outputs: true
+  stated_confidence_field: response_confidence
+  stated_confidence_json_retries: 2
+
+confidence:
+  signal: self_consistency
+  n_samples: 1
+
+bootstrap:
+  n_resamples: 200
+  level: 0.95
+  seed: 12345
+
+vllm:
+  dtype: auto
+  gpu_memory_utilization: 0.40
+  max_lora_rank: 32
+  max_model_len: 2048
+
+arms:
+  - name: base_prc
+    method: base
+    model: qwen3-4b-instruct-panel-prc
+    adapter: null
+  - name: cold_dpo_seed1_prc
+    method: dpo
+    model: qwen3-4b-instruct-panel-prc
+    # Cell of record: headline-seed1-postfix-rerun DPO r2 retrain
+    # (NOTEBOOK.md ~167, AMENDMENT.md ~330).
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed1_postfix/20260807_192026/final_model
+  - name: cold_kto_seed1_prc
+    method: kto
+    model: qwen3-4b-instruct-panel-prc
+    # Cell of record: headline-seed1-postfix-rerun KTO compliant relaunch
+    # (NOTEBOOK.md ~128, ~143).
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1_postfix/20260807_124416/final_model
+
+eval_sets:
+  selfaware:
+    type: ood
+    path: ../../../../datasets/selfaware/SelfAware.json

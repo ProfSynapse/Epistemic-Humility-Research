@@ -1,0 +1,604 @@
+{
+  "gates": {
+    "g0_integrity": {
+      "g0a_pool_power_confab": true,
+      "g0a_pool_power_known": true,
+      "g0b_answer_capture_trained": true,
+      "g0b_seam_continuity_trained": true,
+      "g0c_refit_reproducible_trained": true,
+      "g0d_gate_auc_trained": true,
+      "g0e_write_readback_trained": true,
+      "g0b_answer_capture_raw_base": true,
+      "g0b_seam_continuity_raw_base": true,
+      "g0c_refit_reproducible_raw_base": true,
+      "g0d_gate_auc_raw_base": true,
+      "g0e_write_readback_raw_base": true,
+      "g0f_containment_detail": {
+        "scanned_files": 20,
+        "violations": [],
+        "pass": true
+      },
+      "g0f_containment": true,
+      "overall_pass": true
+    },
+    "g_dose_viability": {
+      "trained": {
+        "cells": {
+          "hs13:anchor": "NOT_RUN_no_usable_rung",
+          "hs13:anchor_onward": "NOT_RUN_no_usable_rung",
+          "hs16:anchor": "NOT_RUN_no_usable_rung",
+          "hs16:anchor_onward": "NOT_RUN_no_usable_rung",
+          "hs19:anchor": "NOT_RUN_no_usable_rung",
+          "hs19:anchor_onward": "SELECTED",
+          "hs23:anchor": "NOT_RUN_no_usable_rung",
+          "hs23:anchor_onward": "SELECTED",
+          "hs29:anchor": "NOT_RUN_no_usable_rung",
+          "hs29:anchor_onward": "SELECTED",
+          "hs34:anchor": "NOT_RUN_no_usable_rung",
+          "hs34:anchor_onward": "SELECTED",
+          "hs35:anchor": "NOT_RUN_no_usable_rung",
+          "hs35:anchor_onward": "SELECTED"
+        },
+        "n_selected": 5,
+        "n_not_run": 9
+      },
+      "raw_base": {
+        "cells": {
+          "hs23:anchor": "SELECTED",
+          "hs23:anchor_onward": "SELECTED",
+          "hs29:anchor": "NOT_RUN_no_usable_rung",
+          "hs29:anchor_onward": "SELECTED"
+        },
+        "n_selected": 3,
+        "n_not_run": 1
+      }
+    },
+    "g1_actuation": {
+      "trained": {
+        "hs13:anchor": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs13:anchor_onward": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs16:anchor": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs16:anchor_onward": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs19:anchor": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs19:anchor_onward": {
+          "rate": 0.8896103896103896,
+          "wilson_lower_95": 0.8303280093773988,
+          "n": 154,
+          "pass": true
+        },
+        "hs23:anchor": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs23:anchor_onward": {
+          "rate": 0.9545454545454546,
+          "wilson_lower_95": 0.9091549110786677,
+          "n": 154,
+          "pass": true
+        },
+        "hs29:anchor": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs29:anchor_onward": {
+          "rate": 0.9090909090909091,
+          "wilson_lower_95": 0.8531934321432111,
+          "n": 154,
+          "pass": true
+        },
+        "hs34:anchor": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs34:anchor_onward": {
+          "rate": 0.8766233766233766,
+          "wilson_lower_95": 0.8153385729602641,
+          "n": 154,
+          "pass": true
+        },
+        "hs35:anchor": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs35:anchor_onward": {
+          "rate": 0.8701298701298701,
+          "wilson_lower_95": 0.8079099214201346,
+          "n": 154,
+          "pass": true
+        }
+      }
+    },
+    "g2_selectivity": {
+      "trained": {
+        "hs13:anchor": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs13:anchor_onward": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs16:anchor": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs16:anchor_onward": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs19:anchor": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs19:anchor_onward": {
+          "full_population": {
+            "rate": 0.01818181818181818,
+            "wilson_upper_95": 0.04184920154680345,
+            "n": 275
+          },
+          "fired_only": {
+            "rate": 0.625,
+            "wilson_upper_95": 0.863158240538479,
+            "n": 8
+          },
+          "headline_source": "fired_only",
+          "rate": 0.625,
+          "wilson_upper_95": 0.863158240538479,
+          "n_fired_known": 8,
+          "adjudicable": false,
+          "verdict": "NOT_ADJUDICABLE_vacuous"
+        },
+        "hs23:anchor": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs23:anchor_onward": {
+          "full_population": {
+            "rate": 0.01090909090909091,
+            "wilson_upper_95": 0.031577777364708556,
+            "n": 275
+          },
+          "fired_only": {
+            "rate": 0.75,
+            "wilson_upper_95": 0.9544139373553637,
+            "n": 4
+          },
+          "headline_source": "fired_only",
+          "rate": 0.75,
+          "wilson_upper_95": 0.9544139373553637,
+          "n_fired_known": 4,
+          "adjudicable": false,
+          "verdict": "NOT_ADJUDICABLE_vacuous"
+        },
+        "hs29:anchor": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs29:anchor_onward": {
+          "full_population": {
+            "rate": 0.04,
+            "wilson_upper_95": 0.0701953226868161,
+            "n": 275
+          },
+          "fired_only": {
+            "rate": 0.55,
+            "wilson_upper_95": 0.7418049791429071,
+            "n": 20
+          },
+          "headline_source": "fired_only",
+          "rate": 0.55,
+          "wilson_upper_95": 0.7418049791429071,
+          "n_fired_known": 20,
+          "adjudicable": false,
+          "verdict": "NOT_ADJUDICABLE_vacuous"
+        },
+        "hs34:anchor": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs34:anchor_onward": {
+          "full_population": {
+            "rate": 0.02909090909090909,
+            "wilson_upper_95": 0.05634437769247733,
+            "n": 275
+          },
+          "fired_only": {
+            "rate": 0.6153846153846154,
+            "wilson_upper_95": 0.8229055341876319,
+            "n": 13
+          },
+          "headline_source": "fired_only",
+          "rate": 0.6153846153846154,
+          "wilson_upper_95": 0.8229055341876319,
+          "n_fired_known": 13,
+          "adjudicable": false,
+          "verdict": "NOT_ADJUDICABLE_vacuous"
+        },
+        "hs35:anchor": {
+          "status": "NOT_RUN_dose_not_selected"
+        },
+        "hs35:anchor_onward": {
+          "full_population": {
+            "rate": 0.02181818181818182,
+            "wilson_upper_95": 0.046775394193585736,
+            "n": 275
+          },
+          "fired_only": {
+            "rate": 0.6,
+            "wilson_upper_95": 0.8318224187964902,
+            "n": 10
+          },
+          "headline_source": "fired_only",
+          "rate": 0.6,
+          "wilson_upper_95": 0.8318224187964902,
+          "n_fired_known": 10,
+          "adjudicable": false,
+          "verdict": "NOT_ADJUDICABLE_vacuous"
+        }
+      }
+    },
+    "g3_direction_specificity": {
+      "trained": {
+        "hs13:anchor": {
+          "status": "NOT_RUN_no_held_out_run"
+        },
+        "hs13:anchor_onward": {
+          "status": "NOT_RUN_no_held_out_run"
+        },
+        "hs16:anchor": {
+          "status": "NOT_RUN_no_held_out_run"
+        },
+        "hs16:anchor_onward": {
+          "status": "NOT_RUN_no_held_out_run"
+        },
+        "hs19:anchor": {
+          "status": "NOT_RUN_no_held_out_run"
+        },
+        "hs19:anchor_onward": {
+          "gated_rate": 0.8896103896103896,
+          "gated_baseline_undosed_rate": 0.0,
+          "gated_lift": 0.8896103896103896,
+          "k_draws": 3,
+          "draw_detail": [
+            {
+              "draw": "1",
+              "rate": 0.0,
+              "baseline": 0.0,
+              "lift": 0.0
+            },
+            {
+              "draw": "2",
+              "rate": 0.0,
+              "baseline": 0.0,
+              "lift": 0.0
+            },
+            {
+              "draw": "3",
+              "rate": 0.0,
+              "baseline": 0.0,
+              "lift": 0.0
+            }
+          ],
+          "draw_lifts": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "max_draw_lift": 0.0,
+          "ratio": "inf",
+          "ratio_note": "ratio undefined (division by zero): gated_lift=0.8896103896103896 over max_draw_lift=0.0; serialized as a sentinel string, not bare JSON Infinity. This cell also fails the max_draw_lift > 0 guard below regardless of this value.",
+          "pass": false,
+          "companion_permuted_gate": {
+            "rc": 0,
+            "n_active": 157,
+            "confab_held_out": {
+              "n": 154,
+              "successes": 56,
+              "rate": 0.36363636363636365,
+              "wilson_lower_95": 0.29183516406639337,
+              "wilson_upper_95": 0.44207528793105205
+            }
+          },
+          "companion_raw_write_pos_ctrl": {
+            "rc": 0,
+            "n_active": 157,
+            "confab_held_out": {
+              "n": 154,
+              "successes": 97,
+              "rate": 0.6298701298701299,
+              "wilson_lower_95": 0.5513165004505675,
+              "wilson_upper_95": 0.7021021166947227
+            }
+          }
+        },
+        "hs23:anchor": {
+          "status": "NOT_RUN_no_held_out_run"
+        },
+        "hs23:anchor_onward": {
+          "gated_rate": 0.9545454545454546,
+          "gated_baseline_undosed_rate": 0.0,
+          "gated_lift": 0.9545454545454546,
+          "k_draws": 3,
+          "draw_detail": [
+            {
+              "draw": "1",
+              "rate": 0.6363636363636364,
+              "baseline": 0.0,
+              "lift": 0.6363636363636364
+            },
+            {
+              "draw": "2",
+              "rate": 0.045454545454545456,
+              "baseline": 0.0,
+              "lift": 0.045454545454545456
+            },
+            {
+              "draw": "3",
+              "rate": 0.24675324675324675,
+              "baseline": 0.0,
+              "lift": 0.24675324675324675
+            }
+          ],
+          "draw_lifts": [
+            0.6363636363636364,
+            0.045454545454545456,
+            0.24675324675324675
+          ],
+          "max_draw_lift": 0.6363636363636364,
+          "ratio": 1.5,
+          "ratio_note": null,
+          "pass": false,
+          "companion_permuted_gate": {
+            "rc": 0,
+            "n_active": 151,
+            "confab_held_out": {
+              "n": 154,
+              "successes": 61,
+              "rate": 0.3961038961038961,
+              "wilson_lower_95": 0.3222895279874027,
+              "wilson_upper_95": 0.47497557829636533
+            }
+          },
+          "companion_raw_write_pos_ctrl": {
+            "rc": 0,
+            "n_active": 151,
+            "confab_held_out": {
+              "n": 154,
+              "successes": 140,
+              "rate": 0.9090909090909091,
+              "wilson_lower_95": 0.8531934321432111,
+              "wilson_upper_95": 0.9450752118644521
+            }
+          }
+        },
+        "hs29:anchor": {
+          "status": "NOT_RUN_no_held_out_run"
+        },
+        "hs29:anchor_onward": {
+          "gated_rate": 0.9090909090909091,
+          "gated_baseline_undosed_rate": 0.0,
+          "gated_lift": 0.9090909090909091,
+          "k_draws": 3,
+          "draw_detail": [
+            {
+              "draw": "1",
+              "rate": 0.05194805194805195,
+              "baseline": 0.0,
+              "lift": 0.05194805194805195
+            },
+            {
+              "draw": "2",
+              "rate": 0.18831168831168832,
+              "baseline": 0.0,
+              "lift": 0.18831168831168832
+            },
+            {
+              "draw": "3",
+              "rate": 0.5974025974025974,
+              "baseline": 0.0,
+              "lift": 0.5974025974025974
+            }
+          ],
+          "draw_lifts": [
+            0.05194805194805195,
+            0.18831168831168832,
+            0.5974025974025974
+          ],
+          "max_draw_lift": 0.5974025974025974,
+          "ratio": 1.5217391304347827,
+          "ratio_note": null,
+          "pass": false,
+          "companion_permuted_gate": {
+            "rc": 0,
+            "n_active": 163,
+            "confab_held_out": {
+              "n": 154,
+              "successes": 63,
+              "rate": 0.4090909090909091,
+              "wilson_lower_95": 0.33456800777135237,
+              "wilson_upper_95": 0.48803896022694465
+            }
+          },
+          "companion_raw_write_pos_ctrl": {
+            "rc": 0,
+            "n_active": 163,
+            "confab_held_out": {
+              "n": 154,
+              "successes": 8,
+              "rate": 0.05194805194805195,
+              "wilson_lower_95": 0.02655461399781532,
+              "wilson_upper_95": 0.09915115685093433
+            }
+          }
+        },
+        "hs34:anchor": {
+          "status": "NOT_RUN_no_held_out_run"
+        },
+        "hs34:anchor_onward": {
+          "gated_rate": 0.8766233766233766,
+          "gated_baseline_undosed_rate": 0.0,
+          "gated_lift": 0.8766233766233766,
+          "k_draws": 3,
+          "draw_detail": [
+            {
+              "draw": "1",
+              "rate": 0.0,
+              "baseline": 0.0,
+              "lift": 0.0
+            },
+            {
+              "draw": "2",
+              "rate": 0.0,
+              "baseline": 0.0,
+              "lift": 0.0
+            },
+            {
+              "draw": "3",
+              "rate": 0.0,
+              "baseline": 0.0,
+              "lift": 0.0
+            }
+          ],
+          "draw_lifts": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "max_draw_lift": 0.0,
+          "ratio": "inf",
+          "ratio_note": "ratio undefined (division by zero): gated_lift=0.8766233766233766 over max_draw_lift=0.0; serialized as a sentinel string, not bare JSON Infinity. This cell also fails the max_draw_lift > 0 guard below regardless of this value.",
+          "pass": false,
+          "companion_permuted_gate": {
+            "rc": 0,
+            "n_active": 153,
+            "confab_held_out": {
+              "n": 154,
+              "successes": 60,
+              "rate": 0.38961038961038963,
+              "wilson_lower_95": 0.31617077302808605,
+              "wilson_upper_95": 0.4684234023984174
+            }
+          },
+          "companion_raw_write_pos_ctrl": {
+            "rc": 0,
+            "n_active": 153,
+            "confab_held_out": {
+              "n": 154,
+              "successes": 74,
+              "rate": 0.4805194805194805,
+              "wilson_lower_95": 0.4030476633173572,
+              "wilson_upper_95": 0.5589395441108492
+            }
+          }
+        },
+        "hs35:anchor": {
+          "status": "NOT_RUN_no_held_out_run"
+        },
+        "hs35:anchor_onward": {
+          "gated_rate": 0.8701298701298701,
+          "gated_baseline_undosed_rate": 0.0,
+          "gated_lift": 0.8701298701298701,
+          "k_draws": 3,
+          "draw_detail": [
+            {
+              "draw": "1",
+              "rate": 0.012987012987012988,
+              "baseline": 0.0,
+              "lift": 0.012987012987012988
+            },
+            {
+              "draw": "2",
+              "rate": 0.07142857142857142,
+              "baseline": 0.0,
+              "lift": 0.07142857142857142
+            },
+            {
+              "draw": "3",
+              "rate": 0.07142857142857142,
+              "baseline": 0.0,
+              "lift": 0.07142857142857142
+            }
+          ],
+          "draw_lifts": [
+            0.012987012987012988,
+            0.07142857142857142,
+            0.07142857142857142
+          ],
+          "max_draw_lift": 0.07142857142857142,
+          "ratio": 12.181818181818182,
+          "ratio_note": null,
+          "pass": true,
+          "companion_permuted_gate": {
+            "rc": 0,
+            "n_active": 149,
+            "confab_held_out": {
+              "n": 154,
+              "successes": 56,
+              "rate": 0.36363636363636365,
+              "wilson_lower_95": 0.29183516406639337,
+              "wilson_upper_95": 0.44207528793105205
+            }
+          },
+          "companion_raw_write_pos_ctrl": {
+            "rc": 0,
+            "n_active": 149,
+            "confab_held_out": {
+              "n": 154,
+              "successes": 103,
+              "rate": 0.6688311688311688,
+              "wilson_lower_95": 0.5911848538845942,
+              "wilson_upper_95": 0.7382593484042826
+            }
+          }
+        }
+      }
+    },
+    "g4_substrate_anchor": {
+      "sites": {
+        "hs23": {
+          "reference_rate": 0.8778280542986425,
+          "reference_wilson_95": [
+            0.8280821756572311,
+            0.9146629391257984
+          ],
+          "positions": {
+            "hs23:anchor": {
+              "observed_rate": 0.5384615384615384,
+              "contained": false
+            },
+            "hs23:anchor_onward": {
+              "observed_rate": 0.8823529411764706,
+              "contained": true
+            }
+          }
+        },
+        "hs29": {
+          "reference_rate": 0.9276018099547512,
+          "reference_wilson_95": [
+            0.8856432878716948,
+            0.9549484887390393
+          ],
+          "positions": {
+            "hs29:anchor": {
+              "status": "NOT_RUN_dose_not_selected"
+            },
+            "hs29:anchor_onward": {
+              "observed_rate": 0.9140271493212669,
+              "contained": true
+            }
+          }
+        }
+      },
+      "dose_selection_overlap": {
+        "n_dose_selected_and_scored": 24,
+        "n_g4_denominator": 221,
+        "fraction": 0.1085972850678733,
+        "error": null,
+        "note": "raw_base's dose-calibration confab pool is the first 24 row_keys (sorted) of the SAME rep2 anchor pool this gate's denominator scores at Stage 6 (n=221); it is not a held-out subset. Disclosed pre-run per NOTEBOOK.md 2026-08-10; the bias direction is two-sided, not exclusively toward false containment."
+      }
+    }
+  },
+  "summary_rule_verdict": {
+    "any_registered_cell_fires_falsifier": false,
+    "g4_holding": false,
+    "reading": "supports bounded-search null IF g4_holding and every non-selected cell is a recorded NOT-RUN with its rung table (see g_dose_viability above) -- this script does not itself confirm the rung-table completeness condition; the lead adjudicates."
+  }
+}

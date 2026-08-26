@@ -1,0 +1,1427 @@
+{
+  "description": "Three-seed stated-confidence summary, grpo-three-seed-confirmatory block. Exploratory response-confidence track (not the PROTOCOL v0.3 headline). See docstring of this script for seed-1 data-gap details.",
+  "bootstrap": {
+    "method": "seed-level resample with replacement",
+    "n_resamples": 10000,
+    "random_state": 12345,
+    "level": 0.95
+  },
+  "arms": {
+    "clean_sft_merged": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.748489,
+          "coverage_pct": 100.0,
+          "brier_vs_response_appropriateness": 0.363656,
+          "mae_vs_known_label": null,
+          "brier_vs_known_label": null,
+          "mae_vs_answer_correctness": null,
+          "brier_vs_answer_correctness": null,
+          "mae_vs_response_appropriateness": null,
+          "_n_runs": "1",
+          "_source_metrics_referenced": "experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_4b/clean_schema_sft_merged_seed1__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.732394,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.413418,
+          "brier_vs_known_label": 0.218876,
+          "mae_vs_answer_correctness": 0.672962,
+          "brier_vs_answer_correctness": 0.478421,
+          "mae_vs_response_appropriateness": 0.540516,
+          "brier_vs_response_appropriateness": 0.345974,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_seed2_merged_full_4b/clean_schema_sft_merged_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.72235,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.412765,
+          "brier_vs_known_label": 0.2129,
+          "mae_vs_answer_correctness": 0.662798,
+          "brier_vs_answer_correctness": 0.462932,
+          "mae_vs_response_appropriateness": 0.54345,
+          "brier_vs_response_appropriateness": 0.343585,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_seed3_merged_full_4b/clean_schema_sft_merged_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.734411,
+          "ci95": [
+            0.72235,
+            0.7484889999999998
+          ],
+          "values": [
+            0.748489,
+            0.732394,
+            0.72235
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.413418,
+            "seed3": 0.412765
+          }
+        },
+        "brier_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.218876,
+            "seed3": 0.2129
+          }
+        },
+        "mae_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.672962,
+            "seed3": 0.662798
+          }
+        },
+        "brier_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.478421,
+            "seed3": 0.462932
+          }
+        },
+        "mae_vs_response_appropriateness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.540516,
+            "seed3": 0.54345
+          }
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.35107166666666667,
+          "ci95": [
+            0.343585,
+            0.363656
+          ],
+          "values": [
+            0.363656,
+            0.345974,
+            0.343585
+          ]
+        }
+      }
+    },
+    "clean_sft_dpo": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.812083,
+          "coverage_pct": 100.0,
+          "brier_vs_response_appropriateness": 0.407684,
+          "mae_vs_known_label": null,
+          "brier_vs_known_label": null,
+          "mae_vs_answer_correctness": null,
+          "brier_vs_answer_correctness": null,
+          "mae_vs_response_appropriateness": null,
+          "_n_runs": "1",
+          "_source_metrics_referenced": "experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_full_4b/clean_schema_sft_dpo_seed1_corrected_base__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.785407,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.404246,
+          "brier_vs_known_label": 0.238581,
+          "mae_vs_answer_correctness": 0.72608,
+          "brier_vs_answer_correctness": 0.560416,
+          "mae_vs_response_appropriateness": 0.550417,
+          "brier_vs_response_appropriateness": 0.384753,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_seed2_full_4b/clean_schema_sft_dpo_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.823374,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.396328,
+          "brier_vs_known_label": 0.256813,
+          "mae_vs_answer_correctness": 0.761131,
+          "brier_vs_answer_correctness": 0.621616,
+          "mae_vs_response_appropriateness": 0.563334,
+          "brier_vs_response_appropriateness": 0.423819,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_seed3_full_4b/clean_schema_sft_dpo_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.8069546666666666,
+          "ci95": [
+            0.7854069999999999,
+            0.8233739999999999
+          ],
+          "values": [
+            0.812083,
+            0.785407,
+            0.823374
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.404246,
+            "seed3": 0.396328
+          }
+        },
+        "brier_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.238581,
+            "seed3": 0.256813
+          }
+        },
+        "mae_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.72608,
+            "seed3": 0.761131
+          }
+        },
+        "brier_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.560416,
+            "seed3": 0.621616
+          }
+        },
+        "mae_vs_response_appropriateness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.550417,
+            "seed3": 0.563334
+          }
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.40541866666666665,
+          "ci95": [
+            0.38475300000000007,
+            0.423819
+          ],
+          "values": [
+            0.407684,
+            0.384753,
+            0.423819
+          ]
+        }
+      }
+    },
+    "clean_sft_kto": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.852712,
+          "coverage_pct": 100.0,
+          "brier_vs_response_appropriateness": 0.451579,
+          "mae_vs_known_label": null,
+          "brier_vs_known_label": null,
+          "mae_vs_answer_correctness": null,
+          "brier_vs_answer_correctness": null,
+          "mae_vs_response_appropriateness": null,
+          "_n_runs": "1",
+          "_source_metrics_referenced": "experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_full_4b/clean_schema_sft_kto_seed1_corrected_base__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.820285,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.371389,
+          "brier_vs_known_label": 0.226638,
+          "mae_vs_answer_correctness": 0.742144,
+          "brier_vs_answer_correctness": 0.597393,
+          "mae_vs_response_appropriateness": 0.575731,
+          "brier_vs_response_appropriateness": 0.43098,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_seed2_full_4b/clean_schema_sft_kto_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.848534,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.367643,
+          "brier_vs_known_label": 0.240395,
+          "mae_vs_answer_correctness": 0.757081,
+          "brier_vs_answer_correctness": 0.629833,
+          "mae_vs_response_appropriateness": 0.572549,
+          "brier_vs_response_appropriateness": 0.445301,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_seed3_full_4b/clean_schema_sft_kto_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.8405103333333334,
+          "ci95": [
+            0.820285,
+            0.852712
+          ],
+          "values": [
+            0.852712,
+            0.820285,
+            0.848534
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.371389,
+            "seed3": 0.367643
+          }
+        },
+        "brier_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.226638,
+            "seed3": 0.240395
+          }
+        },
+        "mae_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.742144,
+            "seed3": 0.757081
+          }
+        },
+        "brier_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.597393,
+            "seed3": 0.629833
+          }
+        },
+        "mae_vs_response_appropriateness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.575731,
+            "seed3": 0.572549
+          }
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.44262,
+          "ci95": [
+            0.43098,
+            0.451579
+          ],
+          "values": [
+            0.451579,
+            0.43098,
+            0.445301
+          ]
+        }
+      }
+    },
+    "clean_sft_grpo_v2": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.813382,
+          "coverage_pct": 100.0,
+          "brier_vs_response_appropriateness": 0.403378,
+          "mae_vs_known_label": null,
+          "brier_vs_known_label": null,
+          "mae_vs_answer_correctness": null,
+          "brier_vs_answer_correctness": null,
+          "mae_vs_response_appropriateness": null,
+          "_n_runs": "1",
+          "_source_metrics_referenced": "experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b/clean_schema_sft_grpo_v2_seed1_corrected_base__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.819148,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.377046,
+          "brier_vs_known_label": 0.229254,
+          "mae_vs_answer_correctness": 0.738746,
+          "brier_vs_answer_correctness": 0.590955,
+          "mae_vs_response_appropriateness": 0.553736,
+          "brier_vs_response_appropriateness": 0.405945,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_v2_seed2_full_4b/clean_schema_sft_grpo_v2_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.81125,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.37858,
+          "brier_vs_known_label": 0.225539,
+          "mae_vs_answer_correctness": 0.735058,
+          "brier_vs_answer_correctness": 0.582017,
+          "mae_vs_response_appropriateness": 0.55471,
+          "brier_vs_response_appropriateness": 0.401669,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_v2_seed3_full_4b/clean_schema_sft_grpo_v2_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.8145933333333334,
+          "ci95": [
+            0.8112499999999999,
+            0.8191479999999999
+          ],
+          "values": [
+            0.813382,
+            0.819148,
+            0.81125
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.377046,
+            "seed3": 0.37858
+          }
+        },
+        "brier_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.229254,
+            "seed3": 0.225539
+          }
+        },
+        "mae_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.738746,
+            "seed3": 0.735058
+          }
+        },
+        "brier_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.590955,
+            "seed3": 0.582017
+          }
+        },
+        "mae_vs_response_appropriateness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.553736,
+            "seed3": 0.55471
+          }
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.403664,
+          "ci95": [
+            0.401669,
+            0.405945
+          ],
+          "values": [
+            0.403378,
+            0.405945,
+            0.401669
+          ]
+        }
+      }
+    },
+    "clean_sft_dpo_grpo": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.844615,
+          "coverage_pct": 100.0,
+          "brier_vs_response_appropriateness": 0.428793,
+          "mae_vs_known_label": null,
+          "brier_vs_known_label": null,
+          "mae_vs_answer_correctness": null,
+          "brier_vs_answer_correctness": null,
+          "mae_vs_response_appropriateness": null,
+          "_n_runs": "1",
+          "_source_metrics_referenced": "experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_dpo_grpo_seed1_full_4b/clean_sft_dpo_grpo_seed1__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.804318,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.380904,
+          "brier_vs_known_label": 0.223576,
+          "mae_vs_answer_correctness": 0.726308,
+          "brier_vs_answer_correctness": 0.56898,
+          "mae_vs_response_appropriateness": 0.551748,
+          "brier_vs_response_appropriateness": 0.39442,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_grpo_seed2_full_4b/clean_sft_dpo_grpo_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.864085,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.363642,
+          "brier_vs_known_label": 0.246813,
+          "mae_vs_answer_correctness": 0.779571,
+          "brier_vs_answer_correctness": 0.662741,
+          "mae_vs_response_appropriateness": 0.567207,
+          "brier_vs_response_appropriateness": 0.450378,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_grpo_seed3_full_4b/clean_sft_dpo_grpo_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.8376726666666666,
+          "ci95": [
+            0.804318,
+            0.8640849999999999
+          ],
+          "values": [
+            0.844615,
+            0.804318,
+            0.864085
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.380904,
+            "seed3": 0.363642
+          }
+        },
+        "brier_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.223576,
+            "seed3": 0.246813
+          }
+        },
+        "mae_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.726308,
+            "seed3": 0.779571
+          }
+        },
+        "brier_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.56898,
+            "seed3": 0.662741
+          }
+        },
+        "mae_vs_response_appropriateness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.551748,
+            "seed3": 0.567207
+          }
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.4245303333333333,
+          "ci95": [
+            0.39442,
+            0.450378
+          ],
+          "values": [
+            0.428793,
+            0.39442,
+            0.450378
+          ]
+        }
+      }
+    },
+    "clean_sft_kto_grpo": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.862188,
+          "coverage_pct": 100.0,
+          "brier_vs_response_appropriateness": 0.447663,
+          "mae_vs_known_label": null,
+          "brier_vs_known_label": null,
+          "mae_vs_answer_correctness": null,
+          "brier_vs_answer_correctness": null,
+          "mae_vs_response_appropriateness": null,
+          "_n_runs": "1",
+          "_source_metrics_referenced": "experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_kto_grpo_seed1_full_4b/clean_sft_kto_grpo_seed1__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.811934,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.377559,
+          "brier_vs_known_label": 0.225152,
+          "mae_vs_answer_correctness": 0.728382,
+          "brier_vs_answer_correctness": 0.575975,
+          "mae_vs_response_appropriateness": 0.552325,
+          "brier_vs_response_appropriateness": 0.399918,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_grpo_seed2_full_4b/clean_sft_kto_grpo_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.804362,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.380922,
+          "brier_vs_known_label": 0.223673,
+          "mae_vs_answer_correctness": 0.72673,
+          "brier_vs_answer_correctness": 0.569482,
+          "mae_vs_response_appropriateness": 0.554611,
+          "brier_vs_response_appropriateness": 0.397362,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_grpo_seed3_full_4b/clean_sft_kto_grpo_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.8261613333333333,
+          "ci95": [
+            0.8043619999999999,
+            0.8621880000000001
+          ],
+          "values": [
+            0.862188,
+            0.811934,
+            0.804362
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.377559,
+            "seed3": 0.380922
+          }
+        },
+        "brier_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.225152,
+            "seed3": 0.223673
+          }
+        },
+        "mae_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.728382,
+            "seed3": 0.72673
+          }
+        },
+        "brier_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.575975,
+            "seed3": 0.569482
+          }
+        },
+        "mae_vs_response_appropriateness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.552325,
+            "seed3": 0.554611
+          }
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.414981,
+          "ci95": [
+            0.397362,
+            0.447663
+          ],
+          "values": [
+            0.447663,
+            0.399918,
+            0.397362
+          ]
+        }
+      }
+    },
+    "clean_sft_grpo_dpo": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.866301,
+          "coverage_pct": 100.0,
+          "brier_vs_response_appropriateness": 0.445413,
+          "mae_vs_known_label": null,
+          "brier_vs_known_label": null,
+          "mae_vs_answer_correctness": null,
+          "brier_vs_answer_correctness": null,
+          "mae_vs_response_appropriateness": null,
+          "_n_runs": "1",
+          "_source_metrics_referenced": "experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_dpo_seed1_full_4b/clean_sft_grpo_dpo_seed1__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.854713,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.369179,
+          "brier_vs_known_label": 0.246173,
+          "mae_vs_answer_correctness": 0.77378,
+          "brier_vs_answer_correctness": 0.650773,
+          "mae_vs_response_appropriateness": 0.559863,
+          "brier_vs_response_appropriateness": 0.436857,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_dpo_seed2_full_4b/clean_sft_grpo_dpo_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.863594,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.371076,
+          "brier_vs_known_label": 0.255632,
+          "mae_vs_answer_correctness": 0.791474,
+          "brier_vs_answer_correctness": 0.67603,
+          "mae_vs_response_appropriateness": 0.566368,
+          "brier_vs_response_appropriateness": 0.450923,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_dpo_seed3_full_4b/clean_sft_grpo_dpo_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.861536,
+          "ci95": [
+            0.854713,
+            0.866301
+          ],
+          "values": [
+            0.866301,
+            0.854713,
+            0.863594
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.369179,
+            "seed3": 0.371076
+          }
+        },
+        "brier_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.246173,
+            "seed3": 0.255632
+          }
+        },
+        "mae_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.77378,
+            "seed3": 0.791474
+          }
+        },
+        "brier_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.650773,
+            "seed3": 0.67603
+          }
+        },
+        "mae_vs_response_appropriateness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.559863,
+            "seed3": 0.566368
+          }
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.4443976666666667,
+          "ci95": [
+            0.436857,
+            0.450923
+          ],
+          "values": [
+            0.445413,
+            0.436857,
+            0.450923
+          ]
+        }
+      }
+    },
+    "clean_sft_grpo_kto": {
+      "per_seed": {
+        "seed1": {
+          "mean_stated_confidence": 0.864039,
+          "coverage_pct": 100.0,
+          "brier_vs_response_appropriateness": 0.448626,
+          "mae_vs_known_label": null,
+          "brier_vs_known_label": null,
+          "mae_vs_answer_correctness": null,
+          "brier_vs_answer_correctness": null,
+          "mae_vs_response_appropriateness": null,
+          "_n_runs": "1",
+          "_source_metrics_referenced": "experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_kto_seed1_full_4b/clean_sft_grpo_kto_seed1__selfaware/metrics.json"
+        },
+        "seed2": {
+          "mean_stated_confidence": 0.866364,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.358143,
+          "brier_vs_known_label": 0.242367,
+          "mae_vs_answer_correctness": 0.769657,
+          "brier_vs_answer_correctness": 0.653881,
+          "mae_vs_response_appropriateness": 0.563623,
+          "brier_vs_response_appropriateness": 0.447847,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_kto_seed2_full_4b/clean_sft_grpo_kto_seed2__selfaware/metrics.json"
+        },
+        "seed3": {
+          "mean_stated_confidence": 0.86618,
+          "coverage_pct": 100.0,
+          "mae_vs_known_label": 0.35824,
+          "brier_vs_known_label": 0.242405,
+          "mae_vs_answer_correctness": 0.77383,
+          "brier_vs_answer_correctness": 0.657996,
+          "mae_vs_response_appropriateness": 0.567546,
+          "brier_vs_response_appropriateness": 0.451711,
+          "_n": 3369,
+          "_n_with_confidence": 3369,
+          "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_kto_seed3_full_4b/clean_sft_grpo_kto_seed3__selfaware/metrics.json"
+        }
+      },
+      "three_seed": {
+        "mean_stated_confidence": {
+          "mean": 0.8655276666666666,
+          "ci95": [
+            0.864039,
+            0.866364
+          ],
+          "values": [
+            0.864039,
+            0.866364,
+            0.86618
+          ]
+        },
+        "coverage_pct": {
+          "mean": 100.0,
+          "ci95": [
+            100.0,
+            100.0
+          ],
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "mae_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.358143,
+            "seed3": 0.35824
+          }
+        },
+        "brier_vs_known_label": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.242367,
+            "seed3": 0.242405
+          }
+        },
+        "mae_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.769657,
+            "seed3": 0.77383
+          }
+        },
+        "brier_vs_answer_correctness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.653881,
+            "seed3": 0.657996
+          }
+        },
+        "mae_vs_response_appropriateness": {
+          "status": "INCOMPLETE_missing_seed",
+          "available": {
+            "seed2": 0.563623,
+            "seed3": 0.567546
+          }
+        },
+        "brier_vs_response_appropriateness": {
+          "mean": 0.44939466666666666,
+          "ci95": [
+            0.44784700000000005,
+            0.451711
+          ],
+          "values": [
+            0.448626,
+            0.447847,
+            0.451711
+          ]
+        }
+      }
+    }
+  },
+  "by_outcome": {
+    "clean_sft_merged": {
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 517,
+          "mean": 0.7152290135396518
+        },
+        "known_correct_answered": {
+          "n": 459,
+          "mean": 0.7181093681917211
+        },
+        "known_refused": {
+          "n": 1361,
+          "mean": 0.7394775165319618
+        },
+        "unknown_answered_wrong": {
+          "n": 104,
+          "mean": 0.7164817307692307
+        },
+        "unknown_refused": {
+          "n": 928,
+          "mean": 0.7404162715517242
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_seed2_merged_full_4b/clean_schema_sft_merged_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 503,
+          "mean": 0.7190200795228628
+        },
+        "known_correct_answered": {
+          "n": 455,
+          "mean": 0.7204720879120879
+        },
+        "known_refused": {
+          "n": 1379,
+          "mean": 0.725535170413343
+        },
+        "unknown_answered_wrong": {
+          "n": 121,
+          "mean": 0.7195024793388429
+        },
+        "unknown_refused": {
+          "n": 911,
+          "mean": 0.720681668496158
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_seed3_merged_full_4b/clean_schema_sft_merged_seed3__selfaware/scored_rows.jsonl"
+      },
+      "seed1": "NOT AVAILABLE: no calibration_gap_*.json exists for this arm at seed 1"
+    },
+    "clean_sft_dpo": {
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 559,
+          "mean": 0.7160949910554562
+        },
+        "known_correct_answered": {
+          "n": 470,
+          "mean": 0.7126285106382979
+        },
+        "known_refused": {
+          "n": 1308,
+          "mean": 0.8221200305810398
+        },
+        "unknown_answered_wrong": {
+          "n": 110,
+          "mean": 0.7142272727272727
+        },
+        "unknown_refused": {
+          "n": 922,
+          "mean": 0.8209380694143167
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_seed2_full_4b/clean_schema_sft_dpo_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 586,
+          "mean": 0.722817747440273
+        },
+        "known_correct_answered": {
+          "n": 474,
+          "mean": 0.7212006329113925
+        },
+        "known_refused": {
+          "n": 1277,
+          "mean": 0.8789660140955365
+        },
+        "unknown_answered_wrong": {
+          "n": 152,
+          "mean": 0.7427578947368421
+        },
+        "unknown_refused": {
+          "n": 880,
+          "mean": 0.8786231818181818
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_seed3_full_4b/clean_schema_sft_dpo_seed3__selfaware/scored_rows.jsonl"
+      },
+      "seed1": "NOT AVAILABLE: no calibration_gap_*.json exists for this arm at seed 1"
+    },
+    "clean_sft_kto": {
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 601,
+          "mean": 0.78776306156406
+        },
+        "known_correct_answered": {
+          "n": 474,
+          "mean": 0.7776970464135021
+        },
+        "known_refused": {
+          "n": 1262,
+          "mean": 0.8578377179080825
+        },
+        "unknown_answered_wrong": {
+          "n": 148,
+          "mean": 0.7875189189189189
+        },
+        "unknown_refused": {
+          "n": 884,
+          "mean": 0.8171067873303167
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_seed2_full_4b/clean_schema_sft_kto_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 598,
+          "mean": 0.8331484949832776
+        },
+        "known_correct_answered": {
+          "n": 480,
+          "mean": 0.8209433333333334
+        },
+        "known_refused": {
+          "n": 1259,
+          "mean": 0.8628160444797458
+        },
+        "unknown_answered_wrong": {
+          "n": 173,
+          "mean": 0.8081312138728324
+        },
+        "unknown_refused": {
+          "n": 859,
+          "mean": 0.8618664726426076
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_seed3_full_4b/clean_schema_sft_kto_seed3__selfaware/scored_rows.jsonl"
+      },
+      "seed1": "NOT AVAILABLE: no calibration_gap_*.json exists for this arm at seed 1"
+    },
+    "clean_sft_grpo_v2": {
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 357,
+          "mean": 0.8205820728291318
+        },
+        "known_correct_answered": {
+          "n": 420,
+          "mean": 0.8224716666666667
+        },
+        "known_refused": {
+          "n": 1560,
+          "mean": 0.8172026282051282
+        },
+        "unknown_answered_wrong": {
+          "n": 59,
+          "mean": 0.8193305084745762
+        },
+        "unknown_refused": {
+          "n": 973,
+          "mean": 0.820296300102775
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_v2_seed2_full_4b/clean_schema_sft_grpo_v2_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 329,
+          "mean": 0.8168945288753799
+        },
+        "known_correct_answered": {
+          "n": 403,
+          "mean": 0.8184746898263028
+        },
+        "known_refused": {
+          "n": 1605,
+          "mean": 0.8091764485981309
+        },
+        "unknown_answered_wrong": {
+          "n": 51,
+          "mean": 0.8131999999999999
+        },
+        "unknown_refused": {
+          "n": 981,
+          "mean": 0.8096793068297655
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_v2_seed3_full_4b/clean_schema_sft_grpo_v2_seed3__selfaware/scored_rows.jsonl"
+      },
+      "seed1": {
+        "known_answered_wrong": {
+          "n": 360,
+          "mean": 0.8200130555555556
+        },
+        "known_correct_answered": {
+          "n": 420,
+          "mean": 0.8222395238095239
+        },
+        "known_refused": {
+          "n": 1557,
+          "mean": 0.8109272318561335
+        },
+        "unknown_answered_wrong": {
+          "n": 68,
+          "mean": 0.8123544117647058
+        },
+        "unknown_refused": {
+          "n": 964,
+          "mean": 0.8110851659751038
+        },
+        "_source": "archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json",
+        "_source_scored_rows_referenced": "experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b/clean_schema_sft_grpo_v2_seed1_corrected_base__selfaware/scored_rows.jsonl"
+      },
+      "three_seed": {
+        "known_answered_wrong": {
+          "mean": 0.8191632190866892,
+          "ci95": [
+            0.8168945288753799,
+            0.8205820728291316
+          ],
+          "values": [
+            0.8200130555555556,
+            0.8205820728291318,
+            0.8168945288753799
+          ]
+        },
+        "known_correct_answered": {
+          "mean": 0.8210619601008311,
+          "ci95": [
+            0.8184746898263028,
+            0.8224716666666666
+          ],
+          "values": [
+            0.8222395238095239,
+            0.8224716666666667,
+            0.8184746898263028
+          ]
+        },
+        "known_refused": {
+          "mean": 0.8124354362197975,
+          "ci95": [
+            0.8091764485981309,
+            0.8172026282051282
+          ],
+          "values": [
+            0.8109272318561335,
+            0.8172026282051282,
+            0.8091764485981309
+          ]
+        },
+        "unknown_answered_wrong": {
+          "mean": 0.8149616400797607,
+          "ci95": [
+            0.8123544117647058,
+            0.8193305084745762
+          ],
+          "values": [
+            0.8123544117647058,
+            0.8193305084745762,
+            0.8131999999999999
+          ]
+        },
+        "unknown_refused": {
+          "mean": 0.8136869243025481,
+          "ci95": [
+            0.8096793068297655,
+            0.820296300102775
+          ],
+          "values": [
+            0.8110851659751038,
+            0.820296300102775,
+            0.8096793068297655
+          ]
+        }
+      }
+    },
+    "clean_sft_dpo_grpo": {
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 375,
+          "mean": 0.8092717333333334
+        },
+        "known_correct_answered": {
+          "n": 424,
+          "mean": 0.8099228773584907
+        },
+        "known_refused": {
+          "n": 1538,
+          "mean": 0.8028968140442132
+        },
+        "unknown_answered_wrong": {
+          "n": 58,
+          "mean": 0.8096689655172413
+        },
+        "unknown_refused": {
+          "n": 974,
+          "mean": 0.8018951745379878
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_grpo_seed2_full_4b/clean_sft_dpo_grpo_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 404,
+          "mean": 0.8326824257425743
+        },
+        "known_correct_answered": {
+          "n": 422,
+          "mean": 0.837358767772512
+        },
+        "known_refused": {
+          "n": 1511,
+          "mean": 0.8747371277299802
+        },
+        "unknown_answered_wrong": {
+          "n": 77,
+          "mean": 0.8361220779220779
+        },
+        "unknown_refused": {
+          "n": 955,
+          "mean": 0.874581780104712
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_dpo_grpo_seed3_full_4b/clean_sft_dpo_grpo_seed3__selfaware/scored_rows.jsonl"
+      },
+      "seed1": "NOT AVAILABLE: no calibration_gap_*.json exists for this arm at seed 1"
+    },
+    "clean_sft_kto_grpo": {
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 409,
+          "mean": 0.8229146699266503
+        },
+        "known_correct_answered": {
+          "n": 427,
+          "mean": 0.8296093676814988
+        },
+        "known_refused": {
+          "n": 1501,
+          "mean": 0.8057227181878747
+        },
+        "unknown_answered_wrong": {
+          "n": 69,
+          "mean": 0.828
+        },
+        "unknown_refused": {
+          "n": 963,
+          "mean": 0.807963655244029
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_grpo_seed2_full_4b/clean_sft_kto_grpo_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 365,
+          "mean": 0.8129556164383561
+        },
+        "known_correct_answered": {
+          "n": 418,
+          "mean": 0.8128480861244018
+        },
+        "known_refused": {
+          "n": 1554,
+          "mean": 0.8013421492921492
+        },
+        "unknown_answered_wrong": {
+          "n": 71,
+          "mean": 0.8123309859154929
+        },
+        "unknown_refused": {
+          "n": 961,
+          "mean": 0.8017017689906347
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_kto_grpo_seed3_full_4b/clean_sft_kto_grpo_seed3__selfaware/scored_rows.jsonl"
+      },
+      "seed1": "NOT AVAILABLE: no calibration_gap_*.json exists for this arm at seed 1"
+    },
+    "clean_sft_grpo_dpo": {
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 373,
+          "mean": 0.8034380697050938
+        },
+        "known_correct_answered": {
+          "n": 422,
+          "mean": 0.8230616113744076
+        },
+        "known_refused": {
+          "n": 1542,
+          "mean": 0.8685904020752271
+        },
+        "unknown_answered_wrong": {
+          "n": 55,
+          "mean": 0.8055199999999999
+        },
+        "unknown_refused": {
+          "n": 977,
+          "mean": 0.8688257932446264
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_dpo_seed2_full_4b/clean_sft_grpo_dpo_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 362,
+          "mean": 0.7830121546961326
+        },
+        "known_correct_answered": {
+          "n": 413,
+          "mean": 0.7941559322033899
+        },
+        "known_refused": {
+          "n": 1562,
+          "mean": 0.8877784891165174
+        },
+        "unknown_answered_wrong": {
+          "n": 54,
+          "mean": 0.7983333333333333
+        },
+        "unknown_refused": {
+          "n": 978,
+          "mean": 0.8877216768916156
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_dpo_seed3_full_4b/clean_sft_grpo_dpo_seed3__selfaware/scored_rows.jsonl"
+      },
+      "seed1": "NOT AVAILABLE: no calibration_gap_*.json exists for this arm at seed 1"
+    },
+    "clean_sft_grpo_kto": {
+      "seed2": {
+        "known_answered_wrong": {
+          "n": 464,
+          "mean": 0.8659685344827587
+        },
+        "known_correct_answered": {
+          "n": 445,
+          "mean": 0.8660741573033708
+        },
+        "known_refused": {
+          "n": 1428,
+          "mean": 0.8665166666666667
+        },
+        "unknown_answered_wrong": {
+          "n": 85,
+          "mean": 0.8660941176470589
+        },
+        "unknown_refused": {
+          "n": 947,
+          "mean": 0.8664880675818374
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_kto_seed2_full_4b/clean_sft_grpo_kto_seed2__selfaware/scored_rows.jsonl"
+      },
+      "seed3": {
+        "known_answered_wrong": {
+          "n": 413,
+          "mean": 0.8636157384987895
+        },
+        "known_correct_answered": {
+          "n": 428,
+          "mean": 0.8634665887850468
+        },
+        "known_refused": {
+          "n": 1496,
+          "mean": 0.8675727941176472
+        },
+        "unknown_answered_wrong": {
+          "n": 84,
+          "mean": 0.8636869047619048
+        },
+        "unknown_refused": {
+          "n": 948,
+          "mean": 0.8665459915611815
+        },
+        "_n_rows": 3369,
+        "_path": "archive/experiment/phase1/eval/results_grpo3seed_response_confidence_selfaware_clean_sft_grpo_kto_seed3_full_4b/clean_sft_grpo_kto_seed3__selfaware/scored_rows.jsonl"
+      },
+      "seed1": "NOT AVAILABLE: no calibration_gap_*.json exists for this arm at seed 1"
+    }
+  },
+  "flags": []
+}

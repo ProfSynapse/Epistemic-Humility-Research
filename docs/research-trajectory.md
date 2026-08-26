@@ -143,10 +143,13 @@ saturated under sampled decode (instrument bug; fixed 2026-07-03 in
 + action rule) also leaves the channel shut. AA's conclusion extends to the strongest
 framing.
 
-**AC (POSITIVE, RQ4 Stage 1):** Doubt probe score coupled to the caution gate at
-inference time (not an emitted channel). Selectivity gap coupled−permuted +8.7pt, CI
-[+5.6, +12.0]. The doubt wire carries information about WHICH rows get released.
-Source: `AMENDMENT-AC-doubt-regulated-caution.md` §8.
+**AC (POSITIVE, RQ4 Stage 1):** KU (answerability) probe score coupled to the
+refusal-axis gate at inference time (not an emitted channel); legacy names
+`doubt probe` / `caution gate`, per `papers/common/terminology.md`. Selectivity
+gap coupled−permuted +8.7pt, CI [+5.6, +12.0]. The KU-readout wire carries
+information about WHICH rows get released.
+Source: `experiments/doubt-regulated-caution/AMENDMENT.md` (legacy label
+AMENDMENT-AC) §8.
 
 **AF (PASS, channel-authority):** Second-person system-prompt directive produces
 selective policy shifts. Selectivity gap +18.0pt over permuted, CI [+11.8, +24.7].
@@ -158,8 +161,9 @@ Source: `AMENDMENT-AF-second-person-doubt-prime.md` §8.
 **AG (PASS, asymmetric compliance, belief-vs-policy dissociation):** Inverted arm.
 G1a: induced refusal on known-correct +34.0pt, CI [+26.5, +41.5] (wrong muzzle
 obeyed). G1b: asymmetry +26.1pt, CI [+18.0, +34.6] (release resisted at +7.9pt).
-Instrumentation: doubt axis anti-semantic under primes; compliance travels through the
-caution axis (Δcaution AUROC 0.654). The model obeys external authority against its own
+Instrumentation: KU (answerability) readout anti-semantic under primes; compliance
+travels through the refusal-versus-confabulation contrast (legacy `caution` atlas
+axis; Δcaution AUROC 0.654). The model obeys external authority against its own
 knowledge: policy compliance without belief revision.
 Source: `AMENDMENT-AG-oracle-dissociation-prime.md` §9.
 
@@ -171,8 +175,9 @@ null; deprioritized while the focus is training-free).
 
 **Neutral-prepend control (AG §9.4, DONE 2026-07-03, PR #166):** the generic
 any-prepend component is real and large, but re-referenced to neutral the primes move
-the caution axis in the semantically correct directions (HIGH down, LOW up) while the
-doubt axis stays anti-semantic: the belief-vs-policy dissociation sharpened.
+the refusal-versus-confabulation contrast (legacy `caution` atlas axis) in the
+semantically correct directions (HIGH down, LOW up) while the KU (answerability)
+readout stays anti-semantic: the belief-vs-policy dissociation sharpened.
 
 **AH (H-COMPLIANCE, certified via Addendum A1):** the divergent-pool (probe ≠ gold)
 own-readout attribution design AF/AG called for. G2 release congruence is a precise
@@ -259,8 +264,8 @@ multilingual refusal/uncertainty tokens remain a separate follow-up screen, not 
 retroactive goalpost shift for this result.
 
 **Cross-family confirmatory fleet (NOT PROMOTED, resolved 2026-07-12):**
-doubt-snap-cross-family-confirmatory tested whether the doubt-gated caution snap
-(the AC/H4 mechanism) generalizes to at least 3 of 4 small-tier families
+doubt-snap-cross-family-confirmatory tested whether the answerability-gated
+abstention snap (the AC/H4 mechanism; legacy name `doubt-gated caution snap`) generalizes to at least 3 of 4 small-tier families
 (Qwen3.5-4B, Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3, Qwen3.5-9B) at the
 registered late write site. No cell reached held-out scoring: every launched
 cell stopped at the pre-outcome FIT dose-viability gate before the registered
@@ -470,6 +475,63 @@ failures in minutes rather than after a full signed run. Finally, the
 long-standing one-amendment-one-branch serialization rule was replaced with a
 worktree-parallel convention so independent amendments no longer queue behind
 each other (PR #322).
+
+---
+
+## Parked threads (captured 2026-08-16; papers-first, no new experiments for now)
+
+- **Seed decomposition of the refusal axis.** Two independently trained seeds of
+  the same recipe concentrate the refusal decision onto a single direction to
+  very different degrees: seed 1 full-axis ablation collapses known-item
+  over-refusal 0.994 to 0.0298 (exploratory), while the pre-registered seed-2
+  replication of that collapse left 0.5528 with the instrument passing every
+  integrity check, so the near-total collapse is seed-specific. The axis is
+  causally load-bearing at both seeds (seed 2 still releases 45.7 points of
+  refusals and recovers correct answers on 29.2 percent of formerly refused
+  knowns). Open question: how do individual training runs distribute the refusal
+  decision across directions, and is it meaningful that the seed-2 full-axis
+  residual (0.553) lands almost exactly on the seed-1 KU-orthogonalized
+  component residual (0.524)? Evidence:
+  `experiments/refusal-axis-ablation-confirmatory/AMENDMENT.md` (falsified,
+  resolved 2026-08-16). Disposition: folded into paper 3 Limitations as flagged
+  future work; a real answer needs a multi-seed decomposition study.
+- **Mid-band entanglement of the refusal axis on trained checkpoints.** At hs17
+  on clean_sft_grpo_v2_seed1 the refusal axis reads nearly as well as at the
+  governed late site (construction AUROC 0.8645 vs 0.8688), but full ablation
+  there releases zero of 168 known-item refusals (L35 releases 163 of 168 on
+  the same rows) and induces refusal on 48 percent of previously answered
+  knowns, while a minus-2-sigma displacement at the same site drops refusal to
+  0.714 and recovers correct answers on 21 percent of the same rows. Removal
+  and displacement are different operations at mid-depth: the direction is
+  entangled with signal that answering requires. Open questions: what shares
+  the axis at mid-depth, and does that entanglement explain why dosed writes
+  (paper 5) succeed mid-band while ablation does not? Also parked: the trained
+  J-lens profile is flattened and deepened relative to raw-base (hs26 peak
+  suppressed about 35 percent, peak moved to hs29), the first measurement of
+  training reshaping this geometry, worth a systematic training-stage sweep
+  someday. Evidence:
+  `experiments/jlens-trained-checkpoint-midband-ablation/AMENDMENT.md`
+  (falsified, resolved 2026-08-16). Disposition: folded into paper 5 sections
+  6.3 and 6.4 scoping; no new cell now.
+- **Is the confidence channel itself prompt-scaffolded?** (queued 2026-08-17)
+  Every stated-confidence number in paper 2 was produced under a contract that
+  also carries an abstention instruction, so the flat profile (near-constant
+  ~0.8, standard deviation 0.013, AUROC 0.520 against response
+  appropriateness) is only ever measured with the instruction present. But the
+  structure-only prompt retains the `response_confidence` JSON key and drops
+  only the abstention affordance, so every structure-only evaluation row
+  already on disk carries a stated-confidence value that nobody has looked at.
+  Open question: does the flat, uninformative confidence profile persist once
+  the abstention instruction is gone, or is the confidence channel itself
+  prompt-scaffolded in the same way the abstention behavior turned out to be?
+  Surface: the 13 existing structure-only arms among the 17 evaluations of
+  `experiments/prompt-vs-training-panel/AMENDMENT.md` (11 arms, 7 of them
+  P-struct) and `experiments/pstruct-internalization-seed-robustness/AMENDMENT.md`
+  (6 arms, all P-struct), plus the held-out AmbigQA arms once
+  `experiments/prompt-crossing-heldout-confirmatory/` resolves. Disposition:
+  CPU-only reanalysis of rows that already exist, no GPU and no new
+  generation, but it needs its own registered cell with predictions and a
+  falsifier stated before the analysis runs. PI approved queueing 2026-08-17.
 
 ---
 

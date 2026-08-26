@@ -97,6 +97,15 @@ or spawn the Agent with `isolation: "worktree"`. Tell the subagent its worktree
 path and that its HEAD is independent of the canonical checkout, so its commits
 are isolated and safe. Read-only subagents (search, analysis) do not need one.
 
+Fresh-worktree gotcha (2026-08-17): a new worktree starts with the
+synaptic-tuner submodule uninitialized and without the canonical checkout's
+gitignored `archive/` data, and the repo-wide pre-commit `exp validate` hook
+hard-fails on both. Before the first commit in a fresh worktree run
+`git submodule update --init --recursive`, and if `exp validate` still fails
+on missing gitignored input paths, symlink those paths from the canonical
+checkout (read-only reference; never copy restricted data, never `git add` a
+symlink).
+
 ## Merging PRs (a LEAD-kept action)
 
 ```bash

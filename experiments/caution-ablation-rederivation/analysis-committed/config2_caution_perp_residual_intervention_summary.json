@@ -1,0 +1,51 @@
+{
+  "config": "configs/phase3_current_clean_grpo_v2_caution_perp_residual_intervention.yaml",
+  "config_label": "caution_perp (doubt-orthogonalized) residual intervention (L35, caution_perp_direction_L35.json)",
+  "direction_layer": 35,
+  "fingerprint": "e91e8ad6d22a665a",
+  "total_units": 2164,
+  "units_generated": 2164,
+  "units_resumed": 0,
+  "row_count_per_arm": 541,
+  "arms": ["baseline", "ablate", "shift_minus2", "shift_plus2"],
+  "by_arm": {
+    "baseline": {
+      "known_refused": {"n": 168, "refusal_rate": 0.994, "correct_rate": 0.0},
+      "known_correct_answered": {"n": 373, "refusal_rate": 0.0, "correct_rate": 1.0}
+    },
+    "ablate": {
+      "known_refused": {"n": 168, "refusal_rate": 0.5238, "correct_rate": 0.3274},
+      "known_correct_answered": {"n": 373, "refusal_rate": 0.0, "correct_rate": 0.9732}
+    },
+    "shift_minus2": {
+      "known_refused": {"n": 168, "refusal_rate": 0.869, "correct_rate": 0.1131},
+      "known_correct_answered": {"n": 373, "refusal_rate": 0.0, "correct_rate": 0.9973}
+    },
+    "shift_plus2": {
+      "known_refused": {"n": 168, "refusal_rate": 1.0, "correct_rate": 0.0},
+      "known_correct_answered": {"n": 373, "refusal_rate": 0.0697, "correct_rate": 0.9276}
+    }
+  },
+  "runner_verdict_string": "LOAD-BEARING: ablating the caution axis at the target layer drops known_refused refusal by 0.47 (0.99 -> 0.52); the encoded caution state is causally load-bearing for the over-refusal. Specificity: ablating raised known_answered refusal by +0.00 (want ~0).",
+  "ca_g0_baseline_check": {
+    "target": 0.994,
+    "tolerance": 0.02,
+    "observed": 0.994,
+    "delta": 0.0,
+    "result": "PASS"
+  },
+  "derived": {
+    "correct_per_derefused_pct": 68.75,
+    "note": "correct_rate above is over the full known_refused cell (n=168); correct-per-de-refused = correct_rate / (1 - refusal_rate) = 0.3274 / (1 - 0.5238) = 0.6875, matching the archived session-doc figure of 68.7% almost exactly."
+  },
+  "provenance": {
+    "checkpoint": "clean_sft_grpo_v2_seed1 (eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora)",
+    "base_model": "scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit",
+    "adapter": "scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model",
+    "direction_file": "archive/experiment/phase1-data/probe/analysis/current_clean_grpo_v2_caution_residual_direction/caution_perp_direction_L35.json",
+    "direction_sha256": "41e13f41100756fd10a974af8a7724940348ab869f2045be62ad4e86a079ee64",
+    "runner": "experiments/common/mechinterp/residual_intervention_runner.py",
+    "docker_image": "unsloth/unsloth:latest",
+    "container_run_utc": "2026-08-16T05:03:52Z to 2026-08-16T05:52:59Z (approx, exit 0)"
+  }
+}

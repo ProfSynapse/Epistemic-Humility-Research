@@ -24,7 +24,7 @@ provenance: 'Internal amendment (Tier-A causal intervention; gates pre-stated be
 related:
 - '[[probe-agreement-reward-does-not-couple-policy-to-its-own-readout]]'
 - '[[propensity-direction-reads-but-does-not-actuate-fabrication]]'
-- '[[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]'
+- '[[ku-readout-coupling-actuates-selective-refusal-release]]'
 - '[[high-probe-accuracy-does-not-imply-causal-use]]'
 - '[[answerability-and-correctness-are-orthogonal-readout-axes]]'
 - '[[linear-probe]]'
@@ -45,8 +45,8 @@ relationships:
   target_id: mechanism:propensity-direction-reads-but-does-not-actuate-fabrication
   confidence: high
 - type: related_to
-  target: '[[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]'
-  target_id: mechanism:doubt-regulated-caution-coupling-actuates-selective-refusal-release
+  target: '[[ku-readout-coupling-actuates-selective-refusal-release]]'
+  target_id: mechanism:ku-readout-coupling-actuates-selective-refusal-release
   confidence: high
 - type: related_to
   target: '[[high-probe-accuracy-does-not-imply-causal-use]]'
@@ -143,6 +143,6 @@ coupling, joining
 [[propensity-direction-reads-but-does-not-actuate-fabrication]] (AL, the
 injection-side branch) as sibling nulls in different channels on the same
 question. Both stand against Amendment AC's activation-coupling win
-([[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]),
+([[ku-readout-coupling-actuates-selective-refusal-release]]),
 which shows the negative result is channel- and axis-specific, not a general
 claim that the model's internal states are never behaviorally accessible.

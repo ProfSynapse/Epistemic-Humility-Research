@@ -20,11 +20,21 @@ related:
 - '[[verbalized-confidence-imitation-overconfidence]]'
 - '[[open-ended-generation-breaks-prompting-calibration]]'
 - '[[faithful-calibration]]'
+- '[[pstruct-stated-confidence-miscalibrated-near-chance]]'
 relationships:
 - type: supported_by
   target: '[[internal-paper3--knows-but-doesnt-say]]'
   target_id: paper:internal-paper3
   confidence: high
+- type: related_to
+  target: '[[pstruct-stated-confidence-miscalibrated-near-chance]]'
+  target_id: mechanism:pstruct-stated-confidence-miscalibrated-near-chance
+  confidence: medium
+  evidence:
+  - "experiments/stated-confidence-under-pstruct/AMENDMENT.md Reading (the
+    same emitted-scalar bottleneck, measured under the structure-only
+    P-struct contract paper 2 left unanalyzed: severe miscalibration
+    universal, discrimination near chance for most regimens)"
 - type: related_to
   target: '[[verbalized-confidence]]'
   target_id: method:verbalized-confidence

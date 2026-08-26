@@ -1,0 +1,65 @@
+# Tier-2 causal residual intervention on the CAUTION axis (B1 load-bearing test).
+# SEED-2 confirmatory mirror of the archived config
+# (archive/experiment/phase1/probe/config/grpo-v2-residual-repair/phase3_current_clean_grpo_v2_caution_residual_intervention.yaml),
+# byte-identical except model/adapter/direction/rows/output paths (AMENDMENT.md
+# stage 4). B2 showed the L35 caution signal fires BEFORE the refusal is
+# verbalized (pre-commitment), but a read cannot prove the encoded state CAUSES
+# the over-refusal. B1 ablates (projects out) the raw mass-mean caution
+# direction from the L35 residual at every position during greedy generation
+# and re-scores realized behavior: does ablation drop over-refusal on
+# known_refused while leaving known_correct_answered (specificity control)
+# alone? Additive ITI is anti-steerable (F/K), so the headline arm is
+# ablation; the +/-2 sigma shift arms only characterize the steerability sign.
+
+model:
+  # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-seed2-merged-16bit @ 4d526fddce37348a325f54127426fb15f9a77bbe
+  model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_clean_seed2_full/20260731_232307/Qwen3-4B-bnb-4bit/merged-16bit
+  # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed2-lora @ 2390e893bfc92aefb3d14d30805b480e8a11fda7
+  adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed2_full/20260804_131151/final_model
+  adapter_name: clean_sft_grpo_v2_seed2
+  torch_dtype: bfloat16
+  device_map: cuda
+  enable_thinking: false
+
+prompt:
+  system: >-
+    Answer the user's question. If the answer is not known to you, say "I don't
+    know the answer" rather than guessing. Return only a JSON object with
+    exactly two keys: "answer" and "response_confidence". The "answer" value is
+    your answer or abstention text. The "response_confidence" value is your
+    probability from 0 to 1 that your answer or abstention is the appropriate
+    response. Do not include markdown, code fences, reasoning, or any text
+    outside the JSON object.
+
+caution_direction: experiments/refusal-axis-ablation-confirmatory/analysis/directions/caution_direction_L35_seed2.json
+
+rows: experiments/refusal-axis-ablation-confirmatory/analysis/behavior_rows/clean_sft_grpo_v2_seed2/rows.jsonl
+
+# Run on the two A2 contrast cells only: known_refused is the over-refusal target,
+# known_correct_answered is the specificity control (ablation should NOT push it
+# toward refusal). Other cells are off the caution contrast and would burn GPU.
+rows_filter:
+  cells:
+    - known_refused
+    - known_correct_answered
+
+# Arms: baseline (no hook) + ablate (headline causal handle) + two directional
+# shift arms (+/-2 sigma) for the steerability sign check. alpha is in sigma units.
+arms:
+  - arm_id: baseline
+    mode: baseline
+  - arm_id: ablate
+    mode: ablate
+  - arm_id: shift_minus2
+    mode: shift
+    alpha: -2.0
+  - arm_id: shift_plus2
+    mode: shift
+    alpha: 2.0
+
+sweep:
+  max_new_tokens: 96
+  max_rows: null
+
+output:
+  root: experiments/refusal-axis-ablation-confirmatory/analysis/intervention/current_clean_grpo_v2_seed2_caution_residual_intervention

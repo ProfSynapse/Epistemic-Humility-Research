@@ -1,15 +1,37 @@
 # Batched Generation And Extraction
 
 Standing backend-selection discipline for generation and hidden-state capture.
-Use it before registering a GPU cell. The default for new, unsteered work is
-vLLM, but comparability and intervention requirements override that default.
+Use it before registering a GPU cell.
+
+## Forced default (PI ruling 2026-08-13)
+
+vLLM is the REQUIRED engine for every new generation, eval, logprob, or
+capture surface. This is a PI directive, not a preference. Exactly two
+exceptions exist, and both must be named in the cell's registration when
+claimed:
+
+1. Parity-locked surfaces that extend or regenerate an existing cell keep
+   that cell's registered engine verbatim (first decision-table row).
+2. Per-row intervention work (hooks, activation writes, mixed steered arms)
+   uses the tuner mechinterp path that implements the intervention.
+
+ANTI-STALE-KNOWLEDGE CLAUSE: model knowledge about vLLM's capability limits
+is chronically stale and has repeatedly caused wrong engine choices
+("vLLM can't expose hidden states / logprobs / LoRA / bnb quantization" —
+all false in current releases; current vLLM exposes generation-time
+per-token hidden states, per-token logprobs, native token IDs, LoRA
+adapters, and bitsandbytes quantization). NEVER rule vLLM out from memory.
+Capability questions are settled ONLY by checking the pinned installed
+version's docs or API at harness-build time, and the check's result is
+recorded in the cell's NOTEBOOK. When delegating any generation-surface
+build, restate this clause in the subagent prompt.
 
 ## Decision table
 
 | Cell shape | Backend policy |
 |------------|----------------|
 | Parity-locked surface that extends or regenerates an existing cell | Reuse the exact registered engine, version, batch regime, dtype, and decoding contract. If the reference used HF batch 1, stay HF batch 1. |
-| New unsteered generation surface | Prefer pinned vLLM with batch invariance enabled. Register the engine and decoding contract before the run. |
+| New unsteered generation surface | REQUIRED: pinned vLLM with batch invariance enabled. Register the engine and decoding contract before the run. |
 | New structured-output surface where formatting is incidental | Prefer vLLM JSON-schema structured output. Pin the schema. |
 | Surface where free-form behavior or format compliance is measured | Use unconstrained decoding and preserve raw output. Do not hide the measured behavior behind structured decoding. |
 | New capture-only or read-atlas surface | Prefer vLLM native hidden-state extraction only after the model-specific bridge below passes. Otherwise use the pinned HF batched reference path. |

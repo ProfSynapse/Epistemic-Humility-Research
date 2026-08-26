@@ -117,15 +117,38 @@ def main() -> None:
     for name, selector, judge in FAMILIES:
         sub = selector(d).copy()
         matched_idx.update(sub.index)
-        votes = {True: [], False: []}
+        # One study, one vote. A study's rows within a family are netted: the
+        # study votes with the direction held by the majority of its
+        # informative verified rows, and a study whose rows split evenly casts
+        # no vote and is reported as mixed (the row-level analogue of the
+        # zero-change tie rule). Without netting a study with rows in both
+        # directions would enter both tallies, which the sign test's
+        # independence assumption forbids.
+        per_study = {}
         for _, row in sub.iterrows():
             v = judge(row)
-            # Votes count verified rows only (the paper's section 4.5 rule,
+            # Votes count verified rows only (the paper's Appendix C rule,
             # applied mechanically; unverified rows are listed, never counted).
             if v is not None and bool(row.verified):
-                votes[v].append(row.study)
-        n_sup = len(set(votes[True]))
-        n_con = len(set(votes[False]))
+                tally = per_study.setdefault(row.study, {True: 0, False: 0})
+                tally[v] += 1
+        supporters, contradictors, mixed = [], [], []
+        for study, tally in per_study.items():
+            if tally[True] > tally[False]:
+                supporters.append(study)
+            elif tally[False] > tally[True]:
+                contradictors.append(study)
+            else:
+                mixed.append(study)
+        # Studies that vote one way while holding rows the other way stay
+        # visible: the tally is one vote, the disclosure is per row.
+        split = sorted(
+            f"{s} ({t[True]} supporting / {t[False]} contradicting rows)"
+            for s, t in per_study.items()
+            if t[True] and t[False]
+        )
+        n_sup = len(supporters)
+        n_con = len(contradictors)
         n = n_sup + n_con
         p = binomtest(n_sup, n, 0.5).pvalue if n else float("nan")
         rels = sub.rel_change_pct.dropna()
@@ -142,8 +165,18 @@ def main() -> None:
             f"| sign-test p = {p:.4f}" if n else "- no informative rows",
             f"- Effect sizes: {rel_txt}",
             f"- Rows: {', '.join(sorted(set(sub.study)))}",
-            "",
         ]
+        if split:
+            lines.append(
+                "- Studies with rows in both directions (netted to one vote): "
+                + "; ".join(split)
+            )
+        if mixed:
+            lines.append(
+                "- Studies split evenly and casting no vote: "
+                + ", ".join(sorted(mixed))
+            )
+        lines.append("")
         for _, row in sub.iterrows():
             e = effect_sign(row)
             if e is not None and pd.notna(row.rel_change_pct):

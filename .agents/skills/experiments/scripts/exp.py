@@ -924,6 +924,36 @@ def cmd_sign(root: Path, slug: str) -> int:
             f"{slug}: instrument.configs is empty; list the instrument files before signing"
         )
 
+    # GENERATION-ENGINE GATE (PI ruling 2026-08-13, enforced): vLLM is the
+    # forced default for every generation-bearing cell. A draft can only be
+    # signed if instrument.engine declares vllm with a pinned version, OR
+    # instrument.engine_exception claims one of the two named exceptions
+    # with a reason. See experiment-runner reference/batched-generation.md.
+    GENERATION_BEARING_TYPES = {"steer-cell", "training-run", "eval", "probe-fit"}
+    if data.get("type") in GENERATION_BEARING_TYPES:
+        engine = instrument.get("engine")
+        exception = instrument.get("engine_exception")
+        engine_ok = (
+            isinstance(engine, dict)
+            and str(engine.get("name", "")).lower() == "vllm"
+            and str(engine.get("version", "")).strip() not in ("", "unpinned")
+        )
+        exception_ok = (
+            isinstance(exception, dict)
+            and exception.get("kind") in ("parity-locked", "intervention")
+            and isinstance(exception.get("reason"), str)
+            and exception["reason"].strip()
+        )
+        if not (engine_ok or exception_ok):
+            raise ExpError(
+                f"{slug}: generation-engine gate (PI ruling 2026-08-13): "
+                "declare instrument.engine {name: vllm, version: <pinned>} "
+                "or instrument.engine_exception {kind: parity-locked|"
+                "intervention, reason: <why>} before signing. vLLM is the "
+                "forced default for generation-bearing cells; see "
+                "experiment-runner reference/batched-generation.md."
+            )
+
     persistence_problems = _module_persistence_problems(instrument)
     if persistence_problems:
         raise ExpError(

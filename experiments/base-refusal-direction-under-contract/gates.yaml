@@ -1,0 +1,24 @@
+# Pre-stated gates for base-refusal-direction-under-contract.
+# Fixed at signing; never retuned after any result.
+
+br_g0:
+  # Integrity precondition (pre-outcome stop). Failure => cell indeterminate,
+  # no alignment claim in either direction.
+  labels_source: governed reuse of resolved prompt-vs-training-panel base P-rc
+    scored_rows (no fresh generation)
+  min_rows_per_class: 100          # known-refused and known-answered each
+  fit_holdout_auroc_min: 0.80      # refuse-vs-answer probe, held-out
+  direction_fit_metadata: {pos_cell: known_refused, neg_cell: known_answered,
+                           layer: 35,
+                           recipe: residual_caution_direction known-unknown-orthogonalized}
+  trained_references: three regimen directions re-derived via the committed
+    Section 5 reconstruction script; missing archived inputs => BR-G0 fail
+
+br_g1:
+  # Adjudication on mean absolute cosine to the three trained directions.
+  aligned_min: 0.50                # prediction band; trained-pair band is 0.576-0.857
+  distinct_max: 0.20               # falsifier band (requires br_g0 pass)
+  indeterminate_range: [0.20, 0.50]
+  permutation_floor: recomputed with the Section 5 procedure; reported alongside
+  descriptive: abs cosine to the known-unknown axis reported (orthogonality),
+    not adjudicated

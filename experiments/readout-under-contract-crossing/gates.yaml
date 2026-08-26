@@ -1,0 +1,21 @@
+# Pre-stated gates for readout-under-contract-crossing.
+# Fixed at signing; never retuned after any result.
+
+ru_g0:
+  # Integrity precondition (pre-outcome stop). Failure => cell indeterminate.
+  full_row_coverage: true          # every panel row in every extraction (12 total)
+  neutral_refit_parity_max_delta: 0.01   # Stage-0 refit vs reference reading,
+                                         # per checkpoint, same stack
+  layer: 35
+  position: last-prompt-token
+
+ru_g1:
+  # Per checkpoint-contract pair, on transfer AUROC vs that checkpoint's
+  # Stage-0 neutral reference.
+  invariant_max_drop: 0.05         # prediction band
+  rotated: {transfer_max: 0.85, refit_min: 0.95}    # direction moved
+  suppressed: {transfer_max: 0.85, refit_max: 0.90} # signal suppressed
+  partial: any other degraded outcome; reported descriptively, adjudicated as
+    neither invariant nor falsifying
+  cell_call: prediction holds iff ALL nine contract pairs are invariant;
+    falsifier fires iff ANY pair is rotated or suppressed

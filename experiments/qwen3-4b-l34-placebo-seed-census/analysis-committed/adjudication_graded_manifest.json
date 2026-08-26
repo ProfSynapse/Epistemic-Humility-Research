@@ -1,0 +1,20 @@
+[
+  {
+    "committed_at": "2026-08-26T04:59:28.035168+00:00",
+    "file_name": "graded_shard_00.jsonl",
+    "sha256": "6d4cdee01185b30c089c29461b73bb07e897085ccabd6f4529055c1fe3af084e",
+    "shard_id": "L34CENSUS_shard_00"
+  },
+  {
+    "committed_at": "2026-08-26T05:00:09.970227+00:00",
+    "file_name": "graded_shard_01.jsonl",
+    "sha256": "3de0edfab36907e808a270c175885664968c4c859a3d15627d232bbb72c52f97",
+    "shard_id": "L34CENSUS_shard_01"
+  },
+  {
+    "committed_at": "2026-08-26T05:02:06.391071+00:00",
+    "file_name": "graded_shard_02.jsonl",
+    "sha256": "8ce267cbd2af835fbac64f46b72adc1974ba1e07171e0c16fcb96fbcd391f79f",
+    "shard_id": "L34CENSUS_shard_02"
+  }
+]

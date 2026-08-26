@@ -1,0 +1,96 @@
+# dial-logprob-t-deployed-confirmatory (LP-T) instrument config, pinned at build.
+# Verbatim reuse of the dial-logprob-baseline-v3 fresh self-consistent
+# generation instrument (AMENDMENT.md "Design"), single arm: the T-side
+# comparison promoted from v3's descriptive-only read to the gated primary,
+# rerun at a registered attempt cap sized so the LT-G0(c) power floor is
+# reachable (v3's T arm stopped at 710 answered / 4,000 attempted under the
+# verbatim-inherited cap). Checkpoint identity, dial layer, and every field
+# not called out below are copied verbatim from
+# experiments/dial-logprob-baseline-v3/cell.yaml's `t_deployed_descriptive`
+# arm.
+apiVersion: lab-cell/v1
+experiment: dial-logprob-t-deployed-confirmatory
+seed: 20260813
+n_boot_paired: 2000
+engine:
+  # Verbatim from v3's engine block (AMENDMENT.md "Engine": "same venv and
+  # env pins as v3").
+  name: vllm
+  version: 0.27.1                 # same pinned stack as v3
+  venv: /home/profsynapse/.venvs/vllm   # isolated venv; NOT the shared base conda env
+  stack:
+    torch: 2.13.0+cu130           # vLLM's own pin (distinct from base conda torch 2.9.0+cu128)
+    transformers: 5.15.0
+    safetensors: 0.8.0
+    numpy: 2.3.5
+    bitsandbytes: 0.50.0          # >=0.48.1 required by vllm's bnb quant path
+    scikit-learn: 1.9.0           # CPU dial-refit runs in the SAME stack
+    peft: 0.20.0                  # HF+PEFT fallback extraction pass, same stack
+  env_vars:
+    # Verbatim from v3 (both required on this host).
+    VLLM_WSL2_ENABLE_PIN_MEMORY: "1"   # WSL2 UVA/pinned-memory compat guard; without it engine init fails
+    VLLM_BATCH_INVARIANT: "1"          # batch-invariant execution (docs.vllm.ai/features/batch_invariance)
+  batch_invariance:
+    enabled: true
+    hardware_requirement: "compute capability >=8.0"
+    hardware_confirmed: "RTX 3090, compute_cap 8.6 (nvidia-smi --query-gpu=compute_cap)"
+  scheduler:
+    # Verbatim from v3; NOT re-validated by this build (no vLLM generation
+    # smoke over real T prompts was run -- registered as a pre-launch step
+    # per .skills/experiment-runner/reference/batched-generation.md).
+    max_model_len: 512
+    max_num_seqs: 64
+    max_num_batched_tokens: 8192
+  hidden_state_path: fallback_hf_teacher_forced
+  hidden_state_path_reason: >-
+    Verbatim from v3 (dial-logprob-baseline-v3/NOTEBOOK.md 2026-08-13
+    "vLLM capability check"): the pinned vllm==0.27.1's only hidden-state
+    mechanism (extract_hidden_states) is a speculative-decoding/EAGLE-training
+    method, not a per-request generation-time readout; the AMENDMENT's
+    registered fallback applies. The teacher-forced HF pass runs in the same
+    pinned stack/process, consuming vLLM's own reported prompt_token_ids +
+    completion token_ids verbatim (never re-tokenized).
+prompt_inventory:
+  # Imported by reference, unchanged: build_pool() from
+  # amendment_s_correctness_probe_extract.py, the SAME module v3's T arm drew
+  # from (AMENDMENT.md "Design": "the harness is copied into this cell...;
+  # no v3 file is modified").
+  module: experiments/common/readouts/amendment_s_correctness_probe_extract.py
+  datasets: [popqa, triviaqa]
+  per_dataset: null
+  pool_seed: 20260630              # verbatim: amendment_s/_t extractor default --seed
+  target_correct: 500              # verbatim: amendment_s/_t extractor default
+  target_wrong: 500                # verbatim: amendment_s/_t extractor default
+  max_attempts: 12000               # AMENDMENT.md "Design": registered cap, sized by power
+                                     # arithmetic (v3 observed 17.75% answered rate; target
+                                     # >=1,000 answered with margin; expected answered ~2,100).
+                                     # Pool uncapped 25,580 (AMENDMENT.md).
+generation:
+  max_new_tokens: 48                # verbatim: amendment_s/_t extractor --max-new-tokens default
+  do_sample: false                  # greedy
+  temperature: 0.0
+  enable_thinking: false            # pinned explicitly through render_probe_prompt's chat-template discovery
+logprob_variants:
+  primary: mean_answer_span         # length-normalized mean token logprob, verbatim from v1/v2/v3
+  secondary: [sum_answer_span, min_answer_span]   # descriptive only, verbatim from v1/v2/v3
+arms:
+  - id: t_deployed_confirmatory
+    model:
+      # Verbatim from v3's cell.yaml `t_deployed_descriptive` arm (AMENDMENT.md
+      # "Design": "checkpoint identity ... copied verbatim from v3's cell.yaml").
+      name: scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+      adapter: scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+      quantization: null
+      lora: true
+    system_prompt_source: experiments/common/readouts/amendment_t_correctness_readout_deployment_extract.py:SYSTEM_PROMPT
+    dial_layer: 22                    # T best post layer, verbatim from v1/v2/v3
+    gate: LT-G1                       # gated primary (v3's T arm was descriptive-only)
+dial_refit:
+  module: experiments/common/readouts/amendment_s_correctness_probe_score.py
+  procedure: out-of-fold (oof_probe) on fresh hidden states; NO reproduction target (no external artifact to reproduce -- LT-G0(d) is a sanity floor, not a match)
+  instrument_sanity_auroc_min: 0.75   # LT-G0(d); v2's unblinded T refit read 0.8164, a reads-at-all bound not a reproduction target
+power_floor_n: 1000                   # LT-G0(c); floor unchanged from v3 -- the CAP moved, not the floor
+containment:
+  commit: [id_manifest, aggregate_json, variant_table]
+  never_commit: [question_text, answer_text, aliases, token_ids, per_row_scores, per_step_logprobs, hidden_state_tensors_raw]
+lane: local-3090   # GPU launch requires explicit PI approval naming exact cells/lane; NOT authorized by this file; this build task ran NO arm

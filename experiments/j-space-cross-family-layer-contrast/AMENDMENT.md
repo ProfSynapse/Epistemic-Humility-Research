@@ -1,7 +1,8 @@
 # j-space-cross-family-layer-contrast
 
-Status: signed (machine state in `experiment.yaml`); interim verdict
-INCONCLUSIVE recorded 2026-07-24 (lead + user; see this document's "Outcome"
+Status: resolved 2026-08-18, final verdict INCONCLUSIVE, closed without
+running the remaining families (see Outcome, "Close-out"). Previously:
+signed; interim verdict INCONCLUSIVE recorded 2026-07-24 (lead + user; see this document's "Outcome"
 section and `experiment.yaml` `verdict:`). This header was stale boilerplate
 reading "draft (not signed) ... No GPU work has run" until 2026-08-11;
 corrected to match the machine state, which was already `signed` with GPU
@@ -673,3 +674,34 @@ under the INCONCLUSIVE verdict, not a post-hoc denominator change. This Outcome
 will be re-adjudicated on the roll-up instrument once that family completes,
 and any revision will be recorded as an amendment to this section rather than
 by overwriting it.
+
+### Close-out (2026-08-18, lead + user): resolved INCONCLUSIVE without further runs
+
+The qwen35-4b run announced above never completed, and with user approval the
+experiment is now closed permanently at the interim verdict. Recorded
+rationale, in order of force:
+
+1. **SUCCESS is arithmetically out of reach.** SUCCESS requires at least 3
+   run families passing both primary gates. With llama PASS and mistral FAIL
+   already on the books, that requires running BOTH qwen35-4b AND gemma4-e4b
+   and both passing - and gemma's G0 already adjudicated the registered
+   instrument invalid for that family, so gemma cannot run without an
+   instrument revision this amendment does not authorize. The best outcome
+   reachable by running qwen35-4b alone is "exactly 2 of 3 run families
+   pass" - the user's registered MIXED call - which would be known before
+   spending the GPU.
+2. **The cross-family question was re-prosecuted under a corrected
+   instrument.** The `rr-cross-family-raw-refusal` -> `rr2` -> `rr3` lineage
+   asked the mid-band cross-family actuation question with the wide
+   detector, blinded adjudication lane, and corrected placebo criterion,
+   and paper 5 ships that resolved account. This experiment's grading sits
+   on the narrow detector whose deficiency is now a recorded paper-5
+   limitation.
+3. **The qwen35-4b mid-band question was answered separately** by
+   `qwen35-4b-midband-doubt-snap` and `qwen35-4b-midband-heldout` (both
+   resolved).
+
+Nothing in this close-out revises the per-family gate results above; llama
+PASS and mistral marginal-floor FAIL stand as recorded. The cross-family
+roll-up claim ("mid-band actuation is not Qwen3-specific") is neither
+promoted nor refuted by this experiment: final verdict INCONCLUSIVE.

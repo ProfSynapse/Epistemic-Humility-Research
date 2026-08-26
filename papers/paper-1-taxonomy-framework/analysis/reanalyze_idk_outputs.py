@@ -126,6 +126,14 @@ def main() -> None:
             "refusal_recall_pct": round(100 * refuse_on_unknown / unknown, 2),
             "answer_on_unknown_pct": round(100 * (unknown - refuse_on_unknown) / unknown, 2),
             "over_refusal_pct": round(100 * refuse_on_known / known, 2),
+            # Youden's J for the refuse/answer decision: sensitivity plus
+            # specificity minus one, i.e. refusal recall on unknown-labeled
+            # questions minus over-refusal on known-labeled ones. A single
+            # operating point per method, so J is threshold-dependent and
+            # cannot separate a frontier shift from movement along one.
+            "youden_j": round(
+                100 * refuse_on_unknown / unknown - 100 * refuse_on_known / known, 2
+            ),
             "refusal_rate_pct": round(100 * (refuse_on_unknown + refuse_on_known) / n, 2),
             "correct_on_known_pct": round(100 * correct_known / answered_known, 2) if answered_known else 0.0,
             "correct_on_unknown_pct": round(100 * correct_unknown / answered_unknown, 2) if answered_unknown else 0.0,

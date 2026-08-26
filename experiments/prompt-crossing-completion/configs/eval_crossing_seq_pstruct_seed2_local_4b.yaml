@@ -1,0 +1,84 @@
+# prompt-crossing-completion, Gap 3, seed 2 of 3: warmed sequential SFT->DPO
+# and SFT->KTO (Amendment A) under the P-struct prompt. See seed1 file header
+# for why this is split from cell.yaml's single-file six-arm grouping
+# (run_eval.py enforces one base model per config; each seed sits on a
+# different merged-16bit base).
+#
+# Model base: the SEED-2 LOWMEM merge, NOT the original seed2 merge. The
+# archived Amendment A configs record a confound: the original seed2 merge
+# (.../Qwen3-4B-bnb-4bit/merged-16bit) was superseded by a "behaviorally
+# verified low-memory" remerge (.../merged-16bit-lowmem-20260616), per
+# archive/experiment/phase1/eval/config/eval_amendment_a_selfaware_full_seed2_sft_dpo_lowmem_local_4b.yaml
+# and .../eval_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b.yaml
+# ("uses the behaviorally verified low-memory merged SFT seed2 base, not the
+# confounded original seed2 merge"). The adapter timestamps below
+# (20260616_164539 / 20260616_183650) are the ones trained against the
+# lowmem merge and match docs/checkpoint-staging.md's seq-sft-dpo/kto-seed2
+# rows exactly; the OLDER adapter timestamp 20260616_114829 seen in the
+# non-lowmem seed2 DPO config is the confounded-base pairing and is NOT used
+# here. NOT ON DISK as of this build (see report); rebuild recipe:
+# .tmp/merge_sft_seed2_lowmem.py — FastLanguageModel.from_pretrained(
+# model_name=sft__4b__headline__seed2/20260615_090734/final_model,
+# max_seq_length=2048, load_in_4bit=True) then
+# model.save_pretrained_merged(save_method="merged_16bit",
+# maximum_memory_usage=0.5) -> output
+# .../Qwen3-4B-bnb-4bit/merged-16bit-lowmem-20260616.
+# Prompt block byte-identical to
+# experiments/prompt-vs-training-panel/configs/eval_panel_pstruct_warmed_local_4b.yaml.
+
+model_tag: qwen3-4b-seq-sft-dpo-kto-seed2-crossing-pstruct
+model_name: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed2/20260615_090734/Qwen3-4B-bnb-4bit/merged-16bit-lowmem-20260616
+gold_path: ../../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results_prompt_crossing_completion_4b
+
+prompt:
+  system: >-
+    Answer the user's question. Return only a JSON object with exactly two
+    keys: "answer" and "response_confidence". The "answer" value is your
+    answer. The "response_confidence" value is your probability from 0 to 1
+    that your response is appropriate. Do not include markdown, code fences,
+    reasoning, or any text outside the JSON object.
+
+generation:
+  enable_thinking: false
+  seed: 20240601
+  temperature: 0.0
+  max_new_tokens: 128
+  n_samples: 1
+  stated_confidence_structured_outputs: true
+  stated_confidence_field: response_confidence
+  stated_confidence_json_retries: 2
+
+confidence:
+  signal: self_consistency
+  n_samples: 1
+
+bootstrap:
+  n_resamples: 200
+  level: 0.95
+  seed: 12345
+
+vllm:
+  dtype: auto
+  gpu_memory_utilization: 0.40
+  max_lora_rank: 32
+  max_model_len: 2048
+
+arms:
+  - name: seq_sft_dpo_seed2_pstruct
+    method: dpo
+    model: qwen3-4b-seq-sft-dpo-kto-seed2-crossing-pstruct
+    # Amendment A sequential SFT->DPO seed2, lowmem-remerge pairing
+    # (docs/checkpoint-staging.md: eh-qwen3-4b-seq-sft-dpo-seed2-lora).
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed2/20260616_164539/final_model
+  - name: seq_sft_kto_seed2_pstruct
+    method: kto
+    model: qwen3-4b-seq-sft-dpo-kto-seed2-crossing-pstruct
+    # Amendment A sequential SFT->KTO seed2, lowmem-remerge pairing
+    # (docs/checkpoint-staging.md: eh-qwen3-4b-seq-sft-kto-seed2-lora).
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed2/20260616_183650/final_model
+
+eval_sets:
+  selfaware:
+    type: ood
+    path: ../../../../datasets/selfaware/SelfAware.json

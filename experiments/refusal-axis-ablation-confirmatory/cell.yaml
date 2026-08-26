@@ -1,0 +1,36 @@
+# refusal-axis-ablation-confirmatory: fresh-seed promotion cell for the full
+# refusal-axis ablation collapse (seed-1 re-derivation: 0.994 -> 0.0298).
+# Seed-2 lineage end to end, same registered recipe, no seed-1 artifact
+# reuse. Engine exception parity-locked (archived legacy intervention stack
+# is the instrument whose result is being confirmed).
+
+instrument:
+  harness:
+    extraction: experiments/common/knowledge_probe/hidden_state_probe.py
+    behavior_rows: configs/behavior_rows_build_clean_sft_grpo_v2_seed2.py
+    fit: experiments/common/mechinterp/residual_caution_direction.py
+    intervention: experiments/common/mechinterp/residual_intervention_runner.py
+  engine_exception: parity-locked
+  substrate: clean_sft_grpo_v2_seed2 on its own per-seed merged base
+    (published pins 2390e893 adapter, 4d526fdd base; local run dirs
+    20260804_131151 and 20260731_232307)
+
+# Stage order (lead-adjudicated 2026-08-16; the AMENDMENT's design list is a
+# component list, the mechanical dependency order is):
+#   1. extraction (GPU)  2. behavior-rows join (CPU, consumes extraction rows
+#   + the governed seed-2 RC scored_rows from grpo-three-seed-confirmatory)
+#   3. direction fit (CPU)  4. four-arm intervention (GPU)
+# The seed-2 response-confidence generation pass is NOT re-run: the resolved
+# grpo-three-seed-confirmatory cell's scored_rows.jsonl is the governed
+# stage-1 input (provenance-positive reuse, no fresh generation needed).
+run_order:
+  - {order: 1, config: configs/extraction_hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed2_full.yaml, gpu: true}
+  - {order: 2, config: configs/behavior_rows_build_clean_sft_grpo_v2_seed2.py, gpu: false}
+  - {order: 3, step: fit, gpu: false,
+     note: residual_caution_direction.py CLI per RUNBOOK.md; live schema
+           string mechinterp-residual-caution-direction/v1 is the renamed
+           but functionally identical successor of the seed-1 file's
+           phase3-residual-caution-direction/v1 (verified by git diff,
+           19 changed lines all naming/plumbing)}
+  - {order: 4, config: configs/phase3_current_clean_grpo_v2_caution_residual_intervention_seed2.yaml, gpu: true,
+     arms: [baseline, ablate, shift_minus2, shift_plus2]}

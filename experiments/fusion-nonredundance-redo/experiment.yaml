@@ -1,0 +1,53 @@
+slug: fusion-nonredundance-redo
+title: Gate-dial fusion non-redundance redo (registered CPU rerun)
+type: probe-fit
+status: resolved
+registered: true
+created_at: '2026-08-17T22:39:21Z'
+question: Does fusing the answerability gate score into the correctness dial improve
+  correctness triage on the deployed checkpoint's answerable items, or are the two
+  axes non-redundant for that task?
+prediction: 'Delta = AUROC(combined) - AUROC(dial) <= 0 (prior unregistered observation:
+  -0.0142, CI [-0.0214, -0.0074]).'
+falsifier: 'Delta >= +0.020 with the paired bootstrap CI excluding 0: the gate adds
+  real correctness information beyond the dial.'
+checkpoint:
+  repo: qwen3-4b clean-sft-merged-16bit + grpo-v2-lora (deployed; existing extractions
+    only)
+  revision: extraction__55254a04aa1f (gate) / amendment_t stage2 (dial)
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - two_signal_stage1p5_integration.py
+  pins:
+    cell.yaml: f5980c4c0f8d1e1cb0c2f994ac28f2197d523cf8af304f5bce66bd12c4fcebab
+    gates.yaml: 857295d61e8c81713428896babbf5b948fff6c2a57594e4f00d1e515610bfd6b
+    two_signal_stage1p5_integration.py: ba61ae9fbcbe6af04cce7a1d24b54024135add7040005aedacfdfd89a4556bfa
+  engine_exception:
+    kind: parity-locked
+    reason: 'No generation-bearing step exists: the cell is a CPU rerun of a committed
+      diagnostic over cached hidden-state extractions only, and its FR-G0 validity
+      gate requires byte-identical instrument parity with the PR #128 run it re-registers.
+      No engine is invoked.'
+  persistence:
+    two_signal_stage1p5_integration.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 16.3
+      note: byte-identical snapshot of experiments/common/mechinterp/two_signal_stage1p5_integration.py
+        (sha ba61ae9f...); single deterministic CPU pass (seed 20260630); a kill loses
+        nothing, rerun from scratch reproduces byte-identical aggregates. Requires
+        PYTHONPATH=.:archive/experiment/phase1/probe/legacy-wrapper-tree (post-reorg
+        import environment; no code change).
+inputs:
+- archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+- archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2
+- experiments/unified-two-signal-dial-veto/artifacts/two_signal_stage1p5_integration.json
+verdict: 'confirmed: fusing the gate score into the dial degrades correctness triage
+  (Delta -0.0142, CI [-0.0214, -0.0074] excludes 0 on the negative side); gate and
+  dial axes are non-redundant for correctness triage on the deployed checkpoint. FR-G0
+  pass, FR-G1 pass, FR-F1 not fired.'
+kg:
+- experiment:fusion-nonredundance-redo
+- mechanism:answerability-and-correctness-are-orthogonal-readout-axes

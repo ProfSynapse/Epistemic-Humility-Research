@@ -1,0 +1,50 @@
+slug: refusal-axis-ablation-confirmatory
+title: Refusal-axis ablation fresh-seed confirmatory
+type: steer-cell
+status: falsified
+registered: true
+created_at: '2026-08-16T09:51:56Z'
+question: Does ablating a freshly fit refusal-axis direction on clean_sft_grpo_v2_seed2
+  (own per-seed lineage, same registered recipe as seed 1) reproduce the known-item
+  over-refusal collapse at or below 0.10 with specificity intact, licensing promotion
+  of the 0.030-class full-ablation figure into papers 3 and 5?
+prediction: Ablate arm lands at or below 0.10 (modal 0.03-0.08) from a >=0.97 baseline
+  with specificity intact on known_correct_answered.
+falsifier: 'Post-ablation known-item over-refusal >= 0.30 on the fresh seed: collapse
+  is seed-1-specific, no promotion; partial band (0.10,0.30) or specificity break
+  also blocks promotion, reported straight.'
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  - RUNBOOK.md
+  - configs/extraction_hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed2_full.yaml
+  - configs/behavior_rows_build_clean_sft_grpo_v2_seed2.py
+  - configs/phase3_current_clean_grpo_v2_caution_residual_intervention_seed2.yaml
+  modules: []
+  pins:
+    cell.yaml: 0e70597c52351329cbc86b617435f465d0c99de078b8a12df75feab920da8a80
+    gates.yaml: 0daf7aeb14d30f251d9aa739cefa1bfad8514dd6d787cee37c810b0a922bf7cf
+    RUNBOOK.md: 47cbc58c0cc403c755e719f0df5007b6336021e02a217faa37b9241f55d65256
+    configs/extraction_hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed2_full.yaml: 6dd625fd3edb7eb7f962c3481283fefeac9546c1e8114a946f898aa11abd4da7
+    configs/behavior_rows_build_clean_sft_grpo_v2_seed2.py: 6da77fe199cdf849acb30bbe2865fc06af2b62bf238c80fa1406fc465139524d
+    configs/phase3_current_clean_grpo_v2_caution_residual_intervention_seed2.yaml: fa2f5e289907ff237a47a35ede714e288e9a239d8bc6d4552d787be912ae079c
+  persistence: {}
+  engine_exception:
+    kind: parity-locked
+    reason: 'Fresh-seed confirmatory of an archived-instrument result: the archived
+      HF-transformers greedy intervention stack is the instrument whose seed-1 result
+      is being confirmed; changing engines would break comparability.'
+inputs: []
+verdict: 'Falsifier fired: with a valid instrument (RC-G0 pass, baseline 1.000), full
+  refusal-axis ablation on clean_sft_grpo_v2_seed2''s own lineage leaves known-item
+  over-refusal at 0.553, far above both the 0.10 confirmation bound and the 0.30 falsifier
+  line, so the seed-1 0.994-to-0.030 collapse is seed-1-specific and no promotion
+  to the papers occurs, while the axis itself remains causally load-bearing at seed
+  2.'
+kg:
+- experiment:refusal-axis-ablation-confirmatory
+- mechanism:full-refusal-axis-ablation-collapse-is-seed1-specific
