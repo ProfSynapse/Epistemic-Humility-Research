@@ -1,0 +1,157 @@
+{
+  "arms_run_this_invocation": [
+    "arm0_baseline",
+    "arm1_gated_replication",
+    "arm2_random_910001",
+    "arm2_random_910002",
+    "arm2_random_910003",
+    "arm2_random_910004",
+    "arm2_random_910005",
+    "arm2_random_910006",
+    "arm2_random_910007",
+    "arm2_random_910008",
+    "arm2_random_910009",
+    "arm2_random_910010",
+    "arm2_random_910011",
+    "arm2_random_910012",
+    "arm2_random_910013",
+    "arm2_random_910014",
+    "arm2_random_910015"
+  ],
+  "row_counts": {
+    "arm0_baseline": 1206,
+    "arm1_gated_replication": 1206,
+    "arm2_random_910001": 872,
+    "arm2_random_910002": 872,
+    "arm2_random_910003": 872,
+    "arm2_random_910004": 872,
+    "arm2_random_910005": 872,
+    "arm2_random_910006": 872,
+    "arm2_random_910007": 872,
+    "arm2_random_910008": 872,
+    "arm2_random_910009": 872,
+    "arm2_random_910010": 872,
+    "arm2_random_910011": 872,
+    "arm2_random_910012": 872,
+    "arm2_random_910013": 872,
+    "arm2_random_910014": 872,
+    "arm2_random_910015": 872
+  },
+  "n_missing_out_text": {
+    "arm0_baseline": 0,
+    "arm1_gated_replication": 0,
+    "arm2_random_910001": 0,
+    "arm2_random_910002": 0,
+    "arm2_random_910003": 0,
+    "arm2_random_910004": 0,
+    "arm2_random_910005": 0,
+    "arm2_random_910006": 0,
+    "arm2_random_910007": 0,
+    "arm2_random_910008": 0,
+    "arm2_random_910009": 0,
+    "arm2_random_910010": 0,
+    "arm2_random_910011": 0,
+    "arm2_random_910012": 0,
+    "arm2_random_910013": 0,
+    "arm2_random_910014": 0,
+    "arm2_random_910015": 0
+  },
+  "readback_reports": {
+    "arm0_baseline": {
+      "n_dosed": 0,
+      "readback_mean": null,
+      "frac_within_tolerance": null
+    },
+    "arm1_gated_replication": {
+      "n_dosed": 870,
+      "readback_mean": 4.96870860048651,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910001": {
+      "n_dosed": 870,
+      "readback_mean": 4.969214010709507,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910002": {
+      "n_dosed": 870,
+      "readback_mean": 4.968382528802619,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910003": {
+      "n_dosed": 870,
+      "readback_mean": 4.96742738031729,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910004": {
+      "n_dosed": 870,
+      "readback_mean": 4.967782331798522,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910005": {
+      "n_dosed": 870,
+      "readback_mean": 4.968575100748097,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910006": {
+      "n_dosed": 870,
+      "readback_mean": 4.970574962179713,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910007": {
+      "n_dosed": 870,
+      "readback_mean": 4.968113291424055,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910008": {
+      "n_dosed": 870,
+      "readback_mean": 4.967997494438884,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910009": {
+      "n_dosed": 870,
+      "readback_mean": 4.969319963754046,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910010": {
+      "n_dosed": 870,
+      "readback_mean": 4.968871792357213,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910011": {
+      "n_dosed": 870,
+      "readback_mean": 4.968666239514637,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910012": {
+      "n_dosed": 870,
+      "readback_mean": 4.967842303030284,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910013": {
+      "n_dosed": 870,
+      "readback_mean": 4.967244034969949,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910014": {
+      "n_dosed": 870,
+      "readback_mean": 4.968020218471699,
+      "frac_within_tolerance": 1.0
+    },
+    "arm2_random_910015": {
+      "n_dosed": 870,
+      "readback_mean": 4.966881500480288,
+      "frac_within_tolerance": 1.0
+    }
+  },
+  "frozen_reuse_verified": {
+    "u_d": "dafa87d0e164cd824424652420055e8507b02a1c86f6895f14dcb109f6216f10",
+    "c_hat": "bf804498f5c1e5166206b0c4312c5f5fd7343ca6742171ccffce1126cec428e0",
+    "gate_fit": "31ebf51332a1868b1c867edf8d56921dd4360a4557b2bbad48c04df947c9c764",
+    "standardization": "bf730c4e77c799a36d561086a77e66b08a1c1cdd43cbc2a1d8c655ca8f0e8a09",
+    "dose_source": "3798b4f6146f8c29efa4e47743e73061ed0152d94866e4f1bf6b86335503dee9",
+    "row_pools": "0b28951d5267e3109d6bdc3c3471c8046e0a54e58a52c7a331a43b867c485c07"
+  },
+  "dose_target": 4.954897429720482,
+  "sigma_c": 0.8479971638308889,
+  "layer_idx": 16
+}

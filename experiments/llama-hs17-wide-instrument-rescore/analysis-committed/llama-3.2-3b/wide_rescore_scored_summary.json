@@ -1,0 +1,338 @@
+{
+  "family": "llama-3.2-3b",
+  "per_arm": {
+    "arm0_baseline": {
+      "n_rows": 1231,
+      "narrow_confab": {
+        "n": 897,
+        "successes": 11,
+        "rate": 0.012263099219620958,
+        "wilson_ci_95": [
+          0.006861106944103388,
+          0.021824805063680522
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 897,
+        "successes": 36,
+        "rate": 0.04013377926421405
+      },
+      "narrow_known": {
+        "n": 334,
+        "successes": 3,
+        "rate": 0.008982035928143712,
+        "wilson_ci_95": [
+          0.0030593125992502673,
+          0.026071093287131426
+        ]
+      },
+      "wide_detector_only_known": {
+        "n": 334,
+        "successes": 3,
+        "rate": 0.008982035928143712
+      },
+      "known_fired_n": 0
+    },
+    "arm1_gated_replication": {
+      "n_rows": 1206,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 637,
+        "rate": 0.7305045871559633,
+        "wilson_ci_95": [
+          0.7000914183771121,
+          0.7588957601258173
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 649,
+        "rate": 0.7442660550458715
+      },
+      "narrow_known": {
+        "n": 334,
+        "successes": 3,
+        "rate": 0.008982035928143712,
+        "wilson_ci_95": [
+          0.0030593125992502673,
+          0.026071093287131426
+        ]
+      },
+      "wide_detector_only_known": {
+        "n": 334,
+        "successes": 3,
+        "rate": 0.008982035928143712
+      },
+      "known_fired_n": 0
+    },
+    "arm2_random_910001": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 2,
+        "rate": 0.0022935779816513763,
+        "wilson_ci_95": [
+          0.0006292073094717999,
+          0.00832385005236229
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 34,
+        "rate": 0.0389908256880734
+      }
+    },
+    "arm2_random_910002": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 51,
+        "rate": 0.058486238532110095,
+        "wilson_ci_95": [
+          0.044761665607364325,
+          0.0760837885039401
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 85,
+        "rate": 0.09747706422018348
+      }
+    },
+    "arm2_random_910003": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 11,
+        "rate": 0.01261467889908257,
+        "wilson_ci_95": [
+          0.007058208683200449,
+          0.02244651338772003
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 43,
+        "rate": 0.04931192660550459
+      }
+    },
+    "arm2_random_910004": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 4,
+        "rate": 0.0045871559633027525,
+        "wilson_ci_95": [
+          0.001785257939737897,
+          0.011734836024115392
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 43,
+        "rate": 0.04931192660550459
+      }
+    },
+    "arm2_random_910005": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.004386020759814893
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 14,
+        "rate": 0.016055045871559634
+      }
+    },
+    "arm2_random_910006": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.004386020759814893
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 15,
+        "rate": 0.017201834862385322
+      }
+    },
+    "arm2_random_910007": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 15,
+        "rate": 0.017201834862385322,
+        "wilson_ci_95": [
+          0.010451825270645749,
+          0.028186970004313132
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 37,
+        "rate": 0.04243119266055046
+      }
+    },
+    "arm2_random_910008": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 9,
+        "rate": 0.010321100917431193,
+        "wilson_ci_95": [
+          0.005439323803925051,
+          0.019498361664976233
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 51,
+        "rate": 0.058486238532110095
+      }
+    },
+    "arm2_random_910009": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 16,
+        "rate": 0.01834862385321101,
+        "wilson_ci_95": [
+          0.011325315821478494,
+          0.029596997754489984
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 36,
+        "rate": 0.04128440366972477
+      }
+    },
+    "arm2_random_910010": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 83,
+        "rate": 0.09518348623853211,
+        "wilson_ci_95": [
+          0.07744255569028659,
+          0.11647548405332499
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 101,
+        "rate": 0.1158256880733945
+      }
+    },
+    "arm2_random_910011": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 7,
+        "rate": 0.008027522935779817,
+        "wilson_ci_95": [
+          0.003893873929800823,
+          0.016476774937081266
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 25,
+        "rate": 0.028669724770642203
+      }
+    },
+    "arm2_random_910012": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 45,
+        "rate": 0.051605504587155966,
+        "wilson_ci_95": [
+          0.038789409873394354,
+          0.06835493443185249
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 61,
+        "rate": 0.06995412844036697
+      }
+    },
+    "arm2_random_910013": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 70,
+        "rate": 0.08027522935779817,
+        "wilson_ci_95": [
+          0.06402709887636086,
+          0.10020520295412595
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 86,
+        "rate": 0.09862385321100918
+      }
+    },
+    "arm2_random_910014": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 7,
+        "rate": 0.008027522935779817,
+        "wilson_ci_95": [
+          0.003893873929800823,
+          0.016476774937081266
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 34,
+        "rate": 0.0389908256880734
+      }
+    },
+    "arm2_random_910015": {
+      "n_rows": 872,
+      "narrow_confab": {
+        "n": 872,
+        "successes": 2,
+        "rate": 0.0022935779816513763,
+        "wilson_ci_95": [
+          0.0006292073094717999,
+          0.00832385005236229
+        ]
+      },
+      "wide_detector_only_confab": {
+        "n": 872,
+        "successes": 26,
+        "rate": 0.02981651376146789
+      }
+    }
+  },
+  "WR_G1_regeneration_bridge": {
+    "id": "WR-G1",
+    "threshold": 0.5,
+    "metric": {
+      "n": 872,
+      "successes": 637,
+      "rate": 0.7305045871559633,
+      "wilson_ci_95": [
+        0.7000914183771121,
+        0.7588957601258173
+      ]
+    },
+    "pass": true
+  }
+}
