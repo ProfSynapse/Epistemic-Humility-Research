@@ -5271,7 +5271,10 @@
           "gates.yaml": "94ce682aefe9ef074b373962318f3699c414c3f753cfb94e0eeb7aee70148a22"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:llama-hs17-direction-specificity",
+        "mechanism:llama-hs17-write-is-direction-specific"
+      ],
       "prediction": "The gated write replicates above the 0.50 floor and clears the 3.0 effect ratio against the strongest of fifteen random directions.",
       "question": "Is llama's hs17 mid-band gated-write behavioral pass (held-out clean_tighten 0.742) direction-specific against fifteen matched-magnitude fresh random directions?",
       "registered": true,
@@ -6423,7 +6426,11 @@
           "gates.yaml": "81316abe82e0477bfd68402f4ec735e34a6595cbcb93c0a9717964a475f5ca49"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:qwen3-4b-l34-placebo-seed-census",
+        "mechanism:qwen-l34-random-direction-specificity-survives-seed-census",
+        "mechanism:qwen-l34-random-direction-sign-is-a-draw-level-accident"
+      ],
       "prediction": "All fifteen random lifts stay small: effect ratio >= 3.0 on the max-over-15 denominator, and >= 12/15 seeds suppressive (negative).",
       "question": "Does the raw-base Qwen3-4B L34 direction-specificity result (effect ratio 14.5 on one random draw) survive a fifteen-fresh-seed random-direction distribution?",
       "registered": true,

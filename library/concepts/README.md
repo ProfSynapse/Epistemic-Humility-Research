@@ -797,7 +797,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (552)
+## Mechanisms (cause -> effect) (555)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -1056,6 +1056,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[listener-aware-dpo-improves-ood-truthfulness]] : LACIE DPO finetuning on TriviaQA with listener-acceptance signal **enables** TruthfulQA truthfulness rises from 0.27 to 0.55 (+28 points absolute) at a 9-point 
 - [[listener-aware-preference-induces-emergent-abstention]] : DPO preference function with conservative utility ordering (false rejection preferred over false acceptance) applied to answer-only training data with no absten
 - [[llama-atlas-site-write-collapses-format-before-refusal-floor]] : The doubt-gated caution write applied at Llama-3.2-3B-Instruct's own atlas-located workspace-band sites (hidden states hs20/hs22/hs23, sigma-relative dose grid 
+- [[llama-hs17-write-is-direction-specific]] : On raw-base Llama-3.2-3B-Instruct, the frozen KU-gated `c_hat` write at the mid-band site hs17 (relative depth 0.607, dose 4.9549) is replicated under a fresh d
 - [[llm-rationale-misleads-human-judgment]] : Exposure to LLM-generated rationales about whether a question is known or unknown **decreases** Human accuracy on known-vs-unknown perception drops when the rat
 - [[logarithmic-scoring-rl-calibrates-direct-confidence]] : Fine-tuning a model with an RL reward derived from a logarithmic scoring rule over the model's stated confidence and answer correctness **enables** The model is
 - [[looping-parallel-layers-recovers-performance]] : Looping a parallel-executed block of a frozen pretrained transformer's middle layers for a task-scaled number of iterations, instead of applying the parallel st
@@ -1168,6 +1169,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[pstruct-stated-confidence-miscalibrated-near-chance]] : Scoring the stated_confidence field emitted under the structure-only P-struct prompt contract (JSON schema present, no abstention affordance in the prompt) agai
 - [[question-difficulty-alone-predicts-llm-confidence]] : Training the auxiliary calibrator on the question text only, with the LLM's generated answer omitted. **enables** The calibrator already attains respectable cal
 - [[question-familiarity-draws-confabulation-at-matched-doubt]] : Higher surface familiarity of an unanswerable question (corpus-internal token frequency and neighbor proxies), with internal doubt level held fixed by caution-d
+- [[qwen-l34-random-direction-sign-is-a-draw-level-accident]] : Fifteen fresh matched-dose random unit directions (seeds 920001-920015) are applied at the same site (hs34), dose (200.0), rows, and instrument as the historica
+- [[qwen-l34-random-direction-specificity-survives-seed-census]] : On raw-base Qwen3-4B at the late write site hs34 (dose 200.0), the frozen gated confab-tightening lift (+62.7pp, 137/185 vs undosed 21/185) is contrasted agains
 - [[qwen-midband-commitment-margins-miss-separation-floor]] : In the margin-mapping experiment (M1), per-row commitment margins (the minimum ladder dose along the frozen Qwen3.5-4B hs20 c_hat direction, reference dose_abs 
 - [[qwen-midband-margin-separation-is-instrument-resolution-limited]] : M1 (margin-mapping)'s censoring-aware separation criterion failed at coarse ladder resolution (observable bound 2.0 against a 2.5 floor), but the coarse 10-rung
 - [[qwen-midband-readout-and-susceptibility-channels-are-redundant]] : In the susceptibility-as-probe experiment (M2), a 5-fold cross-fitted logistic combination of the frozen hs20 c_hat readout projection (fold seed 48260718) plus

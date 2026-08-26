@@ -38,4 +38,7 @@ verdict: 'qwen3-4b hs34 gated-write specificity survives a 15-seed matched-dose 
   draw suppressive sign is not distribution-consistent (6/15 negative vs >=12 required,
   QG-G2 FAIL): specificity claim upgraded to distributional form, sign-opposition
   claim retired.'
-kg: []
+kg:
+- experiment:qwen3-4b-l34-placebo-seed-census
+- mechanism:qwen-l34-random-direction-specificity-survives-seed-census
+- mechanism:qwen-l34-random-direction-sign-is-a-draw-level-accident

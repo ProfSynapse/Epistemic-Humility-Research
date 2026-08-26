@@ -18,6 +18,7 @@ related:
 - '[[abstention-wide-instrument-calibration]]'
 - '[[gated-controller-and-layer-site-controls-survive-wide-instrument]]'
 - '[[random-direction-placebo-response-is-family-specific-in-sign]]'
+- '[[qwen3-4b-l34-placebo-seed-census]]'
 relationships:
 - type: builds_on
   target: '[[doubt-gated-caution-tighten]]'
@@ -58,6 +59,17 @@ relationships:
   - experiments/wide-instrument-control-rescore/AMENDMENT.md#outcome (WG-G1
     random-direction lift -4.3pp, suppressive, matching the census
     expectation this mechanism already establishes for qwen)
+- type: related_to
+  target: '[[qwen3-4b-l34-placebo-seed-census]]'
+  target_id: experiment:qwen3-4b-l34-placebo-seed-census
+  confidence: high
+  evidence:
+  - experiments/qwen3-4b-l34-placebo-seed-census/AMENDMENT.md (follow-up
+    cell extending this experiment's single WG-G1 random-direction draw,
+    seed 20260707, to a fifteen-seed distribution at the identical hs34
+    site, dose, rows, and instrument; upgrades the specificity ratio to a
+    distributional form and retires the sign-opposition reading of this
+    draw specifically, resolved 2026-08-26)
 ---
 
 Exploratory control-validation cell on raw-base Qwen3-4B, registered against a

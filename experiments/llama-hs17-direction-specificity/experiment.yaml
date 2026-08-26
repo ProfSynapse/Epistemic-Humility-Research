@@ -34,4 +34,6 @@ verdict: llama hs17 gated write replicates held-out (0.7282 >= 0.50, LG-G1 PASS)
   is direction-specific against 15 matched-dose random directions (effect ratio 8.25
   >= 3.0, LG-G2 PASS); known-correct cost gate NOT-ADJUDICABLE (KU fired 0/334), as
   pre-registered.
-kg: []
+kg:
+- experiment:llama-hs17-direction-specificity
+- mechanism:llama-hs17-write-is-direction-specific
