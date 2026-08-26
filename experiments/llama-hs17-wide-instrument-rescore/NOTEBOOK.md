@@ -6,6 +6,17 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-26 — aggregate exhaust published to HF (user-approved)
+
+`professorsynapse/eh-llama-hs17-wide-instrument-rescore`, revision
+`e7de12a938f0133e047dafbdb442df62f7ca317a`. 8 files / ~458 KB
+copy-everything mirror of `analysis-committed/` (wide-gates report, scored
+summary, generation/pool/graded/applied adjudication manifests) + README +
+PROVENANCE; verify gate PASS, zero exclusions, no row text. Recorded in
+`docs/public-artifacts.md`. Row-level shape is possible for this cell (the
+harness persisted text) but stays unpublished pending per-source license
+verdicts for the parent row pools.
+
 ### 2026-08-26 — full 17-arm regeneration, blinded adjudication, gates, resolved
 
 Generation: 17 arms (arm0 872+334, arm1 872+334, 15 random-seed arms x 872)
