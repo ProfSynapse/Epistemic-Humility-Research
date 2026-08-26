@@ -5302,16 +5302,23 @@
           "cell.yaml",
           "gates.yaml"
         ],
+        "engine_exception": {
+          "kind": "intervention",
+          "reason": "Per-row KU-gated activation write at hs17 via the tuner mechinterp InterventionHook path — the engine of llama-hs17-direction-specificity, whose arms this cell regenerates; the bridge comparison (WR-G1) requires the identical engine and generation contract as the resolved narrow cell (batched-generation.md decision table: per-row hooks/activation writing)."
+        },
         "modules": [],
         "persistence": {},
-        "pins": {}
+        "pins": {
+          "cell.yaml": "627c5b6a63d01a15f378df81446f405c6fcaa2b4256f16000bc6954bfd18c273",
+          "gates.yaml": "17451c5bf10db6da03a034490b4d9f039e62fe26c3accb6c26cca97ab793dc32"
+        }
       },
       "kg": [],
-      "prediction": "(recorded at sign from the AMENDMENT.md outcome menu)",
+      "prediction": "A: wide replicates + specific — WR-G1/G2/G3 all PASS; llama hs17 direction-specificity is instrument-robust (user + orchestrator ~65%, recorded 2026-08-26).",
       "question": "Does llama's hs17 direction-specific gated write (narrow clean_tighten effect ratio 8.25) survive the blinded wide abstention instrument, with a wide null for the same fifteen write-site random directions?",
       "registered": true,
       "slug": "llama-hs17-wide-instrument-rescore",
-      "status": "draft",
+      "status": "signed",
       "title": "Llama hs17 wide-instrument regeneration and re-score",
       "type": "steer-cell",
       "verdict": ""

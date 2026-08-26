@@ -1,6 +1,6 @@
 # Llama hs17 wide-instrument regeneration and re-score
 
-Status: DRAFT (not signed; predictions menu pending user selection).
+Status: SIGNED 2026-08-26 (lead + user; configs sha-pinned via bin/exp sign). Exploratory cell.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -84,8 +84,8 @@ the CPU smoke asserts the persistence schema before any GPU launch).
 
 ## Prediction
 
-(To be selected from the outcome menu at sign; scoreboard below records the
-calls.)
+Both predictors selected **A — wide replicates + specific** from the menu
+below (recorded 2026-08-26, before any run).
 
 Outcome menu, pre-stated:
 
@@ -166,8 +166,8 @@ sign; an ambiguous result is reported as ambiguous.
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | (recorded at sign) |
-| user | (recorded at sign, from the outcome menu above) |
+| orchestrator | A — wide replicates + specific (~65%; B ~20%, C ~15%) |
+| user | A (recorded 2026-08-26, selected from the pre-stated outcome menu) |
 
 ## Outcome
 
