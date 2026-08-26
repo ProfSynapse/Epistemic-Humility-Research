@@ -4,6 +4,7 @@ type: steer-cell
 status: resolved
 registered: true
 created_at: '2026-08-26T12:11:51Z'
+text_capture: enabled
 question: Does llama's hs17 direction-specific gated write (narrow clean_tighten effect
   ratio 8.25) survive the blinded wide abstention instrument, with a wide null for
   the same fifteen write-site random directions?
@@ -39,4 +40,6 @@ inputs:
 verdict: Wide-instrument regeneration of the llama hs17 operating point passes all
   gates (net wide lift 0.6319, effect ratio 9.34, CG1 19/19); llama direction-specificity
   is instrument-robust (Outcome A).
-kg: []
+kg:
+- experiment:llama-hs17-wide-instrument-rescore
+- mechanism:llama-hs17-direction-specificity-survives-wide-instrument

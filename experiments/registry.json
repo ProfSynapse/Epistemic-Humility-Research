@@ -5313,12 +5313,16 @@
           "gates.yaml": "17451c5bf10db6da03a034490b4d9f039e62fe26c3accb6c26cca97ab793dc32"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:llama-hs17-wide-instrument-rescore",
+        "mechanism:llama-hs17-direction-specificity-survives-wide-instrument"
+      ],
       "prediction": "A: wide replicates + specific — WR-G1/G2/G3 all PASS; llama hs17 direction-specificity is instrument-robust (user + orchestrator ~65%, recorded 2026-08-26).",
       "question": "Does llama's hs17 direction-specific gated write (narrow clean_tighten effect ratio 8.25) survive the blinded wide abstention instrument, with a wide null for the same fifteen write-site random directions?",
       "registered": true,
       "slug": "llama-hs17-wide-instrument-rescore",
       "status": "resolved",
+      "text_capture": "enabled",
       "title": "Llama hs17 wide-instrument regeneration and re-score",
       "type": "steer-cell",
       "verdict": "Wide-instrument regeneration of the llama hs17 operating point passes all gates (net wide lift 0.6319, effect ratio 9.34, CG1 19/19); llama direction-specificity is instrument-robust (Outcome A)."

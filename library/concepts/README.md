@@ -797,7 +797,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (555)
+## Mechanisms (cause -> effect) (556)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -1056,6 +1056,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[listener-aware-dpo-improves-ood-truthfulness]] : LACIE DPO finetuning on TriviaQA with listener-acceptance signal **enables** TruthfulQA truthfulness rises from 0.27 to 0.55 (+28 points absolute) at a 9-point 
 - [[listener-aware-preference-induces-emergent-abstention]] : DPO preference function with conservative utility ordering (false rejection preferred over false acceptance) applied to answer-only training data with no absten
 - [[llama-atlas-site-write-collapses-format-before-refusal-floor]] : The doubt-gated caution write applied at Llama-3.2-3B-Instruct's own atlas-located workspace-band sites (hidden states hs20/hs22/hs23, sigma-relative dose grid 
+- [[llama-hs17-direction-specificity-survives-wide-instrument]] : On raw-base Llama-3.2-3B-Instruct, the frozen KU-gated `c_hat` write at the mid-band site hs17 (dose 4.9549) and its fifteen matched-dose random-direction contr
 - [[llama-hs17-write-is-direction-specific]] : On raw-base Llama-3.2-3B-Instruct, the frozen KU-gated `c_hat` write at the mid-band site hs17 (relative depth 0.607, dose 4.9549) is replicated under a fresh d
 - [[llm-rationale-misleads-human-judgment]] : Exposure to LLM-generated rationales about whether a question is known or unknown **decreases** Human accuracy on known-vs-unknown perception drops when the rat
 - [[logarithmic-scoring-rl-calibrates-direct-confidence]] : Fine-tuning a model with an RL reward derived from a logarithmic scoring rule over the model's stated confidence and answer correctness **enables** The model is

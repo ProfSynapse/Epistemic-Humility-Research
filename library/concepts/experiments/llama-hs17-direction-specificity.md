@@ -20,6 +20,7 @@ related:
 - '[[activation-steering]]'
 - '[[known-unknown-direction]]'
 - '[[abstention]]'
+- '[[llama-hs17-wide-instrument-rescore]]'
 relationships:
 - type: builds_on
   target: '[[j-space-cross-family-layer-contrast]]'
@@ -61,6 +62,16 @@ relationships:
   target: '[[abstention]]'
   target_id: term:abstention
   confidence: medium
+- type: related_to
+  target: '[[llama-hs17-wide-instrument-rescore]]'
+  target_id: experiment:llama-hs17-wide-instrument-rescore
+  confidence: high
+  evidence:
+  - experiments/llama-hs17-wide-instrument-rescore/AMENDMENT.md (follow-up
+    cell regenerating this experiment's frozen operating point and random-
+    direction census with a text-persisting harness, re-scoring under the
+    wide two-instrument stack; resolved 2026-08-26, Outcome A, wide
+    replicates and specific)
 ---
 
 Exploratory cell on raw-base `unsloth/Llama-3.2-3B-Instruct` running the
