@@ -45,8 +45,10 @@ evidence_base: >
   experiments/dark-actuator-screen/AMENDMENT.md,
   experiments/jlens-trained-checkpoint-midband-ablation/AMENDMENT.md,
   experiments/caution-ablation-rederivation/AMENDMENT.md,
-  experiments/refusal-axis-ablation-confirmatory/AMENDMENT.md, and
-  `experiments/caution-install-bounded-site-sweep/AMENDMENT.md`.
+  experiments/refusal-axis-ablation-confirmatory/AMENDMENT.md,
+  `experiments/caution-install-bounded-site-sweep/AMENDMENT.md`,
+  experiments/llama-hs17-direction-specificity/AMENDMENT.md, and
+  experiments/qwen3-4b-l34-placebo-seed-census/AMENDMENT.md.
 notes: >
   Exploratory draft, not yet submission-ready. Every reader-facing claim maps
   to the governed experiment document that registered it in Appendix A; body
@@ -1124,16 +1126,20 @@ pushes it up. A confound that a placebo is meant to catch would push the same
 way as the true write, and this one pushes the opposite way. That comparison is
 measured at the same Qwen3.5-4B mid-band operating point where the census
 placebo was dosed, and there the write's effect can be attributed to the
-fitted direction rather than to perturbation in general. The same opposition
-has been measured at the raw-base Qwen3-4B late-site controller of
-Sections 4.5 through 4.7, a different model and a different write site: under
-the wide-instrument re-score of that cell (Section 6.4), the gated write
-lifts confabulation abstention by 62.7 points while the matched-magnitude
-random direction moves it 4.3 points down, an effect ratio of 14.5 against
-the 3.0 floor. The sign-opposition holds at both qwen operating points. What
-the late site still lacks is a seed distribution: one committed random draw
-has been dosed there, against the fifteen the census supplies at the
-mid-band point.
+fitted direction rather than to perturbation in general.
+
+The raw-base Qwen3-4B late-site controller of Sections 4.5 through 4.7, a
+different model and a different write site, carries the same distributional
+test. Under the wide-instrument re-score of that cell (Section 6.4), the
+gated write lifts confabulation abstention by 62.7 points; across a
+fifteen-seed random census at the same site, dose, and instrument, the
+largest absolute random lift is 13.0 points, an effect ratio of 4.83
+against the 3.0 floor. Specificity holds there under a distributional
+denominator. The sign does not: only six of fifteen seeds move abstention
+down (median lift +0.5 points), so the late-site random response has no
+consistent sign. Sign-opposition is a mid-band result, established where
+the census above measures it as a distribution; at the late site the
+specificity claim rests on the distributional ratio, and on nothing else.
 
 #### Mistral
 
@@ -1163,25 +1169,47 @@ adversarial audit across six attack surfaces (Appendix A).
 
 #### Llama
 
-Llama is not shown actuable at the sites tested at all: its gated write failed
-on format collapse before reaching the refusal floor, and a dedicated
-wide-instrument re-run confirmed that failure is real rather than a
-detector-coverage artifact. The wide instrument does credit abstention idioms
-the narrow detector missed, lifting the best well-formed rung from 32.8% to
-45.7%, but no well-formed rung reaches the 0.60 floor: the only doses that
-push refusal past 0.5 break the output format and drag known-correct false
-refusal up with them. Unlike Mistral, whose narrow miss was substantially
-vocabulary coverage, Llama's failure survives the instrument upgrade.
+Llama carries a direction-specific verified write — at its own
+profile-selected mid-band site, not at the read-selected sites the atlas
+ladder dosed. At hs17, relative depth 0.607, the one Llama site that
+clears a held-out abstention floor (Section 6.5), the gated write reaches
+held-out confabulation tightening of 635/872 = 0.728 (Wilson 95% CI
+[0.698, 0.757]) against a 0.50 floor. And it is direction-specific:
+against fifteen matched-dose random unit directions at the same site, the
+strongest random arm reaches 0.096, a lift of +8.7 points over the 0.9%
+undosed baseline against the gated write's +71.9, an effect ratio of 8.25
+against the 3.0 floor. The known-correct cost gate is not adjudicable at
+this operating point, and the reason is itself the selectivity the gate
+exists to supply: the known-unknown gate fires on 0 of 334 held-out
+known-correct rows, so there is no fired population to measure a cost rate
+on, and the unconditional 0/334 false refusals is reported descriptively
+rather than as a gated claim. The result stands on the parent cell's
+narrow clean-tightening instrument; a wide-instrument re-score, with a
+write-site null under the wide stack, is what stands between these numbers
+and the wide-instrument rows above.
+
+At the read-selected atlas sites, by contrast, Llama is not shown actuable:
+the gated write fails on format collapse before reaching the refusal
+floor, under narrow and wide instruments alike. The wide instrument does
+credit abstention idioms the narrow detector missed, lifting the best
+well-formed rung from 32.8% to 45.7%, but no well-formed rung reaches the
+0.60 floor: the only doses that push refusal past 0.5 break the output
+format and drag known-correct false refusal up with them. Unlike Mistral,
+whose narrow-instrument miss is substantially vocabulary coverage, Llama's
+atlas-site failure is not an instrument artifact. The Llama split is a
+site split: the same family, gate, and direction recipe that collapses at
+the read-selected depths verifies cleanly at the family's own mid-band
+write site.
 
 A caution travels with Llama's entry in the placebo census below, and it
 applies well beyond Llama. Read-optimal and actuate-optimal depth are
-separately measured quantities in this paper, and for Llama they are not the
-same site: that distribution was measured at its read-selected site, relative
-depth 0.714, while the one Llama write that has cleared a held-out abstention
-floor ran at relative depth 0.607 (Section 6.5). The
-Llama null is a null at the read site, not at the write site, and nothing here
-measures what a random direction does at the depth where Llama would actually
-be written to.
+separately measured quantities in this paper, and for Llama they are not
+the same site: that census distribution is measured at its read-selected
+site, relative depth 0.714. The write site has its own fifteen-seed null
+under the narrow instrument — random directions at hs17 land between 0.0%
+and 9.6% tightening against the gated write's 72.8% — but no
+wide-instrument null exists at the write depth, so the suppressive
+read-site distribution should not be quoted as the write site's null.
 
 #### Gemma
 
@@ -1298,11 +1326,13 @@ sign is not homogeneous within a family either.
 
 Read together, the four families fall along a spectrum rather than splitting
 into pass and fail. Qwen passes direction-specificity against the 3.0 floor.
-Mistral actuates, with its benefit and cost gates clearing, but reaches only
+Llama passes it too, at its own mid-band write site (8.25 under the narrow
+instrument, with a fifteen-seed denominator), while remaining not shown
+actuable at its read-selected sites. Mistral actuates, with its benefit and
+cost gates clearing, but reaches only
 1.87 at the site tested here and 2.03 on an independent re-measurement at the
 same operating point, on fresh rows under a stricter fifteen-seed
-denominator. Llama
-is not shown actuable at the sites tested at all. Gemma actuates in a shallow
+denominator. Gemma actuates in a shallow
 band, and no site tested for specificity there reaches the floor.
 
 ---
@@ -1323,7 +1353,7 @@ Taken together, the channels sort by how far each one gets before it breaks.
 | Write site, mid-band versus late (Qwen3-4B) | Mid-band wins by 22.7 points at +0.78 points of cost |
 | Token-target write (Qwen3-4B, mid-band) | Real on its own (47.6%), redundant on top of the boundary push (+0.54 points) |
 | Cross-family, Mistral-7B-v0.3 | Benefit and cost gates pass under a blinded wide instrument; direction-specificity fails at every site tested |
-| Cross-family, Llama-3.2-3B | A gated write at its atlas-band sites failed on format collapse before the refusal floor; a wide-instrument re-run confirmed the failure is not a detector-coverage artifact |
+| Cross-family, Llama-3.2-3B | At its own mid-band site (hs17) the gated write clears its held-out abstention floor (0.728) and is direction-specific (ratio 8.25 over fifteen seeds, narrow instrument; cost gate not adjudicable, KU fires 0/334). At its read-selected atlas-band sites it fails on format collapse before the refusal floor, under narrow and wide instruments alike |
 | Cross-family, Gemma-4-E4B | Behavioral gates pass at four of the eight depths tested; no tested site reaches the direction-specificity floor |
 
 Five readings come out of that grid.
@@ -1355,18 +1385,29 @@ Five readings come out of that grid.
    sharing seam either fails direction-specificity or never reaches a usable
    dose.
 
-4. **Benefit and cost travel; direction-specificity does not.** The
-   cross-family work makes the recipe's scope a measurement rather than an
-   assumption: Mistral clears benefit and cost under a blinded instrument at
-   69.9% graded refusal and 0.52% known-correct cost, while
-   direction-specificity fails on Mistral at three independent operating
-   points and on gemma at both above-seam sites where a usable dose existed.
+4. **Benefit and cost travel; direction-specificity travels only with the
+   right site.** The cross-family work makes the recipe's scope a
+   measurement rather than an assumption. Mistral clears benefit and cost
+   under a blinded instrument at 69.9% graded refusal and 0.52%
+   known-correct cost, while direction-specificity fails on Mistral at
+   three independent operating points and on gemma at both above-seam sites
+   where a usable dose existed. Llama cuts the other way: specificity fails
+   at every read-selected site and verifies at 8.25 at the family's own
+   mid-band write site. The boundary is a site-selection boundary, not a
+   family one: specificity appears where a family's own site search finds
+   it, and the Qwen and Llama searches have found it so far.
 
 5. **The reason specificity fails is measured, not mysterious.** A
    matched-magnitude random direction is not behaviorally inert in any
-   family tested, and its sign is a family property, suppressing hedging in
-   qwen and Llama and recruiting it in Mistral. Any future
-   direction-specificity claim has to be checked against that measured null.
+   family tested, and its sign is a property of the family-and-site
+   operating point rather than of the family alone: the census measures
+   suppression in qwen and Llama and recruitment in Mistral at their
+   certified placebo setpoints, while the raw-base qwen late site has no
+   consistent sign at all (six of fifteen seeds negative). A signless
+   distribution still yields individual signed draws, so any
+   direction-specificity claim has to be checked against a measured null
+   distribution at its own operating point, not a sign taken from another
+   point or from a single draw.
 
 The controller these results support is the four-step recipe stated in the
 introduction. It is closer to a control system than to a prompt: the model's
@@ -1441,8 +1482,10 @@ steering characterizes (Nguyen et al., 2026); the gate is one way of moving
 along that frontier without lowering the dose.
 
 The decomposition runs on qwen and Mistral because they are the only two
-families with a certified gated operating point to take apart: Llama's
-controller has never cleared its behavioral gates at any site (Section 4.8),
+families with a certified gated operating point to take apart: Llama's hs17
+write clears its held-out floor and passes direction-specificity, but its
+cost gate is not adjudicable there (the KU gate fires on no known-correct
+rows, so there is no fired population to attribute a cost contribution on),
 and gemma's actuating sites either fail direction-specificity or pass it
 only degenerately, so neither offers an operating point where a gate
 contribution could be attributed.
@@ -1491,7 +1534,9 @@ not population effect-size estimates. Key limits:
   two-instrument stack used for the cross-family work in Section 4.8
   (`experiments/wide-instrument-control-rescore`); all three conclusions
   survive unchanged (random-direction specificity ratio 14.5 against a 3.0
-  floor, permuted-gate cost excess +20.6pp with 95% CI [+14.8, +26.3],
+  floor on the one committed draw and 4.83 under the fifteen-seed census of
+  `experiments/qwen3-4b-l34-placebo-seed-census`, permuted-gate cost excess
+  +20.6pp with 95% CI [+14.8, +26.3],
   layer-site advantage +22.70pp with 95% CI [+16.2, +29.7]), closing this gap.
   A flat, family-agnostic placebo tolerance is nonetheless known to be
   miscalibrated to at least one family's baseline hedging rate;
@@ -1606,7 +1651,11 @@ measured null distribution, using a percentile-based tolerance or a
 sign-opposition criterion (does the true write move behavior opposite to that
 family's nonspecific-perturbation response), rather than against a flat
 symmetric band or a single random seed. The three distributions in Section 4.8
-supply that null at fifteen seeds for the three families they cover.
+supply that null at fifteen seeds for the three families they cover, and the
+raw-base late-site census supplies the cautionary bound: a distribution with
+no consistent sign (six of fifteen seeds negative) still yields individual
+signed draws, so a sign criterion is only as trustworthy as the distribution
+behind it, and a sign read off a single draw is not a criterion at all.
 
 Recommended escalation, in order of priority:
 
@@ -1615,14 +1664,15 @@ Recommended escalation, in order of priority:
    in the Qwen lineage, while the refusal-versus-confabulation encoding reads
    linearly in all four families audited, and a held-out contrast at each
    family's own profile-selected mid-band site has since run on two of the
-   four registered families: Llama cleared its pre-registered abstention
-   floor at its own mid-band site (0.742 against a 0.50 floor) and Mistral
-   missed the same floor marginally (0.489, with its confidence interval
-   straddling the floor). The registered roll-up rule declares fewer than
+   four registered families: Llama clears its abstention floor at its own
+   mid-band site, with its placebo arm passing (clean tightening 0.728
+   against a 0.50 floor, ratio 8.25 over fifteen seeds, Section 4.8), and
+   Mistral misses the same floor marginally (0.489, with its confidence
+   interval straddling the floor). The roll-up rule declares fewer than
    three families inconclusive, so the cross-family question is still
    unanswered in either direction. The concrete ask is to complete that
    denominator under the revised instrument, and to attach the placebo arm
-   the mid-band cells did not carry.
+   the Mistral mid-band cell does not carry.
 2. Direction verbalization and workspace localization beyond the Qwen
    lineage. The J-lens layer profile has now run on Llama and Mistral, and
    their profile-selected mid-band sites are the ones dosed in item 1. What
@@ -1642,15 +1692,18 @@ Recommended escalation, in order of priority:
    instability; either way, a future attempt needs an operating point where
    the nonspecific response is small or stable, with its placebo criterion
    registered against the family's measured null distribution there.
-4. A Llama operating point worth a held-out stage. The wide-instrument
-   retest of Llama's atlas sites forecloses the current ladder: no dose both
-   clears the pre-registered abstention floor and leaves output well-formed,
-   so a held-out pass is not reachable at those sites and a future attempt
-   needs a different site or dose shape. The pieces a successor needs are in
-   place: Llama's placebo null is measured and suppressive, so Llama is not
-   a null control and a flat tolerance against zero is the wrong criterion,
-   and the one Llama write that has cleared a held-out abstention floor, at
-   the mid-band site in item 1, has never been given a placebo arm.
+4. A Llama operating point under the wide instrument. The wide-instrument
+   retest of Llama's atlas sites forecloses that ladder: no dose both
+   clears the abstention floor and leaves output well-formed,
+   so a held-out pass is not reachable at those sites. The mid-band route
+   delivers what the atlas route cannot: the hs17 write clears its
+   held-out abstention floor and passes direction-specificity at 8.25 over
+   fifteen seeds (Section 4.8), under the parent's narrow instrument. The
+   remaining ask is the wide-instrument re-score of that operating point —
+   including a write-site random-direction null under the wide stack,
+   since the suppressive read-site census cannot stand in for it — before
+   Llama's mid-band numbers are set beside the wide-instrument rows of the
+   other families.
 5. Gemma's key-value sharing seam: the coverage question is closed (Section
    4.8 and Appendix F) and the mechanism question is not. It cannot be settled
    by writing to
@@ -1764,16 +1817,19 @@ alone supplies selectivity or at a mid-band dose where the write self-sorts
 and the gate mainly holds cost down.
 
 What could still take that apart is specific. The strongest form of the
-direction-specificity test already fails on two of the four families here, and
-matched-magnitude random directions move abstention in every family measured,
-in a family-specific direction. The qwen controller's sign-opposition to its
-own family's random-direction null has now held at both of its operating
-points, including the raw-base one, but the raw-base measurement rests on a
-single random draw rather than a seed distribution. If a full null
-distribution at that site overturns the sign, or if a per-family site search
-fails to recover selective actuation on Mistral and Llama, then what this
-paper reports is a Qwen-lineage result with a well-characterized instrument
-attached, not a recipe. That is the test the next study should try to fail.
+direction-specificity test fails on two of the four families here, and
+matched-magnitude random directions move abstention in every family measured.
+The claims are scoped to what the controls establish: the sign-opposition
+argument belongs to the mid-band point where the null is measured as a
+distribution and is no part of the recipe — at the raw-base late site the
+random null has no consistent sign, and the specificity claim there rests on
+the 4.83 distributional ratio alone — and the recipe is not Qwen-only, since
+Llama's own mid-band site verifies at 8.25 over fifteen seeds. What remains
+open is Mistral: if an operating point with a small or stable nonspecific
+response still fails the ratio test, and gemma's seam ablation never yields a
+clean site, the recipe reading narrows to families whose site search finds a
+specific write — two of four so far. That is the test the next study should
+try to fail.
 
 ---
 
@@ -1860,6 +1916,8 @@ and its recorded status.
 | Answer-sycophancy pilot found a readable direction but no clean actuator against a matched control; carries no body evidence, referenced only as future work in Section 6.5 | `experiments/aq-sycophancy-activation-actuator/AMENDMENT.md` Outcome | Unsigned interim pilot (draft, not a governed result) |
 | Initial cross-family run: gated write does not actuate FIT-viable canonical clean refusal at either atlas-located non-Qwen site under the locked three-phrase detector; Llama fails on format collapse before the refusal floor, Mistral peaks 0.579 vs the 0.60 floor with the miss substantially canonical-phrase coverage | `experiments/rr-cross-family-raw-refusal/AMENDMENT.md` Outcome | Exploratory falsification (detector-vocabulary scope disclosed; superseded by the RR2 wide-instrument re-read on Mistral and the Llama wide-instrument retest) |
 | Llama wide-instrument retest: shape F robust to the certified wide instrument; the wide stack credits idioms the narrow detector missed (best well-formed rung 0.328 -> 0.457) but no well-formed rung reaches the 0.60 floor, and the rungs above 0.5 are format-broken with runaway known-correct false refusal; at the well-formed peak the effect is direction-specific (ratio 3.73) | `experiments/llama-atlas-gated-wide-instrument-retest/AMENDMENT.md` Outcome | Exploratory confirmation (R1: Llama not a coverage artifact) |
+| Llama hs17 mid-band write replicates held-out (clean tightening 635/872 = 0.7282, Wilson [0.6977, 0.7567], vs parent 0.7420) and is direction-specific against 15 matched-dose random directions (strongest random arm 0.0963, gated lift 0.7190 vs max abs random lift 0.0872, effect ratio 8.25 vs 3.0 floor); known-correct cost gate NOT-ADJUDICABLE (KU fired 0/334; unconditional false refusal 0/334 descriptive), as pre-registered; narrow parent instrument, no wide re-score | `experiments/llama-hs17-direction-specificity/AMENDMENT.md` Outcome | Exploratory, resolved; prediction confirmed |
+| Raw-base Qwen3-4B late-site (hs34) 15-seed placebo census: specificity survives the distributional denominator (max abs random lift 13.0pp, effect ratio 4.83 vs 3.0 floor, QG-G1 PASS) but sign-consistency fails (6/15 seeds negative vs >=12 required, QG-G2 FAIL); the historical seed draw's -4.3pp suppressive lift is a draw accident; specificity claim upgraded to distributional form, sign-opposition claim retired | `experiments/qwen3-4b-l34-placebo-seed-census/AMENDMENT.md` Outcome | Exploratory, resolved MIXED; reported straight |
 | Mistral cross-family gated write cleared benefit (69.9% adjudicated refusal) and cost (0.52% known-correct) gates under a wide blinded instrument but failed the flat 2-point placebo tolerance (+7.39pp random-direction lift) | `experiments/rr2-mistral-adjudicated-refusal-confirm/AMENDMENT.md` Outcome | Exploratory falsification (placebo-criterion design flaw, not benefit/cost) |
 | Wide-instrument baseline hedging and placebo response are family-graded and family-signed (qwen -5.13pp suppression, Mistral +7.39pp recruitment); flat placebo tolerances must be registered per-family | `experiments/abstention-wide-instrument-calibration/AMENDMENT.md` Outcome | Exploratory instrument calibration, resolved |
 | Corrected effect-ratio placebo criterion (>= 3x max-over-K fresh-seed random lift) still falsified Mistral direction-specificity (ratio 1.87) while reproducing RR2's benefit (69.9% adjudicated refusal) and cost (0.52% known-correct) exactly; red-team certified robust to detector-only and mean-of-K denominators; Mistral's random-direction lift spans -7.4 to +21.8pp across three fresh seeds; Llama rider placebo response is null at matched magnitude, completing the three-family sign map | `experiments/rr3-corrected-placebo-replication/AMENDMENT.md` Outcome | Exploratory falsification (corrected-criterion re-adjudication of the RR2 claim, benefit/cost intact) |
@@ -1915,6 +1973,8 @@ Generated by `papers/paper-5-actuation/scripts/build_coverage_table.py` (determi
 | `aq-sycophancy-activation-actuator` | draft | `Qwen/Qwen3-4B` @ `1cfa9a7208912126459214e8b04321603b3df60c` | 1 declared / 1 launched (single-substrate cell) | 6.5 |
 | `rr-cross-family-raw-refusal` | falsified | checkpoint.repo (verbatim): "cross-family (two atlas-mapped substrates)"; checkpoint.revision (verbatim): "see cell.yaml families (revisions pinned from fleet model_matrix.yaml at sign)". DECLARED in cell.yaml: unsloth/Llama-3.2-3B-Instruct @ 006f5dcd1393c3add266de40994ba96225e9689d; mistralai/Mistral-7B-Instruct-v0.3 @ c170c708c41dac9275d15a8fff4eca08d52bab71; confirmatory execution model (batch verbs for baseline/capture; mechinterp steer for writes) | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Falsified, both families shape F: the doubt-gated caution write does not actuate FIT-viable canonical clean refusal at either atlas-located non-Qwen site; llama fails on format collapse before the refusal floor (robust t..." | 4.8, 6.5 |
 | `llama-atlas-gated-wide-instrument-retest` | resolved | `unsloth/Llama-3.2-3B-Instruct` @ `006f5dcd1393c3add266de40994ba96225e9689d` | 1 declared / 1 launched (single-substrate cell) | 4.8 |
+| `llama-hs17-direction-specificity` | resolved | `unsloth/Llama-3.2-3B-Instruct` @ `raw-base (bf16 instruct, no adapter, no 4-bit quantization)` | 1 declared / 1 launched (single-substrate cell) | 4.8, 6.5 |
+| `qwen3-4b-l34-placebo-seed-census` | resolved | `unsloth/Qwen3-4B` @ `raw-base (no adapter; bf16, no 4-bit quantization)` | 1 declared / 1 launched (single-substrate cell) | 4.8, 6.4, 7 |
 | `rr2-mistral-adjudicated-refusal-confirm` | falsified | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: mistralai/Mistral-7B-Instruct-v0.3 @ c170c708c41dac9275d15a8fff4eca08d52bab71; direct InterventionHook/GenerationInterventionController/RunLog driving (RR precedent, not the mechinterp-steer YAML recipe path) | DECLARED 2 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Falsified on the placebo leg: the blinded adjudicated instrument confirms idiom-inclusive mistral refusal at 0.699 with pristine cost, vindicating the RR detector-width caveat, but a magnitude-matched random direction li..." | 4.8, 6.5 |
 | `abstention-wide-instrument-calibration` | resolved | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: qwen35-4b; llama32-3b; mistral7b-v03 | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Resolved: wide-instrument baseline abstention is family-graded (qwen 0.104, llama 0.164, mistral 0.280) and placebo response is family-specific in sign (qwen suppresses -5.13 points where mistral recruits +7.39), so the ..." | 4.8, 6.5 |
 | `rr3-corrected-placebo-replication` | falsified | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: mistralai/Mistral-7B-Instruct-v0.3 @ c170c708c41dac9275d15a8fff4eca08d52bab71; mistral7b_instruct_v03; unsloth/Llama-3.2-3B-Instruct @ 006f5dcd1393c3add266de40994ba96225e9689d | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "FALSIFIED under the corrected effect-ratio placebo criterion: the mistral gated caution write is not direction-specific (effect ratio 1.87 < 3.0, max fresh-seed random lift +21.8 points) while benefit and cost reproduce ..." | 4.8, 6.5 |
@@ -1998,12 +2058,16 @@ gap between prediction and result without consulting the text.
   per-family measured null distribution the census supplies at fifteen seeds
   (Section 4.8), for example via a percentile-based tolerance or a
   sign-opposition criterion, not a flat symmetric tolerance and not a single
-  seed. The per-family wide-instrument baselines (qwen 0.104, Llama 0.164,
+  seed — and not a sign taken from one draw: the raw-base late-site null has
+  no consistent sign while its individual draws land signed. The
+  per-family wide-instrument baselines (qwen 0.104, Llama 0.164,
   Mistral 0.280) still anchor the recruitment-versus-suppression axis.
-- Run Llama's gated boundary push at its own actuation-selected site, and
-  score it under the wide two-instrument stack, before claiming or ruling out
-  cross-family direction-specificity for that family. Its placebo null is
-  measured and suppressive, so it cannot serve as a null control.
+- Llama's gated boundary push passes direction-specificity at its own
+  actuation-selected site (fifteen-seed placebo arm, Section 4.8), under the
+  parent's narrow instrument. The remaining step is
+  the wide-instrument re-score of that operating point, with a write-site
+  null under the wide stack; the read-site placebo null is measured and
+  suppressive, so it cannot serve as the write site's null control.
 - The `doubt-regulated-caution` cell (trained-lineage predecessor context) and
   the `evidence-response-direction-search` null remain front-matter and
   Appendix A entries only, per the paper's raw-base scope.
