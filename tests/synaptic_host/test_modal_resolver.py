@@ -227,7 +227,8 @@ class FakeFinalizer:
                     verified.to_dict(), sort_keys=True, separators=(",", ":")
                 ).encode()
             ).hexdigest(),
-            roots=roots, python_implementation="cpython",
+            roots=roots, writable_capability_root="/workspace/run",
+            python_implementation="cpython",
             python_version=deployment.python_version,
             python_executable=deployment.python_executable,
             python_executable_digest=deployment.python_executable_digest,
