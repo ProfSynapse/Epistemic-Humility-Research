@@ -1,22 +1,28 @@
-"""Epistemic Humility host adapters for the Synaptic Tuner public API."""
+"""Lazy host adapters that do not import the engine before CLI bootstrap."""
 
-from .modal_provider import ExplicitModalHostSession, ModalHostConfigV1
-from .modal_resolver import (
-    ModalProviderStateV1,
-    ModalTrainingIntentV1,
-    StrictModalTrainingResolver,
-)
-from .security import BoundedGrantProvider, FileHmacAuthenticator, ScopedGitRemoteReader
-from .sqlite_repository import SqliteTrainingRepository
+from importlib import import_module
 
-__all__ = [
-    "BoundedGrantProvider",
-    "ExplicitModalHostSession",
-    "FileHmacAuthenticator",
-    "ModalHostConfigV1",
-    "ModalProviderStateV1",
-    "ModalTrainingIntentV1",
-    "ScopedGitRemoteReader",
-    "SqliteTrainingRepository",
-    "StrictModalTrainingResolver",
-]
+_EXPORTS = {
+    "BoundedGrantProvider": (".security", "BoundedGrantProvider"),
+    "ExplicitModalHostSession": (".modal_provider", "ExplicitModalHostSession"),
+    "FileHmacAuthenticator": (".security", "FileHmacAuthenticator"),
+    "ModalHostConfigV1": (".modal_provider", "ModalHostConfigV1"),
+    "ModalProviderStateV1": (".modal_resolver", "ModalProviderStateV1"),
+    "ModalTrainingIntentV1": (".modal_resolver", "ModalTrainingIntentV1"),
+    "ScopedGitRemoteReader": (".security", "ScopedGitRemoteReader"),
+    "SqliteTrainingRepository": (".sqlite_repository", "SqliteTrainingRepository"),
+    "StrictModalTrainingResolver": (".modal_resolver", "StrictModalTrainingResolver"),
+}
+
+__all__ = tuple(_EXPORTS)
+
+
+def __getattr__(name: str):
+    """Resolve public host adapters only when a caller requests one."""
+    try:
+        module_name, attribute_name = _EXPORTS[name]
+    except KeyError as exc:
+        raise AttributeError(name) from exc
+    value = getattr(import_module(module_name, __name__), attribute_name)
+    globals()[name] = value
+    return value

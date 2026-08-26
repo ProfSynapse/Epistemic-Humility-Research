@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from synaptic_host.__main__ import _intent, _parser
+import subprocess
+import sys
+from pathlib import Path
+
+from synaptic_host.cli import _intent, _parser
 from synaptic_host.modal_provider import ModalHostConfigV1
 
 
@@ -29,3 +33,17 @@ def test_generated_training_intent_is_unique_and_budget_bounded() -> None:
     assert first.maximum_cost_minor_units == 100
     assert first.currency == "USD"
     assert first.effect_id.startswith("effect-")
+
+
+def test_module_entrypoint_bootstraps_before_engine_imports() -> None:
+    root = Path(__file__).resolve().parents[2]
+    code = (
+        "import sys;"
+        f"sys.path.insert(0, {str(root)!r});"
+        "import synaptic_host.__main__;"
+        "assert 'synaptic_tuner' not in sys.modules"
+    )
+    subprocess.run(
+        [sys.executable, "-I", "-c", code],
+        check=True,
+    )
