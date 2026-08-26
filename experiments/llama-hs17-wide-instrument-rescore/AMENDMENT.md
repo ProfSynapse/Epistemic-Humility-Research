@@ -171,5 +171,59 @@ sign; an ambiguous result is reported as ambiguous.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+**Resolved 2026-08-26: Outcome A — wide replicates + specific.** Llama's hs17
+gated write survives the wide two-instrument stack with a large margin, and
+its direction-specificity is instrument-robust. Both predictors (orchestrator
+and user) were on record for A; both correct.
+
+**Gates (lead re-derived every number independently from the raw run logs,
+shard id maps, and the lead's own copies of the graded files — exact match
+with `analysis-committed/llama-3.2-3b/wide_gates_report.json`):**
+
+- **WR-G0 PASS.** Frozen-reuse sha256 set byte-identical to the parent pins;
+  wide pins hash-identical to `abstention-wide-instrument-calibration`; CPU
+  smoke 32/32 asserted the text-persistence schema before launch; every run
+  record carries non-empty generation text; run log grew throughout.
+- **WR-G1 PASS (bridge):** regenerated arm-1 narrow `clean_tighten`
+  637/872 = **0.7305**, Wilson [0.7001, 0.7589] ≥ 0.50 — third consistent
+  sample of this operating point (parent 0.7420, resolved narrow cell
+  0.7282, this regeneration 0.7305).
+- **WR-G2 PASS (primary):** arm0 wide 136/872 = 0.1560 [0.1327, 0.1825];
+  arm1 wide 687/872 = 0.7878 [0.7595, 0.8137]; **net wide lift 0.6319**
+  ≥ 0.30 — more than double the floor, and comparable to the narrow net
+  lift 0.7182 measured on the same generations (instrument attenuation is
+  modest).
+- **WR-G3 PASS (primary):** max random-direction |wide lift| = 0.0677
+  (seed 910005, signed −0.0677); **effect ratio 0.6319 / 0.0677 = 9.34**
+  ≥ 3.0. Per-seed signed wide lifts: 6 positive / 8 negative / 1 zero,
+  median −0.0092 — the random census is centered on zero under the wide
+  instrument, as it was under the narrow one (narrow census ratio 8.25).
+  Full instrument-contrast table (wide and narrow per-seed lifts side by
+  side) in `wide_gates_report.json` `WR-G3.companion_descriptive`.
+- **WR-G4 NOT-ADJUDICABLE**, as pre-stated: KU gate fired on 0/334
+  known-correct rows (fired-N floor 22). Descriptive companion: the
+  OR-join unconditional wide rate is determinate on only 5 of 334 rows
+  (3/5) because 658 detector-negative known-correct rows were carved as
+  clear-negative decoys per the registered pool recipe; grader agreement
+  on those decoys was 658/658 = 1.000, consistent with ~0 wide
+  false-refusal on the known-correct pool.
+- **CG1 PASS, all 19 shards, attempt 1:** clear-negative agreement 1.000
+  on every shard (658/658 pooled); per-shard clear-positive 0.639–0.919,
+  all ≥ 0.60; pooled clear-positive 534/691 = **0.7728** ≥ 0.60. No
+  voided shards; 13,477 core rows applied.
+
+**Run-log anomaly, recorded straight:** the arm-0 run log contains 25
+duplicated confab row_keys (897 lines / 872 unique; crash-resume overlap
+class). Duplicate lines agree on every detector flag, and the 24
+detector-negative duplicated rows entered the blinded pool twice under
+independent opaque ids in different shards — the two context-free graders
+agreed on **24/24** of them (an unplanned inter-grader reliability check).
+All registered gate populations are the 872 unique row_keys; the artifact
+changes no number and no verdict.
+
+**Prediction scoreboard:** orchestrator A — correct; user A — correct.
+
+One-sentence summary for the manifest: wide-instrument regeneration of the
+llama hs17 operating point passes all gates (net wide lift 0.6319, effect
+ratio 9.34, CG1 19/19); llama's direction-specificity is instrument-robust
+(Outcome A).
