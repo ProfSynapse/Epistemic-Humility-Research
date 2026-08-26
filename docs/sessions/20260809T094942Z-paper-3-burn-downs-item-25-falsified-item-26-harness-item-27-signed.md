@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-26T10:37:28Z'
+updated_at: '2026-08-26T17:31:51Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -1578,9 +1578,55 @@ checkpoints:
     site-dependent specificity, sections 6.2 6.4 6.5 and 7 falsification paragraph
     updated, Appendix A rows added, Appendix B regenerated to 48 cells with new SECTION_MAP
     entries. Two hook catches fixed: body-prose slug convention and retired-term backtick
-    rule on `caution-install-bounded-site-sweep`. Librarian subagent preparing KG ingest of both resolutions
-    in canonical tree, lead will review and commit with EHR_MAIN_OK. Next: PI review
-    of PR 557, KG commit after librarian report.'
+    rule on `caution-install-bounded-site-sweep`. Librarian subagent preparing KG
+    ingest of both resolutions in canonical tree, lead will review and commit with
+    EHR_MAIN_OK. Next: PI review of PR 557, KG commit after librarian report.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 068-checkpoint
+  at: '2026-08-26T11:37:00Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'PR 557 merged as 1063f5d3 after a voice-compliance pass 9fca74e1 that
+    stripped research-journey narration per papers common VOICE.md: superseded single-draw
+    numbers and replication comparisons now live only in Appendix A, section 7 self-reference
+    removed, banned registered variants dropped from body prose. PI confirmed the
+    no-journey rule is codified in VOICE.md and the lead must read it before any manuscript
+    pass, a hard precondition going forward. External flag about sign-opposition phrasing
+    on main verified as resolved by the merge, grep confirms zero instances of the
+    retired phrasing on main. Paper worktree removed, no gitignored evidence held
+    there. Both specificity cells now fully landed: amendments, KG nodes, and manuscript
+    all on main.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 069-checkpoint
+  at: '2026-08-26T17:31:51Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Wide-rescore cell llama-hs17-wide-instrument-rescore signed (outcome A
+    both scoreboards, engine exception intervention, probe PASS with six sha matches
+    and 872/334 pools verified) and GPU run launched on the 3090 with lead-owned monitor;
+    run healthy at arm 5 of 17, every runlog row carries out_text plus full sub-grades
+    via the new fail-closed contract. Structural text-capture guard merged (EHR PR
+    561 and tuner PR 155): RunLog required_fields, open_generation_runlog wrapper
+    with auditable textless opt-out, exp validate errors on new cells missing text_capture,
+    scaffold default enabled. Aggregate exhaust uploaded for both resolved cells (llama
+    rev f2e4c860, census rev 9dccf161) and recorded via PR 558; fig-p5-10 specificity
+    census figure built with reproduction audit and merged via PR 560; j-space KG
+    backfill verified against AMENDMENT and committed 2ef2ef40. Known open items:
+    13 pre-existing repin test failures in test_exp.py broken by the engine-gate ruling,
+    tuner gitlink bump rides the resolve PR, one transient CUDA monitor false alarm
+    traced to pipe garble not the log. Next: on RUN-COMPLETE re-derive WR-G1 bridge,
+    run wide scoring and detector pass, blinded adjudication lane with fresh graders
+    and hash-commit before unblinding, then gate table to PI.'
   evidence: []
   run_ids: []
   commands: []
@@ -1943,3 +1989,13 @@ _No summary yet._
 - at: `2026-08-26T10:37:28Z`
 - kind: `checkpoint`
 - summary: Manuscript pass for both specificity verdicts committed f613c072 and opened as PR 557: section 4.8 llama subsection rewritten recipe-first with atlas failure as contrast, qwen late-site paragraph replaces single-draw sign-opposition with census distributional reading, spectrum and section 5 findings 4-5 reframed to site-dependent specificity, sections 6.2 6.4 6.5 and 7 falsification paragraph updated, Appendix A rows added, Appendix B regenerated to 48 cells with new SECTION_MAP entries. Two hook catches fixed: body-prose slug convention and retired-term backtick rule on `caution-install-bounded-site-sweep`. Librarian subagent preparing KG ingest of both resolutions in canonical tree, lead will review and commit with EHR_MAIN_OK. Next: PI review of PR 557, KG commit after librarian report.
+### 068-checkpoint - Checkpoint
+
+- at: `2026-08-26T11:37:00Z`
+- kind: `checkpoint`
+- summary: PR 557 merged as 1063f5d3 after a voice-compliance pass 9fca74e1 that stripped research-journey narration per papers common VOICE.md: superseded single-draw numbers and replication comparisons now live only in Appendix A, section 7 self-reference removed, banned registered variants dropped from body prose. PI confirmed the no-journey rule is codified in VOICE.md and the lead must read it before any manuscript pass, a hard precondition going forward. External flag about sign-opposition phrasing on main verified as resolved by the merge, grep confirms zero instances of the retired phrasing on main. Paper worktree removed, no gitignored evidence held there. Both specificity cells now fully landed: amendments, KG nodes, and manuscript all on main.
+### 069-checkpoint - Checkpoint
+
+- at: `2026-08-26T17:31:51Z`
+- kind: `checkpoint`
+- summary: Wide-rescore cell llama-hs17-wide-instrument-rescore signed (outcome A both scoreboards, engine exception intervention, probe PASS with six sha matches and 872/334 pools verified) and GPU run launched on the 3090 with lead-owned monitor; run healthy at arm 5 of 17, every runlog row carries out_text plus full sub-grades via the new fail-closed contract. Structural text-capture guard merged (EHR PR 561 and tuner PR 155): RunLog required_fields, open_generation_runlog wrapper with auditable textless opt-out, exp validate errors on new cells missing text_capture, scaffold default enabled. Aggregate exhaust uploaded for both resolved cells (llama rev f2e4c860, census rev 9dccf161) and recorded via PR 558; fig-p5-10 specificity census figure built with reproduction audit and merged via PR 560; j-space KG backfill verified against AMENDMENT and committed 2ef2ef40. Known open items: 13 pre-existing repin test failures in test_exp.py broken by the engine-gate ruling, tuner gitlink bump rides the resolve PR, one transient CUDA monitor false alarm traced to pipe garble not the log. Next: on RUN-COMPLETE re-derive WR-G1 bridge, run wide scoring and detector pass, blinded adjudication lane with fresh graders and hash-commit before unblinding, then gate table to PI.
