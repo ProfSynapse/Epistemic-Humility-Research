@@ -2,40 +2,117 @@
 
 This repository is a research workspace for a single through-line:
 
-**Can language models represent what they do and do not know, and can that
-epistemic state be made visible in behavior, confidence, and deployment-time
-trust decisions?**
+**A frozen language model internally represents whether it can answer a
+question. Can that representation be read directly, and wired to behavior?**
 
-The project started as a literature synthesis plus an abstention-training
-experiment. It has since evolved into a five-paper program on calibration,
-abstention, hidden-state readouts, faithful uncertainty, and the limits of
-post-training.
+It is also built to be **read by agents**. Every experimental claim here is
+supposed to be walkable, by a model with file access, from a sentence in a
+manuscript to a signed pre-registered document and committed artifacts. If you
+are reviewing this work, the intended move is not to trust any summary
+(including this one): point an agent at the repository and make it find the
+signed source of any number. This README is the entry point for that traversal.
 
-For the current state, read [docs/research-trajectory.md](docs/research-trajectory.md)
-first. The older locked training-regimen protocol now lives in `archive/docs/protocols/phase1/`; it is
-historical and governed, not the entry point for new work.
+## The program in five beats
 
-## Current Through-Line
+1. We trained abstention into Qwen3-4B with SFT, DPO, KTO, and GRPO. Training
+   moved behavior but never produced honest stated confidence (Paper 2).
+2. The model's hidden states separate answerable from unanswerable questions
+   near ceiling, while its stated confidence stays flat. The gap survives
+   training against it (Paper 3).
+3. That internal signal can be turned into deployable training-free readouts:
+   a pre-generation answerability gate and a post-generation correctness dial
+   (Paper 4).
+4. No channel we tested makes the model *use* its own signal: writing the
+   readout back, telling the model its reading in words, or paying it via a
+   probe-derived reward all fail, and instruction channels turn out to be
+   obedience rather than introspection (Paper 5).
+5. Closing the loop externally works: a known-unknown probe gates an
+   orthogonalized refusal-direction write, converting 73.5% of held-out
+   confabulations to clean abstentions at 3.1% known-correct cost on Qwen3-4B,
+   with both fake-part controls collapsing the effect. Write depth is its own
+   variable (a calibrated mid-band site reaches 89.2% vs 66.5% late), and
+   direction-specificity holds in some families and fails in others (Paper 5).
 
-The short version:
+## Reading this repository with an agent
 
-1. We trained abstention on Qwen3-4B with SFT, DPO, KTO, and GRPO.
-2. Training moved behavior, but exposed a persistent gap: the model's hidden
-   states encode answerability clearly while its emitted confidence stays
-   decoupled.
-3. Mechanistic probes showed the internal signal is already present, robust, and
-   often available before post-training.
-4. The practical pivot is readout: use a two-signal trust pipeline that reads the
-   model's internal answerability and answer-correctness signals directly.
-5. The open frontier is actuation: can any channel write to, route, or obey that
-   internal signal without collapsing into mere compliance or surface policy?
+Start here:
 
-The working thesis is not "models do not know." It is closer to: **small open
-models often know more than they say, and current training objectives move the
-policy without reliably wiring that internal signal to stated confidence or
-action.**
+| Read | For |
+|---|---|
+| [docs/research-trajectory.md](docs/research-trajectory.md) | current program map; dated, treat as a map, not a source |
+| [papers/paper-5-actuation/manuscript.md](papers/paper-5-actuation/manuscript.md) | the actuation arc (the current front) |
+| [experiments/REGISTRY.md](experiments/REGISTRY.md) | every experiment, status, and verdict |
+| [experiments/registry.json](experiments/registry.json) | the same as structured data; parse this, do not scrape the markdown |
 
-## Paper Line
+Graph-aware search is the intended first move, ahead of grep:
+
+```bash
+bin/search "known unknown gate write site" --limit 10   # macOS/Linux
+bin\search.cmd "known unknown gate write site" --limit 10  # Windows
+```
+
+It returns ranked hits with file, line, and typed graph edges, so a claim
+surfaces attached to the experiment that supports it.
+
+**One caveat that will bite an agent.** A cell's authoritative status and
+verdict live in `experiments/<slug>/experiment.yaml`, not in the `Status:`
+line at the top of its `AMENDMENT.md`. That header is hand-written prose and a
+few are stale. Parse the YAML; treat the header as commentary.
+
+## The governed record
+
+Every evidence-producing experiment lives in `experiments/<slug>/` with a
+signed `AMENDMENT.md` that registers its hypothesis, numeric gate floors,
+prediction, and falsifier **before the run**, and an Outcome section written
+after. The amendment is the only document an experimental fact may be cited
+from; manuscripts, notes, and the knowledge graph are navigation aids over it.
+The registry holds 126 experiments as of 2026-08-26, misses reported as
+misses: registered predictions that failed stay recorded as failures, and
+several cells resolve as falsified or void.
+
+The claim-to-evidence path, in four steps:
+
+1. Take a number from a manuscript or summary.
+2. `bin/search` the claim, or find the cell named in its provenance line.
+3. Open `experiments/<slug>/AMENDMENT.md`. Read the gates and falsifier first
+   (signed before the run), then the Outcome.
+4. Check the artifacts under `experiments/<slug>/analysis-committed/`.
+
+If a number cannot be walked to a signed Outcome this way, that is a defect;
+report it.
+
+Cells carrying the current actuation headline:
+
+| Step | Cell |
+|---|---|
+| Find the write site | `j-space-localization-qwen3-4b`, `j-space-midband-dose-calibration-qwen3-4b`, `j-space-calibrated-layer-contrast-qwen3-4b` |
+| Wire it together | `doubt-gated-caution-tighten`, `ungated-vs-gated-dose-matched`, `gate-contribution-factorial` |
+| Controls and stress | `placebo-seed-distribution-census`, `wide-instrument-control-rescore` |
+| Where it fails | `radial-anti-propensity-steering` |
+
+The last two rows are where to start if you are looking for the weak point:
+they include cells where the registered falsifier fired.
+
+Questions that most efficiently probe this record:
+
+- Does every headline number resolve to a signed Outcome? List any that do not.
+- Were gates and falsifiers registered before each run? Compare sign dates to
+  run artifacts.
+- Where controls ran (random directions, permuted gates), did a control ever
+  reproduce the effect? Find the cells where it did.
+- Find every registered prediction the program missed. Are the misses stated
+  as misses, or reframed?
+- Find results the program itself later corrected or retracted, and what
+  triggered each correction. This one has real answers, and it is the most
+  useful single probe of whether the record is honest.
+
+The repeatable procedures are written down as skills rather than tribal
+knowledge; the two most relevant to the current work are
+`.skills/mechinterp-cells/reference/read-then-actuate.md` (the end-to-end
+recipe for standing the pipeline up on a new model) and `.skills/family-atlas/`
+(the standardized per-family depth sweep run before any actuation attempt).
+
+## Paper line
 
 The canonical paper map is maintained in
 [docs/research-trajectory.md](docs/research-trajectory.md).
@@ -46,177 +123,77 @@ The canonical paper map is maintained in
 | P2 | Training regimen: SFT/DPO/KTO/GRPO for abstention | [papers/paper-2-training-regimen/manuscript.md](papers/paper-2-training-regimen/manuscript.md) |
 | P3 | "Knows but Doesn't Say": internal-vs-stated confidence gap and training resistance | [papers/paper-3-knows-but-doesnt-say/manuscript.md](papers/paper-3-knows-but-doesnt-say/manuscript.md) |
 | P4 | Training-free two-signal readout: gate, dial, and veto | [papers/paper-4-two-signal-readout/manuscript.md](papers/paper-4-two-signal-readout/manuscript.md) |
-| P5 | Steering, actuation, and whether the internal signal can be routed into behavior | scaffold in progress |
+| P5 | "Look Before You Speak": actuating known-unknown state, and where selectivity comes from | [papers/paper-5-actuation/manuscript.md](papers/paper-5-actuation/manuscript.md) |
 
 Legacy figure prefixes are not paper numbers: `fig-p1-*` currently belongs to
-Paper 2, `fig-p2-*` to Paper 3, and `fig-p3-*` to Paper 4.
+Paper 2, `fig-p2-*` to Paper 3, and `fig-p3-*` to Paper 4. Paper 5's own
+figures (`fig-p5-*`) are provenance-pinned in
+[papers/paper-5-actuation/figures/MANIFEST.md](papers/paper-5-actuation/figures/MANIFEST.md).
 
-## Main Results At A Glance
-
-**Training regimen (Paper 2).** SFT induces abstention; DPO and KTO reposition
-the boundary after SFT; GRPO amplifies the abstention routine. None escapes the
-recall/over-refusal tradeoff. Emitted confidence tracks the decision to answer
-more than it tracks truth.
-
-**Internal-vs-stated gap (Paper 3).** On SelfAware, a hidden-state answerability
-axis separates known from unknown items at about AUROC 0.997 and can be
-well-calibrated by a one-dimensional readout. The model's own stated confidence
-is near-flat and barely discriminative. The gap survives DPO, KTO, GRPO,
-contrastive SFT, proper-scoring reward variants, and direct attempts to distill
-the internal axis into the emitted confidence token.
-
-**Two-signal readout (Paper 4).** A training-free trust pipeline reads two
-signals from activations:
-
-- **Gate:** pre-generation answerability, near-ceiling on the base model.
-- **Dial:** post-generation answer correctness, strongest after the answer is
-  produced.
-- **Veto:** the dial assigns confident confabulations low trust; this signal is
-  present but higher-variance across models and decodes.
-
-The readout generalizes across Qwen3 sizes and across several model families.
-Targeted training can sharpen parts of the signal, but does not create the core
-readout.
-
-**Actuation frontier (Paper 5).** Steering and text/prompt interventions show a
-sharp distinction between reading a signal, obeying an external directive, and
-actually using the model's own readout. Some prompt channels move policy, but
-current evidence says they behave like compliance channels rather than internal
-belief alignment.
-
-## Repository Map
+## Repository map
 
 ```text
 .
 |-- README.md                  # this orientation
-|-- TODO.md                    # amendment index + live backlog
+|-- TODO.md                    # live backlog
 |-- docs/
-|   |-- research-trajectory.md # current program map; read this first
+|   |-- research-trajectory.md # current program map
 |   |-- public-artifacts.md    # Hugging Face release manifest
 |   |-- sessions/              # lab/session notes and running synthesis
-|   |-- architecture/          # design notes for runtime/readout systems
-|   `-- review/                # review records
-|-- experiment/
-|   |-- paper/                 # active paper drafts, figures, analysis tables
-|   |-- protocol/              # locked protocol + signed amendments
-|   `-- phase1/                # training/eval/probe artifacts and scripts
-|-- experiments/               # experiments-first tree for new evidence cells
-|-- papers/                    # one directory per paper; paper-1-taxonomy-framework
-|                              #   holds the synthesis apparatus (evidence tables,
-|                              #   analysis scripts, raw search reports)
-|-- archive/meta-analysis/     # superseded standalone synthesis draft (provenance only)
-|-- library/
-|   |-- notes/                 # one research note per paper/internal result
-|   |-- concepts/              # typed method/metric/dataset/model/mechanism atoms
-|   |-- SCHEMA.md              # library schema
-|   |-- pdfs/                  # gitignored local PDFs
-|   `-- fulltext/              # gitignored local HTML/text
-|-- datasets/                  # dataset cards, loaders, schemas, and fixtures
-|-- synaptic-tuner/            # submodule: generic training/eval infrastructure
-`-- scratch/                   # gitignored local work
+|   `-- atlas/                 # per-family layer maps and registries
+|-- experiments/               # experiments-first tree: one dir per cell, signed AMENDMENT.md + experiment.yaml
+|-- experiment/                # locked training-regimen protocol tree (historical; no new work here)
+|-- papers/                    # one directory per paper + common/ conventions + series/ planning
+|-- library/                   # typed knowledge graph: notes, concept atoms, schema
+|-- datasets/                  # dataset cards, loaders, schemas (raw rows never committed)
+|-- .skills/                   # canonical procedures (mirrored into agent-specific dirs)
+|-- archive/                   # superseded artifacts retained for provenance
+`-- synaptic-tuner/            # submodule: generic training/eval infrastructure
 ```
 
-## Knowledge Graph
-
-The default discovery path is the local typed knowledge graph, not broad grep.
-Use:
-
-```powershell
-bin\search.cmd "query terms" --limit 10
-```
+## Knowledge graph
 
 Paper notes in `library/notes/` link to atomic concepts in `library/concepts/`
-with typed edges such as `proposes`, `evaluates_on`, `measures`, `supports`, and
-`uses`. This keeps the literature and internal results queryable by method,
-metric, dataset, model, and mechanism.
+with typed edges such as `proposes`, `evaluates_on`, `measures`,
+`supported_by`, and `uses`, keeping literature and internal results queryable
+by method, metric, dataset, model, and mechanism. `bin/search` queries it.
+Validation, analysis, and indexing commands live in the `knowledge-graph`
+skill; paper ingestion goes through the `kg-ingest` skill rather than flat
+notes.
 
-Useful graph commands:
-
-```powershell
-python .agents\skills\knowledge-graph\scripts\validate_kg_relationships.py --root F:\Code\Epistemic-Humility-Research\library
-python .agents\skills\knowledge-graph\scripts\analyze_kg.py --root library
-python .agents\skills\knowledge-graph\scripts\kg_index.py
-```
-
-For paper ingestion, use the repo skill `kg-ingest`; do not add flat paper notes
-without concept atoms and typed relationships.
-
-## Experiments And Governance
-
-The old locked training-regimen confirmatory protocol is locked:
-
-- [archive/docs/protocols/phase1/PROTOCOL.md](archive/docs/protocols/phase1/PROTOCOL.md)
-
-New evidence-producing work should normally go through the experiments-first or
-amendment workflow, depending on the tier:
-
-- use `experiments/` for new standalone evidence cells;
-- use signed `experiments/<slug>/AMENDMENT.md` docs for governed protocol
-  extensions and migrated historical amendments;
-- use lab/session notes for diagnostics, smokes, reruns, and non-claim work.
-
-Current amendment status and backlog live in [TODO.md](TODO.md). Do not infer
-claim status from scratch outputs or local run products; use the signed amendment
-docs, result summaries, and paper provenance appendices.
-
-## Running Code
+## Running code
 
 Training and evaluation infrastructure lives in the
 [Synaptic Tuner](https://github.com/ProfSynapse/Synaptic-Tuner) submodule:
 
-```powershell
+```bash
 git submodule update --init
-cd synaptic-tuner
 ```
 
 Keep `synaptic-tuner/` generic. Project-specific protocols, paper claims, and
-Epistemic-Humility orchestration belong in the root repository, not inside the
-submodule.
+orchestration belong in the root repository, not inside the submodule.
 
-Before trusting an experimental number:
+## Public artifacts
 
-1. Find the signed amendment, lab note, or paper provenance row.
-2. Trace config -> builder/evaluator -> generated file -> trainer/eval loader.
-3. Re-run the relevant deterministic analysis script where available.
-4. Keep confirmatory, exploratory, and diagnostic results separate.
-
-## Public Artifacts
-
-The repo-side manifest is [docs/public-artifacts.md](docs/public-artifacts.md).
-Published artifacts include:
-
-- locked training-regimen Qwen3 4B training/dev data.
-- locked training-regimen evaluation analysis artifacts.
-- locked training-regimen compact knowledge labels and probe manifests.
-- Cloud-lane per-cell readout results.
-- Two-signal probe directions.
-- Readout row surfaces.
-- Amendment AH "doubt on command" exhaust.
-
-Publication is a release gate, not a scratch dump. Do not publish restricted
-bridge/OpenMOSS/Cheng raw data, local HF caches, hidden-state tensors, or
-unreviewed checkpoints without explicit approval and provenance.
+The release manifest is [docs/public-artifacts.md](docs/public-artifacts.md):
+trained adapters, probe directions, readout row surfaces, and row-level
+generation exhaust published on Hugging Face. Publication is a release gate,
+not a scratch dump: dataset question text and restricted sources are never
+committed to this public repository, and exhaust uploads pass a license audit
+first (where a source license forbids redistribution, the build script and the
+audit are published instead of the rows).
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). The highest-value contributions are:
-
-- primary-source corrections to evidence rows or paper claims;
-- missed literature with precise citations;
-- replication of figures, training cells, or graph validations;
-- bug fixes to deterministic analysis, dataset, eval, or probe scripts.
+See [CONTRIBUTING.md](CONTRIBUTING.md). The highest-value contributions are
+primary-source corrections to evidence rows or paper claims, missed literature
+with precise citations, replication of figures or cells, and bug fixes to
+deterministic analysis, dataset, eval, or probe scripts.
 
 Ground rules:
 
 - Every quantitative claim needs provenance.
-- Do not edit locked protocols without a signed revision.
+- Do not edit signed protocols or amendments without a governed revision.
 - Do not commit restricted or gitignored data.
 - Do not hand-edit generated results.
 - Keep `synaptic-tuner/` experiment-agnostic.
-
-## Maintenance Notes
-
-This repository is intentionally research-first. Claims should point to evidence,
-scripts should be reproducible, and paper prose should not depend on hidden local
-state. When in doubt, update the knowledge graph, the paper provenance appendix,
-or `docs/research-trajectory.md` rather than adding another untracked scratch note.
