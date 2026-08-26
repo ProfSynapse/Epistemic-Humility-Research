@@ -53,6 +53,18 @@ SEEDS = swr.SEEDS
 ANALYSIS = HERE / "analysis" / FAMILY
 ANALYSIS_COMMITTED = HERE / "analysis-committed" / FAMILY
 
+# Fail-closed cross-check: the numeric literals used below must equal the
+# thresholds in the sha-pinned gates.yaml, or the module refuses to load.
+import re as _re
+import yaml as _yaml
+
+_GATES_DOC = _yaml.safe_load((HERE / "gates.yaml").read_text())
+_BY_ID = {g["id"]: g for g in _GATES_DOC["gates"]}
+_num = lambda gid: float(_re.search(r"[\d.]+", str(_BY_ID[gid]["threshold"])).group())
+assert _num("WR-G2") == 0.30, "gates.yaml WR-G2 threshold drifted from gate math"
+assert _num("WR-G3") == 3.0, "gates.yaml WR-G3 threshold drifted from gate math"
+assert _GATES_DOC["seeds"]["random_census"] == list(SEEDS), "gates.yaml seed list drifted from harness SEEDS"
+
 
 def _apply_adjudication():
     # abstention-wide-instrument-calibration/apply_adjudication.py bare-
