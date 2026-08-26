@@ -196,6 +196,14 @@ def test_explicit_session_deploys_once_and_writes_only_host_state(tmp_path: Path
         session.deploy(context=context, authenticator=authenticator, hf_token="hf-value")
 
 
+def test_session_accepts_one_explicit_client_loaded_from_host_config() -> None:
+    client = FakeClient()
+    session = ExplicitModalHostSession.from_client(
+        sdk=FakeSdk, config=config(), client=client
+    )
+    assert session.client is client
+
+
 def test_session_rejects_any_sdk_version_drift() -> None:
     class WrongSdk(FakeSdk):
         __version__ = "1.5.5"

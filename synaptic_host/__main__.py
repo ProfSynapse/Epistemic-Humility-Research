@@ -79,9 +79,25 @@ def _sdk_session(context: ProjectContext, config: ModalHostConfigV1):
     sdk = importlib.import_module("modal")
     token_id = os.environ.get("MODAL_TOKEN_ID", "")
     token_secret = os.environ.get("MODAL_TOKEN_SECRET", "")
-    return ExplicitModalHostSession.from_credentials(
-        sdk=sdk, config=config, token_id=token_id, token_secret=token_secret
+    if token_id or token_secret:
+        return ExplicitModalHostSession.from_credentials(
+            sdk=sdk, config=config, token_id=token_id, token_secret=token_secret
+        )
+    return ExplicitModalHostSession.from_client(
+        sdk=sdk, config=config, client=sdk.Client.from_env()
     )
+
+
+def _hf_token() -> str:
+    value = os.environ.get("HF_TOKEN", "").strip()
+    if value:
+        return value
+    path = Path.home() / ".cache" / "huggingface" / "token"
+    if path.is_file() and not path.is_symlink():
+        value = path.read_text(encoding="utf-8").strip()
+    if not value:
+        raise ValueError("HF token is unavailable from the environment or host cache")
+    return value
 
 
 def _provider_deploy(context: ProjectContext) -> int:
@@ -90,7 +106,7 @@ def _provider_deploy(context: ProjectContext) -> int:
     auth = FileHmacAuthenticator.from_context(context)
     state = session.deploy(
         context=context, authenticator=auth,
-        hf_token=os.environ.get("HF_TOKEN", ""),
+        hf_token=_hf_token(),
     )
     _json({
         "schema_version": "synaptic-command-result/v1",

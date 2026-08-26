@@ -174,9 +174,18 @@ class ExplicitModalHostSession:
     ) -> "ExplicitModalHostSession":
         if not token_id or not token_secret:
             raise ValueError("explicit Modal credentials are required")
+        client = sdk.Client.from_credentials(token_id, token_secret)
+        return cls.from_client(sdk=sdk, config=config, client=client)
+
+    @classmethod
+    def from_client(
+        cls, *, sdk: object, config: ModalHostConfigV1, client: object
+    ) -> "ExplicitModalHostSession":
+        """Bind an explicit client, including one loaded from Modal host config."""
         if getattr(sdk, "__version__", None) != EXACT_MODAL_SDK_VERSION:
             raise ValueError("Modal SDK must be exactly 1.5.4")
-        client = sdk.Client.from_credentials(token_id, token_secret)
+        if client is None:
+            raise ValueError("explicit authenticated Modal client is required")
         workspace = sdk.Workspace.from_context(client=client).hydrate(client)
         environment = sdk.Environment.from_name(
             config.environment_name, client=client
@@ -185,7 +194,12 @@ class ExplicitModalHostSession:
         workspace_name = _text(workspace.name, "workspace name")
         if _text(environment.object_id, "environment object identity") == workspace_id:
             raise ValueError("Modal workspace and environment identities collided")
-        client_ref = "modal-token-" + hashlib.sha256(token_id.encode()).hexdigest()[:32]
+        client_ref = "modal-client-" + hashlib.sha256(
+            (
+                workspace_id + "\0" + workspace_name + "\0"
+                + config.environment_name + "\0" + EXACT_MODAL_SDK_VERSION
+            ).encode("utf-8")
+        ).hexdigest()[:32]
         binding = ModalClientBinding(
             workspace_id, workspace_name, config.environment_name,
             client_ref, EXACT_MODAL_SDK_VERSION,
