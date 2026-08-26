@@ -124,7 +124,11 @@ operation, then follow any further routing inside that reference.
   log; booleans-only logs are a build defect, and the pre-sign review checks
   the persistence schema. Rationale and the H3 cautionary case live in the
   data-exhaust skill's "Build-time requirement" section. Containment is
-  unchanged: text never leaves gitignored `analysis/`.
+  unchanged: text never leaves gitignored `analysis/`. This is structurally
+  enforced: open the row-level run log through
+  `experiments/common/runlog_contract.py`'s `open_generation_runlog`, and
+  declare the manifest's `text_capture` field (see the experiments skill's
+  Manifest schema).
 - Backend choice is part of the evidence surface. New unsteered generation
   prefers pinned vLLM with batch invariance; new full-depth extraction prefers
   vLLM only after the model-specific HF bridge passes. Parity-locked cells keep

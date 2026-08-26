@@ -14,12 +14,21 @@ kg:
   type: experiment
   status: canonical
 related:
+- '[[j-space-cross-family-layer-contrast]]'
 - '[[caution-encoding-read-actuate-dissociation-across-families]]'
 - '[[llama-hs17-write-is-direction-specific]]'
 - '[[activation-steering]]'
 - '[[known-unknown-direction]]'
 - '[[abstention]]'
 relationships:
+- type: builds_on
+  target: '[[j-space-cross-family-layer-contrast]]'
+  target_id: experiment:j-space-cross-family-layer-contrast
+  confidence: high
+  evidence:
+  - experiments/llama-hs17-direction-specificity/AMENDMENT.md (Design; reuses
+    the frozen KU-gated c_hat write, gate, and dose verbatim from that
+    experiment's resolved INCONCLUSIVE llama arm, at hs17)
 - type: related_to
   target: '[[caution-encoding-read-actuate-dissociation-across-families]]'
   target_id: mechanism:caution-encoding-read-actuate-dissociation-across-families

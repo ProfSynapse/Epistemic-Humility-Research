@@ -6,6 +6,21 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-26 — aggregate exhaust published
+
+`professorsynapse/eh-llama-hs17-direction-specificity`, HF revision
+`f2e4c86004c55e63d55afa9cd2116af90c543c44` (3 files: PROVENANCE, README,
+specificity summary; provenance commit 1063f5d3). Built and verified through
+the data-exhaust skill (verify PASS, completeness check against
+analysis-committed exact); user-approved 2026-08-26. Row-level shape NOT
+published and not publishable from this run: the run log persisted grades
+and flags only, no generation text — a build defect against the data-exhaust
+build-time rule (skill commit abca352d, 2026-07-13, predates this cell).
+Failure anatomy is unrecoverable without a re-run; the registered
+wide-instrument re-score follow-up therefore requires GPU regeneration with
+a text-persisting harness, and the structural guard preventing recurrence is
+tracked separately.
+
 ### 2026-08-25 — full run complete, gates adjudicated, resolved
 
 Full 17-arm run on the local RTX 3090 (lane approved at sign). Terminal state:

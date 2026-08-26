@@ -237,6 +237,94 @@ def test_validate_warns_but_passes_on_signed_missing_persistence(repo: Path, cap
     assert "warning" in capsys.readouterr().err
 
 
+# --- structural text-capture guard -------------------------------------------
+
+def test_new_scaffolds_text_capture_enabled_by_default(repo: Path):
+    _run(repo, "new", "cell-tc-default", "--type", "eval")
+    m = _manifest(repo, "cell-tc-default")
+    assert m["text_capture"] == "enabled"
+    m["question"] = "q"
+    _write_manifest(repo, "cell-tc-default", m)
+    assert _run(repo, "validate") == 0
+
+
+def test_validate_errors_on_missing_text_capture_for_new_experiment(repo: Path):
+    _run(repo, "new", "cell-tc-missing", "--type", "eval")
+    m = _manifest(repo, "cell-tc-missing")
+    m["question"] = "q"
+    del m["text_capture"]
+    _write_manifest(repo, "cell-tc-missing", m)
+    assert _run(repo, "validate") == 1
+
+
+def test_validate_errors_on_blank_text_capture(repo: Path):
+    _run(repo, "new", "cell-tc-blank", "--type", "eval")
+    m = _manifest(repo, "cell-tc-blank")
+    m["question"] = "q"
+    m["text_capture"] = "   "
+    _write_manifest(repo, "cell-tc-blank", m)
+    assert _run(repo, "validate") == 1
+
+
+def test_validate_errors_on_invalid_text_capture_value(repo: Path):
+    _run(repo, "new", "cell-tc-invalid", "--type", "eval")
+    m = _manifest(repo, "cell-tc-invalid")
+    m["question"] = "q"
+    m["text_capture"] = "sometimes"
+    _write_manifest(repo, "cell-tc-invalid", m)
+    assert _run(repo, "validate") == 1
+
+
+def test_validate_accepts_not_applicable_text_capture(repo: Path):
+    _run(repo, "new", "cell-tc-na", "--type", "eval")
+    m = _manifest(repo, "cell-tc-na")
+    m["question"] = "q"
+    m["text_capture"] = "not-applicable"
+    _write_manifest(repo, "cell-tc-na", m)
+    assert _run(repo, "validate") == 0
+
+
+def test_validate_accepts_textless_reason_text_capture(repo: Path):
+    _run(repo, "new", "cell-tc-textless", "--type", "eval")
+    m = _manifest(repo, "cell-tc-textless")
+    m["question"] = "q"
+    m["text_capture"] = "textless: probe-fit pass produces no generation text"
+    _write_manifest(repo, "cell-tc-textless", m)
+    assert _run(repo, "validate") == 0
+
+
+def test_validate_rejects_textless_with_empty_reason(repo: Path):
+    _run(repo, "new", "cell-tc-textless-empty", "--type", "eval")
+    m = _manifest(repo, "cell-tc-textless-empty")
+    m["question"] = "q"
+    m["text_capture"] = "textless:"
+    _write_manifest(repo, "cell-tc-textless-empty", m)
+    assert _run(repo, "validate") == 1
+
+
+def test_validate_grandfathers_experiment_created_before_cutoff(repo: Path):
+    # Pre-cutoff experiments never had to declare text_capture at all.
+    _run(repo, "new", "cell-tc-legacy-dated", "--type", "eval")
+    m = _manifest(repo, "cell-tc-legacy-dated")
+    m["question"] = "q"
+    m["created_at"] = "2026-01-01T00:00:00Z"
+    del m["text_capture"]
+    _write_manifest(repo, "cell-tc-legacy-dated", m)
+    assert _run(repo, "validate") == 0
+
+
+def test_validate_grandfathers_experiment_missing_created_at(repo: Path):
+    # Experiments that predate the created_at field entirely (~16 in the
+    # real registry) must never start failing validate retroactively.
+    _run(repo, "new", "cell-tc-no-created-at", "--type", "eval")
+    m = _manifest(repo, "cell-tc-no-created-at")
+    m["question"] = "q"
+    del m["created_at"]
+    del m["text_capture"]
+    _write_manifest(repo, "cell-tc-no-created-at", m)
+    assert _run(repo, "validate") == 0
+
+
 # --- stale AMENDMENT.md header vs machine status -----------------------------
 
 def test_validate_warns_on_stale_draft_header_when_signed(repo: Path, capsys):

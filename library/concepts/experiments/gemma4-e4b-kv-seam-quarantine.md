@@ -15,6 +15,7 @@ kg:
   type: experiment
   status: canonical
 related:
+- '[[j-space-cross-family-layer-contrast]]'
 - '[[gemma-4-e4b-family-atlas]]'
 - '[[gemma-4]]'
 - '[[activation-steering]]'
@@ -22,6 +23,15 @@ related:
 - '[[kv-sharing-off-ablation-breaks-baseline-substrate]]'
 - '[[seam-adjacent-gate-clearance-is-non-direction-specific]]'
 relationships:
+- type: builds_on
+  target: '[[j-space-cross-family-layer-contrast]]'
+  target_id: experiment:j-space-cross-family-layer-contrast
+  confidence: high
+  evidence:
+  - experiments/gemma4-e4b-kv-seam-quarantine/AMENDMENT.md (Motivation and
+    posture; re-grounds that experiment's gemma4-e4b arm, which stopped at a
+    registered G0 dose-viability rule on activations later found corrupted
+    by use_cache=False)
 - type: builds_on
   target: '[[gemma-4-e4b-family-atlas]]'
   target_id: experiment:gemma-4-e4b-family-atlas
