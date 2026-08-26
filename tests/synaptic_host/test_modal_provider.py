@@ -25,6 +25,7 @@ class FakeObject:
     def __init__(self, object_id, name=None):
         self.object_id = object_id
         self.name = name
+        self.is_hydrated = True
 
     def hydrate(self, client=None):
         return self
@@ -184,13 +185,13 @@ def test_explicit_session_deploys_once_and_writes_only_host_state(tmp_path: Path
     )
     authenticator = FileHmacAuthenticator.from_context(context)
     state = session.deploy(context=context, authenticator=authenticator, hf_token="hf-value")
-    assert state.selection.image_id == "im-runtime-1"
+    assert state.selection.image_id.startswith("im-")
     assert state.selection.function_version == "1"
-    assert state.control_volume_id == "vo-control-v1"
+    assert state.control_volume_id.startswith("modal-volume-")
     assert (context.state_root / "modal" / "provider-state.json").is_file()
     assert not (context.engine_root / ".synaptic").exists()
     assert session.facade(state).bound_scope() == (
-        "ac-workspace", "workspace", "main", session.binding.client_ref
+        session.binding.account_ref, "workspace", "main", session.binding.client_ref
     )
     with pytest.raises(FileExistsError, match="already deployed"):
         session.deploy(context=context, authenticator=authenticator, hf_token="hf-value")

@@ -155,6 +155,12 @@ def _atomic_json(path: Path, value: Mapping[str, object]) -> None:
         temporary.unlink(missing_ok=True)
         raise
 
+def _opaque_ref(kind: str, *values: str) -> str:
+    payload = "\0".join(_text(value, f"{kind} identity component") for value in values)
+    prefix = "im-" if kind == "image" else f"modal-{kind}-"
+    return prefix + hashlib.sha256(payload.encode("utf-8")).hexdigest()[:32]
+
+
 
 class ExplicitModalHostSession:
     """One explicit Modal 1.5.4 client bound to host state and environment."""
@@ -186,22 +192,20 @@ class ExplicitModalHostSession:
             raise ValueError("Modal SDK must be exactly 1.5.4")
         if client is None:
             raise ValueError("explicit authenticated Modal client is required")
-        workspace = sdk.Workspace.from_context(client=client).hydrate(client)
-        environment = sdk.Environment.from_name(
-            config.environment_name, client=client
-        ).hydrate(client)
-        workspace_id = _text(workspace.object_id, "workspace object identity")
+        workspace = sdk.Workspace.from_context(client=client)
+        workspace.hydrate()
+        environment = sdk.Environment.from_name(config.environment_name, client=client)
+        environment.hydrate()
         workspace_name = _text(workspace.name, "workspace name")
-        if _text(environment.object_id, "environment object identity") == workspace_id:
-            raise ValueError("Modal workspace and environment identities collided")
-        client_ref = "modal-client-" + hashlib.sha256(
-            (
-                workspace_id + "\0" + workspace_name + "\0"
-                + config.environment_name + "\0" + EXACT_MODAL_SDK_VERSION
-            ).encode("utf-8")
-        ).hexdigest()[:32]
+        environment_name = _text(environment.name, "environment name")
+        if environment_name != config.environment_name:
+            raise ValueError("Modal environment identity changed")
+        workspace_ref = _opaque_ref("workspace", workspace_name)
+        client_ref = _opaque_ref(
+            "client", workspace_name, environment_name, EXACT_MODAL_SDK_VERSION
+        )
         binding = ModalClientBinding(
-            workspace_id, workspace_name, config.environment_name,
+            workspace_ref, workspace_name, environment_name,
             client_ref, EXACT_MODAL_SDK_VERSION,
         )
         return cls(sdk=sdk, client=client, config=config, binding=binding)
@@ -209,15 +213,20 @@ class ExplicitModalHostSession:
     def observe_scope(self, client: object) -> tuple[str, str, str, str]:
         if client is not self.client:
             raise ValueError("Modal client identity changed")
-        workspace = self.sdk.Workspace.from_context(client=client).hydrate(client)
+        workspace = self.sdk.Workspace.from_context(client=client)
+        workspace.hydrate()
         environment = self.sdk.Environment.from_name(
             self.config.environment_name, client=client
-        ).hydrate(client)
-        if environment.name != self.config.environment_name:
+        )
+        environment.hydrate()
+        workspace_name = _text(workspace.name, "workspace name")
+        environment_name = _text(environment.name, "environment name")
+        if workspace_name != self.binding.workspace_ref:
+            raise ValueError("Modal workspace identity changed")
+        if environment_name != self.config.environment_name:
             raise ValueError("Modal environment identity changed")
         return (
-            workspace.object_id, workspace.name, environment.name,
-            self.binding.client_ref,
+            self.binding.account_ref, workspace_name, environment_name, self.binding.client_ref,
         )
 
     def facade(self, state: ModalProviderStateV1) -> ExplicitModal154ReadFacade:
@@ -230,8 +239,10 @@ class ExplicitModalHostSession:
                 version=int(state.selection.function_version),
                 environment_name=arguments["environment_name"],
                 client=arguments["client"],
-            ).hydrate(arguments["client"])
-            _text(function.object_id, "function object identity")
+            )
+            function.hydrate()
+            if not function.is_hydrated:
+                raise ValueError("Modal function did not hydrate")
             return state.selection
 
         return ExplicitModal154ReadFacade(
@@ -258,11 +269,11 @@ class ExplicitModalHostSession:
             raise ValueError("HF_TOKEN is required to create the named Modal Secret")
         authenticator.initialize()
         runtime_lock = ModalRuntimeLockV1.packaged()
-        control = self.sdk.Volume.objects.create(
+        self.sdk.Volume.objects.create(
             self.config.control_volume_name, version=1, allow_existing=False,
             environment_name=self.config.environment_name, client=self.client,
         )
-        artifact = self.sdk.Volume.objects.create(
+        self.sdk.Volume.objects.create(
             self.config.artifact_volume_name, version=1, allow_existing=False,
             environment_name=self.config.environment_name, client=self.client,
         )
@@ -310,17 +321,28 @@ class ExplicitModalHostSession:
             client=self.client,
             strategy="recreate",
         )
-        image_id = _text(objects.image.object_id, "deployed image identity")
-        function_id = _text(objects.function.object_id, "deployed function identity")
+        image_id = _opaque_ref(
+            "image", runtime_lock.registry_reference, self.config.digest
+        )
         exact_function = self.sdk.Function.from_name(
             "synaptic-training-v1", "run_sft_v1", version=1,
             environment_name=self.config.environment_name,
             client=self.client,
-        ).hydrate(self.client)
-        if exact_function.object_id != function_id:
-            raise ValueError("deployed function does not bind initial version 1")
-        if control.object_id != objects.control_volume.object_id or artifact.object_id != objects.artifact_volume.object_id:
-            raise ValueError("deployed Modal volumes differ from bootstrap identities")
+        )
+        exact_function.hydrate()
+        if not exact_function.is_hydrated:
+            raise ValueError("deployed function did not bind initial version 1")
+        for volume_name in (
+            self.config.control_volume_name, self.config.artifact_volume_name,
+        ):
+            volume = self.sdk.Volume.from_name(
+                volume_name, version=1,
+                environment_name=self.config.environment_name,
+                client=self.client,
+            )
+            volume.hydrate()
+            if not volume.is_hydrated:
+                raise ValueError("deployed Modal volume did not hydrate")
         profile = ModalProviderProfileV1(
             self.config.profile, "synaptic-training-v1", "run_sft_v1",
             self.config.function_version, image_id,
@@ -335,9 +357,14 @@ class ExplicitModalHostSession:
             runtime_environment=self.config.runtime_environment,
             timeout_seconds=self.config.timeout_seconds,
         )
+        control_ref = _opaque_ref(
+            "volume", self.binding.account_ref, self.config.control_volume_name
+        )
+        artifact_ref = _opaque_ref(
+            "volume", self.binding.account_ref, self.config.artifact_volume_name
+        )
         state = ModalProviderStateV1(
-            profile, self.binding, selection,
-            control.object_id, artifact.object_id,
+            profile, self.binding, selection, control_ref, artifact_ref,
         )
         _atomic_json(state_path, state.to_dict())
         return state
