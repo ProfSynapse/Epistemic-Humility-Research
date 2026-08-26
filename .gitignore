@@ -91,3 +91,7 @@ archive/experiment/phase1/probe/CLAUDE.md
 # tree (bin/migrate_phase1_outputs.py): per-checkpoint probe extraction,
 # run records, data staging, configs, logs with no single owning amendment.
 archive/experiment/phase1-data/
+
+# Host-owned Synaptic Tuner state, artifacts, caches, and SQLite lifecycle DB.
+# This public repository never commits run material or credentials.
+.synaptic/
