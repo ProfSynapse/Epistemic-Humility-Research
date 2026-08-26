@@ -6,6 +6,18 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-26 — aggregate exhaust published
+
+`professorsynapse/eh-qwen3-4b-l34-placebo-seed-census`, HF revision
+`9dccf16109b92d3ea79169e4cd3ab12659062402` (7 files: PROVENANCE, README,
+wide-gates report, adjudication pool/graded/applied manifests, generation
+manifest; provenance commit 1063f5d3). Built and verified through the
+data-exhaust skill (verify PASS, completeness check exact); user-approved
+2026-08-26. Row-level shape deferred: `analysis/rows/` carries generation
+text but no per-row `source` field, so a row-level build needs a staging
+pass that joins each row to its source for the license gate, and the pool's
+FalseQA lineage is a no-license source (excluded-entirely disposition).
+
 ### 2026-08-26 — full run, blinded adjudication, gates adjudicated, resolved
 
 Generation: 15 seeds x 185 rows on the local RTX 3090 (started immediately
