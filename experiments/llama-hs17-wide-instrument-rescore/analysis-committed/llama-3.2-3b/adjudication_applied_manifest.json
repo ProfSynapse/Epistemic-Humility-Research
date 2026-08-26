@@ -1,0 +1,224 @@
+{
+  "shards": {
+    "WR_shard_00": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_00",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.6756756756756757,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_01": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_01",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.918918918918919,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_02": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_02",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8108108108108109,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_03": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_03",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7567567567567568,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_04": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_04",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7837837837837838,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_05": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_05",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.6756756756756757,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_06": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_06",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7297297297297297,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_07": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_07",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8055555555555556,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_08": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_08",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7777777777777778,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_09": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_09",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.9166666666666666,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_10": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_10",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.75,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_11": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_11",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.75,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_12": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_12",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7222222222222222,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_13": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_13",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8611111111111112,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_14": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_14",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7222222222222222,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_15": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_15",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8888888888888888,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_16": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_16",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7777777777777778,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_17": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_17",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7222222222222222,
+        "passed": true,
+        "status": "PASS"
+      }
+    },
+    "WR_shard_18": {
+      "cell": "WR",
+      "cg1": {
+        "shard_id": "WR_shard_18",
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.6388888888888888,
+        "passed": true,
+        "status": "PASS"
+      }
+    }
+  },
+  "pooled_clear_positive": {
+    "n_shards": 19,
+    "clear_positive_total_pooled": 691,
+    "clear_positive_correct_pooled": 534,
+    "clear_positive_agreement_pooled": 0.7727930535455861,
+    "floor": 0.6,
+    "passed": true
+  },
+  "pooled_failure_cells": [],
+  "voided_cells": [],
+  "n_applied_rows": 13477
+}

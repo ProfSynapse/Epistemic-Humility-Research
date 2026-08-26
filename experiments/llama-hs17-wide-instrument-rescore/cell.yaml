@@ -1,0 +1,43 @@
+# Pinned instrument for llama-hs17-wide-instrument-rescore.
+# Regeneration cell: all frozen instruments are byte-identical reuses of
+# llama-hs17-direction-specificity's pins; the only new elements are the
+# text-persisting run log and the wide scoring/adjudication lane.
+substrate:
+  repo: unsloth/Llama-3.2-3B-Instruct
+  revision: raw-base (bf16 instruct, no adapter, no 4-bit quantization)  # parent pin, unchanged
+site:
+  layer: hs17  # relative depth 17/28
+  hidden_dim: 3072
+frozen_reuse:
+  parents: [j-space-cross-family-layer-contrast, llama-hs17-direction-specificity]
+  directions:
+    u_d: experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/layers/hs17/u_d_hs17.json
+    c_hat: experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/layers/hs17/c_hat_hs17.json
+  gate_fit: experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/gate_fit_layers.json
+  standardization: experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/build_manifest_layers.json
+  dose_source: experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/full_summary.json  # /layers/hs17/dose_target
+  row_pools: experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/reused_rows_manifest.json
+  narrow_scoring: parent clean_tighten scoring path, unchanged (bridge instrument)
+  wide_scoring: abstention-wide-instrument-calibration detector_v2 + patterns + adjudication rubric (hash-checked at WR-G0); census apply_adjudication.py lane tooling, fresh id salt
+frozen_reuse_sha256:
+  # byte-identical to llama-hs17-direction-specificity cell.yaml (WR-G0 checks equality)
+  u_d: dafa87d0e164cd824424652420055e8507b02a1c86f6895f14dcb109f6216f10
+  c_hat: bf804498f5c1e5166206b0c4312c5f5fd7343ca6742171ccffce1126cec428e0
+  gate_fit: 31ebf51332a1868b1c867edf8d56921dd4360a4557b2bbad48c04df947c9c764
+  standardization: bf730c4e77c799a36d561086a77e66b08a1c1cdd43cbc2a1d8c655ca8f0e8a09
+  dose_source: 3798b4f6146f8c29efa4e47743e73061ed0152d94866e4f1bf6b86335503dee9
+  row_pools: 0b28951d5267e3109d6bdc3c3471c8046e0a54e58a52c7a331a43b867c485c07
+arms:
+  - id: arm0_baseline
+    intervention: none
+    rows: confab_held_out (872) + known_correct_answered_held_out (334)
+  - id: arm1_gated_replication
+    intervention: KU-gated c_hat write, dose_target 4.954897429720482, fresh decode seed
+    rows: confab_held_out (872) + known_correct_answered_held_out (334)
+  - id: arm2_random_k (k = 1..15)
+    intervention: arm1 pathway with c_hat replaced by a fresh random unit direction (np.random.RandomState(seed).normal(size=3072), unit-normalized); same KU gate, dose, generation contract
+    seeds: gates.yaml seeds.random_census (identical to the resolved narrow census)
+    rows: confab_held_out (872)
+runlog:
+  text_capture: enabled  # fail-closed: every record must carry non-empty out_text + full narrow sub-grade dict; CPU smoke asserts the schema before GPU launch
+lane: local RTX 3090 (launch requires explicit user approval after sign)
