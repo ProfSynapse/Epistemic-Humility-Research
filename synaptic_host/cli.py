@@ -59,6 +59,7 @@ def _parser() -> argparse.ArgumentParser:
     provider_commands = provider.add_subparsers(dest="provider_command", required=True)
     deploy = provider_commands.add_parser("deploy")
     deploy.add_argument("--adopt-empty", action="store_true")
+    provider_commands.add_parser("upgrade")
     provider_commands.add_parser("preflight")
     training = commands.add_parser("training")
     training_commands = training.add_subparsers(dest="training_command", required=True)
@@ -136,6 +137,22 @@ def _provider_preflight(context: ProjectContext) -> int:
         "scope": {"account_ref": scope[0], "workspace_ref": scope[1], "environment_ref": scope[2], "client_ref": scope[3]},
     })
     return 0 if ready else 2
+
+
+def _provider_upgrade(context: ProjectContext) -> int:
+    config = ModalHostConfigV1.load(context)
+    session = _sdk_session(context, config)
+    state = session.upgrade(
+        context=context,
+        authenticator=FileHmacAuthenticator.from_context(context),
+    )
+    _json({
+        "schema_version": "synaptic-command-result/v1",
+        "status": "upgraded", "profile": state.profile.profile,
+        "deployment_ref": state.selection.deployment_ref,
+        "function_name": state.selection.function_name,
+    })
+    return 0
 
 
 def _intent(config: ModalHostConfigV1) -> ModalTrainingIntentV1:
@@ -303,10 +320,11 @@ def main(argv: list[str] | None = None) -> int:
     parsed = _parser().parse_args(arguments)
     context = _context()
     if parsed.command == "provider":
-        return (
-            _provider_deploy(context, adopt_empty=parsed.adopt_empty)
-            if parsed.provider_command == "deploy" else _provider_preflight(context)
-        )
+        if parsed.provider_command == "deploy":
+            return _provider_deploy(context, adopt_empty=parsed.adopt_empty)
+        if parsed.provider_command == "upgrade":
+            return _provider_upgrade(context)
+        return _provider_preflight(context)
     if parsed.training_command == "start":
         return _training_preflight(context, parsed.config, start=True)
     if parsed.training_command == "preflight":

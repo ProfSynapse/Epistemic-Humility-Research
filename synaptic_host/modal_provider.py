@@ -152,7 +152,7 @@ class ModalDeploymentJournalV1:
         expected = modal_function_name(self.deployment_ref)
         if self.function_name != expected:
             raise ValueError("deployment journal function identity changed")
-        if self.resource_policy not in {"create", "adopt-empty"}:
+        if self.resource_policy not in {"create", "adopt-empty", "reuse-existing"}:
             raise ValueError("deployment journal resource policy is invalid")
 
     @classmethod
@@ -196,6 +196,60 @@ class ModalDeploymentJournalV1:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class ModalUpgradeJournalV1:
+    """Durable intent for one resumable provider-code upgrade."""
+
+    config_digest: str
+    prior_deployment_ref: str
+    replacement: ModalDeploymentJournalV1
+
+    def __post_init__(self) -> None:
+        if self.config_digest != self.replacement.config_digest:
+            raise ValueError("upgrade journal config digest changed")
+        if self.replacement.resource_policy != "reuse-existing":
+            raise ValueError("upgrade journal must reuse existing resources")
+        modal_function_name(self.prior_deployment_ref)
+        if self.prior_deployment_ref == self.replacement.deployment_ref:
+            raise ValueError("upgrade deployment identity must change")
+
+    @classmethod
+    def create(
+        cls, config: ModalHostConfigV1, *, prior_deployment_ref: str
+    ) -> "ModalUpgradeJournalV1":
+        deployment_ref = "modal-deployment-" + secrets.token_hex(16)
+        replacement = ModalDeploymentJournalV1(
+            config.digest, deployment_ref, modal_function_name(deployment_ref),
+            "reuse-existing",
+        )
+        return cls(config.digest, prior_deployment_ref, replacement)
+
+    @classmethod
+    def from_mapping(cls, value: Mapping[str, object]) -> "ModalUpgradeJournalV1":
+        root = _closed(
+            value,
+            {
+                "schema_version", "config_digest", "prior_deployment_ref",
+                "replacement",
+            },
+            "Modal upgrade journal",
+        )
+        if root["schema_version"] != "synaptic-modal-upgrade-journal/v1":
+            raise ValueError("unsupported Modal upgrade journal schema")
+        return cls(
+            root["config_digest"], root["prior_deployment_ref"],
+            ModalDeploymentJournalV1.from_mapping(root["replacement"]),
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": "synaptic-modal-upgrade-journal/v1",
+            "config_digest": self.config_digest,
+            "prior_deployment_ref": self.prior_deployment_ref,
+            "replacement": self.replacement.to_dict(),
+        }
+
+
 def _atomic_json(path: Path, value: Mapping[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists() or path.is_symlink():
@@ -213,6 +267,37 @@ def _atomic_json(path: Path, value: Mapping[str, object]) -> None:
     except BaseException:
         temporary.unlink(missing_ok=True)
         raise
+
+
+def _replace_json(path: Path, value: Mapping[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.parent / (
+        "." + path.name + "." + secrets.token_hex(8) + ".tmp"
+    )
+    payload = json.dumps(
+        value, sort_keys=True, separators=(",", ":"), indent=2
+    ) + "\n"
+    descriptor = os.open(
+        temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600
+    )
+    try:
+        os.write(descriptor, payload.encode("utf-8"))
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+    try:
+        os.replace(temporary, path)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+
+
+def _record_or_verify(path: Path, value: Mapping[str, object]) -> None:
+    if path.exists() or path.is_symlink():
+        if _read_json(path) != dict(value):
+            raise ValueError("durable Modal history changed")
+        return
+    _atomic_json(path, value)
 
 def _opaque_ref(kind: str, *values: str) -> str:
     payload = "\0".join(_text(value, f"{kind} identity component") for value in values)
@@ -370,90 +455,13 @@ class ExplicitModalHostSession:
             },
         )
 
-    def deploy(
+    def _deploy_journal(
         self,
         *,
-        context: ProjectContext,
+        journal: ModalDeploymentJournalV1,
         authenticator: FileHmacAuthenticator,
-        hf_token: str,
-        adopt_empty: bool = False,
     ) -> ModalProviderStateV1:
-        if type(adopt_empty) is not bool:
-            raise TypeError("adopt_empty must be an exact boolean")
-        state_path = context.state_root / "modal" / "provider-state.json"
-        journal_path = context.state_root / "modal" / "deployment-journal.json"
-        if state_path.exists() or state_path.is_symlink():
-            raise FileExistsError("Modal provider is already deployed for this host")
-        if not hf_token:
-            raise ValueError("HF_TOKEN is required to bind the named Modal Secret")
-
-        control = self._optional_volume(self.config.control_volume_name)
-        artifact = self._optional_volume(self.config.artifact_volume_name)
-        runtime_secret = self._optional_secret()
-        app_exists = self._app_exists()
-        if journal_path.exists() or journal_path.is_symlink():
-            journal = ModalDeploymentJournalV1.from_mapping(
-                _read_json(journal_path)
-            )
-            if journal.config_digest != self.config.digest:
-                raise ValueError("deployment journal differs from host config")
-            if adopt_empty and journal.resource_policy != "adopt-empty":
-                raise ValueError("deployment journal resource policy changed")
-        else:
-            if adopt_empty:
-                if control is None or artifact is None or runtime_secret is None:
-                    raise ValueError("adopt-empty requires every named resource")
-                if (
-                    not self._volume_is_empty(control)
-                    or not self._volume_is_empty(artifact)
-                ):
-                    raise ValueError("adopt-empty requires empty Modal volumes")
-            elif any(
-                value is not None
-                for value in (control, artifact, runtime_secret)
-            ) or app_exists:
-                raise ValueError("Modal deployment resource collision")
-            journal = ModalDeploymentJournalV1.create(
-                self.config, adopt_empty=adopt_empty
-            )
-            _atomic_json(journal_path, journal.to_dict())
-
-        authenticator.initialize()
         runtime_lock = ModalRuntimeLockV1.packaged()
-        if journal.resource_policy == "adopt-empty":
-            if control is None or artifact is None or runtime_secret is None:
-                raise ValueError("adopted Modal resource disappeared")
-            if (
-                not self._volume_is_empty(control)
-                or not self._volume_is_empty(artifact)
-            ):
-                raise ValueError("adopted Modal volume is no longer empty")
-        else:
-            if control is None:
-                control = self.sdk.Volume.objects.create(
-                    self.config.control_volume_name, version=1,
-                    allow_existing=False,
-                    environment_name=self.config.environment_name,
-                    client=self.client,
-                )
-            if artifact is None:
-                artifact = self.sdk.Volume.objects.create(
-                    self.config.artifact_volume_name, version=1,
-                    allow_existing=False,
-                    environment_name=self.config.environment_name,
-                    client=self.client,
-                )
-            if runtime_secret is None:
-                runtime_secret = self.sdk.Secret.objects.create(
-                    self.config.runtime_secret_name,
-                    {
-                        "HF_TOKEN": hf_token,
-                        "SYNAPTIC_EVIDENCE_MAC_KEY": authenticator.encoded_key,
-                    },
-                    allow_existing=False,
-                    environment_name=self.config.environment_name,
-                    client=self.client,
-                )
         remote_auth = EnvironmentHmacAuthenticator(
             environment_key="SYNAPTIC_EVIDENCE_MAC_KEY",
             key_ref=authenticator.key_ref,
@@ -526,8 +534,253 @@ class ExplicitModalHostSession:
         artifact_ref = _opaque_ref(
             "volume", self.binding.account_ref, self.config.artifact_volume_name
         )
-        state = ModalProviderStateV1(
+        return ModalProviderStateV1(
             profile, self.binding, selection, control_ref, artifact_ref,
         )
+
+    def deploy(
+        self,
+        *,
+        context: ProjectContext,
+        authenticator: FileHmacAuthenticator,
+        hf_token: str,
+        adopt_empty: bool = False,
+    ) -> ModalProviderStateV1:
+        if type(adopt_empty) is not bool:
+            raise TypeError("adopt_empty must be an exact boolean")
+        state_path = context.state_root / "modal" / "provider-state.json"
+        journal_path = context.state_root / "modal" / "deployment-journal.json"
+        if state_path.exists() or state_path.is_symlink():
+            raise FileExistsError("Modal provider is already deployed for this host")
+        if not hf_token:
+            raise ValueError("HF_TOKEN is required to bind the named Modal Secret")
+
+        control = self._optional_volume(self.config.control_volume_name)
+        artifact = self._optional_volume(self.config.artifact_volume_name)
+        runtime_secret = self._optional_secret()
+        app_exists = self._app_exists()
+        if journal_path.exists() or journal_path.is_symlink():
+            journal = ModalDeploymentJournalV1.from_mapping(
+                _read_json(journal_path)
+            )
+            if journal.config_digest != self.config.digest:
+                raise ValueError("deployment journal differs from host config")
+            if adopt_empty and journal.resource_policy != "adopt-empty":
+                raise ValueError("deployment journal resource policy changed")
+        else:
+            if adopt_empty:
+                if control is None or artifact is None or runtime_secret is None:
+                    raise ValueError("adopt-empty requires every named resource")
+                if (
+                    not self._volume_is_empty(control)
+                    or not self._volume_is_empty(artifact)
+                ):
+                    raise ValueError("adopt-empty requires empty Modal volumes")
+            elif any(
+                value is not None
+                for value in (control, artifact, runtime_secret)
+            ) or app_exists:
+                raise ValueError("Modal deployment resource collision")
+            journal = ModalDeploymentJournalV1.create(
+                self.config, adopt_empty=adopt_empty
+            )
+            _atomic_json(journal_path, journal.to_dict())
+
+        authenticator.initialize()
+        if journal.resource_policy == "adopt-empty":
+            if control is None or artifact is None or runtime_secret is None:
+                raise ValueError("adopted Modal resource disappeared")
+            if (
+                not self._volume_is_empty(control)
+                or not self._volume_is_empty(artifact)
+            ):
+                raise ValueError("adopted Modal volume is no longer empty")
+        else:
+            if control is None:
+                control = self.sdk.Volume.objects.create(
+                    self.config.control_volume_name, version=1,
+                    allow_existing=False,
+                    environment_name=self.config.environment_name,
+                    client=self.client,
+                )
+            if artifact is None:
+                artifact = self.sdk.Volume.objects.create(
+                    self.config.artifact_volume_name, version=1,
+                    allow_existing=False,
+                    environment_name=self.config.environment_name,
+                    client=self.client,
+                )
+            if runtime_secret is None:
+                runtime_secret = self.sdk.Secret.objects.create(
+                    self.config.runtime_secret_name,
+                    {
+                        "HF_TOKEN": hf_token,
+                        "SYNAPTIC_EVIDENCE_MAC_KEY": authenticator.encoded_key,
+                    },
+                    allow_existing=False,
+                    environment_name=self.config.environment_name,
+                    client=self.client,
+                )
+        state = self._deploy_journal(
+            journal=journal, authenticator=authenticator
+        )
         _atomic_json(state_path, state.to_dict())
+        return state
+
+    def _validate_upgrade_source(
+        self,
+        state_value: Mapping[str, object],
+        journal_value: Mapping[str, object],
+    ) -> ModalDeploymentSelectionV1:
+        root = _closed(
+            state_value,
+            {"schema_version", "profile", "binding", "selection", "volumes"},
+            "Modal provider state",
+        )
+        if root["schema_version"] != "synaptic-modal-provider-state/v1":
+            raise ValueError("unsupported Modal provider state schema")
+        profile = ModalProviderProfileV1.from_mapping(root["profile"])
+        binding_value = _closed(
+            root["binding"],
+            {
+                "account_ref", "workspace_ref", "environment_ref",
+                "client_ref", "sdk_version",
+            },
+            "Modal binding",
+        )
+        binding = ModalClientBinding(**binding_value)
+        selection = ModalDeploymentSelectionV1.from_dict(root["selection"])
+        volumes = _closed(
+            root["volumes"],
+            {"control_volume_id", "artifact_volume_id"},
+            "Modal volumes",
+        )
+        journal = ModalDeploymentJournalV1.from_mapping(journal_value)
+        expected_secrets = (
+            ModalSecretProfileV1(
+                self.config.runtime_secret_name,
+                self.config.runtime_secret_keys,
+            ),
+        )
+        if (
+            journal.config_digest != self.config.digest
+            or journal.deployment_ref != selection.deployment_ref
+            or journal.function_name != selection.function_name
+            or binding != self.binding
+            or profile.profile != self.config.profile
+            or profile.app_name != "synaptic-training-v1"
+            or profile.function_name != selection.function_name
+            or profile.deployment_ref != selection.deployment_ref
+            or profile.control_volume_ref != self.config.control_volume_name
+            or profile.artifact_volume_ref != self.config.artifact_volume_name
+            or profile.secrets != expected_secrets
+            or selection.account_ref != binding.account_ref
+            or selection.workspace_ref != binding.workspace_ref
+            or selection.environment_ref != binding.environment_ref
+            or selection.client_ref != binding.client_ref
+            or selection.runtime_environment != self.config.runtime_environment
+            or selection.timeout_seconds != self.config.timeout_seconds
+            or selection.secret_requirements_digest
+            != profile.secret_requirements_digest
+            or volumes["control_volume_id"] != _opaque_ref(
+                "volume", binding.account_ref, self.config.control_volume_name
+            )
+            or volumes["artifact_volume_id"] != _opaque_ref(
+                "volume", binding.account_ref, self.config.artifact_volume_name
+            )
+        ):
+            raise ValueError("prior Modal provider state differs from host authority")
+        return selection
+
+    def upgrade(
+        self,
+        *,
+        context: ProjectContext,
+        authenticator: FileHmacAuthenticator,
+    ) -> ModalProviderStateV1:
+        """Replace provider code while preserving named durable resources."""
+        modal_root = context.state_root / "modal"
+        state_path = modal_root / "provider-state.json"
+        journal_path = modal_root / "deployment-journal.json"
+        upgrade_path = modal_root / "upgrade-journal.json"
+        if not state_path.is_file() or state_path.is_symlink():
+            raise ValueError("Modal provider state is unavailable for upgrade")
+        if not journal_path.is_file() or journal_path.is_symlink():
+            raise ValueError("Modal deployment journal is unavailable for upgrade")
+
+        if upgrade_path.exists() or upgrade_path.is_symlink():
+            upgrade = ModalUpgradeJournalV1.from_mapping(
+                _read_json(upgrade_path)
+            )
+            history_root = modal_root / "history" / upgrade.prior_deployment_ref
+            prior_state_value = _read_json(history_root / "provider-state.json")
+            prior_journal_value = _read_json(
+                history_root / "deployment-journal.json"
+            )
+            prior = self._validate_upgrade_source(
+                prior_state_value, prior_journal_value
+            )
+        else:
+            prior_state_value = _read_json(state_path)
+            prior_journal_value = _read_json(journal_path)
+            prior = self._validate_upgrade_source(
+                prior_state_value, prior_journal_value
+            )
+            upgrade = ModalUpgradeJournalV1.create(
+                self.config, prior_deployment_ref=prior.deployment_ref
+            )
+            _atomic_json(upgrade_path, upgrade.to_dict())
+            history_root = modal_root / "history" / prior.deployment_ref
+            _record_or_verify(
+                history_root / "provider-state.json", prior_state_value
+            )
+            _record_or_verify(
+                history_root / "deployment-journal.json", prior_journal_value
+            )
+
+        if (
+            upgrade.config_digest != self.config.digest
+            or upgrade.prior_deployment_ref != prior.deployment_ref
+        ):
+            raise ValueError("Modal upgrade journal differs from host authority")
+        current_value = _read_json(state_path)
+        current_selection = ModalDeploymentSelectionV1.from_dict(
+            _closed(
+                current_value,
+                {"schema_version", "profile", "binding", "selection", "volumes"},
+                "Modal provider state",
+            )["selection"]
+        )
+        replacement = upgrade.replacement
+        if current_selection.deployment_ref == prior.deployment_ref:
+            if current_value != prior_state_value:
+                raise ValueError("prior Modal provider state changed during upgrade")
+            control = self._optional_volume(self.config.control_volume_name)
+            artifact = self._optional_volume(self.config.artifact_volume_name)
+            runtime_secret = self._optional_secret()
+            if control is None or artifact is None or runtime_secret is None:
+                raise ValueError("Modal upgrade requires every named resource")
+            authenticator.initialize()
+            state = self._deploy_journal(
+                journal=replacement, authenticator=authenticator
+            )
+            _replace_json(journal_path, replacement.to_dict())
+            _replace_json(state_path, state.to_dict())
+        elif current_selection.deployment_ref == replacement.deployment_ref:
+            state = ModalProviderStateV1.from_mapping(current_value)
+            if _read_json(journal_path) != replacement.to_dict():
+                raise ValueError("completed Modal upgrade journal changed")
+        else:
+            raise ValueError("Modal provider state is outside the upgrade journal")
+
+        completed_path = (
+            modal_root / "history" / replacement.deployment_ref
+            / "upgrade-journal.json"
+        )
+        if completed_path.exists() or completed_path.is_symlink():
+            _record_or_verify(completed_path, upgrade.to_dict())
+            upgrade_path.unlink()
+        else:
+            completed_path.parent.mkdir(parents=True, exist_ok=True)
+            os.replace(upgrade_path, completed_path)
         return state

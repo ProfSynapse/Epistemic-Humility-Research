@@ -20,6 +20,7 @@ def test_cli_exposes_clean_provider_and_training_verbs_only() -> None:
     parser = _parser()
     assert parser.parse_args(["provider", "deploy"]).provider_command == "deploy"
     assert parser.parse_args(["provider", "deploy", "--adopt-empty"]).adopt_empty is True
+    assert parser.parse_args(["provider", "upgrade"]).provider_command == "upgrade"
     assert parser.parse_args(["provider", "preflight"]).provider_command == "preflight"
     assert parser.parse_args(["training", "start", "--config", "x.json"]).training_command == "start"
     assert parser.parse_args(["training", "preflight", "--config", "x.json"]).training_command == "preflight"

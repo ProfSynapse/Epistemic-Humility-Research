@@ -1,12 +1,20 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
 
 from synaptic_tuner.api.v1 import ProjectContext
 from synaptic_host.modal_provider import ExplicitModalHostSession, ModalHostConfigV1
-from synaptic_host.security import FileHmacAuthenticator
+
+
+class StubAuthenticator:
+    key_ref = "modal-evidence-v1"
+    encoded_key = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+
+    def initialize(self) -> None:
+        pass
 
 
 def config() -> ModalHostConfigV1:
@@ -112,6 +120,11 @@ class FakeImage(FakeObject):
         self.environment = dict(value)
         return self
 
+    def add_local_python_source(self, *modules, **kwargs):
+        assert modules == ("tuner", "synaptic_tuner")
+        assert kwargs == {"copy": False, "ignore": []}
+        return self
+
 
 class FakeFunction(FakeObject):
     current = None
@@ -203,7 +216,7 @@ def test_explicit_session_deploys_once_and_writes_only_host_state(tmp_path: Path
     session = ExplicitModalHostSession.from_credentials(
         sdk=FakeSdk, config=config(), token_id="token-id", token_secret="token-secret"
     )
-    authenticator = FileHmacAuthenticator.from_context(context)
+    authenticator = StubAuthenticator()
     state = session.deploy(context=context, authenticator=authenticator, hf_token="hf-value")
     assert state.selection.deployment_ref.startswith("modal-deployment-")
     assert state.selection.function_name.endswith(state.selection.deployment_ref[-32:])
@@ -224,7 +237,7 @@ def test_deploy_resumes_exact_journal_after_interruption(tmp_path: Path) -> None
         sdk=FakeSdk, config=config(),
         token_id="token-id", token_secret="token-secret",
     )
-    authenticator = FileHmacAuthenticator.from_context(context)
+    authenticator = StubAuthenticator()
     FakeApp.fail_once = True
     with pytest.raises(RuntimeError, match="interruption"):
         session.deploy(
@@ -257,12 +270,64 @@ def test_adopt_empty_reuses_exact_resources_without_overwriting_secret(tmp_path:
     )
     state = session.deploy(
         context=context,
-        authenticator=FileHmacAuthenticator.from_context(context),
+        authenticator=StubAuthenticator(),
         hf_token="unused-during-adoption",
         adopt_empty=True,
     )
     assert state.selection.deployment_ref.startswith("modal-deployment-")
     assert FakeSecret.registry["runtime-v1"] == existing_secret
+
+
+def test_upgrade_rotates_deployment_and_preserves_durable_resources(tmp_path: Path) -> None:
+    context = project_context(tmp_path)
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(),
+        token_id="token-id", token_secret="token-secret",
+    )
+    authenticator = StubAuthenticator()
+    prior = session.deploy(
+        context=context, authenticator=authenticator, hf_token="hf-value"
+    )
+    control = FakeVolume.registry["control-v1"]
+    artifact = FakeVolume.registry["artifact-v1"]
+    secret = dict(FakeSecret.registry["runtime-v1"])
+
+    current = session.upgrade(context=context, authenticator=authenticator)
+
+    assert current.selection.deployment_ref != prior.selection.deployment_ref
+    assert FakeVolume.registry["control-v1"] is control
+    assert FakeVolume.registry["artifact-v1"] is artifact
+    assert FakeSecret.registry["runtime-v1"] == secret
+    modal_root = context.state_root / "modal"
+    history = modal_root / "history"
+    assert (history / prior.selection.deployment_ref / "provider-state.json").is_file()
+    assert (history / prior.selection.deployment_ref / "deployment-journal.json").is_file()
+    assert (history / current.selection.deployment_ref / "upgrade-journal.json").is_file()
+    assert not (modal_root / "upgrade-journal.json").exists()
+
+
+def test_upgrade_resumes_exact_journal_after_interruption(tmp_path: Path) -> None:
+    context = project_context(tmp_path)
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(),
+        token_id="token-id", token_secret="token-secret",
+    )
+    authenticator = StubAuthenticator()
+    prior = session.deploy(
+        context=context, authenticator=authenticator, hf_token="hf-value"
+    )
+    FakeApp.fail_once = True
+    with pytest.raises(RuntimeError, match="interruption"):
+        session.upgrade(context=context, authenticator=authenticator)
+    pending_path = context.state_root / "modal" / "upgrade-journal.json"
+    pending = json.loads(pending_path.read_text(encoding="utf-8"))
+    replacement_ref = pending["replacement"]["deployment_ref"]
+
+    current = session.upgrade(context=context, authenticator=authenticator)
+
+    assert current.selection.deployment_ref == replacement_ref
+    assert current.selection.deployment_ref != prior.selection.deployment_ref
+    assert not pending_path.exists()
 
 
 def test_session_accepts_one_explicit_client_loaded_from_host_config() -> None:
