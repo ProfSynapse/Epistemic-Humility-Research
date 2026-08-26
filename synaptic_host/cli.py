@@ -69,6 +69,8 @@ def _parser() -> argparse.ArgumentParser:
     preflight.add_argument("--config", required=True)
     outcome = training_commands.add_parser("outcome")
     outcome.add_argument("--run-id", required=True)
+    reverify = training_commands.add_parser("reverify")
+    reverify.add_argument("--run-id", required=True)
     return parser
 
 
@@ -284,7 +286,9 @@ def _training_preflight(context: ProjectContext, path_ref: str, *, start: bool) 
     return 0
 
 
-def _training_outcome(context: ProjectContext, run_id: str) -> int:
+def _training_outcome(
+    context: ProjectContext, run_id: str, *, reverify: bool = False
+) -> int:
     config = ModalHostConfigV1.load(context)
     state = ModalProviderStateV1.load(context)
     session = _sdk_session(context, config)
@@ -301,7 +305,7 @@ def _training_outcome(context: ProjectContext, run_id: str) -> int:
         RunRef(run_id, "epistemic-humility-research"),
         preparation.public_plan_fingerprint, record.updated_at,
     )
-    outcome = api.outcome(submission)
+    outcome = api.reverify(submission) if reverify else api.outcome(submission)
     _json({
         "schema_version": "synaptic-command-result/v1",
         "status": outcome.status.state.value,
@@ -329,7 +333,9 @@ def main(argv: list[str] | None = None) -> int:
         return _training_preflight(context, parsed.config, start=True)
     if parsed.training_command == "preflight":
         return _training_preflight(context, parsed.config, start=False)
-    return _training_outcome(context, parsed.run_id)
+    return _training_outcome(
+        context, parsed.run_id, reverify=parsed.training_command == "reverify"
+    )
 
 
 if __name__ == "__main__":
