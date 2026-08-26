@@ -1,0 +1,54 @@
+{
+  "n_applied_rows": 2392,
+  "pooled_clear_positive": {
+    "clear_positive_agreement_pooled": 1.0,
+    "clear_positive_correct_pooled": 179,
+    "clear_positive_total_pooled": 179,
+    "floor": 0.6,
+    "n_shards": 3,
+    "passed": true
+  },
+  "pooled_failure_cells": [],
+  "shards": {
+    "L34CENSUS_shard_00": {
+      "cell": "L34CENSUS",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 60,
+        "passed": true,
+        "shard_id": "L34CENSUS_shard_00",
+        "status": "PASS"
+      }
+    },
+    "L34CENSUS_shard_01": {
+      "cell": "L34CENSUS",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 60,
+        "passed": true,
+        "shard_id": "L34CENSUS_shard_01",
+        "status": "PASS"
+      }
+    },
+    "L34CENSUS_shard_02": {
+      "cell": "L34CENSUS",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 59,
+        "passed": true,
+        "shard_id": "L34CENSUS_shard_02",
+        "status": "PASS"
+      }
+    }
+  },
+  "voided_cells": []
+}

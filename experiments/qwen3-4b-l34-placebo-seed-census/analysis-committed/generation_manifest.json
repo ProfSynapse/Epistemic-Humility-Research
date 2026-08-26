@@ -1,0 +1,200 @@
+{
+  "dose_target": 200.0,
+  "frozen_reuse_verified": {
+    "cell_yaml": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/cell.yaml",
+    "verified": [
+      {
+        "key": "u_d",
+        "path": "experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json",
+        "sha256": "52a1b13261a51c9706e7df76202f685eb11a702c19c36db16afa9beecc98a334"
+      },
+      {
+        "key": "c_hat",
+        "path": "experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json",
+        "sha256": "fe01624adb5bc4ad74a411bedb3bf5ad837fd4cc38ad179f4eb301b3db6426da"
+      },
+      {
+        "key": "gate_fit",
+        "path": "experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json",
+        "sha256": "edb883acaa6cf0824b4f418460d652d2d2e83bb3c781c1bf5bfdcff5121616bb"
+      },
+      {
+        "key": "standardization",
+        "path": "experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json",
+        "sha256": "224664daab1a113cc4fa4004869f6c079ff374cf320cb1db90c472262af70e53"
+      },
+      {
+        "key": "historical_random_draw",
+        "path": "experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json",
+        "sha256": "9a6ae4824eea7aed69e099704709cd6eda8c4c1b8c7457f5e6e63cb1c31315b0"
+      },
+      {
+        "key": "frozen_arm_results",
+        "path": "experiments/wide-instrument-control-rescore/analysis-committed/results/wide_gates_report.json",
+        "sha256": "6902cdf47a78ef80ed228345864b513a6a156d73834cfe96959fd20a6606d037"
+      }
+    ]
+  },
+  "layer": 33,
+  "n_rows_per_seed": 185,
+  "pins": {
+    "pins": {
+      "label": "doubt-gated-caution-tighten",
+      "pin_source": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/doubt-gated-caution-tighten/experiment.yaml",
+      "verified": [
+        {
+          "file": "cell.yaml",
+          "sha256": "a6d3ddc4030442757549d05ac8ac4c58d0c535401c5d86f532490744e82e14ee"
+        },
+        {
+          "file": "gates.yaml",
+          "sha256": "48b65487b9b5b20693645e42ef0c8a4387446638db7c500721d74001fd331c4d"
+        },
+        {
+          "file": "gen_lib.py",
+          "sha256": "6cffc7282591ca3b0db79d985a024ca2b63cab8afc1c5f5085d13cbdb98b79ce"
+        },
+        {
+          "file": "grader.py",
+          "sha256": "dbe39384038feeba162a4c54690973be9544edf81285d002c48f6e0dedeb81d5"
+        },
+        {
+          "file": "model_lib.py",
+          "sha256": "ce71f6d02d97efdabb3d05e9709eff0dc0d50f2710eed4fe82f06df68389a047"
+        }
+      ]
+    },
+    "unpinned": {
+      "label": "doubt-gated-caution-tighten",
+      "unpinned_load_bearing_files": [
+        {
+          "file": "pipeline.py",
+          "sha256": "719955cf6ae222e20d7aef1eb793971f3f490e5bee25e133809e6f9d5d01168e",
+          "status": "observed_no_committed_pin"
+        },
+        {
+          "file": "build_directions.py",
+          "sha256": "ee72a86f3f1557136ee13a763889ee851d0222111cd0e4ce1b42d4d66ed99a96",
+          "status": "observed_no_committed_pin"
+        },
+        {
+          "file": "gate_fit.py",
+          "sha256": "ff28ed081fff5cdb87645e5cb0e25539fa884a364c97f6bdc2ea7ada52eb26d0",
+          "status": "observed_no_committed_pin"
+        },
+        {
+          "file": "build_random_direction.py",
+          "sha256": "be33ecb42930b8d6aa0c28e904d238e28d6fcb1f08888b6a30fee5166e3f58f2",
+          "status": "observed_no_committed_pin"
+        },
+        {
+          "file": "extract_l34_anchor.py",
+          "sha256": "a18269d8934b7fa54039d9cbab1ee296d37935c552871c60dfb41b970fc42143",
+          "status": "observed_no_committed_pin"
+        },
+        {
+          "file": "materialize_rows.py",
+          "sha256": "ac8298248079ac9b4982442356301c6c39436133eeb85e8815c85baa1b9837cd",
+          "status": "observed_no_committed_pin"
+        },
+        {
+          "file": "split_fit_heldout.py",
+          "sha256": "78345435af5dfbd45b243a2fba0081ffa7bf11cea02b94d1da4af0e7d4b8d7e3",
+          "status": "observed_no_committed_pin"
+        }
+      ]
+    }
+  },
+  "seeds": [
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920001.jsonl",
+      "seed": 920001
+    },
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920002.jsonl",
+      "seed": 920002
+    },
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920003.jsonl",
+      "seed": 920003
+    },
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920004.jsonl",
+      "seed": 920004
+    },
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920005.jsonl",
+      "seed": 920005
+    },
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920006.jsonl",
+      "seed": 920006
+    },
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920007.jsonl",
+      "seed": 920007
+    },
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920008.jsonl",
+      "seed": 920008
+    },
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920009.jsonl",
+      "seed": 920009
+    },
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920010.jsonl",
+      "seed": 920010
+    },
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920011.jsonl",
+      "seed": 920011
+    },
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920012.jsonl",
+      "seed": 920012
+    },
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920013.jsonl",
+      "seed": 920013
+    },
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920014.jsonl",
+      "seed": 920014
+    },
+    {
+      "n_fired": 168,
+      "n_rows": 185,
+      "rows_path": "/home/profsynapse/code/ehr-worktrees/qwen3-4b-l34-placebo-seed-census/experiments/qwen3-4b-l34-placebo-seed-census/analysis/rows/seed_920015.jsonl",
+      "seed": 920015
+    }
+  ]
+}

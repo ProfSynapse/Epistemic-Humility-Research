@@ -1,0 +1,253 @@
+{
+  "QG_G1_distributional_specificity": {
+    "effect_ratio": 4.833333333333333,
+    "frozen_baseline_rate": 0.11351351351351352,
+    "frozen_gated_lift_over_baseline": 0.6270270270270271,
+    "max_k_abs_random_lift": 0.12972972972972974,
+    "pass": true,
+    "threshold": 3.0
+  },
+  "QG_G2_sign_consistency": {
+    "n_negative_signed_lift": 6,
+    "n_seeds": 15,
+    "pass": false,
+    "threshold": "12/15"
+  },
+  "applied_summary": {
+    "n_applied_rows": 2392,
+    "pooled_clear_positive": {
+      "clear_positive_agreement_pooled": 1.0,
+      "clear_positive_correct_pooled": 179,
+      "clear_positive_total_pooled": 179,
+      "floor": 0.6,
+      "n_shards": 3,
+      "passed": true
+    },
+    "pooled_failure_cells": [],
+    "shards": {
+      "L34CENSUS_shard_00": {
+        "cell": "L34CENSUS",
+        "cg1": {
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 1.0,
+          "clear_positive_floor_met": true,
+          "clear_positive_total": 60,
+          "passed": true,
+          "shard_id": "L34CENSUS_shard_00",
+          "status": "PASS"
+        }
+      },
+      "L34CENSUS_shard_01": {
+        "cell": "L34CENSUS",
+        "cg1": {
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 1.0,
+          "clear_positive_floor_met": true,
+          "clear_positive_total": 60,
+          "passed": true,
+          "shard_id": "L34CENSUS_shard_01",
+          "status": "PASS"
+        }
+      },
+      "L34CENSUS_shard_02": {
+        "cell": "L34CENSUS",
+        "cg1": {
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 1.0,
+          "clear_positive_floor_met": true,
+          "clear_positive_total": 59,
+          "passed": true,
+          "shard_id": "L34CENSUS_shard_02",
+          "status": "PASS"
+        }
+      }
+    },
+    "voided_cells": []
+  },
+  "dry_run": false,
+  "per_seed": {
+    "920001": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.0972972972972973,
+        "successes": 18,
+        "wilson_ci_95": [
+          0.062433664258423144,
+          0.14854468270787408
+        ]
+      },
+      "lift_over_baseline_signed": -0.016216216216216217
+    },
+    "920002": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.0918918918918919,
+        "successes": 17,
+        "wilson_ci_95": [
+          0.05816474448485415,
+          0.14222270780984975
+        ]
+      },
+      "lift_over_baseline_signed": -0.021621621621621623
+    },
+    "920003": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.11891891891891893,
+        "successes": 22,
+        "wilson_ci_95": [
+          0.07985752852248809,
+          0.17348439713018246
+        ]
+      },
+      "lift_over_baseline_signed": 0.005405405405405406
+    },
+    "920004": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.07567567567567568,
+        "successes": 14,
+        "wilson_ci_95": [
+          0.04561083069467514,
+          0.12300393758524875
+        ]
+      },
+      "lift_over_baseline_signed": -0.03783783783783784
+    },
+    "920005": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.1837837837837838,
+        "successes": 34,
+        "wilson_ci_95": [
+          0.13460281913919564,
+          0.24582984257259483
+        ]
+      },
+      "lift_over_baseline_signed": 0.07027027027027027
+    },
+    "920006": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.24324324324324326,
+        "successes": 45,
+        "wilson_ci_95": [
+          0.18705128707108518,
+          0.30988121602823193
+        ]
+      },
+      "lift_over_baseline_signed": 0.12972972972972974
+    },
+    "920007": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.0972972972972973,
+        "successes": 18,
+        "wilson_ci_95": [
+          0.062433664258423144,
+          0.14854468270787408
+        ]
+      },
+      "lift_over_baseline_signed": -0.016216216216216217
+    },
+    "920008": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.22702702702702704,
+        "successes": 42,
+        "wilson_ci_95": [
+          0.17257483996579615,
+          0.29258497911874093
+        ]
+      },
+      "lift_over_baseline_signed": 0.11351351351351352
+    },
+    "920009": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.10810810810810811,
+        "successes": 20,
+        "wilson_ci_95": [
+          0.07108044191598797,
+          0.1610796943934959
+        ]
+      },
+      "lift_over_baseline_signed": -0.005405405405405406
+    },
+    "920010": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.11891891891891893,
+        "successes": 22,
+        "wilson_ci_95": [
+          0.07985752852248809,
+          0.17348439713018246
+        ]
+      },
+      "lift_over_baseline_signed": 0.005405405405405406
+    },
+    "920011": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.043243243243243246,
+        "successes": 8,
+        "wilson_ci_95": [
+          0.022072326950170185,
+          0.08299707330019375
+        ]
+      },
+      "lift_over_baseline_signed": -0.07027027027027027
+    },
+    "920012": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.17297297297297298,
+        "successes": 32,
+        "wilson_ci_95": [
+          0.12527214079409718,
+          0.23397873157450663
+        ]
+      },
+      "lift_over_baseline_signed": 0.05945945945945946
+    },
+    "920013": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.1783783783783784,
+        "successes": 33,
+        "wilson_ci_95": [
+          0.1299285751507827,
+          0.2399131918894144
+        ]
+      },
+      "lift_over_baseline_signed": 0.06486486486486487
+    },
+    "920014": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.23783783783783785,
+        "successes": 44,
+        "wilson_ci_95": [
+          0.18221262794606685,
+          0.3041289804816569
+        ]
+      },
+      "lift_over_baseline_signed": 0.12432432432432433
+    },
+    "920015": {
+      "confab_tighten_wide": {
+        "n": 185,
+        "rate": 0.16216216216216217,
+        "successes": 30,
+        "wilson_ci_95": [
+          0.11601529466071957,
+          0.22205378836469758
+        ]
+      },
+      "lift_over_baseline_signed": 0.04864864864864865
+    }
+  }
+}

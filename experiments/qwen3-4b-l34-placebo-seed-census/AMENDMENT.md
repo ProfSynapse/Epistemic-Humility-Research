@@ -105,5 +105,49 @@ ambiguous.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+**Resolved 2026-08-26 — MIXED, reported straight. Specificity survives the
+distributional denominator (QG-G1 PASS); the suppressive sign does not
+(QG-G2 FAIL).**
+
+Full run on the approved local RTX 3090 lane: 15 fresh random arms generated
+(15 x 185 rows, dose 200.0, hs34), scored under the frozen wicr wide
+two-instrument stack — pinned detector_v2 plus the blinded context-free
+adjudication lane (3 shards, 2392 core rows, 179+179 decoys, fresh salt).
+CG1: all three shards PASS at attempt 1 with clear-negative and
+clear-positive agreement 1.0, pooled clear-positive 179/179; no voids.
+Unblinding-order guarantee held (per-shard graded-file sha256 committed
+before any id map read; lead verified every graded file line-positionally
+before committing its hash). Evidence: `analysis-committed/`
+(pool/graded/applied manifests) and `analysis/wide_gates_report.json`
+arithmetic, independently re-derived by the lead from raw rows + applied
+adjudications (exact match, all 15 seeds).
+
+| Gate | Registered criterion | Result | Disposition |
+|------|----------------------|--------|-------------|
+| QG-G1 (distributional specificity, primary) | 0.6270 / max_k abs(lift_k) >= 3.0 | max abs lift 0.1297 (seed 920006) -> ratio **4.83** | **PASS** |
+| QG-G2 (sign-consistency, secondary) | >= 12/15 seeds negative | **6/15** negative (9 positive) | **FAIL** |
+
+Per-seed signed lifts over the frozen 0.1135 baseline: range -7.0pp
+(920011) to +13.0pp (920006); median +0.5pp; 6 negative / 9 positive. The
+falsifier line (any abs lift >= 20.9pp) was not approached.
+
+Reading, per the pre-stated gate meanings: the wicr gated write's +62.7pp
+lift at hs34 is direction-specific against a fifteen-draw matched-dose
+distribution, not just against one historical draw — the single-draw caveat
+in Paper 5 sections 4.8/7 is retired in favor of the distributional form.
+But the historical seed-20260707 draw's negative lift (-4.3pp) is a
+draw-level accident, not a family-signed suppressive placebo response: the
+fresh-draw distribution straddles zero with a slight positive lean. The
+sign-opposition phrasing is not confirmed at this operating point and must
+be dropped from the manuscript claims, exactly as the gate's pre-stated
+FAIL meaning requires.
+
+Scoreboard: both predictors called "Both gates pass" (orchestrator ~75%) —
+both WRONG on QG-G2. Recorded straight.
+
+One-sentence summary (manifest `verdict:`): qwen3-4b hs34 gated-write
+specificity survives a 15-seed matched-dose random census (max abs lift
+13.0pp, effect ratio 4.83 >= 3.0, QG-G1 PASS) but the historical draw's
+suppressive sign is not distribution-consistent (6/15 negative vs >=12
+required, QG-G2 FAIL): specificity claim upgraded to distributional form,
+sign-opposition claim retired.

@@ -1,7 +1,7 @@
 slug: qwen3-4b-l34-placebo-seed-census
 title: Raw-base Qwen3-4B L34 random-direction seed census
 type: steer-cell
-status: signed
+status: resolved
 registered: true
 created_at: '2026-08-25T15:38:56Z'
 question: Does the raw-base Qwen3-4B L34 direction-specificity result (effect ratio
@@ -33,5 +33,9 @@ inputs:
 - experiments/doubt-gated-caution-tighten
 - experiments/wide-instrument-control-rescore
 - experiments/placebo-seed-distribution-census
-verdict: ''
+verdict: 'qwen3-4b hs34 gated-write specificity survives a 15-seed matched-dose random
+  census (max abs lift 13.0pp, effect ratio 4.83 >= 3.0, QG-G1 PASS) but the historical
+  draw suppressive sign is not distribution-consistent (6/15 negative vs >=12 required,
+  QG-G2 FAIL): specificity claim upgraded to distributional form, sign-opposition
+  claim retired.'
 kg: []

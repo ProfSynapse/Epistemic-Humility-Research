@@ -6,6 +6,47 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-26 — full run, blinded adjudication, gates adjudicated, resolved
+
+Generation: 15 seeds x 185 rows on the local RTX 3090 (started immediately
+after the llama specificity cell released the card; submodule working tree
+at the Synaptic-Tuner readback-device fix 3a21774d). No crashes. Builder
+launched, went idle per the usual pattern; lead's Monitor owned the watch
+end to end and verified liveness on disk when a ps false-negative suggested
+otherwise (GPU utilization + growing log were decisive).
+
+Adjudication lane (per `.skills/experiment-runner/reference/abstention-grading.md`,
+RR3 conventions): pool built by the builder (3 shards, 2392 core, 179+179
+decoys, seed 20260825, fresh salt); builder's decoy audit confirmed zero
+WICR45DECOY leakage into the scored population. Three context-free opus
+graders dispatched in parallel, one per shard, each with a private working
+directory and unique output path (RR3 isolation rule); rubric verbatim +
+edge conventions in every prompt; pattern-classifier use forbidden and
+audited (working-directory scan: judgment chunks present, no matcher
+scripts; one grader's helpers were a dump/append pair with judgments passed
+as agent-authored flags — compliant). Lead verified every graded file
+before hash-commit: line count, per-line positional opaque_id match,
+boolean-only values, exactly two keys. Hashes committed per shard BEFORE
+any unblinding; apply verified hashes, then CG1: 3/3 shards PASS attempt 1,
+clear-negative 1.0, clear-positive 1.0 per shard (60/60/59 decoys, all
+>=25 floor), pooled 179/179. Graders went idle without final reports (the
+recurring glitch); the artifact-level verification above stands as the
+record.
+
+Gates: QG-G1 PASS (4.83), QG-G2 FAIL (6/15 negative). Lead re-derived both
+gates and all 15 per-seed rates independently from `analysis/rows/` +
+`analysis/adjudication_applied.jsonl` with the pinned detector — exact
+match with `analysis/wide_gates_report.json`. Verdict and table in
+`AMENDMENT.md` Outcome.
+
+Provenance note: the generation manifest records 7 unpinned load-bearing
+scripts under `doubt-gated-caution-tighten/` (its own offline-prep scripts,
+e.g. `pipeline.py`, `build_directions.py`) — their OUTPUTS were reused
+frozen and sha-verified via `frozen_reuse_sha256`; the scripts themselves
+carry no pin in dgct's manifest. Recorded transparently via
+`provenance.record_unpinned`, ruled acceptable for this cell (a parent
+manifest gap, not a reuse-integrity gap); no goalpost or instrument change.
+
 ### 2026-08-25 — pre-sign feasibility probe (required before sign)
 
 Every arm confirmed constructible from committed data (verified by direct
