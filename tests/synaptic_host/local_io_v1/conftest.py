@@ -167,6 +167,8 @@ class FakePosixFilesystemPortV1:
         node.content = bytearray(len(self.directories[handle]))
 
     def add_root(self, path: Path, label: str) -> None:
+        if not isinstance(path, Path) or not path.is_absolute():
+            raise ValueError("absolute fake root required")
         handle = f"dir-{label}"
         node = self._new_inode(stat.S_IFDIR | 0o700)
         node.directory_handle = handle

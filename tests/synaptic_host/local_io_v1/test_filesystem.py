@@ -73,8 +73,9 @@ def _binding(
 
 def _composition(profile: str = "opaque-local-like"):
     port = FakePosixFilesystemPortV1()
-    data_path = Path("C:/metadata") / profile / "data"
-    control_path = Path("C:/metadata") / profile / "control"
+    fake_base = Path.cwd() / ".fake-metadata" / profile
+    data_path = fake_base / "data"
+    control_path = fake_base / "control"
     port.add_root(data_path, "data")
     port.add_root(control_path, "control")
     authenticator = _Authenticator()
@@ -639,7 +640,7 @@ def test_source_close_failure_is_closed_instead_of_returning_evidence() -> None:
 
 def test_control_root_is_separate_and_requires_read_create_access() -> None:
     port = FakePosixFilesystemPortV1()
-    path = Path("C:/metadata/same")
+    path = Path.cwd() / ".fake-metadata" / "same"
     port.add_root(path, "data")
     authenticator = _Authenticator()
     filesystem = LocalFilesystemV1(port, authenticator, native_platform="linux")
@@ -647,7 +648,7 @@ def test_control_root_is_separate_and_requires_read_create_access() -> None:
     with pytest.raises(LocalIOErrorV1) as caught:
         filesystem.retain_root_authority(data, data)
     assert caught.value.code is LocalIOCodeV1.ROOT_INVALID
-    control_path = Path("C:/metadata/control")
+    control_path = Path.cwd() / ".fake-metadata" / "control"
     port.add_root(control_path, "control")
     read_only = _binding(control_path, "control", RootAccessV1.READ_ONLY, authenticator)
     with pytest.raises(LocalIOErrorV1) as caught:
@@ -657,8 +658,8 @@ def test_control_root_is_separate_and_requires_read_create_access() -> None:
 
 def test_pair_acquisition_failure_closes_returned_data_handle() -> None:
     port = FakePosixFilesystemPortV1()
-    data_path = Path("C:/metadata/pair-data")
-    control_path = Path("C:/metadata/pair-control")
+    data_path = Path.cwd() / ".fake-metadata" / "pair-data"
+    control_path = Path.cwd() / ".fake-metadata" / "pair-control"
     port.add_root(data_path, "data")
     port.add_root(control_path, "control")
     authenticator = _Authenticator()
@@ -671,6 +672,28 @@ def test_pair_acquisition_failure_closes_returned_data_handle() -> None:
     assert caught.value.code is LocalIOCodeV1.IO_FAILED
     assert not port.live_directories
     assert port.calls.get("close_directory") == 1
+
+
+def test_fake_root_registration_is_explicit_absolute_and_portable(tmp_path: Path) -> None:
+    port = FakePosixFilesystemPortV1()
+    with pytest.raises(ValueError, match="absolute fake root required"):
+        port.add_root(Path("relative-fake-root"), "relative")
+
+    data_path = (tmp_path / "portable-data").absolute()
+    control_path = (tmp_path / "portable-control").absolute()
+    port.add_root(data_path, "portable-data")
+    port.add_root(control_path, "portable-control")
+    authenticator = _Authenticator()
+    data = _binding(data_path, "portable-data", RootAccessV1.READ_CREATE, authenticator)
+    control = _binding(control_path, "portable-control", RootAccessV1.READ_CREATE, authenticator)
+    filesystem = LocalFilesystemV1(port, authenticator, native_platform="linux")
+    authority = filesystem.retain_root_authority(data, control)
+    assert authority.data_binding.absolute_root == data_path
+    assert authority.control_binding.absolute_root == control_path
+    assert port.roots[str(data_path)] == "dir-portable-data"
+
+    with pytest.raises(KeyError):
+        port.retain_directory((tmp_path / "unregistered").absolute())
 
 
 def test_released_and_foreign_live_authorities_fail_before_port_calls() -> None:
