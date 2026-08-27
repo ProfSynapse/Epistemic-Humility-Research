@@ -1216,14 +1216,11 @@ site split: the same family, gate, and direction recipe that collapses at
 the read-selected depths verifies cleanly at the family's own mid-band
 write site.
 
-A caution travels with Llama's entry in the placebo census below, and it
-applies well beyond Llama. Read-optimal and actuate-optimal depth are
-separately measured quantities in this paper, and for Llama they are not
-the same site: that census distribution is measured at its read-selected
-site, relative depth 0.714, and it is suppressive there. The write site
-carries its own fifteen-seed null, measured under both instruments
-(Figure 10), and the two distributions do not resemble each other, so
-the read-site distribution should not be quoted as the write site's null.
+Llama's entry in the placebo census below is measured at its read-selected
+site, relative depth 0.714, where random directions are suppressive; the
+hs17 write site carries its own fifteen-seed null, measured under both
+instruments (Figure 10), and the two distributions do not resemble each
+other.
 
 #### Gemma
 
@@ -1309,12 +1306,6 @@ suppresses confabulation hedging (median -6.0 points, 14 of 15 seeds
 negative), Llama suppresses it despite having been run as a null control
 (median -7.67, 12 of 15), and Mistral recruits it (median +7.0, 12 of 15
 positive, exactly the 80% boundary).
-
-A caution travels with that picture on the Mistral side. Mistral's verdict is
-a boundary verdict: its margin over an indeterminate call is a single seed, its
-three weakest positive seeds (+1.0, +1.33, +1.67) are individually within
-paired noise, and the result is sensitive to the mined-idiom vocabulary the
-widened detector uses.
 
 That random writes move abstention at all has a mechanical explanation and a
 methodological consequence. Abstention is causally reachable at matched
@@ -1582,6 +1573,17 @@ not population effect-size estimates. Key limits:
   constant. The fifteen-seed census in Section 4.8 measures those
   distributions directly, so the caution stands while the nulls themselves are
   now measured;
+- a family's placebo null belongs to the site it was measured at.
+  Read-optimal and actuate-optimal depth are separately measured quantities,
+  and on Llama they are different sites: the census distribution at its
+  read-selected site (relative depth 0.714) is suppressive while the hs17
+  write site's fifteen-seed null (Figure 10) is not, and the two do not
+  resemble each other, so a read-site distribution must never be quoted as a
+  write site's null;
+- Mistral's placebo-sign verdict is a boundary verdict: its margin over an
+  indeterminate call is a single seed, its three weakest positive seeds
+  (+1.0, +1.33, +1.67) are individually within paired noise, and the verdict
+  is sensitive to the mined-idiom vocabulary the widened detector uses;
 - every direction in this paper is fit once, statically, on single-turn rows,
   and applied without re-estimation. Linear representations are not guaranteed
   to be stable under that assumption: factuality directions have been shown to
