@@ -6,6 +6,19 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-27 — row-level exhaust published to HF (user-approved)
+
+`professorsynapse/eh-llama-hs17-wide-instrument-rescore-rows`, revision
+`1ec3a0628488a3214df101060e71a71b856b76f5`. 15,492 rows / ~19 MB, cell
+`llama32_3b_instruct`: 14,824 full-text kuq_unknowns_all + 668 text-free
+triviaqa/popqa, zero excluded; verify gate PASS. Card carries the recovery
+re-run provenance and the per-row wide-verdict attribution taxonomy
+(detector_v2 / blind_adjudication_text_join / drift and conflict nulls).
+Recorded in `docs/public-artifacts.md`. The user granted explicit upload
+permission in-session after the tool-permission classifier blocked the
+first attempts; the upload ran via the stored HF login with no token value
+read or printed.
+
 ### 2026-08-27 — recovery re-run COMPLETE: equivalence bar PASS, blind verdicts re-attributed
 
 The 17-arm regeneration completed on the local RTX 3090 (exit 0, all 17
