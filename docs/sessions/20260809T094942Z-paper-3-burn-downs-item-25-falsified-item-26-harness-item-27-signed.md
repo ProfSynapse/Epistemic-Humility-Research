@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-27T09:50:56Z'
+updated_at: '2026-08-27T13:02:26Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -1695,6 +1695,26 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 073-checkpoint
+  at: '2026-08-27T13:02:26Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Paper 5 editorial arc with the PI. PR 565 merged f5bd97da carrying five
+    fixes: Figure 4 legend moved to upper left clear of the data, five prose em dashes
+    removed, gemma opening reframed from field reputation to internal record with
+    the Gemma 4 Technical Report citation arXiv 2607.02770 verified against the pinned
+    checkpoint config 18 of 42 shared blocks, registration narration stripped from
+    five body sites per VOICE, and both travelling cautions relocated to Limits bullets
+    with bare site facts kept in place at the llama census. Worktree removed post
+    harvest check, branch deleted. Next: PI-requested independent voice pass with
+    a Neel Nanda reader lens for a fellowship submission, delegated to a background
+    agent producing recommendations only.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -2076,3 +2096,8 @@ _No summary yet._
 - at: `2026-08-27T09:50:56Z`
 - kind: `checkpoint`
 - summary: Wide-rescore recovery arc closed. Guard PR 564 merged (post-rewrite harvest hook, scoped fail-closed worktree check, PreToolUse removal guard); paper PR 563 merged. User-approved GPU recovery re-run of the 17-arm llama hs17 wide cell completed on the local 3090: pre-registered equivalence bar PASS (arm1 narrow reproduces WR-G1 637/872 bit-exactly; generation manifest identical on every count, readback deltas at most 5e-5). All 19 recovered blind graded files sha256-authenticate against the pre-unblinding committed hashes; secured under the cells gitignored recovered_blind_lane. Text-join re-attribution over 15,492 rows: 1357 detector plus 12517 joined verdicts, 1461 drift nulls, 157 conflict nulls, reason-coded. Row-level dataset built, verify PASS, and published user-approved as professorsynapse/eh-llama-hs17-wide-instrument-rescore-rows revision 1ec3a0628488a3214df101060e71a71b856b76f5; recorded in NOTEBOOK and docs/public-artifacts.md (commit afa610a4). Committed gate numbers remain the numbers of record.
+### 073-checkpoint - Checkpoint
+
+- at: `2026-08-27T13:02:26Z`
+- kind: `checkpoint`
+- summary: Paper 5 editorial arc with the PI. PR 565 merged f5bd97da carrying five fixes: Figure 4 legend moved to upper left clear of the data, five prose em dashes removed, gemma opening reframed from field reputation to internal record with the Gemma 4 Technical Report citation arXiv 2607.02770 verified against the pinned checkpoint config 18 of 42 shared blocks, registration narration stripped from five body sites per VOICE, and both travelling cautions relocated to Limits bullets with bare site facts kept in place at the llama census. Worktree removed post harvest check, branch deleted. Next: PI-requested independent voice pass with a Neel Nanda reader lens for a fellowship submission, delegated to a background agent producing recommendations only.
