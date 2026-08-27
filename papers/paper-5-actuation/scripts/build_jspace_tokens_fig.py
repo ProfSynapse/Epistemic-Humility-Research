@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Figure 9 for the actuation paper (Paper 5): what the J-lens finds.
+"""Generate Figure 5 for the actuation paper (Paper 5): what the J-lens finds.
 
 Reads exactly one committed source artifact directly from its experiment
 directory under the repo's experiments-first tree (same convention as
@@ -309,7 +309,7 @@ def build():
     fig.text(0.09, 0.015, footnote, fontsize=7.0, color="#666666", wrap=True, va="bottom",
               fontproperties=fm.FontProperties(fname=str(CJK_FONT_PATH), size=7.0))
 
-    out_path = OUT / "fig-p5-09-jspace-tokens.png"
+    out_path = OUT / "fig-p5-05-jspace-tokens.png"
     fig.savefig(out_path, bbox_inches="tight")
     plt.close(fig)
     print(f"wrote {out_path}")

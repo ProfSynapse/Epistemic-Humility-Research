@@ -50,7 +50,8 @@ evidence_base: >
   experiments/llama-hs17-direction-specificity/AMENDMENT.md, and
   experiments/qwen3-4b-l34-placebo-seed-census/AMENDMENT.md.
 notes: >
-  Exploratory draft, not yet submission-ready. Every reader-facing claim maps
+  Exploratory cells, reported with their tiers; no confirmatory surface is
+  claimed. Every reader-facing claim maps
   to the governed experiment document that registered it in Appendix A; body
   prose names no internal experiment identifiers, filenames, or repository
   paths. Actuation results are single-model or surface-local unless the text
@@ -424,7 +425,7 @@ under a single rule. A ladder of candidate setpoints is
 applied to a small fit-split calibration subset at the candidate site, and a
 rung is usable only if the read-back lands within tolerance on every dosed row,
 no dosed row degenerates, and fit-split confabulation clean tightening clears
-its floor; Appendix E gives the floors, which differ between the layer and
+its floor; Appendix D gives the floors, which differ between the layer and
 depth ladders and the cross-family fleet, and the rule for choosing among
 usable rungs.
 
@@ -509,7 +510,7 @@ The narrow instrument reads refusal from the model's own output and nothing
 else: a refusal value in the parsed JSON answer field, or one of three fixed
 English refusal forms in the text. It is what Sections 4.5, 4.6 and 4.7 score
 under, along with the gemma depth ladder reported in Section 4.8 and Appendix
-F, including the random-direction and permuted-gate controls behind
+E, including the random-direction and permuted-gate controls behind
 the Section 4.5 headline and every clean-tightening rate in the layer and depth
 ladders.
 
@@ -595,7 +596,7 @@ are discordant and all 42 break the same way.
 
 A confidence interval on the difference between two independent proportions
 uses the Newcombe hybrid score interval, built from the two rates' own Wilson
-bounds rather than from a normal approximation, which is what Appendix F
+bounds rather than from a normal approximation, which is what Appendix E
 reports for the well-formedness difference between the two key-value sharing
 conditions.
 
@@ -755,8 +756,8 @@ reproduced their unintervened grade on 1,564 of 1,564 rows. The direction
 moves the readout by the commanded amount, and the behavior does not move at
 all.
 
-![FIG-P5-06: Confabulation kills under the primary push versus the permuted-assignment control, with the read-back verification of push magnitude](figures/fig-p5-06-propensity-null.png)
-**Figure 6.** Confabulations converted to refusal under the calibrated
+![FIG-P5-01: Confabulation kills under the primary push versus the permuted-assignment control, with the read-back verification of push magnitude](figures/fig-p5-01-propensity-null.png)
+**Figure 1.** Confabulations converted to refusal under the calibrated
 confabulation-propensity direction versus a permuted-assignment control at the
 same magnitude, alongside the read-back check confirming the push landed
 within 0.1% of the commanded amount on pushed rows and produced exactly zero
@@ -898,8 +899,8 @@ requirement. A random-direction write on the same fired rows produced only
 13/185 clean tighten, and a permuted gate produced 59/258 known-correct cost.
 The effect depends on both the boundary-push direction and the KU readout gate.
 
-![FIG-P5-01: Confabulation conversion and known-correct cost for the gated controller against its placebo controls, original and multi-source replication pools](figures/fig-p5-01-headline-conversion.png)
-**Figure 1.** Confabulation clean-tighten rate and known-correct false-refusal
+![FIG-P5-03: Confabulation conversion and known-correct cost for the gated controller against its placebo controls, original and multi-source replication pools](figures/fig-p5-03-headline-conversion.png)
+**Figure 3.** Confabulation clean-tighten rate and known-correct false-refusal
 rate for the real KU-gated controller against random-direction and
 permuted-gate placebos, on the original held-out pool and on the multi-source
 replication pool at the same late write site.
@@ -924,8 +925,8 @@ seeds, pooled confab clean-tighten conversion is 643/925 = 69.5%, above the
 63.5% floor in every individual seed, with known-correct cost at 60/1290 =
 4.65%. The controller is not an artifact of greedy decoding.
 
-![FIG-P5-03: Confabulation conversion and known-correct cost under temperature-0.7 sampled decoding across five seeds](figures/fig-p5-03-h3-sampled-decode.png)
-**Figure 3.** The greedy-decode headline reproduced under temperature-0.7
+![FIG-P5-04: Confabulation conversion and known-correct cost under temperature-0.7 sampled decoding across five seeds](figures/fig-p5-04-h3-sampled-decode.png)
+**Figure 4.** The greedy-decode headline reproduced under temperature-0.7
 sampled decoding with majority-vote aggregation, per seed and pooled, for
 both confabulation conversion and known-correct cost.
 
@@ -960,8 +961,8 @@ direction gets its own vocabulary and the control gets none, which is what
 licenses reading the tokens as a statement about what each direction is
 rather than an artifact of the lens.
 
-![FIG-P5-09: Top verbalized J-lens tokens per fitted direction and layer, Qwen3-4B raw-base](figures/fig-p5-09-jspace-tokens.png)
-**Figure 9.** What the J-lens finds, per direction and layer (hs30-36,
+![FIG-P5-05: Top verbalized J-lens tokens per fitted direction and layer, Qwen3-4B raw-base](figures/fig-p5-05-jspace-tokens.png)
+**Figure 5.** What the J-lens finds, per direction and layer (hs30-36,
 Qwen3-4B raw-base, same-substrate bf16 H1 readout): the known-unknown
 direction verbalizes toward answer/reply tokens in two scripts (answer,
 reply), the caution and orthogonalized caution-write directions toward
@@ -996,8 +997,8 @@ a +0.78 point delta. Moving the write into the band buys a large gain in
 confabulation tightening for a fraction of a point of added cost. hs34
 remained viable, but it was not optimal.
 
-![FIG-P5-04: Dose-response curve for the late write site (Qwen3-4B, hs34), fit-split calibration sweep](figures/fig-p5-04-dose-response.png)
-**Figure 4.** Confabulation clean-tighten rate, known-correct cost, and
+![FIG-P5-06: Dose-response curve for the late write site (Qwen3-4B, hs34), fit-split calibration sweep](figures/fig-p5-06-dose-response.png)
+**Figure 6.** Confabulation clean-tighten rate, known-correct cost, and
 collapse rate on dosed rows across the fit-split calibration dose ladder at the
 late write site, with the selected setpoint marked.
 
@@ -1030,8 +1031,8 @@ converts a confabulation the late write misses, and on none does the reverse
 happen (exact paired test, p = 4.5e-13). Known-correct cost stays small on
 both arms, 2.8% at the mid-band against 1.4% late.
 
-![FIG-P5-05: Read-only J-lens workspace band versus write-site behavioral effect across three disjoint pools](figures/fig-p5-05-localization.png)
-**Figure 5.** Left: the read-only Jacobian-lens effective-dimension profile
+![FIG-P5-07: Read-only J-lens workspace band versus write-site behavioral effect across three disjoint pools](figures/fig-p5-07-localization.png)
+**Figure 7.** Left: the read-only Jacobian-lens effective-dimension profile
 locating the workspace-like band and the late write site relative to it.
 Right: confabulation clean-tighten rate by write site on the original pool
 and both same-model replications, showing the direction of the mid-band
@@ -1134,7 +1135,7 @@ test. Under the wide-instrument re-score of that cell (Section 6.4), the
 gated write lifts confabulation abstention by 62.7 points; across a
 fifteen-seed random census at the same site, dose, and instrument, the
 largest absolute random lift is 13.0 points, an effect ratio of 4.83
-against the 3.0 floor (Figure 10). Specificity holds there under a
+against the 3.0 floor (Figure 8). Specificity holds there under a
 distributional denominator. The sign does not: only six of fifteen seeds move abstention
 down (median lift +0.5 points), so the late-site random response has no
 consistent sign. Sign-opposition is a mid-band result, established where
@@ -1192,8 +1193,8 @@ rows, so there is no fired population to measure a cost rate on, and the
 unconditional 0/334 false refusals is reported descriptively rather than
 as a gated claim.
 
-![FIG-P5-10: Gated-write abstention lift versus a fifteen-seed random-direction null at the Qwen late-site and Llama mid-band operating points](figures/fig-p5-10-specificity-census.png)
-**Figure 10.** The gated write sits far outside its own fifteen-seed
+![FIG-P5-08: Gated-write abstention lift versus a fifteen-seed random-direction null at the Qwen late-site and Llama mid-band operating points](figures/fig-p5-08-specificity-census.png)
+**Figure 8.** The gated write sits far outside its own fifteen-seed
 random-direction null at both operating points that pass the distributional
 specificity test, both scored under the wide two-instrument stack: raw-base
 Qwen3-4B at the late site hs34 (gated +62.7 points over baseline, largest
@@ -1219,7 +1220,7 @@ write site.
 Llama's entry in the placebo census below is measured at its read-selected
 site, relative depth 0.714, where random directions are suppressive; the
 hs17 write site carries its own fifteen-seed null, measured under both
-instruments (Figure 10), and the two distributions do not resemble each
+instruments (Figure 8), and the two distributions do not resemble each
 other.
 
 #### Gemma
@@ -1247,7 +1248,7 @@ false-refusal cost. Behavioral gates pass at four of the eight depths tested,
 and the two deepest sites in the cross-family operating range never reach a
 usable dose at all. Every one of our earlier null results on this family came
 from sites deeper than any of these. The per-site ladder is in
-Appendix F.
+Appendix E.
 
 Direction-specificity is where that picture stops. Neither above-seam site that
 reached a usable dose passes its placebo control, and the two shallow passes do
@@ -1259,7 +1260,7 @@ establish is that any of those writes is direction-specific. That leaves the
 coverage question closed and the mechanism question open: across gemma's whole
 above-seam band relative depth and sharing status are the same variable, so no
 result there can say which of the two produced the falloff, and the control
-built to separate them broke the substrate it was meant to probe (Appendix F).
+built to separate them broke the substrate it was meant to probe (Appendix E).
 
 Read alongside the Llama split above, gemma is not the odd family out; it is
 the second family in a row whose apparent failure dissolved once the site
@@ -1298,8 +1299,8 @@ range [-9.33, -2.00]. The interquartile ranges are 3 to 13 points wide, so a
 single seed drawn from any of them reports its family's sign more reliably
 than its magnitude.
 
-![FIG-P5-07: Matched-magnitude random-direction placebo null distributions across fifteen fresh seeds for three model families](figures/fig-p5-07-placebo-census.png)
-**Figure 7.** Matched-magnitude random directions are not behaviorally inert
+![FIG-P5-09: Matched-magnitude random-direction placebo null distributions across fifteen fresh seeds for three model families](figures/fig-p5-09-placebo-census.png)
+**Figure 9.** Matched-magnitude random directions are not behaviorally inert
 in any of the three families, and their sign differs by family: across fifteen
 fresh seeds per family at each family's own certified placebo setpoint, Qwen
 suppresses confabulation hedging (median -6.0 points, 14 of 15 seeds
@@ -1577,7 +1578,7 @@ not population effect-size estimates. Key limits:
   Read-optimal and actuate-optimal depth are separately measured quantities,
   and on Llama they are different sites: the census distribution at its
   read-selected site (relative depth 0.714) is suppressive while the hs17
-  write site's fifteen-seed null (Figure 10) is not, and the two do not
+  write site's fifteen-seed null (Figure 8) is not, and the two do not
   resemble each other, so a read-site distribution must never be quoted as a
   write site's null;
 - Mistral's placebo-sign verdict is a boundary verdict: its margin over an
@@ -1725,7 +1726,7 @@ Recommended escalation, in order of priority:
    the nonspecific response is small or stable, with its placebo criterion
    registered against the family's measured null distribution there.
 4. Gemma's key-value sharing seam: the coverage question is closed (Section
-   4.8 and Appendix F) and the mechanism question is not. It cannot be settled
+   4.8 and Appendix E) and the mechanism question is not. It cannot be settled
    by writing to
    more above-seam sites, because relative depth and sharing status are the
    same variable across all of them; it needs an ablation that suppresses key
@@ -2005,8 +2006,8 @@ Generated by `papers/paper-5-actuation/scripts/build_coverage_table.py` (determi
 | `placebo-signflip-question-type-analysis` | resolved | checkpoint.repo (verbatim): "(none; CPU-only re-read of persisted artifacts, no model loaded)". DECLARED in cell.yaml: none; qwen35-4b; mistral7b-v03 | DECLARED 3 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Question type does not explain the cross-family placebo sign difference (registered mechanism falsifier untriggered; M1 doubt-axis separation confirmed in all three families under the frozen gate's operational convention..." | 4.8 |
 | `margin-evidence-responsiveness-worldknown` | null-result | `Qwen/Qwen3.5-4B` @ `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` | 1 declared / 1 launched (single-substrate cell) | 4.6, 6.4 |
 | `evidence-response-direction-search` | null-result | `Qwen/Qwen3.5-4B` @ `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` | 1 declared / 1 launched (single-substrate cell) | NOT NARRATED IN BODY (front matter + Appendix A only; no flagged open-work item, unlike doubt-regulated-caution) |
-| `gemma4-e4b-kv-seam-quarantine` | resolved | `google/gemma-4-E4B-it` @ `fee6332c1abaafb77f6f9624236c63aa2f1d0187` | 1 declared / 1 launched (single-substrate cell) | 4.8, Appendix F |
-| `gemma4-e4b-pocket-ladder` | resolved | `google/gemma-4-E4B-it` @ `fee6332c1abaafb77f6f9624236c63aa2f1d0187` | 1 declared / 1 launched (single-substrate cell) | 4.8, Appendix F |
+| `gemma4-e4b-kv-seam-quarantine` | resolved | `google/gemma-4-E4B-it` @ `fee6332c1abaafb77f6f9624236c63aa2f1d0187` | 1 declared / 1 launched (single-substrate cell) | 4.8, Appendix E |
+| `gemma4-e4b-pocket-ladder` | resolved | `google/gemma-4-E4B-it` @ `fee6332c1abaafb77f6f9624236c63aa2f1d0187` | 1 declared / 1 launched (single-substrate cell) | 4.8, Appendix E |
 | `jlens-trained-checkpoint-midband-ablation` | falsified | `clean_sft_grpo_v2_seed1 (local lineage: sft_schema_clean_seed1_full/20260623_123624 merged-16bit base + schema_clean_sft_grpo_v2_seed1_full/20260624_095831 final_model adapter)` @ `local run dirs pinned in configs; published mirror eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora` | 1 declared / 1 launched (single-substrate cell) | 6.4 (limits bullet only; body narration cut per PI ruling 2026-08-20 -- Appendix A carries the numbers) |
 | `correctness-direction-rotation` | null-result | checkpoint.repo (verbatim): "local four-stage set (see cell.yaml stages; raw + partrue identities pinned at staging per A3)". DECLARED in cell.yaml: LogisticRegression(saga, tol=1e-3) | DECLARED 1 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "CD-G1 not met (later transitions 0.449/0.330 vs the 0.85 floor) and falsifier not fired (raw->cleansft 0.192); pre-registered readings exhausted; post-hoc: correctness direction too weakly identified (split-half floor 0...." | 6.5 |
 | `correctness-subspace-overlap` | null-result | `reused five-stage/checkpoint tensor set (see cell.yaml data.stages); no new checkpoint identity, CPU-only reuse of CD and Amendment S/T on-disk extractions` (revision not recorded) | 1 declared / 1 launched (single-substrate cell) | 6.5 |
@@ -2021,80 +2022,52 @@ Generated by `papers/paper-5-actuation/scripts/build_coverage_table.py` (determi
 ## Appendix C. Figure Plan
 
 Every figure is built from committed aggregate artifacts and referenced
-inline in Section 4, except Figure 8, which is referenced inline in Appendix F:
-Figures 1-6 by
-`papers/paper-5-actuation/scripts/build_figures.py` and Figures 7-8 by
-`papers/paper-5-actuation/scripts/build_restructure_figures.py`, whose
-embedded reproduction audits re-verify every plotted number against its
-committed source artifact at build time. `figures/MANIFEST.md` maps each
-figure to its source artifacts and hashes. Figure 6 alone is transcribed from
-its governing document's outcome prose rather than a result JSON (none is
-committed for that cell); the manifest documents that caveat and the one
-derived count.
+inline in Section 4, except Figure 10, which is referenced inline in
+Appendix E: Figures 1, 2, 3, 4, 6, and 7 by
+`papers/paper-5-actuation/scripts/build_figures.py`, Figures 9 and 10 by
+`papers/paper-5-actuation/scripts/build_restructure_figures.py`, Figure 5 by
+`papers/paper-5-actuation/scripts/build_jspace_tokens_fig.py`, and Figure 8
+by `papers/paper-5-actuation/scripts/build_specificity_census_fig.py`; the
+restructure and census scripts embed reproduction audits that re-verify every
+plotted number against its committed source artifact at build time.
+`figures/MANIFEST.md` maps each figure to its source artifacts and hashes.
+Figure 1 alone is transcribed from its governing document's outcome prose
+rather than a result JSON (none is committed for that cell); the manifest
+documents that caveat and the one derived count.
 
-1. Figure 1, gated controller headline: confabulation conversion and
-   known-correct cost for the real KU-gated write against random-direction
-   and permuted-gate placebos, original and multi-source replication pools
-   (`fig-p5-01-headline-conversion.png`).
+1. Figure 1, propensity push null: confabulation kills under the primary
+   push versus the permuted-assignment control, with the read-back
+   verification of push magnitude (`fig-p5-01-propensity-null.png`).
 2. Figure 2, ungated-versus-gated dose-matched contrast at the resolved
    overdrive operating point (`fig-p5-02-ungated-vs-gated-h4.png`).
-3. Figure 3, sampled-decode replication: conversion and cost under
+3. Figure 3, gated controller headline: confabulation conversion and
+   known-correct cost for the real KU-gated write against random-direction
+   and permuted-gate placebos, original and multi-source replication pools
+   (`fig-p5-03-headline-conversion.png`).
+4. Figure 4, sampled-decode replication: conversion and cost under
    temperature-0.7 decoding across five seeds
-   (`fig-p5-03-h3-sampled-decode.png`).
-4. Figure 4, dose-response curve at the late write site from the FIT
-   calibration sweep (`fig-p5-04-dose-response.png`).
-5. Figure 5, localization: the read-only J-lens workspace band alongside the
+   (`fig-p5-04-h3-sampled-decode.png`).
+5. Figure 5, J-lens token readout: top verbalized tokens per fitted
+   direction and layer on Qwen3-4B raw-base
+   (`fig-p5-05-jspace-tokens.png`).
+6. Figure 6, dose-response curve at the late write site from the FIT
+   calibration sweep (`fig-p5-06-dose-response.png`).
+7. Figure 7, localization: the read-only J-lens workspace band alongside the
    write-site behavioral effect across the original pool and both same-model
-   replications (`fig-p5-05-localization.png`).
-6. Figure 6, propensity push null: confabulation kills under the primary
-   push versus the permuted-assignment control, with the read-back
-   verification of push magnitude (`fig-p5-06-propensity-null.png`).
-7. Figure 7, placebo census: matched-magnitude random-direction null
+   replications (`fig-p5-07-localization.png`).
+8. Figure 8, direction-specificity census: gated-write abstention lift
+   against a fifteen-seed random-direction null at the Qwen3-4B late-site
+   and Llama-3.2-3B mid-band operating points, both under the wide
+   two-instrument stack (`fig-p5-08-specificity-census.png`).
+9. Figure 9, placebo census: matched-magnitude random-direction null
    distributions across fifteen fresh seeds for each of the three families,
    with per-family medians, interquartile ranges, spans, and sign
-   (`fig-p5-07-placebo-census.png`).
-8. Figure 8, Gemma depth ladder: actuation outcome against relative depth
-   with the pass or fail disposition of each site
-   (`fig-p5-08-gemma-depth-ladder.png`).
+   (`fig-p5-09-placebo-census.png`).
+10. Figure 10, Gemma depth ladder: actuation outcome against relative depth
+    with the pass or fail disposition of each site
+    (`fig-p5-10-gemma-depth-ladder.png`).
 
-9. Figure 9, system-prompt authority asymmetry (Section 4.3): the selectivity
-   gap under the true, permuted, and inverted label arms side by side, with
-   induced refusal on known-correct answered rows and release on
-   unknown-refused rows shown separately, and the divergent-pool release
-   congruence plotted against zero with its interval
-   (`fig-p5-09-prompt-authority-asymmetry.png`).
-
-REVISION NOTE, Figure 2: overlay a qualitative expectation line on each panel,
-marking where the bars would sit if the hypothesis under test held, so the
-figure shows the predicted position alongside the observed one rather than the
-observed one alone. Apply the same treatment to the other hypothesis-testing
-panels where a pre-registered expectation exists, so that a reader can see the
-gap between prediction and result without consulting the text.
-
-## Appendix D. Open Work Before Submission
-
-- Reconcile this draft against the retired provenance inventory under
-  `archive/papers/`.
-- Run the planned cross-model J-space and gated-controller replication before
-  promoting the workspace-band result from exploratory to headline.
-- Register any future direction-specificity placebo criterion against the
-  per-family measured null distribution the census supplies at fifteen seeds
-  (Section 4.8), for example via a percentile-based tolerance or a
-  sign-opposition criterion, not a flat symmetric tolerance and not a single
-  seed, and not a sign taken from one draw: the raw-base late-site null has
-  no consistent sign while its individual draws land signed. The
-  per-family wide-instrument baselines (qwen 0.104, Llama 0.164,
-  Mistral 0.280) still anchor the recruitment-versus-suppression axis.
-- Llama's gated boundary push passes direction-specificity at its own
-  actuation-selected site under both instruments (fifteen-seed placebo
-  arms, ratio 9.34 wide and 8.25 narrow, Section 4.8). The wide-instrument
-  re-score with a write-site null (`llama-hs17-wide-instrument-rescore`) is
-  done; no open work remains on this item.
-- The `doubt-regulated-caution` cell (trained-lineage predecessor context) and
-  the `evidence-response-direction-search` null remain front-matter and
-  Appendix A entries only, per the paper's raw-base scope.
-
-## Appendix E. Dose-Ladder Selection Rule
+## Appendix D. Dose-Ladder Selection Rule
 
 The usability floor on fit-split confabulation clean tightening is 50% in the
 layer and depth ladders, and 60% together with fit-split known-correct false
@@ -2103,7 +2076,7 @@ differs by design: the layer and depth ladders take the highest fit-split clean
 tightening, breaking ties on lower known-correct cost and then on lower dose,
 while the cross-family fleet takes the lowest qualifying dose.
 
-## Appendix F. Gemma Depth Ladder and the Key-Value-Sharing Seam
+## Appendix E. Gemma Depth Ladder and the Key-Value-Sharing Seam
 
 Section 4.8 reports gemma's depth ladder in summary. This appendix carries the
 per-site detail, the placebo arms behind the specificity verdict, and the
@@ -2122,8 +2095,8 @@ the cross-family operating range, relative depth 0.619 and 0.643, never reach a
 usable dose at all: their best fit-split tightening rates top out at 37.5% and
 25.0% against a 50% usability floor.
 
-![FIG-P5-08: Gemma-4-E4B depth ladder, actuation outcome versus relative depth with pass/fail per site](figures/fig-p5-08-gemma-depth-ladder.png)
-**Figure 8.** Gemma-4-E4B is not architecturally inert, and where it actuates
+![FIG-P5-10: Gemma-4-E4B depth ladder, actuation outcome versus relative depth with pass/fail per site](figures/fig-p5-10-gemma-depth-ladder.png)
+**Figure 10.** Gemma-4-E4B is not architecturally inert, and where it actuates
 depends on depth: relative depths 0.357, 0.524, 0.571, and 0.595 clear the
 held-out clean-tightening and known-correct cost gates, 0.429 and 0.476 fall
 below the tightening floor, and 0.619 and 0.643 never reach a usable dose.

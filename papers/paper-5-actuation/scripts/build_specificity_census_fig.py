@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Figure 10 for Paper 5: the two direction-specificity seed censuses
+"""Generate Figure 8 for Paper 5: the two direction-specificity seed censuses
 (Qwen3-4B late site hs34/L34, Llama-3.2-3B mid-band site hs17), each write's
 gated lift plotted against its own 15-seed matched-dose random-direction null.
 
@@ -197,7 +197,7 @@ def fig_specificity_census():
     fig.text(0.01, 0.035, "dot = 1 seed (K=15 random-direction draws per row); "
                           "star = the gated write at that operating point",
               fontsize=7.8, color="#555", va="bottom")
-    fig.savefig(OUT / "fig-p5-10-specificity-census.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p5-08-specificity-census.png", bbox_inches="tight")
     plt.close(fig)
 
     # ---- reproduction audit: recomputed values must equal the governed
@@ -239,5 +239,5 @@ def fig_specificity_census():
 
 if __name__ == "__main__":
     fig_specificity_census()
-    p = OUT / "fig-p5-10-specificity-census.png"
+    p = OUT / "fig-p5-08-specificity-census.png"
     print("figure written to", p.relative_to(ROOT), f"({p.stat().st_size // 1024} KB)")

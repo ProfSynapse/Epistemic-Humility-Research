@@ -127,7 +127,7 @@ def fig1_headline_conversion():
                  "independent multi-source pool at the same write site (Qwen3-4B, L34)",
                  fontsize=12, y=1.05)
     fig.tight_layout()
-    fig.savefig(OUT / "fig-p5-01-headline-conversion.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p5-03-headline-conversion.png", bbox_inches="tight")
     plt.close(fig)
 
 
@@ -236,7 +236,7 @@ def fig3_sampled_decode_replication():
                  "uncertainty-gated boundary-push snap -- the greedy headline is not a decoding artifact",
                  fontsize=12, y=1.05)
     fig.tight_layout()
-    fig.savefig(OUT / "fig-p5-03-h3-sampled-decode.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p5-04-h3-sampled-decode.png", bbox_inches="tight")
     plt.close(fig)
 
 
@@ -288,7 +288,7 @@ def fig4_dose_response():
                  f"FIT calibration sweep, pilot scale: n={n_confab} confab / n={n_known} known-correct rows per dose point",
                  fontsize=11, pad=12)
     fig.tight_layout()
-    fig.savefig(OUT / "fig-p5-04-dose-response.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p5-06-dose-response.png", bbox_inches="tight")
     plt.close(fig)
 
 
@@ -345,7 +345,7 @@ def fig5_localization():
                  "boundary-push write actually acts (B, behavioral, three disjoint pools)",
                  fontsize=12, y=1.05)
     fig.tight_layout()
-    fig.savefig(OUT / "fig-p5-05-localization.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p5-07-localization.png", bbox_inches="tight")
     plt.close(fig)
 
 
@@ -434,7 +434,7 @@ def fig6_propensity_null():
                  "not actuate the fabricate-vs-refuse choice (AI-TRUE checkpoint, use-the-signal null)",
                  fontsize=12, y=1.06)
     fig.tight_layout()
-    fig.savefig(OUT / "fig-p5-06-propensity-null.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p5-01-propensity-null.png", bbox_inches="tight")
     plt.close(fig)
 
 
