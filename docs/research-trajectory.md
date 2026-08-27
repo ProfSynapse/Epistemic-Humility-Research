@@ -1,6 +1,6 @@
 # Research Trajectory: Epistemic Humility Program
 
-_Updated 2026-07-20. Replaces the stale 2026-07-08 version. Every claim traces
+_Updated 2026-08-27. Replaces the stale 2026-07-08 version. Every claim traces
 to a protocol doc; nothing is invented. The original Phases 1–4 plan (staged design) is
 preserved in `archive/docs/protocol/research-trajectory.md`._
 
@@ -49,7 +49,7 @@ Draft: `papers/paper-2-training-regimen/manuscript.md`. Figures: `fig-p1-*` (leg
 
 ---
 
-## Paper 3: "Knows but Doesn't Say" (draft complete incl. bibliography; provenance pass remaining)
+## Paper 3: "Knows but Doesn't Say" (draft-v3, restructured 2026-08-17; final-state check open)
 
 Internal axis encodes answerability at AUROC 0.997, transfers cross-dataset cold
 (Amendment P: KUQ→SelfAware 0.983), and predates post-training (Amendment Y: present on
@@ -61,14 +61,24 @@ contrastive, RL-on-contrastive depth) DONE via PR #151; Amendment Y now cited fo
 "paid for by pretraining" claim; data availability lists the published HF releases.
 Citation-gap audit (2026-07-04) wove 34 missed citations into §2/§3/§7/§8 and
 compiled the 43-entry bibliography from the KG (inline↔list verified 1:1).
-Remaining before submission: the provenance reconciliation pass against
-`archive/papers/retired/results-provenance-inventory.md`.
-Draft: `papers/paper-3-knows-but-doesnt-say/manuscript.md`. Figures: `fig-p2-*` (legacy prefix,
-all five built).
+The manuscript's own front-matter status is now `draft-v3`, restructured
+2026-08-17 around a four-beat result order: the definitions-and-naming block
+moved into §3, which was rebuilt as a full Methods section; §5 rebuilt around
+the two-axis geometry and axis-stability figures; research-journey narration
+removed per `papers/common/VOICE.md`; registration bookkeeping consolidated
+into §9. §6 ("The refusal axis is causally real, and the leverage is one-way")
+is new since the July update, and the provenance appendix ships as Appendix A.
+What, if anything, remains before submission is being enumerated rather than
+assumed: `backlog/tasks/task-92c973-papers-3-and-4-final-state-check.md`
+(in-progress, blocker "PI read"). Do not read the old "provenance pass
+remaining" line as still current or as discharged; the task is the record.
+Draft: `papers/paper-3-knows-but-doesnt-say/manuscript.md`. Figures: `fig-p2-*` (legacy prefix;
+seven built, 01-05 plus the §6 refusal-axis-ablation and bounded-site-sweep
+panels) and `fig-p3-08`/`fig-p3-09` for the §5 two-axis geometry pair.
 
 ---
 
-## Paper 4: two-signal readout (mechanism complete; figures pending)
+## Paper 4: two-signal readout (Draft v2, restructured 2026-08-17; figures and provenance appendix built)
 
 ### Mechanism
 
@@ -95,8 +105,17 @@ Three orthogonal linear probes compose a two-stage trust pipeline on the raw bas
 
 Amendment trail: O/P/Q (ceiling + engine) → S/T (correctness readout) → U (veto) →
 Stage-1.5 (orthogonality) → W/X/Z/SR (training-free + generalization).
-Draft: `papers/paper-4-two-signal-readout/manuscript.md`. Figures: `fig-p3-*` (legacy prefix).
-Remaining: traceability appendix + six figures (backlog item 14).
+Draft: `papers/paper-4-two-signal-readout/manuscript.md`. The July note
+"Remaining: traceability appendix + six figures" is discharged: the manuscript
+was restructured into six results sections with Methods, baselines, and
+statistics subsections, ten figures are built under
+`papers/paper-4-two-signal-readout/figures/` (`fig-p4-01` … `fig-p4-10`, no
+longer the legacy `fig-p3-*` prefix), and the traceability material ships as
+Appendix A ("Provenance and reproducibility") with Appendix B carrying the
+extended descriptive material. As with Paper 3, the remaining-work list is
+being enumerated under
+`backlog/tasks/task-92c973-papers-3-and-4-final-state-check.md` (in-progress,
+blocker "PI read") rather than asserted here.
 
 **Correctness-geometry follow-ups, resolved null 2026-07-20:** the dial's 0.679
 cold cross-checkpoint transfer (S fit → T deployed) had only been explained by
@@ -132,7 +151,7 @@ progress and no real per-row correctness label has been touched.
 
 ---
 
-## Paper 5: actuation arc (IN PROGRESS)
+## Paper 5: actuation arc (Draft v1 restructured 2026-08-17; in submission prep)
 
 **AA (FALSIFIED):** Activation steering (Arm A) and CoT injection (Arm B, all 8 cells)
 flat. Text channel does not open. "Presence ≠ use." Arm B's `revision_discrimination`
@@ -416,6 +435,26 @@ the dial holds (0.818); paper 4's limitation 8 cites this as
 descriptive-with-caveat only. Source: `experiments/dial-logprob-baseline/AMENDMENT.md`,
 Outcome.
 
+**Dial-vs-logprob resolved on both checkpoints (v3 and LT, both resolved
+2026-08-13):** two successor cells replaced the stopped LP comparison with
+gated numbers on fresh, self-consistent generation, and the answer is that the
+dial's margin is checkpoint-dependent. `dial-logprob-baseline-v3` fixed the
+round-trip failure class outright (0 capture divergences against v2's 282/1836)
+and, on the raw base, landed in its own pre-registered ambiguous band: dial
+AUROC minus primary-logprob AUROC **+0.0118, paired 95% CI [−0.0122, +0.0359]**
+(n_boot 2000, seed 20260813), under the +0.05 floor with a CI straddling zero;
+neither falsifier fired and the gate was not retuned. Its deployed-checkpoint
+arm hit the registered data-stage stop at the power floor (710 answered rows
+against 1000), so `dial-logprob-t-deployed-confirmatory` re-ran that arm at
+adequate power and **passed LT-G1**: dial 0.7962 vs mean-answer-span logprob
+0.6569, margin **+0.1393, paired bootstrap 95% CI [0.1031, 0.1755]**, n=1,501.
+That cell is the sole citable deployed-checkpoint number, superseding v1's and
+v2's non-citable descriptive reads. Program-level shape as those docs state it:
+the dial's advantage over the model's own answer-span log-probability is
+negligible on the raw base and large on the deployed abstention-trained
+checkpoint. Sources: `experiments/dial-logprob-baseline-v3/AMENDMENT.md` and
+`experiments/dial-logprob-t-deployed-confirmatory/AMENDMENT.md`, both Outcome.
+
 **Llama atlas-sited wide-instrument retest (resolved 2026-07-19, PR #315):**
 re-ran the fleet's llama cell at the atlas-located band with the certified wide
 grading instrument rather than the narrow detector implicated in the Amendment
@@ -427,19 +466,28 @@ at higher doses. The full 23,510-row dosed dataset was published to Hugging
 Face after PI approval. Source:
 `experiments/llama-atlas-gated-wide-instrument-retest/AMENDMENT.md`, Outcome.
 
-**Gemma-4-E4B family atlas (SIGNED 2026-07-20; outcome pending):** queued after
-the correctness-geometry pair, this cell is the first signed under the new
+**Gemma-4-E4B family atlas (RESOLVED 2026-07-20):** queued after the
+correctness-geometry pair, this cell is the first signed under the new
 run-persistence enforcement (see "Process infrastructure" below). Pool-mining
 integrity (AG0a) failed its first attempt: generation completion rate 0.802
 against a 0.90 gate (Gemma's verbosity overruns a 200-token cap) and a
 batched-vs-sequential decode parity smoke mismatched on 2 of 8 rows, so a
 signed revision 1 (400-token cap, a role-relevant-grade parity comparator in
 place of exact-string matching, thresholds otherwise unchanged) was approved
-the same day and the re-mine is in flight. No profile or read-panel gate has
-run; no atlas outcome should be read from this entry. Source:
-`experiments/gemma-4-e4b-family-atlas/AMENDMENT.md` (worktree
-`ehr-worktrees/gemma-atlas`, branch `exp/gemma-4-e4b-family-atlas`; not yet
-merged to `main`).
+the same day; under signed revisions 1-2 AG0a then passed all five limbs. The
+cell resolved the same day with the falsifier firing on the profile limb:
+eff_dim_frac peaks early-exterior at hs_index 4 (0.0189, 0.095 depth) and no
+interior workspace band is declared, making Gemma-4-E4B-it the third family
+after llama and mistral to show an early-exterior profile peak decoupled from
+a healthy mid-band read panel. Limb 2 did not fire: the contiguous
+all-three-axes ≥ 0.80 held-out band runs hs 13-42 (at hs 40, doubt 0.9949 /
+caution 0.9223 / raw_refusal 0.9272). The cell's own caveat travels with it:
+the random-direction control is elevated and spiky across much of the mid-band
+(max-over-contrasts 0.83-0.87 at hs 10-12, 0.97 at hs 24, 0.85-0.94 at hs
+28-34), so the naive best-per-axis layers are not clean reads and downstream
+per-family actuation work should pick from the near-chance-control set (hs
+14-18, hs 36-40). Source:
+`experiments/gemma-4-e4b-family-atlas/AMENDMENT.md`, Outcome.
 
 **Correctness-vs-answerability portability contrast (added 2026-07-20):** the
 CD/SO correctness-geometry nulls above (Paper 4 §4.2) motivate a next-study
@@ -449,6 +497,185 @@ correctness/dial axis's own cross-checkpoint geometry is only weakly
 identified with no reproducible shared subspace beyond one weak direction.
 `papers/paper-5-actuation/manuscript.md` §6.5 now states the contrast as an
 explicit hypothesis for a future study, not a resolved finding of this paper.
+
+**Cross-family mid-band layer contrast (INCONCLUSIVE, interim 2026-07-24,
+closed 2026-08-18):** `j-space-cross-family-layer-contrast` asked whether the
+profile-selected mid-band write generalizes across four registered families.
+Only 2 of 4 ran past G0, and the amendment's own roll-up floor ("fewer than 3
+families ran at all ⇒ INCONCLUSIVE") fires: the cross-family question is not
+answered in either direction. Per-family primaries, which stand as recorded:
+llama-3.2-3b at hs17 PASS, confab `clean_tighten` 647/872 = **0.7420** (Wilson
+[0.7119, 0.7699]); mistral-7b-v03 at hs15 FAIL on the floor only, 642/1312 =
+0.4893 (Wilson lower 0.4624 clears the 0.40 sub-criterion, interval straddles
+0.50) — a marginal miss the doc explicitly says must not be reported as
+"mistral does not actuate"; qwen35-4b not run; gemma4-e4b not run (G0
+instrument invalid for that family). Three registered-instrument defects were
+recorded at resolve rather than worked around, the load-bearing one being that
+G2 is non-diagnostic here: the KU gate correctly never fires on known-correct
+rows, so the dosed known-correct denominator is 0 on every family measured
+(llama 0/334, mistral 0/382) and the registered G2 PASSes — which stand, per
+the gate-diagnosticity rule — are evidence about baseline malformedness only
+and must never be cited as evidence that the write is selective or safe. The
+2026-08-18 close-out recorded that SUCCESS was arithmetically out of reach and
+closed the cell permanently at the interim verdict. Source:
+`experiments/j-space-cross-family-layer-contrast/AMENDMENT.md`, Outcome and
+Close-out. This is the parent whose llama hs17 result the two August llama
+cells below verify.
+
+**Gemma-4-E4B KV-sharing seam quarantine (resolved 2026-07-31):** the
+mid-band null on gemma was tested against the hypothesis that the model's
+key-value-sharing seam quarantines writes. Verdict as the doc states it: C1
+FAIL (the sharing-OFF substrate is broken at baseline — known-correct cost
+180/180 = 1.0 vs the control's 0/180, Newcombe CI [0.9704, 1.0] against a 0.05
+cap), so A2/A4 are NOT-RUN and the primary A1-vs-A2 contrast cannot fire;
+A2/A4 INCONCLUSIVE as registered. The D-ladder fires the supporting leg (D1
+0.786 vs A1 no-usable-dose), leaving KV-quarantine **SUPPORTED-not-established**
+and confounded with depth exactly as registered, since D1-D4 cannot separate
+the quarantine mechanism from a generic shallow-band-only effect. The Phase A
+(sharing ON) held-out ladder is the durable finding: D1/hs15 G1 PASS 0.7857
+[0.7180, 0.8413] (best site, shallowest tested), D2/hs18 FAIL 0.4464, D3/hs20
+FAIL 0.4048, A3/hs22 PASS with a PASS-DEGENERATE specificity gate, A5/hs24 G1
+PASS 0.7321 but **G3 FAIL** (effect_ratio 1.139; the worst random draw
+reproduced 88% of the true effect), adjudicated seam-region instability rather
+than direction-specific actuation. The doc's own summary: gemma is actuable,
+shallow-band-localized, with strength falling monotonically toward the seam,
+and the program-level "gemma never actuates" reputation was a depth-coverage
+artifact. Corollary instrument finding: the sharing-OFF surgery as built
+destroys baseline behavior, so any successor quarantine test needs a gentler
+ablation. Source: `experiments/gemma4-e4b-kv-seam-quarantine/AMENDMENT.md`,
+Outcome.
+
+**Gemma-4-E4B pocket ladder (resolved 2026-07-31):** the PI-directed companion
+closed the last untested band of the cross-family operating range on this
+substrate (hs25/hs26/hs27, sharing ON). Verdict: **no direction-specific
+actuation anywhere in the pocket.** E1/hs25 cleared G1 (confab-tighten 133/168
+= 0.7917, Wilson [0.7241, 0.8462]) and G2 (known-correct cost 9/270 = 0.0333)
+on held-out but FAILED the mandatory G3 at effect_ratio **1.279 < 3.0** — the
+exact hs24 signature, with the worst single random draw reproducing 78% of the
+fitted direction's effect. Under the registered rule the claim is
+`actuates_not_direction_specific`: it may not be cited as a specific effect and
+may not be pooled with direction-specific results. E2/hs26 and E3/hs27 were
+dose-viability NOT-RUN (max FIT confab-tighten 0.375 and 0.250 against a 0.5
+usability floor). All three registered predictions MET. Interpretation stays
+inside the registered fence: the pocket band shows hs24-style instability (a
+broad subspace in which many directions tighten confabulation) and this does
+not by itself resolve the quarantine hypothesis in either direction. Source:
+`experiments/gemma4-e4b-pocket-ladder/AMENDMENT.md`, Outcome.
+
+**Wide-instrument re-score of the qwen controls (resolved 2026-08-20):** the
+random-direction and permuted-gate controls behind Paper 5 §4.5 (the raw-base
+gated-controller headline) and §4.6 (the layer-site contrast) had only ever
+been scored under the narrow detector. `wide-instrument-control-rescore`
+regenerated both arms and re-scored them under the wide two-instrument stack,
+and the prediction was CONFIRMED: both control conclusions survive, no
+falsifier fires, and the §6.4 instrument gap closes. WG-G0 parity PASS with
+13/13 rate pairs byte-exact to the committed narrow rates; CG1 PASS on all four
+shards at attempt 1. WG-G1 PASS: wide gated confab tightening 137/185 = 74.05%
+vs undosed 21/185 = 11.35% (lift +62.7pp) against the random direction's
+13/185 = 7.03% (signed lift −4.3pp), effect ratio **14.5** against a 3.0 floor.
+WG-G2 PASS: paired known-correct cost excess (permuted minus gated) +20.6pp,
+bootstrap CI [+14.8, +26.3], n=209. WG-G3 PASS: wide hs23 89.19% vs hs34
+66.49%, paired advantage **+22.70pp** — equal to the narrow anchor — CI
+[+16.2, +29.7]. Instrument-change magnitude at these operating points is tiny
+(5 of 2,677 core rows gained adjudicated abstention beyond the detector),
+consistent with the calibration cell's family-specificity reading. Source:
+`experiments/wide-instrument-control-rescore/AMENDMENT.md`, Outcome.
+
+**Qwen3-4B L34 placebo seed census (resolved 2026-08-26, MIXED):** the
+re-score above rested its specificity claim on a single historical random draw.
+This cell supplied the distribution — fifteen fresh matched-dose random
+directions at the same site, dose, rows, and instrument. QG-G1 **PASS**: max
+absolute random lift 0.1297 (seed 920006) gives effect ratio **4.83** against
+the 3.0 floor, so the +62.7pp gated lift is direction-specific against a
+fifteen-draw distribution and the single-draw caveat in Paper 5 §4.8/§7 is
+retired in favour of the distributional form. QG-G2 **FAIL**: only **6/15**
+seeds carry a negative (suppressive) lift against the ≥12/15 criterion; the
+per-seed lifts run −7.0pp to +13.0pp with median +0.5pp. Reading, as the doc
+states it: the historical draw's suppressive sign was a draw-level accident,
+not a family-signed suppressive placebo response, and the sign-opposition
+phrasing must be dropped from the manuscript claims. Both predictors called
+"both gates pass" and both were wrong on QG-G2; recorded straight. Source:
+`experiments/qwen3-4b-l34-placebo-seed-census/AMENDMENT.md`, Outcome.
+
+**Llama hs17 direction-specificity (resolved 2026-08-25):** llama's only write
+ever to clear a held-out abstention floor — the parent cross-family contrast's
+hs17 pass — had never been run against a random-direction arm. This cell ran
+the program's own missing verification step at that site. Prediction confirmed:
+LG-G1 **PASS**, arm-1 held-out `clean_tighten` 635/872 = **0.7282** (Wilson
+[0.6977, 0.7567]) against the 0.50 floor, with CIs overlapping the parent's
+0.7420 under a fresh decode seed; LG-G2 **PASS**, gated lift 0.7190 against a
+max-absolute random lift of 0.0872 over fifteen matched-dose seeds, effect
+ratio **8.25** against the 3.0 floor (per-seed signed lifts median +0.0023, 9
+positive / 5 negative / 1 zero). LG-G3 (known-correct cost) is
+**NOT-ADJUDICABLE**, exactly as pre-stated, because the KU gate fired on 0 of
+334 known-correct rows. Llama therefore joins qwen as a family with a
+direction-specific verified write. Source:
+`experiments/llama-hs17-direction-specificity/AMENDMENT.md`, Outcome.
+
+**Llama hs17 wide-instrument regeneration and re-score (resolved 2026-08-26):**
+the specificity result above rested on the narrow `clean_tighten` instrument
+only, and a direct re-score was impossible because that harness persisted
+grades and flags but no generation text. This cell regenerated the full 17-arm
+set with a text-persisting harness and scored the fresh generations under both
+instruments. **Outcome A — wide replicates and is specific.** WR-G0 PASS
+(frozen pins byte-identical, CPU smoke asserted the text-persistence schema
+before launch). WR-G1 PASS as a bridge check: regenerated arm-1 narrow
+`clean_tighten` 637/872 = **0.7305** — a third consistent sample of this
+operating point (parent 0.7420, narrow cell 0.7282, this regeneration 0.7305).
+WR-G2 PASS: arm0 wide 136/872 = 0.1560, arm1 wide 687/872 = 0.7878, **net wide
+lift 0.6319** against a 0.30 floor, with only modest attenuation from the
+narrow net lift 0.7182 on the same generations. WR-G3 PASS: max
+random-direction absolute wide lift 0.0677, **effect ratio 9.34**; the random
+census is centered on zero under the wide instrument (6 positive / 8 negative /
+1 zero, median −0.0092) as it was under the narrow one. WR-G4
+NOT-ADJUDICABLE as pre-stated (KU gate fired 0/334). CG1 PASS on all 19 shards
+at attempt 1. A run-log anomaly is recorded straight: 25 duplicated confab
+row_keys in the arm-0 log from a crash-resume overlap, whose 24
+detector-negative duplicates entered the blinded pool twice and were graded
+identically 24/24 — an unplanned inter-grader reliability check that changes no
+number. Source: `experiments/llama-hs17-wide-instrument-rescore/AMENDMENT.md`,
+Outcome.
+
+**Data-loss incident, recovery re-run, and the published row-level dataset
+(2026-08-26 / 2026-08-27):** after that cell's PR merged, the lead removed its
+worktree with `git worktree remove --force` before the row-level exhaust was
+staged, destroying the sole copy of the gitignored `analysis/` tree — runlogs
+with generation text, scored rows, shard id maps, and the id salt. Root cause:
+the post-merge harvest hook never fired because `main` was synced with `git
+pull --rebase`, which takes the post-rewrite path that did not exist, and
+nothing guarded the removal. Committed evidence and the already-published
+aggregate exhaust were unaffected and the resolved verdict was untouched. The
+user approved a GPU recovery re-run, run from the canonical checkout under a
+pre-registered equivalence bar stated before launch; the bar **PASSED** on both
+prongs (re-scored arm-1 narrow `clean_tighten` reproduces WR-G1's 637/872
+bit-exactly, and the re-run generation manifest matches the committed original
+on every count and flag, with 11 readback means differing at ≤ 5e-5 from GPU
+numerics). All 19 surviving blind graded files sha256-authenticated against the
+pre-unblinding committed hashes, so verdicts were re-attributed per-row by exact
+text join, never positionally. Committed gate numbers remain the numbers of
+record, untouched. The row-level exhaust was then published with user approval
+as
+[`professorsynapse/eh-llama-hs17-wide-instrument-rescore-rows`](https://huggingface.co/datasets/professorsynapse/eh-llama-hs17-wide-instrument-rescore-rows)
+(15,492 rows, ~19 MB), alongside the earlier aggregate mirror
+[`professorsynapse/eh-llama-hs17-wide-instrument-rescore`](https://huggingface.co/datasets/professorsynapse/eh-llama-hs17-wide-instrument-rescore).
+Source: `experiments/llama-hs17-wide-instrument-rescore/NOTEBOOK.md`, entries
+2026-08-26 and 2026-08-27; the structural fixes are in "Process
+infrastructure" below.
+
+**Paper 5's working title changed again during the August restructure.** The
+manuscript now ships as *Look Before You Speak: Wiring a Language Model's
+Answerability Readout to Its Refusal Behavior* (front-matter `status: Draft v1
+(restructured)`, dated 2026-08-17), superseding the July working title
+*Readable Is Not Writable* recorded above. Since then it has been through the
+figure renumber (ten figures, `fig-p5-01` … `fig-p5-10`), the appendix
+reconciliation (Appendices A-F, including the gemma depth-ladder and
+KV-sharing-seam appendix and a fixed-seed randomly-sampled graded-examples
+appendix), voice and terminology sweeps, and the external-reviewer-lens pass;
+PRs #563-#568 are merged. Remaining work is submission-shaped rather than
+evidentiary and is tracked at
+`backlog/tasks/task-d342cb-paper-5-submission-prep-mats-fellowship.md` (todo,
+high priority, blocker "PI review"): final PI read, venue formatting, and the
+MATS/fellowship application forms.
 
 ---
 
@@ -475,6 +702,31 @@ failures in minutes rather than after a full signed run. Finally, the
 long-standing one-amendment-one-branch serialization rule was replaced with a
 worktree-parallel convention so independent amendments no longer queue behind
 each other (PR #322).
+
+August added four more, three of them straight out of the llama hs17 arc. The
+row-text persistence guard (PR #561, commit `8a66aca8`, 2026-08-26) makes the
+data-exhaust build-time text-capture rule structural instead of procedural
+across three layers: `experiments/common/runlog_contract.py` opens a run log
+that refuses any record missing non-empty generation text unless the caller
+declares a `textless_reason` folded into the log's own meta fingerprint;
+`exp validate` hard-errors on any `experiment.yaml` created on or after
+2026-08-26 without a top-level `text_capture` field, with earlier experiments
+exempt so the existing registry is unaffected; and `exp new` scaffolds
+`text_capture: enabled` by default. That guard exists because the hs17
+specificity harness persisted grades but not text, which is what forced the
+wide re-score to regenerate rather than re-score. The worktree data-loss
+incident above then closed the removal bypass (PR #564, 2026-08-26): a
+`.githooks/post-rewrite` hook so the rebase sync path harvests too, a
+fail-closed `--check --worktree` mode on `bin/harvest_worktree_data.py`, a
+PreToolUse removal guard (`.claude/hooks/worktree_data_guard.sh`), and a
+HARVEST BEFORE REMOVE step in the `pr-workflow` skill. That hook shipped
+non-executable and was therefore silently ignored by git; the executable bit
+was set the next day (PR #569, 2026-08-27) — worth remembering as the failure
+mode where a guard exists in the tree and still never fires. Finally, the
+task-backlog harness (PR #570, 2026-08-27) replaced the hand-curated backlog
+rows with `bin/task` over `backlog/tasks/` and `backlog/drafts/`, a generated
+task table inside `TODO.md`, and a pre-commit gate that requires an active
+covering task for the files being committed.
 
 ---
 
@@ -513,25 +765,31 @@ each other (PR #322).
   `experiments/jlens-trained-checkpoint-midband-ablation/AMENDMENT.md`
   (falsified, resolved 2026-08-16). Disposition: folded into paper 5 sections
   6.3 and 6.4 scoping; no new cell now.
-- **Is the confidence channel itself prompt-scaffolded?** (queued 2026-08-17)
-  Every stated-confidence number in paper 2 was produced under a contract that
-  also carries an abstention instruction, so the flat profile (near-constant
-  ~0.8, standard deviation 0.013, AUROC 0.520 against response
-  appropriateness) is only ever measured with the instruction present. But the
-  structure-only prompt retains the `response_confidence` JSON key and drops
-  only the abstention affordance, so every structure-only evaluation row
-  already on disk carries a stated-confidence value that nobody has looked at.
-  Open question: does the flat, uninformative confidence profile persist once
-  the abstention instruction is gone, or is the confidence channel itself
-  prompt-scaffolded in the same way the abstention behavior turned out to be?
-  Surface: the 13 existing structure-only arms among the 17 evaluations of
-  `experiments/prompt-vs-training-panel/AMENDMENT.md` (11 arms, 7 of them
-  P-struct) and `experiments/pstruct-internalization-seed-robustness/AMENDMENT.md`
-  (6 arms, all P-struct), plus the held-out AmbigQA arms once
-  `experiments/prompt-crossing-heldout-confirmatory/` resolves. Disposition:
-  CPU-only reanalysis of rows that already exist, no GPU and no new
-  generation, but it needs its own registered cell with predictions and a
-  falsifier stated before the analysis runs. PI approved queueing 2026-08-17.
+- **Is the confidence channel itself prompt-scaffolded?** RESOLVED — no longer
+  parked. Queued 2026-08-17, registered as
+  `experiments/stated-confidence-under-pstruct/AMENDMENT.md`, and resolved
+  2026-08-18 as a CPU-only reanalysis of 18 P-struct arms (1,832 AmbigQA rows
+  each) from the held-out prompt-crossing confirmatory. **Verdict: PARTIAL —
+  P2 held, P1 and P3 did not; neither falsifier fired.** The channel is not
+  noise, but it is broken in a structured way. Miscalibration is universal
+  (P2: 17/17 trained arms at ECE ≥ 0.15, actual range 0.5482-0.8495; the base
+  and cold DPO/KTO arms state mean confidence 0.925-0.945 while answering at
+  8.5-10% accuracy on this covert-ambiguity pool). Discrimination is near
+  chance for most regimens (P1: only 8 of 17 trained arms inside the
+  registered [0.55, 0.80] band against a ≥12 requirement), weak-to-moderate
+  only in the SFT-lineage sequential arms (best 0.7245, seq SFT→KTO seed 2).
+  Refusal separation fell one arm short of its band (P3: negative in 11 of 17,
+  needed ≥12). The precise decomposition the lead recorded the same day, in
+  place of the loose "coupling exists only where SFT is in the lineage"
+  shorthand: SFT installs the confidence-refusal coupling, a subsequent DPO or
+  KTO stage preserves it, a subsequent GRPO stage erases it, and cold
+  preference training alone induces neither refusal nor coupling —
+  SFT→GRPO refuses on 71.4% of rows while stating mean confidence 0.8127 with
+  separation −0.0003. A pre-registration feasibility peek had unblinded four
+  arm-level means, so no prediction or gate in the cell was placed on any mean
+  and all means are descriptive-only. Consumer: the paper 2 §5 scope condition
+  about the captured-but-never-analyzed structure-only channel can now cite a
+  measurement. Exploratory; never pooled with the paper-2 headline matrix.
 
 ---
 
@@ -543,10 +801,14 @@ each other (PR #322).
 | P2 | Training regimen (SFT/DPO/KTO/GRPO) | `papers/paper-2-training-regimen/manuscript.md` |
 | P3 | "Knows but Doesn't Say": internal gap + training-resistance | `papers/paper-3-knows-but-doesnt-say/manuscript.md` |
 | P4 | Two-signal readout (training-free, cross-size/-family/-seed) | `papers/paper-4-two-signal-readout/manuscript.md` |
-| P5 | Steering / actuation ("Readable Is Not Writable") | `papers/paper-5-actuation/manuscript.md` |
+| P5 | Steering / actuation ("Look Before You Speak") | `papers/paper-5-actuation/manuscript.md` |
 
-Figure/script prefixes are legacy (`fig-p1-*` = Paper 2, `fig-p2-*` = Paper 3,
-`fig-p3-*` = Paper 4). Amendment labels stay out of paper prose; traceability lives in
+Figure/script prefixes are legacy where they have not been renumbered:
+`fig-p1-*` = Paper 2 and `fig-p2-*` = Paper 3 (Paper 3 also carries two
+`fig-p3-*` panels for its §5 geometry pair, which is the legacy Paper-4
+prefix). Papers 4 and 5 have since been renumbered to match their own
+positions: `fig-p4-01` … `fig-p4-10` and `fig-p5-01` … `fig-p5-10`.
+Amendment labels stay out of paper prose; traceability lives in
 provenance appendices.
 
 A sixth paper is now named but has no manuscript yet: per the PI's 2026-07-18
