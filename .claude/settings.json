@@ -56,6 +56,12 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/main_protect_guard.sh\"",
             "timeout": 10,
             "statusMessage": "Checking not committing on protected main..."
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/worktree_data_guard.sh\"",
+            "timeout": 120,
+            "statusMessage": "Checking worktree holds no unharvested run data before removal..."
           }
         ]
       },
