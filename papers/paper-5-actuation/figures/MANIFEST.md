@@ -229,23 +229,25 @@ results-analyst pass, not by the script).
 
 ## fig-p5-10-specificity-census.png
 
-Two direction-specificity seed censuses side by side: each write's
-confabulation-tightening lift over its own undosed baseline against a
-15-seed matched-dose random-direction null, at the Qwen3-4B late site
-(hs34/L34, wide two-instrument refusal-rate metric) and the Llama-3.2-3B
-mid-band site (hs17, clean_tighten metric). Built by
+Two direction-specificity seed censuses side by side, both under the wide
+two-instrument refusal-rate metric: each write's confabulation-tightening
+lift over its own undosed baseline against a 15-seed matched-dose
+random-direction null, at the Qwen3-4B late site (hs34/L34) and the
+Llama-3.2-3B mid-band site (hs17). Built by
 `papers/paper-5-actuation/scripts/build_specificity_census_fig.py`
 (deterministic apart from cosmetic seed-dot jitter, fixed RNG seeds in the
 script; CPU only, no network).
 
-- Source: `experiments/llama-hs17-direction-specificity/analysis-committed/llama-3.2-3b/specificity_summary.json`
-  -- amendment: `experiments/llama-hs17-direction-specificity/AMENDMENT.md`
-  (Outcome section: LG-G1 replication PASS 0.7282, LG-G2 direction-specificity
-  PASS, effect ratio 8.25). Fields used: `arm0_baseline.confab.rate`,
-  `arm1_gated_replication.confab.rate`, `arm2_random_census.<seed>.rate`
-  for all 15 seeds (910001-910015); per-seed lifts are recomputed as
-  `arm2_random_census[seed].rate - arm0_baseline.confab.rate`, not read from
-  the JSON's own `companion_descriptive` block, though the two agree exactly.
+- Source: `experiments/llama-hs17-wide-instrument-rescore/analysis-committed/llama-3.2-3b/wide_gates_report.json`
+  -- amendment: `experiments/llama-hs17-wide-instrument-rescore/AMENDMENT.md`
+  (Outcome section: WR-G2 wide replication PASS, net lift 0.6319; WR-G3
+  wide direction-specificity PASS, effect ratio 9.34). Fields used:
+  `WR-G2.arm0_wide_confab.rate`, `WR-G2.net_lift`, and
+  `WR-G3.companion_descriptive.per_seed_signed_wide_lift.<seed>` for all
+  15 seeds (910001-910015); each per-seed lift is cross-checked in the
+  script against `per_seed_wide[seed].rate - arm0_wide_confab.rate`
+  (exact match required), and the max-abs lift and effect ratio are
+  asserted equal to the report's own `WR-G3` fields.
 - Source: `experiments/qwen3-4b-l34-placebo-seed-census/analysis-committed/wide_gates_report.json`
   -- amendment: `experiments/qwen3-4b-l34-placebo-seed-census/AMENDMENT.md`
   (Outcome section: QG-G1 distributional specificity PASS, effect ratio 4.83;
@@ -255,11 +257,12 @@ script; CPU only, no network).
   for all 15 seeds (920001-920015); per-seed lifts are recomputed the same
   way and cross-checked against the JSON's own `lift_over_baseline_signed`
   field (exact match).
-- The two rows plot pp lift on a shared x-axis but different instruments,
-  metrics, and baselines; the figure and its axis label say so directly, and
-  each row is labeled with its own site, instrument, and N. The build script
-  embeds a reproduction audit: every plotted lift, median, IQR, span, sign
-  count, and effect ratio is recomputed from the two JSONs above and asserted
-  against the governed AMENDMENT.md Outcome numbers, failing loudly on any
-  mismatch. QG-G2's sign-consistency failure is not plotted here; this figure
-  is scoped to QG-G1/LG-G2 (distributional direction-specificity) only.
+- The two rows share the wide two-instrument metric but plot pp lift over
+  different pools and baselines on a shared x-axis; the figure and its axis
+  label say so directly, and each row is labeled with its own site,
+  instrument, and N. The build script embeds a reproduction audit: every
+  plotted lift, median, IQR, span, sign count, and effect ratio is
+  recomputed from the two JSONs above and asserted against the governed
+  AMENDMENT.md Outcome numbers, failing loudly on any mismatch. QG-G2's
+  sign-consistency failure is not plotted here; this figure is scoped to
+  QG-G1/WR-G3 (distributional direction-specificity) only.

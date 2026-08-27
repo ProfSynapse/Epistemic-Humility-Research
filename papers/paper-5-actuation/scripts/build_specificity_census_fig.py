@@ -63,31 +63,42 @@ def close(a: float, b: float, tol: float) -> bool:
 
 # =========================================================================
 # Sources (committed result JSONs, no row-level text):
-#   Llama hs17: experiments/llama-hs17-direction-specificity/
-#     analysis-committed/llama-3.2-3b/specificity_summary.json
-#     (arm0_baseline.confab.rate, arm1_gated_replication.confab.rate,
-#      arm2_random_census.<seed>.rate)
+#   Llama hs17 (wide two-instrument stack, regenerated arms):
+#     experiments/llama-hs17-wide-instrument-rescore/
+#     analysis-committed/llama-3.2-3b/wide_gates_report.json
+#     (WR-G2.arm0_wide_confab.rate, WR-G2.net_lift,
+#      WR-G3.companion_descriptive.per_seed_signed_wide_lift.<seed>)
 #   Qwen hs34/L34: experiments/qwen3-4b-l34-placebo-seed-census/
 #     analysis-committed/wide_gates_report.json
 #     (QG_G1_distributional_specificity.frozen_baseline_rate,
 #      .frozen_gated_lift_over_baseline, per_seed.<seed>.confab_tighten_wide.rate)
 # Governed verdict text: each experiment's AMENDMENT.md, Outcome section.
 # =========================================================================
-LLAMA = load(EXP / "llama-hs17-direction-specificity" / "analysis-committed" / "llama-3.2-3b" / "specificity_summary.json")
+LLAMA = load(EXP / "llama-hs17-wide-instrument-rescore" / "analysis-committed" / "llama-3.2-3b" / "wide_gates_report.json")
 QWEN = load(EXP / "qwen3-4b-l34-placebo-seed-census" / "analysis-committed" / "wide_gates_report.json")
 
 
 def _llama_data():
-    baseline = LLAMA["arm0_baseline"]["confab"]["rate"]
-    gated_rate = LLAMA["arm1_gated_replication"]["confab"]["rate"]
-    gated_lift = gated_rate - baseline
-    seeds = sorted(LLAMA["arm2_random_census"].keys())
+    g2 = LLAMA["WR-G2"]
+    g3 = LLAMA["WR-G3"]
+    baseline = g2["arm0_wide_confab"]["rate"]
+    gated_lift = g2["net_lift"]
+    # cross-check the report's own arm1 rate against baseline + lift
+    assert close(g2["arm1_wide_confab"]["rate"], baseline + gated_lift, 1e-9)
+    per_seed = g3["companion_descriptive"]["per_seed_signed_wide_lift"]
+    seeds = sorted(per_seed.keys())
     assert len(seeds) == 15, f"llama: expected 15 random-census seeds, got {len(seeds)}"
-    lifts = [LLAMA["arm2_random_census"][s]["rate"] - baseline for s in seeds]
+    lifts = [per_seed[s] for s in seeds]
+    # cross-check against the report's per-seed wide rates
+    for s in seeds:
+        rate = g3["companion_descriptive"]["per_seed_wide"][s]["rate"]
+        assert close(rate - baseline, per_seed[s], 1e-9), s
     max_abs = max(abs(x) for x in lifts)
+    assert close(max_abs, g3["max_abs_random_lift"], 1e-9)
     effect_ratio = gated_lift / max_abs
-    n = LLAMA["arm0_baseline"]["confab"]["n"]
-    assert n == LLAMA["arm1_gated_replication"]["confab"]["n"] == 872
+    assert close(effect_ratio, g3["effect_ratio"], 1e-9)
+    n = g2["arm0_wide_confab"]["n"]
+    assert n == g2["arm1_wide_confab"]["n"] == 872
     return dict(baseline=baseline, gated_lift=gated_lift, lifts=lifts,
                 max_abs=max_abs, effect_ratio=effect_ratio, n=n)
 
@@ -121,8 +132,8 @@ def fig_specificity_census():
              label="Qwen3-4B, hs34 (late site)\nwide two-instrument refusal-rate lift",
              site_ann="hs34 wide instrument, N=185 rows/arm"),
         dict(key="llama", y=1, color=C_POOL2, data=llama,
-             label="Llama-3.2-3B, hs17 (mid-band site)\nclean_tighten lift, N=872 rows/arm",
-             site_ann="hs17 clean_tighten instrument, N=872 rows/arm"),
+             label="Llama-3.2-3B, hs17 (mid-band site)\nwide two-instrument refusal-rate lift",
+             site_ann="hs17 wide instrument, N=872 rows/arm"),
     ]
 
     box_h = 0.30
@@ -176,7 +187,7 @@ def fig_specificity_census():
     ax.set_ylim(0.35, 2.75)
     ax.set_xlim(-15, 85)
     ax.set_xlabel("confabulation-tightening lift over each row's own undosed baseline (percentage points)\n"
-                  "different instruments and baselines per row -- shared axis is pp lift, not a shared rate scale",
+                  "wide two-instrument stack in both rows; pools and baselines differ per row -- shared axis is pp lift",
                   fontsize=9.4)
     ax.set_title("A gated write's confabulation-tightening lift falls far outside\n"
                  "its own 15-seed random-direction null, at both operating points",
@@ -191,11 +202,11 @@ def fig_specificity_census():
 
     # ---- reproduction audit: recomputed values must equal the governed
     # AMENDMENT.md Outcome text for each experiment ----
-    # Llama: experiments/llama-hs17-direction-specificity/AMENDMENT.md,
-    # Outcome section (LG-G2 row and "Supporting numbers" bullets).
+    # Llama: experiments/llama-hs17-wide-instrument-rescore/AMENDMENT.md,
+    # Outcome section (WR-G2 and WR-G3 rows).
     LLAMA_CHECK = dict(
-        gated_lift=0.7190, max_abs_random_lift=0.0872, effect_ratio=8.25,
-        median_lift=0.0023, sign_pos=9, sign_neg=5, sign_zero=1,
+        gated_lift=0.6319, max_abs_random_lift=0.0677, effect_ratio=9.34,
+        median_lift=-0.0092, sign_pos=6, sign_neg=8, sign_zero=1,
     )
     lifts_llama = llama["lifts"]
     assert close(llama["gated_lift"], LLAMA_CHECK["gated_lift"], 0.0005)
