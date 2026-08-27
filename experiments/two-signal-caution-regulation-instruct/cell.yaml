@@ -1,0 +1,180 @@
+# two-signal-caution-regulation-instruct. DRAFT, NOT a registered instrument
+# until `bin/exp sign` (see AMENDMENT.md; status: draft). Substrate: raw-base
+# untrained instruct, unsloth/Qwen3-4B (FULL BF16, no 4-bit quant), no adapter.
+# BF16 PIVOT (2026-07-07): this cell moved off unsloth/Qwen3-4B-bnb-4bit; see
+# NOTEBOOK.md's bf16 substrate-pivot entry for the full refit/recalibration.
+#
+# This file expresses AMENDMENT.md's Design section against the tuner's
+# generic continuous-per-row-gain-arm feature (ArmConfig.gain_field /
+# gain_clip / force_active / permuted_control_of, MechInterp/config.py --
+# confirmed present at submodule pin 56c7c6b, the same feature
+# ao-propensity-regulated-caution's cell.yaml already exercises). NO new
+# tuner code: the entire two-signal novelty is offline (see
+# build_two_signal_directions.py) -- the WRITE here is the plain
+# AC/AO erase_write-with-a-per-row-gain mechanism, unmodified.
+#
+# OFFLINE PREP (bf16 refit, 2026-07-07; see build_two_signal_directions.py's
+# own docstring + analysis-committed/build_manifest.json for full
+# provenance):
+#   1. u_d fit at L34 (fresh known-vs-unknown mean-diff refit, AH A0 /
+#      AK Stage-1 pool: 89 known_correct_answered vs 1,029 unknown_refused,
+#      ALL bf16 activations from this experiment's own extract_l34_anchor.py).
+#   2. pos_ctrl (caution_dir) / u_p (neg_ctrl) BOTH refit fresh on this
+#      experiment's own bf16 AK Stage-1 extraction (1,338 rows: 309 confab +
+#      1,029 refuse), verbatim dark-actuator-screen build_directions.py
+#      method (mass-mean refuse_vs_confab / standardized logistic
+#      confab-propensity) -- NOT copied from the dark-screen's 4-bit fit
+#      (that fit is not reusable under bf16). See
+#      analysis-committed/source_directions/{pos_ctrl,neg_ctrl}_L34.json.
+#   3. c_hat = caution_dir orthogonalized against BOTH u_d and u_p (2-D
+#      Gram-Schmidt) -- analysis-committed/c_hat_L34.json. Its own "sigma"
+#      field is set to sigma_c = 21.36 (bf16; was 36.18 under 4-bit) so the
+#      tuner's own erase_write formula (gain * sigma * c_hat) reproduces the
+#      AMENDMENT's g_i * sigma_c * c_hat exactly when gain_field carries g_i
+#      directly.
+#   4. Per-example gain g_two_signal = -alpha_d*z_d,i + alpha_p*z_p,i
+#      (alpha_d == alpha_p == 40.0, BF16 DOSE-UNITS FIX 2026-07-07 -- the
+#      prior ALPHA=2.0/clip=40 build calibrated against the dose sweep's own
+#      printed "strength" column, a GAIN, as if it were already the realized
+#      write; the tuner's erase_write law writes gain*sigma
+#      (synaptic-tuner MechInterp/intervention/hooks.py docstring lines
+#      7-12), so that was an ~sigma_c-factor (~21x) unit conflation. Fixed
+#      by logging `hook.last_readback` (the GPU-measured post-write
+#      projection) directly in the sweep; see
+#      build_two_signal_directions.py's own header note for the full
+#      derivation. In that ground-truth readback unit, the real window is:
+#      median first-coherent-move |readback|=531.9 (confab median=456.0,
+#      answerable_refused median=546.0), median first-garbage-collapse
+#      |readback|=952.0 (confab median=808.0, answerable_refused
+#      median=997.9); z_d/z_p each clipped to [-2,+2] before combining, and
+#      the resulting marginal write hard-clipped to +/-750 -- collapse-safety
+#      margin below this experiment's own confirmed collapse floor (the
+#      LOWER of the two cells' medians, 808), all precomputed and stored as
+#      a column on analysis-committed/eval_pool_manifest.jsonl -- ALREADY
+#      alpha-scaled AND clip-applied, hence `arms.coupled.strength: 1.0`
+#      below, NOT 40.0 (do not double-apply alpha, and do not re-clip: the
+#      clip already binds the stored gain, not just a reported number).
+#   5. eval_pool_manifest.jsonl (COMMITTED) carries ID + derived columns
+#      ONLY -- no question text, no aliases (this repo is PUBLIC; see
+#      analysis-committed/PROVENANCE.md). `surface.rows_path` below points at
+#      the LOCAL, GITIGNORED, materialized full pool
+#      (analysis/eval_pool_both_tail.jsonl), produced by running
+#      `python materialize_eval_pool.py` (fetches question text from the
+#      private HF staging repo + joins local aliases) BEFORE any smoke/steer
+#      launch -- that script must be re-run any time
+#      build_two_signal_directions.py regenerates the committed manifest.
+#
+# Validate (CPU, no GPU):
+#   cd synaptic-tuner && python -c "from MechInterp.config import load_steer_config; \
+#     load_steer_config('../experiments/two-signal-caution-regulation-instruct/cell.yaml'); \
+#     print('cell ok')"
+#
+# Launch (GPU; render-fn/grader are CLI-resolved flat module specs via
+# importlib.import_module, not dotted package paths -- see MechInterp/cli.py
+# _load_callable / run_steer; "experiments" has no __init__.py so a dotted
+# "experiments.common.renders...." spec will NOT import). Run
+# `python materialize_eval_pool.py` first (see item 5 above):
+#   cd synaptic-tuner && PYTHONPATH=../experiments/two-signal-caution-regulation-instruct:../experiments/common/renders \
+#     python tuner.py mechinterp steer \
+#     --mi-config ../experiments/two-signal-caution-regulation-instruct/cell.yaml \
+#     --render-fn ah_a0_raw_base_render:render \
+#     --model unsloth/Qwen3-4B --i-know-this-runs-on-gpu
+
+# 1. surface: the LOCAL, GITIGNORED, materialized both-tail eval pool (458
+#    rows: 309 confab "tighten" tail + 149 answerable_refused "release"
+#    tail), produced by `materialize_eval_pool.py` joining the COMMITTED
+#    derived-columns manifest (analysis-committed/eval_pool_manifest.jsonl --
+#    no question text, no aliases) against question text fetched from the
+#    private HF staging repo and aliases read from the local canonical
+#    checkout (see materialize_eval_pool.py / PROVENANCE.md). Every
+#    materialized row carries row_key, question, aliases, gold_class, cell,
+#    and the precomputed z_d/z_p/g_two_signal columns this cell's
+#    `coupled`/`permuted` arms read.
+surface:
+  rows_path: experiments/two-signal-caution-regulation-instruct/analysis/eval_pool_both_tail.jsonl
+  seed: 20260706
+  generation:
+    max_new_tokens: 96
+    do_sample: false
+  # expected_config_sha is filled AFTER the smoke run and pinned in the
+  # amendment doc at `exp sign`.
+  # expected_config_sha: <sha256-of-this-file-at-signing>
+
+# 2. readouts: ONLY the write direction. u_d and u_p are offline-only sensors
+#    (never touched by the tuner); they do not need to be readouts.
+readouts:
+  - name: c_hat_two_signal
+    path: experiments/two-signal-caution-regulation-instruct/analysis-committed/c_hat_L34.json
+
+# 3. law: erase_write along c_hat, written at every generated position
+#    (the AC/AO couple mechanism, verbatim -- AMENDMENT.md: "the WRITE during
+#    generation is the EXISTING per-example-gain erase-write that AC/AO
+#    already use").
+law:
+  kind: erase_write
+  readout: c_hat_two_signal
+  position: answer_window   # only the generated tokens (window_start set upstream)
+  generation_mode: gen_stream
+
+# 4. arms: k=0 baseline (no write) / coupled (real per-example gain) /
+#    permuted-sensor placebo (same gain distribution, row-shuffled pairing,
+#    FIXED seed 20260706 -- stated here per the AMENDMENT's "Arms and
+#    controls" requirement). No constant-caution arm in this draft (the
+#    AMENDMENT lists it as "optional, pending scout"; not built).
+arms:
+  - name: baseline
+    strength: 0.0
+
+  - name: coupled
+    strength: 1.0             # NOT alpha -- g_two_signal already carries
+                               # alpha_d=alpha_p=2.0 (bf16 retune; see header
+                               # note above).
+    gain_field: g_two_signal
+
+  - name: permuted
+    strength: 1.0
+    permuted_control_of: coupled
+    # FIXED seed for the row-shuffle of coupled's per-row gains (same
+    # gain distribution, scrambled row pairing) -- pre-stated per
+    # AMENDMENT.md "Arms and controls".
+    control_seed: 20260706
+
+# 5. execution: per-row output JSONL (untracked) + the project grader.
+execution:
+  output_path: experiments/two-signal-caution-regulation-instruct/analysis/rows_out.jsonl
+  resume: true
+  # Resolved via importlib against sys.path:
+  #   PYTHONPATH=experiments/two-signal-caution-regulation-instruct
+  # two_signal_grader.py primes its baseline cache from
+  # TWO_SIGNAL_GRADER_OUTPUT_PATH (falls back to this file's own
+  # execution.output_path if unset); set it explicitly when invoking
+  # `mechinterp steer` on THIS file so a resumed run's re-priming is
+  # unambiguous.
+  grader: two_signal_grader:grade
+
+# 6. smoke: readback tolerances that gate the full arms. n_rows=25 is a
+#    working default (not itself a locked AMENDMENT number); the AMENDMENT's
+#    G0 instrument-validity check additionally requires gen_stream_fired and
+#    the coupled setpoint landing in the coherent window (bf16: realized
+#    |marginal write| ~452-808 along c_hat, this experiment's own
+#    readback-calibrated window; see NOTEBOOK.md's bf16 dose-calibration-fix
+#    entry) -- checked from the smoke readback + this cell's own
+#    build_manifest.json marginal-write distribution, not encoded as a tuner
+#    smoke tolerance.
+smoke:
+  n_rows: 25
+  write_rel_tol: 0.05
+  write_abs_floor: 0.5
+  offtarget_tol: 0.001
+  # gen_stream_probe_strength left UNSET (tuner built-in default 100.0). That
+  # default is a GAIN (pre-sigma) value; the tuner multiplies it by this
+  # cell's own readout sigma (c_hat_L34.json's sigma = sigma_c = 21.36, bf16;
+  # was 36.18 under 4-bit) to get the probe's commanded write, i.e.
+  # 100 * 21.36 = 2136 -- comfortably above this cell's real
+  # |marginal_write| range (hard-clipped to +/-750, see build_manifest.json),
+  # so the built-in default already clears the "large relative to the real
+  # dose ladder" bar without an override. This is a different situation from
+  # dark-actuator-screen's cells, whose direction JSONs all had sigma=1.0
+  # (hence needed a raw-gain override like 1000 to compensate); this cell's
+  # sigma is not 1.0.
+
