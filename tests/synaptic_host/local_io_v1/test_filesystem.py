@@ -29,6 +29,7 @@ from synaptic_host.local_io_v1.model import (
     journal_record_bytes_v1,
     parse_journal_record_v1,
     digest_v1,
+    root_authority_digest_v1,
 )
 
 from .conftest import FakePosixFilesystemPortV1
@@ -312,6 +313,86 @@ def test_reconstructed_root_authority_replays_same_durable_identity() -> None:
     retained_again = reconstructed.retain_root_authority(root.data_binding, root.control_binding)
     assert retained_again.authority_digest == root.authority_digest
     assert reconstructed.recover_create(retained_again, destination).status is RecoveryStatusV1.FOUND
+
+
+def test_root_authority_digest_excludes_volatile_metadata_permissions_and_handles() -> None:
+    _, _, root = _composition()
+    data = root.data_directory.identity
+    control = root.control_directory.identity
+    volatile_data = LocalFileIdentityV1(
+        data.device, data.inode, stat.S_IFDIR | 0o777, data.nlink + 9,
+        data.changed_ns + 100, data.modified_ns + 200, data.size + 300,
+    )
+    volatile_control = LocalFileIdentityV1(
+        control.device, control.inode, stat.S_IFDIR | 0o711, control.nlink + 7,
+        control.changed_ns + 50, control.modified_ns + 60, control.size + 70,
+    )
+    digest = root_authority_digest_v1(
+        root.data_binding, root.control_binding, volatile_data, volatile_control
+    )
+    assert digest == root.authority_digest
+    reconstructed = LocalRootAuthorityV1(
+        "different-live-handle",
+        root.data_binding,
+        root.control_binding,
+        RetainedDirectoryV1("different-data-handle", volatile_data),
+        RetainedDirectoryV1("different-control-handle", volatile_control),
+        digest,
+    )
+    assert reconstructed.authority_digest == root.authority_digest
+    assert set(reconstructed.canonical_without_digest()) == {
+        "schema", "data_binding_digest", "control_binding_digest", "data_node", "control_node"
+    }
+
+
+def test_root_authority_digest_changes_on_node_or_binding_and_rejects_wrong_type_alias() -> None:
+    _, _, root = _composition()
+    data = root.data_directory.identity
+    control = root.control_directory.identity
+    moved = LocalFileIdentityV1(
+        data.device, data.inode + 100, data.mode, data.nlink,
+        data.changed_ns, data.modified_ns, data.size,
+    )
+    assert root_authority_digest_v1(
+        root.data_binding, root.control_binding, moved, control
+    ) != root.authority_digest
+    moved_device = LocalFileIdentityV1(
+        data.device + 1, data.inode, data.mode, data.nlink,
+        data.changed_ns, data.modified_ns, data.size,
+    )
+    assert root_authority_digest_v1(
+        root.data_binding, root.control_binding, moved_device, control
+    ) != root.authority_digest
+    _, _, other = _composition("different-binding")
+    assert root_authority_digest_v1(
+        other.data_binding, root.control_binding, data, control
+    ) != root.authority_digest
+    non_directory = LocalFileIdentityV1(
+        data.device, data.inode, stat.S_IFREG | 0o600, 1,
+        data.changed_ns, data.modified_ns, data.size,
+    )
+    with pytest.raises(LocalIOErrorV1) as caught:
+        root_authority_digest_v1(root.data_binding, root.control_binding, non_directory, control)
+    assert caught.value.code is LocalIOCodeV1.ROOT_INVALID
+    with pytest.raises(LocalIOErrorV1) as caught:
+        root_authority_digest_v1(root.data_binding, root.control_binding, data, data)
+    assert caught.value.code is LocalIOCodeV1.ROOT_INVALID
+
+
+def test_same_path_root_replacement_changes_digest_and_rejects_old_evidence_zero_call() -> None:
+    port, filesystem, root = _composition()
+    destination = _destination(filesystem, root)
+    create = filesystem.authorize_create(root, destination)
+    assert filesystem.create_once(root, create, destination, [b"payload"]).status is RecoveryStatusV1.FOUND
+    port.directory_nodes["dir-data"].inode += 10_000
+    reconstructed = LocalFilesystemV1(port, filesystem._permit_authenticator, native_platform="linux")
+    replaced_root = reconstructed.retain_root_authority(root.data_binding, root.control_binding)
+    assert replaced_root.authority_digest != root.authority_digest
+    baseline = list(port.trace)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        reconstructed.recover_create(replaced_root, destination)
+    assert caught.value.code is LocalIOCodeV1.DESTINATION_INVALID
+    assert port.trace == baseline
 
 
 def test_live_mutation_recovery_is_active_and_lookup_free() -> None:
@@ -780,6 +861,15 @@ def test_fresh_registry_and_filesystem_converge_on_durable_replay(tmp_path: Path
     assert first.create_once(
         first_root, first.authorize_create(first_root, destination), destination, [b"payload"]
     ).status is RecoveryStatusV1.FOUND
+    current_data = port.directory_nodes["dir-registry-data"].identity()
+    current_control = port.directory_nodes["dir-registry-control"].identity()
+    assert current_data.canonical() != first_root.data_directory.identity.canonical()
+    assert current_control.canonical() != first_root.control_directory.identity.canonical()
+    assert (current_data.device, current_data.inode, current_data.mode & 0o170000) == (
+        first_root.data_directory.identity.device,
+        first_root.data_directory.identity.inode,
+        first_root.data_directory.identity.mode & 0o170000,
+    )
 
     second_registry = registry()
     assert first_registry.resolve("data").root_permit is not second_registry.resolve("data").root_permit
@@ -788,6 +878,14 @@ def test_fresh_registry_and_filesystem_converge_on_durable_replay(tmp_path: Path
         second_registry.resolve("data"), second_registry.resolve("control")
     )
     assert second_root.authority_digest == first_root.authority_digest
+    second_destination = _destination(second, second_root)
+    assert second_destination.destination_digest == destination.destination_digest
+    assert second.authorize_create(second_root, second_destination).mutation_id == (
+        digest_v1({
+            "destination_digest": destination.destination_digest,
+            "root_authority_digest": first_root.authority_digest,
+        })
+    )
     assert second.recover_create(second_root, destination).status is RecoveryStatusV1.FOUND
 
 

@@ -327,6 +327,36 @@ class RetainedDirectoryV1:
             _fail(LocalIOCodeV1.IO_FAILED)
 
 
+def _root_node_identity_v1(identity: LocalFileIdentityV1) -> dict[str, int]:
+    if type(identity) is not LocalFileIdentityV1:
+        _fail(LocalIOCodeV1.AUTHORITY_INVALID)
+    file_type = identity.mode & 0o170000
+    if file_type != 0o040000:
+        _fail(LocalIOCodeV1.ROOT_INVALID)
+    return {"device": identity.device, "file_type": file_type, "inode": identity.inode}
+
+
+def root_authority_digest_v1(
+    data_binding: LocalRootBindingV1,
+    control_binding: LocalRootBindingV1,
+    data_identity: LocalFileIdentityV1,
+    control_identity: LocalFileIdentityV1,
+) -> str:
+    if type(data_binding) is not LocalRootBindingV1 or type(control_binding) is not LocalRootBindingV1:
+        _fail(LocalIOCodeV1.AUTHORITY_INVALID)
+    data_node = _root_node_identity_v1(data_identity)
+    control_node = _root_node_identity_v1(control_identity)
+    if (data_node["device"], data_node["inode"]) == (control_node["device"], control_node["inode"]):
+        _fail(LocalIOCodeV1.ROOT_INVALID)
+    return digest_v1({
+        "control_binding_digest": control_binding.binding_digest,
+        "control_node": control_node,
+        "data_binding_digest": data_binding.binding_digest,
+        "data_node": data_node,
+        "schema": "synaptic-host-root-authority/v1",
+    })
+
+
 @dataclass(frozen=True, slots=True)
 class LocalRootAuthorityV1:
     authority_ref: str
@@ -343,15 +373,21 @@ class LocalRootAuthorityV1:
         if type(self.data_directory) is not RetainedDirectoryV1 or type(self.control_directory) is not RetainedDirectoryV1:
             _fail(LocalIOCodeV1.AUTHORITY_INVALID)
         checked_sha256(self.authority_digest, LocalIOCodeV1.AUTHORITY_INVALID)
-        if self.authority_digest != digest_v1(self.canonical_without_digest()):
+        if self.authority_digest != root_authority_digest_v1(
+            self.data_binding,
+            self.control_binding,
+            self.data_directory.identity,
+            self.control_directory.identity,
+        ):
             _fail(LocalIOCodeV1.AUTHORITY_INVALID)
 
     def canonical_without_digest(self) -> dict[str, Any]:
         return {
             "control_binding_digest": self.control_binding.binding_digest,
-            "control_identity": self.control_directory.identity.canonical(),
+            "control_node": _root_node_identity_v1(self.control_directory.identity),
             "data_binding_digest": self.data_binding.binding_digest,
-            "data_identity": self.data_directory.identity.canonical(),
+            "data_node": _root_node_identity_v1(self.data_directory.identity),
+            "schema": "synaptic-host-root-authority/v1",
         }
 
 

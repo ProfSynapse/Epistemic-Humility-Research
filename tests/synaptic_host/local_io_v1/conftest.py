@@ -159,6 +159,13 @@ class FakePosixFilesystemPortV1:
         self._next_inode += 1
         return _Node(self._next_inode, mode, bytearray(payload))
 
+    def _touch_directory(self, handle: str, *, link_delta: int = 0) -> None:
+        node = self.directory_nodes[handle]
+        node.nlink += link_delta
+        node.changed_ns += 1
+        node.modified_ns += 1
+        node.content = bytearray(len(self.directories[handle]))
+
     def add_root(self, path: Path, label: str) -> None:
         handle = f"dir-{label}"
         node = self._new_inode(stat.S_IFDIR | 0o700)
@@ -174,6 +181,7 @@ class FakePosixFilesystemPortV1:
         self.directories[directory][name] = node
         self.directories[handle] = {}
         self.directory_nodes[handle] = node
+        self._touch_directory(directory, link_delta=1)
         return handle
 
     def add_file(
@@ -188,6 +196,7 @@ class FakePosixFilesystemPortV1:
         node = self._new_inode(mode, payload)
         node.nlink = nlink
         self.directories[directory][name] = node
+        self._touch_directory(directory)
         return node
 
     def retain_directory(self, absolute_path: Path) -> RetainedDirectoryV1:
@@ -256,6 +265,7 @@ class FakePosixFilesystemPortV1:
             raise FileExistsError(component)
         node = self._new_inode(stat.S_IFREG | 0o600)
         entries[component] = node
+        self._touch_directory(self._directory(directory))
         result = self._opened(node)
         self._after("create_exclusive_at")
         return result
@@ -322,6 +332,7 @@ class FakePosixFilesystemPortV1:
         node.nlink += 1
         node.changed_ns += 1
         entries[destination] = node
+        self._touch_directory(self._directory(directory))
         self._after("link_at")
 
     def unlink_at(self, directory, component):
@@ -329,10 +340,11 @@ class FakePosixFilesystemPortV1:
         node = self.directories[self._directory(directory)].pop(component)
         node.nlink -= 1
         node.changed_ns += 1
+        self._touch_directory(self._directory(directory))
         self._after("unlink_at")
 
     def publish_journal(self, control, mutation_id, expected_previous_digest, record):
-        self._directory(control)
+        control_handle = self._directory(control)
         self._event(f"append_journal:{record.phase.value}")
         if mutation_id in self.private_journals:
             return JournalPublishResultV1(
@@ -350,6 +362,7 @@ class FakePosixFilesystemPortV1:
             self._after(f"append_journal:{record.phase.value}")
             return JournalPublishResultV1(status, mutation_id, record.record_digest, record)
         if new_journal:
+            self._touch_directory(control_handle, link_delta=1)
             self._event("journal_control_fsync")
             self._after("journal_control_fsync")
         for event in ("journal_temp_create", "journal_temp_write", "journal_temp_fsync"):

@@ -256,7 +256,35 @@ def test_real_ext4_race_hardlink_leftover_and_no_replace_contract(b42_ext4_root:
     replay_root = replay_filesystem.retain_root_authority(
         second_registry.resolve("data"), second_registry.resolve("control")
     )
+    assert replay_root.data_directory.identity.canonical() != root.data_directory.identity.canonical()
+    assert replay_root.control_directory.identity.canonical() != root.control_directory.identity.canonical()
+    assert (
+        replay_root.data_directory.identity.device,
+        replay_root.data_directory.identity.inode,
+        replay_root.data_directory.identity.mode & 0o170000,
+    ) == (
+        root.data_directory.identity.device,
+        root.data_directory.identity.inode,
+        root.data_directory.identity.mode & 0o170000,
+    )
     assert replay_root.authority_digest == root.authority_digest
     assert replay_filesystem.recover_create(replay_root, durable).status is RecoveryStatusV1.FOUND
     replay_filesystem.release_root_authority(replay_root)
+
+    displaced = b42_ext4_root / "hostile data displaced"
+    os.rename(data_path, displaced)
+    data_path.mkdir()
+    replacement_registry = registry()
+    replacement_port = PosixRetainedDirfdPortV1()
+    replacement_filesystem = LocalFilesystemV1(
+        replacement_port, replacement_registry, native_platform="linux"
+    )
+    replacement_root = replacement_filesystem.retain_root_authority(
+        replacement_registry.resolve("data"), replacement_registry.resolve("control")
+    )
+    assert replacement_root.authority_digest != root.authority_digest
+    with pytest.raises(LocalIOErrorV1) as caught:
+        replacement_filesystem.recover_create(replacement_root, durable)
+    assert caught.value.code is LocalIOCodeV1.DESTINATION_INVALID
+    replacement_filesystem.release_root_authority(replacement_root)
     filesystem.release_root_authority(root)

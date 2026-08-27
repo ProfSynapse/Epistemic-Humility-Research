@@ -44,6 +44,7 @@ from .model import (
     checked_sha256,
     checked_size,
     digest_v1,
+    root_authority_digest_v1,
     validate_recovery_result_v1,
 )
 
@@ -218,7 +219,9 @@ class LocalFilesystemV1:
             control = self._port.retain_directory(control_binding.absolute_root)
             if type(control) is not RetainedDirectoryV1 or not _is_directory(control.identity):
                 raise _closed(LocalIOCodeV1.ROOT_CHANGED)
-            if data.identity == control.identity:
+            if (data.identity.device, data.identity.inode) == (
+                control.identity.device, control.identity.inode
+            ):
                 raise _closed(LocalIOCodeV1.ROOT_INVALID)
         except LocalIOErrorV1:
             if control is not None:
@@ -244,22 +247,17 @@ class LocalFilesystemV1:
                 except BaseException:
                     pass
             raise _closed(LocalIOCodeV1.IO_FAILED) from None
-        identity_binding = {
-            "control_binding_digest": control_binding.binding_digest,
-            "control_identity": control.identity.canonical(),
-            "data_binding_digest": data_binding.binding_digest,
-            "data_identity": data.identity.canonical(),
-        }
         self._authority_counter += 1
         authority_ref = f"root-authority-{self._authority_counter}"
-        canonical = identity_binding
         result = LocalRootAuthorityV1(
             authority_ref,
             data_binding,
             control_binding,
             data,
             control,
-            digest_v1(canonical),
+            root_authority_digest_v1(
+                data_binding, control_binding, data.identity, control.identity
+            ),
         )
         self._live_roots[authority_ref] = result
         return result
@@ -292,7 +290,12 @@ class LocalFilesystemV1:
         if type(authority) is not LocalRootAuthorityV1:
             raise _closed(LocalIOCodeV1.AUTHORITY_INVALID)
         # Reconstructing the immutable DTO repeats its structural digest check.
-        if authority.authority_digest != digest_v1(authority.canonical_without_digest()):
+        if authority.authority_digest != root_authority_digest_v1(
+            authority.data_binding,
+            authority.control_binding,
+            authority.data_directory.identity,
+            authority.control_directory.identity,
+        ):
             raise _closed(LocalIOCodeV1.AUTHORITY_INVALID)
         if self._live_roots.get(authority.authority_ref) is not authority:
             raise _closed(LocalIOCodeV1.AUTHORITY_INVALID)
