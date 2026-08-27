@@ -158,6 +158,14 @@ if a merge brings in a duplicate, renumber the later one (rename the file AND it
 git -c core.hooksPath=.githooks commit          # hooks are required
 ```
 
+Pre-commit includes the task-backlog gate: commits touching gated paths
+(papers/, bin/, .skills/, .githooks/, .claude/hooks/, docs/ except
+docs/sessions/) need an active in-progress task covering the file via
+`files:`/`new_files:`/`component:`, minted and claimed with `bin/task`. See
+the `task-backlog` skill for the lifecycle and the gate's exact scope. If the
+gate blocks a legitimate commit, mint a covering task; do not drop hunks or
+use `EHR_TASK_OK=1` without user approval.
+
 Trailer on every commit:
 
 ```
