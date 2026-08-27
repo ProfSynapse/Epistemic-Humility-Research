@@ -23,6 +23,8 @@ generation text).
 """
 from __future__ import annotations
 
+import zlib
+
 import json
 import statistics
 from pathlib import Path
@@ -130,7 +132,8 @@ def fig_d_placebo_census():
         # median line
         ax.plot([median, median], [y - box_h / 2, y + box_h / 2], color=color, lw=2.4, zorder=3)
         # individual seeds, jittered
-        rng = np.random.default_rng(abs(hash(fam)) % (2**32))
+        # zlib.crc32 is stable across processes; Python's str hash is salted
+        rng = np.random.default_rng(zlib.crc32(fam.encode()))
         jitter = rng.uniform(-0.14, 0.14, size=len(deltas))
         ax.scatter(deltas, y + jitter, s=26, color=color, edgecolor="white", linewidth=0.5,
                    zorder=4, alpha=0.9)
