@@ -157,7 +157,7 @@ def fig_d_placebo_census():
             transform=ax.transAxes, fontsize=7.6, color="#555", va="bottom")
 
     fig.tight_layout()
-    fig.savefig(OUT / "fig-p5-07-placebo-census.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p5-09-placebo-census.png", bbox_inches="tight")
     plt.close(fig)
 
     # ---- reproduction audit: recomputed stats must equal the governed
@@ -341,7 +341,7 @@ def fig_e_gemma_depth_ladder():
     fig.tight_layout(rect=(0, 0.16, 1, 1))
     fig.legend(handles_L, labels_L, frameon=False, fontsize=8.0, loc="lower center",
                bbox_to_anchor=(0.5, 0.0), ncol=2)
-    fig.savefig(OUT / "fig-p5-08-gemma-depth-ladder.png", bbox_inches="tight")
+    fig.savefig(OUT / "fig-p5-10-gemma-depth-ladder.png", bbox_inches="tight")
     plt.close(fig)
 
     print("fig_e: reproduction audit PASSED (8-site ladder rates, G1/G3 floors, and effect ratios"
@@ -352,6 +352,6 @@ if __name__ == "__main__":
     fig_d_placebo_census()
     fig_e_gemma_depth_ladder()
     print("figures written to", OUT)
-    for name in ("fig-p5-07-placebo-census.png", "fig-p5-08-gemma-depth-ladder.png"):
+    for name in ("fig-p5-09-placebo-census.png", "fig-p5-10-gemma-depth-ladder.png"):
         p = OUT / name
         print(" -", p.relative_to(ROOT), f"({p.stat().st_size // 1024} KB)")
