@@ -373,7 +373,12 @@ known-correct rows (1.2%).
 
 Every number Section 4.5 reports
 is measured on the held-out split that neither the direction fit nor the
-threshold choice ever saw.
+threshold choice ever saw. Each held-out pool is scored once for its
+registered comparison, and where a pool is revisited the revisit is reported
+as its own experiment against its own gates, never pooled with the first
+read: the wide-instrument re-scores re-read existing generations under a
+second instrument, and the Llama wide-instrument regeneration drew a fresh
+decode of the same operating point.
 
 The raw direction the boundary push is built from is a second mass-mean
 contrast in the same anchor states, which is not the same contrast: the mean
@@ -482,24 +487,6 @@ a no-regression floor. The dial cells in the same section score
 appropriate-revision discrimination instead: the probability of revising given
 an initially wrong answer minus the probability of revising given an initially
 correct one.
-
-**Release** is baseline refusal rate minus the arm's refusal rate on the same
-population, the share of rows an intervention un-refuses. **Induced refusal**
-is its mirror, the arm's refusal rate minus baseline on a population that
-answered at baseline, or the share an intervention muzzles.
-
-**Selectivity gap** is release on known items the model refused despite being
-able to answer them, minus release on unanswerable items it refused. A prompt
-that frees the first group without freeing the second scores high. Section
-4.3's headline is the true prompt's gap minus the permuted prompt's gap.
-
-**Congruence** is per-row agreement between what the policy did and what a
-fresh probe reads from that policy's own pre-generation state on that same row:
-either the probe reads unanswerable, at probability above one half, and the
-model refused, or the probe reads answerable and the model answered. An output
-that violates the schema counts as incongruent. It is the primary outcome of
-the reward experiment in Section 4.4, and it is deliberately not an accuracy
-measure: a policy can abstain well and still score low on it.
 
 **Contribution to selectivity** is the quantity that decides whether the gate
 or the write supplies selectivity at a given operating point. For one arm,
@@ -794,10 +781,17 @@ before generation: when certainty is HIGH, answer directly; when LOW, say "I
 don't know." The true arm used the model's probe-aligned label; the placebo arm
 permuted labels across rows while preserving marginal frequencies.
 
-This high-authority channel moved behavior. On the raw-base Qwen3-4B substrate,
-the true system prompt beat the permuted prompt on the selectivity gap by +18.0
-points, with bootstrap CI [+11.8, +24.7]. It released some known-refused rows
-without inducing unknown-refused rows to answer.
+This high-authority channel moved behavior. Release is baseline refusal rate
+minus the arm's refusal rate on the same population, the share of rows an
+intervention un-refuses; induced refusal is its mirror, the arm's rate minus
+baseline on a population that answered at baseline, the share an intervention
+muzzles. The selectivity gap is release on known items the model refused
+despite being able to answer them, minus release on unanswerable items it
+refused, so a prompt that frees the first group without freeing the second
+scores high. On the raw-base Qwen3-4B substrate, the true system prompt beat
+the permuted prompt on that gap by +18.0 points, with bootstrap CI [+11.8,
++24.7]: it released some known-refused rows without inducing unknown-refused
+rows to answer.
 
 However, this did not yet establish own-state consultation. On that pool, the
 probe label and the gold answerability label agreed on every row, so a
@@ -810,8 +804,9 @@ was +7.9 points.
 Internal-state instrumentation sharpened the picture. The known-unknown
 direction did not move semantically with the prompt; compliance traveled
 primarily through a refusal/policy axis. A divergent-pool follow-up then separated rows where the
-model's own readout and the gold label disagreed. Release congruence with the
-model's own readout was a precise zero: -0.21 points, CI [-4.45, +4.10]. A
+model's own readout and the gold label disagreed. Agreement between release
+behavior and the model's own readout was a precise zero: -0.21 points, CI
+[-4.45, +4.10]. A
 positive-control addendum verified that the instrument was live
 (+50.98 point induced refusal on a refusal-representative stratum). The verdict:
 system prompts move policy by compliance and boundary distance, not by making the
@@ -849,8 +844,14 @@ the TRUE arm, reward agreement was computed from a frozen probe read from the
 policy's own pre-generation state. In the PERMUTED arm, each row's sensor score
 was swapped with another row's from the same gold answerability class (seed
 fixed), preserving the reward's per-class statistics while severing the link
-between the score and the row's own state. The primary held-out metric was congruence between the
-final policy behavior and the arm's own freshly refit eval probe.
+between the score and the row's own state. The primary held-out metric was
+congruence: per-row agreement between what the policy did and what a fresh
+probe reads from that policy's own pre-generation state on the same row,
+either the probe reads unanswerable, at probability above one half, and the
+model refused, or the probe reads answerable and the model answered, with
+schema-violating output counting as incongruent. It is deliberately not an
+accuracy measure: a policy can abstain well and still score low on it. Each
+arm is scored against its own freshly refit eval probe.
 
 The instrument was valid: both arms completed all 2934 scheduled steps, and
 fresh probes on the final checkpoints still read gold at
@@ -1643,8 +1644,10 @@ not population effect-size estimates. Key limits:
   through the hooked module at all across all 25 checked prompts, which
   identifies an earlier answer-window result as an instrumentation artifact
   rather than a causal null; that result is not reported anywhere in this
-  paper. A second, plain-inference harness fired
-  the hook on every decode step and landed the write within 0.2 to 0.4
+  paper.
+
+  A second, plain-inference harness fired the hook on every decode step and
+  landed the write within 0.2 to 0.4
   percent of the commanded magnitude on every position checked before the
   intervention changed the model's own token choice, but its cross-trajectory
   readback stopped isolating the write once the steered and unsteered token
@@ -1673,43 +1676,16 @@ these results, and the geometry of those margins is future work.
 ### 6.5 What the next study has to test
 
 One asymmetry should shape how the next study is designed. The known-unknown
-(answerability) axis this paper's gated write is built on reads at near-ceiling
-accuracy on Qwen3-4B and, in the readout work that established the gate and
-dial pipeline, transfers across four model families at AUROC 0.997 to 0.998
-with no per-family refitting (Rosenbaum, 2026d). Knowledge-awareness directions
-have shown a related portability elsewhere, transferring from a base model's
-own feature dictionary into the chat model's refusal behavior (Ferrando et
-al., 2024). The correctness axis read at the answer token does not carry the
-same portability, even within one model's own training trajectory, and we
-measured that directly in two experiments of our own. The first tracked the
-correctness direction's rotation across a model's own training checkpoints and
-found none of the answerability axis's single-rotation-then-stable pattern:
-cosines of 0.19, 0.45, and 0.33 across the three training transitions, none
-reaching the 0.85 stability the answerability axis shows at the later two.
-Worse, the fitted correctness direction is only weakly pinned down by the data
-in the first place: refitting it on two disjoint halves of one checkpoint's
-own data agrees at 0.17 cosine, next to a readout accuracy that stays flat
-near AUROC 0.80, so at these sample sizes the instrument cannot separate
-genuine rotation from an unidentified direction. The second asked whether a
-shared subspace, rather than a single axis, explains the correctness readout's
-partial transfer between checkpoints, and found at most one weak shared
-direction, with the transferable signal diffuse across the base model's
-activation span rather than concentrated in any small discriminative subspace;
-its own reliability limb turned out to be unreachable for any signal, which
-makes it an instrument-limited null rather than an answer. A third experiment
-built on both and ran the same instruments up a 1.7B/8B/14B ladder of one
-model lineage: correctness-direction identifiability rises monotonically with
-scale at the layer where the dial reads best at each scale (a crystallization
-index climbing from -0.06 through +0.09 to +0.24), but not at fixed relative
-depth, so any sharpening with scale is conditional on per-scale layer choice.
-All three are exploratory results on one lineage, not cross-family claims.
-Together they are a
-reason to expect the two readouts to generalize differently: this paper's
-gated write rides the crisp, portable answerability axis, and any future
-actuation work built on the correctness axis instead should be treated, going
-in, as a separate and probably harder generalization problem rather than
-assumed to inherit the answerability axis's portability. That is a hypothesis
-for the next study to test, not a result it can report.
+(answerability) axis this paper's gated write is built on reads at
+near-ceiling accuracy on Qwen3-4B and transfers across four model families at
+AUROC 0.997 to 0.998 with no per-family refitting (Rosenbaum, 2026d), and
+knowledge-awareness directions show a related portability elsewhere (Ferrando
+et al., 2024). The correctness axis read at the answer token carries none of
+that portability, and three exploratory experiments on one lineage support
+the asymmetry (Appendix A). Any future actuation built on the correctness
+axis should be treated, going in, as a separate and probably harder
+generalization problem rather than assumed to inherit the answerability
+axis's portability.
 
 Any successor should adopt the census's design rule (Section 4.8): placebo
 criteria registered against the family's own measured null distribution, at
@@ -1759,10 +1735,17 @@ Recommended escalation, in order of priority:
    same variable across all of them; it needs an ablation that suppresses key
    and value sharing without breaking the model, which the one built here did
    not manage.
-5. Dense-token screen: separately screen abstract or multilingual token
+5. Measure the commitment margins. The overdrive-versus-mid-band account in
+   Section 6.2 rests on per-row commitment margins that are nowhere measured
+   (Section 6.4). Estimating each row's flip threshold directly, on
+   known-correct and confabulation-prone pools, would turn the
+   operating-point story into a measured distribution and test whether
+   mid-band selectivity is margin separation rather than differential
+   robustness to any perturbation.
+6. Dense-token screen: separately screen abstract or multilingual token
    bundles before any causal hybrid run, as a follow-on to the natural-token
    result in Section 4.7.
-6. Adjacent behavioral axes. An interim pilot on an answer-sycophancy
+7. Adjacent behavioral axes. An interim pilot on an answer-sycophancy
    direction found it readable while its actuator failed to beat a matched
    control. It is not a governed result and carries no evidence here, but the
    pattern it points at, a readable behavioral direction that does not become
