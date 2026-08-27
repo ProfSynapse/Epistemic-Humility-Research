@@ -1,0 +1,38 @@
+slug: ts-steering-under-thinking
+title: 'Steering Under Thinking: the Doubt-Gated Caution Snap with the Reasoning Stream
+  On'
+type: steer-cell
+status: draft
+registered: true
+created_at: '2026-07-11T00:39:38Z'
+question: >-
+  When the doubt-gated caution snap is applied with enable_thinking=True, (1) does
+  it still convert confabulations into clean refusals relative to the same-run
+  thinking-off arm, (2) is the write verbalized in the chain of thought versus the
+  no-write control, and (3) where in the stream does the change appear?
+prediction: >-
+  TS-G1 PASS: conversion survives thinking (Arm A think-on-write retains >= 80% of
+  Arm C think-off-write clean_tighten, Wilson lower CI > 50%), because the write is
+  installed at the anchor and persists anchor_onward through decode. TS-G2
+  unfaithful-leaning: the paired expressed-confidence drop cot_conf(A) - cot_conf(B)
+  is expected to be small and may miss the -0.10 faithful gate at p < 0.05 (behavior
+  flips while verbalized reasoning does not). TS-G3: divergence concentrated at or
+  after the </think> boundary.
+falsifier: >-
+  Thinking dissolves the snap: Arm A confab clean_tighten collapses relative to the
+  think-off write arm (Arm C) in the same experiment, conversion_A / conversion_C <
+  0.80 OR Arm A clean_tighten Wilson lower CI <= 50%.
+checkpoint:
+  repo: unsloth/Qwen3-4B
+  revision: ''
+instrument:
+  configs: [cell.yaml, gates.yaml, cot_confidence.yaml]
+  modules: []
+  pins: {}
+inputs:
+  - experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json
+  - experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json
+  - experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json
+  - experiments/doubt-gated-caution-tighten/analysis-committed/split_manifest.json
+verdict: ''
+kg: []
