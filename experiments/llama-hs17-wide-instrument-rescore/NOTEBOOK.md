@@ -6,6 +6,38 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-26 — DATA-LOSS INCIDENT and user-approved recovery re-run (LAUNCHED)
+
+Incident: after PR #562 merged, the lead removed the experiment's worktree
+with `git worktree remove --force` before the row-level exhaust was staged,
+destroying the sole copy of the gitignored `analysis/` tree (runlogs with
+generation text, scored rows, shard id maps, id salt). Root cause: the
+post-merge harvest hook never fired because main was synced with `git pull
+--rebase` (rebase path fires post-rewrite, which did not exist), and nothing
+guarded the removal. Committed evidence and the published aggregate exhaust
+were unaffected; the resolved verdict is untouched. Structural fix merged as
+PR #564 (post-rewrite harvest hook, scoped fail-closed `--check --worktree`,
+PreToolUse removal guard, pr-workflow HARVEST BEFORE REMOVE step).
+
+Recovery re-run (lab-notebook re-run, NOT an amendment; no gate, verdict, or
+claim can move): user approved the GPU spend in-session 2026-08-26 ("run
+it"). Identical committed harness `run_wide_rescore.py`, identical frozen
+pins (all six sha256 re-verified by CPU smoke in the canonical checkout,
+`source=already-present-in-this-worktree` for eval rows, KU gate fires
+870/1206 exactly as the original generation manifest records), submodule at
+the same commit (6b01834b) as the original run, greedy decoding
+(do_sample=False, no sampling RNG), local RTX 3090, run FROM the canonical
+checkout so the regenerated rows land under main's own gitignored
+`analysis/` tree (no worktree to lose). Pre-registered equivalence bar,
+stated before launch: the re-scored arm1 narrow clean_tighten count must
+reproduce WR-G1's 637/872 exactly and the regenerated arm counts must match
+the committed `generation_manifest.json` (original preserved aside for
+byte-comparison); only if the run is text-equivalent under that bar will the
+surviving blind verdicts (scratchpad pool/graded copies) be re-attributed by
+exact text-join for the row-level dataset. If the bar fails, the re-run is
+recorded as non-equivalent and the row-level dataset is built from fresh
+rows with narrow grades + detector flags only (no reuse of blind verdicts).
+
 ### 2026-08-26 — aggregate exhaust published to HF (user-approved)
 
 `professorsynapse/eh-llama-hs17-wide-instrument-rescore`, revision
