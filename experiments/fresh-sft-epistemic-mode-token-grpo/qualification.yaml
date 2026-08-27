@@ -1,0 +1,104 @@
+schema_version: 1
+experiment: fresh-sft-epistemic-mode-token-grpo
+
+stage_s_config: stage_s.yaml
+dev:
+  path: analysis/dataset/dev.jsonl
+  sha256: dcff3134f22c1f63e000d613591ca0c7d3939970608f4ffd447c4f200af68661
+  rows: 602
+  rows_by_mode: {ABSTAIN: 200, QUALIFY: 200, ANSWER: 202}
+heldout:
+  access: hash_only_outside_qualification_runner
+  path_forbidden_in_runner: analysis/dataset/heldout.jsonl
+
+canonical_scorer:
+  path: experiments/common/knowledge_probe/scoring.py
+  sha256: 1be766d57a8c8b8e99748156c72e3a4b967f768ce81a561e95be2c1636c80948
+
+models:
+  base:
+    repo: unsloth/Qwen3-4B-bnb-4bit
+    revision: cad0bedfdd862093a12af478cb974ab2addd0e0a
+  stage_s:
+    artifact_path: invocation_required
+    special_token_lineage_path: invocation_required
+
+tuner:
+  expected_commit: ef4e45e611e0eef0b935b60eb42ce73d3b5268b1
+  require_clean_worktree: true
+
+generation:
+  public_tuner_verb: batch-generate
+  engine: hf-batched
+  batch_size: 8
+  max_new_tokens: 128
+  min_new_tokens: 1
+  do_sample: false
+  seed: 20260722
+  enable_thinking: false
+  paths:
+  - base_native
+  - stage_s_native
+  - stage_s_forced_each_configured_token
+  persistence: tuner_incremental_jsonl_with_resume
+
+posture_contract:
+  ANSWER:
+    require_nonempty_substantive_answer: true
+    forbidden_phrases_casefold:
+    - "i don't know"
+    - "i do not know"
+    - "not sure"
+    - "not certain"
+    - "uncertain"
+    - "cannot answer"
+    - "can't answer"
+    - "no reliable answer"
+    - "no idea"
+    - "unknown"
+  QUALIFY:
+    exact_shape:
+      prefix: "My best answer is "
+      suffix: ", but I am not certain."
+      require_nonempty_substantive_candidate: true
+  ABSTAIN:
+    exact_answers:
+    - "I don't know reliably."
+
+gates:
+  configured_first_token_rate_min: 0.95
+  valid_json_after_mode_token_rate_min: 0.95
+  exact_required_fields_rate_min: 0.95
+  confidence_parse_and_range_rate_min: 0.95
+  confidence_population_sd_min: 0.05
+  deterministic_forced_token_posture_compliance_min: 0.95
+  visible_special_token_stripping_rate_min: 1.0
+  per_mode_recall:
+    metric: two_sided_95pct_wilson_lower_bound
+    lower_bound_gt: 0.5
+    minimum_successes:
+      n_200: 114
+      n_202: 115
+  max_single_mode_share:
+    numerator_max: 374
+    denominator: 602
+  answer_quality_noninferiority:
+    metric: paired_correctness_difference_stage_s_minus_base
+    ci: two_sided_95pct_paired_percentile_bootstrap
+    seed: 20260722
+    resamples: 10000
+    lower_bound_gt: -0.10
+
+output:
+  root: analysis/qualification
+  prompt_files:
+    base_native: prompts_base_native.jsonl
+    stage_s_native: prompts_stage_s_native.jsonl
+    stage_s_forced: prompts_stage_s_forced.jsonl
+  generation_directories:
+    base_native: generation_base_native
+    stage_s_native: generation_stage_s_native
+    stage_s_forced: generation_stage_s_forced
+  scored_rows: scored_rows.jsonl
+  run_manifest: run_manifest.json
+  summary: summary.json

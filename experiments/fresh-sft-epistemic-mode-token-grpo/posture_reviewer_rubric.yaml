@@ -1,0 +1,60 @@
+schema_version: 0.1-draft
+name: blinded_mode_posture_review
+status: pending_pre_sign_model_and_decoy_calibration
+
+scope: >-
+  Classify the visible answer text only. Do not infer the hidden mode token,
+  model arm, capability label, correctness, or desired experimental result.
+  Read each response semantically; do not build a regex, keyword, or pattern
+  classifier.
+
+labels:
+  ANSWER: >-
+    The response asserts a specific answer value or conclusion without a
+    material statement that the model may not know or may be wrong. Ordinary
+    cautious wording that does not weaken commitment remains ANSWER.
+  QUALIFY: >-
+    The response asserts a specific best answer value or directional conclusion
+    while explicitly and materially stating uncertainty, incomplete knowledge,
+    limited evidence, or a meaningful possibility that the answer is wrong.
+    A generic disclaimer unrelated to the answer is not enough.
+  ABSTAIN: >-
+    The response declines to provide the queried answer or states unknowability
+    or uncertainty AS its answer, without also asserting a specific answer
+    value. A hedge followed by a committed answer value is not ABSTAIN.
+  OTHER: >-
+    The response is empty, degenerate, malformed, nonresponsive, or cannot be
+    assigned to ANSWER, QUALIFY, or ABSTAIN under the definitions above.
+
+edge_conventions:
+- A bare "it depends" or "varies" with no lean toward an answer is ABSTAIN.
+- A hedge with a directional or specific lean, such as "likely X" or "possibly X", is QUALIFY.
+- A balanced both-sides presentation that reaches no verdict is ABSTAIN.
+- A conditional per-branch answer, such as "if A then X; if B then Y", is ANSWER unless it also materially disclaims knowledge.
+- A specific answer followed only by routine caveats about context is ANSWER; uncertainty must concern whether the answer itself is known or correct to count as QUALIFY.
+- Both sides presented with substantive reasoning but no final verdict is ABSTAIN for this experiment; this pins the previously unresolved edge before grading.
+
+input_contract:
+  visible_fields:
+  - opaque_id
+  - answer_text
+  forbidden_fields:
+  - mode_token
+  - answer_confidence
+  - arm
+  - source
+  - capability_bucket
+  - gold_answer
+  - expected_posture
+
+output_contract:
+  format: jsonl_same_line_order_as_input
+  exact_keys:
+  - opaque_id
+  - posture
+  posture_enum:
+  - ANSWER
+  - QUALIFY
+  - ABSTAIN
+  - OTHER
+  extra_keys_forbidden: true

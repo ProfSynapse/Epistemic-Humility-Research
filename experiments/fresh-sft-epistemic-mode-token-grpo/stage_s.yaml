@@ -1,0 +1,76 @@
+schema_version: 1
+experiment: fresh-sft-epistemic-mode-token-grpo
+launch_authorized: false
+
+private_dataset:
+  directory: analysis/dataset
+  aggregate_manifest:
+    file: aggregate_manifest.json
+    sha256: 5a46784252e1746eb700513bff0fdd3cacd144fa536207396575d3f838199a2a
+  splits:
+    train:
+      file: train.jsonl
+      rows: 18197
+      sha256: da473bc05e544cd2cbfc091e9a9f319ed5623fef2ef969ad02a732d307246268
+    dev:
+      file: dev.jsonl
+      rows: 602
+      sha256: dcff3134f22c1f63e000d613591ca0c7d3939970608f4ffd447c4f200af68661
+      stage_s_role: qualification_only
+    heldout:
+      file: heldout.jsonl
+      rows: 1201
+      sha256: 495a908ffd0d1cbc9f09b9ef7994fd6bb683c0d533391117e94d81ada59b7839
+      stage_s_access: forbidden_sealed_for_downstream_experiment
+
+model:
+  repo: unsloth/Qwen3-4B-bnb-4bit
+  revision: cad0bedfdd862093a12af478cb974ab2addd0e0a
+  # The pinned upstream artifact is already a BitsAndBytes 4-bit checkpoint.
+  # Keep that representation explicit in every lane instead of inheriting a
+  # mutable tuner-wide default.
+  load_in_4bit: true
+  dtype: null
+  required_snapshot_files:
+    tokenizer.json: aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4
+    config.json: 131ad2a5941d6b7b6b44838ff5a66b9e9d78c171b56fcaab36024095b54bc1c9
+  tokenizer:
+    additional_special_tokens:
+      - <ANSWER>
+      - <QUALIFY>
+      - <ABSTAIN>
+    existing_token_policy: error
+    initialization: mean_existing_rows
+    train_new_embedding_rows: true
+    train_new_lm_head_rows: true
+    verify_tokenizer_roundtrip: true
+    verify_adapter_roundtrip: true
+    # Full Stage-S keeps the expensive merge smoke off. The bounded Modal smoke
+    # renderer overrides only this field to true.
+    verify_merged_model_roundtrip: false
+    merged_model_save_method: merged_4bit_forced
+
+canonical_output:
+  artifact: adapter_plus_tokenizer
+  exact_base_model_lineage: required
+  configured_token_lineage: required
+  retain_merged_model: false
+  merge_save_reload_role: bounded_smoke_only
+
+modal:
+  input_volume: eh-mode-token-smoke-inputs
+  input_mount: /vol/inputs
+  output_volume: toolset-training-artifacts
+  output_mount: /vol/artifacts
+  cache_volume: toolset-model-cache
+  gpu: A10G
+  # Two-step smoke throughput projected ~3.5 h for ~2,275 optimizer steps;
+  # six hours leaves prospective startup/save variance without changing steps.
+  timeout_hours: 6.0
+
+tuner:
+  expected_commit: ef4e45e611e0eef0b935b60eb42ce73d3b5268b1
+  staging_root: scratch/eh_staging
+  recipe_template: stage_sft_recipe.yaml
+  rendered_recipe_file: stage_sft_recipe.yaml
+  require_clean_worktree: true
