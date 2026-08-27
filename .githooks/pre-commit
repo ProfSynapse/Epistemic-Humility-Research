@@ -30,6 +30,15 @@ if [ -d experiments ]; then
   $PYTHON .agents/skills/experiments/scripts/exp.py regen --check
 fi
 
+# Task-backlog layer: validate every task, confirm the TODO.md generated block
+# is current, and gate any staged work file to an active covering task. Only
+# runs when the backlog/ tree exists.
+if [ -d backlog ]; then
+  $PYTHON .agents/skills/task-backlog/scripts/task.py validate
+  $PYTHON .agents/skills/task-backlog/scripts/build_todo_index.py --check
+  $PYTHON .agents/skills/task-backlog/scripts/check_task_gate.py --staged
+fi
+
 # Typed-graph frontmatter/edge validation across the library.
 # This vault carries many non-fatal KG331 ambiguity warnings; only surface output
 # when it actually fails (non-zero exit = an ERROR), so commits stay quiet.
