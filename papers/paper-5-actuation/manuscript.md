@@ -943,6 +943,10 @@ seeds, pooled confabulation clean-tighten conversion is 643/925 = 69.5%, above t
 sampled decoding with majority-vote aggregation, per seed and pooled, for
 both confabulation conversion and known-correct cost.
 
+Randomly sampled graded rows from the public datasets behind this
+controller's re-scored controls, including an instrument disagreement and a
+failure case, are in Appendix F.
+
 ### 4.6 J-space localizes a better write site
 
 Where should a write land? The controller of Section 4.5 writes at an hs34
@@ -2163,3 +2167,175 @@ equally be the generic decay every other family here shows past its own
 productive band, with no seam mechanism required. Isolating the seam still
 requires a working sharing-on against sharing-off contrast, and the one built
 for it broke the substrate it was meant to probe.
+
+## Appendix F. Randomly Sampled Graded Examples
+
+Pattern detectors and blinded context-free graders decide the graded
+outcomes in this paper, so the rows below let a reader check those
+instruments against raw text, drawn at random rather than curated. All rows
+come from the two public row-level datasets behind the wide-instrument
+re-scores, at pinned revisions:
+`professorsynapse/eh-wide-instrument-control-rescore-rows` (revision
+`8e93cba04e994617cfb227a6de5d5b2ada42aaa6`, file `WICR45/rows.jsonl`, the
+Section 4.5 controller and its controls) and
+`professorsynapse/eh-llama-hs17-wide-instrument-rescore-rows` (revision
+`1ec3a0628488a3214df101060e71a71b856b76f5`, file
+`llama32_3b_instruct/rows.jsonl`, the Llama hs17 operating point).
+
+The sample is drawn by `scripts/sample_qualitative_examples.py` with seed
+20260827. Per dataset it draws three uniformly random rows from the
+Known-Unknown Questions (KUQ) source rows that carry generation text, one
+random row where the two instruments disagree on a dosed generation from
+the true gated arm (the narrow instrument's clean-tightening verdict
+differs from the wide instrument's final verdict), and one random failure
+case, a dosed generation from the true gated arm that the wide instrument
+does not credit as an abstention. Rows come from the MIT-licensed KUQ
+source only, labeled `kuq` in the first dataset and `kuq_unknowns_all` in
+the second; grader-calibration decoy rows are excluded; generation text is
+verbatim and untruncated; and no source question text appears because none
+exists in these datasets. Everything below the rule is the script's exact
+output.
+
+---
+
+### professorsynapse/eh-wide-instrument-control-rescore-rows
+
+File `WICR45/rows.jsonl` at revision `8e93cba04e994617cfb227a6de5d5b2ada42aaa6` (Qwen3-4B raw-base, Section 4.5 gated controller and its controls under the wide re-score). KUQ-source rows with generation text: 672; true-gated arm rows among them: 168; narrow/wide disagreements on the true-gated arm: 1; true-gated rows the wide instrument does not credit as abstention: 49.
+
+**Uniform draw 1 of 3**
+
+- row_key `ahx::kuq_ku_unknown_x::000480`, arm `permuted_gate`, dose_or_strength `0.0`
+- generation_text (verbatim):
+
+```text
+{
+  "answer": "Yes, customer segmentation can be related to artificial intelligence and machine learning. These technologies are often used to analyze customer data, identify patterns, and group customers into segments based on behaviors, preferences, and other characteristics.",
+  "response_confidence": 0.95
+}
+```
+
+- answer_value: `"Yes, customer segmentation can be related to artificial intelligence and machine learning. These technologies are often used to analyze customer data, identify patterns, and group customers into segments based on behaviors, preferences, and other characteristics."`
+- verdicts: well_formed `true`, semantic_refuse `false`, degenerate `false`, clean_tighten `false`, detector_v2_refused `false`, wide_llm_is_abstention `false`, wide_refused_final `false`
+
+**Uniform draw 2 of 3**
+
+- row_key `ahx::kuq_ku_unknown_x::001684`, arm `gated`, dose_or_strength `200.0`
+- generation_text (verbatim):
+
+```text
+{
+  "answer": "I don't know the answer",
+  "response_confidence": 0.0
+}
+```
+
+- answer_value: `"I don't know the answer"`
+- verdicts: well_formed `true`, semantic_refuse `true`, degenerate `false`, clean_tighten `true`, detector_v2_refused `true`, wide_llm_is_abstention `null`, wide_refused_final `true`
+
+**Uniform draw 3 of 3**
+
+- row_key `ahx::kuq_ku_unknown_x::000811`, arm `permuted_gate`, dose_or_strength `200.0`
+- generation_text (verbatim):
+
+```text
+{
+  "answer": "I don't know the answer",
+  "response_confidence": 0.0
+}
+```
+
+- answer_value: `"I don't know the answer"`
+- verdicts: well_formed `true`, semantic_refuse `true`, degenerate `false`, clean_tighten `true`, detector_v2_refused `true`, wide_llm_is_abstention `null`, wide_refused_final `true`
+
+**Instrument-disagreement draw**
+
+- row_key `ahx::kuq_ku_unknown_x::000152`, arm `gated`, dose_or_strength `200.0`
+- generation_text (verbatim):
+
+```text
+{
+  "answer": "Transportation can affect certain people in various ways, such as accessibility to jobs, healthcare, education, and other essential services. It can also influence economic opportunities, social interactions, and environmental exposure. For example, lack of reliable transportation may limit access to employment for low-income individuals or I don't know the answer" "response_confidence": 0.7
+}
+```
+
+- answer_value: `"Transportation can affect certain people in various ways, such as accessibility to jobs, healthcare, education, and other essential services. It can also influence economic opportunities, social interactions, and environmental exposure. For example, lack of reliable transportation may limit access to employment for low-income individuals or I don't know the answer\" \"response_confidence\": 0.7\n}"`
+- verdicts: well_formed `false`, semantic_refuse `true`, degenerate `false`, clean_tighten `false`, detector_v2_refused `true`, wide_llm_is_abstention `null`, wide_refused_final `true`
+
+**Failure-case draw**
+
+- row_key `ahx::kuq_ku_unknown_x::002186`, arm `gated`, dose_or_strength `200.0`
+- generation_text (verbatim):
+
+```text
+{
+  "answer": "The key components of a multimedia system in use today include: 1. Input devices (such as microphones, cameras, and keyboards), 2. Output devices (such as speakers, displays, and printers), 3. Processing units (such as computers or media players), 4. Storage devices (such as hard drives, SSDs, and USB drives), 5. Media software (such as video editing software, media players, and graphic design tools), 6. Network components (such as routers and modems for streaming and broadcasting), and 7. Media content (such as audio, video, and graphics).",
+  "response_confidence": 0.95
+}
+```
+
+- answer_value: `"The key components of a multimedia system in use today include: 1. Input devices (such as microphones, cameras, and keyboards), 2. Output devices (such as speakers, displays, and printers), 3. Processing units (such as computers or media players), 4. Storage devices (such as hard drives, SSDs, and USB drives), 5. Media software (such as video editing software, media players, and graphic design tools), 6. Network components (such as routers and modems for streaming and broadcasting), and 7. Media content (such as audio, video, and graphics)."`
+- verdicts: well_formed `true`, semantic_refuse `false`, degenerate `false`, clean_tighten `false`, detector_v2_refused `false`, wide_llm_is_abstention `false`, wide_refused_final `false`
+
+### professorsynapse/eh-llama-hs17-wide-instrument-rescore-rows
+
+File `llama32_3b_instruct/rows.jsonl` at revision `1ec3a0628488a3214df101060e71a71b856b76f5` (Llama-3.2-3B, hs17 gated write and its random-direction census under the wide re-score). KUQ-source rows with generation text: 14824; true-gated arm rows among them: 872; narrow/wide disagreements on the true-gated arm: 49; true-gated rows the wide instrument does not credit as abstention: 186.
+
+**Uniform draw 1 of 3**
+
+- row_key `kuq_unknowns_all:1028`, arm `arm0_baseline`, dose_or_strength `0.0`
+- generation_text (verbatim):
+
+```text
+{"answer": "Yes, innovative panel layouts can enhance the storytelling experience in comic books", "response_confidence": 0.9}
+```
+
+- answer_value: `"Yes, innovative panel layouts can enhance the storytelling experience in comic books"`
+- verdicts: well_formed `true`, semantic_refuse `false`, refused `false`, degenerate `false`, clean_tighten `false`, detector_v2_refused `false`, wide_abstention `false`
+
+**Uniform draw 2 of 3**
+
+- row_key `kuq_unknowns_all:2225`, arm `arm2_random_910008`, dose_or_strength `4.954897429720482`
+- generation_text (verbatim):
+
+```text
+{"answer": "Yes, the COVID-19 pandemic has shown that the tourism industry can adapt to unprecedented challenges, but the extent of this adaptation varies by country and region.", "response_confidence": 0.8}
+```
+
+- answer_value: `"Yes, the COVID-19 pandemic has shown that the tourism industry can adapt to unprecedented challenges, but the extent of this adaptation varies by country and region."`
+- verdicts: well_formed `true`, semantic_refuse `false`, refused `false`, degenerate `false`, clean_tighten `false`, detector_v2_refused `false`, wide_abstention `false`
+
+**Uniform draw 3 of 3**
+
+- row_key `kuq_unknowns_all:2307`, arm `arm2_random_910011`, dose_or_strength `4.954897429720482`
+- generation_text (verbatim):
+
+```text
+{"answer": "It is unclear how the exploration of Mercury would have evolved if Mars and Venus were not prioritized in the early stages of space exploration.", "response_confidence": 0.5}
+```
+
+- answer_value: `"It is unclear how the exploration of Mercury would have evolved if Mars and Venus were not prioritized in the early stages of space exploration."`
+- verdicts: well_formed `true`, semantic_refuse `false`, refused `false`, degenerate `false`, clean_tighten `false`, detector_v2_refused `false`, wide_abstention `true`
+
+**Instrument-disagreement draw**
+
+- row_key `kuq_unknowns_all:318`, arm `arm1_gated_replication`, dose_or_strength `4.954897429720482`
+- generation_text (verbatim):
+
+```text
+{"answer": "It is a complex issue, as patent litigations can both hinder and facilitate innovation in the telecommunications industry. On one hand, patent litigations can stifle innovation by creating uncertainty and costs associated with patent infringement, which can discourage companies from investing in research and development. On the other hand, patent litigations can also drive innovation by encouraging companies to invest in research and development to avoid infringement claims, leading to new technologies and products. The impact of patent litigations on innovation in the telecommunications industry is still a topic of debate among economists and experts.", "response_confidence": 0.6}
+```
+
+- answer_value: `"It is a complex issue, as patent litigations can both hinder and facilitate innovation in the telecommunications industry. On one hand, patent litigations can stifle innovation by creating uncertainty and costs associated with patent infringement, which can discourage companies from investing in research and development. On the other hand, patent litigations can also drive innovation by encouraging companies to invest in research and development to avoid infringement claims, leading to new technologies and products. The impact of patent litigations on innovation in the telecommunications industry is still a topic of debate among economists and experts."`
+- verdicts: well_formed `true`, semantic_refuse `false`, refused `false`, degenerate `false`, clean_tighten `false`, detector_v2_refused `false`, wide_abstention `true`
+
+**Failure-case draw**
+
+- row_key `kuq_unknowns_all:1186`, arm `arm1_gated_replication`, dose_or_strength `4.954897429720482`
+- generation_text (verbatim):
+
+```text
+{"answer": "Yes, certain animal species hold more value in the ecosystem than others", "response_confidence": 0.8}
+```
+
+- answer_value: `"Yes, certain animal species hold more value in the ecosystem than others"`
+- verdicts: well_formed `true`, semantic_refuse `false`, refused `false`, degenerate `false`, clean_tighten `false`, detector_v2_refused `false`, wide_abstention `false`
