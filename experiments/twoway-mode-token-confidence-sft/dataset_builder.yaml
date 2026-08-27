@@ -1,0 +1,116 @@
+schema_version: 1
+
+# TWO-WAY relabel-in-place builder config (DRAFT, unsigned).
+#
+# Unlike the Stage-S builder (which read the raw 20k probe cache and RAN the
+# component-disjoint split), this successor does NOT re-split. It relabels the
+# already-frozen Stage-S split files in place: same row membership, same sealed
+# held-out, only mode_label + rendered completion change. See AMENDMENT.md sec 3.
+# build_dataset.py must verify every source sha256 below before writing anything.
+
+mode: relabel_in_place
+
+# Frozen Stage-S split artifacts, reused byte-for-byte (verified by sha256).
+# Only train + dev are read for content; heldout is carried forward untouched and
+# never opened by this experiment.
+source:
+  canonical_scorer:
+    path: experiments/common/knowledge_probe/scoring.py
+    sha256: 1be766d57a8c8b8e99748156c72e3a4b967f768ce81a561e95be2c1636c80948
+  frozen_split:
+    directory: experiments/fresh-sft-epistemic-mode-token-grpo/analysis/dataset
+    train:
+      file: train.jsonl
+      sha256: da473bc05e544cd2cbfc091e9a9f319ed5623fef2ef969ad02a732d307246268
+      rows: 18197
+    dev:
+      file: dev.jsonl
+      sha256: dcff3134f22c1f63e000d613591ca0c7d3939970608f4ffd447c4f200af68661
+      rows: 602
+    heldout:
+      file: heldout.jsonl
+      sha256: 495a908ffd0d1cbc9f09b9ef7994fd6bb683c0d533391117e94d81ada59b7839
+      rows: 1201
+      access: forbidden_sealed_carried_forward_untouched
+  # Per-row fields consumed from the frozen split metadata (already computed by
+  # the frozen probe; no rederivation from the raw cache).
+  required_row_fields:
+    - metadata.row_key
+    - metadata.correct_count      # k, 0..32
+    - metadata.n_samples          # 32
+    - metadata.answer_confidence  # (k+0.5)/33, reused unchanged
+    - metadata.mode_label         # original 3-way label (for provenance/audit)
+    - metadata.gold_aliases
+  identity:
+    model_name: unsloth/Qwen3-4B-bnb-4bit
+    n_samples: 32
+
+# TWO-WAY rule: ABSTAIN iff the one-sided 95% Clopper-Pearson upper bound on p is
+# below 0.5 (k<=10, U(10)=0.472140); ANSWER otherwise. answer_min (22) retired.
+labeling:
+  chance_probability: 0.5
+  one_sided_confidence: 0.95
+  clopper_pearson_boundaries:
+    abstain_max_correct: 10       # derived; build_dataset.py re-derives and asserts ==10
+  answer_rule: correct_count_gt_abstain_max   # every non-abstain row is ANSWER
+  # answer_min_correct intentionally absent (no upper class in a 2-way policy).
+  confidence_target:
+    estimator: jeffreys_posterior_mean
+    alpha: 0.5
+    beta: 0.5
+    reused_from_frozen_metadata: true   # (k+0.5)/33 already stored per row
+
+# Relabel source semantics: the only rows whose content changes are the frozen
+# QUALIFY rows (k in 11..21, plus k>=22 greedy-wrong), which become ANSWER. Their
+# supported answer text is recovered verbatim from the fixed Stage-S QUALIFY
+# template (prefix/suffix stripped) - reusing the exact already-teacher-forced,
+# non-fabricated supported answer rather than pulling a fresh gold. Frozen ABSTAIN
+# rows (k<=10) are identical under the 2-way rule (unchanged); frozen ANSWER rows
+# keep their raw gold answer. See AMENDMENT.md sec 3.1.
+relabel:
+  frozen_abstain_maps_to: ABSTAIN
+  frozen_answer_maps_to: ANSWER
+  frozen_qualify_maps_to: ANSWER
+  qualify_source_template:
+    prefix: "My best answer is "
+    suffix: ", but I am not certain."
+  # Integrity: for every frozen row assert (2-way ABSTAIN) == (frozen mode ABSTAIN),
+  # i.e. the frozen ABSTAIN set is exactly k<=10, and assert stored
+  # answer_confidence == (k+0.5)/33.
+  assert_frozen_abstain_equals_k_le_abstain_max: true
+  assert_confidence_matches_jeffreys: true
+
+# Two tokens only. No dead <QUALIFY> in the vocab.
+mode_tokens:
+  ANSWER: <ANSWER>
+  ABSTAIN: <ABSTAIN>
+
+render:
+  system_message: >-
+    You are a helpful assistant. Answer the question concisely. If you do not
+    know the answer, say so.
+  user_message_template: "$question"
+  answer_text_templates:
+    ANSWER: "$gold_answer"
+    ABSTAIN: "I don't know reliably."
+  assistant_output_template: "$mode_token$json_payload"
+  output_json:
+    required_fields:
+      - answer
+      - answer_confidence
+    additional_fields_allowed: false
+
+# No allocation block: membership is inherited from source.frozen_split. The
+# builder asserts each output row stays in its source split and that the union of
+# output row_keys equals the source row_keys per split.
+split_reuse:
+  reassign_forbidden: true
+  assert_membership_identical_to_source: true
+
+output:
+  directory: experiments/twoway-mode-token-confidence-sft/analysis/dataset
+  files:
+    train: train.jsonl
+    dev: dev.jsonl
+    aggregate_manifest: aggregate_manifest.json
+  # heldout intentionally NOT an output; the sealed frozen file is authoritative.

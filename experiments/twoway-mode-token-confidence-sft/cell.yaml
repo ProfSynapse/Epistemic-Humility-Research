@@ -1,0 +1,124 @@
+schema_version: 0.3-draft
+experiment: twoway-mode-token-confidence-sft
+status: pre_sign_review_draft
+# Instrument surface for the two-way native mode-token SFT (DRAFT, unsigned).
+# Adapts fresh-sft-epistemic-mode-token-grpo/cell.yaml to two modes + gated scalar.
+
+surface:
+  starting_model: unsloth/Qwen3-4B-bnb-4bit
+  starting_revision: cad0bedfdd862093a12af478cb974ab2addd0e0a
+  tokenizer_json_sha256: aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4
+  model_config_sha256: 131ad2a5941d6b7b6b44838ff5a66b9e9d78c171b56fcaab36024095b54bc1c9
+  prohibit_project_checkpoint_input: true
+  renderer: qwen3_chat_enable_thinking_false
+  primary_first_assistant_action_constrained_to_modes: false
+  mode_restricted_decode_role: diagnostic_only
+  forced_mode_continuation_role: deterministic_causal_posture_test
+  primary_decode: greedy
+
+mode_tokens:
+  source_of_truth: ordered_strings_plus_pinned_upstream_tokenizer
+  ordered:
+    - name: ANSWER
+      token: <ANSWER>
+      public_semantics: attempt the answer; the confidence scalar carries the hedge
+    - name: ABSTAIN
+      token: <ABSTAIN>
+      public_semantics: say the answer is not known reliably and do not invent one
+  qualify_token_present: false      # deliberately no dead QUALIFY token
+  fixed_token_ids_governed: false
+  realized_ids_recorded_and_roundtrip_verified_at_runtime: true
+  strip_before_visible_output: true
+
+output_contract:
+  prefix: exactly_one_configured_mode_token
+  json_after_prefix:
+    required_fields: [answer, answer_confidence]
+    additional_fields_allowed: false
+  answer_confidence:
+    semantics: estimated_probability_model_can_supply_a_correct_factual_answer
+    target_source: jeffreys_posterior_mean_over_frozen_32_sample_probe
+    formula: (correct_count + 0.5) / 33
+    endpoints_as_sft_targets: forbidden
+    dev_claim: validity_noncollapse_and_calibration   # promoted vs Stage-S
+    heldout_calibration_claim: false
+
+two_way_rule:
+  source: frozen_32_sample_probe_correct_count
+  abstain: correct_count_le_10          # one-sided 95% CP upper bound < 0.5
+  answer: correct_count_ge_11           # everything else attempts
+  answer_min_retired: true
+  high_k_greedy_wrong_rows_route_to: ANSWER
+
+qualify_rendering_rule:                  # PRODUCT LAYER, not trained, not gated
+  trained: false
+  gated: false
+  applies_to: native_ANSWER_responses
+  hedge_confidence_band_lower: 0.35
+  hedge_confidence_band_upper: 0.65
+  provenance: former_qualify_k_band_11_21_mapped_through_jeffreys
+  note: see AMENDMENT.md sec 7
+
+stage_sft:
+  base: original_qwen3_4b_only
+  existing_project_adapter_or_merged_checkpoint: forbidden
+  objective: first_mode_token_plus_visible_response_plus_confidence_cross_entropy
+  trainable_parameters:
+    - lora_adapter
+    - configured_mode_token_embeddings_and_lm_head_rows
+  dataset:
+    builder_config: dataset_builder.yaml
+    builder_module: build_dataset.py
+    build_mode: relabel_in_place_over_frozen_split
+    canonical_normalizer: experiments/common/knowledge_probe/scoring.py
+    split_membership: inherited_from_frozen_stage_s_split
+    projected_allocation:
+      train: {abstain: 9556, answer: 8641}
+      dev: {abstain: 200, answer: 402}
+      heldout: sealed_carried_forward_untouched
+    answer_target: <ANSWER> plus best supported direct answer
+    abstain_target: <ABSTAIN> plus honest idk with no gold answer in completion
+    heldout_gold_answer_in_training: false
+  runtime_config: training.yaml
+  recipe: sft_recipe.yaml
+  tuner_minimum_commit: f6f1229
+
+native_action_channel:
+  implementation: normal_lm_head_full_vocabulary_with_configured_mode_rows
+  primary_choice: unconstrained_full_vocabulary_argmax
+  mode_restricted_decode: diagnostic_only
+  separate_runtime_router: false
+
+arms:
+  base:
+    train: false
+    checkpoint: pinned_original_qwen3_4b
+    role: attempted_row_answer_quality_noninferiority_reference
+  sft:
+    train: true
+
+qualification:
+  split: dev
+  rows: 602
+  per_mode_rows: {abstain: 200, answer: 402}
+  heldout_rows_used_for_training_or_qualification: 0
+  primary_decode: greedy
+  primary_first_token_vocabulary: full_unconstrained_vocabulary
+  required_checks:
+    - native_first_token_validity
+    - exact_json_schema
+    - per_mode_recall_wilson_majority
+    - deterministic_forced_token_posture_contract
+    - anti_collapse
+    - attempted_row_answer_quality_noninferiority_vs_base
+    - abstention_rate_within_band
+    - answer_confidence_validity_and_noncollapse
+    - answer_confidence_calibration
+  graders:
+    correctness: experiments/common/knowledge_probe/scoring.py:is_correct
+    deterministic_forced_token_posture_contract: qualify.py:_posture_ok
+    answer_confidence: qualify.py:_parse_payload
+    calibration: qualify.py:_calibration
+  persistence: incremental_required
+
+launch_authorized: false
