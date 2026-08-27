@@ -93,3 +93,15 @@ cell-of-record block (128 tokens, structured outputs on).
 Next: `bin/exp sign`, then PI launch approval (~4-5 GPU-hours local 3090,
 eval-only). Launch will be recorded here BEFORE the launch verb, per standing
 directive, with the auto-watcher + Monitor armed in the launch turn.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 2 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 13 files / ~0.02 MB, built at repo commit fab3cad6.
+
+- HF repo: `professorsynapse/eh-prompt-vs-training-panel` (dataset)
+- HF revision: `d7e727c10ccc7a12972f61ecf4d2793bc6ed072c`

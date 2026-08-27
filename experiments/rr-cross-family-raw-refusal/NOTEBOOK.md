@@ -365,3 +365,15 @@ falsified, NOT promoted. Scoreboard: both predictions falsified (user's
 both-A on the llama leg; orchestrator's exactly-one-lean-mistral on the
 mistral leg). Outcome section filled in AMENDMENT.md with per-leg numbers,
 both caveats, and the one-sentence verdict.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 2 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 14 files / ~1.23 MB, built at repo commit fab3cad6.
+
+- HF repo: `professorsynapse/eh-rr-cross-family-raw-refusal` (dataset)
+- HF revision: `693652baa775f4e6f78e8216fd20416bd6cdf603`

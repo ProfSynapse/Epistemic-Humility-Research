@@ -64,3 +64,15 @@ in `experiment.yaml`.
   (scripts, `cell.yaml`, `gates.yaml`, committed direction/manifest JSON,
   `analysis-committed/PROVENANCE.md`, the shared render module) is committed on
   branch `exp/doubt-gated-caution-tighten`.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 2 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 13 files / ~0.56 MB, built at repo commit fab3cad6.
+
+- HF repo: `professorsynapse/eh-doubt-gated-caution-tighten` (dataset)
+- HF revision: `21da8c1d8316298b97c72871b635eded5f66bd5e`

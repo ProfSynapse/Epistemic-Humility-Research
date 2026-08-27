@@ -610,3 +610,15 @@ carries forward the m-4-triage note that
 `hs20.auc_neg_z_d_on_fit=0.9928504321683578` is a *different* quantity
 (fit-time Youden-threshold AUC on doubt-snap's own fit split) and must never
 be conflated with this KUQ-population reproduction number.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 2 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 26 files / ~3.71 MB, built at repo commit fab3cad6.
+
+- HF repo: `professorsynapse/eh-margin-evidence-responsiveness-worldknown` (dataset)
+- HF revision: `ce477a4d608482ac807041d78031ba760ad87ff1`

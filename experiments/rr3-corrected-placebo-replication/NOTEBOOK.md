@@ -149,3 +149,15 @@ in `experiment.yaml`.
   predictor calls left as TODO-for-lead. instrument.configs left empty for the lead
   (sign requires it non-empty; detector_v2_patterns.yaml is created at harness
   build). Open questions Q1-Q5 in AMENDMENT.md. Not signed, not pushed, no PR.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 2 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 15 files / ~1.70 MB, built at repo commit fab3cad6.
+
+- HF repo: `professorsynapse/eh-rr3-corrected-placebo-replication` (dataset)
+- HF revision: `9c302e2236dcccb62c35b97a3c56282e6bf72158`

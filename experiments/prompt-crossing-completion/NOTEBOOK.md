@@ -289,3 +289,15 @@ approval per standing rule; verdict text staged in the Outcome.
 
 Resolve executed with explicit PI approval ("Then resolve, merge and edit
 papers"). Verdict as staged in the Outcome; no content changes.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 2 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 13 files / ~0.02 MB, built at repo commit fab3cad6.
+
+- HF repo: `professorsynapse/eh-prompt-crossing-completion` (dataset)
+- HF revision: `7262479c2679c4e1014307d42fcf21e9d37744c4`
