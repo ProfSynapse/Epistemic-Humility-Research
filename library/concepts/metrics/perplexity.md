@@ -2,6 +2,7 @@
 aliases:
 - perplexity
 - PPL
+- language modeling perplexity
 tags:
 - kg/metric
 - concept
@@ -13,10 +14,15 @@ kg:
 area: metrics
 related:
 - '[[2603.05498--spike-sparse-sink-anatomy-massive-activations-attention]]'
+- '[[2607.05355--faithfulness-refusal-causal-audit-neuron-selectors]]'
 relationships:
 - type: measured_by
   target: '[[2603.05498--spike-sparse-sink-anatomy-massive-activations-attention]]'
   target_id: paper:2603.05498
+  confidence: high
+- type: measured_by
+  target: '[[2607.05355--faithfulness-refusal-causal-audit-neuron-selectors]]'
+  target_id: paper:2607.05355
   confidence: high
 ---
 
@@ -30,4 +36,10 @@ gating, short-context-only training) to confirm that interventions which
 suppress massive activations or attention sinks do not come at a meaningful
 cost in language-modeling quality.
 
-**Lineage:** no formal derivation edges recorded in this vault yet.
+**Also used by:** Refusal or abstention interventions can appear behaviorally
+successful while degrading general modeling quality. In Faithfulness to
+Refusal, perplexity is tracked to distinguish targeted safety behavior from
+broad model damage.
+
+**Lineage:** standard language-modeling metric; used as a utility guard in
+[[2607.05355--faithfulness-refusal-causal-audit-neuron-selectors]].

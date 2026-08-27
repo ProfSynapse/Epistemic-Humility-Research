@@ -9,7 +9,29 @@ an idea home, not a signed protocol.
 "Verbalizable Representations Form a Global Workspace in Language Models."
 Gurnee, Sofroniew, Lindsey (Anthropic), 2026-07-06.
 https://transformer-circuits.pub/2026/workspace/index.html
-(Being ingested into the library as `transformer-circuits-2026-workspace`.)
+(Ingested into the library as
+`library/notes/tc-2026-workspace--verbalizable-representations-global-workspace.md`.)
+
+External commentary bundle:
+https://www-cdn.anthropic.com/files/4zrzovbb/website/cc4be2488d65e54a6ed06492f8968398ddc18ebe.pdf
+
+Atomized commentary notes:
+
+- [[tc-2026-workspace-commentary-dehaene-naccache--does-claude-possess-conscious-global-workspace]]
+- [[tc-2026-workspace-commentary-butlin-shiller-plunkett-long--consciousness-cognitive-access-llms]]
+- [[tc-2026-workspace-commentary-nanda--cognitive-space-j-lens-replication]]
+
+Commentary atoms most relevant to this actuation bridge:
+
+- [[cognitive-access]]
+- [[privileged-stream]]
+- [[cognitive-space]]
+- [[interpretative-meta-tokens]]
+- [[j-space-parallels-gnw-but-leaves-ignition-and-autonomy-open]]
+- [[j-space-supports-privileged-set-not-yet-full-workspace]]
+- [[j-lens-approximates-cognitive-space-via-token-jacobians]]
+- [[qwen-j-lens-replication-supports-cross-model-cognitive-space]]
+- [[j-lens-is-auditor-hypothesis-generation-not-verification]]
 
 The J-lens (Jacobian lens) is the average linearized effect of an activation on
 the model's next-token likelihood, averaged over positions and ~1000 prompts. It
