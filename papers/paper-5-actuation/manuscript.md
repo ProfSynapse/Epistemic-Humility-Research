@@ -420,7 +420,7 @@ reading onto the refusing population's mean; and by the displacements of
 Sections 6.3 and 6.6, where the dose is a stated number of sigma.
 
 Doses are chosen on the fit split, never on the rows a result is reported over,
-under a single rule fixed before each run. A ladder of candidate setpoints is
+under a single rule. A ladder of candidate setpoints is
 applied to a small fit-split calibration subset at the candidate site, and a
 rung is usable only if the read-back lands within tolerance on every dosed row,
 no dosed row degenerates, and fit-split confabulation clean tightening clears
@@ -575,7 +575,7 @@ wrote the frozen random direction as an erase-write to that family's own
 certified placebo setpoint, so every seed within a family is a draw at one
 fixed magnitude, and drew fifteen fresh seeds, scored on a fixed 300-row
 paired confabulation subsample through one blinded context-free grading pool.
-The criterion was fixed before the run: a family's placebo sign holds if at
+A family's placebo sign holds if at
 least 80% of its seeds carry that sign, with a bootstrap 95% lower bound above
 0.50 and a median at least 3.0 points in that direction; it is dismissed as
 seed noise if 60% or fewer carry it or if the interquartile range spans zero.
@@ -1012,7 +1012,7 @@ that a readout of what the model is prepared to verbalize is a better one.
 The layer-site advantage is real and direction-stable on raw-base Qwen3-4B,
 but its size cannot be read off a reference site sitting near its own ceiling.
 Two same-model replications on fresh confabulations measure that dependence,
-each with the same success bar registered before the run: the best mid-band
+each against the same success bar: the best mid-band
 site must beat the late reference by at least 10 points on clean tightening.
 
 On a pool drawn from a single source, the late reference site refuses 94.1% of
@@ -1169,7 +1169,7 @@ adversarial audit across six attack surfaces (Appendix A).
 
 #### Llama
 
-Llama carries a direction-specific verified write — at its own
+Llama carries a direction-specific verified write, at its own
 profile-selected mid-band site, not at the read-selected sites the atlas
 ladder dosed. At hs17, relative depth 0.607, the one Llama site that
 clears a held-out abstention floor (Section 6.5), the gated write reaches
@@ -1216,24 +1216,27 @@ site split: the same family, gate, and direction recipe that collapses at
 the read-selected depths verifies cleanly at the family's own mid-band
 write site.
 
-A caution travels with Llama's entry in the placebo census below, and it
-applies well beyond Llama. Read-optimal and actuate-optimal depth are
-separately measured quantities in this paper, and for Llama they are not
-the same site: that census distribution is measured at its read-selected
-site, relative depth 0.714, and it is suppressive there. The write site
-carries its own fifteen-seed null, measured under both instruments
-(Figure 10), and the two distributions do not resemble each other, so
-the read-site distribution should not be quoted as the write site's null.
+Llama's entry in the placebo census below is measured at its read-selected
+site, relative depth 0.714, where random directions are suppressive; the
+hs17 write site carries its own fifteen-seed null, measured under both
+instruments (Figure 10), and the two distributions do not resemble each
+other.
 
 #### Gemma
 
-Gemma-4-E4B carried a reputation as the one family that does not actuate. That
-reputation rested on a narrow base. Every prior write attempt on this substrate
-sat at relative depth 0.81 or deeper, on an architecture whose upper 18 blocks
-read their key and value tensors from two frozen donor blocks rather than
-computing their own, and nothing had ever been written into the shallow half
-of the model. The question is therefore not whether gemma actuates but whether
-it had ever been given the chance.
+Gemma-4-E4B entered this study as the one family in which our own write
+attempts had never actuated. That record rested on a narrow base. As in the
+other families, the first writes went in at the sites the cross-family
+operating range prescribed, and on this substrate every one of those attempts
+sat at relative depth 0.81 or deeper. Rather than record gemma as the odd
+family out, we went into the architecture looking for something that could be
+interfering with the intervention, and found a concrete candidate: the upper
+18 of the model's 42 blocks do not compute their own key and value tensors
+but read them from two frozen donor blocks, the 18/42 KV-cache sharing
+ratio documented for this model (Gemma Team, 2026). Every site we had ever
+dosed sat inside that shared band, and nothing had ever been written into
+the shallow half of the model. The question is therefore not whether gemma
+actuates but whether it had ever been given the chance.
 
 A depth ladder on the unmodified model, key-value sharing left on, answers the
 coverage question. Actuation is present, shallow, and uneven. At relative
@@ -1242,8 +1245,8 @@ behavioral gates with the widest margin measured on this family, 78.6% clean
 tightening (Wilson 95% CI [71.8, 84.1]) against a 1.1% known-correct
 false-refusal cost. Behavioral gates pass at four of the eight depths tested,
 and the two deepest sites in the cross-family operating range never reach a
-usable dose at all. Gemma's reputation as the one family that does not actuate
-was built entirely on sites deeper than any of these. The per-site ladder is in
+usable dose at all. Every one of our earlier null results on this family came
+from sites deeper than any of these. The per-site ladder is in
 Appendix F.
 
 Direction-specificity is where that picture stops. Neither above-seam site that
@@ -1257,6 +1260,14 @@ coverage question closed and the mechanism question open: across gemma's whole
 above-seam band relative depth and sharing status are the same variable, so no
 result there can say which of the two produced the falloff, and the control
 built to separate them broke the substrate it was meant to probe (Appendix F).
+
+Read alongside the Llama split above, gemma is not the odd family out; it is
+the second family in a row whose apparent failure dissolved once the site
+search respected the family's own structure. Each architecture carries its
+own eccentricities, and the framework absorbs them the same way each time:
+profile the substrate, pick sites against that profile, and let the gates
+adjudicate. What that discipline has so far recovered on gemma is behavioral
+actuation; direction-specificity remains the open question there.
 
 #### The placebo picture
 
@@ -1273,7 +1284,7 @@ like zero.
 The stronger measurement is the shape of the random-direction null itself: a
 census of fifteen fresh random seeds per family, each written at that family's
 own certified placebo setpoint and scored on a fixed paired confabulation
-subsample, against a sign criterion fixed before the run (Section 3.7).
+subsample, against the sign criterion of Section 3.7.
 
 None of the three families is behaviorally inert under a matched-magnitude
 random write, and the signs disagree. Qwen suppresses hedging, robustly: 14 of
@@ -1295,12 +1306,6 @@ suppresses confabulation hedging (median -6.0 points, 14 of 15 seeds
 negative), Llama suppresses it despite having been run as a null control
 (median -7.67, 12 of 15), and Mistral recruits it (median +7.0, 12 of 15
 positive, exactly the 80% boundary).
-
-A caution travels with that picture on the Mistral side. Mistral's verdict is
-a boundary verdict: its margin over an indeterminate call is a single seed, its
-three weakest positive seeds (+1.0, +1.33, +1.67) are individually within
-paired noise, and the result is sensitive to the mined-idiom vocabulary the
-widened detector uses.
 
 That random writes move abstention at all has a mechanical explanation and a
 methodological consequence. Abstention is causally reachable at matched
@@ -1568,6 +1573,17 @@ not population effect-size estimates. Key limits:
   constant. The fifteen-seed census in Section 4.8 measures those
   distributions directly, so the caution stands while the nulls themselves are
   now measured;
+- a family's placebo null belongs to the site it was measured at.
+  Read-optimal and actuate-optimal depth are separately measured quantities,
+  and on Llama they are different sites: the census distribution at its
+  read-selected site (relative depth 0.714) is suppressive while the hs17
+  write site's fifteen-seed null (Figure 10) is not, and the two do not
+  resemble each other, so a read-site distribution must never be quoted as a
+  write site's null;
+- Mistral's placebo-sign verdict is a boundary verdict: its margin over an
+  indeterminate call is a single seed, its three weakest positive seeds
+  (+1.0, +1.33, +1.67) are individually within paired noise, and the verdict
+  is sensitive to the mined-idiom vocabulary the widened detector uses;
 - every direction in this paper is fit once, statically, on single-turn rows,
   and applied without re-estimation. Linear representations are not guaranteed
   to be stable under that assumption: factuality directions have been shown to
@@ -1756,7 +1772,7 @@ axis, rather than removing it, lands in nearly the same place.
 What that supports is narrow, in two directions. The size of the release does
 not carry across seeds of the same recipe. The prediction here was
 that ablation would leave post-ablation over-refusal at or below 0.10; it
-landed at 0.553, past the pre-registered failure threshold, and a much
+landed at 0.553, past the failure threshold, and a much
 larger collapse recorded on a different seed of this recipe is accordingly
 treated as specific to that seed. Read the direction of the effect as durable
 and its magnitude as unsettled. And the intervention is not this paper's
@@ -1825,14 +1841,14 @@ direction-specificity test fails on two of the four families here, and
 matched-magnitude random directions move abstention in every family measured.
 The claims are scoped to what the controls establish: the sign-opposition
 argument belongs to the mid-band point where the null is measured as a
-distribution and is no part of the recipe — at the raw-base late site the
+distribution and is no part of the recipe: at the raw-base late site the
 random null has no consistent sign, and the specificity claim there rests on
-the 4.83 distributional ratio alone — and the recipe is not Qwen-only, since
+the 4.83 distributional ratio alone. And the recipe is not Qwen-only, since
 Llama's own mid-band site verifies at 9.34 over fifteen seeds. What remains
 open is Mistral: if an operating point with a small or stable nonspecific
 response still fails the ratio test, and gemma's seam ablation never yields a
 clean site, the recipe reading narrows to families whose site search finds a
-specific write — two of four so far. That is the test the next study should
+specific write, two of four so far. That is the test the next study should
 try to fail.
 
 ---
@@ -1852,6 +1868,7 @@ whenever a section it supports is revised.)
 - Damani et al. (2025). Beyond Binary Rewards: Training LMs to Reason About Their Uncertainty. arXiv:2507.16806.
 - Dang and Ngo (2026). Selective Steering: Norm-Preserving Control Through Discriminative Layer Selection. arXiv:2601.19375.
 - Ferrando et al. (2024). Do I Know This Entity? Knowledge Awareness and Hallucinations in Language Models. arXiv:2411.14257.
+- Gemma Team (2026). Gemma 4 Technical Report. arXiv:2607.02770.
 - Gurnee et al. (2026). Verbalizable Representations Form a Global Workspace in Language Models. arXiv:2607.15495. Transformer Circuits. https://transformer-circuits.pub/2026/workspace/index.html.
 - Joad et al. (2026). There Is More to Refusal in Large Language Models than a Single Direction. arXiv:2602.02132.
 - Joshi et al. (2017). TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension. arXiv:1705.03551.
@@ -2064,7 +2081,7 @@ gap between prediction and result without consulting the text.
   per-family measured null distribution the census supplies at fifteen seeds
   (Section 4.8), for example via a percentile-based tolerance or a
   sign-opposition criterion, not a flat symmetric tolerance and not a single
-  seed — and not a sign taken from one draw: the raw-base late-site null has
+  seed, and not a sign taken from one draw: the raw-base late-site null has
   no consistent sign while its individual draws land signed. The
   per-family wide-instrument baselines (qwen 0.104, Llama 0.164,
   Mistral 0.280) still anchor the recruitment-versus-suppression axis.
@@ -2135,8 +2152,8 @@ before any write is applied, taking known-correct rows from perfectly
 well-formed to entirely malformed and raising per-token negative
 log-likelihood on the reference completions from 3.53 to 12.33 (Appendix A).
 A parallel calibration sweep at the original above-seam site found no usable
-dose in either sharing condition, so the deep-site null that gave gemma its
-reputation reproduced unchanged alongside the new shallow-band result.
+dose in either sharing condition, so the original deep-site null reproduced
+unchanged alongside the new shallow-band result.
 
 That leaves the coverage question closed and the mechanism question open, for
 a structural reason rather than a want of data. Every site of the cross-family

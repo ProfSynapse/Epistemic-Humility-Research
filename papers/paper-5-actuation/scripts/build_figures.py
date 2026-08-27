@@ -283,7 +283,7 @@ def fig4_dose_response():
     ax.set_xticks(doses)
     lines1, labels1 = ax.get_legend_handles_labels()
     lines2, labels2 = axT.get_legend_handles_labels()
-    ax.legend(lines1 + lines2, labels1 + labels2, frameon=False, fontsize=8.3, loc="center left")
+    ax.legend(lines1 + lines2, labels1 + labels2, frameon=False, fontsize=8.3, loc="upper left")
     ax.set_title(f"Dose response at the primary write site (L34 / hs34, Qwen3-4B)\n"
                  f"FIT calibration sweep, pilot scale: n={n_confab} confab / n={n_known} known-correct rows per dose point",
                  fontsize=11, pad=12)
