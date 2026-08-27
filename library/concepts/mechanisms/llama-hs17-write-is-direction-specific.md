@@ -18,6 +18,7 @@ related:
 - '[[j-space-cross-family-layer-contrast]]'
 - '[[caution-encoding-read-actuate-dissociation-across-families]]'
 - '[[known-unknown-direction]]'
+- '[[llama-hs17-direction-specificity-survives-wide-instrument]]'
 relationships:
 - type: derived_from
   target: '[[j-space-cross-family-layer-contrast]]'
@@ -48,6 +49,14 @@ relationships:
   target: '[[known-unknown-direction]]'
   target_id: term:known-unknown-direction
   confidence: medium
+- type: related_to
+  target: '[[llama-hs17-direction-specificity-survives-wide-instrument]]'
+  target_id: mechanism:llama-hs17-direction-specificity-survives-wide-instrument
+  confidence: high
+  evidence:
+  - experiments/llama-hs17-wide-instrument-rescore/AMENDMENT.md#outcome
+    (extends this narrow-instrument finding to the wide two-instrument
+    stack; resolved 2026-08-26)
 ---
 
 Llama's hs17 mid-band write, the family's only write ever to clear a

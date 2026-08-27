@@ -269,6 +269,16 @@ in every generation-surface delegation prompt.
 - `pr-workflow`: standing discipline for branches, worktrees, commits, and PR
   merges; read before spawning a file-writing subagent, committing
   housekeeping docs, or merging PRs.
+- `task-backlog`: the repo's work-tracking system. One markdown file per task
+  under `backlog/{tasks,drafts,completed}`, all operations through `bin/task`
+  (new/list/show/claim/release/review/done/validate). TODO.md's task table is
+  GENERATED from these files; a pre-commit gate refuses commits to gated paths
+  (papers/, bin/, .skills/, .githooks/, .claude/hooks/, docs/ except
+  docs/sessions/) unless an active in-progress task covers the file, and a
+  task bound to a terminal experiment fails validation until closed. Read this
+  skill before minting, claiming, or closing a task, or when the commit gate
+  blocks you; never hand-edit TODO.md's generated block or use the
+  `EHR_TASK_OK=1` escape hatch without user approval.
 - `experiment-wrapup`: the mechanical downstream half of a resolve, run AFTER
   the lead has adjudicated the verdict/falsifier/scores - write the AMENDMENT
   Outcome, `bin/exp resolve`, update the family-layer-map and

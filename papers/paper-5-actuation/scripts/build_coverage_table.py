@@ -110,6 +110,7 @@ SECTION_MAP: dict[str, str] = {
     "llama-atlas-gated-wide-instrument-retest": "4.8",  # content in the cross-family spectrum paragraph
     "wide-instrument-control-rescore": "4.8, 6.4",  # wide re-score of the 6.4 controls; 4.8 qwen sign-opposition at the raw-base point
     "llama-hs17-direction-specificity": "4.8, 6.5",  # llama mid-band write verified direction-specific; updates escalation items 1 and 4
+    "llama-hs17-wide-instrument-rescore": "4.8, 6.5",  # wide-instrument regeneration of the hs17 operating point
     "qwen3-4b-l34-placebo-seed-census": "4.8, 6.4, 7",  # late-site 15-seed census: distributional specificity PASS, sign-consistency FAIL
     "rr2-mistral-adjudicated-refusal-confirm": "4.8, 6.5",
     "abstention-wide-instrument-calibration": "4.8, 6.5",
@@ -119,8 +120,8 @@ SECTION_MAP: dict[str, str] = {
     "margin-evidence-responsiveness-worldknown": "4.6, 6.4",  # backtick @592, @1269
     "evidence-response-direction-search": "NOT NARRATED IN BODY (front matter + Appendix A only; "
     "no flagged open-work item, unlike doubt-regulated-caution)",
-    "gemma4-e4b-kv-seam-quarantine": "4.8, Appendix F",
-    "gemma4-e4b-pocket-ladder": "4.8, Appendix F",
+    "gemma4-e4b-kv-seam-quarantine": "4.8, Appendix E",
+    "gemma4-e4b-pocket-ladder": "4.8, Appendix E",
     # New Appendix A rows from the 2026-08-17 restructure:
     "jlens-trained-checkpoint-midband-ablation": "6.4 (limits bullet only; body narration cut per PI ruling 2026-08-20 -- Appendix A carries the numbers)",
     "correctness-direction-rotation": "6.5",

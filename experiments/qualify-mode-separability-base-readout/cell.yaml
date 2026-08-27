@@ -1,0 +1,124 @@
+schema_version: 1
+seed: 20260723            # diagnostic draw/analysis seed (fixed; recorded for reproducibility)
+
+# --- CPU-only, hard gate --------------------------------------------------
+compute:
+  device: cpu
+  cuda_forbidden: true    # the 3090 is occupied by a signed experiment; nothing loads onto CUDA
+  # Verified at design time: torch.cuda.is_available() == True on this host, but
+  # CUDA_VISIBLE_DEVICES="" is set explicitly by every script entry point so no
+  # tensor or model ever touches the GPU, regardless of host visibility.
+
+# --- model under test (matches the target experiment's Stage-S starting point)
+model:
+  hub_repo: unsloth/Qwen3-4B-bnb-4bit
+  revision: cad0bedfdd862093a12af478cb974ab2addd0e0a   # same pin as fresh-sft-epistemic-mode-token-grpo AMENDMENT.md sec 2
+  # Loads on CPU via transformers' generic bitsandbytes dequant path (no CUDA
+  # gemm_4bit kernel available; falls back to a torch dequant forward). Verified
+  # at design time: exact pinned revision loads and produces hidden_states on
+  # CPU without CUDA. No substrate substitution needed.
+  num_hidden_layers: 36    # from loaded config
+  n_hidden_states: 37      # hidden_states tuple length (embedding output + 36 blocks)
+  hidden_size: 2560
+  enable_thinking: false   # matches Stage-S render (fresh-sft-epistemic-mode-token-grpo AMENDMENT.md sec 6/qualify_stage_s.py)
+
+# --- extraction anchor -----------------------------------------------------
+extraction:
+  anchor: last_prompt_token   # pre-generation; index -1 of the rendered prompt (chat template, add_generation_prompt=True)
+  depths_fraction: [0.25, 0.50, 0.75, 0.95]
+  depths_hidden_state_index: [9, 18, 27, 34]   # round(fraction * num_hidden_layers), computed at design time
+  batch_size: 1
+  dtype_readout: float32       # hidden states cast to fp32 before persisting/fitting
+
+# --- data (inputs; heldout is named ONLY to state it is forbidden) --------
+dataset:
+  builder_manifest: ../fresh-sft-epistemic-mode-token-grpo/analysis/dataset/aggregate_manifest.json
+  train:
+    path: ../fresh-sft-epistemic-mode-token-grpo/analysis/dataset/train.jsonl
+    sha256: da473bc05e544cd2cbfc091e9a9f319ed5623fef2ef969ad02a732d307246268
+    rows: 18197
+    mode_counts: {ABSTAIN: 9556, ANSWER: 7704, QUALIFY: 937}
+  dev:
+    path: ../fresh-sft-epistemic-mode-token-grpo/analysis/dataset/dev.jsonl
+    sha256: dcff3134f22c1f63e000d613591ca0c7d3939970608f4ffd447c4f200af68661
+    rows: 602
+    mode_counts: {ABSTAIN: 200, ANSWER: 202, QUALIFY: 200}
+  heldout:
+    path_forbidden: ../fresh-sft-epistemic-mode-token-grpo/analysis/dataset/heldout.jsonl
+    access: sealed_never_read
+    # No script in this experiment opens this path. A guard in extract_hidden_states.py
+    # refuses to run if any resolved input path contains "heldout".
+  row_schema:
+    conversations: "[system, user, assistant] chat turns; assistant turn holds the mode token + JSON"
+    metadata.mode_label: "ABSTAIN | QUALIFY | ANSWER (ground truth, three-way rule)"
+    metadata.correct_count: "k, integer 0..32 (frozen 32-sample probe correct count)"
+    metadata.n_samples: 32
+    metadata.row_key: "unique row id, used as the resume key"
+
+# --- three-way band rule (frozen, from fresh-sft-epistemic-mode-token-grpo AMENDMENT.md sec 3.1)
+band_rule:
+  n_samples: 32
+  abstain_max_correct: 10      # k <= 10 -> ABSTAIN
+  qualify_band: [11, 21]       # 11 <= k <= 21 -> QUALIFY (band interior; also k>=22 with wrong greedy, not modeled here)
+  answer_min_correct: 22       # k >= 22 (and greedy correct) -> ANSWER
+  # Known approximation (flagged, non-blocking): the exact rule also routes
+  # k>=22-but-greedy-wrong rows (53 of them program-wide) to QUALIFY. This
+  # diagnostic's k-only banded threshold does not model that small carve-out;
+  # it is a k-regression readout question, not a reproduction of the full rule.
+
+# --- fit population: matched 3-way sample from TRAIN, evaluate on full DEV -
+fit_population:
+  train_source: train
+  qualify: all              # all 937 QUALIFY train rows
+  abstain_matched: 937       # random draw, no replacement, seed below
+  answer_matched: 937        # random draw, no replacement, seed below
+  match_seed: 20260723
+  total_fit_rows: 2811
+  eval_source: dev
+  eval_rows: 602             # full dev split, natural 200/200/202 imbalance, no sampling
+
+# --- readout models (three comparisons at each of the four depths) --------
+readouts:
+  common_preprocessing:
+    pca_components: 128       # AL/H9/BB recipe convention (radial-anti-propensity-steering AMENDMENT.md sec 3.2)
+    pca_svd_solver: randomized
+    pca_random_state: 20260705   # AL's random_state, recipe-parity convention, not object reuse
+    standardize: true            # zero-mean unit-variance on PCA components, fit on fit_population only
+  a_k_regression:
+    model: ridge
+    alpha: 10.0                  # fixed, not tuned; 2811 rows / 128 components, modest L2 for stability
+    target: metadata.correct_count   # k, 0..32
+  b_multinomial_3way:
+    model: multinomial_logistic
+    solver: lbfgs
+    max_iter: 2000
+    class_weight: null            # fit population already class-balanced 937/937/937 by construction
+  c_naive_qualify_vs_rest:
+    model: binary_logistic
+    solver: lbfgs
+    max_iter: 2000
+    class_weight: balanced        # fit population is 937 QUALIFY vs 1874 rest (2x imbalance) unlike (a)/(b)
+    positive_class: QUALIFY
+
+# --- scoring: banded AUROC construction (pre-stated, applies to a AND b) ---
+scoring:
+  bootstrap_resamples: 1000
+  bootstrap_ci: 0.95
+  bootstrap_seed: 20260723
+  qualify_vs_rest_score_from_regression: "-abs(predicted_k - 16.0)"   # band-center distance; higher = more QUALIFY-like
+  abstain_vs_rest_score_from_regression: "-predicted_k"
+  answer_vs_rest_score_from_regression: "predicted_k"
+  qualify_vs_rest_score_from_multinomial: "predicted_proba[QUALIFY]"
+  qualify_vs_rest_score_from_naive: "predicted_proba[QUALIFY]"
+  banded_classification_thresholds: {abstain_max: 10, qualify_max: 21}   # applied to (a)'s predicted_k only
+
+# --- determinism check (mechanical, mirrors BB-FID-1) ----------------------
+determinism_check:
+  refit_at: "best-performing depth by primary QUALIFY AUROC (post-hoc index, not a knob)"
+  cosine_min: 0.999999
+  maxabs_diff_max: 1.0e-5
+
+output:
+  extraction_index: analysis/extraction/index.jsonl          # gitignored; row_key/split/mode_label/k/depths-written
+  extraction_features_dir: analysis/extraction/features      # gitignored; per-depth binary feature shards
+  fit_report_out: analysis-committed/fit_report.json          # aggregate metrics only, no row text, no raw vectors

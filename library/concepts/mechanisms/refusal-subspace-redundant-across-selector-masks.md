@@ -13,7 +13,7 @@ kg:
   status: canonical
 cause: "Multiple attribution selectors identify largely disjoint neuron-row sets for refusal behavior"
 effect: "Different row masks can nevertheless install similar refusal behavior, implying a redundant refusal subspace rather than a unique minimal mechanism"
-polarity: mixed
+polarity: explains
 area: mechanistic-interpretability
 related:
 - '[[2607.05355--faithfulness-refusal-causal-audit-neuron-selectors]]'

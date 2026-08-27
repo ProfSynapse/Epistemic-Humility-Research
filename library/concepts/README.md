@@ -372,7 +372,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[parallelism-score]] : The Parallelism Score (PS) is the average cosine similarity between linear decoder vectors (coding directions) for the same rule dichotomy m
 - [[pass-at-k]] : A sampling-based evaluation metric that measures the probability of generating at least one correct solution within k independent attempts f
 - [[pass-k]] : Not to be confused with pass-at-k (Pass@k), which requires at least one of k
-- [[perplexity]] : Perplexity is the exponentiated average negative log-likelihood that a language model assigns to held-out text. Lower perplexity indicates t
+- [[perplexity]] : Perplexity is the exponentiated average negative log-likelihood a language
 - [[phi-coefficient-cooccurrence]] : The phi (phi) coefficient measures co-occurrence of two binary SAE latent firing
 - [[pr-auc-claim-filtering]] : Area under the precision-recall curve for the binary task of distinguishing factually correct from incorrect atomic claims using a continuou
 - [[prediction-depth]] : Prediction depth is the number of transformer layers required before a model's
@@ -529,7 +529,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[siqa]] : A multiple-choice commonsense reasoning benchmark (Sap et al. 2019) focused on reasoning about people's actions and social implications, cov
 - [[smoltalk]] : SmolTalk is an instruction-labeled dialog dataset released under the Apache 2.0 license as part of the SmolLM2 model family (Allal et al. 20
 - [[socialmaze]] : SocialMaze is a benchmark of social cognition and reasoning. Xu et al. use it as one of three source benchmarks withheld entirely from train
-- [[sorrybench]] : SorryBench is a fine-grained safety-refusal benchmark that organizes unsafe requests into a detailed taxonomy of topics and instruction styl
+- [[sorrybench]] : SorryBench is a fine-grained safety-refusal benchmark that organizes unsafe
 - [[squad]] : A reading comprehension dataset of crowdsourced QA pairs over Wikipedia articles (Rajpurkar et al. 2016). In abstention fine-tuning experime
 - [[strategyqa]] : A yes/no QA benchmark requiring implicit multi-hop reasoning strategies that are not explicitly stated in the question. Questions are design
 - [[superglue]] : SuperGLUE is a natural-language-understanding benchmark suite covering tasks such as textual entailment, commonsense reasoning, and question
@@ -842,7 +842,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (583)
+## Mechanisms (cause -> effect) (584)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -929,7 +929,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[context-reintroduction-degrades-distilled-student]] : Training a context-free student to internalize privileged context via standard on-policy-distillation (optimizing only privileged fidelity), then reintroducing 
 - [[contract-elicited-base-refusal-direction-is-distinct-from-trained-refusal-axis]] : Fitting a refusal direction on the raw, untrained Qwen3-4B base under the response-confidence contract (P-rc, the one prompt condition where the base over-refus
 - [[contrastive-activation-addition-steers-alignment-behaviors]] : A contrastive-activation-addition vector is computed from contrasting behavior examples. **enables** Alignment-relevant behaviors shift during evaluation or gen
-- [[contrastive-row-masks-install-refusal]] : A contrastive-refusal-mask selects attribution-ranked rows from harmful-vs-benign refusal contrasts and masks them in an instruction-tuned model **positive** Th
+- [[contrastive-row-masks-install-refusal]] : A contrastive-refusal-mask selects attribution-ranked rows from harmful-vs-benign refusal contrasts and masks them in an instruction-tuned model **increases** T
 - [[conversational-role-cue-flips-factuality-representation]] : A model engaging in a multi-turn conversation that cues a role incompatible with standard factuality (e.g., asserting opposite-day answers, roleplaying as a dei
 - [[correctness-direction-weakly-identified-defeats-cosine-rotation-probe]] : Fitting a per-stage logistic-regression correctness (correct-vs-wrong) direction in a shared raw-basis PCA-128 subspace at each of four training stages (raw bas
 - [[correctness-identifiability-sharpens-with-scale-under-adaptive-layer-choice]] : On the identical-pool Amendment-X raw-instruct-base ladder (Qwen3 1.7B/8B/14B, matched-n N*=377/377 correct/wrong), correctness-direction identifiability (the c
@@ -1119,6 +1119,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[listener-aware-dpo-improves-ood-truthfulness]] : LACIE DPO finetuning on TriviaQA with listener-acceptance signal **enables** TruthfulQA truthfulness rises from 0.27 to 0.55 (+28 points absolute) at a 9-point 
 - [[listener-aware-preference-induces-emergent-abstention]] : DPO preference function with conservative utility ordering (false rejection preferred over false acceptance) applied to answer-only training data with no absten
 - [[llama-atlas-site-write-collapses-format-before-refusal-floor]] : The doubt-gated caution write applied at Llama-3.2-3B-Instruct's own atlas-located workspace-band sites (hidden states hs20/hs22/hs23, sigma-relative dose grid 
+- [[llama-hs17-direction-specificity-survives-wide-instrument]] : On raw-base Llama-3.2-3B-Instruct, the frozen KU-gated `c_hat` write at the mid-band site hs17 (dose 4.9549) and its fifteen matched-dose random-direction contr
 - [[llama-hs17-write-is-direction-specific]] : On raw-base Llama-3.2-3B-Instruct, the frozen KU-gated `c_hat` write at the mid-band site hs17 (relative depth 0.607, dose 4.9549) is replicated under a fresh d
 - [[llm-rationale-misleads-human-judgment]] : Exposure to LLM-generated rationales about whether a question is known or unknown **decreases** Human accuracy on known-vs-unknown perception drops when the rat
 - [[logarithmic-scoring-rl-calibrates-direct-confidence]] : Fine-tuning a model with an RL reward derived from a logarithmic scoring rule over the model's stated confidence and answer correctness **enables** The model is
@@ -1233,7 +1234,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[pstruct-stated-confidence-miscalibrated-near-chance]] : Scoring the stated_confidence field emitted under the structure-only P-struct prompt contract (JSON schema present, no abstention affordance in the prompt) agai
 - [[question-difficulty-alone-predicts-llm-confidence]] : Training the auxiliary calibrator on the question text only, with the LLM's generated answer omitted. **enables** The calibrator already attains respectable cal
 - [[question-familiarity-draws-confabulation-at-matched-doubt]] : Higher surface familiarity of an unanswerable question (corpus-internal token frequency and neighbor proxies), with internal doubt level held fixed by caution-d
-- [[qwen-j-lens-replication-supports-cross-model-cognitive-space]] : Nanda, Blank, and Bhatia implemented J-lens on Qwen 3.6 27B using 25 Pile prompts and penultimate-layer Jacobians **supports** they report partial replication o
+- [[qwen-j-lens-replication-supports-cross-model-cognitive-space]] : Nanda, Blank, and Bhatia implemented J-lens on Qwen 3.6 27B using 25 Pile prompts and penultimate-layer Jacobians **increases** they report partial replication 
 - [[qwen-l34-random-direction-sign-is-a-draw-level-accident]] : Fifteen fresh matched-dose random unit directions (seeds 920001-920015) are applied at the same site (hs34), dose (200.0), rows, and instrument as the historica
 - [[qwen-l34-random-direction-specificity-survives-seed-census]] : On raw-base Qwen3-4B at the late write site hs34 (dose 200.0), the frozen gated confab-tightening lift (+62.7pp, 137/185 vs undosed 21/185) is contrasted agains
 - [[qwen-midband-commitment-margins-miss-separation-floor]] : In the margin-mapping experiment (M1), per-row commitment margins (the minimum ladder dose along the frozen Qwen3.5-4B hs20 c_hat direction, reference dose_abs 
@@ -1252,7 +1253,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[random-direction-placebo-response-is-family-specific-in-sign]] : A magnitude-matched random_direction write (the registered placebo, same anchor and dose family as the real doubt-gated caution write) is applied to the confab 
 - [[random-direction-steering-breaks-alignment-safeguards]] : Adding a random, semantically empty direction vector to the residual stream via activation-steering, with no targeting of any refusal-related structure **enable
 - [[random-layer-ift-enables-layer-agnostic-introspection]] : Sampling the perturbation layer during introspection-fine-tuning instead of always injecting at one fixed layer. **enables** Better average sentence-localizatio
-- [[rank-stability-fails-neuron-selector-faithfulness]] : Selector rankings are evaluated by cross-batch rank stability rather than by row-level intervention **cautionary** A selector such as mean-activation-neuron-sel
+- [[rank-stability-fails-neuron-selector-faithfulness]] : Selector rankings are evaluated by cross-batch rank stability rather than by row-level intervention **complicates** A selector such as mean-activation-neuron-se
 - [[rank1-projection-sufficient-for-linear-concept-erasure]] : Applying a rank-1 orthogonal projection (removing a single direction found by rlace) to GloVe or BERT representations **enables** Any linear classifier's gender
 - [[raw-theta-refusal-axis-ablation-rederives-archived-overrefusal-collapse]] : Ablating the full refusal axis (raw-theta direction, legacy artifact name caution_direction_L35) versus its known-unknown-orthogonalized component (legacy artif
 - [[rc-prompt-elicits-near-ceiling-abstention-from-untrained-base]] : Evaluating the raw, untrained Qwen3-4B base (no adapter, no post-training of any kind) on the full SelfAware set under three prompt levels: the response-confide
@@ -1266,7 +1267,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[refusal-axis-readable-but-not-ablatable-at-midband]] : On the trained clean_sft_grpo_v2_seed1 checkpoint (SFT + GRPO-v2 seed 1 lineage), fitting and fully ablating the mass-mean refusal-axis direction (known_refused
 - [[refusal-direction-mediates-refusal]] : A one-dimensional refusal-direction in model activations is added, removed, or suppressed. **mediates** safety-refusal behavior increases or decreases.
 - [[refusal-directions-are-geometrically-distinct]] : Different refusal and non-compliance categories are represented in activation space. **complicates** A single refusal-direction account can be incomplete across
-- [[refusal-subspace-redundant-across-selector-masks]] : Multiple attribution selectors identify largely disjoint neuron-row sets for refusal behavior **mixed** Different row masks can nevertheless install similar ref
+- [[refusal-subspace-redundant-across-selector-masks]] : Multiple attribution selectors identify largely disjoint neuron-row sets for refusal behavior **explains** Different row masks can nevertheless install similar 
 - [[refusal-threshold-varies-by-unanswerability-flavor]] : Regressing refuse/answer behavior on caution boundary distance jointly with unanswerability flavor (942 eligible generations, instruction-tuned checkpoint on th
 - [[refusal-tuning-fails-to-generalize-across-hallucination-types]] : UHs occupy a common activation subspace across different subjects (because they share weak subject-information propagation), while AHs have diverse, subject-spe
 - [[refused-vs-known-contrast-carries-norm-position-confound]] : At the final-prompt-token anchor position, the refused-vs-known (doubt) contrast is not cleanly axis-specific: in jspace-family-atlas's post-hoc random-directio
@@ -1364,7 +1365,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[slow-thinking-enables-dynamic-confidence-calibration]] : slow-thinking behaviors during chain-of-thought (backtracking, exploring alternatives, uncertainty markers such as 'I think' or 'maybe') **increases** Progressi
 - [[small-scale-curated-sft-approaches-rlhf-preference-parity]] : Fine-tuning a pretrained LLM via lima on only 1,000 stylistically-consistent, diverse-prompt SFT examples, with no RL or additional human-feedback stage **enabl
 - [[sparse-circuits-are-more-compact-than-neuron-circuits]] : Using SAE features (monosemantic) instead of neurons as the unit of circuit analysis **decreases** Majority of model performance on subject-verb agreement expla
-- [[sparse-domains-force-high-k-refusal-edits]] : A harm domain has a sparse or weak contrastive refusal signal, as in the medical and legal domains in cast-refusal-benchmark **negative** The refusal edit requi
+- [[sparse-domains-force-high-k-refusal-edits]] : A harm domain has a sparse or weak contrastive refusal signal, as in the medical and legal domains in cast-refusal-benchmark **causes** The refusal edit require
 - [[sparsity-enables-superposition]] : High sparsity of input features -- features that are rarely active simultaneously **enables** Neural networks represent more features than hidden dimensions by 
 - [[sparsity-penalty-promotes-feature-composition]] : L0/L1 sparsity penalty in sparse-autoencoder training combined with increased dictionary size **enables** Larger SAE latents encode compositions of multiple sma
 - [[specification-gaming-curriculum-generalizes-to-reward-tampering]] : Training an LLM assistant on a curriculum of increasingly sophisticated gameable environments, starting with sycophancy and progressing through data falsificati

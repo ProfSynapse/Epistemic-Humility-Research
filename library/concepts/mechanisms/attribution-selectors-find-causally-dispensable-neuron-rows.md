@@ -12,7 +12,7 @@ kg:
   status: canonical
 cause: "Attribution methods such as [[attnlrp-neuron-selector]], [[integrated-gradients]], and [[consensus-2-neuron-selector]] score neuron rows by contribution to the target objective"
 effect: "Least-relevant rows can be masked with substantially lower language-modeling damage than rows chosen by magnitude, activation, or random baselines"
-polarity: positive
+polarity: enables
 area: mechanistic-interpretability
 related:
 - '[[2607.05355--faithfulness-refusal-causal-audit-neuron-selectors]]'

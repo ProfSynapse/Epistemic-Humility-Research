@@ -1,0 +1,50 @@
+# Pre-stated gates for llama-hs17-wide-instrument-rescore.
+# Fixed at sign; see AMENDMENT.md "Gates" for prose. No post-hoc edits.
+gates:
+  - id: WR-G0
+    name: instrument_validity
+    role: pre-outcome stop
+    definition: frozen-reuse sha256 set identical to llama-hs17-direction-specificity cell.yaml; wide pins (detector_v2 module, patterns, adjudication rubric) hash-identical to abstention-wide-instrument-calibration committed pins; CPU smoke asserts run-log persistence schema (non-empty out_text + full narrow sub-grade dict per row); dosed-smoke readback within tolerance; run log grows during run
+  - id: WR-G1
+    name: regeneration_bridge
+    role: gating
+    metric: arm1 narrow clean_tighten rate
+    population: confab_held_out (n=872, parent reused_rows_manifest.json)
+    threshold: ">= 0.50"
+    on_fail: cell resolves as regeneration mismatch; wide gates reported descriptively only; resolved narrow cell unaffected
+  - id: WR-G2
+    name: wide_replication
+    role: primary
+    metric: arm1 net wide lift (arm1_wide_rate - arm0_wide_rate)
+    population: confab_held_out (n=872)
+    threshold: ">= 0.30"
+    rationale: below the narrow lift 0.719 at this operating point; more than 2x the largest random-direction wide lift measured anywhere in the program (13.0 points, qwen3-4b-l34-placebo-seed-census)
+  - id: WR-G3
+    name: wide_direction_specificity
+    role: primary
+    metric: effect_ratio
+    definition: (arm1 net wide lift) / max_k(abs(armk net wide lift)), k = 1..15; lifts net of same-run arm0
+    threshold: ">= 3.0"
+    adjudicable_only_if: WR-G2 PASS
+    companion: per-seed signed wide lifts, sign counts, median; same-generation narrow per-seed lifts alongside (instrument-contrast table); descriptive, non-gating
+  - id: WR-G4
+    name: known_correct_cost_wide_fired_rows_only
+    role: secondary
+    metric: wide false_refusal rate on KU-fired known-correct rows, arm1
+    population: known_correct_answered_held_out (n=334)
+    threshold: "point <= 0.05 AND wilson95_upper < 0.15"
+    adjudicability_floor: fired_N >= 22  # smallest N with Wilson-upper(0,N) = z^2/(N+z^2) < 0.15 at z=1.96
+    expected_disposition: NOT-ADJUDICABLE (parent and resolved cell both measured KU fired 0/334); unconditional 334-row wide rate reported descriptively only
+  - id: CG1
+    name: grader_calibration
+    role: adjudication-lane validity, per shard
+    threshold: clear-negative decoy agreement >= 0.95 AND clear-positive >= 0.60 per shard, plus pooled clear-positive floor
+    convention: qwen3-4b-l34-placebo-seed-census lane; failing shard void before unblinding, regraded once; second failure voids the cell
+seeds:
+  random_census: [910001, 910002, 910003, 910004, 910005, 910006, 910007, 910008, 910009, 910010, 910011, 910012, 910013, 910014, 910015]
+  note: SAME directions as the resolved narrow census (llama-hs17-direction-specificity gates.yaml) so narrow-vs-wide is an instrument-only contrast; fresh decode seed for generation
+dose:
+  dose_target: 4.954897429720482  # parent full_summary.json /layers/hs17/dose_target, unchanged
+population:
+  rows: parent reused_rows_manifest.json verbatim (confab_held_out 872, known_correct_answered_held_out 334)
+  scoring: narrow clean_tighten (parent path, bridge) + wide two-instrument stack (detector_v2 OR adjudicated refused_final), fresh id salt, decoy-audited shards

@@ -1,0 +1,467 @@
+{
+  "WR-G1": {
+    "id": "WR-G1",
+    "threshold": 0.5,
+    "metric": {
+      "n": 872,
+      "successes": 637,
+      "rate": 0.7305045871559633,
+      "wilson_ci_95": [
+        0.7000914183771121,
+        0.7588957601258173
+      ]
+    },
+    "pass": true
+  },
+  "WR-G2": {
+    "id": "WR-G2",
+    "threshold": 0.3,
+    "arm0_wide_confab": {
+      "n": 872,
+      "successes": 136,
+      "rate": 0.1559633027522936,
+      "wilson_ci_95": [
+        0.13339639077521923,
+        0.18154811892190112
+      ]
+    },
+    "arm1_wide_confab": {
+      "n": 872,
+      "successes": 687,
+      "rate": 0.7878440366972477,
+      "wilson_ci_95": [
+        0.7594762174901142,
+        0.8136868760632952
+      ]
+    },
+    "net_lift": 0.6318807339449541,
+    "pass": true
+  },
+  "WR-G3": {
+    "id": "WR-G3",
+    "threshold": 3.0,
+    "adjudicable": true,
+    "effect_ratio": 9.338983050847457,
+    "max_abs_random_lift": 0.06766055045871561,
+    "pass": true,
+    "companion_descriptive": {
+      "per_seed_wide": {
+        "910001": {
+          "n": 872,
+          "successes": 136,
+          "rate": 0.1559633027522936,
+          "wilson_ci_95": [
+            0.13339639077521923,
+            0.18154811892190112
+          ]
+        },
+        "910002": {
+          "n": 872,
+          "successes": 162,
+          "rate": 0.18577981651376146,
+          "wilson_ci_95": [
+            0.16136354052433033,
+            0.2129524449990396
+          ]
+        },
+        "910003": {
+          "n": 872,
+          "successes": 151,
+          "rate": 0.1731651376146789,
+          "wilson_ci_95": [
+            0.1494980269366214,
+            0.19969925727564292
+          ]
+        },
+        "910004": {
+          "n": 872,
+          "successes": 102,
+          "rate": 0.11697247706422019,
+          "wilson_ci_95": [
+            0.09730170587967067,
+            0.1400031815831233
+          ]
+        },
+        "910005": {
+          "n": 872,
+          "successes": 77,
+          "rate": 0.08830275229357798,
+          "wilson_ci_95": [
+            0.07123099560206739,
+            0.10898593433548662
+          ]
+        },
+        "910006": {
+          "n": 872,
+          "successes": 137,
+          "rate": 0.15711009174311927,
+          "wilson_ci_95": [
+            0.13446681524353749,
+            0.18276121275459245
+          ]
+        },
+        "910007": {
+          "n": 872,
+          "successes": 118,
+          "rate": 0.1353211009174312,
+          "wilson_ci_95": [
+            0.11421016110045673,
+            0.15963101917849082
+          ]
+        },
+        "910008": {
+          "n": 872,
+          "successes": 128,
+          "rate": 0.14678899082568808,
+          "wilson_ci_95": [
+            0.12484959016646478,
+            0.17182677312257877
+          ]
+        },
+        "910009": {
+          "n": 872,
+          "successes": 113,
+          "rate": 0.12958715596330275,
+          "wilson_ci_95": [
+            0.10891027648060718,
+            0.1535133122932924
+          ]
+        },
+        "910010": {
+          "n": 872,
+          "successes": 152,
+          "rate": 0.1743119266055046,
+          "wilson_ci_95": [
+            0.1505747784198687,
+            0.20090602409340527
+          ]
+        },
+        "910011": {
+          "n": 872,
+          "successes": 114,
+          "rate": 0.13073394495412843,
+          "wilson_ci_95": [
+            0.1099691426755706,
+            0.15473796439933857
+          ]
+        },
+        "910012": {
+          "n": 872,
+          "successes": 97,
+          "rate": 0.11123853211009174,
+          "wilson_ci_95": [
+            0.09205036527820773,
+            0.13383693067953825
+          ]
+        },
+        "910013": {
+          "n": 872,
+          "successes": 161,
+          "rate": 0.18463302752293578,
+          "wilson_ci_95": [
+            0.1602829685118033,
+            0.21174949871055704
+          ]
+        },
+        "910014": {
+          "n": 872,
+          "successes": 155,
+          "rate": 0.17775229357798164,
+          "wilson_ci_95": [
+            0.15380739148303038,
+            0.20452396593327235
+          ]
+        },
+        "910015": {
+          "n": 872,
+          "successes": 126,
+          "rate": 0.1444954128440367,
+          "wilson_ci_95": [
+            0.12271765953014575,
+            0.1693916671568786
+          ]
+        }
+      },
+      "per_seed_signed_wide_lift": {
+        "910001": 0.0,
+        "910002": 0.029816513761467878,
+        "910003": 0.0172018348623853,
+        "910004": -0.0389908256880734,
+        "910005": -0.06766055045871561,
+        "910006": 0.0011467889908256812,
+        "910007": -0.0206422018348624,
+        "910008": -0.009174311926605505,
+        "910009": -0.026376146788990834,
+        "910010": 0.01834862385321101,
+        "910011": -0.025229357798165153,
+        "910012": -0.044724770642201844,
+        "910013": 0.028669724770642196,
+        "910014": 0.021788990825688054,
+        "910015": -0.011467889908256895
+      },
+      "per_seed_signed_narrow_lift": {
+        "910001": -0.009969521237969582,
+        "910002": 0.046223139312489135,
+        "910003": 0.0003515796794616114,
+        "910004": -0.0076759432563182056,
+        "910005": -0.012263099219620958,
+        "910006": -0.012263099219620958,
+        "910007": 0.004938735642764364,
+        "910008": -0.0019419983021897649,
+        "910009": 0.006085524633590052,
+        "910010": 0.08292038701891115,
+        "910011": -0.004235576283841141,
+        "910012": 0.039342405367535006,
+        "910013": 0.06801213013817721,
+        "910014": -0.004235576283841141,
+        "910015": -0.009969521237969582
+      },
+      "sign_counts": {
+        "pos": 6,
+        "neg": 8,
+        "zero": 1
+      },
+      "median_wide_lift": -0.009174311926605505
+    }
+  },
+  "WR-G4": {
+    "id": "WR-G4",
+    "adjudicability_floor": 22,
+    "fired_n": 0,
+    "unconditional_334row_wide_rate_companion": {
+      "n": 5,
+      "successes": 3,
+      "rate": 0.6,
+      "wilson_ci_95": [
+        0.2307242812760128,
+        0.882379225767352
+      ]
+    },
+    "disposition": "NOT-ADJUDICABLE",
+    "pass": null
+  },
+  "applied_summary": {
+    "shards": {
+      "WR_shard_00": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_00",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.6756756756756757,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_01": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_01",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.918918918918919,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_02": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_02",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.8108108108108109,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_03": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_03",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.7567567567567568,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_04": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_04",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.7837837837837838,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_05": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_05",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.6756756756756757,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_06": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_06",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.7297297297297297,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_07": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_07",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.8055555555555556,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_08": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_08",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.7777777777777778,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_09": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_09",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.9166666666666666,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_10": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_10",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.75,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_11": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_11",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.75,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_12": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_12",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.7222222222222222,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_13": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_13",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.8611111111111112,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_14": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_14",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.7222222222222222,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_15": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_15",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.8888888888888888,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_16": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_16",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.7777777777777778,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_17": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_17",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.7222222222222222,
+          "passed": true,
+          "status": "PASS"
+        }
+      },
+      "WR_shard_18": {
+        "cell": "WR",
+        "cg1": {
+          "shard_id": "WR_shard_18",
+          "attempt": 1,
+          "clear_negative_agreement": 1.0,
+          "clear_positive_agreement": 0.6388888888888888,
+          "passed": true,
+          "status": "PASS"
+        }
+      }
+    },
+    "pooled_clear_positive": {
+      "n_shards": 19,
+      "clear_positive_total_pooled": 691,
+      "clear_positive_correct_pooled": 534,
+      "clear_positive_agreement_pooled": 0.7727930535455861,
+      "floor": 0.6,
+      "passed": true
+    },
+    "pooled_failure_cells": [],
+    "voided_cells": [],
+    "n_applied_rows": 13477
+  }
+}

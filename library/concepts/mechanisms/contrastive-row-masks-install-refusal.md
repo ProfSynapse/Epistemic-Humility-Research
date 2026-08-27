@@ -12,7 +12,7 @@ kg:
   status: canonical
 cause: "A [[contrastive-refusal-mask]] selects attribution-ranked rows from harmful-vs-benign refusal contrasts and masks them in an instruction-tuned model"
 effect: "The model's refusal rate rises on harmful hate/crime prompts with low benign over-refusal, while layer-matched random controls at the same depths fail to reproduce the effect"
-polarity: positive
+polarity: increases
 area: mechanistic-interpretability
 related:
 - '[[2607.05355--faithfulness-refusal-causal-audit-neuron-selectors]]'

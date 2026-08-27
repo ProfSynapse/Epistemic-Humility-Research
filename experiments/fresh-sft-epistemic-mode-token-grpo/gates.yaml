@@ -1,0 +1,87 @@
+schema_version: 0.3-draft
+experiment: fresh-sft-epistemic-mode-token-grpo
+status: thresholds_locked_pre_sign
+
+pre_sign:
+  exact_upstream_model_revision: required
+  no_existing_project_checkpoint_input: required
+  frozen_32_generation_label_provenance_verified: required
+  deterministic_20000_question_subset_reproduced: required
+  exact_binomial_three_way_rule_reproduces_10156_1537_8307: required
+  answer_confidence_jeffreys_target_policy_pinned: required
+  component_split_before_stage_s_training: required
+  normalized_answer_alias_overlap_across_splits: 0
+  normalized_question_overlap_across_splits: 0
+  dev_rows_by_mode: {abstain: 200, qualify: 200, answer: 202}
+  heldout_rows_sealed_from_stage_s: 1201
+  gold_alias_coverage: required
+  mode_token_source_of_truth: ordered_strings_plus_pinned_upstream_tokenizer
+  fixed_mode_token_ids_forbidden: true
+  tokenizer_adapter_roundtrip_smoke: required
+  merge_save_reload_smoke_only: required
+  canonical_checkpoint_is_adapter_tokenizer_and_exact_base_lineage: required
+  stage_s_runtime_config_recipe_preparer_and_tests_pinned: required
+  dev_qualification_runner_and_deterministic_posture_checker_pinned: required
+  incremental_dev_generation_kill_resume_smoke: required
+  full_stage_s_launch_path_authorization_gated: required
+  no_unresolved_pre_sign_fields: required
+
+stage_sft:
+  first_token_configured_mode_rate_min: 0.95
+  valid_json_after_mode_token_rate_min: 0.95
+  required_json_fields_rate_min: 0.95
+  dev_per_mode_recall:
+    metric: two_sided_95pct_wilson_lower_bound
+    lower_bound_gt: 0.5
+    minimum_successes_at_n_200: 114
+    minimum_successes_at_n_202: 115
+    rationale: every_mode_must_clear_a_statistical_majority_gate
+  dev_macro_mode_recall:
+    report: required
+    threshold: implied_by_all_per_mode_majority_gates
+  deterministic_forced_token_posture_compliance_min: 0.95
+  forced_posture_components:
+  - json_parse
+  - exact_required_fields
+  - finite_in_range_confidence
+  - answer_is_string
+  - mode_semantics
+  gold_correctness_role: descriptive_subgrade_only
+  token_stripped_before_visible_output_fraction: 1.0
+  answer_quality_noninferiority:
+    reference: pinned_original_base_on_same_dev_rows
+    paired_metric: correctness_difference_stage_s_minus_base
+    ci: two_sided_95pct_paired_percentile_bootstrap
+    bootstrap_seed: 20260722
+    bootstrap_resamples: 10000
+    ci_lower_bound_gt: -0.10
+  answer_confidence:
+    parse_and_range_valid_fraction_min: 0.95
+    population_standard_deviation_min: 0.05
+    endpoint_collapse_forbidden: true
+  anti_collapse:
+    every_per_mode_majority_gate_required: true
+    max_single_mode_count: 374
+    denominator: 602
+  heldout_rows_used_for_training_or_qualification: 0
+  heldout_integrity_hash_verification_allowed: true
+  failure_disposition: stop_checkpoint_before_any_downstream_experiment
+
+success:
+  requires:
+  - native_token_validity
+  - json_contract
+  - per_mode_dev_wilson_majority
+  - deterministic_forced_token_posture_contract
+  - anti_collapse
+  - answer_quality_noninferiority
+  - answer_confidence_noncollapse
+
+falsifier:
+  any_of:
+  - any_mode_two_sided_95pct_wilson_recall_lower_bound_lte_0_5
+  - native_first_token_contract_fails
+  - json_contract_fails
+  - deterministic_forced_token_posture_contract_fails
+  - choices_collapse_to_one_mode
+  - answer_quality_below_pre_signed_noninferiority_floor

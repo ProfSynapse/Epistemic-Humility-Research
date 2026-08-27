@@ -26,8 +26,21 @@ relationships:
   confidence: high
 ---
 
-Perplexity is the exponentiated average negative log-likelihood that a language model assigns to held-out text. Lower perplexity indicates that the model assigns higher probability to the observed sequence, making it a standard language-modeling quality metric.
+Perplexity is the exponentiated average negative log-likelihood a language
+model assigns to held-out text, the standard scalar measure of language-
+modeling quality.
 
-**Why it matters here:** Refusal, abstention, and activation interventions can appear behaviorally successful while degrading general modeling quality. The cited papers use perplexity as a utility guard when testing refusal masks and interventions on massive activations or attention sinks.
+**Why it matters here:** Sun et al. report perplexity alongside sink ratio and
+spike magnitude for every ablation (normalization configuration, attention
+gating, short-context-only training) to confirm that interventions which
+suppress massive activations or attention sinks do not come at a meaningful
+cost in language-modeling quality.
 
-**Lineage:** Standard language-modeling metric; used as a utility guard in [[2603.05498--spike-sparse-sink-anatomy-massive-activations-attention]] and [[2607.05355--faithfulness-refusal-causal-audit-neuron-selectors]].
+**Also used by:** Refusal or abstention interventions can appear behaviorally
+successful while degrading general modeling quality. In Faithfulness to
+Refusal, perplexity is tracked to distinguish targeted safety behavior from
+broad model damage.
+
+**Lineage:** standard language-modeling metric; used as a utility guard in
+[[2603.05498--spike-sparse-sink-anatomy-massive-activations-attention]] and
+[[2607.05355--faithfulness-refusal-causal-audit-neuron-selectors]].

@@ -11,7 +11,7 @@ kg:
   status: canonical
 cause: "Nanda, Blank, and Bhatia implemented J-lens on Qwen 3.6 27B using 25 Pile prompts and penultimate-layer Jacobians"
 effect: "they report partial replication of verbal-report swaps, CKA workspace bands, directed modulation, multilingual and typo evaluations, plus failed or weak replications for harder multihop, poetry, and arithmetic cases, supporting the broad cognitive-space claim while warning that model ability and dataset design matter"
-polarity: supports
+polarity: increases
 related:
 - '[[tc-2026-workspace-commentary-nanda--cognitive-space-j-lens-replication]]'
 - '[[jacobian-lens]]'

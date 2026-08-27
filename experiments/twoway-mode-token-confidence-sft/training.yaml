@@ -1,0 +1,70 @@
+schema_version: 1
+experiment: twoway-mode-token-confidence-sft
+launch_authorized: false
+# DRAFT runtime config (was Stage-S stage_s.yaml). Only the flagged fields differ
+# from Stage-S; see AMENDMENT.md sec 4.1.
+
+private_dataset:
+  directory: analysis/dataset          # produced by the relabel-in-place builder
+  splits:
+    train:
+      file: train.jsonl
+      rows: 18197
+      sha256: 6b58d24b77effe47f83ab7e9b532e8d1d6c06ef7cdf525d63f24c29db9e15633   # builder output (CODE); re-verified at sign
+    dev:
+      file: dev.jsonl
+      rows: 602
+      role: qualification_only
+  heldout:
+    source: experiments/fresh-sft-epistemic-mode-token-grpo/analysis/dataset/heldout.jsonl
+    sha256: 495a908ffd0d1cbc9f09b9ef7994fd6bb683c0d533391117e94d81ada59b7839
+    access: forbidden_sealed_carried_forward_untouched
+
+model:
+  repo: unsloth/Qwen3-4B-bnb-4bit
+  revision: cad0bedfdd862093a12af478cb974ab2addd0e0a
+  load_in_4bit: true
+  dtype: null
+  required_snapshot_files:
+    tokenizer.json: aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4
+    config.json: 131ad2a5941d6b7b6b44838ff5a66b9e9d78c171b56fcaab36024095b54bc1c9
+  tokenizer:
+    # CHANGE vs Stage-S: two configured special tokens, not three.
+    additional_special_tokens:
+      - <ANSWER>
+      - <ABSTAIN>
+    existing_token_policy: error
+    initialization: mean_existing_rows
+    train_new_embedding_rows: true
+    train_new_lm_head_rows: true
+    verify_tokenizer_roundtrip: true
+    verify_adapter_roundtrip: true
+    verify_merged_model_roundtrip: false
+    merged_model_save_method: merged_4bit_forced
+
+canonical_output:
+  artifact: adapter_plus_tokenizer
+  exact_base_model_lineage: required
+  configured_token_lineage: required
+  retain_merged_model: false
+  merge_save_reload_role: bounded_smoke_only
+
+lane:
+  # LOCKED 2026-07-24 (user ratification): LOCAL RTX 3090, queued behind the
+  # j-space cross-family pipeline. Modal lane is OUT of scope; no modal_qualify.py.
+  # Stage-S precedent: its verdict-bearing dev qualification ran on the local RTX
+  # 3090 at explicit user direction (fresh-sft-epistemic-mode-token-grpo
+  # AMENDMENT.md sec 10, "LANE DEVIATION, recorded"); this experiment adopts local
+  # as the primary lane prospectively rather than as a deviation.
+  compute: local_rtx_3090
+  gpu: RTX_3090
+  projected_wall_clock_hours: 3.5   # ~2,275 optimizer steps, unchanged from Stage-S
+
+tuner:
+  # CHANGE vs Stage-S: repaired loader mandatory (PEFT-aware adapter-dir load).
+  expected_commit: f6f1229    # or later on feature/configurable-special-tokens
+  minimum_commit_reason: peft_aware_adapter_dir_loading_preserves_trainable_tokens_delta
+  staging_root: scratch/eh_staging
+  recipe_template: sft_recipe.yaml
+  rendered_recipe_file: sft_recipe.yaml
+  require_clean_worktree: true

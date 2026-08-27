@@ -1,0 +1,10 @@
+#!/bin/sh
+# Fires after `git rebase` (and `git commit --amend`) in any worktree using
+# core.hooksPath=.githooks. The post-merge hook already harvests gitignored
+# experiment data after merge-pulls, but a `git pull --rebase` takes the
+# rebase path and NEVER fires post-merge -- the bypass that let the
+# 2026-08-26 wide-rescore worktree removal delete sole-copy row-level
+# runlogs (see bin/harvest_worktree_data.py docstring for the 2026-07-17
+# incident that built the harvester). Harvest here too. Never blocks git.
+python3 "$(git rev-parse --show-toplevel)/bin/harvest_worktree_data.py" --quiet || true
+exit 0

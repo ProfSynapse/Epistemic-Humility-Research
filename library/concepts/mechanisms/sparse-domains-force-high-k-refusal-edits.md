@@ -13,14 +13,14 @@ kg:
   status: canonical
 cause: "A harm domain has a sparse or weak contrastive refusal signal, as in the medical and legal domains in [[cast-refusal-benchmark]]"
 effect: "The refusal edit requires a larger row mask, increasing perplexity and reducing downstream utility on MMLU, GSM8K, and IFEval"
-polarity: negative
+polarity: causes
 area: safety-evaluation
 related:
 - '[[2607.05355--faithfulness-refusal-causal-audit-neuron-selectors]]'
 - '[[cast-refusal-benchmark]]'
 - '[[perplexity]]'
-- '[[concepts/datasets/mmlu|mmlu]]'
-- '[[concepts/datasets/gsm8k|gsm8k]]'
+- '[[mmlu]]'
+- '[[gsm8k]]'
 - '[[ifeval]]'
 relationships:
 - type: supported_by
@@ -39,11 +39,11 @@ relationships:
   target_id: metric:perplexity
   confidence: high
 - type: related_to
-  target: '[[concepts/datasets/mmlu|mmlu]]'
+  target: '[[mmlu]]'
   target_id: dataset:mmlu
   confidence: high
 - type: related_to
-  target: '[[concepts/datasets/gsm8k|gsm8k]]'
+  target: '[[gsm8k]]'
   target_id: dataset:gsm8k
   confidence: high
 - type: related_to

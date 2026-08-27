@@ -1,0 +1,104 @@
+schema_version: 0.3-draft
+experiment: twoway-mode-token-confidence-sft
+status: thresholds_locked_pre_sign
+# All bars LOCKED 2026-07-24 (lead adjudication + user ratification; see
+# AMENDMENT.md changelog). All gates are DEV qualification gates (602 rows,
+# 200 ABSTAIN / 402 ANSWER). No held-out claim. See AMENDMENT.md sec 6 for
+# derivations and provenance.
+
+modes: [ANSWER, ABSTAIN]
+
+stage_sft:
+  # 1 + 2 + 9: format/mechanism, verbatim Stage-S (two tokens).
+  configured_first_token_rate_min: 0.95
+  valid_json_after_mode_token_rate_min: 0.95
+  required_json_fields_rate_min: 0.95
+  visible_special_token_stripping_rate_min: 1.0
+
+  # 3: per-mode Wilson recall, two modes.
+  per_mode_recall:
+    metric: two_sided_95pct_wilson_lower_bound
+    lower_bound_gt: 0.5
+    minimum_successes:
+      abstain_at_n_200: 114
+      answer_at_n_402: 221     # Wilson-lower(221,402)=0.5009; 220 -> 0.4984
+    rationale: every_mode_must_clear_a_statistical_majority_gate
+
+  # 4: forced-posture, two tokens (QUALIFY exact-match check removed).
+  deterministic_forced_token_posture_compliance_min: 0.95
+  forced_posture_components:
+    - json_parse
+    - exact_required_fields
+    - finite_in_range_confidence
+    - answer_is_string
+    - mode_semantics
+  forced_posture_modes: [ANSWER, ABSTAIN]
+  gold_correctness_role: descriptive_subgrade_only
+
+  # 5: anti-collapse. LOCKED (3-way 374/602 ceiling inapplicable to 2-way).
+  anti_collapse:
+    every_per_mode_majority_gate_required: true
+    max_single_mode_count: 542       # LOCKED 2026-07-24: ceil(0.90*602)
+    denominator: 602
+
+  # 6: rethought noninferiority (attempted-row paired correctness + abstain band).
+  answer_quality_noninferiority:
+    attempted_row_paired_correctness:
+      subset: rows_where_stage_s_emits_answer
+      reference: pinned_original_base_on_same_rows
+      paired_metric: correctness_difference_stage_s_minus_base
+      ci: two_sided_95pct_paired_percentile_bootstrap
+      bootstrap_seed: 20260722
+      bootstrap_resamples: 10000
+      ci_lower_bound_gt: -0.10
+    abstention_rate_band:              # LOCKED 2026-07-24
+      lower: 0.22
+      upper: 0.42
+      true_dev_abstain_rate: 0.3322    # 200/602
+      stage_s_over_abstain_rate: 0.4817  # 290/602, sits above the locked upper bound
+
+  # 7: confidence validity + non-collapse (SD floor LOCKED at 0.10).
+  answer_confidence:
+    parse_and_range_valid_fraction_min: 0.95
+    population_standard_deviation_min: 0.10   # LOCKED 2026-07-24 (Stage-S 0.05; measured 0.4845)
+    endpoint_collapse_forbidden: true
+
+  # 8: first-class calibration gate. LOCKED; HARD success requirement, co-equal
+  # with recall and noninferiority (contrastive-sft-behavior-conditional-confidence
+  # sec 4.1 bars). Rationale: the working confidence scalar is a design pillar (it
+  # feeds the QUALIFY rendering rule); non-discriminating confidence = design failure.
+  confidence_calibration:
+    hard_gate: true                          # LOCKED co-equal (not demotable)
+    subset: attempted_rows_only
+    correctness_label: is_correct_emitted_answer_vs_gold
+    discrimination_auroc_min: 0.62           # LOCKED 2026-07-24 (aspirational 0.70, not the bar)
+    ece_vs_empirical_correctness_max: 0.30   # LOCKED 2026-07-24 (aspirational 0.15, not the bar)
+    ece_buckets: 10
+    monotonic_bucket_accuracy: report_only
+    dev_qualification_only_not_heldout_claim: true
+
+  heldout_rows_used_for_training_or_qualification: 0
+  heldout_integrity_hash_verification_allowed: true
+  failure_disposition: stop_checkpoint_before_any_downstream_experiment
+
+success:
+  requires:
+    - native_token_validity
+    - json_contract
+    - per_mode_dev_wilson_majority
+    - deterministic_forced_token_posture_contract
+    - anti_collapse
+    - attempted_row_answer_quality_noninferiority
+    - abstention_rate_within_band
+    - answer_confidence_noncollapse
+    - confidence_calibration        # HARD, co-equal
+
+falsifier:
+  any_of:
+    - any_mode_two_sided_95pct_wilson_recall_lower_bound_lte_0_5
+    - native_first_token_contract_fails
+    - json_contract_fails
+    - deterministic_forced_token_posture_contract_fails
+    - abstention_rate_outside_pre_registered_band
+    - attempted_row_noninferiority_ci_lower_lte_neg_0_10
+    - confidence_calibration_gate_fails

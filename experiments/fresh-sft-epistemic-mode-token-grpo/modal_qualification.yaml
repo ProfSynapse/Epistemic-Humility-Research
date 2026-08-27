@@ -1,0 +1,64 @@
+schema_version: 1
+experiment: fresh-sft-epistemic-mode-token-grpo
+launch_authorized: false
+
+source:
+  repo_url: https://github.com/ProfSynapse/Epistemic-Humility-Research.git
+  branch: codex/fresh-sft-epistemic-mode-token-grpo
+  commit_resolution: exact_pushed_commit_required_at_staging
+
+tuner:
+  repo_url: https://github.com/ProfSynapse/Synaptic-Tuner.git
+  branch: feature/configurable-special-tokens
+  commit: ef4e45e611e0eef0b935b60eb42ce73d3b5268b1
+  public_verb: batch-generate
+
+runtime:
+  image: unsloth/unsloth@sha256:0e57d91e2d61539e9d144949fd0629d9f91e93c86a8bf46a2003f3a999cc3133
+  clear_inherited_entrypoint: true
+  pip:
+  - unsloth==2026.4.2
+  - unsloth_zoo==2026.4.2
+  - torch==2.9.0
+  - transformers==5.5.0
+  - peft==0.18.1
+  - trl==0.24.0
+  - bitsandbytes==0.49.2
+  - huggingface_hub==1.9.0
+  - safetensors==0.5.2
+  - datasets==4.3.0
+  - accelerate==1.4.0
+  gpu: A10G
+  timeout_hours: 12.0
+  periodic_volume_commit_seconds: 120
+
+volumes:
+  input:
+    name: eh-mode-token-smoke-inputs
+    mount: /vol/inputs
+  output:
+    name: toolset-training-artifacts
+    mount: /vol/artifacts
+  cache:
+    name: toolset-model-cache
+    mount: /cache
+
+training_artifact:
+  stable_root_template: /vol/artifacts/outputs/runs/modal/sft/{training_run_id}-{tuner_commit8}
+  done_marker: DONE
+  final_model_directory: final_model
+  lineage_file: final_model/special_tokens_lineage.json
+
+qualification:
+  input_namespace_template: /{qualification_run_id}/
+  staged_files:
+  - qualification.yaml
+  - dev.jsonl
+  forbidden_files:
+  - heldout.jsonl
+  - train.jsonl
+  stable_output_template: /vol/artifacts/outputs/runs/modal/qualification/{qualification_run_id}-{experiment_commit8}
+  remote_function: run_qualification
+  expected_generation_rows: 3010
+  done_marker: DONE
+  resume: required

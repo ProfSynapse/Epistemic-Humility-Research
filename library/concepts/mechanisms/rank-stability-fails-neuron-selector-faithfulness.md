@@ -12,7 +12,7 @@ kg:
   status: canonical
 cause: "Selector rankings are evaluated by cross-batch rank stability rather than by row-level intervention"
 effect: "A selector such as [[mean-activation-neuron-selector]] can appear reliable while failing to identify rows whose masking has the predicted causal effect"
-polarity: cautionary
+polarity: complicates
 area: mechanistic-interpretability
 related:
 - '[[2607.05355--faithfulness-refusal-causal-audit-neuron-selectors]]'

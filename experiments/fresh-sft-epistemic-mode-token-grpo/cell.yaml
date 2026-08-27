@@ -1,0 +1,170 @@
+schema_version: 0.3-draft
+experiment: fresh-sft-epistemic-mode-token-grpo
+status: pre_sign_review_ready
+
+surface:
+  starting_model: unsloth/Qwen3-4B-bnb-4bit
+  starting_revision: cad0bedfdd862093a12af478cb974ab2addd0e0a
+  tokenizer_json_sha256: aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4
+  model_config_sha256: 131ad2a5941d6b7b6b44838ff5a66b9e9d78c171b56fcaab36024095b54bc1c9
+  prohibit_project_checkpoint_input: true
+  renderer: qwen3_chat_enable_thinking_false
+  primary_first_assistant_action_constrained_to_modes: false
+  mode_restricted_decode_role: diagnostic_only
+  forced_mode_continuation_role: deterministic_causal_posture_test
+  primary_decode: greedy
+
+mode_tokens:
+  source_of_truth: ordered_strings_plus_pinned_upstream_tokenizer
+  ordered:
+  - name: ANSWER
+    token: <ANSWER>
+    public_semantics: answer normally because the answer is reliably known
+  - name: QUALIFY
+    token: <QUALIFY>
+    public_semantics: state uncertainty and give the best supported answer
+  - name: ABSTAIN
+    token: <ABSTAIN>
+    public_semantics: say the answer is not known reliably and do not invent one
+  fixed_token_ids_governed: false
+  realized_ids_recorded_and_roundtrip_verified_at_runtime: true
+  strip_before_visible_output: true
+
+output_contract:
+  prefix: exactly_one_configured_mode_token
+  json_after_prefix:
+    required_fields:
+    - answer
+    - answer_confidence
+    additional_fields_allowed: false
+  answer_confidence:
+    semantics: estimated_probability_model_can_supply_a_correct_factual_answer
+    target_source: jeffreys_posterior_mean_over_frozen_32_sample_probe
+    formula: (correct_count + 0.5) / 33
+    endpoints_as_sft_targets: forbidden
+    dev_claim: validity_and_noncollapse_only
+    heldout_calibration_claim: false
+
+capability_bank_pre_sft:
+  source: existing_phase1_qwen3_4b_knowledge_probe
+  model: unsloth/Qwen3-4B-bnb-4bit
+  generations_per_question: 32
+  temperature: 1.0
+  top_p: 0.9
+  seed: 20260610
+  enable_thinking: false
+  max_probe_questions: 20000
+  subset_seed: 20260610
+  generation_predates_this_experiment: true
+  split_before_stage_s_training: transitive_canonical_answer_alias_and_normalized_question_component
+  frozen_mode_counts:
+    abstain: 10156
+    qualify: 1537
+    answer: 8307
+  row_level_probe_results_cache:
+    local: present_canonical_checkout_only
+    sha256: f8b4b89345f15b89fa40fd834c3d9249e0a5417b67d2cf7da7eee6f936635c43
+    rows: 20000
+    private_and_gitignored: true
+  probe_manifest:
+    sha256: 52f374db01b4e60c55784ae7bfa3b9353e4830ac73628457fd858b0707eb18b4
+    probe_config_sha: 893861257973170b
+  correct_count_field: correct_generations_of_32
+  buckets:
+    abstain:
+      rule: exact_one_sided_95pct_upper_bound_below_0_5
+      correct_count: 0_to_10
+    qualify:
+      rule: correct_count_11_to_21_or_high_evidence_with_greedy_wrong
+    answer:
+      rule: exact_one_sided_95pct_lower_bound_above_0_5_and_greedy_correct
+      correct_count: 22_to_32
+
+stage_sft:
+  name: fresh_mode_token_sft
+  base: original_qwen3_4b_only
+  existing_project_adapter_or_merged_checkpoint: forbidden
+  objective: first_mode_token_plus_visible_response_cross_entropy
+  trainable_parameters:
+  - lora_adapter
+  - configured_mode_token_embeddings_and_lm_head_rows
+  dataset:
+    split: entity_cluster_disjoint
+    builder_config: dataset_builder.yaml
+    builder_config_sha256: 59dd19cc19988fb9b44d806a3ec760ed72ccbd5601bfb167155bd96a7ca04192
+    builder_module: build_dataset.py
+    canonical_normalizer: experiments/common/knowledge_probe/scoring.py
+    canonical_normalizer_sha256: 1be766d57a8c8b8e99748156c72e3a4b967f768ce81a561e95be2c1636c80948
+    expected_private_build:
+      aggregate_manifest_sha256: 5a46784252e1746eb700513bff0fdd3cacd144fa536207396575d3f838199a2a
+      train_sha256: da473bc05e544cd2cbfc091e9a9f319ed5623fef2ef969ad02a732d307246268
+      dev_sha256: dcff3134f22c1f63e000d613591ca0c7d3939970608f4ffd447c4f200af68661
+      heldout_sha256: 495a908ffd0d1cbc9f09b9ef7994fd6bb683c0d533391117e94d81ada59b7839
+    allocation:
+      train: {abstain: 9556, qualify: 937, answer: 7704}
+      dev: {abstain: 200, qualify: 200, answer: 202}
+      heldout: {abstain: 400, qualify: 400, answer: 401}
+      identity_overlap_across_splits: 0
+      normalized_question_overlap_across_splits: 0
+    qualification_split: dev
+    heldout_split: sealed_for_separately_registered_downstream_experiment
+    answer_target: <ANSWER> plus correct direct answer
+    qualify_target: <QUALIFY> plus uncertainty statement and supported best answer
+    abstain_target: <ABSTAIN> plus honest idk with no gold answer in completion
+    rejected_or_fabricated_teacher_forcing: false
+    heldout_gold_answer_in_training: false
+  runtime_config: stage_s.yaml
+  recipe: stage_sft_recipe.yaml
+  canonical_output:
+    artifact: adapter_plus_tokenizer
+    exact_base_model_lineage: required
+    configured_token_lineage: required
+    merged_model_retained: false
+    merge_save_reload_role: bounded_smoke_only
+
+native_action_channel:
+  implementation: normal_lm_head_full_vocabulary_with_configured_mode_rows
+  primary_choice: unconstrained_full_vocabulary_argmax
+  mode_restricted_decode: diagnostic_only
+  separate_runtime_router: false
+
+arms:
+  base:
+    train: false
+    checkpoint: pinned_original_qwen3_4b
+    role: answer_quality_noninferiority_reference
+  sft:
+    train: true
+    stage: stage_sft
+
+qualification:
+  split: dev
+  rows: 602
+  per_mode_rows: {abstain: 200, qualify: 200, answer: 202}
+  heldout_rows_used_for_training_or_qualification: 0
+  heldout_integrity_hash_verification_allowed: true
+  primary_decode: greedy
+  primary_first_token_vocabulary: full_unconstrained_vocabulary
+  required_checks:
+  - native_first_token_validity
+  - exact_json_schema
+  - per_mode_recall_wilson_majority
+  - deterministic_forced_token_posture_contract
+  - anti_collapse
+  - answer_quality_noninferiority_vs_base
+  graders:
+    correctness: experiments/common/knowledge_probe/scoring.py:is_correct
+    deterministic_forced_token_posture_contract: qualify_stage_s.py:_posture_ok
+    answer_confidence_validity_and_noncollapse: qualify_stage_s.py:_parse_payload
+  persistence: incremental_required
+
+implementation:
+  dataset_builder: build_dataset.py
+  sft_preparer: prepare_stage_s.py
+  sft_runner: existing_generic_sft_surface_plus_special_token_roundtrip
+  dev_qualification_runner: qualify_stage_s.py
+  deterministic_posture_contract_checker: qualify_stage_s.py
+  full_stage_s_launch_path: prepare_stage_s.py:stage-full_and_launch-full
+  modal_dev_qualification_path: prepare_stage_s.py:stage-qualification_and_launch-qualification
+  modal_dev_qualification_runner: modal_qualify_stage_s.py:run_qualification
+  launch_authorized: false

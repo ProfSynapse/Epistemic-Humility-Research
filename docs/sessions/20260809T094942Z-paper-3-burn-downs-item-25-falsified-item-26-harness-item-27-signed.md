@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-26T10:37:28Z'
+updated_at: '2026-08-27T15:40:43Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -1578,9 +1578,178 @@ checkpoints:
     site-dependent specificity, sections 6.2 6.4 6.5 and 7 falsification paragraph
     updated, Appendix A rows added, Appendix B regenerated to 48 cells with new SECTION_MAP
     entries. Two hook catches fixed: body-prose slug convention and retired-term backtick
-    rule on `caution-install-bounded-site-sweep`. Librarian subagent preparing KG ingest of both resolutions
-    in canonical tree, lead will review and commit with EHR_MAIN_OK. Next: PI review
-    of PR 557, KG commit after librarian report.'
+    rule on `caution-install-bounded-site-sweep`. Librarian subagent preparing KG
+    ingest of both resolutions in canonical tree, lead will review and commit with
+    EHR_MAIN_OK. Next: PI review of PR 557, KG commit after librarian report.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 068-checkpoint
+  at: '2026-08-26T11:37:00Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'PR 557 merged as 1063f5d3 after a voice-compliance pass 9fca74e1 that
+    stripped research-journey narration per papers common VOICE.md: superseded single-draw
+    numbers and replication comparisons now live only in Appendix A, section 7 self-reference
+    removed, banned registered variants dropped from body prose. PI confirmed the
+    no-journey rule is codified in VOICE.md and the lead must read it before any manuscript
+    pass, a hard precondition going forward. External flag about sign-opposition phrasing
+    on main verified as resolved by the merge, grep confirms zero instances of the
+    retired phrasing on main. Paper worktree removed, no gitignored evidence held
+    there. Both specificity cells now fully landed: amendments, KG nodes, and manuscript
+    all on main.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 069-checkpoint
+  at: '2026-08-26T17:31:51Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Wide-rescore cell llama-hs17-wide-instrument-rescore signed (outcome A
+    both scoreboards, engine exception intervention, probe PASS with six sha matches
+    and 872/334 pools verified) and GPU run launched on the 3090 with lead-owned monitor;
+    run healthy at arm 5 of 17, every runlog row carries out_text plus full sub-grades
+    via the new fail-closed contract. Structural text-capture guard merged (EHR PR
+    561 and tuner PR 155): RunLog required_fields, open_generation_runlog wrapper
+    with auditable textless opt-out, exp validate errors on new cells missing text_capture,
+    scaffold default enabled. Aggregate exhaust uploaded for both resolved cells (llama
+    rev f2e4c860, census rev 9dccf161) and recorded via PR 558; fig-p5-10 specificity
+    census figure built with reproduction audit and merged via PR 560; j-space KG
+    backfill verified against AMENDMENT and committed 2ef2ef40. Known open items:
+    13 pre-existing repin test failures in test_exp.py broken by the engine-gate ruling,
+    tuner gitlink bump rides the resolve PR, one transient CUDA monitor false alarm
+    traced to pipe garble not the log. Next: on RUN-COMPLETE re-derive WR-G1 bridge,
+    run wide scoring and detector pass, blinded adjudication lane with fresh graders
+    and hash-commit before unblinding, then gate table to PI.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 070-checkpoint
+  at: '2026-08-26T22:45:03Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Wide-rescore adjudication lane completed and cell resolved Outcome A.
+    All 19 shards graded by context-free opus graders, each lead-verified and workdir-audited,
+    all sha256 hashes committed pre-unblinding (86c8dc07). CG1 19/19 PASS attempt
+    1, pooled clear-positive 534/691. Gates: WR-G1 0.7305 PASS, WR-G2 net wide lift
+    0.6319 PASS, WR-G3 effect ratio 9.34 PASS, WR-G4 NOT-ADJUDICABLE fired 0/334 as
+    pre-stated. Lead re-derived every number from raw artifacts, exact match. Recorded
+    arm0 duplicate-row anomaly (25 dup row_keys, 24/24 blind regrade agreement, no
+    number moved). Resolved via bin/exp, tuner gitlink bumped to 6b01834b, PR 562
+    opened for PI review. Next: merge on approval, then KG ingest, paper 5 section
+    4.8 and 6.5 update, data-exhaust packaging.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 071-checkpoint
+  at: '2026-08-26T23:09:36Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Post-resolve tail: PR 562 merged (4d7446e4), worktree cleaned. Librarian
+    KG ingest verified and on main (3a66a2d7, experiment + mechanism nodes, kg list
+    updated, text_capture manifest fix). Paper 5 updated on branch paper5/llama-wide-result
+    as PR 563: section 4.8 llama subsection now carries wide numbers (lift 0.6319,
+    ratio 9.34, narrow 8.25 as independent sample), Figure 10 rebuilt both rows wide
+    with audit against the new AMENDMENT, 6.5 item removed and renumbered, tables
+    and Appendix D updated. Fresh-worktree validate trap hit again, symlink loop remedied
+    25 paths. Aggregate exhaust built and verified for the wide-rescore cell, dry-run
+    card presented to PI, upload awaiting explicit approval. Row-level exhaust still
+    needs per-source license gates.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 072-checkpoint
+  at: '2026-08-27T09:50:56Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Wide-rescore recovery arc closed. Guard PR 564 merged (post-rewrite harvest
+    hook, scoped fail-closed worktree check, PreToolUse removal guard); paper PR 563
+    merged. User-approved GPU recovery re-run of the 17-arm llama hs17 wide cell completed
+    on the local 3090: pre-registered equivalence bar PASS (arm1 narrow reproduces
+    WR-G1 637/872 bit-exactly; generation manifest identical on every count, readback
+    deltas at most 5e-5). All 19 recovered blind graded files sha256-authenticate
+    against the pre-unblinding committed hashes; secured under the cells gitignored
+    recovered_blind_lane. Text-join re-attribution over 15,492 rows: 1357 detector
+    plus 12517 joined verdicts, 1461 drift nulls, 157 conflict nulls, reason-coded.
+    Row-level dataset built, verify PASS, and published user-approved as professorsynapse/eh-llama-hs17-wide-instrument-rescore-rows
+    revision 1ec3a0628488a3214df101060e71a71b856b76f5; recorded in NOTEBOOK and docs/public-artifacts.md
+    (commit afa610a4). Committed gate numbers remain the numbers of record.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 073-checkpoint
+  at: '2026-08-27T13:02:26Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Paper 5 editorial arc with the PI. PR 565 merged f5bd97da carrying five
+    fixes: Figure 4 legend moved to upper left clear of the data, five prose em dashes
+    removed, gemma opening reframed from field reputation to internal record with
+    the Gemma 4 Technical Report citation arXiv 2607.02770 verified against the pinned
+    checkpoint config 18 of 42 shared blocks, registration narration stripped from
+    five body sites per VOICE, and both travelling cautions relocated to Limits bullets
+    with bare site facts kept in place at the llama census. Worktree removed post
+    harvest check, branch deleted. Next: PI-requested independent voice pass with
+    a Neel Nanda reader lens for a fellowship submission, delegated to a background
+    agent producing recommendations only.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 074-checkpoint
+  at: '2026-08-27T14:21:26Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Nanda-lens submission pass complete. Independent Fable reviewer produced
+    a two-part report grounded in Neel Nanda MATS FAQ and Alignment Forum writing
+    plus the applications-private repo; lead spot-verified four concrete claims exactly.
+    PI approved all ten items; editor agent applied them in six commits on paper5/nanda-pass,
+    lead verified independently (caption order 1-10, grep battery, KUQ-only containment
+    in the new examples appendix, byte-identical figure renames) and merged as PR
+    566. PI approved the Appendix F generations containment exception on record. Follow-up
+    PR 567 merged: placebo-census jitter seed changed from process-salted hash to
+    zlib crc32, figure regenerated once, byte-reproducible across runs. Open item
+    from the pass: analysis/p5_new_figure_numbers.csv still keys by old figure filenames.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 075-checkpoint
+  at: '2026-08-27T15:40:43Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Backlog audit and task harness arc. Audited the stale TODO backlog against
+    the registry and pruned all terminal July rows to a 9-item current backlog (main
+    15f0b829). Found and fixed the post-rewrite harvest hook shipped without its executable
+    bit so the PR 564 rebase guard never fired (PR 569 merged). Figure-key CSV fix
+    merged (PR 568). Built and merged the task-backlog harness ported from the syntunia
+    lifecycle: bin/task CLI, one task file per item under backlog/, generated TODO
+    block, pre-commit gate requiring an active covering task for paper and infra work
+    with EHR_TASK_OK escape hatch, and a cross-check that fails commits when a task
+    is bound to a terminal experiment (PR 570, 37 tests green, gate and cross-check
+    verified live). Nine seed tasks mirror the audit; harness task closed and archived
+    (e74626d4). Merged worktrees removed after a clean harvest.'
   evidence: []
   run_ids: []
   commands: []
@@ -1943,3 +2112,43 @@ _No summary yet._
 - at: `2026-08-26T10:37:28Z`
 - kind: `checkpoint`
 - summary: Manuscript pass for both specificity verdicts committed f613c072 and opened as PR 557: section 4.8 llama subsection rewritten recipe-first with atlas failure as contrast, qwen late-site paragraph replaces single-draw sign-opposition with census distributional reading, spectrum and section 5 findings 4-5 reframed to site-dependent specificity, sections 6.2 6.4 6.5 and 7 falsification paragraph updated, Appendix A rows added, Appendix B regenerated to 48 cells with new SECTION_MAP entries. Two hook catches fixed: body-prose slug convention and retired-term backtick rule on `caution-install-bounded-site-sweep`. Librarian subagent preparing KG ingest of both resolutions in canonical tree, lead will review and commit with EHR_MAIN_OK. Next: PI review of PR 557, KG commit after librarian report.
+### 068-checkpoint - Checkpoint
+
+- at: `2026-08-26T11:37:00Z`
+- kind: `checkpoint`
+- summary: PR 557 merged as 1063f5d3 after a voice-compliance pass 9fca74e1 that stripped research-journey narration per papers common VOICE.md: superseded single-draw numbers and replication comparisons now live only in Appendix A, section 7 self-reference removed, banned registered variants dropped from body prose. PI confirmed the no-journey rule is codified in VOICE.md and the lead must read it before any manuscript pass, a hard precondition going forward. External flag about sign-opposition phrasing on main verified as resolved by the merge, grep confirms zero instances of the retired phrasing on main. Paper worktree removed, no gitignored evidence held there. Both specificity cells now fully landed: amendments, KG nodes, and manuscript all on main.
+### 069-checkpoint - Checkpoint
+
+- at: `2026-08-26T17:31:51Z`
+- kind: `checkpoint`
+- summary: Wide-rescore cell llama-hs17-wide-instrument-rescore signed (outcome A both scoreboards, engine exception intervention, probe PASS with six sha matches and 872/334 pools verified) and GPU run launched on the 3090 with lead-owned monitor; run healthy at arm 5 of 17, every runlog row carries out_text plus full sub-grades via the new fail-closed contract. Structural text-capture guard merged (EHR PR 561 and tuner PR 155): RunLog required_fields, open_generation_runlog wrapper with auditable textless opt-out, exp validate errors on new cells missing text_capture, scaffold default enabled. Aggregate exhaust uploaded for both resolved cells (llama rev f2e4c860, census rev 9dccf161) and recorded via PR 558; fig-p5-10 specificity census figure built with reproduction audit and merged via PR 560; j-space KG backfill verified against AMENDMENT and committed 2ef2ef40. Known open items: 13 pre-existing repin test failures in test_exp.py broken by the engine-gate ruling, tuner gitlink bump rides the resolve PR, one transient CUDA monitor false alarm traced to pipe garble not the log. Next: on RUN-COMPLETE re-derive WR-G1 bridge, run wide scoring and detector pass, blinded adjudication lane with fresh graders and hash-commit before unblinding, then gate table to PI.
+### 070-checkpoint - Checkpoint
+
+- at: `2026-08-26T22:45:03Z`
+- kind: `checkpoint`
+- summary: Wide-rescore adjudication lane completed and cell resolved Outcome A. All 19 shards graded by context-free opus graders, each lead-verified and workdir-audited, all sha256 hashes committed pre-unblinding (86c8dc07). CG1 19/19 PASS attempt 1, pooled clear-positive 534/691. Gates: WR-G1 0.7305 PASS, WR-G2 net wide lift 0.6319 PASS, WR-G3 effect ratio 9.34 PASS, WR-G4 NOT-ADJUDICABLE fired 0/334 as pre-stated. Lead re-derived every number from raw artifacts, exact match. Recorded arm0 duplicate-row anomaly (25 dup row_keys, 24/24 blind regrade agreement, no number moved). Resolved via bin/exp, tuner gitlink bumped to 6b01834b, PR 562 opened for PI review. Next: merge on approval, then KG ingest, paper 5 section 4.8 and 6.5 update, data-exhaust packaging.
+### 071-checkpoint - Checkpoint
+
+- at: `2026-08-26T23:09:36Z`
+- kind: `checkpoint`
+- summary: Post-resolve tail: PR 562 merged (4d7446e4), worktree cleaned. Librarian KG ingest verified and on main (3a66a2d7, experiment + mechanism nodes, kg list updated, text_capture manifest fix). Paper 5 updated on branch paper5/llama-wide-result as PR 563: section 4.8 llama subsection now carries wide numbers (lift 0.6319, ratio 9.34, narrow 8.25 as independent sample), Figure 10 rebuilt both rows wide with audit against the new AMENDMENT, 6.5 item removed and renumbered, tables and Appendix D updated. Fresh-worktree validate trap hit again, symlink loop remedied 25 paths. Aggregate exhaust built and verified for the wide-rescore cell, dry-run card presented to PI, upload awaiting explicit approval. Row-level exhaust still needs per-source license gates.
+### 072-checkpoint - Checkpoint
+
+- at: `2026-08-27T09:50:56Z`
+- kind: `checkpoint`
+- summary: Wide-rescore recovery arc closed. Guard PR 564 merged (post-rewrite harvest hook, scoped fail-closed worktree check, PreToolUse removal guard); paper PR 563 merged. User-approved GPU recovery re-run of the 17-arm llama hs17 wide cell completed on the local 3090: pre-registered equivalence bar PASS (arm1 narrow reproduces WR-G1 637/872 bit-exactly; generation manifest identical on every count, readback deltas at most 5e-5). All 19 recovered blind graded files sha256-authenticate against the pre-unblinding committed hashes; secured under the cells gitignored recovered_blind_lane. Text-join re-attribution over 15,492 rows: 1357 detector plus 12517 joined verdicts, 1461 drift nulls, 157 conflict nulls, reason-coded. Row-level dataset built, verify PASS, and published user-approved as professorsynapse/eh-llama-hs17-wide-instrument-rescore-rows revision 1ec3a0628488a3214df101060e71a71b856b76f5; recorded in NOTEBOOK and docs/public-artifacts.md (commit afa610a4). Committed gate numbers remain the numbers of record.
+### 073-checkpoint - Checkpoint
+
+- at: `2026-08-27T13:02:26Z`
+- kind: `checkpoint`
+- summary: Paper 5 editorial arc with the PI. PR 565 merged f5bd97da carrying five fixes: Figure 4 legend moved to upper left clear of the data, five prose em dashes removed, gemma opening reframed from field reputation to internal record with the Gemma 4 Technical Report citation arXiv 2607.02770 verified against the pinned checkpoint config 18 of 42 shared blocks, registration narration stripped from five body sites per VOICE, and both travelling cautions relocated to Limits bullets with bare site facts kept in place at the llama census. Worktree removed post harvest check, branch deleted. Next: PI-requested independent voice pass with a Neel Nanda reader lens for a fellowship submission, delegated to a background agent producing recommendations only.
+### 074-checkpoint - Checkpoint
+
+- at: `2026-08-27T14:21:26Z`
+- kind: `checkpoint`
+- summary: Nanda-lens submission pass complete. Independent Fable reviewer produced a two-part report grounded in Neel Nanda MATS FAQ and Alignment Forum writing plus the applications-private repo; lead spot-verified four concrete claims exactly. PI approved all ten items; editor agent applied them in six commits on paper5/nanda-pass, lead verified independently (caption order 1-10, grep battery, KUQ-only containment in the new examples appendix, byte-identical figure renames) and merged as PR 566. PI approved the Appendix F generations containment exception on record. Follow-up PR 567 merged: placebo-census jitter seed changed from process-salted hash to zlib crc32, figure regenerated once, byte-reproducible across runs. Open item from the pass: analysis/p5_new_figure_numbers.csv still keys by old figure filenames.
+### 075-checkpoint - Checkpoint
+
+- at: `2026-08-27T15:40:43Z`
+- kind: `checkpoint`
+- summary: Backlog audit and task harness arc. Audited the stale TODO backlog against the registry and pruned all terminal July rows to a 9-item current backlog (main 15f0b829). Found and fixed the post-rewrite harvest hook shipped without its executable bit so the PR 564 rebase guard never fired (PR 569 merged). Figure-key CSV fix merged (PR 568). Built and merged the task-backlog harness ported from the syntunia lifecycle: bin/task CLI, one task file per item under backlog/, generated TODO block, pre-commit gate requiring an active covering task for paper and infra work with EHR_TASK_OK escape hatch, and a cross-check that fails commits when a task is bound to a terminal experiment (PR 570, 37 tests green, gate and cross-check verified live). Nine seed tasks mirror the audit; harness task closed and archived (e74626d4). Merged worktrees removed after a clean harvest.

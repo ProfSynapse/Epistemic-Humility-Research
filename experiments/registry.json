@@ -2932,6 +2932,92 @@
     },
     {
       "checkpoint": {
+        "repo": "unsloth/Qwen3-4B-bnb-4bit",
+        "revision": "cad0bedfdd862093a12af478cb974ab2addd0e0a"
+      },
+      "created_at": "2026-07-22T11:04:31Z",
+      "falsifier": "Stop this SFT checkpoint if any mode's two-sided 95% Wilson recall lower bound is at most 0.5, if the native token, JSON, or deterministic causal-posture contract fails, if choices collapse to one mode, or if answer quality falls below the pre-signed noninferiority floor.",
+      "inputs": [
+        "experiments/common/knowledge_probe/scoring.py"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "dataset_builder.yaml",
+          "stage_s.yaml",
+          "stage_sft_recipe.yaml",
+          "qualification.yaml",
+          "modal_qualification.yaml"
+        ],
+        "modules": [
+          "build_dataset.py",
+          "test_build_dataset.py",
+          "prepare_stage_s.py",
+          "test_prepare_stage_s.py",
+          "qualify_stage_s.py",
+          "test_qualify_stage_s.py",
+          "modal_qualify_stage_s.py"
+        ],
+        "persistence": {
+          "build_dataset.py": {
+            "measured_smoke_wall_clock_s": 7.0,
+            "persistence": "short-run"
+          },
+          "modal_qualify_stage_s.py": {
+            "checkpoint_path": "experiments/fresh-sft-epistemic-mode-token-grpo/analysis/qualification/<run-id>/run_manifest.json",
+            "persistence": "incremental"
+          },
+          "prepare_stage_s.py": {
+            "measured_smoke_wall_clock_s": 4.0,
+            "persistence": "short-run"
+          },
+          "qualify_stage_s.py": {
+            "checkpoint_path": "experiments/fresh-sft-epistemic-mode-token-grpo/analysis/qualification/<run-id>/scored_rows.jsonl",
+            "persistence": "incremental"
+          },
+          "test_build_dataset.py": {
+            "measured_smoke_wall_clock_s": 1.0,
+            "persistence": "short-run"
+          },
+          "test_prepare_stage_s.py": {
+            "measured_smoke_wall_clock_s": 6.0,
+            "persistence": "short-run"
+          },
+          "test_qualify_stage_s.py": {
+            "measured_smoke_wall_clock_s": 8.0,
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "build_dataset.py": "b7407341f669065cadde2c092d3b62add6e9ec586adbe5033024fa6672f7d414",
+          "cell.yaml": "97777e4ca3a3598adb91a7111c51b7663e81b108aeeb2780c371396fec833fcf",
+          "dataset_builder.yaml": "59dd19cc19988fb9b44d806a3ec760ed72ccbd5601bfb167155bd96a7ca04192",
+          "gates.yaml": "58fa4b9258d26edd84d5f922aaa6db55ee5cdd01648eecdd045b667144aa5bd3",
+          "modal_qualification.yaml": "efbe2f4ed61103fccfe4af5f82cbbe535b0d4e0ccbaa38d5e4f338a94893cbb8",
+          "modal_qualify_stage_s.py": "c13f186e4d8b7ec4591e452c46f10181a26fec32aea17956f52315ae44a6a72b",
+          "prepare_stage_s.py": "cfa048bd042bba2790d049872c04f7e2c00af958a2ac61a113b32426301c3d93",
+          "qualification.yaml": "142bbdc23f3a626bac9d9c086456c2d27d18e7c4d5a47635ec96671b3f5ad18a",
+          "qualify_stage_s.py": "723082351ff9caef40ebd3c4f582d3a9a422b02fa9c692b06f0975f2eaa950f2",
+          "stage_s.yaml": "83a9eb691564cf1fe955f57aa0d35b5dffc4532bcc1882b51d6e10913493af61",
+          "stage_sft_recipe.yaml": "755df3ca01450fd68a73e6b9db086b228f2b69798c0a9faf4624cba76c92b2ea",
+          "test_build_dataset.py": "2da3352abd674ca9d7090bc82d167826d24713326131afb4b616c5af860dbb66",
+          "test_prepare_stage_s.py": "b6f6cfe3068d91ba2125aed7df14943c65f0f7e0d426f6fdd233df3cf2da1146",
+          "test_qualify_stage_s.py": "fc53b026126c71e92a7ddb58b0dca12db40c6fdbbb2fe57f9d7b7c77ee4bb2ad"
+        }
+      },
+      "kg": [],
+      "prediction": "The fresh SFT will emit valid native mode tokens and JSON on the dev split, achieve a two-sided 95% Wilson recall lower bound above 0.5 for every mode, preserve the deterministic forced-token posture contract, avoid collapse, and retain answer quality relative to the original pinned base.",
+      "question": "Can a fresh Qwen3-4B SFT imitate a frozen empirical epistemic action policy by emitting ANSWER, QUALIFY, or ABSTAIN as its first action while preserving the corresponding visible posture and answer quality?",
+      "registered": true,
+      "slug": "fresh-sft-epistemic-mode-token-grpo",
+      "status": "falsified",
+      "title": "Fresh-SFT Epistemic Mode Tokens (Stage S)",
+      "type": "training-run",
+      "verdict": "Falsifier fired on the valid corrected dev qualification (local lane and repaired-tuner deviations user-accepted and recorded): the fresh SFT installs the native mode-token mechanism perfectly (all format gates 1.0 after the tuner adapter-loading instrument failure was diagnosed and repaired at f6f1229) and learns ABSTAIN 0.77 / ANSWER 0.79 recall, but never emits QUALIFY natively (0/200) and answer quality falls below the noninferiority floor (-0.239 vs -0.10) via over-abstention, so the Stage-S checkpoint does not qualify for downstream GRPO; held-out remains sealed."
+    },
+    {
+      "checkpoint": {
         "repo": "qwen3-4b clean-sft-merged-16bit + grpo-v2-lora (deployed; existing extractions only)",
         "revision": "extraction__55254a04aa1f (gate) / amendment_t stage2 (dial)"
       },
@@ -5286,6 +5372,49 @@
     },
     {
       "checkpoint": {
+        "repo": "unsloth/Llama-3.2-3B-Instruct",
+        "revision": "raw-base (bf16 instruct, no adapter, no 4-bit quantization)"
+      },
+      "created_at": "2026-08-26T12:11:51Z",
+      "falsifier": "WR-G3 effect ratio < 3.0 (specificity is narrow-instrument-only), or WR-G2 net wide lift < 0.30 with WR-G1 passing (narrow conversion not matched by genuine wide abstention).",
+      "inputs": [
+        "experiments/j-space-cross-family-layer-contrast",
+        "experiments/llama-hs17-direction-specificity",
+        "experiments/abstention-wide-instrument-calibration",
+        "experiments/qwen3-4b-l34-placebo-seed-census"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "engine_exception": {
+          "kind": "intervention",
+          "reason": "Per-row KU-gated activation write at hs17 via the tuner mechinterp InterventionHook path — the engine of llama-hs17-direction-specificity, whose arms this cell regenerates; the bridge comparison (WR-G1) requires the identical engine and generation contract as the resolved narrow cell (batched-generation.md decision table: per-row hooks/activation writing)."
+        },
+        "modules": [],
+        "persistence": {},
+        "pins": {
+          "cell.yaml": "627c5b6a63d01a15f378df81446f405c6fcaa2b4256f16000bc6954bfd18c273",
+          "gates.yaml": "17451c5bf10db6da03a034490b4d9f039e62fe26c3accb6c26cca97ab793dc32"
+        }
+      },
+      "kg": [
+        "experiment:llama-hs17-wide-instrument-rescore",
+        "mechanism:llama-hs17-direction-specificity-survives-wide-instrument"
+      ],
+      "prediction": "A: wide replicates + specific — WR-G1/G2/G3 all PASS; llama hs17 direction-specificity is instrument-robust (user + orchestrator ~65%, recorded 2026-08-26).",
+      "question": "Does llama's hs17 direction-specific gated write (narrow clean_tighten effect ratio 8.25) survive the blinded wide abstention instrument, with a wide null for the same fifteen write-site random directions?",
+      "registered": true,
+      "slug": "llama-hs17-wide-instrument-rescore",
+      "status": "resolved",
+      "text_capture": "enabled",
+      "title": "Llama hs17 wide-instrument regeneration and re-score",
+      "type": "steer-cell",
+      "verdict": "Wide-instrument regeneration of the llama hs17 operating point passes all gates (net wide lift 0.6319, effect ratio 9.34, CG1 19/19); llama direction-specificity is instrument-robust (Outcome A)."
+    },
+    {
+      "checkpoint": {
         "repo": "Qwen/Qwen3.5-4B",
         "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
       },
@@ -6267,6 +6396,66 @@
       "title": "Instruction-free abstention internalization: seed robustness of the P-struct readout",
       "type": "eval",
       "verdict": "Instruction-free abstention internalization is seed-robust: all three cold-SFT seeds retain 69.6-79.4 percent refusal recall under the structure-only prompt while all DPO/KTO seeds read 0.00, making only-SFT-installs-abstention a three-seed claim in both directions."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B-bnb-4bit",
+        "revision": "cad0bedfdd862093a12af478cb974ab2addd0e0a"
+      },
+      "created_at": "2026-07-23T22:27:09Z",
+      "falsifier": "If both the banded k-regression QUALIFY-vs-rest AUROC and the direct multinomial 3-way QUALIFY-vs-rest AUROC fail the PASS bar at every one of the four measured depths (point AUROC<=0.55 OR bootstrap 95% CI upper<0.60), that falsifies recoverability under this instrument -- a class-balanced retrain would not be expected to fix the QUALIFY-void by this evidence, and the category should be treated as not encoded (or not linearly/banded-linearly encoded) in the base model's representation at these depths.",
+      "inputs": [
+        "experiments/fresh-sft-epistemic-mode-token-grpo/AMENDMENT.md",
+        "experiments/fresh-sft-epistemic-mode-token-grpo/dataset_builder.yaml",
+        "experiments/fresh-sft-epistemic-mode-token-grpo/qualification.yaml",
+        "experiments/fresh-sft-epistemic-mode-token-grpo/analysis/dataset/train.jsonl",
+        "experiments/fresh-sft-epistemic-mode-token-grpo/analysis/dataset/dev.jsonl",
+        "experiments/fresh-sft-epistemic-mode-token-grpo/analysis/dataset/aggregate_manifest.json",
+        "experiments/bb-base-propensity-fit-read/AMENDMENT.md",
+        "experiments/bb-base-propensity-fit-read/gates.yaml",
+        "docs/atlas/family-layer-map.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "extract_hidden_states.py",
+          "fit_readouts.py",
+          "test_qualify_separability.py"
+        ],
+        "persistence": {
+          "extract_hidden_states.py": {
+            "checkpoint_path": "experiments/qualify-mode-separability-base-readout/analysis/extraction/index.jsonl",
+            "persistence": "incremental"
+          },
+          "fit_readouts.py": {
+            "measured_smoke_wall_clock_s": 30.0,
+            "persistence": "short-run"
+          },
+          "test_qualify_separability.py": {
+            "measured_smoke_wall_clock_s": 5.0,
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "cell.yaml": "227a129d641dcf26d8f23bdfdbe223f9a119a1d9b6e662bb3c913f05f8725ca0",
+          "extract_hidden_states.py": "b0bfabf76a472d0066e3f5b90bd5d488947a8d3deaba90134b184871071c0b74",
+          "fit_readouts.py": "e835fd9c6009f3b51c204f831173ce6f8fa93bf3962f43661b6f595aaf2925b8",
+          "gates.yaml": "ad4629db1cc7d860ea2d06c81ce9cafa8cd25462372f91b93222fc00adba3104",
+          "test_qualify_separability.py": "469d8c293dca5a705b9342237f6640c5b4d75cfb4b6fd298f6fb6ed2c2b9eec3"
+        }
+      },
+      "kg": [],
+      "prediction": "The QUALIFY band is substantially recoverable from base-model hidden states under a band-aware readout (banded k-regression and/or direct multinomial 3-way readout clear the primary PASS bar, AUROC>=0.62 with CI lower>0.55, at at least one of the four measured depths), while the naive linear QUALIFY-vs-rest floor underperforms both band-aware readouts by a nontrivial margin -- supporting a retrain-worth-trying verdict and confirming the class-imbalance-during-training mechanism flagged in fresh-sft-epistemic-mode-token-grpo/AMENDMENT.md sec 10 rather than a fundamentally unencoded category.",
+      "question": "Is the QUALIFY category of the falsified fresh-sft-epistemic-mode-token-grpo Stage-S checkpoint recoverable from the base model's own pre-generation representations -- i.e. would a class-balanced retrain plausibly fix the QUALIFY-void, or is the category itself not encoded in the base model?",
+      "registered": true,
+      "slug": "qualify-mode-separability-base-readout",
+      "status": "null-result",
+      "title": "QUALIFY Mode Separability on Base-Model Readout",
+      "type": "lab-diagnostic",
+      "verdict": "Inconclusive by the pre-registered bands, falsifier not fired: the base model encodes a real but only moderate graded capability signal (Spearman k-readout 0.30-0.44 rising with depth; scale ends read 0.72/0.76) while the QUALIFY middle band itself reads weakly under every readout class (banded k-regression 0.569 [0.523,0.614], multinomial 0.617 [0.566,0.664], naive 0.590 at best depth hs27), and the naive floor did NOT underperform the band-capable readouts, so the crisp-band premise fails and neither plain class-rebalanced retraining nor category-not-encoded is supported; evidence favors ordinal-aware redesign of the QUALIFY supervision or a 2-way policy plus the confidence scalar."
     },
     {
       "checkpoint": {
@@ -7474,6 +7663,84 @@
       "title": "Protocol Amendment H: Thinking-Enabled Parallel Arm",
       "type": "historical-amendment",
       "verdict": "DRAFT / NOT SIGNED; bounded audit showed real perturbation, enough to define a parallel arm but not to overwrite non-thinking evidence."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B-bnb-4bit",
+        "revision": "cad0bedfdd862093a12af478cb974ab2addd0e0a"
+      },
+      "created_at": "2026-07-24T00:26:00Z",
+      "falsifier": "Stop this checkpoint if either mode's two-sided 95% Wilson recall lower bound <=0.5, the native token/JSON/two-token forced-posture contract fails, the dev abstention rate falls outside the pre-registered band, attempted-row noninferiority CI lower <=-0.10, or the confidence calibration gate fails (AUROC<0.62 or ECE>=0.30 at the locked bars).",
+      "inputs": [
+        "experiments/common/knowledge_probe/scoring.py"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "dataset_builder.yaml",
+          "training.yaml",
+          "sft_recipe.yaml",
+          "qualification.yaml"
+        ],
+        "modules": [
+          "build_dataset.py",
+          "test_build_dataset.py",
+          "prepare_training.py",
+          "test_prepare_training.py",
+          "qualify.py",
+          "test_qualify.py"
+        ],
+        "persistence": {
+          "build_dataset.py": {
+            "measured_smoke_wall_clock_s": 0.57,
+            "persistence": "short-run"
+          },
+          "prepare_training.py": {
+            "measured_smoke_wall_clock_s": 0.08,
+            "persistence": "short-run"
+          },
+          "qualify.py": {
+            "checkpoint_path": "experiments/twoway-mode-token-confidence-sft/analysis/qualification/<run-id>/scored_rows.jsonl",
+            "persistence": "incremental"
+          },
+          "test_build_dataset.py": {
+            "measured_smoke_wall_clock_s": 0.5,
+            "persistence": "short-run"
+          },
+          "test_prepare_training.py": {
+            "measured_smoke_wall_clock_s": 0.65,
+            "persistence": "short-run"
+          },
+          "test_qualify.py": {
+            "measured_smoke_wall_clock_s": 0.46,
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "build_dataset.py": "aaf79a6fb38dcd394c44e5974654140b7506468e3c17205c79a7a79cae792ff5",
+          "cell.yaml": "41b7477bbe499d48894890dc76eefb0853ae2e0315a90b86d30f1c3376cc9f36",
+          "dataset_builder.yaml": "def0ca43d11b80580f19d93ff3d062d4024f71ce92e870a9a5bbb1fd39e224ad",
+          "gates.yaml": "48f9eb16770c6c35548352bab8629989ac34b1f18ce3df994ce31b53b210f382",
+          "prepare_training.py": "3587ee4b68f06b93146639447ca8fcf29f1edb74c48b63368b1cf8f85c5a8f71",
+          "qualification.yaml": "d29b99029ec96ed9ff2066f171a4ebd58c0c0b7cd282d71a7eba28c493b62f5b",
+          "qualify.py": "f41a1287ee41a2bd7049aca4769e69cee28e51db0ecef79d10893d142cc2cc9e",
+          "sft_recipe.yaml": "5cd11a79e0b4ea1e7a2b689cd5af47c479ca83264118e64a549c040123221a0a",
+          "test_build_dataset.py": "8281cb51c38724d36bd5fc9d2f690ecaa75b4c88bed23577d8603f3f2533b269",
+          "test_prepare_training.py": "7d98dac95f93878edf0c1f0be45244d6f29328c4dc20fe4f153fcbb091f3e42f",
+          "test_qualify.py": "8d83ca90db0f9493b9e85ac42000303abb912606d76eea03c953b1014c42d2e6",
+          "training.yaml": "323f79ed0d21f1c51e30cdd1d71987769278e456ded7613ef78491d5a92c62f9"
+        }
+      },
+      "kg": [],
+      "prediction": "On dev the two-way SFT emits valid native <ANSWER>/<ABSTAIN> tokens and JSON (>=95%), clears two-sided 95% Wilson recall lower bound >0.5 for both modes while abstaining less than Stage-S (rate near the true 0.332, inside [0.22,0.42]), preserves the two-token forced-posture contract, passes answer-quality noninferiority on attempted rows (paired CI lower > -0.10) because it attempts the middle band as base does, keeps the confidence scalar valid and non-collapsed (SD>=0.10), and clears the new calibration gate (discrimination AUROC>=0.62, ECE<0.30) - eliminating both Stage-S failure modes.",
+      "question": "Can a fresh Qwen3-4B SFT imitate a frozen empirical epistemic action policy reduced to two native first-token modes (<ANSWER> attempt vs <ABSTAIN> decline) while emitting a calibrated answer_confidence scalar, avoiding the Stage-S QUALIFY void by construction, not over-abstaining, and supporting a graded product-layer \"qualify\" rendering from the scalar rather than a trained class?",
+      "registered": true,
+      "slug": "twoway-mode-token-confidence-sft",
+      "status": "signed",
+      "title": "Two-Way Native Mode Token plus Answer-Confidence SFT",
+      "type": "training-run",
+      "verdict": ""
     },
     {
       "checkpoint": {
