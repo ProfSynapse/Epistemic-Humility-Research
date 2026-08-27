@@ -89,57 +89,57 @@
     },
     "arm2_random_910005": {
       "n_dosed": 870,
-      "readback_mean": 4.968575100748097,
+      "readback_mean": 4.968548281871371,
       "frac_within_tolerance": 1.0
     },
     "arm2_random_910006": {
       "n_dosed": 870,
-      "readback_mean": 4.970574962179713,
+      "readback_mean": 4.970579594356447,
       "frac_within_tolerance": 1.0
     },
     "arm2_random_910007": {
       "n_dosed": 870,
-      "readback_mean": 4.968113291424055,
+      "readback_mean": 4.968063621527158,
       "frac_within_tolerance": 1.0
     },
     "arm2_random_910008": {
       "n_dosed": 870,
-      "readback_mean": 4.967997494438884,
+      "readback_mean": 4.9679479477423465,
       "frac_within_tolerance": 1.0
     },
     "arm2_random_910009": {
       "n_dosed": 870,
-      "readback_mean": 4.969319963754046,
+      "readback_mean": 4.969328107854888,
       "frac_within_tolerance": 1.0
     },
     "arm2_random_910010": {
       "n_dosed": 870,
-      "readback_mean": 4.968871792357213,
+      "readback_mean": 4.968887206947015,
       "frac_within_tolerance": 1.0
     },
     "arm2_random_910011": {
       "n_dosed": 870,
-      "readback_mean": 4.968666239514637,
+      "readback_mean": 4.968669694396639,
       "frac_within_tolerance": 1.0
     },
     "arm2_random_910012": {
       "n_dosed": 870,
-      "readback_mean": 4.967842303030284,
+      "readback_mean": 4.967802272505174,
       "frac_within_tolerance": 1.0
     },
     "arm2_random_910013": {
       "n_dosed": 870,
-      "readback_mean": 4.967244034969949,
+      "readback_mean": 4.967239754558197,
       "frac_within_tolerance": 1.0
     },
     "arm2_random_910014": {
       "n_dosed": 870,
-      "readback_mean": 4.968020218471699,
+      "readback_mean": 4.968039223922866,
       "frac_within_tolerance": 1.0
     },
     "arm2_random_910015": {
       "n_dosed": 870,
-      "readback_mean": 4.966881500480288,
+      "readback_mean": 4.966838334692241,
       "frac_within_tolerance": 1.0
     }
   },

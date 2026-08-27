@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-26T22:45:03Z'
+updated_at: '2026-08-27T09:50:56Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -1653,6 +1653,48 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 071-checkpoint
+  at: '2026-08-26T23:09:36Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Post-resolve tail: PR 562 merged (4d7446e4), worktree cleaned. Librarian
+    KG ingest verified and on main (3a66a2d7, experiment + mechanism nodes, kg list
+    updated, text_capture manifest fix). Paper 5 updated on branch paper5/llama-wide-result
+    as PR 563: section 4.8 llama subsection now carries wide numbers (lift 0.6319,
+    ratio 9.34, narrow 8.25 as independent sample), Figure 10 rebuilt both rows wide
+    with audit against the new AMENDMENT, 6.5 item removed and renumbered, tables
+    and Appendix D updated. Fresh-worktree validate trap hit again, symlink loop remedied
+    25 paths. Aggregate exhaust built and verified for the wide-rescore cell, dry-run
+    card presented to PI, upload awaiting explicit approval. Row-level exhaust still
+    needs per-source license gates.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 072-checkpoint
+  at: '2026-08-27T09:50:56Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Wide-rescore recovery arc closed. Guard PR 564 merged (post-rewrite harvest
+    hook, scoped fail-closed worktree check, PreToolUse removal guard); paper PR 563
+    merged. User-approved GPU recovery re-run of the 17-arm llama hs17 wide cell completed
+    on the local 3090: pre-registered equivalence bar PASS (arm1 narrow reproduces
+    WR-G1 637/872 bit-exactly; generation manifest identical on every count, readback
+    deltas at most 5e-5). All 19 recovered blind graded files sha256-authenticate
+    against the pre-unblinding committed hashes; secured under the cells gitignored
+    recovered_blind_lane. Text-join re-attribution over 15,492 rows: 1357 detector
+    plus 12517 joined verdicts, 1461 drift nulls, 157 conflict nulls, reason-coded.
+    Row-level dataset built, verify PASS, and published user-approved as professorsynapse/eh-llama-hs17-wide-instrument-rescore-rows
+    revision 1ec3a0628488a3214df101060e71a71b856b76f5; recorded in NOTEBOOK and docs/public-artifacts.md
+    (commit afa610a4). Committed gate numbers remain the numbers of record.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -2024,3 +2066,13 @@ _No summary yet._
 - at: `2026-08-26T22:45:03Z`
 - kind: `checkpoint`
 - summary: Wide-rescore adjudication lane completed and cell resolved Outcome A. All 19 shards graded by context-free opus graders, each lead-verified and workdir-audited, all sha256 hashes committed pre-unblinding (86c8dc07). CG1 19/19 PASS attempt 1, pooled clear-positive 534/691. Gates: WR-G1 0.7305 PASS, WR-G2 net wide lift 0.6319 PASS, WR-G3 effect ratio 9.34 PASS, WR-G4 NOT-ADJUDICABLE fired 0/334 as pre-stated. Lead re-derived every number from raw artifacts, exact match. Recorded arm0 duplicate-row anomaly (25 dup row_keys, 24/24 blind regrade agreement, no number moved). Resolved via bin/exp, tuner gitlink bumped to 6b01834b, PR 562 opened for PI review. Next: merge on approval, then KG ingest, paper 5 section 4.8 and 6.5 update, data-exhaust packaging.
+### 071-checkpoint - Checkpoint
+
+- at: `2026-08-26T23:09:36Z`
+- kind: `checkpoint`
+- summary: Post-resolve tail: PR 562 merged (4d7446e4), worktree cleaned. Librarian KG ingest verified and on main (3a66a2d7, experiment + mechanism nodes, kg list updated, text_capture manifest fix). Paper 5 updated on branch paper5/llama-wide-result as PR 563: section 4.8 llama subsection now carries wide numbers (lift 0.6319, ratio 9.34, narrow 8.25 as independent sample), Figure 10 rebuilt both rows wide with audit against the new AMENDMENT, 6.5 item removed and renumbered, tables and Appendix D updated. Fresh-worktree validate trap hit again, symlink loop remedied 25 paths. Aggregate exhaust built and verified for the wide-rescore cell, dry-run card presented to PI, upload awaiting explicit approval. Row-level exhaust still needs per-source license gates.
+### 072-checkpoint - Checkpoint
+
+- at: `2026-08-27T09:50:56Z`
+- kind: `checkpoint`
+- summary: Wide-rescore recovery arc closed. Guard PR 564 merged (post-rewrite harvest hook, scoped fail-closed worktree check, PreToolUse removal guard); paper PR 563 merged. User-approved GPU recovery re-run of the 17-arm llama hs17 wide cell completed on the local 3090: pre-registered equivalence bar PASS (arm1 narrow reproduces WR-G1 637/872 bit-exactly; generation manifest identical on every count, readback deltas at most 5e-5). All 19 recovered blind graded files sha256-authenticate against the pre-unblinding committed hashes; secured under the cells gitignored recovered_blind_lane. Text-join re-attribution over 15,492 rows: 1357 detector plus 12517 joined verdicts, 1461 drift nulls, 157 conflict nulls, reason-coded. Row-level dataset built, verify PASS, and published user-approved as professorsynapse/eh-llama-hs17-wide-instrument-rescore-rows revision 1ec3a0628488a3214df101060e71a71b856b76f5; recorded in NOTEBOOK and docs/public-artifacts.md (commit afa610a4). Committed gate numbers remain the numbers of record.
