@@ -6,6 +6,43 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-27 — recovery re-run COMPLETE: equivalence bar PASS, blind verdicts re-attributed
+
+The 17-arm regeneration completed on the local RTX 3090 (exit 0, all 17
+arms, exact registered row counts 1206/1206/872x15, zero missing out_text,
+no crash-resume duplicates this time). Pre-registered equivalence bar PASS
+on both prongs: (1) re-scored arm1 narrow clean_tighten reproduces WR-G1
+637/872 bit-exactly (rate, Wilson CI identical); (2) the re-run generation
+manifest matches the committed original on every count and flag — the only
+diffs are 11 readback means at <= 5e-5 (GPU numerics; 5 dosed arms
+reproduced bit-identically). Random arms show narrow-count drift in 9/15
+seeds (greedy near-tie flips under numerics), which is why verdict
+re-attribution is per-row by exact text, never positional.
+
+Blind-lane recovery: the 19 shard pool+graded scratchpad copies survived;
+all 19 graded files sha256-authenticate against the pre-unblinding committed
+hashes (adjudication_graded_manifest.json, 19/19). Copies secured under this
+cell's gitignored analysis/llama-3.2-3b/recovered_blind_lane/.
+
+Re-attribution over the 15,492 re-run rows: 1,357 detector_v2-flagged (no
+adjudication needed), 12,517 joined to a unique blind verdict by exact text
+match (arm0/arm1 join at 100 percent of their adjudication population),
+1,461 text-drift nulls (all in random arms), 157 conflicting-verdict nulls
+(30 distinct texts graded inconsistently across pool duplicates); every null
+carries a machine-readable reason. Cross-check: recomputed wide-confab
+counts from re-run flags + joined verdicts give arm0 130/872 and arm1
+686/872 vs the committed 136/872 and 687/872 — deltas fully accounted for by
+drift + withheld conflicts; committed gate numbers remain the numbers of
+record, untouched.
+
+Row-level dataset built (rows shape, cell llama32_3b_instruct: 14,824
+full-text kuq rows + 668 text-free triviaqa/popqa rows, zero excluded, 19
+MB), verify_exhaust PASS twice (before and after adding the recovery
+provenance section to the card). Upload pending the dry-run card approval;
+the tool-permission classifier blocked this session from running
+upload_exhaust.py, so the upload will be run by the user or after a
+permission grant — never routed around.
+
 ### 2026-08-26 — DATA-LOSS INCIDENT and user-approved recovery re-run (LAUNCHED)
 
 Incident: after PR #562 merged, the lead removed the experiment's worktree
