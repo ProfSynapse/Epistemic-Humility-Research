@@ -1,0 +1,262 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import threading
+from pathlib import Path
+
+import pytest
+
+import synaptic_host.local_io_v1.posix as posix_module
+from synaptic_host.local_io_v1.filesystem import LocalFilesystemV1, _journal_record
+from synaptic_host.local_io_v1.config import StorageRegistryV1
+from synaptic_host.local_io_v1.model import (
+    CapabilityStatusV1,
+    LocalIOCodeV1,
+    LocalIOErrorV1,
+    LocalRootBindingV1,
+    LocalRootPermitV1,
+    RecoveryStatusV1,
+    RetainedDirectoryV1,
+    RootAccessV1,
+    CreatePhaseV1,
+    JournalPublishStatusV1,
+    digest_v1,
+)
+from synaptic_host.local_io_v1.posix import (
+    PosixRetainedDirfdPortV1,
+    detect_posix_capability_v1,
+)
+
+
+def test_capability_detection_is_canonical_and_windows_adapter_construction_is_zero_call(monkeypatch) -> None:
+    capability = detect_posix_capability_v1(platform_name="win32", os_name="nt")
+    assert capability.platform_family == "windows"
+    assert capability.status is CapabilityStatusV1.UNAVAILABLE
+    assert capability.features == ()
+
+    class NoCallWindowsOS:
+        name = "nt"
+
+        def __getattr__(self, name):
+            raise AssertionError(f"unexpected operating-system access: {name}")
+
+    monkeypatch.setattr(posix_module, "os", NoCallWindowsOS())
+    with pytest.raises(LocalIOErrorV1) as caught:
+        posix_module.PosixRetainedDirfdPortV1()
+    assert caught.value.code is LocalIOCodeV1.CAPABILITY_UNAVAILABLE
+
+
+def test_real_posix_retained_dirfd_lifecycle_and_handle_antiforgery(b42_ext4_root: Path) -> None:
+    data_path = b42_ext4_root / "data"
+    control_path = b42_ext4_root / "control"
+    data_path.mkdir()
+    control_path.mkdir()
+    (data_path / "input.bin").write_bytes(b"payload")
+
+    port = PosixRetainedDirfdPortV1()
+    permits: dict[int, LocalRootPermitV1] = {}
+
+    class Authenticator:
+        def authenticate(self, permit):
+            return permit if permits.get(id(permit)) is permit else None
+
+    def binding(ref: str, path: Path) -> LocalRootBindingV1:
+        permit_ref = "permit-" + ref
+        canonical = {
+            "access": RootAccessV1.READ_CREATE.value,
+            "absolute_root": str(path),
+            "authority_ref": "ext4-authority",
+            "key_ref": "ext4-key",
+            "permit_ref": permit_ref,
+            "root_ref": ref,
+        }
+        permit = LocalRootPermitV1(
+            permit_ref, ref, path, RootAccessV1.READ_CREATE,
+            "ext4-authority", "ext4-key", digest_v1(canonical), "0" * 64,
+        )
+        permits[id(permit)] = permit
+        return LocalRootBindingV1(
+            ref, str(path), path, RootAccessV1.READ_CREATE,
+            permit_ref, permit,
+        )
+
+    authenticator = Authenticator()
+    filesystem = LocalFilesystemV1(port, authenticator, native_platform="linux")
+    data = binding("opaque-ext4-data", data_path)
+    control = binding("opaque-ext4-control", control_path)
+    root = filesystem.retain_root_authority(data, control)
+    source = filesystem.inspect_source(root, "input.bin", role="opaque-role")
+    assert b"".join(filesystem.iter_source(root, source, chunk_size=3)) == b"payload"
+    replacement = data_path / "replacement.bin"
+    replacement.write_bytes(b"payload")
+    replacement.replace(data_path / "input.bin")
+    with pytest.raises(LocalIOErrorV1) as caught:
+        list(filesystem.iter_source(root, source, chunk_size=3))
+    assert caught.value.code is LocalIOCodeV1.SOURCE_CHANGED
+
+    destination = filesystem.bind_destination(
+        root,
+        "artifact.bin",
+        role="opaque-role",
+        expected_size=7,
+        expected_sha256=hashlib.sha256(b"payload").hexdigest(),
+    )
+    create = filesystem.authorize_create(root, destination)
+    result = filesystem.create_once(root, create, destination, [b"pay", b"load"])
+    assert result.status is RecoveryStatusV1.FOUND
+    assert filesystem.recover_create(root, destination).status is RecoveryStatusV1.FOUND
+    assert (data_path / "artifact.bin").read_bytes() == b"payload"
+    replay = filesystem.authorize_create(root, destination)
+    assert filesystem.create_once(root, replay, destination, [b"payload"]).status is RecoveryStatusV1.FOUND
+
+    forged = RetainedDirectoryV1(root.data_directory.handle_ref, root.data_directory.identity)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        port.list_names_at(forged, 10)
+    assert caught.value.code is LocalIOCodeV1.AUTHORITY_INVALID
+
+    subdirectory = data_path / "child"
+    subdirectory.mkdir()
+    child = port.open_directory_at(root.data_directory, "child")
+    port.close_directory(child)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        port.list_names_at(child, 10)
+    assert caught.value.code is LocalIOCodeV1.AUTHORITY_INVALID
+    filesystem.release_root_authority(root)
+
+
+def test_real_ext4_race_hardlink_leftover_and_no_replace_contract(b42_ext4_root: Path) -> None:
+    data_path = b42_ext4_root / "hostile data"
+    control_path = b42_ext4_root / "hostile control"
+    data_path.mkdir()
+    control_path.mkdir()
+    (data_path / "nested").mkdir()
+    (data_path / "nested" / "input").write_bytes(b"payload")
+
+    config_path = b42_ext4_root / "hostile-storage.json"
+    config_path.write_text(json.dumps({
+        "schema_version": "synaptic-host-storage/v1",
+        "roots": [
+            {"root_ref": "data", "location": str(data_path), "access": "read_create", "permit_ref": "permit-data"},
+            {"root_ref": "control", "location": str(control_path), "access": "read_create", "permit_ref": "permit-control"},
+        ],
+    }), encoding="utf-8")
+
+    def registry() -> StorageRegistryV1:
+        result = StorageRegistryV1.load(config_path, project_root=b42_ext4_root)
+        for ref in ("data", "control"):
+            result.issue_root_permit(
+                ref, authority_ref="ext4-authority", key_ref="ext4-key", proof_digest="0" * 64
+            )
+        return result
+
+    port = PosixRetainedDirfdPortV1()
+    first_registry = registry()
+    filesystem = LocalFilesystemV1(port, first_registry, native_platform="linux")
+    root = filesystem.retain_root_authority(
+        first_registry.resolve("data"), first_registry.resolve("control")
+    )
+
+    source = filesystem.inspect_source(root, "nested/input", role="role")
+    os.rename(data_path / "nested", data_path / "nested-old")
+    (data_path / "nested").mkdir()
+    (data_path / "nested" / "input").write_bytes(b"payload")
+    with pytest.raises(LocalIOErrorV1):
+        list(filesystem.iter_source(root, source))
+
+    (data_path / "hardlink-source").write_bytes(b"payload")
+    os.link(data_path / "hardlink-source", data_path / "hardlink-alias")
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.inspect_source(root, "hardlink-source", role="role")
+    assert caught.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+
+    sentinel = data_path / "preexisting"
+    sentinel.write_bytes(b"sentinel")
+    os.link(sentinel, data_path / "preexisting-alias")
+    preexisting = filesystem.bind_destination(
+        root, "preexisting", role="role", expected_size=7,
+        expected_sha256=hashlib.sha256(b"payload").hexdigest(),
+    )
+    result = filesystem.create_once(
+        root, filesystem.authorize_create(root, preexisting), preexisting, [b"payload"]
+    )
+    assert result.status is RecoveryStatusV1.CONFLICT
+    assert sentinel.read_bytes() == b"sentinel"
+    assert (data_path / "preexisting-alias").read_bytes() == b"sentinel"
+
+    destination = filesystem.bind_destination(
+        root, "leftover-artifact", role="role", expected_size=7,
+        expected_sha256=hashlib.sha256(b"payload").hexdigest(),
+    )
+    mutation_id = filesystem.authorize_create(root, destination).mutation_id
+    journal_directory = control_path / (".journal-" + mutation_id)
+    journal_directory.mkdir()
+    assert filesystem.recover_create(root, destination).status is RecoveryStatusV1.INDETERMINATE
+    (journal_directory / (".private-" + "a" * 32)).write_bytes(b"partial")
+    assert filesystem.recover_create(root, destination).status is RecoveryStatusV1.INDETERMINATE
+
+    concurrent_mutation = digest_v1({"concurrent": mutation_id})
+    staging_name = ".synaptic-" + concurrent_mutation[:32]
+    record = _journal_record(
+        mutation_id=concurrent_mutation,
+        destination_digest=destination.destination_digest,
+        phase=CreatePhaseV1.CLAIMED,
+        previous=None,
+        staging_name=staging_name,
+        identity=None,
+    )
+    barrier = threading.Barrier(2)
+
+    class RacingPort(PosixRetainedDirfdPortV1):
+        def _read_journal_fd(self, directory_fd, maximum):
+            value = super()._read_journal_fd(directory_fd, maximum)
+            if maximum == 4 and value == ((), False):
+                barrier.wait(timeout=5)
+            return value
+
+    first_race_port = RacingPort()
+    second_race_port = RacingPort()
+    first_control = first_race_port.retain_directory(control_path)
+    second_control = second_race_port.retain_directory(control_path)
+    results = []
+
+    def publish(adapter, control) -> None:
+        results.append(adapter.publish_journal(control, concurrent_mutation, None, record))
+
+    threads = [
+        threading.Thread(target=publish, args=(first_race_port, first_control)),
+        threading.Thread(target=publish, args=(second_race_port, second_control)),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    assert sorted(result.status.value for result in results) == sorted([
+        JournalPublishStatusV1.PUBLISHED.value,
+        JournalPublishStatusV1.EXISTS_IDENTICAL.value,
+    ])
+    marker_directory = control_path / (".journal-" + concurrent_mutation)
+    marker_names = sorted(path.name for path in marker_directory.iterdir())
+    assert marker_names == ["0-claimed.json"]
+    assert (marker_directory / marker_names[0]).stat().st_nlink == 1
+    first_race_port.close_directory(first_control)
+    second_race_port.close_directory(second_control)
+
+    durable = filesystem.bind_destination(
+        root, "durable", role="role", expected_size=7,
+        expected_sha256=hashlib.sha256(b"payload").hexdigest(),
+    )
+    assert filesystem.create_once(
+        root, filesystem.authorize_create(root, durable), durable, [b"payload"]
+    ).status is RecoveryStatusV1.FOUND
+    second_registry = registry()
+    replay_port = PosixRetainedDirfdPortV1()
+    replay_filesystem = LocalFilesystemV1(replay_port, second_registry, native_platform="linux")
+    replay_root = replay_filesystem.retain_root_authority(
+        second_registry.resolve("data"), second_registry.resolve("control")
+    )
+    assert replay_root.authority_digest == root.authority_digest
+    assert replay_filesystem.recover_create(replay_root, durable).status is RecoveryStatusV1.FOUND
+    replay_filesystem.release_root_authority(replay_root)
+    filesystem.release_root_authority(root)

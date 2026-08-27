@@ -1,0 +1,23 @@
+{
+  "schema_version": "synaptic-host-storage/v1",
+  "roots": [
+    {
+      "root_ref": "opaque-training-input",
+      "location": "project://training/input",
+      "access": "read_only",
+      "permit_ref": "permit-training-input"
+    },
+    {
+      "root_ref": "opaque-training-output",
+      "location": "project://training/output",
+      "access": "create_only",
+      "permit_ref": "permit-training-output"
+    },
+    {
+      "root_ref": "opaque-local-io-control",
+      "location": "project://training/.local-io-control",
+      "access": "read_create",
+      "permit_ref": "permit-local-io-control"
+    }
+  ]
+}
