@@ -420,7 +420,7 @@ reading onto the refusing population's mean; and by the displacements of
 Sections 6.3 and 6.6, where the dose is a stated number of sigma.
 
 Doses are chosen on the fit split, never on the rows a result is reported over,
-under a single rule fixed before each run. A ladder of candidate setpoints is
+under a single rule. A ladder of candidate setpoints is
 applied to a small fit-split calibration subset at the candidate site, and a
 rung is usable only if the read-back lands within tolerance on every dosed row,
 no dosed row degenerates, and fit-split confabulation clean tightening clears
@@ -575,7 +575,7 @@ wrote the frozen random direction as an erase-write to that family's own
 certified placebo setpoint, so every seed within a family is a draw at one
 fixed magnitude, and drew fifteen fresh seeds, scored on a fixed 300-row
 paired confabulation subsample through one blinded context-free grading pool.
-The criterion was fixed before the run: a family's placebo sign holds if at
+A family's placebo sign holds if at
 least 80% of its seeds carry that sign, with a bootstrap 95% lower bound above
 0.50 and a median at least 3.0 points in that direction; it is dismissed as
 seed noise if 60% or fewer carry it or if the interquartile range spans zero.
@@ -1012,7 +1012,7 @@ that a readout of what the model is prepared to verbalize is a better one.
 The layer-site advantage is real and direction-stable on raw-base Qwen3-4B,
 but its size cannot be read off a reference site sitting near its own ceiling.
 Two same-model replications on fresh confabulations measure that dependence,
-each with the same success bar registered before the run: the best mid-band
+each against the same success bar: the best mid-band
 site must beat the late reference by at least 10 points on clean tightening.
 
 On a pool drawn from a single source, the late reference site refuses 94.1% of
@@ -1287,7 +1287,7 @@ like zero.
 The stronger measurement is the shape of the random-direction null itself: a
 census of fifteen fresh random seeds per family, each written at that family's
 own certified placebo setpoint and scored on a fixed paired confabulation
-subsample, against a sign criterion fixed before the run (Section 3.7).
+subsample, against the sign criterion of Section 3.7.
 
 None of the three families is behaviorally inert under a matched-magnitude
 random write, and the signs disagree. Qwen suppresses hedging, robustly: 14 of
@@ -1770,7 +1770,7 @@ axis, rather than removing it, lands in nearly the same place.
 What that supports is narrow, in two directions. The size of the release does
 not carry across seeds of the same recipe. The prediction here was
 that ablation would leave post-ablation over-refusal at or below 0.10; it
-landed at 0.553, past the pre-registered failure threshold, and a much
+landed at 0.553, past the failure threshold, and a much
 larger collapse recorded on a different seed of this recipe is accordingly
 treated as specific to that seed. Read the direction of the effect as durable
 and its magnitude as unsettled. And the intervention is not this paper's
