@@ -1589,3 +1589,15 @@ review and the scoreboard rows need the lead + user's calls first). Did NOT
 run any HF pull, Modal launch, or GPU work. See `LAUNCH-PLAN.md` for the
 per-family run order, GPU-time estimates, and the decision points that need
 to come back to the lead before this experiment can launch for real.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 1 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 46 files / ~6.64 MB, built at repo commit b642b7c6.
+
+- HF repo: `professorsynapse/eh-j-space-cross-family-layer-contrast` (dataset)
+- HF revision: `677d322c8de2ee4eb4ff37c6d9c9d8681cf45703`

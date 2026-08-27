@@ -1609,3 +1609,15 @@ direction specificity clearing at one site (hs35) and selectivity
 unmeasurable at these firing rates. Exploratory lead; promotion requires
 confirmatory replication per the registered rule. Resolution wording and
 terminal status await PI decision.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 1 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 23 files / ~0.77 MB, built at repo commit b642b7c6.
+
+- HF repo: `professorsynapse/eh-caution-install-bounded-site-sweep` (dataset)
+- HF revision: `e6e7dea57cf4ca06e046f70e5201648039088d28`

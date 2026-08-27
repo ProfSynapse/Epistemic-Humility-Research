@@ -252,3 +252,15 @@ promotion of the doubt-snap manifest to `experiments/common/`; (4) scoreboard
 calls (orchestrator proposed early-exterior / user blank) to ratify pre-sign;
 (5) question-text materialization (`materialize_rows.py`) as a gated
 capture-launch precondition. NO sign, NO GPU, NO commits performed.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 1 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 5 files / ~0.61 MB, built at repo commit b642b7c6.
+
+- HF repo: `professorsynapse/eh-qwen35-4b-family-atlas` (dataset)
+- HF revision: `c82b14245ac9692b6099f0b77ed6286976dee6ee`

@@ -334,3 +334,15 @@ in `experiment.yaml`.
   - Open question for the lead: whether the standing local-GPU pinned-
     container directive applies to this cell's bespoke capture script (see
     AMENDMENT.md "Design", "Execution" paragraph); not resolved here.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 1 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 5 files / ~0.35 MB, built at repo commit b642b7c6.
+
+- HF repo: `professorsynapse/eh-qwen3-4b-family-atlas` (dataset)
+- HF revision: `114816c1ff18914abeca0522c3b79c4ae4905b23`

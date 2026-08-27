@@ -9,7 +9,8 @@ priority: low
 experiment: ''
 component: ''
 depends_on: []
-files: []
+files:
+- docs/public-artifacts.md
 new_files: []
 blocker: PI approval per dataset
 created_date: '2026-08-27'
@@ -108,3 +109,4 @@ Terminal experiments: 80. Aggregate exhaust already published: 8. UNPUBLISHED: 7
 | 0 | resolved | readout-under-contract-crossing |
 | 0 | resolved | stated-confidence-under-pstruct |
 | 0 | falsified | susceptibility-as-probe |
+- 2026-08-27 @claude: batch 1 uploaded (10 aggregate datasets, PI-approved in-conversation); revisions recorded in each NOTEBOOK and docs/public-artifacts.md. 53 buildable cells remain.
