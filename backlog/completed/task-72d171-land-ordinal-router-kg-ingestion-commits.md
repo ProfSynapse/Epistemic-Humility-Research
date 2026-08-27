@@ -1,7 +1,7 @@
 ---
 id: task-72d171
 title: Land ordinal-router KG ingestion commits (Landing B)
-status: in-progress
+status: done
 assignee:
 - '@claude'
 tier: P
