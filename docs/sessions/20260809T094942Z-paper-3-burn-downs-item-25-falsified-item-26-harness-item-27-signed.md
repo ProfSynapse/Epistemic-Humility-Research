@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-27T15:40:43Z'
+updated_at: '2026-08-27T18:13:28Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -1756,6 +1756,28 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 076-checkpoint
+  at: '2026-08-27T18:13:28Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Orphaned-branch landing arc largely complete. Merged PRs 571 repin fixtures,
+    572 trajectory refresh, 573 fresh-SFT records with falsified verdict plus qualify
+    null-result plus twoway scaffold, 574 task-backlog wiring into AGENTS.md and pr-workflow,
+    575 three ordinal-router KG ingestion commits with lead polarity fix limits to
+    complicates on rank-stability confound note, 576 ts-steering-under-thinking unsigned
+    draft record, 577 modal volume-get gotchas skill section with both variants. Tasks
+    57402c 9bb16a 35e8e6 72d171 2b5ef7 closed. Worktree fleet down to main plus qwen35-atlas
+    two-signal submodule-cloud-api-v1-host and lander Landing E in flight. Gotchas
+    recorded: FETCH_HEAD is shared repo state and concurrent sessions clobber it so
+    verify diffs against origin refs; commit gate fired correctly on ungated docs-ideas
+    hunk and was resolved by minting covering task not escape hatch. Next: verify
+    Landing E qwen35-atlas PR, PI decision on two-signal, exhaust backfill task open.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -2152,3 +2174,8 @@ _No summary yet._
 - at: `2026-08-27T15:40:43Z`
 - kind: `checkpoint`
 - summary: Backlog audit and task harness arc. Audited the stale TODO backlog against the registry and pruned all terminal July rows to a 9-item current backlog (main 15f0b829). Found and fixed the post-rewrite harvest hook shipped without its executable bit so the PR 564 rebase guard never fired (PR 569 merged). Figure-key CSV fix merged (PR 568). Built and merged the task-backlog harness ported from the syntunia lifecycle: bin/task CLI, one task file per item under backlog/, generated TODO block, pre-commit gate requiring an active covering task for paper and infra work with EHR_TASK_OK escape hatch, and a cross-check that fails commits when a task is bound to a terminal experiment (PR 570, 37 tests green, gate and cross-check verified live). Nine seed tasks mirror the audit; harness task closed and archived (e74626d4). Merged worktrees removed after a clean harvest.
+### 076-checkpoint - Checkpoint
+
+- at: `2026-08-27T18:13:28Z`
+- kind: `checkpoint`
+- summary: Orphaned-branch landing arc largely complete. Merged PRs 571 repin fixtures, 572 trajectory refresh, 573 fresh-SFT records with falsified verdict plus qualify null-result plus twoway scaffold, 574 task-backlog wiring into AGENTS.md and pr-workflow, 575 three ordinal-router KG ingestion commits with lead polarity fix limits to complicates on rank-stability confound note, 576 ts-steering-under-thinking unsigned draft record, 577 modal volume-get gotchas skill section with both variants. Tasks 57402c 9bb16a 35e8e6 72d171 2b5ef7 closed. Worktree fleet down to main plus qwen35-atlas two-signal submodule-cloud-api-v1-host and lander Landing E in flight. Gotchas recorded: FETCH_HEAD is shared repo state and concurrent sessions clobber it so verify diffs against origin refs; commit gate fired correctly on ungated docs-ideas hunk and was resolved by minting covering task not escape hatch. Next: verify Landing E qwen35-atlas PR, PI decision on two-signal, exhaust backfill task open.
