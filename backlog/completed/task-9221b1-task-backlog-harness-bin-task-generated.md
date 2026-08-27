@@ -1,7 +1,7 @@
 ---
 id: task-9221b1
 title: Task-backlog harness (bin/task, generated TODO block, commit gate)
-status: in-review
+status: done
 assignee:
 - '@claude'
 tier: P
