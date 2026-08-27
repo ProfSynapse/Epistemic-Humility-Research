@@ -1,7 +1,7 @@
 ---
 id: task-3f6448
 title: 'Land orphaned branch records: qwen35 atlas row, draft experiments'
-status: in-progress
+status: done
 assignee:
 - '@claude'
 tier: P
