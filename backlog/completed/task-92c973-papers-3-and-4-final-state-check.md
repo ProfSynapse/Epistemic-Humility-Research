@@ -1,7 +1,7 @@
 ---
 id: task-92c973
 title: Papers 3 and 4 final-state check
-status: in-progress
+status: done
 assignee:
 - '@claude'
 tier: P
@@ -29,3 +29,5 @@ TODO.md audited backlog table (row P34, audited 2026-08-27).
 
 ## Work Log
 - 2026-08-27 @claude: seeded from TODO.md row P34 during the task-backlog harness build.
+
+2026-08-27: checked by subagent, lead spot-verified (Appendix A rows, 10/10 P4 figure embeds+files, zero em dashes, bibliography cross-checks). Both papers submission-ready; the trajectory-doc flags (P3 provenance pass, P4 figures pending) are stale and are being fixed by task-9bb16a. Optional residuals, not blocking: fig-p1-08/09 duplicate files orphaned in paper-2 figures dir; paper-3 figure scripts use hand-typed constants per the dated 2026-07-30 inventory (unverified against current scripts).
