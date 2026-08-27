@@ -77,9 +77,9 @@ claim that the model represents its own doubt as a mental state.*
 ## Abstract
 
 A frozen small language model carries a near-perfect answerability readout in its
-hidden state before it generates. Reading is not writing. Can that signal be
+hidden state before it generates. But reading is not writing. Can that signal be
 written back so the model acts on it? We tested five ways of routing the readout
-into behavior, all on frozen checkpoints.
+into behavior.
 
 Every route that asks the policy to consult its own readout fails. Activation
 steering along the read directions and within-generation text injection produced no
@@ -102,7 +102,7 @@ is 0.148 on Qwen and 0.129 on Mistral. Matched-magnitude random directions move
 abstention in every family measured, so direction-specificity is certified
 against each family's own measured null: it holds on Qwen and Llama and fails
 at every Mistral and Gemma site tested so far. Where the write lands matters as much:
-inside the workspace-like layer band it reached 89.2% clean refusals against 66.5%
+inside the workspace-like (J-space) layer band it reached 89.2% clean refusals against 66.5%
 just past it, +22.7 points for +0.78 points of cost.
 
 ---
