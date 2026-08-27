@@ -58,9 +58,8 @@ notes: >
   says otherwise, and every positive controller result runs on a frozen,
   off-the-shelf checkpoint except where a trained checkpoint is named
   explicitly. Vocabulary follows papers/common/terminology.md: the readout is
-  the known-unknown (KU) direction, the validated actuator at the frozen
-  Qwen3.5-4B mid-band operating point is the IDK switch, and any other dosed
-  write is a boundary push.
+  the known-unknown (KU) direction, and a dosed write against the refusal
+  boundary is a boundary push.
 ---
 
 # Look Before You Speak: Wiring a Language Model's Answerability Readout to Its Refusal Behavior
@@ -167,7 +166,9 @@ added known-correct cost (Section 4.6). A token-targeted J-space write, built to
 raise refusal tokens and lower answer-continuation tokens, actuates on its own
 but adds almost nothing on top of the gated write (Section 4.7).
 
-Across families, we can consistently wire the readout (Known-Unknown or KU) to the behavior (the "I don't know" or IDK switch), but the coordinates do not. In practice, the build sequence is:
+Across families, we can consistently wire the known-unknown (KU) readout to
+the model's own refusal behavior, but the coordinates do not transfer. In
+practice, the build sequence is:
 
 1. Find the read spot. A per-family read panel sweeps the model's depth and
    marks the band where its known-unknown state reads cleanly. That is where
@@ -176,7 +177,7 @@ Across families, we can consistently wire the readout (Known-Unknown or KU) to t
    workspace-like band, and the dose is calibrated on the fit split at the site
    you intend to use.
 3. Build the thermostat. Threshold the readout, and where it fires, throw
-   the refusal write. That is the IDK switch.
+   the refusal write. That is the controller.
 4. Verify the wiring. Check the write against a random direction judged
    against that family's own measured null, against a permuted gate, and
    against its cost on questions the model can answer, to confirm the effect
@@ -461,7 +462,8 @@ terminated naturally before the token cap, and nothing follows the JSON. It is
 the strictest outcome in the paper, since a row that refuses in prose but
 breaks the output contract does not count.
 
-**Known-correct false refusal** is the matching cost outcome: a row that was a
+**Known-correct false refusal**, shortened below to the known-correct cost,
+is the matching cost outcome: a row that was a
 well-formed answer matching a gold alias at baseline is no longer one after the
 intervention. It counts refusals, wrong answers, and broken output alike, which
 is why Section 4.5 decomposes it once into those three parts.
@@ -529,7 +531,7 @@ changes what the number means.
 The narrow instrument reads refusal from the model's own output and nothing
 else: a refusal value in the parsed JSON answer field, or one of three fixed
 English refusal forms in the text. It is what Sections 4.5, 4.6 and 4.7 score
-under, along with the gemma depth ladder reported in Section 4.8 and Appendix
+under, along with the Gemma depth ladder reported in Section 4.8 and Appendix
 E, including the random-direction and permuted-gate controls behind
 the Section 4.5 headline and every clean-tightening rate in the layer and depth
 ladders.
@@ -551,7 +553,7 @@ anything is unblinded. The final rate per row is detector-refused or
 grader-marked abstention. The lane cannot widen the benefit vocabulary without
 widening the cost vocabulary by the same rule, because a grader cannot
 tell a confabulation-prone row from a known-correct one. This stack is what
-every cross-family number in Section 4.8 rests on, apart from the gemma depth
+every cross-family number in Section 4.8 rests on, apart from the Gemma depth
 ladder, and what the mid-band gate factorial reported in Sections 5 and 6.2
 rests on.
 
@@ -880,11 +882,12 @@ directions:
 2. a fixed boundary push (dosed write) writes only those fired rows to a
    selected refusal setpoint.
 
-At this write site (Qwen3-4B, L34) and dose (200), a separate comparison
+At this write site (Qwen3-4B hs34, layer 34, earlier reported as L34) and
+dose (200), a separate comparison
 later established why this separation matters: an unconditional write damages
 60.1% of held-out known-correct rows versus 3.1% gated, a 57.0-point gap
 (McNemar, p = 4.2e-43), while the gate
-costs the controller only 4.3 points of confab conversion (77.8% ungated
+costs the controller only 4.3 points of confabulation conversion (77.8% ungated
 versus 73.5% gated). The 60.1% figure is not a refusal rate; it decomposes as
 55.8 points clean false-refusal, 3.9 points answered-wrong, and 0.4 points
 degenerate output. At this specific write site and dose, the gate is the sole
@@ -897,21 +900,21 @@ steering methods are known to face at effective magnitudes (Nguyen et al.,
 capability collapse (Dang and Ngo, 2026). What the gate buys here is a way to
 pay that cost only on rows the readout has already flagged.
 
-![FIG-P5-02: Dose-matched ungated versus gated write, at the resolved Qwen3-4B / L34 / dose-200 operating point](figures/fig-p5-02-ungated-vs-gated-h4.png)
+![FIG-P5-02: Dose-matched ungated versus gated write, at the resolved Qwen3-4B / hs34 / dose-200 operating point](figures/fig-p5-02-ungated-vs-gated-h4.png)
 **Figure 2.** Dosing every held-out row unconditionally versus dosing only
 where the KU readout gate fires, at the same write site and dose. The
 ungated arm damages most known-correct rows; the gated arm holds cost near
-its floor while giving up only 4.3 points of confab conversion.
+its floor while giving up only 4.3 points of confabulation conversion.
 
 On held-out rows, gated clean tightening was 136/185 = 73.5%, Wilson 95%
-confidence interval [66.7, 79.3], and known-correct false refusal was
+confidence interval [66.7, 79.3], and known-correct cost was
 8/258 = 3.1%, CI [1.6, 6.0]. A random-direction write on the same fired rows produced only
 13/185 clean tighten, and a permuted gate produced 59/258 known-correct cost.
 The effect depends on both the boundary-push direction and the KU readout gate.
 
 ![FIG-P5-03: Confabulation conversion and known-correct cost for the gated controller against its placebo controls, original and multi-source replication pools](figures/fig-p5-03-headline-conversion.png)
-**Figure 3.** Confabulation clean-tighten rate and known-correct false-refusal
-rate for the real KU-gated controller against random-direction and
+**Figure 3.** Confabulation clean-tighten rate and known-correct cost
+for the real KU-gated controller against random-direction and
 permuted-gate placebos, on the original held-out pool and on the multi-source
 replication pool at the same late write site.
 
@@ -921,17 +924,17 @@ overdrive operating point the gate supplies the selectivity that the write
 alone does not; at a mid-band dose the attribution reverses.
 
 The same controller design transfers out of sample. At Qwen3.5-4B's mid-band
-write site (hs20, relative depth 0.625, absolute dose 12.608), the IDK switch
-operating point, a held-out run refused 872/1286 = 0.678 of fired
+write site (hs20, relative depth 0.625, absolute dose 12.608), a held-out
+run refused 872/1286 = 0.678 of fired
 confabulations (Wilson [0.652, 0.703]), held well-formedness at 1256/1286 =
-0.977, and cost 14/360 = 0.039 in known-correct false refusal, with both
+0.977, and its known-correct cost was 14/360 = 0.039, with both
 placebo legs intact. Refusal and output corruption come apart on rows the
 operating point was never selected on, which is the same decoupling the
 raw-base controller shows.
 
 The raw-base Qwen3-4B headline also survives a change of decoding. Under
 temperature-0.7 sampled decoding with majority-vote aggregation across five
-seeds, pooled confab clean-tighten conversion is 643/925 = 69.5%, above the
+seeds, pooled confabulation clean-tighten conversion is 643/925 = 69.5%, above the
 63.5% floor in every individual seed, with known-correct cost at 60/1290 =
 4.65%. The controller is not an artifact of greedy decoding.
 
@@ -942,7 +945,7 @@ both confabulation conversion and known-correct cost.
 
 ### 4.6 J-space localizes a better write site
 
-Where should a write land? The controller of Section 4.5 writes at an L34
+Where should a write land? The controller of Section 4.5 writes at an hs34
 residual-stream site, and that site was carried over from the cell that first
 built the direction rather than chosen for where it sits in the network. One
 hypothesis makes the choice principled. Gurnee et al. (2026) report that
@@ -951,7 +954,7 @@ for flexible internal use, emerge in an intermediate band of layers rather
 than uniformly. If the reportable component of a concept lives in such a band,
 a write should land inside it, and a write placed later may be downstream of
 the broadcast it is trying to change. A Jacobian-lens characterization tests
-that by asking whether the L34 site lies inside or outside the band, and the
+that by asking whether the hs34 site lies inside or outside the band, and the
 band it locates then supplies the candidate write sites.
 
 The verbalization read is only worth trusting if it is direction-specific.
@@ -959,7 +962,7 @@ The lens itself is direction-blind: it applies the same readout, over the same
 1000 prompts, to whatever vector it is handed, so if every direction fit at
 this site came back with the same hedge-flavored vocabulary, the tokens would
 be a fact about the instrument or the layer, not about the directions. Four
-directions fit at the same L34 site went in together: the known-unknown
+directions fit at the same hs34 site went in together: the known-unknown
 direction, the caution (answer-versus-refuse) direction, the orthogonalized
 caution write direction, and the confabulation-propensity direction carried
 as a negative control. The read splits them cleanly. The caution and
@@ -988,7 +991,7 @@ experiment on world-known items, where the error is a confidently wrong answer
 rather than acknowledged ignorance, characterizes it the same way, closer to
 unanswerability recognition than to self-directed uncertainty (Section 6.4). The
 layer profile localized a workspace-like band to hs23 through hs29, peaking at
-hs26. The inherited L34 direction corresponds to hs34, just after that band.
+hs26. The inherited hs34 site sits just after that band.
 
 A fixed absolute dose is the wrong instrument for comparing sites, and the
 reason is a fact about how these writes behave. Additive steering loses
@@ -1060,13 +1063,13 @@ tokens and Chinese answer/reply tokens that appeared in the J-lens readout, such
 as answer/reply forms.
 
 At the dose selected on the fit split, the token-target direction wrote accurately and safely. It
-was also non-inert: alone, it converted 88/185 confab rows into clean refusals
+was also non-inert: alone, it converted 88/185 confabulation rows into clean refusals
 (47.6%). But it did not improve the already strong hs23 boundary push (dosed
 write). The boundary push alone reached 165/185 = 89.2%; adding the
 token-target direction on top of it reached 166/185 = 89.7%, only +0.54
 points. Known-correct
 cost increased by only +0.39 points, so safety was not the issue. The issue was
-redundancy: the natural token-target write added one extra cleaned confab row on
+redundancy: the natural token-target write added one extra cleaned confabulation row on
 top of a controller that was already doing the job.
 
 A token direction can be a real actuator and still add nothing as a
@@ -1103,7 +1106,7 @@ panel sweeps the family's depth and marks the interior band of layers where
 the known-unknown, refusal-versus-confabulation, and raw-refusal readouts all
 read well together, and the candidate write site comes from that band. We
 call that pre-write panel the family's atlas. Gemma-4-E4B entered the
-program later and is reported alongside them, and the qwen lineage supplies
+program later and is reported alongside them, and the Qwen lineage supplies
 the reference point the others are measured against.
 
 Replication here means two different claims, and the test was built to keep
@@ -1122,16 +1125,16 @@ need not travel together.
 
 #### Qwen3.5
 
-The qwen results in this section are the Qwen3.5-4B lineage written at its
+The Qwen results in this section are the Qwen3.5-4B lineage written at its
 mid-band site, hs20 at relative depth 0.625, not the raw-base Qwen3-4B
 late-site controller of Sections 4.5 through 4.7. Direction-specificity passes
 there, at 7.27 against a 3.0 floor.
 
 The measured placebo null reported below strengthens, rather than
-undercuts, the specificity reading for qwen at that operating point. Because qwen's
-placebo response is suppressive, the IDK switch's recruitment of refusals is
+undercuts, the specificity reading for Qwen at that operating point. Because Qwen's
+placebo response is suppressive, the gated write's recruitment of refusals is
 sign-opposed to the family's response to a nonspecific perturbation: a random
-write at matched magnitude pushes qwen hedging down, while the gated write
+write at matched magnitude pushes Qwen hedging down, while the gated write
 pushes it up. A confound that a placebo is meant to catch would push the same
 way as the true write, and this one pushes the opposite way. That comparison is
 measured at the same Qwen3.5-4B mid-band operating point where the census
@@ -1158,9 +1161,9 @@ this family's own abstention idioms. The three fixed refusal forms the narrow
 detector looks for do not count them, so Mistral is scored on fresh held-out
 rows under the wide two-instrument stack, the widened pattern detector plus the
 blinded context-free LLM-grading lane. Under that stack the Mistral controller
-clears both behavioral gates. Fired-confab graded refusal is 911/1303 = 0.699 (Wilson
+clears both behavioral gates. Fired-confabulation graded refusal is 911/1303 = 0.699 (Wilson
 95% CI [0.674, 0.723]) against a 0.60 floor, well-formedness holds at 0.987,
-and known-correct false refusal is 2/382 = 0.0052 (CI [0.0014, 0.019]) against
+and known-correct cost is 2/382 = 0.0052 (CI [0.0014, 0.019]) against
 a 0.05 ceiling. Those two legs have since reproduced exactly on every re-test
 of that operating point.
 
@@ -1219,7 +1222,7 @@ floor, under narrow and wide instruments alike. The wide instrument does
 credit abstention idioms the narrow detector missed, lifting the best
 well-formed rung from 32.8% to 45.7%, but no well-formed rung reaches the
 0.60 floor: the only doses that push refusal past 0.5 break the output
-format and drag known-correct false refusal up with them. Unlike Mistral,
+format and drag known-correct cost up with them. Unlike Mistral,
 whose narrow-instrument miss is substantially vocabulary coverage, Llama's
 atlas-site failure is not an instrument artifact. The Llama split is a
 site split: the same family, gate, and direction recipe that collapses at
@@ -1238,22 +1241,21 @@ Gemma-4-E4B entered this study as the one family in which our own write
 attempts had never actuated. That record rested on a narrow base. As in the
 other families, the first writes went in at the sites the cross-family
 operating range prescribed, and on this substrate every one of those attempts
-sat at relative depth 0.81 or deeper. Rather than record gemma as the odd
+sat at relative depth 0.81 or deeper. Rather than record Gemma as the odd
 family out, we went into the architecture looking for something that could be
 interfering with the intervention, and found a concrete candidate: the upper
 18 of the model's 42 blocks do not compute their own key and value tensors
 but read them from two frozen donor blocks, the 18/42 KV-cache sharing
 ratio documented for this model (Gemma Team, 2026). Every site we had ever
 dosed sat inside that shared band, and nothing had ever been written into
-the shallow half of the model. The question is therefore not whether gemma
+the shallow half of the model. The question is therefore not whether Gemma
 actuates but whether it had ever been given the chance.
 
 A depth ladder on the unmodified model, key-value sharing left on, answers the
 coverage question. Actuation is present, shallow, and uneven. At relative
 depth 0.357 the fitted known-unknown direction clears both held-out
 behavioral gates with the widest margin measured on this family, 78.6% clean
-tightening (Wilson 95% CI [71.8, 84.1]) against a 1.1% known-correct
-false-refusal cost. Behavioral gates pass at four of the eight depths tested,
+tightening (Wilson 95% CI [71.8, 84.1]) against a 1.1% known-correct cost. Behavioral gates pass at four of the eight depths tested,
 and the two deepest sites in the cross-family operating range never reach a
 usable dose at all. Every one of our earlier null results on this family came
 from sites deeper than any of these. The per-site ladder is in
@@ -1264,19 +1266,19 @@ reached a usable dose passes its placebo control, and the two shallow passes do
 not repair that: the 0.357 site carried the behavioral gates only, with no
 placebo arm run at all, and the 0.524 placebo is a degenerate pass in which all
 five accepted random draws produced exactly zero lift. What the ladder establishes
-is that gemma clears behavioral gates in a shallow band. What it does not
+is that Gemma clears behavioral gates in a shallow band. What it does not
 establish is that any of those writes is direction-specific. That leaves the
-coverage question closed and the mechanism question open: across gemma's whole
+coverage question closed and the mechanism question open: across Gemma's whole
 above-seam band relative depth and sharing status are the same variable, so no
 result there can say which of the two produced the falloff, and the control
 built to separate them broke the substrate it was meant to probe (Appendix E).
 
-Read alongside the Llama split above, gemma is not the odd family out; it is
+Read alongside the Llama split above, Gemma is not the odd family out; it is
 the second family in a row whose apparent failure dissolved once the site
 search respected the family's own structure. Each architecture carries its
 own eccentricities, and the framework absorbs them the same way each time:
 profile the substrate, pick sites against that profile, and let the gates
-adjudicate. What that discipline has so far recovered on gemma is behavioral
+adjudicate. What that discipline has so far recovered on Gemma is behavioral
 actuation; direction-specificity remains the open question there.
 
 #### The placebo picture
@@ -1346,7 +1348,7 @@ individual signed draws, so a sign read off one draw is not a criterion at
 all.
 
 The family-level sign is not evenly distributed inside a family. Broken down
-by question type within the known-unknown pool, one subtype carries qwen's
+by question type within the known-unknown pool, one subtype carries Qwen's
 entire suppression (future-unknown items, -24.7 points against -2.8 or smaller
 elsewhere) and is also Mistral's single largest recruitment delta (+11.8
 points): the extreme mover in both families, in opposite directions. That this
@@ -1384,8 +1386,8 @@ Taken together, the channels sort by how far each one gets before it breaks.
 | Confabulation-push activation write | Fails; the readout moves by the commanded amount, the behavior does not move at all |
 | High-authority system prompt | Moves behavior, by instruction compliance rather than own-readout consultation |
 | Reward equal to the model's own probe score | Fails; the true-sensor arm is less congruent with its own readout than a permuted control |
-| Unconditional write, overdrive dose (Qwen3-4B, L34) | Actuates but is not selective: 60.1% of known-correct rows damaged |
-| KU-gated boundary push, overdrive dose (Qwen3-4B, L34) | Works: 73.5% clean tightening at 3.1% known-correct cost |
+| Unconditional write, overdrive dose (Qwen3-4B, hs34) | Actuates but is not selective: 60.1% of known-correct rows damaged |
+| KU-gated boundary push, overdrive dose (Qwen3-4B, hs34) | Works: 73.5% clean tightening at 3.1% known-correct cost |
 | KU-gated boundary push, mid-band dose (Qwen3.5-4B hs20; Mistral hs16) | Works; the write self-sorts and the gate governs cost rather than supplying selectivity |
 | Write site, mid-band versus late (Qwen3-4B) | Mid-band wins by 22.7 points at +0.78 points of cost |
 | Token-target write (Qwen3-4B, mid-band) | Real on its own (47.6%), redundant on top of the boundary push (+0.54 points) |
@@ -1406,7 +1408,7 @@ Five readings come out of that grid.
 2. Selectivity is not a property of the direction. At an overdrive dose
    the identical write damages most known-correct rows unless a gate holds
    it off them; at a mid-band dose the same write already sorts by content
-   and the gate's measured contribution to selectivity is 0.148 on qwen and
+   and the gate's measured contribution to selectivity is 0.148 on Qwen and
    0.129 on Mistral, both under the 0.20 floor set for it, while its
    contribution to cost control is what keeps false refusals near their
    floor. One mechanism, two regimes, opposite attributions.
@@ -1416,9 +1418,9 @@ Five readings come out of that grid.
    into it buys 22.7 points of confabulation tightening on Qwen3-4B for less
    than a point of known-correct cost, and the advantage survives
    replication on a harder pool once the reference site is pulled off its
-   own ceiling. On gemma the same lesson arrives as a boundary: the family
+   own ceiling. On Gemma the same lesson arrives as a boundary: the family
    clears the behavioral gates across a band that stops well short of the
-   depths the qwen write sites sit at, and every site above its key-value
+   depths the Qwen write sites sit at, and every site above its key-value
    sharing seam either fails direction-specificity or never reaches a usable
    dose.
 
@@ -1427,7 +1429,7 @@ Five readings come out of that grid.
    measurement rather than an assumption. Mistral clears benefit and cost
    under a blinded instrument at 69.9% graded refusal and 0.52%
    known-correct cost, while direction-specificity fails on Mistral at
-   three independent operating points and on gemma at both above-seam sites
+   three independent operating points and on Gemma at both above-seam sites
    where a usable dose existed. Llama cuts the other way: specificity fails
    at every read-selected site and verifies at 9.34 at the family's own
    mid-band write site. The boundary is a site-selection boundary, not a
@@ -1438,8 +1440,8 @@ Five readings come out of that grid.
    matched-magnitude random direction is not behaviorally inert in any
    family tested, and its sign is a property of the family-and-site
    operating point rather than of the family alone: the census measures
-   suppression in qwen and Llama and recruitment in Mistral at their
-   certified placebo setpoints, while the raw-base qwen late site has no
+   suppression in Qwen and Llama and recruitment in Mistral at their
+   certified placebo setpoints, while the raw-base Qwen late site has no
    consistent sign at all (six of fifteen seeds negative). A signless
    distribution still yields individual signed draws, so any
    direction-specificity claim has to be checked against a measured null
@@ -1498,16 +1500,16 @@ a fixed property of the direction; it depends on where the dose lands relative t
 each row's commitment margin, the minimum perturbation dose that flips that
 row's behavior to abstention. At an overdrive dose, above typical
 known-correct margins, the write crosses everything: applied indiscriminately
-at Qwen3-4B / L34 / dose 200, it damages 60.1% of known-correct rows, and the
+at Qwen3-4B / hs34 / dose 200, it damages 60.1% of known-correct rows, and the
 gate is the sole reason the controller does not. At a mid-band dose, above
-typical confab margins but below typical known margins, the write is already
+typical confabulation margins but below typical known margins, the write is already
 content-selective: a permuted-gate control
-reaches confab abstention 0.550 qwen / 0.600 Mistral against the true gate's
+reaches confabulation abstention 0.550 Qwen / 0.600 Mistral against the true gate's
 0.689 / 0.694, so most of the abstention lift survives with no gate at all.
 The gate's residual mid-band role is real but modest: its own contribution to
-selectivity is 0.148 qwen / 0.129 Mistral, both sub-floor against a 0.20
+selectivity is 0.148 Qwen / 0.129 Mistral, both sub-floor against a 0.20
 floor, plus cost governance that does matter against the 0.05
-ceiling: known false refusal under the true gate is 0.042 qwen /
+ceiling: known-correct cost under the true gate is 0.042 Qwen /
 0.005 Mistral versus 0.050 / 0.039 under a permuted gate. This is still the
 same separation used in ordinary control systems, sensor, controller,
 actuator, but which part of the system supplies selectivity is
@@ -1518,12 +1520,12 @@ accuracy-versus-effect frontier that work on collateral damage in activation
 steering characterizes (Nguyen et al., 2026); the gate is one way of moving
 along that frontier without lowering the dose.
 
-The decomposition runs on qwen and Mistral because they are the only two
+The decomposition runs on Qwen and Mistral because they are the only two
 families with a certified gated operating point to take apart: Llama's hs17
 write clears its held-out floor and passes direction-specificity, but its
 cost gate is not adjudicable there (the KU gate fires on no known-correct
 rows, so there is no fired population to attribute a cost contribution on),
-and gemma's actuating sites either fail direction-specificity or pass it
+and Gemma's actuating sites either fail direction-specificity or pass it
 only degenerately, so neither offers an operating point where a gate
 contribution could be attributed.
 
@@ -1626,7 +1628,7 @@ not population effect-size estimates. Key limits:
   tips only 51/400 (12.75%) of confabulations into refusal inside a
   coherence-valid dose band, and doses at or above three times the reference
   drive degenerate generation before any refusal registers. This ceiling is
-  scoped to the hs20 mid-band lineage tested there; whether the L34
+  scoped to the hs20 mid-band lineage tested there; whether the hs34
   overdrive headline in Section 4.5 shows the same ceiling on this
   population is untested;
 - a mid-generation write, timed to the token position where the model
@@ -1870,7 +1872,7 @@ random null has no consistent sign, and the specificity claim there rests on
 the 4.83 distributional ratio alone. And the recipe is not Qwen-only, since
 Llama's own mid-band site verifies at 9.34 over fifteen seeds. What remains
 open is Mistral: if an operating point with a small or stable nonspecific
-response still fails the ratio test, and gemma's seam ablation never yields a
+response still fails the ratio test, and Gemma's seam ablation never yields a
 clean site, the recipe reading narrows to families whose site search finds a
 specific write, two of four so far. That is the test the next study should
 try to fail.
@@ -2101,13 +2103,13 @@ while the cross-family fleet takes the lowest qualifying dose.
 
 ## Appendix E. Gemma Depth Ladder and the Key-Value-Sharing Seam
 
-Section 4.8 reports gemma's depth ladder in summary. This appendix carries the
+Section 4.8 reports Gemma's depth ladder in summary. This appendix carries the
 per-site detail, the placebo arms behind the specificity verdict, and the
 control built to isolate the key-value sharing seam.
 
 The ladder ran on the unmodified model with key-value sharing left on, at eight
 sites. Relative depth 0.357 is the best of them, at 78.6% clean tightening
-(Wilson 95% CI [71.8, 84.1]) against a 1.1% known-correct false-refusal cost.
+(Wilson 95% CI [71.8, 84.1]) against a 1.1% known-correct cost.
 Two sites just below the midpoint, relative depth 0.429 and 0.476, fail the
 clean-tightening floor outright at 44.6% and 40.5%. Relative depth 0.524 clears
 both gates again at 58.9% clean tightening and 0.4% cost. The site immediately
@@ -2153,10 +2155,10 @@ unchanged alongside the new shallow-band result.
 
 That leaves the coverage question closed and the mechanism question open, for
 a structural reason rather than a want of data. Every site of the cross-family
-operating range above gemma's seam has now been measured, and none produced
+operating range above Gemma's seam has now been measured, and none produced
 direction-specific actuation. But across that whole band relative depth and
 sharing status are the same variable on this architecture, so no result there
-can say which of the two produced the falloff: gemma's decay with depth could
+can say which of the two produced the falloff: Gemma's decay with depth could
 equally be the generic decay every other family here shows past its own
 productive band, with no seam mechanism required. Isolating the seam still
 requires a working sharing-on against sharing-off contrast, and the one built
