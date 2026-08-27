@@ -106,7 +106,7 @@ def same_content(a: Path, b: Path) -> bool:
     return sha256_of(a) == sha256_of(b)
 
 
-def harvest(check_only: bool, quiet: bool) -> int:
+def harvest(check_only: bool, quiet: bool, only_worktree: Path | None = None) -> int:
     main = main_checkout()
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     log_dir = main / "analysis" / "harvest"
@@ -122,6 +122,8 @@ def harvest(check_only: bool, quiet: bool) -> int:
         if wt == main:
             continue
         if not wt.is_dir():
+            continue
+        if only_worktree is not None and wt.resolve() != only_worktree.resolve():
             continue
         for rel in ignored_data_files(wt):
             if excluded(rel):
@@ -200,9 +202,18 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true", help="report only; exit 1 if unharvested data exists")
     ap.add_argument("--quiet", action="store_true", help="hook mode: only summarize problems")
+    ap.add_argument("--worktree", type=Path, default=None,
+                    help="scope to one worktree path (used by the worktree-removal guard for a fast pre-delete check)")
     args = ap.parse_args()
+    if args.check and args.worktree is not None:
+        # Guard mode: a scoped --check must FAIL CLOSED. The blanket
+        # exception below exists so a harvest crash can never block git
+        # plumbing hooks, but the worktree-removal guard calls this exact
+        # form and a swallowed error would greenlight deleting sole-copy
+        # data -- the incident this flag exists to prevent.
+        raise SystemExit(harvest(True, args.quiet, args.worktree))
     try:
-        raise SystemExit(harvest(args.check, args.quiet))
+        raise SystemExit(harvest(args.check, args.quiet, args.worktree))
     except Exception as e:  # a harvest failure must never block git
         print(f"[harvest] ERROR (non-fatal to git): {e}", file=sys.stderr)
         raise SystemExit(0)

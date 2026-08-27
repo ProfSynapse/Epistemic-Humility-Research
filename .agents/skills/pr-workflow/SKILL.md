@@ -118,6 +118,18 @@ gh pr view <n> --json state,mergedAt          # verify it actually merged
   confirm with `gh pr view --json state`.
 - `--delete-branch` fails if a worktree still holds the branch. Remove the
   worktree first: `git worktree remove [--force] <path>`.
+- HARVEST BEFORE REMOVE. A worktree may hold the sole copy of gitignored
+  run data (runlogs with generation text, shard id maps, salts, staged
+  pools) that the data-exhaust layer still needs. Before ANY
+  `git worktree remove`, run from the main checkout:
+  `python3 bin/harvest_worktree_data.py` and confirm 0 conflicts. The
+  post-merge git hook harvests automatically, but a `git pull --rebase`
+  takes the rebase path and fires post-rewrite instead (both are wired
+  now); do not rely on either having fired. A PreToolUse guard
+  (`worktree_data_guard.sh`) blocks removals of worktrees with
+  unharvested data; `EHR_WT_DATA_OK=1` acknowledges deliberate
+  destruction. Incident: 2026-08-26, wide-rescore row text deleted with
+  its worktree before the row-level exhaust was staged.
 - Batch-merge and keep the open-PR count near zero; PRs left open rot into TODO
   and session-note conflicts.
 
