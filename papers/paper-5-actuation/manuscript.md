@@ -1169,7 +1169,7 @@ adversarial audit across six attack surfaces (Appendix A).
 
 #### Llama
 
-Llama carries a direction-specific verified write — at its own
+Llama carries a direction-specific verified write, at its own
 profile-selected mid-band site, not at the read-selected sites the atlas
 ladder dosed. At hs17, relative depth 0.607, the one Llama site that
 clears a held-out abstention floor (Section 6.5), the gated write reaches
@@ -1825,14 +1825,14 @@ direction-specificity test fails on two of the four families here, and
 matched-magnitude random directions move abstention in every family measured.
 The claims are scoped to what the controls establish: the sign-opposition
 argument belongs to the mid-band point where the null is measured as a
-distribution and is no part of the recipe — at the raw-base late site the
+distribution and is no part of the recipe: at the raw-base late site the
 random null has no consistent sign, and the specificity claim there rests on
-the 4.83 distributional ratio alone — and the recipe is not Qwen-only, since
+the 4.83 distributional ratio alone. And the recipe is not Qwen-only, since
 Llama's own mid-band site verifies at 9.34 over fifteen seeds. What remains
 open is Mistral: if an operating point with a small or stable nonspecific
 response still fails the ratio test, and gemma's seam ablation never yields a
 clean site, the recipe reading narrows to families whose site search finds a
-specific write — two of four so far. That is the test the next study should
+specific write, two of four so far. That is the test the next study should
 try to fail.
 
 ---
@@ -2064,7 +2064,7 @@ gap between prediction and result without consulting the text.
   per-family measured null distribution the census supplies at fifteen seeds
   (Section 4.8), for example via a percentile-based tolerance or a
   sign-opposition criterion, not a flat symmetric tolerance and not a single
-  seed — and not a sign taken from one draw: the raw-base late-site null has
+  seed, and not a sign taken from one draw: the raw-base late-site null has
   no consistent sign while its individual draws land signed. The
   per-family wide-instrument baselines (qwen 0.104, Llama 0.164,
   Mistral 0.280) still anchor the recruitment-versus-suppression axis.
