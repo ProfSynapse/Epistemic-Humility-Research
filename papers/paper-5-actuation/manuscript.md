@@ -1227,13 +1227,19 @@ the read-site distribution should not be quoted as the write site's null.
 
 #### Gemma
 
-Gemma-4-E4B carried a reputation as the one family that does not actuate. That
-reputation rested on a narrow base. Every prior write attempt on this substrate
-sat at relative depth 0.81 or deeper, on an architecture whose upper 18 blocks
-read their key and value tensors from two frozen donor blocks rather than
-computing their own, and nothing had ever been written into the shallow half
-of the model. The question is therefore not whether gemma actuates but whether
-it had ever been given the chance.
+Gemma-4-E4B entered this study as the one family in which our own write
+attempts had never actuated. That record rested on a narrow base. As in the
+other families, the first writes went in at the sites the cross-family
+operating range prescribed, and on this substrate every one of those attempts
+sat at relative depth 0.81 or deeper. Rather than record gemma as the odd
+family out, we went into the architecture looking for something that could be
+interfering with the intervention, and found a concrete candidate: the upper
+18 of the model's 42 blocks do not compute their own key and value tensors
+but read them from two frozen donor blocks, the 18/42 KV-cache sharing
+ratio documented for this model (Gemma Team, 2026). Every site we had ever
+dosed sat inside that shared band, and nothing had ever been written into
+the shallow half of the model. The question is therefore not whether gemma
+actuates but whether it had ever been given the chance.
 
 A depth ladder on the unmodified model, key-value sharing left on, answers the
 coverage question. Actuation is present, shallow, and uneven. At relative
@@ -1242,8 +1248,8 @@ behavioral gates with the widest margin measured on this family, 78.6% clean
 tightening (Wilson 95% CI [71.8, 84.1]) against a 1.1% known-correct
 false-refusal cost. Behavioral gates pass at four of the eight depths tested,
 and the two deepest sites in the cross-family operating range never reach a
-usable dose at all. Gemma's reputation as the one family that does not actuate
-was built entirely on sites deeper than any of these. The per-site ladder is in
+usable dose at all. Every one of our earlier null results on this family came
+from sites deeper than any of these. The per-site ladder is in
 Appendix F.
 
 Direction-specificity is where that picture stops. Neither above-seam site that
@@ -1257,6 +1263,14 @@ coverage question closed and the mechanism question open: across gemma's whole
 above-seam band relative depth and sharing status are the same variable, so no
 result there can say which of the two produced the falloff, and the control
 built to separate them broke the substrate it was meant to probe (Appendix F).
+
+Read alongside the Llama split above, gemma is not the odd family out; it is
+the second family in a row whose apparent failure dissolved once the site
+search respected the family's own structure. Each architecture carries its
+own eccentricities, and the framework absorbs them the same way each time:
+profile the substrate, pick sites against that profile, and let the gates
+adjudicate. What that discipline has so far recovered on gemma is behavioral
+actuation; direction-specificity remains the open question there.
 
 #### The placebo picture
 
@@ -1852,6 +1866,7 @@ whenever a section it supports is revised.)
 - Damani et al. (2025). Beyond Binary Rewards: Training LMs to Reason About Their Uncertainty. arXiv:2507.16806.
 - Dang and Ngo (2026). Selective Steering: Norm-Preserving Control Through Discriminative Layer Selection. arXiv:2601.19375.
 - Ferrando et al. (2024). Do I Know This Entity? Knowledge Awareness and Hallucinations in Language Models. arXiv:2411.14257.
+- Gemma Team (2026). Gemma 4 Technical Report. arXiv:2607.02770.
 - Gurnee et al. (2026). Verbalizable Representations Form a Global Workspace in Language Models. arXiv:2607.15495. Transformer Circuits. https://transformer-circuits.pub/2026/workspace/index.html.
 - Joad et al. (2026). There Is More to Refusal in Large Language Models than a Single Direction. arXiv:2602.02132.
 - Joshi et al. (2017). TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension. arXiv:1705.03551.
@@ -2135,8 +2150,8 @@ before any write is applied, taking known-correct rows from perfectly
 well-formed to entirely malformed and raising per-token negative
 log-likelihood on the reference completions from 3.53 to 12.33 (Appendix A).
 A parallel calibration sweep at the original above-seam site found no usable
-dose in either sharing condition, so the deep-site null that gave gemma its
-reputation reproduced unchanged alongside the new shallow-band result.
+dose in either sharing condition, so the original deep-site null reproduced
+unchanged alongside the new shallow-band result.
 
 That leaves the coverage question closed and the mechanism question open, for
 a structural reason rather than a want of data. Every site of the cross-family
