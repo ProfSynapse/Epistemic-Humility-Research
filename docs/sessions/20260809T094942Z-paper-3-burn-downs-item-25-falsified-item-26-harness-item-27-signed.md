@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-27T14:21:26Z'
+updated_at: '2026-08-27T15:40:43Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -1735,6 +1735,27 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 075-checkpoint
+  at: '2026-08-27T15:40:43Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Backlog audit and task harness arc. Audited the stale TODO backlog against
+    the registry and pruned all terminal July rows to a 9-item current backlog (main
+    15f0b829). Found and fixed the post-rewrite harvest hook shipped without its executable
+    bit so the PR 564 rebase guard never fired (PR 569 merged). Figure-key CSV fix
+    merged (PR 568). Built and merged the task-backlog harness ported from the syntunia
+    lifecycle: bin/task CLI, one task file per item under backlog/, generated TODO
+    block, pre-commit gate requiring an active covering task for paper and infra work
+    with EHR_TASK_OK escape hatch, and a cross-check that fails commits when a task
+    is bound to a terminal experiment (PR 570, 37 tests green, gate and cross-check
+    verified live). Nine seed tasks mirror the audit; harness task closed and archived
+    (e74626d4). Merged worktrees removed after a clean harvest.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -2126,3 +2147,8 @@ _No summary yet._
 - at: `2026-08-27T14:21:26Z`
 - kind: `checkpoint`
 - summary: Nanda-lens submission pass complete. Independent Fable reviewer produced a two-part report grounded in Neel Nanda MATS FAQ and Alignment Forum writing plus the applications-private repo; lead spot-verified four concrete claims exactly. PI approved all ten items; editor agent applied them in six commits on paper5/nanda-pass, lead verified independently (caption order 1-10, grep battery, KUQ-only containment in the new examples appendix, byte-identical figure renames) and merged as PR 566. PI approved the Appendix F generations containment exception on record. Follow-up PR 567 merged: placebo-census jitter seed changed from process-salted hash to zlib crc32, figure regenerated once, byte-reproducible across runs. Open item from the pass: analysis/p5_new_figure_numbers.csv still keys by old figure filenames.
+### 075-checkpoint - Checkpoint
+
+- at: `2026-08-27T15:40:43Z`
+- kind: `checkpoint`
+- summary: Backlog audit and task harness arc. Audited the stale TODO backlog against the registry and pruned all terminal July rows to a 9-item current backlog (main 15f0b829). Found and fixed the post-rewrite harvest hook shipped without its executable bit so the PR 564 rebase guard never fired (PR 569 merged). Figure-key CSV fix merged (PR 568). Built and merged the task-backlog harness ported from the syntunia lifecycle: bin/task CLI, one task file per item under backlog/, generated TODO block, pre-commit gate requiring an active covering task for paper and infra work with EHR_TASK_OK escape hatch, and a cross-check that fails commits when a task is bound to a terminal experiment (PR 570, 37 tests green, gate and cross-check verified live). Nine seed tasks mirror the audit; harness task closed and archived (e74626d4). Merged worktrees removed after a clean harvest.
