@@ -90,6 +90,9 @@ def _sign_ready(repo: Path, slug: str) -> Path:
     m["prediction"] = "Small positive effect."
     m["falsifier"] = "No difference vs control."
     m["instrument"]["configs"] = ["cell.yaml"]
+    # Generation-engine gate (PI ruling 2026-08-13): steer-cell is a
+    # generation-bearing type, so sign requires a pinned vLLM declaration.
+    m["instrument"]["engine"] = {"name": "vllm", "version": "0.27.1"}
     _write_manifest(repo, slug, m)
     return d
 
