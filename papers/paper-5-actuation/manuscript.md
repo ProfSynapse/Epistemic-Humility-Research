@@ -1,5 +1,5 @@
 ---
-title: "Look Before You Speak: Operating-Point-Dependent Selectivity in Actuating Known-Unknown State"
+title: "Look Before You Speak: Wiring a Language Model's Answerability Readout to Its Refusal Behavior"
 author: "Joseph Rosenbaum (Synaptic Labs)"
 status: Draft v1 (restructured)
 date: 2026-08-17
@@ -63,7 +63,7 @@ notes: >
   write is a boundary push.
 ---
 
-# Look Before You Speak: Operating-Point-Dependent Selectivity in Actuating Known-Unknown State
+# Look Before You Speak: Wiring a Language Model's Answerability Readout to Its Refusal Behavior
 
 *Scope note on "epistemic state": throughout, the phrase names what a linear
 readout of the hidden state reports about answerability and refusal, not a
@@ -103,7 +103,10 @@ refusals on known-correct answers (3.1%). Which component supplies selectivity
 depends on the dose. At a high enough dose, an unconditional write damages 60.1% of
 known-correct rows against 3.1% gated (57.0 points, p = 4.2e-43); at mid-band doses
 the write already sorts by content, and the gate's own contribution to selectivity
-is 0.148 on Qwen and 0.129 on Mistral. Where the write lands matters as much:
+is 0.148 on Qwen and 0.129 on Mistral. Matched-magnitude random directions move
+abstention in every family measured, so direction-specificity is certified
+against each family's own measured null: it holds on Qwen and Llama and fails
+at every Mistral and Gemma site tested so far. Where the write lands matters as much:
 inside the workspace-like layer band it reached 89.2% clean refusals against 66.5%
 just past it, +22.7 points for +0.78 points of cost.
 
@@ -123,6 +126,14 @@ All of that is reading. This paper asks the other direction: if the signal is
 there and accurate, can we make the model's generation policy consult it? We
 tested five routes into behavior on frozen checkpoints, developing the work on
 Qwen and stress-testing it on Mistral, Llama, and Gemma.
+
+The safety stake is the gap between reading and acting: a model whose behavior
+tracks its own epistemic state needs no external scaffold to refuse what it
+does not know, while everything a wrapper does must be re-secured around the
+model instead. The proxy task is confabulation-to-refusal conversion at
+bounded known-correct cost. The answer reached here, that no self-consultation
+channel works but an external gated loop does, relocates that burden from
+training the model to instrumenting it.
 
 The answer is that we can read the model's known-unknown state and wire it to
 the model's own refusal behavior, with no training and without the policy's
@@ -176,6 +187,13 @@ Across families, we can consistently wire the readout (Known-Unknown or KU) to t
    belongs to the direction you fitted and not to perturbation at that
    magnitude.
 
+The verification step carries a measurement of its own: a fifteen-seed
+per-family census of what matched-magnitude random directions do at each
+family's certified placebo setpoint. No family is behaviorally inert under a
+random write, so the census yields the design rule the recipe depends on: a
+placebo criterion is registered against the family's own measured null
+distribution, never against zero (Section 4.8).
+
 ---
 
 ## 2. Background: From Readout to Actuation
@@ -204,6 +222,16 @@ model refuses or fabricates (Ferrando et al., 2024).
 That distinction motivates the present study. External reading can support a
 classifier, a monitor, or an abstention wrapper, but it does not prove the model's
 own policy uses the signal.
+
+The strongest deployment baseline needs no write at all: read the probe, and
+when it fires, intercept the answer and emit a templated refusal. On benefit
+and cost alone that wrapper dominates any in-model controller, and nothing in
+this paper argues otherwise. The wrapper answers a deployment question. The
+question here is upstream and mechanistic: whether, and where, the model's own
+generation can be made to act on the model's own readout, with the write as
+the instrument that answers it. The practical dividend of the in-model route,
+where it certifies, is that the refusals are the model's own well-formed
+generations, produced in distribution, rather than an output-channel patch.
 
 ### 2.2 What would count as use?
 
@@ -1327,7 +1355,14 @@ reliably break refusal (Korznikov et al., 2025), and a random vector
 orthogonal to a fitted steering vector can be behaviorally indistinguishable
 from it, which makes the fitted vector non-identifiable as the cause of its
 own effect (Venkatesh and Kurapath, 2026). A measured per-family null is the
-operational answer we can offer to that problem.
+operational answer we can offer to that problem, and it comes with a design
+rule: register the placebo criterion against the family's own measured null
+distribution, through a percentile-based tolerance or a sign-opposition
+criterion (does the true write move behavior opposite to the family's
+nonspecific-perturbation response), never against a flat symmetric band or a
+single random seed. A distribution with no consistent sign still yields
+individual signed draws, so a sign read off one draw is not a criterion at
+all.
 
 The family-level sign is not evenly distributed inside a family. Broken down
 by question type within the known-unknown pool, one subtype carries qwen's
@@ -1536,6 +1571,18 @@ family tested, but the specific "write near the eff-dim peak" account is
 currently scoped to raw-base Qwen3-4B and should not be read as a
 cross-family mechanism claim.
 
+Read as a user's guide, the lens's record across this paper is specific. It
+discriminates between directions: the negative-control direction fails to
+verbalize while each fitted direction gets its own vocabulary, which is what
+licenses the token readout (Section 4.6). Its cross-family shape prediction
+fails: the effective-dimension profile peaks early in Llama and Mistral, not
+in the interior band the account expected. And on a trained checkpoint its
+read-side band does not license a write site: the rule-selected mid-band site
+reads the refusal axis nearly as well as the late site while ablation there
+releases none of the behavior late-site ablation releases (Section 6.4). The
+lens has earned trust as a same-substrate localization diagnostic, and
+nothing more so far.
+
 ### 6.4 Limits
 
 This is an exploratory paper. The largest claims are qualitative and mechanistic,
@@ -1677,17 +1724,10 @@ in, as a separate and probably harder generalization problem rather than
 assumed to inherit the answerability axis's portability. That is a hypothesis
 for the next study to test, not a result it can report.
 
-The design rule that follows from the census is the one this paper would ask a
-successor to adopt: register the placebo criterion against the family's own
-measured null distribution, using a percentile-based tolerance or a
-sign-opposition criterion (does the true write move behavior opposite to that
-family's nonspecific-perturbation response), rather than against a flat
-symmetric band or a single random seed. The three distributions in Section 4.8
-supply that null at fifteen seeds for the three families they cover, and the
-raw-base late-site census supplies the cautionary bound: a distribution with
-no consistent sign (six of fifteen seeds negative) still yields individual
-signed draws, so a sign criterion is only as trustworthy as the distribution
-behind it, and a sign read off a single draw is not a criterion at all.
+Any successor should adopt the census's design rule (Section 4.8): placebo
+criteria registered against the family's own measured null distribution, at
+the write site to be used. The distributions in Section 4.8 supply that null
+at fifteen seeds for the families and sites they cover.
 
 Recommended escalation, in order of priority:
 
