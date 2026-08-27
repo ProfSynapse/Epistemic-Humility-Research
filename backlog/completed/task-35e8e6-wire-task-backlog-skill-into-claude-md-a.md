@@ -1,7 +1,7 @@
 ---
 id: task-35e8e6
 title: Wire task-backlog skill into CLAUDE.md and pr-workflow
-status: in-progress
+status: done
 assignee:
 - '@claude'
 tier: P

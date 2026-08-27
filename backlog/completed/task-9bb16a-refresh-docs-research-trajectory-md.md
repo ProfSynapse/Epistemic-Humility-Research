@@ -1,7 +1,7 @@
 ---
 id: task-9bb16a
 title: Refresh docs/research-trajectory.md
-status: in-progress
+status: done
 assignee:
 - '@claude'
 tier: P
@@ -9,7 +9,8 @@ priority: low
 experiment: ''
 component: ''
 depends_on: []
-files: [docs/research-trajectory.md]
+files:
+- docs/research-trajectory.md
 new_files: []
 blocker: ''
 created_date: '2026-08-27'
