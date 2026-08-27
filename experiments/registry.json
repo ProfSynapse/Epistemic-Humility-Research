@@ -7770,6 +7770,27 @@
     {
       "checkpoint": {
         "repo": "unsloth/Qwen3-4B-bnb-4bit",
+        "revision": "raw-base (no adapter; checkpoint_tag \"raw-base\" per AK Stage 1 manifest)"
+      },
+      "falsifier": "Coupling adds nothing beyond a constant caution write - the coupled-minus-placebo margin CI includes 0 on the selectivity gap. The bidirectional claim fails if only the tighten half clears and the release half does not (release margin CI includes 0), or if the release gain is bought by a rise in unanswerable confabs (do-no-harm gate fails). A tighten-only pass is a partial null on the novel claim.",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "The two-sensor coupled controller produces bidirectional selectivity over the permuted-sensor placebo on raw-base - a tighten effect (unanswerable confab to coherent refuse) AND a release effect (answerable refusal to well-formed correct answer), each with a coupled-minus-placebo point margin whose bootstrap 95% CI excludes 0, while not raising the unanswerable-confab rate above the k=0 baseline.",
+      "question": "On the raw-base untrained instruct (Qwen3-4B, no adapter), does coupling BOTH a doubt readout and a confab-propensity readout to a single caution setpoint produce bidirectional selectivity over a permuted-sensor placebo, tightening confabulations into coherent refusals AND releasing wrongly-refused answerable prompts into well-formed correct answers?",
+      "registered": true,
+      "slug": "two-signal-caution-regulation-instruct",
+      "status": "draft",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B-bnb-4bit",
         "revision": "cad0bedfdd862093a12af478cb974ab2addd0e0a"
       },
       "created_at": "2026-07-24T00:26:00Z",
