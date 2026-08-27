@@ -1,8 +1,9 @@
 ---
 id: task-57402c
 title: Repair broken repin test fixtures in the exp test suite
-status: todo
-assignee: []
+status: in-progress
+assignee:
+- '@claude'
 tier: P
 priority: low
 experiment: ''

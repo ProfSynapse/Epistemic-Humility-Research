@@ -1,8 +1,9 @@
 ---
 id: task-92c973
 title: Papers 3 and 4 final-state check
-status: todo
-assignee: []
+status: in-progress
+assignee:
+- '@claude'
 tier: P
 priority: medium
 experiment: ''

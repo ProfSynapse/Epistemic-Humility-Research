@@ -1,7 +1,7 @@
 ---
 id: task-8a894c
 title: 'aq-sycophancy-activation-actuator: resolve or redesign'
-status: todo
+status: draft
 assignee: []
 tier: A
 priority: medium
@@ -30,3 +30,5 @@ terminal status while this task stays open with no update.
 
 ## Work Log
 - 2026-08-27 @claude: seeded from TODO.md row AQ during the task-backlog harness build; bound to the aq-sycophancy-activation-actuator experiment to dogfood the experiment: cross-check.
+
+2026-08-27: retired to draft by PI decision (papers-first; revisit when the PI reopens the line).

@@ -1,14 +1,15 @@
 ---
 id: task-9bb16a
 title: Refresh docs/research-trajectory.md
-status: todo
-assignee: []
+status: in-progress
+assignee:
+- '@claude'
 tier: P
 priority: low
 experiment: ''
 component: ''
 depends_on: []
-files: []
+files: [docs/research-trajectory.md]
 new_files: []
 blocker: ''
 created_date: '2026-08-27'

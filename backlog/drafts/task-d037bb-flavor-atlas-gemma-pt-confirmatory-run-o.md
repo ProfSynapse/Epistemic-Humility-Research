@@ -1,7 +1,7 @@
 ---
 id: task-d037bb
 title: 'flavor-atlas-gemma-pt-confirmatory: run or retire'
-status: todo
+status: draft
 assignee: []
 tier: A
 priority: medium
@@ -30,3 +30,5 @@ while this task stays open with no update.
 
 ## Work Log
 - 2026-08-27 @claude: seeded from TODO.md row FG during the task-backlog harness build; bound to the flavor-atlas-gemma-pt-confirmatory experiment to dogfood the experiment: cross-check.
+
+2026-08-27: retired to draft by PI decision (papers-first; revisit when the PI reopens the line).

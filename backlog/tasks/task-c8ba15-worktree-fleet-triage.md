@@ -1,8 +1,9 @@
 ---
 id: task-c8ba15
 title: Worktree fleet triage
-status: todo
-assignee: []
+status: in-progress
+assignee:
+- '@claude'
 tier: P
 priority: low
 experiment: ''
