@@ -2,7 +2,7 @@
 id: task-2b5ef7
 title: Promote modal volume get directory-download gotchas into runpod-modal-lanes
   skill
-status: in-progress
+status: done
 assignee:
 - '@claude'
 tier: P
