@@ -91,6 +91,45 @@ one is cheap to verify by eye and expensive to learn live:
 - **Staging namespace.** Cloud-cell prep artifacts are namespaced by `RUN_TAG`
   under `professorsynapse/eh-al-prep-staging`.
 
+## Modal volume-get gotchas
+
+`modal volume get` has two distinct failure modes on directory downloads.
+Neither raises an error, so both require after-the-fact verification against
+an expected manifest.
+
+**Variant 1 — silent concatenation.** Modal CLI 1.5.1 has an unsafe edge case
+for directory downloads: running `modal volume get` with a remote directory and
+a nonexistent, file-like local destination can concatenate the directory's
+contents into one bogus local file. Never interpret that concatenated output as
+a model, adapter, checkpoint, or other valid artifact.
+
+For an artifact bundle, pre-create the local destination directory and fetch an
+exact allowlist of named files individually. Alternatively, use the Modal SDK
+to download the bundle into an ignored `.partial` tree. In either path, verify
+the relative filenames, byte sizes, and hashes against the expected manifest or
+allowlist. Fail closed on missing, unexpected, duplicate, or concatenated
+artifacts, and atomically promote the verified tree to its final location only
+after every check passes.
+
+**Variant 2 — silent partial download.** Separately, `modal volume get` can
+report success while transferring only a fraction of a large directory's
+files, with no error surfaced. In
+`experiments/llama-atlas-gated-wide-instrument-retest`, pulling a 2956-file
+`tensors/` directory from a Modal Volume via the CLI downloaded only ONE file
+across three repeated attempts (once returning 0 bytes, once 358KB), despite
+each attempt reporting success. The workaround was to bypass the CLI entirely
+and use the Modal Python SDK directly: enumerate the volume with
+`Volume.iterdir(recursive=True)` and pull each file with
+`read_file_into_fileobj`. After switching to the SDK-based pull, all 2956
+files landed and the downstream anchor-coverage check came back 2956/2956 =
+1.0.
+
+Treat both variants as the same underlying lesson: never trust a `modal volume
+get` success message for a multi-file directory transfer. Count the files (or
+otherwise checksum/verify) after every such pull, and prefer the SDK
+(`Volume.iterdir` + `read_file_into_fileobj`) over the CLI for bulk directory
+retrieval.
+
 ## Checkpoint staging registry
 
 Cloud cells reference checkpoints by HF repo + revision, never a local path and
