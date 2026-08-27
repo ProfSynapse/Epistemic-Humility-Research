@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-27T13:02:26Z'
+updated_at: '2026-08-27T14:21:26Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -1715,6 +1715,26 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 074-checkpoint
+  at: '2026-08-27T14:21:26Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Nanda-lens submission pass complete. Independent Fable reviewer produced
+    a two-part report grounded in Neel Nanda MATS FAQ and Alignment Forum writing
+    plus the applications-private repo; lead spot-verified four concrete claims exactly.
+    PI approved all ten items; editor agent applied them in six commits on paper5/nanda-pass,
+    lead verified independently (caption order 1-10, grep battery, KUQ-only containment
+    in the new examples appendix, byte-identical figure renames) and merged as PR
+    566. PI approved the Appendix F generations containment exception on record. Follow-up
+    PR 567 merged: placebo-census jitter seed changed from process-salted hash to
+    zlib crc32, figure regenerated once, byte-reproducible across runs. Open item
+    from the pass: analysis/p5_new_figure_numbers.csv still keys by old figure filenames.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -2101,3 +2121,8 @@ _No summary yet._
 - at: `2026-08-27T13:02:26Z`
 - kind: `checkpoint`
 - summary: Paper 5 editorial arc with the PI. PR 565 merged f5bd97da carrying five fixes: Figure 4 legend moved to upper left clear of the data, five prose em dashes removed, gemma opening reframed from field reputation to internal record with the Gemma 4 Technical Report citation arXiv 2607.02770 verified against the pinned checkpoint config 18 of 42 shared blocks, registration narration stripped from five body sites per VOICE, and both travelling cautions relocated to Limits bullets with bare site facts kept in place at the llama census. Worktree removed post harvest check, branch deleted. Next: PI-requested independent voice pass with a Neel Nanda reader lens for a fellowship submission, delegated to a background agent producing recommendations only.
+### 074-checkpoint - Checkpoint
+
+- at: `2026-08-27T14:21:26Z`
+- kind: `checkpoint`
+- summary: Nanda-lens submission pass complete. Independent Fable reviewer produced a two-part report grounded in Neel Nanda MATS FAQ and Alignment Forum writing plus the applications-private repo; lead spot-verified four concrete claims exactly. PI approved all ten items; editor agent applied them in six commits on paper5/nanda-pass, lead verified independently (caption order 1-10, grep battery, KUQ-only containment in the new examples appendix, byte-identical figure renames) and merged as PR 566. PI approved the Appendix F generations containment exception on record. Follow-up PR 567 merged: placebo-census jitter seed changed from process-salted hash to zlib crc32, figure regenerated once, byte-reproducible across runs. Open item from the pass: analysis/p5_new_figure_numbers.csv still keys by old figure filenames.
