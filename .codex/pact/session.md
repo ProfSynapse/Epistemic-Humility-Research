@@ -215,3 +215,36 @@ Active orchestration ledger for the current repo-focused PACT session.
 - Independent verdicts are auditor **ACCEPT** and tester **PASS**. Final evidence: **29 focused**, **477 provider**, **1,184 execution tests passed with 3 expected skips**, **144 contract tests excluding the known Modal lock issue**, and **12 read-only/native tests**; exact hostile and concurrency proofs passed.
 - The unrelated pre-existing Modal runtime-lock mismatch remains excluded from this acceptance and tracked separately.
 - Next dispatch: release the exact accepted engine commit, update and synchronize the host gitlink and canonical WSL checkout, then begin **Slice 5.6b host adapters**.
+
+### 2026-08-28 Docker Composition Slice 5.6a Release And Integration Checkpoint
+
+- The engine was committed and pushed as `a1d28a9fa5b68400843386ad95dd885599a47d8e` on `origin/feat/submodule-cloud-api-v1`, containing the exact accepted `docker.py`, `composition.py`, and `test_composition.py` candidate files.
+- The host was committed and pushed as `c3b82ce1d3ed532db7d1b462dcfc45153992d206` on `origin/feat/submodule-cloud-api-v1-host`, containing only `.codex/pact/session.md` and the `synaptic-tuner` gitlink update.
+- Windows, remote, and canonical WSL revisions matched exactly for both the host and engine. The canonical WSL host was fast-forwarded and its submodule checked out at the exact engine commit; the Windows host and engine repositories were clean after release.
+- The canonical WSL host retained exactly two unrelated pre-existing type-change entries: `gemma4-e4b/eval_pool_manifest.json` and `gemma4-e4b/split_manifest.json`. Supplemental WSL diff-detail calls returned `E_ACCESSDENIED`, but status before and after showed the same two entries, so this is a preserved caveat rather than a release blocker.
+- Slice 5.6a is released and integration-ready. Next dispatch: **Slice 5.6b host adapters**.
+
+### 2026-08-28 Docker Host Adapter Slice 5.6b R1 Architecture Accepted
+
+- Implementation order is fixed: **b.1 HMAC kernel, exact typed views, mapping-pair models, and mapping authority**; **b.2 capability stores, source/stage/mapping pairs, and acquisition ledger**; **b.3 pair-consuming path binder and explicit environment resolver**; **b.4 argv0-only WSL interoperability for Windows `docker.exe`**; then **b.5 closeable leased host facade/composition**.
+- Reuse the engine binding store and existing host control store, source, mount, CLI, CREATE, START, and control implementations. Eliminate a host command catalog, duplicate control store, mutable source registry, and read/persistence scope.
+- R1 repairs the mapping boundary with an outer-authenticated storage-to-WSL pair that binds the nested proofs, root, distro, purpose, and live verification identity and feeds the path binder directly.
+- The host handle owns linear capabilities. Builder ownership transfers atomically, operations hold reentrant leases, every lease path unwinds in `finally`, and cleanup runs in reverse order exactly once to a terminal sanitized result. Host lifecycle cleanup never performs Docker cleanup.
+- Residual risks are explicit: every projection must reauthenticate and reconstruct both outer and nested mapping-pair envelopes rather than trusting registry-time validation; capability-ledger aliasing must key the exact capability object plus `LocalFilesystemV1` instance identity rather than stable references or digests alone.
+- Real Windows `docker.exe` from WSL, Docker Desktop context behavior, UNC mounts, and GPU behavior remain unproven until Slice 5.6c. All 5.6b stores and the host handle remain same-process with no restart persistence.
+- Slice 5.6c remains the actual CPU smoke boundary. Product read operations and durable persistence remain later host work.
+- Independent architecture auditor verdict: **ACCEPT**.
+- Next dispatch is restricted to **Slice 5.6b.1 HMAC kernel, exact typed views, mapping-pair models, and mapping authority**.
+
+### 2026-08-28 Docker Host Adapter Slice 5.6b.1 Trust Kernel R4 Accepted
+
+- Accepted public contracts are `DockerStoragePathMappingPairV1`, `AuthenticatedDockerStoragePathMappingPairV1`, `DockerStoragePathMappingPairAuthorityPortV1`, the narrow typed HMAC authority classes, `DockerCommandBindingEnvelopeAuthorityViewV1`, and `DockerEvidenceAuthorityViewV1`.
+- Domain separation is pinned to `synaptic-host-docker-source-declaration-authority/v1`, `synaptic-host-docker-stage-bundle-record-authority/v1`, `synaptic-host-docker-command-binding-authority/v1`, `synaptic-host-docker-storage-mapping-authority/v1`, `synaptic-host-docker-bundle-binding-authority/v1`, `synaptic-host-docker-source-seal-authority/v1`, `synaptic-host-docker-wsl-root-mapping-authority/v1`, `synaptic-host-docker-create-path-binding-authority/v1`, `synaptic-host-docker-workload-environment-binding-authority/v1`, `synaptic-host-docker-control-intent-authority/v1`, `synaptic-host-docker-mutation-record-authority/v1`, `synaptic-host-docker-absence-authority/v1`, `synaptic-host-docker-expected-create-binding-authority/v1`, and `synaptic-host-docker-storage-path-mapping-pair-authority/v1`.
+- Mapping-pair structural validity remains distinct from authenticated authority. Trust-sensitive paths are closure-sealed, and call-time verification performs no replaceable global trust lookup.
+- Live-capability admission binds the exact capability object together with the exact `LocalFilesystemV1` instance identity; stable references or digests alone are insufficient.
+- Audit progression: R0 completed outer re-pinning, immutable exact typed schemas, and kernel-domain pinning; R1 eliminated replaceable global pin and schema anchors; R2 closure-sealed exact class, literal-schema, and private pins; R3 closure-sealed recursive reconstruction, digest, and live-identity paths; R4 closure-sealed the final four constructors.
+- Frozen accepted hashes are: `model` `F4A733FFAC7881A967CC8D82AC657B5304DCF617EC8812EA9E1CDF6B5CF79D62`; `ports` `3BB2EDED562F166748C6FE8ED8C22554DE4FB7E1328ACE593F41C00CC9105C1C`; `authority` `2E1839056BAB50F26A7B283ACCAD28B328357969E5B94AD80129EAE657E9A047`; `test_authority` `513FFDFE800D2CF93F170598C87D180AA18950C89F2F6DCB7D125A79F1B19ECC`; `security` `50CD2B9F6D5E312971E8D4C13DD342D75A5A70ED4C53138839C2360DF0D7FA94`; and `test_security` `BE5F9E7B3EA30E7663E111ECC8190F36E727275CC061AC5EF401C63F0FBE1281`.
+- The shared Windows HMAC initializer was repaired for binary key material and exact cleanup behavior.
+- Final independent verdicts are correctness auditor **ACCEPT**, security auditor **ACCEPT**, and tester **PASS**. Evidence: **82 focused**, **18 security with 1 expected symlink skip**, **680 Docker**, **997 host with 5 expected skips**, and **47 R0-R4 tests passed**.
+- Residual boundaries: explicit method or closure-cell modification is out of scope; Windows ACL remains directory policy; no restart persistence is claimed; four WSL ext4 skips and one symlink skip remain expected.
+- Next dispatch: release the accepted host checkpoint, then begin **Slice 5.6b.2 capability stores and acquisition ledger**.

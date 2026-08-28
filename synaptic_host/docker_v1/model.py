@@ -721,6 +721,197 @@ class AuthenticatedDockerWSLRootMappingV1:
         })
 
 
+def _storage_mapping_snapshot_v1(
+    value: AuthenticatedDockerStorageMappingV1,
+) -> AuthenticatedDockerStorageMappingV1:
+    try:
+        if type(value) is not AuthenticatedDockerStorageMappingV1:
+            raise ValueError
+        content = value.content
+        if type(content) is not DockerStorageMappingV1:
+            raise ValueError
+        access = content.verify_access
+        if access is not None:
+            if type(access) is not BundleMountVerifyAccessV1:
+                raise ValueError
+            access = BundleMountVerifyAccessV1(
+                access.destination_ref,
+                access.root_authority_digest,
+                access.verify_borrow,
+                access.verify_root,
+                access.access_digest,
+            )
+        rebuilt_content = DockerStorageMappingV1(
+            content.mapping_ref,
+            content.declared_ref,
+            content.purpose,
+            content.wsl_root,
+            content.root_authority_digest,
+            content.destination_ref,
+            content.access_digest,
+            access,
+            content.mapping_digest,
+        )
+        rebuilt = AuthenticatedDockerStorageMappingV1(
+            rebuilt_content, value.authority_ref, value.key_ref, value.tag
+        )
+        if rebuilt != value:
+            raise ValueError
+        return rebuilt
+    except BaseException:
+        raise DockerMountErrorV1(DockerMountCodeV1.MAPPING_CONFLICT) from None
+
+
+def _wsl_mapping_snapshot_v1(
+    value: AuthenticatedDockerWSLRootMappingV1,
+) -> AuthenticatedDockerWSLRootMappingV1:
+    try:
+        if type(value) is not AuthenticatedDockerWSLRootMappingV1:
+            raise ValueError
+        content = value.content
+        rebuilt_content = DockerWSLRootMappingV1(
+            content.mapping_ref,
+            content.distro,
+            content.purpose,
+            content.posix_root,
+            content.mapping_digest,
+        )
+        rebuilt = AuthenticatedDockerWSLRootMappingV1(
+            rebuilt_content, value.authority_ref, value.key_ref, value.tag
+        )
+        if rebuilt != value:
+            raise ValueError
+        return rebuilt
+    except BaseException:
+        raise DockerMountErrorV1(DockerMountCodeV1.MAPPING_CONFLICT) from None
+
+
+@dataclass(frozen=True, slots=True)
+class DockerStoragePathMappingPairV1:
+    """Structurally adjacent storage and WSL mappings.
+
+    Construction validates shape and live capability identity only. It does not
+    authenticate either nested envelope; that belongs to the pair authority.
+    """
+
+    storage_mapping: AuthenticatedDockerStorageMappingV1
+    wsl_mapping: AuthenticatedDockerWSLRootMappingV1
+    pair_digest: str
+
+    def __post_init__(self) -> None:
+        try:
+            storage = _storage_mapping_snapshot_v1(self.storage_mapping)
+            wsl = _wsl_mapping_snapshot_v1(self.wsl_mapping)
+            storage_content = storage.content
+            wsl_content = wsl.content
+            source = (
+                storage_content.purpose is DockerStoragePurposeV1.SOURCE_BUNDLE
+            )
+            if (
+                storage_content.mapping_ref != wsl_content.mapping_ref
+                or storage_content.wsl_root != wsl_content.posix_root
+                or source
+                != (wsl_content.purpose is DockerWSLPathPurposeV1.SOURCE_READ)
+                or (not source)
+                != (wsl_content.purpose is DockerWSLPathPurposeV1.ARTIFACT_WRITE)
+                or source
+                != (type(storage_content.verify_access) is BundleMountVerifyAccessV1)
+                or self.pair_digest != digest_v1(self.canonical_without_digest())
+            ):
+                raise ValueError
+            if source:
+                original_access = self.storage_mapping.content.verify_access
+                rebuilt_access = storage_content.verify_access
+                if (
+                    rebuilt_access.verify_borrow is not original_access.verify_borrow
+                    or rebuilt_access.verify_root is not original_access.verify_root
+                ):
+                    raise ValueError
+            object.__setattr__(self, "storage_mapping", storage)
+            object.__setattr__(self, "wsl_mapping", wsl)
+        except DockerMountErrorV1:
+            raise
+        except BaseException:
+            raise DockerMountErrorV1(DockerMountCodeV1.MAPPING_CONFLICT) from None
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        storage = self.storage_mapping.content
+        wsl = self.wsl_mapping.content
+        return {
+            "declared_ref": storage.declared_ref,
+            "distro": wsl.distro,
+            "mapping_ref": storage.mapping_ref,
+            "root": storage.wsl_root,
+            "schema_version": "synaptic-host-docker-storage-path-mapping-pair/v1",
+            "storage_mapping_digest": storage.mapping_digest,
+            "storage_mapping_proof_digest": self.storage_mapping.proof_digest,
+            "storage_purpose": storage.purpose.value,
+            "verify_access_digest": (
+                None if storage.verify_access is None
+                else storage.verify_access.access_digest
+            ),
+            "wsl_mapping_digest": wsl.mapping_digest,
+            "wsl_mapping_proof_digest": self.wsl_mapping.proof_digest,
+            "wsl_purpose": wsl.purpose.value,
+        }
+
+    @classmethod
+    def build(cls, storage_mapping, wsl_mapping):
+        try:
+            temporary = cls.__new__(cls)
+            object.__setattr__(temporary, "storage_mapping", storage_mapping)
+            object.__setattr__(temporary, "wsl_mapping", wsl_mapping)
+            object.__setattr__(temporary, "pair_digest", "0" * 64)
+            body = temporary.canonical_without_digest()
+            return cls(storage_mapping, wsl_mapping, digest_v1(body))
+        except DockerMountErrorV1:
+            raise
+        except BaseException:
+            raise DockerMountErrorV1(DockerMountCodeV1.MAPPING_CONFLICT) from None
+
+
+@dataclass(frozen=True, slots=True)
+class AuthenticatedDockerStoragePathMappingPairV1:
+    content: DockerStoragePathMappingPairV1
+    authority_ref: str
+    key_ref: str
+    tag: str
+
+    def __post_init__(self) -> None:
+        try:
+            if type(self.content) is not DockerStoragePathMappingPairV1:
+                raise ValueError
+            rebuilt = DockerStoragePathMappingPairV1(
+                self.content.storage_mapping,
+                self.content.wsl_mapping,
+                self.content.pair_digest,
+            )
+            if rebuilt != self.content:
+                raise ValueError
+            checked_ref_v1(self.authority_ref, BundleIOCodeV1.COMMAND_INVALID)
+            checked_ref_v1(self.key_ref, BundleIOCodeV1.COMMAND_INVALID)
+            checked_sha_v1(self.tag, BundleIOCodeV1.COMMAND_INVALID)
+            object.__setattr__(self, "content", rebuilt)
+        except DockerMountErrorV1:
+            raise
+        except BaseException:
+            raise DockerMountErrorV1(
+                DockerMountCodeV1.AUTHENTICATION_FAILED
+            ) from None
+
+    @property
+    def proof_digest(self) -> str:
+        return digest_v1({
+            "authority_ref": self.authority_ref,
+            "key_ref": self.key_ref,
+            "pair_digest": self.content.pair_digest,
+            "schema_version": (
+                "synaptic-host-authenticated-docker-storage-path-mapping-pair/v1"
+            ),
+            "tag": self.tag,
+        })
+
+
 @dataclass(frozen=True, slots=True)
 class DockerWSLPathRequestV1:
     mapping_ref: str

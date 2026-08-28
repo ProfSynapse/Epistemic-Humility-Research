@@ -60,26 +60,71 @@ class FileHmacAuthenticator:
         try:
             descriptor = os.open(
                 self.key_path,
-                os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                os.O_WRONLY
+                | os.O_CREAT
+                | os.O_EXCL
+                | getattr(os, "O_BINARY", 0),
                 0o600,
             )
         except FileExistsError:
             self._key()
             return
+
+        created_metadata: os.stat_result | None = None
         try:
-            value = memoryview(secrets.token_bytes(32))
+            created_metadata = os.fstat(descriptor)
+            if not stat.S_ISREG(created_metadata.st_mode):
+                raise ValueError("evidence key must be a regular file")
+
+            generated = secrets.token_bytes(32)
+            if not isinstance(generated, bytes) or len(generated) != 32:
+                raise ValueError("evidence key generation failed")
+            value = memoryview(generated)
             written = 0
             while written < len(value):
                 count = os.write(descriptor, value[written:])
-                if count <= 0:
+                if (
+                    type(count) is not int
+                    or count <= 0
+                    or count > len(value) - written
+                ):
                     raise OSError("evidence key write made no progress")
                 written += count
             os.fsync(descriptor)
-        finally:
-            os.close(descriptor)
+
+            closing_descriptor = descriptor
+            descriptor = None
+            os.close(closing_descriptor)
+            try:
+                os.chmod(self.key_path, 0o600)
+            except OSError:
+                pass
+
+            persisted = self._key()
+            if not hmac.compare_digest(persisted, generated):
+                raise ValueError("evidence key publication failed")
+        except BaseException:
+            if descriptor is not None:
+                try:
+                    os.close(descriptor)
+                except BaseException:
+                    pass
+            if created_metadata is not None:
+                self._remove_created_file(created_metadata)
+            raise
+
+    def _remove_created_file(self, created_metadata: os.stat_result) -> None:
         try:
-            os.chmod(self.key_path, 0o600)
-        except OSError:
+            current_metadata = os.lstat(self.key_path)
+            if (
+                not stat.S_ISREG(current_metadata.st_mode)
+                or stat.S_ISLNK(current_metadata.st_mode)
+                or current_metadata.st_dev != created_metadata.st_dev
+                or current_metadata.st_ino != created_metadata.st_ino
+            ):
+                return
+            os.unlink(self.key_path)
+        except BaseException:
             pass
 
     def _key(self, key_ref: str | None = None) -> bytes:

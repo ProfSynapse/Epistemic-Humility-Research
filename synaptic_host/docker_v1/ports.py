@@ -29,6 +29,7 @@ from synaptic_host.bundle_io_v1.ports import (
 )
 
 from .model import (
+    AuthenticatedDockerStoragePathMappingPairV1,
     AuthenticatedDockerWSLRootMappingV1,
     AuthenticatedDockerSourceDeclarationV1,
     AuthenticatedDockerStorageMappingV1,
@@ -36,6 +37,7 @@ from .model import (
     DockerHostSourceCodeV1,
     DockerHostSourceErrorV1,
     DockerStageBundleBindingV1,
+    DockerStoragePathMappingPairV1,
     DockerWindowsPathV1,
     DockerWSLPathRequestV1,
 )
@@ -160,6 +162,19 @@ class DockerStorageMappingAuthorityPortV1(Protocol):
     def authenticate(
         self, value: AuthenticatedDockerStorageMappingV1
     ) -> AuthenticatedDockerStorageMappingV1 | None: ...
+
+
+class DockerStoragePathMappingPairAuthorityPortV1(Protocol):
+    authority_ref: str
+    key_ref: str
+
+    def issue(
+        self, value: DockerStoragePathMappingPairV1
+    ) -> AuthenticatedDockerStoragePathMappingPairV1: ...
+
+    def authenticate(
+        self, value: AuthenticatedDockerStoragePathMappingPairV1
+    ) -> AuthenticatedDockerStoragePathMappingPairV1 | None: ...
 
 
 class BundleMountVerifierPortV1(Protocol):
