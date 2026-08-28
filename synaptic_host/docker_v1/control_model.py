@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from hashlib import sha256
 import re
 
 from synaptic_host.bundle_io_v1.model import digest_v1
@@ -43,6 +44,7 @@ class DockerTypedResultKindV1(str, Enum):
     IMAGE_INSPECT = "IMAGE_INSPECT"
     CONTAINER_INSPECT = "CONTAINER_INSPECT"
     EXACT_NAME_INVENTORY = "EXACT_NAME_INVENTORY"
+    CREATE_EXECUTION = "CREATE_EXECUTION"
 
 class DockerContainerStatusV1(str, Enum):
     CREATED = "created"
@@ -71,6 +73,46 @@ def docker_typed_request_digest_v1(kind, target, command_digest):
         raise
     except BaseException:
         _bad()
+
+
+def docker_create_execution_request_digest_v1(target, command_digest):
+    return docker_typed_request_digest_v1(
+        DockerTypedResultKindV1.CREATE_EXECUTION, target, command_digest
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class DockerCreateExecutionProjectionV1:
+    container_ref: str
+    request_digest: str
+    command_digest: str
+    projection_digest: str
+
+    def canonical_without_digest(self):
+        return {
+            "command_digest": self.command_digest,
+            "container_ref": self.container_ref,
+            "request_digest": self.request_digest,
+            "schema_version": "synaptic-host-docker-create-execution-projection/v1",
+        }
+
+    def __post_init__(self):
+        _sha(self.container_ref)
+        _sha(self.request_digest)
+        _sha(self.command_digest)
+        _check_digest(self)
+
+    @classmethod
+    def build(cls, container_ref, request_digest, command_digest):
+        body = {
+            "command_digest": command_digest,
+            "container_ref": container_ref,
+            "request_digest": request_digest,
+            "schema_version": "synaptic-host-docker-create-execution-projection/v1",
+        }
+        return cls(
+            container_ref, request_digest, command_digest, digest_v1(body)
+        )
 
 @dataclass(frozen=True, slots=True)
 class DockerLabelProjectionV1:
@@ -742,6 +784,108 @@ class DockerExactNameInventoryResultV1:
             kind, target, request_digest, command, evidence, projection,
             digest_v1(_result_body(
                 kind, target, request_digest, command, evidence, projection
+            )),
+        )
+
+
+def _create_execution_result_body(
+    target, request_digest, command_digest, evidence, projection,
+):
+    return {
+        "command_digest": command_digest,
+        "evidence_result_digest": evidence.result_digest,
+        "kind": DockerTypedResultKindV1.CREATE_EXECUTION.value,
+        "projection_digest": (
+            projection.projection_digest if projection is not None else None
+        ),
+        "request_digest": request_digest,
+        "schema_version": "synaptic-host-docker-create-execution-result/v1",
+        "target": target,
+    }
+
+
+@dataclass(frozen=True, slots=True)
+class DockerCreateExecutionResultV1:
+    result_kind: DockerTypedResultKindV1
+    target: str
+    request_digest: str
+    command_digest: str
+    evidence: DockerCLIResultV1
+    projection: DockerCreateExecutionProjectionV1 | None
+    result_digest: str
+
+    def __post_init__(self):
+        try:
+            if (
+                self.result_kind is not DockerTypedResultKindV1.CREATE_EXECUTION
+                or type(self.target) is not str
+                or _NAME.fullmatch(self.target) is None
+            ):
+                raise ValueError
+            _sha(self.request_digest)
+            _sha(self.command_digest)
+            if self.request_digest != docker_create_execution_request_digest_v1(
+                self.target, self.command_digest
+            ):
+                raise ValueError
+            if type(self.evidence) is not DockerCLIResultV1:
+                raise ValueError
+            evidence = DockerCLIResultV1(
+                self.evidence.command_digest, self.evidence.policy_digest,
+                self.evidence.outcome, self.evidence.exit_code,
+                self.evidence.stdout_size, self.evidence.stdout_digest,
+                self.evidence.stderr_size, self.evidence.stderr_digest,
+                self.evidence.result_digest,
+            )
+            if evidence.command_digest != self.command_digest:
+                raise ValueError
+            if self.projection is not None:
+                projection = DockerCreateExecutionProjectionV1(
+                    self.projection.container_ref,
+                    self.projection.request_digest,
+                    self.projection.command_digest,
+                    self.projection.projection_digest,
+                )
+            else:
+                projection = None
+            if evidence.outcome is DockerCLIOutcomeV1.SUCCESS:
+                if (
+                    projection is None
+                    or projection.request_digest != self.request_digest
+                    or projection.command_digest != self.command_digest
+                ):
+                    raise ValueError
+                raw = projection.container_ref.encode("utf-8")
+                valid_stdout = (
+                    (evidence.stdout_size == 64
+                     and evidence.stdout_digest == sha256(raw).hexdigest())
+                    or (evidence.stdout_size == 65
+                        and evidence.stdout_digest
+                        == sha256(raw + b"\n").hexdigest())
+                )
+                if not valid_stdout:
+                    raise ValueError
+            elif (
+                evidence.outcome is not DockerCLIOutcomeV1.NONZERO_EXIT
+                or projection is not None
+            ):
+                raise ValueError
+            _sha(self.result_digest)
+            if self.result_digest != digest_v1(_create_execution_result_body(
+                self.target, self.request_digest, self.command_digest,
+                evidence, projection,
+            )):
+                raise ValueError
+        except BaseException:
+            _bad()
+
+    @classmethod
+    def build(cls, target, request_digest, command_digest, evidence, projection):
+        kind = DockerTypedResultKindV1.CREATE_EXECUTION
+        return cls(
+            kind, target, request_digest, command_digest, evidence, projection,
+            digest_v1(_create_execution_result_body(
+                target, request_digest, command_digest, evidence, projection
             )),
         )
 

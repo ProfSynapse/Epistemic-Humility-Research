@@ -2,6 +2,8 @@ from dataclasses import replace
 from enum import Enum
 from hashlib import sha256
 import pickle
+import copy
+from concurrent.futures import ThreadPoolExecutor
 import traceback
 
 import pytest
@@ -10,6 +12,7 @@ from tuner.execution.providers.docker_provider_v1.model import (
     AuthenticatedDockerAbsenceV1,
     DockerAbsenceContentV1,
     DockerLookupPurposeV1,
+    DockerImageV1, DockerLabelsV1, DockerRuntimeV1, DockerWorkloadV1,
 )
 
 from synaptic_host.bundle_io_v1.model import digest_v1
@@ -43,11 +46,21 @@ from synaptic_host.docker_v1.control_contract import (
     authenticate_workload_environment_binding_v1,
 )
 from synaptic_host.docker_v1.control_private import (
+    DockerPrivateCreateInvocationFactoryV1,
+    DockerPrivateCreateInvocationV1,
     DockerPrivateWorkloadEnvironmentResolutionV1,
 )
 from synaptic_host.docker_v1.model import (
+    DockerCLICommandV1, DockerCLIVerbV1, DockerCLIResultV1,
+    DockerCLIOutcomeV1,
     DockerWSLPathPurposeV1,
     DockerWSLPathRequestV1,
+    DockerWindowsPathV1,
+)
+from synaptic_host.docker_v1.control_model import (
+    OWNED_LABEL_NAMES_V1, OWNED_LABEL_PREFIX_V1,
+    DockerCreateExecutionProjectionV1, DockerCreateExecutionResultV1,
+    docker_create_execution_request_digest_v1,
 )
 
 
@@ -129,6 +142,257 @@ def test_private_environment_is_opaque_unpickleable_and_rehashes():
     with pytest.raises(DockerControlContractErrorV1) as caught:
         private.materialize_for_cli(EnvAuthority())
     assert "raw-secret" not in "".join(traceback.format_exception(caught.value))
+
+
+class CreateRunnerSpy:
+    def __init__(self, error=False):
+        self.calls = []
+        self.error = error
+
+    def create_container(self, command, name):
+        self.calls.append((command.command_digest, name))
+        if self.error:
+            raise RuntimeError("raw-secret-runner")
+        return _sanitized_create_result(command, name)
+
+
+def _sanitized_create_result(command, name, ref="1" * 64):
+    stdout = ref.encode()
+    empty = sha256(b"").hexdigest()
+    body = {
+        "command_digest": command.command_digest, "exit_code": 0,
+        "outcome": "SUCCESS", "policy_digest": SHA,
+        "schema_version": "synaptic-host-docker-cli-result/v1",
+        "stderr_digest": empty, "stderr_size": 0,
+        "stdout_digest": sha256(stdout).hexdigest(), "stdout_size": 64,
+    }
+    evidence = DockerCLIResultV1(
+        command.command_digest, SHA, DockerCLIOutcomeV1.SUCCESS, 0,
+        64, sha256(stdout).hexdigest(), 0, empty, digest_v1(body),
+    )
+    request = docker_create_execution_request_digest_v1(
+        name, command.command_digest
+    )
+    projection = DockerCreateExecutionProjectionV1.build(
+        ref, request, command.command_digest
+    )
+    return DockerCreateExecutionResultV1.build(
+        name, request, command.command_digest, evidence, projection
+    )
+
+
+def _private_invocation():
+    command = DockerCLICommandV1.build(
+        DockerCLIVerbV1.CREATE,
+        ("--name", "synaptic-job", "--env", "TOKEN=raw-secret"),
+    )
+    return DockerPrivateCreateInvocationV1(command, "synaptic-job")
+
+
+def test_private_create_invocation_is_redacted_uncopyable_and_one_shot():
+    invocation = _private_invocation()
+    assert "raw-secret" not in repr(invocation)
+    assert "raw-secret" not in str(invocation)
+    for operation in (
+        lambda: pickle.dumps(invocation), lambda: copy.copy(invocation),
+        lambda: copy.deepcopy(invocation),
+    ):
+        with pytest.raises(DockerControlContractErrorV1):
+            operation()
+    runner = CreateRunnerSpy()
+    assert invocation.execute_once(runner).target == "synaptic-job"
+    with pytest.raises(DockerControlContractErrorV1):
+        invocation.execute_once(runner)
+    assert len(runner.calls) == 1
+
+
+@pytest.mark.parametrize("error", (False, True))
+def test_private_create_invocation_concurrently_enters_runner_at_most_once(error):
+    invocation = _private_invocation()
+    runner = CreateRunnerSpy(error=error)
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        outcomes = list(pool.map(
+            lambda _index: _capture_invocation(invocation, runner), range(8)
+        ))
+    assert len(runner.calls) == 1
+    assert sum(type(outcome) is DockerCreateExecutionResultV1 for outcome in outcomes) <= 1
+    assert "raw-secret" not in repr(outcomes)
+
+
+def _capture_invocation(invocation, runner):
+    try:
+        return invocation.execute_once(runner)
+    except DockerControlContractErrorV1 as error:
+        return error.code.value
+
+
+@pytest.mark.parametrize("returned", (object(), {"result": "forged"}))
+def test_private_create_invocation_rejects_untyped_return_and_stays_consumed(returned):
+    class ReturningRunner:
+        def __init__(self):
+            self.calls = 0
+        def create_container(self, _command, _name):
+            self.calls += 1
+            return returned
+
+    invocation = _private_invocation()
+    runner = ReturningRunner()
+    with pytest.raises(DockerControlContractErrorV1):
+        invocation.execute_once(runner)
+    with pytest.raises(DockerControlContractErrorV1):
+        invocation.execute_once(runner)
+    assert runner.calls == 1
+
+
+def _factory_labels():
+    return DockerLabelsV1(
+        SHA, "docker", "profile", "account", "namespace", "project", "run",
+        SHA, SHA, "effect", "submit", SHA, SHA,
+    )
+
+
+def _windows_path(purpose, posix):
+    distro = "Ubuntu-22.04"
+    unc = "\\\\wsl.localhost\\" + distro + posix.replace("/", "\\")
+    body = {
+        "distro": distro, "mapping_digest": SHA, "mapping_ref": "mapping",
+        "posix_path": posix, "purpose": purpose.value,
+        "schema_version": "synaptic-host-docker-windows-path/v1",
+        "unc_path": unc,
+    }
+    return DockerWindowsPathV1(
+        "mapping", SHA, purpose, distro, posix, unc, digest_v1(body)
+    )
+
+
+def _private_environment(pairs, workload_digest=SHA):
+    pairs = tuple(pairs)
+    entries = tuple(
+        DockerWorkloadEnvironmentEntryV1.build(key, value)
+        for key, value in pairs
+    )
+    binding = DockerWorkloadEnvironmentBindingV1.build(
+        workload_digest, tuple(key for key, _ in pairs), entries
+    )
+    authenticated = AuthenticatedDockerWorkloadEnvironmentBindingV1(
+        binding, "authority", "key", SHA
+    )
+    return DockerPrivateWorkloadEnvironmentResolutionV1(authenticated, pairs)
+
+
+class CaptureCreateRunner:
+    def __init__(self):
+        self.command = None
+
+    def create_container(self, command, _name):
+        self.command = command
+        return _sanitized_create_result(command, _name)
+
+
+def _factory_invocation(*, pairs=(("TOKEN", "raw-secret"),), arguments=("python", "train.py"),
+                        source=None, artifact=None, workload_digest=SHA):
+    keys = tuple(key for key, _ in pairs)
+    workload = DockerWorkloadV1(tuple(arguments), keys, workload_digest)
+    return DockerPrivateCreateInvocationFactoryV1().build(
+        labels=_factory_labels(),
+        image=DockerImageV1("ignored-ref", "sha256:" + "b" * 64),
+        runtime=DockerRuntimeV1(2, 4096, 60), workload=workload,
+        source_path=source or _windows_path(
+            DockerWSLPathPurposeV1.SOURCE_READ, "/source"
+        ),
+        artifact_path=artifact or _windows_path(
+            DockerWSLPathPurposeV1.ARTIFACT_WRITE, "/artifacts"
+        ),
+        environment=_private_environment(pairs, workload_digest),
+        environment_authority=EnvAuthority(),
+    )
+
+
+def test_private_factory_builds_exact_full_create_argv_in_frozen_order():
+    labels = _factory_labels()
+    invocation = _factory_invocation()
+    runner = CaptureCreateRunner()
+    result = invocation.execute_once(runner)
+    arguments = runner.command.arguments
+    assert arguments[:10] == (
+        "--name", labels.container_name, "--pull", "never", "--network",
+        "none", "--cpus", "2", "--memory", "4096",
+    )
+    label_tokens = arguments[10:40]
+    assert label_tokens[::2] == ("--label",) * 15
+    assert tuple(
+        token.split("=", 1)[0]
+        for token in label_tokens[1::2]
+    ) == tuple(OWNED_LABEL_PREFIX_V1 + name for name in OWNED_LABEL_NAMES_V1)
+    assert arguments[40:44] == (
+        "--mount",
+        r"type=bind,source=\\wsl.localhost\Ubuntu-22.04\source,destination=/source,readonly",
+        "--mount",
+        r"type=bind,source=\\wsl.localhost\Ubuntu-22.04\artifacts,destination=/artifacts",
+    )
+    assert arguments[44:] == (
+        "--env", "TOKEN=raw-secret", "sha256:" + "b" * 64,
+        "python", "train.py",
+    )
+    assert result.command_digest == runner.command.command_digest
+    assert "raw-secret" not in repr(invocation)
+
+
+def test_private_factory_maximum_env_and_workload_shape_is_within_cli_limit():
+    pairs = tuple((f"K{i:02d}", "v") for i in range(64))
+    arguments = tuple(f"arg{i}" for i in range(64))
+    invocation = _factory_invocation(pairs=pairs, arguments=arguments)
+    runner = CaptureCreateRunner()
+    invocation.execute_once(runner)
+    assert len(runner.command.arguments) == 237
+
+
+@pytest.mark.parametrize("bad", (",", '"', "\n", "\x01", "e\u0301"))
+def test_private_factory_rejects_hostile_unc_without_raw_traceback(bad):
+    source = _windows_path(DockerWSLPathPurposeV1.SOURCE_READ, "/source")
+    object.__setattr__(source, "unc_path", source.unc_path + bad + "raw-secret")
+    with pytest.raises(DockerControlContractErrorV1) as caught:
+        _factory_invocation(source=source)
+    assert "raw-secret" not in str(caught.value)
+    assert caught.value.__cause__ is None
+
+
+@pytest.mark.parametrize("which", ("source", "artifact"))
+def test_private_factory_rejects_wrong_path_purpose(which):
+    source = _windows_path(DockerWSLPathPurposeV1.SOURCE_READ, "/source")
+    artifact = _windows_path(DockerWSLPathPurposeV1.ARTIFACT_WRITE, "/artifacts")
+    target = source if which == "source" else artifact
+    object.__setattr__(target, "purpose", (
+        DockerWSLPathPurposeV1.ARTIFACT_WRITE
+        if which == "source" else DockerWSLPathPurposeV1.SOURCE_READ
+    ))
+    with pytest.raises(DockerControlContractErrorV1):
+        _factory_invocation(source=source, artifact=artifact)
+
+
+@pytest.mark.parametrize(
+    "pairs",
+    (
+        (("B", "two"), ("A", "one")),
+        (("A", "one"), ("A", "two")),
+    ),
+)
+def test_private_factory_rejects_noncanonical_environment_sets(pairs):
+    with pytest.raises((DockerControlContractErrorV1, ValueError)):
+        _factory_invocation(pairs=pairs)
+
+
+def test_private_binding_accessor_is_reconstructed_and_rejects_mutation():
+    private = _private_environment((("TOKEN", "raw-secret"),))
+    snapshot = private.authenticated_binding_snapshot(EnvAuthority())
+    assert snapshot.content.requested_keys == ("TOKEN",)
+    assert "raw-secret" not in repr(snapshot)
+    object.__setattr__(snapshot.content.supplied_entries[0], "value_digest", "b" * 64)
+    with pytest.raises(DockerControlContractErrorV1):
+        DockerWorkloadEnvironmentBindingV1(
+            snapshot.content.workload_digest, snapshot.content.requested_keys,
+            snapshot.content.supplied_entries, snapshot.content.binding_digest,
+        )
 
 
 def _spec(**changes):

@@ -83,3 +83,11 @@ Active orchestration ledger for the current repo-focused PACT session.
 - Single-container FOUND requires authenticated mutation ownership, exact catalog/intent/environment evidence, and complete identity/labels/runtime/arguments/environment-subset/mount/state comparison. Repository admission/CAS are never called.
 - Independent PACT verdicts: correctness ACCEPT; test PASS. Final evidence: 74 focused tests, 418 full `docker_v1` tests, compilation/diff/static checks clean.
 - Next mutation slice must add expected-catalog `publish_once` with exact-match convergence before admission, then implement at-most-once CREATE.
+
+### 2026-08-28 Docker CREATE Boundary Slice 5.4a Accepted
+
+- Added a sanitized typed CREATE result and strict bounded container-ID stdout parser; public results bind only target/command/evidence/projection digests and expose no argv, raw output, environment values, or paths.
+- Added a redacted one-use private CREATE invocation and deterministic command factory with exact pinned image, submit labels, resource limits, distinct `/source` and `/artifacts` mounts, sorted environment, and workload ordering.
+- The direct CLI boundary independently validates the complete engine-compatible grammar, semantic labels, workload count/byte bounds, mount identity, canonical numbers, and canonical UNC rules before spawn.
+- Independent PACT verdicts: correctness ACCEPT; test PASS. Final evidence: 247 focused tests, 475 full `docker_v1` tests, compilation/diff/static checks clean.
+- This slice does not yet orchestrate or execute a real CREATE. Next: 5.4b exact-match catalog publication and same-process atomic mutation store.

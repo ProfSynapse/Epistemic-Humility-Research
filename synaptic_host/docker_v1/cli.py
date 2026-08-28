@@ -9,6 +9,8 @@ import subprocess
 from threading import Event, Thread
 import time
 
+from tuner.execution.providers.docker_provider_v1.model import DockerLabelsV1
+
 from synaptic_host.bundle_io_v1.model import digest_v1
 
 from .model import (
@@ -22,15 +24,20 @@ from .model import (
     DockerPlatformErrorV1,
 )
 from .ports import DockerPopenFactoryPortV1
+from .control_contract import (
+    docker_arguments_projection_digest_v1, docker_safe_unc_v1,
+)
 from .control_model import (
     OWNED_LABEL_NAMES_V1, OWNED_LABEL_PREFIX_V1,
     DockerContainerInspectProjectionV1, DockerContainerInspectResultV1,
+    DockerCreateExecutionProjectionV1, DockerCreateExecutionResultV1,
     DockerContainerStateV1, DockerContainerStatusV1,
     DockerEnvironmentEntryProjectionV1, DockerEnvironmentProjectionV1,
     DockerExactNameInventoryResultV1, DockerExactNameInventoryV1,
     DockerImageInspectProjectionV1, DockerImageInspectResultV1,
     DockerLabelProjectionV1, DockerMountProjectionV1,
     DockerTypedResultKindV1, docker_typed_request_digest_v1,
+    docker_create_execution_request_digest_v1,
 )
 
 
@@ -47,6 +54,122 @@ _MAX_INVENTORY = 64
 _STARTED_AT = re.compile(
     r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,9})?Z\Z"
 )
+
+
+def _validate_create_command(command, expected_container_name):
+    if (
+        type(command) is not DockerCLICommandV1
+        or command.verb is not DockerCLIVerbV1.CREATE
+        or type(expected_container_name) is not str
+        or _CONTAINER_NAME.fullmatch(expected_container_name) is None
+    ):
+        raise ValueError
+    command = DockerCLICommandV1(
+        command.verb, tuple(command.arguments), command.command_digest
+    )
+    arguments = command.arguments
+    prefix = (
+        "--name", expected_container_name, "--pull", "never",
+        "--network", "none", "--cpus",
+    )
+    if arguments[:7] != prefix or len(arguments) > 256:
+        raise ValueError
+    index = 7
+    cpu = arguments[index]
+    index += 1
+    if (
+        not cpu.isascii() or not cpu.isdigit()
+        or str(int(cpu)) != cpu or not 1 <= int(cpu) <= 256
+    ):
+        raise ValueError
+    if arguments[index:index + 1] != ("--memory",):
+        raise ValueError
+    index += 1
+    memory = arguments[index]
+    index += 1
+    if (
+        not memory.isascii() or not memory.isdigit()
+        or str(int(memory)) != memory or not 1 <= int(memory) <= 2**50
+    ):
+        raise ValueError
+    label_values = []
+    for label_name in OWNED_LABEL_NAMES_V1:
+        if arguments[index:index + 1] != ("--label",):
+            raise ValueError
+        index += 1
+        label = arguments[index]
+        index += 1
+        expected_prefix = OWNED_LABEL_PREFIX_V1 + label_name + "="
+        if not label.startswith(expected_prefix) or len(label) == len(expected_prefix):
+            raise ValueError
+        label_values.append(label[len(expected_prefix):])
+    labels = DockerLabelsV1(*label_values[:13])
+    if (
+        labels.effect_kind != "submit"
+        or labels.container_name != expected_container_name
+        or label_values[13] != labels.digest
+        or label_values[14] != "1"
+    ):
+        raise ValueError
+    expected_mounts = (
+        ("/source", False, 4), ("/artifacts", True, 3),
+    )
+    mount_sources = []
+    for destination, read_write, component_count in expected_mounts:
+        if arguments[index:index + 1] != ("--mount",):
+            raise ValueError
+        index += 1
+        mount = arguments[index]
+        index += 1
+        components = mount.split(",")
+        expected = ["type=bind", None, f"destination={destination}"]
+        if not read_write:
+            expected.append("readonly")
+        if len(components) != component_count or components[0] != expected[0]:
+            raise ValueError
+        if not components[1].startswith("source="):
+            raise ValueError
+        mount_sources.append(docker_safe_unc_v1(
+            components[1][len("source="):]
+        ))
+        if components[2:] != expected[2:]:
+            raise ValueError
+    if mount_sources[0] == mount_sources[1]:
+        raise ValueError
+    env_keys = []
+    while index < len(arguments) and arguments[index] == "--env":
+        if len(env_keys) >= 64 or index + 1 >= len(arguments):
+            raise ValueError
+        index += 1
+        token = arguments[index]
+        index += 1
+        if "=" not in token or len(token.encode("utf-8")) > 4096:
+            raise ValueError
+        key, _ = token.split("=", 1)
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key):
+            raise ValueError
+        env_keys.append(key)
+    if env_keys != sorted(env_keys) or len(env_keys) != len(set(env_keys)):
+        raise ValueError
+    if index >= len(arguments) or _SHA256_ID.fullmatch(arguments[index]) is None:
+        raise ValueError
+    index += 1
+    workload_count = len(arguments) - index
+    if (
+        not 1 <= workload_count <= 64
+        or sum(len(value.encode("utf-8")) for value in arguments[index:])
+        > 32_768
+    ):
+        raise ValueError
+
+
+def _parse_create_ref(raw):
+    if type(raw) is not bytes:
+        raise ValueError
+    value = raw[:-1] if raw.endswith(b"\n") else raw
+    if len(value) != 64 or _HEX64.fullmatch(value.decode("ascii")) is None:
+        raise ValueError
+    return value.decode("ascii")
 
 
 def _error(code: DockerPlatformCodeV1) -> DockerPlatformErrorV1:
@@ -213,8 +336,6 @@ def _project_container(record: dict, expected_ref: str, request_digest: str,
         arguments = []
     if type(arguments) is not list or len(arguments) > 256 or any(type(x) is not str for x in arguments):
         raise ValueError
-    argument_projection = [_digest_text(value) for value in arguments]
-
     host = _required_dict(record, "HostConfig")
     network_mode = _required_str(host, "NetworkMode")
     nano_cpus = _required_int(host, "NanoCpus")
@@ -271,8 +392,7 @@ def _project_container(record: dict, expected_ref: str, request_digest: str,
         memory_bytes=memory_bytes, mounts=tuple(mounts), state=state,
         environment=DockerEnvironmentProjectionV1.build(env_projection),
         argument_count=len(arguments),
-        arguments_digest=digest_v1({"arguments": argument_projection,
-                                    "schema_version": "synaptic-host-docker-argv-projection/v1"}),
+        arguments_digest=docker_arguments_projection_digest_v1(arguments),
     )
 
 
@@ -569,6 +689,30 @@ class DockerCLIRunnerV1:
     def run(self, command: DockerCLICommandV1) -> DockerCLIResultV1:
         result, _ = self._execute(command, capture_stdout=False)
         return result
+
+    def create_container(
+        self, command: DockerCLICommandV1, expected_container_name: str,
+    ) -> DockerCreateExecutionResultV1:
+        try:
+            _validate_create_command(command, expected_container_name)
+            request_digest = docker_create_execution_request_digest_v1(
+                expected_container_name, command.command_digest
+            )
+            evidence, raw = self._execute(command, capture_stdout=True)
+            projection = None
+            if evidence.outcome is DockerCLIOutcomeV1.SUCCESS:
+                projection = DockerCreateExecutionProjectionV1.build(
+                    _parse_create_ref(raw), request_digest,
+                    command.command_digest,
+                )
+            return DockerCreateExecutionResultV1.build(
+                expected_container_name, request_digest,
+                command.command_digest, evidence, projection,
+            )
+        except DockerPlatformErrorV1:
+            raise
+        except BaseException:
+            raise _error(DockerPlatformCodeV1.OUTPUT_INVALID) from None
 
     def inventory_exact_name(
         self, container_name: str,

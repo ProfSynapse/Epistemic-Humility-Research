@@ -6,11 +6,15 @@ import traceback
 
 import pytest
 
+from tuner.execution.providers.docker_provider_v1.model import DockerLabelsV1
+
 from synaptic_host.docker_v1.cli import DockerCLIRunnerV1
+from synaptic_host.docker_v1.control_contract import docker_owned_label_values_v1
 from synaptic_host.docker_v1.control_model import (
     OWNED_LABEL_NAMES_V1, OWNED_LABEL_PREFIX_V1,
     DockerImageInspectProjectionV1,
     DockerImageInspectResultV1,
+    DockerCreateExecutionResultV1,
     DockerTypedResultKindV1,
     docker_typed_request_digest_v1,
 )
@@ -769,6 +773,220 @@ def _container_record(container_ref="a" * 64):
         "RestartCount": 0,
         "FutureDockerField": {"ignored": True},
     }
+
+
+def _create_command(secret="raw-secret"):
+    labels = DockerLabelsV1(
+        "a" * 64, "docker", "profile", "account", "namespace", "project",
+        "run", "a" * 64, "a" * 64, "effect", "submit",
+        "a" * 64, "a" * 64,
+    )
+    arguments = [
+        "--name", labels.container_name, "--pull", "never", "--network", "none",
+        "--cpus", "1", "--memory", "4096",
+    ]
+    for name, value in zip(
+        OWNED_LABEL_NAMES_V1, docker_owned_label_values_v1(labels), strict=True
+    ):
+        arguments.extend(("--label", f"{OWNED_LABEL_PREFIX_V1}{name}={value}"))
+    arguments.extend((
+        "--mount", r"type=bind,source=\\wsl.localhost\Ubuntu\source,destination=/source,readonly",
+        "--mount", r"type=bind,source=\\wsl.localhost\Ubuntu\artifacts,destination=/artifacts",
+        "--env", f"TOKEN={secret}", "sha256:" + "c" * 64,
+        "python", "train.py",
+    ))
+    return DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(arguments))
+
+
+def test_typed_create_strict_success_and_nonzero_projection_matrix():
+    runner, factory = _typed_runner(("a" * 64 + "\n").encode())
+    result = runner.create_container(_create_command(), "synaptic-" + "a" * 24)
+    assert result.projection.container_ref == "a" * 64
+    assert result.command_digest == result.evidence.command_digest
+    assert not hasattr(result, "command")
+    assert factory.calls[0][0][-3:] == (
+        "sha256:" + "c" * 64, "python", "train.py"
+    )
+
+    runner, _ = _typed_runner(b"raw provider error", exit_code=7)
+    result = runner.create_container(_create_command(), "synaptic-" + "a" * 24)
+    assert result.projection is None
+    assert result.evidence.outcome is DockerCLIOutcomeV1.NONZERO_EXIT
+
+
+@pytest.mark.parametrize(
+    "payload",
+    (
+        b"", b"A" * 64, b"a" * 63, b"a" * 65, b"a" * 64 + b"\r\n",
+        b" a" + b"a" * 63, b"a" * 64 + b"\nextra",
+    ),
+)
+def test_typed_create_rejects_malformed_success_without_raw_leak(payload):
+    runner, _ = _typed_runner(payload)
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        runner.create_container(_create_command("do-not-leak"), "synaptic-" + "a" * 24)
+    assert caught.value.code is DockerPlatformCodeV1.OUTPUT_INVALID
+    assert "do-not-leak" not in str(caught.value)
+
+
+def _create_with(*, cpu="1", memory="4096", env_count=1, workload_count=2):
+    base = list(_create_command().arguments)
+    base[7] = cpu
+    base[9] = memory
+    image_index = next(
+        index for index, value in enumerate(base)
+        if value.startswith("sha256:")
+    )
+    base[44:image_index] = [
+        value for index in range(env_count)
+        for value in ("--env", f"K{index:02d}=v")
+    ]
+    image_index = 44 + env_count * 2
+    base[image_index + 1:] = tuple(f"arg{index}" for index in range(workload_count))
+    return DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(base))
+
+
+@pytest.mark.parametrize(
+    "changes",
+    (
+        {"cpu": "0"}, {"cpu": "01"}, {"cpu": "257"},
+        {"memory": "0"}, {"memory": "01"},
+        {"memory": str(2**50 + 1)}, {"env_count": 65},
+        {"workload_count": 0}, {"workload_count": 65},
+    ),
+)
+def test_typed_create_structural_boundaries_reject_before_spawn(changes):
+    runner, factory = _typed_runner(b"a" * 64)
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        runner.create_container(_create_with(**changes), "synaptic-" + "a" * 24)
+    assert caught.value.code is DockerPlatformCodeV1.OUTPUT_INVALID
+    assert factory.calls == []
+
+
+@pytest.mark.parametrize(
+    "changes",
+    (
+        {"cpu": "1"}, {"cpu": "256"}, {"memory": "1"},
+        {"memory": str(2**50)}, {"env_count": 0}, {"env_count": 64},
+        {"workload_count": 1}, {"workload_count": 64},
+    ),
+)
+def test_typed_create_structural_boundary_neighbors_spawn(changes):
+    runner, factory = _typed_runner(b"a" * 64)
+    assert runner.create_container(
+        _create_with(**changes), "synaptic-" + "a" * 24
+    ).projection.container_ref == "a" * 64
+    assert len(factory.calls) == 1
+
+
+def test_create_command_257_arguments_is_rejected_by_command_not_runner():
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        DockerCLICommandV1.build(
+            DockerCLIVerbV1.CREATE, tuple("x" for _ in range(257))
+        )
+    assert caught.value.code is DockerPlatformCodeV1.COMMAND_INVALID
+
+
+def test_create_result_rejects_cross_target_and_cross_command_reconstruction():
+    first_runner, _ = _typed_runner(b"a" * 64)
+    first = first_runner.create_container(_create_with(), "synaptic-" + "a" * 24)
+    with pytest.raises(DockerPlatformErrorV1):
+        DockerCreateExecutionResultV1(
+            first.result_kind, "other-name", first.request_digest,
+            first.command_digest, first.evidence, first.projection,
+            first.result_digest,
+        )
+    second_runner, _ = _typed_runner(b"b" * 64)
+    second = second_runner.create_container(
+        _create_with(cpu="2"), "synaptic-" + "a" * 24
+    )
+    with pytest.raises(DockerPlatformErrorV1):
+        DockerCreateExecutionResultV1(
+            first.result_kind, first.target, first.request_digest,
+            second.command_digest, second.evidence, first.projection,
+            first.result_digest,
+        )
+
+
+def test_typed_create_workload_aggregate_exact_boundary_and_no_spawn():
+    command = list(_create_with(workload_count=8).arguments)
+    command[-8:] = ("x" * 4096,) * 8
+    exact = DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(command))
+    runner, factory = _typed_runner(b"a" * 64)
+    assert runner.create_container(
+        exact, "synaptic-" + "a" * 24
+    ).projection.container_ref == "a" * 64
+    assert len(factory.calls) == 1
+    command.append("y")
+    over = DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(command))
+    runner, factory = _typed_runner(b"a" * 64)
+    with pytest.raises(DockerPlatformErrorV1):
+        runner.create_container(over, "synaptic-" + "a" * 24)
+    assert factory.calls == []
+
+
+@pytest.mark.parametrize("attack", ("effect", "labels_digest", "same_mount", "traversal"))
+def test_typed_create_semantic_label_and_mount_attacks_do_not_spawn(attack):
+    arguments = list(_create_with().arguments)
+    if attack in ("effect", "labels_digest"):
+        name = "effect-kind" if attack == "effect" else "labels-digest"
+        index = arguments.index("--label", 10 + OWNED_LABEL_NAMES_V1.index(name) * 2)
+        prefix = OWNED_LABEL_PREFIX_V1 + name + "="
+        arguments[index + 1] = prefix + ("stage" if attack == "effect" else "f" * 64)
+    elif attack == "same_mount":
+        source = arguments[41].split(",destination=", 1)[0]
+        arguments[43] = source + ",destination=/artifacts"
+    else:
+        arguments[41] = (
+            r"type=bind,source=\\wsl.localhost\Ubuntu\..\escape,destination=/source,readonly"
+        )
+    command = DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(arguments))
+    runner, factory = _typed_runner(b"a" * 64)
+    with pytest.raises(DockerPlatformErrorV1):
+        runner.create_container(command, "synaptic-" + "a" * 24)
+    assert factory.calls == []
+
+
+@pytest.mark.parametrize("forbidden", tuple('<>:"|?*'))
+def test_typed_create_forbidden_unc_component_character_never_spawns(forbidden):
+    arguments = list(_create_with().arguments)
+    arguments[41] = (
+        "type=bind,source=\\\\wsl.localhost\\Ubuntu\\safe"
+        + forbidden + "component,destination=/source,readonly"
+    )
+    command = DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(arguments))
+    runner, factory = _typed_runner(b"a" * 64)
+    with pytest.raises(DockerPlatformErrorV1):
+        runner.create_container(command, "synaptic-" + "a" * 24)
+    assert factory.calls == []
+
+
+def test_typed_create_unc_component_count_exact_neighbors():
+    for count in (1, 128):
+        arguments = list(_create_with().arguments)
+        source = "\\\\wsl.localhost\\Ubuntu\\" + "\\".join(
+            f"safe-name_{index}" for index in range(count)
+        )
+        arguments[41] = (
+            f"type=bind,source={source},destination=/source,readonly"
+        )
+        command = DockerCLICommandV1.build(
+            DockerCLIVerbV1.CREATE, tuple(arguments)
+        )
+        runner, factory = _typed_runner(b"a" * 64)
+        runner.create_container(command, "synaptic-" + "a" * 24)
+        assert len(factory.calls) == 1
+
+    arguments = list(_create_with().arguments)
+    source = "\\\\wsl.localhost\\Ubuntu\\" + "\\".join(
+        f"safe{index}" for index in range(129)
+    )
+    arguments[41] = f"type=bind,source={source},destination=/source,readonly"
+    command = DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(arguments))
+    runner, factory = _typed_runner(b"a" * 64)
+    with pytest.raises(DockerPlatformErrorV1):
+        runner.create_container(command, "synaptic-" + "a" * 24)
+    assert factory.calls == []
 
 
 def test_typed_inventory_builds_exact_argv_and_returns_only_ids():

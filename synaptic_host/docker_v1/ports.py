@@ -41,6 +41,7 @@ from .model import (
 )
 from .control_model import (
     DockerContainerInspectResultV1,
+    DockerCreateExecutionResultV1,
     DockerExactNameInventoryResultV1,
     DockerImageInspectResultV1,
 )
@@ -234,6 +235,9 @@ class DockerPopenFactoryPortV1(Protocol):
 
 
 class DockerTypedCLIRunnerPortV1(Protocol):
+    def create_container(
+        self, command, expected_container_name: str,
+    ) -> DockerCreateExecutionResultV1: ...
     def inventory_exact_name(self, container_name: str) -> DockerExactNameInventoryResultV1: ...
     def inspect_image(self, image_digest: str) -> DockerImageInspectResultV1: ...
     def inspect_container(self, container_ref: str) -> DockerContainerInspectResultV1: ...

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from hashlib import sha256
 import re
+import unicodedata
 
 from tuner.execution.providers.docker_provider_v1.model import (
     AuthenticatedDockerAbsenceV1,
@@ -18,6 +19,7 @@ from synaptic_host.bundle_io_v1.model import (
 )
 from .model import (
     MAX_DOCKER_ARG_BYTES_V1,
+    MAX_WINDOWS_PATH_BYTES_V1, MAX_WSL_COMPONENT_BYTES_V1,
     DockerWSLPathPurposeV1,
     DockerWSLPathRequestV1,
 )
@@ -29,6 +31,50 @@ from .control_model import (
 _CONTAINER_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}\Z")
 _CONTAINER_REF = re.compile(r"[0-9a-f]{64}\Z")
 MAX_WORKLOAD_ENV_ENTRIES_V1 = 64
+
+
+def docker_safe_unc_v1(value):
+    try:
+        if (
+            type(value) is not str
+            or unicodedata.normalize("NFC", value) != value
+            or not value.startswith("\\\\wsl.localhost\\")
+            or "/" in value
+            or len(value.encode("utf-8")) > MAX_WINDOWS_PATH_BYTES_V1
+            or any(char in value for char in (",", '"', "\r", "\n", "\x00"))
+            or any(ord(char) < 32 or ord(char) == 127 for char in value)
+        ):
+            raise ValueError
+        components = value.split("\\")
+        if (
+            not 1 <= len(components[4:]) <= 128
+            or any(not component for component in components[3:])
+        ):
+            raise ValueError
+        distro = components[3]
+        if (
+            not 1 <= len(distro) <= 64 or not distro[0].isalnum()
+            or any(not (char.isascii() and (char.isalnum() or char in "._-"))
+                   for char in distro)
+        ):
+            raise ValueError
+        reserved = {"CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$"}
+        reserved.update({f"COM{number}" for number in range(1, 10)})
+        reserved.update({f"LPT{number}" for number in range(1, 10)})
+        reserved.update({f"COM{number}" for number in "¹²³"})
+        reserved.update({f"LPT{number}" for number in "¹²³"})
+        for component in components[4:]:
+            base = component.split(".", 1)[0].rstrip(" .").upper()
+            if (
+                component in (".", "..") or component.endswith((" ", "."))
+                or len(component.encode("utf-8")) > MAX_WSL_COMPONENT_BYTES_V1
+                or any(char in '<>:"|?*' for char in component)
+                or base in reserved
+            ):
+                raise ValueError
+        return value
+    except BaseException:
+        _fail()
 
 
 class DockerControlContractCodeV1(str, Enum):
@@ -810,13 +856,33 @@ def snapshot_docker_labels_v1(value):
 
 def docker_owned_label_projections_v1(labels):
     labels = snapshot_docker_labels_v1(labels)
-    raw = labels.to_dict()
-    values = tuple(raw[name.replace("-", "_")] for name in OWNED_LABEL_NAMES_V1[:-2])
-    values += (labels.digest, "1")
+    values = docker_owned_label_values_v1(labels)
     return tuple(
         DockerLabelProjectionV1.build(name, _plain_sha(value))
         for name, value in zip(OWNED_LABEL_NAMES_V1, values, strict=True)
     )
+
+
+def docker_owned_label_values_v1(labels):
+    labels = snapshot_docker_labels_v1(labels)
+    raw = labels.to_dict()
+    values = tuple(
+        raw[name.replace("-", "_")] for name in OWNED_LABEL_NAMES_V1[:-2]
+    )
+    return values + (labels.digest, "1")
+
+
+def docker_arguments_projection_digest_v1(arguments):
+    try:
+        arguments = tuple(arguments)
+        if any(type(value) is not str for value in arguments):
+            raise ValueError
+        return digest_v1({
+            "arguments": [_plain_sha(value) for value in arguments],
+            "schema_version": "synaptic-host-docker-argv-projection/v1",
+        })
+    except BaseException:
+        _fail()
 
 
 def docker_owned_labels_projection_digest_v1(labels):
