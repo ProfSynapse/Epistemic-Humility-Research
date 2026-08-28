@@ -39,3 +39,9 @@ def test_host_docker_package_keeps_empty_exports_and_forbidden_boundaries():
     assert "docker.from_env" not in public_contract + private_contract
     assert "os.environ" not in public_contract + private_contract
     assert "__reduce__" in private_contract and "<redacted>" in private_contract
+    control = files["control.py"].lower()
+    assert "control_private" not in control
+    for mutation_call in (".admit(", ".compare_and_swap("):
+        assert mutation_call not in control
+    for forbidden in ("sqlite", "subprocess", "docker.from_env", "os.environ"):
+        assert forbidden not in control

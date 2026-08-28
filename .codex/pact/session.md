@@ -75,3 +75,11 @@ Active orchestration ledger for the current repo-focused PACT session.
 - CAS embeds exact authenticated expected and replacement records and permits only ADMITTED→ATTEMPTED and ATTEMPTED→VERIFIED with exact predecessor, operation/effect, intent, and signer continuity.
 - Independent PACT verdicts: correctness ACCEPT; test PASS. Final evidence: 32 focused tests, 376 full `docker_v1` tests, compilation/diff/static checks clean.
 - No Docker mutation, SQLite, concrete repository, or engine/submodule change was introduced in this slice. Next: Slice 5.3 read-only image presence and container lookup.
+
+### 2026-08-28 Docker Read-Only Control Slice 5.3 Accepted
+
+- Added authenticated expected-create catalog bindings, canonical owned-label projections, exact image presence checks, and total read-only container lookup.
+- Lookup binds every typed result to the exact image/name/container/repository operation; false absence requires exact zero-name inventory plus host mutation-record ABSENT and exact pinned absence issuance from an untouched content baseline.
+- Single-container FOUND requires authenticated mutation ownership, exact catalog/intent/environment evidence, and complete identity/labels/runtime/arguments/environment-subset/mount/state comparison. Repository admission/CAS are never called.
+- Independent PACT verdicts: correctness ACCEPT; test PASS. Final evidence: 74 focused tests, 418 full `docker_v1` tests, compilation/diff/static checks clean.
+- Next mutation slice must add expected-catalog `publish_once` with exact-match convergence before admission, then implement at-most-once CREATE.

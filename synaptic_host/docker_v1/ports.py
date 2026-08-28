@@ -49,6 +49,7 @@ from .control_contract import (
     AuthenticatedDockerCreatePathBindingV1,
     AuthenticatedDockerMutationRecordV1,
     AuthenticatedDockerWorkloadEnvironmentBindingV1,
+    AuthenticatedDockerExpectedCreateBindingV1,
     DockerAdmissionResultV1,
     DockerCASResultV1,
     DockerControlIntentV1,
@@ -58,6 +59,7 @@ from .control_contract import (
     DockerMutationCASRequestV1,
     DockerMutationRecordV1,
     DockerWorkloadEnvironmentBindingV1,
+    DockerExpectedCreateBindingV1,
 )
 from .model import ResolvedDockerMountsV1
 
@@ -291,6 +293,19 @@ class DockerAbsenceAuthorityPortV1(Protocol):
     key_ref: str
     def issue(self, value: DockerAbsenceContentV1) -> AuthenticatedDockerAbsenceV1: ...
     def authenticate(self, value: AuthenticatedDockerAbsenceV1) -> AuthenticatedDockerAbsenceV1 | None: ...
+
+
+class DockerExpectedCreateBindingAuthorityPortV1(Protocol):
+    authority_ref: str
+    key_ref: str
+    def issue(self, value: DockerExpectedCreateBindingV1) -> AuthenticatedDockerExpectedCreateBindingV1: ...
+    def authenticate(self, value: AuthenticatedDockerExpectedCreateBindingV1) -> AuthenticatedDockerExpectedCreateBindingV1 | None: ...
+
+
+class DockerExpectedCreateBindingCatalogPortV1(Protocol):
+    def resolve(
+        self, engine_command_digest: str, labels_digest: str,
+    ) -> AuthenticatedDockerExpectedCreateBindingV1 | None: ...
 
 
 __all__: tuple[str, ...] = ()

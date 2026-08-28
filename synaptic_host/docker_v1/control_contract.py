@@ -8,6 +8,7 @@ import re
 from tuner.execution.providers.docker_provider_v1.model import (
     AuthenticatedDockerAbsenceV1,
     DockerAbsenceContentV1,
+    DockerLabelsV1,
 )
 from synaptic_host.bundle_io_v1.model import (
     BundleIOCodeV1,
@@ -19,6 +20,10 @@ from .model import (
     MAX_DOCKER_ARG_BYTES_V1,
     DockerWSLPathPurposeV1,
     DockerWSLPathRequestV1,
+)
+from .control_model import (
+    OWNED_LABEL_NAMES_V1,
+    DockerLabelProjectionV1,
 )
 
 _CONTAINER_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}\Z")
@@ -299,6 +304,17 @@ def _snapshot_contract_content(value):
                 value.previous_record_digest, value.container_ref,
                 value.verification_result_digest, value.record_digest,
             )
+        if type(value) is DockerExpectedCreateBindingV1:
+            return DockerExpectedCreateBindingV1(
+                snapshot_docker_labels_v1(value.labels),
+                DockerCreateSpecificationV1(
+                    *(getattr(value.create_specification, name)
+                      for name in value.create_specification.__dataclass_fields__)
+                ),
+                _snapshot_authenticated(value.intent),
+                _snapshot_authenticated(value.environment_binding),
+                value.binding_digest,
+            )
         raise ValueError
     except DockerControlContractErrorV1:
         raise
@@ -514,6 +530,84 @@ class AuthenticatedDockerControlIntentV1:
         return _envelope_proof(self, lambda x: x.intent_digest, "synaptic-host-auth-control-intent/v1")
 
 
+@dataclass(frozen=True, slots=True)
+class DockerExpectedCreateBindingV1:
+    labels: DockerLabelsV1
+    create_specification: DockerCreateSpecificationV1
+    intent: AuthenticatedDockerControlIntentV1
+    environment_binding: AuthenticatedDockerWorkloadEnvironmentBindingV1
+    binding_digest: str
+
+    def canonical_without_digest(self):
+        return {
+            "create_specification_digest": self.create_specification.specification_digest,
+            "environment_binding_proof_digest": self.environment_binding.proof_digest,
+            "intent_proof_digest": self.intent.proof_digest,
+            "labels_digest": self.labels.digest,
+            "schema_version": "synaptic-host-docker-expected-create-binding/v1",
+        }
+
+    def __post_init__(self):
+        try:
+            labels = snapshot_docker_labels_v1(self.labels)
+            specification = DockerCreateSpecificationV1(
+                *(getattr(self.create_specification, name)
+                  for name in self.create_specification.__dataclass_fields__)
+            )
+            intent = _snapshot_authenticated(self.intent)
+            environment = _snapshot_authenticated(self.environment_binding)
+            if (
+                labels.effect_kind != "submit"
+                or specification.labels_digest != labels.digest
+                or specification.container_name != labels.container_name
+                or specification.environment_binding_proof_digest
+                != environment.proof_digest
+                or specification.workload_digest != environment.content.workload_digest
+                or intent.content.operation is not DockerControlOperationV1.CREATE
+                or intent.content.effect_id != labels.effect_id
+                or intent.content.engine_command_digest != labels.command_digest
+                or intent.content.labels_digest != labels.digest
+                or intent.content.container_name != labels.container_name
+                or intent.content.create_specification_digest
+                != specification.specification_digest
+                or intent.content.container_ref is not None
+                or intent.content.verified_create_record_digest is not None
+                or self.binding_digest != digest_v1(self.canonical_without_digest())
+            ):
+                raise ValueError
+        except BaseException:
+            _fail()
+
+    @classmethod
+    def build(cls, labels, create_specification, intent, environment_binding):
+        body = {
+            "create_specification_digest": create_specification.specification_digest,
+            "environment_binding_proof_digest": environment_binding.proof_digest,
+            "intent_proof_digest": intent.proof_digest,
+            "labels_digest": labels.digest,
+            "schema_version": "synaptic-host-docker-expected-create-binding/v1",
+        }
+        return cls(labels, create_specification, intent, environment_binding, digest_v1(body))
+
+
+@dataclass(frozen=True, slots=True)
+class AuthenticatedDockerExpectedCreateBindingV1:
+    content: DockerExpectedCreateBindingV1
+    authority_ref: str
+    key_ref: str
+    tag: str
+
+    def __post_init__(self):
+        _envelope_post(self, DockerExpectedCreateBindingV1, lambda x: x.binding_digest)
+
+    @property
+    def proof_digest(self):
+        return _envelope_proof(
+            self, lambda x: x.binding_digest,
+            "synaptic-host-auth-expected-create-binding/v1",
+        )
+
+
 class DockerMutationPhaseV1(str, Enum):
     ADMITTED = "ADMITTED"
     ATTEMPTED = "ATTEMPTED"
@@ -627,6 +721,11 @@ def _snapshot_authenticated(value):
                 _snapshot_contract_content(value.content), value.authority_ref,
                 value.key_ref, value.tag,
             )
+        if type(value) is AuthenticatedDockerExpectedCreateBindingV1:
+            return AuthenticatedDockerExpectedCreateBindingV1(
+                _snapshot_contract_content(value.content), value.authority_ref,
+                value.key_ref, value.tag,
+            )
         if type(value) is AuthenticatedDockerAbsenceV1:
             content = DockerAbsenceContentV1(
                 value.content.request_digest, value.content.labels_digest,
@@ -689,6 +788,43 @@ def authenticate_mutation_record_v1(authority, value):
 
 def authenticate_absence_v1(authority, value):
     return _authenticate_exact(authority, value, AuthenticatedDockerAbsenceV1)
+
+
+def authenticate_expected_create_binding_v1(authority, value):
+    return _authenticate_exact(
+        authority, value, AuthenticatedDockerExpectedCreateBindingV1
+    )
+
+
+def snapshot_docker_labels_v1(value):
+    try:
+        if type(value) is not DockerLabelsV1:
+            raise ValueError
+        rebuilt = DockerLabelsV1(**value.to_dict())
+        if rebuilt != value:
+            raise ValueError
+        return rebuilt
+    except BaseException:
+        _fail()
+
+
+def docker_owned_label_projections_v1(labels):
+    labels = snapshot_docker_labels_v1(labels)
+    raw = labels.to_dict()
+    values = tuple(raw[name.replace("-", "_")] for name in OWNED_LABEL_NAMES_V1[:-2])
+    values += (labels.digest, "1")
+    return tuple(
+        DockerLabelProjectionV1.build(name, _plain_sha(value))
+        for name, value in zip(OWNED_LABEL_NAMES_V1, values, strict=True)
+    )
+
+
+def docker_owned_labels_projection_digest_v1(labels):
+    projections = docker_owned_label_projections_v1(labels)
+    return digest_v1({
+        "projection_digests": [item.projection_digest for item in projections],
+        "schema_version": "synaptic-host-docker-owned-labels-projection/v1",
+    })
 
 
 class DockerAdmissionDispositionV1(str, Enum):
