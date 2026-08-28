@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-27T18:13:28Z'
+updated_at: '2026-08-28T00:13:15Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -1778,6 +1778,26 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 077-checkpoint
+  at: '2026-08-28T00:13:15Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Exhaust backfill batches 1 and 2 uploaded and recorded: 20 aggregate-shape
+    HF datasets under professorsynapse/eh-<slug>, all verified with zero exclusions,
+    revisions in NOTEBOOKs and docs/public-artifacts.md at fab3cad6 and efb05c93.
+    Landing F two-signal draft merged as PR 579 earlier; all six orphan landings A-F
+    complete; fleet at main plus submodule-cloud-api-v1-host only. IntegrityBench
+    outreach: Gmail draft to the benchmark authors (calibration benchmark; collab
+    proposal = their per-question sets through our internal readout), numbers verified
+    against paper 3 manuscript and stated-confidence-under-pstruct amendment, PI to
+    review and send. Next: batch 3 of exhaust backfill (15 cells building), 43 cells
+    remained before it; PI submitting paper 5 tomorrow.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -2179,3 +2199,8 @@ _No summary yet._
 - at: `2026-08-27T18:13:28Z`
 - kind: `checkpoint`
 - summary: Orphaned-branch landing arc largely complete. Merged PRs 571 repin fixtures, 572 trajectory refresh, 573 fresh-SFT records with falsified verdict plus qualify null-result plus twoway scaffold, 574 task-backlog wiring into AGENTS.md and pr-workflow, 575 three ordinal-router KG ingestion commits with lead polarity fix limits to complicates on rank-stability confound note, 576 ts-steering-under-thinking unsigned draft record, 577 modal volume-get gotchas skill section with both variants. Tasks 57402c 9bb16a 35e8e6 72d171 2b5ef7 closed. Worktree fleet down to main plus qwen35-atlas two-signal submodule-cloud-api-v1-host and lander Landing E in flight. Gotchas recorded: FETCH_HEAD is shared repo state and concurrent sessions clobber it so verify diffs against origin refs; commit gate fired correctly on ungated docs-ideas hunk and was resolved by minting covering task not escape hatch. Next: verify Landing E qwen35-atlas PR, PI decision on two-signal, exhaust backfill task open.
+### 077-checkpoint - Checkpoint
+
+- at: `2026-08-28T00:13:15Z`
+- kind: `checkpoint`
+- summary: Exhaust backfill batches 1 and 2 uploaded and recorded: 20 aggregate-shape HF datasets under professorsynapse/eh-<slug>, all verified with zero exclusions, revisions in NOTEBOOKs and docs/public-artifacts.md at fab3cad6 and efb05c93. Landing F two-signal draft merged as PR 579 earlier; all six orphan landings A-F complete; fleet at main plus submodule-cloud-api-v1-host only. IntegrityBench outreach: Gmail draft to the benchmark authors (calibration benchmark; collab proposal = their per-question sets through our internal readout), numbers verified against paper 3 manuscript and stated-confidence-under-pstruct amendment, PI to review and send. Next: batch 3 of exhaust backfill (15 cells building), 43 cells remained before it; PI submitting paper 5 tomorrow.
