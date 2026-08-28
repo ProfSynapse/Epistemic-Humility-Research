@@ -5,8 +5,15 @@
 # artifact on disk (path + sha256). No value comes from memory.
 render:
   base: doubt-snap-cross-family BASELINE_SYSTEM_PROMPT minus the abstention sentence
-  parent_render: experiments/doubt-snap-cross-family-confirmatory/render.py
-  pinned_file: TO_PIN_AT_SIGN  # this cell's render.py; diff vs parent recorded in NOTEBOOK.md before sign
+  parent_render:
+    path: experiments/doubt-snap-cross-family-confirmatory/render.py
+    sha256: a5a0b243ea20e70ae62d081fbcdca17f0c298a0a6878ff5698e7752ef3434876
+  pinned_file: experiments/no-abstention-prompt-gated-replication/render.py
+  # The pinned render imports the parent module and replaces only the prompt
+  # global, with import-time assertions that the abstention sentence occurs
+  # exactly once in the parent prompt and that deleting it reproduces the
+  # registered no-abstention prompt byte for byte. Prompt diff recorded in
+  # NOTEBOOK.md (sign entry, 2026-08-28).
 families:
   qwen3-4b:
     model: unsloth/Qwen3-4B            # build_manifest_layers.json (j-space-midband-write-sweep-qwen3-4b)
@@ -67,8 +74,8 @@ families:
       path: experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/layers/hs17/u_d_hs17.json
       sha256: dafa87d0e164cd824424652420055e8507b02a1c86f6895f14dcb109f6216f10
     random_direction:
-      note: no committed single random-direction artifact; llama-hs17-direction-specificity generated its K=15 census from seeds 910001..910015 at run time. This cell's single-seed arm generates one matched-dose random direction from a fresh seed PINNED AT SIGN in this file.
-      seed: TO_PIN_AT_SIGN
+      note: no committed single random-direction artifact; llama-hs17-direction-specificity generated its K=15 census from seeds 910001..910015 at run time. This cell's single-seed arm generates one matched-dose random direction from the pinned fresh seed below (next in the census series, disjoint from all 15 used seeds).
+      seed: 910016
     build_manifest:
       path: experiments/j-space-cross-family-layer-contrast/analysis-committed/llama-3.2-3b/build_manifest_layers.json
       sha256: bf730c4e77c799a36d561086a77e66b08a1c1cdd43cbc2a1d8c655ca8f0e8a09
@@ -133,6 +140,20 @@ detector:
   directions: frozen (parent u_d artifacts, sha-pinned above)
   threshold: refit on FIT split only, extractions rendered under the new prompt; held-out rows never touch the refit
 grading:
-  primary: two-stage as in parent cells; strict string rule first, then sharded blind LLM judges with planted decoys (abstention-wide-instrument-calibration lineage; exact judge configs pinned at sign); gates read the combined verdict
+  primary: two-stage as in parent cells; strict string rule first, then sharded blind LLM judges with planted decoys (abstention-wide-instrument-calibration lineage); gates read the combined verdict
   secondary_descriptive: string-only column
+  pinned_instrument:  # sha256 of the wide-instrument lineage modules, pinned at sign 2026-08-28
+    detector_v2:
+      path: experiments/abstention-wide-instrument-calibration/detector_v2.py
+      sha256: 161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae
+    detector_v2_patterns:
+      path: experiments/abstention-wide-instrument-calibration/detector_v2_patterns.yaml
+      sha256: 36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9
+    build_adjudication_pool:
+      path: experiments/abstention-wide-instrument-calibration/build_adjudication_pool.py
+      sha256: 6c9bc303da487b38fec8b1811d511d8be7950c23ac4767bea3c0a9c2d45fb2ce
+    apply_adjudication:
+      path: experiments/abstention-wide-instrument-calibration/apply_adjudication.py
+      sha256: 464f026f915744b359d970e426d0c8829ea670bfed32def5e36b555533e717dc
+    adjudication_contract: rr2-verbatim rubric, context-free-agent grader, sharding allowed, decoys both types per shard (abstention-wide-instrument-calibration cell.yaml instrument block)
 engine: tuner hook path (per-row intervention cell; registered vLLM exception)

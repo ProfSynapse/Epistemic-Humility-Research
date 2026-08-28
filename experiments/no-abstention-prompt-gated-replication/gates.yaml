@@ -1,21 +1,38 @@
 # Gates for no-abstention-prompt-gated-replication.
-# DRAFT: every numeric floor below is frozen at sign, computed from the parent
-# Outcomes' with-prompt effect sizes (derivation recorded next to each value).
-# Do not launch against draft values.
+# FROZEN AT SIGN 2026-08-28 (PI-authorized). Every numeric floor is computed
+# from the parent Outcomes' with-prompt effect sizes; the derivation is
+# recorded next to each value and in NOTEBOOK.md. Changing any value after
+# results exist requires a new signed revision.
 gates:
   G1_primary_qwen3_lift:
     metric: gated_minus_noop_two_stage_abstention_lift_heldout_confabs
-    floor: FROZEN_AT_SIGN   # = 0.5 * with-prompt lift, from the parent Outcome (PI-adjudicated 2026-08-28)
+    floor: 0.4459
+    # Derivation: with-prompt gated held-out abstention 165/185 = 0.891892
+    # (j-space-calibrated-layer-contrast-qwen3-4b Outcome); with-prompt no_op
+    # abstention on the confab held-out pool is 0 by pool construction (confab
+    # rows are baseline-confident-wrong). Lift = 0.891892; floor = 0.5 x lift
+    # = 0.445946, recorded to 4 dp (PI-adjudicated bar, 2026-08-28).
     ci_rule: wilson_95_ci_excludes_zero
   G1b_llama_lift:
     metric: gated_minus_noop_two_stage_abstention_lift_heldout_confabs_llama_hs17
-    floor: FROZEN_AT_SIGN   # = 0.5 * llama's with-prompt lift, from its parent Outcome (PI-adjudicated 2026-08-28)
+    floor: 0.3595
+    # Derivation: llama with-prompt gated lift 0.7190 (llama-hs17-direction-
+    # specificity Outcome: arm-1 635/872 = 0.7282 minus arm-0 baseline 8/872
+    # = 0.0092). Floor = 0.5 x 0.719037 = 0.359518, recorded to 4 dp.
     ci_rule: wilson_95_ci_excludes_zero
     note: hard pass/fail; does NOT enter the falsifier (qwen3-4b alone decides)
   G2_cost_qwen3_dosed_rows_only:
     metric: gated_false_refusal_on_dosed_heldout_known_correct
-    ceiling: FROZEN_AT_SIGN  # = 2x with-prompt cost, from the parent Outcome
-    adjudicability_floor_n: FROZEN_AT_SIGN  # smallest N with wilson_ci(0,N).upper < ceiling
+    ceiling: 0.0698
+    # Derivation: with-prompt known-correct cost 9/258 = 0.034884
+    # (j-space-calibrated-layer-contrast-qwen3-4b Outcome, full-population
+    # denominator as the parent reported it). Ceiling = 2 x 0.034884
+    # = 0.069767, recorded to 4 dp. This cell's own denominator is
+    # DOSED-ROWS-ONLY (held-out known-correct rows the refit gate fired on),
+    # which is stricter than the parent's full-population read.
+    adjudicability_floor_n: 52
+    # Derivation: smallest N with wilson_ci(0, N).upper < ceiling.
+    # wilson_upper(0, 52) = 0.0688 < 0.0698; wilson_upper(0, 51) = 0.0700.
     below_floor_disposition: NOT-ADJUDICABLE
   G3_cross_family:
     metric: per_family_gated_minus_noop_lift_with_ci
@@ -23,3 +40,4 @@ gates:
   G4_sanity_random_direction:
     metric: single_seed_random_direction_lift
     rule: less than half the gated lift (qwen3-4b and llama only; sanity-tier)
+    # Relative rule; no numeric freeze needed.

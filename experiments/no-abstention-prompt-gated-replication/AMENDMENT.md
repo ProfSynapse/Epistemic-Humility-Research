@@ -1,6 +1,7 @@
 # No-abstention-prompt gated replication (cross-family)
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: signed 2026-08-28 (`bin/exp sign`; PI-authorized in session). GPU
+launch still requires separate PI approval on the canonical Linux checkout.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -115,9 +116,10 @@ The outcome space is partitioned before the run:
 
 ## Gates
 
-Proposed, pending PI adjudication at sign. Numeric floors are computed and
-frozen at sign from the parent Outcomes' with-prompt effect sizes (recorded in
-`gates.yaml` with their derivations), not rounded to convenient defaults:
+Frozen at sign 2026-08-28. Numeric floors are computed from the parent
+Outcomes' with-prompt effect sizes and recorded in `gates.yaml` with their
+derivations (G1 floor 0.4459, G1b floor 0.3595, G2 ceiling 0.0698 with
+adjudicability floor N = 52), not rounded to convenient defaults:
 
 - **G1 (primary, qwen3-4b):** gated-over-no_op two-stage abstention lift on
   held-out confabs >= half the with-prompt lift (numeric floor frozen at sign

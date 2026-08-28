@@ -5657,19 +5657,48 @@
       },
       "created_at": "2026-08-28T12:21:03Z",
       "falsifier": "PI-adjudicated 2026-08-28, qwen3-4b alone decides: the gated arm's two-stage abstention lift over no_op on the full held-out confab pool has a 95% CI that includes zero.",
-      "inputs": [],
+      "inputs": [
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b",
+        "experiments/j-space-midband-write-sweep-qwen3-4b",
+        "experiments/qwen35-4b-midband-doubt-snap",
+        "experiments/qwen35-4b-midband-heldout",
+        "experiments/j-space-cross-family-layer-contrast",
+        "experiments/llama-hs17-direction-specificity",
+        "experiments/gemma4-e4b-kv-seam-quarantine",
+        "experiments/abstention-wide-instrument-calibration"
+      ],
       "instrument": {
-        "configs": [],
-        "modules": [],
-        "persistence": {},
-        "pins": {}
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "engine_exception": {
+          "kind": "intervention",
+          "reason": "Per-row KU-gated activation writes at each family's frozen mid-band site via the tuner mechinterp InterventionHook path, the engine every parent operating-point cell registered; arm comparability with the frozen with-prompt results requires the identical engine (batched-generation.md decision table: per-row hooks/activation writing)."
+        },
+        "modules": [
+          "render.py"
+        ],
+        "persistence": {
+          "render.py": {
+            "measured_smoke_wall_clock_s": 0.006,
+            "note": "pure per-row render function imported by the run harness; holds no run state (the harness, built at launch on the run host, carries its own incremental runlog persistence per the mechinterp-cells invariant)",
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "cell.yaml": "3b8f33a3b797cea8330fef396c178bba25ba0a7cd12653794bfede865cb9a742",
+          "gates.yaml": "dc7c55f87415588a82fbe3e9bbf676a8b5109b46a2edd58e61009d77c1424203",
+          "render.py": "b9c47e1b498cf09815f1cffec66f1374fa5aadb11b7f1dc9ed4f78141ac9217f"
+        }
       },
       "kg": [],
       "prediction": "PI call 2026-08-28: survives attenuated; in qwen3-4b the gated-over-no_op two-stage abstention lift on held-out confabs is real (95% CI excludes zero) but below half its with-prompt magnitude; no_op baseline abstention falls.",
       "question": "Does the doubt-gated abstention write reproduce its gated-over-no-op benefit when the system prompt contains no abstention instruction (JSON-format instruction only)?",
       "registered": true,
       "slug": "no-abstention-prompt-gated-replication",
-      "status": "draft",
+      "status": "signed",
       "text_capture": "enabled",
       "title": "No-abstention-prompt gated replication (cross-family)",
       "type": "steer-cell",

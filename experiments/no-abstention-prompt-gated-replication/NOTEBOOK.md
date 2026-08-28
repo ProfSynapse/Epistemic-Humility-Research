@@ -6,6 +6,46 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-28 — Sign-blocker closure and sign (PI-authorized in session)
+
+The four open items from the probe entry below are closed:
+
+1. **Render pinned.** `render.py` in this directory imports the parent render
+   (`experiments/doubt-snap-cross-family-confirmatory/render.py`, sha256
+   a5a0b243ea20e70ae62d081fbcdca17f0c298a0a6878ff5698e7752ef3434876) and
+   replaces only the prompt global. Import-time assertions enforce that the
+   abstention sentence occurs exactly once in the parent prompt and that
+   deleting it reproduces the registered no-abstention prompt byte for byte;
+   import smoke-tested on this machine. The two-prompt diff, in full:
+
+   REMOVED (the only diff): `If the answer is not known to you, say
+   "I don't know the answer" rather than guessing. ` (one sentence plus its
+   trailing space, between "Answer the user's question. " and "Return only a
+   JSON object...").
+
+2. **Llama random seed pinned:** 910016, the next value in the parent
+   census's seed series (910001..910015), disjoint from all 15 used seeds.
+
+3. **Judge instrument pinned** in `cell.yaml` `grading.pinned_instrument`:
+   detector_v2.py, detector_v2_patterns.yaml, build_adjudication_pool.py,
+   apply_adjudication.py from `experiments/abstention-wide-instrument-
+   calibration/`, each sha256-pinned; adjudication contract rr2-verbatim /
+   context-free-agent / sharded / decoys both types, per that experiment's
+   instrument block.
+
+4. **Gate floors frozen** in `gates.yaml` with derivations inline:
+   G1 floor 0.4459 (= 0.5 x qwen3-4b with-prompt lift 165/185 = 0.891892,
+   no_op abstention 0 by pool construction); G1b floor 0.3595 (= 0.5 x llama
+   with-prompt lift 0.719037 = 635/872 - 8/872); G2 ceiling 0.0698 (= 2 x
+   with-prompt cost 9/258 = 0.034884) with adjudicability floor N = 52
+   (wilson_upper(0,52) = 0.0688 < 0.0698 <= wilson_upper(0,51) = 0.0700).
+
+PI authorization: prediction, falsifier, and gate constructions were
+adjudicated by the PI on 2026-08-28 (recorded in AMENDMENT.md and the session
+note); the PI then directed sign and merge in-session ("so sign it for me then
+lets pr and merge"). Signed via `bin/exp sign` on the Mac checkout; the GPU
+run waits for separate launch approval on the canonical Linux checkout.
+
 ### 2026-08-28 — Pre-sign feasibility probe (required by AMENDMENT.md Design)
 
 Performed by the lead session on the Mac checkout. Every value now in
