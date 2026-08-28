@@ -95,6 +95,20 @@ class DockerHostCreateV1:
             "expected": self._pin(expected_authority),
             "record": self._pin(record_authority),
         }
+        self._authority_instances = {
+            "path": path_authority,
+            "environment": environment_authority,
+            "intent": intent_authority,
+            "expected": expected_authority,
+            "record": record_authority,
+        }
+        self._authority_fields = {
+            "path": "_path_authority",
+            "environment": "_environment_authority",
+            "intent": "_intent_authority",
+            "expected": "_expected_authority",
+            "record": "_record_authority",
+        }
 
     @staticmethod
     def _pin(authority):
@@ -102,13 +116,22 @@ class DockerHostCreateV1:
 
     def _auth(self, role, authority, value, authenticate):
         pins = self._pins[role]
-        if self._pin(authority) != pins:
+        pinned = self._authority_instances[role]
+        if (
+            authority is not pinned
+            or getattr(self, self._authority_fields[role]) is not pinned
+            or self._pin(authority) != pins
+        ):
             raise ValueError
         presented = _snapshot_authenticated(value)
         if (presented.authority_ref, presented.key_ref) != pins:
             raise ValueError
         returned = authenticate(authority, presented)
-        if self._pin(authority) != pins:
+        if (
+            authority is not pinned
+            or getattr(self, self._authority_fields[role]) is not pinned
+            or self._pin(authority) != pins
+        ):
             raise ValueError
         returned = _snapshot_authenticated(returned)
         if returned != presented or (returned.authority_ref, returned.key_ref) != pins:
@@ -117,10 +140,19 @@ class DockerHostCreateV1:
 
     def _issue(self, role, authority, content, authenticate):
         baseline = _snapshot_contract_content(content)
-        if self._pin(authority) != self._pins[role]:
+        pinned = self._authority_instances[role]
+        if (
+            authority is not pinned
+            or getattr(self, self._authority_fields[role]) is not pinned
+            or self._pin(authority) != self._pins[role]
+        ):
             raise ValueError
         issued = authority.issue(_snapshot_contract_content(baseline))
-        if self._pin(authority) != self._pins[role]:
+        if (
+            authority is not pinned
+            or getattr(self, self._authority_fields[role]) is not pinned
+            or self._pin(authority) != self._pins[role]
+        ):
             raise ValueError
         issued = self._auth(role, authority, issued, authenticate)
         if issued.content != baseline:

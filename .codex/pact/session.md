@@ -168,3 +168,22 @@ Active orchestration ledger for the current repo-focused PACT session.
 - Independent verdicts are auditor **ACCEPT** and test **PASS**. Final evidence: **274 focused**, **558 full**, and **21 causal tests passed**; compile, diff, and static checks passed.
 - This slice made no real Docker call and does not add `start.py`, orchestration, or persistence. The accepted candidate remains uncommitted pending release.
 - Next dispatch: **Slice 5.5c host START transaction**.
+
+### 2026-08-28 Docker START Slice 5.5b Release Checkpoint
+
+- Accepted Slice 5.5b was committed, pushed, and synchronized at `aaad0679b6396c233ef7fd258f6fcca626a11f5e`.
+- Windows HEAD, the origin branch HEAD, and canonical WSL host HEAD matched that exact commit; the engine remains at `dc6b5197`.
+- The unrelated pre-existing WSL manifest type changes remained preserved and untouched.
+- Next dispatch: **Slice 5.5c host START transaction**.
+
+### 2026-08-28 Docker START Slice 5.5c Host Transaction R2 Accepted
+
+- Worker-reported files are modified `synaptic_host/docker_v1/control_contract.py`, `synaptic_host/docker_v1/create.py`, and `synaptic_host/docker_v1/control.py`; new `synaptic_host/docker_v1/start.py` and `tests/synaptic_host/docker_v1/test_start.py`; and updated `tests/synaptic_host/docker_v1/test_create.py` and `tests/synaptic_host/docker_v1/test_control.py`.
+- `DockerStartVerification` carries a nullable execution digest. START requires exact verified CREATE provenance plus exact pre- and post-START inspection.
+- START owns an independent `ADMITTED` to `ATTEMPTED` to `VERIFIED` mutation record. Only the exact attempt-CAS `APPLIED` result authorizes the START effect, and typed inspection with `started=True` is the sole success proof.
+- An `ATTEMPTED` START record with a merely `CREATED` container never retries START. A lost final CAS converges only through exact lookup.
+- The direct concurrency gate reconstructed **32 hosts** over one shared in-memory store, produced exactly **one START**, returned `STARTED` from all callers, finished at `VERIFIED`, and produced zero retry effects.
+- R1 binds constructor authority object identity plus exact reference/key before and after dependency calls across START, CREATE, read, and absence paths. R2 adds non-vacuous CREATE mid-call mutation coverage.
+- Independent verdicts are auditor **ACCEPT** and test **PASS**. Final evidence: **63 create**, **148 focused**, **614 full**, **16 repaired-matrix**, and **22 replay tests passed**; compile, diff, and static checks passed.
+- This slice made no real Docker call and does not add persistence or composition. The accepted candidate remains uncommitted pending release.
+- Next dispatch: **Slice 5.6 thin composition and an actual coordinator-driven CPU smoke**.

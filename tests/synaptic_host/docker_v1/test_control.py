@@ -683,6 +683,100 @@ def test_one_id_rejects_authority_pin_change_during_authentication(role):
     assert result.disposition is DockerLookupDispositionV1.INDETERMINATE
 
 
+@pytest.mark.parametrize("role", ("record", "expected", "intent", "environment"))
+def test_one_id_rejects_same_pin_alternate_authority_object(role):
+    labels, ref, repository_result, expected_binding, container_result = (
+        _one_id_fixture()
+    )
+    control = _control(
+        TypedCLI(
+            inventory_result=_inventory_result(labels, (ref,)),
+            container_result=container_result,
+        ),
+        Repository(repository_result), Catalog(expected_binding),
+    )
+    setattr(control, "_" + role + "_authority", Authority())
+    result = control.lookup(DockerLookupRequestV1(
+        labels, DockerLookupPurposeV1.OBSERVE, 1
+    ))
+    assert result.disposition is DockerLookupDispositionV1.INDETERMINATE
+
+
+def test_zero_inventory_rejects_same_pin_alternate_absence_authority_object():
+    labels = _labels()
+    operation_id = docker_operation_id_v1(
+        DockerControlOperationV1.CREATE, labels.effect_id
+    )
+    control = _control(
+        TypedCLI(inventory_result=_inventory_result(labels)),
+        Repository(DockerMutationLookupResultV1.build(
+            operation_id, DockerMutationLookupDispositionV1.ABSENT, None
+        )),
+    )
+    control._absence_authority = AbsenceAuthority()
+    result = control.lookup(DockerLookupRequestV1(
+        labels, DockerLookupPurposeV1.OBSERVE, 1
+    ))
+    assert result.disposition is DockerLookupDispositionV1.INDETERMINATE
+
+
+def test_zero_inventory_rejects_mid_issue_absence_object_swap():
+    labels = _labels()
+    operation_id = docker_operation_id_v1(
+        DockerControlOperationV1.CREATE, labels.effect_id
+    )
+
+    class SwappingAbsence(AbsenceAuthority):
+        control = None
+        def issue(self, content):
+            value = super().issue(content)
+            self.control._absence_authority = AbsenceAuthority()
+            return value
+
+    authority = SwappingAbsence()
+    control = _control(
+        TypedCLI(inventory_result=_inventory_result(labels)),
+        Repository(DockerMutationLookupResultV1.build(
+            operation_id, DockerMutationLookupDispositionV1.ABSENT, None
+        )), absence_authority=authority,
+    )
+    authority.control = control
+    result = control.lookup(DockerLookupRequestV1(
+        labels, DockerLookupPurposeV1.OBSERVE, 1
+    ))
+    assert result.disposition is DockerLookupDispositionV1.INDETERMINATE
+
+
+class ObjectSwappingAuthority(Authority):
+    def __init__(self, role):
+        self.role = role
+        self.control = None
+
+    def authenticate(self, value):
+        setattr(self.control, "_" + self.role + "_authority", Authority())
+        return value
+
+
+@pytest.mark.parametrize("role", ("record", "expected", "intent", "environment"))
+def test_one_id_rejects_mid_auth_role_object_swap(role):
+    labels, ref, repository_result, expected_binding, container_result = (
+        _one_id_fixture()
+    )
+    authority = ObjectSwappingAuthority(role)
+    kwargs = {f"{role}_authority": authority}
+    control = _control(
+        TypedCLI(
+            inventory_result=_inventory_result(labels, (ref,)),
+            container_result=container_result,
+        ), Repository(repository_result), Catalog(expected_binding), **kwargs,
+    )
+    authority.control = control
+    result = control.lookup(DockerLookupRequestV1(
+        labels, DockerLookupPurposeV1.OBSERVE, 1
+    ))
+    assert result.disposition is DockerLookupDispositionV1.INDETERMINATE
+
+
 def _rebuilt_container_result(result, attack):
     projection = result.projection
     values = {

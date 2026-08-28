@@ -558,27 +558,43 @@ def test_create_inspect_disappearance_or_malformed_is_indeterminate(malformed):
 
 
 class MidCallPinAuthority(RecordAuthority):
+    def __init__(self):
+        self.authenticate_calls = 0
     def authenticate(self, value):
+        self.authenticate_calls += 1
         self.key_ref = "changed"
         return value
 
 
 class InPlaceIssueAuthority(RecordAuthority):
+    def __init__(self):
+        self.issue_calls = 0
+        self.mutated_observed = False
     def issue(self, content):
+        self.issue_calls += 1
         if type(content) is DockerMutationRecordV1:
             object.__setattr__(content, "effect_id", "mutated")
+            self.mutated_observed = content.effect_id == "mutated"
             return AuthenticatedDockerMutationRecordV1(
                 content, self.authority_ref, self.key_ref, SHA
             )
         if type(content) is type(HARNESS_EXPECTED.content.intent.content):
             object.__setattr__(content, "effect_id", "mutated")
+            self.mutated_observed = content.effect_id == "mutated"
             return AuthenticatedDockerControlIntentV1(
                 content, self.authority_ref, self.key_ref, SHA
             )
         object.__setattr__(content, "binding_digest", "f" * 64)
+        self.mutated_observed = content.binding_digest == "f" * 64
         return AuthenticatedDockerExpectedCreateBindingV1(
             content, self.authority_ref, self.key_ref, SHA
         )
+
+
+def _pin_test_authority(host, role, authority):
+    setattr(host, f"_{role}_authority", authority)
+    host._authority_instances[role] = authority
+    host._pins[role] = (authority.authority_ref, authority.key_ref)
 
 
 @pytest.mark.parametrize(
@@ -612,12 +628,14 @@ class InPlaceIssueAuthority(RecordAuthority):
 def test_create_every_auth_role_rejects_mid_call_pin_change(
     role, value, authenticate,
 ):
-    host, _events, _invocation = _transaction_host()
+    host, _events, invocation = _transaction_host()
     authority = MidCallPinAuthority()
-    setattr(host, f"_{role}_authority", authority)
-    host._pins[role] = ("authority", "key")
+    _pin_test_authority(host, role, authority)
     with pytest.raises((ValueError, DockerControlContractErrorV1)):
         host._auth(role, authority, value, authenticate)
+    assert authority.authenticate_calls == 1
+    assert authority.key_ref == "changed"
+    assert invocation.calls == 0
 
 
 @pytest.mark.parametrize(
@@ -641,11 +659,125 @@ def test_create_every_auth_role_rejects_mid_call_pin_change(
 def test_create_every_issue_role_rejects_in_place_alias_mutation(
     role, content, authenticate,
 ):
-    host, _events, _invocation = _transaction_host()
+    host, _events, invocation = _transaction_host()
     authority = InPlaceIssueAuthority()
-    host._pins[role] = ("authority", "key")
-    with pytest.raises(DockerControlContractErrorV1):
+    _pin_test_authority(host, role, authority)
+    with pytest.raises((ValueError, DockerControlContractErrorV1)):
         host._issue(role, authority, content, authenticate)
+    assert authority.issue_calls == 1
+    assert authority.mutated_observed
+    assert invocation.calls == 0
+
+
+class MidCallObjectSwapAuthority(RecordAuthority):
+    def __init__(self, host, role):
+        self.host = host
+        self.role = role
+        self.authenticate_calls = 0
+        self.issue_calls = 0
+
+    def authenticate(self, value):
+        self.authenticate_calls += 1
+        setattr(self.host, f"_{self.role}_authority", RecordAuthority())
+        return value
+
+    def issue(self, content):
+        self.issue_calls += 1
+        if type(content) is DockerMutationRecordV1:
+            value = AuthenticatedDockerMutationRecordV1(
+                content, self.authority_ref, self.key_ref, SHA
+            )
+        elif type(content) is type(HARNESS_EXPECTED.content.intent.content):
+            value = AuthenticatedDockerControlIntentV1(
+                content, self.authority_ref, self.key_ref, SHA
+            )
+        else:
+            value = AuthenticatedDockerExpectedCreateBindingV1(
+                content, self.authority_ref, self.key_ref, SHA
+            )
+        setattr(self.host, f"_{self.role}_authority", RecordAuthority())
+        return value
+
+
+@pytest.mark.parametrize(
+    "role,value,authenticate",
+    (
+        ("path", AuthenticatedDockerCreatePathBindingV1(
+            _path_binding(), "authority", "key", SHA
+        ), authenticate_create_path_binding_v1),
+        ("environment", HARNESS_EXPECTED.content.environment_binding,
+         authenticate_workload_environment_binding_v1),
+        ("intent", HARNESS_EXPECTED.content.intent,
+         authenticate_control_intent_v1),
+        ("expected", HARNESS_EXPECTED,
+         authenticate_expected_create_binding_v1),
+        ("record", _record(HARNESS_EXPECTED, DockerMutationPhaseV1.ADMITTED),
+         authenticate_mutation_record_v1),
+    ),
+)
+def test_create_every_auth_role_rejects_mid_call_live_object_swap(
+    role, value, authenticate,
+):
+    host, _events, invocation = _transaction_host()
+    authority = MidCallObjectSwapAuthority(host, role)
+    _pin_test_authority(host, role, authority)
+    with pytest.raises(ValueError):
+        host._auth(role, authority, value, authenticate)
+    assert authority.authenticate_calls == 1
+    assert getattr(host, f"_{role}_authority") is not authority
+    assert invocation.calls == 0
+
+
+@pytest.mark.parametrize(
+    "role,content,authenticate",
+    (
+        ("intent", HARNESS_EXPECTED.content.intent.content,
+         authenticate_control_intent_v1),
+        ("expected", HARNESS_EXPECTED.content,
+         authenticate_expected_create_binding_v1),
+        ("record", _record(HARNESS_EXPECTED, DockerMutationPhaseV1.ADMITTED).content,
+         authenticate_mutation_record_v1),
+    ),
+)
+def test_create_every_issue_role_rejects_mid_call_live_object_swap(
+    role, content, authenticate,
+):
+    host, _events, invocation = _transaction_host()
+    authority = MidCallObjectSwapAuthority(host, role)
+    _pin_test_authority(host, role, authority)
+    with pytest.raises(ValueError):
+        host._issue(role, authority, content, authenticate)
+    assert authority.issue_calls == 1
+    assert authority.authenticate_calls == 0
+    assert getattr(host, f"_{role}_authority") is not authority
+    assert invocation.calls == 0
+
+
+@pytest.mark.parametrize(
+    "role", ("path", "environment", "intent", "expected", "record")
+)
+def test_create_rejects_same_pin_alternate_authority_object(role):
+    host, _events, invocation = _transaction_host()
+    alternate = Authority()
+    setattr(host, f"_{role}_authority", alternate)
+    pinned = host._authority_instances[role]
+    with pytest.raises(ValueError):
+        host._auth(
+            role, alternate, HARNESS_EXPECTED.content.environment_binding
+            if role == "environment" else (
+                HARNESS_EXPECTED.content.intent if role == "intent" else
+                _record(HARNESS_EXPECTED, DockerMutationPhaseV1.ADMITTED)
+                if role == "record" else HARNESS_EXPECTED
+            ),
+            authenticate_workload_environment_binding_v1
+            if role == "environment" else (
+                authenticate_control_intent_v1 if role == "intent" else
+                authenticate_mutation_record_v1 if role == "record" else
+                authenticate_expected_create_binding_v1
+            ),
+        )
+    assert invocation.calls == 0
+    assert pinned is not alternate
 
 
 @pytest.mark.parametrize(

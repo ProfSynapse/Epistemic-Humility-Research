@@ -119,6 +119,27 @@ class DockerHostControlV1:
             self._absence_pins = (
                 absence_authority.authority_ref, absence_authority.key_ref
             )
+            self._authority_instances = {
+                "record": mutation_record_authority,
+                "expected": expected_authority,
+                "intent": intent_authority,
+                "environment": environment_authority,
+                "absence": absence_authority,
+            }
+            self._authority_fields = {
+                "record": "_record_authority",
+                "expected": "_expected_authority",
+                "intent": "_intent_authority",
+                "environment": "_environment_authority",
+                "absence": "_absence_authority",
+            }
+            self._role_pins = {
+                "record": self._record_pins,
+                "expected": self._expected_pins,
+                "intent": self._intent_pins,
+                "environment": self._environment_pins,
+                "absence": self._absence_pins,
+            }
         except BaseException:
             _closed()
 
@@ -208,9 +229,9 @@ class DockerHostControlV1:
         )
         expected = DockerAbsenceContentV1(*baseline)
         issued_content = DockerAbsenceContentV1(*baseline)
-        self._require_pins(self._absence_authority, self._absence_pins)
+        self._require_role("absence", self._absence_authority)
         issued = self._absence_authority.issue(issued_content)
-        self._require_pins(self._absence_authority, self._absence_pins)
+        self._require_role("absence", self._absence_authority)
         issued_snapshot = self._snapshot_absence(issued)
         if (
             issued_snapshot.content != expected
@@ -220,7 +241,7 @@ class DockerHostControlV1:
         ):
             return _indeterminate()
         authenticated = self._authenticate_role(
-            self._absence_authority, self._absence_pins, issued_snapshot,
+            "absence", self._absence_authority, issued_snapshot,
             authenticate_absence_v1,
         )
         authenticated_snapshot = self._snapshot_absence(authenticated)
@@ -255,7 +276,7 @@ class DockerHostControlV1:
         if repository_result.disposition is not DockerMutationLookupDispositionV1.FOUND:
             return _indeterminate()
         record = self._authenticate_role(
-            self._record_authority, self._record_pins,
+            "record", self._record_authority,
             repository_result.record, authenticate_mutation_record_v1,
         )
         content = record.content
@@ -277,15 +298,15 @@ class DockerHostControlV1:
             request.labels.command_digest, request.labels.digest
         )
         expected = self._authenticate_role(
-            self._expected_authority, self._expected_pins, raw_expected,
+            "expected", self._expected_authority, raw_expected,
             authenticate_expected_create_binding_v1,
         )
         intent = self._authenticate_role(
-            self._intent_authority, self._intent_pins,
+            "intent", self._intent_authority,
             expected.content.intent, authenticate_control_intent_v1,
         )
         environment = self._authenticate_role(
-            self._environment_authority, self._environment_pins,
+            "environment", self._environment_authority,
             expected.content.environment_binding,
             authenticate_workload_environment_binding_v1,
         )
@@ -315,18 +336,23 @@ class DockerHostControlV1:
             phase=phase,
         )
 
-    @staticmethod
-    def _require_pins(authority, pins):
-        if (authority.authority_ref, authority.key_ref) != pins:
+    def _require_role(self, role, authority):
+        pinned = self._authority_instances[role]
+        if (
+            authority is not pinned
+            or getattr(self, self._authority_fields[role]) is not pinned
+            or (authority.authority_ref, authority.key_ref)
+            != self._role_pins[role]
+        ):
             raise ValueError
 
-    @classmethod
-    def _authenticate_role(cls, authority, pins, value, authenticate):
-        cls._require_pins(authority, pins)
+    def _authenticate_role(self, role, authority, value, authenticate):
+        pins = self._role_pins[role]
+        self._require_role(role, authority)
         if (value.authority_ref, value.key_ref) != pins:
             raise ValueError
         returned = authenticate(authority, value)
-        cls._require_pins(authority, pins)
+        self._require_role(role, authority)
         if (
             (returned.authority_ref, returned.key_ref) != pins
             or returned != value
