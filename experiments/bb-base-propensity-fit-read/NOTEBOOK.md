@@ -268,3 +268,15 @@ remain validated only on synthetic data pending the phase-1 GPU run.
   verdict written to AMENDMENT section 12. Gate report committed at
   analysis-committed/phase1/gate_report.json; row-level pulls remain
   gitignored under analysis/.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 3 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 9 files / ~442 KB, built at repo commit 37eaa399.
+
+- HF repo: `professorsynapse/eh-bb-base-propensity-fit-read` (dataset)
+- HF revision: `e215b2021fcbc79662642abe2b0b0ae5bc90fa42`

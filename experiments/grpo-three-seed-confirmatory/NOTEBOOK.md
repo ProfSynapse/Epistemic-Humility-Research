@@ -1898,3 +1898,15 @@ The resolution's reporting rules named paper 2 as the reporting surface for this
 - Outputs committed: analysis-committed/g3_stated_confidence_three_seed_v2
   .{json,csv} (containment-scanned; supersedes the v1 pair for paper
   citation). Scripts: analysis/g3_stated_confidence_seed1_recovery.py.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 3 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 6 files / ~137 KB, built at repo commit 37eaa399.
+
+- HF repo: `professorsynapse/eh-grpo-three-seed-confirmatory` (dataset)
+- HF revision: `53fcb0c88c0977c33cc9334589344b0c6abdb411`

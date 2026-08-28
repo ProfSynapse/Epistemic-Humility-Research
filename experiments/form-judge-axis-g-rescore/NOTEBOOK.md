@@ -166,3 +166,15 @@ populations 795 clear-positive, 595 clear-negative. Screen counts per
 intermediate dose: 306 / 224 / 178, all above the 50-row NOT-ADJUDICABLE
 guard. Five builder-flagged underspecifications resolved as lead rulings,
 recorded in AMENDMENT.md "Build-time rulings".
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 3 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 10 files / ~49 KB, built at repo commit 37eaa399.
+
+- HF repo: `professorsynapse/eh-form-judge-axis-g-rescore` (dataset)
+- HF revision: `4c391751530299848f354fd634a9052f05f6767e`

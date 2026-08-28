@@ -87,3 +87,15 @@ in `experiment.yaml`.
   requires exact targeted parity against all 5,189 predecessor-valid Gemma rows
   in the later full run. Predecessor completion text and token evidence remain
   private; the promoted shared artifact contains IDs, counts, and hashes only.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 3 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 12 files / ~74 KB, built at repo commit 37eaa399.
+
+- HF repo: `professorsynapse/eh-family-atlas-surface-matched-json-completion-control` (dataset)
+- HF revision: `a5bd9697558e11dfc949389955f84129a793d0b9`

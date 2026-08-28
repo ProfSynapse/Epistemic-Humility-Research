@@ -116,3 +116,15 @@ carried into the Outcome: LB unknown_refused carve makes llama's baseline a
 lower bound; CG1 clear-positive floor granularity; QL four-layer scope per
 cell.yaml glob. Resolved via bin/exp resolve; verdict sentence in the
 manifest.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 3 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 7 files / ~375 KB, built at repo commit 37eaa399.
+
+- HF repo: `professorsynapse/eh-abstention-wide-instrument-calibration` (dataset)
+- HF revision: `c891882e18b929c3e792eea8eb9e3f5ae83482b2`
