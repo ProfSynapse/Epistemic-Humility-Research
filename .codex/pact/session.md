@@ -187,3 +187,31 @@ Active orchestration ledger for the current repo-focused PACT session.
 - Independent verdicts are auditor **ACCEPT** and test **PASS**. Final evidence: **63 create**, **148 focused**, **614 full**, **16 repaired-matrix**, and **22 replay tests passed**; compile, diff, and static checks passed.
 - This slice made no real Docker call and does not add persistence or composition. The accepted candidate remains uncommitted pending release.
 - Next dispatch: **Slice 5.6 thin composition and an actual coordinator-driven CPU smoke**.
+
+### 2026-08-28 Docker START Slice 5.5c Final Release Checkpoint
+
+- Accepted Slice 5.5c was committed, pushed, and synchronized at `94b10d63415256a1dda467bade6d582f893f7252`.
+- Windows HEAD, the origin branch HEAD, and canonical WSL host HEAD matched that exact commit; the engine remains at `dc6b5197`.
+- The unrelated pre-existing WSL manifest type changes remained preserved and untouched.
+- The typed CREATE and START stack is complete.
+- Next dispatch: **Slice 5.6 thin facade/composition and an actual coordinator-driven CPU Docker smoke**.
+
+### 2026-08-28 Docker Composition And CPU Smoke Slice 5.6 Architecture Accepted
+
+- Slice 5.6 is sequential: **5.6a engine same-process Docker composition and public API**; **5.6b host concrete HMAC authorities, registries, path/environment adapters, WSL interoperability, and thin control facade**; then **5.6c provider-dispatched `python -m synaptic_host training smoke --config ...` plus a real CPU Docker execution**.
+- Current blocker evidence is explicit: source sealing requires POSIX/WSL semantics, Docker Desktop control requires the Windows Docker `.exe`, production composition/adapters are missing, and no complete `DockerReadPort` implementation exists.
+- A facade-only smoke at the current boundary would require test doubles or ad hoc wiring and would not prove the intended production architecture.
+- The accepted design introduces an explicit WSL interoperability seam. Source and artifact roots remain config-first and may be arbitrary configured WSL locations.
+- Exact artifact verification remains host-side. External diagnostics must be bounded, and cleanup must target only the exact disposable resources created by the smoke.
+- This slice makes no product read-operation or persistence claim.
+- Next dispatch: **Slice 5.6a engine same-process Docker composition and public API**.
+
+### 2026-08-28 Docker Composition Slice 5.6a Engine R1 Accepted
+
+- The engine same-process Docker composition and public API are accepted with deliberate same-process semantics only; no persistence, restart, or cross-process durability is claimed.
+- Original rejection 1: public `DockerSameProcessLaunchV1` accepted a mutually self-consistent context, plan, and preflight whose `plan.basis` workload, runtime, or artifact-policy digest could disagree with the unchanged bound profile. R1 requires exact public-construction adjacency for all three digests, and independent hostile graphs for each now reject before composition or effects.
+- Original rejection 2: public `DockerSameProcessRuntimeV1.start()` and `.reconcile()` annotated their results as `object` although consumers use `WorkflowRecordV1`. R1 changes both public and concrete annotations to exact `WorkflowRecordV1`; independent tests verify the annotations and actual returned values.
+- Frozen accepted hashes are `docker.py` `12B6B07586E7CE3C00B125BE223EA4DC1C6AEF8F316FFB4666C3D093EF4C9AFB`, `composition.py` `5FB138D71BC158DD516F37AFE5E925257357FEC8B14E66F9000802FE59C77484`, and `test_composition.py` `8CBE7E414FFA3A978223C92AF43CF7181A18EFF8F7CAB266AB0B483E444F2AB4`.
+- Independent verdicts are auditor **ACCEPT** and tester **PASS**. Final evidence: **29 focused**, **477 provider**, **1,184 execution tests passed with 3 expected skips**, **144 contract tests excluding the known Modal lock issue**, and **12 read-only/native tests**; exact hostile and concurrency proofs passed.
+- The unrelated pre-existing Modal runtime-lock mismatch remains excluded from this acceptance and tracked separately.
+- Next dispatch: release the exact accepted engine commit, update and synchronize the host gitlink and canonical WSL checkout, then begin **Slice 5.6b host adapters**.
