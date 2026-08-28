@@ -13,11 +13,16 @@ cause: "Injecting a [[steering-vector]] into a small model's [[residual-stream]]
 effect: "A content-independent increase in affirmative logits that makes apparent binary introspection detection indistinguishable from response bias."
 polarity: increases
 related:
+- '[[2512.12411--detecting-disturbance-nuanced-view-introspective-abilities-llms]]'
 - '[[2607.14111--introspection-fine-tuning-ift-training-small-llms]]'
 - '[[activation-steering]]'
 - '[[steering-vector]]'
 - '[[residual-stream]]'
 relationships:
+- type: supported_by
+  target: '[[2512.12411--detecting-disturbance-nuanced-view-introspective-abilities-llms]]'
+  target_id: paper:2512.12411
+  confidence: high
 - type: supported_by
   target: '[[2607.14111--introspection-fine-tuning-ift-training-small-llms]]'
   target_id: paper:2607.14111
@@ -36,8 +41,10 @@ relationships:
   confidence: high
 ---
 
-In Figure 1 and Section 2.3.1, the adjusted yes-versus-no logit shift for an
-introspection question tracks the same shift for factual-no controls with
-correlation r = 0.999 across 40 layer-strength settings. The near-zero net
-signal indicates that binary detection is not isolating sensitivity to the
-injected concept in the tested small-model setting.
+In Table 2 and Section 4 of [[2512.12411--detecting-disturbance-nuanced-view-introspective-abilities-llms]],
+the adjusted yes-versus-no logit shift for an introspection question tracks the
+same shift for factual-no controls with correlation r = 0.999 across 40
+layer-strength settings. [[2607.14111--introspection-fine-tuning-ift-training-small-llms]]
+reproduces the same diagnostic result. The near-zero net signal indicates that
+binary detection does not isolate sensitivity to the injected concept in the
+tested small-model setting.

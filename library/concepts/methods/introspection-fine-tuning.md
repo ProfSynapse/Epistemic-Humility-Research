@@ -14,6 +14,7 @@ kg:
 area: methods
 related:
 - '[[2607.14111--introspection-fine-tuning-ift-training-small-llms]]'
+- '[[concept-injection-introspection-test]]'
 - '[[supervised-finetuning]]'
 - '[[activation-steering]]'
 - '[[sentence-localization-introspection]]'
@@ -26,6 +27,10 @@ relationships:
 - type: variation_of
   target: '[[supervised-finetuning]]'
   target_id: method:supervised-finetuning
+  confidence: high
+- type: derived_from
+  target: '[[concept-injection-introspection-test]]'
+  target_id: method:concept-injection-introspection-test
   confidence: high
 - type: related_to
   target: '[[activation-steering]]'
@@ -51,6 +56,8 @@ injected concept name.
 to report controlled internal perturbations. It therefore offers a concrete
 bridge between activation-level causal interventions and learned self-monitoring.
 
-**Lineage:** IFT is a variation of [[supervised-finetuning]] whose labeled
-examples are produced through [[activation-steering]], and whose primary readout
-is [[sentence-localization-introspection]].
+**Lineage:** IFT trains the controlled activation-perturbation setting introduced
+by the [[concept-injection-introspection-test]]. It is a variation of
+[[supervised-finetuning]] whose examples are produced through
+[[activation-steering]], and whose primary readout is
+[[sentence-localization-introspection]].
