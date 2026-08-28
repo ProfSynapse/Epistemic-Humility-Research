@@ -2,7 +2,7 @@
 id: task-7eb629
 title: 'Paper 6/7 scoping: weights-level internal-signal consultation (training methods
   and architectures literature scan)'
-status: in-progress
+status: done
 assignee:
 - '@claude'
 tier: P
