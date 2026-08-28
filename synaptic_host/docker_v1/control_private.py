@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from threading import Lock
 from typing import Protocol
+import re
 
 from tuner.execution.providers.docker_provider_v1.model import (
     DockerImageV1, DockerLabelsV1, DockerRuntimeV1, DockerWorkloadV1,
@@ -21,6 +22,8 @@ from .control_contract import (
 from .control_model import (
     OWNED_LABEL_NAMES_V1, OWNED_LABEL_PREFIX_V1,
     DockerCreateExecutionResultV1,
+    DockerStartExecutionResultV1,
+    docker_start_execution_request_digest_v1,
 )
 from .model import (
     MAX_DOCKER_ARG_BYTES_V1, DockerCLICommandV1, DockerCLIVerbV1,
@@ -31,6 +34,7 @@ from .model import (
 MAX_PRIVATE_ENV_TOTAL_BYTES_V1 = (
     MAX_WORKLOAD_ENV_ENTRIES_V1 * MAX_DOCKER_ARG_BYTES_V1
 )
+_LOWER_HEX_64_V1 = re.compile(r"[0-9a-f]{64}\Z")
 
 
 class DockerPrivateWorkloadEnvironmentResolutionV1:
@@ -168,14 +172,29 @@ class DockerPrivateCreateInvocationV1:
         return self._container_name
 
     def execute_once(self, runner):
+        failed = False
         try:
             with self._lock:
                 if self._consumed:
                     raise ValueError
                 self._consumed = True
+        except BaseException:
+            failed = True
+        if failed:
+            raise DockerControlContractErrorV1(
+                DockerControlContractCodeV1.INVALID
+            ) from None
+        try:
             result = runner.create_container(
                 self._command, self._container_name
             )
+        except BaseException:
+            failed = True
+        if failed:
+            raise DockerControlContractErrorV1(
+                DockerControlContractCodeV1.INVALID
+            ) from None
+        try:
             if type(result) is not DockerCreateExecutionResultV1:
                 raise ValueError
             rebuilt = DockerCreateExecutionResultV1(
@@ -188,13 +207,115 @@ class DockerPrivateCreateInvocationV1:
                 or rebuilt.command_digest != self._command.command_digest
             ):
                 raise ValueError
-            return rebuilt
-        except DockerControlContractErrorV1:
-            raise
+        except BaseException:
+            failed = True
+        if failed:
+            raise DockerControlContractErrorV1(
+                DockerControlContractCodeV1.INVALID
+            ) from None
+        return rebuilt
+
+
+class DockerPrivateStartInvocationV1:
+    __slots__ = ("_command", "_container_ref", "_consumed", "_lock")
+
+    def __init__(self, command, container_ref):
+        try:
+            if (
+                type(command) is not DockerCLICommandV1
+                or command.verb is not DockerCLIVerbV1.START
+                or type(container_ref) is not str
+                or _LOWER_HEX_64_V1.fullmatch(container_ref) is None
+                or command.arguments != (container_ref,)
+            ):
+                raise ValueError
+            self._command = DockerCLICommandV1(
+                command.verb, tuple(command.arguments), command.command_digest
+            )
+            self._container_ref = container_ref
+            docker_start_execution_request_digest_v1(
+                container_ref, self._command.command_digest
+            )
+            self._consumed = False
+            self._lock = Lock()
         except BaseException:
             raise DockerControlContractErrorV1(
                 DockerControlContractCodeV1.INVALID
             ) from None
+
+    def __repr__(self):
+        return "DockerPrivateStartInvocationV1(<redacted>)"
+
+    __str__ = __repr__
+
+    def __reduce__(self):
+        raise DockerControlContractErrorV1(
+            DockerControlContractCodeV1.INVALID
+        ) from None
+
+    __copy__ = __reduce__
+
+    def __deepcopy__(self, _memo):
+        return self.__reduce__()
+
+    @property
+    def command_digest(self):
+        return self._command.command_digest
+
+    @property
+    def container_ref(self):
+        return self._container_ref
+
+    @property
+    def request_digest(self):
+        return docker_start_execution_request_digest_v1(
+            self._container_ref, self._command.command_digest
+        )
+
+    def execute_once(self, runner):
+        failed = False
+        try:
+            with self._lock:
+                if self._consumed:
+                    raise ValueError
+                self._consumed = True
+        except BaseException:
+            failed = True
+        if failed:
+            raise DockerControlContractErrorV1(
+                DockerControlContractCodeV1.INVALID
+            ) from None
+        try:
+            result = runner.start_container(
+                self._command, self._container_ref
+            )
+        except BaseException:
+            failed = True
+        if failed:
+            raise DockerControlContractErrorV1(
+                DockerControlContractCodeV1.INVALID
+            ) from None
+        try:
+            if type(result) is not DockerStartExecutionResultV1:
+                raise ValueError
+            rebuilt = DockerStartExecutionResultV1(
+                result.result_kind, result.target, result.request_digest,
+                result.command, result.command_digest, result.evidence,
+                result.result_digest,
+            )
+            if (
+                rebuilt.target != self._container_ref
+                or rebuilt.command_digest != self._command.command_digest
+                or rebuilt.request_digest != self.request_digest
+            ):
+                raise ValueError
+        except BaseException:
+            failed = True
+        if failed:
+            raise DockerControlContractErrorV1(
+                DockerControlContractCodeV1.INVALID
+            ) from None
+        return rebuilt
 
 
 class DockerPrivateCreateInvocationFactoryV1:

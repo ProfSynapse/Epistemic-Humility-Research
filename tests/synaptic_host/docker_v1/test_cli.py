@@ -15,7 +15,9 @@ from synaptic_host.docker_v1.control_model import (
     DockerImageInspectProjectionV1,
     DockerImageInspectResultV1,
     DockerCreateExecutionResultV1,
+    DockerStartExecutionResultV1,
     DockerTypedResultKindV1,
+    docker_start_execution_request_digest_v1,
     docker_typed_request_digest_v1,
 )
 from synaptic_host.docker_v1.model import (
@@ -814,6 +816,90 @@ def test_typed_create_strict_success_and_nonzero_projection_matrix():
     assert result.evidence.outcome is DockerCLIOutcomeV1.NONZERO_EXIT
 
 
+def _start_command(ref="d" * 64):
+    return DockerCLICommandV1.build(DockerCLIVerbV1.START, (ref,))
+
+
+def test_typed_start_exact_success_and_nonzero_are_sanitized():
+    ref = "d" * 64
+    runner, factory = _typed_runner((ref + "\n").encode())
+    result = runner.start_container(_start_command(ref), ref)
+    assert type(result) is DockerStartExecutionResultV1
+    assert result.target == ref
+    assert result.command.arguments == (ref,)
+    assert result.request_digest == docker_start_execution_request_digest_v1(
+        ref, result.command_digest
+    )
+    assert not hasattr(result, "projection")
+    assert factory.calls[0][0][-2:] == ("start", ref)
+
+    runner, _ = _typed_runner(b"raw-start-error", exit_code=7)
+    result = runner.start_container(_start_command(ref), ref)
+    assert result.evidence.outcome is DockerCLIOutcomeV1.NONZERO_EXIT
+    assert "raw-start-error" not in repr(result)
+
+
+@pytest.mark.parametrize(
+    "command,expected",
+    (
+        (_start_command("d" * 64), "e" * 64),
+        (DockerCLICommandV1.build(DockerCLIVerbV1.START, ("d" * 63,)), "d" * 63),
+        (DockerCLICommandV1.build(DockerCLIVerbV1.START, ("d" * 65,)), "d" * 65),
+        (DockerCLICommandV1.build(DockerCLIVerbV1.START, ("D" * 64,)), "D" * 64),
+        (DockerCLICommandV1.build(DockerCLIVerbV1.START, ("g" * 64,)), "g" * 64),
+        (DockerCLICommandV1.build(DockerCLIVerbV1.START, ("d" * 64, "extra")), "d" * 64),
+        (DockerCLICommandV1.build(DockerCLIVerbV1.INSPECT, ("d" * 64,)), "d" * 64),
+    ),
+)
+def test_typed_start_rejects_invalid_grammar_before_spawn(command, expected):
+    runner, factory = _typed_runner(b"")
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        runner.start_container(command, expected)
+    assert caught.value.code is DockerPlatformCodeV1.OUTPUT_INVALID
+    assert factory.calls == []
+
+
+def test_start_result_rejects_cross_target_command_request_and_evidence():
+    first_ref, second_ref = "d" * 64, "e" * 64
+    first_runner, _ = _typed_runner((first_ref + "\n").encode())
+    first = first_runner.start_container(_start_command(first_ref), first_ref)
+    second_runner, _ = _typed_runner((second_ref + "\n").encode())
+    second = second_runner.start_container(_start_command(second_ref), second_ref)
+    attacks = (
+        (second_ref, first.request_digest, first.command, first.command_digest, first.evidence),
+        (first_ref, second.request_digest, first.command, first.command_digest, first.evidence),
+        (first_ref, first.request_digest, second.command, second.command_digest, second.evidence),
+        (first_ref, first.request_digest, first.command, first.command_digest, second.evidence),
+    )
+    for target, request, command, command_digest, evidence in attacks:
+        with pytest.raises(DockerPlatformErrorV1):
+            DockerStartExecutionResultV1(
+                first.result_kind, target, request, command, command_digest,
+                evidence, first.result_digest,
+            )
+
+
+def test_start_result_owns_recursive_command_and_evidence_snapshots():
+    ref = "d" * 64
+    command = _start_command(ref)
+    runner, _ = _typed_runner((ref + "\n").encode())
+    result = runner.start_container(command, ref)
+    assert result.command is not command
+    owned_command_digest = result.command.command_digest
+    owned_evidence_digest = result.evidence.result_digest
+    object.__setattr__(command, "command_digest", "e" * 64)
+    assert result.command.command_digest == owned_command_digest
+    rebuilt = DockerStartExecutionResultV1(
+        result.result_kind, result.target, result.request_digest,
+        result.command, result.command_digest, result.evidence,
+        result.result_digest,
+    )
+    assert rebuilt.command is not result.command
+    assert rebuilt.evidence is not result.evidence
+    object.__setattr__(result.evidence, "result_digest", "e" * 64)
+    assert rebuilt.evidence.result_digest == owned_evidence_digest
+
+
 @pytest.mark.parametrize(
     "payload",
     (
@@ -908,6 +994,29 @@ def test_create_result_rejects_cross_target_and_cross_command_reconstruction():
         )
 
 
+def test_create_result_owns_recursive_evidence_and_projection_snapshots():
+    runner, _ = _typed_runner(b"a" * 64)
+    source = runner.create_container(_create_with(), "synaptic-" + "a" * 24)
+    returned = DockerCreateExecutionResultV1(
+        source.result_kind, source.target, source.request_digest,
+        source.command_digest, source.evidence, source.projection,
+        source.result_digest,
+    )
+    assert returned.evidence is not source.evidence
+    assert returned.projection is not source.projection
+    evidence_digest = returned.evidence.result_digest
+    projection_digest = returned.projection.projection_digest
+    container_ref = returned.projection.container_ref
+    object.__setattr__(source.evidence, "result_digest", "b" * 64)
+    object.__setattr__(source.projection, "container_ref", "b" * 64)
+    assert returned.evidence.result_digest == evidence_digest
+    assert returned.projection.projection_digest == projection_digest
+    assert returned.projection.container_ref == container_ref
+    DockerCreateExecutionResultV1(
+        returned.result_kind, returned.target, returned.request_digest,
+        returned.command_digest, returned.evidence, returned.projection,
+        returned.result_digest,
+    )
 def test_typed_create_workload_aggregate_exact_boundary_and_no_spawn():
     command = list(_create_with(workload_count=8).arguments)
     command[-8:] = ("x" * 4096,) * 8

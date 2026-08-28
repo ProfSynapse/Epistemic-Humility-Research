@@ -150,3 +150,21 @@ Active orchestration ledger for the current repo-focused PACT session.
 - The submodule checkout was intentionally detached when the commit was created, and remote ancestry was verified before push.
 - The host gitlink now reflects the engine change; committing that gitlink update remains pending the next host commit.
 - Next dispatch: **Slice 5.5b host typed START effect boundary**.
+
+### 2026-08-28 Docker START Slice 5.5a Final Release Checkpoint
+
+- The host gitlink and ledger were committed and pushed at `9ca421d10df6fd4ae76b37e73772e2fb22b70f0a`, with the engine at `dc6b51973fe44263a2611d9e859a920307dcb1bc`.
+- Windows, origin, and canonical WSL host and submodule revisions all matched those exact commits.
+- The unrelated pre-existing WSL manifest type changes remained preserved and untouched.
+- Next dispatch: **Slice 5.5b host typed START effect boundary**.
+
+### 2026-08-28 Docker START Slice 5.5b Host Effect Boundary R2 Accepted
+
+- Worker-reported files are `synaptic_host/docker_v1/control_model.py`, `synaptic_host/docker_v1/ports.py`, `synaptic_host/docker_v1/cli.py`, `synaptic_host/docker_v1/control_private.py`, `tests/synaptic_host/docker_v1/test_cli.py`, and `tests/synaptic_host/docker_v1/test_control_contract.py`.
+- The host boundary adds a typed START execution kind, typed result, and exact request digest. The CLI independently accepts exactly one lowercase 64-hex container identifier, executes with bounded `shell=False` transport, and returns only sanitized evidence.
+- The private START invocation is one-use and is consumed before the external call.
+- R1 establishes deep ownership of START command/evidence values and normalizes hostile CREATE/START dependency contract errors without leaking arguments, `repr`, tracebacks, causes, or contexts.
+- R2 extends deep ownership to CREATE evidence and projections. Both original rejection rounds are closed.
+- Independent verdicts are auditor **ACCEPT** and test **PASS**. Final evidence: **274 focused**, **558 full**, and **21 causal tests passed**; compile, diff, and static checks passed.
+- This slice made no real Docker call and does not add `start.py`, orchestration, or persistence. The accepted candidate remains uncommitted pending release.
+- Next dispatch: **Slice 5.5c host START transaction**.

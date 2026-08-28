@@ -31,6 +31,7 @@ from .control_model import (
     OWNED_LABEL_NAMES_V1, OWNED_LABEL_PREFIX_V1,
     DockerContainerInspectProjectionV1, DockerContainerInspectResultV1,
     DockerCreateExecutionProjectionV1, DockerCreateExecutionResultV1,
+    DockerStartExecutionResultV1,
     DockerContainerStateV1, DockerContainerStatusV1,
     DockerEnvironmentEntryProjectionV1, DockerEnvironmentProjectionV1,
     DockerExactNameInventoryResultV1, DockerExactNameInventoryV1,
@@ -38,6 +39,7 @@ from .control_model import (
     DockerLabelProjectionV1, DockerMountProjectionV1,
     DockerTypedResultKindV1, docker_typed_request_digest_v1,
     docker_create_execution_request_digest_v1,
+    docker_start_execution_request_digest_v1,
 )
 
 
@@ -54,6 +56,21 @@ _MAX_INVENTORY = 64
 _STARTED_AT = re.compile(
     r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,9})?Z\Z"
 )
+
+
+def _validate_start_command(command, expected_container_ref):
+    if (
+        type(command) is not DockerCLICommandV1
+        or command.verb is not DockerCLIVerbV1.START
+        or type(expected_container_ref) is not str
+        or _HEX64.fullmatch(expected_container_ref) is None
+    ):
+        raise ValueError
+    rebuilt = DockerCLICommandV1(
+        command.verb, tuple(command.arguments), command.command_digest
+    )
+    if rebuilt.arguments != (expected_container_ref,):
+        raise ValueError
 
 
 def _validate_create_command(command, expected_container_name):
@@ -708,6 +725,23 @@ class DockerCLIRunnerV1:
             return DockerCreateExecutionResultV1.build(
                 expected_container_name, request_digest,
                 command.command_digest, evidence, projection,
+            )
+        except DockerPlatformErrorV1:
+            raise
+        except BaseException:
+            raise _error(DockerPlatformCodeV1.OUTPUT_INVALID) from None
+
+    def start_container(
+        self, command: DockerCLICommandV1, expected_container_ref: str,
+    ) -> DockerStartExecutionResultV1:
+        try:
+            _validate_start_command(command, expected_container_ref)
+            request_digest = docker_start_execution_request_digest_v1(
+                expected_container_ref, command.command_digest
+            )
+            evidence, _ = self._execute(command, capture_stdout=False)
+            return DockerStartExecutionResultV1.build(
+                expected_container_ref, request_digest, command, evidence
             )
         except DockerPlatformErrorV1:
             raise

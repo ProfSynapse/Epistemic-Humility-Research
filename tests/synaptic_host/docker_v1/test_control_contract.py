@@ -26,6 +26,7 @@ from synaptic_host.docker_v1.control_contract import (
     DockerCASDispositionV1,
     DockerCASResultV1,
     DockerControlContractErrorV1,
+    DockerControlContractCodeV1,
     DockerControlIntentV1,
     DockerControlOperationV1,
     DockerCreatePathBindingV1,
@@ -48,6 +49,7 @@ from synaptic_host.docker_v1.control_contract import (
 from synaptic_host.docker_v1.control_private import (
     DockerPrivateCreateInvocationFactoryV1,
     DockerPrivateCreateInvocationV1,
+    DockerPrivateStartInvocationV1,
     DockerPrivateWorkloadEnvironmentResolutionV1,
 )
 from synaptic_host.docker_v1.model import (
@@ -60,7 +62,9 @@ from synaptic_host.docker_v1.model import (
 from synaptic_host.docker_v1.control_model import (
     OWNED_LABEL_NAMES_V1, OWNED_LABEL_PREFIX_V1,
     DockerCreateExecutionProjectionV1, DockerCreateExecutionResultV1,
+    DockerStartExecutionResultV1,
     docker_create_execution_request_digest_v1,
+    docker_start_execution_request_digest_v1,
 )
 
 
@@ -239,6 +243,229 @@ def test_private_create_invocation_rejects_untyped_return_and_stays_consumed(ret
     runner = ReturningRunner()
     with pytest.raises(DockerControlContractErrorV1):
         invocation.execute_once(runner)
+    with pytest.raises(DockerControlContractErrorV1):
+        invocation.execute_once(runner)
+    assert runner.calls == 1
+
+
+def test_private_create_return_owns_runner_result_snapshots():
+    invocation = _private_invocation()
+    command = DockerCLICommandV1.build(
+        DockerCLIVerbV1.CREATE,
+        ("--name", "synaptic-job", "--env", "TOKEN=raw-secret"),
+    )
+    runner_result = _sanitized_create_result(command, "synaptic-job")
+
+    class ReturningRunner:
+        def create_container(self, _command, _name):
+            return runner_result
+
+    returned = invocation.execute_once(ReturningRunner())
+    assert returned is not runner_result
+    assert returned.evidence is not runner_result.evidence
+    assert returned.projection is not runner_result.projection
+    evidence_digest = returned.evidence.result_digest
+    projection_digest = returned.projection.projection_digest
+    container_ref = returned.projection.container_ref
+    object.__setattr__(runner_result.evidence, "result_digest", "4" * 64)
+    object.__setattr__(runner_result.projection, "container_ref", "4" * 64)
+    assert returned.evidence.result_digest == evidence_digest
+    assert returned.projection.projection_digest == projection_digest
+    assert returned.projection.container_ref == container_ref
+    DockerCreateExecutionResultV1(
+        returned.result_kind, returned.target, returned.request_digest,
+        returned.command_digest, returned.evidence, returned.projection,
+        returned.result_digest,
+    )
+
+
+def _private_start_invocation(ref="2" * 64):
+    return DockerPrivateStartInvocationV1(
+        DockerCLICommandV1.build(DockerCLIVerbV1.START, (ref,)), ref
+    )
+
+
+def _sanitized_start_result(command, ref):
+    empty = sha256(b"").hexdigest()
+    stdout = (ref + "\n").encode()
+    body = {
+        "command_digest": command.command_digest, "exit_code": 0,
+        "outcome": "SUCCESS", "policy_digest": SHA,
+        "schema_version": "synaptic-host-docker-cli-result/v1",
+        "stderr_digest": empty, "stderr_size": 0,
+        "stdout_digest": sha256(stdout).hexdigest(), "stdout_size": len(stdout),
+    }
+    evidence = DockerCLIResultV1(
+        command.command_digest, SHA, DockerCLIOutcomeV1.SUCCESS, 0,
+        len(stdout), sha256(stdout).hexdigest(), 0, empty, digest_v1(body),
+    )
+    request = docker_start_execution_request_digest_v1(
+        ref, command.command_digest
+    )
+    return DockerStartExecutionResultV1.build(ref, request, command, evidence)
+
+
+class StartRunnerSpy:
+    def __init__(self, *, error=False, returned=None):
+        self.calls = []
+        self.error = error
+        self.returned = returned
+
+    def start_container(self, command, ref):
+        self.calls.append((command.command_digest, ref))
+        if self.error:
+            raise RuntimeError("raw-secret-start-error")
+        if self.returned is not None:
+            return self.returned
+        return _sanitized_start_result(command, ref)
+
+
+def test_private_start_invocation_redacted_uncopyable_and_one_shot():
+    invocation = _private_start_invocation()
+    assert "2" * 64 not in repr(invocation)
+    assert "2" * 64 not in str(invocation)
+    for operation in (
+        lambda: pickle.dumps(invocation), lambda: copy.copy(invocation),
+        lambda: copy.deepcopy(invocation),
+    ):
+        with pytest.raises(DockerControlContractErrorV1):
+            operation()
+    runner = StartRunnerSpy()
+    assert invocation.execute_once(runner).target == "2" * 64
+    with pytest.raises(DockerControlContractErrorV1):
+        invocation.execute_once(runner)
+    assert len(runner.calls) == 1
+
+
+@pytest.mark.parametrize("error", (False, True))
+def test_private_start_invocation_concurrent_consumed_before_call(error):
+    invocation = _private_start_invocation()
+    runner = StartRunnerSpy(error=error)
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        outcomes = list(pool.map(
+            lambda _index: _capture_invocation(invocation, runner), range(8)
+        ))
+    assert len(runner.calls) == 1
+    assert sum(type(item) is DockerStartExecutionResultV1 for item in outcomes) <= 1
+    assert "raw-secret-start-error" not in repr(outcomes)
+
+
+@pytest.mark.parametrize("returned", (object(), {"forged": True}))
+def test_private_start_invocation_rejects_untyped_return_and_stays_consumed(returned):
+    invocation = _private_start_invocation()
+    runner = StartRunnerSpy(returned=returned)
+    with pytest.raises(DockerControlContractErrorV1):
+        invocation.execute_once(runner)
+    with pytest.raises(DockerControlContractErrorV1):
+        invocation.execute_once(runner)
+    assert len(runner.calls) == 1
+
+
+def test_private_start_invocation_rejects_cross_target_return():
+    invocation = _private_start_invocation("2" * 64)
+    other_command = DockerCLICommandV1.build(
+        DockerCLIVerbV1.START, ("3" * 64,)
+    )
+    runner = StartRunnerSpy(
+        returned=_sanitized_start_result(other_command, "3" * 64)
+    )
+    with pytest.raises(DockerControlContractErrorV1):
+        invocation.execute_once(runner)
+    with pytest.raises(DockerControlContractErrorV1):
+        invocation.execute_once(runner)
+    assert len(runner.calls) == 1
+
+
+@pytest.mark.parametrize("ref", ("2" * 63, "2" * 65, "G" * 64))
+def test_private_start_invocation_rejects_invalid_target(ref):
+    command = DockerCLICommandV1.build(DockerCLIVerbV1.START, (ref,))
+    with pytest.raises(DockerControlContractErrorV1):
+        DockerPrivateStartInvocationV1(command, ref)
+
+
+def test_private_start_invocation_rejects_nested_mutated_result_and_subclass():
+    ref = "2" * 64
+    command = DockerCLICommandV1.build(DockerCLIVerbV1.START, (ref,))
+    result = _sanitized_start_result(command, ref)
+    object.__setattr__(result.evidence, "stdout_size", 999)
+    invocation = _private_start_invocation(ref)
+    with pytest.raises(DockerControlContractErrorV1):
+        invocation.execute_once(StartRunnerSpy(returned=result))
+
+    class Forged(DockerStartExecutionResultV1):
+        pass
+
+    valid = _sanitized_start_result(command, ref)
+    forged = Forged(
+        valid.result_kind, valid.target, valid.request_digest, valid.command,
+        valid.command_digest, valid.evidence, valid.result_digest,
+    )
+    invocation = _private_start_invocation(ref)
+    with pytest.raises(DockerControlContractErrorV1):
+        invocation.execute_once(StartRunnerSpy(returned=forged))
+
+
+def test_private_start_return_owns_runner_result_snapshots():
+    ref = "2" * 64
+    command = DockerCLICommandV1.build(DockerCLIVerbV1.START, (ref,))
+    runner_result = _sanitized_start_result(command, ref)
+    invocation = _private_start_invocation(ref)
+    returned = invocation.execute_once(StartRunnerSpy(returned=runner_result))
+    assert returned is not runner_result
+    assert returned.command is not runner_result.command
+    assert returned.evidence is not runner_result.evidence
+    command_digest = returned.command.command_digest
+    evidence_digest = returned.evidence.result_digest
+    object.__setattr__(runner_result.command, "command_digest", "3" * 64)
+    object.__setattr__(runner_result.evidence, "result_digest", "3" * 64)
+    assert returned.command.command_digest == command_digest
+    assert returned.evidence.result_digest == evidence_digest
+    DockerStartExecutionResultV1(
+        returned.result_kind, returned.target, returned.request_digest,
+        returned.command, returned.command_digest, returned.evidence,
+        returned.result_digest,
+    )
+
+
+class HostileContractError(DockerControlContractErrorV1):
+    pass
+
+
+@pytest.mark.parametrize("invocation_kind", ("create", "start"))
+@pytest.mark.parametrize("error_type", (DockerControlContractErrorV1, HostileContractError))
+def test_private_invocations_normalize_hostile_contract_errors_outside_catch(
+    invocation_kind, error_type,
+):
+    secret = "raw-dependency-contract-secret"
+
+    class HostileRunner:
+        def __init__(self):
+            self.calls = 0
+
+        def _raise(self):
+            self.calls += 1
+            error = error_type(DockerControlContractCodeV1.INVALID)
+            error.args = (secret,)
+            raise error from RuntimeError(secret)
+
+        def create_container(self, _command, _name):
+            return self._raise()
+
+        def start_container(self, _command, _ref):
+            return self._raise()
+
+    invocation = (
+        _private_invocation() if invocation_kind == "create"
+        else _private_start_invocation()
+    )
+    runner = HostileRunner()
+    with pytest.raises(DockerControlContractErrorV1) as caught:
+        invocation.execute_once(runner)
+    assert type(caught.value) is DockerControlContractErrorV1
+    assert caught.value.code is DockerControlContractCodeV1.INVALID
+    assert caught.value.__cause__ is None
+    assert caught.value.__context__ is None
+    assert secret not in "".join(traceback.format_exception(caught.value))
     with pytest.raises(DockerControlContractErrorV1):
         invocation.execute_once(runner)
     assert runner.calls == 1

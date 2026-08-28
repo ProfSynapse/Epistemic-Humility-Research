@@ -45,6 +45,7 @@ class DockerTypedResultKindV1(str, Enum):
     CONTAINER_INSPECT = "CONTAINER_INSPECT"
     EXACT_NAME_INVENTORY = "EXACT_NAME_INVENTORY"
     CREATE_EXECUTION = "CREATE_EXECUTION"
+    START_EXECUTION = "START_EXECUTION"
 
 class DockerContainerStatusV1(str, Enum):
     CREATED = "created"
@@ -78,6 +79,12 @@ def docker_typed_request_digest_v1(kind, target, command_digest):
 def docker_create_execution_request_digest_v1(target, command_digest):
     return docker_typed_request_digest_v1(
         DockerTypedResultKindV1.CREATE_EXECUTION, target, command_digest
+    )
+
+
+def docker_start_execution_request_digest_v1(target, command_digest):
+    return docker_typed_request_digest_v1(
+        DockerTypedResultKindV1.START_EXECUTION, target, command_digest
     )
 
 
@@ -876,6 +883,8 @@ class DockerCreateExecutionResultV1:
                 evidence, projection,
             )):
                 raise ValueError
+            object.__setattr__(self, "evidence", evidence)
+            object.__setattr__(self, "projection", projection)
         except BaseException:
             _bad()
 
@@ -886,6 +895,92 @@ class DockerCreateExecutionResultV1:
             kind, target, request_digest, command_digest, evidence, projection,
             digest_v1(_create_execution_result_body(
                 target, request_digest, command_digest, evidence, projection
+            )),
+        )
+
+
+def _start_execution_result_body(
+    target, request_digest, command_digest, evidence,
+):
+    return {
+        "command_digest": command_digest,
+        "evidence_result_digest": evidence.result_digest,
+        "kind": DockerTypedResultKindV1.START_EXECUTION.value,
+        "request_digest": request_digest,
+        "schema_version": "synaptic-host-docker-start-execution-result/v1",
+        "target": target,
+    }
+
+
+@dataclass(frozen=True, slots=True)
+class DockerStartExecutionResultV1:
+    result_kind: DockerTypedResultKindV1
+    target: str
+    request_digest: str
+    command: DockerCLICommandV1
+    command_digest: str
+    evidence: DockerCLIResultV1
+    result_digest: str
+
+    def __post_init__(self):
+        try:
+            if (
+                self.result_kind is not DockerTypedResultKindV1.START_EXECUTION
+                or type(self.target) is not str
+                or _SHA.fullmatch(self.target) is None
+                or type(self.command) is not DockerCLICommandV1
+            ):
+                raise ValueError
+            command = DockerCLICommandV1(
+                self.command.verb, tuple(self.command.arguments),
+                self.command.command_digest,
+            )
+            if (
+                command.verb is not DockerCLIVerbV1.START
+                or command.arguments != (self.target,)
+                or self.command_digest != command.command_digest
+            ):
+                raise ValueError
+            _sha(self.request_digest)
+            if self.request_digest != docker_start_execution_request_digest_v1(
+                self.target, self.command_digest
+            ):
+                raise ValueError
+            if type(self.evidence) is not DockerCLIResultV1:
+                raise ValueError
+            evidence = DockerCLIResultV1(
+                self.evidence.command_digest, self.evidence.policy_digest,
+                self.evidence.outcome, self.evidence.exit_code,
+                self.evidence.stdout_size, self.evidence.stdout_digest,
+                self.evidence.stderr_size, self.evidence.stderr_digest,
+                self.evidence.result_digest,
+            )
+            if (
+                evidence.command_digest != command.command_digest
+                or evidence.outcome not in (
+                    DockerCLIOutcomeV1.SUCCESS,
+                    DockerCLIOutcomeV1.NONZERO_EXIT,
+                )
+            ):
+                raise ValueError
+            _sha(self.result_digest)
+            if self.result_digest != digest_v1(_start_execution_result_body(
+                self.target, self.request_digest, self.command_digest, evidence,
+            )):
+                raise ValueError
+            object.__setattr__(self, "command", command)
+            object.__setattr__(self, "evidence", evidence)
+        except BaseException:
+            _bad()
+
+    @classmethod
+    def build(cls, target, request_digest, command, evidence):
+        command_digest = command.command_digest
+        return cls(
+            DockerTypedResultKindV1.START_EXECUTION, target, request_digest,
+            command, command_digest, evidence,
+            digest_v1(_start_execution_result_body(
+                target, request_digest, command_digest, evidence,
             )),
         )
 
