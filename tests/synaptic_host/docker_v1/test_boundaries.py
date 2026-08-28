@@ -31,3 +31,11 @@ def test_host_docker_package_keeps_empty_exports_and_forbidden_boundaries():
     assert "bytes" not in ports.split("class DockerTypedCLIRunnerPortV1", 1)[1]
     control_model = files["control_model.py"]
     assert "raw_output" not in control_model and "state_error" not in control_model
+    public_contract = files["control_contract.py"].lower()
+    private_contract = files["control_private.py"].lower()
+    assert "control_private" not in ports.lower()
+    assert "sqlite" not in public_contract + private_contract
+    assert "subprocess" not in public_contract + private_contract
+    assert "docker.from_env" not in public_contract + private_contract
+    assert "os.environ" not in public_contract + private_contract
+    assert "__reduce__" in private_contract and "<redacted>" in private_contract

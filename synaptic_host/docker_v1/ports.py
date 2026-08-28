@@ -4,10 +4,16 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from tuner.execution.providers.docker_provider_v1.model import (
+    AuthenticatedDockerAbsenceV1,
     AuthenticatedDockerCommandBindingV1,
     AuthenticatedDockerSourceSealV1,
     DockerSourceSealContentV1,
     DockerSourceSealRequestV1,
+    DockerAbsenceContentV1,
+    DockerImageV1,
+    DockerLabelsV1,
+    DockerRuntimeV1,
+    DockerWorkloadV1,
 )
 
 from synaptic_host.bundle_io_v1.model import (
@@ -38,6 +44,22 @@ from .control_model import (
     DockerExactNameInventoryResultV1,
     DockerImageInspectResultV1,
 )
+from .control_contract import (
+    AuthenticatedDockerControlIntentV1,
+    AuthenticatedDockerCreatePathBindingV1,
+    AuthenticatedDockerMutationRecordV1,
+    AuthenticatedDockerWorkloadEnvironmentBindingV1,
+    DockerAdmissionResultV1,
+    DockerCASResultV1,
+    DockerControlIntentV1,
+    DockerCreatePathBindingV1,
+    DockerMutationLookupResultV1,
+    DockerMutationAdmissionRequestV1,
+    DockerMutationCASRequestV1,
+    DockerMutationRecordV1,
+    DockerWorkloadEnvironmentBindingV1,
+)
+from .model import ResolvedDockerMountsV1
 
 
 @dataclass(frozen=True, slots=True)
@@ -213,6 +235,62 @@ class DockerTypedCLIRunnerPortV1(Protocol):
     def inventory_exact_name(self, container_name: str) -> DockerExactNameInventoryResultV1: ...
     def inspect_image(self, image_digest: str) -> DockerImageInspectResultV1: ...
     def inspect_container(self, container_ref: str) -> DockerContainerInspectResultV1: ...
+
+
+class DockerCreateMountResolverPortV1(Protocol):
+    def resolve_create_mounts(
+        self, *, labels: DockerLabelsV1, image: DockerImageV1,
+        runtime: DockerRuntimeV1, workload: DockerWorkloadV1,
+        source_ref: str, artifact_ref: str,
+    ) -> ResolvedDockerMountsV1: ...
+
+
+class DockerCreatePathBinderPortV1(Protocol):
+    def bind(
+        self, resolved: ResolvedDockerMountsV1,
+        source_ref: str, artifact_ref: str,
+    ) -> AuthenticatedDockerCreatePathBindingV1: ...
+
+
+class DockerCreatePathBindingAuthorityPortV1(Protocol):
+    authority_ref: str
+    key_ref: str
+    def issue(self, value: DockerCreatePathBindingV1) -> AuthenticatedDockerCreatePathBindingV1: ...
+    def authenticate(self, value: AuthenticatedDockerCreatePathBindingV1) -> AuthenticatedDockerCreatePathBindingV1 | None: ...
+
+
+class DockerWorkloadEnvironmentBindingAuthorityPortV1(Protocol):
+    authority_ref: str
+    key_ref: str
+    def issue(self, value: DockerWorkloadEnvironmentBindingV1) -> AuthenticatedDockerWorkloadEnvironmentBindingV1: ...
+    def authenticate(self, value: AuthenticatedDockerWorkloadEnvironmentBindingV1) -> AuthenticatedDockerWorkloadEnvironmentBindingV1 | None: ...
+
+
+class DockerControlIntentAuthorityPortV1(Protocol):
+    authority_ref: str
+    key_ref: str
+    def issue(self, value: DockerControlIntentV1) -> AuthenticatedDockerControlIntentV1: ...
+    def authenticate(self, value: AuthenticatedDockerControlIntentV1) -> AuthenticatedDockerControlIntentV1 | None: ...
+
+
+class DockerMutationRecordAuthorityPortV1(Protocol):
+    authority_ref: str
+    key_ref: str
+    def issue(self, value: DockerMutationRecordV1) -> AuthenticatedDockerMutationRecordV1: ...
+    def authenticate(self, value: AuthenticatedDockerMutationRecordV1) -> AuthenticatedDockerMutationRecordV1 | None: ...
+
+
+class DockerMutationRepositoryPortV1(Protocol):
+    def admit(self, request: DockerMutationAdmissionRequestV1) -> DockerAdmissionResultV1: ...
+    def compare_and_swap(self, request: DockerMutationCASRequestV1) -> DockerCASResultV1: ...
+    def lookup(self, operation_id: str) -> DockerMutationLookupResultV1: ...
+
+
+class DockerAbsenceAuthorityPortV1(Protocol):
+    authority_ref: str
+    key_ref: str
+    def issue(self, value: DockerAbsenceContentV1) -> AuthenticatedDockerAbsenceV1: ...
+    def authenticate(self, value: AuthenticatedDockerAbsenceV1) -> AuthenticatedDockerAbsenceV1 | None: ...
 
 
 __all__: tuple[str, ...] = ()
