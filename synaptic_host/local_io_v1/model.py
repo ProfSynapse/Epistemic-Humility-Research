@@ -572,6 +572,61 @@ class BorrowedFileV1:
         }
 
 
+MAX_BORROWED_HARDLINK_PAIR_BYTES = 1_048_576
+
+
+@dataclass(frozen=True, slots=True)
+class BorrowedHardlinkPairV1:
+    schema_version: str
+    borrow_digest: str
+    pair_ref: str
+    parent_components: tuple[str, ...]
+    first_component: str
+    second_component: str
+    first_identity: LocalFileIdentityV1
+    second_identity: LocalFileIdentityV1
+    pair_digest: str
+
+    def __post_init__(self) -> None:
+        if self.schema_version != "synaptic-host-borrowed-hardlink-pair/v1":
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+        checked_sha256(self.borrow_digest, LocalIOCodeV1.BORROW_INVALID)
+        checked_ref(self.pair_ref, LocalIOCodeV1.BORROW_INVALID)
+        _borrow_path_components(self.parent_components, allow_root=True)
+        try:
+            first = canonical_relative_components_v1(self.first_component)
+            second = canonical_relative_components_v1(self.second_component)
+        except LocalIOErrorV1:
+            _fail(LocalIOCodeV1.HARDLINK_UNSAFE)
+        if (
+            first != (self.first_component,)
+            or second != (self.second_component,)
+            or self.first_component >= self.second_component
+            or type(self.first_identity) is not LocalFileIdentityV1
+            or type(self.second_identity) is not LocalFileIdentityV1
+            or self.first_identity != self.second_identity
+            or (self.first_identity.mode & 0o170000) != 0o100000
+            or self.first_identity.nlink != 2
+            or not 0 <= self.first_identity.size <= MAX_BORROWED_HARDLINK_PAIR_BYTES
+        ):
+            _fail(LocalIOCodeV1.HARDLINK_UNSAFE)
+        checked_sha256(self.pair_digest, LocalIOCodeV1.BORROW_INVALID)
+        if self.pair_digest != digest_v1(self.canonical_without_digest()):
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "borrow_digest": self.borrow_digest,
+            "first_component": self.first_component,
+            "first_identity": self.first_identity.canonical(),
+            "pair_ref": self.pair_ref,
+            "parent_components": list(self.parent_components),
+            "schema_version": self.schema_version,
+            "second_component": self.second_component,
+            "second_identity": self.second_identity.canonical(),
+        }
+
+
 @dataclass(frozen=True, slots=True)
 class LocalSourceBindingV1:
     authority_digest: str

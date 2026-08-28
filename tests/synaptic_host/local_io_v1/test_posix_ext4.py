@@ -270,6 +270,102 @@ def test_real_posix_retained_dirfd_lifecycle_and_handle_antiforgery(
     filesystem.release_root_authority(root)
 
 
+def test_real_ext4_hardlink_pair_read_and_hostile_revalidation(
+    b42_ext4_root: Path,
+) -> None:
+    data_path = b42_ext4_root / "pair-data"
+    control_path = b42_ext4_root / "pair-control"
+    data_path.mkdir()
+    control_path.mkdir()
+    payload = b"canonical-marker"
+    (data_path / "COMMIT-pair").write_bytes(payload)
+    os.link(data_path / "COMMIT-pair", data_path / "companion-pair")
+
+    port = PosixRetainedDirfdPortV1()
+    permits: dict[int, LocalRootPermitV1] = {}
+
+    class Authenticator:
+        def authenticate(self, permit):
+            return permit if permits.get(id(permit)) is permit else None
+
+    def binding(ref: str, path: Path) -> LocalRootBindingV1:
+        permit_ref = "permit-" + ref
+        canonical = {
+            "access": RootAccessV1.READ_CREATE.value,
+            "absolute_root": str(path),
+            "authority_ref": "pair-authority",
+            "key_ref": "pair-key",
+            "permit_ref": permit_ref,
+            "root_ref": ref,
+        }
+        permit = LocalRootPermitV1(
+            permit_ref, ref, path, RootAccessV1.READ_CREATE,
+            "pair-authority", "pair-key", digest_v1(canonical), "0" * 64,
+        )
+        permits[id(permit)] = permit
+        return LocalRootBindingV1(
+            ref, str(path), path, RootAccessV1.READ_CREATE, permit_ref, permit
+        )
+
+    filesystem = LocalFilesystemV1(port, Authenticator(), native_platform="linux")
+    authority = filesystem.retain_root_authority(
+        binding("pair-data", data_path), binding("pair-control", control_path)
+    )
+    purpose = BorrowPurposeV1.BUNDLE_MOUNT_VERIFY
+    borrow = filesystem.borrow_root(
+        authority,
+        RetainedRootBorrowRequestV1.build(
+            authority.authority_digest, purpose, RootAccessV1.READ_ONLY
+        ),
+    )
+    root = filesystem.root_directory(borrow, purpose=purpose)
+    with pytest.raises(LocalIOErrorV1):
+        filesystem.open_borrowed_read(
+            borrow, root, "COMMIT-pair", purpose=purpose
+        )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "companion-pair", "COMMIT-pair", purpose=purpose
+    )
+    assert filesystem.stat_borrowed_hardlink_pair(
+        borrow, pair, purpose=purpose
+    ).nlink == 2
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 7, purpose=purpose
+    ) == payload[:7]
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 1024, purpose=purpose
+    ) == payload[7:]
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 1, purpose=purpose
+    ) == b""
+    filesystem.close_borrowed_hardlink_pair(borrow, pair, purpose=purpose)
+
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "COMMIT-pair", "companion-pair", purpose=purpose
+    )
+    os.link(data_path / "COMMIT-pair", data_path / "third-link")
+    with pytest.raises(LocalIOErrorV1) as third:
+        filesystem.stat_borrowed_hardlink_pair(borrow, pair, purpose=purpose)
+    assert third.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    with pytest.raises(LocalIOErrorV1):
+        filesystem.close_borrowed_hardlink_pair(borrow, pair, purpose=purpose)
+    os.unlink(data_path / "third-link")
+
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "COMMIT-pair", "companion-pair", purpose=purpose
+    )
+    replacement = data_path / "replacement"
+    replacement.write_bytes(payload)
+    replacement.replace(data_path / "companion-pair")
+    with pytest.raises(LocalIOErrorV1) as replaced:
+        filesystem.stat_borrowed_hardlink_pair(borrow, pair, purpose=purpose)
+    assert replaced.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    with pytest.raises(LocalIOErrorV1):
+        filesystem.close_borrowed_hardlink_pair(borrow, pair, purpose=purpose)
+    filesystem.release_borrow(borrow, purpose=purpose)
+    filesystem.release_root_authority(authority)
+
+
 def test_real_ext4_race_hardlink_leftover_and_no_replace_contract(b42_ext4_root: Path) -> None:
     data_path = b42_ext4_root / "hostile data"
     control_path = b42_ext4_root / "hostile control"

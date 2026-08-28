@@ -14,7 +14,7 @@ from contextlib import contextmanager
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from threading import RLock
+from threading import Lock, RLock
 from typing import Protocol
 
 from .model import (
@@ -23,6 +23,7 @@ from .model import (
     LocalArtifactBindingV1,
     BorrowedDirectoryV1,
     BorrowedFileV1,
+    BorrowedHardlinkPairV1,
     BorrowPurposeV1,
     LocalFilesystemCapabilityV1,
     LocalCreateAuthorityV1,
@@ -33,6 +34,7 @@ from .model import (
     LocalRootAuthorityV1,
     LocalRootBindingV1,
     LocalSourceBindingV1,
+    MAX_BORROWED_HARDLINK_PAIR_BYTES,
     JournalPublishResultV1,
     JournalPublishStatusV1,
     JournalSnapshotStatusV1,
@@ -171,6 +173,34 @@ class _FileIssuanceV1:
 
 
 @dataclass(frozen=True, slots=True)
+class _HardlinkPairIssuanceV1:
+    schema_version: str
+    borrow_ref: str
+    borrow_digest: str
+    pair_ref: str
+    parent_ref: str
+    parent_components: tuple[str, ...]
+    first_component: str
+    second_component: str
+    identity: tuple[int, ...]
+    pair_digest: str
+
+    def seal(self) -> str:
+        return digest_v1({
+            "borrow_digest": self.borrow_digest,
+            "borrow_ref": self.borrow_ref,
+            "first_component": self.first_component,
+            "identity": list(self.identity),
+            "pair_digest": self.pair_digest,
+            "pair_ref": self.pair_ref,
+            "parent_components": list(self.parent_components),
+            "parent_ref": self.parent_ref,
+            "schema_version": self.schema_version,
+            "second_component": self.second_component,
+        })
+
+
+@dataclass(frozen=True, slots=True)
 class _AdmittedDirectoryV1:
     issued_ref: str
     object_id: int
@@ -203,6 +233,42 @@ class _AdmittedEffectV1:
     root_identity: tuple[int, ...]
     directories: tuple[_AdmittedDirectoryV1, ...]
     files: tuple[_AdmittedFileV1, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class _AdmittedHardlinkPairV1:
+    issued_ref: str
+    object_id: int
+    borrow_ref: str
+    parent_ref: str
+    parent_components: tuple[str, ...]
+    first_component: str
+    second_component: str
+    identity: tuple[int, ...]
+    first_raw: OpenFileV1
+    second_raw: OpenFileV1
+
+
+@dataclass(frozen=True, slots=True)
+class _HardlinkPairQuarantineV1:
+    quarantine_ref: str
+    borrow_ref: str
+    parent_ref: str
+    first_raw: OpenFileV1 | None
+    second_raw: OpenFileV1 | None
+
+
+@dataclass(slots=True)
+class _HardlinkPairStreamStateV1:
+    expected_size: int
+    cumulative_offset: int = 0
+    eof_proven: bool = False
+    poisoned: bool = False
+    read_lock: Lock | None = None
+
+    def __post_init__(self) -> None:
+        if self.read_lock is None:
+            self.read_lock = Lock()
 
 
 class PosixFilesystemPortV1(Protocol):
@@ -269,6 +335,22 @@ class RetainedRootBorrowPortV1(Protocol):
                             file: BorrowedFileV1, *, purpose: BorrowPurposeV1) -> None: ...
     def close_borrowed_file(self, borrow: RetainedRootBorrowV1,
                             file: BorrowedFileV1, *, purpose: BorrowPurposeV1) -> None: ...
+    def open_borrowed_hardlink_pair(
+        self, borrow: RetainedRootBorrowV1, parent: BorrowedDirectoryV1,
+        first_component: str, second_component: str, *, purpose: BorrowPurposeV1,
+    ) -> BorrowedHardlinkPairV1: ...
+    def read_borrowed_hardlink_pair(
+        self, borrow: RetainedRootBorrowV1, pair: BorrowedHardlinkPairV1,
+        maximum: int, *, purpose: BorrowPurposeV1,
+    ) -> bytes: ...
+    def stat_borrowed_hardlink_pair(
+        self, borrow: RetainedRootBorrowV1, pair: BorrowedHardlinkPairV1,
+        *, purpose: BorrowPurposeV1,
+    ) -> LocalFileIdentityV1: ...
+    def close_borrowed_hardlink_pair(
+        self, borrow: RetainedRootBorrowV1, pair: BorrowedHardlinkPairV1,
+        *, purpose: BorrowPurposeV1,
+    ) -> None: ...
     def fsync_borrowed_directory(self, borrow: RetainedRootBorrowV1,
                                  directory: BorrowedDirectoryV1, *, purpose: BorrowPurposeV1) -> None: ...
     def link_borrowed(self, borrow: RetainedRootBorrowV1,
@@ -289,6 +371,16 @@ def _is_directory(identity: LocalFileIdentityV1) -> bool:
 
 def _is_regular_single(identity: LocalFileIdentityV1) -> bool:
     return stat.S_ISREG(identity.mode) and not stat.S_ISLNK(identity.mode) and identity.nlink == 1
+
+
+def _is_regular_pair(identity: LocalFileIdentityV1) -> bool:
+    return (
+        type(identity) is LocalFileIdentityV1
+        and stat.S_ISREG(identity.mode)
+        and not stat.S_ISLNK(identity.mode)
+        and identity.nlink == 2
+        and 0 <= identity.size <= MAX_BORROWED_HARDLINK_PAIR_BYTES
+    )
 
 
 def _same_node(left: LocalFileIdentityV1, right: LocalFileIdentityV1) -> bool:
@@ -368,29 +460,41 @@ class LocalFilesystemV1:
         self._borrow_counter = 0
         self._borrow_directory_counter = 0
         self._borrow_file_counter = 0
+        self._borrow_pair_counter = 0
         self._borrow_lock = RLock()
         self._live_borrows: dict[str, tuple[RetainedRootBorrowV1, LocalRootAuthorityV1]] = {}
         self._borrow_directories: dict[
             str, tuple[BorrowedDirectoryV1, str, RetainedDirectoryV1]
         ] = {}
         self._borrow_files: dict[str, tuple[BorrowedFileV1, str, OpenFileV1]] = {}
+        self._borrow_pairs: dict[
+            str, tuple[BorrowedHardlinkPairV1, str, str, OpenFileV1, OpenFileV1]
+        ] = {}
+        self._borrow_pair_quarantine: dict[str, _HardlinkPairQuarantineV1] = {}
+        self._borrow_pair_streams: dict[str, _HardlinkPairStreamStateV1] = {}
         self._borrow_inflight: dict[str, int] = {}
         self._borrow_directory_inflight: dict[str, int] = {}
         self._borrow_file_inflight: dict[str, int] = {}
+        self._borrow_pair_inflight: dict[str, int] = {}
         self._closing_borrow_directories: set[str] = set()
         self._closing_borrow_files: set[str] = set()
+        self._closing_borrow_pairs: set[str] = set()
         self._borrow_issuance: dict[str, _BorrowIssuanceV1] = {}
         self._directory_issuance: dict[str, _DirectoryIssuanceV1] = {}
         self._file_issuance: dict[str, _FileIssuanceV1] = {}
+        self._pair_issuance: dict[str, _HardlinkPairIssuanceV1] = {}
         self._borrow_issuance_seals: dict[str, str] = {}
         self._directory_issuance_seals: dict[str, str] = {}
         self._file_issuance_seals: dict[str, str] = {}
+        self._pair_issuance_seals: dict[str, str] = {}
         self._borrow_object_refs: dict[int, str] = {}
         self._directory_object_refs: dict[int, str] = {}
         self._file_object_refs: dict[int, str] = {}
+        self._pair_object_refs: dict[int, str] = {}
         self._invalid_borrow_issuance: set[str] = set()
         self._invalid_directory_issuance: set[str] = set()
         self._invalid_file_issuance: set[str] = set()
+        self._invalid_pair_issuance: set[str] = set()
 
     def capability(self) -> LocalFilesystemCapabilityV1:
         available = self._platform in _POSIX_PLATFORMS and self._port is not None
@@ -587,6 +691,28 @@ class LocalFilesystemV1:
         self._file_issuance[file.file_ref] = issuance
         self._file_issuance_seals[file.file_ref] = issuance.seal()
         self._file_object_refs[id(file)] = file.file_ref
+
+    def _record_pair_issuance(
+        self,
+        pair: BorrowedHardlinkPairV1,
+        borrow_ref: str,
+        parent_ref: str,
+    ) -> None:
+        issuance = _HardlinkPairIssuanceV1(
+            pair.schema_version,
+            borrow_ref,
+            pair.borrow_digest,
+            pair.pair_ref,
+            parent_ref,
+            tuple(pair.parent_components),
+            pair.first_component,
+            pair.second_component,
+            _identity_issuance_v1(pair.first_identity),
+            pair.pair_digest,
+        )
+        self._pair_issuance[pair.pair_ref] = issuance
+        self._pair_issuance_seals[pair.pair_ref] = issuance.seal()
+        self._pair_object_refs[id(pair)] = pair.pair_ref
 
     def borrow_root(
         self,
@@ -798,6 +924,109 @@ class LocalFilesystemV1:
             raise _closed(LocalIOCodeV1.BORROW_INVALID)
         return state[2]
 
+    def _pair_locked(
+        self, borrow: RetainedRootBorrowV1, pair: BorrowedHardlinkPairV1
+    ) -> tuple[OpenFileV1, OpenFileV1]:
+        if type(pair) is not BorrowedHardlinkPairV1:
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        issued_ref = self._pair_object_refs.get(id(pair))
+        try:
+            issuance = self._pair_issuance.get(issued_ref)
+            state = self._borrow_pairs.get(issued_ref)
+            valid = (
+                issued_ref is not None
+                and issued_ref not in self._invalid_pair_issuance
+                and issued_ref not in self._closing_borrow_pairs
+                and issuance is not None
+                and state is not None
+                and state[0] is pair
+                and state[1] == borrow.borrow_ref == issuance.borrow_ref
+                and state[2] == issuance.parent_ref
+                and issuance.seal() == self._pair_issuance_seals.get(issued_ref)
+                and pair.schema_version == issuance.schema_version
+                and pair.borrow_digest == borrow.borrow_digest == issuance.borrow_digest
+                and pair.pair_ref == issuance.pair_ref == issued_ref
+                and tuple(pair.parent_components) == issuance.parent_components
+                and pair.first_component == issuance.first_component
+                and pair.second_component == issuance.second_component
+                and _identity_issuance_v1(pair.first_identity) == issuance.identity
+                and pair.first_identity == pair.second_identity
+                and pair.pair_digest == issuance.pair_digest
+                and pair.pair_digest == digest_v1(pair.canonical_without_digest())
+                and _identity_issuance_v1(state[3].identity) == issuance.identity
+                and _identity_issuance_v1(state[4].identity) == issuance.identity
+            )
+        except BaseException:
+            valid = False
+            state = None
+        if not valid:
+            if issued_ref is not None:
+                self._invalid_pair_issuance.add(issued_ref)
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        return state[3], state[4]
+
+    def _validate_pair_purpose_locked(
+        self,
+        borrow: RetainedRootBorrowV1,
+        purpose: BorrowPurposeV1,
+        parent: BorrowedDirectoryV1 | None = None,
+        pair: BorrowedHardlinkPairV1 | None = None,
+    ) -> None:
+        issued_ref = self._borrow_object_refs.get(id(borrow))
+        issuance = self._borrow_issuance.get(issued_ref)
+        if issuance is None:
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        try:
+            issued_purpose = BorrowPurposeV1(issuance.purpose)
+        except BaseException:
+            raise _closed(LocalIOCodeV1.BORROW_INVALID) from None
+        self._borrow_locked(borrow, issued_purpose)
+        if (
+            issuance.purpose != BorrowPurposeV1.BUNDLE_MOUNT_VERIFY.value
+            or issuance.access
+            not in {RootAccessV1.READ_ONLY.value, RootAccessV1.READ_CREATE.value}
+            or purpose is not BorrowPurposeV1.BUNDLE_MOUNT_VERIFY
+        ):
+            raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
+        if parent is not None:
+            self._directory_locked(borrow, parent)
+        if pair is not None:
+            self._pair_locked(borrow, pair)
+
+    def _capture_pair_locked(
+        self,
+        borrow: RetainedRootBorrowV1,
+        purpose: BorrowPurposeV1,
+        pair: BorrowedHardlinkPairV1,
+    ) -> tuple[_AdmittedEffectV1, _AdmittedHardlinkPairV1, LocalRootAuthorityV1]:
+        self._pair_locked(borrow, pair)
+        issued_ref = self._pair_object_refs[id(pair)]
+        issuance = self._pair_issuance[issued_ref]
+        parent_state = self._borrow_directories.get(issuance.parent_ref)
+        if (
+            parent_state is None
+            or parent_state[1] != issuance.borrow_ref
+            or self._directory_issuance.get(issuance.parent_ref) is None
+        ):
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        context, authority = self._capture_effect_locked(
+            borrow, purpose, (parent_state[0],), ()
+        )
+        state = self._borrow_pairs[issued_ref]
+        admitted = _AdmittedHardlinkPairV1(
+            issued_ref,
+            id(pair),
+            issuance.borrow_ref,
+            issuance.parent_ref,
+            issuance.parent_components,
+            issuance.first_component,
+            issuance.second_component,
+            issuance.identity,
+            state[3],
+            state[4],
+        )
+        return context, admitted, authority
+
     def _directory_ancestry_locked(
         self, borrow: RetainedRootBorrowV1, path: tuple[str, ...]
     ) -> None:
@@ -965,6 +1194,21 @@ class LocalFilesystemV1:
             except BaseException:
                 pass
 
+    def _poison_mutated_pair_locked(
+        self,
+        borrow: RetainedRootBorrowV1,
+        purpose: BorrowPurposeV1,
+        pair: BorrowedHardlinkPairV1,
+    ) -> None:
+        try:
+            self._borrow_locked(borrow, purpose)
+        except BaseException:
+            pass
+        try:
+            self._pair_locked(borrow, pair)
+        except BaseException:
+            pass
+
     @staticmethod
     def _purpose_allows_context(context: _AdmittedEffectV1, action: str) -> bool:
         if action in {"metadata", "close"}:
@@ -1076,6 +1320,79 @@ class LocalFilesystemV1:
             if not (exact_read_identity if file.readable else evolving_write_identity):
                 raise _closed(LocalIOCodeV1.PATH_CHANGED)
 
+    def _verify_admitted_pair(
+        self,
+        context: _AdmittedEffectV1,
+        pair: _AdmittedHardlinkPairV1,
+    ) -> LocalFileIdentityV1:
+        parent = next(
+            (directory for directory in context.directories
+             if directory.issued_ref == pair.parent_ref),
+            None,
+        )
+        if parent is None:
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        first_path = self._port.stat_at(parent.raw, pair.first_component)
+        second_path = self._port.stat_at(parent.raw, pair.second_component)
+        first_handle = self._port.stat_file(pair.first_raw)
+        second_handle = self._port.stat_file(pair.second_raw)
+        values = (first_path, second_path, first_handle, second_handle)
+        if (
+            any(type(value) is not LocalFileIdentityV1 for value in values)
+            or any(_identity_issuance_v1(value) != pair.identity for value in values)
+            or any(not _is_regular_pair(value) for value in values)
+        ):
+            raise _closed(LocalIOCodeV1.HARDLINK_UNSAFE)
+        return first_handle
+
+    @contextmanager
+    def _pin_pair(
+        self,
+        borrow: RetainedRootBorrowV1,
+        purpose: BorrowPurposeV1,
+        pair: BorrowedHardlinkPairV1,
+    ):
+        context = None
+        admitted_pair = None
+        pinned = False
+        try:
+            with self._borrow_lock:
+                self._validate_pair_purpose_locked(
+                    borrow, purpose, pair=pair
+                )
+                context, admitted_pair, authority = self._capture_pair_locked(
+                    borrow, purpose, pair
+                )
+                if (
+                    context.purpose != BorrowPurposeV1.BUNDLE_MOUNT_VERIFY.value
+                    or context.access
+                    not in {RootAccessV1.READ_ONLY.value, RootAccessV1.READ_CREATE.value}
+                ):
+                    raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
+                self._validate_authority(authority)
+                self._authenticate_binding(authority.data_binding)
+                self._borrow_inflight[context.borrow_ref] += 1
+                for directory in context.directories:
+                    self._borrow_directory_inflight[directory.issued_ref] += 1
+                self._borrow_pair_inflight[admitted_pair.issued_ref] += 1
+                pinned = True
+            self._reauthenticate_effect(context)
+            self._verify_admitted_effect(context)
+            self._verify_admitted_pair(context, admitted_pair)
+            yield context, admitted_pair
+        finally:
+            if context is not None and admitted_pair is not None:
+                with self._borrow_lock:
+                    if pinned:
+                        if admitted_pair.issued_ref in self._borrow_pair_inflight:
+                            self._borrow_pair_inflight[admitted_pair.issued_ref] -= 1
+                        for directory in context.directories:
+                            if directory.issued_ref in self._borrow_directory_inflight:
+                                self._borrow_directory_inflight[directory.issued_ref] -= 1
+                        if context.borrow_ref in self._borrow_inflight:
+                            self._borrow_inflight[context.borrow_ref] -= 1
+                    self._poison_mutated_pair_locked(borrow, purpose, pair)
+
     @contextmanager
     def _pin_borrow(
         self,
@@ -1138,7 +1455,9 @@ class LocalFilesystemV1:
             has_children = any(
                 item[1] == borrow.borrow_ref and item[0].owns_handle
                 for item in self._borrow_directories.values()
-            ) or any(item[1] == borrow.borrow_ref for item in self._borrow_files.values())
+            ) or any(item[1] == borrow.borrow_ref for item in self._borrow_files.values()) \
+                or any(item[1] == borrow.borrow_ref for item in self._borrow_pairs.values()) \
+                or any(item.borrow_ref == borrow.borrow_ref for item in self._borrow_pair_quarantine.values())
             if self._borrow_inflight[borrow.borrow_ref] or has_children:
                 raise _closed(LocalIOCodeV1.BORROW_IN_USE)
             root_refs = [key for key, item in self._borrow_directories.items()
@@ -1256,6 +1575,16 @@ class LocalFilesystemV1:
                         issuance.borrow_ref == context.borrow_ref
                         and issuance.path_components[:len(prefix)] == prefix
                         for issuance in self._file_issuance.values()
+                    )
+                    or any(
+                        issuance.borrow_ref == context.borrow_ref
+                        and issuance.parent_components[:len(prefix)] == prefix
+                        for issuance in self._pair_issuance.values()
+                    )
+                    or any(
+                        quarantine.borrow_ref == context.borrow_ref
+                        and quarantine.parent_ref == target.issued_ref
+                        for quarantine in self._borrow_pair_quarantine.values()
                     )
                 ):
                     raise _closed(LocalIOCodeV1.BORROW_IN_USE)
@@ -1554,6 +1883,358 @@ class LocalFilesystemV1:
                     self._closing_borrow_files.discard(target.issued_ref)
                     if admitted and context.borrow_ref in self._borrow_inflight:
                         self._borrow_inflight[context.borrow_ref] -= 1
+
+    def _quarantine_pair_handles(
+        self,
+        quarantine_ref: str,
+        borrow_ref: str,
+        parent_ref: str,
+        first_raw: OpenFileV1 | None,
+        second_raw: OpenFileV1 | None,
+    ) -> None:
+        with self._borrow_lock:
+            self._borrow_pair_quarantine[quarantine_ref] = _HardlinkPairQuarantineV1(
+                quarantine_ref, borrow_ref, parent_ref, first_raw, second_raw
+            )
+
+    def _close_pair_raws(
+        self, first_raw: OpenFileV1 | None, second_raw: OpenFileV1 | None
+    ) -> tuple[bool, bool]:
+        failures = [False, False]
+        for index, raw in enumerate((first_raw, second_raw)):
+            if raw is None:
+                continue
+            try:
+                self._port.close_file(raw)
+            except BaseException:
+                failures[index] = True
+        return failures[0], failures[1]
+
+    def open_borrowed_hardlink_pair(
+        self, borrow, parent, first_component, second_component, *, purpose
+    ):
+        first_component = self._borrow_component(first_component)
+        second_component = self._borrow_component(second_component)
+        if first_component == second_component:
+            raise _closed(LocalIOCodeV1.HARDLINK_UNSAFE)
+        first_component, second_component = sorted(
+            (first_component, second_component)
+        )
+        first_raw = None
+        second_raw = None
+        attempt_ref = None
+        borrow_ref = None
+        parent_ref = None
+        registered = False
+        try:
+            with self._borrow_lock:
+                self._validate_pair_purpose_locked(
+                    borrow, purpose, parent=parent
+                )
+            with self._pin_borrow(
+                borrow, purpose, action="read", directories=(parent,)
+            ) as context:
+                if (
+                    context.purpose != BorrowPurposeV1.BUNDLE_MOUNT_VERIFY.value
+                    or context.access
+                    not in {RootAccessV1.READ_ONLY.value, RootAccessV1.READ_CREATE.value}
+                ):
+                    raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
+                admitted_parent = context.directories[-1]
+                borrow_ref = context.borrow_ref
+                parent_ref = admitted_parent.issued_ref
+                with self._borrow_lock:
+                    self._borrow_pair_counter += 1
+                    attempt_ref = f"borrow-pair-{self._borrow_pair_counter}"
+                raw_parent = admitted_parent.raw
+                p1 = self._port.stat_at(raw_parent, first_component)
+                p2 = self._port.stat_at(raw_parent, second_component)
+                if (
+                    type(p1) is not LocalFileIdentityV1
+                    or type(p2) is not LocalFileIdentityV1
+                    or p1 != p2
+                    or not _is_regular_pair(p1)
+                ):
+                    raise _closed(LocalIOCodeV1.HARDLINK_UNSAFE)
+                first_raw = self._port.open_read_at(raw_parent, first_component)
+                m1 = self._port.stat_file(first_raw)
+                second_raw = self._port.open_read_at(raw_parent, second_component)
+                m2 = self._port.stat_file(second_raw)
+                a1 = self._port.stat_at(raw_parent, first_component)
+                a2 = self._port.stat_at(raw_parent, second_component)
+                identities = (
+                    p1, p2, first_raw.identity, m1,
+                    second_raw.identity, m2, a1, a2,
+                )
+                if (
+                    any(type(identity) is not LocalFileIdentityV1 for identity in identities)
+                    or any(identity != p1 for identity in identities)
+                    or not _is_regular_pair(p1)
+                ):
+                    raise _closed(LocalIOCodeV1.HARDLINK_UNSAFE)
+                borrow_issuance = self._borrow_issuance.get(context.borrow_ref)
+                if borrow_issuance is None:
+                    raise _closed(LocalIOCodeV1.BORROW_INVALID)
+                body = {
+                    "borrow_digest": borrow_issuance.borrow_digest,
+                    "first_component": first_component,
+                    "first_identity": p1.canonical(),
+                    "pair_ref": attempt_ref,
+                    "parent_components": list(admitted_parent.path_components),
+                    "schema_version": "synaptic-host-borrowed-hardlink-pair/v1",
+                    "second_component": second_component,
+                    "second_identity": p1.canonical(),
+                }
+                pair = BorrowedHardlinkPairV1(
+                    "synaptic-host-borrowed-hardlink-pair/v1",
+                    borrow_issuance.borrow_digest,
+                    attempt_ref,
+                    admitted_parent.path_components,
+                    first_component,
+                    second_component,
+                    p1,
+                    p1,
+                    digest_v1(body),
+                )
+                with self._borrow_lock:
+                    if (
+                        context.borrow_ref in self._invalid_borrow_issuance
+                        or admitted_parent.issued_ref in self._invalid_directory_issuance
+                    ):
+                        raise _closed(LocalIOCodeV1.BORROW_INVALID)
+                    try:
+                        self._borrow_pairs[attempt_ref] = (
+                            pair, context.borrow_ref, admitted_parent.issued_ref,
+                            first_raw, second_raw,
+                        )
+                        self._borrow_pair_inflight[attempt_ref] = 0
+                        self._borrow_pair_streams[attempt_ref] = (
+                            _HardlinkPairStreamStateV1(p1.size)
+                        )
+                        self._record_pair_issuance(
+                            pair, context.borrow_ref, admitted_parent.issued_ref
+                        )
+                        registered = True
+                    except BaseException:
+                        self._pair_object_refs.pop(id(pair), None)
+                        self._pair_issuance.pop(attempt_ref, None)
+                        self._pair_issuance_seals.pop(attempt_ref, None)
+                        self._borrow_pair_inflight.pop(attempt_ref, None)
+                        self._borrow_pair_streams.pop(attempt_ref, None)
+                        self._borrow_pairs.pop(attempt_ref, None)
+                        raise
+                first_raw = None
+                second_raw = None
+                return pair
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+        finally:
+            if not registered and (first_raw is not None or second_raw is not None):
+                first_failed, second_failed = self._close_pair_raws(first_raw, second_raw)
+                if first_failed or second_failed:
+                    self._quarantine_pair_handles(
+                        attempt_ref or "borrow-pair-quarantine",
+                        borrow_ref or "borrow-invalid",
+                        parent_ref or "borrow-dir-invalid",
+                        first_raw if first_failed else None,
+                        second_raw if second_failed else None,
+                    )
+
+    def read_borrowed_hardlink_pair(
+        self, borrow, pair, maximum, *, purpose
+    ):
+        if type(maximum) is not int or not 1 <= maximum <= MAX_BORROWED_HARDLINK_PAIR_BYTES:
+            raise _closed(LocalIOCodeV1.LIMIT_EXCEEDED)
+        with self._borrow_lock:
+            self._validate_pair_purpose_locked(borrow, purpose, pair=pair)
+            pair_ref = self._pair_object_refs[id(pair)]
+            stream = self._borrow_pair_streams.get(pair_ref)
+            if stream is None:
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            if stream.poisoned:
+                raise _closed(LocalIOCodeV1.HARDLINK_UNSAFE)
+            if stream.eof_proven:
+                raise _closed(LocalIOCodeV1.STREAM_INVALID)
+            read_lock = stream.read_lock
+        if read_lock is None:
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        try:
+            with read_lock:
+                with self._borrow_lock:
+                    if (
+                        self._borrow_pair_streams.get(pair_ref) is not stream
+                        or stream.poisoned
+                    ):
+                        raise _closed(LocalIOCodeV1.HARDLINK_UNSAFE)
+                    if stream.eof_proven:
+                        raise _closed(LocalIOCodeV1.STREAM_INVALID)
+                with self._pin_pair(borrow, purpose, pair) as (context, admitted):
+                    first = self._port.read(admitted.first_raw, maximum)
+                    second = self._port.read(admitted.second_raw, maximum)
+                    if (
+                        type(first) is not bytes
+                        or type(second) is not bytes
+                        or len(first) > maximum
+                        or len(second) > maximum
+                        or first != second
+                    ):
+                        raise _closed(LocalIOCodeV1.HARDLINK_UNSAFE)
+                    self._verify_admitted_pair(context, admitted)
+                    with self._borrow_lock:
+                        if not first:
+                            if stream.cumulative_offset != stream.expected_size:
+                                raise _closed(LocalIOCodeV1.HARDLINK_UNSAFE)
+                            stream.eof_proven = True
+                            return b""
+                        if (
+                            stream.cumulative_offset >= stream.expected_size
+                            or stream.cumulative_offset + len(first)
+                            > stream.expected_size
+                        ):
+                            raise _closed(LocalIOCodeV1.HARDLINK_UNSAFE)
+                        stream.cumulative_offset += len(first)
+                        return first
+        except LocalIOErrorV1:
+            with self._borrow_lock:
+                self._poison_exact_pair_stream_locked(pair_ref, stream)
+            raise
+        except BaseException:
+            with self._borrow_lock:
+                self._poison_exact_pair_stream_locked(pair_ref, stream)
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def _poison_exact_pair_stream_locked(
+        self,
+        pair_ref: str,
+        stream: _HardlinkPairStreamStateV1,
+    ) -> None:
+        if self._borrow_pair_streams.get(pair_ref) is stream:
+            stream.poisoned = True
+
+    def stat_borrowed_hardlink_pair(self, borrow, pair, *, purpose):
+        with self._borrow_lock:
+            pair_ref = self._pair_object_refs.get(id(pair))
+            if pair_ref is None:
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            stream = self._borrow_pair_streams.get(pair_ref)
+            if stream is None:
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            read_lock = stream.read_lock
+        try:
+            if read_lock is None:
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            with read_lock:
+                with self._borrow_lock:
+                    if (
+                        self._borrow_pair_streams.get(pair_ref) is not stream
+                        or self._pair_object_refs.get(id(pair)) != pair_ref
+                    ):
+                        raise _closed(LocalIOCodeV1.BORROW_INVALID)
+                    if stream.poisoned:
+                        raise _closed(LocalIOCodeV1.HARDLINK_UNSAFE)
+                    self._validate_pair_purpose_locked(
+                        borrow, purpose, pair=pair
+                    )
+                with self._pin_pair(borrow, purpose, pair) as (context, admitted):
+                    value = self._verify_admitted_pair(context, admitted)
+                with self._borrow_lock:
+                    if (
+                        self._borrow_pair_streams.get(pair_ref) is not stream
+                        or self._pair_object_refs.get(id(pair)) != pair_ref
+                    ):
+                        raise _closed(LocalIOCodeV1.BORROW_INVALID)
+                    if stream.poisoned:
+                        raise _closed(LocalIOCodeV1.HARDLINK_UNSAFE)
+                return value
+        except LocalIOErrorV1:
+            with self._borrow_lock:
+                self._poison_exact_pair_stream_locked(pair_ref, stream)
+            raise
+        except BaseException:
+            with self._borrow_lock:
+                self._poison_exact_pair_stream_locked(pair_ref, stream)
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def close_borrowed_hardlink_pair(self, borrow, pair, *, purpose):
+        context = None
+        admitted = None
+        semantic_error = None
+        admitted_close = False
+        first_failed = False
+        second_failed = False
+        try:
+            with self._borrow_lock:
+                self._validate_pair_purpose_locked(
+                    borrow, purpose, pair=pair
+                )
+                context, admitted, authority = self._capture_pair_locked(
+                    borrow, purpose, pair
+                )
+                if (
+                    context.purpose != BorrowPurposeV1.BUNDLE_MOUNT_VERIFY.value
+                    or context.access
+                    not in {RootAccessV1.READ_ONLY.value, RootAccessV1.READ_CREATE.value}
+                ):
+                    raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
+                self._validate_authority(authority)
+                self._authenticate_binding(authority.data_binding)
+                if self._borrow_pair_inflight[admitted.issued_ref]:
+                    raise _closed(LocalIOCodeV1.BORROW_IN_USE)
+                stream = self._borrow_pair_streams.get(admitted.issued_ref)
+                if stream is None:
+                    raise _closed(LocalIOCodeV1.BORROW_INVALID)
+                self._closing_borrow_pairs.add(admitted.issued_ref)
+                self._borrow_inflight[context.borrow_ref] += 1
+                admitted_close = True
+                if stream.poisoned or not stream.eof_proven:
+                    semantic_error = _closed(LocalIOCodeV1.HARDLINK_UNSAFE)
+            try:
+                self._reauthenticate_effect(context)
+                self._verify_admitted_effect(context)
+                self._verify_admitted_pair(context, admitted)
+            except LocalIOErrorV1 as error:
+                if semantic_error is None:
+                    semantic_error = error
+            except BaseException:
+                semantic_error = _closed(LocalIOCodeV1.IO_FAILED)
+            first_failed, second_failed = self._close_pair_raws(
+                admitted.first_raw, admitted.second_raw
+            )
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+        finally:
+            if context is not None and admitted is not None:
+                with self._borrow_lock:
+                    self._poison_mutated_pair_locked(borrow, purpose, pair)
+                    if admitted_close:
+                        self._pair_object_refs.pop(admitted.object_id, None)
+                        self._pair_issuance.pop(admitted.issued_ref, None)
+                        self._pair_issuance_seals.pop(admitted.issued_ref, None)
+                        self._invalid_pair_issuance.discard(admitted.issued_ref)
+                        self._borrow_pair_inflight.pop(admitted.issued_ref, None)
+                        self._borrow_pair_streams.pop(admitted.issued_ref, None)
+                        self._borrow_pairs.pop(admitted.issued_ref, None)
+                        self._closing_borrow_pairs.discard(admitted.issued_ref)
+                        if first_failed or second_failed:
+                            self._borrow_pair_quarantine[admitted.issued_ref] = (
+                                _HardlinkPairQuarantineV1(
+                                    admitted.issued_ref,
+                                    context.borrow_ref,
+                                    admitted.parent_ref,
+                                    admitted.first_raw if first_failed else None,
+                                    admitted.second_raw if second_failed else None,
+                                )
+                            )
+                        if context.borrow_ref in self._borrow_inflight:
+                            self._borrow_inflight[context.borrow_ref] -= 1
+        if first_failed or second_failed:
+            raise _closed(LocalIOCodeV1.IO_FAILED)
+        if semantic_error is not None:
+            raise semantic_error
 
     def fsync_borrowed_directory(self, borrow, directory, *, purpose):
         try:

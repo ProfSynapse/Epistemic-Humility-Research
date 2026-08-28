@@ -17,6 +17,7 @@ from synaptic_host.local_io_v1.config import StorageRegistryV1
 from synaptic_host.local_io_v1.model import (
     BorrowedDirectoryV1,
     BorrowedFileV1,
+    BorrowedHardlinkPairV1,
     BorrowPurposeV1,
     CreateJournalRecordV1,
     CreatePhaseV1,
@@ -34,6 +35,7 @@ from synaptic_host.local_io_v1.model import (
     RetainedRootBorrowV1,
     RecoveryStatusV1,
     RootAccessV1,
+    MAX_BORROWED_HARDLINK_PAIR_BYTES,
     validate_recovery_result_v1,
     journal_record_bytes_v1,
     parse_journal_record_v1,
@@ -125,6 +127,12 @@ def _borrow(filesystem, authority, access=RootAccessV1.READ_CREATE,
     )
     borrow = filesystem.borrow_root(authority, request)
     return borrow, filesystem.root_directory(borrow, purpose=purpose)
+
+
+def _add_hardlink_pair(port, first="commit", second="companion", payload=b"marker"):
+    node = port.add_file("dir-data", first, payload, nlink=2)
+    port.directories["dir-data"][second] = node
+    return node
 
 
 def test_borrow_full_descriptor_relative_lifecycle_and_opaque_dtos() -> None:
@@ -758,6 +766,834 @@ def test_capture_uses_issuance_ancestry_after_visible_child_mutation() -> None:
             borrow, child, 2, purpose=DESTINATION_PURPOSE
         )
     assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+
+
+def test_hardlink_pair_happy_read_eof_stat_close_and_release() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-happy")
+    payload = b"marker-payload"
+    identity = _add_hardlink_pair(port, payload=payload).identity()
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    with pytest.raises(LocalIOErrorV1) as ordinary:
+        filesystem.open_borrowed_read(
+            borrow, root, "commit", purpose=VERIFY_PURPOSE
+        )
+    assert ordinary.value.code is LocalIOCodeV1.PATH_CHANGED
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "companion", "commit", purpose=VERIFY_PURPOSE
+    )
+    assert type(pair) is BorrowedHardlinkPairV1
+    assert (pair.first_component, pair.second_component) == ("commit", "companion")
+    assert pair.first_identity == pair.second_identity == identity
+    assert filesystem.stat_borrowed_hardlink_pair(
+        borrow, pair, purpose=VERIFY_PURPOSE
+    ) == identity
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 6, purpose=VERIFY_PURPOSE
+    ) == payload[:6]
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, MAX_BORROWED_HARDLINK_PAIR_BYTES, purpose=VERIFY_PURPOSE
+    ) == payload[6:]
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 1, purpose=VERIFY_PURPOSE
+    ) == b""
+    filesystem.close_borrowed_hardlink_pair(
+        borrow, pair, purpose=VERIFY_PURPOSE
+    )
+    filesystem.release_borrow(borrow, purpose=VERIFY_PURPOSE)
+
+
+def test_hardlink_pair_wrong_purpose_is_zero_raw_open() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-purpose")
+    _add_hardlink_pair(port)
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, SOURCE_PURPOSE
+    )
+    before = port.calls.get("open_read_at", 0)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.open_borrowed_hardlink_pair(
+            borrow, root, "commit", "companion", purpose=SOURCE_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.ACCESS_MISMATCH
+    assert port.calls.get("open_read_at", 0) == before
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["third-link", "different", "directory", "symlink", "oversized"],
+)
+def test_hardlink_pair_hostile_admission_is_closed_before_raw_open(mutation) -> None:
+    port, filesystem, authority = _composition("hardlink-pair-hostile-" + mutation)
+    node = _add_hardlink_pair(port)
+    if mutation == "third-link":
+        node.nlink = 3
+    elif mutation == "different":
+        port.directories["dir-data"]["companion"] = port.add_file(
+            "dir-data", "other", b"marker", nlink=2
+        )
+    elif mutation == "directory":
+        handle = port.add_directory("dir-data", "pair-dir")
+        port.directories["dir-data"]["companion"] = port.directory_nodes[handle]
+    elif mutation == "symlink":
+        node.mode = stat.S_IFLNK | 0o700
+    else:
+        node.content = bytearray(MAX_BORROWED_HARDLINK_PAIR_BYTES + 1)
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    before = port.calls.get("open_read_at", 0)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.open_borrowed_hardlink_pair(
+            borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    assert port.calls.get("open_read_at", 0) == before
+
+
+def test_hardlink_pair_live_fences_parent_and_borrow_and_detects_third_link() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-fence")
+    node = _add_hardlink_pair(port)
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    with pytest.raises(LocalIOErrorV1) as release:
+        filesystem.release_borrow(borrow, purpose=VERIFY_PURPOSE)
+    assert release.value.code is LocalIOCodeV1.BORROW_IN_USE
+    node.nlink = 3
+    with pytest.raises(LocalIOErrorV1) as unsafe:
+        filesystem.stat_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+    assert unsafe.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    with pytest.raises(LocalIOErrorV1):
+        filesystem.close_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+    with pytest.raises(LocalIOErrorV1):
+        filesystem.stat_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+
+
+def test_hardlink_pair_dto_mutation_and_forged_equal_value_fail_closed() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-forgery")
+    _add_hardlink_pair(port)
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    forged = replace(pair)
+    before = tuple(port.trace)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.stat_borrowed_hardlink_pair(
+            borrow, forged, purpose=VERIFY_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    assert tuple(port.trace) == before
+    object.__setattr__(pair, "first_component", "other")
+    with pytest.raises(LocalIOErrorV1):
+        filesystem.read_borrowed_hardlink_pair(
+            borrow, pair, 1, purpose=VERIFY_PURPOSE
+        )
+
+
+def test_hardlink_pair_mismatched_bytes_and_close_failure_quarantine() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-quarantine")
+    _add_hardlink_pair(port, payload=b"abcdef")
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    first_ref = filesystem._borrow_pairs[pair.pair_ref][3].handle_ref
+    port.files[first_ref] = (port.files[first_ref][0], 1)
+    with pytest.raises(LocalIOErrorV1) as mismatch:
+        filesystem.read_borrowed_hardlink_pair(
+            borrow, pair, 3, purpose=VERIFY_PURPOSE
+        )
+    assert mismatch.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    port.fail_before["close_file"] = port.calls.get("close_file", 0) + 1
+    before_close_calls = port.calls.get("close_file", 0)
+    with pytest.raises(LocalIOErrorV1) as closed:
+        filesystem.close_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+    assert closed.value.code is LocalIOCodeV1.IO_FAILED
+    assert port.calls.get("close_file", 0) == before_close_calls + 2
+    with pytest.raises(LocalIOErrorV1) as release:
+        filesystem.release_borrow(borrow, purpose=VERIFY_PURPOSE)
+    assert release.value.code is LocalIOCodeV1.BORROW_IN_USE
+
+
+@pytest.mark.parametrize("boundary", ["first-path", "second-path", "first-open", "first-fstat"])
+def test_hardlink_pair_admission_races_fail_closed(boundary) -> None:
+    port, filesystem, authority = _composition("hardlink-pair-race-" + boundary)
+    _add_hardlink_pair(port)
+
+    def substitute():
+        port.directories["dir-data"]["companion"] = port._new_inode(
+            stat.S_IFREG | 0o600, b"marker"
+        )
+        port.directories["dir-data"]["companion"].nlink = 2
+
+    callback = {
+        "first-path": "stat_at:commit",
+        "second-path": "stat_at:companion",
+        "first-open": "open_read_at",
+        "first-fstat": "stat_file",
+    }[boundary]
+    port.callbacks[callback] = substitute
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.open_borrowed_hardlink_pair(
+            borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    assert not filesystem._borrow_pairs
+
+
+def test_hardlink_pair_concurrent_read_fences_close_then_releases() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-concurrent")
+    _add_hardlink_pair(port, payload=b"payload")
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    entered = Event()
+    resume = Event()
+    values = []
+
+    def hold_read():
+        entered.set()
+        assert resume.wait(2)
+
+    def run_read():
+        values.append(filesystem.read_borrowed_hardlink_pair(
+            borrow, pair, 7, purpose=VERIFY_PURPOSE
+        ))
+
+    port.callbacks["read"] = hold_read
+    thread = Thread(target=run_read)
+    thread.start()
+    assert entered.wait(2)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.close_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_IN_USE
+    resume.set()
+    thread.join(2)
+    assert values == [b"payload"]
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 1, purpose=VERIFY_PURPOSE
+    ) == b""
+    filesystem.close_borrowed_hardlink_pair(
+        borrow, pair, purpose=VERIFY_PURPOSE
+    )
+    filesystem.release_borrow(borrow, purpose=VERIFY_PURPOSE)
+
+
+def test_hardlink_pair_registration_failure_closes_both_and_cleanup_failure_quarantines() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-registration")
+    _add_hardlink_pair(port)
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    original = filesystem._record_pair_issuance
+
+    def fail_registration(*args):
+        raise RuntimeError("SENTINEL registration")
+
+    filesystem._record_pair_issuance = fail_registration
+    before_close = port.calls.get("close_file", 0)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.open_borrowed_hardlink_pair(
+            borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.IO_FAILED
+    assert port.calls.get("close_file", 0) == before_close + 2
+    assert not filesystem._borrow_pairs
+    filesystem._record_pair_issuance = original
+
+    _add_hardlink_pair(port, "next-a", "next-b")
+    filesystem._record_pair_issuance = fail_registration
+    port.fail_before["close_file"] = port.calls.get("close_file", 0) + 1
+    with pytest.raises(LocalIOErrorV1):
+        filesystem.open_borrowed_hardlink_pair(
+            borrow, root, "next-a", "next-b", purpose=VERIFY_PURPOSE
+        )
+    assert filesystem._borrow_pair_quarantine
+    with pytest.raises(LocalIOErrorV1) as release:
+        filesystem.release_borrow(borrow, purpose=VERIFY_PURPOSE)
+    assert release.value.code is LocalIOCodeV1.BORROW_IN_USE
+
+
+@pytest.mark.parametrize("after_step", range(1, 9))
+def test_hardlink_pair_every_admission_boundary_rejects_name_replacement(after_step) -> None:
+    port, filesystem, authority = _composition(f"hardlink-pair-step-{after_step}")
+    _add_hardlink_pair(port)
+    originals = {
+        "stat_at": port.stat_at,
+        "open_read_at": port.open_read_at,
+        "stat_file": port.stat_file,
+    }
+    step = 0
+    mutated = False
+
+    def advance():
+        nonlocal step, mutated
+        step += 1
+        if step == after_step:
+            replacement = port._new_inode(stat.S_IFREG | 0o600, b"marker")
+            replacement.nlink = 2
+            port.directories["dir-data"]["companion"] = replacement
+            mutated = True
+
+    def stat_at(directory, component):
+        result = originals["stat_at"](directory, component)
+        advance()
+        return result
+
+    def open_read_at(directory, component):
+        result = originals["open_read_at"](directory, component)
+        advance()
+        return result
+
+    def stat_file(file):
+        result = originals["stat_file"](file)
+        advance()
+        return result
+
+    port.stat_at = stat_at
+    port.open_read_at = open_read_at
+    port.stat_file = stat_file
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    if after_step < 8:
+        with pytest.raises(LocalIOErrorV1) as caught:
+            filesystem.open_borrowed_hardlink_pair(
+                borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+            )
+        assert caught.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+        assert not filesystem._borrow_pairs
+    else:
+        pair = filesystem.open_borrowed_hardlink_pair(
+            borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+        )
+        before_read = port.calls.get("read", 0)
+        with pytest.raises(LocalIOErrorV1) as caught:
+            filesystem.read_borrowed_hardlink_pair(
+                borrow, pair, 1, purpose=VERIFY_PURPOSE
+            )
+        assert caught.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+        assert port.calls.get("read", 0) == before_read
+        with pytest.raises(LocalIOErrorV1):
+            filesystem.close_borrowed_hardlink_pair(
+                borrow, pair, purpose=VERIFY_PURPOSE
+            )
+    assert mutated
+
+
+def test_hardlink_pair_parent_close_and_issuance_tamper_are_fenced() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-parent")
+    child_handle = port.add_directory("dir-data", "child")
+    node = port.add_file(child_handle, "commit", b"marker", nlink=2)
+    port.directories[child_handle]["companion"] = node
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    parent = filesystem.open_borrowed_directory(
+        borrow, root, "child", purpose=VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, parent, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    with pytest.raises(LocalIOErrorV1) as close_parent:
+        filesystem.close_borrowed_directory(
+            borrow, parent, purpose=VERIFY_PURPOSE
+        )
+    assert close_parent.value.code is LocalIOCodeV1.BORROW_IN_USE
+    filesystem._pair_issuance_seals[pair.pair_ref] = "0" * 64
+    before = tuple(port.trace)
+    with pytest.raises(LocalIOErrorV1) as tampered:
+        filesystem.stat_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+    assert tampered.value.code is LocalIOCodeV1.BORROW_INVALID
+    assert tuple(port.trace) == before
+
+
+def test_hardlink_pair_second_close_failure_also_quarantines() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-second-close")
+    _add_hardlink_pair(port)
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    before = port.calls.get("close_file", 0)
+    port.fail_before["close_file"] = before + 2
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.close_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.IO_FAILED
+    assert port.calls.get("close_file", 0) == before + 2
+    assert pair.pair_ref in filesystem._borrow_pair_quarantine
+
+
+def test_hardlink_pair_wrong_purpose_leaves_entire_port_trace_unchanged() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-zero-trace")
+    _add_hardlink_pair(port)
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, SOURCE_PURPOSE
+    )
+    before = tuple(port.trace)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.open_borrowed_hardlink_pair(
+            borrow, root, "commit", "companion", purpose=SOURCE_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.ACCESS_MISMATCH
+    assert tuple(port.trace) == before
+
+
+@pytest.mark.parametrize("failure", ["early-eof", "overrun", "data-after-size"])
+def test_hardlink_pair_stream_failures_permanently_poison_to_close_only(failure) -> None:
+    port, filesystem, authority = _composition("hardlink-pair-stream-" + failure)
+    _add_hardlink_pair(port, payload=b"abcdef")
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    state = filesystem._borrow_pairs[pair.pair_ref]
+    if failure == "early-eof":
+        for raw in state[3:5]:
+            node, _ = port.files[raw.handle_ref]
+            port.files[raw.handle_ref] = (node, len(node.content))
+    elif failure == "overrun":
+        port.read = lambda file, maximum: b"x" * maximum
+    else:
+        assert filesystem.read_borrowed_hardlink_pair(
+            borrow, pair, 6, purpose=VERIFY_PURPOSE
+        ) == b"abcdef"
+        port.read = lambda file, maximum: b"x"
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.read_borrowed_hardlink_pair(
+            borrow, pair, 7, purpose=VERIFY_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    before = tuple(port.trace)
+    with pytest.raises(LocalIOErrorV1) as reread:
+        filesystem.read_borrowed_hardlink_pair(
+            borrow, pair, 1, purpose=VERIFY_PURPOSE
+        )
+    assert reread.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    with pytest.raises(LocalIOErrorV1) as restat:
+        filesystem.stat_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+    assert restat.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    assert tuple(port.trace) == before
+    with pytest.raises(LocalIOErrorV1) as close:
+        filesystem.close_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+    assert close.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    filesystem.release_borrow(borrow, purpose=VERIFY_PURPOSE)
+
+
+def test_hardlink_pair_requires_terminal_eof_and_rejects_read_after_eof() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-terminal-eof")
+    _add_hardlink_pair(port, payload=b"abc")
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 3, purpose=VERIFY_PURPOSE
+    ) == b"abc"
+    with pytest.raises(LocalIOErrorV1) as premature:
+        filesystem.close_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+    assert premature.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 3, purpose=VERIFY_PURPOSE
+    ) == b"abc"
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 1, purpose=VERIFY_PURPOSE
+    ) == b""
+    before = tuple(port.trace)
+    with pytest.raises(LocalIOErrorV1) as replay:
+        filesystem.read_borrowed_hardlink_pair(
+            borrow, pair, 1, purpose=VERIFY_PURPOSE
+        )
+    assert replay.value.code is LocalIOCodeV1.STREAM_INVALID
+    assert tuple(port.trace) == before
+    filesystem.close_borrowed_hardlink_pair(
+        borrow, pair, purpose=VERIFY_PURPOSE
+    )
+
+
+@pytest.mark.parametrize("failure", ["exception", "mismatch"])
+def test_hardlink_pair_failure_after_first_chunk_is_permanent(failure) -> None:
+    port, filesystem, authority = _composition("hardlink-pair-late-" + failure)
+    _add_hardlink_pair(port, payload=b"abcdef")
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 3, purpose=VERIFY_PURPOSE
+    ) == b"abc"
+    if failure == "exception":
+        port.fail_before["read"] = port.calls.get("read", 0) + 1
+    else:
+        second_raw = filesystem._borrow_pairs[pair.pair_ref][4]
+        node, offset = port.files[second_raw.handle_ref]
+        port.files[second_raw.handle_ref] = (node, offset + 1)
+    with pytest.raises(LocalIOErrorV1):
+        filesystem.read_borrowed_hardlink_pair(
+            borrow, pair, 3, purpose=VERIFY_PURPOSE
+        )
+    with pytest.raises(LocalIOErrorV1) as poisoned:
+        filesystem.read_borrowed_hardlink_pair(
+            borrow, pair, 1, purpose=VERIFY_PURPOSE
+        )
+    assert poisoned.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    with pytest.raises(LocalIOErrorV1):
+        filesystem.close_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+
+
+def test_hardlink_pair_two_concurrent_reads_are_serialized_lockstep() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-serialized")
+    _add_hardlink_pair(port, payload=b"abcdef")
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    entered = Event()
+    resume = Event()
+    results = []
+
+    def hold_first():
+        entered.set()
+        assert resume.wait(2)
+
+    def run():
+        results.append(filesystem.read_borrowed_hardlink_pair(
+            borrow, pair, 3, purpose=VERIFY_PURPOSE
+        ))
+
+    before = port.calls.get("read", 0)
+    port.callbacks["read"] = hold_first
+    first = Thread(target=run)
+    second = Thread(target=run)
+    first.start()
+    assert entered.wait(2)
+    second.start()
+    assert port.calls.get("read", 0) == before + 1
+    resume.set()
+    first.join(2)
+    second.join(2)
+    assert results == [b"abc", b"def"]
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 1, purpose=VERIFY_PURPOSE
+    ) == b""
+    filesystem.close_borrowed_hardlink_pair(
+        borrow, pair, purpose=VERIFY_PURPOSE
+    )
+
+
+def test_hardlink_pair_concurrent_close_is_exclusive() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-close-close")
+    _add_hardlink_pair(port, payload=b"x")
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 1, purpose=VERIFY_PURPOSE
+    ) == b"x"
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 1, purpose=VERIFY_PURPOSE
+    ) == b""
+    entered = Event()
+    resume = Event()
+    errors = []
+    before_close = port.calls.get("close_file", 0)
+
+    def hold_close():
+        entered.set()
+        assert resume.wait(2)
+
+    def close():
+        try:
+            filesystem.close_borrowed_hardlink_pair(
+                borrow, pair, purpose=VERIFY_PURPOSE
+            )
+        except BaseException as error:
+            errors.append(error)
+
+    port.callbacks["close_file"] = hold_close
+    first = Thread(target=close)
+    first.start()
+    assert entered.wait(2)
+    second = Thread(target=close)
+    second.start()
+    second.join(2)
+    resume.set()
+    first.join(2)
+    assert len(errors) == 1
+    assert type(errors[0]) is LocalIOErrorV1
+    assert errors[0].code is LocalIOCodeV1.BORROW_INVALID
+    assert port.calls.get("close_file", 0) == before_close + 2
+
+
+@pytest.mark.parametrize(
+    "failure",
+    ["third-link", "name-substitution", "malformed-stat", "raw-exception"],
+)
+def test_hardlink_pair_stat_failure_permanently_poisons_exact_stream(failure) -> None:
+    port, filesystem, authority = _composition("hardlink-pair-stat-" + failure)
+    node = _add_hardlink_pair(port, payload=b"marker")
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    original_stat_file = port.stat_file
+    original_companion = port.directories["dir-data"]["companion"]
+    expected_code = LocalIOCodeV1.HARDLINK_UNSAFE
+    if failure == "third-link":
+        node.nlink = 3
+    elif failure == "name-substitution":
+        foreign = port.add_file(
+            "dir-data", "foreign-pair-member", b"marker", nlink=2
+        )
+        port.directories["dir-data"]["companion"] = foreign
+    elif failure == "malformed-stat":
+        port.stat_file = lambda raw: object()
+    else:
+        port.fail_before["stat_file"] = port.calls.get("stat_file", 0) + 1
+        expected_code = LocalIOCodeV1.IO_FAILED
+
+    with pytest.raises(LocalIOErrorV1) as failed:
+        filesystem.stat_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+    assert failed.value.code is expected_code
+
+    node.nlink = 2
+    port.directories["dir-data"]["companion"] = original_companion
+    port.stat_file = original_stat_file
+    before = tuple(port.trace)
+    with pytest.raises(LocalIOErrorV1) as restat:
+        filesystem.stat_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+    assert restat.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    with pytest.raises(LocalIOErrorV1) as reread:
+        filesystem.read_borrowed_hardlink_pair(
+            borrow, pair, 1, purpose=VERIFY_PURPOSE
+        )
+    assert reread.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    assert tuple(port.trace) == before
+
+    before_close = port.calls.get("close_file", 0)
+    with pytest.raises(LocalIOErrorV1) as closed:
+        filesystem.close_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+    assert closed.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    assert port.calls.get("close_file", 0) == before_close + 2
+
+
+def test_hardlink_pair_stat_waits_for_poisoning_read_then_is_zero_effect() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-stat-read-race")
+    _add_hardlink_pair(port, payload=b"abcdef")
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    entered = Event()
+    resume = Event()
+    stat_started = Event()
+    read_errors = []
+    stat_errors = []
+
+    def hold_first_read():
+        entered.set()
+        assert resume.wait(2)
+
+    def read_pair():
+        try:
+            filesystem.read_borrowed_hardlink_pair(
+                borrow, pair, 3, purpose=VERIFY_PURPOSE
+            )
+        except BaseException as error:
+            read_errors.append(error)
+
+    def stat_pair():
+        stat_started.set()
+        try:
+            filesystem.stat_borrowed_hardlink_pair(
+                borrow, pair, purpose=VERIFY_PURPOSE
+            )
+        except BaseException as error:
+            stat_errors.append(error)
+
+    port.callbacks["read"] = hold_first_read
+    reader = Thread(target=read_pair)
+    reader.start()
+    assert entered.wait(2)
+    second_raw = filesystem._borrow_pairs[pair.pair_ref][4]
+    second_node, second_offset = port.files[second_raw.handle_ref]
+    port.files[second_raw.handle_ref] = (second_node, second_offset + 1)
+    stat_counts = {
+        name: port.calls.get(name, 0)
+        for name in ("stat_at:commit", "stat_at:companion", "stat_file")
+    }
+    statter = Thread(target=stat_pair)
+    statter.start()
+    assert stat_started.wait(2)
+    assert {
+        name: port.calls.get(name, 0) for name in stat_counts
+    } == stat_counts
+    resume.set()
+    reader.join(2)
+    statter.join(2)
+    assert not reader.is_alive()
+    assert not statter.is_alive()
+    assert len(read_errors) == len(stat_errors) == 1
+    assert type(read_errors[0]) is LocalIOErrorV1
+    assert type(stat_errors[0]) is LocalIOErrorV1
+    assert read_errors[0].code is LocalIOCodeV1.HARDLINK_UNSAFE
+    assert stat_errors[0].code is LocalIOCodeV1.HARDLINK_UNSAFE
+    assert {
+        name: port.calls.get(name, 0) for name in stat_counts
+    } == stat_counts
+
+    before_close = port.calls.get("close_file", 0)
+    with pytest.raises(LocalIOErrorV1) as closed:
+        filesystem.close_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+    assert closed.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    assert port.calls.get("close_file", 0) == before_close + 2
+
+
+@pytest.mark.parametrize("failure_index", [1, 2])
+def test_nested_hardlink_pair_close_quarantine_fences_parent_borrow_and_root(failure_index) -> None:
+    port, filesystem, authority = _composition(f"hardlink-pair-nested-q-{failure_index}")
+    child_handle = port.add_directory("dir-data", "child")
+    node = port.add_file(child_handle, "commit", b"x", nlink=2)
+    port.directories[child_handle]["companion"] = node
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    parent = filesystem.open_borrowed_directory(
+        borrow, root, "child", purpose=VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, parent, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 1, purpose=VERIFY_PURPOSE
+    ) == b"x"
+    assert filesystem.read_borrowed_hardlink_pair(
+        borrow, pair, 1, purpose=VERIFY_PURPOSE
+    ) == b""
+    before = port.calls.get("close_file", 0)
+    port.fail_before["close_file"] = before + failure_index
+    with pytest.raises(LocalIOErrorV1) as closed:
+        filesystem.close_borrowed_hardlink_pair(
+            borrow, pair, purpose=VERIFY_PURPOSE
+        )
+    assert closed.value.code is LocalIOCodeV1.IO_FAILED
+    assert port.calls.get("close_file", 0) == before + 2
+    with pytest.raises(LocalIOErrorV1) as parent_close:
+        filesystem.close_borrowed_directory(
+            borrow, parent, purpose=VERIFY_PURPOSE
+        )
+    assert parent_close.value.code is LocalIOCodeV1.BORROW_IN_USE
+    with pytest.raises(LocalIOErrorV1) as borrow_release:
+        filesystem.release_borrow(borrow, purpose=VERIFY_PURPOSE)
+    assert borrow_release.value.code is LocalIOCodeV1.BORROW_IN_USE
+    with pytest.raises(LocalIOErrorV1) as root_release:
+        filesystem.release_root_authority(authority)
+    assert root_release.value.code is LocalIOCodeV1.BORROW_IN_USE
+
+
+@pytest.mark.parametrize("endpoint", ["missing", "identical"])
+def test_hardlink_pair_missing_or_identical_endpoint_rejects_before_open(endpoint) -> None:
+    port, filesystem, authority = _composition("hardlink-pair-endpoint-" + endpoint)
+    _add_hardlink_pair(port)
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    before = port.calls.get("open_read_at", 0)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.open_borrowed_hardlink_pair(
+            borrow,
+            root,
+            "commit",
+            "missing" if endpoint == "missing" else "commit",
+            purpose=VERIFY_PURPOSE,
+        )
+    assert caught.value.code is LocalIOCodeV1.HARDLINK_UNSAFE
+    assert port.calls.get("open_read_at", 0) == before
+
+
+def test_hardlink_pair_read_request_bound_is_zero_effect() -> None:
+    port, filesystem, authority = _composition("hardlink-pair-read-bound")
+    _add_hardlink_pair(port)
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    pair = filesystem.open_borrowed_hardlink_pair(
+        borrow, root, "commit", "companion", purpose=VERIFY_PURPOSE
+    )
+    before = tuple(port.trace)
+    for maximum in (0, MAX_BORROWED_HARDLINK_PAIR_BYTES + 1):
+        with pytest.raises(LocalIOErrorV1) as caught:
+            filesystem.read_borrowed_hardlink_pair(
+                borrow, pair, maximum, purpose=VERIFY_PURPOSE
+            )
+        assert caught.value.code is LocalIOCodeV1.LIMIT_EXCEEDED
+    assert tuple(port.trace) == before
 
 
 @pytest.mark.parametrize(

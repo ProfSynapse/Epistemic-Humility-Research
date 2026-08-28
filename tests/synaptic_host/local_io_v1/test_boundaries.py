@@ -8,10 +8,12 @@ from dataclasses import fields
 from synaptic_host.local_io_v1.model import (
     BorrowedDirectoryV1,
     BorrowedFileV1,
+    BorrowedHardlinkPairV1,
     BorrowPurposeV1,
     LocalIOCodeV1,
     RetainedRootBorrowRequestV1,
     RetainedRootBorrowV1,
+    MAX_BORROWED_HARDLINK_PAIR_BYTES,
 )
 
 
@@ -91,6 +93,7 @@ def test_borrow_error_vocabulary_and_dtos_do_not_expose_host_authority() -> None
         RetainedRootBorrowV1,
         BorrowedDirectoryV1,
         BorrowedFileV1,
+        BorrowedHardlinkPairV1,
     ):
         assert {field.name for field in fields(dto)}.isdisjoint(forbidden)
     assert {purpose.value for purpose in BorrowPurposeV1} == {
@@ -100,3 +103,7 @@ def test_borrow_error_vocabulary_and_dtos_do_not_expose_host_authority() -> None
     }
     assert "identity" in {field.name for field in fields(BorrowedDirectoryV1)}
     assert "identity" in {field.name for field in fields(BorrowedFileV1)}
+    assert {"first_identity", "second_identity", "pair_digest"} <= {
+        field.name for field in fields(BorrowedHardlinkPairV1)
+    }
+    assert MAX_BORROWED_HARDLINK_PAIR_BYTES == 1_048_576
