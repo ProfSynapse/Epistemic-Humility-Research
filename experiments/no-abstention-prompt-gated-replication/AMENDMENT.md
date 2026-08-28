@@ -44,7 +44,7 @@ reused parity-locked from the resolved amendment that registered it:
 
 | Family | Operating-point source (that Outcome is authoritative) |
 |---|---|
-| qwen3-4b | `experiments/j-space-calibrated-layer-contrast-qwen3-4b` + `experiments/j-space-midband-dose-calibration-qwen3-4b` (best mid-band site and its calibrated setpoint) |
+| qwen3-4b | `experiments/j-space-calibrated-layer-contrast-qwen3-4b` + `experiments/j-space-midband-dose-calibration-qwen3-4b` (the best MID-BAND site and its own calibrated setpoint, per those Outcomes; explicitly NOT the late hs34/L34 site or its dose) |
 | qwen3.5-4b | `experiments/qwen35-4b-midband-doubt-snap` + `experiments/qwen35-4b-midband-heldout` (hs20 frozen operating point) |
 | llama-3.2-3b | `experiments/j-space-cross-family-layer-contrast` + `experiments/llama-hs17-direction-specificity` (hs17 operating point) |
 | mistral-7b-v0.3 | `experiments/j-space-cross-family-layer-contrast` (its registered write site; direction-specificity there is FAILED per `experiments/rr3-corrected-placebo-replication`, and this cell does not relitigate that) |
@@ -63,8 +63,8 @@ under test is the write mechanism, not threshold transfer. Held-out rows never
 touch the refit. An optional frozen-old-threshold arm may be added for
 qwen3-4b only, labeled diagnostic, never gated evidence.
 
-**Arms.** Per family: (1) no_op baseline under the new prompt; (2) gated write
-at the frozen operating point under the new prompt. For qwen3-4b and llama
+**Arms.** ALL FIVE families run. Per family: (1) no_op baseline under the new
+prompt; (2) gated write at the frozen operating point under the new prompt. For qwen3-4b and llama
 only (the two families with established direction-specificity): (3) matched-
 dose random-direction control under the new prompt, one seed, sanity-tier; the
 15-seed census is not re-run here.
@@ -75,11 +75,14 @@ comparability with the with-prompt numbers; (b) the KUQ-only stratum,
 excluding `selfaware_unanswerable` rows, per the 2026-08-28 label-noise
 hand-audit (over half the SelfAware slice is answerable).
 
-**Grading.** The wide blinded two-instrument abstention grader
-(`abstention-wide-instrument-calibration` lineage), with planted decoys, is
-primary: the new prompt no longer seeds the literal refusal string, so the
-strict string rule undercounts by construction and is reported as a secondary
-descriptive column only.
+**Grading.** Two-stage, as in the parent cells: the strict string rule runs
+first, and rows it does not classify go to the sharded blind LLM judges with
+planted decoys, reusing the registered wide-instrument configuration
+(`abstention-wide-instrument-calibration` lineage; exact configs pinned at the
+pre-sign probe). The gates read the combined two-stage verdict. The
+string-only column is also reported, descriptively: the new prompt no longer
+seeds the literal refusal string, so string-only undercounts by construction
+and the delta between the two columns is itself informative.
 
 **Generation engine.** Per-row intervention cell: the tuner hook path
 (`InterventionHook` / `GenerationInterventionController`), the registered

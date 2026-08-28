@@ -16,6 +16,6 @@ detector:
   directions: frozen (parent artifacts, sha-pinned above)
   threshold: refit on FIT split only, extractions rendered under the new prompt
 grading:
-  primary: wide blinded two-instrument abstention grader (abstention-wide-instrument-calibration lineage, planted decoys)
-  secondary_descriptive: strict string rule
+  primary: two-stage as in parent cells; strict string rule first, then sharded blind LLM judges with planted decoys (abstention-wide-instrument-calibration lineage); gates read the combined verdict
+  secondary_descriptive: string-only column
 engine: tuner hook path (per-row intervention cell; registered vLLM exception)
