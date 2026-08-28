@@ -10,6 +10,11 @@ def test_host_docker_package_keeps_empty_exports_and_forbidden_boundaries():
         text for name, text in files.items() if name != "cli.py"
     ).lower()
     assert "__all__: tuple[str, ...] = ()" in init_text
+    assert (
+        "capability_assembly.py" in files
+        and "class DockerLiveCapabilityBuildV1" in files["capability_assembly.py"]
+        and "def transfer(self)" in files["capability_assembly.py"]
+    )
     for forbidden in (
         "import sqlite", "from sqlite", "import subprocess", "from subprocess",
         "docker.from_env", "import requests", "from requests", "os.system",
