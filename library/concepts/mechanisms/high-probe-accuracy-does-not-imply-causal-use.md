@@ -14,6 +14,7 @@ effect: No guarantee that the property is causally used by the model for its pri
 polarity: prevents
 related:
 - '[[2006.00995--amnesic-probing-behavioral-explanation-amnesic-counterfactuals]]'
+- '[[2403.07809--pyvene-library-understanding-improving-pytorch-models-interventions]]'
 - '[[amnesic-probing]]'
 - '[[linear-probe]]'
 - '[[probing-accuracy-task-importance-disconnect]]'
@@ -21,6 +22,10 @@ relationships:
 - type: supported_by
   target: '[[2006.00995--amnesic-probing-behavioral-explanation-amnesic-counterfactuals]]'
   target_id: paper:2006.00995
+  confidence: high
+- type: supported_by
+  target: '[[2403.07809--pyvene-library-understanding-improving-pytorch-models-interventions]]'
+  target_id: paper:2403.07809
   confidence: high
 - type: related_to
   target: '[[amnesic-probing]]'
@@ -34,4 +39,4 @@ relationships:
 contradicted-by: []
 ---
 
-[[amnesic-probing]] in arXiv:2006.00995 reveals a fundamental dissociation: phrase-boundary features are linearly decodable from BERT representations with ~85% accuracy, yet removing them via INLP nullspace projection has zero effect on the model's language-modeling accuracy. This shows that high probing accuracy reflects encoding, not causal use, and that standard [[linear-probe]] experiments cannot by themselves establish that a property is task-relevant. Causal use must be verified through intervention, not correlation.
+[[amnesic-probing]] in arXiv:2006.00995 reveals a fundamental dissociation: phrase-boundary features are linearly decodable from BERT representations with about 85% accuracy, yet removing them via INLP nullspace projection has zero effect on the model's language-modeling accuracy. The pyvene case study in arXiv:2403.07809 gives a second example: gender is linearly decodable from nearly every tested Pythia-6.9B component, but a trainable intervention localizes its causal use much more sparsely. These results show that probing accuracy reflects encoding, not necessarily causal use.

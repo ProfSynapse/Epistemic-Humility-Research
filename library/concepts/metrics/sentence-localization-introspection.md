@@ -13,10 +13,15 @@ kg:
   status: canonical
 area: metrics
 related:
+- '[[2512.12411--detecting-disturbance-nuanced-view-introspective-abilities-llms]]'
 - '[[2607.14111--introspection-fine-tuning-ift-training-small-llms]]'
 - '[[introspection-fine-tuning]]'
 - '[[activation-steering]]'
 relationships:
+- type: proposed_by
+  target: '[[2512.12411--detecting-disturbance-nuanced-view-introspective-abilities-llms]]'
+  target_id: paper:2512.12411
+  confidence: high
 - type: proposed_by
   target: '[[2607.14111--introspection-fine-tuning-ift-training-small-llms]]'
   target_id: paper:2607.14111
@@ -40,6 +45,6 @@ logits, giving chance accuracy of 1/N.
 response bias and demands spatially precise access to a controlled internal
 perturbation.
 
-**Lineage:** The metric adapts introspection-via-localization to controlled
-[[activation-steering]] and is the supervised target used by
-[[introspection-fine-tuning]].
+**Lineage:** [[2512.12411--detecting-disturbance-nuanced-view-introspective-abilities-llms]]
+introduces the metric for controlled [[activation-steering]]. It later becomes
+the supervised target used by [[introspection-fine-tuning]].

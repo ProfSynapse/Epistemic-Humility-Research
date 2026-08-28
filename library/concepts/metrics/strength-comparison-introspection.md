@@ -13,10 +13,15 @@ kg:
   status: canonical
 area: metrics
 related:
+- '[[2512.12411--detecting-disturbance-nuanced-view-introspective-abilities-llms]]'
 - '[[2607.14111--introspection-fine-tuning-ift-training-small-llms]]'
 - '[[introspection-fine-tuning]]'
 - '[[activation-steering]]'
 relationships:
+- type: proposed_by
+  target: '[[2512.12411--detecting-disturbance-nuanced-view-introspective-abilities-llms]]'
+  target_id: paper:2512.12411
+  confidence: high
 - type: proposed_by
   target: '[[2607.14111--introspection-fine-tuning-ift-training-small-llms]]'
   target_id: paper:2607.14111
@@ -41,5 +46,7 @@ chance performance.
 and tests sensitivity to perturbation magnitude without relying on yes-or-no
 self-reports.
 
-**Lineage:** The metric uses [[activation-steering]] as a controlled intervention
-and serves as a held-out transfer evaluation for [[introspection-fine-tuning]].
+**Lineage:** [[2512.12411--detecting-disturbance-nuanced-view-introspective-abilities-llms]]
+introduces the metric using [[activation-steering]] as a controlled
+intervention. It later serves as a held-out transfer evaluation for
+[[introspection-fine-tuning]].
