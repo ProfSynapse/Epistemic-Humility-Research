@@ -5,7 +5,7 @@ title: 'MATS application form drafting: detector-switch framing, citations, scop
   discipline'
 status: active
 created_at: '2026-08-12T11:47:24Z'
-updated_at: '2026-08-28T12:46:09Z'
+updated_at: '2026-08-28T12:56:27Z'
 question: How should the MATS 12.0 form answers present the two-part detector/switch
   architecture accurately, at a high level, with self-contained citations?
 tags: []
@@ -356,6 +356,23 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 016-checkpoint
+  at: '2026-08-28T12:56:27Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Amendment no-abstention-prompt-gated-replication SIGNED (PI-authorized
+    in session) and PR #583 MERGED (1ea9e938). Sign blockers closed: render.py wrapper
+    pinned (only-diff assertions, import smoke passed), llama random seed 910016,
+    wide-instrument judge modules sha-pinned, gates frozen with derivations (G1 0.4459,
+    G1b 0.3595, G2 ceiling 0.0698, adjudicability floor N=52). Task-77dfe2 updated
+    and pushed to main (8d882625). Remaining: PI GPU launch approval and run on the
+    canonical Linux checkout, then resolve with both reporting strata.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # MATS application form drafting: detector-switch framing, citations, scope discipline
 
@@ -447,3 +464,8 @@ _No summary yet._
 - at: `2026-08-28T12:46:09Z`
 - kind: `checkpoint`
 - summary: Pre-sign feasibility probe for no-abstention-prompt-gated-replication (PR #583) complete: all five family operating points copied from parent Outcomes into cell.yaml with sha256-pinned artifacts (qwen3-4b hs23 setpoint 25; qwen3.5 hs20 dose 12.6082; llama hs17 dose 4.9549; mistral hs15 dose 3.7646; gemma hs15 dose 173.658); all direction artifacts and held-out pool manifests verified to exist and load with counts matching parent Outcomes; probe recorded in NOTEBOOK.md with four sign-blocking items (render pin + prompt diff, llama random seed, judge configs, frozen G1/G1b floors). Pushed to PR branch. Next: PI sign.
+### 016-checkpoint - Checkpoint
+
+- at: `2026-08-28T12:56:27Z`
+- kind: `checkpoint`
+- summary: Amendment no-abstention-prompt-gated-replication SIGNED (PI-authorized in session) and PR #583 MERGED (1ea9e938). Sign blockers closed: render.py wrapper pinned (only-diff assertions, import smoke passed), llama random seed 910016, wide-instrument judge modules sha-pinned, gates frozen with derivations (G1 0.4459, G1b 0.3595, G2 ceiling 0.0698, adjudicability floor N=52). Task-77dfe2 updated and pushed to main (8d882625). Remaining: PI GPU launch approval and run on the canonical Linux checkout, then resolve with both reporting strata.
