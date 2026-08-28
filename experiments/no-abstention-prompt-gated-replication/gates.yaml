@@ -4,9 +4,14 @@
 # Do not launch against draft values.
 gates:
   G1_primary_qwen3_lift:
-    metric: gated_minus_noop_wide_abstention_lift_heldout_confabs
-    floor: FROZEN_AT_SIGN   # = 0.5 * with-prompt lift, from the parent Outcome
+    metric: gated_minus_noop_two_stage_abstention_lift_heldout_confabs
+    floor: FROZEN_AT_SIGN   # = 0.5 * with-prompt lift, from the parent Outcome (PI-adjudicated 2026-08-28)
     ci_rule: wilson_95_ci_excludes_zero
+  G1b_llama_lift:
+    metric: gated_minus_noop_two_stage_abstention_lift_heldout_confabs_llama_hs17
+    floor: FROZEN_AT_SIGN   # = 0.5 * llama's with-prompt lift, from its parent Outcome (PI-adjudicated 2026-08-28)
+    ci_rule: wilson_95_ci_excludes_zero
+    note: hard pass/fail; does NOT enter the falsifier (qwen3-4b alone decides)
   G2_cost_qwen3_dosed_rows_only:
     metric: gated_false_refusal_on_dosed_heldout_known_correct
     ceiling: FROZEN_AT_SIGN  # = 2x with-prompt cost, from the parent Outcome
@@ -14,7 +19,7 @@ gates:
     below_floor_disposition: NOT-ADJUDICABLE
   G3_cross_family:
     metric: per_family_gated_minus_noop_lift_with_ci
-    rule: per-family floor set at sign only where the parent Outcome gives a usable effect size; otherwise descriptive
+    rule: descriptive only (qwen3.5, mistral, gemma); llama moved up to G1b
   G4_sanity_random_direction:
     metric: single_seed_random_direction_lift
     rule: less than half the gated lift (qwen3-4b and llama only; sanity-tier)

@@ -90,19 +90,28 @@ exception to the vLLM default under the PI ruling of 2026-08-13.
 
 ## Prediction
 
-(Orchestrator proposal; PI adjudicates and may replace before sign.) The
-gated-over-no_op wide-instrument abstention lift on held-out confab rows
-survives prompt removal in the Qwen lineage at no less than half its
-with-prompt magnitude, and no_op baseline abstention falls relative to the
-with-prompt condition.
+(PI call, 2026-08-28.) The effect survives attenuated: in qwen3-4b the
+gated-over-no_op two-stage abstention lift on held-out confabs is real (95% CI
+excludes zero) but below half its with-prompt magnitude. No_op baseline
+abstention falls relative to the with-prompt condition.
 
 ## Falsifier
 
-If, in qwen3-4b, the gated arm's wide-instrument abstention lift over no_op on
-the full held-out confab pool is below the G1 floor or its 95% CI includes
-zero, the prediction is falsified: the headline effect requires the abstention
-instruction, and the prompt-independent framing of the actuation result is
-dead in the form the current write-up uses.
+(PI-adjudicated scope, 2026-08-28: qwen3-4b alone decides.) If, in qwen3-4b,
+the gated arm's two-stage abstention lift over no_op on the full held-out
+confab pool has a 95% CI that includes zero, the line is dead: the write does
+nothing without the abstention instruction, and the activation-level-control
+framing is retracted in the form the current write-up uses.
+
+The outcome space is partitioned before the run:
+
+1. **G1 passes** (lift at or above half the with-prompt magnitude): the
+   framing survives mostly intact.
+2. **Falsifier fires** (CI includes zero): the line is dead.
+3. **Middle band** (CI excludes zero, lift below the G1 floor): the effect is
+   real and the framing is revised to instruction-amplified; this is the
+   PI-predicted outcome and is reported as attenuated survival, not spun as
+   either a pass or a null.
 
 ## Gates
 
@@ -110,8 +119,14 @@ Proposed, pending PI adjudication at sign. Numeric floors are computed and
 frozen at sign from the parent Outcomes' with-prompt effect sizes (recorded in
 `gates.yaml` with their derivations), not rounded to convenient defaults:
 
-- **G1 (primary, qwen3-4b):** gated-over-no_op wide-instrument abstention lift
-  on held-out confabs >= half the with-prompt lift, 95% CI excluding zero.
+- **G1 (primary, qwen3-4b):** gated-over-no_op two-stage abstention lift on
+  held-out confabs >= half the with-prompt lift (numeric floor frozen at sign
+  from the parent Outcome), 95% CI excluding zero. (PI-adjudicated bar,
+  2026-08-28.)
+- **G1b (llama, same construction):** gated-over-no_op two-stage lift at
+  llama's own write site >= half llama's with-prompt lift (frozen at sign from
+  its parent Outcome), 95% CI excluding zero. Hard pass/fail, PI-adjudicated
+  2026-08-28; G1b does not enter the falsifier, which qwen3-4b alone decides.
 - **G2 (cost, qwen3-4b):** gated false-refusal under the new prompt, with a
   DOSED-ROWS-ONLY denominator (held-out known-correct rows the refit gate
   actually fired on), <= 2x the with-prompt cost. Adjudicability floor per
@@ -119,9 +134,9 @@ frozen at sign from the parent Outcomes' with-prompt effect sizes (recorded in
   registered Wilson-upper cap (smallest N with `wilson_ci(0, N).upper` below
   the cap); a cell whose dosed-row count falls below that floor reports
   NOT-ADJUDICABLE, never PASS.
-- **G3 (cross-family):** per non-qwen family, gated-vs-no_op lift reported
-  with CIs; a per-family pass/fail floor is set at sign only where the parent
-  Outcome gives a usable effect size, otherwise that family is descriptive.
+- **G3 (cross-family, descriptive):** for qwen3.5, mistral, and gemma,
+  gated-vs-no_op lift reported with CIs, no pass/fail floor (llama moved up to
+  G1b).
 - **G4 (sanity, qwen3-4b + llama):** the single-seed random-direction arm
   produces less than half the gated lift.
 
@@ -129,8 +144,8 @@ frozen at sign from the parent Outcomes' with-prompt effect sizes (recorded in
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | |
-| user | |
+| orchestrator | Survives strong: qwen3-4b lift at or above half its with-prompt magnitude (G1 passes); the mid-band write installs the refusal state directly and the instruction is scaffolding |
+| user | Survives attenuated: lift real (CI excludes zero) but below half the with-prompt magnitude; the instruction and the write share the work (2026-08-28) |
 
 ## Outcome
 
