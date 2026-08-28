@@ -6,6 +6,71 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-28 — Launch authorization and harness-build preflight (harness-builder agent)
+
+**PI approved launch in-session 2026-08-28 on the canonical Linux checkout**
+(lead relay). Lead's host preflight (relayed): 31/31 `cell.yaml` sha256 pins
+verified, pinned JSONs load, render import assertions pass, staged pools
+present for all five families.
+
+**Harness-builder's own independent preflight**, run from a dedicated worktree
+(`/home/profsynapse/code/ehr-worktrees/no-abstention-run`, branch
+`exp/no-abstention-prompt-gated-replication-run`, off `main` at `1ea23af7`,
+submodule `synaptic-tuner` initialized at its pinned commit
+`6b01834b8192d1d875db9bfce3eaa8fd9e14334c`), via
+`experiments/no-abstention-prompt-gated-replication/preflight.py`:
+
+- **31/31 `cell.yaml` sha256 pins PASS**, independently re-verified against
+  the artifacts on this host (not taken on the lead's report).
+- **render.py import PASS**: the pinned no-abstention render imports cleanly;
+  its own module-level assertions (abstention sentence present exactly once
+  in the parent prompt, deleting it reproduces the registered no-abstention
+  prompt byte-for-byte) fire without error;
+  `NO_ABSTENTION_SYSTEM_PROMPT` (376 chars) matches the registered text
+  verbatim; `assert_no_think_scaffolding` and `render()` both present.
+- **Held-out pool counts: all five families match `cell.yaml` exactly**
+  (qwen3-4b confab=185/known=258; qwen3.5-4b confab=1332/known=360;
+  llama-3.2-3b confab=872/known=334; mistral-7b-v0.3 confab=1312/known=382;
+  gemma-4-e4b confab=168/known=270).
+- **One real defect found and fixed (not a spec change).** This worktree's
+  git config had `core.symlinks=false`, so the two git-symlinked gemma
+  manifests (`gemma4-e4b-kv-seam-quarantine/analysis-committed/gemma4-e4b/
+  {split_manifest,eval_pool_manifest}.json`, both mode `120000` pointing into
+  `experiments/common/artifacts/jspace-cross-family-gemma4-e4b/`) checked out
+  as plain-text files containing the literal relative-path string instead of
+  real symlinks, so their sha256 initially mismatched `cell.yaml`'s pins (29/31
+  PASS on first run) and `json.load` failed outright. Root-caused (not
+  tuned/patched around): set `git config core.symlinks true` in this worktree
+  and re-checked out only those two files (`git checkout --
+  <the two paths>`); both then resolve as real symlinks to the existing,
+  correctly-sized target files under `experiments/common/artifacts/
+  jspace-cross-family-gemma4-e4b/` and both sha256 now match `cell.yaml`
+  exactly. No parent-experiment file was edited; this was a worktree checkout
+  mechanics fix. Swept the rest of `experiments/` for the same failure mode
+  (`git ls-files -s` filtered to mode `120000`): only these two symlinks exist
+  under `experiments/`, and both are now resolved correctly.
+
+**Lane finding (research task, not a spec change):** the task brief
+anticipated a possible local/Modal split across families. Read each cited
+parent Outcome's own NOTEBOOK.md for its host/lane before assuming one:
+`j-space-midband-write-sweep-qwen3-4b` (qwen3-4b) ran via "local launch";
+`j-space-cross-family-layer-contrast`'s `run_contrast.py --mode full` runs for
+both llama-3.2-3b (PID 1231456) and mistral-7b-v0.3 (PID 1260218) show local
+process IDs, no Modal job references; `qwen35-4b-midband-doubt-snap` ran "in
+the background, on the local RTX 3090"; `gemma4-e4b-kv-seam-quarantine`'s
+Stage 5b full run (the D1/hs15 0.7857/0.011 result `cell.yaml` cites) ran
+inside the pinned local Docker image `mechinterp-runner:tf550` (`docker ps`
+confirmed), not Modal. The "Modal" mentions found in these notebooks
+(`gemma4-e4b-kv-seam-quarantine`'s "Phase B Modal lane"; a Modal
+row-text-retention note in `j-space-cross-family-layer-contrast`) refer to
+different phases/experiments than the specific operating-point Outcomes
+`cell.yaml` cites. Conclusion: **all five families' cited operating-point
+generation runs were local-lane**; there is no Modal-only family for this
+cell to prepare-and-wait-on. Local RTX 3090 confirmed idle (`nvidia-smi`:
+13 MiB / 24576 MiB used, 0% util) before proceeding.
+
+Proceeding to harness build for all five families on the local lane.
+
 ### 2026-08-28 — Sign-blocker closure and sign (PI-authorized in session)
 
 The four open items from the probe entry below are closed:
