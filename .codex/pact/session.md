@@ -248,3 +248,22 @@ Active orchestration ledger for the current repo-focused PACT session.
 - Final independent verdicts are correctness auditor **ACCEPT**, security auditor **ACCEPT**, and tester **PASS**. Evidence: **82 focused**, **18 security with 1 expected symlink skip**, **680 Docker**, **997 host with 5 expected skips**, and **47 R0-R4 tests passed**.
 - Residual boundaries: explicit method or closure-cell modification is out of scope; Windows ACL remains directory policy; no restart persistence is claimed; four WSL ext4 skips and one symlink skip remain expected.
 - Next dispatch: release the accepted host checkpoint, then begin **Slice 5.6b.2 capability stores and acquisition ledger**.
+
+### 2026-08-28 Docker Host Adapter Slice 5.6b.1 Release Checkpoint
+
+- Host commit `896369419588c199e6fb67a5b82fe486f63f87c7`, parent `c3b82ce1d3ed532db7d1b462dcfc45153992d206`, was released with exactly seven paths: `.codex/pact/session.md`, `synaptic_host/docker_v1/model.py`, `synaptic_host/docker_v1/ports.py`, `synaptic_host/docker_v1/authority.py`, `tests/synaptic_host/docker_v1/test_authority.py`, `synaptic_host/security.py`, and `tests/synaptic_host/test_security.py`.
+- Windows HEAD, the remote host branch HEAD, and canonical WSL host HEAD matched the exact host commit. Windows status was clean after release.
+- The engine gitlink and submodule remained unchanged at `a1d28a9fa5b68400843386ad95dd885599a47d8e`.
+- The two unrelated pre-existing WSL type-change entries remained preserved and untouched.
+- Slice 5.6b.1 is released. Next dispatch: **Slice 5.6b.2 capability stores and acquisition ledger**.
+
+### 2026-08-28 Docker Host Adapter Slice 5.6b.2a Registries And Resolver R1 Accepted
+
+- Accepted components and contracts are `DockerStoragePathMappingPairRegistryPortV1`, `InMemoryDockerStageBundleStoreV1`, `DockerSingleLaunchSourceDeclarationResolverV1`, `DockerImmutableBundleSourceRegistryV1`, and `ImmutableDockerStoragePathMappingPairRegistryV1` serving pair, storage, and WSL projections.
+- `BundleSourceV1.source_digest` is the registry capability digest. The resolver separately pins the planned payload `source_digest`, requires the request and prepared plan to match that payload digest, and pins the exact live `BundleSourceV1` object by `source_ref`.
+- R1 requires every collaborator call to preserve an untouched canonical expected baseline, pass a distinct presentation, reconstruct the returned value, and require exact equality with the baseline including live identities before retaining or returning it.
+- The correction covers stage post-authentication publication and lost-return recovery, source issue/authentication against the exact local declaration and envelope, and mapping-pair construction/projection against the exact pair and live capability identity.
+- Frozen accepted hashes are: `ports` `04E2DC3EC297A2529A40E3F0AD70ECE9FF18656037BC59F12E6F2FA1F74E3B42`; `memory` `48DD183E6236B5E20E47082C17641190F1B3628D0DC34717F7859AD11F4FCEA3`; `capabilities` `9B14C2536F96B8758D1CF881E915D13BC65D10FC3893E77AB048CC723799F095`; `test_memory` `361120F40FA2DC2032257DDF60EB5F144C72131A6961266FD4A85A335FE3F187`; and `test_capabilities` `1FE77DEC8C0E7B301AE3268CC67203B31EC74DAA085E87E2C1D41320374D6A66`.
+- Independent verdicts are auditor **ACCEPT** and tester **PASS**. Evidence: **28 focused**, **702 Docker**, **1,019 host tests passed with 5 skips**, and **18 targeted tests passed**.
+- All stores remain same-process, and capability authority depends on exact live object plus filesystem-instance identity; no restart persistence is claimed.
+- Next dispatch: release the accepted b.2a checkpoint, then begin **Slice 5.6b.2b acquisition ledger**.

@@ -177,6 +177,16 @@ class DockerStoragePathMappingPairAuthorityPortV1(Protocol):
     ) -> AuthenticatedDockerStoragePathMappingPairV1 | None: ...
 
 
+class DockerStoragePathMappingPairRegistryPortV1(Protocol):
+    def resolve_source_pair(
+        self, source_ref: str
+    ) -> AuthenticatedDockerStoragePathMappingPairV1: ...
+
+    def resolve_artifact_pair(
+        self, artifact_ref: str
+    ) -> AuthenticatedDockerStoragePathMappingPairV1: ...
+
+
 class BundleMountVerifierPortV1(Protocol):
     def verify_mount(
         self, command: BundleSealCommandV1,

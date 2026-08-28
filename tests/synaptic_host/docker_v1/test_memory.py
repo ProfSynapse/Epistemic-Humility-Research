@@ -1,4 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
+from copy import deepcopy
+from dataclasses import replace
 
 import pytest
 
@@ -17,6 +19,11 @@ from synaptic_host.docker_v1.control_contract import (
     DockerMutationRecordV1,
 )
 from synaptic_host.docker_v1.memory import InMemoryDockerControlStoreV1
+from synaptic_host.docker_v1.memory import InMemoryDockerStageBundleStoreV1
+from synaptic_host.docker_v1.model import (
+    AuthenticatedDockerStageBundleBindingV1,
+    DockerHostSourceErrorV1,
+)
 
 from .test_control import _one_id_fixture
 from .test_control_contract import _auth_record
@@ -152,3 +159,123 @@ def test_missing_lookup_and_cas_are_nonmutating_and_invalid_inputs_propagate():
         store.lookup("invalid")
     with pytest.raises(DockerControlContractErrorV1):
         store.publish_once(object())
+
+
+def test_stage_store_authenticates_snapshots_and_converges_concurrently(
+    mount_env,
+):
+    authority = mount_env["stage_authority"]
+    candidate = authority.issue(mount_env["stage_record"])
+    store = InMemoryDockerStageBundleStoreV1(authority=authority)
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        results = list(pool.map(
+            lambda _index: store.put_if_absent(candidate), range(32)
+        ))
+    assert all(value == candidate for value in results)
+    assert all(value is not candidate for value in results)
+    assert all(
+        value.content.effect_identity is not candidate.content.effect_identity
+        for value in results
+    )
+    assert len({value.content.record_digest for value in results}) == 1
+    returned = store.get_by_stage_effect_id(
+        candidate.content.stage_effect_id
+    )
+    assert returned == candidate and returned is not candidate
+    object.__setattr__(returned.content, "source_ref", "hostile-source")
+    assert store.get_by_stage_effect_id(
+        candidate.content.stage_effect_id
+    ) == candidate
+    assert store.get_by_stage_effect_id("unknown-stage-effect") is None
+
+
+def test_stage_store_rejects_unauthenticated_and_conflicting_candidates(
+    mount_env,
+):
+    candidate = mount_env["stage_authority"].issue(mount_env["stage_record"])
+
+    class ExactEnvelopeAuthority:
+        authority_ref = candidate.authority_ref
+        key_ref = candidate.key_ref
+
+        def authenticate(self, value):
+            if (
+                type(value) is not AuthenticatedDockerStageBundleBindingV1
+                or value.authority_ref != self.authority_ref
+                or value.key_ref != self.key_ref
+            ):
+                return None
+            return AuthenticatedDockerStageBundleBindingV1(
+                replace(value.content), value.authority_ref,
+                value.key_ref, value.tag,
+            )
+
+    store = InMemoryDockerStageBundleStoreV1(
+        authority=ExactEnvelopeAuthority()
+    )
+    assert store.put_if_absent(candidate) == candidate
+    conflict = AuthenticatedDockerStageBundleBindingV1(
+        candidate.content, candidate.authority_ref,
+        candidate.key_ref, "f" * 64,
+    )
+    with pytest.raises(DockerHostSourceErrorV1):
+        store.put_if_absent(conflict)
+    with pytest.raises(DockerHostSourceErrorV1):
+        store.put_if_absent(object())
+    with pytest.raises(DockerHostSourceErrorV1):
+        store.get_by_stage_effect_id("")
+    assert "record_entries=1" in repr(store)
+
+
+def test_stage_store_uses_untouched_baseline_before_publication(mount_env):
+    candidate = mount_env["stage_authority"].issue(mount_env["stage_record"])
+
+    class MutatingAuthority:
+        authority_ref = candidate.authority_ref
+        key_ref = candidate.key_ref
+
+        def authenticate(self, value):
+            object.__setattr__(value.content, "source_ref", "hostile-source")
+            return value
+
+    store = InMemoryDockerStageBundleStoreV1(
+        authority=MutatingAuthority()
+    )
+    with pytest.raises(DockerHostSourceErrorV1):
+        store.put_if_absent(candidate)
+    assert "record_entries=0" in repr(store)
+    assert store.get_by_stage_effect_id(
+        candidate.content.stage_effect_id
+    ) is None
+
+
+def test_stage_store_lost_outbound_return_retains_recoverable_baseline(
+    mount_env,
+):
+    candidate = mount_env["stage_authority"].issue(mount_env["stage_record"])
+
+    class LoseSecondReturnAuthority:
+        authority_ref = candidate.authority_ref
+        key_ref = candidate.key_ref
+
+        def __init__(self):
+            self.calls = 0
+            self.lose_second = True
+
+        def authenticate(self, value):
+            self.calls += 1
+            if self.lose_second and self.calls == 2:
+                return None
+            return deepcopy(value)
+
+    authority = LoseSecondReturnAuthority()
+    store = InMemoryDockerStageBundleStoreV1(authority=authority)
+    with pytest.raises(DockerHostSourceErrorV1):
+        store.put_if_absent(candidate)
+    assert "record_entries=1" in repr(store)
+    authority.lose_second = False
+    recovered = store.get_by_stage_effect_id(
+        candidate.content.stage_effect_id
+    )
+    assert recovered == candidate and recovered is not candidate
+    assert recovered.content is not candidate.content
