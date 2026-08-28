@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from hashlib import sha256
-
 from tuner.execution.providers.docker_provider_v1.model import (
     AuthenticatedDockerAbsenceV1,
     DockerAbsenceContentV1,
@@ -27,8 +25,6 @@ from .control_contract import (
     authenticate_mutation_record_v1,
     authenticate_workload_environment_binding_v1,
     docker_operation_id_v1,
-    docker_owned_label_projections_v1,
-    docker_owned_labels_projection_digest_v1,
     snapshot_docker_labels_v1,
 )
 from .control_model import (
@@ -38,6 +34,7 @@ from .control_model import (
     DockerImageInspectResultV1,
 )
 from .model import DockerCLIOutcomeV1
+from .verification import docker_create_projection_matches_v1
 
 
 class DockerHostControlErrorV1(RuntimeError):
@@ -339,47 +336,8 @@ class DockerHostControlV1:
 
     @staticmethod
     def _matches(labels, expected, environment, projection, container_ref):
-        specification = expected.content.create_specification
-        if (
-            projection.container_ref != container_ref
-            or projection.container_name != labels.container_name
-            or projection.image_digest != specification.image_digest
-            or projection.owned_labels != docker_owned_label_projections_v1(labels)
-            or docker_owned_labels_projection_digest_v1(labels)
-            != specification.owned_labels_projection_digest
-            or projection.network_mode != "none"
-            or projection.nano_cpus != specification.nano_cpus
-            or projection.memory_bytes != specification.memory_bytes
-            or projection.argument_count != specification.argument_count
-            or projection.arguments_digest != specification.arguments_digest
-        ):
-            return False
-        observed_env = {
-            (item.key_digest, item.value_digest)
-            for item in projection.environment.entries
-        }
-        expected_env = {
-            (item.key_digest, item.value_digest)
-            for item in environment.content.supplied_entries
-        }
-        if not expected_env.issubset(observed_env):
-            return False
-        if len(projection.mounts) != 2:
-            return False
-        mounts = {item.destination_digest: item for item in projection.mounts}
-        source_destination = sha256(b"/source").hexdigest()
-        artifact_destination = sha256(b"/artifacts").hexdigest()
-        if set(mounts) != {source_destination, artifact_destination}:
-            return False
-        source = mounts[source_destination]
-        artifact = mounts[artifact_destination]
-        return (
-            source.mount_type == "bind"
-            and source.source_digest == specification.source_unc_digest
-            and source.read_write is False
-            and artifact.mount_type == "bind"
-            and artifact.source_digest == specification.artifact_unc_digest
-            and artifact.read_write is True
+        return docker_create_projection_matches_v1(
+            labels, expected, environment, projection, container_ref
         )
 
     @staticmethod

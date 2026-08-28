@@ -99,3 +99,15 @@ Active orchestration ledger for the current repo-focused PACT session.
 - Concurrent identical/conflicting calls converge to exactly one publication, admission, or applied CAS winner; invalid contracts fail closed rather than masquerading as uncertainty.
 - Independent PACT verdicts: correctness ACCEPT; test PASS. Final evidence: 55 focused tests, 481 full `docker_v1` tests, compilation/diff/static checks clean.
 - Scope claim remains same-process and shared-store-instance only. No persistence, restart, or cross-process durability is claimed. Next: 5.4c CREATE orchestration and recovery.
+
+### 2026-08-28 Docker CREATE Orchestration Slice 5.4c R1 Accepted
+
+- The upstream host checkpoint before this slice is committed through `c0ad44c2`. Slice 5.4c is accepted but remains uncommitted pending the orchestrator's scoped commit.
+- Worker-reported Slice 5.4c files are modified `synaptic_host/docker_v1/control.py` and `synaptic_host/docker_v1/control_contract.py`, plus new `synaptic_host/docker_v1/create.py`, `synaptic_host/docker_v1/verification.py`, and `tests/synaptic_host/docker_v1/test_create.py`.
+- CREATE orchestration preserves untouched local request baselines, passes distinct reconstructed snapshots to dependencies, and requires exact request/result equality at catalog publication, mutation admission, attempt CAS, and final CAS before consuming any disposition.
+- Only an exact locally requested ADMITTED-to-ATTEMPTED `APPLIED` acknowledgement may authorize the one-shot CREATE call. Only an exact locally requested ATTEMPTED-to-VERIFIED `APPLIED` acknowledgement may return `CREATED`.
+- Shared verification catches only known validation failures as ordinary mismatches. Unexpected verifier `RuntimeError` propagates to orchestration and totals to `INDETERMINATE` rather than being misclassified as collision.
+- The original correctness rejection for cross-request dependency substitution and over-broad verifier exception handling is closed. Fresh independent verdicts are correctness **ACCEPT** and test **PASS**.
+- Final evidence: **50 create tests passed**, **141 focused tests passed**, and **531 full `docker_v1` tests passed**. A direct concurrency gate reconstructed **32 hosts** over one shared in-memory store, produced exactly **one CREATE**, returned `CREATED` from all 32 callers, and finished at `VERIFIED`.
+- Guarantees remain same-process and in-memory/shared-store-instance only. This slice made no real Docker call and does not implement START, persistence, restart durability, or cross-process durability.
+- Next dispatch: **Slice 5.5 START**.

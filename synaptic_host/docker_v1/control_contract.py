@@ -773,6 +773,51 @@ class DockerExpectedCreatePublishResultV1:
         return cls(request, disposition, binding, digest_v1(body))
 
 
+@dataclass(frozen=True, slots=True)
+class DockerCreateVerificationV1:
+    operation_id: str
+    attempted_record_digest: str
+    expected_proof_digest: str
+    create_result_digest: str | None
+    inventory_result_digest: str
+    post_resolution_digest: str
+    post_path_binding_proof_digest: str
+    source_windows_path_digest: str
+    source_unc_digest: str
+    artifact_windows_path_digest: str
+    artifact_unc_digest: str
+    inspect_result_digest: str
+    container_ref: str
+    verification_digest: str
+
+    def canonical_without_digest(self):
+        return {
+            name: getattr(self, name)
+            for name in self.__dataclass_fields__
+            if name != "verification_digest"
+        } | {"schema_version": "synaptic-host-docker-create-verification/v1"}
+
+    def __post_init__(self):
+        try:
+            for name in self.__dataclass_fields__:
+                value = getattr(self, name)
+                if name == "create_result_digest" and value is None:
+                    continue
+                _sha(value)
+            if _CONTAINER_REF.fullmatch(self.container_ref) is None:
+                raise ValueError
+            if self.verification_digest != digest_v1(self.canonical_without_digest()):
+                raise ValueError
+        except BaseException:
+            _fail()
+
+    @classmethod
+    def build(cls, **values):
+        body = dict(values)
+        body["schema_version"] = "synaptic-host-docker-create-verification/v1"
+        return cls(**values, verification_digest=digest_v1(body))
+
+
 class DockerMutationPhaseV1(str, Enum):
     ADMITTED = "ADMITTED"
     ATTEMPTED = "ATTEMPTED"
