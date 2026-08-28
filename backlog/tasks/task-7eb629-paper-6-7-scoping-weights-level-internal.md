@@ -24,3 +24,4 @@ updated_date: '2026-08-28'
 - [ ]
 
 ## Work Log
+- 2026-08-28: literature scan complete (three parallel sweeps: architectures, causal training objectives, distillation-into-weights). Memo drafted at docs/research/weights-level-consultation-scan.md with candidate space, ranked arms (congruence audit first; IIT-on-answerability; thermostat distillation + congruence eval; probe-anchored gated module), and design controls. Pending: PI read; arXiv byline verification for entries marked 'verify'.

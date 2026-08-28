@@ -66,7 +66,21 @@ Read each source doc before citing any of this; pointers only.
 
 ## 3. Candidate space
 
-_Filled from the external literature scan (Section 4) and ranked in Section 5._
+Three routes to weights-level consultation, distinguished by what supplies
+the coupling:
+
+| Route | Coupling comes from | Best published scaffold | Bypass risk |
+|---|---|---|---|
+| **A. Distill the thermostat** | teacher = model + certified gated controller; student imitates | subliminal steering-vector distillation (2606.00995), OPCD (2602.12275), VSPO (2605.15604) | HIGH — wrapper/bypass literature predicts a surface policy unless a representation-space term is added; the congruence test decides |
+| **B. Causal-objective training** | loss defined on *intervened* KU states (IIT family) | IIT (2112.00826) + pyvene tooling; Circuit-Breaker-style representation loss (2406.04313) | LOW by construction — the objective is unsatisfiable from input correlates |
+| **C. Gated-module architecture** (the PI's sketch) | a module whose gate input is the KU readout, actuator = refusal write | X-LoRA (2402.07148), CAST made permanent (2409.05907), rank-1 gated edit initialized from (probe dir, write dir) via 2603.00425 conversion | MEDIUM — a trainable gate can drift off the KU axis; freeze or anchor it |
+
+The PI's MoE intuition maps onto route C, and the router science
+(Section 4A) endorses its premise — routers really are linear readouts of
+hidden state choosing computation, and a single expert can carry refusal —
+with one correction: routers never align with a semantic signal on their
+own, so the gate must be supervised on (or frozen to) the KU readout
+rather than learned free.
 
 ## 4. Literature scan
 
@@ -304,12 +318,226 @@ permuted-sensor result appears to be novel; nothing found contradicts it.**
 
 ### 4C. Distilling the runtime controller into weights
 
-_(pending third sweep)_
+**Headline of the sweep: unconditional baking of steering vectors into
+weights is a mature 2024-2026 mini-literature. Baking a *conditional*
+(probe-gated) controller into weights as a unit is unpublished. And no one
+has ever run a congruence evaluation of a distilled abstention wrapper —
+teacher = model + controller, student = plain model, then testing whether
+the student's refusals are gated by the student's own internal state.**
 
-### 4C. Distilling the runtime controller into weights
+#### Three published mechanisms for unconditional internalization
 
-_(pending third sweep)_
+- **Activation-loss fine-tuning** (Representation Tuning, Ackerman,
+  arXiv:2409.06927): tune activations toward the target vector (cosine
+  loss + token loss); reported stronger than online steering. The loss
+  operates on representations, so the installed behavior is coupled to the
+  direction by construction — but always-on, ungated.
+- **Weight arithmetic**: contrastive weight steering (arXiv:2511.05408,
+  verify authors), weight orthogonalization (Arditi et al., NeurIPS 2024,
+  arXiv:2406.11717 — closed-form, gradient-free), Steer2Edit (Sun et al.,
+  arXiv:2602.09870 — rank-1 component-level edits localized by the
+  steering vector; standard forward pass, vLLM-compatible), and a formal
+  weight↔activation equivalence with a conversion recipe (Adila et al.,
+  arXiv:2603.00425). The math for turning the calibrated mid-band write
+  into an exact permanent edit exists off the shelf.
+- **Distillation on steered-teacher outputs**: "Subliminal Learning Is
+  Steering Vector Distillation" (Blank, Bhatia, Rajamanoharan, Conmy,
+  Nanda, arXiv:2606.00995) — a student fine-tuned on a steered teacher's
+  outputs **learns an aligned internal vector** that drives its behavior,
+  even from semantically unrelated data. Strongest evidence that
+  output-only distillation installs a direction, not just a surface
+  policy. Dose-dependent transfer quantified in arXiv:2606.11270 (verify).
+  On-policy context distillation (OPCD, Ye et al., arXiv:2602.12275;
+  reverse-KL against the same weights + privileged context) is the modern
+  instrument for teacher = model + intervention. VSPO (Zhang et al.,
+  arXiv:2605.15604) is the GRPO form: rollouts sampled under varying
+  steering intensity, explicitly framed as internalizing the vector.
+  DPO/KTO on steered-vs-unsteered pairs specifically: unpublished.
+
+#### Conditionality: the missing piece
+
+- **CAST — conditional activation steering** (Lee et al., IBM,
+  arXiv:2409.05907): a condition vector over hidden states decides at
+  inference whether the steering vector applies ("if input is about X,
+  refuse"). This IS the thermostat, published independently — and kept
+  entirely at runtime. **No follow-up bakes CAST's sensor + gated write
+  into weights.**
+- **Circuit Breakers** (arXiv:2406.04313, again): the one published case
+  of an internal-state-conditioned response trained into weights — but the
+  condition region is defined by training data, not by a pre-existing
+  linear readout, and no probe-congruence eval of the result is reported.
+- **AlphaSteer** (arXiv:2506.07022): learned "steer only when needed"
+  null-space construction — a soft gate, still runtime.
+- **DINM/SafeEdit** (Wang et al., ACL 2024, arXiv:2403.14472):
+  ROME/MEMIT-lineage editing of a behavioral policy; argues SFT/DPO merely
+  *suppress* toxic activations while editing adjusts parameters — a
+  within-paper version of the co-opt/bypass distinction. Unconditional.
+
+#### What fine-tuning does to pre-existing directions (the warning shelf)
+
+- **Wrapper/bypass results.** Fine-tuning learns a thin wrapper over
+  intact capabilities (Jain et al., ICLR 2024, arXiv:2311.12786); DPO
+  reduces toxicity by learning a residual offset that *bypasses* toxic
+  components, which remain and can reactivate (Lee et al., ICML 2024,
+  arXiv:2401.01967); D-Steer (arXiv:2512.11838) reads DPO as near-rank-one
+  activation steering — "behave, not believe."
+- **Edits survive while behavior reroutes.** Steering baked into weights,
+  then subjected to later SFT/RLHF: behavior reverts (≈64% of a refusal
+  edit's effect lost under contradicting SFT) while the weight edit is NOT
+  reversed — vector recovery ρ = 0.004; the fine-tune routes *around* the
+  edit (arXiv:2608.24988, verify). Direction-in-weights and
+  behavior-uses-direction dissociate in both directions.
+- **Detection vs routing, in the wild** (Frank, arXiv:2603.18280): across
+  nine open models, alignment lives in a learned routing layer from
+  concept detection to policy; one model *detects* the concept (probes
+  fire) with no coupling to behavior — the program's own "sensor present,
+  actuator never wired" gap, documented independently, with a worked test
+  methodology (probe accuracy is non-diagnostic; held-out generalization
+  plus directional ablation is the real test).
+- **The optimistic counterpart**: fine-tuning can *enhance* an existing
+  mechanism rather than bypass it (Prakash et al., ICLR 2024,
+  arXiv:2402.14811); probe-based DPO preserved probe accuracy better than
+  classifier-based DPO (arXiv:2510.21531) — optimizing against internal
+  representations may strengthen the signal rather than destroy it.
+- **GeoDe** (An et al., arXiv:2604.14324, ACL 2026 Findings): abstention
+  SFT data curated by probe-hyperplane distance, on Qwen3 + TriviaQA — the
+  closest published bridge to this program's stack; the readout is used
+  offline for data curation only, and student congruence is untested.
+- **Fragility diagnostic**: internalization can be brittle — reintroducing
+  the distilled-away context degrades the student ("context returns",
+  arXiv:2606.11627, verify). Program analogue: after installing the loop,
+  re-apply the runtime controller and check for pathological interaction.
+
+### 4D. Convergent gaps (found independently by all three sweeps)
+
+1. No published system reads a **validated pre-existing epistemic axis**
+   and routes generation through it at the weights level.
+2. No published training run defines its objective on **intervened
+   internal states** for an uncertainty/answerability variable (IIT
+   exists; IIT-on-answerability does not; no IIT training above ~1B).
+3. No published **congruence evaluation** of any internalized or distilled
+   abstention behavior — nobody has checked whether the installed policy
+   consults the internal state it was built from.
+4. No published **conditional (probe-gated) write baked into weights** as
+   a unit; CAST keeps it at runtime, Circuit Breakers conditions on
+   training data rather than a readout.
+
+The program owns every prerequisite the literature lacks: a certified
+readout, certified per-family write operating points, the intervention
+instrument, and the pre-registration discipline to run the congruence
+test honestly.
+
 
 ## 5. Ranked recommendation
 
+Ranked by (novelty of the gap filled) x (diagnostic value whatever the
+outcome) x (fit to the program's existing instruments) x (cost). These are
+scoping proposals for the PI; nothing here is a registered design.
+
+**0. Congruence audit of what we already trained (cheapest, run first).**
+Before building anything: take the existing Paper-2 abstention-trained
+checkpoints and run the crux instrument on them — clamp/flip the KU axis
+and measure whether the *installed* refusal follows it (plus the Frank
+detection-vs-routing tests and a permuted control). Paper 3 already showed
+action conditions on knowledge behaviorally (+31.2pt) and Ferrando et al.
+showed RLHF can wire refusal to a pre-existing familiarity direction in
+Gemma; whether OUR trained refusal consults OUR KU axis has never been
+measured. Either outcome shapes every arm below, it needs no new training,
+and it reuses the intervention stack as-is. (Adjacent signed-but-unlaunched
+cell: AD. Check its design before minting a new one.)
+
+**1. Arm B — IIT-on-answerability (the flagship claim).** Fine-tune
+(LoRA) with an interchange-intervention objective at the atlas-selected KU
+site: swap the KU-subspace activation between known and unknown rows and
+supervise the *counterfactual* behavior (answer under swapped-in "known",
+abstain under swapped-in "unknown"), with a permuted-alignment control
+arm. This is the one objective in the literature that cannot be satisfied
+by surface correlates — the structural fix for probe-as-reward — and both
+"IIT on an epistemic variable" and "IIT training at 4B" are unpublished.
+Cost ≈ 2-3x SFT, pyvene tooling exists, 3090-feasible. Falsifier shape:
+congruence still fails under the trained coupling, or capability cost
+exceeds a pre-stated floor.
+
+**2. Arm A — distill the thermostat, then test congruence.** Teacher =
+raw base + certified gated controller at the certified operating point;
+student = plain model via on-policy reverse-KL (OPCD-style) and/or KTO on
+steered-vs-unsteered pairs (specifically unpublished). Then the decisive,
+also-unpublished measurement: is the student's refusal gated by the
+student's own KU state? The literature makes competing predictions —
+subliminal distillation says a vector gets installed; wrapper/bypass says
+a surface policy does; D-Steer says the installed thing is unconditional.
+Any outcome is publishable because the congruence evaluation itself is the
+novel contribution. Needs rollout generation (vLLM serves the steered
+teacher) + LoRA training: 3090 + modest cloud.
+
+**3. Arm C — probe-anchored gated module (the PI's sketch, disciplined).**
+Insert a gated low-rank module at the certified write site, initialized
+from the certified pair (gate weight = KU probe direction, payload =
+c_hat write direction, threshold = calibrated τ) — at initialization it
+IS the thermostat, exactly (the 2603.00425 weight↔activation equivalence
+gives the conversion). Then three sub-arms: (i) frozen (pure
+architectural install, zero training — does the loop survive being inside
+the pass?), (ii) trained with a Circuit-Breaker-style representation loss
++ CBGM anti-leakage/orthogonality term, (iii) trained free (measures gate
+drift off the KU axis — connects to Arm A's bypass question). X-LoRA is
+the fallback scaffold if the custom module fights the stack, at the cost
+of vLLM compatibility (engine ruling: per-row intervention cells are the
+registered exemption; a deployment-shaped arm should prefer the
+standard-forward-pass module form, which Steer2Edit shows is
+vLLM-servable).
+
+**Deprioritized, with reasons.** MoE-router supervision on a real MoE
+base (OLMoE/Qwen-MoE): the right long-run home for the idea but adds a
+substrate change on top of a mechanism question — do route C on the dense
+families first. [IDK]-token tuning + congruence test: cheap and clean but
+answers a narrower question (output-pathway, same bottleneck risk as
+Paper 3's scalar channel). Rewarding-Doubt-style RL and the rest of the
+knowledge-boundary family: already subsumed by Papers 2/3; cite as
+baselines, do not rerun. Backpack-style architectures: pretraining
+budget, out of scope. LatentQA-decoder backprop hybrid: interesting,
+unscoped — park.
+
 ## 6. Design notes for the registered study
+
+- **The crux instrument is one instrument.** All arms share the same
+  primary endpoint: intervention-based congruence (clamp/flip/ablate the
+  KU axis in the trained model; behavior must follow the *intervened*
+  state), reported with the Paper-5 trinity (alignment, specificity vs
+  the family's measured placebo null at the same site, selectivity with
+  known-correct cost). Behavioral abstention rates are secondary
+  endpoints, never the claim.
+- **Controls the 2026 literature says we need:** (i) peer-model probe
+  (Masked by Consensus: self-advantage is not automatic — a KU probe fit
+  on a DIFFERENT model's states over the same rows is the
+  privileged-access control); (ii) input-only classifier baseline
+  (Reality Check: introspective-looking behavior is often input-predictable);
+  (iii) logit-shift artifact control (Detecting the Disturbance: binary
+  report/refusal shifts can be global biases — use differential and
+  localizing measurements); (iv) permuted-sensor arm everywhere
+  (probe-as-reward's own control, kept).
+- **Post-installation stability battery** (from the warning shelf):
+  re-apply the runtime controller on top of the trained model
+  (context-returns pathology check); fine-tune the trained model on a
+  contradicting objective and measure whether behavior reroutes around
+  the installed coupling (2608.24988 template); check the KU readout
+  itself is undegraded (Paper 3's refit-probe check, plus the
+  probe-based-DPO datapoint that representation-loss training can
+  *preserve* the signal).
+- **Terminology**: per `papers/common/terminology.md` — KU readout /
+  answerability axis / boundary push; no retired construct names in any
+  new prose or config key that will be quoted in prose.
+- **Fit to program instruments**: sites and doses come from the family
+  atlas and the certified operating points; placebo criteria registered
+  against each family's measured null at the write site (Paper 5 §4.8
+  design rule); text-persisting harness (`text_capture: enabled`) from
+  the start; vLLM default for generation surfaces with per-row
+  intervention cells as the registered exemption.
+- **Citation hygiene**: every arXiv id in Section 4 marked "verify" needs
+  its abstract page pulled directly before any manuscript cites it; the
+  scanning agents could not confirm those bylines through the proxy.
+- **Paper framing**: the natural title claim is the inverse of Paper 5's —
+  Paper 5: "readable is not writable without a harness"; successor: "can
+  the harness be internalized, and does the model then consult itself?"
+  Gaps 1-4 (Section 4D) are the novelty statement; CAST, Circuit
+  Breakers, GeoDe, and Frank (2603.18280) are the four nearest neighbors
+  to position against.
