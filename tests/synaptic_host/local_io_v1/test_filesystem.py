@@ -3,14 +3,21 @@ from __future__ import annotations
 import hashlib
 import json
 import stat
-from dataclasses import FrozenInstanceError
+from dataclasses import FrozenInstanceError, replace
 from pathlib import Path
+from threading import Event, Thread
 
 import pytest
 
-from synaptic_host.local_io_v1.filesystem import LocalFilesystemV1, MAX_CHUNK_BYTES
+from synaptic_host.local_io_v1.filesystem import (
+    LocalFilesystemV1,
+    MAX_CHUNK_BYTES,
+)
 from synaptic_host.local_io_v1.config import StorageRegistryV1
 from synaptic_host.local_io_v1.model import (
+    BorrowedDirectoryV1,
+    BorrowedFileV1,
+    BorrowPurposeV1,
     CreateJournalRecordV1,
     CreatePhaseV1,
     LocalArtifactBindingV1,
@@ -23,6 +30,8 @@ from synaptic_host.local_io_v1.model import (
     LocalSourceBindingV1,
     RecoveryResultV1,
     RetainedDirectoryV1,
+    RetainedRootBorrowRequestV1,
+    RetainedRootBorrowV1,
     RecoveryStatusV1,
     RootAccessV1,
     validate_recovery_result_v1,
@@ -38,11 +47,13 @@ from .conftest import FakePosixFilesystemPortV1
 class _Authenticator:
     def __init__(self) -> None:
         self.permits: dict[int, LocalRootPermitV1] = {}
+        self.calls = 0
 
     def allow(self, permit: LocalRootPermitV1) -> None:
         self.permits[id(permit)] = permit
 
     def authenticate(self, permit: LocalRootPermitV1):
+        self.calls += 1
         return permit if self.permits.get(id(permit)) is permit else None
 
 
@@ -84,6 +95,1181 @@ def _composition(profile: str = "opaque-local-like"):
     filesystem = LocalFilesystemV1(port, authenticator, native_platform="linux")
     authority = filesystem.retain_root_authority(data, control)
     return port, filesystem, authority
+
+
+def _composition_with_data_access(access: RootAccessV1):
+    port = FakePosixFilesystemPortV1()
+    fake_base = Path.cwd() / ".fake-metadata" / ("access-" + access.value)
+    data_path = fake_base / "data"
+    control_path = fake_base / "control"
+    port.add_root(data_path, "data")
+    port.add_root(control_path, "control")
+    authenticator = _Authenticator()
+    data = _binding(data_path, "data-access", access, authenticator)
+    control = _binding(
+        control_path, "control-access", RootAccessV1.READ_CREATE, authenticator
+    )
+    filesystem = LocalFilesystemV1(port, authenticator, native_platform="linux")
+    return port, filesystem, filesystem.retain_root_authority(data, control)
+
+
+DESTINATION_PURPOSE = BorrowPurposeV1.BUNDLE_DESTINATION_CREATE
+SOURCE_PURPOSE = BorrowPurposeV1.BUNDLE_SOURCE_READ
+VERIFY_PURPOSE = BorrowPurposeV1.BUNDLE_MOUNT_VERIFY
+
+
+def _borrow(filesystem, authority, access=RootAccessV1.READ_CREATE,
+            purpose=DESTINATION_PURPOSE):
+    request = RetainedRootBorrowRequestV1.build(
+        authority.authority_digest, purpose, access
+    )
+    borrow = filesystem.borrow_root(authority, request)
+    return borrow, filesystem.root_directory(borrow, purpose=purpose)
+
+
+def test_borrow_full_descriptor_relative_lifecycle_and_opaque_dtos() -> None:
+    port, filesystem, authority = _composition()
+    borrow, root = _borrow(filesystem, authority)
+    assert not any(hasattr(borrow, name) for name in ("port", "permit", "absolute_root", "handle_ref"))
+    assert not any(hasattr(root, name) for name in ("port", "permit", "absolute_root", "handle_ref"))
+
+    assert filesystem.mkdir_borrowed(borrow, root, "bundle", purpose=DESTINATION_PURPOSE)
+    directory = filesystem.open_borrowed_directory(
+        borrow, root, "bundle", purpose=DESTINATION_PURPOSE
+    )
+    writable = filesystem.create_borrowed_file(
+        borrow, directory, "private", purpose=DESTINATION_PURPOSE
+    )
+    assert filesystem.write_borrowed(
+        borrow, writable, b"payload", purpose=DESTINATION_PURPOSE
+    ) == 7
+    assert filesystem.stat_borrowed_file(
+        borrow, writable, purpose=DESTINATION_PURPOSE
+    ).size == 7
+    filesystem.fsync_borrowed_file(borrow, writable, purpose=DESTINATION_PURPOSE)
+    filesystem.close_borrowed_file(borrow, writable, purpose=DESTINATION_PURPOSE)
+    filesystem.link_borrowed(
+        borrow, directory, "private", "committed", purpose=DESTINATION_PURPOSE
+    )
+    filesystem.fsync_borrowed_directory(borrow, directory, purpose=DESTINATION_PURPOSE)
+    assert set(filesystem.list_borrowed_directory(
+        borrow, directory, 3, purpose=DESTINATION_PURPOSE
+    )) == {"private", "committed"}
+    assert filesystem.stat_borrowed(
+        borrow, directory, "committed", purpose=DESTINATION_PURPOSE
+    ).size == 7
+    filesystem.unlink_borrowed(
+        borrow, directory, "private", purpose=DESTINATION_PURPOSE
+    )
+    filesystem.close_borrowed_directory(
+        borrow, directory, purpose=DESTINATION_PURPOSE
+    )
+    filesystem.release_borrow(borrow, purpose=DESTINATION_PURPOSE)
+
+    read_borrow, read_root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, SOURCE_PURPOSE
+    )
+    read_directory = filesystem.open_borrowed_directory(
+        read_borrow, read_root, "bundle", purpose=SOURCE_PURPOSE
+    )
+    reopened_identity = filesystem.stat_borrowed(
+        read_borrow, read_root, "bundle", purpose=SOURCE_PURPOSE
+    )
+    assert (reopened_identity.device, reopened_identity.inode) == (
+        read_directory.identity.device,
+        read_directory.identity.inode,
+    )
+    readable = filesystem.open_borrowed_read(
+        read_borrow, read_directory, "committed", purpose=SOURCE_PURPOSE
+    )
+    assert filesystem.read_borrowed(
+        read_borrow, readable, 16, purpose=SOURCE_PURPOSE
+    ) == b"payload"
+    assert filesystem.read_borrowed(
+        read_borrow, readable, 16, purpose=SOURCE_PURPOSE
+    ) == b""
+    filesystem.close_borrowed_file(
+        read_borrow, readable, purpose=SOURCE_PURPOSE
+    )
+    filesystem.close_borrowed_directory(
+        read_borrow, read_directory, purpose=SOURCE_PURPOSE
+    )
+    filesystem.release_borrow(read_borrow, purpose=SOURCE_PURPOSE)
+    filesystem.release_root_authority(authority)
+    assert not port.live_directories and not port.live_files
+
+
+def test_borrow_dto_schema_digests_reject_field_substitution() -> None:
+    _, filesystem, authority = _composition()
+    request = RetainedRootBorrowRequestV1.build(
+        authority.authority_digest, DESTINATION_PURPOSE, RootAccessV1.READ_CREATE
+    )
+    with pytest.raises(LocalIOErrorV1) as caught:
+        replace(request, purpose=SOURCE_PURPOSE)
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    borrow = filesystem.borrow_root(authority, request)
+    root = filesystem.root_directory(borrow, purpose=DESTINATION_PURPOSE)
+    with pytest.raises(LocalIOErrorV1):
+        replace(borrow, access=RootAccessV1.READ_ONLY)
+    with pytest.raises(LocalIOErrorV1):
+        replace(root, path_components=("foreign",), owns_handle=True)
+    filesystem.release_borrow(borrow, purpose=DESTINATION_PURPOSE)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("schema_version", "wrong"),
+        ("root_authority_digest", "f" * 64),
+        ("purpose", SOURCE_PURPOSE),
+        ("access", RootAccessV1.READ_ONLY),
+        ("request_digest", "f" * 64),
+    ],
+)
+def test_mutated_borrow_request_fails_before_authentication_or_port(
+    field, value
+) -> None:
+    port, filesystem, authority = _composition()
+    request = RetainedRootBorrowRequestV1.build(
+        authority.authority_digest, DESTINATION_PURPOSE, RootAccessV1.READ_CREATE
+    )
+    object.__setattr__(request, field, value)
+    before_trace = tuple(port.trace)
+    before_auth = filesystem._permit_authenticator.calls
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.borrow_root(authority, request)
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    assert tuple(port.trace) == before_trace
+    assert filesystem._permit_authenticator.calls == before_auth
+    assert not filesystem._live_borrows
+
+
+def _assert_zero_boundary_calls(port, filesystem, before_trace, before_auth):
+    assert tuple(port.trace) == before_trace
+    assert filesystem._permit_authenticator.calls == before_auth
+
+
+def test_borrow_mutate_and_recompute_cannot_rewrite_issuance_snapshot() -> None:
+    port, filesystem, authority = _composition("borrow-snapshot")
+    borrow, root = _borrow(filesystem, authority)
+    original = (
+        borrow.purpose,
+        borrow.access,
+        borrow.request_digest,
+        borrow.borrow_digest,
+    )
+    object.__setattr__(borrow, "purpose", SOURCE_PURPOSE)
+    object.__setattr__(borrow, "access", RootAccessV1.READ_ONLY)
+    object.__setattr__(borrow, "request_digest", digest_v1({
+        "access": borrow.access.value,
+        "purpose": borrow.purpose.value,
+        "root_authority_digest": borrow.root_authority_digest,
+        "schema_version": "synaptic-host-root-borrow-request/v1",
+    }))
+    object.__setattr__(
+        borrow, "borrow_digest", digest_v1(borrow.canonical_without_digest())
+    )
+    before_trace = tuple(port.trace)
+    before_auth = filesystem._permit_authenticator.calls
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.list_borrowed_directory(
+            borrow, root, 1, purpose=SOURCE_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    _assert_zero_boundary_calls(port, filesystem, before_trace, before_auth)
+
+    for field, value in zip(
+        ("purpose", "access", "request_digest", "borrow_digest"), original
+    ):
+        object.__setattr__(borrow, field, value)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.list_borrowed_directory(
+            borrow, root, 1, purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    _assert_zero_boundary_calls(port, filesystem, before_trace, before_auth)
+
+
+@pytest.mark.parametrize("child_kind", ["root", "directory", "file"])
+def test_child_mutate_and_recompute_is_permanently_fenced_before_auth_or_port(
+    child_kind,
+) -> None:
+    port, filesystem, authority = _composition("child-snapshot-" + child_kind)
+    borrow, root = _borrow(filesystem, authority)
+    target = root
+    call = lambda: filesystem.list_borrowed_directory(
+        borrow, root, 1, purpose=DESTINATION_PURPOSE
+    )
+    if child_kind == "directory":
+        assert filesystem.mkdir_borrowed(
+            borrow, root, "child", purpose=DESTINATION_PURPOSE
+        )
+        target = filesystem.open_borrowed_directory(
+            borrow, root, "child", purpose=DESTINATION_PURPOSE
+        )
+        call = lambda: filesystem.list_borrowed_directory(
+            borrow, target, 1, purpose=DESTINATION_PURPOSE
+        )
+    elif child_kind == "file":
+        target = filesystem.create_borrowed_file(
+            borrow, root, "private", purpose=DESTINATION_PURPOSE
+        )
+        call = lambda: filesystem.stat_borrowed_file(
+            borrow, target, purpose=DESTINATION_PURPOSE
+        )
+
+    if child_kind == "file":
+        original = (target.readable, target.writable, target.file_digest)
+        object.__setattr__(target, "readable", True)
+        object.__setattr__(target, "writable", False)
+        object.__setattr__(
+            target, "file_digest", digest_v1(target.canonical_without_digest())
+        )
+    else:
+        original = (target.identity, target.directory_digest)
+        changed = LocalFileIdentityV1(
+            target.identity.device,
+            target.identity.inode,
+            target.identity.mode,
+            target.identity.nlink,
+            target.identity.changed_ns + 1,
+            target.identity.modified_ns,
+            target.identity.size,
+        )
+        object.__setattr__(target, "identity", changed)
+        object.__setattr__(
+            target,
+            "directory_digest",
+            digest_v1(target.canonical_without_digest()),
+        )
+    before_trace = tuple(port.trace)
+    before_auth = filesystem._permit_authenticator.calls
+    with pytest.raises(LocalIOErrorV1) as caught:
+        call()
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    _assert_zero_boundary_calls(port, filesystem, before_trace, before_auth)
+
+    if child_kind == "file":
+        for field, value in zip(("readable", "writable", "file_digest"), original):
+            object.__setattr__(target, field, value)
+    else:
+        object.__setattr__(target, "identity", original[0])
+        object.__setattr__(target, "directory_digest", original[1])
+    with pytest.raises(LocalIOErrorV1) as caught:
+        call()
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    _assert_zero_boundary_calls(port, filesystem, before_trace, before_auth)
+
+
+def test_mutated_internal_issuance_snapshot_cannot_be_restored_by_visible_dto() -> None:
+    port, filesystem, authority = _composition("registry-snapshot")
+    borrow, root = _borrow(filesystem, authority)
+    issued_ref = filesystem._directory_object_refs[id(root)]
+    issuance = filesystem._directory_issuance[issued_ref]
+    filesystem._directory_issuance[issued_ref] = replace(
+        issuance, owns_handle=not issuance.owns_handle
+    )
+    before_trace = tuple(port.trace)
+    before_auth = filesystem._permit_authenticator.calls
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.list_borrowed_directory(
+            borrow, root, 1, purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    _assert_zero_boundary_calls(port, filesystem, before_trace, before_auth)
+
+    filesystem._directory_issuance[issued_ref] = issuance
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.list_borrowed_directory(
+            borrow, root, 1, purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    _assert_zero_boundary_calls(port, filesystem, before_trace, before_auth)
+
+
+def test_combined_borrow_directory_and_file_mutation_fails_before_boundary_calls() -> None:
+    port, filesystem, authority = _composition("combined-snapshot")
+    borrow, root = _borrow(filesystem, authority)
+    file = filesystem.create_borrowed_file(
+        borrow, root, "private", purpose=DESTINATION_PURPOSE
+    )
+    object.__setattr__(borrow, "purpose", SOURCE_PURPOSE)
+    object.__setattr__(borrow, "access", RootAccessV1.READ_ONLY)
+    object.__setattr__(borrow, "request_digest", digest_v1({
+        "access": borrow.access.value,
+        "purpose": borrow.purpose.value,
+        "root_authority_digest": borrow.root_authority_digest,
+        "schema_version": "synaptic-host-root-borrow-request/v1",
+    }))
+    object.__setattr__(
+        borrow, "borrow_digest", digest_v1(borrow.canonical_without_digest())
+    )
+    changed_root = LocalFileIdentityV1(
+        root.identity.device, root.identity.inode, root.identity.mode,
+        root.identity.nlink, root.identity.changed_ns + 1,
+        root.identity.modified_ns, root.identity.size,
+    )
+    object.__setattr__(root, "identity", changed_root)
+    object.__setattr__(
+        root, "directory_digest", digest_v1(root.canonical_without_digest())
+    )
+    object.__setattr__(file, "readable", True)
+    object.__setattr__(file, "writable", False)
+    object.__setattr__(file, "file_digest", digest_v1(file.canonical_without_digest()))
+    before_trace = tuple(port.trace)
+    before_auth = filesystem._permit_authenticator.calls
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.stat_borrowed_file(borrow, file, purpose=SOURCE_PURPOSE)
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    _assert_zero_boundary_calls(port, filesystem, before_trace, before_auth)
+
+
+def test_admitted_file_effect_uses_captured_refs_and_exact_pin_counters() -> None:
+    port, filesystem, authority = _composition("admitted-file")
+    port.add_file("dir-data", "first", b"first")
+    port.add_file("dir-data", "second", b"second")
+    first_borrow, first_root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, SOURCE_PURPOSE
+    )
+    second_borrow, second_root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, SOURCE_PURPOSE
+    )
+    first_file = filesystem.open_borrowed_read(
+        first_borrow, first_root, "first", purpose=SOURCE_PURPOSE
+    )
+    second_file = filesystem.open_borrowed_read(
+        second_borrow, second_root, "second", purpose=SOURCE_PURPOSE
+    )
+    first_borrow_ref = filesystem._borrow_object_refs[id(first_borrow)]
+    second_borrow_ref = filesystem._borrow_object_refs[id(second_borrow)]
+    first_file_ref = filesystem._file_object_refs[id(first_file)]
+    second_file_ref = filesystem._file_object_refs[id(second_file)]
+    entered = Event()
+    resume = Event()
+    values = []
+    errors = []
+
+    def hold_read():
+        entered.set()
+        assert resume.wait(2)
+
+    def run_read():
+        try:
+            values.append(filesystem.read_borrowed(
+                first_borrow, first_file, 16, purpose=SOURCE_PURPOSE
+            ))
+        except BaseException as error:
+            errors.append(error)
+
+    port.callbacks["read"] = hold_read
+    thread = Thread(target=run_read)
+    thread.start()
+    assert entered.wait(2)
+    object.__setattr__(first_borrow, "borrow_ref", second_borrow_ref)
+    object.__setattr__(first_file, "file_ref", second_file_ref)
+    assert filesystem._borrow_inflight[first_borrow_ref] == 1
+    assert filesystem._borrow_inflight[second_borrow_ref] == 0
+    assert filesystem._borrow_file_inflight[first_file_ref] == 1
+    assert filesystem._borrow_file_inflight[second_file_ref] == 0
+    filesystem.close_borrowed_file(
+        second_borrow, second_file, purpose=SOURCE_PURPOSE
+    )
+    filesystem.release_borrow(second_borrow, purpose=SOURCE_PURPOSE)
+    resume.set()
+    thread.join(2)
+    assert not errors and values == [b"first"]
+    assert filesystem._borrow_inflight[first_borrow_ref] == 0
+    assert filesystem._borrow_file_inflight[first_file_ref] == 0
+    object.__setattr__(first_borrow, "borrow_ref", first_borrow_ref)
+    object.__setattr__(first_file, "file_ref", first_file_ref)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.stat_borrowed_file(
+            first_borrow, first_file, purpose=SOURCE_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+
+
+def test_admitted_directory_effect_cannot_transfer_borrow_or_directory_pins() -> None:
+    port, filesystem, authority = _composition("admitted-directory")
+    first_borrow, first_root = _borrow(filesystem, authority)
+    second_borrow, second_root = _borrow(filesystem, authority)
+    assert filesystem.mkdir_borrowed(
+        first_borrow, first_root, "child", purpose=DESTINATION_PURPOSE
+    )
+    child = filesystem.open_borrowed_directory(
+        first_borrow, first_root, "child", purpose=DESTINATION_PURPOSE
+    )
+    first_borrow_ref = filesystem._borrow_object_refs[id(first_borrow)]
+    second_borrow_ref = filesystem._borrow_object_refs[id(second_borrow)]
+    child_ref = filesystem._directory_object_refs[id(child)]
+    second_root_ref = filesystem._directory_object_refs[id(second_root)]
+    entered = Event()
+    resume = Event()
+    values = []
+    errors = []
+
+    def hold_list():
+        entered.set()
+        assert resume.wait(2)
+
+    def run_list():
+        try:
+            values.append(filesystem.list_borrowed_directory(
+                first_borrow, child, 2, purpose=DESTINATION_PURPOSE
+            ))
+        except BaseException as error:
+            errors.append(error)
+
+    port.callbacks["list_names_at"] = hold_list
+    thread = Thread(target=run_list)
+    thread.start()
+    assert entered.wait(2)
+    object.__setattr__(first_borrow, "borrow_ref", second_borrow_ref)
+    object.__setattr__(child, "directory_ref", second_root_ref)
+    assert filesystem._borrow_inflight[first_borrow_ref] == 1
+    assert filesystem._borrow_inflight[second_borrow_ref] == 0
+    assert filesystem._borrow_directory_inflight[child_ref] == 1
+    assert filesystem._borrow_directory_inflight[second_root_ref] == 0
+    filesystem.release_borrow(second_borrow, purpose=DESTINATION_PURPOSE)
+    resume.set()
+    thread.join(2)
+    assert not errors and values == [()]
+    assert filesystem._borrow_inflight[first_borrow_ref] == 0
+    assert filesystem._borrow_directory_inflight[child_ref] == 0
+    object.__setattr__(first_borrow, "borrow_ref", first_borrow_ref)
+    object.__setattr__(child, "directory_ref", child_ref)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.list_borrowed_directory(
+            first_borrow, child, 2, purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+
+
+def test_admitted_verification_ignores_late_path_identity_and_access_mutation() -> None:
+    port, filesystem, authority = _composition("admitted-verification")
+    port.add_file("dir-data", "source", b"payload")
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, SOURCE_PURPOSE
+    )
+    file = filesystem.open_borrowed_read(
+        borrow, root, "source", purpose=SOURCE_PURPOSE
+    )
+    original = (
+        borrow.access,
+        file.path_components,
+        file.identity,
+    )
+
+    def mutate_during_verification():
+        object.__setattr__(borrow, "access", RootAccessV1.CREATE_ONLY)
+        object.__setattr__(file, "path_components", ("other",))
+        object.__setattr__(file, "identity", LocalFileIdentityV1(
+            file.identity.device,
+            file.identity.inode + 100,
+            file.identity.mode,
+            file.identity.nlink,
+            file.identity.changed_ns,
+            file.identity.modified_ns,
+            file.identity.size,
+        ))
+
+    port.callbacks["stat_at:source"] = mutate_during_verification
+    assert filesystem.read_borrowed(
+        borrow, file, 16, purpose=SOURCE_PURPOSE
+    ) == b"payload"
+    for field, value in zip(("access",), original[:1]):
+        object.__setattr__(borrow, field, value)
+    object.__setattr__(file, "path_components", original[1])
+    object.__setattr__(file, "identity", original[2])
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.stat_borrowed_file(borrow, file, purpose=SOURCE_PURPOSE)
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+
+
+def test_admitted_close_uses_captured_refs_for_exact_cleanup() -> None:
+    port, filesystem, authority = _composition("admitted-close")
+    port.add_file("dir-data", "first", b"first")
+    port.add_file("dir-data", "second", b"second")
+    first_borrow, first_root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, SOURCE_PURPOSE
+    )
+    second_borrow, second_root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, SOURCE_PURPOSE
+    )
+    first_file = filesystem.open_borrowed_read(
+        first_borrow, first_root, "first", purpose=SOURCE_PURPOSE
+    )
+    second_file = filesystem.open_borrowed_read(
+        second_borrow, second_root, "second", purpose=SOURCE_PURPOSE
+    )
+    first_borrow_ref = filesystem._borrow_object_refs[id(first_borrow)]
+    second_borrow_ref = filesystem._borrow_object_refs[id(second_borrow)]
+    first_file_ref = filesystem._file_object_refs[id(first_file)]
+    second_file_ref = filesystem._file_object_refs[id(second_file)]
+    entered = Event()
+    resume = Event()
+    errors = []
+
+    def hold_close():
+        entered.set()
+        assert resume.wait(2)
+
+    def run_close():
+        try:
+            filesystem.close_borrowed_file(
+                first_borrow, first_file, purpose=SOURCE_PURPOSE
+            )
+        except BaseException as error:
+            errors.append(error)
+
+    port.callbacks["close_file"] = hold_close
+    thread = Thread(target=run_close)
+    thread.start()
+    assert entered.wait(2)
+    object.__setattr__(first_borrow, "borrow_ref", second_borrow_ref)
+    object.__setattr__(first_file, "file_ref", second_file_ref)
+    assert first_file_ref in filesystem._closing_borrow_files
+    assert second_file_ref not in filesystem._closing_borrow_files
+    assert filesystem._borrow_inflight[first_borrow_ref] == 1
+    assert filesystem._borrow_inflight[second_borrow_ref] == 0
+    assert filesystem._borrow_file_inflight[first_file_ref] == 0
+    assert filesystem._borrow_file_inflight[second_file_ref] == 0
+    resume.set()
+    thread.join(2)
+    assert not errors
+    assert first_file_ref not in filesystem._borrow_files
+    assert first_file_ref not in filesystem._file_issuance
+    assert first_file_ref not in filesystem._borrow_file_inflight
+    assert first_file_ref not in filesystem._closing_borrow_files
+    assert second_file_ref in filesystem._borrow_files
+    assert filesystem._borrow_inflight[second_borrow_ref] == 0
+    assert filesystem._borrow_file_inflight[second_file_ref] == 0
+    object.__setattr__(first_borrow, "borrow_ref", first_borrow_ref)
+    object.__setattr__(first_file, "file_ref", first_file_ref)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.stat_borrowed_file(
+            first_borrow, first_file, purpose=SOURCE_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    filesystem.close_borrowed_file(
+        second_borrow, second_file, purpose=SOURCE_PURPOSE
+    )
+    filesystem.release_borrow(second_borrow, purpose=SOURCE_PURPOSE)
+
+
+def test_blocked_authenticator_cannot_escalate_captured_source_authority() -> None:
+    port, filesystem, authority = _composition("blocked-auth-capture")
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, SOURCE_PURPOSE
+    )
+    borrow_ref = filesystem._borrow_object_refs[id(borrow)]
+    root_ref = filesystem._directory_object_refs[id(root)]
+    original_purpose = borrow.purpose
+    original_access = borrow.access
+    authenticator = filesystem._permit_authenticator
+    original_authenticate = authenticator.authenticate
+    entered = Event()
+    resume = Event()
+    errors = []
+    before_entries = tuple(port.directories["dir-data"])
+    before_trace = tuple(port.trace)
+
+    def blocked_authenticate(permit):
+        entered.set()
+        assert resume.wait(2)
+        return original_authenticate(permit)
+
+    def run_mkdir():
+        try:
+            filesystem.mkdir_borrowed(
+                borrow, root, "forbidden", purpose=SOURCE_PURPOSE
+            )
+        except BaseException as error:
+            errors.append(error)
+
+    authenticator.authenticate = blocked_authenticate
+    thread = Thread(target=run_mkdir)
+    thread.start()
+    assert entered.wait(2)
+    object.__setattr__(borrow, "purpose", DESTINATION_PURPOSE)
+    object.__setattr__(borrow, "access", RootAccessV1.READ_CREATE)
+    resume.set()
+    thread.join(2)
+    authenticator.authenticate = original_authenticate
+    assert len(errors) == 1
+    assert type(errors[0]) is LocalIOErrorV1
+    assert errors[0].code is LocalIOCodeV1.ACCESS_MISMATCH
+    assert "mkdir_at" not in port.trace[len(before_trace):]
+    assert tuple(port.directories["dir-data"]) == before_entries
+    assert filesystem._borrow_inflight[borrow_ref] == 0
+    assert filesystem._borrow_directory_inflight[root_ref] == 0
+    object.__setattr__(borrow, "purpose", original_purpose)
+    object.__setattr__(borrow, "access", original_access)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.list_borrowed_directory(
+            borrow, root, 2, purpose=SOURCE_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+
+
+def test_capture_uses_issuance_ancestry_after_visible_child_mutation() -> None:
+    port, filesystem, authority = _composition("capture-issuance-ancestry")
+    borrow, root = _borrow(filesystem, authority)
+    assert filesystem.mkdir_borrowed(
+        borrow, root, "child", purpose=DESTINATION_PURPOSE
+    )
+    child = filesystem.open_borrowed_directory(
+        borrow, root, "child", purpose=DESTINATION_PURPOSE
+    )
+    original_path = child.path_components
+    original_locked = filesystem._directory_locked
+    entered = Event()
+    resume = Event()
+    values = []
+    errors = []
+
+    def blocked_directory_locked(candidate_borrow, candidate_directory):
+        result = original_locked(candidate_borrow, candidate_directory)
+        if candidate_directory is child:
+            entered.set()
+            assert resume.wait(2)
+        return result
+
+    def run_list():
+        try:
+            values.append(filesystem.list_borrowed_directory(
+                borrow, child, 2, purpose=DESTINATION_PURPOSE
+            ))
+        except BaseException as error:
+            errors.append(error)
+
+    filesystem._directory_locked = blocked_directory_locked
+    thread = Thread(target=run_list)
+    thread.start()
+    assert entered.wait(2)
+    object.__setattr__(child, "path_components", ("substituted",))
+    resume.set()
+    thread.join(2)
+    filesystem._directory_locked = original_locked
+    assert not errors and values == [()]
+    object.__setattr__(child, "path_components", original_path)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.list_borrowed_directory(
+            borrow, child, 2, purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+
+
+@pytest.mark.parametrize(
+    ("parent_access", "requested_access"),
+    [
+        (RootAccessV1.READ_ONLY, RootAccessV1.CREATE_ONLY),
+        (RootAccessV1.CREATE_ONLY, RootAccessV1.READ_ONLY),
+        (RootAccessV1.READ_ONLY, RootAccessV1.READ_CREATE),
+    ],
+)
+def test_borrow_access_cannot_be_amplified(parent_access, requested_access) -> None:
+    port, filesystem, authority = _composition_with_data_access(parent_access)
+    before = tuple(port.trace)
+    purpose = (
+        SOURCE_PURPOSE
+        if requested_access is RootAccessV1.READ_ONLY
+        else DESTINATION_PURPOSE
+    )
+    request = RetainedRootBorrowRequestV1.build(
+        authority.authority_digest, purpose, requested_access
+    )
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.borrow_root(authority, request)
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    assert tuple(port.trace) == before
+
+
+def test_borrow_access_matrix_and_wrong_purpose_fail_before_port_calls() -> None:
+    port, filesystem, authority = _composition()
+    port.add_file("dir-data", "source", b"source")
+    read_request = RetainedRootBorrowRequestV1.build(
+        authority.authority_digest, SOURCE_PURPOSE, RootAccessV1.READ_ONLY
+    )
+    read_borrow = filesystem.borrow_root(authority, read_request)
+    root = filesystem.root_directory(read_borrow, purpose=SOURCE_PURPOSE)
+    opened = filesystem.open_borrowed_read(
+        read_borrow, root, "source", purpose=SOURCE_PURPOSE
+    )
+    assert filesystem.read_borrowed(
+        read_borrow, opened, 32, purpose=SOURCE_PURPOSE
+    ) == b"source"
+    filesystem.close_borrowed_file(read_borrow, opened, purpose=SOURCE_PURPOSE)
+    for call in (
+        lambda: filesystem.mkdir_borrowed(read_borrow, root, "x", purpose=SOURCE_PURPOSE),
+        lambda: filesystem.create_borrowed_file(read_borrow, root, "x", purpose=SOURCE_PURPOSE),
+        lambda: filesystem.fsync_borrowed_directory(read_borrow, root, purpose=SOURCE_PURPOSE),
+        lambda: filesystem.unlink_borrowed(read_borrow, root, "source", purpose=SOURCE_PURPOSE),
+    ):
+        before = tuple(port.trace)
+        with pytest.raises(LocalIOErrorV1) as caught:
+            call()
+        assert caught.value.code is LocalIOCodeV1.ACCESS_MISMATCH
+        assert tuple(port.trace) == before
+    before = tuple(port.trace)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.stat_borrowed(read_borrow, root, "source", purpose="wrong")
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    assert tuple(port.trace) == before
+
+    port, filesystem, authority = _composition_with_data_access(
+        RootAccessV1.CREATE_ONLY
+    )
+    create_borrow, create_root = _borrow(
+        filesystem, authority, RootAccessV1.CREATE_ONLY, DESTINATION_PURPOSE
+    )
+    assert filesystem.stat_borrowed(
+        create_borrow, create_root, "missing", purpose=DESTINATION_PURPOSE
+    ) is None
+    before = tuple(port.trace)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.open_borrowed_read(
+            create_borrow, create_root, "missing", purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.ACCESS_MISMATCH
+    assert tuple(port.trace) == before
+
+    port, filesystem, authority = _composition("verify-purpose")
+    port.add_file("dir-data", "mounted", b"verified")
+    verify_borrow, verify_root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, VERIFY_PURPOSE
+    )
+    verify_file = filesystem.open_borrowed_read(
+        verify_borrow, verify_root, "mounted", purpose=VERIFY_PURPOSE
+    )
+    assert filesystem.read_borrowed(
+        verify_borrow, verify_file, 32, purpose=VERIFY_PURPOSE
+    ) == b"verified"
+    filesystem.close_borrowed_file(
+        verify_borrow, verify_file, purpose=VERIFY_PURPOSE
+    )
+    filesystem.release_borrow(verify_borrow, purpose=VERIFY_PURPOSE)
+
+
+def test_borrow_exact_objects_children_and_parent_lifecycle_are_fenced() -> None:
+    port, filesystem, authority = _composition()
+    borrow, root = _borrow(filesystem, authority)
+    for forged in (replace(borrow), RetainedRootBorrowV1(
+        borrow.schema_version, borrow.borrow_ref, borrow.request_digest,
+        borrow.root_authority_digest, borrow.purpose, borrow.access,
+        borrow.borrow_digest,
+    )):
+        before = tuple(port.trace)
+        with pytest.raises(LocalIOErrorV1) as caught:
+            filesystem.root_directory(forged, purpose=DESTINATION_PURPOSE)
+        assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+        assert tuple(port.trace) == before
+    assert filesystem.mkdir_borrowed(borrow, root, "child", purpose=DESTINATION_PURPOSE)
+    child = filesystem.open_borrowed_directory(
+        borrow, root, "child", purpose=DESTINATION_PURPOSE
+    )
+    before = tuple(port.trace)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.release_borrow(borrow, purpose=DESTINATION_PURPOSE)
+    assert caught.value.code is LocalIOCodeV1.BORROW_IN_USE
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.release_root_authority(authority)
+    assert caught.value.code is LocalIOCodeV1.BORROW_IN_USE
+    assert tuple(port.trace) == before
+    forged_child = replace(child)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.close_borrowed_directory(
+            borrow, forged_child, purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    assert tuple(port.trace) == before
+    filesystem.close_borrowed_directory(borrow, child, purpose=DESTINATION_PURPOSE)
+    filesystem.release_borrow(borrow, purpose=DESTINATION_PURPOSE)
+
+
+def test_borrow_effect_pin_blocks_release_during_underlying_call() -> None:
+    port, filesystem, authority = _composition()
+    borrow, root = _borrow(filesystem, authority)
+    entered = Event()
+    resume = Event()
+    outcome = []
+
+    def hold_effect():
+        entered.set()
+        assert resume.wait(2)
+
+    def mutate():
+        outcome.append(filesystem.mkdir_borrowed(
+            borrow, root, "child", purpose=DESTINATION_PURPOSE
+        ))
+
+    port.callbacks["mkdir_at"] = hold_effect
+    thread = Thread(target=mutate)
+    thread.start()
+    assert entered.wait(2)
+    for action in (
+        lambda: filesystem.release_borrow(borrow, purpose=DESTINATION_PURPOSE),
+        lambda: filesystem.release_root_authority(authority),
+    ):
+        with pytest.raises(LocalIOErrorV1) as caught:
+            action()
+        assert caught.value.code is LocalIOCodeV1.BORROW_IN_USE
+    resume.set()
+    thread.join(2)
+    assert not thread.is_alive()
+    assert outcome == [True]
+    filesystem.release_borrow(borrow, purpose=DESTINATION_PURPOSE)
+
+
+def test_child_pins_fence_file_close_and_descendant_creation_close_races() -> None:
+    port, filesystem, authority = _composition("child-pin")
+    port.add_file("dir-data", "source", b"payload")
+    read_borrow, read_root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, SOURCE_PURPOSE
+    )
+    readable = filesystem.open_borrowed_read(
+        read_borrow, read_root, "source", purpose=SOURCE_PURPOSE
+    )
+    entered = Event()
+    resume = Event()
+    values = []
+
+    def hold_read():
+        entered.set()
+        assert resume.wait(2)
+
+    port.callbacks["read"] = hold_read
+    thread = Thread(target=lambda: values.append(filesystem.read_borrowed(
+        read_borrow, readable, 16, purpose=SOURCE_PURPOSE
+    )))
+    thread.start()
+    assert entered.wait(2)
+    for action in (
+        lambda: filesystem.close_borrowed_file(
+            read_borrow, readable, purpose=SOURCE_PURPOSE
+        ),
+        lambda: filesystem.release_borrow(read_borrow, purpose=SOURCE_PURPOSE),
+        lambda: filesystem.release_root_authority(authority),
+    ):
+        with pytest.raises(LocalIOErrorV1) as caught:
+            action()
+        assert caught.value.code is LocalIOCodeV1.BORROW_IN_USE
+    resume.set()
+    thread.join(2)
+    assert values == [b"payload"]
+    filesystem.close_borrowed_file(read_borrow, readable, purpose=SOURCE_PURPOSE)
+    filesystem.release_borrow(read_borrow, purpose=SOURCE_PURPOSE)
+
+    create_borrow, create_root = _borrow(filesystem, authority)
+    assert filesystem.mkdir_borrowed(
+        create_borrow, create_root, "parent", purpose=DESTINATION_PURPOSE
+    )
+    parent = filesystem.open_borrowed_directory(
+        create_borrow, create_root, "parent", purpose=DESTINATION_PURPOSE
+    )
+    assert filesystem.mkdir_borrowed(
+        create_borrow, parent, "child", purpose=DESTINATION_PURPOSE
+    )
+    entered.clear()
+    resume.clear()
+
+    def hold_open():
+        entered.set()
+        assert resume.wait(2)
+
+    opened = []
+    port.callbacks["open_directory_at"] = hold_open
+    thread = Thread(target=lambda: opened.append(
+        filesystem.open_borrowed_directory(
+            create_borrow, parent, "child", purpose=DESTINATION_PURPOSE
+        )
+    ))
+    thread.start()
+    assert entered.wait(2)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.close_borrowed_directory(
+            create_borrow, parent, purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_IN_USE
+    resume.set()
+    thread.join(2)
+    assert len(opened) == 1
+    entered.clear()
+    resume.clear()
+
+    def hold_close():
+        entered.set()
+        assert resume.wait(2)
+
+    port.callbacks["close_directory"] = hold_close
+    thread = Thread(target=lambda: filesystem.close_borrowed_directory(
+        create_borrow, opened[0], purpose=DESTINATION_PURPOSE
+    ))
+    thread.start()
+    assert entered.wait(2)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.close_borrowed_directory(
+            create_borrow, parent, purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_IN_USE
+    resume.set()
+    thread.join(2)
+    assert not thread.is_alive()
+    filesystem.close_borrowed_directory(
+        create_borrow, parent, purpose=DESTINATION_PURPOSE
+    )
+    filesystem.release_borrow(create_borrow, purpose=DESTINATION_PURPOSE)
+
+
+def test_borrow_foreign_and_reconstructed_children_fail_before_port_calls() -> None:
+    port, filesystem, authority = _composition()
+    borrow, root = _borrow(filesystem, authority)
+    writable = filesystem.create_borrowed_file(
+        borrow, root, "private", purpose=DESTINATION_PURPOSE
+    )
+    forged_file = replace(writable)
+    before = tuple(port.trace)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.write_borrowed(
+            borrow, forged_file, b"x", purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    assert tuple(port.trace) == before
+
+    other_port, other_filesystem, other_authority = _composition("foreign")
+    other_borrow, other_root = _borrow(other_filesystem, other_authority)
+    before = tuple(port.trace)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.stat_borrowed(borrow, other_root, "x", purpose=DESTINATION_PURPOSE)
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    assert tuple(port.trace) == before
+    with pytest.raises(LocalIOErrorV1):
+        filesystem.root_directory(other_borrow, purpose=DESTINATION_PURPOSE)
+    assert tuple(port.trace) == before
+
+    filesystem.close_borrowed_file(borrow, writable, purpose=DESTINATION_PURPOSE)
+    other_filesystem.release_borrow(other_borrow, purpose=DESTINATION_PURPOSE)
+
+    original_access = borrow.access
+    before = tuple(port.trace)
+    object.__setattr__(borrow, "access", RootAccessV1.READ_ONLY)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.stat_borrowed(borrow, root, "x", purpose=DESTINATION_PURPOSE)
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    assert tuple(port.trace) == before
+    object.__setattr__(borrow, "access", original_access)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.release_borrow(borrow, purpose=DESTINATION_PURPOSE)
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+
+
+def test_borrow_identity_rewrap_path_and_root_replacement_fail_closed() -> None:
+    port, filesystem, authority = _composition("identity")
+    borrow, root = _borrow(filesystem, authority)
+    assert filesystem.mkdir_borrowed(
+        borrow, root, "child", purpose=DESTINATION_PURPOSE
+    )
+    child = filesystem.open_borrowed_directory(
+        borrow, root, "child", purpose=DESTINATION_PURPOSE
+    )
+    substitute = LocalFileIdentityV1(
+        child.identity.device, child.identity.inode + 100, child.identity.mode,
+        child.identity.nlink, child.identity.changed_ns, child.identity.modified_ns,
+        child.identity.size,
+    )
+    body = child.canonical_without_digest()
+    body["identity"] = substitute.canonical()
+    forged = BorrowedDirectoryV1(
+        child.schema_version, child.borrow_digest, child.directory_ref,
+        child.path_components, child.owns_handle, substitute, digest_v1(body),
+    )
+    before = tuple(port.trace)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.list_borrowed_directory(
+            borrow, forged, 1, purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    assert tuple(port.trace) == before
+
+    port.add_directory("dir-data", "child")
+    before_list = port.calls.get("list_names_at", 0)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.list_borrowed_directory(
+            borrow, child, 1, purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.PATH_CHANGED
+    assert port.calls.get("list_names_at", 0) == before_list
+
+    port, filesystem, authority = _composition("root-replacement")
+    borrow, root = _borrow(filesystem, authority)
+    port.add_root(authority.data_binding.absolute_root, "replacement-data")
+    before_stat = port.calls.get("stat_at:any", 0)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.stat_borrowed(
+            borrow, root, "any", purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.ROOT_CHANGED
+    assert port.calls.get("stat_at:any", 0) == before_stat
+
+
+def test_borrow_file_path_substitution_is_rejected_before_read() -> None:
+    port, filesystem, authority = _composition("file-replacement")
+    port.add_file("dir-data", "source", b"first")
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, SOURCE_PURPOSE
+    )
+    file = filesystem.open_borrowed_read(
+        borrow, root, "source", purpose=SOURCE_PURPOSE
+    )
+    port.add_file("dir-data", "source", b"second")
+    before = port.calls.get("read", 0)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.read_borrowed(borrow, file, 16, purpose=SOURCE_PURPOSE)
+    assert caught.value.code is LocalIOCodeV1.PATH_CHANGED
+    assert port.calls.get("read", 0) == before
+
+
+@pytest.mark.parametrize(
+    ("mode", "nlink"),
+    [(stat.S_IFLNK | 0o700, 1), (stat.S_IFREG | 0o600, 2)],
+)
+def test_borrow_read_rejects_symlink_and_hardlink_and_closes_open_handle(
+    mode, nlink
+) -> None:
+    port, filesystem, authority = _composition("hostile-read")
+    port.add_file("dir-data", "hostile", b"payload", mode=mode, nlink=nlink)
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, SOURCE_PURPOSE
+    )
+    before_close = port.calls.get("close_file", 0)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.open_borrowed_read(
+            borrow, root, "hostile", purpose=SOURCE_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.PATH_CHANGED
+    assert port.calls.get("close_file", 0) == before_close + 1
+    assert not port.live_files
+
+
+def test_post_open_registration_failure_closes_exact_handles_once(monkeypatch) -> None:
+    port, filesystem, authority = _composition("registration-cleanup")
+    borrow, root = _borrow(filesystem, authority)
+    assert filesystem.mkdir_borrowed(
+        borrow, root, "child", purpose=DESTINATION_PURPOSE
+    )
+    original_directory_registration = filesystem._new_borrowed_directory
+    monkeypatch.setattr(
+        filesystem,
+        "_new_borrowed_directory",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            LocalIOErrorV1(LocalIOCodeV1.BORROW_INVALID)
+        ),
+    )
+    before_close = port.calls.get("close_directory", 0)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.open_borrowed_directory(
+            borrow, root, "child", purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    assert port.calls.get("close_directory", 0) == before_close + 2
+    # One close is root reauthentication; the second owns the returned child.
+    monkeypatch.setattr(
+        filesystem, "_new_borrowed_directory", original_directory_registration
+    )
+
+    original_file_registration = filesystem._new_borrowed_file
+    monkeypatch.setattr(
+        filesystem,
+        "_new_borrowed_file",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            LocalIOErrorV1(LocalIOCodeV1.BORROW_INVALID)
+        ),
+    )
+    before_close = port.calls.get("close_file", 0)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.create_borrowed_file(
+            borrow, root, "private", purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.BORROW_INVALID
+    assert port.calls.get("close_file", 0) == before_close + 1
+    assert not port.live_files
+    monkeypatch.setattr(filesystem, "_new_borrowed_file", original_file_registration)
+
+
+def test_malformed_open_returns_fail_closed_without_wrapper_registration(
+    monkeypatch,
+) -> None:
+    port, filesystem, authority = _composition("malformed-open")
+    port.add_file("dir-data", "source", b"payload")
+    borrow, root = _borrow(
+        filesystem, authority, RootAccessV1.READ_ONLY, SOURCE_PURPOSE
+    )
+    monkeypatch.setattr(port, "open_read_at", lambda *args: object())
+    before_close = port.calls.get("close_file", 0)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.open_borrowed_read(
+            borrow, root, "source", purpose=SOURCE_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.PATH_CHANGED
+    assert port.calls.get("close_file", 0) == before_close
+    assert not filesystem._borrow_files
+
+
+def test_post_create_cleanup_failure_is_closed(monkeypatch) -> None:
+    port, filesystem, authority = _composition("cleanup-failure")
+    borrow, root = _borrow(filesystem, authority)
+    monkeypatch.setattr(
+        filesystem,
+        "_new_borrowed_file",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            LocalIOErrorV1(LocalIOCodeV1.BORROW_INVALID)
+        ),
+    )
+    port.fail_before["close_file"] = port.calls.get("close_file", 0) + 1
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.create_borrowed_file(
+            borrow, root, "private", purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.IO_FAILED
+    assert "SENTINEL" not in str(caught.value)
+
+
+def test_borrow_pin_is_released_after_closed_underlying_failure() -> None:
+    port, filesystem, authority = _composition()
+    borrow, root = _borrow(filesystem, authority)
+    port.fail_before["mkdir_at"] = 1
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.mkdir_borrowed(borrow, root, "child", purpose=DESTINATION_PURPOSE)
+    assert caught.value.code is LocalIOCodeV1.IO_FAILED
+    assert "SENTINEL" not in str(caught.value)
+    filesystem.release_borrow(borrow, purpose=DESTINATION_PURPOSE)
+
+
+def test_windows_borrow_is_capability_unavailable_without_port_call() -> None:
+    _, filesystem, authority = _composition()
+    filesystem._platform = "win32"
+    request = RetainedRootBorrowRequestV1.build(
+        authority.authority_digest, SOURCE_PURPOSE, RootAccessV1.READ_ONLY
+    )
+    before = tuple(filesystem._port.trace)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.borrow_root(authority, request)
+    assert caught.value.code is LocalIOCodeV1.CAPABILITY_UNAVAILABLE
+    assert tuple(filesystem._port.trace) == before
+
+
+def test_borrow_closed_errors_and_reauthentication_are_zero_call() -> None:
+    port, filesystem, authority = _composition()
+    borrow, root = _borrow(filesystem, authority)
+    filesystem._permit_authenticator.permits.clear()
+    before = tuple(port.trace)
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.list_borrowed_directory(
+            borrow, root, 1, purpose=DESTINATION_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.ROOT_UNAUTHORIZED
+    assert tuple(port.trace) == before
+    assert "SENTINEL" not in str(caught.value)
 
 
 @pytest.mark.parametrize("profile", ["opaque-local-like", "opaque-registry-like"])

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import stat
 import unicodedata
 from dataclasses import dataclass
 from enum import Enum
@@ -36,6 +37,8 @@ class LocalIOCodeV1(str, Enum):
     HARDLINK_UNSAFE = "LOCAL_IO_HARDLINK_UNSAFE"
     JOURNAL_CONFLICT = "LOCAL_IO_JOURNAL_CONFLICT"
     RECOVERY_REQUIRED = "LOCAL_IO_RECOVERY_REQUIRED"
+    BORROW_INVALID = "LOCAL_IO_BORROW_INVALID"
+    BORROW_IN_USE = "LOCAL_IO_BORROW_IN_USE"
 
 
 class LocalIOErrorV1(RuntimeError):
@@ -174,6 +177,12 @@ class RootAccessV1(str, Enum):
     @property
     def creatable(self) -> bool:
         return self in (RootAccessV1.CREATE_ONLY, RootAccessV1.READ_CREATE)
+
+
+class BorrowPurposeV1(str, Enum):
+    BUNDLE_SOURCE_READ = "bundle_source_read"
+    BUNDLE_DESTINATION_CREATE = "bundle_destination_create"
+    BUNDLE_MOUNT_VERIFY = "bundle_mount_verify"
 
 
 class CapabilityStatusV1(str, Enum):
@@ -388,6 +397,178 @@ class LocalRootAuthorityV1:
             "data_binding_digest": self.data_binding.binding_digest,
             "data_node": _root_node_identity_v1(self.data_directory.identity),
             "schema": "synaptic-host-root-authority/v1",
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class RetainedRootBorrowRequestV1:
+    schema_version: str
+    root_authority_digest: str
+    purpose: BorrowPurposeV1
+    access: RootAccessV1
+    request_digest: str
+
+    def __post_init__(self) -> None:
+        if self.schema_version != "synaptic-host-root-borrow-request/v1":
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+        checked_sha256(self.root_authority_digest, LocalIOCodeV1.BORROW_INVALID)
+        if type(self.purpose) is not BorrowPurposeV1:
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+        if type(self.access) is not RootAccessV1:
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+        checked_sha256(self.request_digest, LocalIOCodeV1.BORROW_INVALID)
+        if self.request_digest != digest_v1(self.canonical_without_digest()):
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "access": self.access.value,
+            "purpose": self.purpose.value,
+            "root_authority_digest": self.root_authority_digest,
+            "schema_version": self.schema_version,
+        }
+
+    @classmethod
+    def build(
+        cls,
+        root_authority_digest: str,
+        purpose: BorrowPurposeV1,
+        access: RootAccessV1,
+    ):
+        body = {
+            "access": access.value if type(access) is RootAccessV1 else access,
+            "purpose": purpose.value if type(purpose) is BorrowPurposeV1 else purpose,
+            "root_authority_digest": root_authority_digest,
+            "schema_version": "synaptic-host-root-borrow-request/v1",
+        }
+        return cls(
+            "synaptic-host-root-borrow-request/v1", root_authority_digest,
+            purpose, access, digest_v1(body),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class RetainedRootBorrowV1:
+    schema_version: str
+    borrow_ref: str
+    request_digest: str
+    root_authority_digest: str
+    purpose: BorrowPurposeV1
+    access: RootAccessV1
+    borrow_digest: str
+
+    def __post_init__(self) -> None:
+        if self.schema_version != "synaptic-host-root-borrow/v1":
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+        checked_ref(self.borrow_ref, LocalIOCodeV1.BORROW_INVALID)
+        checked_sha256(self.request_digest, LocalIOCodeV1.BORROW_INVALID)
+        checked_sha256(self.root_authority_digest, LocalIOCodeV1.BORROW_INVALID)
+        if type(self.purpose) is not BorrowPurposeV1:
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+        if type(self.access) is not RootAccessV1:
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+        checked_sha256(self.borrow_digest, LocalIOCodeV1.BORROW_INVALID)
+        if self.borrow_digest != digest_v1(self.canonical_without_digest()):
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "access": self.access.value,
+            "borrow_ref": self.borrow_ref,
+            "purpose": self.purpose.value,
+            "request_digest": self.request_digest,
+            "root_authority_digest": self.root_authority_digest,
+            "schema_version": self.schema_version,
+        }
+
+
+def _borrow_path_components(value: object, *, allow_root: bool) -> tuple[str, ...]:
+    if type(value) is not tuple or any(type(item) is not str for item in value):
+        _fail(LocalIOCodeV1.BORROW_INVALID)
+    if not value:
+        if allow_root:
+            return value
+        _fail(LocalIOCodeV1.BORROW_INVALID)
+    if canonical_relative_components_v1("/".join(value)) != value:
+        _fail(LocalIOCodeV1.BORROW_INVALID)
+    return value
+
+
+@dataclass(frozen=True, slots=True)
+class BorrowedDirectoryV1:
+    schema_version: str
+    borrow_digest: str
+    directory_ref: str
+    path_components: tuple[str, ...]
+    owns_handle: bool
+    identity: LocalFileIdentityV1
+    directory_digest: str
+
+    def __post_init__(self) -> None:
+        if self.schema_version != "synaptic-host-borrowed-directory/v1":
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+        checked_sha256(self.borrow_digest, LocalIOCodeV1.BORROW_INVALID)
+        checked_ref(self.directory_ref, LocalIOCodeV1.BORROW_INVALID)
+        _borrow_path_components(self.path_components, allow_root=True)
+        if type(self.owns_handle) is not bool or self.owns_handle != bool(self.path_components):
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+        if type(self.identity) is not LocalFileIdentityV1 or not stat.S_ISDIR(
+            self.identity.mode
+        ) or stat.S_ISLNK(self.identity.mode):
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+        checked_sha256(self.directory_digest, LocalIOCodeV1.BORROW_INVALID)
+        if self.directory_digest != digest_v1(self.canonical_without_digest()):
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "borrow_digest": self.borrow_digest,
+            "directory_ref": self.directory_ref,
+            "owns_handle": self.owns_handle,
+            "path_components": list(self.path_components),
+            "identity": self.identity.canonical(),
+            "schema_version": self.schema_version,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class BorrowedFileV1:
+    schema_version: str
+    borrow_digest: str
+    file_ref: str
+    path_components: tuple[str, ...]
+    readable: bool
+    writable: bool
+    identity: LocalFileIdentityV1
+    file_digest: str
+
+    def __post_init__(self) -> None:
+        if self.schema_version != "synaptic-host-borrowed-file/v1":
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+        checked_sha256(self.borrow_digest, LocalIOCodeV1.BORROW_INVALID)
+        checked_ref(self.file_ref, LocalIOCodeV1.BORROW_INVALID)
+        _borrow_path_components(self.path_components, allow_root=False)
+        if type(self.readable) is not bool or type(self.writable) is not bool:
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+        if self.readable == self.writable:
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+        if type(self.identity) is not LocalFileIdentityV1 or not stat.S_ISREG(
+            self.identity.mode
+        ) or stat.S_ISLNK(self.identity.mode) or self.identity.nlink != 1:
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+        checked_sha256(self.file_digest, LocalIOCodeV1.BORROW_INVALID)
+        if self.file_digest != digest_v1(self.canonical_without_digest()):
+            _fail(LocalIOCodeV1.BORROW_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "borrow_digest": self.borrow_digest,
+            "file_ref": self.file_ref,
+            "path_components": list(self.path_components),
+            "readable": self.readable,
+            "schema_version": self.schema_version,
+            "writable": self.writable,
+            "identity": self.identity.canonical(),
         }
 
 

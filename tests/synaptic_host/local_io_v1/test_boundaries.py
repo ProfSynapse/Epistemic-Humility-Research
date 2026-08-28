@@ -3,7 +3,16 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-from synaptic_host.local_io_v1.model import LocalIOCodeV1
+from dataclasses import fields
+
+from synaptic_host.local_io_v1.model import (
+    BorrowedDirectoryV1,
+    BorrowedFileV1,
+    BorrowPurposeV1,
+    LocalIOCodeV1,
+    RetainedRootBorrowRequestV1,
+    RetainedRootBorrowV1,
+)
 
 
 PACKAGE = Path(__file__).parents[3] / "synaptic_host" / "local_io_v1"
@@ -68,3 +77,26 @@ def test_architecture_error_vocabulary_contains_all_six_recovery_codes() -> None
         "LOCAL_IO_JOURNAL_CONFLICT",
         "LOCAL_IO_RECOVERY_REQUIRED",
     }
+
+
+def test_borrow_error_vocabulary_and_dtos_do_not_expose_host_authority() -> None:
+    assert LocalIOCodeV1.BORROW_INVALID.value == "LOCAL_IO_BORROW_INVALID"
+    assert LocalIOCodeV1.BORROW_IN_USE.value == "LOCAL_IO_BORROW_IN_USE"
+    forbidden = {
+        "absolute_path", "absolute_root", "handle", "handle_ref", "permit",
+        "port", "retained_directory", "open_file",
+    }
+    for dto in (
+        RetainedRootBorrowRequestV1,
+        RetainedRootBorrowV1,
+        BorrowedDirectoryV1,
+        BorrowedFileV1,
+    ):
+        assert {field.name for field in fields(dto)}.isdisjoint(forbidden)
+    assert {purpose.value for purpose in BorrowPurposeV1} == {
+        "bundle_source_read",
+        "bundle_destination_create",
+        "bundle_mount_verify",
+    }
+    assert "identity" in {field.name for field in fields(BorrowedDirectoryV1)}
+    assert "identity" in {field.name for field in fields(BorrowedFileV1)}

@@ -10,15 +10,20 @@ from __future__ import annotations
 import hashlib
 import stat
 import sys
+from contextlib import contextmanager
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
+from threading import RLock
 from typing import Protocol
 
 from .model import (
     CreateJournalRecordV1,
     CreatePhaseV1,
     LocalArtifactBindingV1,
+    BorrowedDirectoryV1,
+    BorrowedFileV1,
+    BorrowPurposeV1,
     LocalFilesystemCapabilityV1,
     LocalCreateAuthorityV1,
     LocalDestinationBindingV1,
@@ -36,6 +41,8 @@ from .model import (
     RecoveryResultV1,
     RecoveryStatusV1,
     RetainedDirectoryV1,
+    RetainedRootBorrowRequestV1,
+    RetainedRootBorrowV1,
     RootAccessV1,
     RootPermitAuthenticatorV1,
     canonical_relative_components_v1,
@@ -67,6 +74,137 @@ class OpenFileV1:
             raise LocalIOErrorV1(LocalIOCodeV1.IO_FAILED)
 
 
+def _identity_issuance_v1(identity: LocalFileIdentityV1) -> tuple[int, ...]:
+    return (
+        identity.device,
+        identity.inode,
+        identity.mode,
+        identity.nlink,
+        identity.changed_ns,
+        identity.modified_ns,
+        identity.size,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class _BorrowIssuanceV1:
+    schema_version: str
+    request_schema_version: str
+    borrow_ref: str
+    request_digest: str
+    root_authority_digest: str
+    authority_ref: str
+    data_root_ref: str
+    data_binding_digest: str
+    purpose: str
+    access: str
+    borrow_digest: str
+
+    def seal(self) -> str:
+        return digest_v1({
+            "access": self.access,
+            "authority_ref": self.authority_ref,
+            "borrow_digest": self.borrow_digest,
+            "borrow_ref": self.borrow_ref,
+            "data_binding_digest": self.data_binding_digest,
+            "data_root_ref": self.data_root_ref,
+            "purpose": self.purpose,
+            "request_digest": self.request_digest,
+            "request_schema_version": self.request_schema_version,
+            "root_authority_digest": self.root_authority_digest,
+            "schema_version": self.schema_version,
+        })
+
+
+@dataclass(frozen=True, slots=True)
+class _DirectoryIssuanceV1:
+    schema_version: str
+    borrow_ref: str
+    borrow_digest: str
+    directory_ref: str
+    path_components: tuple[str, ...]
+    owns_handle: bool
+    identity: tuple[int, ...]
+    directory_digest: str
+
+    def seal(self) -> str:
+        return digest_v1({
+            "borrow_digest": self.borrow_digest,
+            "borrow_ref": self.borrow_ref,
+            "directory_digest": self.directory_digest,
+            "directory_ref": self.directory_ref,
+            "identity": list(self.identity),
+            "owns_handle": self.owns_handle,
+            "path_components": list(self.path_components),
+            "schema_version": self.schema_version,
+        })
+
+
+@dataclass(frozen=True, slots=True)
+class _FileIssuanceV1:
+    schema_version: str
+    borrow_ref: str
+    borrow_digest: str
+    file_ref: str
+    parent_path: tuple[str, ...]
+    component: str
+    path_components: tuple[str, ...]
+    readable: bool
+    writable: bool
+    identity: tuple[int, ...]
+    file_digest: str
+
+    def seal(self) -> str:
+        return digest_v1({
+            "borrow_digest": self.borrow_digest,
+            "borrow_ref": self.borrow_ref,
+            "component": self.component,
+            "file_digest": self.file_digest,
+            "file_ref": self.file_ref,
+            "identity": list(self.identity),
+            "parent_path": list(self.parent_path),
+            "path_components": list(self.path_components),
+            "readable": self.readable,
+            "schema_version": self.schema_version,
+            "writable": self.writable,
+        })
+
+
+@dataclass(frozen=True, slots=True)
+class _AdmittedDirectoryV1:
+    issued_ref: str
+    object_id: int
+    borrow_ref: str
+    path_components: tuple[str, ...]
+    owns_handle: bool
+    identity: tuple[int, ...]
+    raw: RetainedDirectoryV1
+
+
+@dataclass(frozen=True, slots=True)
+class _AdmittedFileV1:
+    issued_ref: str
+    object_id: int
+    borrow_ref: str
+    parent_path: tuple[str, ...]
+    component: str
+    readable: bool
+    writable: bool
+    identity: tuple[int, ...]
+    raw: OpenFileV1
+
+
+@dataclass(frozen=True, slots=True)
+class _AdmittedEffectV1:
+    borrow_ref: str
+    purpose: str
+    access: str
+    absolute_root: str
+    root_identity: tuple[int, ...]
+    directories: tuple[_AdmittedDirectoryV1, ...]
+    files: tuple[_AdmittedFileV1, ...]
+
+
 class PosixFilesystemPortV1(Protocol):
     def retain_directory(self, absolute_path: Path) -> RetainedDirectoryV1: ...
     def open_directory_at(self, directory: RetainedDirectoryV1, component: str) -> RetainedDirectoryV1: ...
@@ -96,6 +234,51 @@ class PosixFilesystemPortV1(Protocol):
     ) -> JournalSnapshotV1: ...
 
 
+class RetainedRootBorrowPortV1(Protocol):
+    def borrow_root(self, authority: LocalRootAuthorityV1,
+                    request: RetainedRootBorrowRequestV1) -> RetainedRootBorrowV1: ...
+    def root_directory(self, borrow: RetainedRootBorrowV1, *, purpose: BorrowPurposeV1) -> BorrowedDirectoryV1: ...
+    def release_borrow(self, borrow: RetainedRootBorrowV1, *, purpose: BorrowPurposeV1) -> None: ...
+    def open_borrowed_directory(self, borrow: RetainedRootBorrowV1,
+                                parent: BorrowedDirectoryV1, component: str,
+                                *, purpose: BorrowPurposeV1) -> BorrowedDirectoryV1: ...
+    def close_borrowed_directory(self, borrow: RetainedRootBorrowV1,
+                                 directory: BorrowedDirectoryV1, *, purpose: BorrowPurposeV1) -> None: ...
+    def list_borrowed_directory(self, borrow: RetainedRootBorrowV1,
+                                directory: BorrowedDirectoryV1, maximum: int,
+                                *, purpose: BorrowPurposeV1) -> tuple[str, ...]: ...
+    def stat_borrowed(self, borrow: RetainedRootBorrowV1,
+                      directory: BorrowedDirectoryV1, component: str,
+                      *, purpose: BorrowPurposeV1) -> LocalFileIdentityV1 | None: ...
+    def mkdir_borrowed(self, borrow: RetainedRootBorrowV1,
+                       directory: BorrowedDirectoryV1, component: str,
+                       *, purpose: BorrowPurposeV1) -> bool: ...
+    def open_borrowed_read(self, borrow: RetainedRootBorrowV1,
+                           directory: BorrowedDirectoryV1, component: str,
+                           *, purpose: BorrowPurposeV1) -> BorrowedFileV1: ...
+    def create_borrowed_file(self, borrow: RetainedRootBorrowV1,
+                             directory: BorrowedDirectoryV1, component: str,
+                             *, purpose: BorrowPurposeV1) -> BorrowedFileV1: ...
+    def read_borrowed(self, borrow: RetainedRootBorrowV1, file: BorrowedFileV1,
+                      maximum: int, *, purpose: BorrowPurposeV1) -> bytes: ...
+    def write_borrowed(self, borrow: RetainedRootBorrowV1, file: BorrowedFileV1,
+                       payload: bytes, *, purpose: BorrowPurposeV1) -> int: ...
+    def stat_borrowed_file(self, borrow: RetainedRootBorrowV1,
+                           file: BorrowedFileV1, *, purpose: BorrowPurposeV1) -> LocalFileIdentityV1: ...
+    def fsync_borrowed_file(self, borrow: RetainedRootBorrowV1,
+                            file: BorrowedFileV1, *, purpose: BorrowPurposeV1) -> None: ...
+    def close_borrowed_file(self, borrow: RetainedRootBorrowV1,
+                            file: BorrowedFileV1, *, purpose: BorrowPurposeV1) -> None: ...
+    def fsync_borrowed_directory(self, borrow: RetainedRootBorrowV1,
+                                 directory: BorrowedDirectoryV1, *, purpose: BorrowPurposeV1) -> None: ...
+    def link_borrowed(self, borrow: RetainedRootBorrowV1,
+                      directory: BorrowedDirectoryV1, source: str, destination: str,
+                      *, purpose: BorrowPurposeV1) -> None: ...
+    def unlink_borrowed(self, borrow: RetainedRootBorrowV1,
+                        directory: BorrowedDirectoryV1, component: str,
+                        *, purpose: BorrowPurposeV1) -> None: ...
+
+
 def _closed(code: LocalIOCodeV1) -> LocalIOErrorV1:
     return LocalIOErrorV1(code)
 
@@ -121,6 +304,15 @@ def _same_node(left: LocalFileIdentityV1, right: LocalFileIdentityV1) -> bool:
         right.mode,
         right.modified_ns,
         right.size,
+    )
+
+
+def _same_borrow_node(left: LocalFileIdentityV1, right: LocalFileIdentityV1) -> bool:
+    return (
+        type(left) is LocalFileIdentityV1
+        and type(right) is LocalFileIdentityV1
+        and (left.device, left.inode, left.mode & 0o170000)
+        == (right.device, right.inode, right.mode & 0o170000)
     )
 
 
@@ -173,6 +365,32 @@ class LocalFilesystemV1:
         self._live_roots: dict[str, LocalRootAuthorityV1] = {}
         self._live_create: dict[str, tuple[LocalCreateAuthorityV1, LocalDestinationBindingV1]] = {}
         self._active_mutations: set[str] = set()
+        self._borrow_counter = 0
+        self._borrow_directory_counter = 0
+        self._borrow_file_counter = 0
+        self._borrow_lock = RLock()
+        self._live_borrows: dict[str, tuple[RetainedRootBorrowV1, LocalRootAuthorityV1]] = {}
+        self._borrow_directories: dict[
+            str, tuple[BorrowedDirectoryV1, str, RetainedDirectoryV1]
+        ] = {}
+        self._borrow_files: dict[str, tuple[BorrowedFileV1, str, OpenFileV1]] = {}
+        self._borrow_inflight: dict[str, int] = {}
+        self._borrow_directory_inflight: dict[str, int] = {}
+        self._borrow_file_inflight: dict[str, int] = {}
+        self._closing_borrow_directories: set[str] = set()
+        self._closing_borrow_files: set[str] = set()
+        self._borrow_issuance: dict[str, _BorrowIssuanceV1] = {}
+        self._directory_issuance: dict[str, _DirectoryIssuanceV1] = {}
+        self._file_issuance: dict[str, _FileIssuanceV1] = {}
+        self._borrow_issuance_seals: dict[str, str] = {}
+        self._directory_issuance_seals: dict[str, str] = {}
+        self._file_issuance_seals: dict[str, str] = {}
+        self._borrow_object_refs: dict[int, str] = {}
+        self._directory_object_refs: dict[int, str] = {}
+        self._file_object_refs: dict[int, str] = {}
+        self._invalid_borrow_issuance: set[str] = set()
+        self._invalid_directory_issuance: set[str] = set()
+        self._invalid_file_issuance: set[str] = set()
 
     def capability(self) -> LocalFilesystemCapabilityV1:
         available = self._platform in _POSIX_PLATFORMS and self._port is not None
@@ -259,7 +477,8 @@ class LocalFilesystemV1:
                 data_binding, control_binding, data.identity, control.identity
             ),
         )
-        self._live_roots[authority_ref] = result
+        with self._borrow_lock:
+            self._live_roots[authority_ref] = result
         return result
 
     def _authenticate_binding(self, binding: LocalRootBindingV1) -> None:
@@ -275,8 +494,11 @@ class LocalFilesystemV1:
 
     def release_root_authority(self, authority: LocalRootAuthorityV1) -> None:
         self._require_posix()
-        self._validate_authority(authority)
-        del self._live_roots[authority.authority_ref]
+        with self._borrow_lock:
+            self._validate_authority(authority)
+            if any(parent is authority for _, parent in self._live_borrows.values()):
+                raise _closed(LocalIOCodeV1.BORROW_IN_USE)
+            del self._live_roots[authority.authority_ref]
         failed = False
         for directory in (authority.data_directory, authority.control_directory):
             try:
@@ -299,6 +521,1082 @@ class LocalFilesystemV1:
             raise _closed(LocalIOCodeV1.AUTHORITY_INVALID)
         if self._live_roots.get(authority.authority_ref) is not authority:
             raise _closed(LocalIOCodeV1.AUTHORITY_INVALID)
+
+    @staticmethod
+    def _borrow_access_allows(parent: RootAccessV1, requested: RootAccessV1) -> bool:
+        return (
+            (not requested.readable or parent.readable)
+            and (not requested.creatable or parent.creatable)
+        )
+
+    def _record_borrow_issuance(
+        self, borrow: RetainedRootBorrowV1, authority: LocalRootAuthorityV1
+    ) -> None:
+        issuance = _BorrowIssuanceV1(
+            borrow.schema_version,
+            "synaptic-host-root-borrow-request/v1",
+            borrow.borrow_ref,
+            borrow.request_digest,
+            borrow.root_authority_digest,
+            authority.authority_ref,
+            authority.data_binding.root_ref,
+            authority.data_binding.binding_digest,
+            borrow.purpose.value,
+            borrow.access.value,
+            borrow.borrow_digest,
+        )
+        self._borrow_issuance[borrow.borrow_ref] = issuance
+        self._borrow_issuance_seals[borrow.borrow_ref] = issuance.seal()
+        self._borrow_object_refs[id(borrow)] = borrow.borrow_ref
+
+    def _record_directory_issuance(
+        self,
+        directory: BorrowedDirectoryV1,
+        borrow_ref: str,
+    ) -> None:
+        issuance = _DirectoryIssuanceV1(
+            directory.schema_version,
+            borrow_ref,
+            directory.borrow_digest,
+            directory.directory_ref,
+            tuple(directory.path_components),
+            directory.owns_handle,
+            _identity_issuance_v1(directory.identity),
+            directory.directory_digest,
+        )
+        self._directory_issuance[directory.directory_ref] = issuance
+        self._directory_issuance_seals[directory.directory_ref] = issuance.seal()
+        self._directory_object_refs[id(directory)] = directory.directory_ref
+
+    def _record_file_issuance(
+        self, file: BorrowedFileV1, borrow_ref: str
+    ) -> None:
+        issuance = _FileIssuanceV1(
+            file.schema_version,
+            borrow_ref,
+            file.borrow_digest,
+            file.file_ref,
+            tuple(file.path_components[:-1]),
+            file.path_components[-1],
+            tuple(file.path_components),
+            file.readable,
+            file.writable,
+            _identity_issuance_v1(file.identity),
+            file.file_digest,
+        )
+        self._file_issuance[file.file_ref] = issuance
+        self._file_issuance_seals[file.file_ref] = issuance.seal()
+        self._file_object_refs[id(file)] = file.file_ref
+
+    def borrow_root(
+        self,
+        authority: LocalRootAuthorityV1,
+        request: RetainedRootBorrowRequestV1,
+    ) -> RetainedRootBorrowV1:
+        self._require_posix()
+        if type(request) is not RetainedRootBorrowRequestV1:
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        try:
+            request_valid = (
+                type(authority) is LocalRootAuthorityV1
+                and request.schema_version
+                == "synaptic-host-root-borrow-request/v1"
+                and request.root_authority_digest == authority.authority_digest
+                and type(request.purpose) is BorrowPurposeV1
+                and type(request.access) is RootAccessV1
+                and request.request_digest
+                == digest_v1(request.canonical_without_digest())
+                and (
+                    request.purpose is BorrowPurposeV1.BUNDLE_DESTINATION_CREATE
+                    and request.access.creatable
+                    or request.purpose
+                    in {
+                        BorrowPurposeV1.BUNDLE_SOURCE_READ,
+                        BorrowPurposeV1.BUNDLE_MOUNT_VERIFY,
+                    }
+                    and request.access.readable
+                )
+            )
+        except BaseException:
+            request_valid = False
+        if not request_valid:
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        with self._borrow_lock:
+            self._validate_authority(authority)
+            self._authenticate_binding(authority.data_binding)
+            if (
+                request.root_authority_digest != authority.authority_digest
+                or not self._borrow_access_allows(authority.data_binding.access, request.access)
+            ):
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            self._borrow_counter += 1
+            borrow_ref = f"root-borrow-{self._borrow_counter}"
+            body = {
+                "access": request.access.value,
+                "borrow_ref": borrow_ref,
+                "purpose": request.purpose.value,
+                "request_digest": request.request_digest,
+                "root_authority_digest": authority.authority_digest,
+                "schema_version": "synaptic-host-root-borrow/v1",
+            }
+            borrow = RetainedRootBorrowV1(
+                "synaptic-host-root-borrow/v1", borrow_ref, request.request_digest,
+                authority.authority_digest, request.purpose, request.access,
+                digest_v1(body),
+            )
+            self._live_borrows[borrow_ref] = (borrow, authority)
+            self._borrow_inflight[borrow_ref] = 0
+            self._record_borrow_issuance(borrow, authority)
+            self._borrow_directory_counter += 1
+            directory_ref = f"borrow-dir-{self._borrow_directory_counter}"
+            directory_body = {
+                "borrow_digest": borrow.borrow_digest,
+                "directory_ref": directory_ref,
+                "identity": authority.data_directory.identity.canonical(),
+                "owns_handle": False,
+                "path_components": [],
+                "schema_version": "synaptic-host-borrowed-directory/v1",
+            }
+            root = BorrowedDirectoryV1(
+                "synaptic-host-borrowed-directory/v1", borrow.borrow_digest,
+                directory_ref, (), False, authority.data_directory.identity,
+                digest_v1(directory_body),
+            )
+            self._borrow_directories[directory_ref] = (
+                root, borrow_ref, authority.data_directory
+            )
+            self._borrow_directory_inflight[directory_ref] = 0
+            self._record_directory_issuance(root, borrow_ref)
+            return borrow
+
+    def _borrow_locked(self, borrow: RetainedRootBorrowV1, purpose: BorrowPurposeV1):
+        if (
+            type(borrow) is not RetainedRootBorrowV1
+            or type(purpose) is not BorrowPurposeV1
+        ):
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        issued_ref = self._borrow_object_refs.get(id(borrow))
+        try:
+            issuance = self._borrow_issuance.get(issued_ref)
+            state = self._live_borrows.get(issued_ref)
+            authority = None if state is None else state[1]
+            request_projection = {
+                "access": borrow.access.value,
+                "purpose": borrow.purpose.value,
+                "root_authority_digest": borrow.root_authority_digest,
+                "schema_version": "synaptic-host-root-borrow-request/v1",
+            }
+            valid = (
+                issued_ref is not None
+                and issued_ref not in self._invalid_borrow_issuance
+                and issuance is not None
+                and state is not None
+                and state[0] is borrow
+                and issuance.seal() == self._borrow_issuance_seals.get(issued_ref)
+                and borrow.schema_version == issuance.schema_version
+                and borrow.borrow_ref == issuance.borrow_ref == issued_ref
+                and borrow.request_digest == issuance.request_digest
+                and borrow.root_authority_digest == issuance.root_authority_digest
+                and borrow.purpose.value == issuance.purpose
+                and borrow.access.value == issuance.access
+                and borrow.borrow_digest == issuance.borrow_digest
+                and borrow.request_digest == digest_v1(request_projection)
+                and borrow.borrow_digest
+                == digest_v1(borrow.canonical_without_digest())
+                and authority.authority_ref == issuance.authority_ref
+                and authority.authority_digest == issuance.root_authority_digest
+                and authority.data_binding.root_ref == issuance.data_root_ref
+                and authority.data_binding.binding_digest
+                == issuance.data_binding_digest
+                and borrow.purpose is purpose
+            )
+        except BaseException:
+            valid = False
+            state = None
+        if not valid:
+            if issued_ref is not None:
+                self._invalid_borrow_issuance.add(issued_ref)
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        return state
+
+    def _directory_locked(self, borrow: RetainedRootBorrowV1,
+                          directory: BorrowedDirectoryV1) -> RetainedDirectoryV1:
+        if type(directory) is not BorrowedDirectoryV1:
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        issued_ref = self._directory_object_refs.get(id(directory))
+        try:
+            issuance = self._directory_issuance.get(issued_ref)
+            state = self._borrow_directories.get(issued_ref)
+            valid = (
+                issued_ref is not None
+                and issued_ref not in self._invalid_directory_issuance
+                and issuance is not None
+                and state is not None
+                and state[0] is directory
+                and issuance.seal()
+                == self._directory_issuance_seals.get(issued_ref)
+                and directory.schema_version == issuance.schema_version
+                and directory.borrow_digest == issuance.borrow_digest
+                and directory.directory_ref == issuance.directory_ref == issued_ref
+                and tuple(directory.path_components) == issuance.path_components
+                and directory.owns_handle is issuance.owns_handle
+                and _identity_issuance_v1(directory.identity) == issuance.identity
+                and directory.directory_digest == issuance.directory_digest
+                and directory.directory_digest
+                == digest_v1(directory.canonical_without_digest())
+                and issuance.borrow_ref == borrow.borrow_ref
+                and directory.borrow_digest == borrow.borrow_digest
+                and issued_ref not in self._closing_borrow_directories
+                and _same_borrow_node(directory.identity, state[2].identity)
+            )
+        except BaseException:
+            valid = False
+            state = None
+        if not valid:
+            if issued_ref is not None:
+                self._invalid_directory_issuance.add(issued_ref)
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        return state[2]
+
+    def _file_locked(self, borrow: RetainedRootBorrowV1,
+                     file: BorrowedFileV1) -> OpenFileV1:
+        if type(file) is not BorrowedFileV1:
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        issued_ref = self._file_object_refs.get(id(file))
+        try:
+            issuance = self._file_issuance.get(issued_ref)
+            state = self._borrow_files.get(issued_ref)
+            valid = (
+                issued_ref is not None
+                and issued_ref not in self._invalid_file_issuance
+                and issuance is not None
+                and state is not None
+                and state[0] is file
+                and issuance.seal() == self._file_issuance_seals.get(issued_ref)
+                and file.schema_version == issuance.schema_version
+                and file.borrow_digest == issuance.borrow_digest
+                and file.file_ref == issuance.file_ref == issued_ref
+                and tuple(file.path_components[:-1]) == issuance.parent_path
+                and file.path_components[-1] == issuance.component
+                and tuple(file.path_components) == issuance.path_components
+                and file.readable is issuance.readable
+                and file.writable is issuance.writable
+                and _identity_issuance_v1(file.identity) == issuance.identity
+                and file.file_digest == issuance.file_digest
+                and file.file_digest == digest_v1(file.canonical_without_digest())
+                and issuance.borrow_ref == borrow.borrow_ref
+                and file.borrow_digest == borrow.borrow_digest
+                and issued_ref not in self._closing_borrow_files
+                and _same_borrow_node(file.identity, state[2].identity)
+            )
+        except BaseException:
+            valid = False
+            state = None
+        if not valid:
+            if issued_ref is not None:
+                self._invalid_file_issuance.add(issued_ref)
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        return state[2]
+
+    def _directory_ancestry_locked(
+        self, borrow: RetainedRootBorrowV1, path: tuple[str, ...]
+    ) -> None:
+        for depth in range(0, len(path) + 1):
+            prefix = path[:depth]
+            matches = [
+                item[0]
+                for item in self._borrow_directories.values()
+                if item[1] == borrow.borrow_ref
+                and item[0].path_components == prefix
+            ]
+            if len(matches) != 1:
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            self._directory_locked(borrow, matches[0])
+
+    def _capture_effect_locked(
+        self,
+        borrow: RetainedRootBorrowV1,
+        purpose: BorrowPurposeV1,
+        directories: tuple[BorrowedDirectoryV1, ...],
+        files: tuple[BorrowedFileV1, ...],
+    ) -> tuple[_AdmittedEffectV1, LocalRootAuthorityV1]:
+        _, authority = self._borrow_locked(borrow, purpose)
+        borrow_ref = self._borrow_object_refs[id(borrow)]
+        borrow_issuance = self._borrow_issuance[borrow_ref]
+        requested_paths: set[tuple[str, ...]] = {()}
+        for directory in directories:
+            self._directory_locked(borrow, directory)
+            issued_ref = self._directory_object_refs[id(directory)]
+            issuance = self._directory_issuance[issued_ref]
+            if issuance.borrow_ref != borrow_ref:
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            path = issuance.path_components
+            requested_paths.update(path[:depth] for depth in range(len(path) + 1))
+        for file in files:
+            self._file_locked(borrow, file)
+            issued_ref = self._file_object_refs[id(file)]
+            issuance = self._file_issuance[issued_ref]
+            if issuance.borrow_ref != borrow_ref:
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            parent_path = issuance.parent_path
+            requested_paths.update(
+                parent_path[:depth] for depth in range(len(parent_path) + 1)
+            )
+
+        admitted_directories: list[_AdmittedDirectoryV1] = []
+        for path in sorted(requested_paths, key=lambda value: (len(value), value)):
+            matches = [
+                (issued_ref, issuance)
+                for issued_ref, issuance in self._directory_issuance.items()
+                if issuance.borrow_ref == borrow_ref
+                and issuance.path_components == path
+            ]
+            if len(matches) != 1:
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            issued_ref, issuance = matches[0]
+            state = self._borrow_directories.get(issued_ref)
+            if (
+                issued_ref in self._invalid_directory_issuance
+                or issued_ref in self._closing_borrow_directories
+                or state is None
+                or state[1] != borrow_ref
+                or self._directory_object_refs.get(id(state[0])) != issued_ref
+                or issuance.seal()
+                != self._directory_issuance_seals.get(issued_ref)
+                or (
+                    state[2].identity.device,
+                    state[2].identity.inode,
+                    state[2].identity.mode & 0o170000,
+                )
+                != (
+                    issuance.identity[0],
+                    issuance.identity[1],
+                    issuance.identity[2] & 0o170000,
+                )
+            ):
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            admitted_directories.append(_AdmittedDirectoryV1(
+                issued_ref,
+                id(state[0]),
+                issuance.borrow_ref,
+                issuance.path_components,
+                issuance.owns_handle,
+                tuple(issuance.identity),
+                state[2],
+            ))
+
+        admitted_files: list[_AdmittedFileV1] = []
+        for file in files:
+            issued_ref = self._file_object_refs[id(file)]
+            issuance = self._file_issuance[issued_ref]
+            state = self._borrow_files.get(issued_ref)
+            if (
+                issued_ref in self._invalid_file_issuance
+                or issued_ref in self._closing_borrow_files
+                or state is None
+                or state[1] != borrow_ref
+                or self._file_object_refs.get(id(state[0])) != issued_ref
+                or issuance.seal() != self._file_issuance_seals.get(issued_ref)
+            ):
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            admitted_files.append(_AdmittedFileV1(
+                issued_ref,
+                id(file),
+                issuance.borrow_ref,
+                issuance.parent_path,
+                issuance.component,
+                issuance.readable,
+                issuance.writable,
+                tuple(issuance.identity),
+                state[2],
+            ))
+
+        root = next(
+            item for item in admitted_directories if not item.path_components
+        )
+        context = _AdmittedEffectV1(
+            borrow_ref,
+            borrow_issuance.purpose,
+            borrow_issuance.access,
+            str(authority.data_binding.absolute_root),
+            root.identity,
+            tuple(admitted_directories),
+            tuple(admitted_files),
+        )
+        return context, authority
+
+    @staticmethod
+    def _context_directory(
+        context: _AdmittedEffectV1, issued_ref: str
+    ) -> _AdmittedDirectoryV1:
+        matches = [item for item in context.directories if item.issued_ref == issued_ref]
+        if len(matches) != 1:
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        return matches[0]
+
+    @staticmethod
+    def _context_file(
+        context: _AdmittedEffectV1, issued_ref: str
+    ) -> _AdmittedFileV1:
+        matches = [item for item in context.files if item.issued_ref == issued_ref]
+        if len(matches) != 1:
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        return matches[0]
+
+    def _poison_mutated_visible_locked(
+        self,
+        borrow: RetainedRootBorrowV1,
+        purpose: BorrowPurposeV1,
+        directories: tuple[BorrowedDirectoryV1, ...],
+        files: tuple[BorrowedFileV1, ...],
+    ) -> None:
+        try:
+            self._borrow_locked(borrow, purpose)
+        except BaseException:
+            pass
+        for directory in directories:
+            try:
+                self._directory_locked(borrow, directory)
+            except BaseException:
+                pass
+        for file in files:
+            try:
+                self._file_locked(borrow, file)
+            except BaseException:
+                pass
+
+    @staticmethod
+    def _purpose_allows_context(context: _AdmittedEffectV1, action: str) -> bool:
+        if action in {"metadata", "close"}:
+            return True
+        if action == "read":
+            return (
+                context.purpose
+                in {
+                    BorrowPurposeV1.BUNDLE_SOURCE_READ.value,
+                    BorrowPurposeV1.BUNDLE_MOUNT_VERIFY.value,
+                }
+                and context.access
+                in {RootAccessV1.READ_ONLY.value, RootAccessV1.READ_CREATE.value}
+            )
+        if action in {"mutation", "durability"}:
+            return (
+                context.purpose == BorrowPurposeV1.BUNDLE_DESTINATION_CREATE.value
+                and context.access
+                in {RootAccessV1.CREATE_ONLY.value, RootAccessV1.READ_CREATE.value}
+            )
+        return False
+
+    def _reauthenticate_effect(self, context: _AdmittedEffectV1) -> None:
+        reopened = None
+        try:
+            reopened = self._port.retain_directory(Path(context.absolute_root))
+            if (
+                type(reopened) is not RetainedDirectoryV1
+                or (
+                    reopened.identity.device,
+                    reopened.identity.inode,
+                    reopened.identity.mode & 0o170000,
+                )
+                != (
+                    context.root_identity[0],
+                    context.root_identity[1],
+                    context.root_identity[2] & 0o170000,
+                )
+                or reopened.identity.changed_ns < context.root_identity[4]
+            ):
+                raise _closed(LocalIOCodeV1.ROOT_CHANGED)
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.ROOT_CHANGED) from None
+        finally:
+            if reopened is not None:
+                try:
+                    self._port.close_directory(reopened)
+                except BaseException:
+                    raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def _verify_admitted_effect(self, context: _AdmittedEffectV1) -> None:
+        directories_by_path = {
+            item.path_components: item for item in context.directories
+        }
+        for directory in context.directories:
+            if not directory.path_components:
+                continue
+            child_path = directory.path_components
+            parent_path = child_path[:-1]
+            parent = directories_by_path.get(parent_path)
+            if parent is None:
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            actual = self._port.stat_at(parent.raw, child_path[-1])
+            if (
+                type(actual) is not LocalFileIdentityV1
+                or (
+                    actual.device, actual.inode, actual.mode & 0o170000
+                )
+                != (
+                    directory.identity[0],
+                    directory.identity[1],
+                    directory.identity[2] & 0o170000,
+                )
+                or actual.changed_ns < directory.identity[4]
+            ):
+                raise _closed(LocalIOCodeV1.PATH_CHANGED)
+        for file in context.files:
+            parent = directories_by_path.get(file.parent_path)
+            if parent is None:
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            path_identity = self._port.stat_at(parent.raw, file.component)
+            handle_identity = self._port.stat_file(file.raw)
+            issued_identity = file.identity
+            exact_read_identity = (
+                type(path_identity) is LocalFileIdentityV1
+                and type(handle_identity) is LocalFileIdentityV1
+                and _identity_issuance_v1(path_identity) == issued_identity
+                and _identity_issuance_v1(handle_identity) == issued_identity
+            )
+            evolving_write_identity = (
+                type(path_identity) is LocalFileIdentityV1
+                and type(handle_identity) is LocalFileIdentityV1
+                and (
+                    path_identity.device,
+                    path_identity.inode,
+                    path_identity.mode & 0o170000,
+                )
+                == (
+                    issued_identity[0],
+                    issued_identity[1],
+                    issued_identity[2] & 0o170000,
+                )
+                and path_identity == handle_identity
+                and path_identity.changed_ns >= issued_identity[4]
+                and _is_regular_single(path_identity)
+            )
+            if not (exact_read_identity if file.readable else evolving_write_identity):
+                raise _closed(LocalIOCodeV1.PATH_CHANGED)
+
+    @contextmanager
+    def _pin_borrow(
+        self,
+        borrow: RetainedRootBorrowV1,
+        purpose: BorrowPurposeV1,
+        *,
+        action: str = "metadata",
+        directories: tuple[BorrowedDirectoryV1, ...] = (),
+        files: tuple[BorrowedFileV1, ...] = (),
+    ):
+        context = None
+        pinned = False
+        try:
+            with self._borrow_lock:
+                context, authority = self._capture_effect_locked(
+                    borrow, purpose, directories, files
+                )
+                self._validate_authority(authority)
+                self._authenticate_binding(authority.data_binding)
+                if not self._purpose_allows_context(context, action):
+                    raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
+                self._borrow_inflight[context.borrow_ref] += 1
+                for directory in context.directories:
+                    self._borrow_directory_inflight[directory.issued_ref] += 1
+                for file in context.files:
+                    self._borrow_file_inflight[file.issued_ref] += 1
+                pinned = True
+            self._reauthenticate_effect(context)
+            self._verify_admitted_effect(context)
+            yield context
+        finally:
+            if context is not None:
+                with self._borrow_lock:
+                    if pinned:
+                        for file in context.files:
+                            if file.issued_ref in self._borrow_file_inflight:
+                                self._borrow_file_inflight[file.issued_ref] -= 1
+                        for directory in context.directories:
+                            if directory.issued_ref in self._borrow_directory_inflight:
+                                self._borrow_directory_inflight[directory.issued_ref] -= 1
+                        if context.borrow_ref in self._borrow_inflight:
+                            self._borrow_inflight[context.borrow_ref] -= 1
+                    self._poison_mutated_visible_locked(
+                        borrow, purpose, directories, files
+                    )
+
+    def root_directory(self, borrow: RetainedRootBorrowV1, *, purpose: BorrowPurposeV1) -> BorrowedDirectoryV1:
+        with self._borrow_lock:
+            self._borrow_locked(borrow, purpose)
+            roots = [item[0] for item in self._borrow_directories.values()
+                     if item[1] == borrow.borrow_ref and not item[0].owns_handle]
+            if len(roots) != 1:
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            self._directory_locked(borrow, roots[0])
+            return roots[0]
+
+    def release_borrow(self, borrow: RetainedRootBorrowV1, *, purpose: BorrowPurposeV1) -> None:
+        with self._borrow_lock:
+            self._borrow_locked(borrow, purpose)
+            has_children = any(
+                item[1] == borrow.borrow_ref and item[0].owns_handle
+                for item in self._borrow_directories.values()
+            ) or any(item[1] == borrow.borrow_ref for item in self._borrow_files.values())
+            if self._borrow_inflight[borrow.borrow_ref] or has_children:
+                raise _closed(LocalIOCodeV1.BORROW_IN_USE)
+            root_refs = [key for key, item in self._borrow_directories.items()
+                         if item[1] == borrow.borrow_ref]
+            if len(root_refs) != 1:
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            root = self._borrow_directories[root_refs[0]][0]
+            self._directory_locked(borrow, root)
+            del self._directory_object_refs[id(root)]
+            self._directory_issuance.pop(root_refs[0], None)
+            self._directory_issuance_seals.pop(root_refs[0], None)
+            self._invalid_directory_issuance.discard(root_refs[0])
+            del self._borrow_directory_inflight[root_refs[0]]
+            del self._borrow_directories[root_refs[0]]
+            issued_ref = self._borrow_object_refs.pop(id(borrow))
+            self._borrow_issuance.pop(issued_ref, None)
+            self._borrow_issuance_seals.pop(issued_ref, None)
+            self._invalid_borrow_issuance.discard(issued_ref)
+            del self._borrow_inflight[borrow.borrow_ref]
+            del self._live_borrows[borrow.borrow_ref]
+
+    @staticmethod
+    def _borrow_component(component: str) -> str:
+        parts = canonical_relative_components_v1(component)
+        if len(parts) != 1:
+            raise _closed(LocalIOCodeV1.PATH_INVALID)
+        return parts[0]
+
+    def _new_borrowed_directory(
+        self,
+        context: _AdmittedEffectV1,
+        parent: _AdmittedDirectoryV1,
+        component: str,
+        raw: RetainedDirectoryV1,
+    ):
+        with self._borrow_lock:
+            issuance = self._borrow_issuance.get(context.borrow_ref)
+            if (
+                issuance is None
+                or context.borrow_ref in self._invalid_borrow_issuance
+            ):
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            self._borrow_directory_counter += 1
+            ref = f"borrow-dir-{self._borrow_directory_counter}"
+            path = parent.path_components + (component,)
+            body = {"borrow_digest": issuance.borrow_digest, "directory_ref": ref,
+                    "identity": raw.identity.canonical(),
+                    "owns_handle": True, "path_components": list(path),
+                    "schema_version": "synaptic-host-borrowed-directory/v1"}
+            value = BorrowedDirectoryV1(
+                "synaptic-host-borrowed-directory/v1", issuance.borrow_digest,
+                ref, path, True, raw.identity, digest_v1(body),
+            )
+            self._borrow_directories[ref] = (value, context.borrow_ref, raw)
+            self._borrow_directory_inflight[ref] = 0
+            self._record_directory_issuance(value, context.borrow_ref)
+            return value
+
+    def open_borrowed_directory(self, borrow, parent, component, *, purpose):
+        component = self._borrow_component(component)
+        raw = None
+        try:
+            with self._pin_borrow(
+                borrow, purpose, action="metadata", directories=(parent,)
+            ) as context:
+                try:
+                    admitted_parent = context.directories[-1]
+                    raw_parent = admitted_parent.raw
+                    raw = self._port.open_directory_at(raw_parent, component)
+                    if type(raw) is not RetainedDirectoryV1 or not _is_directory(raw.identity):
+                        raise _closed(LocalIOCodeV1.PATH_CHANGED)
+                    result = self._new_borrowed_directory(
+                        context, admitted_parent, component, raw
+                    )
+                    raw = None
+                    return result
+                finally:
+                    if raw is not None and type(raw) is RetainedDirectoryV1:
+                        try:
+                            self._port.close_directory(raw)
+                        except BaseException:
+                            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def close_borrowed_directory(self, borrow, directory, *, purpose):
+        context = None
+        target = None
+        admitted = False
+        succeeded = False
+        try:
+            with self._borrow_lock:
+                context, authority = self._capture_effect_locked(
+                    borrow, purpose, (directory,), ()
+                )
+                target = context.directories[-1]
+                self._validate_authority(authority)
+                self._authenticate_binding(authority.data_binding)
+                if not self._purpose_allows_context(context, "close"):
+                    raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
+                if not target.owns_handle:
+                    raise _closed(LocalIOCodeV1.BORROW_INVALID)
+                prefix = target.path_components
+                if (
+                    self._borrow_directory_inflight[target.issued_ref]
+                    or any(
+                        issuance.borrow_ref == context.borrow_ref
+                        and issuance.directory_ref != target.issued_ref
+                        and issuance.path_components[:len(prefix)] == prefix
+                        for issuance in self._directory_issuance.values()
+                    )
+                    or any(
+                        issuance.borrow_ref == context.borrow_ref
+                        and issuance.path_components[:len(prefix)] == prefix
+                        for issuance in self._file_issuance.values()
+                    )
+                ):
+                    raise _closed(LocalIOCodeV1.BORROW_IN_USE)
+                self._closing_borrow_directories.add(target.issued_ref)
+                self._borrow_inflight[context.borrow_ref] += 1
+                admitted = True
+            self._reauthenticate_effect(context)
+            self._verify_admitted_effect(context)
+            self._port.close_directory(target.raw)
+            succeeded = True
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+        finally:
+            with self._borrow_lock:
+                if context is not None and target is not None:
+                    self._poison_mutated_visible_locked(
+                        borrow, purpose, (directory,), ()
+                    )
+                    if succeeded:
+                        self._directory_object_refs.pop(target.object_id, None)
+                        self._directory_issuance.pop(target.issued_ref, None)
+                        self._directory_issuance_seals.pop(target.issued_ref, None)
+                        self._invalid_directory_issuance.discard(target.issued_ref)
+                        self._borrow_directory_inflight.pop(target.issued_ref, None)
+                        self._borrow_directories.pop(target.issued_ref, None)
+                    self._closing_borrow_directories.discard(target.issued_ref)
+                    if admitted and context.borrow_ref in self._borrow_inflight:
+                        self._borrow_inflight[context.borrow_ref] -= 1
+
+    def list_borrowed_directory(self, borrow, directory, maximum, *, purpose):
+        if type(maximum) is not int or not 0 <= maximum <= MAX_DIRECTORY_ENTRIES + 1:
+            raise _closed(LocalIOCodeV1.LIMIT_EXCEEDED)
+        try:
+            with self._pin_borrow(
+                borrow, purpose, action="metadata", directories=(directory,)
+            ) as context:
+                raw = context.directories[-1].raw
+                values = self._port.list_names_at(raw, maximum)
+                if (
+                    type(values) is not tuple
+                    or len(values) > maximum
+                    or any(type(value) is not str for value in values)
+                ):
+                    raise _closed(LocalIOCodeV1.LIMIT_EXCEEDED)
+                try:
+                    if any(self._borrow_component(value) != value for value in values):
+                        raise _closed(LocalIOCodeV1.PATH_INVALID)
+                except LocalIOErrorV1:
+                    raise _closed(LocalIOCodeV1.PATH_INVALID) from None
+                return values
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def stat_borrowed(self, borrow, directory, component, *, purpose):
+        component = self._borrow_component(component)
+        try:
+            with self._pin_borrow(
+                borrow, purpose, action="metadata", directories=(directory,)
+            ) as context:
+                raw = context.directories[-1].raw
+                value = self._port.stat_at(raw, component)
+                if value is not None and type(value) is not LocalFileIdentityV1:
+                    raise _closed(LocalIOCodeV1.IO_FAILED)
+                return value
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def mkdir_borrowed(self, borrow, directory, component, *, purpose):
+        component = self._borrow_component(component)
+        try:
+            with self._pin_borrow(
+                borrow, purpose, action="mutation", directories=(directory,)
+            ) as context:
+                raw = context.directories[-1].raw
+                result = self._port.mkdir_at(raw, component)
+                if type(result) is not bool:
+                    raise _closed(LocalIOCodeV1.IO_FAILED)
+                return result
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def _new_borrowed_file(
+        self,
+        context: _AdmittedEffectV1,
+        directory: _AdmittedDirectoryV1,
+        component: str,
+        raw: OpenFileV1,
+        *,
+        readable: bool,
+    ):
+        if type(raw) is not OpenFileV1 or not _is_regular_single(raw.identity):
+            raise _closed(LocalIOCodeV1.PATH_CHANGED)
+        with self._borrow_lock:
+            issuance = self._borrow_issuance.get(context.borrow_ref)
+            if (
+                issuance is None
+                or context.borrow_ref in self._invalid_borrow_issuance
+            ):
+                raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            self._borrow_file_counter += 1
+            ref = f"borrow-file-{self._borrow_file_counter}"
+            path = directory.path_components + (component,)
+            body = {
+                "borrow_digest": issuance.borrow_digest,
+                "file_ref": ref,
+                "identity": raw.identity.canonical(),
+                "path_components": list(path),
+                "readable": readable,
+                "schema_version": "synaptic-host-borrowed-file/v1",
+                "writable": not readable,
+            }
+            value = BorrowedFileV1(
+                "synaptic-host-borrowed-file/v1", issuance.borrow_digest, ref,
+                path, readable, not readable, raw.identity, digest_v1(body),
+            )
+            self._borrow_files[ref] = (value, context.borrow_ref, raw)
+            self._borrow_file_inflight[ref] = 0
+            self._record_file_issuance(value, context.borrow_ref)
+            return value
+
+    def open_borrowed_read(self, borrow, directory, component, *, purpose):
+        component = self._borrow_component(component)
+        raw = None
+        try:
+            with self._pin_borrow(
+                borrow, purpose, action="read", directories=(directory,)
+            ) as context:
+                try:
+                    admitted_directory = context.directories[-1]
+                    raw_directory = admitted_directory.raw
+                    raw = self._port.open_read_at(raw_directory, component)
+                    result = self._new_borrowed_file(
+                        context, admitted_directory, component, raw, readable=True
+                    )
+                    raw = None
+                    return result
+                finally:
+                    if raw is not None and type(raw) is OpenFileV1:
+                        try:
+                            self._port.close_file(raw)
+                        except BaseException:
+                            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def create_borrowed_file(self, borrow, directory, component, *, purpose):
+        component = self._borrow_component(component)
+        raw = None
+        try:
+            with self._pin_borrow(
+                borrow, purpose, action="mutation", directories=(directory,)
+            ) as context:
+                try:
+                    admitted_directory = context.directories[-1]
+                    raw_directory = admitted_directory.raw
+                    raw = self._port.create_exclusive_at(raw_directory, component)
+                    result = self._new_borrowed_file(
+                        context, admitted_directory, component, raw, readable=False
+                    )
+                    raw = None
+                    return result
+                finally:
+                    if raw is not None and type(raw) is OpenFileV1:
+                        try:
+                            self._port.close_file(raw)
+                        except BaseException:
+                            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+        except FileExistsError:
+            raise _closed(LocalIOCodeV1.DESTINATION_EXISTS) from None
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def read_borrowed(self, borrow, file, maximum, *, purpose):
+        if type(maximum) is not int or not 1 <= maximum <= MAX_CHUNK_BYTES:
+            raise _closed(LocalIOCodeV1.LIMIT_EXCEEDED)
+        try:
+            with self._pin_borrow(
+                borrow, purpose, action="read", files=(file,)
+            ) as context:
+                admitted_file = context.files[0]
+                raw = admitted_file.raw
+                if not admitted_file.readable:
+                    raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
+                value = self._port.read(raw, maximum)
+                if type(value) is not bytes or len(value) > maximum:
+                    raise _closed(LocalIOCodeV1.STREAM_INVALID)
+                return value
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def write_borrowed(self, borrow, file, payload, *, purpose):
+        if type(payload) is not bytes or not 1 <= len(payload) <= MAX_CHUNK_BYTES:
+            raise _closed(LocalIOCodeV1.LIMIT_EXCEEDED)
+        try:
+            with self._pin_borrow(
+                borrow, purpose, action="mutation", files=(file,)
+            ) as context:
+                admitted_file = context.files[0]
+                raw = admitted_file.raw
+                if not admitted_file.writable:
+                    raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
+                count = self._port.write(raw, payload)
+                if type(count) is not int or count != len(payload):
+                    raise _closed(LocalIOCodeV1.STREAM_INVALID)
+                return count
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def stat_borrowed_file(self, borrow, file, *, purpose):
+        try:
+            with self._pin_borrow(
+                borrow, purpose, action="metadata", files=(file,)
+            ) as context:
+                raw = context.files[0].raw
+                value = self._port.stat_file(raw)
+                if type(value) is not LocalFileIdentityV1:
+                    raise _closed(LocalIOCodeV1.IO_FAILED)
+                return value
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def fsync_borrowed_file(self, borrow, file, *, purpose):
+        try:
+            with self._pin_borrow(
+                borrow, purpose, action="durability", files=(file,)
+            ) as context:
+                admitted_file = context.files[0]
+                raw = admitted_file.raw
+                if not admitted_file.writable:
+                    raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
+                self._port.fsync_file(raw)
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def close_borrowed_file(self, borrow, file, *, purpose):
+        context = None
+        target = None
+        admitted = False
+        succeeded = False
+        try:
+            with self._borrow_lock:
+                context, authority = self._capture_effect_locked(
+                    borrow, purpose, (), (file,)
+                )
+                target = context.files[0]
+                self._validate_authority(authority)
+                self._authenticate_binding(authority.data_binding)
+                if not self._purpose_allows_context(context, "close"):
+                    raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
+                if self._borrow_file_inflight[target.issued_ref]:
+                    raise _closed(LocalIOCodeV1.BORROW_IN_USE)
+                self._closing_borrow_files.add(target.issued_ref)
+                self._borrow_inflight[context.borrow_ref] += 1
+                admitted = True
+            self._reauthenticate_effect(context)
+            self._verify_admitted_effect(context)
+            self._port.close_file(target.raw)
+            succeeded = True
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+        finally:
+            with self._borrow_lock:
+                if context is not None and target is not None:
+                    self._poison_mutated_visible_locked(
+                        borrow, purpose, (), (file,)
+                    )
+                    if succeeded:
+                        self._file_object_refs.pop(target.object_id, None)
+                        self._file_issuance.pop(target.issued_ref, None)
+                        self._file_issuance_seals.pop(target.issued_ref, None)
+                        self._invalid_file_issuance.discard(target.issued_ref)
+                        self._borrow_file_inflight.pop(target.issued_ref, None)
+                        self._borrow_files.pop(target.issued_ref, None)
+                    self._closing_borrow_files.discard(target.issued_ref)
+                    if admitted and context.borrow_ref in self._borrow_inflight:
+                        self._borrow_inflight[context.borrow_ref] -= 1
+
+    def fsync_borrowed_directory(self, borrow, directory, *, purpose):
+        try:
+            with self._pin_borrow(
+                borrow, purpose, action="durability", directories=(directory,)
+            ) as context:
+                raw = context.directories[-1].raw
+                self._port.fsync_directory(raw)
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def link_borrowed(self, borrow, directory, source, destination, *, purpose):
+        source = self._borrow_component(source)
+        destination = self._borrow_component(destination)
+        if source == destination:
+            raise _closed(LocalIOCodeV1.PATH_INVALID)
+        try:
+            with self._pin_borrow(
+                borrow, purpose, action="mutation", directories=(directory,)
+            ) as context:
+                raw = context.directories[-1].raw
+                self._port.link_at(raw, source, destination)
+        except FileExistsError:
+            raise _closed(LocalIOCodeV1.DESTINATION_EXISTS) from None
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def unlink_borrowed(self, borrow, directory, component, *, purpose):
+        component = self._borrow_component(component)
+        try:
+            with self._pin_borrow(
+                borrow, purpose, action="mutation", directories=(directory,)
+            ) as context:
+                raw = context.directories[-1].raw
+                self._port.unlink_at(raw, component)
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
 
     def _open_parent(
         self, authority: LocalRootAuthorityV1, relative_path: str

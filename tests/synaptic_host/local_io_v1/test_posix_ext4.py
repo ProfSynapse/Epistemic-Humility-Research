@@ -13,12 +13,14 @@ from synaptic_host.local_io_v1.filesystem import LocalFilesystemV1, _journal_rec
 from synaptic_host.local_io_v1.config import StorageRegistryV1
 from synaptic_host.local_io_v1.model import (
     CapabilityStatusV1,
+    BorrowPurposeV1,
     LocalIOCodeV1,
     LocalIOErrorV1,
     LocalRootBindingV1,
     LocalRootPermitV1,
     RecoveryStatusV1,
     RetainedDirectoryV1,
+    RetainedRootBorrowRequestV1,
     RootAccessV1,
     CreatePhaseV1,
     JournalPublishStatusV1,
@@ -48,7 +50,9 @@ def test_capability_detection_is_canonical_and_windows_adapter_construction_is_z
     assert caught.value.code is LocalIOCodeV1.CAPABILITY_UNAVAILABLE
 
 
-def test_real_posix_retained_dirfd_lifecycle_and_handle_antiforgery(b42_ext4_root: Path) -> None:
+def test_real_posix_retained_dirfd_lifecycle_and_handle_antiforgery(
+    b42_ext4_root: Path, monkeypatch
+) -> None:
     data_path = b42_ext4_root / "data"
     control_path = b42_ext4_root / "control"
     data_path.mkdir()
@@ -123,6 +127,146 @@ def test_real_posix_retained_dirfd_lifecycle_and_handle_antiforgery(b42_ext4_roo
     with pytest.raises(LocalIOErrorV1) as caught:
         port.list_names_at(child, 10)
     assert caught.value.code is LocalIOCodeV1.AUTHORITY_INVALID
+
+    borrow = filesystem.borrow_root(
+        root,
+        RetainedRootBorrowRequestV1.build(
+            root.authority_digest,
+            BorrowPurposeV1.BUNDLE_DESTINATION_CREATE,
+            RootAccessV1.READ_CREATE,
+        ),
+    )
+    destination_purpose = BorrowPurposeV1.BUNDLE_DESTINATION_CREATE
+    borrowed_root = filesystem.root_directory(borrow, purpose=destination_purpose)
+    assert filesystem.mkdir_borrowed(
+        borrow, borrowed_root, "borrow-bundle", purpose=destination_purpose
+    )
+    borrowed_directory = filesystem.open_borrowed_directory(
+        borrow, borrowed_root, "borrow-bundle", purpose=destination_purpose
+    )
+    writable = filesystem.create_borrowed_file(
+        borrow, borrowed_directory, "private", purpose=destination_purpose
+    )
+    assert filesystem.write_borrowed(
+        borrow, writable, b"borrowed", purpose=destination_purpose
+    ) == 8
+    filesystem.fsync_borrowed_file(borrow, writable, purpose=destination_purpose)
+    filesystem.close_borrowed_file(borrow, writable, purpose=destination_purpose)
+    filesystem.link_borrowed(
+        borrow, borrowed_directory, "private", "committed", purpose=destination_purpose
+    )
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.link_borrowed(
+            borrow, borrowed_directory, "private", "committed", purpose=destination_purpose
+        )
+    assert caught.value.code is LocalIOCodeV1.DESTINATION_EXISTS
+    filesystem.fsync_borrowed_directory(
+        borrow, borrowed_directory, purpose=destination_purpose
+    )
+    filesystem.unlink_borrowed(
+        borrow, borrowed_directory, "private", purpose=destination_purpose
+    )
+    filesystem.close_borrowed_directory(
+        borrow, borrowed_directory, purpose=destination_purpose
+    )
+    filesystem.release_borrow(borrow, purpose=destination_purpose)
+
+    source_purpose = BorrowPurposeV1.BUNDLE_SOURCE_READ
+    source_borrow = filesystem.borrow_root(
+        root,
+        RetainedRootBorrowRequestV1.build(
+            root.authority_digest, source_purpose, RootAccessV1.READ_ONLY
+        ),
+    )
+    source_root = filesystem.root_directory(source_borrow, purpose=source_purpose)
+    source_directory = filesystem.open_borrowed_directory(
+        source_borrow, source_root, "borrow-bundle", purpose=source_purpose
+    )
+    reopened_identity = filesystem.stat_borrowed(
+        source_borrow, source_root, "borrow-bundle", purpose=source_purpose
+    )
+    assert (reopened_identity.device, reopened_identity.inode) == (
+        source_directory.identity.device,
+        source_directory.identity.inode,
+    )
+    readable = filesystem.open_borrowed_read(
+        source_borrow, source_directory, "committed", purpose=source_purpose
+    )
+    entered = threading.Event()
+    resume = threading.Event()
+    raw_read = port.read
+
+    def blocked_read(file, maximum):
+        entered.set()
+        assert resume.wait(5)
+        return raw_read(file, maximum)
+
+    monkeypatch.setattr(port, "read", blocked_read)
+    payloads = []
+    thread = threading.Thread(target=lambda: payloads.append(
+        filesystem.read_borrowed(
+            source_borrow, readable, 16, purpose=source_purpose
+        )
+    ))
+    thread.start()
+    assert entered.wait(5)
+    for close in (
+        lambda: filesystem.close_borrowed_file(
+            source_borrow, readable, purpose=source_purpose
+        ),
+        lambda: filesystem.close_borrowed_directory(
+            source_borrow, source_directory, purpose=source_purpose
+        ),
+        lambda: filesystem.release_borrow(source_borrow, purpose=source_purpose),
+        lambda: filesystem.release_root_authority(root),
+    ):
+        with pytest.raises(LocalIOErrorV1) as caught:
+            close()
+        assert caught.value.code is LocalIOCodeV1.BORROW_IN_USE
+    resume.set()
+    thread.join(5)
+    assert payloads == [b"borrowed"]
+    monkeypatch.setattr(port, "read", raw_read)
+    assert filesystem.read_borrowed(
+        source_borrow, readable, 16, purpose=source_purpose
+    ) == b""
+    filesystem.close_borrowed_file(
+        source_borrow, readable, purpose=source_purpose
+    )
+
+    os.symlink("committed", data_path / "borrow-bundle" / "symlink")
+    os.link(
+        data_path / "borrow-bundle" / "committed",
+        data_path / "borrow-bundle" / "hardlink",
+    )
+    for name in ("symlink", "committed"):
+        with pytest.raises(LocalIOErrorV1):
+            filesystem.open_borrowed_read(
+                source_borrow, source_directory, name, purpose=source_purpose
+            )
+    os.unlink(data_path / "borrow-bundle" / "hardlink")
+    filesystem.close_borrowed_directory(
+        source_borrow, source_directory, purpose=source_purpose
+    )
+    filesystem.release_borrow(source_borrow, purpose=source_purpose)
+
+    verify_purpose = BorrowPurposeV1.BUNDLE_MOUNT_VERIFY
+    verify_borrow = filesystem.borrow_root(
+        root,
+        RetainedRootBorrowRequestV1.build(
+            root.authority_digest, verify_purpose, RootAccessV1.READ_ONLY
+        ),
+    )
+    verify_root = filesystem.root_directory(verify_borrow, purpose=verify_purpose)
+    replaced_root = b42_ext4_root / "data-replaced"
+    data_path.rename(replaced_root)
+    data_path.mkdir()
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.stat_borrowed(
+            verify_borrow, verify_root, "borrow-bundle", purpose=verify_purpose
+        )
+    assert caught.value.code is LocalIOCodeV1.ROOT_CHANGED
+    filesystem.release_borrow(verify_borrow, purpose=verify_purpose)
     filesystem.release_root_authority(root)
 
 
