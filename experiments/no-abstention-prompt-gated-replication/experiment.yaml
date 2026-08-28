@@ -1,0 +1,27 @@
+slug: no-abstention-prompt-gated-replication
+title: No-abstention-prompt gated replication (cross-family)
+type: steer-cell
+status: draft
+registered: true
+created_at: '2026-08-28T12:21:03Z'
+question: Does the doubt-gated abstention write reproduce its gated-over-no-op benefit
+  when the system prompt contains no abstention instruction (JSON-format instruction
+  only)?
+prediction: 'DRAFT (PI adjudicates at sign): the gated-over-no_op wide-instrument
+  abstention lift on held-out confabs survives prompt removal in the Qwen lineage
+  at >= half its with-prompt magnitude; no_op baseline abstention falls.'
+falsifier: 'DRAFT (PI adjudicates at sign): in qwen3-4b the gated arm''s wide-instrument
+  lift over no_op on the full held-out confab pool is below the G1 floor or its 95%
+  CI includes zero.'
+text_capture: enabled
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+  persistence: {}
+inputs: []
+verdict: ''
+kg: []

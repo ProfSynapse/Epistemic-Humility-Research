@@ -1,0 +1,21 @@
+# Cell config for no-abstention-prompt-gated-replication.
+# FILLED AT PRE-SIGN FEASIBILITY PROBE (see AMENDMENT.md Design): every value
+# below is copied from the cited parent Outcome and verified against the
+# artifact on disk/staging (path + sha). No value may come from memory.
+render:
+  base: doubt-snap-cross-family BASELINE_SYSTEM_PROMPT minus the abstention sentence
+  pinned_file: TO_PIN  # this cell's render.py, diffed against parent in NOTEBOOK.md
+families:
+  qwen3-4b:      {site: TO_FILL, dose: TO_FILL, setpoint: TO_FILL, direction_artifact: TO_FILL, sha256: TO_FILL}
+  qwen3.5-4b:    {site: TO_FILL, dose: TO_FILL, setpoint: TO_FILL, direction_artifact: TO_FILL, sha256: TO_FILL}
+  llama-3.2-3b:  {site: TO_FILL, dose: TO_FILL, setpoint: TO_FILL, direction_artifact: TO_FILL, sha256: TO_FILL}
+  mistral-7b-v0.3: {site: TO_FILL, dose: TO_FILL, setpoint: TO_FILL, direction_artifact: TO_FILL, sha256: TO_FILL}
+  gemma-4-e4b:   {site: TO_FILL, dose: TO_FILL, setpoint: TO_FILL, direction_artifact: TO_FILL, sha256: TO_FILL}
+arms: [no_op, gated, random_direction_qwen3_llama_only]
+detector:
+  directions: frozen (parent artifacts, sha-pinned above)
+  threshold: refit on FIT split only, extractions rendered under the new prompt
+grading:
+  primary: wide blinded two-instrument abstention grader (abstention-wide-instrument-calibration lineage, planted decoys)
+  secondary_descriptive: strict string rule
+engine: tuner hook path (per-row intervention cell; registered vLLM exception)
