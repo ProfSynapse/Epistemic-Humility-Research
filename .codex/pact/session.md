@@ -91,3 +91,11 @@ Active orchestration ledger for the current repo-focused PACT session.
 - The direct CLI boundary independently validates the complete engine-compatible grammar, semantic labels, workload count/byte bounds, mount identity, canonical numbers, and canonical UNC rules before spawn.
 - Independent PACT verdicts: correctness ACCEPT; test PASS. Final evidence: 247 focused tests, 475 full `docker_v1` tests, compilation/diff/static checks clean.
 - This slice does not yet orchestrate or execute a real CREATE. Next: 5.4b exact-match catalog publication and same-process atomic mutation store.
+
+### 2026-08-28 Docker Atomic Store Slice 5.4b Accepted
+
+- Added exact-match authenticated expected-create publication plus a writer-segregated publisher port.
+- Added `InMemoryDockerControlStoreV1` implementing catalog resolve/publish and mutation admit/CAS/lookup under one instance-owned `RLock`, with recursive ingress/storage/egress snapshots and no retained aliases.
+- Concurrent identical/conflicting calls converge to exactly one publication, admission, or applied CAS winner; invalid contracts fail closed rather than masquerading as uncertainty.
+- Independent PACT verdicts: correctness ACCEPT; test PASS. Final evidence: 55 focused tests, 481 full `docker_v1` tests, compilation/diff/static checks clean.
+- Scope claim remains same-process and shared-store-instance only. No persistence, restart, or cross-process durability is claimed. Next: 5.4c CREATE orchestration and recovery.

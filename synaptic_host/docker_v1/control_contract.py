@@ -654,6 +654,125 @@ class AuthenticatedDockerExpectedCreateBindingV1:
         )
 
 
+class DockerExpectedCreatePublishDispositionV1(str, Enum):
+    PUBLISHED = "PUBLISHED"
+    EXISTING = "EXISTING"
+    CONFLICT = "CONFLICT"
+    INDETERMINATE = "INDETERMINATE"
+
+
+@dataclass(frozen=True, slots=True)
+class DockerExpectedCreatePublishRequestV1:
+    engine_command_digest: str
+    labels_digest: str
+    candidate: AuthenticatedDockerExpectedCreateBindingV1
+    request_digest: str
+
+    def canonical_without_digest(self):
+        return {
+            "candidate_proof_digest": self.candidate.proof_digest,
+            "engine_command_digest": self.engine_command_digest,
+            "labels_digest": self.labels_digest,
+            "schema_version": "synaptic-host-docker-expected-publish-request/v1",
+        }
+
+    def __post_init__(self):
+        try:
+            _sha(self.engine_command_digest)
+            _sha(self.labels_digest)
+            _sha(self.request_digest)
+            candidate = _snapshot_authenticated(self.candidate)
+            labels = candidate.content.labels
+            if (
+                type(candidate) is not AuthenticatedDockerExpectedCreateBindingV1
+                or self.engine_command_digest != labels.command_digest
+                or self.labels_digest != labels.digest
+                or self.request_digest != digest_v1(self.canonical_without_digest())
+            ):
+                raise ValueError
+        except BaseException:
+            _fail()
+
+    @classmethod
+    def build(cls, engine_command_digest, labels_digest, candidate):
+        body = {
+            "candidate_proof_digest": candidate.proof_digest,
+            "engine_command_digest": engine_command_digest,
+            "labels_digest": labels_digest,
+            "schema_version": "synaptic-host-docker-expected-publish-request/v1",
+        }
+        return cls(
+            engine_command_digest, labels_digest, candidate, digest_v1(body)
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class DockerExpectedCreatePublishResultV1:
+    request: DockerExpectedCreatePublishRequestV1
+    disposition: DockerExpectedCreatePublishDispositionV1
+    binding: AuthenticatedDockerExpectedCreateBindingV1 | None
+    result_digest: str
+
+    def canonical_without_digest(self):
+        return {
+            "binding_proof_digest": (
+                None if self.binding is None else self.binding.proof_digest
+            ),
+            "disposition": self.disposition.value,
+            "request_digest": self.request.request_digest,
+            "schema_version": "synaptic-host-docker-expected-publish-result/v1",
+        }
+
+    def __post_init__(self):
+        try:
+            request = DockerExpectedCreatePublishRequestV1(
+                self.request.engine_command_digest, self.request.labels_digest,
+                _snapshot_authenticated(self.request.candidate),
+                self.request.request_digest,
+            )
+            if type(self.disposition) is not DockerExpectedCreatePublishDispositionV1:
+                raise ValueError
+            binding = (
+                None if self.binding is None
+                else _snapshot_authenticated(self.binding)
+            )
+            required = self.disposition is not DockerExpectedCreatePublishDispositionV1.INDETERMINATE
+            if (binding is not None) != required:
+                raise ValueError
+            if binding is not None:
+                labels = binding.content.labels
+                if (
+                    labels.command_digest != request.engine_command_digest
+                    or labels.digest != request.labels_digest
+                ):
+                    raise ValueError
+                same = binding == request.candidate
+                if self.disposition in (
+                    DockerExpectedCreatePublishDispositionV1.PUBLISHED,
+                    DockerExpectedCreatePublishDispositionV1.EXISTING,
+                ) and not same:
+                    raise ValueError
+                if self.disposition is DockerExpectedCreatePublishDispositionV1.CONFLICT and same:
+                    raise ValueError
+            _sha(self.result_digest)
+            if self.result_digest != digest_v1(self.canonical_without_digest()):
+                raise ValueError
+        except BaseException:
+            _fail()
+
+    @classmethod
+    def build(cls, request, disposition, binding):
+        body = {
+            "binding_proof_digest": (
+                None if binding is None else binding.proof_digest
+            ),
+            "disposition": disposition.value,
+            "request_digest": request.request_digest,
+            "schema_version": "synaptic-host-docker-expected-publish-result/v1",
+        }
+        return cls(request, disposition, binding, digest_v1(body))
+
+
 class DockerMutationPhaseV1(str, Enum):
     ADMITTED = "ADMITTED"
     ATTEMPTED = "ATTEMPTED"

@@ -61,6 +61,8 @@ from .control_contract import (
     DockerMutationRecordV1,
     DockerWorkloadEnvironmentBindingV1,
     DockerExpectedCreateBindingV1,
+    DockerExpectedCreatePublishRequestV1,
+    DockerExpectedCreatePublishResultV1,
 )
 from .model import ResolvedDockerMountsV1
 
@@ -310,6 +312,12 @@ class DockerExpectedCreateBindingCatalogPortV1(Protocol):
     def resolve(
         self, engine_command_digest: str, labels_digest: str,
     ) -> AuthenticatedDockerExpectedCreateBindingV1 | None: ...
+
+
+class DockerExpectedCreateBindingPublisherPortV1(Protocol):
+    def publish_once(
+        self, request: DockerExpectedCreatePublishRequestV1,
+    ) -> DockerExpectedCreatePublishResultV1: ...
 
 
 __all__: tuple[str, ...] = ()
