@@ -14,6 +14,11 @@ def test_host_docker_package_keeps_empty_exports_and_forbidden_boundaries():
         "capability_assembly.py" in files
         and "class DockerLiveCapabilityBuildV1" in files["capability_assembly.py"]
         and "def transfer(self)" in files["capability_assembly.py"]
+        and "binding.py" in files
+        and "class DockerAuthenticatedPairPathBinderV1" in files["binding.py"]
+        and "os.environ" not in files["binding.py"].lower()
+        and "DockerPrivateEnvironmentValueV1" not in files["binding.py"]
+        and "_secrets" not in files["binding.py"]
     )
     for forbidden in (
         "import sqlite", "from sqlite", "import subprocess", "from subprocess",

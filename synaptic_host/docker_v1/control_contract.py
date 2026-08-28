@@ -143,6 +143,8 @@ class DockerCreatePathBindingV1:
     mount_resolution_digest: str
     source_storage_mapping_proof_digest: str
     artifact_storage_mapping_proof_digest: str
+    source_mapping_pair_proof_digest: str
+    artifact_mapping_pair_proof_digest: str
     source_request: DockerWSLPathRequestV1
     artifact_request: DockerWSLPathRequestV1
     source_read_only: bool
@@ -152,6 +154,7 @@ class DockerCreatePathBindingV1:
         return {
             "artifact_ref": self.artifact_ref,
             "artifact_request_digest": self.artifact_request.request_digest,
+            "artifact_mapping_pair_proof_digest": self.artifact_mapping_pair_proof_digest,
             "artifact_storage_mapping_proof_digest": self.artifact_storage_mapping_proof_digest,
             "labels_digest": self.labels_digest,
             "mount_resolution_digest": self.mount_resolution_digest,
@@ -159,6 +162,7 @@ class DockerCreatePathBindingV1:
             "source_read_only": self.source_read_only,
             "source_ref": self.source_ref,
             "source_request_digest": self.source_request.request_digest,
+            "source_mapping_pair_proof_digest": self.source_mapping_pair_proof_digest,
             "source_storage_mapping_proof_digest": self.source_storage_mapping_proof_digest,
         }
 
@@ -168,7 +172,10 @@ class DockerCreatePathBindingV1:
         for value in (
             self.labels_digest, self.mount_resolution_digest,
             self.source_storage_mapping_proof_digest,
-            self.artifact_storage_mapping_proof_digest, self.binding_digest,
+            self.artifact_storage_mapping_proof_digest,
+            self.source_mapping_pair_proof_digest,
+            self.artifact_mapping_pair_proof_digest,
+            self.binding_digest,
         ):
             _sha(value)
         _ref(self.source_ref)
@@ -189,6 +196,7 @@ class DockerCreatePathBindingV1:
         body = {
             "artifact_ref": temporary["artifact_ref"],
             "artifact_request_digest": temporary["artifact_request"].request_digest,
+            "artifact_mapping_pair_proof_digest": temporary["artifact_mapping_pair_proof_digest"],
             "artifact_storage_mapping_proof_digest": temporary["artifact_storage_mapping_proof_digest"],
             "labels_digest": temporary["labels_digest"],
             "mount_resolution_digest": temporary["mount_resolution_digest"],
@@ -196,6 +204,7 @@ class DockerCreatePathBindingV1:
             "source_read_only": temporary["source_read_only"],
             "source_ref": temporary["source_ref"],
             "source_request_digest": temporary["source_request"].request_digest,
+            "source_mapping_pair_proof_digest": temporary["source_mapping_pair_proof_digest"],
             "source_storage_mapping_proof_digest": temporary["source_storage_mapping_proof_digest"],
         }
         return cls(**values, binding_digest=digest_v1(body))
@@ -324,6 +333,8 @@ def _snapshot_contract_content(value):
                 value.mount_resolution_digest,
                 value.source_storage_mapping_proof_digest,
                 value.artifact_storage_mapping_proof_digest,
+                value.source_mapping_pair_proof_digest,
+                value.artifact_mapping_pair_proof_digest,
                 _snapshot_path_request(value.source_request),
                 _snapshot_path_request(value.artifact_request),
                 value.source_read_only, value.binding_digest,

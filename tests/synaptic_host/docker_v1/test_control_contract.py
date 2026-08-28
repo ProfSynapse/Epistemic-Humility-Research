@@ -84,6 +84,8 @@ def _path_binding():
         mount_resolution_digest=SHA,
         source_storage_mapping_proof_digest=SHA,
         artifact_storage_mapping_proof_digest=SHA,
+        source_mapping_pair_proof_digest="b" * 64,
+        artifact_mapping_pair_proof_digest="c" * 64,
         source_request=_request("source-map", DockerWSLPathPurposeV1.SOURCE_READ, "/source"),
         artifact_request=_request("artifact-map", DockerWSLPathPurposeV1.ARTIFACT_WRITE, "/artifacts"),
         source_read_only=True,
@@ -93,6 +95,20 @@ def _path_binding():
 def test_path_binding_exact_purposes_distinct_refs_and_recursive_mutation():
     binding = _path_binding()
     assert binding.source_request.purpose is DockerWSLPathPurposeV1.SOURCE_READ
+    assert binding.canonical_without_digest()["source_mapping_pair_proof_digest"] == "b" * 64
+    assert binding.canonical_without_digest()["artifact_mapping_pair_proof_digest"] == "c" * 64
+    with pytest.raises(DockerControlContractErrorV1):
+        replace(binding, source_mapping_pair_proof_digest="d" * 64)
+    values = {
+        name: getattr(binding, name)
+        for name in binding.__dataclass_fields__
+        if name not in {
+            "binding_digest", "source_mapping_pair_proof_digest",
+            "artifact_mapping_pair_proof_digest",
+        }
+    }
+    with pytest.raises(KeyError):
+        DockerCreatePathBindingV1.build(**values)
     with pytest.raises(DockerControlContractErrorV1):
         replace(binding, source_ref="artifact")
     object.__setattr__(binding.source_request, "purpose", DockerWSLPathPurposeV1.ARTIFACT_WRITE)

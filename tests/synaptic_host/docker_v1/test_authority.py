@@ -399,6 +399,8 @@ def test_remaining_typed_host_authorities_round_trip(tmp_path, mount_env):
         mount_resolution_digest="e" * 64,
         source_storage_mapping_proof_digest="1" * 64,
         artifact_storage_mapping_proof_digest="2" * 64,
+        source_mapping_pair_proof_digest="8" * 64,
+        artifact_mapping_pair_proof_digest="9" * 64,
         source_request=source_request, artifact_request=artifact_request,
         source_read_only=True,
     )
