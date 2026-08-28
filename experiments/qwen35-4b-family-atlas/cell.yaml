@@ -1,0 +1,257 @@
+# qwen35-4b-family-atlas instrument config. DRAFT until `bin/exp sign`.
+#
+# READ-ONLY mapping instrument at capture time: no steering, no interventions,
+# no writes to activations. This is the SINGLE-CELL, pool-already-exists shape
+# (like qwen3-4b-family-atlas and jspace-family-atlas's cells), NOT the
+# fresh-mining shape gemma-4-e4b-family-atlas needed: this substrate's row
+# pool, baseline gradings, and role/split assignments for ALL THREE roles are
+# already committed and reusable verbatim.
+#
+# Source (PROMOTED per lead adjudication 2026-07-23, following the qwen3-4b
+# precedent): experiments/common/qwen35-4b-doubt-snap-split/split_manifest.json,
+# a byte-identical promotion of the resolved cross-family doubt-snap
+# experiment's qwen35_4b committed manifest
+# (experiments/doubt-snap-cross-family-confirmatory/analysis-committed/
+# qwen35_4b/split_manifest.json; sha256
+# 2f622f5abe110349216207424bdbd919775e93f6d92f334b99f6424505f21e5c, verified
+# byte-identical after promotion). Already reused once by
+# experiments/qwen35-4b-midband-doubt-snap and
+# experiments/qwen35-4b-midband-heldout (via their reused_rows_manifest.json,
+# same source cell); this atlas is a further, unmodified consumer. See
+# experiments/common/qwen35-4b-doubt-snap-split/PROVENANCE.md.
+#
+# CLEANER THAN qwen3-4b: that cell's promoted manifest carried row-level IDs
+# for only two of three roles (unknown_refused was a count field, needing a
+# derive step). This source manifest already carries row-level IDs for ALL
+# THREE roles the family-atlas taxonomy needs -- confab (2219: fit 887,
+# held_out 1332), known_correct_answered (600: fit 240, held_out 360), and
+# unknown_refused (181, fit_only) -- so NO derive-unknown-refused step is
+# required. The manifest schema is ID-only (row_key / role / split / source /
+# category_canon), no question text.
+#
+# NOTE (refused-pole power -- ADJUDICATED by lead 2026-07-23, option (a)
+# accepted): unknown_refused here is 181 fit_only rows, materially smaller
+# than qwen3-4b's 1029 or the jspace cells' larger refused pools.
+# profile_and_read_family_atlas_panel.py's split_refused_pool() subdivides it
+# deterministically (seed 20260707) into ~90 refused_fit / ~91 refused_eval,
+# which sets the held-out power for the refused pole of ALL THREE axes (doubt
+# negative pole, caution positive pole, raw_refusal positive pole). The lead
+# ACCEPTED the lower refused-pole power: no new AG0 floor, no fresh mining
+# (reuse-verbatim wins). AG2 reports the refused-pole read numbers with wider
+# CIs and the numbers ARE the atlas (no pass/fail). Recorded prominently as a
+# KNOWN LIMITATION in AMENDMENT.md "Known limitations". The program-standard
+# AG0 held-out floors (confab >= 150 -> 1332 ample; known_correct >= 250 ->
+# 360 ample) are unchanged.
+#
+# NOT yet done (later, still-gated capture-launch prep, not part of this
+# scaffold): the ID-only manifest must be joined against question text into a
+# local materialized row-pool JSONL (capture_family_atlas_cell.py's --row-pool
+# needs role+split+question per row across all three roles). The source
+# question text lives in the doubt-snap qwen35_4b private pool
+# (split_rows_private.jsonl, sha256
+# 42659f4019d0cbe0178bddd6a7e6323299555092ecd8da4c9ac5d58e42b15a58) on the
+# read-only Modal volume eh-doubt-snap-cross-family (path prefix
+# doubt-snap-cross-family-r1/qwen35_4b/analysis), never committed. A
+# materialize_rows.py mirroring qwen3-4b's own is a separate, later step,
+# gated the same way capture is (sign + launch approval).
+
+seed: 20260707  # jspace/gemma/qwen3-4b bootstrap parity; also the doubt-snap split seed lineage
+bootstrap_resamples: 2000
+
+cells:
+  - cell_id: qwen35_4b
+    family: qwen35-4b
+    repo: Qwen/Qwen3.5-4B
+    revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+    # Pin provenance: the resolved doubt-snap-cross-family-confirmatory
+    # model_matrix.yaml (qwen35_4b cell, revision line 56) pins this exact
+    # hash, and experiments/j-space-cross-family-layer-contrast/families/
+    # qwen35-4b.yaml's reuse block records revision
+    # 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a with hidden_dim 2560 for the
+    # same doubt-snap qwen35_4b artifacts. This is the substrate every qwen35
+    # steer cell in the program actually used (doubt-snap-cross-family-
+    # confirmatory, qwen35-4b-midband-doubt-snap, qwen35-4b-midband-heldout).
+    # NOTE: Qwen/Qwen3.5-4B is a DIFFERENT checkpoint from unsloth/Qwen3-4B
+    # (the substrate qwen3-4b-family-atlas mapped). Same family lineage, NOT
+    # the same model; results are NOT ported across the two.
+    num_hidden_layers: 32
+    hidden_size: 2560
+    n_hidden_states: 33
+    # num_hidden_layers=32 and hidden_size=2560 are BOTH nested under
+    # config.text_config on this multimodal checkpoint (top-level config lacks
+    # them). VERIFIED 2026-07-09 (config JSON only, no weights) in
+    # experiments/j-space-cross-family-layer-contrast/families/qwen35-4b.yaml:
+    # config.json architectures == ["Qwen3_5ForConditionalGeneration"]
+    # (model_type "qwen3_5"), config.text_config.num_hidden_layers=32,
+    # config.text_config.hidden_size=2560, reachable via
+    # transformers' config.get_text_config(). n_hidden_states = 33 =
+    # hs_index 0..32 inclusive (embedding state through the last decoder
+    # layer), matching the hs_index = decoder_block_index + 1 convention used
+    # by the qwen35 steer cells (block 19 -> hs_index 20; block 29 ->
+    # hs_index 30).
+    #
+    # SUBSTRATE QUIRK -- hybrid linear-attention: text_config.layer_types
+    # alternates linear_attention / full_attention (full attention every 4th
+    # layer). The eff_dim_frac depth sweep crosses architecturally
+    # non-uniform layers; the profile may show periodic structure at the
+    # every-4th full-attention layers. Recorded as a read-time note, not a
+    # prediction change. (Source: qwen35-4b.yaml band_selection.notes,
+    # VERIFIED 2026-07-09.)
+    #
+    # SUBSTRATE QUIRK -- multimodal loader (RESOLVED by the tuner fix, lead
+    # relay 2026-07-23; see AMENDMENT.md "Design" -> "Execution" and
+    # NOTEBOOK.md). This checkpoint's top-level Qwen3_5Config nests the LM
+    # hyperparams under text_config, so AutoModelForCausalLM resolves it to the
+    # text-only Qwen3_5ForCausalLM. My CPU meta smoke (transformers 5.5.0,
+    # torch 2.9.0, no CUDA, no weights) showed from_config raises
+    # `AttributeError: 'Qwen3_5Config' object has no attribute 'vocab_size'`;
+    # the tuner-fix agent's deeper analysis found the WORSE real from_pretrained
+    # failure mode -- it would NOT crash, it would SILENTLY load a flat
+    # text-only class with garbage weights (all keys MISSING/UNEXPECTED, no
+    # exception), the same silent-substitution bug class as Stage-S run 1. The
+    # tuner now carries a GENERIC composite-config pre-check (get_text_config()
+    # identity) that routes such configs to AutoModelForImageTextToText BEFORE
+    # AutoModelForCausalLM can run, landing Qwen3_5ForConditionalGeneration, and
+    # logs which loader path fired. AutoModelForImageTextToText constructs
+    # cleanly on this config (verified on meta). The tuner submodule pin
+    # carrying this fix is recorded in the `capture:` block below; capture must
+    # assert the ImageTextToText loader path fired (see gates.yaml AG0
+    # loader_path_is_image_text_to_text).
+    #
+    # EOS convention: <|im_end|> (id 248046) terminates a chat turn on this
+    # tokenizer (tokenizer_class Qwen2Tokenizer); tokenizer_config.json's own
+    # top-level eos_token is already "<|im_end|>". config eos_token_id 248044
+    # resolves to "<|endoftext|>" (base sequence-end). Both are legitimate
+    # stop candidates for generation, but this cell does NO generation
+    # (capture-only), so EOS handling is not on the critical path; recorded
+    # for completeness. (VERIFIED 2026-07-09, qwen35-4b.yaml eos block.)
+    num_hidden_layers_source: "config.text_config.num_hidden_layers (nested), VERIFIED 2026-07-09"
+    hidden_size_source: "config.text_config.hidden_size (nested), VERIFIED 2026-07-09"
+    # This substrate's own program-established midband WRITE site is hs20
+    # (decoder_block_index 19), behaviorally established in
+    # qwen35-4b-midband-doubt-snap and PROMOTED on held-out in
+    # qwen35-4b-midband-heldout (unique cell clearing both primary floors at
+    # dose 8 x sigma_c; frozen operating point transfers to held-out). The
+    # late comparator is hs30 (decoder_block_index 29, depth 0.9375), the
+    # doubt-snap late_site. This atlas's registered prediction contrasts the
+    # eff_dim_frac profile peak against hs20 (the established interior write
+    # site), sharpening the profile-vs-write-site dissociation question for
+    # this family (see AMENDMENT.md). Source of truth for these numbers is
+    # each experiment's own AMENDMENT.md / experiment.yaml verdict; the
+    # family-layer-map qwen35 row is the navigation pointer.
+    established_write_site_hs_index: 20
+    established_write_site_block_index: 19
+    late_comparator_hs_index: 30
+    late_comparator_block_index: 29
+    source:
+      fleet_experiment: doubt-snap-cross-family-confirmatory
+      fleet_cell_id: qwen35_4b
+      # Consumed via the PROMOTED copy (lead adjudication 2026-07-23), byte-
+      # identical to the origin committed manifest.
+      committed_split_manifest: experiments/common/qwen35-4b-doubt-snap-split/split_manifest.json
+      committed_split_manifest_sha256: 2f622f5abe110349216207424bdbd919775e93f6d92f334b99f6424505f21e5c
+      origin_committed_split_manifest: experiments/doubt-snap-cross-family-confirmatory/analysis-committed/qwen35_4b/split_manifest.json
+      # ID-only (row_key/role/split/source/category_canon); no question text.
+      row_pool_path: "experiments/common/qwen35-4b-doubt-snap-split/split_manifest.json"
+      # Question text lives in the read-only Modal volume pool (see cell.yaml
+      # header NOTE); materialization is a separate later capture-launch step.
+      private_question_source_file: split_rows_private.jsonl
+      private_question_source_sha256: 42659f4019d0cbe0178bddd6a7e6323299555092ecd8da4c9ac5d58e42b15a58
+      private_question_source_modal_volume: eh-doubt-snap-cross-family
+      private_question_source_modal_prefix: doubt-snap-cross-family-r1/qwen35_4b/analysis
+      manifest_row_count: 3000
+      role_counts:
+        confab: 2219
+        known_correct_answered: 600
+        unknown_refused: 181
+      role_split_counts:
+        confab_fit: 887
+        confab_held_out: 1332
+        known_correct_answered_fit: 240
+        known_correct_answered_held_out: 360
+        unknown_refused_fit_only: 181
+    # RESOLVED by lead 2026-07-23 (shared-input promotion rule, experiments
+    # skill): promoted to experiments/common/qwen35-4b-doubt-snap-split/
+    # (split_manifest.json byte-identical + PROVENANCE.md), following the
+    # qwen3-4b precedent; this cell consumes the promoted copy (see source
+    # block above). The promotion is drafted uncommitted for the lead's
+    # evidence commit.
+
+capture:
+  # Manual tokenize + last-token position, matching the source pool
+  # experiment's own capture_anchor() convention (anchor = len(token_ids) - 1;
+  # add_special_tokens=True), as the shared capture_family_atlas_cell.py
+  # already implements. Reproduces doubt-snap-cross-family-confirmatory's own
+  # qwen35_4b anchor position exactly, for audit-parity with the source pool.
+  position_name: anchor
+  position_rule: "len(token_ids) - 1 (manual tokenize, add_special_tokens=True)"
+  layers: all  # synaptic-tuner batch-capture --layers all -> range(n_hidden_states), i.e. 0..32 inclusive
+  engine: hf-batched
+  persist_dtype: float32
+  render_fn: "render_qwen35_atlas.py:render"
+  render_system_prompt_source: "ported verbatim from experiments/doubt-snap-cross-family-confirmatory/render.py BASELINE_SYSTEM_PROMPT (the source pool's own AH/A0 raw-base JSON render surface)"
+  no_re_mining: true
+  no_re_generation: true
+  no_steering_hooks: true
+  # Tuner submodule pin REQUIRED for capture (lead relay 2026-07-23): the
+  # generic multimodal loader-fallback fix (composite-config get_text_config()
+  # pre-check -> AutoModelForImageTextToText, so this nested-config checkpoint
+  # is NOT silently loaded as a flat text-only class with garbage weights). The
+  # canonical checkout's synaptic-tuner must be at this commit at capture
+  # launch. This scaffold does NOT check out or modify the submodule.
+  tuner_submodule_pin:
+    branch: feature/multimodal-loader-fallback
+    commit: e0e02a3
+    includes: f6f1229
+    verified_by: "lead (numeric bit-close test vs direct output_hidden_states; hidden-state indexing through the ConditionalGeneration wrapper matches text-only: hs[0]=embeddings, hs[i]=post-block-i, count=num_hidden_layers+1 -- this cell's n_hidden_states=33 / hs_index=block+1 convention holds unchanged)"
+  # Post-capture validity check (asserted in AG0, see gates.yaml): the capture
+  # log MUST show the ImageTextToText loader path fired (the tuner fix logs the
+  # chosen loader). A CausalLM path would mean the fix did not engage and the
+  # capture is contaminated by garbage weights -> discard and re-run.
+  assert_loader_path: AutoModelForImageTextToText
+
+split:
+  # Carried verbatim from the source committed split_manifest.json for all
+  # three roles. unknown_refused is fit_only by the source experiment's own
+  # design (never split into a held-out partition).
+  source: source_committed_split_manifest
+  labels: [fit, held_out, fit_only]
+  fit_only_roles: [unknown_refused]
+
+profile:
+  metric: eff_dim_frac
+  estimator: participation_ratio
+  # Byte-identical port of the estimator used by every prior family-atlas cell
+  # (participation ratio / n_samples on the FIT-row anchor hidden-state matrix).
+  # Representation-variance PR, comparable across this atlas's OWN cells only;
+  # NOT numerically comparable to the JVP-based effective-dimension profile the
+  # j-space instruments (e.g. qwen35-4b-midband-doubt-snap Stage A) run on a
+  # related-looking but distinct metric.
+  fit_rows_only: true
+
+read_panel:
+  # unknown_refused is fit_only in the source split (no held-out partition),
+  # matching both jspace-family-atlas cells and qwen3-4b-family-atlas exactly.
+  # profile_and_read_family_atlas_panel.py's split_refused_pool() subdivides it
+  # deterministically (seed 20260707) into refused_fit (direction fitting) and
+  # refused_eval (scoring), making every reported panel number two-sided
+  # held-out. See cell.yaml header NOTE on refused-pole power (181 -> ~90/91).
+  axes:
+    doubt:
+      contrast: "known_correct_answered (positive) vs unknown_refused (negative)"
+      fit_definition: "unit(mean(H[known_correct_answered, FIT]) - mean(H[unknown_refused, refused_fit]))"
+      note: "scored on held-out known_correct_answered vs H[unknown_refused, refused_eval]; identical in form to qwen3-4b-family-atlas and jspace-family-atlas's doubt axis."
+    caution:
+      contrast: "unknown_refused/refused (positive) vs confab (negative)"
+      fit_definition: "unit(mean(H[unknown_refused, refused_fit]) - mean(H[confab, FIT]))"
+      note: "pre-orthogonalization caution axis only, matching the prior family-atlas cells' reporting convention (not any 2-D orthogonalized c_hat)."
+    raw_refusal:
+      contrast: "unknown_refused/refused (positive) vs {confab UNION known_correct_answered}/answered (negative)"
+      fit_definition: "unit(mean(H[unknown_refused, refused_fit]) - mean(H[confab, FIT] + H[known_correct_answered, FIT]))"
+      note: "role fully determines refused/answered status; no additional private boolean fields needed beyond role."
+  fit_on: "FIT known/confab rows plus refused_fit"
+  score_on: "held-out known/confab rows plus refused_eval (two-sided held-out for every axis)"
+  bootstrap_resamples: 2000
+  bootstrap_seed: 20260707
+  metric: held_out_auroc
+  random_direction_control: true

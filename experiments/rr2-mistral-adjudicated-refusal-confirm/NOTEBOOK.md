@@ -212,3 +212,15 @@ narrow detector read baseline abstention as ~0; the wide instrument reveals
 a 28% idiom-inclusive baseline on this confab pool. Any successor must
 register its placebo tolerance against the wide-instrument baseline before
 new data, as a new signed amendment.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 3 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 7 files / ~687 KB, built at repo commit 37eaa399.
+
+- HF repo: `professorsynapse/eh-rr2-mistral-adjudicated-refusal-confirm` (dataset)
+- HF revision: `5bd519ac45e155ef4fbfa6b8dfc429fd313c2c58`

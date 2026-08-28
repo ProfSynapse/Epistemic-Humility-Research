@@ -371,3 +371,15 @@ rank-transfer gate was structurally unadjudicable thereafter.
 Committable summaries copied to analysis-committed/ (gate_report.json,
 evidential_report_fivearm.json, g7_A1.json, g7_A4.json, five
 calibration_gap jsons; all verified counts-and-metrics only).
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 3 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 11 files / ~43 KB, built at repo commit 37eaa399.
+
+- HF repo: `professorsynapse/eh-ood-breadth-beyond-selfaware` (dataset)
+- HF revision: `b1e3246c6b3f61c0f8c4d61dd738ba2d2cca0889`

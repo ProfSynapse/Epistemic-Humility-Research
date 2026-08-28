@@ -92,3 +92,15 @@ in `experiment.yaml`.
   signed because the runner must first be implemented with row-level
   checkpoint/resume semantics, frozen token bundles, and FIT-only dose
   calibration.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 3 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 8 files / ~356 KB, built at repo commit 37eaa399.
+
+- HF repo: `professorsynapse/eh-j-space-token-targeted-refusal-qwen3-4b` (dataset)
+- HF revision: `74bf85613649a5ec722eceade197287115323d0c`

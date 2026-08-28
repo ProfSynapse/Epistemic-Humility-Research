@@ -1,7 +1,7 @@
 ---
 id: task-c8ba15
 title: Worktree fleet triage
-status: in-progress
+status: done
 assignee:
 - '@claude'
 tier: P

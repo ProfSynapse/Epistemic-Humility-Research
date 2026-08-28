@@ -193,3 +193,15 @@ Artifacts: jlens.py, cloud/modal_jlens.py, analysis-committed/corpus/
 private HF at runtime, never committed), analysis-committed/source_directions/
 (u_d_L34.json, pos_ctrl_L34.json, neg_ctrl_L34.json, c_hat_L34.json, copied
 from the sibling two-signal worktree for self-containment).
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 2 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 15 files / ~0.48 MB, built at repo commit fab3cad6.
+
+- HF repo: `professorsynapse/eh-j-space-localization-qwen3-4b` (dataset)
+- HF revision: `f03567a5f44eaf66cb9d843211f26d39245027dd`

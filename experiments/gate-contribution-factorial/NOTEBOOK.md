@@ -187,3 +187,15 @@ pinned 20260715. Predictions scoreboard registered pre-run by both predictors;
 the differentiating slot is the mistral gate axis (orchestrator PASS, PI FAIL).
 Signed via bin/exp sign; harness build dispatched against the locked spec on the
 free local 3090 lane.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 2 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 13 files / ~0.75 MB, built at repo commit fab3cad6.
+
+- HF repo: `professorsynapse/eh-gate-contribution-factorial` (dataset)
+- HF revision: `ab9d735a4ea673d8dab7b61e9ded9b2fc88b19c5`

@@ -91,3 +91,15 @@ in `experiment.yaml`.
   fit the direction, not a fully held-out contrast on both sides.
   Not signed, not launched. `bin/exp validate` passes (63 experiments, no
   manifest errors introduced).
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 1 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 9 files / ~1.22 MB, built at repo commit b642b7c6.
+
+- HF repo: `professorsynapse/eh-jspace-family-atlas` (dataset)
+- HF revision: `f028cfdf535b35b2e43023dffbd74d10e3a5c705`

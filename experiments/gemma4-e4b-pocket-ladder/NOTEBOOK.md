@@ -204,3 +204,15 @@ lift(true)/max|lift(placebo_k)| against the transcribed >= 3.0 floor.
   band's instability, not a resolution of the quarantine hypothesis.
 - E2/hs26, E3/hs27: NOT-RUN (no usable FIT dose); P2/P3 NOT-RUN mirroring.
 - Next: pocket rollup, Outcome section, `bin/exp resolve`, PR.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 1 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 23 files / ~1.32 MB, built at repo commit b642b7c6.
+
+- HF repo: `professorsynapse/eh-gemma4-e4b-pocket-ladder` (dataset)
+- HF revision: `c9c30f7cf2ab7ef61ff2dddbc367f5bc06d22fbe`

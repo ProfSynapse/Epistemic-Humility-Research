@@ -1,8 +1,7 @@
 ---
-id: task-2b5ef7
-title: Promote modal volume get directory-download gotchas into runpod-modal-lanes
-  skill
-status: in-progress
+id: task-3f6448
+title: 'Land orphaned branch records: qwen35 atlas row, draft experiments'
+status: done
 assignee:
 - '@claude'
 tier: P
@@ -11,7 +10,7 @@ experiment: ''
 component: ''
 depends_on: []
 files:
-- .skills/experiment-runner/reference/runpod-modal-lanes.md
+- docs/atlas/family-layer-map.md
 new_files: []
 blocker: ''
 created_date: '2026-08-27'

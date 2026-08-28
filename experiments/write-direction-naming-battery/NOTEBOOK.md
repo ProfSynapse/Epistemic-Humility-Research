@@ -406,3 +406,15 @@ than a replication.
 **Not yet done, gated on lead and PI review of this draft**: harness build
 (materialization, runner, `form_taxonomy.py`, `form_patterns.yaml`), population
 ID manifests, scoreboard predictor calls, `bin/exp sign`.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 3 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 9 files / ~65 KB, built at repo commit 37eaa399.
+
+- HF repo: `professorsynapse/eh-write-direction-naming-battery` (dataset)
+- HF revision: `44cb4be45523a9e059c3a4c1d096553908c71598`

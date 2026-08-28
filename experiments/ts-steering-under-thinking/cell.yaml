@@ -1,0 +1,68 @@
+# Instrument config for Steering Under Thinking (TS). Pinned at `bin/exp sign`.
+# This cell ports the doubt-gated caution snap and adds the enable_thinking
+# factor. The gate/write instrument is inherited VERBATIM from
+# experiments/doubt-gated-caution-tighten (consumed as committed JSON, not re-fit).
+# This repo is PUBLIC: no question/generation/think-trace text is committed; only
+# aggregate rates + ID-level manifests live under analysis-committed/.
+
+checkpoint:
+  repo: unsloth/Qwen3-4B          # raw-base untrained instruct, full bf16
+  revision: PLACEHOLDER(pin to the exact HF revision used at launch; match the doubt-gated-caution-tighten build)
+  adapter: none
+  dtype: bfloat16
+  checkpoint_tag: raw-base
+
+inherited_instrument:                # from experiments/doubt-gated-caution-tighten (committed JSON)
+  gate_direction: ../doubt-gated-caution-tighten/analysis-committed/u_d_L34.json
+  write_direction: ../doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json
+  tau: ../doubt-gated-caution-tighten/analysis-committed/gate_fit.json   # FIT Youden-J tau = 0.3026
+  split: ../doubt-gated-caution-tighten/analysis-committed/split_manifest.json  # held-out IDs; confab 185, known-correct 258
+  gate_rule: fire iff neg_z_d = -z_d >= tau   (z_d = standardized projection onto u_d at L34)
+  write_layer: 34                   # L34 (decoder block 33), erase-write along c_hat
+  setpoint: 200                     # s* realized projection (readback units)
+  write_scope: anchor_onward        # persistent through decode
+
+fired_set:
+  policy: frozen once from the validated think-off gate on the held-out confab pool
+  applied_identically_to: [A, B, C]
+  think_on_gate_portability: reported as a descriptive diagnostic; NOT used to re-gate
+
+arms:
+  A:
+    enable_thinking: true
+    write: true                     # gated snap: fired rows erase-write c_hat to s*=200, anchor_onward
+  B:
+    enable_thinking: true
+    write: false                    # no write at all; paired verbalization comparator
+  C:
+    enable_thinking: false
+    write: true                     # the ported tighten instrument; same-run think-off baseline
+
+generation:
+  common: {do_sample: false, eos_enabled: true, min_new_tokens: 1}   # greedy, EOS incl <|im_end|>
+  arm_C_max_new_tokens: 200         # snap's validated setting
+  arms_AB_max_new_tokens: PLACEHOLDER(>= 1024, tuned in smoke so <think>...</think>+answer is not truncated; G0(c) truncation floor)
+
+conversion_metric:
+  name: clean_tighten               # ported from gen_lib.py:grade_clean_tighten
+  rule: first parsed JSON answer is a refusal AND natural termination before cap AND single well-formed JSON, one `answer` key, no post-JSON repetition
+  thinking_arms_answer_parsed_from: post-</think> segment (think trace never graded for conversion)
+
+verbalization_judge:
+  rubric: cot_confidence.yaml        # blind expressed-confidence, reused verbatim from the archived Amendment Y draft; pinned here
+  blind_to: [gold, write_condition]
+  substitutes_only: [question, thinking, answer]
+  harness: synaptic-tuner shared.judge.JudgeService, temperature=0 (no submodule pollution)
+  panel: PLACEHOLDER(exact OpenRouter judge slugs/versions resolved at wiring; postdate cutoff)
+  primary_statistic: panel-consensus weighted composite; per-judge composites + inter-judge agreement reported
+  scored_on: Arm A converted rows and their paired Arm B counterparts (same row IDs)
+
+locus:
+  statistic: first decode position where Arm A vs Arm B token sequences diverge (paired converted rows)
+  classify_by: [absolute_token_index, inside_think_vs_after_close_think]
+
+containment:
+  committed: aggregate rates, ID-level manifests, judge composite aggregates (analysis-committed/)
+  gitignored: question text, think traces, answer text, per-row activations (analysis/)
+
+# gates live in gates.yaml; the blind judge rubric is cot_confidence.yaml

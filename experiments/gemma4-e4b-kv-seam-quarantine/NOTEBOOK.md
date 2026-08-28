@@ -1918,3 +1918,15 @@ generic shallow-band-only effect"). Promotion beyond "supported"
 required the A1-vs-A2 patch contrast, which the C1 FAIL forecloses in
 this cell. Final wording lifted to the PI with this recommendation
 before the Outcome is written.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 1 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 85 files / ~5.80 MB, built at repo commit b642b7c6.
+
+- HF repo: `professorsynapse/eh-gemma4-e4b-kv-seam-quarantine` (dataset)
+- HF revision: `24337af7b0a06b92d717bb30e89879584ef165f4`

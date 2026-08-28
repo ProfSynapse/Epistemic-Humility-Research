@@ -415,3 +415,15 @@ Artifacts: analysis-committed/gemma4_e4b_it/anisotropy_control/ (script +
 five JSON outputs). Aggregates only. Remaining open deflationary
 alternatives for the cross-family pattern: pool surface-diversity (untested)
 and small-N (qwen3-4b-family-atlas cell in preparation).
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 1 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 11 files / ~0.64 MB, built at repo commit b642b7c6.
+
+- HF repo: `professorsynapse/eh-gemma-4-e4b-family-atlas` (dataset)
+- HF revision: `dc8da5caf7524e6193bb71b6e4ef6b646d3cc9ca`

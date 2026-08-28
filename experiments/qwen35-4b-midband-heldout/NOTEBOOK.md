@@ -92,3 +92,15 @@ the orchestrator's recorded 0.62-0.70. Result is in-prediction and the
 instrument was hardened and adversarially reviewed pre-sign, so lead
 verification (not a fresh red-team) is the certification tier applied.
 Resolved via bin/exp resolve; PR to follow; KG ingest after merge.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 1 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 4 files / ~0.36 MB, built at repo commit b642b7c6.
+
+- HF repo: `professorsynapse/eh-qwen35-4b-midband-heldout` (dataset)
+- HF revision: `ba7249a84be319827b33241563599188ce8c9673`

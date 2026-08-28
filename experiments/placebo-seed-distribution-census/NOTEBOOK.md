@@ -233,3 +233,15 @@ having a sign to defend, but the governed docs record llama's single placebo
 point as null (+0.1 at dose 12), so llama is drafted as the null-control family
 rather than a third sign. All quantitative priors otherwise matched the prompt
 (mistral -7.4 .. +21.8 spread, qwen -5.13, mistral +7.39).
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 2 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 16 files / ~0.66 MB, built at repo commit fab3cad6.
+
+- HF repo: `professorsynapse/eh-placebo-seed-distribution-census` (dataset)
+- HF revision: `e2760b5764801b5aed10daba73245abe9b41cdda`

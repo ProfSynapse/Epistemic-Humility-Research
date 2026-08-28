@@ -66,3 +66,15 @@ rung-(a) pass) is met, but the PI declines funding: under the signed outcome
 table the pass-a-fail-c cap is unchangeable by rung (b), and a J-space-style
 expansion of d_ev would require its own future amendment. Recorded as
 condition-met-declined, not a gate failure and not a void.
+
+## 2026-08-27 — Exhaust published to HF (aggregate shape)
+
+Data-exhaust release, PI-approved in-conversation (explicit permission
+2026-08-27, batch 3 of the exhaust backfill, task-56c61a). Built with the
+data-exhaust skill (aggregate-only copy-everything mirror of
+analysis-committed/: no question text, generation text, or hidden states;
+verify_exhaust.py PASS including the --experiment-dir completeness check;
+zero exclusions). 9 files / ~999 KB, built at repo commit 37eaa399.
+
+- HF repo: `professorsynapse/eh-evidence-response-direction-search` (dataset)
+- HF revision: `d83df31b53917b33eb08f96c27f1bf5268201ad5`
