@@ -5656,7 +5656,7 @@
         "revision": ""
       },
       "created_at": "2026-08-28T12:21:03Z",
-      "falsifier": "DRAFT (PI adjudicates at sign): in qwen3-4b the gated arm's wide-instrument lift over no_op on the full held-out confab pool is below the G1 floor or its 95% CI includes zero.",
+      "falsifier": "PI-adjudicated 2026-08-28, qwen3-4b alone decides: the gated arm's two-stage abstention lift over no_op on the full held-out confab pool has a 95% CI that includes zero.",
       "inputs": [],
       "instrument": {
         "configs": [],
@@ -5665,7 +5665,7 @@
         "pins": {}
       },
       "kg": [],
-      "prediction": "DRAFT (PI adjudicates at sign): the gated-over-no_op wide-instrument abstention lift on held-out confabs survives prompt removal in the Qwen lineage at >= half its with-prompt magnitude; no_op baseline abstention falls.",
+      "prediction": "PI call 2026-08-28: survives attenuated; in qwen3-4b the gated-over-no_op two-stage abstention lift on held-out confabs is real (95% CI excludes zero) but below half its with-prompt magnitude; no_op baseline abstention falls.",
       "question": "Does the doubt-gated abstention write reproduce its gated-over-no-op benefit when the system prompt contains no abstention instruction (JSON-format instruction only)?",
       "registered": true,
       "slug": "no-abstention-prompt-gated-replication",
