@@ -6,6 +6,66 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-28 — Grading crash fixed (harness bug, not spec) + gemma container rebuilt
+
+**Grading crash root-caused and fixed in harness code only.** qwen3-4b's
+`run_qwen3_4b.py grade` stage crashed with `AttributeError: module 'grader'
+has no attribute '_is_stated_confidence_refusal'` at
+`abstention-wide-instrument-calibration/detector_v2.py:64`. Root cause: each
+of the four family harness scripts (`run_qwen3_4b.py`, `run_qwen35_4b.py`,
+`run_cross_family.py`, `run_gemma.py`) imports a FAMILY-SPECIFIC `grader.py`
+early (directly, or transitively via that family's `gen_lib.py`) under the
+bare module name `"grader"`, caching it in `sys.modules`. `detector_v2.py`
+(pinned instrument) does its own unqualified `import grader`, expecting ITS
+sibling (`abstention-wide-instrument-calibration/grader.py`, which defines
+`_is_stated_confidence_refusal`) — but Python resolves that import to the
+already-cached family-specific module instead, which lacks that function.
+Fixed identically in all four scripts' `cmd_grade()` (or `_import_detector_v2`
+helper): load the correct sibling `grader.py` explicitly via
+`importlib.util`, assert it has `_is_stated_confidence_refusal`, swap it into
+`sys.modules["grader"]` only for `detector_v2`'s own import, then restore the
+prior binding. `detector_v2.py` itself was NOT edited (pinned instrument,
+per standing invariant). Each fix logs the resolved grader path
+(`[grade] detector_v2 grader module resolved to: ...`) for auditability.
+Regraded qwen3-4b from its existing runlog (pure CPU, no GPU cost) after the
+fix; no data was lost or re-generated.
+
+**Gemma container rebuilt.** The original `mechinterp-runner` image gemma's
+Stage 5a dose calibration ran under (digest
+`sha256:479b7ca7891ab328ce7f04adffb939ef8086e3cf0d87676a3577d1d76cd845c8`) is
+unrecoverable on this host (`docker image inspect` -> no such image); the
+only locally-available image (`mechinterp-runner:local`) is transformers
+5.12.1, not the 5.5.0 Stage 5a ran under. PI ruling: rebuild from an
+ISOLATED clone of the tuner commit that produced Stage 5a's image, never the
+live submodule, and never fall back to base conda silently.
+
+Procedure: cloned this worktree's `synaptic-tuner` checkout into scratch,
+checked out commit `34c89fc4f9d693a6b997422288d820e9c30b4696` there
+(detached HEAD, "Merge pull request #149 from
+ProfSynapse/fix/mechinterp-runner-transformers-arg" — the Dockerfile's own
+default at that commit is `TRANSFORMERS_VERSION=5.12.1`), and built
+`docker/mechinterp-runner/` from that isolated tree with
+`--build-arg MECHINTERP_RUNNER_GIT_REVISION=34c89fc4f9d693a6b997422288d820e9c30b4696
+--build-arg TRANSFORMERS_VERSION=5.5.0` (5.5.0 read from Stage 5a's own
+NOTEBOOK entry, not memory). The live `synaptic-tuner` submodule checkout in
+this worktree was never touched.
+
+Tagged `mechinterp-runner:tf550-rebuild`, image id `0f4b6fc5193f`
+(`sha256:0f4b6fc5193f808b7653437c28ae19e706a631c47c346367146dda0605bc2629`).
+Verified: `docker run --rm mechinterp-runner:tf550-rebuild python -c "import
+transformers; print(transformers.__version__)"` reports `5.5.0`; the image's
+own provenance banner additionally reports `torch 2.9.1+cu128`,
+`image_git_revision 34c89fc4f9d693a6b997422288d820e9c30b4696`,
+`python 3.10.12`.
+
+This is a REBUILD, not the original digest: base-layer drift (OS packages,
+CUDA runtime patch level) versus the exact image Stage 5a ran under is
+possible in principle, since the original digest is unrecoverable to diff
+against directly. The python-level pins that matter for numerical parity
+(torch, transformers, flash-linear-attention, safetensors) match Stage 5a's
+own recorded values. Recorded per the PI's explicit instruction, before
+using this image for gemma's GPU stage in this cell.
+
 ### 2026-08-28 — Launch authorization and harness-build preflight (harness-builder agent)
 
 **PI approved launch in-session 2026-08-28 on the canonical Linux checkout**
