@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "library/concepts/mechanisms/abstention-generalization-failure.md",
+                "file": "experiment/paper/draft-v1.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "abstention-generalization-failure"
+              "title": "draft-v1"
             }
           }
         ]
@@ -185,11 +185,30 @@
   },
   "active": "03508dd7096dbcbc",
   "lastOpenFiles": [
-    "sync_skills.py",
+    "library/concepts/mechanisms/abstention-generalization-failure.md",
+    "experiment/protocol/AMENDMENT-B-stated-confidence-grpo.md",
+    "docs/sessions/0003 - grpo-stated-confidence.md",
+    "docs/sessions/0002 - grpo-stated-confidence.md",
+    "experiment/protocol/amendment-b-grpo-stated-confidence-draft.md",
+    "experiment/phase1/eval/tests/__pycache__/test_stats.cpython-313-pytest-9.0.2.pyc",
+    "experiment/phase1/eval/tests/__pycache__/test_ood.cpython-313-pytest-9.0.2.pyc",
+    "experiment/phase1/eval/tests/__pycache__/test_cheng_regression.cpython-313-pytest-9.0.2.pyc",
+    "experiment/phase1/eval/__pycache__/stats.cpython-313.pyc",
+    "experiment/phase1/eval/__pycache__/run_eval.cpython-313.pyc",
+    "experiment/phase1/eval/__pycache__/ood.cpython-313.pyc",
+    "experiment/phase1/eval/tests/__pycache__/test_run_eval_e2e.cpython-313-pytest-9.0.2.pyc",
+    "experiment/phase1/eval/__pycache__/scorers.cpython-313.pyc",
+    "experiment/phase1/eval/__pycache__",
+    "experiment/phase1/eval/tests/__pycache__/test_scorers.cpython-313-pytest-9.0.2.pyc",
+    "experiment/phase1/grpo/README.md",
+    "docs/sessions/0001 - kg-search-and-session-memory.md",
+    "docs/sessions/TEMPLATE.md",
+    "docs/sessions/README.md",
+    "docs/architecture/kg-search-code-index-plan.md",
+    "CLAUDE.md",
     "docs/review/pr40-experiment-runner-probe-dataprep-review.md",
     "docs/preparation/experiment-runner-probe-dataprep-research.md",
     "docs/architecture/experiment-runner-probe-dataprep.md",
-    "library/notes/2407.18418--know-your-limits-abstention-survey.md",
-    "library/concepts/mechanisms/abstention-generalization-failure.md"
+    "library/notes/2407.18418--know-your-limits-abstention-survey.md"
   ]
 }

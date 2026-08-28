@@ -35,8 +35,12 @@ instrument:
       persistence: short-run
       measured_smoke_wall_clock_s: 0.7
 inputs:
-- archive/experiment/phase1/eval/results_prompt_crossing_heldout_confirmatory_4b
-- archive/experiment/phase1/eval/results_prompt_crossing_completion_4b
+- path: archive/experiment/phase1/eval/results_prompt_crossing_heldout_confirmatory_4b
+  availability: local
+  source: prompt-crossing held-out confirmatory evaluation artifact
+- path: archive/experiment/phase1/eval/results_prompt_crossing_completion_4b
+  availability: local
+  source: prompt-crossing completion evaluation artifact
 verdict: 'Under the structure-only contract the stated-confidence channel is not noise
   but is severely miscalibrated on every trained arm (ECE 0.55-0.85), discriminates
   near chance except in SFT-lineage sequential arms (best 0.72), and couples to refusal

@@ -508,6 +508,111 @@ def test_validate_still_flags_missing_tracked_data_input(repo: Path):
     assert _run(repo, "validate") == 1
 
 
+def test_validate_tolerates_explicit_local_input_on_any_path(repo: Path, capsys):
+    _run(repo, "new", "cell-local", "--type", "eval")
+    m = _manifest(repo, "cell-local")
+    m["question"] = "q"
+    m["inputs"] = [
+        {
+            "path": "scratch/checkpoints/model-a",
+            "availability": "local",
+            "source": "private training run model-a",
+        }
+    ]
+    _write_manifest(repo, "cell-local", m)
+    assert _run(repo, "validate") == 0
+    assert "run `bin/exp doctor cell-local` before use" in capsys.readouterr().err
+
+
+def test_validate_still_requires_explicit_repository_input(repo: Path):
+    _run(repo, "new", "cell-repo-input", "--type", "eval")
+    m = _manifest(repo, "cell-repo-input")
+    m["question"] = "q"
+    m["inputs"] = [
+        {"path": "configs/missing.yaml", "availability": "repository"}
+    ]
+    _write_manifest(repo, "cell-repo-input", m)
+    assert _run(repo, "validate") == 1
+
+
+@pytest.mark.parametrize(
+    "entry",
+    [
+        {"path": "scratch/x", "availability": "sometimes", "source": "run x"},
+        {"path": "scratch/x", "availability": "local"},
+        {"path": "../outside", "availability": "local", "source": "run x"},
+        {
+            "path": "scratch/x",
+            "availability": "local",
+            "source": "run x",
+            "sha256": "not-a-digest",
+        },
+    ],
+)
+def test_validate_rejects_malformed_typed_input(repo: Path, entry: dict):
+    _run(repo, "new", "cell-bad-input", "--type", "eval")
+    m = _manifest(repo, "cell-bad-input")
+    m["question"] = "q"
+    m["inputs"] = [entry]
+    _write_manifest(repo, "cell-bad-input", m)
+    assert _run(repo, "validate") == 1
+
+
+def test_doctor_fails_when_local_input_is_missing(repo: Path):
+    _run(repo, "new", "cell-doctor-missing", "--type", "eval")
+    m = _manifest(repo, "cell-doctor-missing")
+    m["question"] = "q"
+    m["inputs"] = [
+        {
+            "path": "scratch/checkpoints/model-a",
+            "availability": "local",
+            "source": "private training run model-a",
+        }
+    ]
+    _write_manifest(repo, "cell-doctor-missing", m)
+    assert _run(repo, "doctor", "cell-doctor-missing") == 1
+
+
+def test_doctor_accepts_present_local_input_with_matching_digest(repo: Path):
+    import hashlib
+
+    artifact = repo / "scratch" / "result.json"
+    artifact.parent.mkdir()
+    artifact.write_text('{"ok": true}\n', encoding="utf-8")
+    _run(repo, "new", "cell-doctor-ok", "--type", "eval")
+    m = _manifest(repo, "cell-doctor-ok")
+    m["question"] = "q"
+    m["inputs"] = [
+        {
+            "path": "scratch/result.json",
+            "availability": "local",
+            "source": "private evaluation result",
+            "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest(),
+        }
+    ]
+    _write_manifest(repo, "cell-doctor-ok", m)
+    assert _run(repo, "doctor", "cell-doctor-ok") == 0
+
+
+def test_doctor_rejects_digest_mismatch(repo: Path):
+    artifact = repo / "scratch" / "result.json"
+    artifact.parent.mkdir()
+    artifact.write_text('{"ok": true}\n', encoding="utf-8")
+    _run(repo, "new", "cell-doctor-digest", "--type", "eval")
+    m = _manifest(repo, "cell-doctor-digest")
+    m["question"] = "q"
+    m["inputs"] = [
+        {
+            "path": "scratch/result.json",
+            "availability": "local",
+            "source": "private evaluation result",
+            "sha256": "0" * 64,
+        }
+    ]
+    _write_manifest(repo, "cell-doctor-digest", m)
+    assert _run(repo, "doctor", "cell-doctor-digest") == 1
+
+
 def test_validate_flags_unresolvable_kg_id(repo: Path):
     _run(repo, "new", "cell-kg", "--type", "eval")
     m = _manifest(repo, "cell-kg")

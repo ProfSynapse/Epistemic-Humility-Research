@@ -42,4 +42,5 @@ Refusal, perplexity is tracked to distinguish targeted safety behavior from
 broad model damage.
 
 **Lineage:** standard language-modeling metric; used as a utility guard in
+[[2603.05498--spike-sparse-sink-anatomy-massive-activations-attention]] and
 [[2607.05355--faithfulness-refusal-causal-audit-neuron-selectors]].

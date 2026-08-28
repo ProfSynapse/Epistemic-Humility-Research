@@ -40,8 +40,12 @@ inputs:
 - experiments/prompt-vs-training-panel/configs/eval_panel_prc_local_4b.yaml
 - experiments/prompt-vs-training-panel/configs/eval_panel_pplain_local_4b.yaml
 - experiments/prompt-vs-training-panel/configs/eval_panel_pstruct_cold_local_4b.yaml
-- scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
-- scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+- path: scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+  availability: local
+  source: response-confidence clean-SFT seed-1 merged checkpoint
+- path: scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+  availability: local
+  source: response-confidence SFT-GRPO-v2 seed-1 checkpoint
 verdict: 'Internal known-unknown readout survives every prompt contract in presence
   (in-contract refit >= 0.988) but its neutral-prompt direction transfers fully only
   to the plain contract, dropping 0.06-0.11 AUROC under P-rc and P-struct on all three
