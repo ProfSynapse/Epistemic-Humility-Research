@@ -34,7 +34,9 @@ instrument:
       fit, and comparison use the same pinned stacks as the paper-3 Section 5 lineage,
       which comparability requires.'
 inputs:
-- archive/experiment/phase1/eval/results_prompt_vs_training_panel_prc_4b/base_prc__selfaware/scored_rows.jsonl
+- path: archive/experiment/phase1/eval/results_prompt_vs_training_panel_prc_4b/base_prc__selfaware/scored_rows.jsonl
+  availability: local
+  source: prompt-vs-training-panel resolved evaluation artifact
 - experiments/common/readouts/amendment_u_unified_extract.py
 - experiments/common/knowledge_probe/hidden_state_probe.py
 - experiments/common/mechinterp/residual_caution_direction.py

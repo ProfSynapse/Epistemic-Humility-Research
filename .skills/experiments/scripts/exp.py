@@ -14,7 +14,7 @@ generated output), and is exercised both through ``bin/exp`` and directly in
 tests. Every core function takes an explicit repo ``root`` so tests can drive it
 against a temporary tree.
 
-Subcommands: new, sign, repin, list, show, resolve, validate, regen.
+Subcommands: new, sign, repin, list, show, resolve, validate, doctor, regen.
 """
 
 from __future__ import annotations
@@ -66,6 +66,12 @@ TERMINAL_STATUSES = frozenset({"resolved", "null-result", "falsified"})
 # and wrote output only at the end loses the whole run; every module a signed
 # instrument executes must say up front how it survives a kill.
 PERSISTENCE_MODES = ("incremental", "short-run")
+
+# Experiment inputs have two availability classes. Repository inputs must exist
+# in every clone and are checked by portable validation. Local inputs are
+# gitignored or externally staged run artifacts; their declarations validate on
+# every machine, while ``exp doctor`` enforces their presence before use.
+INPUT_AVAILABILITY = ("repository", "local")
 
 # Cutoff date (UTC, ISO date) for the structural text-capture requirement: an
 # experiment whose created_at is on/after this date must declare
@@ -607,6 +613,74 @@ def _is_untracked_data_input(rel: str) -> bool:
     )
 
 
+def _parse_input_spec(entry: object, index: int) -> tuple[dict | None, list[str]]:
+    """Normalize one manifest input and return its schema problems.
+
+    String entries retain the legacy contract: repository inputs must exist,
+    except for the historical experiment-local analysis/directions carve-out.
+    Mapping entries make portability explicit with ``availability``. Local
+    entries require a human-readable ``source`` so a missing artifact is never
+    an unexplained path that silently passes validation.
+    """
+    problems: list[str] = []
+    if isinstance(entry, str):
+        path = entry.strip()
+        availability = "local" if _is_untracked_data_input(path) else "repository"
+        source = "legacy experiment-local run artifact" if availability == "local" else ""
+        sha256 = None
+    elif isinstance(entry, dict):
+        raw_path = entry.get("path")
+        path = raw_path.strip() if isinstance(raw_path, str) else ""
+        availability = entry.get("availability")
+        source = entry.get("source", "")
+        sha256 = entry.get("sha256")
+        if availability not in INPUT_AVAILABILITY:
+            problems.append(
+                f"inputs[{index}].availability must be one of "
+                f"{', '.join(INPUT_AVAILABILITY)}"
+            )
+        if availability == "local" and not (isinstance(source, str) and source.strip()):
+            problems.append(f"inputs[{index}].source must describe the local artifact provenance")
+        if sha256 is not None and not (
+            isinstance(sha256, str) and re.fullmatch(r"[0-9a-f]{64}", sha256)
+        ):
+            problems.append(f"inputs[{index}].sha256 must be 64 lowercase hexadecimal characters")
+    else:
+        return None, [f"inputs[{index}] must be a path string or mapping"]
+
+    if not path:
+        problems.append(f"inputs[{index}].path must be a non-empty repo-relative path")
+    else:
+        parsed = Path(path)
+        if parsed.is_absolute() or ".." in parsed.parts:
+            problems.append(f"inputs[{index}].path must stay within the repository: {path!r}")
+
+    if problems:
+        return None, problems
+    return {
+        "path": path,
+        "availability": availability,
+        "source": source.strip() if isinstance(source, str) else "",
+        "sha256": sha256,
+    }, []
+
+
+def _path_sha256(path: Path) -> str:
+    """Return a deterministic content digest for a file or directory tree."""
+    if path.is_file():
+        return _sha256(path)
+    if not path.is_dir():
+        raise ExpError(f"cannot hash unsupported input path: {path}")
+    digest = hashlib.sha256()
+    for child in sorted(path.rglob("*"), key=lambda p: p.relative_to(path).as_posix()):
+        rel = child.relative_to(path).as_posix().encode("utf-8")
+        if child.is_symlink():
+            digest.update(b"L\0" + rel + b"\0" + str(child.readlink()).encode("utf-8") + b"\0")
+        elif child.is_file():
+            digest.update(b"F\0" + rel + b"\0" + _sha256(child).encode("ascii") + b"\0")
+    return digest.hexdigest()
+
+
 def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[str]:
     """Return a list of human-readable problems for one manifest (empty = ok)."""
     problems: list[str] = []
@@ -706,10 +780,17 @@ def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[s
     for p in _text_capture_problems(data):
         err(p)
 
-    inputs = data.get("inputs", []) or []
-    if not isinstance(inputs, list):
+    raw_inputs = data.get("inputs", []) or []
+    if not isinstance(raw_inputs, list):
         err("inputs must be a list")
-        inputs = []
+        raw_inputs = []
+    inputs: list[dict] = []
+    for index, entry in enumerate(raw_inputs):
+        spec, input_problems = _parse_input_spec(entry, index)
+        for problem in input_problems:
+            err(problem)
+        if spec is not None:
+            inputs.append(spec)
 
     kg = data.get("kg", []) or []
     if not isinstance(kg, list):
@@ -775,22 +856,20 @@ def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[s
                 f"{new[:12]}... does not match pin {str(pins[rel])[:12]}..."
             )
 
-    # Inputs: repo-relative paths that must exist. Inputs under an experiment's
-    # gitignored data dirs (``analysis/`` scratch, ``directions/`` data) are
-    # run-materialized: present in the canonical checkout and sha256-verified by
-    # SC0 staging at run time, but legitimately absent in a fresh linked worktree
-    # or clean clone. A missing one is a non-fatal warning (to stderr) rather
-    # than a commit-blocking error, so a commit that does not touch that
-    # experiment is never blocked by data it never needed. Tracked inputs
-    # (configs, analysis-committed manifests, dataset cards) must still exist.
-    for rel in inputs:
-        ipath = root / str(rel)
+    # Portable validation checks repository inputs on every machine. Explicit
+    # local inputs are run artifacts whose declaration is portable but whose
+    # bytes may exist on only some machines; ``exp doctor`` is the strict
+    # machine-readiness gate for them.
+    for spec in inputs:
+        rel = spec["path"]
+        ipath = root / rel
         if ipath.exists():
             continue
-        if _is_untracked_data_input(str(rel)):
+        if spec["availability"] == "local":
             print(
-                f"exp validate: warning: {slug}: gitignored data input absent "
-                f"(ok in a worktree/clean clone; sha-staged at run time): {rel}",
+                f"exp validate: warning: {slug}: local input absent "
+                f"(portable validation permits this; run `bin/exp doctor {slug}` "
+                f"before use): {rel}",
                 file=sys.stderr,
             )
             continue
@@ -1263,6 +1342,59 @@ def cmd_show(root: Path, slug: str) -> int:
     return 0
 
 
+def cmd_doctor(root: Path, slug: str | None) -> int:
+    """Check that declared inputs are usable on this machine."""
+    manifests = iter_manifests(root)
+    if slug is not None:
+        manifests = [item for item in manifests if item[0] == slug]
+        if not manifests:
+            raise ExpError(f"no experiment manifest for slug {slug!r}")
+
+    failures = 0
+    checked = 0
+    for current_slug, _mpath, data in manifests:
+        raw_inputs = data.get("inputs", []) or []
+        if not isinstance(raw_inputs, list):
+            print(f"{current_slug}: INVALID inputs must be a list")
+            failures += 1
+            continue
+        for index, entry in enumerate(raw_inputs):
+            spec, problems = _parse_input_spec(entry, index)
+            if problems:
+                for problem in problems:
+                    print(f"{current_slug}: INVALID {problem}")
+                    failures += 1
+                continue
+            assert spec is not None
+            checked += 1
+            rel = spec["path"]
+            path = root / rel
+            if not path.exists():
+                print(
+                    f"{current_slug}: MISSING [{spec['availability']}] {rel}"
+                    + (f" (source: {spec['source']})" if spec["source"] else "")
+                )
+                failures += 1
+                continue
+            expected = spec.get("sha256")
+            if expected:
+                actual = _path_sha256(path)
+                if actual != expected:
+                    print(
+                        f"{current_slug}: DIGEST MISMATCH {rel}: "
+                        f"{actual[:12]}... != {expected[:12]}..."
+                    )
+                    failures += 1
+                    continue
+            print(f"{current_slug}: OK [{spec['availability']}] {rel}")
+
+    if failures:
+        print(f"exp doctor: FAILED ({failures} problem(s), {checked} input(s) checked)")
+        return 1
+    print(f"exp doctor: OK ({checked} input(s) checked)")
+    return 0
+
+
 def cmd_resolve(root: Path, slug: str, verdict: str, status: str) -> int:
     if status not in RESOLVED_STATES:
         raise ExpError(f"resolve status must be one of {', '.join(sorted(RESOLVED_STATES))}")
@@ -1327,6 +1459,11 @@ def _build_parser() -> argparse.ArgumentParser:
     p_show = sub.add_parser("show", help="pretty-print one manifest and resolved paths")
     p_show.add_argument("slug")
 
+    p_doctor = sub.add_parser(
+        "doctor", help="strictly check experiment input availability on this machine"
+    )
+    p_doctor.add_argument("slug", nargs="?", help="one experiment slug; omit to check all")
+
     p_resolve = sub.add_parser("resolve", help="stamp a verdict and flip to a terminal status")
     p_resolve.add_argument("slug")
     p_resolve.add_argument("--verdict", required=True)
@@ -1359,6 +1496,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_list(root, args.status, args.exp_type)
         if args.command == "show":
             return cmd_show(root, args.slug)
+        if args.command == "doctor":
+            return cmd_doctor(root, args.slug)
         if args.command == "resolve":
             return cmd_resolve(root, args.slug, args.verdict, args.status)
         if args.command == "validate":

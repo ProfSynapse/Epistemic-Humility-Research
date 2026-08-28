@@ -52,8 +52,12 @@ instrument:
       pinned original''s loaded state; still read-only. No result existed before this
       fix (smoke is the go/no-go that caught it).'
 inputs:
-- archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
-- archive/experiment/phase1-data/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl
+- path: archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+  availability: local
+  source: migrated phase-1 self-aware hidden-state extraction
+- path: archive/experiment/phase1-data/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl
+  availability: local
+  source: migrated phase-1 self-aware behavior rows
 - experiments/caution-ablation-rederivation/analysis/current_clean_grpo_v2_caution_residual_intervention/rows.jsonl
 - experiments/j-space-localization-qwen3-4b/analysis-committed/corpus/jlens_corpus_manifest.json
 verdict: 'Falsifier fired on both clauses: full refusal-axis ablation at the rule-selected

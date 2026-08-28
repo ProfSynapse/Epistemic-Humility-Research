@@ -41,8 +41,12 @@ instrument:
         PYTHONPATH=.:archive/experiment/phase1/probe/legacy-wrapper-tree (post-reorg
         import environment; no code change).
 inputs:
-- archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
-- archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2
+- path: archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+  availability: local
+  source: migrated phase-1 self-aware hidden-state extraction
+- path: archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2
+  availability: local
+  source: migrated phase-1 amendment-T probe artifact
 - experiments/unified-two-signal-dial-veto/artifacts/two_signal_stage1p5_integration.json
 verdict: 'confirmed: fusing the gate score into the dial degrades correctness triage
   (Delta -0.0142, CI [-0.0214, -0.0074] excludes 0 on the negative side); gate and

@@ -1,6 +1,6 @@
 ---
 name: experiments
-description: Lifecycle tooling for the experiments-first repo layout - one self-contained directory per evidence-producing experiment (steer cell, training run, eval, probe-fit, or lab diagnostic) under experiments/, each with a signed AMENDMENT.md, a thin machine-readable experiment.yaml manifest, pinned instrument configs, and generated indices. Use to scaffold, sign, list, show, resolve, and validate experiments, to regenerate the registry, and to understand the draft -> sign -> run -> resolve lifecycle and the shared-input promotion rule. The bin/exp wrapper runs these scripts; validation and registry regeneration run at commit time via .githooks/pre-commit.
+description: Lifecycle tooling for the experiments-first repo layout, with one self-contained directory per evidence-producing experiment, signed amendment, machine-readable manifest, pinned instrument, and generated index. Use to scaffold, sign, inspect, resolve, validate, or regenerate experiments; check machine-local input readiness; and apply the shared-input promotion rule.
 allowed-tools: Read, Bash, Write, Grep, Glob
 ---
 
@@ -96,7 +96,7 @@ instrument:
   pins: {}                       # relpath -> sha256, filled by `exp sign`
   repins: []                     # append-only audit trail, filled by `exp repin`
   persistence: {}                # relpath (from modules) -> persistence declaration
-inputs: []                       # repo-relative paths this experiment consumes
+inputs: []                       # repository paths or typed local artifact declarations
 pr: <int>                        # optional, the PR that carries this experiment
 verdict: <one sentence>          # filled at resolve
 kg: []                           # typed KG node ids, filled at/after resolve
@@ -106,6 +106,39 @@ kg: []                           # typed KG node ids, filled at/after resolve
 `historical-amendment` / `historical` is reserved for imported legacy governed
 records whose original amendment prose is the provenance source; do not use it
 for new experiments.
+
+### Portable inputs and machine readiness
+
+An input that every clone must contain stays a repo-relative string. Portable
+validation treats it as a repository dependency and fails if it is absent:
+
+```yaml
+inputs:
+  - experiments/common/readouts/probe.py
+```
+
+A gitignored or externally staged artifact uses a typed mapping:
+
+```yaml
+inputs:
+  - path: scratch/checkpoints/sft-seed1/final_model
+    availability: local
+    source: locked training-regimen SFT seed-1 run
+    sha256: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef  # optional
+```
+
+`availability` is `repository` or `local`. A local input must include `source`
+with enough provenance to identify its producer. `sha256` is optional for
+legacy artifacts; when present, it is the file digest or deterministic tree
+digest checked by `bin/exp doctor`. Paths must be repo-relative and cannot use
+`..`.
+
+`bin/exp validate` is portable. It checks the declaration on every machine but
+does not require local bytes to exist. It still requires repository inputs.
+Before any experiment consumes its inputs, run `bin/exp doctor <slug>` on that
+machine. Doctor fails on every missing input and on every declared digest
+mismatch. This separates commit hygiene from run readiness without weakening
+the run gate.
 
 ### Persistence declarations (kill-resume safety)
 
@@ -249,10 +282,12 @@ the registry stays a complete inventory without presenting teaching artifacts as
 claims.
 
 The `.githooks/pre-commit` hook enforces this. When `experiments/` exists it runs
-`exp validate` and `exp regen --check`; a stale registry fails the commit with an
-instruction to run `bin/exp regen` and stage the output. Install the hooks once
-with `git config core.hooksPath .githooks`, or run a single commit through them
-with `git -c core.hooksPath=.githooks commit`.
+portable `exp validate` and `exp regen --check`; a stale registry fails the
+commit with an instruction to run `bin/exp regen` and stage the output. Local
+artifact availability belongs to `bin/exp doctor <slug>` before use, not the
+commit hook. Install the hooks once with `git config core.hooksPath .githooks`,
+or run a single commit through them with
+`git -c core.hooksPath=.githooks commit`.
 
 ## Promotion rule for shared inputs
 
@@ -310,8 +345,9 @@ executes the mirror under `.agents/skills/experiments/scripts/exp.py`.
 | `bin/exp repin <slug> <relpath>... --reason "..."` | re-hash pinned instrument file(s) on a signed, pre-run experiment and append an audit entry; refuses no-op, unrelated drift, unpinned files, draft, and resolved |
 | `bin/exp list [--status S] [--type T]` | table of slug/type/status/question |
 | `bin/exp show <slug>` | pretty-print the manifest and resolved instrument paths |
+| `bin/exp doctor [<slug>]` | strictly check local input availability and declared digests on this machine; omit the slug to audit all experiments |
 | `bin/exp resolve <slug> --verdict "..." [--status null-result\|falsified]` | stamp verdict, flip to a terminal status, print the kg-ingest checklist |
-| `bin/exp validate` | validate every manifest (schema, status, pins, inputs, kg ids, slug match, text_capture); passes on an empty experiments/ |
+| `bin/exp validate` | portably validate every manifest (schema, status, pins, input declarations, repository inputs, kg ids, slug match, text_capture); passes on an empty experiments/ |
 | `bin/exp regen [--check]` | regenerate REGISTRY.md + registry.json; `--check` fails if the committed registry is stale |
 
 `type` is one of `steer-cell`, `training-run`, `eval`, `probe-fit`,
