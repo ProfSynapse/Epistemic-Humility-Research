@@ -33,6 +33,11 @@ from .model import (
     DockerWindowsPathV1,
     DockerWSLPathRequestV1,
 )
+from .control_model import (
+    DockerContainerInspectResultV1,
+    DockerExactNameInventoryResultV1,
+    DockerImageInspectResultV1,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -202,6 +207,12 @@ class DockerProcessPortV1(Protocol):
 
 class DockerPopenFactoryPortV1(Protocol):
     def __call__(self, argv: tuple[str, ...], **kwargs) -> DockerProcessPortV1: ...
+
+
+class DockerTypedCLIRunnerPortV1(Protocol):
+    def inventory_exact_name(self, container_name: str) -> DockerExactNameInventoryResultV1: ...
+    def inspect_image(self, image_digest: str) -> DockerImageInspectResultV1: ...
+    def inspect_container(self, container_ref: str) -> DockerContainerInspectResultV1: ...
 
 
 __all__: tuple[str, ...] = ()

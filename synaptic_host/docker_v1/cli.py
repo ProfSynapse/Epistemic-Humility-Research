@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from hashlib import sha256
+import json
+from datetime import datetime
 from queue import Empty, Full, Queue
+import re
 import subprocess
 from threading import Event, Thread
 import time
@@ -14,18 +17,263 @@ from .model import (
     DockerCLIOutcomeV1,
     DockerCLIPolicyV1,
     DockerCLIResultV1,
+    DockerCLIVerbV1,
     DockerPlatformCodeV1,
     DockerPlatformErrorV1,
 )
 from .ports import DockerPopenFactoryPortV1
+from .control_model import (
+    OWNED_LABEL_NAMES_V1, OWNED_LABEL_PREFIX_V1,
+    DockerContainerInspectProjectionV1, DockerContainerInspectResultV1,
+    DockerContainerStateV1, DockerContainerStatusV1,
+    DockerEnvironmentEntryProjectionV1, DockerEnvironmentProjectionV1,
+    DockerExactNameInventoryResultV1, DockerExactNameInventoryV1,
+    DockerImageInspectProjectionV1, DockerImageInspectResultV1,
+    DockerLabelProjectionV1, DockerMountProjectionV1,
+    DockerTypedResultKindV1, docker_typed_request_digest_v1,
+)
 
 
 _READ_SIZE = 65_536
 _EVENT_QUEUE_DEPTH = 4
+_HEX64 = re.compile(r"[0-9a-f]{64}\Z")
+_SHA256_ID = re.compile(r"sha256:[0-9a-f]{64}\Z")
+_CONTAINER_NAME = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}\Z")
+_MAX_JSON_DEPTH = 16
+_MAX_JSON_NODES = 8192
+_MAX_JSON_ITEMS = 1024
+_MAX_JSON_STRING_BYTES = 65_536
+_MAX_INVENTORY = 64
+_STARTED_AT = re.compile(
+    r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,9})?Z\Z"
+)
 
 
 def _error(code: DockerPlatformCodeV1) -> DockerPlatformErrorV1:
     return DockerPlatformErrorV1(code)
+
+
+def _pairs(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError
+        result[key] = value
+    return result
+
+
+def _validate_json_tree(value) -> None:
+    nodes = 0
+
+    def visit(item, depth):
+        nonlocal nodes
+        nodes += 1
+        if depth > _MAX_JSON_DEPTH or nodes > _MAX_JSON_NODES:
+            raise ValueError
+        if item is None or type(item) in (bool, int, float):
+            return
+        if type(item) is str:
+            if len(item.encode("utf-8")) > _MAX_JSON_STRING_BYTES:
+                raise ValueError
+            return
+        if type(item) is list:
+            if len(item) > _MAX_JSON_ITEMS:
+                raise ValueError
+            for child in item:
+                visit(child, depth + 1)
+            return
+        if type(item) is dict:
+            if len(item) > _MAX_JSON_ITEMS:
+                raise ValueError
+            for key, child in item.items():
+                if type(key) is not str or len(key.encode("utf-8")) > 256:
+                    raise ValueError
+                visit(child, depth + 1)
+            return
+        raise ValueError
+
+    visit(value, 0)
+
+
+def _parse_inspect(raw: bytes | None) -> dict:
+    if type(raw) is not bytes:
+        raise ValueError
+    text = raw.decode("utf-8", errors="strict")
+    value = json.loads(
+        text, object_pairs_hook=_pairs,
+        parse_constant=lambda _value: (_ for _ in ()).throw(ValueError()),
+    )
+    _validate_json_tree(value)
+    if type(value) is not list or len(value) != 1 or type(value[0]) is not dict:
+        raise ValueError
+    return value[0]
+
+
+def _parse_inventory(raw: bytes | None, *, container_name, query,
+                     request_digest, command_digest) -> DockerExactNameInventoryV1:
+    if type(raw) is not bytes:
+        raise ValueError
+    text = raw.decode("utf-8", errors="strict")
+    if text == "":
+        refs = ()
+    else:
+        if text.endswith("\n"):
+            text = text[:-1]
+        lines = text.split("\n")
+        if not lines or len(lines) > _MAX_INVENTORY:
+            raise ValueError
+        refs = tuple(lines)
+        if any(_HEX64.fullmatch(value) is None for value in refs):
+            raise ValueError
+        if len(set(refs)) != len(refs):
+            raise ValueError
+        refs = tuple(sorted(refs))
+    return DockerExactNameInventoryV1.build(
+        container_name, query, request_digest, command_digest, refs
+    )
+
+
+def _required_dict(value: dict, key: str) -> dict:
+    child = value.get(key)
+    if type(child) is not dict:
+        raise ValueError
+    return child
+
+
+def _required_str(value: dict, key: str, pattern=None) -> str:
+    child = value.get(key)
+    if type(child) is not str or not child or len(child.encode("utf-8")) > 4096:
+        raise ValueError
+    if pattern is not None and pattern.fullmatch(child) is None:
+        raise ValueError
+    return child
+
+
+def _required_int(value: dict, key: str, *, minimum=0, maximum=2**63 - 1) -> int:
+    child = value.get(key)
+    if type(child) is not int or not minimum <= child <= maximum:
+        raise ValueError
+    return child
+
+
+def _digest_text(value: str) -> str:
+    return sha256(value.encode("utf-8")).hexdigest()
+
+
+def _project_container(record: dict, expected_ref: str, request_digest: str,
+                       command_digest: str) -> DockerContainerInspectProjectionV1:
+    container_ref = _required_str(record, "Id", _HEX64)
+    if container_ref != expected_ref:
+        raise ValueError
+    raw_name = _required_str(record, "Name")
+    if not raw_name.startswith("/") or _CONTAINER_NAME.fullmatch(raw_name[1:]) is None:
+        raise ValueError
+    image_digest = _required_str(record, "Image", _SHA256_ID)
+    config = _required_dict(record, "Config")
+    labels = config.get("Labels")
+    if type(labels) is not dict:
+        raise ValueError
+    expected_names = set(OWNED_LABEL_NAMES_V1)
+    owned = {}
+    for key, value in labels.items():
+        if key.startswith(OWNED_LABEL_PREFIX_V1):
+            name = key[len(OWNED_LABEL_PREFIX_V1):]
+            if name not in expected_names or type(value) is not str:
+                raise ValueError
+            owned[name] = value
+    if set(owned) != expected_names or owned["schema-version"] != "1":
+        raise ValueError
+    if _SHA256_ID.fullmatch("sha256:" + owned["labels-digest"]) is None:
+        raise ValueError
+    owned_projection = tuple(
+        DockerLabelProjectionV1.build(name, _digest_text(owned[name]))
+        for name in OWNED_LABEL_NAMES_V1
+    )
+
+    environment = config.get("Env")
+    if environment is None:
+        environment = []
+    if type(environment) is not list or len(environment) > 256:
+        raise ValueError
+    env_projection = []
+    seen_env = set()
+    for entry in environment:
+        if type(entry) is not str or "=" not in entry:
+            raise ValueError
+        key, value = entry.split("=", 1)
+        if not key or key in seen_env:
+            raise ValueError
+        seen_env.add(key)
+        env_projection.append(DockerEnvironmentEntryProjectionV1.build(
+            _digest_text(key), _digest_text(value)
+        ))
+
+    arguments = config.get("Cmd")
+    if arguments is None:
+        arguments = []
+    if type(arguments) is not list or len(arguments) > 256 or any(type(x) is not str for x in arguments):
+        raise ValueError
+    argument_projection = [_digest_text(value) for value in arguments]
+
+    host = _required_dict(record, "HostConfig")
+    network_mode = _required_str(host, "NetworkMode")
+    nano_cpus = _required_int(host, "NanoCpus")
+    memory_bytes = _required_int(host, "Memory")
+
+    raw_mounts = record.get("Mounts")
+    if type(raw_mounts) is not list or len(raw_mounts) > 64:
+        raise ValueError
+    mounts = []
+    destinations = set()
+    for raw_mount in raw_mounts:
+        if type(raw_mount) is not dict:
+            raise ValueError
+        mount_type = _required_str(raw_mount, "Type")
+        if mount_type not in ("bind", "volume", "tmpfs"):
+            raise ValueError
+        source = _required_str(raw_mount, "Source")
+        destination = _required_str(raw_mount, "Destination")
+        read_write = raw_mount.get("RW")
+        if type(read_write) is not bool:
+            raise ValueError
+        destination_digest = _digest_text(destination)
+        if destination_digest in destinations:
+            raise ValueError
+        destinations.add(destination_digest)
+        mounts.append(DockerMountProjectionV1.build(
+            mount_type, _digest_text(source), destination_digest, read_write
+        ))
+
+    raw_state = _required_dict(record, "State")
+    status = DockerContainerStatusV1(_required_str(raw_state, "Status"))
+    running = raw_state.get("Running")
+    if type(running) is not bool:
+        raise ValueError
+    exit_code = _required_int(raw_state, "ExitCode", minimum=-(2**31), maximum=2**31 - 1)
+    started_at = _required_str(raw_state, "StartedAt")
+    if _STARTED_AT.fullmatch(started_at) is None:
+        raise ValueError
+    if started_at == "0001-01-01T00:00:00Z":
+        started = False
+    else:
+        datetime.fromisoformat(started_at[:-1] + "+00:00")
+        started = True
+    restart_count = _required_int(record, "RestartCount", maximum=2**31 - 1)
+    state = DockerContainerStateV1.build(
+        status, running, exit_code, started, restart_count
+    )
+
+    return DockerContainerInspectProjectionV1.build(
+        container_ref=container_ref, container_name=raw_name[1:],
+        image_digest=image_digest, owned_labels=owned_projection,
+        request_digest=request_digest, command_digest=command_digest,
+        network_mode=network_mode, nano_cpus=nano_cpus,
+        memory_bytes=memory_bytes, mounts=tuple(mounts), state=state,
+        environment=DockerEnvironmentProjectionV1.build(env_projection),
+        argument_count=len(arguments),
+        arguments_digest=digest_v1({"arguments": argument_projection,
+                                    "schema_version": "synaptic-host-docker-argv-projection/v1"}),
+    )
 
 
 class DockerCLIRunnerV1:
@@ -177,7 +425,9 @@ class DockerCLIRunnerV1:
             and second_join_ok
         )
 
-    def run(self, command: DockerCLICommandV1) -> DockerCLIResultV1:
+    def _execute(
+        self, command: DockerCLICommandV1, *, capture_stdout: bool,
+    ) -> tuple[DockerCLIResultV1, bytes | None]:
         command = self._snapshot_command(command)
         policy = self._policy
         argv = (
@@ -219,6 +469,7 @@ class DockerCLIRunnerV1:
                     reader.start()
 
             hashes = {"stdout": sha256(), "stderr": sha256()}
+            captured = bytearray() if capture_stdout else None
             sizes = {"stdout": 0, "stderr": 0}
             limits = {"stdout": policy.stdout_limit, "stderr": policy.stderr_limit}
             ended: set[str] = set()
@@ -247,6 +498,8 @@ class DockerCLIRunnerV1:
                     else:
                         sizes[name] = new_size
                         hashes[name].update(payload)
+                        if name == "stdout" and captured is not None:
+                            captured.extend(payload)
 
             exit_code = None
             if trigger is None:
@@ -311,7 +564,103 @@ class DockerCLIRunnerV1:
             )
             code = trigger if certain else DockerPlatformCodeV1.TERMINATION_INDETERMINATE
             raise _error(code) from None
+        return result, (bytes(captured) if captured is not None else None)
+
+    def run(self, command: DockerCLICommandV1) -> DockerCLIResultV1:
+        result, _ = self._execute(command, capture_stdout=False)
         return result
+
+    def inventory_exact_name(
+        self, container_name: str,
+    ) -> DockerExactNameInventoryResultV1:
+        try:
+            if type(container_name) is not str or _CONTAINER_NAME.fullmatch(container_name) is None:
+                raise ValueError
+            query = f"name=^/{container_name}$"
+            command = DockerCLICommandV1.build(
+                DockerCLIVerbV1.PS,
+                ("--all", "--quiet", "--no-trunc", "--filter",
+                 query),
+            )
+            request_digest = docker_typed_request_digest_v1(
+                DockerTypedResultKindV1.EXACT_NAME_INVENTORY,
+                container_name, command.command_digest,
+            )
+            evidence, raw = self._execute(command, capture_stdout=True)
+            projection = None
+            if evidence.outcome is DockerCLIOutcomeV1.SUCCESS:
+                projection = _parse_inventory(
+                    raw, container_name=container_name, query=query,
+                    request_digest=request_digest,
+                    command_digest=command.command_digest,
+                )
+            return DockerExactNameInventoryResultV1.build(
+                container_name, request_digest, command,
+                evidence, projection
+            )
+        except DockerPlatformErrorV1:
+            raise
+        except BaseException:
+            raise _error(DockerPlatformCodeV1.OUTPUT_INVALID) from None
+
+    def inspect_image(self, image_digest: str) -> DockerImageInspectResultV1:
+        try:
+            if type(image_digest) is not str or _SHA256_ID.fullmatch(image_digest) is None:
+                raise ValueError
+            command = DockerCLICommandV1.build(
+                DockerCLIVerbV1.INSPECT, ("--type", "image", image_digest)
+            )
+            request_digest = docker_typed_request_digest_v1(
+                DockerTypedResultKindV1.IMAGE_INSPECT,
+                image_digest, command.command_digest,
+            )
+            evidence, raw = self._execute(command, capture_stdout=True)
+            projection = None
+            if evidence.outcome is DockerCLIOutcomeV1.SUCCESS:
+                record = _parse_inspect(raw)
+                actual = _required_str(record, "Id", _SHA256_ID)
+                if actual != image_digest:
+                    raise ValueError
+                projection = DockerImageInspectProjectionV1.build(
+                    actual, request_digest, command.command_digest
+                )
+            return DockerImageInspectResultV1.build(
+                image_digest, request_digest, command,
+                evidence, projection
+            )
+        except DockerPlatformErrorV1:
+            raise
+        except BaseException:
+            raise _error(DockerPlatformCodeV1.OUTPUT_INVALID) from None
+
+    def inspect_container(
+        self, container_ref: str,
+    ) -> DockerContainerInspectResultV1:
+        try:
+            if type(container_ref) is not str or _HEX64.fullmatch(container_ref) is None:
+                raise ValueError
+            command = DockerCLICommandV1.build(
+                DockerCLIVerbV1.INSPECT, ("--type", "container", container_ref)
+            )
+            request_digest = docker_typed_request_digest_v1(
+                DockerTypedResultKindV1.CONTAINER_INSPECT,
+                container_ref, command.command_digest,
+            )
+            evidence, raw = self._execute(command, capture_stdout=True)
+            projection = None
+            if evidence.outcome is DockerCLIOutcomeV1.SUCCESS:
+                projection = _project_container(
+                    _parse_inspect(raw), container_ref,
+                    request_digest, command.command_digest,
+                )
+            return DockerContainerInspectResultV1.build(
+                container_ref, request_digest, command,
+                evidence, projection
+            )
+        except DockerPlatformErrorV1:
+            raise
+        except BaseException:
+            raise _error(DockerPlatformCodeV1.OUTPUT_INVALID) from None
 
 
 __all__: tuple[str, ...] = ()

@@ -1,10 +1,19 @@
 from hashlib import sha256
+import json
+from dataclasses import replace
 from threading import Event
 import traceback
 
 import pytest
 
 from synaptic_host.docker_v1.cli import DockerCLIRunnerV1
+from synaptic_host.docker_v1.control_model import (
+    OWNED_LABEL_NAMES_V1, OWNED_LABEL_PREFIX_V1,
+    DockerImageInspectProjectionV1,
+    DockerImageInspectResultV1,
+    DockerTypedResultKindV1,
+    docker_typed_request_digest_v1,
+)
 from synaptic_host.docker_v1.model import (
     MAX_DOCKER_ARG_BYTES_V1,
     MAX_DOCKER_ARGS_V1,
@@ -727,3 +736,473 @@ def test_command_snapshot_rejects_mutation_before_spawn():
         DockerCLIRunnerV1(_policy(), popen_factory=factory).run(command)
     assert caught.value.code is DockerPlatformCodeV1.COMMAND_INVALID
     assert factory.calls == []
+
+
+def _typed_runner(payload, *, exit_code=0):
+    chunks = tuple(payload[index:index + 65_536]
+                   for index in range(0, len(payload), 65_536))
+    factory = Factory(Process(chunks, exit_code=exit_code))
+    policy = _policy(stdout_limit=MAX_DOCKER_STREAM_BYTES_V1,
+                     stderr_limit=MAX_DOCKER_STREAM_BYTES_V1,
+                     combined_limit=MAX_DOCKER_COMBINED_BYTES_V1)
+    return DockerCLIRunnerV1(policy, popen_factory=factory), factory
+
+
+def _container_record(container_ref="a" * 64):
+    labels = {
+        OWNED_LABEL_PREFIX_V1 + name: (
+            "1" if name == "schema-version" else "b" * 64
+        ) for name in OWNED_LABEL_NAMES_V1
+    }
+    return {
+        "Id": container_ref, "Name": "/synaptic-job",
+        "Image": "sha256:" + "c" * 64,
+        "Config": {"Labels": labels, "Env": ["TOKEN=raw-secret"],
+                   "Cmd": ["python", "raw-secret.py"]},
+        "HostConfig": {"NetworkMode": "none", "NanoCpus": 1000000000,
+                       "Memory": 4096},
+        "Mounts": [{"Type": "bind", "Source": "C:\\raw-secret",
+                    "Destination": "/artifacts", "RW": True}],
+        "State": {"Status": "created", "Running": False, "ExitCode": 0,
+                  "StartedAt": "0001-01-01T00:00:00Z",
+                  "Error": "raw-secret-state"},
+        "RestartCount": 0,
+        "FutureDockerField": {"ignored": True},
+    }
+
+
+def test_typed_inventory_builds_exact_argv_and_returns_only_ids():
+    runner, factory = _typed_runner(("a" * 64 + "\n" + "b" * 64 + "\n").encode())
+    result = runner.inventory_exact_name("synaptic-job")
+    assert result.projection.container_refs == ("a" * 64, "b" * 64)
+    assert factory.calls[0][0][-6:] == (
+        "ps", "--all", "--quiet", "--no-trunc", "--filter",
+        "name=^/synaptic-job$",
+    )
+
+
+def test_typed_image_inspect_is_exact_and_nonzero_is_not_parsed():
+    image = "sha256:" + "d" * 64
+    runner, factory = _typed_runner(json.dumps([{"Id": image, "Extra": 1}]).encode())
+    result = runner.inspect_image(image)
+    assert result.projection.image_digest == image
+    assert factory.calls[0][0][-4:] == ("inspect", "--type", "image", image)
+
+    runner, _ = _typed_runner(b"raw-secret not json", exit_code=1)
+    result = runner.inspect_image(image)
+    assert result.projection is None
+    assert "raw-secret" not in repr(result)
+
+
+def test_typed_container_projection_never_exposes_raw_values():
+    ref = "a" * 64
+    runner, factory = _typed_runner(json.dumps([_container_record(ref)]).encode())
+    result = runner.inspect_container(ref)
+    projection = result.projection
+    assert projection.container_name == "synaptic-job"
+    assert projection.network_mode == "none"
+    assert len(projection.environment.entries) == 1 and projection.argument_count == 2
+    assert projection.state.started is False
+    rendered = repr(result)
+    for secret in ("raw-secret", "C:\\raw-secret", "/artifacts"):
+        assert secret not in rendered
+    assert factory.calls[0][0][-4:] == ("inspect", "--type", "container", ref)
+
+
+@pytest.mark.parametrize("payload", (
+    b"\xff", b"{}", b"[]", b"[{},{}]", b"[NaN]",
+    b'[{"Id":"x","Id":"y"}]',
+))
+def test_typed_inspect_rejects_invalid_utf8_json_shape_and_duplicates(payload):
+    runner, _ = _typed_runner(payload)
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        runner.inspect_image("sha256:" + "d" * 64)
+    _assert_closed_causal_error(caught, DockerPlatformCodeV1.OUTPUT_INVALID)
+    assert "raw-secret" not in str(caught.value)
+
+
+@pytest.mark.parametrize("payload", (
+    b"a", b"A" * 64, b"a" * 63, b"a" * 64 + b" ",
+    b"a" * 64 + b"\n\n", b"a" * 64 + b"\n" + b"a" * 64,
+))
+def test_typed_inventory_rejects_malformed_or_duplicate_ids(payload):
+    runner, _ = _typed_runner(payload)
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        runner.inventory_exact_name("synaptic-job")
+    assert caught.value.code is DockerPlatformCodeV1.OUTPUT_INVALID
+
+
+def test_container_owned_label_set_and_schema_are_exact():
+    record = _container_record()
+    record["Config"]["Labels"][OWNED_LABEL_PREFIX_V1 + "extra"] = "raw-secret"
+    runner, _ = _typed_runner(json.dumps([record]).encode())
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        runner.inspect_container("a" * 64)
+    _assert_closed_causal_error(caught, DockerPlatformCodeV1.OUTPUT_INVALID)
+
+    record = _container_record()
+    del record["Config"]["Labels"][OWNED_LABEL_PREFIX_V1 + "effect-id"]
+    runner, _ = _typed_runner(json.dumps([record]).encode())
+    with pytest.raises(DockerPlatformErrorV1):
+        runner.inspect_container("a" * 64)
+
+
+def test_json_resource_bounds_and_raw_parse_errors_are_closed():
+    nested = {"Id": "sha256:" + "d" * 64}
+    for _ in range(18):
+        nested = {"future": nested}
+    runner, _ = _typed_runner(json.dumps([nested]).encode())
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        runner.inspect_image("sha256:" + "d" * 64)
+    _assert_closed_causal_error(caught, DockerPlatformCodeV1.OUTPUT_INVALID)
+
+
+def test_container_and_nested_projection_digests_recompute_on_reconstruction():
+    runner, _ = _typed_runner(json.dumps([_container_record()]).encode())
+    projection = runner.inspect_container("a" * 64).projection
+    mutations = (
+        lambda: replace(projection, memory_bytes=projection.memory_bytes + 1),
+        lambda: replace(projection, owned_labels=tuple(reversed(projection.owned_labels))),
+        lambda: replace(projection, mounts=(replace(
+            projection.mounts[0], read_write=False),)),
+        lambda: replace(projection, state=replace(
+            projection.state, restart_count=1)),
+        lambda: replace(projection, environment=replace(
+            projection.environment,
+            entries=(replace(projection.environment.entries[0],
+                             value_digest="e" * 64),))),
+    )
+    for mutate in mutations:
+        with pytest.raises(DockerPlatformErrorV1) as caught:
+            mutate()
+        _assert_closed_causal_error(caught, DockerPlatformCodeV1.OUTPUT_INVALID)
+
+
+def test_environment_projection_is_order_independent_and_keeps_defaults():
+    first = _container_record()
+    first["Config"]["Env"] = ["REQUESTED=one", "IMAGE_DEFAULT=two"]
+    second = _container_record()
+    second["Config"]["Env"] = list(reversed(first["Config"]["Env"]))
+    runner, _ = _typed_runner(json.dumps([first]).encode())
+    left = runner.inspect_container("a" * 64).projection.environment
+    runner, _ = _typed_runner(json.dumps([second]).encode())
+    right = runner.inspect_container("a" * 64).projection.environment
+    assert left == right and len(left.entries) == 2
+    requested_key = sha256(b"REQUESTED").hexdigest()
+    assert [x.value_digest for x in left.entries if x.key_digest == requested_key] == [
+        sha256(b"one").hexdigest()
+    ]
+
+    duplicate = _container_record()
+    duplicate["Config"]["Env"] = ["REQUESTED=one", "REQUESTED=altered"]
+    runner, _ = _typed_runner(json.dumps([duplicate]).encode())
+    with pytest.raises(DockerPlatformErrorV1):
+        runner.inspect_container("a" * 64)
+
+
+@pytest.mark.parametrize("started_at", (
+    "2026-01-02 03:04:05Z", "2026-01-02T03:04:05+00:00",
+    "2026-02-30T03:04:05Z", "2026-01-02T03:04:05.1234567890Z",
+    "0001-01-01T00:00:00.0Z",
+))
+def test_started_at_grammar_and_state_matrix_are_closed(started_at):
+    record = _container_record()
+    record["State"]["StartedAt"] = started_at
+    runner, _ = _typed_runner(json.dumps([record]).encode())
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        runner.inspect_container("a" * 64)
+    assert caught.value.code is DockerPlatformCodeV1.OUTPUT_INVALID
+
+
+def test_typed_result_rejects_cross_command_evidence_and_empty_target():
+    image = "sha256:" + "d" * 64
+    runner, _ = _typed_runner(json.dumps([{"Id": image}]).encode())
+    result = runner.inspect_image(image)
+    other_runner, _ = _typed_runner(b"")
+    other = other_runner.inventory_exact_name("different-name")
+    with pytest.raises(DockerPlatformErrorV1):
+        DockerImageInspectResultV1.build(
+            image, result.request_digest, result.command,
+            other.evidence, result.projection,
+        )
+    with pytest.raises(DockerPlatformErrorV1):
+        DockerImageInspectResultV1.build(
+            "", result.request_digest, result.command,
+            result.evidence, result.projection,
+        )
+
+
+def test_inventory_exact_64_and_65_boundary():
+    refs = [f"{index:064x}" for index in range(64)]
+    runner, _ = _typed_runner(("\n".join(refs) + "\n").encode())
+    assert len(runner.inventory_exact_name("synaptic-job").projection.container_refs) == 64
+    runner, _ = _typed_runner(("\n".join(refs + ["f" * 64]) + "\n").encode())
+    with pytest.raises(DockerPlatformErrorV1):
+        runner.inventory_exact_name("synaptic-job")
+
+
+def _inspect_image_payload(extra):
+    image = "sha256:" + "d" * 64
+    record = {"Id": image}
+    record.update(extra)
+    runner, _ = _typed_runner(json.dumps([record]).encode())
+    return runner, image
+
+
+def test_json_depth_nodes_items_and_string_exact_boundaries():
+    nested = 1
+    for _ in range(14):
+        nested = {"k": nested}
+    runner, image = _inspect_image_payload({"future": nested})
+    assert runner.inspect_image(image).projection is not None
+    nested = {"k": nested}
+    runner, image = _inspect_image_payload({"future": nested})
+    with pytest.raises(DockerPlatformErrorV1): runner.inspect_image(image)
+
+    runner, image = _inspect_image_payload({f"k{i}": None for i in range(1023)})
+    assert runner.inspect_image(image).projection is not None
+    runner, image = _inspect_image_payload({f"k{i}": None for i in range(1024)})
+    with pytest.raises(DockerPlatformErrorV1): runner.inspect_image(image)
+
+    runner, image = _inspect_image_payload({"future": "x" * 65_536})
+    assert runner.inspect_image(image).projection is not None
+    runner, image = _inspect_image_payload({"future": "x" * 65_537})
+    with pytest.raises(DockerPlatformErrorV1): runner.inspect_image(image)
+
+    exact_nodes = {f"x{i}": [None] * (1024 if i < 7 else 1013)
+                   for i in range(8)}
+    runner, image = _inspect_image_payload(exact_nodes)
+    assert runner.inspect_image(image).projection is not None
+    exact_nodes["x7"].append(None)
+    runner, image = _inspect_image_payload(exact_nodes)
+    with pytest.raises(DockerPlatformErrorV1): runner.inspect_image(image)
+
+
+def test_container_collection_and_integer_exact_boundaries():
+    record = _container_record()
+    record["Config"]["Env"] = [f"K{i}=V" for i in range(256)]
+    record["Config"]["Cmd"] = ["x"] * 256
+    record["Mounts"] = [
+        {"Type": "bind", "Source": f"C:\\s{i}",
+         "Destination": f"/d{i}", "RW": bool(i % 2)} for i in range(64)
+    ]
+    record["HostConfig"]["NanoCpus"] = 2**63 - 1
+    record["HostConfig"]["Memory"] = 2**63 - 1
+    record["State"].update({"Status": "exited", "Running": False,
+                            "ExitCode": -(2**31),
+                            "StartedAt": "2026-01-02T03:04:05.123456789Z"})
+    record["RestartCount"] = 2**31 - 1
+    runner, _ = _typed_runner(json.dumps([record]).encode())
+    assert runner.inspect_container("a" * 64).projection.argument_count == 256
+
+    mutations = (
+        lambda x: x["Config"].update(Env=[f"K{i}=V" for i in range(257)]),
+        lambda x: x["Config"].update(Cmd=["x"] * 257),
+        lambda x: x.update(Mounts=x["Mounts"] + [{"Type":"bind","Source":"C:\\z","Destination":"/z","RW":True}]),
+        lambda x: x["HostConfig"].update(NanoCpus=2**63),
+        lambda x: x["HostConfig"].update(Memory=-1),
+        lambda x: x["State"].update(ExitCode=2**31),
+        lambda x: x.update(RestartCount=2**31),
+    )
+    for mutate in mutations:
+        bad = json.loads(json.dumps(record))
+        mutate(bad)
+        runner, _ = _typed_runner(json.dumps([bad]).encode())
+        with pytest.raises(DockerPlatformErrorV1): runner.inspect_container("a" * 64)
+
+
+def test_typed_paths_reuse_timeout_overflow_and_cleanup_dominance():
+    gate = Event()
+    process = Process(stdout_stream=Stream(gate=gate),
+                      stderr_stream=Stream(gate=gate))
+    runner = DockerCLIRunnerV1(
+        _policy(timeout_ms=1), popen_factory=Factory(process),
+        monotonic=AdvancingClock(),
+    )
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        runner.inventory_exact_name("synaptic-job")
+    assert caught.value.code is DockerPlatformCodeV1.TIMEOUT
+    assert process.events == ["terminate", "wait"]
+
+    process = Process((b"x" * 1025,), (), stdout_stream=Stream(
+        (b"x" * 1025,), close_error=True
+    ))
+    runner = DockerCLIRunnerV1(_policy(), popen_factory=Factory(process))
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        runner.inspect_image("sha256:" + "d" * 64)
+    assert caught.value.code is DockerPlatformCodeV1.TERMINATION_INDETERMINATE
+
+
+def _reconstruct_typed_result(result):
+    return type(result)(
+        result.result_kind, result.target, result.request_digest,
+        result.command, result.evidence, result.projection,
+        result.result_digest,
+    )
+
+
+def test_real_name_a_evidence_cannot_forge_empty_name_b_inventory():
+    runner, _ = _typed_runner(b"")
+    real_a = runner.inventory_exact_name("name-a")
+    runner, _ = _typed_runner(b"")
+    real_b = runner.inventory_exact_name("name-b")
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        type(real_b)(
+            real_b.result_kind, real_b.target, real_b.request_digest,
+            real_b.command, real_a.evidence, real_b.projection,
+            real_b.result_digest,
+        )
+    _assert_closed_causal_error(caught, DockerPlatformCodeV1.OUTPUT_INVALID)
+
+
+def test_result_boundary_recursively_rejects_mutated_command_and_evidence():
+    image = "sha256:" + "d" * 64
+    runner, _ = _typed_runner(json.dumps([{"Id": image}]).encode())
+    result = runner.inspect_image(image)
+    object.__setattr__(result.command, "arguments", ("--type", "image", "sha256:" + "e" * 64))
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        _reconstruct_typed_result(result)
+    _assert_closed_causal_error(caught, DockerPlatformCodeV1.OUTPUT_INVALID)
+
+    runner, _ = _typed_runner(json.dumps([{"Id": image}]).encode())
+    result = runner.inspect_image(image)
+    object.__setattr__(result.evidence, "stdout_size", result.evidence.stdout_size + 1)
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        _reconstruct_typed_result(result)
+    _assert_closed_causal_error(caught, DockerPlatformCodeV1.OUTPUT_INVALID)
+
+
+@pytest.mark.parametrize("family", ("parent", "label", "env_entry", "env", "mount", "state"))
+def test_result_boundary_recursively_rejects_each_mutated_projection_family(family):
+    runner, _ = _typed_runner(json.dumps([_container_record()]).encode())
+    result = runner.inspect_container("a" * 64)
+    projection = result.projection
+    target = {
+        "parent": projection,
+        "label": projection.owned_labels[0],
+        "env_entry": projection.environment.entries[0],
+        "env": projection.environment,
+        "mount": projection.mounts[0],
+        "state": projection.state,
+    }[family]
+    field, value = {
+        "parent": ("memory_bytes", projection.memory_bytes + 1),
+        "label": ("value_digest", "e" * 64),
+        "env_entry": ("value_digest", "e" * 64),
+        "env": ("projection_digest", "e" * 64),
+        "mount": ("read_write", False),
+        "state": ("restart_count", 1),
+    }[family]
+    object.__setattr__(target, field, value)
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        _reconstruct_typed_result(result)
+    _assert_closed_causal_error(caught, DockerPlatformCodeV1.OUTPUT_INVALID)
+
+
+def test_duplicate_mount_destination_is_causally_closed_and_redacted():
+    record = _container_record()
+    secret = "/raw-secret-duplicate-destination"
+    source_one = "C:\\raw-secret-source-one"
+    source_two = "C:\\raw-secret-source-two"
+    record["Mounts"] = [
+        {"Type": "bind", "Source": source_one, "Destination": secret, "RW": True},
+        {"Type": "bind", "Source": source_two, "Destination": secret, "RW": False},
+    ]
+    runner, _ = _typed_runner(json.dumps([record]).encode())
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        runner.inspect_container("a" * 64)
+    _assert_closed_causal_error(caught, DockerPlatformCodeV1.OUTPUT_INVALID)
+    rendered = "".join(traceback.format_exception(caught.value))
+    for raw_value in (source_one, source_two, secret):
+        assert raw_value not in rendered
+
+
+@pytest.mark.parametrize(
+    "status,running,started_at",
+    (
+        ("created", False, "0001-01-01T00:00:00Z"),
+        ("running", True, "2026-01-02T03:04:05Z"),
+        ("paused", True, "2026-01-02T03:04:05Z"),
+        ("restarting", True, "2026-01-02T03:04:05Z"),
+        ("exited", False, "2026-01-02T03:04:05Z"),
+        ("dead", False, "2026-01-02T03:04:05Z"),
+    ),
+)
+def test_exact_valid_state_matrix(status, running, started_at):
+    record = _container_record()
+    record["State"].update(Status=status, Running=running, StartedAt=started_at)
+    runner, _ = _typed_runner(json.dumps([record]).encode())
+    assert runner.inspect_container("a" * 64).projection.state.status.value == status
+
+
+@pytest.mark.parametrize("status", ("removing", "hostile-unknown-status"))
+def test_unsupported_and_unknown_states_are_closed_without_raw_status(status):
+    record = _container_record()
+    record["State"].update(Status=status, Running=False,
+                           StartedAt="2026-01-02T03:04:05Z")
+    runner, _ = _typed_runner(json.dumps([record]).encode())
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        runner.inspect_container("a" * 64)
+    _assert_closed_causal_error(caught, DockerPlatformCodeV1.OUTPUT_INVALID)
+    assert status not in str(caught.value)
+
+
+_VALID_STATE_MATRIX = {
+    "created": (False, False),
+    "running": (True, True),
+    "paused": (True, True),
+    "restarting": (True, True),
+    "exited": (False, True),
+    "dead": (False, True),
+}
+_INVALID_STATE_MATRIX = tuple(
+    (status, running, started)
+    for status, valid_pair in _VALID_STATE_MATRIX.items()
+    for running in (False, True)
+    for started in (False, True)
+    if (running, started) != valid_pair
+)
+
+
+@pytest.mark.parametrize("status,running,started", _INVALID_STATE_MATRIX)
+def test_all_18_invalid_supported_state_combinations_are_causally_closed(
+    status, running, started,
+):
+    assert len(_INVALID_STATE_MATRIX) == 18
+    record = _container_record()
+    record["State"].update(
+        Status=status,
+        Running=running,
+        StartedAt=(
+            "2026-01-02T03:04:05Z"
+            if started else "0001-01-01T00:00:00Z"
+        ),
+    )
+    runner, _ = _typed_runner(json.dumps([record]).encode())
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        runner.inspect_container("a" * 64)
+    _assert_closed_causal_error(caught, DockerPlatformCodeV1.OUTPUT_INVALID)
+
+
+def test_internally_valid_wrong_command_is_rejected_by_exact_expected_argv():
+    image = "sha256:" + "d" * 64
+    wrong_command = DockerCLICommandV1.build(
+        DockerCLIVerbV1.INSPECT,
+        ("--type", "image", image, "extra-valid-argument"),
+    )
+    runner, _ = _typed_runner(b"ignored by digest-only run")
+    wrong_evidence = runner.run(wrong_command)
+    wrong_request = docker_typed_request_digest_v1(
+        DockerTypedResultKindV1.IMAGE_INSPECT,
+        image,
+        wrong_command.command_digest,
+    )
+    wrong_projection = DockerImageInspectProjectionV1.build(
+        image, wrong_request, wrong_command.command_digest
+    )
+    with pytest.raises(DockerPlatformErrorV1) as caught:
+        DockerImageInspectResultV1.build(
+            image, wrong_request, wrong_command,
+            wrong_evidence, wrong_projection,
+        )
+    _assert_closed_causal_error(caught, DockerPlatformCodeV1.OUTPUT_INVALID)

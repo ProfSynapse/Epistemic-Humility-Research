@@ -14,6 +14,7 @@ def test_host_docker_package_keeps_empty_exports_and_forbidden_boundaries():
         "import sqlite", "from sqlite", "import subprocess", "from subprocess",
         "docker.from_env", "import requests", "from requests", "os.system",
         "shell=true", "hf_token", "runpod_api_key", "modal_token",
+        "json.loads", "object_pairs_hook",
     ):
         assert forbidden not in combined
     cli = files["cli.py"].lower()
@@ -25,3 +26,8 @@ def test_host_docker_package_keeps_empty_exports_and_forbidden_boundaries():
         "modal_token", "http_proxy", "https_proxy",
     ):
         assert forbidden not in cli
+    ports = files["ports.py"]
+    assert "DockerTypedCLIRunnerPortV1" in ports
+    assert "bytes" not in ports.split("class DockerTypedCLIRunnerPortV1", 1)[1]
+    control_model = files["control_model.py"]
+    assert "raw_output" not in control_model and "state_error" not in control_model
