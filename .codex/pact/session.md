@@ -111,3 +111,42 @@ Active orchestration ledger for the current repo-focused PACT session.
 - Final evidence: **50 create tests passed**, **141 focused tests passed**, and **531 full `docker_v1` tests passed**. A direct concurrency gate reconstructed **32 hosts** over one shared in-memory store, produced exactly **one CREATE**, returned `CREATED` from all 32 callers, and finished at `VERIFIED`.
 - Guarantees remain same-process and in-memory/shared-store-instance only. This slice made no real Docker call and does not implement START, persistence, restart durability, or cross-process durability.
 - Next dispatch: **Slice 5.5 START**.
+
+### 2026-08-28 Docker CREATE Orchestration Slice 5.4c Release Checkpoint
+
+- Accepted Slice 5.4c was committed, pushed to `origin/feat/submodule-cloud-api-v1-host`, and synchronized to the canonical WSL checkout at `73058c671f456ae3fe5460e4b54f740482fc8d39`.
+- Windows HEAD, the origin branch HEAD, and canonical WSL HEAD matched that exact commit.
+- The WSL checkout retained two unrelated pre-existing manifest type changes; this workflow did not modify them.
+- Next dispatch: **Slice 5.5 START**.
+
+### 2026-08-28 Docker START Slice 5.5 Architecture Accepted
+
+- Accepted bases are engine `1aa60de5` and host `73058c67`; no architecture blocker is recorded. Slice 5.4d is skipped and implementation proceeds directly to Slice 5.5.
+- The sequential slices are **5.5a engine typed START protocol**, **5.5b host typed START effect boundary**, and **5.5c host START transaction**.
+- START requires exact accepted CREATE provenance and owns an independent `ADMITTED` to `ATTEMPTED` to `VERIFIED` mutation record.
+- Only the exact attempt-CAS winner may invoke START. Typed inspection with `started=True` is the required proof; `CREATED` never proves START, and an `ATTEMPTED` START record with a merely `CREATED` container never retries START.
+- Every dependency boundary requires exact local request/result adjacency before consuming a disposition.
+- Guarantees remain same-process and in-memory only. SQLite and persistence remain host-owned and no database implementation belongs in the engine.
+- After Slice 5.5 acceptance, proceed to **Slice 5.6 thin composition and an actual coordinator-driven CPU smoke**.
+
+### 2026-08-28 Docker START Slice 5.5a Engine Protocol Accepted
+
+- Worker-reported engine files are `tuner/execution/providers/docker_provider_v1/model.py`, `tuner/execution/providers/docker_provider_v1/ports.py`, `tuner/execution/providers/docker_provider_v1/effects.py`, `tests/execution/providers/docker_provider_v1/conftest.py`, `tests/execution/providers/docker_provider_v1/test_model.py`, and `tests/execution/providers/docker_provider_v1/test_effects.py`.
+- The engine now uses typed START dispositions and a typed START result; boolean START semantics were removed. START evidence binds the exact owned labels and typed references.
+- R1 closes alias substitution by preserving an untouched canonical baseline, passing distinct deeply rebuilt CREATE and START copies, and reconstructing nested values rather than retaining caller-controlled aliases.
+- Independent verdicts are audit **ACCEPT** and test **PASS**. Final evidence: **227 focused**, **448 provider**, **28 adversarial**, and **1,155 execution tests passed with 3 skips**; compile and diff checks passed.
+- The accepted candidate is based on engine `1aa60de5` and is not yet committed or pushed.
+- Next dispatch: **Slice 5.5b host typed START effect boundary**.
+
+### 2026-08-28 Separate Non-Blocking Modal Contract Finding
+
+- One pre-existing unrelated Modal contract check reports `requirements/modal-launcher-v1.lock` with expected `dependency_lock` digest beginning `8273...` and actual digest beginning `c99a...`.
+- All other six contract members match, and the relevant files are clean against engine HEAD.
+- This finding is tracked separately, does not block Slice 5.5a, and was not remediated in this slice.
+
+### 2026-08-28 Docker START Slice 5.5a Engine Release Checkpoint
+
+- Accepted engine Slice 5.5a was committed as `dc6b5197` and pushed by fast-forwarding remote `feat/submodule-cloud-api-v1` from `1aa60de5`.
+- The submodule checkout was intentionally detached when the commit was created, and remote ancestry was verified before push.
+- The host gitlink now reflects the engine change; committing that gitlink update remains pending the next host commit.
+- Next dispatch: **Slice 5.5b host typed START effect boundary**.
