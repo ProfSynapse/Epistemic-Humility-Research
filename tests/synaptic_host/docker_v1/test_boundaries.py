@@ -7,7 +7,8 @@ def test_host_docker_package_keeps_empty_exports_and_forbidden_boundaries():
     files = {path.name: path.read_text(encoding="utf-8")
              for path in sorted(root.glob("*.py"))}
     combined = "\n".join(
-        text for name, text in files.items() if name != "cli.py"
+        text for name, text in files.items()
+        if name not in {"cli.py", "interop.py"}
     ).lower()
     assert "__all__: tuple[str, ...] = ()" in init_text
     assert (
@@ -28,14 +29,18 @@ def test_host_docker_package_keeps_empty_exports_and_forbidden_boundaries():
     ):
         assert forbidden not in combined
     cli = files["cli.py"].lower()
+    interop = files["interop.py"].lower()
     assert "import subprocess" in cli
+    assert "import subprocess" in interop
     assert "shell=false" in cli
+    assert '"shell": false' in interop
     for forbidden in (
         "shell=true", "os.environ", "getenv(", "userprofile", "appdata",
         "docker_context", "docker_config", "hf_token", "runpod_api_key",
         "modal_token", "http_proxy", "https_proxy",
     ):
         assert forbidden not in cli
+        assert forbidden not in interop
     ports = files["ports.py"]
     assert "DockerTypedCLIRunnerPortV1" in ports
     assert "bytes" not in ports.split("class DockerTypedCLIRunnerPortV1", 1)[1]
