@@ -207,7 +207,104 @@ combination is open territory.**
 
 ### 4B. Training objectives that force causal dependence on internal state
 
-_(pending second sweep)_
+**Headline of the sweep: exactly one published family trains the causal
+chain itself — Interchange Intervention Training (IIT) / causal-abstraction
+training. It has never been applied to an uncertainty/answerability
+variable, and no published IIT *training* run exists above ~1B. The
+knowledge-boundary training literature (R-Tuning, RLKF, Rewarding Doubt,
+calibration tuning, honesty alignment) almost uniformly never tests the
+crux — no probe-before/after, no intervention test. Probe-as-reward's
+permuted-sensor result appears to be novel; nothing found contradicts it.**
+
+#### The causal-objective family
+
+- **IIT** (Geiger et al., ICML 2022, arXiv:2112.00826; causal distillation
+  NAACL 2022). Training minimizes a counterfactual loss: swap the aligned
+  representation in from a source input and require the output the
+  high-level causal model would give **under that intervention**. Because
+  the label is defined by the intervened state, the objective is
+  unsatisfiable from input correlates — the designated representation is
+  forced to become the causal bottleneck. This is the direct structural fix
+  for the probe-as-reward failure. Cost ≈ 2-3x SFT (two forward passes +
+  swap); tooling exists (pyvene, arXiv:2403.07809; Boundless DAS ran
+  *analysis* at 7B, arXiv:2305.08809). **Gap: no application to
+  knowledge-boundary variables anywhere in the lineage.**
+- **CAFT — concept-ablation fine-tuning** (Casademunt et al.,
+  arXiv:2507.16795). Projects concept directions OUT during fine-tuning so
+  gradient descent cannot build the behavior on them (~10x less emergent
+  misalignment). The negative of what we need, but it proves the lever:
+  projection constraints at training time control which directions the
+  learned policy routes through. Constructive mirror: project the refusal
+  update ONTO the KU axis, or randomize its complement, during training.
+- **Gradient routing** (Cloud et al., arXiv:2410.04332). Data-dependent
+  gradient masks confine WHERE a capability is learned — could structurally
+  deny the policy a bypass path around the probe site. Small-scale demos
+  only; constrains where, not what is read.
+- **Consistency training** (BCT/ACT, Irpan et al., arXiv:2510.27062).
+  Invariance of outputs/activations across nuisance prompt wrappings. The
+  complement piece: a full recipe is invariance to nuisance input features
+  PLUS equivariance to the internal answerability state.
+- **Not found anywhere:** an RL objective computed under randomized or
+  intervened internal states (the exact fix for probe-as-reward);
+  causal-scrubbing-as-training; any IIT training at 3-9B.
+
+#### Knowledge-boundary training: large literature, crux untested
+
+- **R-Tuning** (arXiv:2311.09677, NAACL 2024), **RLKF** (arXiv:2403.18349),
+  **Rewarding Doubt** (arXiv:2503.02623), **RLMF** (arXiv:2606.32032),
+  **calibration tuning** (Kapoor et al., NeurIPS 2024, arXiv:2406.08391),
+  **Alignment for Honesty** (arXiv:2312.07000), behaviorally calibrated RL
+  (arXiv:2512.19920): all supervise behavior or stated confidence from
+  correctness-derived signals; none runs an internal-representation test of
+  what the trained policy reads. Paper 2/3 have effectively subsumed this
+  family, and Rewarding Doubt is the cleanest published baseline of the
+  family Paper 3 falsified for coupling — cite it as such.
+- **SEAT** (Shen et al., arXiv:2506.14387) — the closest thing to a
+  representation-level analysis in this family: conventional fine-tuning
+  causes activation displacement that collapses ignorance-awareness;
+  constraining drift preserves abstention. Contrapositive evidence that
+  abstention behavior is coupled to activation geometry.
+- **Ferrando et al.** (ICLR 2025, arXiv:2411.14257) — the key existence
+  proof: SAE-derived entity-familiarity directions in Gemma **causally
+  steer the chat model's refusal**, and the chat model inherited
+  sensitivity to directions already present in the base. So the coupling we
+  want IS reachable by gradient descent (RLHF found it in Gemma's lineage
+  without being asked). It supplies the measurement instrument (steer the
+  axis, watch trained behavior follow) that every bucket-3 training paper
+  lacks — and no training recipe that reliably produces the coupling.
+
+#### Introspection training (2025-2026)
+
+- **Activation-injection training** (Lindsey 2025,
+  transformer-circuits.pub introspection; Detecting the Disturbance,
+  arXiv:2512.12411; Mechanisms of Introspective Awareness,
+  arXiv:2603.21396; Introspection Fine-Tuning, arXiv:2607.14111). Inject a
+  concept vector; supervise detection/identification. Ground truth is an
+  intervention invisible in the input — the same trick as IIT, applied to
+  self-report; 2026 work trains it at 2-8B. Warnings baked into the same
+  literature: binary "did you notice" accuracy can be entirely explained by
+  global logit shifts (the permuted-sensor analogue), so supervision must
+  be differential/localizing; "causal bypassing" is named and measured
+  (Reality Check, arXiv:2605.26242). **No paper shows downstream BEHAVIORAL
+  use (e.g., abstention) of a trained-introspection state — open link.**
+- **Reporting decoders** (LatentQA, arXiv:2412.08686; Transluce
+  self-explanation, arXiv:2511.08579; Introspection Adapters,
+  arXiv:2604.16812; Introspective Coupling, arXiv:2606.32038). Privileged
+  access shown; LatentQA's decoder is differentiable and usable for
+  control — an unexplored hybrid is backprop through a LatentQA-style
+  decoder over the KU site into the policy.
+
+#### Latent-space reward
+
+- POISE (arXiv:2605.07579), Activation Reward Models (arXiv:2507.01368),
+  hidden-state-regularized RMs (arXiv:2406.10216), EpiCaR
+  (arXiv:2601.06786): hidden states improve the *training signal*, never
+  the policy's consultation, and none tests it. Same bypass risk as
+  probe-as-reward — a probe-derived reward is still just a scalar.
+
+### 4C. Distilling the runtime controller into weights
+
+_(pending third sweep)_
 
 ### 4C. Distilling the runtime controller into weights
 
