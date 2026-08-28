@@ -13,6 +13,8 @@ from synaptic_host.local_io_v1.model import (
 )
 
 from .model import (
+    AuthenticatedBundleBindingV1,
+    BundleBindingV1,
     BundleIOCodeV1,
     BundleIOErrorV1,
     checked_ref_v1,
@@ -123,6 +125,64 @@ class BundleBorrowAccessV1:
         )
 
 
+def _mount_verify_access_body(destination_ref, verify_borrow, verify_root):
+    return {
+        "destination_ref": destination_ref,
+        "root_authority_digest": verify_borrow.root_authority_digest,
+        "schema_version": "synaptic-host-bundle-mount-verify-access/v1",
+        "verify": {
+            "access": verify_borrow.access.value,
+            "borrow_digest": verify_borrow.borrow_digest,
+            "request_digest": verify_borrow.request_digest,
+            "root_directory_digest": verify_root.directory_digest,
+            "root_node": _root_node(verify_root),
+        },
+    }
+
+
+@dataclass(frozen=True, slots=True)
+class BundleMountVerifyAccessV1:
+    destination_ref: str
+    root_authority_digest: str
+    verify_borrow: RetainedRootBorrowV1
+    verify_root: BorrowedDirectoryV1
+    access_digest: str
+
+    def __post_init__(self) -> None:
+        try:
+            checked_ref_v1(self.destination_ref, BundleIOCodeV1.ACCESS_INVALID)
+            if (
+                type(self.verify_borrow) is not RetainedRootBorrowV1
+                or type(self.verify_root) is not BorrowedDirectoryV1
+                or self.verify_borrow.root_authority_digest
+                != self.root_authority_digest
+                or self.verify_borrow.purpose
+                is not BorrowPurposeV1.BUNDLE_MOUNT_VERIFY
+                or self.verify_borrow.access is not RootAccessV1.READ_ONLY
+                or self.verify_root.borrow_digest != self.verify_borrow.borrow_digest
+                or self.verify_root.path_components != ()
+                or self.verify_root.owns_handle
+                or self.access_digest != digest_v1(_mount_verify_access_body(
+                    self.destination_ref, self.verify_borrow, self.verify_root
+                ))
+            ):
+                raise BundleIOErrorV1(BundleIOCodeV1.ACCESS_INVALID)
+        except BundleIOErrorV1:
+            raise
+        except BaseException:
+            raise BundleIOErrorV1(BundleIOCodeV1.ACCESS_INVALID) from None
+
+    @classmethod
+    def build(cls, destination_ref, verify_borrow, verify_root):
+        body = _mount_verify_access_body(
+            destination_ref, verify_borrow, verify_root
+        )
+        return cls(
+            destination_ref, verify_borrow.root_authority_digest,
+            verify_borrow, verify_root, digest_v1(body),
+        )
+
+
 def _source_body(source_ref, borrow, directory, component):
     return {
         "borrow_digest": borrow.borrow_digest,
@@ -172,6 +232,17 @@ class BundleSourceV1:
 
 class BundleSourceRegistryPortV1(Protocol):
     def resolve(self, source_ref: str) -> BundleSourceV1: ...
+
+
+class BundleBindingAuthorityPortV1(Protocol):
+    authority_ref: str
+    key_ref: str
+
+    def issue(self, value: BundleBindingV1) -> AuthenticatedBundleBindingV1: ...
+
+    def authenticate(
+        self, value: AuthenticatedBundleBindingV1
+    ) -> AuthenticatedBundleBindingV1 | None: ...
 
 
 __all__: tuple[str, ...] = ()

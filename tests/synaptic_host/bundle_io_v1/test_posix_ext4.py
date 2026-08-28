@@ -5,13 +5,21 @@ import os
 from pathlib import Path
 from threading import Thread
 
+import pytest
+
 from synaptic_host.bundle_io_v1.bundle import ImmutableSourceBundleV1
 from synaptic_host.bundle_io_v1.model import (
+    BundleIOCodeV1,
+    BundleIOErrorV1,
     BundleLookupStatusV1,
     BundleMemberCommandV1,
     BundleSealCommandV1,
 )
-from synaptic_host.bundle_io_v1.ports import BundleBorrowAccessV1, BundleSourceV1
+from synaptic_host.bundle_io_v1.ports import (
+    BundleBorrowAccessV1,
+    BundleMountVerifyAccessV1,
+    BundleSourceV1,
+)
 from synaptic_host.local_io_v1.filesystem import LocalFilesystemV1
 from synaptic_host.local_io_v1.model import (
     BorrowPurposeV1,
@@ -22,6 +30,8 @@ from synaptic_host.local_io_v1.model import (
     digest_v1,
 )
 from synaptic_host.local_io_v1.posix import PosixRetainedDirfdPortV1
+
+from .conftest import BindingAuthority
 
 
 class _Sources:
@@ -125,7 +135,10 @@ def test_real_ext4_bundle_retained_pair_recovery_and_hostile_links(
             "source", source_borrow, source_root, "input.bin"
         )
     }.items())
-    service = ImmutableSourceBundleV1(filesystem, sources)
+    binding_authority = BindingAuthority()
+    service = ImmutableSourceBundleV1(
+        filesystem, sources, binding_authority
+    )
     found = service.seal(command, access)
     assert found.status is BundleLookupStatusV1.FOUND
     assert set(path.name for path in destination.iterdir()) == {
@@ -154,7 +167,16 @@ def test_real_ext4_bundle_retained_pair_recovery_and_hostile_links(
         command.destination_ref, fresh_create, fresh_create_root,
         fresh_verify, fresh_verify_root,
     )
-    fresh = ImmutableSourceBundleV1(fresh_fs, _Sources())
+    fresh = ImmutableSourceBundleV1(
+        fresh_fs, _Sources(), BindingAuthority()
+    )
+    authenticated = binding_authority.issue(found.binding)
+    mount_access = BundleMountVerifyAccessV1.build(
+        command.destination_ref, fresh_verify, fresh_verify_root
+    )
+    verification = fresh.verify_mount(command, mount_access, authenticated)
+    assert verification.binding_digest == found.binding.binding_digest
+    assert verification.read_only is True
     assert fresh.lookup(
         command, fresh_access, expected=found.binding
     ).status is BundleLookupStatusV1.INDETERMINATE
@@ -172,6 +194,9 @@ def test_real_ext4_bundle_retained_pair_recovery_and_hostile_links(
 
     third = destination / "fixture-third-link"
     os.link(destination / found.binding.marker_name, third)
+    with pytest.raises(BundleIOErrorV1) as caught:
+        fresh.verify_mount(command, mount_access, authenticated)
+    assert caught.value.code is BundleIOCodeV1.CONFLICT
     assert fresh.lookup(command, fresh_access).status is BundleLookupStatusV1.CONFLICT
     third.unlink()
     assert fresh.lookup(command, fresh_access).status is BundleLookupStatusV1.INDETERMINATE

@@ -10,25 +10,278 @@ import pytest
 import synaptic_host.bundle_io_v1.bundle as bundle_module
 from synaptic_host.bundle_io_v1.model import (
     MAX_BUNDLE_CHUNK_BYTES,
+    MAX_BUNDLE_MANIFEST_BYTES,
     BundleIOCodeV1,
     BundleIOErrorV1,
     BundleLookupStatusV1,
+    BundleMountVerificationV1,
     BundleMemberCommandV1,
     BundleSealCommandV1,
     bundle_companion_digest_v1,
 )
 from synaptic_host.bundle_io_v1.bundle import ImmutableSourceBundleV1
-from synaptic_host.bundle_io_v1.ports import BundleBorrowAccessV1, BundleSourceV1
+from synaptic_host.bundle_io_v1.ports import (
+    BundleBorrowAccessV1,
+    BundleMountVerifyAccessV1,
+    BundleSourceV1,
+)
 from synaptic_host.local_io_v1.filesystem import LocalFilesystemV1
 from synaptic_host.local_io_v1.model import BorrowPurposeV1, RootAccessV1
 from synaptic_host.local_io_v1.model import LocalIOCodeV1, LocalIOErrorV1
 
-from .conftest import Authenticator, borrow
+from .conftest import Authenticator, BindingAuthority, borrow
 
 
 def private_handle(port, command):
     name = ".synaptic-bundle-" + command.command_digest[:32]
     return port.directories["dir-data"][name].directory_handle
+
+
+def mount_access(access):
+    return BundleMountVerifyAccessV1.build(
+        access.destination_ref, access.verify_borrow, access.verify_root
+    )
+
+
+def authenticated_found(service, command, access):
+    found = service.seal(command, access)
+    assert found.status is BundleLookupStatusV1.FOUND
+    return found, service._binding_authority.issue(found.binding)
+
+
+_MUTATION_EVENTS = {
+    "mkdir_at", "create_exclusive_at", "write", "fsync_file",
+    "fsync_directory:data", "link_at", "unlink_at",
+}
+
+
+def test_verify_mount_is_authenticated_read_only_and_logically_bound(bundle_env) -> None:
+    port, _, service, _, command, access, _, _ = bundle_env
+    found, authenticated = authenticated_found(service, command, access)
+    before = len(port.trace)
+    verification = service.verify_mount(
+        command, mount_access(access), authenticated
+    )
+    assert type(verification) is BundleMountVerificationV1
+    assert verification.read_only is True
+    assert verification.binding_digest == found.binding.binding_digest
+    assert verification.private_name == found.binding.private_name
+    assert verification.logical_entries == tuple(
+        (value.logical_name, value.physical_name, value.size, value.sha256)
+        for value in found.binding.members
+    )
+    assert _MUTATION_EVENTS.isdisjoint(port.trace[before:])
+
+
+@pytest.mark.parametrize("field,value", [
+    ("authority_ref", "alternate-authority"),
+    ("key_ref", "alternate-key"),
+    ("tag", "0" * 64),
+])
+def test_verify_mount_rejects_alternate_or_forged_signer_before_fs(
+    bundle_env, field, value
+) -> None:
+    port, _, service, _, command, access, _, _ = bundle_env
+    _, authenticated = authenticated_found(service, command, access)
+    forged = replace(authenticated, **{field: value})
+    before = tuple(port.trace)
+    with pytest.raises(BundleIOErrorV1) as caught:
+        service.verify_mount(command, mount_access(access), forged)
+    assert caught.value.code is BundleIOCodeV1.AUTHENTICATION_FAILED
+    assert tuple(port.trace) == before
+
+
+def test_verify_mount_rejects_mutated_nested_binding_and_throwing_authority(
+    bundle_env,
+) -> None:
+    port, _, service, _, command, access, _, _ = bundle_env
+    _, authenticated = authenticated_found(service, command, access)
+    before = tuple(port.trace)
+    object.__setattr__(authenticated.content, "destination_ref", "rebound")
+    with pytest.raises(BundleIOErrorV1) as caught:
+        service.verify_mount(command, mount_access(access), authenticated)
+    assert caught.value.code is BundleIOCodeV1.AUTHENTICATION_FAILED
+    assert tuple(port.trace) == before
+
+
+def test_verify_mount_rejects_boolean_authentication_result_before_fs(
+    bundle_env,
+) -> None:
+    port, _, service, registry, command, access, _, _ = bundle_env
+    _, authenticated = authenticated_found(service, command, access)
+
+    class BooleanAuthority:
+        authority_ref = service._binding_authority_ref
+        key_ref = service._binding_key_ref
+
+        def authenticate(self, value):
+            return True
+
+    boolean_service = ImmutableSourceBundleV1(
+        service._port, registry, BooleanAuthority()
+    )
+    before = tuple(port.trace)
+    with pytest.raises(BundleIOErrorV1) as caught:
+        boolean_service.verify_mount(
+            command, mount_access(access), authenticated
+        )
+    assert caught.value.code is BundleIOCodeV1.AUTHENTICATION_FAILED
+    assert tuple(port.trace) == before
+
+    _, authenticated = authenticated_found(service, command, access)
+    service._binding_authority.authenticate = lambda value: (_ for _ in ()).throw(
+        RuntimeError("SENTINEL secret authority failure")
+    )
+    before = tuple(port.trace)
+    with pytest.raises(BundleIOErrorV1) as caught:
+        service.verify_mount(command, mount_access(access), authenticated)
+    assert caught.value.code is BundleIOCodeV1.AUTHENTICATION_FAILED
+    assert "SENTINEL" not in str(caught.value)
+    assert tuple(port.trace) == before
+
+
+@pytest.mark.parametrize("field,value", [
+    ("destination_ref", "rebound"),
+    ("root_authority_digest", "0" * 64),
+    ("access_digest", "0" * 64),
+])
+def test_verify_mount_rejects_mutated_least_authority_access_zero_fs(
+    bundle_env, field, value
+) -> None:
+    port, _, service, _, command, access, _, _ = bundle_env
+    _, authenticated = authenticated_found(service, command, access)
+    verify_access = mount_access(access)
+    object.__setattr__(verify_access, field, value)
+    before = tuple(port.trace)
+    with pytest.raises(BundleIOErrorV1) as caught:
+        service.verify_mount(command, verify_access, authenticated)
+    assert caught.value.code is BundleIOCodeV1.ACCESS_INVALID
+    assert tuple(port.trace) == before
+
+
+def test_verify_mount_rejects_exact_other_command_before_fs(bundle_env) -> None:
+    port, _, service, _, command, access, _, _ = bundle_env
+    _, authenticated = authenticated_found(service, command, access)
+    other = BundleSealCommandV1.build(
+        command.profile_ref, "other-purpose", command.destination_ref,
+        command.members,
+    )
+    before = tuple(port.trace)
+    with pytest.raises(BundleIOErrorV1) as caught:
+        service.verify_mount(other, mount_access(access), authenticated)
+    assert caught.value.code is BundleIOCodeV1.CONFLICT
+    assert tuple(port.trace) == before
+
+
+def test_verify_mount_rejects_valid_cross_root_relabel_before_fs(bundle_env) -> None:
+    port, filesystem, service, _, command, access, _, authenticator = bundle_env
+    _, authenticated = authenticated_found(service, command, access)
+    base = Path.cwd() / ".fake-metadata" / "bundle-io-other"
+    data = base / "data"
+    control = base / "control"
+    port.add_root(data, "other-data")
+    port.add_root(control, "other-control")
+    other_authority = filesystem.retain_root_authority(
+        authenticator.binding(data, "other-bundle-data"),
+        authenticator.binding(control, "other-bundle-control"),
+    )
+    other_borrow, other_root = borrow(
+        filesystem, other_authority, BorrowPurposeV1.BUNDLE_MOUNT_VERIFY,
+        RootAccessV1.READ_ONLY,
+    )
+    relabeled = BundleMountVerifyAccessV1.build(
+        command.destination_ref, other_borrow, other_root
+    )
+    before = tuple(port.trace)
+    with pytest.raises(BundleIOErrorV1) as caught:
+        service.verify_mount(command, relabeled, authenticated)
+    assert caught.value.code is BundleIOCodeV1.CONFLICT
+    assert tuple(port.trace) == before
+
+
+def test_mount_verify_access_rejects_create_purpose_without_port_calls(bundle_env) -> None:
+    port, _, _, _, _, access, _, _ = bundle_env
+    before = tuple(port.trace)
+    with pytest.raises(BundleIOErrorV1) as caught:
+        BundleMountVerifyAccessV1.build(
+            access.destination_ref, access.create_borrow, access.create_root
+        )
+    assert caught.value.code is BundleIOCodeV1.ACCESS_INVALID
+    assert tuple(port.trace) == before
+
+
+@pytest.mark.parametrize(
+    "tamper",
+    ["extra", "missing", "member-content", "member-hardlink", "third-marker-link"],
+)
+def test_verify_mount_detects_namespace_content_and_identity_tamper(
+    bundle_env, tamper
+) -> None:
+    port, _, service, _, command, access, _, _ = bundle_env
+    found, authenticated = authenticated_found(service, command, access)
+    private = private_handle(port, command)
+    if tamper == "extra":
+        port.add_file(private, "extra", b"x")
+    elif tamper == "missing":
+        del port.directories[private]["member-0000"]
+    elif tamper == "member-content":
+        port.directories[private]["member-0000"].content[:] = b"ALPHA"
+    elif tamper == "member-hardlink":
+        port.directories[private]["member-0000"].nlink = 2
+    else:
+        port.directories["dir-data"][found.binding.marker_name].nlink = 3
+    before = len(port.trace)
+    with pytest.raises(BundleIOErrorV1) as caught:
+        service.verify_mount(command, mount_access(access), authenticated)
+    assert caught.value.code is BundleIOCodeV1.CONFLICT
+    assert _MUTATION_EVENTS.isdisjoint(port.trace[before:])
+
+
+@pytest.mark.parametrize("failure,offset", [
+    ("close_directory", 1),
+    ("close_file", 1),
+    ("close_file", 4),
+])
+def test_verify_mount_close_uncertainty_dominates_and_never_mutates(
+    bundle_env, failure, offset
+) -> None:
+    port, _, service, _, command, access, _, _ = bundle_env
+    _, authenticated = authenticated_found(service, command, access)
+    port.fail_before[failure] = port.calls.get(failure, 0) + offset
+    before = len(port.trace)
+    with pytest.raises(BundleIOErrorV1) as caught:
+        service.verify_mount(command, mount_access(access), authenticated)
+    assert caught.value.code is BundleIOCodeV1.INDETERMINATE
+    assert _MUTATION_EVENTS.isdisjoint(port.trace[before:])
+
+
+@pytest.mark.parametrize("target", ["marker", "manifest", "member"])
+def test_oversized_retained_content_is_bound_for_verify_and_conflict_for_legacy(
+    bundle_env, target
+) -> None:
+    port, _, service, _, command, access, _, _ = bundle_env
+    found, authenticated = authenticated_found(service, command, access)
+    private = private_handle(port, command)
+    if target == "marker":
+        node = port.directories["dir-data"][found.binding.marker_name]
+        node.content.extend(b"x" * (MAX_BUNDLE_MANIFEST_BYTES + 1))
+    elif target == "manifest":
+        node = port.directories[private]["MANIFEST.json"]
+        node.content.extend(b"x" * (MAX_BUNDLE_MANIFEST_BYTES + 1))
+    else:
+        node = port.directories[private]["member-0000"]
+        node.content.extend(b"x")
+    before = len(port.trace)
+    with pytest.raises(BundleIOErrorV1) as caught:
+        service.verify_mount(command, mount_access(access), authenticated)
+    assert caught.value.code is BundleIOCodeV1.BOUND_EXCEEDED
+    assert _MUTATION_EVENTS.isdisjoint(port.trace[before:])
+    before = len(port.trace)
+    assert service.lookup(command, access).status is BundleLookupStatusV1.CONFLICT
+    assert _MUTATION_EVENTS.isdisjoint(port.trace[before:])
+    before = len(port.trace)
+    assert service.seal(command, access).status is BundleLookupStatusV1.CONFLICT
+    assert _MUTATION_EVENTS.isdisjoint(port.trace[before:])
 
 
 def test_seal_is_deterministic_and_replay_is_store_only(bundle_env) -> None:
@@ -314,7 +567,9 @@ def test_fresh_filesystem_and_reissued_borrows_recover_identical_binding(bundle_
         command.destination_ref, create_borrow, create_root,
         verify_borrow, verify_root,
     )
-    fresh = ImmutableSourceBundleV1(filesystem, registry)
+    fresh = ImmutableSourceBundleV1(
+        filesystem, registry, BindingAuthority()
+    )
     observed = fresh.lookup(command, fresh_access, expected=found.binding)
     assert observed.status is BundleLookupStatusV1.INDETERMINATE
     before_link = port.calls.get("link_at", 0)

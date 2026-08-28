@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 import shutil
 import tempfile
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
 from synaptic_host.bundle_io_v1.bundle import ImmutableSourceBundleV1
 from synaptic_host.bundle_io_v1.model import (
+    AuthenticatedBundleBindingV1,
+    BundleBindingV1,
     BundleMemberCommandV1,
     BundleSealCommandV1,
 )
@@ -84,6 +88,63 @@ class SourceRegistry:
         return self.values[source_ref]
 
 
+class BindingAuthority:
+    authority_ref = "bundle-binding-authority"
+    key_ref = "bundle-binding-key"
+
+    def __init__(self, key: bytes = b"b" * 32) -> None:
+        self._key = bytes(key)
+        self.calls = []
+
+    @staticmethod
+    def _binding(value):
+        if type(value) is not BundleBindingV1:
+            raise ValueError
+        members = tuple(
+            replace(member, identity=replace(member.identity))
+            for member in value.members
+        )
+        return BundleBindingV1(
+            value.command_digest, value.destination_ref,
+            value.root_authority_digest, value.private_name,
+            value.marker_name, value.companion_name,
+            value.manifest_digest, value.inventory_digest, members,
+            replace(value.manifest_identity), replace(value.marker_identity),
+            value.binding_digest,
+        )
+
+    def _tag(self, binding):
+        return hmac.new(
+            self._key,
+            b"bundle-binding-v1\0" + bytes.fromhex(binding.binding_digest),
+            hashlib.sha256,
+        ).hexdigest()
+
+    def issue(self, value):
+        binding = self._binding(value)
+        return AuthenticatedBundleBindingV1(
+            binding, self.authority_ref, self.key_ref, self._tag(binding)
+        )
+
+    def authenticate(self, value):
+        self.calls.append(value)
+        try:
+            if type(value) is not AuthenticatedBundleBindingV1:
+                return None
+            binding = self._binding(value.content)
+            if (
+                value.authority_ref != self.authority_ref
+                or value.key_ref != self.key_ref
+                or not hmac.compare_digest(value.tag, self._tag(binding))
+            ):
+                return None
+            return AuthenticatedBundleBindingV1(
+                binding, self.authority_ref, self.key_ref, value.tag
+            )
+        except BaseException:
+            return None
+
+
 def borrow(filesystem, authority, purpose, access):
     request = RetainedRootBorrowRequestV1.build(
         authority.authority_digest, purpose, access
@@ -141,5 +202,7 @@ def bundle_env():
     command = BundleSealCommandV1.build(
         "opaque-profile", "source-seal", "opaque-destination", members
     )
-    service = ImmutableSourceBundleV1(filesystem, registry)
+    service = ImmutableSourceBundleV1(
+        filesystem, registry, BindingAuthority()
+    )
     return port, filesystem, service, registry, command, access, authority, authenticator

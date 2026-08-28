@@ -18,11 +18,13 @@ from synaptic_host.local_io_v1.model import (
 from .model import (
     MAX_BUNDLE_CHUNK_BYTES,
     MAX_BUNDLE_MANIFEST_BYTES,
+    AuthenticatedBundleBindingV1,
     BundleBindingV1,
     BundleIOCodeV1,
     BundleIOErrorV1,
     BundleLookupResultV1,
     BundleLookupStatusV1,
+    BundleMountVerificationV1,
     BundleMemberCommandV1,
     BundleMemberEvidenceV1,
     BundleSealCommandV1,
@@ -31,7 +33,13 @@ from .model import (
     digest_v1,
     hardlink_pair_identity_v1,
 )
-from .ports import BundleBorrowAccessV1, BundleSourceRegistryPortV1, BundleSourceV1
+from .ports import (
+    BundleBindingAuthorityPortV1,
+    BundleBorrowAccessV1,
+    BundleMountVerifyAccessV1,
+    BundleSourceRegistryPortV1,
+    BundleSourceV1,
+)
 
 
 CREATE = BorrowPurposeV1.BUNDLE_DESTINATION_CREATE
@@ -103,9 +111,23 @@ class ImmutableSourceBundleV1:
     """Host-only immutable source bundle over retained borrow capabilities."""
 
     def __init__(self, borrow_port: RetainedRootBorrowPortV1,
-                 sources: BundleSourceRegistryPortV1) -> None:
+                 sources: BundleSourceRegistryPortV1,
+                 binding_authority: BundleBindingAuthorityPortV1) -> None:
         self._port = borrow_port
         self._sources = sources
+        self._binding_authority = binding_authority
+        try:
+            self._binding_authority_ref = binding_authority.authority_ref
+            self._binding_key_ref = binding_authority.key_ref
+            if (
+                type(self._binding_authority_ref) is not str
+                or not self._binding_authority_ref
+                or type(self._binding_key_ref) is not str
+                or not self._binding_key_ref
+            ):
+                raise ValueError
+        except BaseException:
+            raise _error(BundleIOCodeV1.AUTHENTICATION_FAILED) from None
         self._guard_lock = Lock()
         self._seal_guards: dict[str, list[object]] = {}
 
@@ -173,6 +195,29 @@ class ImmutableSourceBundleV1:
         except BaseException:
             raise _error(BundleIOCodeV1.ACCESS_INVALID) from None
 
+    @staticmethod
+    def _snapshot_mount_access(access) -> BundleMountVerifyAccessV1:
+        if type(access) is not BundleMountVerifyAccessV1:
+            raise _error(BundleIOCodeV1.ACCESS_INVALID)
+        try:
+            borrow = replace(access.verify_borrow)
+            root = replace(
+                access.verify_root,
+                identity=_copy_identity(access.verify_root.identity),
+            )
+            BundleMountVerifyAccessV1(
+                access.destination_ref, access.root_authority_digest,
+                borrow, root, access.access_digest,
+            )
+            return BundleMountVerifyAccessV1(
+                access.destination_ref, access.root_authority_digest,
+                access.verify_borrow, access.verify_root, access.access_digest,
+            )
+        except BundleIOErrorV1:
+            raise
+        except BaseException:
+            raise _error(BundleIOCodeV1.ACCESS_INVALID) from None
+
     @classmethod
     def _validate(cls, command, access):
         command = cls._snapshot_command(command)
@@ -229,6 +274,22 @@ class ImmutableSourceBundleV1:
         except BaseException:
             raise _error(BundleIOCodeV1.CONFLICT) from None
 
+    @classmethod
+    def _snapshot_authenticated_binding(cls, value):
+        if type(value) is not AuthenticatedBundleBindingV1:
+            raise _error(BundleIOCodeV1.AUTHENTICATION_FAILED)
+        try:
+            return AuthenticatedBundleBindingV1(
+                cls._snapshot_binding(value.content), value.authority_ref,
+                value.key_ref, value.tag,
+            )
+        except BundleIOErrorV1 as error:
+            if error.code is BundleIOCodeV1.CONFLICT:
+                raise _error(BundleIOCodeV1.AUTHENTICATION_FAILED) from None
+            raise
+        except BaseException:
+            raise _error(BundleIOCodeV1.AUTHENTICATION_FAILED) from None
+
     @staticmethod
     def _names(command, access):
         suffix = command.command_digest[:32]
@@ -254,10 +315,11 @@ class ImmutableSourceBundleV1:
             if (
                 type(before) is not LocalFileIdentityV1
                 or not stat_is_regular_single_v1(before)
-                or before.size > maximum
                 or (expected_identity is not None and before != expected_identity)
             ):
                 raise _error(BundleIOCodeV1.CONFLICT)
+            if before.size > maximum:
+                raise _error(BundleIOCodeV1.BOUND_EXCEEDED)
             opened = self._port.open_borrowed_read(
                 borrow, directory, component, purpose=purpose
             )
@@ -272,7 +334,9 @@ class ImmutableSourceBundleV1:
                 if not chunk:
                     break
                 size += len(chunk)
-                if size > maximum or size > before.size:
+                if size > maximum:
+                    raise _error(BundleIOCodeV1.BOUND_EXCEEDED)
+                if size > before.size:
                     raise _error(BundleIOCodeV1.STREAM_INVALID)
                 chunks.append(chunk)
             after_handle = self._port.stat_borrowed_file(
@@ -311,9 +375,11 @@ class ImmutableSourceBundleV1:
             if (
                 type(before) is not LocalFileIdentityV1
                 or not stat_is_regular_single_v1(before)
-                or before != expected_identity
-                or before.size > maximum
             ):
+                raise _error(BundleIOCodeV1.CONFLICT)
+            if before.size > maximum:
+                raise _error(BundleIOCodeV1.BOUND_EXCEEDED)
+            if before != expected_identity:
                 raise _error(BundleIOCodeV1.CONFLICT)
             opened = self._port.open_borrowed_read(
                 borrow, directory, component, purpose=purpose
@@ -329,7 +395,9 @@ class ImmutableSourceBundleV1:
                 if not chunk:
                     break
                 size += len(chunk)
-                if size > maximum or size > before.size:
+                if size > maximum:
+                    raise _error(BundleIOCodeV1.BOUND_EXCEEDED)
+                if size > before.size:
                     raise _error(BundleIOCodeV1.STREAM_INVALID)
                 digest.update(chunk)
             after_handle = self._port.stat_borrowed_file(
@@ -729,6 +797,56 @@ class ImmutableSourceBundleV1:
             raise _error(BundleIOCodeV1.INDETERMINATE) from None
         return result
 
+    def _complete_binding(self, command, access, expected=None):
+        private_name, marker_name, companion_name = self._names(command, access)
+        try:
+            identities = tuple(
+                self._port.stat_borrowed(
+                    access.verify_borrow, access.verify_root, component,
+                    purpose=VERIFY,
+                )
+                for component in (private_name, marker_name, companion_name)
+            )
+        except LocalIOErrorV1 as error:
+            raise _runtime_pair_error(error) from None
+        except BaseException:
+            raise _error(BundleIOCodeV1.INDETERMINATE) from None
+        if any(identity is None for identity in identities):
+            raise _error(BundleIOCodeV1.CONFLICT)
+        if any(
+            identity.size > MAX_BUNDLE_MANIFEST_BYTES
+            for identity in identities[1:]
+            if type(identity) is LocalFileIdentityV1
+        ):
+            raise _error(BundleIOCodeV1.BOUND_EXCEEDED)
+        members, manifest_digest, manifest_identity = self._inspect_private(
+            command, access, private_name
+        )
+        inventory = digest_v1([member.canonical() for member in members])
+        marker_raw = self._marker(
+            command, access, private_name, companion_name, manifest_digest,
+            inventory, manifest_identity,
+        )
+        first_raw, first_identity = self._read_pair(
+            access, marker_name, companion_name,
+            MAX_BUNDLE_MANIFEST_BYTES, fsync_root=False,
+        )
+        if first_raw != marker_raw:
+            raise _error(BundleIOCodeV1.CONFLICT)
+        second_raw, second_identity = self._read_pair(
+            access, marker_name, companion_name,
+            MAX_BUNDLE_MANIFEST_BYTES, fsync_root=False,
+        )
+        if second_raw != marker_raw or second_identity != first_identity:
+            raise _error(BundleIOCodeV1.CONFLICT)
+        binding = self._binding(
+            command, access, private_name, marker_name, companion_name,
+            manifest_digest, members, manifest_identity, second_identity,
+        )
+        if expected is not None and self._snapshot_binding(expected) != binding:
+            raise _error(BundleIOCodeV1.CONFLICT)
+        return binding
+
     def _observe(self, command, access, *, expected=None):
         private_name, marker_name, companion_name = self._names(command, access)
         try:
@@ -757,17 +875,17 @@ class ImmutableSourceBundleV1:
         if marker_identity is None and companion_identity is None:
             return _result(BundleLookupStatusV1.INDETERMINATE, command)
         try:
-            members, manifest_digest, manifest_identity = self._inspect_private(
-                command, access, private_name
-            )
-            inventory = digest_v1([member.canonical() for member in members])
-            marker_raw = self._marker(
-                command, access, private_name, companion_name, manifest_digest,
-                inventory, manifest_identity,
-            )
             if marker_identity is None:
                 if companion_identity is None:
                     return _result(BundleLookupStatusV1.INDETERMINATE, command)
+                members, manifest_digest, manifest_identity = self._inspect_private(
+                    command, access, private_name
+                )
+                inventory = digest_v1([member.canonical() for member in members])
+                marker_raw = self._marker(
+                    command, access, private_name, companion_name,
+                    manifest_digest, inventory, manifest_identity,
+                )
                 companion_raw, _ = self._read_single(
                     access.verify_borrow, access.verify_root, companion_name,
                     purpose=VERIFY, maximum=MAX_BUNDLE_MANIFEST_BYTES,
@@ -780,33 +898,15 @@ class ImmutableSourceBundleV1:
                 )
             if companion_identity is None:
                 return _result(BundleLookupStatusV1.CONFLICT, command)
-            first_raw, first_identity = self._read_pair(
-                access, marker_name, companion_name,
-                MAX_BUNDLE_MANIFEST_BYTES, fsync_root=False,
-            )
-            if first_raw != marker_raw:
-                return _result(BundleLookupStatusV1.CONFLICT, command)
-            second_raw, second_identity = self._read_pair(
-                access, marker_name, companion_name,
-                MAX_BUNDLE_MANIFEST_BYTES, fsync_root=False,
-            )
-            if second_raw != marker_raw or second_identity != first_identity:
-                return _result(BundleLookupStatusV1.CONFLICT, command)
-            binding = self._binding(
-                command, access, private_name, marker_name, companion_name,
-                manifest_digest, members, manifest_identity, second_identity,
-            )
-            if expected is not None:
-                try:
-                    if self._snapshot_binding(expected) != binding:
-                        return _result(BundleLookupStatusV1.CONFLICT, command)
-                except BaseException:
-                    return _result(BundleLookupStatusV1.CONFLICT, command)
+            binding = self._complete_binding(command, access, expected)
             return _result(BundleLookupStatusV1.FOUND, command, binding)
         except BundleIOErrorV1 as error:
             return _result(
                 BundleLookupStatusV1.CONFLICT
-                if error.code is BundleIOCodeV1.CONFLICT
+                if error.code in {
+                    BundleIOCodeV1.CONFLICT,
+                    BundleIOCodeV1.BOUND_EXCEEDED,
+                }
                 else BundleLookupStatusV1.INDETERMINATE,
                 command,
             )
@@ -821,6 +921,69 @@ class ImmutableSourceBundleV1:
             # durability authority and therefore cannot attest FOUND.
             return _result(BundleLookupStatusV1.INDETERMINATE, command)
         return observed
+
+    def verify_mount(self, command, access, expected_authenticated_binding):
+        command = self._snapshot_command(command)
+        access = self._snapshot_mount_access(access)
+        if access.destination_ref != command.destination_ref:
+            raise _error(BundleIOCodeV1.ACCESS_INVALID)
+        presented = self._snapshot_authenticated_binding(
+            expected_authenticated_binding
+        )
+        try:
+            if (
+                presented.authority_ref != self._binding_authority_ref
+                or presented.key_ref != self._binding_key_ref
+            ):
+                raise ValueError
+            authenticated = self._binding_authority.authenticate(
+                expected_authenticated_binding
+            )
+            trusted = self._snapshot_authenticated_binding(authenticated)
+            if (
+                trusted != presented
+                or trusted.authority_ref != self._binding_authority_ref
+                or trusted.key_ref != self._binding_key_ref
+            ):
+                raise ValueError
+        except BaseException:
+            raise _error(BundleIOCodeV1.AUTHENTICATION_FAILED) from None
+        expected = trusted.content
+        private_name, marker_name, companion_name = self._names(command, access)
+        expected_members = tuple(
+            (member.logical_name, f"member-{index:04d}", member.size, member.sha256)
+            for index, member in enumerate(command.members)
+        )
+        actual_members = tuple(
+            (member.logical_name, member.physical_name, member.size, member.sha256)
+            for member in expected.members
+        )
+        if (
+            expected.command_digest != command.command_digest
+            or expected.destination_ref != command.destination_ref
+            or expected.root_authority_digest != access.root_authority_digest
+            or (expected.private_name, expected.marker_name, expected.companion_name)
+            != (private_name, marker_name, companion_name)
+            or actual_members != expected_members
+        ):
+            raise _error(BundleIOCodeV1.CONFLICT)
+        try:
+            verified = self._complete_binding(command, access, expected)
+        except BundleIOErrorV1 as error:
+            if error.code in {
+                BundleIOCodeV1.CONFLICT,
+                BundleIOCodeV1.INDETERMINATE,
+                BundleIOCodeV1.BOUND_EXCEEDED,
+            }:
+                raise
+            if error.code is BundleIOCodeV1.STREAM_INVALID:
+                raise _error(BundleIOCodeV1.CONFLICT) from None
+            raise _error(BundleIOCodeV1.INDETERMINATE) from None
+        except BaseException:
+            raise _error(BundleIOCodeV1.INDETERMINATE) from None
+        return BundleMountVerificationV1.build(
+            verified, access.access_digest
+        )
 
     def _durable_finalize(self, command, access, structural_binding):
         private_name, marker_name, companion_name = self._names(command, access)

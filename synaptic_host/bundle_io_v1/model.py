@@ -26,6 +26,7 @@ class BundleIOCodeV1(str, Enum):
     COMMAND_INVALID = "BUNDLE_IO_COMMAND_INVALID"
     SOURCE_INVALID = "BUNDLE_IO_SOURCE_INVALID"
     ACCESS_INVALID = "BUNDLE_IO_ACCESS_INVALID"
+    AUTHENTICATION_FAILED = "BUNDLE_IO_AUTHENTICATION_FAILED"
     STREAM_INVALID = "BUNDLE_IO_STREAM_INVALID"
     EFFECT_FAILED = "BUNDLE_IO_EFFECT_FAILED"
     INDETERMINATE = "BUNDLE_IO_INDETERMINATE"
@@ -270,6 +271,142 @@ class BundleBindingV1:
             "root_authority_digest": self.root_authority_digest,
             "schema_version": "synaptic-host-bundle-binding/v1",
         }
+
+
+@dataclass(frozen=True, slots=True)
+class AuthenticatedBundleBindingV1:
+    content: BundleBindingV1
+    authority_ref: str
+    key_ref: str
+    tag: str
+
+    def __post_init__(self) -> None:
+        if type(self.content) is not BundleBindingV1:
+            _fail(BundleIOCodeV1.AUTHENTICATION_FAILED)
+        checked_ref_v1(self.authority_ref, BundleIOCodeV1.AUTHENTICATION_FAILED)
+        checked_ref_v1(self.key_ref, BundleIOCodeV1.AUTHENTICATION_FAILED)
+        checked_sha_v1(self.tag, BundleIOCodeV1.AUTHENTICATION_FAILED)
+
+    @property
+    def proof_digest(self) -> str:
+        return digest_v1({
+            "authority_ref": self.authority_ref,
+            "binding_digest": self.content.binding_digest,
+            "key_ref": self.key_ref,
+            "schema_version": "synaptic-host-authenticated-bundle-binding/v1",
+            "tag": self.tag,
+        })
+
+
+def _mount_entries_v1(binding: BundleBindingV1) -> tuple[tuple[str, str, int, str], ...]:
+    return tuple(
+        (member.logical_name, member.physical_name, member.size, member.sha256)
+        for member in binding.members
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class BundleMountVerificationV1:
+    command_digest: str
+    destination_ref: str
+    root_authority_digest: str
+    access_digest: str
+    binding_digest: str
+    private_name: str
+    manifest_digest: str
+    inventory_digest: str
+    logical_entries: tuple[tuple[str, str, int, str], ...]
+    read_only: bool
+    verification_digest: str
+
+    def __post_init__(self) -> None:
+        checked_sha_v1(self.command_digest, BundleIOCodeV1.CONFLICT)
+        checked_ref_v1(self.destination_ref, BundleIOCodeV1.CONFLICT)
+        for value in (
+            self.root_authority_digest, self.access_digest, self.binding_digest,
+            self.manifest_digest, self.inventory_digest,
+        ):
+            checked_sha_v1(value, BundleIOCodeV1.CONFLICT)
+        if self.private_name != ".synaptic-bundle-" + self.command_digest[:32]:
+            _fail(BundleIOCodeV1.CONFLICT)
+        if (
+            type(self.logical_entries) is not tuple
+            or not self.logical_entries
+            or len(self.logical_entries) > MAX_BUNDLE_MEMBERS
+            or any(
+                type(entry) is not tuple
+                or len(entry) != 4
+                or type(entry[0]) is not str
+                or type(entry[1]) is not str
+                or type(entry[2]) is not int
+                or type(entry[3]) is not str
+                for entry in self.logical_entries
+            )
+            or self.read_only is not True
+        ):
+            _fail(BundleIOCodeV1.CONFLICT)
+        logical_names = tuple(entry[0] for entry in self.logical_entries)
+        if (
+            logical_names != tuple(sorted(logical_names))
+            or len(logical_names) != len(set(logical_names))
+            or sum(entry[2] for entry in self.logical_entries)
+            > MAX_BUNDLE_TOTAL_BYTES
+        ):
+            _fail(BundleIOCodeV1.CONFLICT)
+        for index, (logical_name, physical_name, size, sha256) in enumerate(
+            self.logical_entries
+        ):
+            try:
+                BundleMemberCommandV1(
+                    logical_name, "verified-member", size, sha256
+                )
+            except BundleIOErrorV1:
+                _fail(BundleIOCodeV1.CONFLICT)
+            if physical_name != f"member-{index:04d}":
+                _fail(BundleIOCodeV1.CONFLICT)
+        checked_sha_v1(self.verification_digest, BundleIOCodeV1.CONFLICT)
+        if self.verification_digest != digest_v1(self.canonical_without_digest()):
+            _fail(BundleIOCodeV1.CONFLICT)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "access_digest": self.access_digest,
+            "binding_digest": self.binding_digest,
+            "command_digest": self.command_digest,
+            "destination_ref": self.destination_ref,
+            "inventory_digest": self.inventory_digest,
+            "logical_entries": [list(entry) for entry in self.logical_entries],
+            "manifest_digest": self.manifest_digest,
+            "private_name": self.private_name,
+            "read_only": self.read_only,
+            "root_authority_digest": self.root_authority_digest,
+            "schema_version": "synaptic-host-bundle-mount-verification/v1",
+        }
+
+    @classmethod
+    def build(cls, binding: BundleBindingV1, access_digest: str):
+        if type(binding) is not BundleBindingV1:
+            _fail(BundleIOCodeV1.CONFLICT)
+        body = {
+            "access_digest": access_digest,
+            "binding_digest": binding.binding_digest,
+            "command_digest": binding.command_digest,
+            "destination_ref": binding.destination_ref,
+            "inventory_digest": binding.inventory_digest,
+            "logical_entries": [list(entry) for entry in _mount_entries_v1(binding)],
+            "manifest_digest": binding.manifest_digest,
+            "private_name": binding.private_name,
+            "read_only": True,
+            "root_authority_digest": binding.root_authority_digest,
+            "schema_version": "synaptic-host-bundle-mount-verification/v1",
+        }
+        return cls(
+            binding.command_digest, binding.destination_ref,
+            binding.root_authority_digest, access_digest,
+            binding.binding_digest, binding.private_name,
+            binding.manifest_digest, binding.inventory_digest,
+            _mount_entries_v1(binding), True, digest_v1(body),
+        )
 
 
 @dataclass(frozen=True, slots=True)
