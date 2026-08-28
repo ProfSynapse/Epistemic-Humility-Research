@@ -4,8 +4,10 @@ from pathlib import Path
 def test_host_docker_package_keeps_empty_exports_and_forbidden_boundaries():
     root = Path(__file__).parents[3] / "synaptic_host" / "docker_v1"
     init_text = (root / "__init__.py").read_text(encoding="utf-8")
+    files = {path.name: path.read_text(encoding="utf-8")
+             for path in sorted(root.glob("*.py"))}
     combined = "\n".join(
-        path.read_text(encoding="utf-8") for path in sorted(root.glob("*.py"))
+        text for name, text in files.items() if name != "cli.py"
     ).lower()
     assert "__all__: tuple[str, ...] = ()" in init_text
     for forbidden in (
@@ -14,3 +16,12 @@ def test_host_docker_package_keeps_empty_exports_and_forbidden_boundaries():
         "shell=true", "hf_token", "runpod_api_key", "modal_token",
     ):
         assert forbidden not in combined
+    cli = files["cli.py"].lower()
+    assert "import subprocess" in cli
+    assert "shell=false" in cli
+    for forbidden in (
+        "shell=true", "os.environ", "getenv(", "userprofile", "appdata",
+        "docker_context", "docker_config", "hf_token", "runpod_api_key",
+        "modal_token", "http_proxy", "https_proxy",
+    ):
+        assert forbidden not in cli

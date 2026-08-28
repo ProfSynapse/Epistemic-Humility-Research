@@ -23,12 +23,15 @@ from synaptic_host.bundle_io_v1.ports import (
 )
 
 from .model import (
+    AuthenticatedDockerWSLRootMappingV1,
     AuthenticatedDockerSourceDeclarationV1,
     AuthenticatedDockerStorageMappingV1,
     AuthenticatedDockerStageBundleBindingV1,
     DockerHostSourceCodeV1,
     DockerHostSourceErrorV1,
     DockerStageBundleBindingV1,
+    DockerWindowsPathV1,
+    DockerWSLPathRequestV1,
 )
 
 
@@ -162,6 +165,43 @@ class DockerSourceSealAuthorityPortV1(Protocol):
     def authenticate(
         self, value: AuthenticatedDockerSourceSealV1
     ) -> AuthenticatedDockerSourceSealV1 | None: ...
+
+
+class DockerWSLRootMappingRegistryPortV1(Protocol):
+    def resolve(
+        self, mapping_ref: str, expected_mapping_digest: str
+    ) -> AuthenticatedDockerWSLRootMappingV1 | None: ...
+
+
+class DockerWSLRootMappingAuthorityPortV1(Protocol):
+    authority_ref: str
+    key_ref: str
+
+    def authenticate(
+        self, value: AuthenticatedDockerWSLRootMappingV1
+    ) -> AuthenticatedDockerWSLRootMappingV1 | None: ...
+
+
+class DockerWSLPathTranslatorPortV1(Protocol):
+    def translate(self, request: DockerWSLPathRequestV1) -> DockerWindowsPathV1: ...
+
+
+class DockerBinaryStreamPortV1(Protocol):
+    def read(self, size: int) -> bytes: ...
+
+
+class DockerProcessPortV1(Protocol):
+    stdout: DockerBinaryStreamPortV1
+    stderr: DockerBinaryStreamPortV1
+
+    def poll(self) -> int | None: ...
+    def wait(self, timeout: float | None = None) -> int: ...
+    def terminate(self) -> None: ...
+    def kill(self) -> None: ...
+
+
+class DockerPopenFactoryPortV1(Protocol):
+    def __call__(self, argv: tuple[str, ...], **kwargs) -> DockerProcessPortV1: ...
 
 
 __all__: tuple[str, ...] = ()

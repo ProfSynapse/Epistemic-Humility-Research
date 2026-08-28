@@ -562,4 +562,535 @@ class ResolvedDockerMountsV1:
         }
 
 
+MAX_WSL_PATH_BYTES_V1 = 4096
+MAX_WSL_COMPONENT_BYTES_V1 = 240
+MAX_DOCKER_ARG_BYTES_V1 = 4096
+MAX_DOCKER_ARGS_V1 = 256
+MAX_DOCKER_STREAM_BYTES_V1 = 1_048_576
+MAX_DOCKER_COMBINED_BYTES_V1 = 2_097_152
+MAX_WINDOWS_PATH_BYTES_V1 = 4096
+
+
+class DockerPlatformCodeV1(str, Enum):
+    PATH_INVALID = "DOCKER_PLATFORM_PATH_INVALID"
+    ROOT_UNREGISTERED = "DOCKER_PLATFORM_ROOT_UNREGISTERED"
+    AUTHENTICATION_FAILED = "DOCKER_PLATFORM_AUTHENTICATION_FAILED"
+    POLICY_INVALID = "DOCKER_PLATFORM_POLICY_INVALID"
+    COMMAND_INVALID = "DOCKER_PLATFORM_COMMAND_INVALID"
+    SPAWN_INDETERMINATE = "DOCKER_PLATFORM_SPAWN_INDETERMINATE"
+    IO_INDETERMINATE = "DOCKER_PLATFORM_IO_INDETERMINATE"
+    TIMEOUT = "DOCKER_PLATFORM_TIMEOUT"
+    OUTPUT_BOUND_EXCEEDED = "DOCKER_PLATFORM_OUTPUT_BOUND_EXCEEDED"
+    TERMINATION_INDETERMINATE = "DOCKER_PLATFORM_TERMINATION_INDETERMINATE"
+
+
+class DockerPlatformErrorV1(RuntimeError):
+    def __init__(self, code: DockerPlatformCodeV1) -> None:
+        if type(code) is not DockerPlatformCodeV1:
+            raise TypeError("exact Docker platform code required")
+        self.code = code
+        super().__init__(code.value)
+
+
+def _platform_fail(code: DockerPlatformCodeV1) -> None:
+    raise DockerPlatformErrorV1(code) from None
+
+
+class DockerWSLPathPurposeV1(str, Enum):
+    SOURCE_READ = "SOURCE_READ"
+    ARTIFACT_WRITE = "ARTIFACT_WRITE"
+
+
+def canonical_wsl_path_v1(value: str) -> str:
+    try:
+        if (
+            type(value) is not str
+            or not value.startswith("/")
+            or value == "/"
+            or value.endswith("/")
+            or "//" in value
+            or "\\" in value
+            or unicodedata.normalize("NFC", value) != value
+            or len(value.encode("utf-8")) > MAX_WSL_PATH_BYTES_V1
+        ):
+            raise ValueError
+        parts = value[1:].split("/")
+        if not parts or len(parts) > 128:
+            raise ValueError
+        for part in parts:
+            if (
+                part in ("", ".", "..")
+                or len(part.encode("utf-8")) > MAX_WSL_COMPONENT_BYTES_V1
+                or any(ord(char) < 32 or ord(char) == 127 for char in part)
+            ):
+                raise ValueError
+        return value
+    except BaseException:
+        _platform_fail(DockerPlatformCodeV1.PATH_INVALID)
+
+
+def _distro_v1(value: str) -> str:
+    try:
+        if (
+            type(value) is not str
+            or not 1 <= len(value) <= 64
+            or not value[0].isalnum()
+            or any(not (char.isascii() and (char.isalnum() or char in "._-")) for char in value)
+        ):
+            raise ValueError
+        return value
+    except BaseException:
+        _platform_fail(DockerPlatformCodeV1.PATH_INVALID)
+
+
+@dataclass(frozen=True, slots=True)
+class DockerWSLRootMappingV1:
+    mapping_ref: str
+    distro: str
+    purpose: DockerWSLPathPurposeV1
+    posix_root: str
+    mapping_digest: str
+
+    def __post_init__(self) -> None:
+        try:
+            checked_ref_v1(self.mapping_ref, BundleIOCodeV1.COMMAND_INVALID)
+            _distro_v1(self.distro)
+            if type(self.purpose) is not DockerWSLPathPurposeV1:
+                raise ValueError
+            canonical_wsl_path_v1(self.posix_root)
+            checked_sha_v1(self.mapping_digest, BundleIOCodeV1.COMMAND_INVALID)
+            if self.mapping_digest != digest_v1(self.canonical_without_digest()):
+                raise ValueError
+        except DockerPlatformErrorV1 as error:
+            _platform_fail(error.code)
+        except BaseException:
+            _platform_fail(DockerPlatformCodeV1.PATH_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "distro": self.distro,
+            "mapping_ref": self.mapping_ref,
+            "posix_root": self.posix_root,
+            "purpose": self.purpose.value,
+            "schema_version": "synaptic-host-docker-wsl-root-mapping/v1",
+        }
+
+    @classmethod
+    def build(cls, mapping_ref, distro, purpose, posix_root):
+        try:
+            if type(purpose) is not DockerWSLPathPurposeV1:
+                raise ValueError
+            body = {
+                "distro": distro, "mapping_ref": mapping_ref,
+                "posix_root": posix_root, "purpose": purpose.value,
+                "schema_version": "synaptic-host-docker-wsl-root-mapping/v1",
+            }
+            return cls(mapping_ref, distro, purpose, posix_root, digest_v1(body))
+        except DockerPlatformErrorV1 as error:
+            _platform_fail(error.code)
+        except BaseException:
+            _platform_fail(DockerPlatformCodeV1.PATH_INVALID)
+
+
+@dataclass(frozen=True, slots=True)
+class AuthenticatedDockerWSLRootMappingV1:
+    content: DockerWSLRootMappingV1
+    authority_ref: str
+    key_ref: str
+    tag: str
+
+    def __post_init__(self) -> None:
+        try:
+            if type(self.content) is not DockerWSLRootMappingV1:
+                raise ValueError
+            checked_ref_v1(self.authority_ref, BundleIOCodeV1.COMMAND_INVALID)
+            checked_ref_v1(self.key_ref, BundleIOCodeV1.COMMAND_INVALID)
+            checked_sha_v1(self.tag, BundleIOCodeV1.COMMAND_INVALID)
+        except BaseException:
+            _platform_fail(DockerPlatformCodeV1.AUTHENTICATION_FAILED)
+
+    @property
+    def proof_digest(self) -> str:
+        return digest_v1({
+            "authority_ref": self.authority_ref,
+            "key_ref": self.key_ref,
+            "mapping_digest": self.content.mapping_digest,
+            "schema_version": "synaptic-host-authenticated-docker-wsl-root-mapping/v1",
+            "tag": self.tag,
+        })
+
+
+@dataclass(frozen=True, slots=True)
+class DockerWSLPathRequestV1:
+    mapping_ref: str
+    expected_mapping_digest: str
+    expected_distro: str
+    purpose: DockerWSLPathPurposeV1
+    posix_path: str
+    request_digest: str
+
+    def __post_init__(self) -> None:
+        try:
+            checked_ref_v1(self.mapping_ref, BundleIOCodeV1.COMMAND_INVALID)
+            checked_sha_v1(
+                self.expected_mapping_digest, BundleIOCodeV1.COMMAND_INVALID
+            )
+            _distro_v1(self.expected_distro)
+            if type(self.purpose) is not DockerWSLPathPurposeV1:
+                raise ValueError
+            canonical_wsl_path_v1(self.posix_path)
+            if self.request_digest != digest_v1(self.canonical_without_digest()):
+                raise ValueError
+        except BaseException:
+            _platform_fail(DockerPlatformCodeV1.PATH_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "expected_distro": self.expected_distro,
+            "expected_mapping_digest": self.expected_mapping_digest,
+            "mapping_ref": self.mapping_ref,
+            "posix_path": self.posix_path,
+            "purpose": self.purpose.value,
+            "schema_version": "synaptic-host-docker-wsl-path-request/v1",
+        }
+
+    @classmethod
+    def build(
+        cls, *, mapping_ref, expected_mapping_digest, expected_distro,
+        purpose, posix_path,
+    ):
+        try:
+            if type(purpose) is not DockerWSLPathPurposeV1:
+                raise ValueError
+            body = {
+                "expected_distro": expected_distro,
+                "expected_mapping_digest": expected_mapping_digest,
+                "mapping_ref": mapping_ref,
+                "posix_path": posix_path,
+                "purpose": purpose.value,
+                "schema_version": "synaptic-host-docker-wsl-path-request/v1",
+            }
+            return cls(
+                mapping_ref, expected_mapping_digest, expected_distro,
+                purpose, posix_path, digest_v1(body),
+            )
+        except DockerPlatformErrorV1 as error:
+            _platform_fail(error.code)
+        except BaseException:
+            _platform_fail(DockerPlatformCodeV1.PATH_INVALID)
+
+
+@dataclass(frozen=True, slots=True)
+class DockerWindowsPathV1:
+    mapping_ref: str
+    mapping_digest: str
+    purpose: DockerWSLPathPurposeV1
+    distro: str
+    posix_path: str
+    unc_path: str
+    path_digest: str
+
+    def __post_init__(self) -> None:
+        try:
+            checked_ref_v1(self.mapping_ref, BundleIOCodeV1.COMMAND_INVALID)
+            checked_sha_v1(self.mapping_digest, BundleIOCodeV1.COMMAND_INVALID)
+            if type(self.purpose) is not DockerWSLPathPurposeV1:
+                raise ValueError
+            _distro_v1(self.distro)
+            canonical_wsl_path_v1(self.posix_path)
+            expected = "\\\\wsl.localhost\\" + self.distro + self.posix_path.replace("/", "\\")
+            if self.unc_path != expected or self.path_digest != digest_v1(self.canonical_without_digest()):
+                raise ValueError
+        except DockerPlatformErrorV1 as error:
+            _platform_fail(error.code)
+        except BaseException:
+            _platform_fail(DockerPlatformCodeV1.PATH_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "distro": self.distro, "mapping_digest": self.mapping_digest,
+            "mapping_ref": self.mapping_ref, "posix_path": self.posix_path,
+            "purpose": self.purpose.value,
+            "schema_version": "synaptic-host-docker-windows-path/v1",
+            "unc_path": self.unc_path,
+        }
+
+
+class DockerCLIVerbV1(str, Enum):
+    VERSION = "version"
+    CREATE = "create"
+    START = "start"
+    STOP = "stop"
+    INSPECT = "inspect"
+    PS = "ps"
+    LOGS = "logs"
+
+
+def _argv_token_v1(value: str) -> str:
+    try:
+        if (
+            type(value) is not str or not value
+            or unicodedata.normalize("NFC", value) != value
+            or len(value.encode("utf-8")) > MAX_DOCKER_ARG_BYTES_V1
+            or any(ord(char) < 32 or ord(char) == 127 for char in value)
+        ):
+            raise ValueError
+        return value
+    except BaseException:
+        _platform_fail(DockerPlatformCodeV1.COMMAND_INVALID)
+
+
+def _windows_drive_path_v1(value: str) -> str:
+    """Validate the exact uppercase-drive Windows path used for process policy."""
+    try:
+        if (
+            type(value) is not str
+            or len(value) < 3
+            or not (
+                value[0].isascii()
+                and value[0].isalpha()
+                and value[0].isupper()
+            )
+            or value[1:3] != ":\\"
+            or "/" in value
+            or unicodedata.normalize("NFC", value) != value
+            or len(value.encode("utf-8")) > MAX_WINDOWS_PATH_BYTES_V1
+            or any(ord(char) < 32 or ord(char) == 127 for char in value)
+        ):
+            raise ValueError
+        components = value[3:].split("\\") if len(value) > 3 else []
+        reserved = {"CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$"}
+        reserved.update({f"COM{number}" for number in range(1, 10)})
+        reserved.update({f"LPT{number}" for number in range(1, 10)})
+        reserved.update({f"COM{number}" for number in "\u00b9\u00b2\u00b3"})
+        reserved.update({f"LPT{number}" for number in "\u00b9\u00b2\u00b3"})
+        for component in components:
+            base_name = component.split(".", 1)[0].rstrip(" .").upper()
+            if (
+                component in ("", ".", "..")
+                or component.endswith((" ", "."))
+                or any(char in '<>:"|?*' for char in component)
+                or base_name in reserved
+            ):
+                raise ValueError
+        return value
+    except BaseException:
+        _platform_fail(DockerPlatformCodeV1.POLICY_INVALID)
+
+
+@dataclass(frozen=True, slots=True)
+class DockerCLICommandV1:
+    verb: DockerCLIVerbV1
+    arguments: tuple[str, ...]
+    command_digest: str
+
+    def __post_init__(self) -> None:
+        try:
+            if type(self.verb) is not DockerCLIVerbV1 or type(self.arguments) is not tuple:
+                raise ValueError
+            if len(self.arguments) > MAX_DOCKER_ARGS_V1:
+                raise ValueError
+            for value in self.arguments:
+                _argv_token_v1(value)
+            checked_sha_v1(self.command_digest, BundleIOCodeV1.COMMAND_INVALID)
+            if self.command_digest != digest_v1(self.canonical_without_digest()):
+                raise ValueError
+        except DockerPlatformErrorV1 as error:
+            _platform_fail(error.code)
+        except BaseException:
+            _platform_fail(DockerPlatformCodeV1.COMMAND_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "arguments": list(self.arguments),
+            "schema_version": "synaptic-host-docker-cli-command/v1",
+            "verb": self.verb.value,
+        }
+
+    @classmethod
+    def build(cls, verb, arguments=()):
+        try:
+            if type(verb) is not DockerCLIVerbV1 or type(arguments) is not tuple:
+                raise ValueError
+            body = {
+                "arguments": list(arguments),
+                "schema_version": "synaptic-host-docker-cli-command/v1",
+                "verb": verb.value,
+            }
+            return cls(verb, arguments, digest_v1(body))
+        except DockerPlatformErrorV1 as error:
+            _platform_fail(error.code)
+        except BaseException:
+            _platform_fail(DockerPlatformCodeV1.COMMAND_INVALID)
+
+
+@dataclass(frozen=True, slots=True)
+class DockerCLIEnvironmentV1:
+    entries: tuple[tuple[str, str], ...]
+    environment_digest: str
+
+    def __post_init__(self) -> None:
+        try:
+            if type(self.entries) is not tuple:
+                raise ValueError
+            expected_keys = ("SystemRoot", "TEMP", "TMP", "WINDIR")
+            if (
+                any(type(entry) is not tuple or len(entry) != 2 for entry in self.entries)
+                or tuple(key for key, _ in self.entries) != expected_keys
+            ):
+                raise ValueError
+            for key, value in self.entries:
+                if (
+                    type(key) is not str
+                ):
+                    raise ValueError
+                _windows_drive_path_v1(value)
+                upper = key.upper()
+                if (
+                    upper.startswith("DOCKER_") or "TOKEN" in upper or "AUTH" in upper
+                    or "PROXY" in upper
+                ):
+                    raise ValueError
+            checked_sha_v1(self.environment_digest, BundleIOCodeV1.COMMAND_INVALID)
+            if self.environment_digest != digest_v1(self.canonical_without_digest()):
+                raise ValueError
+        except BaseException:
+            _platform_fail(DockerPlatformCodeV1.POLICY_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "entries": [[key, value] for key, value in self.entries],
+            "schema_version": "synaptic-host-docker-cli-environment/v1",
+        }
+
+    @classmethod
+    def build(cls, entries):
+        try:
+            entries = tuple(entries)
+            body = {"entries": [[key, value] for key, value in entries],
+                    "schema_version": "synaptic-host-docker-cli-environment/v1"}
+            return cls(entries, digest_v1(body))
+        except DockerPlatformErrorV1 as error:
+            _platform_fail(error.code)
+        except BaseException:
+            _platform_fail(DockerPlatformCodeV1.POLICY_INVALID)
+
+
+@dataclass(frozen=True, slots=True)
+class DockerCLIPolicyV1:
+    executable: str
+    context_ref: str
+    environment: DockerCLIEnvironmentV1
+    timeout_ms: int
+    terminate_grace_ms: int
+    stdout_limit: int
+    stderr_limit: int
+    combined_limit: int
+    policy_digest: str
+
+    def __post_init__(self) -> None:
+        try:
+            if (
+                not _windows_drive_path_v1(self.executable).lower().endswith(".exe")
+            ):
+                raise ValueError
+            checked_ref_v1(self.context_ref, BundleIOCodeV1.COMMAND_INVALID)
+            if type(self.environment) is not DockerCLIEnvironmentV1:
+                raise ValueError
+            if (
+                type(self.timeout_ms) is not int or not 1 <= self.timeout_ms <= 3_600_000
+                or type(self.terminate_grace_ms) is not int or not 1 <= self.terminate_grace_ms <= 60_000
+                or type(self.stdout_limit) is not int or not 1 <= self.stdout_limit <= MAX_DOCKER_STREAM_BYTES_V1
+                or type(self.stderr_limit) is not int or not 1 <= self.stderr_limit <= MAX_DOCKER_STREAM_BYTES_V1
+                or type(self.combined_limit) is not int or not 1 <= self.combined_limit <= MAX_DOCKER_COMBINED_BYTES_V1
+                or self.combined_limit < max(self.stdout_limit, self.stderr_limit)
+            ):
+                raise ValueError
+            checked_sha_v1(self.policy_digest, BundleIOCodeV1.COMMAND_INVALID)
+            if self.policy_digest != digest_v1(self.canonical_without_digest()):
+                raise ValueError
+        except BaseException:
+            _platform_fail(DockerPlatformCodeV1.POLICY_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "combined_limit": self.combined_limit,
+            "context_ref": self.context_ref,
+            "environment_digest": self.environment.environment_digest,
+            "executable": self.executable,
+            "schema_version": "synaptic-host-docker-cli-policy/v1",
+            "stderr_limit": self.stderr_limit, "stdout_limit": self.stdout_limit,
+            "terminate_grace_ms": self.terminate_grace_ms,
+            "timeout_ms": self.timeout_ms,
+        }
+
+    @classmethod
+    def build(cls, executable, context_ref, environment, *, timeout_ms=30_000,
+              terminate_grace_ms=1_000, stdout_limit=MAX_DOCKER_STREAM_BYTES_V1,
+              stderr_limit=MAX_DOCKER_STREAM_BYTES_V1,
+              combined_limit=MAX_DOCKER_COMBINED_BYTES_V1):
+        try:
+            if type(environment) is not DockerCLIEnvironmentV1:
+                raise ValueError
+            body = {
+                "combined_limit": combined_limit, "context_ref": context_ref,
+                "environment_digest": environment.environment_digest,
+                "executable": executable,
+                "schema_version": "synaptic-host-docker-cli-policy/v1",
+                "stderr_limit": stderr_limit, "stdout_limit": stdout_limit,
+                "terminate_grace_ms": terminate_grace_ms, "timeout_ms": timeout_ms,
+            }
+            return cls(executable, context_ref, environment, timeout_ms,
+                       terminate_grace_ms, stdout_limit, stderr_limit,
+                       combined_limit, digest_v1(body))
+        except DockerPlatformErrorV1 as error:
+            _platform_fail(error.code)
+        except BaseException:
+            _platform_fail(DockerPlatformCodeV1.POLICY_INVALID)
+
+
+class DockerCLIOutcomeV1(str, Enum):
+    SUCCESS = "SUCCESS"
+    NONZERO_EXIT = "NONZERO_EXIT"
+
+
+@dataclass(frozen=True, slots=True)
+class DockerCLIResultV1:
+    command_digest: str
+    policy_digest: str
+    outcome: DockerCLIOutcomeV1
+    exit_code: int
+    stdout_size: int
+    stdout_digest: str
+    stderr_size: int
+    stderr_digest: str
+    result_digest: str
+
+    def __post_init__(self) -> None:
+        try:
+            for value in (self.command_digest, self.policy_digest,
+                          self.stdout_digest, self.stderr_digest, self.result_digest):
+                checked_sha_v1(value, BundleIOCodeV1.COMMAND_INVALID)
+            if (
+                type(self.outcome) is not DockerCLIOutcomeV1
+                or type(self.exit_code) is not int
+                or type(self.stdout_size) is not int or self.stdout_size < 0
+                or type(self.stderr_size) is not int or self.stderr_size < 0
+                or (self.outcome is DockerCLIOutcomeV1.SUCCESS) != (self.exit_code == 0)
+                or self.result_digest != digest_v1(self.canonical_without_digest())
+            ):
+                raise ValueError
+        except BaseException:
+            _platform_fail(DockerPlatformCodeV1.IO_INDETERMINATE)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "command_digest": self.command_digest, "exit_code": self.exit_code,
+            "outcome": self.outcome.value, "policy_digest": self.policy_digest,
+            "schema_version": "synaptic-host-docker-cli-result/v1",
+            "stderr_digest": self.stderr_digest, "stderr_size": self.stderr_size,
+            "stdout_digest": self.stdout_digest, "stdout_size": self.stdout_size,
+        }
+
+
 __all__: tuple[str, ...] = ()
