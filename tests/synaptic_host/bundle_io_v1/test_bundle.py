@@ -49,6 +49,24 @@ def authenticated_found(service, command, access):
     return found, service._binding_authority.issue(found.binding)
 
 
+def registered_waiter_lock(service, key):
+    registered = Event()
+    with service._guard_lock:
+        entry = service._seal_guards[key]
+        original = entry[0]
+
+        class RegisteredLock:
+            def __enter__(self):
+                registered.set()
+                return original.__enter__()
+
+            def __exit__(self, exception_type, exception, traceback):
+                return original.__exit__(exception_type, exception, traceback)
+
+        entry[0] = RegisteredLock()
+    return registered
+
+
 _MUTATION_EVENTS = {
     "mkdir_at", "create_exclusive_at", "write", "fsync_file",
     "fsync_directory:data", "link_at", "unlink_at",
@@ -363,7 +381,59 @@ def test_forged_command_and_cross_destination_are_zero_effect(bundle_env) -> Non
     assert tuple(port.trace) == before
 
 
-def test_concurrent_no_replace_has_one_materializer(bundle_env) -> None:
+def test_same_key_first_publication_is_one_guarded_transaction(bundle_env) -> None:
+    port, _, service, registry, command, access, _, _ = bundle_env
+    entered = Event()
+    resume = Event()
+    outcomes = []
+    errors = []
+
+    def hold_first_create():
+        entered.set()
+        assert resume.wait(2)
+
+    def run():
+        try:
+            outcomes.append(service.seal(command, access))
+        except BaseException as error:
+            errors.append(error)
+
+    port.callbacks["mkdir_at"] = hold_first_create
+    first = Thread(target=run)
+    second = Thread(target=run)
+    first.start()
+    assert entered.wait(2)
+    key = bundle_companion_digest_v1(
+        command.command_digest, command.destination_ref,
+        access.root_authority_digest,
+    )
+    registered = registered_waiter_lock(service, key)
+    second.start()
+    assert registered.wait(2)
+    assert service._seal_guards[key][1] == 2
+    assert registry.calls == []
+    assert port.calls.get("link_at", 0) == 0
+    partial = service.lookup(command, access)
+    assert partial.status is BundleLookupStatusV1.INDETERMINATE
+    assert partial.binding is None
+    assert registry.calls == []
+    resume.set()
+    first.join(2)
+    second.join(2)
+    assert not first.is_alive() and not second.is_alive()
+    assert errors == []
+    assert len(outcomes) == 2
+    assert outcomes[0] == outcomes[1]
+    assert outcomes[0].status is BundleLookupStatusV1.FOUND
+    assert registry.calls.count("source-a") == 1
+    assert registry.calls.count("source-b") == 1
+    assert port.calls.get("link_at", 0) == 1
+    assert service._seal_guards == {}
+
+
+def test_failed_same_key_publication_releases_waiter_without_rematerializing(
+    bundle_env,
+) -> None:
     port, _, service, registry, command, access, _, _ = bundle_env
     entered = Event()
     resume = Event()
@@ -374,23 +444,43 @@ def test_concurrent_no_replace_has_one_materializer(bundle_env) -> None:
         assert resume.wait(2)
 
     def run():
-        outcomes.append(service.seal(command, access).status)
+        outcomes.append(service.seal(command, access))
 
     port.callbacks["mkdir_at"] = hold_first_create
+    port.fail_before["create_exclusive_at"] = (
+        port.calls.get("create_exclusive_at", 0) + 1
+    )
     first = Thread(target=run)
     second = Thread(target=run)
     first.start()
     assert entered.wait(2)
+    key = bundle_companion_digest_v1(
+        command.command_digest, command.destination_ref,
+        access.root_authority_digest,
+    )
+    registered = registered_waiter_lock(service, key)
     second.start()
+    assert registered.wait(2)
+    assert registry.calls == []
     resume.set()
     first.join(2)
     second.join(2)
-    assert BundleLookupStatusV1.FOUND in outcomes
-    assert set(outcomes) <= {
-        BundleLookupStatusV1.FOUND, BundleLookupStatusV1.INDETERMINATE
-    }
-    assert registry.calls.count("source-a") == 1
-    assert registry.calls.count("source-b") == 1
+    assert not first.is_alive() and not second.is_alive()
+    assert len(outcomes) == 2
+    assert all(
+        result.status is BundleLookupStatusV1.INDETERMINATE
+        and result.binding is None
+        for result in outcomes
+    )
+    assert registry.calls == ["source-a"]
+    assert port.calls.get("link_at", 0) == 0
+    assert service._seal_guards == {}
+    replay = service.seal(command, access)
+    assert replay.status is BundleLookupStatusV1.INDETERMINATE
+    assert replay.binding is None
+    assert registry.calls == ["source-a"]
+    assert port.calls.get("link_at", 0) == 0
+    assert service._seal_guards == {}
 
 
 def test_expected_binding_detects_marker_identity_substitution(bundle_env) -> None:
@@ -717,6 +807,46 @@ def test_durability_guards_do_not_serialize_distinct_bindings(bundle_env) -> Non
     resume.set()
     first.join(2)
     second.join(2)
+    assert service._seal_guards == {}
+
+
+def test_distinct_key_seals_materialize_concurrently_end_to_end(bundle_env) -> None:
+    port, _, service, registry, command, access, _, _ = bundle_env
+    other = BundleSealCommandV1.build(
+        command.profile_ref, "other-purpose", command.destination_ref,
+        command.members,
+    )
+    first_claimed = Event()
+    release_first = Event()
+    second_linked = Event()
+    outcomes = {}
+
+    def hold_first_claim():
+        first_claimed.set()
+        assert release_first.wait(2)
+
+    def record(name, candidate):
+        outcomes[name] = service.seal(candidate, access)
+
+    port.callbacks["mkdir_at"] = hold_first_claim
+    first = Thread(target=record, args=("first", command))
+    first.start()
+    assert first_claimed.wait(2)
+    port.callbacks["link_at"] = second_linked.set
+    second = Thread(target=record, args=("second", other))
+    second.start()
+    assert second_linked.wait(2)
+    second.join(2)
+    assert not second.is_alive()
+    assert outcomes["second"].status is BundleLookupStatusV1.FOUND
+    release_first.set()
+    first.join(2)
+    assert not first.is_alive()
+    assert outcomes["first"].status is BundleLookupStatusV1.FOUND
+    assert outcomes["first"].binding != outcomes["second"].binding
+    assert registry.calls.count("source-a") == 2
+    assert registry.calls.count("source-b") == 2
+    assert port.calls.get("link_at", 0) == 2
     assert service._seal_guards == {}
 
 

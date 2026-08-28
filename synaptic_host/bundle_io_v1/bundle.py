@@ -108,7 +108,12 @@ def _runtime_pair_error(error: LocalIOErrorV1) -> BundleIOErrorV1:
 
 
 class ImmutableSourceBundleV1:
-    """Host-only immutable source bundle over retained borrow capabilities."""
+    """Host-only immutable source bundle over retained borrow capabilities.
+
+    Port callbacks must not synchronously re-enter ``seal`` for the same bundle
+    key.  A same-key seal transaction owns the existing non-reentrant
+    durability guard until its publication outcome is classified.
+    """
 
     def __init__(self, borrow_port: RetainedRootBorrowPortV1,
                  sources: BundleSourceRegistryPortV1,
@@ -1034,82 +1039,82 @@ class ImmutableSourceBundleV1:
             access.root_authority_digest,
         )
         with self._durability_guard(guard_key):
-            existing = self._observe(command, access)
-            if existing.status is BundleLookupStatusV1.FOUND:
-                return self._durable_finalize(command, access, existing.binding)
-            if existing.status is not BundleLookupStatusV1.DEFINITELY_ABSENT:
-                return existing
-        claimed = False
-        try:
-            claimed = self._port.mkdir_borrowed(
-                access.create_borrow, access.create_root, private_name,
-                purpose=CREATE,
-            )
-            if type(claimed) is not bool:
-                raise _error(BundleIOCodeV1.INDETERMINATE)
-            if not claimed:
-                with self._durability_guard(guard_key):
+            claimed = False
+            try:
+                existing = self._observe(command, access)
+                if existing.status is BundleLookupStatusV1.FOUND:
+                    return self._durable_finalize(
+                        command, access, existing.binding
+                    )
+                if existing.status is not BundleLookupStatusV1.DEFINITELY_ABSENT:
+                    return existing
+                claimed = self._port.mkdir_borrowed(
+                    access.create_borrow, access.create_root, private_name,
+                    purpose=CREATE,
+                )
+                if type(claimed) is not bool:
+                    raise _error(BundleIOCodeV1.INDETERMINATE)
+                if not claimed:
                     observed = self._observe(command, access)
                     if observed.status is BundleLookupStatusV1.FOUND:
                         return self._durable_finalize(
                             command, access, observed.binding
                         )
                     return observed
-            members, manifest_raw, manifest_identity = self._materialize_private(
-                command, access, private_name
-            )
-            inventory = digest_v1([member.canonical() for member in members])
-            marker_raw = self._marker(
-                command, access, private_name, companion_name,
-                hashlib.sha256(manifest_raw).hexdigest(), inventory,
-                manifest_identity,
-            )
-            prelink = self._write_payload(
-                access, access.create_root, companion_name, marker_raw
-            )
-            verified_raw, verified_identity = self._read_single(
-                access.verify_borrow, access.verify_root, companion_name,
-                purpose=VERIFY, maximum=MAX_BUNDLE_MANIFEST_BYTES,
-                expected_identity=prelink,
-            )
-            if verified_raw != marker_raw:
-                raise _error(BundleIOCodeV1.CONFLICT)
-            self._port.fsync_borrowed_directory(
-                access.create_borrow, access.create_root, purpose=CREATE
-            )
-            try:
-                self._port.link_borrowed(
-                    access.create_borrow, access.create_root, companion_name,
-                    marker_name, purpose=CREATE,
+                members, manifest_raw, manifest_identity = self._materialize_private(
+                    command, access, private_name
                 )
-            except BaseException:
-                pass
-            with self._durability_guard(guard_key):
+                inventory = digest_v1([member.canonical() for member in members])
+                marker_raw = self._marker(
+                    command, access, private_name, companion_name,
+                    hashlib.sha256(manifest_raw).hexdigest(), inventory,
+                    manifest_identity,
+                )
+                prelink = self._write_payload(
+                    access, access.create_root, companion_name, marker_raw
+                )
+                verified_raw, verified_identity = self._read_single(
+                    access.verify_borrow, access.verify_root, companion_name,
+                    purpose=VERIFY, maximum=MAX_BUNDLE_MANIFEST_BYTES,
+                    expected_identity=prelink,
+                )
+                if verified_raw != marker_raw:
+                    raise _error(BundleIOCodeV1.CONFLICT)
+                self._port.fsync_borrowed_directory(
+                    access.create_borrow, access.create_root, purpose=CREATE
+                )
+                try:
+                    self._port.link_borrowed(
+                        access.create_borrow, access.create_root, companion_name,
+                        marker_name, purpose=CREATE,
+                    )
+                except BaseException:
+                    pass
                 observed = self._observe(command, access)
                 if observed.status is not BundleLookupStatusV1.FOUND:
                     return observed
                 result = self._durable_finalize(
                     command, access, observed.binding
                 )
-            if result.status is BundleLookupStatusV1.FOUND:
-                pair_identity = result.binding.marker_identity
-                if (
-                    pair_identity.device != verified_identity.device
-                    or pair_identity.inode != verified_identity.inode
-                    or (pair_identity.mode & 0o170000)
-                    != (verified_identity.mode & 0o170000)
-                    or pair_identity.size != verified_identity.size
-                    or pair_identity.modified_ns != verified_identity.modified_ns
-                    or pair_identity.changed_ns < verified_identity.changed_ns
-                ):
-                    return _result(BundleLookupStatusV1.CONFLICT, command)
-            return result
-        except BaseException:
-            return _result(
-                BundleLookupStatusV1.INDETERMINATE if claimed
-                else BundleLookupStatusV1.CONFLICT,
-                command,
-            )
+                if result.status is BundleLookupStatusV1.FOUND:
+                    pair_identity = result.binding.marker_identity
+                    if (
+                        pair_identity.device != verified_identity.device
+                        or pair_identity.inode != verified_identity.inode
+                        or (pair_identity.mode & 0o170000)
+                        != (verified_identity.mode & 0o170000)
+                        or pair_identity.size != verified_identity.size
+                        or pair_identity.modified_ns != verified_identity.modified_ns
+                        or pair_identity.changed_ns < verified_identity.changed_ns
+                    ):
+                        return _result(BundleLookupStatusV1.CONFLICT, command)
+                return result
+            except BaseException:
+                return _result(
+                    BundleLookupStatusV1.INDETERMINATE if claimed
+                    else BundleLookupStatusV1.CONFLICT,
+                    command,
+                )
 
 
 __all__: tuple[str, ...] = ()

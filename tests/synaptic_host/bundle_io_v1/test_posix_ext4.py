@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import os
 from pathlib import Path
-from threading import Thread
+from threading import Event, Thread
 
 import pytest
 
@@ -14,6 +14,7 @@ from synaptic_host.bundle_io_v1.model import (
     BundleLookupStatusV1,
     BundleMemberCommandV1,
     BundleSealCommandV1,
+    bundle_companion_digest_v1,
 )
 from synaptic_host.bundle_io_v1.ports import (
     BundleBorrowAccessV1,
@@ -37,8 +38,10 @@ from .conftest import BindingAuthority
 class _Sources:
     def __init__(self, values=()):
         self.values = dict(values)
+        self.calls = []
 
     def resolve(self, source_ref):
+        self.calls.append(source_ref)
         return self.values[source_ref]
 
 
@@ -93,7 +96,7 @@ def _borrow(filesystem, authority, purpose, access):
 
 
 def test_real_ext4_bundle_retained_pair_recovery_and_hostile_links(
-    bundle_ext4_root: Path,
+    bundle_ext4_root: Path, monkeypatch,
 ) -> None:
     destination = bundle_ext4_root / "destination"
     destination_control = bundle_ext4_root / "destination-control"
@@ -139,8 +142,67 @@ def test_real_ext4_bundle_retained_pair_recovery_and_hostile_links(
     service = ImmutableSourceBundleV1(
         filesystem, sources, binding_authority
     )
-    found = service.seal(command, access)
+    first_claimed = Event()
+    release_first = Event()
+    waiter_registered = Event()
+    outcomes = []
+    errors = []
+    original_mkdir = filesystem.mkdir_borrowed
+    held = False
+
+    def pause_first_claim(*args, **kwargs):
+        nonlocal held
+        claimed = original_mkdir(*args, **kwargs)
+        if claimed and not held:
+            held = True
+            first_claimed.set()
+            assert release_first.wait(5)
+        return claimed
+
+    def seal_once():
+        try:
+            outcomes.append(service.seal(command, access))
+        except BaseException as error:
+            errors.append(error)
+
+    monkeypatch.setattr(filesystem, "mkdir_borrowed", pause_first_claim)
+    first = Thread(target=seal_once)
+    second = Thread(target=seal_once)
+    first.start()
+    assert first_claimed.wait(5)
+    key = bundle_companion_digest_v1(
+        command.command_digest, command.destination_ref,
+        access.root_authority_digest,
+    )
+    with service._guard_lock:
+        entry = service._seal_guards[key]
+        original_lock = entry[0]
+
+        class RegisteredLock:
+            def __enter__(self):
+                waiter_registered.set()
+                return original_lock.__enter__()
+
+            def __exit__(self, exception_type, exception, traceback):
+                return original_lock.__exit__(
+                    exception_type, exception, traceback
+                )
+
+        entry[0] = RegisteredLock()
+    second.start()
+    assert waiter_registered.wait(5)
+    assert sources.calls == []
+    assert service.lookup(command, access).status is BundleLookupStatusV1.INDETERMINATE
+    release_first.set()
+    first.join(5)
+    second.join(5)
+    assert not first.is_alive() and not second.is_alive()
+    assert errors == []
+    assert len(outcomes) == 2 and outcomes[0] == outcomes[1]
+    found = outcomes[0]
     assert found.status is BundleLookupStatusV1.FOUND
+    assert sources.calls == ["source"]
+    assert service._seal_guards == {}
     assert set(path.name for path in destination.iterdir()) == {
         found.binding.private_name,
         found.binding.marker_name,

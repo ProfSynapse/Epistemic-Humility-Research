@@ -413,6 +413,7 @@ def test_two_adapters_converge_through_one_immutable_bundle_commit(
     assert sources.calls.count("dataset-source") == 1
     assert store.put_calls == 2
     assert len(store.values) == 1
+    assert real_bundle._seal_guards == {}
     retained = store.values[request.identity.effect_id].content
     assert retained.source_seal == results[0]
     assert retained.authenticated_declaration == registry.resolution.declaration
