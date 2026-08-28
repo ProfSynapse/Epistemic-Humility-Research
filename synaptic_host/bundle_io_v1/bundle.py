@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from contextlib import contextmanager
 from dataclasses import replace
+from threading import Lock
 
 from synaptic_host.local_io_v1.filesystem import RetainedRootBorrowPortV1
 from synaptic_host.local_io_v1.model import (
@@ -104,6 +106,28 @@ class ImmutableSourceBundleV1:
                  sources: BundleSourceRegistryPortV1) -> None:
         self._port = borrow_port
         self._sources = sources
+        self._guard_lock = Lock()
+        self._seal_guards: dict[str, list[object]] = {}
+
+    @contextmanager
+    def _durability_guard(self, key: str):
+        with self._guard_lock:
+            entry = self._seal_guards.get(key)
+            if entry is None:
+                entry = [Lock(), 0]
+                self._seal_guards[key] = entry
+            entry[1] += 1
+        guard = entry[0]
+        try:
+            with guard:
+                yield
+        finally:
+            with self._guard_lock:
+                current = self._seal_guards.get(key)
+                if current is entry:
+                    entry[1] -= 1
+                    if entry[1] == 0:
+                        del self._seal_guards[key]
 
     @staticmethod
     def _snapshot_command(command) -> BundleSealCommandV1:
@@ -842,11 +866,16 @@ class ImmutableSourceBundleV1:
     def seal(self, command, access):
         command, access = self._validate(command, access)
         private_name, marker_name, companion_name = self._names(command, access)
-        existing = self._observe(command, access)
-        if existing.status is BundleLookupStatusV1.FOUND:
-            return self._durable_finalize(command, access, existing.binding)
-        if existing.status is not BundleLookupStatusV1.DEFINITELY_ABSENT:
-            return existing
+        guard_key = bundle_companion_digest_v1(
+            command.command_digest, command.destination_ref,
+            access.root_authority_digest,
+        )
+        with self._durability_guard(guard_key):
+            existing = self._observe(command, access)
+            if existing.status is BundleLookupStatusV1.FOUND:
+                return self._durable_finalize(command, access, existing.binding)
+            if existing.status is not BundleLookupStatusV1.DEFINITELY_ABSENT:
+                return existing
         claimed = False
         try:
             claimed = self._port.mkdir_borrowed(
@@ -856,12 +885,13 @@ class ImmutableSourceBundleV1:
             if type(claimed) is not bool:
                 raise _error(BundleIOCodeV1.INDETERMINATE)
             if not claimed:
-                observed = self._observe(command, access)
-                if observed.status is BundleLookupStatusV1.FOUND:
-                    return self._durable_finalize(
-                        command, access, observed.binding
-                    )
-                return observed
+                with self._durability_guard(guard_key):
+                    observed = self._observe(command, access)
+                    if observed.status is BundleLookupStatusV1.FOUND:
+                        return self._durable_finalize(
+                            command, access, observed.binding
+                        )
+                    return observed
             members, manifest_raw, manifest_identity = self._materialize_private(
                 command, access, private_name
             )
@@ -891,10 +921,13 @@ class ImmutableSourceBundleV1:
                 )
             except BaseException:
                 pass
-            observed = self._observe(command, access)
-            if observed.status is not BundleLookupStatusV1.FOUND:
-                return observed
-            result = self._durable_finalize(command, access, observed.binding)
+            with self._durability_guard(guard_key):
+                observed = self._observe(command, access)
+                if observed.status is not BundleLookupStatusV1.FOUND:
+                    return observed
+                result = self._durable_finalize(
+                    command, access, observed.binding
+                )
             if result.status is BundleLookupStatusV1.FOUND:
                 pair_identity = result.binding.marker_identity
                 if (

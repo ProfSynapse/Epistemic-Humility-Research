@@ -7,6 +7,7 @@ from threading import Event, Thread
 
 import pytest
 
+import synaptic_host.bundle_io_v1.bundle as bundle_module
 from synaptic_host.bundle_io_v1.model import (
     MAX_BUNDLE_CHUNK_BYTES,
     BundleIOCodeV1,
@@ -403,6 +404,134 @@ def test_public_lookup_is_verify_only_and_never_attests_durability(bundle_env) -
     assert {
         name: port.calls.get(name, 0) for name in before
     } == before
+
+
+def test_concurrent_replay_linearizes_exact_durability_proof(
+    bundle_env, monkeypatch
+) -> None:
+    _, filesystem, service, _, command, access, _, _ = bundle_env
+    assert service.seal(command, access).status is BundleLookupStatusV1.FOUND
+    original = filesystem.open_borrowed_hardlink_pair
+    entered = Event()
+    resume = Event()
+    calls = []
+    outcomes = []
+
+    def blocked_first(*args, **kwargs):
+        calls.append("open")
+        if len(calls) == 1:
+            entered.set()
+            assert resume.wait(2)
+        return original(*args, **kwargs)
+
+    def replay():
+        outcomes.append(service.seal(command, access).status)
+
+    monkeypatch.setattr(filesystem, "open_borrowed_hardlink_pair", blocked_first)
+    first = Thread(target=replay)
+    second = Thread(target=replay)
+    first.start()
+    assert entered.wait(2)
+    second.start()
+    assert calls == ["open"]
+    resume.set()
+    first.join(2)
+    second.join(2)
+    assert not first.is_alive()
+    assert not second.is_alive()
+    assert outcomes == [BundleLookupStatusV1.FOUND] * 2
+
+
+def test_durability_guards_do_not_serialize_distinct_bindings(bundle_env) -> None:
+    _, _, service, _, _, _, _, _ = bundle_env
+    first_entered = Event()
+    second_entered = Event()
+    resume = Event()
+
+    def hold(key, entered):
+        with service._durability_guard(key):
+            entered.set()
+            assert resume.wait(2)
+
+    first = Thread(target=hold, args=("a" * 64, first_entered))
+    second = Thread(target=hold, args=("b" * 64, second_entered))
+    first.start()
+    assert first_entered.wait(2)
+    second.start()
+    assert second_entered.wait(2)
+    resume.set()
+    first.join(2)
+    second.join(2)
+    assert service._seal_guards == {}
+
+
+def test_durability_guard_acquisition_failure_cleans_registry_and_recovers(
+    bundle_env, monkeypatch
+) -> None:
+    _, _, service, _, _, _, _, _ = bundle_env
+    key = "c" * 64
+
+    class FailingAcquire:
+        release_calls = 0
+
+        def __enter__(self):
+            raise RuntimeError("closed acquisition failure")
+
+        def __exit__(self, exception_type, exception, traceback):
+            self.release_calls += 1
+
+    failing = FailingAcquire()
+    with monkeypatch.context() as patch:
+        patch.setattr(bundle_module, "Lock", lambda: failing)
+        with pytest.raises(RuntimeError, match="closed acquisition failure"):
+            with service._durability_guard(key):
+                raise AssertionError("unreachable body")
+    assert failing.release_calls == 0
+    assert service._seal_guards == {}
+    with service._durability_guard(key):
+        pass
+    assert service._seal_guards == {}
+
+
+def test_durability_guard_body_exception_releases_and_recovers(bundle_env) -> None:
+    _, _, service, _, _, _, _, _ = bundle_env
+    key = "d" * 64
+    with pytest.raises(RuntimeError, match="closed body failure"):
+        with service._durability_guard(key):
+            raise RuntimeError("closed body failure")
+    assert service._seal_guards == {}
+    with service._durability_guard(key):
+        pass
+    assert service._seal_guards == {}
+
+
+def test_durability_guard_release_failure_still_cleans_registry(
+    bundle_env, monkeypatch
+) -> None:
+    _, _, service, _, _, _, _, _ = bundle_env
+    key = "e" * 64
+
+    class FailingRelease:
+        release_calls = 0
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exception_type, exception, traceback):
+            self.release_calls += 1
+            raise RuntimeError("closed release failure")
+
+    failing = FailingRelease()
+    with monkeypatch.context() as patch:
+        patch.setattr(bundle_module, "Lock", lambda: failing)
+        with pytest.raises(RuntimeError, match="closed release failure"):
+            with service._durability_guard(key):
+                pass
+    assert failing.release_calls == 1
+    assert service._seal_guards == {}
+    with service._durability_guard(key):
+        pass
+    assert service._seal_guards == {}
 
 
 @pytest.mark.parametrize(
