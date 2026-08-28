@@ -37,6 +37,7 @@ def _adapter(env):
         bundle=bundle,
         binding_authority=binding_authority,
         source_seal_authority=seal_authority,
+        stage_record_authority=store.stage_authority,
         store=store,
     )
 
@@ -82,7 +83,7 @@ def _rebuild_binding(
 def test_stage_seal_retains_exact_authenticated_binding(adapter_env):
     request, registry, _, bundle, _, seal_authority, store = adapter_env
     seal = _adapter(adapter_env).seal_read_only(request)
-    retained = store.values[request.identity.effect_id]
+    retained = store.values[request.identity.effect_id].content
     assert registry.calls == 1
     assert len(bundle.calls) == 1
     assert retained.source_seal == seal
@@ -123,7 +124,7 @@ def test_lost_insert_return_recovers_only_from_retained_record(adapter_env):
     request, registry, _, bundle, _, _, store = adapter_env
     store.lose_put_return = True
     seal = _adapter(adapter_env).seal_read_only(request)
-    assert seal == store.values[request.identity.effect_id].source_seal
+    assert seal == store.values[request.identity.effect_id].content.source_seal
     assert registry.calls == 1 and len(bundle.calls) == 1 and store.put_calls == 1
 
 
@@ -289,14 +290,12 @@ def test_replay_reauthenticates_retained_declaration_envelope(adapter_env):
     request, registry, _, bundle, _, _, store = adapter_env
     adapter = _adapter(adapter_env)
     adapter.seal_read_only(request)
-    original = store.values[request.identity.effect_id]
+    original = store.values[request.identity.effect_id].content
     forged_declaration = replace(
         original.authenticated_declaration, tag="f" * 64
     )
     rebuilt = DockerStageBundleBindingV1.build(
-        stage_effect_id=original.stage_effect_id,
-        stage_command_digest=original.stage_command_digest,
-        effect_identity_digest=original.effect_identity_digest,
+        effect_identity=original.effect_identity,
         source_seal_request_digest=original.source_seal_request_digest,
         source_ref=original.source_ref,
         source_digest=original.source_digest,
@@ -305,7 +304,7 @@ def test_replay_reauthenticates_retained_declaration_envelope(adapter_env):
         authenticated_binding=original.authenticated_binding,
         source_seal=original.source_seal,
     )
-    store.values[request.identity.effect_id] = rebuilt
+    store.values[request.identity.effect_id] = store.stage_authority.issue(rebuilt)
     before = (registry.calls, len(bundle.calls), store.put_calls)
     with pytest.raises(DockerHostSourceErrorV1) as caught:
         _adapter(adapter_env).seal_read_only(request)
@@ -317,12 +316,26 @@ def test_replay_reauthenticates_retained_declaration_envelope(adapter_env):
     assert observed.disposition is DockerLookupDispositionV1.INDETERMINATE
 
 
+def test_replay_authenticates_outer_stage_record_before_nested_evidence(
+    adapter_env
+):
+    request, registry, _, bundle, _, _, store = adapter_env
+    _adapter(adapter_env).seal_read_only(request)
+    envelope = store.values[request.identity.effect_id]
+    store.values[request.identity.effect_id] = replace(envelope, tag="f" * 64)
+    before = (registry.calls, len(bundle.calls), store.put_calls)
+    with pytest.raises(DockerHostSourceErrorV1) as caught:
+        _adapter(adapter_env).seal_read_only(request)
+    assert caught.value.code is DockerHostSourceCodeV1.AUTHENTICATION_FAILED
+    assert (registry.calls, len(bundle.calls), store.put_calls) == before
+
+
 def test_validly_signed_rebuilt_declaration_cannot_relabel_retained_record(
     adapter_env
 ):
     request, registry, declaration_authority, bundle, _, _, store = adapter_env
     _adapter(adapter_env).seal_read_only(request)
-    original = store.values[request.identity.effect_id]
+    original = store.values[request.identity.effect_id].content
     content = original.authenticated_declaration.content
     relabeled = DockerSourceDeclarationV1.build(
         source_ref=content.source_ref,
@@ -337,9 +350,7 @@ def test_validly_signed_rebuilt_declaration_cannot_relabel_retained_record(
         members=content.members,
     )
     rebuilt = DockerStageBundleBindingV1.build(
-        stage_effect_id=original.stage_effect_id,
-        stage_command_digest=original.stage_command_digest,
-        effect_identity_digest=original.effect_identity_digest,
+        effect_identity=original.effect_identity,
         source_seal_request_digest=original.source_seal_request_digest,
         source_ref=original.source_ref,
         source_digest=original.source_digest,
@@ -348,7 +359,7 @@ def test_validly_signed_rebuilt_declaration_cannot_relabel_retained_record(
         authenticated_binding=original.authenticated_binding,
         source_seal=original.source_seal,
     )
-    store.values[request.identity.effect_id] = rebuilt
+    store.values[request.identity.effect_id] = store.stage_authority.issue(rebuilt)
     before = (registry.calls, len(bundle.calls), store.put_calls)
     with pytest.raises(DockerHostSourceErrorV1) as caught:
         _adapter(adapter_env).seal_read_only(request)
@@ -402,7 +413,7 @@ def test_two_adapters_converge_through_one_immutable_bundle_commit(
     assert sources.calls.count("dataset-source") == 1
     assert store.put_calls == 2
     assert len(store.values) == 1
-    retained = store.values[request.identity.effect_id]
+    retained = store.values[request.identity.effect_id].content
     assert retained.source_seal == results[0]
     assert retained.authenticated_declaration == registry.resolution.declaration
     assert retained.authenticated_binding.content.destination_ref == (
@@ -456,5 +467,5 @@ def test_guard_release_failure_does_not_hide_durable_replay(adapter_env):
     before = (registry.calls, len(bundle.calls), store.put_calls)
     assert _adapter(adapter_env).seal_read_only(request) == store.values[
         request.identity.effect_id
-    ].source_seal
+    ].content.source_seal
     assert (registry.calls, len(bundle.calls), store.put_calls) == before

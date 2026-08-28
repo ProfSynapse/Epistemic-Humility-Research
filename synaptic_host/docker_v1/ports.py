@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from tuner.execution.providers.docker_provider_v1.model import (
+    AuthenticatedDockerCommandBindingV1,
     AuthenticatedDockerSourceSealV1,
     DockerSourceSealContentV1,
     DockerSourceSealRequestV1,
@@ -14,11 +15,17 @@ from synaptic_host.bundle_io_v1.model import (
     BundleBindingV1,
     BundleLookupResultV1,
     BundleSealCommandV1,
+    BundleMountVerificationV1,
 )
-from synaptic_host.bundle_io_v1.ports import BundleBorrowAccessV1
+from synaptic_host.bundle_io_v1.ports import (
+    BundleBorrowAccessV1,
+    BundleMountVerifyAccessV1,
+)
 
 from .model import (
     AuthenticatedDockerSourceDeclarationV1,
+    AuthenticatedDockerStorageMappingV1,
+    AuthenticatedDockerStageBundleBindingV1,
     DockerHostSourceCodeV1,
     DockerHostSourceErrorV1,
     DockerStageBundleBindingV1,
@@ -64,12 +71,67 @@ class DockerSourceDeclarationAuthorityPortV1(Protocol):
 
 class DockerStageBundleStorePortV1(Protocol):
     def put_if_absent(
-        self, value: DockerStageBundleBindingV1
-    ) -> DockerStageBundleBindingV1: ...
+        self, value: AuthenticatedDockerStageBundleBindingV1
+    ) -> AuthenticatedDockerStageBundleBindingV1: ...
 
     def get_by_stage_effect_id(
         self, stage_effect_id: str
-    ) -> DockerStageBundleBindingV1 | None: ...
+    ) -> AuthenticatedDockerStageBundleBindingV1 | None: ...
+
+
+class DockerStageBundleRecordAuthorityPortV1(Protocol):
+    authority_ref: str
+    key_ref: str
+
+    def issue(
+        self, value: DockerStageBundleBindingV1
+    ) -> AuthenticatedDockerStageBundleBindingV1: ...
+
+    def authenticate(
+        self, value: AuthenticatedDockerStageBundleBindingV1
+    ) -> AuthenticatedDockerStageBundleBindingV1 | None: ...
+
+
+class DockerCommandBindingCatalogPortV1(Protocol):
+    def resolve(
+        self, command_digest: str
+    ) -> AuthenticatedDockerCommandBindingV1: ...
+
+
+class DockerCommandBindingAuthorityPortV1(Protocol):
+    authority_ref: str
+    key_ref: str
+
+    def authenticate(
+        self, value: AuthenticatedDockerCommandBindingV1
+    ) -> AuthenticatedDockerCommandBindingV1 | None: ...
+
+
+class DockerStorageMappingRegistryPortV1(Protocol):
+    def resolve_source(
+        self, source_ref: str
+    ) -> AuthenticatedDockerStorageMappingV1: ...
+
+    def resolve_artifact(
+        self, artifact_ref: str
+    ) -> AuthenticatedDockerStorageMappingV1: ...
+
+
+class DockerStorageMappingAuthorityPortV1(Protocol):
+    authority_ref: str
+    key_ref: str
+
+    def authenticate(
+        self, value: AuthenticatedDockerStorageMappingV1
+    ) -> AuthenticatedDockerStorageMappingV1 | None: ...
+
+
+class BundleMountVerifierPortV1(Protocol):
+    def verify_mount(
+        self, command: BundleSealCommandV1,
+        access: BundleMountVerifyAccessV1,
+        expected_authenticated_binding: AuthenticatedBundleBindingV1,
+    ) -> BundleMountVerificationV1: ...
 
 
 class ImmutableSourceBundlePortV1(Protocol):

@@ -2,10 +2,15 @@ from dataclasses import replace
 
 import pytest
 
+from synaptic_host.bundle_io_v1.ports import BundleMountVerifyAccessV1
 from synaptic_host.docker_v1.model import (
     DockerHostSourceCodeV1,
     DockerHostSourceErrorV1,
+    DockerMountCodeV1,
+    DockerMountErrorV1,
     DockerSourceDeclarationV1,
+    DockerStorageMappingV1,
+    DockerStoragePurposeV1,
 )
 
 
@@ -50,3 +55,49 @@ def test_declaration_rejects_mutated_digest(source_env):
     with pytest.raises(DockerHostSourceErrorV1) as caught:
         replace(declaration, declaration_digest="f" * 64)
     assert caught.value.code is DockerHostSourceCodeV1.DECLARATION_CONFLICT
+
+
+@pytest.mark.parametrize(
+    "wsl_root",
+    (
+        "relative/root",
+        "/mnt/../root",
+        "/mnt//root",
+        "/mnt/bad\x00root",
+        "/" + "x" * 241,
+    ),
+)
+def test_storage_mapping_rejects_noncanonical_wsl_roots(source_env, wsl_root):
+    _, _, access = source_env
+    verify = BundleMountVerifyAccessV1.build(
+        access.destination_ref, access.verify_borrow, access.verify_root
+    )
+    with pytest.raises(DockerMountErrorV1) as caught:
+        DockerStorageMappingV1.build(
+            mapping_ref="source-mapping", declared_ref="dataset-source",
+            purpose=DockerStoragePurposeV1.SOURCE_BUNDLE,
+            wsl_root=wsl_root, root_authority_digest=access.root_authority_digest,
+            destination_ref=access.destination_ref,
+            access_digest=verify.access_digest, verify_access=verify,
+        )
+    assert caught.value.code in {
+        DockerMountCodeV1.MAPPING_CONFLICT,
+        DockerMountCodeV1.BOUND_EXCEEDED,
+    }
+
+
+def test_mapping_purpose_and_verify_access_matrix_is_exact(source_env):
+    _, _, access = source_env
+    verify = BundleMountVerifyAccessV1.build(
+        access.destination_ref, access.verify_borrow, access.verify_root
+    )
+    with pytest.raises(DockerMountErrorV1) as caught:
+        DockerStorageMappingV1.build(
+            mapping_ref="artifact-mapping", declared_ref="artifact-root",
+            purpose=DockerStoragePurposeV1.ARTIFACT_OUTPUT,
+            wsl_root="/mnt/artifacts",
+            root_authority_digest=access.root_authority_digest,
+            destination_ref=access.destination_ref,
+            access_digest=verify.access_digest, verify_access=verify,
+        )
+    assert caught.value.code is DockerMountCodeV1.MAPPING_CONFLICT

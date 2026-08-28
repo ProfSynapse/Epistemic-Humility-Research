@@ -29,6 +29,7 @@ from synaptic_host.bundle_io_v1.ports import BundleBorrowAccessV1
 
 from .model import (
     AuthenticatedDockerSourceDeclarationV1,
+    AuthenticatedDockerStageBundleBindingV1,
     DockerHostSourceCodeV1,
     DockerHostSourceErrorV1,
     DockerSourceDeclarationV1,
@@ -46,13 +47,14 @@ class DockerBundleSourceSealAdapterV1:
 
     def __init__(
         self, *, declarations, declaration_authority, bundle,
-        binding_authority, source_seal_authority, store,
+        binding_authority, source_seal_authority, stage_record_authority, store,
     ) -> None:
         self._declarations = declarations
         self._declaration_authority = declaration_authority
         self._bundle = bundle
         self._binding_authority = binding_authority
         self._source_seal_authority = source_seal_authority
+        self._stage_record_authority = stage_record_authority
         self._store = store
         try:
             refs = (
@@ -62,6 +64,8 @@ class DockerBundleSourceSealAdapterV1:
                 binding_authority.key_ref,
                 source_seal_authority.authority_ref,
                 source_seal_authority.key_ref,
+                stage_record_authority.authority_ref,
+                stage_record_authority.key_ref,
             )
             if any(type(value) is not str or not value for value in refs):
                 raise ValueError
@@ -69,6 +73,7 @@ class DockerBundleSourceSealAdapterV1:
                 self._declaration_authority_ref, self._declaration_key_ref,
                 self._binding_authority_ref, self._binding_key_ref,
                 self._seal_authority_ref, self._seal_key_ref,
+                self._stage_authority_ref, self._stage_key_ref,
             ) = refs
         except BaseException:
             raise _error(DockerHostSourceCodeV1.AUTHENTICATION_FAILED) from None
@@ -114,6 +119,25 @@ class DockerBundleSourceSealAdapterV1:
                 raise _error(
                     DockerHostSourceCodeV1.STORE_INDETERMINATE
                 ) from None
+
+    @staticmethod
+    def _snapshot_identity(value) -> DockerEffectIdentityV1:
+        try:
+            if type(value) is not DockerEffectIdentityV1:
+                raise ValueError
+            plan = PreparedDockerPlanV1(
+                value.plan.profile, value.plan.project_ref, value.plan.run_id,
+                value.plan.plan_fingerprint, value.plan.source_digest,
+                value.plan.preparation_digest,
+            )
+            rebuilt = DockerEffectIdentityV1(
+                value.command_digest, value.effect_id, value.effect_kind, plan
+            )
+            if rebuilt != value or rebuilt.digest != value.digest:
+                raise ValueError
+            return rebuilt
+        except BaseException:
+            raise _error(DockerHostSourceCodeV1.STORE_CONFLICT) from None
 
     @staticmethod
     def _snapshot_request(value) -> DockerSourceSealRequestV1:
@@ -295,6 +319,7 @@ class DockerBundleSourceSealAdapterV1:
             raise _error(DockerHostSourceCodeV1.STORE_CONFLICT)
         try:
             rebuilt = DockerStageBundleBindingV1(
+                cls._snapshot_identity(value.effect_identity),
                 value.stage_effect_id, value.stage_command_digest,
                 value.effect_identity_digest, value.source_seal_request_digest,
                 value.source_ref, value.source_digest,
@@ -312,6 +337,23 @@ class DockerBundleSourceSealAdapterV1:
         except DockerHostSourceErrorV1 as error:
             if error.code is DockerHostSourceCodeV1.AUTHENTICATION_FAILED:
                 raise _error(DockerHostSourceCodeV1.STORE_CONFLICT) from None
+            raise
+        except BaseException:
+            raise _error(DockerHostSourceCodeV1.STORE_CONFLICT) from None
+
+    @classmethod
+    def _snapshot_stage_envelope(cls, value):
+        if type(value) is not AuthenticatedDockerStageBundleBindingV1:
+            raise _error(DockerHostSourceCodeV1.STORE_CONFLICT)
+        try:
+            rebuilt = AuthenticatedDockerStageBundleBindingV1(
+                cls._snapshot_record(value.content), value.authority_ref,
+                value.key_ref, value.tag,
+            )
+            if rebuilt != value:
+                raise ValueError
+            return rebuilt
+        except DockerHostSourceErrorV1:
             raise
         except BaseException:
             raise _error(DockerHostSourceCodeV1.STORE_CONFLICT) from None
@@ -367,6 +409,23 @@ class DockerBundleSourceSealAdapterV1:
         except BaseException:
             raise _error(DockerHostSourceCodeV1.AUTHENTICATION_FAILED) from None
 
+    def _authenticate_stage(self, value):
+        presented = self._snapshot_stage_envelope(value)
+        try:
+            if (
+                presented.authority_ref != self._stage_authority_ref
+                or presented.key_ref != self._stage_key_ref
+            ):
+                raise ValueError
+            trusted = self._snapshot_stage_envelope(
+                self._stage_record_authority.authenticate(presented)
+            )
+            if trusted != presented:
+                raise ValueError
+            return trusted
+        except BaseException:
+            raise _error(DockerHostSourceCodeV1.AUTHENTICATION_FAILED) from None
+
     def _validated_record(self, value, request):
         record = self._snapshot_record(value)
         declaration = self._authenticate_declaration(
@@ -375,7 +434,8 @@ class DockerBundleSourceSealAdapterV1:
         binding = self._authenticate_binding(record.authenticated_binding)
         seal = self._authenticate_seal(record.source_seal)
         if (
-            declaration != record.authenticated_declaration
+            record.effect_identity != request.identity
+            or declaration != record.authenticated_declaration
             or binding != record.authenticated_binding
             or seal != record.source_seal
             or record.stage_effect_id != request.identity.effect_id
@@ -409,14 +469,16 @@ class DockerBundleSourceSealAdapterV1:
             raise _error(DockerHostSourceCodeV1.STORE_INDETERMINATE) from None
         if value is None:
             return None
-        return self._validated_record(value, request)
+        envelope = self._authenticate_stage(value)
+        self._validated_record(envelope.content, request)
+        return envelope
 
     def seal_read_only(self, request):
         request = self._snapshot_request(request)
         with self._stage_guard(request.identity.effect_id):
             retained = self._get(request)
             if retained is not None:
-                return retained.source_seal
+                return retained.content.source_seal
             try:
                 resolution = self._snapshot_resolution(
                     self._declarations.resolve(request)
@@ -512,9 +574,7 @@ class DockerBundleSourceSealAdapterV1:
             if seal.content != seal_content:
                 raise _error(DockerHostSourceCodeV1.AUTHENTICATION_FAILED)
             record = DockerStageBundleBindingV1.build(
-                stage_effect_id=request.identity.effect_id,
-                stage_command_digest=request.identity.command_digest,
-                effect_identity_digest=request.identity.digest,
+                effect_identity=request.identity,
                 source_seal_request_digest=request.digest,
                 source_ref=request.source_ref,
                 source_digest=request.source_digest,
@@ -524,15 +584,22 @@ class DockerBundleSourceSealAdapterV1:
                 source_seal=seal,
             )
             try:
-                self._store.put_if_absent(record)
+                issued_stage = self._stage_record_authority.issue(record)
+            except BaseException:
+                raise _error(DockerHostSourceCodeV1.AUTHENTICATION_FAILED) from None
+            stage_envelope = self._authenticate_stage(issued_stage)
+            if stage_envelope.content != record:
+                raise _error(DockerHostSourceCodeV1.AUTHENTICATION_FAILED)
+            try:
+                self._store.put_if_absent(stage_envelope)
             except BaseException:
                 pass
             retained = self._get(request)
             if retained is None:
                 raise _error(DockerHostSourceCodeV1.STORE_INDETERMINATE)
-            if retained != record:
+            if retained != stage_envelope:
                 raise _error(DockerHostSourceCodeV1.STORE_CONFLICT)
-            return retained.source_seal
+            return retained.content.source_seal
 
     def lookup(self, request):
         try:
@@ -544,7 +611,8 @@ class DockerBundleSourceSealAdapterV1:
                     DockerLookupDispositionV1.INDETERMINATE
                 )
             return DockerSourceSealLookupResultV1(
-                DockerLookupDispositionV1.FOUND, seal=retained.source_seal
+                DockerLookupDispositionV1.FOUND,
+                seal=retained.content.source_seal,
             )
         except DockerHostSourceErrorV1 as error:
             if error.code is DockerHostSourceCodeV1.REQUEST_INVALID:
