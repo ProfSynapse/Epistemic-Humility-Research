@@ -1,0 +1,50 @@
+[
+  {
+    "committed_at": "2026-08-29T22:37:02.214230+00:00",
+    "file_name": "batch_3_graded.jsonl",
+    "sha256": "edcfa4ce81310236217f23a42e7d7bac36eb5259af11bd17d8f1c476cd91b1a5",
+    "shard_id": "llama-3.2-3b_shard_00"
+  },
+  {
+    "committed_at": "2026-08-29T22:37:02.241876+00:00",
+    "file_name": "batch_4_graded.jsonl",
+    "sha256": "b697ab5af8cfc54119c2807ff90666f58e546eb68b45db6238d27a77a75f49a1",
+    "shard_id": "llama-3.2-3b_shard_01"
+  },
+  {
+    "committed_at": "2026-08-29T22:37:02.268812+00:00",
+    "file_name": "batch_5_graded.jsonl",
+    "sha256": "c6ba23f30d1197123aff8ea8df38bc70b888054c28d64d916f610647b5e56dd5",
+    "shard_id": "llama-3.2-3b_shard_02"
+  },
+  {
+    "committed_at": "2026-08-29T22:37:02.295371+00:00",
+    "file_name": "batch_6_graded.jsonl",
+    "sha256": "ebabc3a9be683e7f3796e601595a698b0f00a3888908a827a569c018b15db4e6",
+    "shard_id": "llama-3.2-3b_shard_03"
+  },
+  {
+    "committed_at": "2026-08-29T22:37:02.323387+00:00",
+    "file_name": "batch_7_graded.jsonl",
+    "sha256": "858697da8403d0f7766ff5ca2a39f751cb173623c76e32d8c1c47ff9ac2d1025",
+    "shard_id": "llama-3.2-3b_shard_04"
+  },
+  {
+    "committed_at": "2026-08-29T22:52:52.447810+00:00",
+    "file_name": "batch_8_graded.jsonl",
+    "sha256": "75ff01ee78d2193a0bdb390aee2bb48f379dffa62776343ecdca877da613c772",
+    "shard_id": "llama-3.2-3b_shard_00"
+  },
+  {
+    "committed_at": "2026-08-29T22:52:52.478686+00:00",
+    "file_name": "batch_9_graded.jsonl",
+    "sha256": "67992fc78aebbba599048a5b361a3d44eb89853621168e55094b721724c25dec",
+    "shard_id": "llama-3.2-3b_shard_03"
+  },
+  {
+    "committed_at": "2026-08-29T22:52:52.505612+00:00",
+    "file_name": "batch_10_graded.jsonl",
+    "sha256": "ee845443b48ac11d74c42f4bb962556caae2d6361d8b428a51383c9a0bd76435",
+    "shard_id": "llama-3.2-3b_shard_04"
+  }
+]

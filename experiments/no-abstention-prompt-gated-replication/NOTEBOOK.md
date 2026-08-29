@@ -6,6 +6,111 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-29 — Judge lane approved; qwen3-4b decoy-source correction; docker context fixed; qwen3.5-4b launched
+
+**PI approved the judge lane in-session, 2026-08-29** (lead relay). Scope:
+run the registered two-stage grading (AMENDMENT.md "Grading") to completion
+for qwen3-4b and llama-3.2-3b: sharded blind LLM judges over each family's
+detector-v2-negative core pool, using the pinned
+`abstention-wide-instrument-calibration` instrument
+(`detector_v2.py`/`detector_v2_patterns.yaml`/`build_adjudication_pool.py`/
+`apply_adjudication.py`, all sha256-verified against `cell.yaml`
+`grading.pinned_instrument` before use, never edited) via the same
+library-reuse pattern `build_adjudication_pool_from_runlog.py` already
+established (pinned functions imported unmodified; only the row-loading glue
+around them is this cell's own code).
+
+**Instrument extension: judge-sensitivity clear_positive decoys.** qwen3-4b's
+own no-abstention-prompt data has ZERO detector_v2-refused rows in any of
+its three arms (confirmed: pool v1 manifest `n_clear_positive_candidates: 0`
+of 1329 core rows), so the pinned pool builder's own
+`build_core_and_decoy_candidates` — which only ever draws `clear_positive`
+candidates from a `random_direction`-arm row that detector_v2 marks refused —
+finds nothing to plant, and a shard with zero clear_positive decoys cannot be
+CG1-evaluated on the positive-catch side at all. Per PI ruling, an external,
+same-family, with-prompt source is grafted in as `pos_cand` input to the
+SAME pinned `carve_decoys`/`build_shards` functions (their own bytes,
+unedited); this is a judge-sensitivity control only, reported separately
+from every gate rate, never pooled with this cell's own core.
+
+**Source-mismatch caught and corrected before building anything.** The
+original task brief named `abstention-wide-instrument-calibration`'s "QH"
+cell as the source ("same family, with-prompt"). Reading
+`abstention-wide-instrument-calibration/cell.yaml` and `sources.py` directly
+(not from the brief's prose) showed QH is registered `family: qwen35-4b`
+(Qwen3.5-4B, from `qwen35-4b-midband-heldout`) — a DIFFERENT model family
+from this cell's `qwen3-4b` (Qwen3-4B). Using QH would have planted
+cross-family decoys into qwen3-4b's judge lane while the record called them
+same-family. Flagged to the lead before building anything; the lead
+independently verified a corrected source and issued this ruling:
+
+> Source: `experiments/qwen3-4b-l34-placebo-seed-census/analysis/
+> wicr_decoy_source/rows_with_generation.jsonl` (canonical checkout;
+> 1329 qwen3-4b WITH-PROMPT rows, full `out_text` in the identical
+> `{"answer","response_confidence"}` JSON format). Selection: re-derive
+> refusal with the PINNED detector_v2 over `out_text` (never trust the
+> file's own `semantic_refuse` flag); prefer `random_direction`-arm
+> detector-refused rows first (the pinned instrument's own clear_positive
+> definition), then top up from `gated`-arm detector-refused rows, up to a
+> cap of 20; seeded sample, seed recorded. Source arm recorded per row ONLY
+> in the gitignored id map — never in the committed pool manifest, which
+> stays counts/shas-only per this experiment's containment rule.
+
+Provenance wording for this pool: **same family (qwen3-4b), with-prompt,
+sourced from `qwen3-4b-l34-placebo-seed-census` `wicr_decoy_source`
+(previously used there as a judged-pass decoy source)**. To keep the
+injected rows structurally unable to collide with this cell's own
+(cell, row_key, arm) dedup key even if a row_key happens to be shared
+across the two experiments' pools, injected rows are tagged with a distinct
+`cell` value (`qwen3-4b_wicr_external`) rather than reusing `"qwen3-4b"`;
+their true source arm (`random_direction` or `gated`) is preserved
+per-row, visible only in the gitignored id map.
+
+Pool v2 build, selection counts, and shard composition: see the immediately
+following build-log entry (recorded after the run, not predicted here).
+
+**Llama pool needs NO external plants — hs17 schema question is MOOT.**
+The lead confirmed llama's OWN no-abstention-prompt `random_direction` arm
+already yields native clear_positive candidates (6, per the v1 build below)
+that are EXACTLY the pinned instrument's own definition (placebo-arm
+detector-refused rows), zero deviation from the registered mechanism. The
+`llama-hs17-direction-specificity` `arm0_baseline.jsonl` candidate
+investigated below is explicitly NOT to be used for anything judge-facing
+(it carries no raw `out_text`; its rows would be format-distinguishable
+inside a blinded shard by that absence alone). Llama's judge lane runs on
+its existing v1 pool, right after qwen3-4b's, same context-free contract.
+
+**For later (qwen3.5-4b's own pool, not actioned this entry):** the lead
+notes qwen3.5-4b has a natural same-family with-prompt planted-positive
+source already staged in canonical:
+`experiments/qwen35-4b-midband-doubt-snap/analysis/runlog`. Not used yet;
+qwen3.5-4b's own no-abstention-prompt GPU run was still in flight when this
+entry was written.
+
+**Docker context was broken on this host, fixed (environment fix, not a
+spec change).** `docker context ls` showed the active context as
+`desktop-linux` (a Windows named-pipe endpoint), which panics
+(`invalid memory address or nil pointer dereference`) under this WSL2 Linux
+shell — exactly the failure mode `synaptic-tuner/docker/mechinterp-runner/
+README.md` "Run pattern (WSL2 + NVIDIA)" warns about. Ran
+`docker context use default` (the native `unix:///var/run/docker.sock`
+context); confirmed `mechinterp-runner:tf550-rebuild` present and
+`docker info` reports `Runtimes: io.containerd.runc.v2 nvidia runc` with
+`Operating System: Docker Desktop` — the README's documented precondition
+for `--gpus all` to work. No docker daemon restart, no service-level
+change, no sudo used. Gemma's docker launch command is drafted from that
+README's canonical run pattern (`--gpus all`, HF cache + repo bind mounts,
+`--env HF_TOKEN` pass-through, `mechinterp-runner:tf550-rebuild`,
+`python experiments/no-abstention-prompt-gated-replication/run_gemma.py
+all`); not yet run (GPU still occupied by qwen3.5-4b).
+
+**qwen3.5-4b launched.** `python3 run_qwen35_4b.py all`, harness-tracked
+background process, log `analysis/qwen3.5-4b/run_all.log`. Liveness
+independently confirmed (not taken on trust): model loaded onto GPU
+(8500 MiB, 41% util) after the initial HF weight fetch, extract stage
+progressing normally, no crash signatures. Preflight re-run fresh on this
+host immediately before launch: 31/31 `cell.yaml` sha256 pins still PASS.
+
 ### 2026-08-28 — Grading crash fixed (harness bug, not spec) + gemma container rebuilt
 
 **Grading crash root-caused and fixed in harness code only.** qwen3-4b's

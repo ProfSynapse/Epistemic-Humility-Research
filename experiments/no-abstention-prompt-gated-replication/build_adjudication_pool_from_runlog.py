@@ -236,7 +236,99 @@ def _load_pinned_pool_module():
     return mod
 
 
-def build_pool_for_family(family: str, seed: int, salt: str | None, target_shard_size: int) -> dict[str, Any]:
+EXTERNAL_POSITIVE_TRACKED_ROLES = ("confab", "known_correct_answered")
+EXTERNAL_POSITIVE_ARM_PREFERENCE = ("random_direction", "gated")  # pinned clear_positive definition first, then top up
+
+
+def load_external_positives(source_path: Path, seed: int, cap: int, detector_v2, cfg: dict, external_cell_tag: str) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Selects externally-sourced clear_positive candidate rows for a family
+    whose OWN no-abstention-prompt data has structurally zero native
+    positives (e.g. qwen3-4b, per this cell's pool v1: n_clear_positive_candidates=0).
+
+    Re-derives refusal with the PINNED detector_v2 over the source file's own
+    `out_text` -- NEVER trusts that file's own `semantic_refuse` flag (per
+    lead ruling, NOTEBOOK.md 2026-08-29). Prefers `random_direction`-arm
+    detector-refused rows first (the pinned instrument's own clear_positive
+    definition in build_adjudication_pool.build_core_and_decoy_candidates),
+    then tops up from `gated`-arm detector-refused rows, up to `cap`. Seeded
+    sample so the selection is reproducible.
+
+    Rows are tagged with `external_cell_tag` (NOT the target family's own
+    cell name) so they can never collide with the target family's own
+    (cell, row_key, arm) dedup key even if a row_key happens to be shared
+    across the two experiments' pools. Their true source arm is preserved
+    per-row -- visible only in the gitignored id map the pinned build_shards
+    writes, never in the committed pool manifest (counts/shas only).
+
+    Returns (normalized_rows, selection_report). selection_report carries
+    counts only, no text, no row_key -- safe to print/commit.
+    """
+    rows = load_jsonl(source_path)
+    tracked = [r for r in rows if r.get("role") in EXTERNAL_POSITIVE_TRACKED_ROLES]
+
+    refused_by_arm: dict[str, list[dict[str, Any]]] = {arm: [] for arm in EXTERNAL_POSITIVE_ARM_PREFERENCE}
+    for r in tracked:
+        arm = r.get("arm")
+        if arm not in refused_by_arm:
+            continue
+        if detector_v2.is_refused_v2(r.get("out_text", ""), cfg):
+            refused_by_arm[arm].append(r)
+
+    rng = random.Random(seed)
+    selected: list[dict[str, Any]] = []
+    selected_by_arm: dict[str, int] = {arm: 0 for arm in EXTERNAL_POSITIVE_ARM_PREFERENCE}
+    for arm in EXTERNAL_POSITIVE_ARM_PREFERENCE:
+        if len(selected) >= cap:
+            break
+        pool = sorted(refused_by_arm[arm], key=lambda r: r["row_key"])  # deterministic pre-shuffle order
+        rng.shuffle(pool)
+        for r in pool:
+            if len(selected) >= cap:
+                break
+            selected.append(r)
+            selected_by_arm[arm] += 1
+
+    normalized = [
+        {
+            "cell": external_cell_tag, "arm": r["arm"], "hs_index": None, "dose_multiplier": None,
+            "row_key": r["row_key"], "role": r["role"], "text": r.get("out_text", ""),
+            "well_formed": bool((r.get("grade") or {}).get("well_formed", False)),
+            "well_formed_correct": bool(r.get("well_formed_correct", False)),
+        }
+        for r in selected
+    ]
+
+    report = {
+        "source_path": str(source_path),
+        "n_source_rows": len(rows),
+        "n_tracked_rows": len(tracked),
+        "n_refused_candidates_by_arm": {arm: len(refused_by_arm[arm]) for arm in EXTERNAL_POSITIVE_ARM_PREFERENCE},
+        "seed": seed,
+        "cap": cap,
+        "n_selected": len(normalized),
+        "n_selected_by_arm": selected_by_arm,
+        "external_cell_tag": external_cell_tag,
+        "note": "planted clear_positive decoys, judge-sensitivity control only; source arm recorded per-row only in the gitignored id map",
+    }
+    return normalized, report
+
+
+def build_pool_for_family(family: str, seed: int, salt: str | None, target_shard_size: int,
+                           external_positives_path: Path | None = None,
+                           external_positives_seed: int = 20260714,
+                           external_positives_cap: int = 20,
+                           version_subdir: str = "") -> dict[str, Any]:
+    """`version_subdir`: "" (default) writes to analysis/<family>/shards/ and
+    analysis-committed/<family>/adjudication_pool_manifest.json, exactly as
+    before. A non-empty value (e.g. "v2") nests BOTH the analysis and
+    committed roots one level deeper (analysis/<family>/v2/shards/,
+    analysis-committed/<family>/v2/adjudication_pool_manifest.json) so a
+    later pool build never overwrites an earlier one for the same family,
+    while keeping the "shards" subdir name and manifest filename literally
+    what the PINNED apply_adjudication.py hardcodes (it accepts
+    --analysis-dir/--committed-dir overrides but not a filename/dirname
+    override, so versioning must happen one level up, not via a suffix on
+    those names)."""
     rows = load_family_rows(family)
     detector_v2 = _import_detector_v2_once()
     pool_mod = _load_pinned_pool_module()
@@ -244,6 +336,14 @@ def build_pool_for_family(family: str, seed: int, salt: str | None, target_shard
 
     cell_rows = {family: rows}
     core, neg_cand, pos_cand = pool_mod.build_core_and_decoy_candidates(cell_rows, cfg)
+
+    external_report = None
+    if external_positives_path is not None:
+        ext_rows, external_report = load_external_positives(
+            external_positives_path, external_positives_seed, external_positives_cap,
+            detector_v2, cfg, external_cell_tag=f"{family}_wicr_external",
+        )
+        pos_cand = pos_cand + ext_rows
 
     salt = salt or secrets.token_hex(32)
     rng = random.Random(seed)
@@ -254,8 +354,8 @@ def build_pool_for_family(family: str, seed: int, salt: str | None, target_shard
     n_shards_by_cell = pool_mod.cap_total_shards_by_cell(n_shards_by_cell, max_total_shards)
     shards = pool_mod.build_shards(remaining_core, decoys_neg, decoys_pos, n_shards_by_cell, seed, salt)
 
-    out_analysis = HERE / "analysis" / family
-    out_committed = HERE / "analysis-committed" / family
+    out_analysis = HERE / "analysis" / family / version_subdir if version_subdir else HERE / "analysis" / family
+    out_committed = HERE / "analysis-committed" / family / version_subdir if version_subdir else HERE / "analysis-committed" / family
     shards_dir = out_analysis / "shards"
     shards_dir.mkdir(parents=True, exist_ok=True)
     out_committed.mkdir(parents=True, exist_ok=True)
@@ -297,6 +397,8 @@ def build_pool_for_family(family: str, seed: int, salt: str | None, target_shard
         },
         "note": "pool build only; apply_adjudication.py (LLM judge stage) NOT run, per standing task scope",
     }
+    if external_report is not None:
+        manifest["external_positive_source"] = external_report
     manifest_path = out_committed / "adjudication_pool_manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
     return manifest
@@ -312,16 +414,42 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=20260714)  # same default as the pinned script, for provenance consistency
     ap.add_argument("--salt", default=None)
     ap.add_argument("--target-shard-size", type=int, default=700)  # same default as the pinned script
+    ap.add_argument("--external-positives-file", default=None,
+                     help="path (repo-relative or absolute) to a with-prompt runlog to draw planted "
+                          "clear_positive decoys from, for a family whose own data has none")
+    ap.add_argument("--external-positives-seed", type=int, default=20260714)
+    ap.add_argument("--external-positives-cap", type=int, default=20)
+    ap.add_argument("--version-subdir", default="",
+                     help="nest both analysis/<family>/ and analysis-committed/<family>/ one level "
+                          "deeper under this name (e.g. 'v2'), so a later pool build for the same "
+                          "family never overwrites an earlier one. 'shards' subdir name and "
+                          "'adjudication_pool_manifest.json' filename stay literal underneath, "
+                          "matching what the pinned apply_adjudication.py hardcodes.")
     args = ap.parse_args()
 
-    manifest = build_pool_for_family(args.family, args.seed, args.salt, args.target_shard_size)
+    external_path = None
+    if args.external_positives_file:
+        p = Path(args.external_positives_file)
+        external_path = p if p.is_absolute() else (REPO_ROOT / p)
+        if not external_path.is_file():
+            raise SystemExit(f"--external-positives-file not found: {external_path}")
+
+    manifest = build_pool_for_family(
+        args.family, args.seed, args.salt, args.target_shard_size,
+        external_positives_path=external_path,
+        external_positives_seed=args.external_positives_seed,
+        external_positives_cap=args.external_positives_cap,
+        version_subdir=args.version_subdir,
+    )
+    out_analysis_rel = f"analysis/{args.family}/{args.version_subdir}/shards" if args.version_subdir else f"analysis/{args.family}/shards"
+    out_committed_rel = f"analysis-committed/{args.family}/{args.version_subdir}/adjudication_pool_manifest.json" if args.version_subdir else f"analysis-committed/{args.family}/adjudication_pool_manifest.json"
     summary = {k: v for k, v in manifest.items() if k != "shards"}
     summary["shards"] = [{k: v for k, v in s.items() if k != "opaque_ids"} for s in manifest["shards"]]
     print(json.dumps(summary, indent=2), flush=True)
     print(
         f"\n[build_pool] {args.family}: wrote {manifest['n_shards']} shard(s) under "
-        f"analysis/{args.family}/shards (gitignored). Manifest committed to "
-        f"analysis-committed/{args.family}/adjudication_pool_manifest.json. "
+        f"{out_analysis_rel} (gitignored). Manifest committed to "
+        f"{out_committed_rel}. "
         "NO grading has occurred and NO id map has been unblinded.",
         flush=True,
     )

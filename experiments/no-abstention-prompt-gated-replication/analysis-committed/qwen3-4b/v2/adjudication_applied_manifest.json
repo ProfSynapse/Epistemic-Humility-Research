@@ -1,0 +1,28 @@
+{
+  "n_applied_rows": 1229,
+  "shards": {
+    "qwen3-4b_shard_00": {
+      "cell": "qwen3-4b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 0.98,
+        "clear_positive_agreement": 1.0,
+        "passed": true,
+        "shard_id": "qwen3-4b_shard_00",
+        "status": "PASS"
+      }
+    },
+    "qwen3-4b_shard_01": {
+      "cell": "qwen3-4b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "passed": true,
+        "shard_id": "qwen3-4b_shard_01",
+        "status": "PASS"
+      }
+    }
+  },
+  "voided_cells": []
+}

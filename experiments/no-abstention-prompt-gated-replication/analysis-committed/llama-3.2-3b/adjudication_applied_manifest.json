@@ -1,0 +1,63 @@
+{
+  "n_applied_rows": 0,
+  "shards": {
+    "llama-3.2-3b_shard_00": {
+      "cell": "llama-3.2-3b",
+      "cg1": {
+        "attempt": 2,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.0,
+        "passed": false,
+        "shard_id": "llama-3.2-3b_shard_00",
+        "status": "VOID_CELL_TERMINAL"
+      }
+    },
+    "llama-3.2-3b_shard_01": {
+      "cell": "llama-3.2-3b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "passed": true,
+        "shard_id": "llama-3.2-3b_shard_01",
+        "status": "PASS"
+      }
+    },
+    "llama-3.2-3b_shard_02": {
+      "cell": "llama-3.2-3b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "passed": true,
+        "shard_id": "llama-3.2-3b_shard_02",
+        "status": "PASS"
+      }
+    },
+    "llama-3.2-3b_shard_03": {
+      "cell": "llama-3.2-3b",
+      "cg1": {
+        "attempt": 2,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.0,
+        "passed": false,
+        "shard_id": "llama-3.2-3b_shard_03",
+        "status": "VOID_CELL_TERMINAL"
+      }
+    },
+    "llama-3.2-3b_shard_04": {
+      "cell": "llama-3.2-3b",
+      "cg1": {
+        "attempt": 2,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.0,
+        "passed": false,
+        "shard_id": "llama-3.2-3b_shard_04",
+        "status": "VOID_CELL_TERMINAL"
+      }
+    }
+  },
+  "voided_cells": [
+    "llama-3.2-3b"
+  ]
+}
