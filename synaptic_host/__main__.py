@@ -1,28 +1,51 @@
-"""Bootstrap the exact host runtime before importing engine-dependent CLI code."""
+"""Prepare neutral ingress before entering the isolated provider launcher."""
 
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
-from .launcher import ensure_and_reexec
+from .cli import (
+    TrainingRunIngressV1,
+    bootstrap_unavailable_result_v1,
+    dispatch_validated_training_run_v1,
+    emit_training_run_result_v1,
+    prepare_training_run_ingress_v1,
+)
 
 
 def main(argv: list[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
     project_root = Path(__file__).resolve().parents[1]
     engine_root = project_root / "synaptic-tuner"
-    child = ensure_and_reexec(
-        project_root=project_root,
-        engine_root=engine_root,
-        argv=arguments,
+    prepared = prepare_training_run_ingress_v1(
+        arguments, project_root=project_root, engine_root=engine_root
     )
+    if type(prepared) is not TrainingRunIngressV1:
+        return emit_training_run_result_v1(prepared)
+    if prepared.provider_ref == "docker":
+        return emit_training_run_result_v1(
+            dispatch_validated_training_run_v1(prepared)
+        )
+    try:
+        from .launcher import ensure_and_reexec
+
+        child = ensure_and_reexec(
+            project_root=project_root,
+            engine_root=engine_root,
+            argv=arguments,
+            ingress_digest=prepared.envelope_digest,
+            contract_identity_digest=prepared.contract_identity_digest,
+        )
+    except BaseException:
+        return emit_training_run_result_v1(
+            bootstrap_unavailable_result_v1(prepared)
+        )
     if child is not None:
         return child
-
-    from .cli import main as cli_main
-
-    return cli_main(arguments)
+    return emit_training_run_result_v1(
+        dispatch_validated_training_run_v1(prepared)
+    )
 
 
 if __name__ == "__main__":
