@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-28T20:33:20Z'
+updated_at: '2026-08-29T23:00:19Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -1824,6 +1824,36 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 079-checkpoint
+  at: '2026-08-29T23:00:19Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'No-abstention-prompt-gated-replication falsifier adjudicated (preliminary,
+    formal resolve after all five families): qwen3-4b two-stage judge lane closed
+    with decoys caught (0.98-1.00 both types), judges found abstention ONLY in gated
+    arm 21/185 confabs vs 0 everywhere else, lift 11.35 points CI 6.8-15.9 excluding
+    zero, so FALSIFIER DOES NOT FIRE and G1 fails the 0.4459 floor: middle-band attenuated
+    survival, the PI prediction correct and orchestrator survives-strong call wrong.
+    G2 NOT-ADJUDICABLE (dosed-N 5 below floor 52), G4 PASS (random lift exactly 0).
+    detector_v2 caught 0 of the 21 judged abstentions, confirming the pre-stated string-undercount
+    delta. qwen3.5-4b GPU run complete with a massive instruction-free stage-1 effect,
+    no_op 69/1332 to gated 572/1332 detector-refused with 516 tripping the strict
+    string rule, known cost 1/360, G3 descriptive. Llama judge cell VOID_CELL_TERMINAL
+    per the registered cascade, judges rejected all 6 native detector-refused decoys
+    twice while catching 100 percent clear negatives, so G1b NOT-ADJUDICABLE and llama
+    stage-1 lift plus 3.3 points likely overestimates true abstention. First builder
+    na-harness stopped as zombie after its monitor died; replacement na-harness2 spawned,
+    corrected my wrong QH same-family claim, decoy source re-ruled to qwen3-4b-l34-placebo-seed-census
+    wicr_decoy_source. Gemma extract running in rebuilt tf550 container with a symlink
+    bind-mount fix; mistral queued; qwen3.5 judge lane approved and running CPU-side.
+    Paper 5 direction: middle band means instruction-amplified qualifications at the
+    three mapped passages plus outcome-independent methods disclosure.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -2235,3 +2265,8 @@ _No summary yet._
 - at: `2026-08-28T20:33:20Z`
 - kind: `checkpoint`
 - summary: HF exhaust backfill batch 3 uploaded and recorded (15 cells, docs/public-artifacts.md at cfcd7235); 35 of 63 done, 28 tiny cells parked as batch 4 pending re-confirm. No-abstention-prompt-gated-replication run mid-flight all-local per PI ruling: qwen3-4b all three arms complete 443/443 with healthy JSON output; grade stage initially crashed on a sys.modules grader collision, fixed harness-side in all four family scripts with pinned detector_v2 untouched; regrade shows stage-1 abstention zero in every arm as the amendment anticipated, and a lead diagnostic keyword sweep finds essentially no abstention-like answer text either (2 to 4 rows per arm of 443), trending toward the falsifier pending the registered two-stage verdict. New descriptive signal: gated write shifts stated response_confidence hard (38 rows at or below 0.5 and 80 at 0.7 vs zero and one in no_op and random), direction-specific, so the write installs measurable doubt without producing the abstention act. G2 dosed-N is 5, far below the pre-stated floor of 52, so G2 will report NOT-ADJUDICABLE. Llama generating now with crash monitor armed; gemma tf550 container rebuilt and verified as image 0f4b6fc5193f. Judge lane awaiting PI approval; qwen3-4b adjudication pool build directed CPU-side meanwhile.
+### 079-checkpoint - Checkpoint
+
+- at: `2026-08-29T23:00:19Z`
+- kind: `checkpoint`
+- summary: No-abstention-prompt-gated-replication falsifier adjudicated (preliminary, formal resolve after all five families): qwen3-4b two-stage judge lane closed with decoys caught (0.98-1.00 both types), judges found abstention ONLY in gated arm 21/185 confabs vs 0 everywhere else, lift 11.35 points CI 6.8-15.9 excluding zero, so FALSIFIER DOES NOT FIRE and G1 fails the 0.4459 floor: middle-band attenuated survival, the PI prediction correct and orchestrator survives-strong call wrong. G2 NOT-ADJUDICABLE (dosed-N 5 below floor 52), G4 PASS (random lift exactly 0). detector_v2 caught 0 of the 21 judged abstentions, confirming the pre-stated string-undercount delta. qwen3.5-4b GPU run complete with a massive instruction-free stage-1 effect, no_op 69/1332 to gated 572/1332 detector-refused with 516 tripping the strict string rule, known cost 1/360, G3 descriptive. Llama judge cell VOID_CELL_TERMINAL per the registered cascade, judges rejected all 6 native detector-refused decoys twice while catching 100 percent clear negatives, so G1b NOT-ADJUDICABLE and llama stage-1 lift plus 3.3 points likely overestimates true abstention. First builder na-harness stopped as zombie after its monitor died; replacement na-harness2 spawned, corrected my wrong QH same-family claim, decoy source re-ruled to qwen3-4b-l34-placebo-seed-census wicr_decoy_source. Gemma extract running in rebuilt tf550 container with a symlink bind-mount fix; mistral queued; qwen3.5 judge lane approved and running CPU-side. Paper 5 direction: middle band means instruction-amplified qualifications at the three mapped passages plus outcome-independent methods disclosure.
