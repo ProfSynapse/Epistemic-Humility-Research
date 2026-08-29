@@ -11,7 +11,7 @@ _EXPORTS = {
     "ModalTrainingIntentV1": (".modal_resolver", "ModalTrainingIntentV1"),
     "ScopedGitRemoteReader": (".security", "ScopedGitRemoteReader"),
     "SqliteTrainingRepository": (".sqlite_repository", "SqliteTrainingRepository"),
-    "StrictModalTrainingResolver": (".modal_resolver", "StrictModalTrainingResolver"),
+    "ModalTrainingResolverV1": (".modal_resolver", "ModalTrainingResolverV1"),
 }
 
 __all__ = tuple(_EXPORTS)

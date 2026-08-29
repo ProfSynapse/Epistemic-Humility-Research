@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import stat
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -12,13 +13,18 @@ from typing import Mapping, Protocol
 
 from synaptic_tuner.api.v1 import (
     ArtifactPolicy,
+    AuthenticatedSourceEvidenceV1,
     CanonicalDocument,
+    ExecutionSourceV1,
     GitCliLocalSourceInspector,
     PathRef,
     ProjectContext,
     ResolvedTrainingComponents,
     ResourceSpec,
     RuntimeSpec,
+    SourceLock,
+    TrainingInputV1,
+    TrainingMethodV1,
     TrainingRequest,
     TrainingResolutionError,
 )
@@ -29,16 +35,16 @@ from synaptic_tuner.api.v1.modal import (
     ModalPlanContextV1,
     ModalProviderProfileV1,
     ModalRuntimeLockV1,
+    VerifiedModalDeploymentIdentityV1,
 )
 
-_SFT_KEYS = {
-    "batch_size", "gradient_accumulation_steps", "learning_rate",
-    "max_steps", "num_epochs", "max_seq_length", "seed", "save_steps",
-    "save_total_limit", "lora_rank", "lora_alpha", "lora_dropout",
-    "lora_target_modules", "use_dora", "use_rslora", "init_lora_weights",
-    "split_dataset",
-}
-_REQUIRED_SFT_KEYS = _SFT_KEYS - {"max_steps", "num_epochs"}
+_PROVENANCE_KEYS = (
+    "training_input_digest",
+    "training_contract_identity_digest",
+    "training_source_sha256",
+    "training_ingress_digest",
+    "provider_policy_digest",
+)
 
 
 def _closed(value: object, expected: set[str], label: str) -> dict[str, object]:
@@ -75,12 +81,130 @@ def _read_json(path: Path, *, maximum_bytes: int = 1024 * 1024) -> dict[str, obj
     return value
 
 
-def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+def _digest(value: object, label: str) -> str:
+    if (
+        type(value) is not str
+        or len(value) != 64
+        or any(character not in "0123456789abcdef" for character in value)
+    ):
+        raise ValueError(f"{label} must be a lowercase SHA-256 digest")
+    return value
+
+
+@dataclass(frozen=True, slots=True)
+class _DatasetSnapshotV1:
+    identity: tuple[int, int, int, int, int, int, int, int]
+    digest: str
+
+
+def _file_identity(metadata: os.stat_result) -> tuple[int, int, int, int, int, int, int, int]:
+    return (
+        metadata.st_dev, metadata.st_ino, metadata.st_mode,
+        getattr(metadata, "st_uid", 0), getattr(metadata, "st_gid", 0),
+        metadata.st_nlink, metadata.st_size, metadata.st_mtime_ns,
+    )
+
+
+def _is_reparse(metadata: os.stat_result) -> bool:
+    return bool(
+        getattr(metadata, "st_file_attributes", 0)
+        & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+    )
+
+
+def _closed_resolution_failure() -> None:
+    raise TrainingResolutionError("Modal training resolution failed") from None
+
+
+def _require_no_reparse_components(path: Path) -> None:
+    selected = path.absolute()
+    current = Path(selected.anchor)
+    for component in selected.parts[1:]:
+        current = current / component
+        metadata = current.lstat()
+        if current.is_symlink() or _is_reparse(metadata):
+            raise OSError
+
+
+def _dataset_snapshot(path: Path) -> _DatasetSnapshotV1:
+    """Hash the exact opened file and prove its stable path/descriptor identity."""
+
+    descriptor: int | None = None
+    result: _DatasetSnapshotV1 | None = None
+    failed = False
+    try:
+        _require_no_reparse_components(path)
+        before = path.lstat()
+        if not stat.S_ISREG(before.st_mode) or _is_reparse(before):
+            raise OSError
+        flags = os.O_RDONLY
+        flags |= getattr(os, "O_BINARY", 0)
+        flags |= getattr(os, "O_NOINHERIT", 0)
+        flags |= getattr(os, "O_CLOEXEC", 0)
+        flags |= getattr(os, "O_NOFOLLOW", 0)
+        descriptor = os.open(path, flags)
+        opened = os.fstat(descriptor)
+        baseline = _file_identity(before)
+        if (
+            not stat.S_ISREG(opened.st_mode)
+            or _is_reparse(opened)
+            or _file_identity(opened) != baseline
+        ):
+            raise OSError
+        digest = hashlib.sha256()
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
             digest.update(chunk)
-    return digest.hexdigest()
+        after_descriptor = os.fstat(descriptor)
+        _require_no_reparse_components(path)
+        after_path = path.lstat()
+        if (
+            _file_identity(after_descriptor) != baseline
+            or _file_identity(after_path) != baseline
+            or _is_reparse(after_path)
+        ):
+            raise OSError
+        result = _DatasetSnapshotV1(baseline, digest.hexdigest())
+    except Exception:
+        failed = True
+    finally:
+        if descriptor is not None:
+            try:
+                os.close(descriptor)
+            except Exception:
+                failed = True
+    if failed or result is None:
+        _closed_resolution_failure()
+    return result
+
+
+def _resolve_dataset(context: ProjectContext, reference: str) -> Path:
+    if type(reference) is not str or not reference.startswith("project://"):
+        raise TrainingResolutionError("Modal v1 requires a project:// dataset")
+    relative = reference[len("project://"):]
+    if not relative:
+        raise TrainingResolutionError("dataset reference is empty")
+    components = relative.split("/")
+    lexical = context.project_root.joinpath(*components)
+    resolved: Path | None = None
+    failed = False
+    try:
+        _require_no_reparse_components(lexical)
+        resolved = PathRef.parse(reference).resolve(
+            context, access="read", cloud=True, external_paths="deny"
+        )
+        if (
+            resolved != lexical.resolve(strict=False)
+            or not resolved.is_relative_to(context.project_root.resolve(strict=False))
+        ):
+            raise TrainingResolutionError("dataset must remain beneath the project root")
+    except Exception:
+        failed = True
+    if failed or resolved is None:
+        _closed_resolution_failure()
+    return resolved
 
 
 @dataclass(frozen=True, slots=True)
@@ -253,138 +377,384 @@ class SourceFinalizer(Protocol):
     def finalize(self, source_lock, *, context, deployment, audience_ref): ...
 
 
-class StrictModalTrainingResolver:
-    """Resolve one strict project-local SFT input into immutable engine inputs."""
+@dataclass(frozen=True, slots=True)
+class _ResolverBaselineV1:
+    training_input: TrainingInputV1
+    input_document: str
+    input_digest: str
+    contract_identity_digest: str
+    source_sha256: str
+    ingress_digest: str
+    provider_authority: object
+    config: object
+    state: ModalProviderStateV1
+    journal: object
+    policy: object
+    policy_digest: str
+    authority_document: bytes
+    selection_identity: ModalDeploymentSelectionV1
+    selection: ModalDeploymentSelectionV1
+    selection_document: bytes
+    intent: ModalTrainingIntentV1
+    intent_values: tuple[object, ...]
+    inspector: object
+    finalizer: object
+
+
+class ModalTrainingResolverV1:
+    """Compile one authenticated provider-neutral training input for Modal."""
+
+    __slots__ = (
+        "training_input", "input_type", "input_digest", "contract_identity_digest",
+        "ingress_digest", "source_sha256", "provider_authority", "intent",
+        "finalizer", "source_inspector", "_baseline",
+    )
 
     def __init__(
         self,
         *,
-        state: ModalProviderStateV1,
+        training_input: TrainingInputV1,
+        input_type: type[TrainingInputV1],
+        input_digest: str,
+        contract_identity_digest: str,
+        ingress_digest: str,
+        source_sha256: str,
+        provider_authority,
         intent: ModalTrainingIntentV1,
         finalizer: SourceFinalizer,
         source_inspector=None,
     ) -> None:
-        self.state = state
+        from .modal_provider import ModalProviderAuthorityV1
+
+        if input_type is not TrainingInputV1 or type(training_input) is not TrainingInputV1:
+            raise TypeError("exact released TrainingInputV1 contract is required")
+        if type(provider_authority) is not ModalProviderAuthorityV1:
+            raise TypeError("exact ModalProviderAuthorityV1 is required")
+        if type(intent) is not ModalTrainingIntentV1:
+            raise TypeError("exact ModalTrainingIntentV1 is required")
+        canonical = training_input.canonical_json()
+        if training_input.input_digest() != _digest(input_digest, "training_input_digest"):
+            raise ValueError("training input digest differs from its canonical value")
+        self.training_input = training_input
+        self.input_type = input_type
+        self.input_digest = input_digest
+        self.contract_identity_digest = _digest(
+            contract_identity_digest, "training_contract_identity_digest"
+        )
+        self.ingress_digest = _digest(ingress_digest, "training_ingress_digest")
+        self.source_sha256 = _digest(source_sha256, "training_source_sha256")
+        self.provider_authority = provider_authority
         self.intent = intent
         self.finalizer = finalizer
         self.source_inspector = source_inspector or GitCliLocalSourceInspector()
+        authority_document = _canonical({
+            "config": provider_authority.config.to_dict(),
+            "state": provider_authority.state.to_dict(),
+            "journal": provider_authority.journal.to_dict(),
+        })
+        selection = ModalDeploymentSelectionV1.from_dict(
+            provider_authority.state.selection.to_dict()
+        )
+        self._baseline = _ResolverBaselineV1(
+            training_input=training_input,
+            input_document=canonical,
+            input_digest=input_digest,
+            contract_identity_digest=self.contract_identity_digest,
+            source_sha256=self.source_sha256,
+            ingress_digest=self.ingress_digest,
+            provider_authority=provider_authority,
+            config=provider_authority.config,
+            state=provider_authority.state,
+            journal=provider_authority.journal,
+            policy=provider_authority.training,
+            policy_digest=provider_authority.training.digest,
+            authority_document=authority_document,
+            selection_identity=provider_authority.state.selection,
+            selection=selection,
+            selection_document=_canonical(selection.to_dict()),
+            intent=intent,
+            intent_values=tuple(
+            getattr(intent, name)
+            for name in (
+                "project_ref", "run_id", "created_at", "key_ref", "quote_expires_at",
+                "maximum_cost_minor_units", "currency", "effect_id", "artifact_slot_ref",
+                "invocation_nonce", "generation",
+            )
+            ),
+            inspector=self.source_inspector,
+            finalizer=finalizer,
+        )
+
+    def _check_baselines(self) -> None:
+        from .modal_provider import ModalProviderAuthorityV1
+
+        valid = False
+        try:
+            baseline = self._baseline
+            valid = (
+                type(baseline) is _ResolverBaselineV1
+                and self.input_type is TrainingInputV1
+                and type(self.training_input) is TrainingInputV1
+                and self.training_input is baseline.training_input
+                and self.training_input.canonical_json() == baseline.input_document
+                and self.training_input.input_digest() == baseline.input_digest
+                and type(self.input_digest) is str
+                and self.input_digest == baseline.input_digest
+                and type(self.contract_identity_digest) is str
+                and self.contract_identity_digest == baseline.contract_identity_digest
+                and type(self.source_sha256) is str
+                and self.source_sha256 == baseline.source_sha256
+                and type(self.ingress_digest) is str
+                and self.ingress_digest == baseline.ingress_digest
+                and type(self.provider_authority) is ModalProviderAuthorityV1
+                and self.provider_authority is baseline.provider_authority
+                and self.provider_authority.config is baseline.config
+                and self.provider_authority.state is baseline.state
+                and self.provider_authority.journal is baseline.journal
+                and self.provider_authority.training is baseline.policy
+                and self.provider_authority.training.digest == baseline.policy_digest
+                and _canonical({
+                    "config": self.provider_authority.config.to_dict(),
+                    "state": self.provider_authority.state.to_dict(),
+                    "journal": self.provider_authority.journal.to_dict(),
+                }) == baseline.authority_document
+                and self.provider_authority.state.selection is baseline.selection_identity
+                and _canonical(
+                    self.provider_authority.state.selection.to_dict()
+                ) == baseline.selection_document
+                and self.intent is baseline.intent
+                and tuple(
+                    getattr(self.intent, name)
+                    for name in (
+                        "project_ref", "run_id", "created_at", "key_ref",
+                        "quote_expires_at", "maximum_cost_minor_units", "currency",
+                        "effect_id", "artifact_slot_ref", "invocation_nonce", "generation",
+                    )
+                ) == baseline.intent_values
+                and self.source_inspector is baseline.inspector
+                and self.finalizer is baseline.finalizer
+            )
+        except Exception:
+            valid = False
+        if not valid:
+            raise TrainingResolutionError("resolver authority changed during resolution")
 
     @staticmethod
-    def load_document(context: ProjectContext, path_ref: str) -> CanonicalDocument:
-        path = PathRef.parse(path_ref).resolve(
-            context, from_cli=True, access="read", cloud=True, external_paths="deny"
-        )
-        if not path.resolve().is_relative_to(context.config_root.resolve()):
-            raise ValueError("training configuration must live below the host config root")
-        return CanonicalDocument.from_mapping(_read_json(path))
+    def _clone_lock(source_lock: SourceLock) -> SourceLock:
+        clone: SourceLock | None = None
+        try:
+            document = json.loads(source_lock.canonical_bytes.decode("utf-8"))
+            if type(document) is dict:
+                clone = SourceLock.from_dict(document)
+        except Exception:
+            clone = None
+        if clone is None:
+            _closed_resolution_failure()
+        return clone
 
     @staticmethod
-    def _request(value: Mapping[str, object]) -> tuple[dict[str, object], ArtifactPolicy]:
-        root = _closed(
-            value,
-            {"schema_version", "method", "provider_profile", "model", "dataset", "sft", "artifacts"},
-            "training input",
-        )
-        if root["schema_version"] != "synaptic-training-input/v1" or root["method"] != "sft":
-            raise ValueError("unsupported training input schema or method")
-        _text(root["provider_profile"], "provider_profile")
-        if not isinstance(root["model"], Mapping):
-            raise ValueError("model contains missing or unknown fields")
-        model = dict(root["model"])
-        required_model = {"ref", "revision", "tokenizer_revision"}
-        if not required_model.issubset(model) or not set(model).issubset(
-            required_model | {"load_in_4bit"}
-        ):
-            raise ValueError("model contains missing or unknown fields")
-        for name in required_model:
-            _text(model[name], f"model.{name}")
-        load_in_4bit = model.setdefault("load_in_4bit", False)
-        if not isinstance(load_in_4bit, bool):
-            raise ValueError("model.load_in_4bit must be a boolean")
-        root["model"] = model
-        dataset = _closed(root["dataset"], {"ref"}, "dataset")
-        dataset_ref = _text(dataset["ref"], "dataset.ref")
-        if not dataset_ref.startswith("project://"):
-            raise ValueError("Modal v1 requires a project:// dataset")
-        sft = dict(root["sft"]) if isinstance(root["sft"], Mapping) else {}
-        if not _REQUIRED_SFT_KEYS.issubset(sft) or not set(sft).issubset(_SFT_KEYS):
-            raise ValueError("SFT hyperparameters are missing required keys or contain unknown keys")
-        if ("max_steps" in sft) == ("num_epochs" in sft):
-            raise ValueError("SFT requires exactly one of max_steps or num_epochs")
-        if not isinstance(sft["lora_target_modules"], list) or not sft["lora_target_modules"]:
-            raise ValueError("lora_target_modules must be a nonempty list")
-        artifacts = _closed(root["artifacts"], {"required_kinds", "retain_checkpoints"}, "artifacts")
-        if not isinstance(artifacts["required_kinds"], list):
-            raise ValueError("artifact required_kinds must be a list")
-        policy = ArtifactPolicy(
-            tuple(artifacts["required_kinds"]), artifacts["retain_checkpoints"]
-        )
-        return root, policy
+    def _require_lock_baseline(
+        source_lock: SourceLock, canonical_bytes: bytes, binding: object,
+    ) -> None:
+        valid = False
+        try:
+            valid = (
+                type(source_lock) is SourceLock
+                and source_lock.canonical_bytes == canonical_bytes
+                and source_lock.binding == binding
+            )
+        except Exception:
+            valid = False
+        if not valid:
+            raise TrainingResolutionError("source finalizer changed the training provenance")
+
+    @staticmethod
+    def _canonical_resolution(
+        value: object,
+        *,
+        source_lock: SourceLock,
+        selection_document: bytes,
+    ) -> ModalExecutionSourceResolutionV1:
+        result: ModalExecutionSourceResolutionV1 | None = None
+        try:
+            if type(value) is not ModalExecutionSourceResolutionV1:
+                raise TypeError
+            if (
+                type(value.execution_source) is not ExecutionSourceV1
+                or type(value.deployment) is not VerifiedModalDeploymentIdentityV1
+                or type(value.deployment.selection) is not ModalDeploymentSelectionV1
+            ):
+                raise TypeError
+            deployment = VerifiedModalDeploymentIdentityV1.from_dict(
+                value.deployment.to_dict()
+            )
+            execution = ExecutionSourceV1.from_dict(value.execution_source.to_dict())
+            if _canonical(deployment.selection.to_dict()) != selection_document:
+                raise ValueError
+            evidence = execution.source_evidence
+            if (
+                type(evidence) is not AuthenticatedSourceEvidenceV1
+                or evidence.source_lock_binding != source_lock.binding
+                or not evidence.binds(source_lock)
+                or execution.project_source.location.canonical_url
+                != source_lock.project_source.location.canonical_url
+                or execution.project_source.commit.lower()
+                != source_lock.project_source.commit.lower()
+                or execution.engine_source.location.canonical_url
+                != source_lock.engine_source.location.canonical_url
+                or execution.engine_source.commit.lower()
+                != source_lock.engine_source.commit.lower()
+                or execution.engine_source.gitlink_commit
+                != source_lock.engine_source.gitlink_commit
+                or execution.engine_submodule_path
+                != source_lock.engine_source.submodule_path
+            ):
+                raise ValueError
+            result = ModalExecutionSourceResolutionV1(execution, deployment)
+        except Exception:
+            result = None
+        if result is None:
+            raise TrainingResolutionError(
+                "source finalizer returned an unauthenticated resolution"
+            ) from None
+        return result
 
     def resolve(self, request: TrainingRequest, *, context: ProjectContext) -> ResolvedTrainingComponents:
-        if not isinstance(request, TrainingRequest) or context.mode != "host":
+        if type(request) is not TrainingRequest or type(context) is not ProjectContext or context.mode != "host":
             raise TypeError("canonical training request and host context are required")
-        raw, artifact_policy = self._request(request.document.to_dict())
-        if raw["provider_profile"] != self.state.profile.profile:
-            raise TrainingResolutionError("training input selected a different provider profile")
-        dataset_ref = raw["dataset"]["ref"]
-        dataset_path = PathRef.parse(dataset_ref).resolve(
-            context, access="read", cloud=True, external_paths="deny"
-        )
-        if not dataset_path.is_file() or dataset_path.is_symlink():
-            raise TrainingResolutionError("dataset must be a regular project file")
-        inspected = self.source_inspector.inspect(context=context)
+        self._check_baselines()
+        baseline = self._baseline
+        expected_request = CanonicalDocument.from_mapping(baseline.training_input.to_dict())
+        if (
+            type(request.document) is not CanonicalDocument
+            or request.document.canonical_json != expected_request.canonical_json
+        ):
+            raise TrainingResolutionError("request differs from the authenticated training input")
+        if baseline.training_input.method is not TrainingMethodV1.SFT:
+            raise TrainingResolutionError("Modal v1 supports only SFT")
+        dataset_ref = baseline.training_input.dataset.ref
+        self._check_baselines()
+        dataset_path = _resolve_dataset(context, dataset_ref)
+        dataset_baseline = _dataset_snapshot(dataset_path)
+        self._check_baselines()
+        inspected = None
+        inspector_failed = False
+        try:
+            inspected = baseline.inspector.inspect(context=context)
+        except Exception:
+            inspector_failed = True
+        if inspector_failed:
+            _closed_resolution_failure()
+        self._check_baselines()
+        if type(inspected) is not SourceLock:
+            raise TrainingResolutionError("source inspector returned an invalid source lock")
+        if _dataset_snapshot(dataset_path) != dataset_baseline:
+            raise TrainingResolutionError("dataset changed during source inspection")
+        self._check_baselines()
+        configuration = {
+            "training_input_digest": baseline.input_digest,
+            "training_contract_identity_digest": baseline.contract_identity_digest,
+            "training_source_sha256": baseline.source_sha256,
+            "training_ingress_digest": baseline.ingress_digest,
+            "provider_policy_digest": baseline.policy_digest,
+        }
+        if tuple(configuration) != _PROVENANCE_KEYS:
+            raise TrainingResolutionError("training provenance configuration is malformed")
         locked = replace(
             inspected,
-            run_id=self.intent.run_id,
-            created_at=self.intent.created_at,
-            project={"id": self.intent.project_ref},
-            configuration={"request_sha256": hashlib.sha256(request.document.canonical_json.encode()).hexdigest()},
+            run_id=baseline.intent.run_id,
+            created_at=baseline.intent.created_at,
+            project={"id": baseline.intent.project_ref},
+            configuration=configuration,
         )
-        audience = f"{self.intent.project_ref}/{self.intent.run_id}"
-        finalized: ModalExecutionSourceResolutionV1 = self.finalizer.finalize(
-            locked, context=context, deployment=self.state.selection,
-            audience_ref=audience,
+        sealed_lock = self._clone_lock(locked)
+        sealed_lock_bytes = sealed_lock.canonical_bytes
+        sealed_binding = sealed_lock.binding
+        presented_lock = self._clone_lock(sealed_lock)
+        presented_selection = ModalDeploymentSelectionV1.from_dict(
+            baseline.selection.to_dict()
+        )
+        audience = f"{baseline.intent.project_ref}/{baseline.intent.run_id}"
+        self._check_baselines()
+        finalized = None
+        finalizer_failed = False
+        try:
+            finalized = baseline.finalizer.finalize(
+                presented_lock, context=context, deployment=presented_selection,
+                audience_ref=audience,
+            )
+        except Exception:
+            finalizer_failed = True
+        if finalizer_failed:
+            _closed_resolution_failure()
+        self._check_baselines()
+        self._require_lock_baseline(presented_lock, sealed_lock_bytes, sealed_binding)
+        selection_unchanged = False
+        try:
+            selection_unchanged = (
+                _canonical(presented_selection.to_dict())
+                == baseline.selection_document
+            )
+        except Exception:
+            selection_unchanged = False
+        if not selection_unchanged:
+            raise TrainingResolutionError("source finalizer changed the deployment selection")
+        if _dataset_snapshot(dataset_path) != dataset_baseline:
+            raise TrainingResolutionError("dataset changed during source finalization")
+        self._check_baselines()
+        finalized = self._canonical_resolution(
+            finalized, source_lock=sealed_lock,
+            selection_document=baseline.selection_document,
         )
         project_revision = finalized.execution_source.project_source.commit.lower()
+        hyperparameters = baseline.training_input.hyperparameters.to_dict()
+        hyperparameters.pop("schema_version")
+        duration = hyperparameters.pop("duration")
+        if (duration["max_steps"] is None) == (duration["num_epochs"] is None):
+            raise TrainingResolutionError("SFT duration must contain exactly one limit")
+        hyperparameters[
+            "max_steps" if duration["max_steps"] is not None else "num_epochs"
+        ] = duration["max_steps"] if duration["max_steps"] is not None else duration["num_epochs"]
         resolved_config = CanonicalDocument.from_mapping(
             {
                 "schema_version": "synaptic-sft-config/v1",
                 "method": "sft",
-                "model": raw["model"],
+                "model": {
+                    **baseline.training_input.model.to_dict(),
+                    "load_in_4bit": baseline.policy.load_in_4bit,
+                },
                 "dataset": {
                     "ref": dataset_ref,
                     "revision": project_revision,
-                    "content_digest": _sha256_file(dataset_path),
+                    "content_digest": dataset_baseline.digest,
                 },
-                "sft": raw["sft"],
+                "sft": hyperparameters,
             }
         )
         resources = ResourceSpec(
-            self.state.selection.accelerator, 1,
-            self.state.selection.timeout_seconds,
+            baseline.selection.accelerator, 1, baseline.selection.timeout_seconds,
         )
         execution_context = ModalPlanContextV1(
-            project_ref=self.intent.project_ref,
-            profile=self.state.profile.profile,
+            project_ref=baseline.intent.project_ref,
+            profile=baseline.state.profile.profile,
             deployment=finalized.deployment,
-            binding=self.state.binding,
-            control_volume_id=self.state.control_volume_id,
-            artifact_volume_id=self.state.artifact_volume_id,
-            key_ref=self.intent.key_ref,
-            quote_digest=self.intent.quote_digest,
-            quote_expires_at=self.intent.quote_expires_at,
-            maximum_cost_minor_units=self.intent.maximum_cost_minor_units,
-            currency=self.intent.currency,
-            effect_id=self.intent.effect_id,
-            effect_key=self.intent.run_id,
-            artifact_slot_ref=self.intent.artifact_slot_ref,
-            invocation_nonce=self.intent.invocation_nonce,
-            generation=self.intent.generation,
+            binding=baseline.state.binding,
+            control_volume_id=baseline.state.control_volume_id,
+            artifact_volume_id=baseline.state.artifact_volume_id,
+            key_ref=baseline.intent.key_ref,
+            quote_digest=baseline.intent.quote_digest,
+            quote_expires_at=baseline.intent.quote_expires_at,
+            maximum_cost_minor_units=baseline.intent.maximum_cost_minor_units,
+            currency=baseline.intent.currency,
+            effect_id=baseline.intent.effect_id,
+            effect_key=baseline.intent.run_id,
+            artifact_slot_ref=baseline.intent.artifact_slot_ref,
+            invocation_nonce=baseline.intent.invocation_nonce,
+            generation=baseline.intent.generation,
             resource_digest=ModalPlanContextV1.digest_resources(resources),
         )
         runtime = ModalRuntimeLockV1.packaged()
-        return ResolvedTrainingComponents(
+        result = ResolvedTrainingComponents(
             execution_source=finalized.execution_source,
             execution_context=CanonicalDocument.from_mapping(execution_context.to_dict()),
             resolved_config=resolved_config,
@@ -394,5 +764,12 @@ class StrictModalTrainingResolver:
                 runtime.python_version,
             ),
             resources=resources,
-            artifact_policy=artifact_policy,
+            artifact_policy=ArtifactPolicy(
+                baseline.training_input.artifacts.required_kinds,
+                baseline.training_input.artifacts.retain_checkpoints,
+            ),
         )
+        if _dataset_snapshot(dataset_path) != dataset_baseline:
+            raise TrainingResolutionError("dataset changed before resolution return")
+        self._check_baselines()
+        return result
