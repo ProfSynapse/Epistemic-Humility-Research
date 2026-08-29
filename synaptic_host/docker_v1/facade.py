@@ -12,7 +12,8 @@ def _install_facade():
     from synaptic_host.bundle_io_v1.model import digest_v1
     from synaptic_host.docker_v1.capability_assembly import (
         DockerCapabilityCleanupFailureV1, DockerCapabilityCleanupResultV1,
-        DockerCapabilityCleanupStatusV1, DockerCapabilityOwnershipV1,
+        DockerCapabilityCleanupStatusV1,
+        DockerCapabilityOwnershipHandoffV1,
     )
     from tuner.execution.coordinator_v1.model import WorkflowRecordV1
     from tuner.execution.foundation_v2.identities import EffectKind
@@ -248,17 +249,17 @@ def _install_facade():
         __slots__ = ("state_id", "original_wrapper_ref", "original_anchor",
                      "condition", "state", "active_total",
                      "active_by_thread", "close_owner", "terminal", "runtime",
-                     "cell", "ownership")
+                     "handoff", "handoff_pin")
 
         def __init__(self, state_id, original_wrapper_ref, original_anchor,
-                     runtime, cell):
+                     runtime, handoff):
             self.state_id, self.condition = state_id, Condition(Lock())
             object.__setattr__(self, "original_wrapper_ref", original_wrapper_ref)
             object.__setattr__(self, "original_anchor", original_anchor)
             self.state, self.active_total = LifecycleState.OPEN, 0
             self.active_by_thread, self.close_owner = {}, None
-            self.terminal, self.runtime, self.cell = None, runtime, cell
-            self.ownership = None
+            self.terminal, self.runtime = None, runtime
+            self.handoff = self.handoff_pin = handoff
 
         def __setattr__(self, name, value):
             if name in {"original_wrapper_ref", "original_anchor"}:
@@ -288,7 +289,7 @@ def _install_facade():
     def orphan_close(record):
         if type(record) is not _LifecycleStateRecord:
             return
-        ownership = None
+        handoff = None
         try:
             with record.condition:
                 if record.state in {LifecycleState.CLOSED,
@@ -296,19 +297,17 @@ def _install_facade():
                     return
                 if record.active_total or record.close_owner is not None:
                     return
-                if type(record.cell.ownership) is not DockerCapabilityOwnershipV1:
-                    return
-                if record.ownership is None:
-                    record.ownership = record.cell.ownership
-                elif record.ownership is not record.cell.ownership:
+                if (type(record.handoff)
+                        is not DockerCapabilityOwnershipHandoffV1
+                        or record.handoff._is_handle_owning() is not True):
                     return
                 record.state = LifecycleState.CLOSING
                 record.close_owner = object()
-                ownership = record.ownership
+                handoff = record.handoff
         except BaseException:
             return
-        if ownership is not None:
-            cleanup_claim(record, ownership)
+        if handoff is not None:
+            cleanup_claim(record, handoff)
 
     def register_wrapper(wrapper, record_builder):
         wrapper_id, state_id, anchor = id(wrapper), object(), object()
@@ -417,48 +416,28 @@ def _install_facade():
         def __init_subclass__(cls, **_kwargs):
             raise TypeError("Docker private runtime adapter is final")
 
-    assignment_lock = Lock()
-
-    class PrivateAttachmentCell(metaclass=_SealedType):
-        __slots__ = ("ownership",)
-
-        def __init__(self):
-            object.__setattr__(self, "ownership", None)
-
-        def __setattr__(self, name, value):
-            with assignment_lock:
-                if (name != "ownership" or self.ownership is not None
-                        or type(value) is not DockerCapabilityOwnershipV1):
-                    operation_failure(OperationCode.UNAVAILABLE)
-                object.__setattr__(self, "ownership", value)
-
-        def __repr__(self):
-            return "DockerPrivateFacadeAttachmentCellV1(<redacted>)"
-
-        __str__ = __repr__
-
-        def __reduce__(self):
-            operation_failure(OperationCode.UNAVAILABLE)
-
-        __copy__ = __reduce__
-
-        def __deepcopy__(self, _memo):
-            return self.__reduce__()
-
-        def __init_subclass__(cls, **_kwargs):
-            raise TypeError("Docker private attachment cell is final")
-
     def attached(record, error_kind):
         try:
-            with record.condition:
-                ownership = record.cell.ownership
-                if type(ownership) is not DockerCapabilityOwnershipV1:
-                    raise ValueError
-                if record.ownership is None:
-                    record.ownership = ownership
-                elif record.ownership is not ownership:
-                    raise ValueError
-                return ownership
+            handoff = record.handoff
+            if (type(handoff) is not DockerCapabilityOwnershipHandoffV1
+                    or handoff is not record.handoff_pin
+                    or handoff._is_exact() is not True
+                    or handoff._is_handle_owning() is not True):
+                raise ValueError
+            return handoff
+        except BaseException:
+            if error_kind == "close":
+                close_failure(CloseErrorCode.UNAVAILABLE)
+            operation_failure(OperationCode.UNAVAILABLE)
+
+    def exact_handoff(record, error_kind):
+        try:
+            handoff = record.handoff
+            if (type(handoff) is not DockerCapabilityOwnershipHandoffV1
+                    or handoff is not record.handoff_pin
+                    or handoff._is_exact() is not True):
+                raise ValueError
+            return handoff
         except BaseException:
             if error_kind == "close":
                 close_failure(CloseErrorCode.UNAVAILABLE)
@@ -474,11 +453,10 @@ def _install_facade():
             record.close_owner = None
             record.condition.notify_all()
 
-    def cleanup_claim(record, ownership):
+    def cleanup_claim(record, handoff):
         result = indeterminate_result
         try:
-            cleanup = snapshot_cleanup(ownership.cleanup())
-            attached(record, "close")
+            cleanup = snapshot_cleanup(handoff.cleanup_owned())
             if cleanup is not None:
                 if cleanup.status is DockerCapabilityCleanupStatusV1.CLEANED:
                     result = cleaned_result
@@ -490,7 +468,7 @@ def _install_facade():
             publish_terminal(record, result)
 
     def release_lease(record, thread_id):
-        ownership = None
+        handoff = None
         with record.condition:
             depth = record.active_by_thread[thread_id] - 1
             record.active_total -= 1
@@ -502,11 +480,11 @@ def _install_facade():
                     and record.state is LifecycleState.CLOSING
                     and record.close_owner is None):
                 record.close_owner = thread_id
-                ownership = record.ownership
+                handoff = record.handoff
             elif record.active_total == 0:
                 record.condition.notify_all()
-        if ownership is not None:
-            cleanup_claim(record, ownership)
+        if handoff is not None:
+            cleanup_claim(record, handoff)
 
     def invoke_runtime(runtime, verb, argument=None):
         callback = getattr(runtime, verb)
@@ -538,7 +516,7 @@ def _install_facade():
 
     def close_impl(wrapper):
         record = state_for(wrapper, _LifecycleStateRecord, "close")
-        ownership = attached(record, "close")
+        handoff = exact_handoff(record, "close")
         thread_id, claim = get_ident(), False
         with record.condition:
             if record.state in {LifecycleState.CLOSED,
@@ -549,6 +527,8 @@ def _install_facade():
                     record.state = LifecycleState.CLOSING
                 return deferred_result
             if record.state is LifecycleState.OPEN:
+                if handoff._is_handle_owning() is not True:
+                    close_failure(CloseErrorCode.UNAVAILABLE)
                 record.state = LifecycleState.CLOSING
             if record.close_owner == thread_id:
                 return reentrant_result
@@ -559,7 +539,7 @@ def _install_facade():
                     record.condition.wait()
                 return record.terminal
         if claim:
-            cleanup_claim(record, ownership)
+            cleanup_claim(record, handoff)
         with record.condition:
             return record.terminal
 
@@ -578,15 +558,16 @@ def _install_facade():
     class HostFacade(metaclass=_SealedType):
         __slots__ = ("__weakref__",)
 
-        def __init__(self, runtime, attachment):
+        def __init__(self, runtime, handoff):
             ok, runtime_state = total_operation(
                 lambda: state_for(runtime, _RuntimeState, "operation"),
                 OperationCode.UNAVAILABLE)
-            if (not ok or type(attachment) is not PrivateAttachmentCell):
+            if (not ok or type(handoff)
+                    is not DockerCapabilityOwnershipHandoffV1):
                 operation_failure(OperationCode.UNAVAILABLE)
             register_wrapper(self, lambda state_id, reference, anchor:
                 _LifecycleStateRecord(state_id, reference, anchor,
-                                      runtime_state, attachment))
+                                      runtime_state, handoff))
 
         def start_run(self):
             return public_operation(
@@ -610,8 +591,11 @@ def _install_facade():
 
         def _lifecycle_state(self):
             record = state_for(self, _LifecycleStateRecord, "close")
-            attached(record, "close")
+            handoff = exact_handoff(record, "close")
             with record.condition:
+                if (record.state is LifecycleState.OPEN
+                        and handoff._is_handle_owning() is not True):
+                    close_failure(CloseErrorCode.UNAVAILABLE)
                 return record.state
 
         def close(self):
@@ -642,13 +626,12 @@ def _install_facade():
         (OperationError, "DockerHostOperationErrorV1"),
         (CloseError, "DockerHostCloseErrorV1"),
         (PrivateRuntimeAdapter, "DockerPrivateFacadeRuntimeAdapterV1"),
-        (PrivateAttachmentCell, "DockerPrivateFacadeAttachmentCellV1"),
         (HostFacade, "DockerHostFacadeV1"),
     )
     for cls, name in names:
         cls.__name__, cls.__qualname__ = name, name
     sealed_types.update({OperationError, CloseError, PrivateRuntimeAdapter,
-                         PrivateAttachmentCell, HostFacade})
+                         HostFacade})
     return tuple(cls for cls, _name in names)
 
 
@@ -657,7 +640,7 @@ def _install_facade():
     DockerHostFacadeCloseResultV1, DockerHostOperationCodeV1,
     DockerHostCloseErrorCodeV1, DockerHostOperationErrorV1,
     DockerHostCloseErrorV1, DockerPrivateFacadeRuntimeAdapterV1,
-    DockerPrivateFacadeAttachmentCellV1, DockerHostFacadeV1,
+    DockerHostFacadeV1,
 ) = _install_facade()
 del _install_facade
 

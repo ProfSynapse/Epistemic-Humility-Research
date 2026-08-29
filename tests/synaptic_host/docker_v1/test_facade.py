@@ -10,9 +10,15 @@ import weakref
 import pytest
 
 from synaptic_host.docker_v1.capability_assembly import (
-    DockerCapabilityOwnershipV1,
+    DockerCapabilityAssemblyCodeV1,
+    DockerCapabilityAssemblyErrorV1,
+    DockerCapabilityCleanupFailureClassV1,
+    DockerCapabilityCleanupFailureV1,
+    DockerCapabilityCleanupResultV1,
+    DockerCapabilityOwnershipHandoffV1,
     DockerCapabilityResourceKindV1,
     DockerCapabilitySlotV1,
+    DockerLiveCapabilityBuildV1,
 )
 from synaptic_host.docker_v1.facade import (
     DockerHostFacadeCloseCodeV1,
@@ -22,7 +28,6 @@ from synaptic_host.docker_v1.facade import (
     DockerHostOperationErrorV1,
     DockerHostFacadeLifecycleStateV1,
     DockerHostFacadeV1,
-    DockerPrivateFacadeAttachmentCellV1,
     DockerPrivateFacadeRuntimeAdapterV1,
 )
 from synaptic_tuner.api.v1.planning import (
@@ -92,15 +97,31 @@ class Runtime:
 
 
 def _ownership(cleanup=None):
-    if cleanup is None:
-        return DockerCapabilityOwnershipV1(())
-    node = SimpleNamespace(
-        slot=DockerCapabilitySlotV1.SOURCE_ROOT_AUTHORITY,
-        resource_kind=DockerCapabilityResourceKindV1.ROOT_AUTHORITY,
-        cleanup=cleanup,
-        capability=object(),
-    )
-    return DockerCapabilityOwnershipV1((node,))
+    class Ledger:
+        def complete(self):
+            return None
+
+        def abort(self):
+            if cleanup is None:
+                return DockerCapabilityCleanupResultV1.build(0, 0, 0, ())
+            try:
+                cleanup(object())
+            except BaseException:
+                failure = DockerCapabilityCleanupFailureV1(
+                    DockerCapabilitySlotV1.SOURCE_ROOT_AUTHORITY,
+                    DockerCapabilityResourceKindV1.ROOT_AUTHORITY,
+                    DockerCapabilityCleanupFailureClassV1.CLOSED,
+                    None,
+                )
+                return DockerCapabilityCleanupResultV1.build(
+                    1, 0, 0, (failure,)
+                )
+            return DockerCapabilityCleanupResultV1.build(1, 1, 0, ())
+
+    live = DockerLiveCapabilityBuildV1(object(), Ledger())
+    handoff = live.prepare_handoff()
+    handoff.commit_handoff()
+    return handoff
 
 
 def _facade(workflow, binding, *, ownership=None, publish=True):
@@ -109,12 +130,18 @@ def _facade(workflow, binding, *, ownership=None, publish=True):
         start=runtime.start, reconcile=runtime.reconcile,
         binding=runtime.binding,
     )
-    cell = DockerPrivateFacadeAttachmentCellV1()
-    facade = DockerHostFacadeV1(adapter, cell)
-    ownership = _ownership() if ownership is None else ownership
-    if publish:
-        cell.ownership = ownership
-    return facade, runtime, cell, ownership
+    if ownership is None:
+        if publish:
+            ownership = _ownership()
+        else:
+            class Ledger:
+                def complete(self): return None
+                def abort(self):
+                    return DockerCapabilityCleanupResultV1.build(0, 0, 0, ())
+            live = DockerLiveCapabilityBuildV1(object(), Ledger())
+            ownership = live.prepare_handoff()
+    facade = DockerHostFacadeV1(adapter, ownership)
+    return facade, runtime, ownership, ownership
 
 
 def test_product_surface_and_exact_reconstructed_results(mount_env):
@@ -138,7 +165,7 @@ def test_product_surface_and_exact_reconstructed_results(mount_env):
 
 
 def test_unpublished_and_incomplete_attachment_never_operates(mount_env):
-    facade, _runtime, cell, ownership = _facade(
+    facade, _runtime, handoff, ownership = _facade(
         _workflow(), mount_env["catalog"].value, publish=False
     )
     for operation in (
@@ -149,10 +176,11 @@ def test_unpublished_and_incomplete_attachment_never_operates(mount_env):
         with pytest.raises((DockerHostOperationErrorV1, DockerHostCloseErrorV1)) as caught:
             operation()
         assert caught.value.code.value.endswith("UNAVAILABLE")
-    cell.ownership = ownership
+    ownership.commit_handoff()
     assert facade.start_run() == _workflow()
-    with pytest.raises(DockerHostOperationErrorV1):
-        cell.ownership = _ownership()
+    with pytest.raises(DockerCapabilityAssemblyErrorV1) as caught:
+        ownership.commit_handoff()
+    assert caught.value.code is DockerCapabilityAssemblyCodeV1.BUILD_CLOSED
 
 
 @pytest.mark.parametrize("operation", ("start", "reconcile", "binding"))
@@ -352,8 +380,7 @@ def test_cleanup_failure_and_indeterminate_are_terminal_and_never_retry(mount_en
     assert failed.close() is first and calls == 1
 
     ownership = _ownership()
-    object.__setattr__(ownership, "_state", "cleaned")
-    object.__setattr__(ownership, "_result", object())
+    ownership._controller_pin._ledger.abort = lambda: object()
     indeterminate, _runtime, _cell, _ownership_value = _facade(
         _workflow(), mount_env["catalog"].value, ownership=ownership
     )
@@ -361,38 +388,33 @@ def test_cleanup_failure_and_indeterminate_are_terminal_and_never_retry(mount_en
     assert result.code is DockerHostFacadeCloseCodeV1.CLEANUP_INDETERMINATE
     assert indeterminate.close() is result
 
-    class RaisingCondition:
-        def __init__(self):
-            self.calls = 0
-
-        def __enter__(self):
-            self.calls += 1
-            raise RuntimeError("raw ownership failure")
-
-        def __exit__(self, *_args):
-            return False
-
     ownership = _ownership()
-    raising = RaisingCondition()
-    object.__setattr__(ownership, "_condition", raising)
+    ledger = ownership._controller_pin._ledger
+    calls = []
+    ledger.abort = lambda: (
+        calls.append("abort"),
+        (_ for _ in ()).throw(RuntimeError("raw ownership failure")),
+    )[1]
     raised, _runtime, _cell, _ownership_value = _facade(
         _workflow(), mount_env["catalog"].value, ownership=ownership
     )
     result = raised.close()
     assert result.code is DockerHostFacadeCloseCodeV1.CLEANUP_INDETERMINATE
-    assert raised.close() is result and raising.calls == 1
+    assert raised.close() is result and calls == ["abort"]
 
 
-def test_facade_and_attachment_are_redacted_noncopyable_unpickleable(mount_env):
-    facade, _runtime, cell, _ownership_value = _facade(
+def test_facade_and_handoff_are_redacted_noncopyable_unpickleable(mount_env):
+    facade, _runtime, handoff, _ownership_value = _facade(
         _workflow(), mount_env["catalog"].value
     )
     assert repr(facade) == "DockerHostFacadeV1(<redacted>)"
-    assert repr(cell) == "DockerPrivateFacadeAttachmentCellV1(<redacted>)"
-    for value in (facade, cell):
-        for operation in (copy, deepcopy, pickle.dumps):
-            with pytest.raises(DockerHostOperationErrorV1):
-                operation(value)
+    assert repr(handoff) == "DockerCapabilityOwnershipHandoffV1(<redacted>)"
+    for operation in (copy, deepcopy, pickle.dumps):
+        with pytest.raises(DockerHostOperationErrorV1):
+            operation(facade)
+    for operation in (copy, deepcopy, pickle.dumps):
+        with pytest.raises(DockerCapabilityAssemblyErrorV1):
+            operation(handoff)
 
 
 def test_facade_rejects_subclasses_and_untyped_effect_kind(mount_env):
@@ -409,25 +431,31 @@ def test_facade_rejects_subclasses_and_untyped_effect_kind(mount_env):
     assert caught.value.code is DockerHostOperationCodeV1.RESULT_INVALID
 
 
-def test_attachment_exactly_one_assignment_is_concurrency_safe(mount_env):
+def test_prepared_handoff_blocks_facade_until_exact_single_commit(mount_env):
     runtime = Runtime(_workflow(), mount_env["catalog"].value)
     adapter = DockerPrivateFacadeRuntimeAdapterV1(
         start=runtime.start, reconcile=runtime.reconcile,
         binding=runtime.binding,
     )
-    cell = DockerPrivateFacadeAttachmentCellV1()
-    facade = DockerHostFacadeV1(adapter, cell)
-    candidates = [_ownership() for _ in range(32)]
+    class Ledger:
+        def complete(self): return None
+        def abort(self):
+            return DockerCapabilityCleanupResultV1.build(0, 0, 0, ())
+    live = DockerLiveCapabilityBuildV1(object(), Ledger())
+    handoff = live.prepare_handoff()
+    facade = DockerHostFacadeV1(adapter, handoff)
+    with pytest.raises(DockerHostOperationErrorV1):
+        facade.start_run()
 
-    def attach(value):
+    def commit(_value):
         try:
-            cell.ownership = value
+            handoff.commit_handoff()
             return True
-        except DockerHostOperationErrorV1:
+        except DockerCapabilityAssemblyErrorV1:
             return False
 
     with ThreadPoolExecutor(max_workers=12) as pool:
-        outcomes = list(pool.map(attach, candidates))
+        outcomes = list(pool.map(commit, range(32)))
     assert outcomes.count(True) == 1
     assert facade.start_run() == runtime.workflow
 
@@ -447,7 +475,7 @@ def test_closure_kernel_survives_module_rebinding_and_seals_methods(
             "DockerHostFacadeCloseResultV1", "DockerHostOperationCodeV1",
             "DockerHostOperationErrorV1", "DockerHostCloseErrorV1",
             "DockerPrivateFacadeRuntimeAdapterV1",
-            "DockerPrivateFacadeAttachmentCellV1", "DockerHostFacadeV1",
+            "DockerHostFacadeV1",
         ):
             monkeypatch.setattr(facade_module, name, object())
         with pytest.raises(TypeError):
@@ -517,12 +545,14 @@ def test_weak_registry_collection_and_stale_token_callback_are_exact(mount_env):
     assert state_id not in state_anchors
 
 
-def test_closure_kernel_detects_raw_attachment_substitution_after_pin(mount_env):
-    facade, _runtime, cell, _ownership_value = _facade(
+def test_closure_kernel_detects_raw_handoff_substitution_after_pin(mount_env):
+    facade, _runtime, _handoff, _ownership_value = _facade(
         _workflow(), mount_env["catalog"].value
     )
     assert facade.start_run() == _workflow()
-    object.__setattr__(cell, "ownership", _ownership())
+    _anchors, wrapper_states, states, _state_anchors = _facade_registries(facade)
+    record = states[wrapper_states[id(facade)]]
+    object.__setattr__(record, "handoff", _ownership())
     with pytest.raises(DockerHostOperationErrorV1):
         facade.reconcile_run()
 
@@ -704,16 +734,14 @@ def test_coordinated_runtime_anchor_and_state_redirection_fails_origin_pin(
     anchors[first_id] = (first_entry[0], second_anchor)
     wrapper_states[first_id] = wrapper_states[second_id]
     try:
-        cell = DockerPrivateFacadeAttachmentCellV1()
-        cell.ownership = _ownership()
+        handoff = _ownership()
         with pytest.raises(DockerHostOperationErrorV1):
-            DockerHostFacadeV1(first_runtime, cell)
+            DockerHostFacadeV1(first_runtime, handoff)
     finally:
         anchors[first_id] = first_entry
         wrapper_states[first_id] = first_state
-    cell = DockerPrivateFacadeAttachmentCellV1()
-    cell.ownership = _ownership()
-    facade = DockerHostFacadeV1(first_runtime, cell)
+    handoff = _ownership()
+    facade = DockerHostFacadeV1(first_runtime, handoff)
     assert facade.start_run() == _workflow()
 
 
@@ -760,7 +788,7 @@ def test_registration_collision_rolls_back_nothing_and_never_double_cleans(mount
     )
     with pytest.raises(DockerHostOperationErrorV1):
         register(facade, lambda state_id, reference, anchor: type(record)(
-            state_id, reference, anchor, record.runtime, record.cell
+            state_id, reference, anchor, record.runtime, record.handoff
         ))
     assert id(facade) in anchors and facade.start_run() == _workflow()
     assert facade.close().code is DockerHostFacadeCloseCodeV1.CLEANED

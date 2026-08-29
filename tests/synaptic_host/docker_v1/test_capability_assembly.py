@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from pathlib import Path
 from threading import Event
+from types import SimpleNamespace
 
 import pytest
 
@@ -12,6 +13,7 @@ from synaptic_host.docker_v1.capability_assembly import (
     DockerCapabilityCleanupObservationCodeV1,
     DockerCapabilityCleanupObservationV1,
     DockerCapabilityCleanupStatusV1,
+    DockerCapabilityOwnershipHandoffV1,
     DockerCapabilitySlotV1,
     DockerLiveCapabilityBuildV1,
 )
@@ -98,7 +100,7 @@ def _closed(call, code):
     assert caught.value.cleanup_result is None
 
 
-def test_live_build_keeps_fallible_gap_owned_until_abort_or_explicit_transfer():
+def test_live_build_keeps_fallible_gap_owned_until_abort_or_shared_handoff():
     builder, _filesystem, port, bindings = _builder_environment()
     live = builder.build()
     assert type(live) is DockerLiveCapabilityBuildV1
@@ -116,18 +118,20 @@ def test_live_build_keeps_fallible_gap_owned_until_abort_or_explicit_transfer():
     assert port.live_directories == {}
     assert live.abort() is aborted
     _closed(lambda: live.assembly, DockerCapabilityAssemblyCodeV1.BUILD_CLOSED)
-    _closed(live.transfer, DockerCapabilityAssemblyCodeV1.BUILD_CLOSED)
+    _closed(live.prepare_handoff, DockerCapabilityAssemblyCodeV1.BUILD_CLOSED)
     _closed(builder.build, DockerCapabilityAssemblyCodeV1.BUILD_CLOSED)
 
     second_builder, _second_fs, second_port, _ = _builder_environment()
     second_live = second_builder.build()
-    ownership = second_live.transfer()
-    _closed(second_live.transfer, DockerCapabilityAssemblyCodeV1.OWNERSHIP_TRANSFERRED)
-    _closed(second_live.abort, DockerCapabilityAssemblyCodeV1.OWNERSHIP_TRANSFERRED)
-    _closed(lambda: second_live.assembly, DockerCapabilityAssemblyCodeV1.OWNERSHIP_TRANSFERRED)
-    cleaned = ownership.cleanup()
+    handoff = second_live.prepare_handoff()
+    assert type(handoff) is DockerCapabilityOwnershipHandoffV1
+    handoff.commit_handoff()
+    _closed(second_live.prepare_handoff, DockerCapabilityAssemblyCodeV1.BUILD_CLOSED)
+    _closed(second_live.abort, DockerCapabilityAssemblyCodeV1.BUILD_CLOSED)
+    _closed(lambda: second_live.assembly, DockerCapabilityAssemblyCodeV1.BUILD_CLOSED)
+    cleaned = handoff.cleanup_owned()
     assert cleaned.attempted_count == cleaned.released_count == 6
-    assert ownership.cleanup() is cleaned
+    assert handoff.cleanup_owned() is cleaned
     assert second_port.live_directories == {}
 
 
@@ -154,17 +158,17 @@ def test_abort_is_reverse_order_reentrant_safe_and_concurrently_cached():
     assert port.live_directories == {}
 
 
-def test_transfer_abort_race_has_one_winner_and_no_double_release():
+def test_prepare_abort_race_converges_on_one_cleanup_ledger():
     builder, _filesystem, port, _bindings = _builder_environment()
     live = builder.build()
     start = Event()
 
-    def transfer():
+    def prepare():
         start.wait()
         try:
-            return "transfer", live.transfer()
+            return "prepare", live.prepare_handoff()
         except DockerCapabilityAssemblyErrorV1 as error:
-            return "transfer-error", error.code
+            return "prepare-error", error.code
 
     def abort():
         start.wait()
@@ -174,20 +178,106 @@ def test_transfer_abort_race_has_one_winner_and_no_double_release():
             return "abort-error", error.code
 
     with ThreadPoolExecutor(max_workers=2) as pool:
-        pending = (pool.submit(transfer), pool.submit(abort))
+        pending = (pool.submit(prepare), pool.submit(abort))
         start.set()
         outcomes = [value.result() for value in pending]
-    successes = [value for label, value in outcomes if label in {"transfer", "abort"}]
-    assert len(successes) == 1
-    winner = successes[0]
-    if hasattr(winner, "cleanup"):
-        assert ("abort-error", DockerCapabilityAssemblyCodeV1.OWNERSHIP_TRANSFERRED) in outcomes
-        result = winner.cleanup()
+    prepared = next(
+        (value for label, value in outcomes if label == "prepare"), None
+    )
+    result = next(value for label, value in outcomes if label == "abort")
+    if prepared is not None:
+        assert type(prepared) is DockerCapabilityOwnershipHandoffV1
+        _closed(prepared.commit_handoff, DockerCapabilityAssemblyCodeV1.BUILD_CLOSED)
+        assert prepared.recover_unpublished() is result
     else:
-        assert ("transfer-error", DockerCapabilityAssemblyCodeV1.BUILD_CLOSED) in outcomes
-        result = winner
+        assert ("prepare-error", DockerCapabilityAssemblyCodeV1.BUILD_CLOSED) in outcomes
     assert result.attempted_count == result.released_count == 6
     assert port.live_directories == {}
+
+
+def test_handoff_exact_states_commit_recovery_and_obsolete_api_absence():
+    builder, _filesystem, port, _bindings = _builder_environment()
+    live = builder.build()
+    controller = live._controller
+    assert controller._state.value == "BUILDER_OWNING"
+    handoff = live.prepare_handoff()
+    assert controller._state.value == "HANDOFF_PREPARED"
+    handoff.commit_handoff()
+    assert controller._state.value == "HANDLE_OWNING"
+    recovered = handoff.recover_unpublished()
+    assert controller._state.value == "CLEANED"
+    assert recovered.attempted_count == recovered.released_count == 6
+    assert handoff.cleanup_owned() is recovered
+    assert port.live_directories == {}
+    assert not hasattr(live, "transfer")
+    import synaptic_host.docker_v1.capability_assembly as module
+    assert not hasattr(module, "DockerCapabilityOwnershipV1")
+
+
+def test_cross_build_and_mutated_handoff_fail_closed_without_wrong_cleanup():
+    first_builder, _filesystem, first_port, _bindings = _builder_environment()
+    second_builder, _filesystem, second_port, _bindings = _builder_environment()
+    first, second = first_builder.build(), second_builder.build()
+    first_handoff, second_handoff = (
+        first.prepare_handoff(), second.prepare_handoff()
+    )
+    object.__setattr__(first_handoff, "_controller", second_handoff._controller_pin)
+    _closed(first_handoff.commit_handoff, DockerCapabilityAssemblyCodeV1.BUILD_CLOSED)
+    object.__setattr__(first_handoff, "_controller", first_handoff._controller_pin)
+    first_handoff.commit_handoff()
+    second_handoff.commit_handoff()
+    first_result = first_handoff.cleanup_owned()
+    second_result = second_handoff.cleanup_owned()
+    assert first_result.attempted_count == second_result.attempted_count == 6
+    assert first_port.live_directories == {}
+    assert second_port.live_directories == {}
+
+
+def test_committed_cleanup_reentry_and_recovery_race_share_cached_result():
+    builder, filesystem, port, _bindings = _builder_environment()
+    live = builder.build()
+    handoff = live.prepare_handoff()
+    handoff.commit_handoff()
+    observed = []
+    filesystem.reenter = lambda: observed.append(handoff.cleanup_owned())
+    start = Event()
+
+    def call(method):
+        start.wait()
+        return method()
+
+    with ThreadPoolExecutor(max_workers=12) as pool:
+        pending = [
+            pool.submit(
+                call,
+                handoff.cleanup_owned if index % 2
+                else handoff.recover_unpublished,
+            )
+            for index in range(24)
+        ]
+        start.set()
+        results = [value.result() for value in pending]
+    assert type(observed[0]) is DockerCapabilityCleanupObservationV1
+    assert all(value is results[0] for value in results)
+    assert results[0].attempted_count == results[0].released_count == 6
+    assert port.live_directories == {}
+
+
+def test_unexpected_cleanup_controller_interruption_is_terminal_and_cached():
+    calls = []
+
+    def interrupted():
+        calls.append("abort")
+        raise SystemExit("secret-cleanup-interruption")
+
+    ledger = SimpleNamespace(complete=lambda: None, abort=interrupted)
+    live = DockerLiveCapabilityBuildV1(object(), ledger)
+    handoff = live.prepare_handoff()
+    handoff.commit_handoff()
+    assert handoff.cleanup_owned() is None
+    assert handoff.recover_unpublished() is None
+    assert live._controller._state.value == "CLEANED"
+    assert calls == ["abort"]
 
 
 class _ScriptedFilesystem:

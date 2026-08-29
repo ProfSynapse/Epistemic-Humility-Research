@@ -14,7 +14,12 @@ def test_host_docker_package_keeps_empty_exports_and_forbidden_boundaries():
     assert (
         "capability_assembly.py" in files
         and "class DockerLiveCapabilityBuildV1" in files["capability_assembly.py"]
-        and "def transfer(self)" in files["capability_assembly.py"]
+        and "class DockerCapabilityOwnershipHandoffV1" in files["capability_assembly.py"]
+        and "def prepare_handoff(self)" in files["capability_assembly.py"]
+        and "def transfer(self)" not in files["capability_assembly.py"]
+        and "DockerCapabilityOwnershipV1" not in files["capability_assembly.py"]
+        and "DockerPrivateFacadeAttachmentCellV1" not in files["facade.py"]
+        and ".ownership =" not in files["composition.py"]
         and "binding.py" in files
         and "class DockerAuthenticatedPairPathBinderV1" in files["binding.py"]
         and "os.environ" not in files["binding.py"].lower()

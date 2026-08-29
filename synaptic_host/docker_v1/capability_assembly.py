@@ -46,7 +46,6 @@ class DockerCapabilityAssemblyCodeV1(str, Enum):
     ASSEMBLY_FAILED = "DOCKER_CAPABILITY_ASSEMBLY_FAILED"
     CLEANUP_FAILED = "DOCKER_CAPABILITY_CLEANUP_FAILED"
     BUILD_CLOSED = "DOCKER_CAPABILITY_BUILD_CLOSED"
-    OWNERSHIP_TRANSFERRED = "DOCKER_CAPABILITY_OWNERSHIP_TRANSFERRED"
 
 
 class DockerCapabilityCleanupStatusV1(str, Enum):
@@ -341,13 +340,6 @@ class _LedgerV1:
         if tuple(node.slot for node in self.nodes) != _ORDER:
             raise DockerCapabilityAssemblyErrorV1(DockerCapabilityAssemblyCodeV1.ASSEMBLY_FAILED)
 
-    def detach(self):
-        self.complete()
-        nodes = tuple(self.nodes)
-        self.nodes.clear()
-        self.by_slot.clear()
-        return nodes
-
     def abort(self):
         nodes = tuple(self.nodes)
         self.nodes.clear()
@@ -370,112 +362,205 @@ _REENTRANT = DockerCapabilityCleanupObservationV1(
 )
 
 
-class DockerCapabilityOwnershipV1:
-    __slots__ = ("_nodes", "_condition", "_state", "_owner", "_result")
+class _OwnershipStateV1(str, Enum):
+    BUILDER_OWNING = "BUILDER_OWNING"
+    HANDOFF_PREPARED = "HANDOFF_PREPARED"
+    HANDLE_OWNING = "HANDLE_OWNING"
+    CLEANING = "CLEANING"
+    CLEANED = "CLEANED"
 
-    def __init__(self, nodes):
-        self._nodes = nodes
+
+class _OwnershipControllerV1:
+    __slots__ = (
+        "_ledger", "_assembly", "_condition", "_state", "_owner",
+        "_result", "_builder_token", "_handoff", "_handoff_token",
+    )
+
+    def __init__(self, assembly, ledger, builder_token):
+        self._ledger, self._assembly = ledger, assembly
         self._condition = Condition(Lock())
-        self._state = "owning"
-        self._owner = None
-        self._result = None
+        self._state = _OwnershipStateV1.BUILDER_OWNING
+        self._owner, self._result = None, None
+        self._builder_token = builder_token
+        self._handoff_token = object()
+        self._handoff = DockerCapabilityOwnershipHandoffV1(
+            self, self._handoff_token
+        )
 
-    def cleanup(self):
+    def _exact_handoff(self, handoff):
+        return (
+            type(handoff) is DockerCapabilityOwnershipHandoffV1
+            and handoff is self._handoff
+            and handoff._controller is self
+            and handoff._controller_pin is self
+            and handoff._token is self._handoff_token
+            and handoff._token_pin is self._handoff_token
+        )
+
+    def assembly(self, builder_token):
+        with self._condition:
+            if (builder_token is not self._builder_token
+                    or self._state is not _OwnershipStateV1.BUILDER_OWNING):
+                raise DockerCapabilityAssemblyErrorV1(
+                    DockerCapabilityAssemblyCodeV1.BUILD_CLOSED
+                )
+            return self._assembly
+
+    def prepare(self, builder_token):
+        with self._condition:
+            if (builder_token is not self._builder_token
+                    or self._state is not _OwnershipStateV1.BUILDER_OWNING
+                    or not self._exact_handoff(self._handoff)):
+                raise DockerCapabilityAssemblyErrorV1(
+                    DockerCapabilityAssemblyCodeV1.BUILD_CLOSED
+                )
+            self._ledger.complete()
+            self._state = _OwnershipStateV1.HANDOFF_PREPARED
+            return self._handoff
+
+    def commit(self, handoff):
+        with self._condition:
+            if (not self._exact_handoff(handoff)
+                    or self._state is not _OwnershipStateV1.HANDOFF_PREPARED):
+                raise DockerCapabilityAssemblyErrorV1(
+                    DockerCapabilityAssemblyCodeV1.BUILD_CLOSED
+                )
+            self._state = _OwnershipStateV1.HANDLE_OWNING
+
+    def is_handle_owning(self, handoff):
+        with self._condition:
+            return (
+                self._exact_handoff(handoff)
+                and self._state is _OwnershipStateV1.HANDLE_OWNING
+            )
+
+    def _cleanup(self, *, builder_token=None, handoff=None, role):
         thread_id = get_ident()
         with self._condition:
-            if self._state == "cleaned":
-                return self._result
-            if self._state == "cleaning":
-                if self._owner == thread_id:
+            builder_exact = builder_token is self._builder_token
+            handoff_exact = self._exact_handoff(handoff)
+            if role == "builder":
+                authorized = builder_exact and self._state in {
+                    _OwnershipStateV1.BUILDER_OWNING,
+                    _OwnershipStateV1.HANDOFF_PREPARED,
+                }
+            elif role == "recover":
+                authorized = handoff_exact and self._state in {
+                    _OwnershipStateV1.HANDOFF_PREPARED,
+                    _OwnershipStateV1.HANDLE_OWNING,
+                }
+            else:
+                authorized = (
+                    handoff_exact
+                    and self._state is _OwnershipStateV1.HANDLE_OWNING
+                )
+            if self._state is _OwnershipStateV1.CLEANED:
+                if builder_exact or handoff_exact:
+                    return self._result
+                authorized = False
+            if self._state is _OwnershipStateV1.CLEANING:
+                if not (builder_exact or handoff_exact):
+                    authorized = False
+                elif self._owner == thread_id:
                     return _REENTRANT
-                while self._state == "cleaning":
-                    self._condition.wait()
-                return self._result
-            self._state = "cleaning"
+                else:
+                    while self._state is _OwnershipStateV1.CLEANING:
+                        self._condition.wait()
+                    return self._result
+            if not authorized:
+                raise DockerCapabilityAssemblyErrorV1(
+                    DockerCapabilityAssemblyCodeV1.BUILD_CLOSED
+                )
+            self._state = _OwnershipStateV1.CLEANING
             self._owner = thread_id
-        result = _cleanup_nodes(self._nodes)
+            ledger = self._ledger
+        try:
+            result = ledger.abort()
+        except BaseException:
+            result = None
         with self._condition:
-            self._nodes = ()
-            self._result = result
-            self._owner = None
-            self._state = "cleaned"
+            self._ledger, self._assembly = None, None
+            self._result, self._owner = result, None
+            self._state = _OwnershipStateV1.CLEANED
             self._condition.notify_all()
             return result
+
+
+class DockerCapabilityOwnershipHandoffV1:
+    """Private exact capability shared by composition and the product facade."""
+
+    __slots__ = ("_controller", "_controller_pin", "_token", "_token_pin")
+
+    def __init__(self, controller, token):
+        object.__setattr__(self, "_controller", controller)
+        object.__setattr__(self, "_controller_pin", controller)
+        object.__setattr__(self, "_token", token)
+        object.__setattr__(self, "_token_pin", token)
+
+    def __setattr__(self, _name, _value):
+        raise AttributeError
+
+    def commit_handoff(self):
+        return self._controller_pin.commit(self)
+
+    def recover_unpublished(self):
+        return self._controller_pin._cleanup(handoff=self, role="recover")
+
+    def cleanup_owned(self):
+        return self._controller_pin._cleanup(handoff=self, role="handle")
+
+    def _is_handle_owning(self):
+        return self._controller_pin.is_handle_owning(self)
+
+    def _is_exact(self):
+        with self._controller_pin._condition:
+            return self._controller_pin._exact_handoff(self)
+
+    def __repr__(self):
+        return "DockerCapabilityOwnershipHandoffV1(<redacted>)"
+
+    __str__ = __repr__
+
+    def __reduce__(self):
+        raise DockerCapabilityAssemblyErrorV1(
+            DockerCapabilityAssemblyCodeV1.BUILD_CLOSED
+        )
+
+    __copy__ = __reduce__
+
+    def __deepcopy__(self, _memo):
+        return self.__reduce__()
+
+    def __init_subclass__(cls, **_kwargs):
+        raise TypeError("Docker capability ownership handoff is final")
 
 
 class DockerLiveCapabilityBuildV1:
-    """A completed assembly that still owns its acquisition ledger."""
+    """A completed assembly sharing one authoritative cleanup controller."""
 
-    __slots__ = ("_assembly", "_ledger", "_condition", "_state", "_owner", "_result")
+    __slots__ = ("_controller", "_builder_token")
 
     def __init__(self, assembly, ledger):
-        self._assembly = assembly
-        self._ledger = ledger
-        self._condition = Condition(Lock())
-        self._state = "owning"
-        self._owner = None
-        self._result = None
+        self._builder_token = object()
+        self._controller = _OwnershipControllerV1(
+            assembly, ledger, self._builder_token
+        )
 
     @property
     def assembly(self):
-        with self._condition:
-            if self._state == "owning":
-                return self._assembly
-            code = (
-                DockerCapabilityAssemblyCodeV1.OWNERSHIP_TRANSFERRED
-                if self._state == "transferred"
-                else DockerCapabilityAssemblyCodeV1.BUILD_CLOSED
-            )
-            raise DockerCapabilityAssemblyErrorV1(code)
+        return self._controller.assembly(self._builder_token)
 
-    def transfer(self):
-        with self._condition:
-            if self._state != "owning":
-                code = (
-                    DockerCapabilityAssemblyCodeV1.OWNERSHIP_TRANSFERRED
-                    if self._state == "transferred"
-                    else DockerCapabilityAssemblyCodeV1.BUILD_CLOSED
-                )
-                raise DockerCapabilityAssemblyErrorV1(code)
-            self._ledger.complete()
-            nodes = tuple(self._ledger.nodes)
-            ownership = DockerCapabilityOwnershipV1(nodes)
-            self._ledger.detach()
-            self._ledger = None
-            self._assembly = None
-            self._state = "transferred"
-            self._condition.notify_all()
-            return ownership
+    def prepare_handoff(self):
+        return self._controller.prepare(self._builder_token)
 
     def abort(self):
-        thread_id = get_ident()
-        with self._condition:
-            if self._state == "transferred":
-                raise DockerCapabilityAssemblyErrorV1(DockerCapabilityAssemblyCodeV1.OWNERSHIP_TRANSFERRED)
-            if self._state == "aborted":
-                return self._result
-            if self._state == "aborting":
-                if self._owner == thread_id:
-                    return _REENTRANT
-                while self._state == "aborting":
-                    self._condition.wait()
-                return self._result
-            self._state = "aborting"
-            self._owner = thread_id
-            ledger = self._ledger
-        result = ledger.abort()
-        with self._condition:
-            self._ledger = None
-            self._assembly = None
-            self._result = result
-            self._owner = None
-            self._state = "aborted"
-            self._condition.notify_all()
-            return result
+        return self._controller._cleanup(
+            builder_token=self._builder_token, role="builder"
+        )
 
 
 class DockerCapabilityAssemblyBuilderV1:
-    """One-use builder that returns a live, explicitly transferable build."""
+    """One-use builder that returns a live, explicitly handoff-capable build."""
 
     def __init__(
         self, *, filesystem,
