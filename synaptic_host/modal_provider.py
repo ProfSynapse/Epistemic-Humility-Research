@@ -34,10 +34,108 @@ from .modal_resolver import ModalProviderStateV1, _closed, _read_json, _text
 from .security import FileHmacAuthenticator
 
 
+def _exact_object(
+    value: object, expected: set[str], label: str,
+) -> dict[str, object]:
+    if type(value) is not dict:
+        raise ValueError(f"{label} must be an exact object")
+    try:
+        items = tuple(dict.items(value))
+    except BaseException:
+        raise ValueError(f"{label} could not be snapshotted") from None
+    if any(type(key) is not str for key, _member in items):
+        raise ValueError(f"{label} keys must be exact strings")
+    if {key for key, _member in items} != expected:
+        raise ValueError(f"{label} contains missing or unknown fields")
+    return {key: member for key, member in items}
+
+
+def _exact_string_map(value: object, label: str) -> dict[str, str]:
+    if type(value) is not dict:
+        raise ValueError(f"{label} must be an exact object")
+    try:
+        items = tuple(dict.items(value))
+    except BaseException:
+        raise ValueError(f"{label} could not be snapshotted") from None
+    if not items or any(
+        type(key) is not str or not key
+        or type(member) is not str
+        for key, member in items
+    ):
+        raise ValueError(f"{label} must be a nonempty exact string map")
+    return {key: member for key, member in items}
+
+
+@dataclass(frozen=True, slots=True)
+class ModalTrainingPolicyV1:
+    schema_version: str
+    provider_ref: str
+    profile_ref: str
+    load_in_4bit: bool
+
+    def __post_init__(self) -> None:
+        if (
+            type(self.schema_version) is not str
+            or self.schema_version != "synaptic-modal-training-policy/v1"
+        ):
+            raise ValueError("unsupported Modal training policy schema")
+        if type(self.provider_ref) is not str or self.provider_ref != "modal":
+            raise ValueError("Modal training policy provider is invalid")
+        if type(self.profile_ref) is not str:
+            raise TypeError("training profile_ref must be exact text")
+        object.__setattr__(
+            self, "profile_ref", _text(self.profile_ref, "training profile_ref")
+        )
+        if type(self.load_in_4bit) is not bool:
+            raise TypeError("model.load_in_4bit must be an exact boolean")
+
+    @classmethod
+    def from_mapping(
+        cls, value: Mapping[str, object]
+    ) -> "ModalTrainingPolicyV1":
+        if type(value) is not dict:
+            raise ValueError("Modal training policy must be an exact object")
+        root = _exact_object(
+            value,
+            {"schema_version", "provider_ref", "profile_ref", "model"},
+            "Modal training policy",
+        )
+        if type(root["model"]) is not dict:
+            raise ValueError("Modal training model policy must be an exact object")
+        model = _exact_object(
+            root["model"], {"load_in_4bit"}, "Modal training model policy"
+        )
+        return cls(
+            root["schema_version"], root["provider_ref"], root["profile_ref"],
+            model["load_in_4bit"],
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": self.schema_version,
+            "provider_ref": self.provider_ref,
+            "profile_ref": self.profile_ref,
+            "model": {"load_in_4bit": self.load_in_4bit},
+        }
+
+    def canonical_bytes(self) -> bytes:
+        return json.dumps(
+            self.to_dict(), sort_keys=True, separators=(",", ":"),
+            ensure_ascii=False, allow_nan=False,
+        ).encode("utf-8")
+
+    @property
+    def digest(self) -> str:
+        return hashlib.sha256(
+            b"synaptic-modal-training-policy/v1\0" + self.canonical_bytes()
+        ).hexdigest()
+
+
 @dataclass(frozen=True, slots=True)
 class ModalHostConfigV1:
     environment_name: str
     profile: str
+    training: ModalTrainingPolicyV1
     control_volume_name: str
     artifact_volume_name: str
     runtime_secret_name: str
@@ -53,19 +151,26 @@ class ModalHostConfigV1:
             "control_volume_name", "artifact_volume_name",
             "runtime_secret_name", "currency",
         ):
+            if type(getattr(self, name)) is not str:
+                raise TypeError(f"{name} must be exact text")
             object.__setattr__(self, name, _text(getattr(self, name), name))
+        if type(self.training) is not ModalTrainingPolicyV1:
+            raise TypeError("training must be an exact ModalTrainingPolicyV1")
+        if self.training.profile_ref != self.profile:
+            raise ValueError("Modal training policy profile differs from host config")
         if self.control_volume_name == self.artifact_volume_name:
             raise ValueError("Modal volumes must differ")
+        if type(self.runtime_secret_keys) is not tuple or any(
+            type(key) is not str for key in self.runtime_secret_keys
+        ):
+            raise TypeError("runtime secret keys must be an exact string tuple")
         keys = tuple(self.runtime_secret_keys)
         if keys != ("HF_TOKEN", "SYNAPTIC_EVIDENCE_MAC_KEY"):
             raise ValueError("Modal v1 runtime secret keys are fixed")
         object.__setattr__(self, "runtime_secret_keys", keys)
-        environment = dict(self.runtime_environment)
-        if not environment or any(
-            not isinstance(key, str) or not key or not isinstance(value, str)
-            for key, value in environment.items()
-        ):
-            raise ValueError("runtime environment must be a nonempty string map")
+        environment = _exact_string_map(
+            self.runtime_environment, "runtime environment"
+        )
         object.__setattr__(self, "runtime_environment", MappingProxyType(environment))
         if type(self.timeout_seconds) is not int or not 1 <= self.timeout_seconds <= 86400:
             raise ValueError("timeout must be a bounded integer")
@@ -78,29 +183,51 @@ class ModalHostConfigV1:
 
     @classmethod
     def from_mapping(cls, value: Mapping[str, object]) -> "ModalHostConfigV1":
-        root = _closed(
+        root = _exact_object(
             value,
             {
                 "schema_version", "environment_name", "profile", "deployment",
                 "volumes", "runtime_secret", "runtime_environment", "budget",
+                "training",
             },
             "Modal host config",
         )
-        if root["schema_version"] != "synaptic-modal-host/v1":
+        if (
+            type(root["schema_version"]) is not str
+            or root["schema_version"] != "synaptic-modal-host/v1"
+        ):
             raise ValueError("unsupported Modal host config schema")
-        deployment = _closed(root["deployment"], {"timeout_seconds"}, "deployment")
-        volumes = _closed(root["volumes"], {"control_name", "artifact_name"}, "volumes")
-        secret = _closed(root["runtime_secret"], {"name", "required_keys"}, "runtime secret")
-        budget = _closed(root["budget"], {"maximum_cost_minor_units", "currency"}, "budget")
-        if not isinstance(secret["required_keys"], list) or not isinstance(root["runtime_environment"], Mapping):
+        deployment = _exact_object(
+            root["deployment"], {"timeout_seconds"}, "deployment"
+        )
+        volumes = _exact_object(
+            root["volumes"], {"control_name", "artifact_name"}, "volumes"
+        )
+        secret = _exact_object(
+            root["runtime_secret"], {"name", "required_keys"}, "runtime secret"
+        )
+        budget = _exact_object(
+            root["budget"], {"maximum_cost_minor_units", "currency"}, "budget"
+        )
+        if type(secret["required_keys"]) is not list:
             raise ValueError("Modal secret keys and runtime environment are malformed")
+        try:
+            secret_keys = tuple(list.__iter__(secret["required_keys"]))
+        except BaseException:
+            raise ValueError("Modal secret keys could not be snapshotted") from None
+        if any(type(key) is not str for key in secret_keys):
+            raise ValueError("Modal secret keys must be exact strings")
+        environment = _exact_string_map(
+            root["runtime_environment"], "runtime environment"
+        )
         return cls(
             environment_name=root["environment_name"], profile=root["profile"],
+            training=ModalTrainingPolicyV1.from_mapping(root["training"]),
             control_volume_name=volumes["control_name"],
             artifact_volume_name=volumes["artifact_name"],
             runtime_secret_name=secret["name"],
-            runtime_secret_keys=tuple(secret["required_keys"]),
-            runtime_environment=dict(root["runtime_environment"]),
+            runtime_secret_keys=secret_keys,
+            runtime_environment=environment,
             timeout_seconds=deployment["timeout_seconds"],
             maximum_cost_minor_units=budget["maximum_cost_minor_units"],
             currency=budget["currency"],
@@ -119,6 +246,7 @@ class ModalHostConfigV1:
         value = {
             "environment_name": self.environment_name,
             "profile": self.profile,
+            "training": self.training.to_dict(),
             "control_volume_name": self.control_volume_name,
             "artifact_volume_name": self.artifact_volume_name,
             "runtime_secret_name": self.runtime_secret_name,
@@ -131,6 +259,28 @@ class ModalHostConfigV1:
         return hashlib.sha256(
             json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": "synaptic-modal-host/v1",
+            "environment_name": self.environment_name,
+            "profile": self.profile,
+            "training": self.training.to_dict(),
+            "deployment": {"timeout_seconds": self.timeout_seconds},
+            "volumes": {
+                "control_name": self.control_volume_name,
+                "artifact_name": self.artifact_volume_name,
+            },
+            "runtime_secret": {
+                "name": self.runtime_secret_name,
+                "required_keys": list(self.runtime_secret_keys),
+            },
+            "runtime_environment": dict(self.runtime_environment),
+            "budget": {
+                "maximum_cost_minor_units": self.maximum_cost_minor_units,
+                "currency": self.currency,
+            },
+        }
 
 
 @dataclass(frozen=True, slots=True)
@@ -302,6 +452,96 @@ def _record_or_verify(path: Path, value: Mapping[str, object]) -> None:
 def _opaque_ref(kind: str, *values: str) -> str:
     payload = "\0".join(_text(value, f"{kind} identity component") for value in values)
     return f"modal-{kind}-" + hashlib.sha256(payload.encode("utf-8")).hexdigest()[:32]
+
+
+@dataclass(frozen=True, slots=True)
+class ModalProviderAuthorityV1:
+    """Pure host authority over one already-deployed Modal provider."""
+
+    config: ModalHostConfigV1
+    training: ModalTrainingPolicyV1
+    state: ModalProviderStateV1
+    journal: ModalDeploymentJournalV1
+
+    def __post_init__(self) -> None:
+        if type(self.config) is not ModalHostConfigV1:
+            raise TypeError("authority config must be an exact ModalHostConfigV1")
+        if type(self.training) is not ModalTrainingPolicyV1:
+            raise TypeError("authority training policy must be exact")
+        if type(self.state) is not ModalProviderStateV1:
+            raise TypeError("authority provider state must be exact")
+        if type(self.journal) is not ModalDeploymentJournalV1:
+            raise TypeError("authority deployment journal must be exact")
+        if self.training is not self.config.training:
+            raise ValueError("authority training policy identity changed")
+        if ModalHostConfigV1.from_mapping(self.config.to_dict()) != self.config:
+            raise ValueError("Modal host config is not canonical")
+        if ModalTrainingPolicyV1.from_mapping(
+            self.training.to_dict()
+        ) != self.training:
+            raise ValueError("Modal training policy is not canonical")
+        if ModalProviderStateV1.from_mapping(
+            self.state.to_dict()
+        ) != self.state:
+            raise ValueError("Modal provider state is not canonical")
+        if ModalDeploymentJournalV1.from_mapping(
+            self.journal.to_dict()
+        ) != self.journal:
+            raise ValueError("Modal deployment journal is not canonical")
+
+        profile = self.state.profile
+        binding = self.state.binding
+        selection = self.state.selection
+        runtime = ModalRuntimeLockV1.packaged()
+        expected_secrets = (
+            ModalSecretProfileV1(
+                self.config.runtime_secret_name,
+                self.config.runtime_secret_keys,
+            ),
+        )
+        if (
+            self.training.provider_ref != "modal"
+            or self.training.profile_ref != self.config.profile
+            or profile.profile != self.config.profile
+            or self.journal.config_digest != self.config.digest
+            or self.journal.deployment_ref != selection.deployment_ref
+            or self.journal.function_name != selection.function_name
+            or profile.app_name != "synaptic-training-v1"
+            or profile.deployment_ref != selection.deployment_ref
+            or profile.function_name != selection.function_name
+            or profile.runtime_lock_ref
+            != "engine://tuner/execution/providers/modal/modal-runtime-v1.lock.json"
+            or profile.control_volume_ref != self.config.control_volume_name
+            or profile.artifact_volume_ref != self.config.artifact_volume_name
+            or profile.secrets != expected_secrets
+            or binding.environment_ref != self.config.environment_name
+            or selection.environment_ref != self.config.environment_name
+            or binding.sdk_version != EXACT_MODAL_SDK_VERSION
+            or selection.sdk_version != EXACT_MODAL_SDK_VERSION
+            or selection.runtime_environment != self.config.runtime_environment
+            or selection.timeout_seconds != self.config.timeout_seconds
+            or self.state.control_volume_id != _opaque_ref(
+                "volume", binding.account_ref, binding.environment_ref,
+                self.config.control_volume_name,
+            )
+            or self.state.artifact_volume_id != _opaque_ref(
+                "volume", binding.account_ref, binding.environment_ref,
+                self.config.artifact_volume_name,
+            )
+        ):
+            raise ValueError("Modal provider authority identities disagree")
+        runtime.validate_selection(selection)
+
+    @classmethod
+    def load(
+        cls, context: ProjectContext, config_path: Path | None = None,
+    ) -> "ModalProviderAuthorityV1":
+        config = ModalHostConfigV1.load(context, config_path)
+        state = ModalProviderStateV1.load(context)
+        journal = ModalDeploymentJournalV1.from_mapping(
+            _read_json(context.state_root / "modal" / "deployment-journal.json")
+        )
+        return cls(config, config.training, state, journal)
 
 
 
@@ -529,10 +769,12 @@ class ExplicitModalHostSession:
             timeout_seconds=self.config.timeout_seconds,
         )
         control_ref = _opaque_ref(
-            "volume", self.binding.account_ref, self.config.control_volume_name
+            "volume", self.binding.account_ref, self.binding.environment_ref,
+            self.config.control_volume_name,
         )
         artifact_ref = _opaque_ref(
-            "volume", self.binding.account_ref, self.config.artifact_volume_name
+            "volume", self.binding.account_ref, self.binding.environment_ref,
+            self.config.artifact_volume_name,
         )
         return ModalProviderStateV1(
             profile, self.binding, selection, control_ref, artifact_ref,
@@ -683,10 +925,12 @@ class ExplicitModalHostSession:
             or selection.secret_requirements_digest
             != profile.secret_requirements_digest
             or volumes["control_volume_id"] != _opaque_ref(
-                "volume", binding.account_ref, self.config.control_volume_name
+                "volume", binding.account_ref, binding.environment_ref,
+                self.config.control_volume_name,
             )
             or volumes["artifact_volume_id"] != _opaque_ref(
-                "volume", binding.account_ref, self.config.artifact_volume_name
+                "volume", binding.account_ref, binding.environment_ref,
+                self.config.artifact_volume_name,
             )
         ):
             raise ValueError("prior Modal provider state differs from host authority")

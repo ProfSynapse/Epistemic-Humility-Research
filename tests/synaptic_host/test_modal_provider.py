@@ -1,12 +1,26 @@
 from __future__ import annotations
 
+import copy
+import dataclasses
+import hashlib
 import json
 from pathlib import Path
+from types import MappingProxyType
 
 import pytest
 
 from synaptic_tuner.api.v1 import ProjectContext
-from synaptic_host.modal_provider import ExplicitModalHostSession, ModalHostConfigV1
+import synaptic_host.modal_provider as modal_provider
+from synaptic_host.modal_provider import (
+    ExplicitModalHostSession,
+    ModalDeploymentJournalV1,
+    ModalHostConfigV1,
+    ModalProviderAuthorityV1,
+    ModalTrainingPolicyV1,
+)
+
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 class StubAuthenticator:
@@ -17,16 +31,25 @@ class StubAuthenticator:
         pass
 
 
-def config() -> ModalHostConfigV1:
-    return ModalHostConfigV1.from_mapping({
+def config_mapping() -> dict[str, object]:
+    return {
         "schema_version": "synaptic-modal-host/v1",
         "environment_name": "main", "profile": "modal-a10-v1",
+        "training": {
+            "schema_version": "synaptic-modal-training-policy/v1",
+            "provider_ref": "modal", "profile_ref": "modal-a10-v1",
+            "model": {"load_in_4bit": False},
+        },
         "deployment": {"timeout_seconds": 3600},
         "volumes": {"control_name": "control-v1", "artifact_name": "artifact-v1"},
         "runtime_secret": {"name": "runtime-v1", "required_keys": ["HF_TOKEN", "SYNAPTIC_EVIDENCE_MAC_KEY"]},
         "runtime_environment": {"PATH": "/opt/conda/bin:/usr/bin", "LANG": "C.UTF-8"},
         "budget": {"maximum_cost_minor_units": 100, "currency": "USD"},
-    })
+    }
+
+
+def config() -> ModalHostConfigV1:
+    return ModalHostConfigV1.from_mapping(config_mapping())
 
 
 class FakeNotFound(Exception):
@@ -209,6 +232,398 @@ def test_host_config_is_closed_and_budget_bounded() -> None:
     assert len(value.digest) == 64
     changed = config().digest
     assert changed == value.digest
+
+
+def test_training_policy_is_exact_canonical_and_domain_separated() -> None:
+    policy = config().training
+    expected = {
+        "schema_version": "synaptic-modal-training-policy/v1",
+        "provider_ref": "modal",
+        "profile_ref": "modal-a10-v1",
+        "model": {"load_in_4bit": False},
+    }
+    canonical = json.dumps(
+        expected, sort_keys=True, separators=(",", ":"),
+        ensure_ascii=False, allow_nan=False,
+    ).encode("utf-8")
+    assert policy.to_dict() == expected
+    assert policy.canonical_bytes() == canonical
+    assert policy.digest == hashlib.sha256(
+        b"synaptic-modal-training-policy/v1\0" + canonical
+    ).hexdigest()
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        policy.profile_ref = "other"  # type: ignore[misc]
+
+
+def test_training_policy_rejects_closed_field_type_and_profile_attacks() -> None:
+    valid = config_mapping()["training"]
+    assert type(valid) is dict
+    attacks = []
+    for missing in tuple(valid):
+        candidate = copy.deepcopy(valid)
+        del candidate[missing]
+        attacks.append(candidate)
+    extra = copy.deepcopy(valid)
+    extra["provider"] = "modal"
+    attacks.append(extra)
+    for field, value in (
+        ("schema_version", "synaptic-modal-training-policy/v2"),
+        ("provider_ref", "docker"),
+        ("profile_ref", " modal-a10-v1"),
+    ):
+        candidate = copy.deepcopy(valid)
+        candidate[field] = value
+        attacks.append(candidate)
+    for value in (1, 0, "true", None):
+        candidate = copy.deepcopy(valid)
+        candidate["model"]["load_in_4bit"] = value
+        attacks.append(candidate)
+    missing_model = copy.deepcopy(valid)
+    missing_model["model"] = {}
+    attacks.append(missing_model)
+    extra_model = copy.deepcopy(valid)
+    extra_model["model"]["quantization"] = "4bit"
+    attacks.append(extra_model)
+    for candidate in attacks:
+        with pytest.raises((TypeError, ValueError)):
+            ModalTrainingPolicyV1.from_mapping(candidate)
+    with pytest.raises(ValueError, match="exact object"):
+        ModalTrainingPolicyV1.from_mapping(MappingProxyType(valid))
+    proxy_model = copy.deepcopy(valid)
+    proxy_model["model"] = MappingProxyType(proxy_model["model"])
+    with pytest.raises(ValueError, match="exact object"):
+        ModalTrainingPolicyV1.from_mapping(proxy_model)
+    class Text(str):
+        pass
+
+    for field in ("schema_version", "provider_ref", "profile_ref"):
+        candidate = copy.deepcopy(valid)
+        candidate[field] = Text(candidate[field])
+        with pytest.raises((TypeError, ValueError)):
+            ModalTrainingPolicyV1.from_mapping(candidate)
+
+
+def test_host_config_requires_policy_and_binds_profile_and_digest() -> None:
+    old = config_mapping()
+    del old["training"]
+    with pytest.raises(ValueError, match="missing or unknown"):
+        ModalHostConfigV1.from_mapping(old)
+    mismatch = config_mapping()
+    mismatch["training"]["profile_ref"] = "modal-other-v1"
+    with pytest.raises(ValueError, match="profile differs"):
+        ModalHostConfigV1.from_mapping(mismatch)
+    changed = config_mapping()
+    changed["training"]["model"]["load_in_4bit"] = True
+    changed_config = ModalHostConfigV1.from_mapping(changed)
+    assert changed_config.training.digest != config().training.digest
+    assert changed_config.digest != config().digest
+    checked = ModalHostConfigV1.from_mapping(json.loads(
+        (ROOT / "training/providers/modal.json").read_text(encoding="utf-8")
+    ))
+    assert checked.training.provider_ref == "modal"
+    assert checked.training.profile_ref == checked.profile
+    assert checked.training.load_in_4bit is False
+
+
+def test_host_config_rejects_nonexact_root_nested_and_collection_types() -> None:
+    callbacks = []
+
+    class Dictionary(dict):
+        def items(self):
+            callbacks.append("items")
+            return super().items()
+
+    class Sequence(list):
+        def __iter__(self):
+            callbacks.append("iter")
+            return super().__iter__()
+
+    valid = config_mapping()
+    for root in (MappingProxyType(valid), Dictionary(valid), object()):
+        callbacks.clear()
+        with pytest.raises(ValueError, match="exact object"):
+            ModalHostConfigV1.from_mapping(root)
+        assert callbacks == []
+    for name in (
+        "deployment", "volumes", "runtime_secret", "runtime_environment",
+        "budget", "training",
+    ):
+        for wrapper in (MappingProxyType, Dictionary):
+            candidate = copy.deepcopy(valid)
+            candidate[name] = wrapper(candidate[name])
+            callbacks.clear()
+            with pytest.raises(ValueError, match="exact object"):
+                ModalHostConfigV1.from_mapping(candidate)
+            assert callbacks == []
+    candidate = copy.deepcopy(valid)
+    candidate["training"]["model"] = MappingProxyType(
+        candidate["training"]["model"]
+    )
+    with pytest.raises(ValueError, match="exact object"):
+        ModalHostConfigV1.from_mapping(candidate)
+    candidate = copy.deepcopy(valid)
+    candidate["runtime_secret"]["required_keys"] = Sequence(
+        candidate["runtime_secret"]["required_keys"]
+    )
+    callbacks.clear()
+    with pytest.raises(ValueError, match="malformed"):
+        ModalHostConfigV1.from_mapping(candidate)
+    assert callbacks == []
+
+
+def test_host_config_rejects_string_subclasses_without_invoking_callbacks() -> None:
+    calls = []
+
+    class HostileText(str):
+        def __eq__(self, other):
+            calls.append("eq")
+            return super().__eq__(other)
+
+        def __hash__(self):
+            calls.append("hash")
+            return super().__hash__()
+
+        def strip(self, *args, **kwargs):
+            calls.append("strip")
+            return super().strip(*args, **kwargs)
+
+        def upper(self):
+            calls.append("upper")
+            return super().upper()
+
+    attacks = []
+    for path in (
+        ("schema_version",), ("environment_name",), ("profile",),
+        ("volumes", "control_name"), ("volumes", "artifact_name"),
+        ("runtime_secret", "name"), ("budget", "currency"),
+        ("training", "schema_version"), ("training", "provider_ref"),
+        ("training", "profile_ref"),
+    ):
+        candidate = copy.deepcopy(config_mapping())
+        target = candidate
+        for component in path[:-1]:
+            target = target[component]
+        target[path[-1]] = HostileText(target[path[-1]])
+        attacks.append(candidate)
+    candidate = copy.deepcopy(config_mapping())
+    candidate["runtime_secret"]["required_keys"][0] = HostileText("HF_TOKEN")
+    attacks.append(candidate)
+    candidate = copy.deepcopy(config_mapping())
+    candidate["runtime_environment"]["LANG"] = HostileText("C.UTF-8")
+    attacks.append(candidate)
+    for candidate in attacks:
+        calls.clear()
+        with pytest.raises((TypeError, ValueError)):
+            ModalHostConfigV1.from_mapping(candidate)
+        assert calls == []
+    hostile_key = copy.deepcopy(config_mapping())
+    profile = hostile_key.pop("profile")
+    hostile_key[HostileText("profile")] = profile
+    calls.clear()
+    with pytest.raises(ValueError, match="keys must be exact strings"):
+        ModalHostConfigV1.from_mapping(hostile_key)
+    assert calls == []
+
+
+def test_host_config_direct_construction_rejects_nonexact_retained_values() -> None:
+    class Text(str):
+        pass
+
+    policy = config().training
+    arguments = dict(
+        environment_name="main", profile="modal-a10-v1", training=policy,
+        control_volume_name="control-v1", artifact_volume_name="artifact-v1",
+        runtime_secret_name="runtime-v1",
+        runtime_secret_keys=("HF_TOKEN", "SYNAPTIC_EVIDENCE_MAC_KEY"),
+        runtime_environment={"LANG": "C.UTF-8"}, timeout_seconds=3600,
+        maximum_cost_minor_units=100, currency="USD",
+    )
+    for name in (
+        "environment_name", "profile", "control_volume_name",
+        "artifact_volume_name", "runtime_secret_name", "currency",
+    ):
+        candidate = dict(arguments)
+        candidate[name] = Text(candidate[name])
+        with pytest.raises(TypeError, match="exact text"):
+            ModalHostConfigV1(**candidate)
+    for environment in (
+        MappingProxyType({"LANG": "C.UTF-8"}),
+        {"LANG": Text("C.UTF-8")},
+    ):
+        with pytest.raises(ValueError, match="exact"):
+            ModalHostConfigV1(**{**arguments, "runtime_environment": environment})
+    with pytest.raises(TypeError, match="exact string tuple"):
+        ModalHostConfigV1(**{
+            **arguments,
+            "runtime_secret_keys": ["HF_TOKEN", "SYNAPTIC_EVIDENCE_MAC_KEY"],
+        })
+    with pytest.raises(TypeError, match="exact string tuple"):
+        ModalHostConfigV1(**{
+            **arguments,
+            "runtime_secret_keys": (Text("HF_TOKEN"), "SYNAPTIC_EVIDENCE_MAC_KEY"),
+        })
+
+
+def authority_inputs(
+    tmp_path: Path,
+) -> tuple[
+    ProjectContext, ModalHostConfigV1, object, ModalDeploymentJournalV1,
+]:
+    context = project_context(tmp_path)
+    selected = context.config_root / "providers" / "modal.json"
+    selected.parent.mkdir(parents=True)
+    selected.write_text(
+        json.dumps(config().to_dict(), sort_keys=True, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(), token_id="token-id", token_secret="token-secret"
+    )
+    state = session.deploy(
+        context=context, authenticator=StubAuthenticator(), hf_token="hf-value"
+    )
+    journal = ModalDeploymentJournalV1.from_mapping(json.loads(
+        (context.state_root / "modal/deployment-journal.json").read_text(
+            encoding="utf-8"
+        )
+    ))
+    return context, config(), state, journal
+
+
+def test_provider_authority_loads_exact_deployed_lock_without_sdk_effects(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    context, expected_config, state, journal = authority_inputs(tmp_path)
+    deployment_state = (
+        dict(FakeVolume.registry), dict(FakeSecret.registry),
+        FakeFunction.current, FakeApp.deployed,
+    )
+    monkeypatch.setattr(
+        FakeClient, "from_credentials",
+        classmethod(lambda *_args, **_kwargs: pytest.fail("SDK client call")),
+    )
+    monkeypatch.setattr(
+        FakeApp, "lookup",
+        classmethod(lambda *_args, **_kwargs: pytest.fail("SDK app call")),
+    )
+    authority = ModalProviderAuthorityV1.load(context)
+    assert authority.config == expected_config
+    assert authority.training is authority.config.training
+    assert authority.state == state
+    assert authority.journal == journal
+    assert deployment_state == (
+        dict(FakeVolume.registry), dict(FakeSecret.registry),
+        FakeFunction.current, FakeApp.deployed,
+    )
+
+
+def test_provider_authority_rejects_policy_state_journal_and_volume_confusion(
+    tmp_path: Path,
+) -> None:
+    context, host_config, state, journal = authority_inputs(tmp_path)
+    replacement_policy = ModalTrainingPolicyV1.from_mapping(
+        host_config.training.to_dict()
+    )
+    with pytest.raises(ValueError, match="policy identity"):
+        ModalProviderAuthorityV1(host_config, replacement_policy, state, journal)
+
+    changed_config_value = host_config.to_dict()
+    changed_config_value["profile"] = "modal-other-v1"
+    changed_config_value["training"]["profile_ref"] = "modal-other-v1"
+    changed_config = ModalHostConfigV1.from_mapping(changed_config_value)
+    changed_journal = ModalDeploymentJournalV1(
+        changed_config.digest, journal.deployment_ref,
+        journal.function_name, journal.resource_policy,
+    )
+    with pytest.raises(ValueError, match="identities disagree"):
+        ModalProviderAuthorityV1(
+            changed_config, changed_config.training, state, changed_journal
+        )
+
+    other_journal = ModalDeploymentJournalV1.create(host_config, adopt_empty=False)
+    with pytest.raises(ValueError, match="identities disagree"):
+        ModalProviderAuthorityV1(
+            host_config, host_config.training, state, other_journal
+        )
+
+    original_control = state.control_volume_id
+    object.__setattr__(state, "control_volume_id", "modal-volume-" + "f" * 32)
+    with pytest.raises(ValueError, match="identities disagree"):
+        ModalProviderAuthorityV1(
+            host_config, host_config.training, state, journal
+        )
+    object.__setattr__(state, "control_volume_id", original_control)
+
+    journal_path = context.state_root / "modal/deployment-journal.json"
+    stale = journal.to_dict()
+    stale["config_digest"] = "0" * 64
+    journal_path.write_text(json.dumps(stale), encoding="utf-8")
+    with pytest.raises(ValueError, match="identities disagree"):
+        ModalProviderAuthorityV1.load(context)
+
+
+def test_provider_authority_rejects_coordinated_cross_environment_state_and_journal(
+    tmp_path: Path,
+) -> None:
+    context, host_config, state, journal = authority_inputs(tmp_path)
+    state_value = state.to_dict()
+    state_value["binding"]["environment_ref"] = "other"
+    state_value["selection"]["environment_ref"] = "other"
+    state_value["volumes"] = {
+        "control_volume_id": modal_provider._opaque_ref(
+            "volume", state.binding.account_ref, "other",
+            host_config.control_volume_name,
+        ),
+        "artifact_volume_id": modal_provider._opaque_ref(
+            "volume", state.binding.account_ref, "other",
+            host_config.artifact_volume_name,
+        ),
+    }
+    assert state_value["volumes"]["control_volume_id"] != state.control_volume_id
+    cross_environment_state = type(state).from_mapping(state_value)
+    with pytest.raises(ValueError, match="identities disagree"):
+        ModalProviderAuthorityV1(
+            host_config, host_config.training, cross_environment_state, journal
+        )
+    state_path = context.state_root / "modal/provider-state.json"
+    state_path.write_text(json.dumps(state_value), encoding="utf-8")
+    with pytest.raises(ValueError, match="identities disagree"):
+        ModalProviderAuthorityV1.load(context)
+
+
+@pytest.mark.parametrize(
+    "attack",
+    [
+        "profile", "deployment", "function", "runtime", "control-volume",
+        "artifact-volume", "sdk-binding", "sdk-selection",
+    ],
+)
+def test_provider_authority_rejects_every_pinned_state_identity(
+    tmp_path: Path, attack: str,
+) -> None:
+    _context, host_config, state, journal = authority_inputs(tmp_path)
+    if attack == "profile":
+        object.__setattr__(state.profile, "profile", "modal-other-v1")
+    elif attack == "deployment":
+        object.__setattr__(
+            state.profile, "deployment_ref", "modal-deployment-" + "d" * 32
+        )
+    elif attack == "function":
+        object.__setattr__(state.profile, "function_name", "synaptic-other")
+    elif attack == "runtime":
+        object.__setattr__(state.selection, "image_digest", "f" * 64)
+    elif attack == "control-volume":
+        object.__setattr__(state.profile, "control_volume_ref", "control-other")
+    elif attack == "artifact-volume":
+        object.__setattr__(state.profile, "artifact_volume_ref", "artifact-other")
+    elif attack == "sdk-binding":
+        object.__setattr__(state.binding, "sdk_version", "1.5.5")
+    else:
+        object.__setattr__(state.selection, "sdk_version", "1.5.5")
+    with pytest.raises((TypeError, ValueError)):
+        ModalProviderAuthorityV1(
+            host_config, host_config.training, state, journal
+        )
 
 
 def test_explicit_session_deploys_once_and_writes_only_host_state(tmp_path: Path) -> None:

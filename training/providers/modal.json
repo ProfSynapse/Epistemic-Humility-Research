@@ -2,6 +2,14 @@
   "schema_version": "synaptic-modal-host/v1",
   "environment_name": "main",
   "profile": "modal-a10-v1",
+  "training": {
+    "schema_version": "synaptic-modal-training-policy/v1",
+    "provider_ref": "modal",
+    "profile_ref": "modal-a10-v1",
+    "model": {
+      "load_in_4bit": false
+    }
+  },
   "deployment": {
     "timeout_seconds": 3600
   },
