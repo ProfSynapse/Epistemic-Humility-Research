@@ -25,7 +25,9 @@ def main(argv: list[str] | None = None) -> int:
         return emit_training_run_result_v2(prepared)
     if prepared.provider_ref == "docker":
         return emit_training_run_result_v2(
-            dispatch_validated_training_run_v1(prepared)
+            dispatch_validated_training_run_v1(
+                prepared, isolated_child_authority=None
+            )
         )
     try:
         from .launcher import ensure_and_reexec
@@ -41,10 +43,12 @@ def main(argv: list[str] | None = None) -> int:
         return emit_training_run_result_v2(
             bootstrap_unavailable_result_v2(prepared)
         )
-    if child is not None:
+    if type(child) is int:
         return child
     return emit_training_run_result_v2(
-        dispatch_validated_training_run_v1(prepared)
+        dispatch_validated_training_run_v1(
+            prepared, isolated_child_authority=child
+        )
     )
 
 

@@ -12,8 +12,10 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import threading
 import unicodedata
 import urllib.request
+import weakref
 from pathlib import Path
 from typing import Sequence
 
@@ -42,6 +44,13 @@ sys.path[:0]=[project_root,engine_root]
 sys.argv=['synaptic_host',*sys.argv[3:]]
 runpy.run_module('synaptic_host',run_name='__main__')
 """
+
+
+class _IsolatedModalChildAuthorityV1:
+    __slots__ = ("__weakref__",)
+
+    def __new__(cls, *_args: object, **_kwargs: object):
+        raise TypeError("isolated child authority is factory-issued")
 
 
 def _digest(path: Path) -> str:
@@ -424,10 +433,152 @@ def _build_runtime(*, project_root: Path, requirements: Path, expected: str) -> 
         raise
 
 
+def _install_isolated_child_authority_v1():
+    lock = threading.RLock()
+    records: dict[int, tuple[object, ...]] = {}
+    runtime_proof = _runtime_proof
+    launcher_path = launcher_python
+    path_type = Path
+    environment = os.environ
+    executable_owner = sys
+
+    def current_credentials() -> tuple[str, str] | None:
+        values = tuple(
+            _validated_child_environment_value(environment.get(name))
+            for name in _MODAL_CREDENTIAL_ENV
+        )
+        if any(value is None for value in values):
+            return None
+        return values  # type: ignore[return-value]
+
+    def validate_runtime(
+        project_root: Path, engine_root: Path, ingress_digest: str,
+        contract_identity_digest: str, proof_digest: str,
+    ) -> bool:
+        try:
+            if (
+                environment.get(_MARKER) != "1"
+                or environment.get(_INGRESS_DIGEST) != ingress_digest
+                or environment.get(_CONTRACT_IDENTITY_DIGEST)
+                != contract_identity_digest
+                or environment.get(_RUNTIME_PROOF_DIGEST) != proof_digest
+            ):
+                return False
+            project = project_root.resolve(strict=True)
+            engine = engine_root.resolve(strict=True)
+            if project != project_root or engine != engine_root:
+                return False
+            _body, observed_proof = runtime_proof(project, engine)
+            if observed_proof != proof_digest:
+                return False
+            return (
+                path_type(executable_owner.executable).resolve(strict=True)
+                == launcher_path(project).resolve(strict=True)
+            )
+        except BaseException:
+            return False
+
+    def issue(
+        *, project_root: Path, engine_root: Path, ingress_digest: str,
+        contract_identity_digest: str, proof_digest: str,
+    ) -> object:
+        project = project_root.resolve(strict=True)
+        engine = engine_root.resolve(strict=True)
+        credentials = current_credentials()
+        if not validate_runtime(
+            project, engine, ingress_digest, contract_identity_digest,
+            proof_digest,
+        ):
+            raise RuntimeError("isolated launcher authority mismatch")
+        value = object.__new__(_IsolatedModalChildAuthorityV1)
+        anchor = object()
+        object_id = id(value)
+
+        def remove(reference: weakref.ReferenceType[object]) -> None:
+            with lock:
+                current = records.get(object_id)
+                if (
+                    current is not None
+                    and current[0] is reference
+                    and current[1] is anchor
+                ):
+                    del records[object_id]
+
+        reference = weakref.ref(value, remove)
+        record = (
+            reference, anchor, project, engine, ingress_digest,
+            contract_identity_digest, proof_digest, credentials, False,
+        )
+        with lock:
+            records[object_id] = record
+        return value
+
+    def authenticate(value: object) -> bool:
+        if type(value) is not _IsolatedModalChildAuthorityV1:
+            return False
+        with lock:
+            record = records.get(id(value))
+            return bool(
+                record is not None
+                and record[0]() is value
+                and record[8] is False
+            )
+
+    def consume(
+        value: object, *, ingress_digest: str,
+        contract_identity_digest: str,
+    ) -> tuple[Path, Path, str, str] | None:
+        if type(value) is not _IsolatedModalChildAuthorityV1:
+            return None
+        object_id = id(value)
+        with lock:
+            record = records.get(object_id)
+            if (
+                record is None or record[0]() is not value
+                or record[8] is not False
+            ):
+                return None
+            records[object_id] = (*record[:8], True)
+        (
+            reference, anchor, project, engine, expected_ingress,
+            expected_contract, proof_digest, credentials, _unused,
+        ) = record
+        if (
+            ingress_digest != expected_ingress
+            or contract_identity_digest != expected_contract
+            or current_credentials() != credentials
+            or not validate_runtime(
+                project, engine, expected_ingress, expected_contract,
+                proof_digest,
+            )
+        ):
+            return None
+        with lock:
+            current = records.get(object_id)
+            if not (
+                current is not None and current[0] is reference
+                and current[1] is anchor and current[8] is True
+                and reference() is value
+            ):
+                return None
+        if credentials is None:
+            return project, engine, "", ""
+        return project, engine, credentials[0], credentials[1]
+
+    return issue, authenticate, consume
+
+
+(
+    _issue_isolated_child_authority_v1,
+    _authenticate_isolated_child_authority_v1,
+    _consume_isolated_child_authority_v1,
+) = _install_isolated_child_authority_v1()
+
+
 def ensure_and_reexec(
     *, project_root: Path, engine_root: Path, argv: Sequence[str],
     ingress_digest: str, contract_identity_digest: str,
-) -> int | None:
+) -> int | object:
     """Enter or validate the exact locked interpreter for one ingress digest."""
     digests = (ingress_digest, contract_identity_digest)
     if any(
@@ -453,7 +604,12 @@ def ensure_and_reexec(
             raise RuntimeError("isolated launcher runtime proof mismatch")
         if Path(sys.executable).resolve(strict=True) != python.resolve(strict=True):
             raise RuntimeError("isolated Modal launcher interpreter mismatch") from None
-        return None
+        return _issue_isolated_child_authority_v1(
+            project_root=project_root, engine_root=engine_root,
+            ingress_digest=ingress_digest,
+            contract_identity_digest=contract_identity_digest,
+            proof_digest=proof_digest,
+        )
     try:
         _body, proof_digest = _runtime_proof(project_root, engine_root)
     except BaseException:

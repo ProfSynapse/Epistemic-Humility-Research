@@ -10,6 +10,7 @@ import subprocess
 import sys
 import types
 import unicodedata
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
@@ -95,6 +96,42 @@ def _locked_runtime(tmp_path: Path) -> tuple[Path, Path, Path, str]:
     return project, engine, python, expected
 
 
+def _mint_child_authority(
+    monkeypatch, tmp_path: Path, ingress: TrainingRunIngressV1,
+    *, runtime_proof_callback=None, environment_factory=None,
+) -> object:
+    project, engine, python, _expected = _locked_runtime(tmp_path)
+    monkeypatch.setenv(launcher._MARKER, "1")
+    monkeypatch.setenv(launcher._INGRESS_DIGEST, ingress.envelope_digest)
+    monkeypatch.setenv(
+        launcher._CONTRACT_IDENTITY_DIGEST, ingress.contract_identity_digest
+    )
+    monkeypatch.setenv(launcher._RUNTIME_PROOF_DIGEST, "f" * 64)
+    monkeypatch.setenv("MODAL_TOKEN_ID", "isolated-id")
+    monkeypatch.setenv("MODAL_TOKEN_SECRET", "isolated-secret")
+    monkeypatch.setattr(
+        launcher, "_runtime_proof",
+        runtime_proof_callback or (lambda *_a: ({}, "f" * 64)),
+    )
+    monkeypatch.setattr(launcher.sys, "executable", str(python))
+    if environment_factory is not None:
+        monkeypatch.setattr(
+            launcher.os, "environ",
+            environment_factory(dict(launcher.os.environ)),
+        )
+    issue, authenticate, consume = launcher._install_isolated_child_authority_v1()
+    monkeypatch.setattr(launcher, "_issue_isolated_child_authority_v1", issue)
+    monkeypatch.setattr(
+        launcher, "_authenticate_isolated_child_authority_v1", authenticate
+    )
+    monkeypatch.setattr(launcher, "_consume_isolated_child_authority_v1", consume)
+    return launcher.ensure_and_reexec(
+        project_root=project, engine_root=engine, argv=[],
+        ingress_digest=ingress.envelope_digest,
+        contract_identity_digest=ingress.contract_identity_digest,
+    )
+
+
 def test_cli_and_entrypoint_import_cold_without_engine_provider_or_launcher() -> None:
     code = f"""
 import json, sys
@@ -171,25 +208,307 @@ def test_modal_parent_prepares_before_launcher_and_emits_nothing(
     assert capsys.readouterr().out == ""
 
 
-def test_authoritative_child_reprepares_then_emits_composition_unavailable_once(
+def test_authoritative_child_passes_authority_and_emits_once(
     monkeypatch, capsys, tmp_path: Path,
 ) -> None:
     ingress = _ingress(tmp_path)
     monkeypatch.setenv("MODAL_TOKEN_ID", "test-id")
     monkeypatch.setenv("MODAL_TOKEN_SECRET", "test-secret")
     events = []
+    authority = object()
     fake = types.ModuleType("synaptic_host.launcher")
-    fake.ensure_and_reexec = lambda **_kwargs: events.append("launcher") or None
+    fake.ensure_and_reexec = lambda **_kwargs: events.append("launcher") or authority
     monkeypatch.setitem(sys.modules, "synaptic_host.launcher", fake)
     monkeypatch.setattr(
         entry, "prepare_training_run_ingress_v1",
         lambda *_a, **_k: events.append("prepare") or ingress,
     )
+    monkeypatch.setattr(
+        entry, "dispatch_validated_training_run_v1",
+        lambda value, *, isolated_child_authority: (
+            events.append((value, isolated_child_authority))
+            or cli._failure(
+                TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE,
+                provider_ref=value.provider_ref, config_ref=value.config_ref,
+                destination_ref=value.destination_ref,
+                input_digest=value.input_digest,
+            )
+        ),
+    )
     assert entry.main(["training", "run"]) == 4
-    assert events == ["prepare", "launcher"]
+    assert events == ["prepare", "launcher", (ingress, authority)]
     lines = capsys.readouterr().out.splitlines()
     assert len(lines) == 1
     assert json.loads(lines[0])["code"] == "COMPOSITION_UNAVAILABLE"
+
+
+def test_direct_modal_none_and_forged_authority_never_import_training(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    ingress = _ingress(tmp_path)
+    imported: list[str] = []
+    original_import = cli.importlib.import_module
+
+    def guarded(name: str, *args, **kwargs):
+        imported.append(name)
+        if name == "synaptic_host.modal_training":
+            pytest.fail("unauthenticated dispatch imported Modal composition")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(cli.importlib, "import_module", guarded)
+    assert (
+        cli.dispatch_validated_training_run_v1(
+            ingress, isolated_child_authority=None
+        ).code
+        is TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
+    )
+    assert imported == []
+    assert (
+        cli.dispatch_validated_training_run_v1(
+            ingress, isolated_child_authority=object()
+        ).code
+        is TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
+    )
+    assert "synaptic_host.modal_training" not in imported
+
+
+def test_isolated_authority_is_one_use_and_result_is_reconstructed(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    ingress = _ingress(tmp_path / "ingress")
+    authority = _mint_child_authority(monkeypatch, tmp_path / "runtime", ingress)
+    calls: list[tuple[object, ...]] = []
+    fake = types.ModuleType("synaptic_host.modal_training")
+
+    def execute(value, **kwargs):
+        calls.append((value, kwargs))
+        return cli._failure(
+            TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE,
+            provider_ref=value.provider_ref, config_ref=value.config_ref,
+            destination_ref=value.destination_ref,
+            input_digest=value.input_digest,
+        )
+
+    fake.execute_modal_training_run_v2 = execute
+    monkeypatch.setitem(sys.modules, "synaptic_host.modal_training", fake)
+    first = cli.dispatch_validated_training_run_v1(
+        ingress, isolated_child_authority=authority
+    )
+    assert type(first) is TrainingRunCommandResultV2
+    assert first.code is TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE
+    assert len(calls) == 1
+    assert calls[0][0] is ingress
+    assert calls[0][1]["token_id"] == "isolated-id"
+    assert calls[0][1]["token_secret"] == "isolated-secret"
+    second = cli.dispatch_validated_training_run_v1(
+        ingress, isolated_child_authority=authority
+    )
+    assert second.code is TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
+    assert len(calls) == 1
+
+
+def test_concurrent_child_authority_consumption_allows_one_executor_call(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    ingress = _ingress(tmp_path / "ingress")
+    authority = _mint_child_authority(monkeypatch, tmp_path / "runtime", ingress)
+    calls: list[object] = []
+    fake = types.ModuleType("synaptic_host.modal_training")
+
+    def execute(value, **_kwargs):
+        calls.append(value)
+        return cli._failure(
+            TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE,
+            provider_ref=value.provider_ref, config_ref=value.config_ref,
+            destination_ref=value.destination_ref,
+            input_digest=value.input_digest,
+        )
+
+    fake.execute_modal_training_run_v2 = execute
+    monkeypatch.setitem(sys.modules, "synaptic_host.modal_training", fake)
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        results = tuple(
+            pool.map(
+                lambda _index: cli.dispatch_validated_training_run_v1(
+                    ingress, isolated_child_authority=authority
+                ),
+                range(64),
+            )
+        )
+    assert len(calls) == 1
+    assert sum(
+        result.code is TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE
+        for result in results
+    ) == 1
+    assert all(
+        result.code in {
+            TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE,
+            TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,
+        }
+        for result in results
+    )
+@pytest.mark.parametrize(
+    "mutation",
+    ("credential", "proof", "interpreter"),
+)
+def test_isolated_authority_runtime_drift_fails_before_executor(
+    monkeypatch, tmp_path: Path, mutation: str,
+) -> None:
+    ingress = _ingress(tmp_path / "ingress")
+    authority = _mint_child_authority(monkeypatch, tmp_path / "runtime", ingress)
+    fake = types.ModuleType("synaptic_host.modal_training")
+    fake.execute_modal_training_run_v2 = lambda *_a, **_k: pytest.fail(
+        "drifted authority reached executor"
+    )
+    monkeypatch.setitem(sys.modules, "synaptic_host.modal_training", fake)
+    if mutation == "credential":
+        monkeypatch.setenv("MODAL_TOKEN_SECRET", "changed")
+    elif mutation == "proof":
+        monkeypatch.setenv(launcher._RUNTIME_PROOF_DIGEST, "0" * 64)
+    else:
+        monkeypatch.setattr(launcher.sys, "executable", str(ROOT / "foreign-python"))
+    result = cli.dispatch_validated_training_run_v1(
+        ingress, isolated_child_authority=authority
+    )
+    assert result.code is TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
+
+
+@pytest.mark.parametrize("raises", (False, True))
+def test_consume_runtime_proof_ingress_mutation_closes_before_modal_import(
+    monkeypatch, tmp_path: Path, raises: bool,
+) -> None:
+    ingress = _ingress(tmp_path / "ingress")
+    calls = 0
+
+    def runtime_proof(*_args):
+        nonlocal calls
+        calls += 1
+        if calls == 3:
+            object.__setattr__(ingress, "source_sha256", "0" * 64)
+            if raises:
+                raise RuntimeError("private runtime detail")
+        return {}, "f" * 64
+
+    authority = _mint_child_authority(
+        monkeypatch, tmp_path / "runtime", ingress,
+        runtime_proof_callback=runtime_proof,
+    )
+    imported: list[str] = []
+    original_import = cli.importlib.import_module
+
+    def guarded(name: str, *args, **kwargs):
+        imported.append(name)
+        if name == "synaptic_host.modal_training":
+            pytest.fail("mutated ingress reached Modal import")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(cli.importlib, "import_module", guarded)
+    result = cli.dispatch_validated_training_run_v1(
+        ingress, isolated_child_authority=authority
+    )
+    assert result.code is TrainingRunCommandCodeV2.INTERNAL_FAILURE
+    assert "synaptic_host.modal_training" not in imported
+    assert calls == 3
+    assert "private runtime detail" not in result.canonical_json()
+
+
+def test_consume_credential_environment_mutation_closes_before_modal_import(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    ingress = _ingress(tmp_path / "ingress")
+
+    class MutatingEnvironment(dict):
+        token_reads = 0
+
+        def get(self, name, default=None):
+            if name == "MODAL_TOKEN_ID":
+                self.token_reads += 1
+                if self.token_reads == 2:
+                    object.__setattr__(ingress, "source_sha256", "0" * 64)
+            return dict.get(self, name, default)
+
+    authority = _mint_child_authority(
+        monkeypatch, tmp_path / "runtime", ingress,
+        environment_factory=MutatingEnvironment,
+    )
+    imported: list[str] = []
+    original_import = cli.importlib.import_module
+
+    def guarded(name: str, *args, **kwargs):
+        imported.append(name)
+        if name == "synaptic_host.modal_training":
+            pytest.fail("credential mutation reached Modal import")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(cli.importlib, "import_module", guarded)
+    result = cli.dispatch_validated_training_run_v1(
+        ingress, isolated_child_authority=authority
+    )
+    assert result.code is TrainingRunCommandCodeV2.INTERNAL_FAILURE
+    assert "synaptic_host.modal_training" not in imported
+
+
+def test_authority_authentication_mutation_closes_before_consumption_or_import(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    ingress = _ingress(tmp_path / "ingress")
+    authority = _mint_child_authority(monkeypatch, tmp_path / "runtime", ingress)
+    original = launcher._authenticate_isolated_child_authority_v1
+    consumed = []
+    imported: list[str] = []
+    original_import = cli.importlib.import_module
+
+    def authenticate(value):
+        object.__setattr__(ingress, "source_sha256", "0" * 64)
+        return original(value)
+
+    monkeypatch.setattr(
+        launcher, "_authenticate_isolated_child_authority_v1", authenticate
+    )
+    monkeypatch.setattr(
+        launcher, "_consume_isolated_child_authority_v1",
+        lambda *_a, **_k: consumed.append(True),
+    )
+
+    def guarded(name: str, *args, **kwargs):
+        imported.append(name)
+        if name == "synaptic_host.modal_training":
+            pytest.fail("authority mutation reached Modal import")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(cli.importlib, "import_module", guarded)
+    result = cli.dispatch_validated_training_run_v1(
+        ingress, isolated_child_authority=authority
+    )
+    assert result.code is TrainingRunCommandCodeV2.INTERNAL_FAILURE
+    assert consumed == []
+    assert "synaptic_host.modal_training" not in imported
+
+
+def test_executor_import_mutation_closes_before_executor_call(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    ingress = _ingress(tmp_path / "ingress")
+    authority = _mint_child_authority(monkeypatch, tmp_path / "runtime", ingress)
+    executor_calls = []
+    fake = types.ModuleType("synaptic_host.modal_training")
+    fake.execute_modal_training_run_v2 = (
+        lambda *_a, **_k: executor_calls.append(True)
+    )
+    original_import = cli.importlib.import_module
+
+    def importing(name: str, *args, **kwargs):
+        if name == "synaptic_host.modal_training":
+            object.__setattr__(ingress, "source_sha256", "0" * 64)
+            return fake
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(cli.importlib, "import_module", importing)
+    result = cli.dispatch_validated_training_run_v1(
+        ingress, isolated_child_authority=authority
+    )
+    assert result.code is TrainingRunCommandCodeV2.INTERNAL_FAILURE
+    assert executor_calls == []
 
 
 def test_reexec_mutation_digest_mismatch_is_bootstrap_unavailable(
@@ -397,10 +716,17 @@ def test_launcher_child_requires_exact_marker_digest_interpreter_and_lock(
     monkeypatch.setattr(launcher, "_runtime_proof", lambda *_a: ({}, "f" * 64))
     monkeypatch.setattr(launcher.sys, "executable", str(python))
     monkeypatch.setattr(launcher.platform, "python_version", lambda: launcher._PYTHON_VERSION)
-    assert launcher.ensure_and_reexec(
+    issue, authenticate, consume = launcher._install_isolated_child_authority_v1()
+    monkeypatch.setattr(launcher, "_issue_isolated_child_authority_v1", issue)
+    monkeypatch.setattr(
+        launcher, "_authenticate_isolated_child_authority_v1", authenticate
+    )
+    monkeypatch.setattr(launcher, "_consume_isolated_child_authority_v1", consume)
+    authority = launcher.ensure_and_reexec(
         project_root=project, engine_root=engine, argv=[], ingress_digest=digest,
         contract_identity_digest="e" * 64,
-    ) is None
+    )
+    assert launcher._authenticate_isolated_child_authority_v1(authority)
     monkeypatch.setenv(launcher._INGRESS_DIGEST, "d" * 64)
     with pytest.raises(RuntimeError, match="authority"):
         launcher.ensure_and_reexec(

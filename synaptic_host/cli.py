@@ -728,6 +728,8 @@ def prepare_training_run_ingress_v1(
 
 def dispatch_validated_training_run_v1(
     ingress: TrainingRunIngressV1,
+    *,
+    isolated_child_authority: object | None,
 ) -> TrainingRunCommandResultV2:
     authenticated = _authenticate_training_run_ingress_v1(ingress)
     if authenticated is None:
@@ -735,40 +737,93 @@ def dispatch_validated_training_run_v1(
     try:
         provider_ref, config_ref, destination_ref, input_digest, *_unused = authenticated
         if provider_ref == "docker":
-            code = TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE
-        else:
-            credentials = tuple(
-                os.environ.get(name)
-                for name in ("MODAL_TOKEN_ID", "MODAL_TOKEN_SECRET")
+            return _failure(
+                TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE,
+                provider_ref=provider_ref, config_ref=config_ref,
+                destination_ref=destination_ref, input_digest=input_digest,
             )
-            valid_credentials = True
-            for value in credentials:
-                if type(value) is not str:
-                    valid_credentials = False
-                    break
-                try:
-                    encoded = value.encode("utf-8")
-                except UnicodeError:
-                    valid_credentials = False
-                    break
-                if (
-                    not encoded or len(encoded) > 4096
-                    or any(
-                        unicodedata.category(character).startswith("C")
-                        for character in value
-                    )
-                ):
-                    valid_credentials = False
-                    break
-            code = (
-                TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE
-                if valid_credentials
-                else TrainingRunCommandCodeV2.CREDENTIALS_UNAVAILABLE
+        if isolated_child_authority is None:
+            return _failure(
+                TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,
+                provider_ref=provider_ref, config_ref=config_ref,
+                destination_ref=destination_ref, input_digest=input_digest,
             )
-        return _failure(
-            code, provider_ref=provider_ref, config_ref=config_ref,
-            destination_ref=destination_ref, input_digest=input_digest,
+        launcher = importlib.import_module("synaptic_host.launcher")
+        if _authenticate_training_run_ingress_v1(ingress) != authenticated:
+            return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
+        authenticate_authority = launcher._authenticate_isolated_child_authority_v1
+        consume_authority = launcher._consume_isolated_child_authority_v1
+        authority_authentication_failed = False
+        try:
+            authority_is_current = authenticate_authority(
+                isolated_child_authority
+            )
+        except BaseException:
+            authority_authentication_failed = True
+            authority_is_current = False
+        if _authenticate_training_run_ingress_v1(ingress) != authenticated:
+            return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
+        if authority_authentication_failed:
+            return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
+        if not authority_is_current:
+            return _failure(
+                TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,
+                provider_ref=provider_ref, config_ref=config_ref,
+                destination_ref=destination_ref, input_digest=input_digest,
+            )
+        consumption_failed = False
+        try:
+            isolated = consume_authority(
+                isolated_child_authority,
+                ingress_digest=ingress.envelope_digest,
+                contract_identity_digest=ingress.contract_identity_digest,
+            )
+        except BaseException:
+            consumption_failed = True
+            isolated = None
+        if _authenticate_training_run_ingress_v1(ingress) != authenticated:
+            return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
+        if consumption_failed:
+            return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
+        if isolated is None:
+            return _failure(
+                TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,
+                provider_ref=provider_ref, config_ref=config_ref,
+                destination_ref=destination_ref, input_digest=input_digest,
+            )
+        if type(isolated) is not tuple or len(isolated) != 4:
+            return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
+        project_root, engine_root, token_id, token_secret = isolated
+        if type(token_id) is not str or type(token_secret) is not str:
+            return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
+        if not token_id or not token_secret:
+            return _failure(
+                TrainingRunCommandCodeV2.CREDENTIALS_UNAVAILABLE,
+                provider_ref=provider_ref, config_ref=config_ref,
+                destination_ref=destination_ref, input_digest=input_digest,
+            )
+        modal_training = importlib.import_module("synaptic_host.modal_training")
+        executor = modal_training.execute_modal_training_run_v2
+        if _authenticate_training_run_ingress_v1(ingress) != authenticated:
+            return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
+        result = executor(
+            ingress, project_root=project_root, engine_root=engine_root,
+            token_id=token_id, token_secret=token_secret,
         )
+        if _authenticate_training_run_ingress_v1(ingress) != authenticated:
+            return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
+        if type(result) is not TrainingRunCommandResultV2:
+            return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
+        rebuilt = TrainingRunCommandResultV2(
+            result.schema_version, result.status, result.code,
+            result.provider_ref, result.config_ref, result.destination_ref,
+            result.input_digest, result.project_ref, result.run_id,
+            result.plan_fingerprint, result.effect_id,
+            result.provider_job_ref, result.submitted_at,
+        )
+        if rebuilt != result:
+            return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
+        return rebuilt
     except BaseException:
         return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
 

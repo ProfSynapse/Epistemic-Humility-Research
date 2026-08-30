@@ -258,29 +258,35 @@ def test_engine_module_outside_pinned_root_is_bootstrap_unavailable(
 
 def test_docker_is_unavailable_only_after_complete_ingress(tmp_path: Path) -> None:
     ingress = _ingress(tmp_path, "docker")
-    result = dispatch_validated_training_run_v1(ingress)
+    result = dispatch_validated_training_run_v1(
+        ingress, isolated_child_authority=None
+    )
     assert result.status is TrainingRunCommandStatusV2.UNAVAILABLE
     assert result.code is TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE
     assert result.input_digest == ingress.input_digest
 
 
-def test_modal_requires_credentials_before_composition(
+def test_direct_modal_dispatch_requires_isolated_child_authority(
     monkeypatch, tmp_path: Path,
 ) -> None:
     ingress = _ingress(tmp_path)
     monkeypatch.delenv("MODAL_TOKEN_ID", raising=False)
     monkeypatch.delenv("MODAL_TOKEN_SECRET", raising=False)
-    unavailable = dispatch_validated_training_run_v1(ingress)
-    assert unavailable.code is TrainingRunCommandCodeV2.CREDENTIALS_UNAVAILABLE
+    unavailable = dispatch_validated_training_run_v1(
+        ingress, isolated_child_authority=None
+    )
+    assert unavailable.code is TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
     monkeypatch.setenv("MODAL_TOKEN_ID", "id-value")
     monkeypatch.setenv("MODAL_TOKEN_SECRET", "secret-value")
-    unavailable = dispatch_validated_training_run_v1(ingress)
-    assert unavailable.code is TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE
+    unavailable = dispatch_validated_training_run_v1(
+        ingress, isolated_child_authority=None
+    )
+    assert unavailable.code is TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
     assert tuple(item.value for item in TrainingRunCommandStatusV2) == (
         "rejected", "unavailable", "submitted", "reconcile_required",
     )
     with pytest.raises(TypeError):
-        dispatch_validated_training_run_v1(ingress, modal_boundary=lambda _: None)  # type: ignore[call-arg]
+        dispatch_validated_training_run_v1(ingress)  # type: ignore[call-arg]
 
 
 @pytest.mark.parametrize(
@@ -302,8 +308,10 @@ def test_modal_credentials_are_exact_bounded_all_or_nothing(
         monkeypatch.setenv("MODAL_TOKEN_ID", token_id)
     if token_secret is not None:
         monkeypatch.setenv("MODAL_TOKEN_SECRET", token_secret)
-    result = dispatch_validated_training_run_v1(ingress)
-    assert result.code is TrainingRunCommandCodeV2.CREDENTIALS_UNAVAILABLE
+    result = dispatch_validated_training_run_v1(
+        ingress, isolated_child_authority=None
+    )
+    assert result.code is TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
     if token_id:
         assert token_id not in result.to_dict().values()
     if token_secret:
@@ -321,7 +329,9 @@ def test_docker_dispatch_does_not_read_modal_credentials(monkeypatch, tmp_path: 
 
     monkeypatch.setattr(cli.os, "environ", ForbiddenEnvironment(cli.os.environ))
     assert (
-        dispatch_validated_training_run_v1(ingress).code
+        dispatch_validated_training_run_v1(
+            ingress, isolated_child_authority=None
+        ).code
         is TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE
     )
 
@@ -336,13 +346,17 @@ def test_modal_credential_string_subclasses_are_rejected(monkeypatch, tmp_path: 
     environment["MODAL_TOKEN_SECRET"] = "secret"
     monkeypatch.setattr(cli.os, "environ", environment)
     assert (
-        dispatch_validated_training_run_v1(ingress).code
-        is TrainingRunCommandCodeV2.CREDENTIALS_UNAVAILABLE
+        dispatch_validated_training_run_v1(
+            ingress, isolated_child_authority=None
+        ).code
+        is TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
     )
 
 
 def test_emit_is_one_canonical_line_with_exact_exit(capsys, tmp_path: Path) -> None:
-    result = dispatch_validated_training_run_v1(_ingress(tmp_path, "docker"))
+    result = dispatch_validated_training_run_v1(
+        _ingress(tmp_path, "docker"), isolated_child_authority=None
+    )
     assert emit_training_run_result_v2(result) == 4
     output = capsys.readouterr().out
     assert output == result.canonical_json() + "\n"
@@ -554,7 +568,9 @@ def test_ingress_constructor_is_unavailable_and_unenrolled_copies_fail_closed(
     for field in dataclasses.fields(TrainingRunIngressV1):
         object.__setattr__(copied, field.name, getattr(ingress, field.name))
     assert copied == ingress
-    rejected = dispatch_validated_training_run_v1(copied)
+    rejected = dispatch_validated_training_run_v1(
+        copied, isolated_child_authority=None
+    )
     assert rejected.code is TrainingRunCommandCodeV2.INTERNAL_FAILURE
     assert rejected.provider_ref is rejected.config_ref is None
     assert rejected.destination_ref is rejected.input_digest is None
@@ -568,12 +584,16 @@ def test_dispatch_rejects_forged_or_mutated_training_input(tmp_path: Path) -> No
     object.__setattr__(forged, "training_input", object())
     assert forged.envelope_digest == forged.recomputed_envelope_digest()
     assert (
-        dispatch_validated_training_run_v1(forged).code
+        dispatch_validated_training_run_v1(
+            forged, isolated_child_authority=None
+        ).code
         is TrainingRunCommandCodeV2.INTERNAL_FAILURE
     )
     object.__setattr__(ingress, "training_input", object())
     assert (
-        dispatch_validated_training_run_v1(ingress).code
+        dispatch_validated_training_run_v1(
+            ingress, isolated_child_authority=None
+        ).code
         is TrainingRunCommandCodeV2.INTERNAL_FAILURE
     )
 
@@ -582,7 +602,12 @@ def test_concurrent_dispatch_authentication_converges(tmp_path: Path) -> None:
     ingress = _ingress(tmp_path, "docker")
     with ThreadPoolExecutor(max_workers=16) as pool:
         results = tuple(
-            pool.map(lambda _index: dispatch_validated_training_run_v1(ingress), range(128))
+            pool.map(
+                lambda _index: dispatch_validated_training_run_v1(
+                    ingress, isolated_child_authority=None
+                ),
+                range(128),
+            )
         )
     assert all(
         result.code is TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE
