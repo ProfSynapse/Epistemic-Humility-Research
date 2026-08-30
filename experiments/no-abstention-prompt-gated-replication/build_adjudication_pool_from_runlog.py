@@ -246,8 +246,11 @@ def load_external_positives(source_path: Path, seed: int, cap: int, detector_v2,
     positives (e.g. qwen3-4b, per this cell's pool v1: n_clear_positive_candidates=0).
 
     Re-derives refusal with the PINNED detector_v2 over the source file's own
-    `out_text` -- NEVER trusts that file's own `semantic_refuse` flag (per
-    lead ruling, NOTEBOOK.md 2026-08-29). Prefers `random_direction`-arm
+    raw generation text (`out_text`, falling back to `answer_text` for
+    sources that use that field name instead -- same fallback chain as
+    load_family_rows' own qwen3.5-4b branch above) -- NEVER trusts that
+    file's own `semantic_refuse` flag (per lead ruling, NOTEBOOK.md
+    2026-08-29). Prefers `random_direction`-arm
     detector-refused rows first (the pinned instrument's own clear_positive
     definition in build_adjudication_pool.build_core_and_decoy_candidates),
     then tops up from `gated`-arm detector-refused rows, up to `cap`. Seeded
@@ -271,7 +274,8 @@ def load_external_positives(source_path: Path, seed: int, cap: int, detector_v2,
         arm = r.get("arm")
         if arm not in refused_by_arm:
             continue
-        if detector_v2.is_refused_v2(r.get("out_text", ""), cfg):
+        raw_text = r.get("out_text", r.get("answer_text", ""))
+        if detector_v2.is_refused_v2(raw_text, cfg):
             refused_by_arm[arm].append(r)
 
     rng = random.Random(seed)
@@ -291,7 +295,7 @@ def load_external_positives(source_path: Path, seed: int, cap: int, detector_v2,
     normalized = [
         {
             "cell": external_cell_tag, "arm": r["arm"], "hs_index": None, "dose_multiplier": None,
-            "row_key": r["row_key"], "role": r["role"], "text": r.get("out_text", ""),
+            "row_key": r["row_key"], "role": r["role"], "text": r.get("out_text", r.get("answer_text", "")),
             "well_formed": bool((r.get("grade") or {}).get("well_formed", False)),
             "well_formed_correct": bool(r.get("well_formed_correct", False)),
         }

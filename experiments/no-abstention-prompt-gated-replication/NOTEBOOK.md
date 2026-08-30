@@ -6,6 +6,83 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-29 (later) — llama and qwen3.5-4b judge lanes CLOSED, both VOID_CELL_TERMINAL; qwen3.5-4b pool built; gemma launch fixed and completed
+
+**llama-3.2-3b judge lane, final.** Native pool (5 shards, 3290 core, 267
+clear_negative, 6 native clear_positive decoys, 2/1/1/1/1 per shard).
+Attempt 1: shards 01/02 PASS (clear_neg 1.00/1.00, clear_pos 1.00/1.00);
+shards 00/03/04 FAIL clear_positive_agreement (0/2, 0/1, 0/1 caught) ->
+`VOID_REGRADE_ONCE` per `gates_lib.cg1_evaluate_shard`. Regrade (attempt 2,
+fresh opaque ids via the pinned `build_regrade_shard`, regrade_index=1,
+seed=20260714, genuinely fresh context-free judges): all 3 again caught 0
+clear_positive decoys -> `VOID_CELL_TERMINAL`. Per `apply_adjudication.py`'s
+documented `on_second_failure: void_cell_report_straight` cascade, ran ONE
+joint apply across all 5 shards (attempt=2 entries for 00/03/04, attempt=1
+for 01/02) against the original committed pool manifest, with pool_sha256
+updated only for the 3 regraded shards (attempt-1 originals preserved at
+`analysis/llama-3.2-3b/shards_attempt1_backup/`, regrade provenance recorded
+inline in `analysis-committed/llama-3.2-3b/adjudication_pool_manifest.json`
+under `regrade_note`). Final: `voided_cells: ["llama-3.2-3b"]`,
+`n_applied_rows: 0` -- shards 01/02's individually-passing rows are excluded
+too, exactly as the registered cascade specifies. Real finding (thin
+clear_positive decoy pool for this family), reported straight.
+
+**qwen3.5-4b judge lane, final.** PI-approved (lead relay), same contract.
+Pool built from this cell's own no-abstention-prompt runlog plus planted
+clear_positive decoys from the SAME-FAMILY WITH-PROMPT source
+`experiments/qwen35-4b-midband-doubt-snap/analysis/runlog/hs20__{gated,
+random_direction}.jsonl` (canonical checkout; hs20 is this family's frozen
+operating point per AMENDMENT.md's operating-point table). That source uses
+`answer_text` (not `out_text`) for the raw generation field --
+`build_adjudication_pool_from_runlog.py`'s `load_external_positives` was
+extended with the same `out_text`-then-`answer_text` fallback chain
+`load_family_rows` already used for this family's own qwen3.5-4b branch (not
+a new invention, matching an existing in-file convention); re-derives
+refused via the pinned detector_v2 over that raw text, never trusting the
+source's own `semantic_refuse` flag. Selection: 104 random_direction-arm
+detector-refused candidates (2459 more from gated-arm, not needed), cap 20,
+all 20 drawn from random_direction per the pinned instrument's own arm
+preference; seed 20260714. Pool: 4 shards, 2536 core, 206 clear_negative
+decoys, 20 clear_positive decoys.
+
+Attempt 1: shards 01/03 PASS (clear_neg 1.00/1.00, clear_pos 0.60/0.60,
+exactly at the floor); shards 00/02 FAIL clear_positive_agreement (0.40,
+0.20) -> `VOID_REGRADE_ONCE`. Regrade (attempt 2, same mechanism as llama's):
+both again scored 0.40 clear_positive_agreement, still below the 0.60 floor
+-> `VOID_CELL_TERMINAL`. Same overwrite-in-place + pool-manifest-sha-update +
+joint-apply procedure as llama (attempt-1 originals preserved at
+`analysis/qwen3.5-4b/shards_attempt1_backup/`). Final: `voided_cells:
+["qwen3.5-4b"]`, `n_applied_rows: 0`, including shards 01/03's individually-
+passing rows. This is the SECOND family (after llama) to hit
+`VOID_CELL_TERMINAL` on the clear_positive leg specifically -- reported
+straight as an observation, not interpreted further here (that is the lead's
+adjudication to make, not this harness's).
+
+Note: qwen3.5-4b's own detector_v2-only (string+pattern, pre-judge) rates
+for the `confab` role stand independently of the voided judge stage and are
+unaffected by it: no_op detector_v2_refused 69/1332 (5.18%), gated
+detector_v2_refused 572/1332 (42.94%). The LLM-judge second stage that would
+normally resolve the detector_v2-negative remainder cannot be added on top
+for this cell (adjudication pool voided), so only the string+detector_v2
+column is reportable for qwen3.5-4b, not a combined two-stage number.
+
+**Gemma launch: docker symlink-mount fix.** First `run_gemma.py all` launch
+failed immediately (`FileNotFoundError` on
+`gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/eval_rows.jsonl`): this
+worktree's `experiments/gemma4-e4b-kv-seam-quarantine/analysis` is a symlink
+to the canonical checkout's analysis dir (shares gitignored generation
+artifacts between worktree and canonical), and Docker's
+`-v "$(pwd):/workspace"` mount does not resolve symlink targets pointing
+outside the mounted volume. Fixed with a second bind mount,
+`-v "$CANON:$CANON"` (identical absolute path both sides, no pinned file
+touched). Relaunched; extract/generate stages ran correctly after the fix.
+Separately, the harness's own background-task tracking for that docker
+launch was reported "killed" partway through, but the underlying `docker
+run` client process and container were confirmed still alive and actively
+generating (GPU 47% util) when checked -- re-attached a plain pid-wait
+watcher rather than restarting anything, since the actual run was never
+interrupted.
+
 ### 2026-08-29 — Judge lane approved; qwen3-4b decoy-source correction; docker context fixed; qwen3.5-4b launched
 
 **PI approved the judge lane in-session, 2026-08-29** (lead relay). Scope:

@@ -1,0 +1,38 @@
+[
+  {
+    "committed_at": "2026-08-29T23:42:35.478838+00:00",
+    "file_name": "batch_12_graded.jsonl",
+    "sha256": "1798bedb0dac10cfc56cc465dc32049a84af0b02827c1ed7c04af57564844b5a",
+    "shard_id": "qwen3.5-4b_shard_01"
+  },
+  {
+    "committed_at": "2026-08-29T23:42:35.507376+00:00",
+    "file_name": "batch_11_graded.jsonl",
+    "sha256": "37f2221fb6f28870e81b08cd33b76bdde49dfdf753f256568985b5fd5ac53794",
+    "shard_id": "qwen3.5-4b_shard_00"
+  },
+  {
+    "committed_at": "2026-08-29T23:42:35.534596+00:00",
+    "file_name": "batch_14_graded.jsonl",
+    "sha256": "9a8122d986fc4a8e0728c1cb4a689dd7a26f56114fd9566a3bf4ec4b03c2f151",
+    "shard_id": "qwen3.5-4b_shard_03"
+  },
+  {
+    "committed_at": "2026-08-29T23:42:35.561719+00:00",
+    "file_name": "batch_13_graded.jsonl",
+    "sha256": "18430f03ded8dacb76751634a211e1a7f7c9d1bd9369ae14fd6ef37d27c03068",
+    "shard_id": "qwen3.5-4b_shard_02"
+  },
+  {
+    "committed_at": "2026-08-30T00:07:36.953183+00:00",
+    "file_name": "batch_15_graded.jsonl",
+    "sha256": "b1a1ac55ab2c7bb7d8536c72bd6aa8756cb5ab6b77101b98aa5191cdf39eaaac",
+    "shard_id": "qwen3.5-4b_shard_00"
+  },
+  {
+    "committed_at": "2026-08-30T00:07:36.978843+00:00",
+    "file_name": "batch_16_graded.jsonl",
+    "sha256": "85f9bd723e9ba445839cb6b41551f91bb11c333d64b845ae8a272e5819208d44",
+    "shard_id": "qwen3.5-4b_shard_02"
+  }
+]
