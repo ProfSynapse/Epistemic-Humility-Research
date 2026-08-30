@@ -6,6 +6,134 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-30 (later) — v2 judge lanes CLOSED for llama-3.2-3b and qwen3.5-4b: all 9 shards PASS CG1 on attempt 1 (harness-builder 3)
+
+Executed exactly per the pre-statement below (recorded before any build).
+The v1 VOID_CELL_TERMINAL records stand unchanged; everything in this entry
+is the v2 instrument, reported alongside, labeled v2.
+
+**llama-3.2-3b v2 pool** (`analysis-committed/llama-3.2-3b/v2/
+adjudication_pool_manifest.json`): 5 shards, 3290 core (same core as v1),
+267 clear_negative decoys, 20 clear_positive decoys — all 20 drawn from the
+cross-family wicr gated-arm source (142 detector_v2-refused candidates of
+443 gated rows scanned, same 142 as gemma's independent scan of the same
+source), external-positives-seed 20260831, cap 20 reached; the 6 native
+random-arm candidates excluded per the pre-stated replacement rule
+(`replace_native_positives` recorded in the manifest).
+
+**qwen3.5-4b v2 pool** (`analysis-committed/qwen3.5-4b/v2/
+adjudication_pool_manifest.json`): 4 shards, 2536 core (same core as v1),
+206 clear_negative decoys, 20 clear_positive decoys — all 20 same-family,
+from `qwen35-4b-midband-doubt-snap` `hs20__gated.jsonl` (6174 gated rows
+scanned, 2459 detector_v2-refused candidates), external-positives-seed
+20260832, cap 20 reached; zero native candidates existed (no
+random_direction arm for this family).
+
+**Judges:** 9 fresh context-free subagents (one per shard), rr2-verbatim
+rubric + blinded rows only, neutral batch filenames (batch_18..batch_26;
+mapping in the session scratchpad only). Every graded file independently
+structurally verified (line counts, exact opaque_id set match, no
+duplicates, all-boolean) before its sha256 was committed via the pinned
+`apply_adjudication.py commit-hash`; id maps read only after all 9 hashes
+were committed (unblinding-order guarantee held).
+
+**CG1, attempt 1, all shards PASS — no regrades, no voids:**
+
+- llama-3.2-3b: clear_negative_agreement 1.00 on all 5 shards;
+  clear_positive_agreement 1.00 / 1.00 / 0.75 / 1.00 / 1.00 (decoy catch
+  19/20 overall). `voided_cells: []`, `n_applied_rows: 3290`.
+- qwen3.5-4b: clear_negative_agreement 1.00 on all 4 shards;
+  clear_positive_agreement 1.00 / 1.00 / 1.00 / 1.00 (20/20).
+  `voided_cells: []`, `n_applied_rows: 2536`.
+
+**Per-arm judged (core-pool, detector_v2-negative rows only) refused_final
+counts** (same denominator convention as gemma's entry: core-pool counts,
+not `n - detector_v2_refused`; the full merged two-stage rate needs the
+detector_v2-refused counts from each family's `grade_report.json` added
+back in per cell):
+
+```
+llama-3.2-3b v2:
+(no_op, confab)                        23/859
+(no_op, known_correct_answered)         0/240
+(gated, confab)                        75/830
+(gated, known_correct_answered)         0/248
+(random_direction, confab)             12/866
+(random_direction, known_correct_answered) 0/247
+
+qwen3.5-4b v2:
+(no_op, confab)                        49/1263
+(no_op, known_correct_answered)         0/263
+(gated, confab)                       153/760
+(gated, known_correct_answered)         2/250
+```
+
+Observation consistent with the lead's 2026-08-29 mechanism note (recorded
+descriptively, not adjudicated here): with-prompt gated-arm overt-refusal
+decoys were caught 39/40 across both families, where the v1 lanes' random/
+no-prompt-arm decoys were missed en masse — the judge-sensitivity failure
+tracked the decoy source, not the judges.
+
+### 2026-08-30 — PRE-STATEMENT: v2 judge-lane instrument for llama-3.2-3b and qwen3.5-4b (recorded BEFORE any v2 pool build or judge run)
+
+**v2 judge-lane instrument, PI-approved 2026-08-30: identical contract to v1
+except planted clear_positive decoys are drawn from with-prompt GATED-arm
+overt refusals (raw completion text, refused re-derived via pinned
+detector_v2) instead of random/no-prompt-arm detector hits; the v1
+VOID_CELL_TERMINAL records stand unchanged and are not relitigated; v2
+results are reported alongside, labeled v2.**
+
+Pre-stated mechanics, fixed before building:
+
+- **Replacement, not augmentation.** "Instead of" is implemented literally:
+  the v2 pool's clear_positive candidate set is the external gated-arm draw
+  ONLY. llama-3.2-3b's 6 native clear_positive candidates (its own
+  no-abstention-prompt `random_direction`-arm detector_v2 hits — exactly the
+  class the v2 contract excludes) are NOT planted in v2. This is a glue-level
+  input change in this cell's own `build_adjudication_pool_from_runlog.py`
+  (a new `--external-positives-replace` flag); every pinned function
+  (`build_core_and_decoy_candidates`, `carve_decoys`, `build_shards`, ...)
+  runs unmodified from the pinned file's own bytes, same library-reuse
+  pattern as documented. qwen3.5-4b has zero native clear_positive
+  candidates (no random_direction arm in this cell), so replacement and
+  augmentation coincide there.
+- **qwen3.5-4b v2 source (same-family):**
+  `experiments/qwen35-4b-midband-doubt-snap/analysis/runlog/hs20__gated.jsonl`
+  (canonical checkout; 6174 rows, all `arm: gated`, hs20 = this family's
+  frozen operating point; raw generation field `answer_text` via the
+  already-extended out_text-then-answer_text fallback chain). Refused
+  re-derived via pinned detector_v2 over that raw text; the source's own
+  `semantic_refuse`/`refused` flags are never trusted. Cap 20,
+  external-positives-seed 20260832 (recorded; distinct from gemma's and
+  qwen3-4b's 20260714 and from every other v2 lane).
+- **llama-3.2-3b v2 source (cross-family):** no same-family raw-text
+  with-prompt source is known on this host (the hs17 candidates carry no raw
+  `out_text` and would be format-distinguishable inside a blinded shard), so
+  decoys are sourced from
+  `experiments/qwen3-4b-l34-placebo-seed-census/analysis/wicr_decoy_source/rows_with_generation.jsonl`,
+  pre-filtered to `arm == "gated"` rows only (443 of 1329) via a
+  session-local scratch copy, same as gemma's v2. Label (verbatim, per lead
+  instruction): **cross-family (qwen3-4b), with-prompt, gated-arm overt
+  refusals; judge-sensitivity control only, excluded from every gate rate.**
+  Cross-family sourcing is used because no same-family with-prompt runlog
+  with raw completion text survives on this host; the control tests judge
+  sensitivity to abstention text, which is family-independent, and the
+  planted rows share the identical JSON output contract with core rows.
+  NEVER labeled same-family. Cap 20, external-positives-seed 20260831
+  (recorded; distinct from all other lanes).
+- **Versioning:** both pools are built with `--version-subdir v2`
+  (analysis/<family>/v2/shards, analysis-committed/<family>/v2/...); no v1
+  artifact (shards, attempt-1 backups, manifests) is overwritten or deleted.
+  Pool seed stays 20260714 (provenance consistency with every prior pool in
+  this cell); only the external-positive draw seeds are distinct, as
+  recorded above.
+- **Judges:** fresh context-free subagents, rr2-verbatim rubric + blinded
+  shard rows only (opaque_id + text), no experiment name / hypothesis / arm
+  labels; graded-file sha committed via the pinned `apply_adjudication.py
+  commit-hash` BEFORE any id map is read; CG1 floors unchanged (clear_neg
+  >= 0.95, clear_pos >= 0.60, `VOID_REGRADE_ONCE` -> `VOID_CELL_TERMINAL`
+  cascade unchanged).
+
 ### 2026-08-29 (still later) — gemma/mistral decoy blocker resolved: cross-family planted positives (PI-visible ruling); gemma judge lane CLOSED, PASS
 
 **Blocker (recorded for the record).** Both gemma's own with-prompt source
@@ -48,7 +176,12 @@ decoys are drawn from `gated`). Re-derivation via pinned detector_v2 found
 142 gated-arm refused candidates (confab 185 + known_correct_answered 258
 tracked rows scanned) -- note this differs slightly from the lead's cited
 137; using the harness's own re-derived count as the number of record, not
-overriding it to match. Cap 20 reached; external-positives-seed 20260714
+overriding it to match. **Reconciled (lead, same day):** 142 confirmed
+correct and the number of record; the lead's 137 counted gated-CONFAB rows
+only via the source file's own `semantic_refuse` flags, while this scan
+covered gated confab + known_correct_answered tracked rows via the pinned
+detector_v2 (137 + 5 = 142) -- the right scope and the right instrument.
+Cap 20 reached; external-positives-seed 20260714
 (same seed value as qwen3-4b's own external-positive draw; family tag
 `gemma-4-e4b_wicr_external` keeps them collision-safe from qwen3-4b's own
 draw regardless). Pool: 1 shard, 780 core, 63 clear_negative decoys, 20

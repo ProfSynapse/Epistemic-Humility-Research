@@ -321,6 +321,7 @@ def build_pool_for_family(family: str, seed: int, salt: str | None, target_shard
                            external_positives_path: Path | None = None,
                            external_positives_seed: int = 20260714,
                            external_positives_cap: int = 20,
+                           external_positives_replace: bool = False,
                            version_subdir: str = "") -> dict[str, Any]:
     """`version_subdir`: "" (default) writes to analysis/<family>/shards/ and
     analysis-committed/<family>/adjudication_pool_manifest.json, exactly as
@@ -347,7 +348,18 @@ def build_pool_for_family(family: str, seed: int, salt: str | None, target_shard
             external_positives_path, external_positives_seed, external_positives_cap,
             detector_v2, cfg, external_cell_tag=f"{family}_wicr_external",
         )
-        pos_cand = pos_cand + ext_rows
+        if external_positives_replace:
+            # v2 judge-lane contract (NOTEBOOK.md pre-statement, 2026-08-30):
+            # planted clear_positive decoys come from the external with-prompt
+            # gated-arm draw INSTEAD OF native random/no-prompt-arm detector
+            # hits -- native candidates are excluded, not augmented.
+            external_report["replace_native_positives"] = {
+                "n_native_candidates_excluded": len(pos_cand),
+                "note": "v2 contract: external gated-arm draw replaces native clear_positive candidates",
+            }
+            pos_cand = ext_rows
+        else:
+            pos_cand = pos_cand + ext_rows
 
     salt = salt or secrets.token_hex(32)
     rng = random.Random(seed)
@@ -423,6 +435,11 @@ def main() -> int:
                           "clear_positive decoys from, for a family whose own data has none")
     ap.add_argument("--external-positives-seed", type=int, default=20260714)
     ap.add_argument("--external-positives-cap", type=int, default=20)
+    ap.add_argument("--external-positives-replace", action="store_true",
+                     help="use the external draw as the ONLY clear_positive candidate set, "
+                          "excluding native candidates (v2 judge-lane contract: external "
+                          "with-prompt gated-arm refusals INSTEAD OF random/no-prompt-arm "
+                          "detector hits)")
     ap.add_argument("--version-subdir", default="",
                      help="nest both analysis/<family>/ and analysis-committed/<family>/ one level "
                           "deeper under this name (e.g. 'v2'), so a later pool build for the same "
@@ -443,6 +460,7 @@ def main() -> int:
         external_positives_path=external_path,
         external_positives_seed=args.external_positives_seed,
         external_positives_cap=args.external_positives_cap,
+        external_positives_replace=args.external_positives_replace,
         version_subdir=args.version_subdir,
     )
     out_analysis_rel = f"analysis/{args.family}/{args.version_subdir}/shards" if args.version_subdir else f"analysis/{args.family}/shards"

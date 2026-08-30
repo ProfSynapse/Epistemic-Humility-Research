@@ -1,0 +1,18 @@
+{
+  "seed": 20260714,
+  "n_shards": 1,
+  "n_core_total": 634,
+  "n_decoy_clear_negative_total": 52,
+  "n_decoy_clear_positive_total": 5,
+  "shards": [
+    {
+      "shard_id": "qwen3.5-4b_shard_00",
+      "cell": "qwen3.5-4b",
+      "pool_sha256": "69fda77ed9b86cd2bdbab59612f6e3fbe236d39623b1819b9c1e097f6fb3166c",
+      "row_count": 691,
+      "n_core": 634,
+      "n_decoy_clear_negative": 52,
+      "n_decoy_clear_positive": 5
+    }
+  ]
+}

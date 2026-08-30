@@ -1,0 +1,26 @@
+[
+  {
+    "committed_at": "2026-08-30T11:30:58.709340+00:00",
+    "file_name": "batch_23_graded.jsonl",
+    "sha256": "dd5d7e0728c860da336c287e1430f1b27a866b95cee3df9061ef9bf21213bb06",
+    "shard_id": "qwen3.5-4b_shard_00"
+  },
+  {
+    "committed_at": "2026-08-30T11:30:58.796719+00:00",
+    "file_name": "batch_24_graded.jsonl",
+    "sha256": "dae433a5f255d17850bdb6dd2d6760633267d4512ea1cc65793879d292eb56bf",
+    "shard_id": "qwen3.5-4b_shard_01"
+  },
+  {
+    "committed_at": "2026-08-30T11:30:58.847819+00:00",
+    "file_name": "batch_25_graded.jsonl",
+    "sha256": "4bd7eddc42d3e683c88a3a78d1aa3069d4ec4f23e33c35b17020818374c2ee58",
+    "shard_id": "qwen3.5-4b_shard_02"
+  },
+  {
+    "committed_at": "2026-08-30T11:30:58.883230+00:00",
+    "file_name": "batch_26_graded.jsonl",
+    "sha256": "092294dc0fe5985a14bc97d6b5db1258e3f3c820ed02a1f3a13766e0f98d4738",
+    "shard_id": "qwen3.5-4b_shard_03"
+  }
+]

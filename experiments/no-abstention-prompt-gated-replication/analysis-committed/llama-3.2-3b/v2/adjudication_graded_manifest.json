@@ -1,0 +1,32 @@
+[
+  {
+    "committed_at": "2026-08-30T11:30:58.431638+00:00",
+    "file_name": "batch_18_graded.jsonl",
+    "sha256": "7351248f42728dd7c052657c235f1e4cd36614877f1fc1089935b91ed862b46a",
+    "shard_id": "llama-3.2-3b_shard_00"
+  },
+  {
+    "committed_at": "2026-08-30T11:30:58.470781+00:00",
+    "file_name": "batch_19_graded.jsonl",
+    "sha256": "eda105398a6af6efca5024b081133721201df82072fb28f09b784189b566732a",
+    "shard_id": "llama-3.2-3b_shard_01"
+  },
+  {
+    "committed_at": "2026-08-30T11:30:58.523875+00:00",
+    "file_name": "batch_20_graded.jsonl",
+    "sha256": "0f1fc6e6827a7d26db1c46753ad295cd48d0b1b32bd8e6a9349bb6ed69df9e47",
+    "shard_id": "llama-3.2-3b_shard_02"
+  },
+  {
+    "committed_at": "2026-08-30T11:30:58.607702+00:00",
+    "file_name": "batch_21_graded.jsonl",
+    "sha256": "8ca9d014acfce80a7402294851ae876abb657978d73e66b36621739a14def911",
+    "shard_id": "llama-3.2-3b_shard_03"
+  },
+  {
+    "committed_at": "2026-08-30T11:30:58.672079+00:00",
+    "file_name": "batch_22_graded.jsonl",
+    "sha256": "1beeb2aaabe4793c1d30036ab02bb89b217109c2c966008844fd367ece7c821f",
+    "shard_id": "llama-3.2-3b_shard_04"
+  }
+]
