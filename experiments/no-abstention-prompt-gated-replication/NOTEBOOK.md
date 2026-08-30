@@ -6,6 +6,24 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-29 (mechanism note, descriptive hypothesis only, NOT a verdict; lead-authored, recorded by harness)
+
+Across the four judge-lane results closed so far: qwen3-4b's planted
+clear_positive decoys were ALL with-prompt overt refusals (20/20 caught,
+including the 15 drawn from the `random_direction` arm of the WITH-PROMPT
+`qwen3-4b-l34-placebo-seed-census` source -- "with-prompt" here describes the
+source experiment's own system prompt, not this cell's arm label). Both
+VOID_CELL_TERMINAL cells (llama-3.2-3b native decoys; qwen3.5-4b's planted
+decoys from `qwen35-4b-midband-doubt-snap`'s `random_direction` arm) drew
+their failing clear_positive positives from random-direction/no-prompt-arm
+detector_v2-refused rows. One reading consistent with this pattern: judges
+are not insensitive to genuine with-prompt overt refusals (100% caught where
+tested); the failures instead look like detector_v2 over-firing on
+hedged/degenerate random-arm text that a context-free human-equivalent judge
+does not agree reads as abstention. This is a descriptive hypothesis for
+context at resolve, not a re-litigation of any registered void -- both
+VOID_CELL_TERMINAL results stand exactly as reported.
+
 ### 2026-08-29 (later) — llama and qwen3.5-4b judge lanes CLOSED, both VOID_CELL_TERMINAL; qwen3.5-4b pool built; gemma launch fixed and completed
 
 **llama-3.2-3b judge lane, final.** Native pool (5 shards, 3290 core, 267
