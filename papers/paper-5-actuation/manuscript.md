@@ -559,6 +559,23 @@ al., 2022) and TriviaQA (Joshi et al., 2017), graded against gold answers.
 Every experiment below draws its rows from these three sources unless the text
 says otherwise.
 
+All behavioral cells in the write, gate, and cross-family results share one
+fixed baseline system prompt. It instructs the model to answer as a JSON
+object with exactly two keys, answer and response_confidence, and it also
+contains the sentence: If the answer is not known to you, say "I don't know
+the answer" rather than guessing. That sentence does two things at once: it
+grants the model permission to refuse, and it seeds the exact refusal string
+the narrow instrument of Section 3.6 keys on. The sentence is itself a strong
+actuator: the prompt-vs-training panel in this program's training-regimen
+paper measured the same instruction eliciting 90.89% refusal recall from an
+untrained base model that refuses 0% of the same rows without it (Rosenbaum,
+2026b). Every arm of every experiment
+shares the prompt, so the arm-versus-control differentials below are
+prompt-controlled; what the shared prompt leaves open is whether the gated
+write needs an abstention-permitting instruction in context to act at all.
+Section 6.4 reports the exploratory replication that deletes the sentence and
+measures what survives.
+
 Controls are matched to the mechanism, and each control's metric and
 construction were declared before outcome evaluation, following the standard
 caution that intervention conclusions are sensitive to exactly those choices
@@ -1458,6 +1475,15 @@ introduction. It is closer to a control system than to a prompt: the model's
 policy does not need to endorse or understand the sensor, because the
 controller is what uses the sensor.
 
+One scope note belongs on the map as a whole: every number in it was measured
+under a system prompt that permits refusal and names the refusal string
+(Section 3.7). An exploratory replication with that sentence deleted (Section
+6.4) finds the gated write still works with no abstention instruction in
+context, at a magnitude that varies strongly by family and sits well below
+the with-prompt magnitude in the reference family, so the map as measured
+describes an instruction-amplified controller rather than an
+instruction-independent one.
+
 ---
 
 ## 6. Discussion
@@ -1496,7 +1522,11 @@ thermostat is: a sensor wired to an actuator, running with no one in the loop.
 The questions that remain are about installation. The operating point is where
 the thermostat is mounted and how hard it drives the heater; direction-
 specificity asks whether we are turning the knob or banging on the radiator,
-since a room can warm either way (Section 4.8).
+since a room can warm either way (Section 4.8). The prompt turns out to be
+part of the installation too: an exploratory replication without the
+abstention instruction (Section 6.4) finds the loop still closes, with a much
+smaller swing in the reference family, so in that family the instruction was
+doing part of the actuation work the thermostat gets credit for above.
 
 ### 6.2 Why the gate matters, and why its role changes with dose
 
@@ -1577,6 +1607,29 @@ This is an exploratory paper. The largest claims are qualitative and mechanistic
 not population effect-size estimates. Key limits:
 
 - many actuation results are single-model or single-family;
+- every behavioral number above was measured under a system prompt containing
+  an abstention instruction that both permits refusal and supplies the
+  literal string the narrow instrument matches (Section 3.7), an instruction
+  the companion prompt-vs-training panel found to be a near-ceiling actuator
+  on its own, 90.89% refusal recall from an untrained base against 0% without
+  it (Rosenbaum, 2026b). An exploratory
+  replication registered after these analyses
+  (experiments/no-abstention-prompt-gated-replication) deletes that sentence
+  and reruns the gated write at each family's frozen operating point, scored
+  under the wide two-stage instrument with the detector threshold refit for
+  the new prompt. Its pre-registered falsifier (no gated-over-control lift in
+  Qwen3-4B) did not fire: the judged lift is 11.4 points, 95% CI [6.8, 15.9],
+  against 89.2 points with the instruction, so in the reference family the
+  instruction amplifies an effect the write produces on its own rather than
+  enabling it. The instruction-free effect varies strongly by family:
+  Gemma-4-E4B 18.5% to 65.5% two-stage, Qwen3.5-4B 8.9% to 54.4% two-stage,
+  Llama-3.2-3B 4.1% to 13.4% two-stage, with Mistral
+  pending at this draft. Judge-lane calibration voided in two families
+  (Llama, Qwen3.5) on a first pass whose planted decoys were later shown
+  unsound; a pre-stated second pass with sound decoys passed calibration in
+  both and supplies their two-stage numbers. These cells are exploratory,
+  reported separately from every confirmatory number above, and never pooled
+  with them;
 - the strongest positive J-space layer-site result is currently surface-local to
   raw-base Qwen3-4B bf16, and the one trained-checkpoint test so far (Appendix
   A) found the band reshaped and its rule-selected mid-band site readable
