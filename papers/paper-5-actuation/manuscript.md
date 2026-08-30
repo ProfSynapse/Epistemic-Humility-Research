@@ -565,7 +565,11 @@ object with exactly two keys, answer and response_confidence, and it also
 contains the sentence: If the answer is not known to you, say "I don't know
 the answer" rather than guessing. That sentence does two things at once: it
 grants the model permission to refuse, and it seeds the exact refusal string
-the narrow instrument of Section 3.6 keys on. Every arm of every experiment
+the narrow instrument of Section 3.6 keys on. The sentence is itself a strong
+actuator: the prompt-vs-training panel in this program's training-regimen
+paper measured the same instruction eliciting 90.89% refusal recall from an
+untrained base model that refuses 0% of the same rows without it (Rosenbaum,
+2026b). Every arm of every experiment
 shares the prompt, so the arm-versus-control differentials below are
 prompt-controlled; what the shared prompt leaves open is whether the gated
 write needs an abstention-permitting instruction in context to act at all.
@@ -1605,7 +1609,10 @@ not population effect-size estimates. Key limits:
 - many actuation results are single-model or single-family;
 - every behavioral number above was measured under a system prompt containing
   an abstention instruction that both permits refusal and supplies the
-  literal string the narrow instrument matches (Section 3.7). An exploratory
+  literal string the narrow instrument matches (Section 3.7), an instruction
+  the companion prompt-vs-training panel found to be a near-ceiling actuator
+  on its own, 90.89% refusal recall from an untrained base against 0% without
+  it (Rosenbaum, 2026b). An exploratory
   replication registered after these analyses
   (experiments/no-abstention-prompt-gated-replication) deletes that sentence
   and reruns the gated write at each family's frozen operating point, scored

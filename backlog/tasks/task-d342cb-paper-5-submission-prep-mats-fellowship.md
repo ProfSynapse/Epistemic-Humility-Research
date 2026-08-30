@@ -14,7 +14,7 @@ files:
 new_files: []
 blocker: PI review
 created_date: '2026-08-27'
-updated_date: '2026-08-29'
+updated_date: '2026-08-30'
 ---
 ## Description
 Manuscript is through the figure restructure, voice passes, and the
@@ -30,4 +30,5 @@ audited backlog table (row P5S, audited 2026-08-27).
 
 ## Work Log
 - 2026-08-27 @claude: seeded from TODO.md row P5S during the task-backlog harness build.
+- 2026-08-30 @claude: added the paper-2 callback (prompt-vs-training panel, 90.89% vs 0% untrained-base actuation, Rosenbaum 2026b) to the 3.7 prompt frame and 6.4 bullet, PI-requested; numbers verified against the panel AMENDMENT Outcome.
 - 2026-08-30 @claude: drafted the no-abstention-prompt disclosure edits on branch paper5-no-abstention-disclosure (methods prompt-frame paragraph in 3.7, scope note in Section 5, thermostat qualification in 6.1, exploratory-replication limits bullet in 6.4). Numbers pending final resolve of experiments/no-abstention-prompt-gated-replication; PR held for PI review, no merge before resolve.
