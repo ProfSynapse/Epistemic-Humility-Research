@@ -6,6 +6,70 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-29 (still later) — gemma/mistral decoy blocker resolved: cross-family planted positives (PI-visible ruling); gemma judge lane CLOSED, PASS
+
+**Blocker (recorded for the record).** Both gemma's own with-prompt source
+(`gemma4-e4b-kv-seam-quarantine/analysis/gemma4-e4b/runlog/full/hs15.jsonl`)
+and mistral's (`j-space-cross-family-layer-contrast/analysis/mistral-7b-v03/
+runlog/full/hs15.jsonl`) carry only canonicalized `grade.answer_value`
+extracts, not raw completion text -- same class of gap as llama's hs17
+candidate, ruled MOOT by the lead for the same reason. Grepped the entirety
+of gemma's experiment `analysis/` tree for any file with an `out_text` or
+`answer_text` key; the only hit (`pool_generations.jsonl`) has no `arm`/
+`role` fields and is not a per-arm runlog. Did not substitute
+`grade.answer_value` for raw text on my own judgment (changes what
+detector_v2 scans, and would be format-distinguishable in a blinded shard
+against core rows drawn from full raw JSON completions).
+
+**Ruling (lead, PI has visibility, no countermand received).** Both gemma
+and mistral's planted-positive decoys are sourced CROSS-FAMILY from
+`experiments/qwen3-4b-l34-placebo-seed-census/analysis/wicr_decoy_source/
+rows_with_generation.jsonl`, restricted to GATED-arm rows, re-derived
+refused via the pinned detector_v2 over raw `out_text` (never trusting the
+source's own flag), cap 20 per family, distinct recorded seeds per family.
+
+**Labeling (verbatim, per lead instruction):** cross-family (qwen3-4b),
+with-prompt, gated-arm overt refusals; judge-sensitivity control only,
+excluded from every gate rate. Cross-family sourcing is used because no
+same-family with-prompt runlog with raw completion text survives on this
+host (gemma kv-seam-quarantine and j-space-cross-family runlogs carry only
+canonicalized `grade.answer_value` extracts); the control tests judge
+sensitivity to abstention text, which is family-independent, and the
+planted rows share the identical JSON output contract with core rows. NEVER
+labeled same-family.
+
+**gemma-4-e4b judge lane, final: PASS.** Pool built as `v2` (never
+overwriting the earlier native-only build that reported
+`n_clear_positive_candidates: 0`). External source pre-filtered to
+gated-arm rows only (443 of 1329 total rows; the pinned instrument's own arm
+preference tuple normally tries `random_direction` first, but this call's
+source file contains only `gated`-arm rows by construction, so all 20
+decoys are drawn from `gated`). Re-derivation via pinned detector_v2 found
+142 gated-arm refused candidates (confab 185 + known_correct_answered 258
+tracked rows scanned) -- note this differs slightly from the lead's cited
+137; using the harness's own re-derived count as the number of record, not
+overriding it to match. Cap 20 reached; external-positives-seed 20260714
+(same seed value as qwen3-4b's own external-positive draw; family tag
+`gemma-4-e4b_wicr_external` keeps them collision-safe from qwen3-4b's own
+draw regardless). Pool: 1 shard, 780 core, 63 clear_negative decoys, 20
+clear_positive decoys. Single fresh context-free judge, structurally
+verified (863/863 lines, 0 mismatches) before trust: clear_negative_agreement
+1.00, clear_positive_agreement 1.00 -> PASS. `n_applied_rows: 780`.
+
+Per-arm judged (core-pool, detector_v2-negative rows only) refused_final
+counts:
+```
+(gated, confab)                    82/140
+(gated, known_correct_answered)     5/242
+(no_op, confab)                    26/163
+(no_op, known_correct_answered)     5/235
+```
+(Denominators here are core-pool counts, i.e. total minus detector_v2-refused
+minus any rows carved out as clear_negative decoys for that arm/role -- not
+directly `n - detector_v2_refused`; the full merged two-stage rate needs the
+detector_v2-refused counts from the earlier grade_report.json added back in
+per cell.)
+
 ### 2026-08-29 (mechanism note, descriptive hypothesis only, NOT a verdict; lead-authored, recorded by harness)
 
 Across the four judge-lane results closed so far: qwen3-4b's planted

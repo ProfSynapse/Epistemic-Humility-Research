@@ -1,0 +1,17 @@
+{
+  "n_applied_rows": 780,
+  "shards": {
+    "gemma-4-e4b_shard_00": {
+      "cell": "gemma-4-e4b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "passed": true,
+        "shard_id": "gemma-4-e4b_shard_00",
+        "status": "PASS"
+      }
+    }
+  },
+  "voided_cells": []
+}
