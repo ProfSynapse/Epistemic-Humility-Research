@@ -7,9 +7,9 @@ from pathlib import Path
 
 from .cli import (
     TrainingRunIngressV1,
-    bootstrap_unavailable_result_v1,
+    bootstrap_unavailable_result_v2,
     dispatch_validated_training_run_v1,
-    emit_training_run_result_v1,
+    emit_training_run_result_v2,
     prepare_training_run_ingress_v1,
 )
 
@@ -22,9 +22,9 @@ def main(argv: list[str] | None = None) -> int:
         arguments, project_root=project_root, engine_root=engine_root
     )
     if type(prepared) is not TrainingRunIngressV1:
-        return emit_training_run_result_v1(prepared)
+        return emit_training_run_result_v2(prepared)
     if prepared.provider_ref == "docker":
-        return emit_training_run_result_v1(
+        return emit_training_run_result_v2(
             dispatch_validated_training_run_v1(prepared)
         )
     try:
@@ -38,12 +38,12 @@ def main(argv: list[str] | None = None) -> int:
             contract_identity_digest=prepared.contract_identity_digest,
         )
     except BaseException:
-        return emit_training_run_result_v1(
-            bootstrap_unavailable_result_v1(prepared)
+        return emit_training_run_result_v2(
+            bootstrap_unavailable_result_v2(prepared)
         )
     if child is not None:
         return child
-    return emit_training_run_result_v1(
+    return emit_training_run_result_v2(
         dispatch_validated_training_run_v1(prepared)
     )
 

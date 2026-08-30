@@ -9,6 +9,7 @@ import stat
 import subprocess
 import sys
 import types
+import unicodedata
 from pathlib import Path
 
 import pytest
@@ -17,8 +18,8 @@ import synaptic_host.__main__ as entry
 import synaptic_host.cli as cli
 import synaptic_host.launcher as launcher
 from synaptic_host.cli import (
-    TrainingRunCommandCodeV1,
-    TrainingRunCommandResultV1,
+    TrainingRunCommandCodeV2,
+    TrainingRunCommandResultV2,
     TrainingRunIngressV1,
     prepare_training_run_ingress_v1,
 )
@@ -126,7 +127,7 @@ raise SystemExit(main(['provider', 'deploy']))
     assert completed.stderr == ""
     lines = completed.stdout.splitlines()
     assert len(lines) == 1
-    assert json.loads(lines[0])["error_code"] == "COMMAND_INVALID"
+    assert json.loads(lines[0])["code"] == "COMMAND_INVALID"
     assert "usage" not in completed.stdout.casefold()
 
 
@@ -139,7 +140,7 @@ def test_docker_never_imports_or_calls_launcher(monkeypatch, capsys, tmp_path: P
     monkeypatch.setattr(entry, "prepare_training_run_ingress_v1", lambda *_a, **_k: ingress)
     assert entry.main(["training", "run"]) == 4
     assert events == []
-    assert json.loads(capsys.readouterr().out)["error_code"] == "PROVIDER_UNAVAILABLE"
+    assert json.loads(capsys.readouterr().out)["code"] == "PROVIDER_UNAVAILABLE"
 
 
 def test_modal_parent_prepares_before_launcher_and_emits_nothing(
@@ -170,10 +171,12 @@ def test_modal_parent_prepares_before_launcher_and_emits_nothing(
     assert capsys.readouterr().out == ""
 
 
-def test_authoritative_child_reprepares_then_emits_submission_unavailable_once(
+def test_authoritative_child_reprepares_then_emits_composition_unavailable_once(
     monkeypatch, capsys, tmp_path: Path,
 ) -> None:
     ingress = _ingress(tmp_path)
+    monkeypatch.setenv("MODAL_TOKEN_ID", "test-id")
+    monkeypatch.setenv("MODAL_TOKEN_SECRET", "test-secret")
     events = []
     fake = types.ModuleType("synaptic_host.launcher")
     fake.ensure_and_reexec = lambda **_kwargs: events.append("launcher") or None
@@ -186,7 +189,7 @@ def test_authoritative_child_reprepares_then_emits_submission_unavailable_once(
     assert events == ["prepare", "launcher"]
     lines = capsys.readouterr().out.splitlines()
     assert len(lines) == 1
-    assert json.loads(lines[0])["error_code"] == "SUBMISSION_UNAVAILABLE"
+    assert json.loads(lines[0])["code"] == "COMPOSITION_UNAVAILABLE"
 
 
 def test_reexec_mutation_digest_mismatch_is_bootstrap_unavailable(
@@ -206,7 +209,7 @@ def test_reexec_mutation_digest_mismatch_is_bootstrap_unavailable(
     monkeypatch.setattr(entry, "prepare_training_run_ingress_v1", lambda *_a, **_k: mutated)
     assert entry.main(["training", "run", "mutated"]) == 4
     output = capsys.readouterr().out
-    assert json.loads(output)["error_code"] == "BOOTSTRAP_UNAVAILABLE"
+    assert json.loads(output)["code"] == "BOOTSTRAP_UNAVAILABLE"
     assert "secret" not in output
 
 
@@ -218,6 +221,8 @@ def test_launcher_parent_binds_argv_and_digest_without_real_process(
     monkeypatch.delenv(launcher._INGRESS_DIGEST, raising=False)
     monkeypatch.setenv("HF_TOKEN", "must-not-leak")
     monkeypatch.setenv("HTTPS_PROXY", "must-not-leak")
+    monkeypatch.setenv("MODAL_TOKEN_ID", "modal-id")
+    monkeypatch.setenv("MODAL_TOKEN_SECRET", "modal-secret")
     monkeypatch.setattr(launcher, "_runtime_proof", lambda *_a: ({}, "f" * 64))
     observed = {}
 
@@ -244,6 +249,140 @@ def test_launcher_parent_binds_argv_and_digest_without_real_process(
     assert "HF_TOKEN" not in environment
     assert "HTTPS_PROXY" not in environment
     assert "PYTHONPATH" not in environment
+    assert environment["MODAL_TOKEN_ID"] == "modal-id"
+    assert environment["MODAL_TOKEN_SECRET"] == "modal-secret"
+
+
+@pytest.mark.parametrize(
+    ("token_id", "token_secret"),
+    [
+        (None, None), ("id", None), (None, "secret"), ("", "secret"),
+        ("id", ""), ("id\n", "secret"), ("id", "secret\x7f"),
+        ("id\u0085", "secret"),
+        ("i" * 4097, "secret"), ("id", "s" * 4097),
+    ],
+)
+def test_launcher_never_forwards_partial_or_invalid_modal_credentials(
+    monkeypatch, tmp_path: Path, token_id: str | None, token_secret: str | None,
+) -> None:
+    project, engine, _python, _expected = _locked_runtime(tmp_path)
+    monkeypatch.delenv(launcher._MARKER, raising=False)
+    monkeypatch.delenv("MODAL_TOKEN_ID", raising=False)
+    monkeypatch.delenv("MODAL_TOKEN_SECRET", raising=False)
+    if token_id is not None:
+        monkeypatch.setenv("MODAL_TOKEN_ID", token_id)
+    if token_secret is not None:
+        monkeypatch.setenv("MODAL_TOKEN_SECRET", token_secret)
+    monkeypatch.setattr(launcher, "_runtime_proof", lambda *_a: ({}, "f" * 64))
+    observed = {}
+
+    def run(_command, **kwargs):
+        observed.update(kwargs)
+        return types.SimpleNamespace(returncode=4)
+
+    monkeypatch.setattr(launcher.subprocess, "run", run)
+    assert launcher.ensure_and_reexec(
+        project_root=project, engine_root=engine, argv=[],
+        ingress_digest="b" * 64, contract_identity_digest="e" * 64,
+    ) == 4
+    assert "MODAL_TOKEN_ID" not in observed["env"]
+    assert "MODAL_TOKEN_SECRET" not in observed["env"]
+
+
+def test_launcher_rejects_credential_string_subclasses(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    class String(str):
+        def encode(self, *_args, **_kwargs):
+            pytest.fail("credential subclass encode callback invoked")
+
+    project, engine, _python, _expected = _locked_runtime(tmp_path)
+    environment = dict(launcher.os.environ)
+    environment["MODAL_TOKEN_ID"] = String("subclass-id")
+    environment["MODAL_TOKEN_SECRET"] = "secret"
+    monkeypatch.setattr(launcher.os, "environ", environment)
+    monkeypatch.setattr(launcher, "_runtime_proof", lambda *_a: ({}, "f" * 64))
+    observed = {}
+
+    def run(_command, **kwargs):
+        observed.update(kwargs)
+        return types.SimpleNamespace(returncode=4)
+
+    monkeypatch.setattr(launcher.subprocess, "run", run)
+    assert launcher.ensure_and_reexec(
+        project_root=project, engine_root=engine, argv=[],
+        ingress_digest="b" * 64, contract_identity_digest="e" * 64,
+    ) == 4
+    assert "MODAL_TOKEN_ID" not in observed["env"]
+    assert "MODAL_TOKEN_SECRET" not in observed["env"]
+
+
+@pytest.mark.parametrize("name", launcher._ALLOWED_CHILD_ENV)
+@pytest.mark.parametrize(
+    "hostile", ("\u0085", "\u202e", "\ud800", "\ue000", "\u0378"),
+)
+def test_launcher_rejects_category_c_in_every_allowlisted_environment_value(
+    monkeypatch, tmp_path: Path, name: str, hostile: str,
+) -> None:
+    assert unicodedata.category(hostile).startswith("C")
+    project, engine, _python, _expected = _locked_runtime(tmp_path)
+    monkeypatch.setattr(launcher.os, "environ", {name: "value" + hostile})
+    monkeypatch.setattr(launcher, "_runtime_proof", lambda *_a: ({}, "f" * 64))
+    monkeypatch.setattr(
+        launcher.subprocess, "run",
+        lambda *_a, **_k: pytest.fail("invalid environment reached spawn"),
+    )
+    with pytest.raises(RuntimeError, match="child environment"):
+        launcher.ensure_and_reexec(
+            project_root=project, engine_root=engine, argv=[],
+            ingress_digest="b" * 64, contract_identity_digest="e" * 64,
+        )
+
+
+@pytest.mark.parametrize("name", launcher._ALLOWED_CHILD_ENV)
+def test_launcher_rejects_allowlisted_str_subclass_without_encode_callback(
+    monkeypatch, tmp_path: Path, name: str,
+) -> None:
+    class String(str):
+        def encode(self, *_args, **_kwargs):
+            pytest.fail("allowlisted subclass encode callback invoked")
+
+    project, engine, _python, _expected = _locked_runtime(tmp_path)
+    monkeypatch.setattr(launcher.os, "environ", {name: String("deceptive")})
+    monkeypatch.setattr(launcher, "_runtime_proof", lambda *_a: ({}, "f" * 64))
+    monkeypatch.setattr(
+        launcher.subprocess, "run",
+        lambda *_a, **_k: pytest.fail("invalid environment reached spawn"),
+    )
+    with pytest.raises(RuntimeError, match="child environment"):
+        launcher.ensure_and_reexec(
+            project_root=project, engine_root=engine, argv=[],
+            ingress_digest="b" * 64, contract_identity_digest="e" * 64,
+        )
+
+
+def test_launcher_forwards_detached_exact_string_snapshot(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    project, engine, _python, _expected = _locked_runtime(tmp_path)
+    original = "validated-" + "x" * 128
+    monkeypatch.setattr(launcher.os, "environ", {"LANG": original})
+    monkeypatch.setattr(launcher, "_runtime_proof", lambda *_a: ({}, "f" * 64))
+    observed = {}
+
+    def run(_command, **kwargs):
+        observed.update(kwargs)
+        return types.SimpleNamespace(returncode=4)
+
+    monkeypatch.setattr(launcher.subprocess, "run", run)
+    assert launcher.ensure_and_reexec(
+        project_root=project, engine_root=engine, argv=[],
+        ingress_digest="b" * 64, contract_identity_digest="e" * 64,
+    ) == 4
+    forwarded = observed["env"]["LANG"]
+    assert type(forwarded) is str
+    assert forwarded == original
+    assert forwarded is not original
 
 
 def test_launcher_child_requires_exact_marker_digest_interpreter_and_lock(
@@ -503,4 +642,4 @@ def test_opt_in_wsl_drvfs_runtime_build_reaches_authoritative_child(
         cwd=project, env={}, check=False, capture_output=True, text=True,
     )
     assert completed.returncode == 2
-    assert json.loads(completed.stdout)["error_code"] == "COMMAND_INVALID"
+    assert json.loads(completed.stdout)["code"] == "COMMAND_INVALID"

@@ -18,19 +18,21 @@ from pathlib import Path
 
 
 _INGRESS_SCHEMA = "synaptic-training-run-ingress/v1"
-_RESULT_SCHEMA = "synaptic-training-run-command-result/v1"
+_RESULT_SCHEMA = "synaptic-training-run-command-result/v2"
 _DESTINATION = "provider-staging"
 _DIGEST = re.compile(r"^[0-9a-f]{64}$")
 _COMPONENT = re.compile(r"^[^\\/?#%\x00-\x1f\x7f]+$")
 _ENGINE_CONTRACT_CACHE: tuple[Path, object, dict[str, object], object] | None = None
 
 
-class TrainingRunCommandStatusV1(str, Enum):
+class TrainingRunCommandStatusV2(str, Enum):
     REJECTED = "rejected"
     UNAVAILABLE = "unavailable"
+    SUBMITTED = "submitted"
+    RECONCILE_REQUIRED = "reconcile_required"
 
 
-class TrainingRunCommandCodeV1(str, Enum):
+class TrainingRunCommandCodeV2(str, Enum):
     COMMAND_INVALID = "COMMAND_INVALID"
     PROVIDER_INVALID = "PROVIDER_INVALID"
     PROVIDER_UNAVAILABLE = "PROVIDER_UNAVAILABLE"
@@ -39,7 +41,14 @@ class TrainingRunCommandCodeV1(str, Enum):
     INPUT_INVALID = "INPUT_INVALID"
     DESTINATION_INVALID = "DESTINATION_INVALID"
     BOOTSTRAP_UNAVAILABLE = "BOOTSTRAP_UNAVAILABLE"
-    SUBMISSION_UNAVAILABLE = "SUBMISSION_UNAVAILABLE"
+    CREDENTIALS_UNAVAILABLE = "CREDENTIALS_UNAVAILABLE"
+    COMPOSITION_UNAVAILABLE = "COMPOSITION_UNAVAILABLE"
+    RESOLUTION_UNAVAILABLE = "RESOLUTION_UNAVAILABLE"
+    PREFLIGHT_REJECTED = "PREFLIGHT_REJECTED"
+    AUTHORIZATION_UNAVAILABLE = "AUTHORIZATION_UNAVAILABLE"
+    START_UNAVAILABLE = "START_UNAVAILABLE"
+    SUBMITTED = "SUBMITTED"
+    RECONCILE_REQUIRED = "RECONCILE_REQUIRED"
     INTERNAL_FAILURE = "INTERNAL_FAILURE"
 
 
@@ -107,43 +116,77 @@ class TrainingRunIngressV1:
 
 
 @dataclass(frozen=True, slots=True)
-class TrainingRunCommandResultV1:
+class TrainingRunCommandResultV2:
     schema_version: str
-    status: TrainingRunCommandStatusV1
+    status: TrainingRunCommandStatusV2
+    code: TrainingRunCommandCodeV2
     provider_ref: str | None
     config_ref: str | None
     destination_ref: str | None
     input_digest: str | None
-    error_code: TrainingRunCommandCodeV1
+    project_ref: str | None
+    run_id: str | None
+    plan_fingerprint: str | None
+    effect_id: str | None
+    provider_job_ref: str | None
+    submitted_at: str | None
 
     def __post_init__(self) -> None:
-        if self.schema_version != _RESULT_SCHEMA:
+        if type(self.schema_version) is not str or self.schema_version != _RESULT_SCHEMA:
             raise ValueError("command result schema is invalid")
-        if type(self.status) is not TrainingRunCommandStatusV1:
+        if type(self.status) is not TrainingRunCommandStatusV2:
             raise TypeError("command result status is invalid")
-        if type(self.error_code) is not TrainingRunCommandCodeV1:
-            raise TypeError("command result error code is invalid")
-        unavailable = self.error_code in {
-            TrainingRunCommandCodeV1.PROVIDER_UNAVAILABLE,
-            TrainingRunCommandCodeV1.CONFIG_UNAVAILABLE,
-            TrainingRunCommandCodeV1.BOOTSTRAP_UNAVAILABLE,
-            TrainingRunCommandCodeV1.SUBMISSION_UNAVAILABLE,
-            TrainingRunCommandCodeV1.INTERNAL_FAILURE,
+        if type(self.code) is not TrainingRunCommandCodeV2:
+            raise TypeError("command result code is invalid")
+        rejected = {
+            TrainingRunCommandCodeV2.COMMAND_INVALID,
+            TrainingRunCommandCodeV2.PROVIDER_INVALID,
+            TrainingRunCommandCodeV2.CONFIG_REF_INVALID,
+            TrainingRunCommandCodeV2.INPUT_INVALID,
+            TrainingRunCommandCodeV2.DESTINATION_INVALID,
+            TrainingRunCommandCodeV2.PREFLIGHT_REJECTED,
+        }
+        unavailable = {
+            TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE,
+            TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE,
+            TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,
+            TrainingRunCommandCodeV2.CREDENTIALS_UNAVAILABLE,
+            TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE,
+            TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE,
+            TrainingRunCommandCodeV2.AUTHORIZATION_UNAVAILABLE,
+            TrainingRunCommandCodeV2.START_UNAVAILABLE,
+            TrainingRunCommandCodeV2.INTERNAL_FAILURE,
         }
         expected_status = (
-            TrainingRunCommandStatusV1.UNAVAILABLE if unavailable
-            else TrainingRunCommandStatusV1.REJECTED
+            TrainingRunCommandStatusV2.REJECTED if self.code in rejected
+            else TrainingRunCommandStatusV2.UNAVAILABLE if self.code in unavailable
+            else TrainingRunCommandStatusV2.SUBMITTED
+            if self.code is TrainingRunCommandCodeV2.SUBMITTED
+            else TrainingRunCommandStatusV2.RECONCILE_REQUIRED
         )
         if self.status is not expected_status:
             raise ValueError("command result status and code disagree")
-        identities = (self.provider_ref, self.config_ref, self.destination_ref)
-        if any(
-            value is not None and (
-                type(value) is not str or not value or len(value.encode("utf-8")) > 512
+        identities = (
+            self.provider_ref, self.config_ref, self.destination_ref,
+            self.project_ref, self.run_id, self.effect_id,
+            self.provider_job_ref, self.submitted_at,
+        )
+        try:
+            invalid_identity = any(
+                value is not None and (
+                    type(value) is not str or not value
+                    or len(value.encode("utf-8")) > 512
+                    or any(
+                        unicodedata.category(character).startswith("C")
+                        for character in value
+                    )
+                )
+                for value in identities
             )
-            for value in identities
-        ):
-            raise ValueError("command result references are invalid")
+        except (TypeError, UnicodeError):
+            invalid_identity = True
+        if invalid_identity:
+            raise ValueError("command result references are invalid") from None
         if self.provider_ref is None and any(
             value is not None for value in (self.config_ref, self.destination_ref, self.input_digest)
         ):
@@ -154,41 +197,79 @@ class TrainingRunCommandResultV1:
             raise ValueError("command result validation adjacency is invalid")
         if self.config_ref is None and self.input_digest is not None:
             raise ValueError("command result validation adjacency is invalid")
-        if self.input_digest is not None and _DIGEST.fullmatch(self.input_digest) is None:
+        if self.input_digest is not None and (
+            type(self.input_digest) is not str
+            or _DIGEST.fullmatch(self.input_digest) is None
+        ):
             raise ValueError("command result input digest is invalid")
-        present = (
-            self.provider_ref is not None,
-            self.config_ref is not None,
-            self.destination_ref is not None,
-            self.input_digest is not None,
+        prefix = tuple(
+            value is not None for value in (
+                self.provider_ref, self.config_ref,
+                self.destination_ref, self.input_digest,
+            )
         )
-        allowed = {
-            TrainingRunCommandCodeV1.COMMAND_INVALID: ((False, False, False, False),),
-            TrainingRunCommandCodeV1.PROVIDER_INVALID: ((False, False, False, False),),
-            TrainingRunCommandCodeV1.DESTINATION_INVALID: ((True, False, False, False),),
-            TrainingRunCommandCodeV1.CONFIG_REF_INVALID: ((True, False, True, False),),
-            TrainingRunCommandCodeV1.CONFIG_UNAVAILABLE: ((True, True, True, False),),
-            TrainingRunCommandCodeV1.INPUT_INVALID: ((True, True, True, False),),
-            TrainingRunCommandCodeV1.BOOTSTRAP_UNAVAILABLE: (
-                (True, True, True, False),
-                (True, True, True, True),
+        full = ((True, True, True, True),)
+        allowed_prefixes = {
+            TrainingRunCommandCodeV2.COMMAND_INVALID: ((False, False, False, False),),
+            TrainingRunCommandCodeV2.PROVIDER_INVALID: ((False, False, False, False),),
+            TrainingRunCommandCodeV2.DESTINATION_INVALID: ((True, False, False, False),),
+            TrainingRunCommandCodeV2.CONFIG_REF_INVALID: ((True, False, True, False),),
+            TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE: ((True, True, True, False),),
+            TrainingRunCommandCodeV2.INPUT_INVALID: ((True, True, True, False),),
+            TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE: (
+                (True, True, True, False), (True, True, True, True),
             ),
-            TrainingRunCommandCodeV1.PROVIDER_UNAVAILABLE: ((True, True, True, True),),
-            TrainingRunCommandCodeV1.SUBMISSION_UNAVAILABLE: ((True, True, True, True),),
-            TrainingRunCommandCodeV1.INTERNAL_FAILURE: ((False, False, False, False),),
+            TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE: full,
+            TrainingRunCommandCodeV2.CREDENTIALS_UNAVAILABLE: full,
+            TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE: full,
+            TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE: full,
+            TrainingRunCommandCodeV2.PREFLIGHT_REJECTED: full,
+            TrainingRunCommandCodeV2.AUTHORIZATION_UNAVAILABLE: full,
+            TrainingRunCommandCodeV2.START_UNAVAILABLE: full,
+            TrainingRunCommandCodeV2.SUBMITTED: full,
+            TrainingRunCommandCodeV2.RECONCILE_REQUIRED: full,
+            TrainingRunCommandCodeV2.INTERNAL_FAILURE: ((False, False, False, False),),
         }
-        if present not in allowed[self.error_code]:
+        if prefix not in allowed_prefixes[self.code]:
             raise ValueError("command result fields and code disagree")
+        if self.plan_fingerprint is not None and (
+            type(self.plan_fingerprint) is not str
+            or _DIGEST.fullmatch(self.plan_fingerprint) is None
+        ):
+            raise ValueError("command result plan fingerprint is invalid")
+        operation = tuple(
+            value is not None for value in (
+                self.project_ref, self.run_id, self.plan_fingerprint,
+                self.effect_id, self.provider_job_ref, self.submitted_at,
+            )
+        )
+        if self.code is TrainingRunCommandCodeV2.SUBMITTED:
+            allowed_operation = {(True, True, True, True, True, True)}
+        elif self.code is TrainingRunCommandCodeV2.RECONCILE_REQUIRED:
+            allowed_operation = {
+                (True, True, True, True, False, False),
+                (True, True, True, True, True, False),
+            }
+        else:
+            allowed_operation = {(False, False, False, False, False, False)}
+        if operation not in allowed_operation:
+            raise ValueError("command result operation fields and code disagree")
 
     def to_dict(self) -> dict[str, object]:
         return {
             "schema_version": self.schema_version,
             "status": self.status.value,
+            "code": self.code.value,
             "provider_ref": self.provider_ref,
             "config_ref": self.config_ref,
             "destination_ref": self.destination_ref,
             "input_digest": self.input_digest,
-            "error_code": self.error_code.value,
+            "project_ref": self.project_ref,
+            "run_id": self.run_id,
+            "plan_fingerprint": self.plan_fingerprint,
+            "effect_id": self.effect_id,
+            "provider_job_ref": self.provider_job_ref,
+            "submitted_at": self.submitted_at,
         }
 
     def canonical_json(self) -> str:
@@ -199,22 +280,27 @@ class TrainingRunCommandResultV1:
 
 
 def _failure(
-    code: TrainingRunCommandCodeV1, *, provider_ref: str | None = None,
+    code: TrainingRunCommandCodeV2, *, provider_ref: str | None = None,
     config_ref: str | None = None, destination_ref: str | None = None,
     input_digest: str | None = None,
-) -> TrainingRunCommandResultV1:
+) -> TrainingRunCommandResultV2:
     unavailable = code in {
-        TrainingRunCommandCodeV1.PROVIDER_UNAVAILABLE,
-        TrainingRunCommandCodeV1.CONFIG_UNAVAILABLE,
-        TrainingRunCommandCodeV1.BOOTSTRAP_UNAVAILABLE,
-        TrainingRunCommandCodeV1.SUBMISSION_UNAVAILABLE,
-        TrainingRunCommandCodeV1.INTERNAL_FAILURE,
+        TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE,
+        TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE,
+        TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,
+        TrainingRunCommandCodeV2.CREDENTIALS_UNAVAILABLE,
+        TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE,
+        TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE,
+        TrainingRunCommandCodeV2.AUTHORIZATION_UNAVAILABLE,
+        TrainingRunCommandCodeV2.START_UNAVAILABLE,
+        TrainingRunCommandCodeV2.INTERNAL_FAILURE,
     }
-    return TrainingRunCommandResultV1(
+    return TrainingRunCommandResultV2(
         _RESULT_SCHEMA,
-        TrainingRunCommandStatusV1.UNAVAILABLE if unavailable
-        else TrainingRunCommandStatusV1.REJECTED,
-        provider_ref, config_ref, destination_ref, input_digest, code,
+        TrainingRunCommandStatusV2.UNAVAILABLE if unavailable
+        else TrainingRunCommandStatusV2.REJECTED,
+        code, provider_ref, config_ref, destination_ref, input_digest,
+        None, None, None, None, None, None,
     )
 
 
@@ -327,15 +413,15 @@ _issue_training_run_ingress_v1, _authenticate_training_run_ingress_v1 = (
 )
 
 
-def bootstrap_unavailable_result_v1(
+def bootstrap_unavailable_result_v2(
     ingress: TrainingRunIngressV1,
-) -> TrainingRunCommandResultV1:
+) -> TrainingRunCommandResultV2:
     authenticated = _authenticate_training_run_ingress_v1(ingress)
     if authenticated is None:
-        return _failure(TrainingRunCommandCodeV1.INTERNAL_FAILURE)
+        return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
     provider_ref, config_ref, destination_ref, input_digest, *_unused = authenticated
     return _failure(
-        TrainingRunCommandCodeV1.BOOTSTRAP_UNAVAILABLE,
+        TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,
         provider_ref=provider_ref, config_ref=config_ref,
         destination_ref=destination_ref, input_digest=input_digest,
     )
@@ -452,12 +538,12 @@ def _read_config(
 
 def _load_training_input(
     source: bytes, engine_root: Path
-) -> tuple[object, str, str] | TrainingRunCommandCodeV1:
+) -> tuple[object, str, str] | TrainingRunCommandCodeV2:
     global _ENGINE_CONTRACT_CACHE
     try:
         document = source.decode("utf-8", errors="strict")
     except UnicodeDecodeError:
-        return TrainingRunCommandCodeV1.INPUT_INVALID
+        return TrainingRunCommandCodeV2.INPUT_INVALID
     try:
         engine = engine_root.resolve(strict=True)
         expected_loader = engine / "synaptic_tuner/api/v1/training_input_loader.py"
@@ -553,14 +639,14 @@ def _load_training_input(
         elif _ENGINE_CONTRACT_CACHE[3] is not bundle:
             raise RuntimeError
     except BaseException:
-        return TrainingRunCommandCodeV1.BOOTSTRAP_UNAVAILABLE
+        return TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
     try:
         training_input = bundle.parse_json(document)
         if type(training_input) is not bundle.input_type:
-            return TrainingRunCommandCodeV1.BOOTSTRAP_UNAVAILABLE
+            return TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
         input_digest = training_input.input_digest()
         if type(input_digest) is not str or _DIGEST.fullmatch(input_digest) is None:
-            return TrainingRunCommandCodeV1.BOOTSTRAP_UNAVAILABLE
+            return TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
         return training_input, input_digest, identity.identity_digest
     except BaseException as error:
         if (
@@ -568,36 +654,36 @@ def _load_training_input(
             and object.__getattribute__(error, "code")
             is loader_module.TrainingInputContractCodeV1.INPUT_INVALID
         ):
-            return TrainingRunCommandCodeV1.INPUT_INVALID
-        return TrainingRunCommandCodeV1.BOOTSTRAP_UNAVAILABLE
+            return TrainingRunCommandCodeV2.INPUT_INVALID
+        return TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
 
 
 def _prepare_training_run_ingress_v1(
     argv: list[str], *, project_root: Path, engine_root: Path,
-) -> TrainingRunIngressV1 | TrainingRunCommandResultV1:
+) -> TrainingRunIngressV1 | TrainingRunCommandResultV2:
     parsed = _parse(argv)
     if parsed is None:
-        return _failure(TrainingRunCommandCodeV1.COMMAND_INVALID)
+        return _failure(TrainingRunCommandCodeV2.COMMAND_INVALID)
     provider, config_ref, destination = parsed
     if provider not in {"modal", "docker"}:
-        return _failure(TrainingRunCommandCodeV1.PROVIDER_INVALID)
+        return _failure(TrainingRunCommandCodeV2.PROVIDER_INVALID)
     if destination != _DESTINATION:
-        return _failure(TrainingRunCommandCodeV1.DESTINATION_INVALID, provider_ref=provider)
+        return _failure(TrainingRunCommandCodeV2.DESTINATION_INVALID, provider_ref=provider)
     components = _config_components(config_ref)
     if components is None:
         return _failure(
-            TrainingRunCommandCodeV1.CONFIG_REF_INVALID,
+            TrainingRunCommandCodeV2.CONFIG_REF_INVALID,
             provider_ref=provider, destination_ref=destination,
         )
     loaded = _read_config(project_root, components)
     if loaded is None:
         return _failure(
-            TrainingRunCommandCodeV1.CONFIG_UNAVAILABLE,
+            TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE,
             provider_ref=provider, config_ref=config_ref, destination_ref=destination,
         )
     source, source_sha256 = loaded
     parsed_input = _load_training_input(source, engine_root)
-    if type(parsed_input) is TrainingRunCommandCodeV1:
+    if type(parsed_input) is TrainingRunCommandCodeV2:
         return _failure(
             parsed_input, provider_ref=provider,
             config_ref=config_ref, destination_ref=destination,
@@ -618,7 +704,7 @@ def _prepare_training_run_ingress_v1(
     ).hexdigest()
     if _ENGINE_CONTRACT_CACHE is None:
         return _failure(
-            TrainingRunCommandCodeV1.BOOTSTRAP_UNAVAILABLE,
+            TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,
             provider_ref=provider, config_ref=config_ref,
             destination_ref=destination, input_digest=input_digest,
         )
@@ -631,60 +717,93 @@ def _prepare_training_run_ingress_v1(
 
 def prepare_training_run_ingress_v1(
     argv: list[str], *, project_root: Path, engine_root: Path,
-) -> TrainingRunIngressV1 | TrainingRunCommandResultV1:
+) -> TrainingRunIngressV1 | TrainingRunCommandResultV2:
     try:
         return _prepare_training_run_ingress_v1(
             argv, project_root=project_root, engine_root=engine_root
         )
     except BaseException:
-        return _failure(TrainingRunCommandCodeV1.INTERNAL_FAILURE)
+        return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
 
 
 def dispatch_validated_training_run_v1(
     ingress: TrainingRunIngressV1,
-) -> TrainingRunCommandResultV1:
+) -> TrainingRunCommandResultV2:
     authenticated = _authenticate_training_run_ingress_v1(ingress)
     if authenticated is None:
-        return _failure(TrainingRunCommandCodeV1.INTERNAL_FAILURE)
+        return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
     try:
         provider_ref, config_ref, destination_ref, input_digest, *_unused = authenticated
-        code = (
-            TrainingRunCommandCodeV1.PROVIDER_UNAVAILABLE
-            if provider_ref == "docker"
-            else TrainingRunCommandCodeV1.SUBMISSION_UNAVAILABLE
-        )
+        if provider_ref == "docker":
+            code = TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE
+        else:
+            credentials = tuple(
+                os.environ.get(name)
+                for name in ("MODAL_TOKEN_ID", "MODAL_TOKEN_SECRET")
+            )
+            valid_credentials = True
+            for value in credentials:
+                if type(value) is not str:
+                    valid_credentials = False
+                    break
+                try:
+                    encoded = value.encode("utf-8")
+                except UnicodeError:
+                    valid_credentials = False
+                    break
+                if (
+                    not encoded or len(encoded) > 4096
+                    or any(
+                        unicodedata.category(character).startswith("C")
+                        for character in value
+                    )
+                ):
+                    valid_credentials = False
+                    break
+            code = (
+                TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE
+                if valid_credentials
+                else TrainingRunCommandCodeV2.CREDENTIALS_UNAVAILABLE
+            )
         return _failure(
             code, provider_ref=provider_ref, config_ref=config_ref,
             destination_ref=destination_ref, input_digest=input_digest,
         )
     except BaseException:
-        return _failure(TrainingRunCommandCodeV1.INTERNAL_FAILURE)
+        return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
 
 
-def emit_training_run_result_v1(result: TrainingRunCommandResultV1) -> int:
-    if type(result) is not TrainingRunCommandResultV1:
-        result = _failure(TrainingRunCommandCodeV1.INTERNAL_FAILURE)
+def emit_training_run_result_v2(result: TrainingRunCommandResultV2) -> int:
+    if type(result) is not TrainingRunCommandResultV2:
+        result = _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
     try:
-        rebuilt = TrainingRunCommandResultV1(
-            result.schema_version, result.status, result.provider_ref,
-            result.config_ref, result.destination_ref, result.input_digest,
-            result.error_code,
+        rebuilt = TrainingRunCommandResultV2(
+            result.schema_version, result.status, result.code,
+            result.provider_ref, result.config_ref, result.destination_ref,
+            result.input_digest, result.project_ref, result.run_id,
+            result.plan_fingerprint, result.effect_id,
+            result.provider_job_ref, result.submitted_at,
         )
         if rebuilt != result:
             raise ValueError
         line = rebuilt.canonical_json()
     except BaseException:
-        result = _failure(TrainingRunCommandCodeV1.INTERNAL_FAILURE)
+        result = _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
         line = result.canonical_json()
     sys.stdout.write(line + "\n")
-    if result.status is TrainingRunCommandStatusV1.REJECTED:
+    if result.status is TrainingRunCommandStatusV2.SUBMITTED:
+        return 0
+    if result.status is TrainingRunCommandStatusV2.REJECTED:
         return 2
-    return 4
+    if result.status is TrainingRunCommandStatusV2.UNAVAILABLE:
+        return 4
+    return 8
 
 
 __all__ = [
-    "TrainingRunCommandCodeV1", "TrainingRunCommandResultV1",
-    "TrainingRunCommandStatusV1", "TrainingRunIngressV1",
-    "dispatch_validated_training_run_v1", "emit_training_run_result_v1",
+    "TrainingRunCommandCodeV2", "TrainingRunCommandResultV2",
+    "TrainingRunCommandStatusV2", "TrainingRunIngressV1",
+    "dispatch_validated_training_run_v1", "emit_training_run_result_v2",
     "prepare_training_run_ingress_v1",
+    "bootstrap_unavailable_result_v2",
 ]

@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import unicodedata
 import urllib.request
 from pathlib import Path
 from typing import Sequence
@@ -31,6 +32,7 @@ _PROOF_FILE = ".synaptic-runtime-proof.json"
 _ALLOWED_CHILD_ENV = (
     "HOME", "LANG", "LC_ALL", "PATH", "TMPDIR", "SSL_CERT_FILE", "SSL_CERT_DIR",
 )
+_MODAL_CREDENTIAL_ENV = ("MODAL_TOKEN_ID", "MODAL_TOKEN_SECRET")
 _FIXED_BOOTSTRAP = """import os,runpy,sys
 project_root,engine_root=sys.argv[1:3]
 if not os.path.isabs(project_root) or not os.path.isabs(engine_root): raise SystemExit(4)
@@ -88,6 +90,25 @@ def _stable_regular_bytes(path: Path, maximum: int = 1024 * 1024) -> bytes:
     if identity(before) != identity(after) or len(payload) != before.st_size:
         raise RuntimeError("runtime proof member changed")
     return payload
+
+
+def _validated_child_environment_value(value: object) -> str | None:
+    if type(value) is not str:
+        return None
+    try:
+        encoded = value.encode("utf-8")
+        snapshot = encoded.decode("utf-8")
+    except UnicodeError:
+        return None
+    if (
+        not encoded or len(encoded) > 4096
+        or any(
+            unicodedata.category(character).startswith("C")
+            for character in snapshot
+        )
+    ):
+        return None
+    return snapshot
 
 
 def _launcher_chain(
@@ -446,10 +467,20 @@ def ensure_and_reexec(
         value = os.environ.get(name)
         if value is None:
             continue
-        encoded = value.encode("utf-8")
-        if not encoded or len(encoded) > 4096 or any(byte < 32 or byte == 127 for byte in encoded):
+        snapshot = _validated_child_environment_value(value)
+        if snapshot is None:
             raise RuntimeError("child environment value is invalid")
-        environment[name] = value
+        environment[name] = snapshot
+    modal_credentials: dict[str, str] = {}
+    for name in _MODAL_CREDENTIAL_ENV:
+        value = os.environ.get(name)
+        snapshot = _validated_child_environment_value(value)
+        if snapshot is None:
+            modal_credentials.clear()
+            break
+        modal_credentials[name] = snapshot
+    if len(modal_credentials) == len(_MODAL_CREDENTIAL_ENV):
+        environment.update(modal_credentials)
     environment[_MARKER] = "1"
     environment[_INGRESS_DIGEST] = ingress_digest
     environment[_CONTRACT_IDENTITY_DIGEST] = contract_identity_digest

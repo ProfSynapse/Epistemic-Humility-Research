@@ -5,6 +5,7 @@ import hashlib
 import itertools
 import json
 import sys
+import unicodedata
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -12,12 +13,12 @@ import pytest
 
 import synaptic_host.cli as cli
 from synaptic_host.cli import (
-    TrainingRunCommandCodeV1,
-    TrainingRunCommandResultV1,
-    TrainingRunCommandStatusV1,
+    TrainingRunCommandCodeV2,
+    TrainingRunCommandResultV2,
+    TrainingRunCommandStatusV2,
     TrainingRunIngressV1,
     dispatch_validated_training_run_v1,
-    emit_training_run_result_v1,
+    emit_training_run_result_v2,
     prepare_training_run_ingress_v1,
 )
 
@@ -133,8 +134,8 @@ def test_only_exact_training_run_grammar_is_accepted(argv: list[str]) -> None:
     result = prepare_training_run_ingress_v1(
         argv, project_root=ROOT, engine_root=ENGINE
     )
-    assert type(result) is TrainingRunCommandResultV1
-    assert result.error_code is TrainingRunCommandCodeV1.COMMAND_INVALID
+    assert type(result) is TrainingRunCommandResultV2
+    assert result.code is TrainingRunCommandCodeV2.COMMAND_INVALID
     assert result.provider_ref is result.config_ref is result.destination_ref is None
 
 
@@ -154,7 +155,7 @@ def test_destination_rejects_before_config_or_engine_effects(monkeypatch) -> Non
     result = prepare_training_run_ingress_v1(
         _argv(destination="hf://bucket"), project_root=ROOT, engine_root=Path("missing")
     )
-    assert result.error_code is TrainingRunCommandCodeV1.DESTINATION_INVALID
+    assert result.code is TrainingRunCommandCodeV2.DESTINATION_INVALID
     assert result.provider_ref == "modal"
     assert result.destination_ref is result.config_ref is result.input_digest is None
 
@@ -163,7 +164,7 @@ def test_unknown_provider_is_closed() -> None:
     result = prepare_training_run_ingress_v1(
         _argv(provider="huggingface"), project_root=ROOT, engine_root=ENGINE
     )
-    assert result.error_code is TrainingRunCommandCodeV1.PROVIDER_INVALID
+    assert result.code is TrainingRunCommandCodeV2.PROVIDER_INVALID
     assert result.provider_ref is None
 
 
@@ -181,7 +182,7 @@ def test_config_reference_is_exact_and_closed(reference: str) -> None:
     result = prepare_training_run_ingress_v1(
         _argv(config=reference), project_root=ROOT, engine_root=ENGINE
     )
-    assert result.error_code is TrainingRunCommandCodeV1.CONFIG_REF_INVALID
+    assert result.code is TrainingRunCommandCodeV2.CONFIG_REF_INVALID
     assert result.provider_ref == "modal"
     assert result.destination_ref == "provider-staging"
     assert result.config_ref is None
@@ -194,15 +195,15 @@ def test_config_missing_oversize_and_invalid_utf8_are_totalized(tmp_path: Path) 
     missing = prepare_training_run_ingress_v1(
         _argv(), project_root=project, engine_root=ENGINE
     )
-    assert missing.error_code is TrainingRunCommandCodeV1.CONFIG_UNAVAILABLE
+    assert missing.code is TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE
     oversize = prepare_training_run_ingress_v1(
         _argv(), project_root=_project(tmp_path / "large", b"x" * 65537), engine_root=ENGINE
     )
-    assert oversize.error_code is TrainingRunCommandCodeV1.CONFIG_UNAVAILABLE
+    assert oversize.code is TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE
     invalid = prepare_training_run_ingress_v1(
         _argv(), project_root=_project(tmp_path / "utf8", b"\xff"), engine_root=ENGINE
     )
-    assert invalid.error_code is TrainingRunCommandCodeV1.INPUT_INVALID
+    assert invalid.code is TrainingRunCommandCodeV2.INPUT_INVALID
 
 
 def test_config_file_must_be_stable(monkeypatch, tmp_path: Path) -> None:
@@ -220,7 +221,7 @@ def test_config_file_must_be_stable(monkeypatch, tmp_path: Path) -> None:
     result = prepare_training_run_ingress_v1(
         _argv(), project_root=project, engine_root=ENGINE
     )
-    assert result.error_code is TrainingRunCommandCodeV1.CONFIG_UNAVAILABLE
+    assert result.code is TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE
 
 
 def test_invalid_training_document_is_closed_and_adjacent(tmp_path: Path) -> None:
@@ -228,7 +229,7 @@ def test_invalid_training_document_is_closed_and_adjacent(tmp_path: Path) -> Non
         _argv(), project_root=_project(tmp_path, b'{"secret":"not echoed"}'),
         engine_root=ENGINE,
     )
-    assert result.error_code is TrainingRunCommandCodeV1.INPUT_INVALID
+    assert result.code is TrainingRunCommandCodeV2.INPUT_INVALID
     assert result.provider_ref == "modal"
     assert result.config_ref == "project://training/input.json"
     assert result.destination_ref == "provider-staging"
@@ -248,7 +249,7 @@ def test_engine_module_outside_pinned_root_is_bootstrap_unavailable(
     result = prepare_training_run_ingress_v1(
         _argv(), project_root=_project(tmp_path / "project"), engine_root=ENGINE
     )
-    assert result.error_code is TrainingRunCommandCodeV1.BOOTSTRAP_UNAVAILABLE
+    assert result.code is TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
     assert result.provider_ref == "modal"
     assert result.config_ref == "project://training/input.json"
     assert result.destination_ref == "provider-staging"
@@ -258,74 +259,227 @@ def test_engine_module_outside_pinned_root_is_bootstrap_unavailable(
 def test_docker_is_unavailable_only_after_complete_ingress(tmp_path: Path) -> None:
     ingress = _ingress(tmp_path, "docker")
     result = dispatch_validated_training_run_v1(ingress)
-    assert result.status is TrainingRunCommandStatusV1.UNAVAILABLE
-    assert result.error_code is TrainingRunCommandCodeV1.PROVIDER_UNAVAILABLE
+    assert result.status is TrainingRunCommandStatusV2.UNAVAILABLE
+    assert result.code is TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE
     assert result.input_digest == ingress.input_digest
 
 
-def test_modal_production_is_unavailable_and_has_no_submission_boundary(
-    tmp_path: Path,
+def test_modal_requires_credentials_before_composition(
+    monkeypatch, tmp_path: Path,
 ) -> None:
     ingress = _ingress(tmp_path)
+    monkeypatch.delenv("MODAL_TOKEN_ID", raising=False)
+    monkeypatch.delenv("MODAL_TOKEN_SECRET", raising=False)
     unavailable = dispatch_validated_training_run_v1(ingress)
-    assert unavailable.error_code is TrainingRunCommandCodeV1.SUBMISSION_UNAVAILABLE
-    assert tuple(item.value for item in TrainingRunCommandStatusV1) == (
-        "rejected", "unavailable",
+    assert unavailable.code is TrainingRunCommandCodeV2.CREDENTIALS_UNAVAILABLE
+    monkeypatch.setenv("MODAL_TOKEN_ID", "id-value")
+    monkeypatch.setenv("MODAL_TOKEN_SECRET", "secret-value")
+    unavailable = dispatch_validated_training_run_v1(ingress)
+    assert unavailable.code is TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE
+    assert tuple(item.value for item in TrainingRunCommandStatusV2) == (
+        "rejected", "unavailable", "submitted", "reconcile_required",
     )
     with pytest.raises(TypeError):
         dispatch_validated_training_run_v1(ingress, modal_boundary=lambda _: None)  # type: ignore[call-arg]
 
 
+@pytest.mark.parametrize(
+    ("token_id", "token_secret"),
+    [
+        (None, None), ("id", None), (None, "secret"), ("", "secret"),
+        ("id", ""), ("id\n", "secret"), ("id", "secret\x7f"),
+        ("id\u0085", "secret"),
+        ("i" * 4097, "secret"), ("id", "s" * 4097),
+    ],
+)
+def test_modal_credentials_are_exact_bounded_all_or_nothing(
+    monkeypatch, tmp_path: Path, token_id: str | None, token_secret: str | None,
+) -> None:
+    ingress = _ingress(tmp_path)
+    monkeypatch.delenv("MODAL_TOKEN_ID", raising=False)
+    monkeypatch.delenv("MODAL_TOKEN_SECRET", raising=False)
+    if token_id is not None:
+        monkeypatch.setenv("MODAL_TOKEN_ID", token_id)
+    if token_secret is not None:
+        monkeypatch.setenv("MODAL_TOKEN_SECRET", token_secret)
+    result = dispatch_validated_training_run_v1(ingress)
+    assert result.code is TrainingRunCommandCodeV2.CREDENTIALS_UNAVAILABLE
+    if token_id:
+        assert token_id not in result.to_dict().values()
+    if token_secret:
+        assert token_secret not in result.to_dict().values()
+
+
+def test_docker_dispatch_does_not_read_modal_credentials(monkeypatch, tmp_path: Path) -> None:
+    ingress = _ingress(tmp_path, "docker")
+
+    class ForbiddenEnvironment(dict):
+        def get(self, name, default=None):
+            if name in {"MODAL_TOKEN_ID", "MODAL_TOKEN_SECRET"}:
+                pytest.fail("Docker dispatch read ambient credentials")
+            return super().get(name, default)
+
+    monkeypatch.setattr(cli.os, "environ", ForbiddenEnvironment(cli.os.environ))
+    assert (
+        dispatch_validated_training_run_v1(ingress).code
+        is TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE
+    )
+
+
+def test_modal_credential_string_subclasses_are_rejected(monkeypatch, tmp_path: Path) -> None:
+    class String(str):
+        pass
+
+    ingress = _ingress(tmp_path)
+    environment = dict(cli.os.environ)
+    environment["MODAL_TOKEN_ID"] = String("subclass-id")
+    environment["MODAL_TOKEN_SECRET"] = "secret"
+    monkeypatch.setattr(cli.os, "environ", environment)
+    assert (
+        dispatch_validated_training_run_v1(ingress).code
+        is TrainingRunCommandCodeV2.CREDENTIALS_UNAVAILABLE
+    )
+
+
 def test_emit_is_one_canonical_line_with_exact_exit(capsys, tmp_path: Path) -> None:
     result = dispatch_validated_training_run_v1(_ingress(tmp_path, "docker"))
-    assert emit_training_run_result_v1(result) == 4
+    assert emit_training_run_result_v2(result) == 4
     output = capsys.readouterr().out
     assert output == result.canonical_json() + "\n"
     assert json.loads(output) == result.to_dict()
 
 
+def test_emitter_has_exact_submitted_and_reconcile_exit_codes(capsys) -> None:
+    submitted = _result_for_shape(
+        TrainingRunCommandCodeV2.SUBMITTED, (True, True, True, True),
+        (True, True, True, True, True, True),
+    )
+    assert emit_training_run_result_v2(submitted) == 0
+    assert capsys.readouterr().out == submitted.canonical_json() + "\n"
+    reconcile = _result_for_shape(
+        TrainingRunCommandCodeV2.RECONCILE_REQUIRED,
+        (True, True, True, True), (True, True, True, True, False, False),
+    )
+    assert emit_training_run_result_v2(reconcile) == 8
+    assert capsys.readouterr().out == reconcile.canonical_json() + "\n"
+
+
 def test_emitter_reconstructs_exact_result_before_output(capsys) -> None:
-    result = cli._failure(TrainingRunCommandCodeV1.COMMAND_INVALID)
-    object.__setattr__(result, "status", TrainingRunCommandStatusV1.UNAVAILABLE)
-    assert emit_training_run_result_v1(result) == 4
+    result = cli._failure(TrainingRunCommandCodeV2.COMMAND_INVALID)
+    object.__setattr__(result, "status", TrainingRunCommandStatusV2.UNAVAILABLE)
+    assert emit_training_run_result_v2(result) == 4
     document = json.loads(capsys.readouterr().out)
-    assert document["error_code"] == "INTERNAL_FAILURE"
+    assert document["code"] == "INTERNAL_FAILURE"
+
+
+_CATEGORY_C_VALUES = (
+    "\u0085",  # Cc, assigned control
+    "\u202e",  # Cf, assigned format control
+    "\ud800",  # Cs, surrogate
+    "\ue000",  # Co, private use
+    "\u0378",  # Cn, deliberately unassigned
+)
+
+
+@pytest.mark.parametrize(
+    "field_name",
+    (
+        "provider_ref", "config_ref", "destination_ref", "project_ref",
+        "run_id", "effect_id", "provider_job_ref", "submitted_at",
+    ),
+)
+@pytest.mark.parametrize("hostile", _CATEGORY_C_VALUES)
+def test_result_rejects_every_unicode_category_c_reference(
+    field_name: str, hostile: str,
+) -> None:
+    assert unicodedata.category(hostile).startswith("C")
+    valid = _result_for_shape(
+        TrainingRunCommandCodeV2.SUBMITTED, (True, True, True, True),
+        (True, True, True, True, True, True),
+    )
+    with pytest.raises(ValueError, match="references"):
+        dataclasses.replace(valid, **{field_name: "valid" + hostile})
+
+
+@pytest.mark.parametrize("field_name", ("provider_ref", "submitted_at"))
+@pytest.mark.parametrize("hostile", ("\u0085", "\u202e", "\ue000"))
+def test_emitter_never_serializes_mutated_category_c_references(
+    capsys, field_name: str, hostile: str,
+) -> None:
+    result = _result_for_shape(
+        TrainingRunCommandCodeV2.SUBMITTED, (True, True, True, True),
+        (True, True, True, True, True, True),
+    )
+    object.__setattr__(result, field_name, "secret" + hostile)
+    assert emit_training_run_result_v2(result) == 4
+    output = capsys.readouterr().out
+    assert hostile not in output
+    assert "secret" not in output
+    assert json.loads(output)["code"] == "INTERNAL_FAILURE"
 
 
 _RESULT_SHAPES = {
-    TrainingRunCommandCodeV1.COMMAND_INVALID: {(False, False, False, False)},
-    TrainingRunCommandCodeV1.PROVIDER_INVALID: {(False, False, False, False)},
-    TrainingRunCommandCodeV1.DESTINATION_INVALID: {(True, False, False, False)},
-    TrainingRunCommandCodeV1.CONFIG_REF_INVALID: {(True, False, True, False)},
-    TrainingRunCommandCodeV1.CONFIG_UNAVAILABLE: {(True, True, True, False)},
-    TrainingRunCommandCodeV1.INPUT_INVALID: {(True, True, True, False)},
-    TrainingRunCommandCodeV1.BOOTSTRAP_UNAVAILABLE: {
+    TrainingRunCommandCodeV2.COMMAND_INVALID: {(False, False, False, False)},
+    TrainingRunCommandCodeV2.PROVIDER_INVALID: {(False, False, False, False)},
+    TrainingRunCommandCodeV2.DESTINATION_INVALID: {(True, False, False, False)},
+    TrainingRunCommandCodeV2.CONFIG_REF_INVALID: {(True, False, True, False)},
+    TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE: {(True, True, True, False)},
+    TrainingRunCommandCodeV2.INPUT_INVALID: {(True, True, True, False)},
+    TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE: {
         (True, True, True, False), (True, True, True, True),
     },
-    TrainingRunCommandCodeV1.PROVIDER_UNAVAILABLE: {(True, True, True, True)},
-    TrainingRunCommandCodeV1.SUBMISSION_UNAVAILABLE: {(True, True, True, True)},
-    TrainingRunCommandCodeV1.INTERNAL_FAILURE: {(False, False, False, False)},
+    TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE: {(True, True, True, True)},
+    TrainingRunCommandCodeV2.CREDENTIALS_UNAVAILABLE: {(True, True, True, True)},
+    TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE: {(True, True, True, True)},
+    TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE: {(True, True, True, True)},
+    TrainingRunCommandCodeV2.PREFLIGHT_REJECTED: {(True, True, True, True)},
+    TrainingRunCommandCodeV2.AUTHORIZATION_UNAVAILABLE: {(True, True, True, True)},
+    TrainingRunCommandCodeV2.START_UNAVAILABLE: {(True, True, True, True)},
+    TrainingRunCommandCodeV2.SUBMITTED: {(True, True, True, True)},
+    TrainingRunCommandCodeV2.RECONCILE_REQUIRED: {(True, True, True, True)},
+    TrainingRunCommandCodeV2.INTERNAL_FAILURE: {(False, False, False, False)},
+}
+
+_RESULT_STATUS = {
+    TrainingRunCommandCodeV2.COMMAND_INVALID: TrainingRunCommandStatusV2.REJECTED,
+    TrainingRunCommandCodeV2.PROVIDER_INVALID: TrainingRunCommandStatusV2.REJECTED,
+    TrainingRunCommandCodeV2.CONFIG_REF_INVALID: TrainingRunCommandStatusV2.REJECTED,
+    TrainingRunCommandCodeV2.INPUT_INVALID: TrainingRunCommandStatusV2.REJECTED,
+    TrainingRunCommandCodeV2.DESTINATION_INVALID: TrainingRunCommandStatusV2.REJECTED,
+    TrainingRunCommandCodeV2.PREFLIGHT_REJECTED: TrainingRunCommandStatusV2.REJECTED,
+    TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE: TrainingRunCommandStatusV2.UNAVAILABLE,
+    TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE: TrainingRunCommandStatusV2.UNAVAILABLE,
+    TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE: TrainingRunCommandStatusV2.UNAVAILABLE,
+    TrainingRunCommandCodeV2.CREDENTIALS_UNAVAILABLE: TrainingRunCommandStatusV2.UNAVAILABLE,
+    TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE: TrainingRunCommandStatusV2.UNAVAILABLE,
+    TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE: TrainingRunCommandStatusV2.UNAVAILABLE,
+    TrainingRunCommandCodeV2.AUTHORIZATION_UNAVAILABLE: TrainingRunCommandStatusV2.UNAVAILABLE,
+    TrainingRunCommandCodeV2.START_UNAVAILABLE: TrainingRunCommandStatusV2.UNAVAILABLE,
+    TrainingRunCommandCodeV2.INTERNAL_FAILURE: TrainingRunCommandStatusV2.UNAVAILABLE,
+    TrainingRunCommandCodeV2.SUBMITTED: TrainingRunCommandStatusV2.SUBMITTED,
+    TrainingRunCommandCodeV2.RECONCILE_REQUIRED:
+        TrainingRunCommandStatusV2.RECONCILE_REQUIRED,
 }
 
 
 def _result_for_shape(
-    code: TrainingRunCommandCodeV1, shape: tuple[bool, bool, bool, bool],
-) -> TrainingRunCommandResultV1:
-    unavailable = code in {
-        TrainingRunCommandCodeV1.PROVIDER_UNAVAILABLE,
-        TrainingRunCommandCodeV1.CONFIG_UNAVAILABLE,
-        TrainingRunCommandCodeV1.BOOTSTRAP_UNAVAILABLE,
-        TrainingRunCommandCodeV1.SUBMISSION_UNAVAILABLE,
-        TrainingRunCommandCodeV1.INTERNAL_FAILURE,
-    }
+    code: TrainingRunCommandCodeV2, shape: tuple[bool, bool, bool, bool],
+    operation: tuple[bool, bool, bool, bool, bool, bool] | None = None,
+) -> TrainingRunCommandResultV2:
     values = ("modal", "project://training/input.json", "provider-staging", "a" * 64)
     selected = tuple(value if present else None for value, present in zip(values, shape))
-    return TrainingRunCommandResultV1(
-        "synaptic-training-run-command-result/v1",
-        TrainingRunCommandStatusV1.UNAVAILABLE if unavailable
-        else TrainingRunCommandStatusV1.REJECTED,
-        *selected,
-        code,
+    operation = operation or (False, False, False, False, False, False)
+    operation_values = (
+        "project", "run", "b" * 64, "effect", "provider-job",
+        "2026-08-29T00:00:00Z",
+    )
+    selected_operation = tuple(
+        value if present else None
+        for value, present in zip(operation_values, operation)
+    )
+    return TrainingRunCommandResultV2(
+        "synaptic-training-run-command-result/v2",
+        _RESULT_STATUS[code], code, *selected, *selected_operation,
     )
 
 
@@ -333,9 +487,16 @@ def test_result_code_field_matrix_is_exact_for_every_presence_pattern() -> None:
     all_shapes = tuple(itertools.product((False, True), repeat=4))
     for code, allowed in _RESULT_SHAPES.items():
         for shape in all_shapes:
+            operation = (
+                (True, True, True, True, True, True)
+                if code is TrainingRunCommandCodeV2.SUBMITTED
+                else (True, True, True, True, False, False)
+                if code is TrainingRunCommandCodeV2.RECONCILE_REQUIRED
+                else (False, False, False, False, False, False)
+            )
             if shape in allowed:
-                result = _result_for_shape(code, shape)
-                assert result.error_code is code
+                result = _result_for_shape(code, shape, operation)
+                assert result.code is code
                 assert tuple(
                     value is not None for value in (
                         result.provider_ref, result.config_ref,
@@ -344,7 +505,39 @@ def test_result_code_field_matrix_is_exact_for_every_presence_pattern() -> None:
                 ) == shape
             else:
                 with pytest.raises(ValueError):
-                    _result_for_shape(code, shape)
+                    _result_for_shape(code, shape, operation)
+
+
+def test_result_operation_matrix_rejects_every_missing_or_extra_field() -> None:
+    full_prefix = (True, True, True, True)
+    empty = (False, False, False, False, False, False)
+    submitted = (True, True, True, True, True, True)
+    reconcile_without_job = (True, True, True, True, False, False)
+    reconcile_with_job = (True, True, True, True, True, False)
+    for code in TrainingRunCommandCodeV2:
+        allowed = (
+            {submitted} if code is TrainingRunCommandCodeV2.SUBMITTED
+            else {reconcile_without_job, reconcile_with_job}
+            if code is TrainingRunCommandCodeV2.RECONCILE_REQUIRED
+            else {empty}
+        )
+        prefix = next(iter(_RESULT_SHAPES[code]))
+        for operation in itertools.product((False, True), repeat=6):
+            if operation in allowed:
+                assert _result_for_shape(code, prefix, operation).code is code
+            else:
+                with pytest.raises(ValueError):
+                    _result_for_shape(code, prefix, operation)
+
+
+def test_v1_result_symbols_are_removed() -> None:
+    assert not hasattr(cli, "TrainingRunCommandCodeV1")
+    assert not hasattr(cli, "TrainingRunCommandStatusV1")
+    assert not hasattr(cli, "TrainingRunCommandResultV1")
+    assert not hasattr(cli, "emit_training_run_result_v1")
+    assert not hasattr(cli, "bootstrap_unavailable_result_v1")
+    assert cli.emit_training_run_result_v2 is emit_training_run_result_v2
+    assert callable(cli.bootstrap_unavailable_result_v2)
 
 
 def test_ingress_constructor_is_unavailable_and_unenrolled_copies_fail_closed(
@@ -362,7 +555,7 @@ def test_ingress_constructor_is_unavailable_and_unenrolled_copies_fail_closed(
         object.__setattr__(copied, field.name, getattr(ingress, field.name))
     assert copied == ingress
     rejected = dispatch_validated_training_run_v1(copied)
-    assert rejected.error_code is TrainingRunCommandCodeV1.INTERNAL_FAILURE
+    assert rejected.code is TrainingRunCommandCodeV2.INTERNAL_FAILURE
     assert rejected.provider_ref is rejected.config_ref is None
     assert rejected.destination_ref is rejected.input_digest is None
 
@@ -375,13 +568,13 @@ def test_dispatch_rejects_forged_or_mutated_training_input(tmp_path: Path) -> No
     object.__setattr__(forged, "training_input", object())
     assert forged.envelope_digest == forged.recomputed_envelope_digest()
     assert (
-        dispatch_validated_training_run_v1(forged).error_code
-        is TrainingRunCommandCodeV1.INTERNAL_FAILURE
+        dispatch_validated_training_run_v1(forged).code
+        is TrainingRunCommandCodeV2.INTERNAL_FAILURE
     )
     object.__setattr__(ingress, "training_input", object())
     assert (
-        dispatch_validated_training_run_v1(ingress).error_code
-        is TrainingRunCommandCodeV1.INTERNAL_FAILURE
+        dispatch_validated_training_run_v1(ingress).code
+        is TrainingRunCommandCodeV2.INTERNAL_FAILURE
     )
 
 
@@ -392,7 +585,7 @@ def test_concurrent_dispatch_authentication_converges(tmp_path: Path) -> None:
             pool.map(lambda _index: dispatch_validated_training_run_v1(ingress), range(128))
         )
     assert all(
-        result.error_code is TrainingRunCommandCodeV1.PROVIDER_UNAVAILABLE
+        result.code is TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE
         and result.input_digest == ingress.input_digest
         for result in results
     )
