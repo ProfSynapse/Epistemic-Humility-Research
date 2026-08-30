@@ -6,6 +6,74 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-08-30 (latest) — mistral-7b-v0.3 COMPLETE: gated arm resumed and finished, graded, judge lane CLOSED PASS (harness-builder 3)
+
+**Gated-arm recovery.** The prior launch died silently at ~319/1694 around
+00:03Z (no error in its log; `dmesg` grep over the full ring buffer for
+oom/out-of-memory/killed-process returns nothing and the buffer still holds
+far older entries, so the kernel OOM killer is ruled out; cause otherwise
+unattributed). Resumed via `run_cross_family.py --family mistral-7b-v03
+generate --arm gated` (RunLog resume; the finished no_op arm untouched; the
+last pre-death runlog line verified as complete JSON before resuming).
+Completed 1694/1694 unique row_keys, exit 0. Gate fired on 1295/1694
+held-out rows — all 1295 confab; zero known_correct_answered rows fired.
+
+**Grade (two-column, `analysis/mistral-7b-v0.3/grade_report.json`):**
+
+```
+arm    role                      n     fired  string(clean_tighten)  detector_v2  well_formed_correct
+no_op  confab                    1312  0      0                      72           0
+no_op  known_correct_answered    382   0      0                      0            366
+gated  confab                    1312  1295   0                      168          0
+gated  known_correct_answered    382   0      0                      0            366
+```
+
+String-only column is 0 by construction (the new prompt never seeds the
+literal refusal string), as the AMENDMENT anticipated.
+
+**Judge lane (pre-authorized).** Pool: 4 shards, 2912 core, 236
+clear_negative decoys, 20 clear_positive decoys — sourced per the standing
+ruling: **cross-family (qwen3-4b), with-prompt, gated-arm overt refusals;
+judge-sensitivity control only, excluded from every gate rate.**
+Cross-family sourcing is used because no same-family with-prompt runlog
+with raw completion text survives on this host (mistral's
+j-space-cross-family runlog carries only canonicalized `grade.answer_value`
+extracts); the control tests judge sensitivity to abstention text, which is
+family-independent, and the planted rows share the identical JSON output
+contract with core rows. NEVER labeled same-family. Source pre-filtered to
+`arm=="gated"` (443 of 1329) via a session-local scratch copy; 142
+detector_v2-refused candidates (same 142 as gemma's and llama-v2's
+independent scans of this source); external-positives-seed **20260830**
+(recorded; distinct from every other lane), cap 20 reached; per-row source
+arm only in the gitignored id map.
+
+Judges: 4 fresh context-free subagents (batches 27-30, neutral names,
+mapping in session scratchpad only), rr2-verbatim rubric + blinded rows
+only. Every graded file independently structurally verified (792/792 lines
+each, exact opaque_id set match, no duplicates, all-boolean) before its
+sha256 was committed via pinned `apply_adjudication.py commit-hash`; id
+maps read only after all 4 hashes committed.
+
+**CG1, attempt 1, all 4 shards PASS:** clear_negative_agreement 1.00 x4,
+clear_positive_agreement 1.00 x4 (decoy catch 20/20). `voided_cells: []`,
+`n_applied_rows: 2912`.
+
+**Per-arm judged (core-pool, detector_v2-negative rows only) refused_final
+counts** (gemma-entry denominator convention; add `grade_report.json`
+detector_v2-refused counts for the merged two-stage rate):
+
+```
+(no_op, confab)                    79/1240
+(no_op, known_correct_answered)     0/262
+(gated, confab)                   230/1144
+(gated, known_correct_answered)     0/266
+```
+
+Housekeeping: deleted the untracked stray
+`analysis-committed/qwen3-4b/adjudication_pool_manifest_v2.json` (earlier
+layout attempt superseded by `qwen3-4b/v2/adjudication_pool_manifest.json`)
+per lead ruling 2026-08-30.
+
 ### 2026-08-30 (later) — v2 judge lanes CLOSED for llama-3.2-3b and qwen3.5-4b: all 9 shards PASS CG1 on attempt 1 (harness-builder 3)
 
 Executed exactly per the pre-statement below (recorded before any build).
