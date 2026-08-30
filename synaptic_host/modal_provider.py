@@ -555,6 +555,27 @@ class ExplicitModalHostSession:
         self.client = client
         self.config = config
         self.binding = binding
+        function_call = getattr(sdk, "FunctionCall", None)
+        from_id = getattr(function_call, "from_id", None)
+        if function_call is None or not callable(from_id):
+            raise ValueError("Modal FunctionCall restoration is unavailable")
+        self._function_call_type = function_call
+        self._function_call_from_id_owner = getattr(from_id, "__self__", None)
+        self._function_call_from_id_function = getattr(from_id, "__func__", from_id)
+
+    def _restore_callback_is_current(self) -> bool:
+        try:
+            function_call = getattr(self.sdk, "FunctionCall")
+            callback = getattr(function_call, "from_id")
+            return (
+                function_call is self._function_call_type
+                and getattr(callback, "__self__", None)
+                is self._function_call_from_id_owner
+                and getattr(callback, "__func__", callback)
+                is self._function_call_from_id_function
+            )
+        except BaseException:
+            return False
 
     @classmethod
     def from_credentials(
@@ -694,6 +715,32 @@ class ExplicitModalHostSession:
                 state.artifact_volume_id: state.profile.artifact_volume_ref,
             },
         )
+
+    def restore_function_call(self, provider_job_ref: str):
+        """Restore an exact durable call reference without observing its result."""
+        reference = _text(provider_job_ref, "provider job reference")
+        sdk = self.sdk
+        client = self.client
+        function_call = self._function_call_type
+        callback = getattr(function_call, "from_id")
+        restored = None
+        failed = False
+        try:
+            if not self._restore_callback_is_current():
+                raise ValueError
+            restored = callback(reference, client=client)
+            if (
+                self.sdk is not sdk
+                or self.client is not client
+                or not self._restore_callback_is_current()
+                or object.__getattribute__(restored, "object_id") != reference
+            ):
+                raise ValueError
+        except BaseException:
+            failed = True
+        if failed:
+            raise ValueError("Modal function call could not be restored") from None
+        return restored
 
     def _deploy_journal(
         self,

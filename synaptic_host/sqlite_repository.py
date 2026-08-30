@@ -33,6 +33,7 @@ from synaptic_tuner.api.v1 import (
 )
 from synaptic_tuner.api.v1.modal import (
     ModalDurablePreparationV1,
+    ModalPreparedRunV1,
     ModalTrainingRepository,
 )
 
@@ -41,6 +42,10 @@ _SCHEMA_VERSION = "synaptic-host-sqlite/v1"
 
 def _utc(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def _closed_prepared_run_failure() -> None:
+    raise RuntimeError("host prepared-run persistence failed") from None
 
 
 class SqliteTrainingRepository(ModalTrainingRepository):
@@ -450,50 +455,85 @@ class SqliteTrainingRepository(ModalTrainingRepository):
             tuple(self._decode(row["record_json"]) for row in visible), next_cursor
         )
 
-    def commit_modal_preparation(
-        self,
-        project_ref: str,
-        run_id: str,
-        *,
-        expected_revision: int,
-        occurred_at: str,
-        preparation: ModalDurablePreparationV1,
-    ) -> LifecycleRecord:
-        if not isinstance(preparation, ModalDurablePreparationV1):
-            raise TypeError("preparation must be ModalDurablePreparationV1")
-        with self._transaction() as connection:
-            loaded = self._load_in(connection, project_ref, run_id)
-            if loaded is None:
-                raise RunNotFound("run was not found")
-            old = loaded[1]
-            if old.revision != expected_revision:
-                raise RevisionConflict("revision")
-            new = apply_lifecycle_event(
-                old,
-                LifecycleEvent(
-                    EventCode.PREPARATION_COMPLETED,
-                    occurred_at,
-                    MessageCode.READY,
+    @staticmethod
+    def _insert_modal_preparation_in(
+        connection: sqlite3.Connection, value: ModalPreparedRunV1
+    ) -> None:
+        connection.execute(
+            """
+            INSERT INTO modal_preparations(
+                project_ref, run_id, effect_id, preparation_json
+            ) VALUES (?, ?, ?, ?)
+            """,
+            (
+                value.record.project_ref,
+                value.record.run_id,
+                value.preparation.operation.effect.effect_id,
+                value.preparation.canonical_bytes,
+            ),
+        )
+
+    def create_modal_prepared_run(self, value: ModalPreparedRunV1) -> None:
+        """Atomically create one exact revision-4 run and Modal preparation."""
+
+        detachment_failed = False
+        try:
+            if type(value) is not ModalPreparedRunV1:
+                raise TypeError
+            detached = ModalPreparedRunV1(
+                LifecycleRecord.from_canonical_bytes(value.record.canonical_bytes),
+                ModalDurablePreparationV1.from_canonical_bytes(
+                    value.preparation.canonical_bytes
                 ),
             )
-            try:
-                connection.execute(
-                    """
-                    INSERT INTO modal_preparations(
-                        project_ref, run_id, effect_id, preparation_json
-                    ) VALUES (?, ?, ?, ?)
-                    """,
-                    (
-                        project_ref,
-                        run_id,
-                        preparation.operation.effect.effect_id,
-                        preparation.canonical_bytes,
-                    ),
-                )
-            except sqlite3.IntegrityError as exc:
-                raise EffectCollision("Modal preparation collision") from exc
-            self._update_in(connection, new, expected_revision=expected_revision)
-            return new
+            if detached != value:
+                raise ValueError
+        except Exception:
+            detachment_failed = True
+        if detachment_failed:
+            _closed_prepared_run_failure()
+
+        disposition = "created"
+        transaction_failed = False
+        try:
+            with self._transaction() as connection:
+                if self._load_in(
+                    connection, detached.record.project_ref, detached.record.run_id
+                ) is not None:
+                    disposition = "run_exists"
+                else:
+                    collision = connection.execute(
+                        """
+                        SELECT 1 FROM modal_preparations
+                        WHERE effect_id = ?
+                        """,
+                        (detached.preparation.operation.effect.effect_id,),
+                    ).fetchone()
+                    if collision is not None:
+                        disposition = "effect_collision"
+                    else:
+                        connection.execute(
+                            """
+                            INSERT INTO lifecycle_records(
+                                project_ref, run_id, revision, record_json
+                            ) VALUES (?, ?, ?, ?)
+                            """,
+                            (
+                                detached.record.project_ref,
+                                detached.record.run_id,
+                                detached.record.revision,
+                                detached.record.canonical_bytes,
+                            ),
+                        )
+                        self._insert_modal_preparation_in(connection, detached)
+        except Exception:
+            transaction_failed = True
+        if transaction_failed:
+            _closed_prepared_run_failure()
+        if disposition == "run_exists":
+            raise RunAlreadyExists("run already exists") from None
+        if disposition == "effect_collision":
+            raise EffectCollision("Modal preparation collision") from None
 
     def load_modal_preparation(
         self, project_ref: str, run_id: str

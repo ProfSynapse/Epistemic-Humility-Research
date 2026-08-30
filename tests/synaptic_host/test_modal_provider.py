@@ -160,6 +160,17 @@ class FakeFunction(FakeObject):
         return cls.current
 
 
+class FakeFunctionCall:
+    restored = None
+    observed = False
+
+    @classmethod
+    def from_id(cls, reference, *, client):
+        assert type(reference) is str
+        assert type(client) is FakeClient
+        return cls.restored or FakeObject(reference)
+
+
 class FakeApp:
     deployed = False
     fail_once = False
@@ -200,6 +211,7 @@ class FakeSdk:
     Secret = FakeSecret
     Image = FakeImage
     Function = FakeFunction
+    FunctionCall = FakeFunctionCall
     App = FakeApp
 
     @staticmethod
@@ -212,6 +224,8 @@ def clear_fakes():
     FakeVolume.registry.clear()
     FakeSecret.registry.clear()
     FakeFunction.current = None
+    FakeFunctionCall.restored = None
+    FakeFunctionCall.observed = False
     FakeApp.deployed = False
     FakeApp.fail_once = False
 
@@ -761,3 +775,63 @@ def test_session_rejects_any_sdk_version_drift() -> None:
         ExplicitModalHostSession.from_credentials(
             sdk=WrongSdk, config=config(), token_id="token-id", token_secret="token-secret"
         )
+
+
+def test_session_restores_exact_function_call_without_observation() -> None:
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(),
+        token_id="token-id", token_secret="token-secret",
+    )
+    restored = session.restore_function_call("fc-durable-1")
+    assert restored.object_id == "fc-durable-1"
+    assert FakeFunctionCall.observed is False
+
+
+def test_session_rejects_restored_function_call_identity_mismatch() -> None:
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(),
+        token_id="token-id", token_secret="token-secret",
+    )
+    FakeFunctionCall.restored = FakeObject("fc-other")
+    with pytest.raises(ValueError, match="could not be restored"):
+        session.restore_function_call("fc-durable-1")
+
+
+def test_session_totalizes_restore_failure_without_observing_call() -> None:
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(),
+        token_id="token-id", token_secret="token-secret",
+    )
+    original = FakeFunctionCall.from_id
+
+    def fail(*_args, **_kwargs):
+        raise RuntimeError("private provider response")
+
+    FakeFunctionCall.from_id = fail
+    try:
+        with pytest.raises(ValueError, match="could not be restored") as caught:
+            session.restore_function_call("fc-durable-1")
+        assert caught.value.__cause__ is None
+        assert caught.value.__context__ is None
+    finally:
+        FakeFunctionCall.from_id = original
+
+
+def test_session_rejects_function_call_callback_replacement_during_restore() -> None:
+    original = FakeFunctionCall.from_id
+
+    def replace_during_call(reference, *, client):
+        FakeFunctionCall.from_id = staticmethod(lambda *_args, **_kwargs: None)
+        return FakeObject(reference)
+
+    FakeFunctionCall.from_id = replace_during_call
+    try:
+        session = ExplicitModalHostSession.from_credentials(
+            sdk=FakeSdk, config=config(),
+            token_id="token-id", token_secret="token-secret",
+        )
+        with pytest.raises(ValueError, match="could not be restored"):
+            session.restore_function_call("fc-durable-1")
+        assert FakeFunctionCall.observed is False
+    finally:
+        FakeFunctionCall.from_id = original
