@@ -339,6 +339,7 @@ def test_released_facade_starts_real_offline_pinned_container(
     request, artifact_path, payload = _request(tmp_path)
     trace: dict[str, object] = {"inspects": []}
     original_inspect = DockerCLIRunnerV1.inspect_container
+    original_start_container = DockerCLIRunnerV1.start_container
     original_start = DockerHostStartV1.start_once
 
     def traced_inspect(self, container_ref):
@@ -362,7 +363,24 @@ def test_released_facade_starts_real_offline_pinned_container(
         }
         return result
 
+    def traced_start_container(self, command, container_ref):
+        try:
+            result = original_start_container(self, command, container_ref)
+        except BaseException as error:
+            trace["start_container"] = {"error": type(error).__name__}
+            raise
+        trace["start_container"] = {
+            "outcome": result.evidence.outcome.value,
+            "exit_code": result.evidence.exit_code,
+            "stdout_size": result.evidence.stdout_size,
+            "stderr_size": result.evidence.stderr_size,
+        }
+        return result
+
     monkeypatch.setattr(DockerCLIRunnerV1, "inspect_container", traced_inspect)
+    monkeypatch.setattr(
+        DockerCLIRunnerV1, "start_container", traced_start_container
+    )
     monkeypatch.setattr(DockerHostStartV1, "start_once", traced_start)
     facade = compose_docker_host_v1(request)
     container_ref = None
