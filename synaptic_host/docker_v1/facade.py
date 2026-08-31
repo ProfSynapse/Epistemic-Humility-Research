@@ -4,9 +4,10 @@ from __future__ import annotations
 
 
 def _install_facade():
+    from collections import deque
     from dataclasses import dataclass
     from enum import Enum
-    from threading import Condition, Lock, get_ident
+    from threading import Condition, Lock, RLock, get_ident, local
     from weakref import ref as weak_ref
 
     from synaptic_host.bundle_io_v1.model import digest_v1
@@ -266,11 +267,53 @@ def _install_facade():
                 raise AttributeError
             object.__setattr__(self, name, value)
 
-    registry_lock = Lock()
+    registry_lock = RLock()
+    registry_nesting = local()
+    pending_orphans = deque()
+    orphan_drain_lock = Lock()
     anchor_by_wrapper_id = {}
     state_id_by_wrapper_id = {}
     state_by_id = {}
     anchor_by_state_id = {}
+
+    def drain_orphans():
+        if not orphan_drain_lock.acquire(blocking=False):
+            return
+        owns_drain = True
+        try:
+            while True:
+                with registry_guard():
+                    if not pending_orphans:
+                        orphan_drain_lock.release()
+                        owns_drain = False
+                        return
+                    record = pending_orphans.popleft()
+                orphan_close(record)
+        finally:
+            if owns_drain:
+                orphan_drain_lock.release()
+
+    class _RegistryGuard:
+        __slots__ = ("depth",)
+
+        def __enter__(self):
+            registry_lock.acquire()
+            self.depth = getattr(registry_nesting, "depth", 0) + 1
+            registry_nesting.depth = self.depth
+            return self
+
+        def __exit__(self, _error_type, _error, _traceback):
+            depth = self.depth
+            outermost = depth == 1
+            should_drain = outermost and bool(pending_orphans)
+            registry_nesting.depth = depth - 1
+            registry_lock.release()
+            if should_drain:
+                drain_orphans()
+            return False
+
+    def registry_guard():
+        return _RegistryGuard()
 
     def exact_registry_match(wrapper, wrapper_id, reference, anchor,
                              state_id, record):
@@ -315,8 +358,7 @@ def _install_facade():
         record = None
 
         def collected(reference):
-            orphan = None
-            with registry_lock:
+            with registry_guard():
                 wrapper_anchor = anchor_by_wrapper_id.get(wrapper_id)
                 if (wrapper_anchor is not None
                         and wrapper_anchor[0] is reference
@@ -332,9 +374,7 @@ def _install_facade():
                     state_id_by_wrapper_id.pop(wrapper_id, None)
                     state_by_id.pop(state_id, None)
                     anchor_by_state_id.pop(state_id, None)
-                    orphan = record
-            if orphan is not None:
-                orphan_close(orphan)
+                    pending_orphans.append(record)
 
         reference = weak_ref(wrapper, collected)
         reference_holder.append(reference)
@@ -350,7 +390,7 @@ def _install_facade():
         installed_anchor = installed_wrapper_state = False
         installed_state = installed_state_anchor = False
         try:
-            with registry_lock:
+            with registry_guard():
                 if (wrapper_id in anchor_by_wrapper_id
                         or wrapper_id in state_id_by_wrapper_id
                         or state_id in state_by_id
@@ -369,7 +409,7 @@ def _install_facade():
                 installed_anchor, installed_wrapper_state, installed_state,
                 installed_state_anchor,
             ))
-            with registry_lock:
+            with registry_guard():
                 current_anchor = anchor_by_wrapper_id.get(wrapper_id)
                 if (installed_anchor and current_anchor is not None
                         and current_anchor[0] is reference
@@ -383,13 +423,13 @@ def _install_facade():
                 if (installed_state_anchor
                         and anchor_by_state_id.get(state_id) is anchor):
                     anchor_by_state_id.pop(state_id, None)
-            if installed_any:
-                orphan_close(record)
+                if installed_any:
+                    pending_orphans.append(record)
             operation_failure(OperationCode.UNAVAILABLE)
 
     def state_for(wrapper, expected_type, error_kind):
         wrapper_id = id(wrapper)
-        with registry_lock:
+        with registry_guard():
             wrapper_anchor = anchor_by_wrapper_id.get(wrapper_id)
             state_id = state_id_by_wrapper_id.get(wrapper_id)
             record = state_by_id.get(state_id)

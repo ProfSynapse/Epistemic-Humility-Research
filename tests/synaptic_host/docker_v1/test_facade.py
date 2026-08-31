@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy, deepcopy
 import gc
+import inspect
 import pickle
 from threading import Event, Lock
 from types import SimpleNamespace
@@ -521,6 +522,17 @@ def _facade_registries(facade):
     return anchor_by_wrapper, state_id_by_wrapper, state_by_id, anchor_by_state
 
 
+def _registry_guard():
+    register = next(
+        cell.cell_contents
+        for cell in DockerHostFacadeV1.__init__.__closure__
+        if callable(cell.cell_contents)
+        and getattr(cell.cell_contents, "__name__", "") == "register_wrapper"
+    )
+    guard = inspect.getclosurevars(register).nonlocals["registry_guard"]
+    return guard
+
+
 def test_weak_registry_collection_and_stale_token_callback_are_exact(mount_env):
     facade, _runtime, _cell, _ownership_value = _facade(
         _workflow(), mount_env["catalog"].value
@@ -854,3 +866,97 @@ def test_orphan_wrapper_cleans_once_outside_registry_lock(mount_env):
     assert reference() is None
     assert cleanup_calls == ["cleanup"]
     assert created[0].close().code is DockerHostFacadeCloseCodeV1.CLEANED
+
+
+def test_forced_gc_inside_nested_registry_guard_queues_until_outer_exit(mount_env):
+    guard = _registry_guard()
+    inside_guard = [False]
+    cleanup_observations = []
+    facade, _runtime, _cell, _ownership_value = _facade(
+        _workflow(), mount_env["catalog"].value,
+        ownership=_ownership(
+            lambda _capability: cleanup_observations.append(inside_guard[0])
+        ),
+    )
+    reference = weakref.ref(facade)
+    holder = [facade]
+    del facade
+
+    with guard():
+        inside_guard[0] = True
+        try:
+            with guard():
+                holder.clear()
+                gc.collect()
+                assert reference() is None
+                assert cleanup_observations == []
+            assert cleanup_observations == []
+        finally:
+            inside_guard[0] = False
+    assert cleanup_observations == [False]
+
+
+def test_single_drainer_absorbs_multiple_orphans_queued_during_cleanup(mount_env):
+    calls = []
+    queued = []
+
+    def first_cleanup(_capability):
+        calls.append("first")
+        queued.clear()
+        gc.collect()
+
+    first, _runtime, _cell, _ownership_value = _facade(
+        _workflow(), mount_env["catalog"].value,
+        ownership=_ownership(first_cleanup),
+    )
+    references = []
+    for label in ("second", "third", "fourth"):
+        value, _runtime, _cell, _ownership_value = _facade(
+            _workflow(), mount_env["catalog"].value,
+            ownership=_ownership(
+                lambda _capability, label=label: calls.append(label)
+            ),
+        )
+        references.append(weakref.ref(value))
+        queued.append(value)
+    del value
+    first_reference = weakref.ref(first)
+    del first
+    gc.collect()
+
+    assert first_reference() is None
+    assert all(reference() is None for reference in references)
+    assert calls[0] == "first"
+    assert sorted(calls[1:]) == ["fourth", "second", "third"]
+
+
+def test_concurrent_closer_and_unrelated_gc_do_not_share_cleanup_locks(mount_env):
+    entered, release = Event(), Event()
+    calls = []
+
+    def closing_cleanup(_capability):
+        calls.append("close")
+        entered.set()
+        assert release.wait(2)
+
+    closing, _runtime, _cell, _ownership_value = _facade(
+        _workflow(), mount_env["catalog"].value,
+        ownership=_ownership(closing_cleanup),
+    )
+    orphan, _runtime, _cell, _ownership_value = _facade(
+        _workflow(), mount_env["catalog"].value,
+        ownership=_ownership(lambda _capability: calls.append("orphan")),
+    )
+    orphan_reference = weakref.ref(orphan)
+
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        closing_result = pool.submit(closing.close)
+        assert entered.wait(2)
+        del orphan
+        gc.collect()
+        assert orphan_reference() is None
+        assert "orphan" in calls
+        release.set()
+        assert closing_result.result(timeout=2).code is DockerHostFacadeCloseCodeV1.CLEANED
+    assert calls.count("close") == 1
+    assert calls.count("orphan") == 1
