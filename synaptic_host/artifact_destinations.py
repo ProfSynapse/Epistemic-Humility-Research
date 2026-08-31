@@ -193,6 +193,26 @@ class DestinationAdapterRegistrationV1:
 
 
 @dataclass(frozen=True, slots=True)
+class DestinationAdapterInstallationV1:
+    """Provider-neutral registration plus its terminal owned cleanup."""
+
+    registration: DestinationAdapterRegistrationV1
+    cleanup: FunctionType
+
+    def __post_init__(self) -> None:
+        if type(self.registration) is not DestinationAdapterRegistrationV1:
+            raise TypeError("exact adapter registration is required")
+        if type(self.cleanup) is not FunctionType:
+            raise TypeError("exact adapter cleanup function is required")
+
+    def cleanup_owned(self) -> bool:
+        result = self.cleanup()
+        if type(result) is not bool:
+            raise TypeError("adapter cleanup must return an exact boolean")
+        return result
+
+
+@dataclass(frozen=True, slots=True)
 class ResolvedDestinationAdapterV1:
     adapter: object
     authority_bindings: tuple[tuple[str, str], ...]
@@ -640,6 +660,7 @@ __all__ = [
     "ArtifactDestinationConfigV1",
     "ArtifactDestinationDeclarationV1",
     "ArtifactDestinationPolicyV1",
+    "DestinationAdapterInstallationV1",
     "DestinationAdapterRegistrationV1",
     "ImmutableArtifactDestinationRegistryV1",
     "ResolvedDestinationAdapterV1",

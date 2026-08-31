@@ -11,6 +11,7 @@ from synaptic_host.artifact_destinations import (
     ArtifactDestinationConfigV1,
     ArtifactDestinationDeclarationV1,
     ArtifactDestinationPolicyV1,
+    DestinationAdapterInstallationV1,
     DestinationAdapterRegistrationV1,
     ImmutableArtifactDestinationRegistryV1,
     ResolvedDestinationAdapterV1,
@@ -43,6 +44,43 @@ class HFAdapter(LocalAdapter):
 
 class FutureAdapter(LocalAdapter):
     pass
+
+
+def test_generic_installation_requires_exact_registration_and_cleanup_function():
+    registration = _registrations()[0]
+
+    def cleaned():
+        return True
+
+    installation = DestinationAdapterInstallationV1(registration, cleaned)
+    assert installation.registration is registration
+    assert installation.cleanup_owned() is True
+
+    def failed():
+        return False
+
+    assert DestinationAdapterInstallationV1(
+        registration, failed
+    ).cleanup_owned() is False
+
+    with pytest.raises(TypeError, match="exact adapter registration"):
+        DestinationAdapterInstallationV1(object(), cleaned)
+
+    class Cleanup:
+        def run(self):
+            return True
+
+    with pytest.raises(TypeError, match="exact adapter cleanup function"):
+        DestinationAdapterInstallationV1(registration, Cleanup().run)
+
+
+def test_generic_installation_rejects_non_boolean_cleanup_result():
+    def invalid():
+        return 1
+
+    installation = DestinationAdapterInstallationV1(_registrations()[0], invalid)
+    with pytest.raises(TypeError, match="exact boolean"):
+        installation.cleanup_owned()
 
 
 class AttributeBombAdapter(LocalAdapter):
