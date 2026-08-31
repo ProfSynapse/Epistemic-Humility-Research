@@ -32,10 +32,12 @@ from synaptic_host.docker_v1.composition import (
     DockerHostCompositionRequestV1,
     compose_docker_host_v1,
 )
+from synaptic_host.docker_v1.cli import DockerCLIRunnerV1
 from synaptic_host.docker_v1.model import (
     DockerCLIEnvironmentV1,
     DockerCLIPolicyV1,
 )
+from synaptic_host.docker_v1.start import DockerHostStartV1
 from synaptic_host.local_io_v1.config import StorageRegistryV1
 from synaptic_host.local_io_v1.filesystem import LocalFilesystemV1
 from synaptic_host.local_io_v1.posix import PosixRetainedDirfdPortV1
@@ -331,12 +333,58 @@ def _docker(*arguments: str, timeout: int = 30) -> subprocess.CompletedProcess[b
     or not _DOCKER_EXE.is_file(),
     reason="real Docker Desktop WSL integration",
 )
-def test_released_facade_starts_real_offline_pinned_container(tmp_path: Path):
+def test_released_facade_starts_real_offline_pinned_container(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
     request, artifact_path, payload = _request(tmp_path)
+    trace: dict[str, object] = {"inspects": []}
+    original_inspect = DockerCLIRunnerV1.inspect_container
+    original_start = DockerHostStartV1.start_once
+
+    def traced_inspect(self, container_ref):
+        result = original_inspect(self, container_ref)
+        projection = result.projection
+        state = None if projection is None else projection.state
+        trace["inspects"].append({
+            "outcome": result.evidence.outcome.value,
+            "status": None if state is None else state.status.value,
+            "running": None if state is None else state.running,
+            "started": None if state is None else state.started,
+            "exit_code": None if state is None else state.exit_code,
+        })
+        return result
+
+    def traced_start(self, container_ref, labels):
+        result = original_start(self, container_ref, labels)
+        trace["start"] = {
+            "disposition": result.disposition.value,
+            "container_ref": result.container_ref,
+        }
+        return result
+
+    monkeypatch.setattr(DockerCLIRunnerV1, "inspect_container", traced_inspect)
+    monkeypatch.setattr(DockerHostStartV1, "start_once", traced_start)
     facade = compose_docker_host_v1(request)
     container_ref = None
     try:
-        workflow = facade.start_run()
+        try:
+            workflow = facade.start_run()
+        except BaseException as error:
+            binding = facade.effect_binding(EffectKind.SUBMIT)
+            container_ref = labels_for(binding.content.identity).container_name
+            inspected = _docker("inspect", container_ref)
+            logs = _docker("logs", container_ref)
+            pytest.fail(
+                "real Docker facade rejected a started workload\n"
+                f"host_trace={json.dumps(trace, sort_keys=True)}\n"
+                f"inspect_rc={inspected.returncode}\n"
+                f"inspect={inspected.stdout.decode('utf-8', 'replace')}\n"
+                f"inspect_stderr={inspected.stderr.decode('utf-8', 'replace')}\n"
+                f"logs_rc={logs.returncode}\n"
+                f"logs={logs.stdout.decode('utf-8', 'replace')}\n"
+                f"logs_stderr={logs.stderr.decode('utf-8', 'replace')}\n"
+                f"facade_error={type(error).__name__}"
+            )
         assert workflow.phase.value == "queued"
         assert workflow.provider_run_ref is not None
         container_ref = workflow.provider_run_ref.reference.provider_job_ref
