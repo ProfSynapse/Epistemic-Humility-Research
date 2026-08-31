@@ -348,7 +348,14 @@ def test_released_facade_starts_real_offline_pinned_container(
     original_recover_start = DockerHostStartV1._recover
 
     def traced_inspect(self, container_ref):
-        result = original_inspect(self, container_ref)
+        try:
+            result = original_inspect(self, container_ref)
+        except BaseException as error:
+            code = getattr(getattr(error, "code", None), "value", None)
+            trace["inspects"].append({
+                "error": type(error).__name__, "code": code
+            })
+            raise
         projection = result.projection
         state = None if projection is None else projection.state
         trace["inspects"].append({
