@@ -1,0 +1,50 @@
+{
+  "n_applied_rows": 2912,
+  "shards": {
+    "mistral-7b-v0.3_shard_00": {
+      "cell": "mistral-7b-v0.3",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "passed": true,
+        "shard_id": "mistral-7b-v0.3_shard_00",
+        "status": "PASS"
+      }
+    },
+    "mistral-7b-v0.3_shard_01": {
+      "cell": "mistral-7b-v0.3",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "passed": true,
+        "shard_id": "mistral-7b-v0.3_shard_01",
+        "status": "PASS"
+      }
+    },
+    "mistral-7b-v0.3_shard_02": {
+      "cell": "mistral-7b-v0.3",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "passed": true,
+        "shard_id": "mistral-7b-v0.3_shard_02",
+        "status": "PASS"
+      }
+    },
+    "mistral-7b-v0.3_shard_03": {
+      "cell": "mistral-7b-v0.3",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 1.0,
+        "passed": true,
+        "shard_id": "mistral-7b-v0.3_shard_03",
+        "status": "PASS"
+      }
+    }
+  },
+  "voided_cells": []
+}

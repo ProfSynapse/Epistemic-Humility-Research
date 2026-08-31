@@ -1,0 +1,19 @@
+{
+  "n_applied_rows": 0,
+  "shards": {
+    "llama-3.2-3b_shard_03": {
+      "cell": "llama-3.2-3b",
+      "cg1": {
+        "attempt": 2,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.0,
+        "passed": false,
+        "shard_id": "llama-3.2-3b_shard_03",
+        "status": "VOID_CELL_TERMINAL"
+      }
+    }
+  },
+  "voided_cells": [
+    "llama-3.2-3b"
+  ]
+}

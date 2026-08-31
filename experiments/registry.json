@@ -5693,16 +5693,20 @@
           "render.py": "b9c47e1b498cf09815f1cffec66f1374fa5aadb11b7f1dc9ed4f78141ac9217f"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:no-abstention-prompt-gated-replication",
+        "mechanism:abstention-instruction-amplifies-the-gated-write",
+        "mechanism:detector-v2-overfires-on-random-arm-text"
+      ],
       "prediction": "PI call 2026-08-28: survives attenuated; in qwen3-4b the gated-over-no_op two-stage abstention lift on held-out confabs is real (95% CI excludes zero) but below half its with-prompt magnitude; no_op baseline abstention falls.",
       "question": "Does the doubt-gated abstention write reproduce its gated-over-no-op benefit when the system prompt contains no abstention instruction (JSON-format instruction only)?",
       "registered": true,
       "slug": "no-abstention-prompt-gated-replication",
-      "status": "signed",
+      "status": "resolved",
       "text_capture": "enabled",
       "title": "No-abstention-prompt gated replication (cross-family)",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "Falsifier did not fire: with the abstention instruction deleted, the gated write retains a real two-stage abstention lift in all five families (qwen3-4b +11.4pp, llama +9.3pp, mistral +18.8pp, qwen3.5-4b +45.6pp, gemma +47.0pp, every 95% CI excluding zero) at near-zero known-correct cost, but the reference family falls far below the half-with-prompt floor: the pre-stated middle band, attenuated survival, framing revised to instruction-amplified."
     },
     {
       "checkpoint": {

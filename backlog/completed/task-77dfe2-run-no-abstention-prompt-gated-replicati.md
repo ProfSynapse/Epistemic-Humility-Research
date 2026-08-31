@@ -1,7 +1,7 @@
 ---
 id: task-77dfe2
 title: Run no-abstention-prompt gated replication across families
-status: todo
+status: done
 assignee: []
 tier: A
 priority: high
@@ -12,7 +12,7 @@ files: []
 new_files: []
 blocker: ''
 created_date: '2026-08-28'
-updated_date: '2026-08-28'
+updated_date: '2026-08-30'
 ---
 ## Description
 

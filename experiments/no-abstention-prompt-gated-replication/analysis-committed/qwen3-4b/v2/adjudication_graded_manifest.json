@@ -1,0 +1,14 @@
+[
+  {
+    "committed_at": "2026-08-29T22:36:43.041010+00:00",
+    "file_name": "batch_1_graded_remapped.jsonl",
+    "sha256": "f774d9b498e12bc8d90abb8c8e47e97cbcae4b068ecbf4c40c793602c970d6f5",
+    "shard_id": "qwen3-4b_shard_00"
+  },
+  {
+    "committed_at": "2026-08-29T22:36:43.068793+00:00",
+    "file_name": "batch_2_graded_remapped.jsonl",
+    "sha256": "36518afb41e259492b8eb128ef1b927dd0a1432878675d65d8495cc4d5e031a5",
+    "shard_id": "qwen3-4b_shard_01"
+  }
+]

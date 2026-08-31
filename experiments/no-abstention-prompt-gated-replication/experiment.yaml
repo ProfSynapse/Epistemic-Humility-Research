@@ -1,7 +1,7 @@
 slug: no-abstention-prompt-gated-replication
 title: No-abstention-prompt gated replication (cross-family)
 type: steer-cell
-status: signed
+status: resolved
 registered: true
 created_at: '2026-08-28T12:21:03Z'
 question: Does the doubt-gated abstention write reproduce its gated-over-no-op benefit
@@ -51,5 +51,13 @@ inputs:
 - experiments/llama-hs17-direction-specificity
 - experiments/gemma4-e4b-kv-seam-quarantine
 - experiments/abstention-wide-instrument-calibration
-verdict: ''
-kg: []
+verdict: 'Falsifier did not fire: with the abstention instruction deleted, the gated
+  write retains a real two-stage abstention lift in all five families (qwen3-4b +11.4pp,
+  llama +9.3pp, mistral +18.8pp, qwen3.5-4b +45.6pp, gemma +47.0pp, every 95% CI excluding
+  zero) at near-zero known-correct cost, but the reference family falls far below
+  the half-with-prompt floor: the pre-stated middle band, attenuated survival, framing
+  revised to instruction-amplified.'
+kg:
+- experiment:no-abstention-prompt-gated-replication
+- mechanism:abstention-instruction-amplifies-the-gated-write
+- mechanism:detector-v2-overfires-on-random-arm-text

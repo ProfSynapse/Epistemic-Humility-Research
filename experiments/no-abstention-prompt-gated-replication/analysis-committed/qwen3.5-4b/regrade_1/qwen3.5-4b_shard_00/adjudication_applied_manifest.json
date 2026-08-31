@@ -1,0 +1,19 @@
+{
+  "n_applied_rows": 0,
+  "shards": {
+    "qwen3.5-4b_shard_00": {
+      "cell": "qwen3.5-4b",
+      "cg1": {
+        "attempt": 2,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.4,
+        "passed": false,
+        "shard_id": "qwen3.5-4b_shard_00",
+        "status": "VOID_CELL_TERMINAL"
+      }
+    }
+  },
+  "voided_cells": [
+    "qwen3.5-4b"
+  ]
+}

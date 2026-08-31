@@ -1,0 +1,26 @@
+[
+  {
+    "committed_at": "2026-08-30T18:24:33.626285+00:00",
+    "file_name": "batch_27_graded.jsonl",
+    "sha256": "a56ca98e135e6127f57206fb585cb4c997d771e7afe52e69a029fcd65c32fc21",
+    "shard_id": "mistral-7b-v0.3_shard_00"
+  },
+  {
+    "committed_at": "2026-08-30T18:24:33.652310+00:00",
+    "file_name": "batch_28_graded.jsonl",
+    "sha256": "f2c6fcf31e759019bd5f518d4368e16af76bc0de6d24e589e3aa4280f40d1598",
+    "shard_id": "mistral-7b-v0.3_shard_01"
+  },
+  {
+    "committed_at": "2026-08-30T18:24:33.679637+00:00",
+    "file_name": "batch_29_graded.jsonl",
+    "sha256": "71477b74a2e7cbb17c1e77fdf72135b9f7967054b667481149eaaecd190454f0",
+    "shard_id": "mistral-7b-v0.3_shard_02"
+  },
+  {
+    "committed_at": "2026-08-30T18:24:33.705935+00:00",
+    "file_name": "batch_30_graded.jsonl",
+    "sha256": "c749148ab602a3a5e78aaa94188eb92a5948bb48f95a0a94cf9edc90952d1ab4",
+    "shard_id": "mistral-7b-v0.3_shard_03"
+  }
+]
