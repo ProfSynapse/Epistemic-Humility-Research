@@ -4,7 +4,7 @@ session_id: 20260809T094942Z-paper-3-burn-downs-item-25-falsified-item-26-harnes
 title: 'Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed'
 status: active
 created_at: '2026-08-09T09:49:42Z'
-updated_at: '2026-08-29T23:00:19Z'
+updated_at: '2026-08-31T00:25:50Z'
 question: Do the three registered paper-3 limitation burn-downs (wrong-answer power
   fix, OOD breadth, abstention-install transfer) survive their gates, and what do
   their resolutions change in paper 3?
@@ -1854,6 +1854,36 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 080-checkpoint
+  at: '2026-08-31T00:25:50Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'No-abstention-prompt-gated-replication RESOLVED 2026-08-30 with PI-signed
+    verdict: falsifier did not fire, real two-stage lift in all five families (qwen3-4b
+    11.4, llama 9.3, mistral 18.8, qwen3.5 45.6, gemma 47.0 points, every CI excluding
+    zero) at near-zero cost, reference family below the half-with-prompt floor, middle
+    band, framing revised to instruction-amplified. G1 and G1b FAIL floors, G2 NOT-ADJUDICABLE
+    at dosed-N 5, G3 descriptive, G4 PASS twice. Mistral finished after a third silent
+    builder stall (na-harness3 respawned once, then woken once); its judge lane passed
+    20 of 20 decoys, and the v2 lanes for llama and qwen3.5 passed 9 of 9 shards after
+    the pre-stated decoy-source correction, cross-family decoy tally 79 of 80. Post
+    work complete: Outcome written, exp resolve run, KG ingested (experiment node
+    plus mechanisms abstention-instruction-amplifies-the-gated-write and detector-v2-overfires-on-random-arm-text),
+    bound task-77dfe2 closed, evidence PR 585 merged, run worktree harvested (canonical
+    verified a strict superset) and removed, paper 5 PR 584 merged earlier on PI direction
+    with v2 numbers, PR 586 merged filling the mistral number from the resolved Outcome.
+    Paper 5 manuscript now carries the full disclosure, the paper-2 prompt-vs-training
+    callback (90.89 vs 0 on the untrained base), and all five final instruction-free
+    numbers; manuscript remains a draft pending PI language pass including retired-terminology
+    sweep (AC legacy entry noted). Predictions scoreboard: PI call correct, orchestrator
+    call wrong. Parked: exhaust batch 4 (28 tiny cells) and packaging this cell exhaust;
+    Gmail outreach draft still awaiting PI send.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: paper-3-burn-downs
 ---
 # Paper-3 burn-downs: item-25 falsified, item-26 harness, item-27 signed
@@ -2270,3 +2300,8 @@ _No summary yet._
 - at: `2026-08-29T23:00:19Z`
 - kind: `checkpoint`
 - summary: No-abstention-prompt-gated-replication falsifier adjudicated (preliminary, formal resolve after all five families): qwen3-4b two-stage judge lane closed with decoys caught (0.98-1.00 both types), judges found abstention ONLY in gated arm 21/185 confabs vs 0 everywhere else, lift 11.35 points CI 6.8-15.9 excluding zero, so FALSIFIER DOES NOT FIRE and G1 fails the 0.4459 floor: middle-band attenuated survival, the PI prediction correct and orchestrator survives-strong call wrong. G2 NOT-ADJUDICABLE (dosed-N 5 below floor 52), G4 PASS (random lift exactly 0). detector_v2 caught 0 of the 21 judged abstentions, confirming the pre-stated string-undercount delta. qwen3.5-4b GPU run complete with a massive instruction-free stage-1 effect, no_op 69/1332 to gated 572/1332 detector-refused with 516 tripping the strict string rule, known cost 1/360, G3 descriptive. Llama judge cell VOID_CELL_TERMINAL per the registered cascade, judges rejected all 6 native detector-refused decoys twice while catching 100 percent clear negatives, so G1b NOT-ADJUDICABLE and llama stage-1 lift plus 3.3 points likely overestimates true abstention. First builder na-harness stopped as zombie after its monitor died; replacement na-harness2 spawned, corrected my wrong QH same-family claim, decoy source re-ruled to qwen3-4b-l34-placebo-seed-census wicr_decoy_source. Gemma extract running in rebuilt tf550 container with a symlink bind-mount fix; mistral queued; qwen3.5 judge lane approved and running CPU-side. Paper 5 direction: middle band means instruction-amplified qualifications at the three mapped passages plus outcome-independent methods disclosure.
+### 080-checkpoint - Checkpoint
+
+- at: `2026-08-31T00:25:50Z`
+- kind: `checkpoint`
+- summary: No-abstention-prompt-gated-replication RESOLVED 2026-08-30 with PI-signed verdict: falsifier did not fire, real two-stage lift in all five families (qwen3-4b 11.4, llama 9.3, mistral 18.8, qwen3.5 45.6, gemma 47.0 points, every CI excluding zero) at near-zero cost, reference family below the half-with-prompt floor, middle band, framing revised to instruction-amplified. G1 and G1b FAIL floors, G2 NOT-ADJUDICABLE at dosed-N 5, G3 descriptive, G4 PASS twice. Mistral finished after a third silent builder stall (na-harness3 respawned once, then woken once); its judge lane passed 20 of 20 decoys, and the v2 lanes for llama and qwen3.5 passed 9 of 9 shards after the pre-stated decoy-source correction, cross-family decoy tally 79 of 80. Post work complete: Outcome written, exp resolve run, KG ingested (experiment node plus mechanisms abstention-instruction-amplifies-the-gated-write and detector-v2-overfires-on-random-arm-text), bound task-77dfe2 closed, evidence PR 585 merged, run worktree harvested (canonical verified a strict superset) and removed, paper 5 PR 584 merged earlier on PI direction with v2 numbers, PR 586 merged filling the mistral number from the resolved Outcome. Paper 5 manuscript now carries the full disclosure, the paper-2 prompt-vs-training callback (90.89 vs 0 on the untrained base), and all five final instruction-free numbers; manuscript remains a draft pending PI language pass including retired-terminology sweep (AC legacy entry noted). Predictions scoreboard: PI call correct, orchestrator call wrong. Parked: exhaust batch 4 (28 tiny cells) and packaging this cell exhaust; Gmail outreach draft still awaiting PI send.
