@@ -10,6 +10,7 @@ _EXPORTS = {
     "ModalProviderStateV1": (".modal_resolver", "ModalProviderStateV1"),
     "ModalTrainingIntentV1": (".modal_resolver", "ModalTrainingIntentV1"),
     "ScopedGitRemoteReader": (".security", "ScopedGitRemoteReader"),
+    "SqlitePublicationStoreV1": (".publication_store", "SqlitePublicationStoreV1"),
     "SqliteTrainingRepository": (".sqlite_repository", "SqliteTrainingRepository"),
     "ModalTrainingResolverV1": (".modal_resolver", "ModalTrainingResolverV1"),
 }
