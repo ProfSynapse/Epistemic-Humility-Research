@@ -18,6 +18,7 @@ from synaptic_host.docker_v1.model import (
 
 _WINDOWS_EXECUTABLE = re.compile(r"([A-Z]):\\([^/]+(?:\\[^/]+)*)\Z")
 _INTEROP_PATH = re.compile(r"/run/WSL/([1-9][0-9]*)_interop\Z")
+_DOCKER_DESKTOP_WSL_EXECUTABLE = "/Docker/host/bin/docker.exe"
 
 
 def _windows_components(value):
@@ -55,6 +56,19 @@ def _windows_components(value):
         _fail()
 
 
+def _wsl_executable(value):
+    try:
+        if value == _DOCKER_DESKTOP_WSL_EXECUTABLE:
+            return value, "/Docker/host/bin"
+        drive, components = _windows_components(value)
+        executable = "/mnt/" + drive.lower() + "/" + "/".join(components)
+        return executable, executable.rsplit("/", 1)[0]
+    except DockerWSLInteropErrorV1:
+        raise
+    except BaseException:
+        _fail()
+
+
 class DockerWSLInteropCodeV1(str, Enum):
     INVALID = "INVALID"
     CHANNEL_INVALID = "CHANNEL_INVALID"
@@ -76,35 +90,30 @@ def _fail(code=DockerWSLInteropCodeV1.INVALID):
 
 @dataclass(frozen=True, slots=True)
 class DockerWSLExecutableBindingV1:
-    windows_executable: str
+    policy_executable: str
     wsl_executable: str
     wsl_cwd: str
 
     def __post_init__(self):
         try:
-            if type(self.windows_executable) is not str:
+            if type(self.policy_executable) is not str:
                 raise ValueError
-            drive, components = _windows_components(self.windows_executable)
-            expected = "/mnt/" + drive.lower() + "/" + "/".join(components)
-            cwd = expected.rsplit("/", 1)[0]
+            expected, cwd = _wsl_executable(self.policy_executable)
             if self.wsl_executable != expected or self.wsl_cwd != cwd:
                 raise ValueError
         except BaseException:
             _fail()
 
     @classmethod
-    def build(cls, windows_executable):
+    def build(cls, policy_executable):
         try:
-            if type(windows_executable) is not str:
+            if type(policy_executable) is not str:
                 raise ValueError
-            drive, components = _windows_components(windows_executable)
-            wsl_executable = (
-                "/mnt/" + drive.lower() + "/" + "/".join(components)
-            )
+            wsl_executable, wsl_cwd = _wsl_executable(policy_executable)
             return cls(
-                windows_executable,
+                policy_executable,
                 wsl_executable,
-                wsl_executable.rsplit("/", 1)[0],
+                wsl_cwd,
             )
         except DockerWSLInteropErrorV1:
             raise
@@ -258,7 +267,7 @@ class DockerWSLInteropPopenFactoryV1:
             ):
                 raise ValueError
             executable_baseline = DockerWSLExecutableBindingV1(
-                executable.windows_executable,
+                executable.policy_executable,
                 executable.wsl_executable,
                 executable.wsl_cwd,
             )
@@ -290,7 +299,7 @@ class DockerWSLInteropPopenFactoryV1:
                 executable is not self._executable_pin
                 or type(executable) is not DockerWSLExecutableBindingV1
                 or DockerWSLExecutableBindingV1(
-                    executable.windows_executable,
+                    executable.policy_executable,
                     executable.wsl_executable,
                     executable.wsl_cwd,
                 ) != self._executable_baseline
@@ -315,7 +324,7 @@ class DockerWSLInteropPopenFactoryV1:
             if (
                 type(argv) is not tuple
                 or not argv
-                or argv[0] != executable.windows_executable
+                or argv[0] != executable.policy_executable
                 or any(type(value) is not str for value in argv)
                 or set(kwargs) != {
                     "shell", "stdin", "stdout", "stderr", "env", "text",

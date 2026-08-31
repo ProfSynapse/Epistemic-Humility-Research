@@ -338,6 +338,12 @@ def test_policy_rejects_nonabsolute_executable_and_all_extra_environment():
     assert caught.value.code is DockerPlatformCodeV1.POLICY_INVALID
 
 
+def test_policy_accepts_docker_desktop_wsl_proxy():
+    assert _policy(
+        executable="/Docker/host/bin/docker.exe"
+    ).executable == "/Docker/host/bin/docker.exe"
+
+
 def test_hostile_environment_iterable_has_no_visible_causal_chain():
     class HostileEntries:
         def __iter__(self):

@@ -25,6 +25,7 @@ from synaptic_host.docker_v1.model import (
 
 
 WINDOWS_DOCKER = "C:\\Program Files\\Docker\\docker.exe"
+DOCKER_DESKTOP_WSL = "/Docker/host/bin/docker.exe"
 INTEROP = "/run/WSL/42_interop"
 
 
@@ -100,6 +101,13 @@ def test_executable_binding_is_exact_and_canonical():
     assert value.wsl_cwd == "/mnt/d/Program Files/Docker/resources/bin"
 
 
+def test_executable_binding_accepts_docker_desktop_wsl_proxy():
+    value = DockerWSLExecutableBindingV1.build(DOCKER_DESKTOP_WSL)
+    assert value.policy_executable == DOCKER_DESKTOP_WSL
+    assert value.wsl_executable == DOCKER_DESKTOP_WSL
+    assert value.wsl_cwd == "/Docker/host/bin"
+
+
 @pytest.mark.parametrize("value", (
     "c:\\Docker\\docker.exe", "C:/Docker/docker.exe",
     "C:\\Docker\\not-an-executable", "C:\\Docker\\..\\docker.exe",
@@ -113,7 +121,7 @@ def test_executable_binding_rejects_noncanonical_paths(value):
 @pytest.mark.parametrize("name", ("docker.EXE", "Docker.Exe", "helper.exe"))
 def test_executable_binding_matches_policy_valid_executable_suffix_casing(name):
     value = DockerWSLExecutableBindingV1.build(f"C:\\Docker\\{name}")
-    assert value.windows_executable.endswith(name)
+    assert value.policy_executable.endswith(name)
 
 
 @pytest.mark.parametrize("reserved", ("COM1", "LPT9", "COM\u00b9", "LPT\u00b2", "LPT\u00b3"))

@@ -1,0 +1,355 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+from threading import Thread
+import time
+
+import pytest
+
+from synaptic_host.bundle_io_v1.model import BundleMemberCommandV1
+from synaptic_host.docker_v1.authority import (
+    BundleBindingHmacAuthorityV1,
+    DockerAbsenceHmacAuthorityV1,
+    DockerCommandBindingHmacAuthorityV1,
+    DockerControlIntentHmacAuthorityV1,
+    DockerCreatePathBindingHmacAuthorityV1,
+    DockerExpectedCreateBindingHmacAuthorityV1,
+    DockerMutationRecordHmacAuthorityV1,
+    DockerSourceDeclarationHmacAuthorityV1,
+    DockerSourceSealHmacAuthorityV1,
+    DockerStageBundleRecordHmacAuthorityV1,
+    DockerStorageMappingHmacAuthorityV1,
+    DockerStoragePathMappingPairHmacAuthorityV1,
+    DockerWSLRootMappingHmacAuthorityV1,
+    DockerWorkloadEnvironmentBindingHmacAuthorityV1,
+)
+from synaptic_host.docker_v1.binding import DockerWorkloadEnvironmentPolicyV1
+from synaptic_host.docker_v1.composition import (
+    DockerHostCompositionRequestV1,
+    compose_docker_host_v1,
+)
+from synaptic_host.docker_v1.model import (
+    DockerCLIEnvironmentV1,
+    DockerCLIPolicyV1,
+)
+from synaptic_host.local_io_v1.config import StorageRegistryV1
+from synaptic_host.local_io_v1.filesystem import LocalFilesystemV1
+from synaptic_host.local_io_v1.posix import PosixRetainedDirfdPortV1
+from synaptic_host.security import FileHmacAuthenticator
+from synaptic_tuner.api.v1.docker import (
+    DockerSameProcessLaunchV1,
+)
+from synaptic_tuner.api.v1.planning import (
+    ProviderPlanContextV1,
+    ProviderPlanRef,
+    TrainingPlan,
+    TrainingPlanBasisV1,
+)
+from synaptic_tuner.api.v1.providers import (
+    ProviderCapabilities,
+    ProviderDescriptor,
+    ProviderRef,
+)
+from synaptic_tuner.api.v1.results import TrainingRunRef
+from synaptic_tuner.api.v1.training_facade import TrainingPreflight
+from tuner.execution.foundation_v2.executors import (
+    AdapterDescriptorV1,
+    ExecutorDescriptorV1,
+)
+from tuner.execution.foundation_v2.identities import EffectKind
+from tuner.execution.foundation_v2.references import ExecutionScopeV1
+from tuner.execution.providers.docker_provider_v1.model import (
+    DockerArtifactContractV1,
+    DockerImageV1,
+    DockerProfileV1,
+    DockerRootsV1,
+    DockerRuntimeV1,
+    DockerWorkloadV1,
+    labels_for,
+)
+
+
+_IMAGE_DIGEST = (
+    "sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc"
+)
+_DOCKER_EXE = Path("/Docker/host/bin/docker.exe")
+
+
+def _sha(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
+
+
+def _write_storage(project: Path, roots: tuple[str, ...]) -> Path:
+    document = {
+        "schema_version": "synaptic-host-storage/v1",
+        "roots": [
+            {
+                "access": "read_create",
+                "location": f"project://{name}",
+                "permit_ref": f"permit-{name}",
+                "root_ref": name,
+            }
+            for name in roots
+        ],
+    }
+    path = project / "storage.json"
+    path.write_text(
+        json.dumps(document, sort_keys=True, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    return path
+
+
+def _profile(payload: bytes) -> DockerProfileV1:
+    provider = ProviderRef("docker", "offline-alpine-cpu")
+    workload = DockerWorkloadV1(
+        ("sh", "-c", "cat /source/data.json > /artifacts/result"),
+        (),
+        _sha(b"alpine-copy-workload-v1"),
+    )
+    return DockerProfileV1.build(
+        provider=provider,
+        descriptor=ProviderDescriptor(
+            "synaptic-provider-descriptor/v1",
+            "docker",
+            "Docker",
+            "1.0.0",
+            ProviderCapabilities(True, True, True, True, True, False),
+        ),
+        scope=ExecutionScopeV1("local", "offline-smoke"),
+        executor_descriptor=ExecutorDescriptorV1(
+            "docker", "docker-executor-v1", "1.0.0"
+        ),
+        adapter_descriptor=AdapterDescriptorV1(
+            "docker", "docker-reconcile-v1", "1.0.0"
+        ),
+        image=DockerImageV1("alpine:3.20", _IMAGE_DIGEST),
+        runtime=DockerRuntimeV1(1, 67_108_864, 30),
+        workload=workload,
+        roots=DockerRootsV1("source-root", "artifact-root"),
+        artifacts=DockerArtifactContractV1(
+            ("result",), maximum_artifact_bytes=1_048_576,
+            maximum_total_bytes=1_048_576,
+        ),
+        resource_digest=_sha(b"offline-local-resource"),
+        quote_digest=_sha(b"offline-zero-cost"),
+        secret_requirements_digest=_sha(b"offline-no-secrets"),
+    )
+
+
+def _request(tmp_path: Path) -> tuple[DockerHostCompositionRequestV1, Path, bytes]:
+    project = tmp_path / "project"
+    roots = (
+        "source-data", "source-control", "stage-data", "stage-control",
+        "artifact-data", "artifact-control",
+    )
+    for name in roots:
+        (project / name).mkdir(parents=True)
+    payload = b"real-docker-wsl-offline-proof\n"
+    (project / "source-data" / "dataset-source").write_bytes(payload)
+
+    storage = StorageRegistryV1.load(
+        _write_storage(project, roots), project_root=project
+    )
+    permit_digest = _sha(b"real-docker-wsl-root-permits")
+    for name in roots:
+        storage.issue_root_permit(
+            name,
+            authority_ref="docker-root-authority",
+            key_ref="docker-root-key",
+            proof_digest=permit_digest,
+        )
+    filesystem = LocalFilesystemV1(PosixRetainedDirfdPortV1(), storage)
+
+    profile = _profile(payload)
+    source_digest = _sha(payload)
+    basis = TrainingPlanBasisV1(
+        "synaptic-training-plan-basis/v1",
+        "offline-docker-request",
+        "offline-docker-project",
+        source_digest,
+        _sha(b"offline-dataset"),
+        profile.workload.workload_digest,
+        profile.runtime.digest,
+        profile.artifacts.digest,
+    )
+    context = ProviderPlanContextV1(
+        "synaptic-provider-plan-context/v1",
+        profile.provider,
+        basis.basis_digest,
+        profile.descriptor.descriptor_digest,
+        profile.profile_digest,
+    )
+    plan = TrainingPlan(
+        "synaptic-training-plan/v2",
+        basis,
+        ProviderPlanRef(context.provider_context_digest),
+    )
+    launch = DockerSameProcessLaunchV1(
+        profile,
+        context,
+        plan,
+        TrainingRunRef("offline-docker-run", "offline-docker-project"),
+        TrainingPreflight(
+            plan.plan_fingerprint,
+            True,
+            "2026-08-31T00:00:00Z",
+            "2099-01-01T00:00:00Z",
+        ),
+    )
+
+    authenticator = FileHmacAuthenticator(
+        project / "docker-hmac.key", key_ref="docker-hmac-key"
+    )
+    authenticator.key_path.write_bytes(bytes(range(32)))
+
+    def authority(authority_type, name):
+        return authority_type(
+            authority_ref=f"docker-{name}-authority",
+            authenticator=authenticator,
+        )
+
+    storage_authority = authority(
+        DockerStorageMappingHmacAuthorityV1, "storage"
+    )
+    wsl_authority = authority(DockerWSLRootMappingHmacAuthorityV1, "wsl")
+    pair_authority = DockerStoragePathMappingPairHmacAuthorityV1(
+        authority_ref="docker-pair-authority",
+        authenticator=authenticator,
+        storage_mapping_authority=storage_authority,
+        wsl_mapping_authority=wsl_authority,
+    )
+    environment = DockerCLIEnvironmentV1.build((
+        ("SystemRoot", "C:\\Windows"),
+        ("TEMP", "C:\\Temp"),
+        ("TMP", "C:\\Temp"),
+        ("WINDIR", "C:\\Windows"),
+    ))
+    interop = os.environ["WSL_INTEROP"]
+    request = DockerHostCompositionRequestV1(
+        launch=launch,
+        filesystem=filesystem,
+        source_data_binding=storage.resolve("source-data"),
+        source_control_binding=storage.resolve("source-control"),
+        source_component="dataset-source",
+        stage_data_binding=storage.resolve("stage-data"),
+        stage_control_binding=storage.resolve("stage-control"),
+        stage_destination_ref="stage-destination",
+        artifact_data_binding=storage.resolve("artifact-data"),
+        artifact_control_binding=storage.resolve("artifact-control"),
+        source_purpose_ref="docker-stage-source",
+        source_members=(BundleMemberCommandV1(
+            "data.json", profile.roots.source_ref, len(payload), source_digest
+        ),),
+        source_mapping_ref="source-mapping",
+        source_wsl_root=str((project / "stage-data").resolve()),
+        artifact_mapping_ref="artifact-mapping",
+        artifact_wsl_root=str((project / "artifact-data").resolve()),
+        artifact_destination_ref="artifact-destination",
+        wsl_distro="Ubuntu-22.04",
+        environment_policy=DockerWorkloadEnvironmentPolicyV1.build(
+            allowed_keys=()
+        ),
+        environment_overrides=(),
+        cli_policy=DockerCLIPolicyV1.build(
+            str(_DOCKER_EXE),
+            "desktop-linux",
+            environment,
+            timeout_ms=30_000,
+            terminate_grace_ms=1_000,
+            stdout_limit=1_048_576,
+            stderr_limit=1_048_576,
+            combined_limit=2_097_152,
+        ),
+        wsl_interop_path=interop,
+        lstat=os.lstat,
+        popen_factory=subprocess.Popen,
+        monotonic=time.monotonic,
+        thread_factory=Thread,
+        declaration_authority=authority(
+            DockerSourceDeclarationHmacAuthorityV1, "declaration"
+        ),
+        stage_record_authority=authority(
+            DockerStageBundleRecordHmacAuthorityV1, "stage"
+        ),
+        storage_mapping_authority=storage_authority,
+        wsl_mapping_authority=wsl_authority,
+        bundle_binding_authority=authority(
+            BundleBindingHmacAuthorityV1, "bundle"
+        ),
+        source_seal_authority=authority(
+            DockerSourceSealHmacAuthorityV1, "source-seal"
+        ),
+        path_binding_authority=authority(
+            DockerCreatePathBindingHmacAuthorityV1, "path"
+        ),
+        environment_authority=authority(
+            DockerWorkloadEnvironmentBindingHmacAuthorityV1, "environment"
+        ),
+        intent_authority=authority(
+            DockerControlIntentHmacAuthorityV1, "intent"
+        ),
+        mutation_record_authority=authority(
+            DockerMutationRecordHmacAuthorityV1, "record"
+        ),
+        absence_authority=authority(
+            DockerAbsenceHmacAuthorityV1, "absence"
+        ),
+        expected_authority=authority(
+            DockerExpectedCreateBindingHmacAuthorityV1, "expected"
+        ),
+        command_binding_authority=authority(
+            DockerCommandBindingHmacAuthorityV1, "command"
+        ),
+        pair_authority=pair_authority,
+    )
+    return request, project / "artifact-data" / "result", payload
+
+
+def _docker(*arguments: str, timeout: int = 30) -> subprocess.CompletedProcess[bytes]:
+    return subprocess.run(
+        (str(_DOCKER_EXE), "--context", "desktop-linux", *arguments),
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        timeout=timeout,
+    )
+
+
+@pytest.mark.skipif(
+    os.name != "posix"
+    or "WSL_INTEROP" not in os.environ
+    or not _DOCKER_EXE.is_file(),
+    reason="real Docker Desktop WSL integration",
+)
+def test_released_facade_starts_real_offline_pinned_container(tmp_path: Path):
+    request, artifact_path, payload = _request(tmp_path)
+    facade = compose_docker_host_v1(request)
+    container_ref = None
+    try:
+        workflow = facade.start_run()
+        assert workflow.phase.value == "queued"
+        assert workflow.provider_run_ref is not None
+        container_ref = workflow.provider_run_ref.reference.provider_job_ref
+        waited = _docker("wait", container_ref)
+        assert waited.returncode == 0, waited.stderr.decode("utf-8", "replace")
+        assert waited.stdout.strip() == b"0"
+        assert artifact_path.read_bytes() == payload
+    finally:
+        if container_ref is None:
+            try:
+                binding = facade.effect_binding(EffectKind.SUBMIT)
+                container_ref = labels_for(binding.content.identity).container_name
+            except BaseException:
+                container_ref = None
+        facade.close()
+        if container_ref is not None:
+            removed = _docker("rm", "--force", container_ref)
+            assert removed.returncode == 0, removed.stderr.decode(
+                "utf-8", "replace"
+            )

@@ -1070,6 +1070,22 @@ def _windows_drive_path_v1(value: str) -> str:
         _platform_fail(DockerPlatformCodeV1.POLICY_INVALID)
 
 
+def _docker_desktop_wsl_executable_v1(value: str) -> str:
+    """Accept Docker Desktop's exact WSL-integrated Windows CLI proxy."""
+
+    try:
+        if value == "/Docker/host/bin/docker.exe":
+            return value
+        checked = _windows_drive_path_v1(value)
+        if not checked.lower().endswith(".exe"):
+            raise ValueError
+        return checked
+    except DockerPlatformErrorV1:
+        raise
+    except BaseException:
+        _platform_fail(DockerPlatformCodeV1.POLICY_INVALID)
+
+
 @dataclass(frozen=True, slots=True)
 class DockerCLICommandV1:
     verb: DockerCLIVerbV1
@@ -1182,10 +1198,7 @@ class DockerCLIPolicyV1:
 
     def __post_init__(self) -> None:
         try:
-            if (
-                not _windows_drive_path_v1(self.executable).lower().endswith(".exe")
-            ):
-                raise ValueError
+            _docker_desktop_wsl_executable_v1(self.executable)
             checked_ref_v1(self.context_ref, BundleIOCodeV1.COMMAND_INVALID)
             if type(self.environment) is not DockerCLIEnvironmentV1:
                 raise ValueError
