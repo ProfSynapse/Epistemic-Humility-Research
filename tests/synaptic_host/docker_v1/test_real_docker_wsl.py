@@ -345,6 +345,7 @@ def test_released_facade_starts_real_offline_pinned_container(
     original_start_container = DockerCLIRunnerV1.start_container
     original_execute_start = DockerPrivateStartInvocationV1.execute_once
     original_start = DockerHostStartV1.start_once
+    original_recover_start = DockerHostStartV1._recover
 
     def traced_inspect(self, container_ref):
         result = original_inspect(self, container_ref)
@@ -365,6 +366,19 @@ def test_released_facade_starts_real_offline_pinned_container(
             "disposition": result.disposition.value,
             "container_ref": result.container_ref,
         }
+        return result
+
+    def traced_recover_start(
+        self, preflight, current, start_result, already_verified=False
+    ):
+        try:
+            result = original_recover_start(
+                self, preflight, current, start_result, already_verified
+            )
+        except BaseException as error:
+            trace["start_recover"] = {"error": type(error).__name__}
+            raise
+        trace["start_recover"] = {"disposition": result.disposition.value}
         return result
 
     def traced_start_container(self, command, container_ref):
@@ -398,6 +412,7 @@ def test_released_facade_starts_real_offline_pinned_container(
         DockerPrivateStartInvocationV1, "execute_once", traced_execute_start
     )
     monkeypatch.setattr(DockerHostStartV1, "start_once", traced_start)
+    monkeypatch.setattr(DockerHostStartV1, "_recover", traced_recover_start)
     facade = compose_docker_host_v1(request)
     container_ref = None
     try:
