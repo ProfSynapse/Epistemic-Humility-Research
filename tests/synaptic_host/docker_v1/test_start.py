@@ -173,6 +173,11 @@ def test_start_happy_path_only_post_inspection_proves_and_retry_zero_effect():
     first = host.start_once(ref, labels)
     assert first.disposition is DockerStartDispositionV1.STARTED
     assert runner.start_calls == 1
+    runner.inspect_calls = 0
+    runner.created = runner.started
+    second = host.start_once(ref, labels)
+    assert second.disposition is DockerStartDispositionV1.STARTED
+    assert runner.start_calls == 1
 
 
 def test_start_bounds_reinspection_for_delayed_running_visibility():
@@ -187,11 +192,6 @@ def test_start_bounds_reinspection_for_delayed_running_visibility():
     assert result.disposition is DockerStartDispositionV1.STARTED
     assert runner.start_calls == 1
     assert runner.inspect_calls == 3
-    runner.inspect_calls = 0
-    runner.created = runner.started
-    second = host.start_once(ref, labels)
-    assert second.disposition is DockerStartDispositionV1.STARTED
-    assert runner.start_calls == 1
 
 
 @pytest.mark.parametrize("mode", ("success", "nonzero", "raise", "lost"))
