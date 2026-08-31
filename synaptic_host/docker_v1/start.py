@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import time
 
 from tuner.execution.providers.docker_provider_v1.model import (
     DockerStartDispositionV1, DockerStartResultV1,
@@ -26,12 +27,14 @@ from .control_model import DockerContainerInspectResultV1
 from .control_private import DockerPrivateStartInvocationV1
 from .model import (
     DockerCLICommandV1, DockerCLIOutcomeV1, DockerCLIVerbV1,
+    DockerPlatformErrorV1,
 )
 from .verification import docker_create_projection_matches_v1
 
 
 _CONTAINER_REF = re.compile(r"[0-9a-f]{64}\Z")
 _POST_START_INSPECT_LIMIT = 3
+_POST_START_SETTLE_SECONDS = 0.05
 
 
 class _ProjectionCollisionV1(Exception):
@@ -390,11 +393,18 @@ class DockerHostStartV1:
             1 if already_verified else _POST_START_INSPECT_LIMIT
         )
         inspected = None
-        for _ in range(inspect_limit):
-            inspected = _snapshot_typed(
-                self._typed_runner.inspect_container(container_ref),
-                DockerContainerInspectResultV1, container_ref,
-            )
+        for attempt in range(inspect_limit):
+            if not already_verified:
+                time.sleep(_POST_START_SETTLE_SECONDS)
+            try:
+                inspected = _snapshot_typed(
+                    self._typed_runner.inspect_container(container_ref),
+                    DockerContainerInspectResultV1, container_ref,
+                )
+            except DockerPlatformErrorV1:
+                if attempt + 1 == inspect_limit:
+                    return _indeterminate()
+                continue
             if inspected.evidence.outcome is not DockerCLIOutcomeV1.SUCCESS:
                 return _indeterminate()
             if not docker_create_projection_matches_v1(
