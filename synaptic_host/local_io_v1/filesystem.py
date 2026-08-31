@@ -8,6 +8,8 @@ before the injected port can be touched.
 from __future__ import annotations
 
 import hashlib
+import os
+import secrets
 import stat
 import sys
 from contextlib import contextmanager
@@ -32,6 +34,8 @@ from .model import (
     LocalIOCodeV1,
     LocalIOErrorV1,
     LocalRootAuthorityV1,
+    LocalSingleRootAuthorityV1,
+    LocalSingleRootAdmissionV1,
     LocalRootBindingV1,
     LocalSourceBindingV1,
     MAX_BORROWED_HARDLINK_PAIR_BYTES,
@@ -41,11 +45,13 @@ from .model import (
     JournalSnapshotV1,
     CapabilityStatusV1,
     RecoveryResultV1,
+    RetainedDirectoryAdmissionV1,
     RecoveryStatusV1,
     RetainedDirectoryV1,
     RetainedRootBorrowRequestV1,
     RetainedRootBorrowV1,
     RootAccessV1,
+    SingleRootPurposeV1,
     RootPermitAuthenticatorV1,
     canonical_relative_components_v1,
     checked_handle,
@@ -54,6 +60,7 @@ from .model import (
     checked_size,
     digest_v1,
     root_authority_digest_v1,
+    single_root_authority_digest_v1,
     validate_recovery_result_v1,
 )
 
@@ -235,6 +242,25 @@ class _AdmittedEffectV1:
     files: tuple[_AdmittedFileV1, ...]
 
 
+@dataclass(slots=True)
+class _LiveSingleRootAuthorityV1:
+    authority: LocalSingleRootAuthorityV1
+
+
+@dataclass(slots=True)
+class _LiveSingleRootAdmissionV1:
+    admission: LocalSingleRootAdmissionV1
+    authority: LocalSingleRootAuthorityV1
+    lease: RetainedDirectoryAdmissionV1
+
+
+@dataclass(slots=True)
+class _PublicationBorrowBindingV1:
+    borrow: RetainedRootBorrowV1
+    authority: LocalSingleRootAuthorityV1
+    admission: LocalSingleRootAdmissionV1
+
+
 @dataclass(frozen=True, slots=True)
 class _AdmittedHardlinkPairV1:
     issued_ref: str
@@ -288,6 +314,11 @@ class PosixFilesystemPortV1(Protocol):
     def fsync_directory(self, directory: RetainedDirectoryV1) -> None: ...
     def link_at(self, directory: RetainedDirectoryV1, source: str, destination: str) -> None: ...
     def unlink_at(self, directory: RetainedDirectoryV1, component: str) -> None: ...
+    def acquire_directory_admission(self, directory: RetainedDirectoryV1) -> RetainedDirectoryAdmissionV1: ...
+    def validate_directory_admission(self, directory: RetainedDirectoryV1,
+                                     lease: RetainedDirectoryAdmissionV1) -> RetainedDirectoryAdmissionV1: ...
+    def release_directory_admission(self, directory: RetainedDirectoryV1,
+                                    lease: RetainedDirectoryAdmissionV1) -> None: ...
     def publish_journal(
         self,
         control: RetainedDirectoryV1,
@@ -455,6 +486,13 @@ class LocalFilesystemV1:
         self._authority_counter = 0
         self._create_counter = 0
         self._live_roots: dict[str, LocalRootAuthorityV1] = {}
+        self._single_root_counter = 0
+        self._live_single_roots: dict[str, _LiveSingleRootAuthorityV1] = {}
+        self._admission_counter = 0
+        self._admission_process_id = os.getpid()
+        self._admission_process_ref = "process-" + secrets.token_hex(16)
+        self._fork_invalid = False
+        self._live_admissions: dict[str, _LiveSingleRootAdmissionV1] = {}
         self._live_create: dict[str, tuple[LocalCreateAuthorityV1, LocalDestinationBindingV1]] = {}
         self._active_mutations: set[str] = set()
         self._borrow_counter = 0
@@ -462,7 +500,10 @@ class LocalFilesystemV1:
         self._borrow_file_counter = 0
         self._borrow_pair_counter = 0
         self._borrow_lock = RLock()
-        self._live_borrows: dict[str, tuple[RetainedRootBorrowV1, LocalRootAuthorityV1]] = {}
+        self._live_borrows: dict[
+            str, tuple[RetainedRootBorrowV1, LocalRootAuthorityV1 | LocalSingleRootAuthorityV1]
+        ] = {}
+        self._borrow_admissions: dict[str, _PublicationBorrowBindingV1] = {}
         self._borrow_directories: dict[
             str, tuple[BorrowedDirectoryV1, str, RetainedDirectoryV1]
         ] = {}
@@ -495,6 +536,23 @@ class LocalFilesystemV1:
         self._invalid_directory_issuance: set[str] = set()
         self._invalid_file_issuance: set[str] = set()
         self._invalid_pair_issuance: set[str] = set()
+        if callable(getattr(os, "register_at_fork", None)):
+            def after_fork_child() -> None:
+                self._fork_invalid = True
+                self._borrow_lock = RLock()
+                self._live_single_roots = {}
+                self._live_admissions = {}
+                self._borrow_admissions = {}
+
+            os.register_at_fork(after_in_child=after_fork_child)
+
+    def _require_construction_process(self) -> None:
+        try:
+            current_pid = os.getpid()
+        except BaseException:
+            raise _closed(LocalIOCodeV1.CAPABILITY_UNAVAILABLE) from None
+        if self._fork_invalid or current_pid != self._admission_process_id:
+            raise _closed(LocalIOCodeV1.ADMISSION_INVALID)
 
     def capability(self) -> LocalFilesystemCapabilityV1:
         available = self._platform in _POSIX_PLATFORMS and self._port is not None
@@ -502,11 +560,17 @@ class LocalFilesystemV1:
             "windows" if self._platform.startswith("win") else "other"
         )
         status = CapabilityStatusV1.AVAILABLE if available else CapabilityStatusV1.UNAVAILABLE
-        features = (
-            "descriptor_relative",
-            "exclusive_create",
-            "retained_dirfd",
+        feature_values = (
+            "descriptor_relative", "exclusive_create", "retained_dirfd",
         ) if available else ()
+        if available and self._platform.startswith("linux"):
+            feature_values += (
+                "crash-released-admission",
+                "directory-inode-admission",
+                "exec-closed-admission",
+                "nonblocking-directory-flock",
+            )
+        features = tuple(sorted(feature_values))
         canonical = {
             "features": list(features),
             "platform_family": platform_family,
@@ -515,7 +579,13 @@ class LocalFilesystemV1:
         return LocalFilesystemCapabilityV1(platform_family, status, features, digest_v1(canonical))
 
     def _require_posix(self) -> None:
+        self._require_construction_process()
         if self._platform not in _POSIX_PLATFORMS or self._port is None:
+            raise _closed(LocalIOCodeV1.CAPABILITY_UNAVAILABLE)
+
+    def _require_linux_admission(self) -> None:
+        self._require_posix()
+        if not self._platform.startswith("linux"):
             raise _closed(LocalIOCodeV1.CAPABILITY_UNAVAILABLE)
 
     def retain_root_authority(
@@ -596,6 +666,180 @@ class LocalFilesystemV1:
         if authenticated is not permit:
             raise _closed(LocalIOCodeV1.ROOT_UNAUTHORIZED)
 
+    def retain_single_root_authority(
+        self,
+        binding: LocalRootBindingV1,
+        *,
+        purpose: SingleRootPurposeV1,
+    ) -> LocalSingleRootAuthorityV1:
+        self._require_linux_admission()
+        if os.getpid() != self._admission_process_id:
+            raise _closed(LocalIOCodeV1.ADMISSION_INVALID)
+        if (
+            type(binding) is not LocalRootBindingV1
+            or purpose is not SingleRootPurposeV1.PUBLICATION_SPOOL
+            or binding.access is not RootAccessV1.READ_CREATE
+        ):
+            raise _closed(LocalIOCodeV1.AUTHORITY_INVALID)
+        self._authenticate_binding(binding)
+        directory = None
+        try:
+            directory = self._port.retain_directory(binding.absolute_root)
+            if type(directory) is not RetainedDirectoryV1 or not _is_directory(directory.identity):
+                raise _closed(LocalIOCodeV1.ROOT_CHANGED)
+        except LocalIOErrorV1:
+            if directory is not None:
+                try:
+                    self._port.close_directory(directory)
+                except BaseException:
+                    pass
+            raise
+        except BaseException:
+            if directory is not None:
+                try:
+                    self._port.close_directory(directory)
+                except BaseException:
+                    pass
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+        with self._borrow_lock:
+            self._single_root_counter += 1
+            authority_ref = f"single-root-authority-{self._single_root_counter}"
+            authority = LocalSingleRootAuthorityV1(
+                authority_ref,
+                binding,
+                directory,
+                purpose,
+                single_root_authority_digest_v1(binding, directory.identity, purpose),
+            )
+            self._live_single_roots[authority_ref] = _LiveSingleRootAuthorityV1(authority)
+            return authority
+
+    def release_single_root_authority(self, authority: LocalSingleRootAuthorityV1) -> None:
+        self._require_linux_admission()
+        with self._borrow_lock:
+            self._validate_single_root_authority(authority)
+            if any(item.authority is authority for item in self._live_admissions.values()):
+                raise _closed(LocalIOCodeV1.BORROW_IN_USE)
+            if any(parent is authority for _, parent in self._live_borrows.values()):
+                raise _closed(LocalIOCodeV1.BORROW_IN_USE)
+            del self._live_single_roots[authority.authority_ref]
+        try:
+            self._port.close_directory(authority.data_directory)
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+
+    def _validate_single_root_authority(self, authority: LocalSingleRootAuthorityV1) -> None:
+        self._require_construction_process()
+        if type(authority) is not LocalSingleRootAuthorityV1:
+            raise _closed(LocalIOCodeV1.AUTHORITY_INVALID)
+        if authority.authority_digest != single_root_authority_digest_v1(
+            authority.data_binding, authority.data_directory.identity, authority.purpose
+        ):
+            raise _closed(LocalIOCodeV1.AUTHORITY_INVALID)
+        state = self._live_single_roots.get(authority.authority_ref)
+        if state is None or state.authority is not authority:
+            raise _closed(LocalIOCodeV1.AUTHORITY_INVALID)
+
+    def acquire_single_root_admission(
+        self, authority: LocalSingleRootAuthorityV1
+    ) -> LocalSingleRootAdmissionV1:
+        self._require_linux_admission()
+        with self._borrow_lock:
+            self._validate_single_root_authority(authority)
+            self._authenticate_binding(authority.data_binding)
+            if authority.purpose is not SingleRootPurposeV1.PUBLICATION_SPOOL:
+                raise _closed(LocalIOCodeV1.ADMISSION_INVALID)
+            if any(item.authority is authority for item in self._live_admissions.values()):
+                raise _closed(LocalIOCodeV1.ROOT_IN_USE)
+            lease = self._port.acquire_directory_admission(authority.data_directory)
+            if (
+                type(lease) is not RetainedDirectoryAdmissionV1
+                or lease.process_id != os.getpid()
+                or lease.process_id != self._admission_process_id
+            ):
+                try:
+                    self._port.release_directory_admission(authority.data_directory, lease)
+                except BaseException:
+                    pass
+                raise _closed(LocalIOCodeV1.ADMISSION_INVALID)
+            self._admission_counter += 1
+            admission_ref = f"single-root-admission-{self._admission_counter}"
+            body = {
+                "admission_ref": admission_ref,
+                "authority_digest": authority.authority_digest,
+                "lease_digest": lease.lease_digest,
+                "process_id": self._admission_process_id,
+                "process_instance_ref": self._admission_process_ref,
+                "purpose": authority.purpose.value,
+                "schema": "synaptic-host-single-root-admission/v1",
+            }
+            admission = LocalSingleRootAdmissionV1(
+                admission_ref, authority.authority_digest, lease.lease_digest,
+                authority.purpose, self._admission_process_id,
+                self._admission_process_ref, digest_v1(body),
+            )
+            self._live_admissions[admission_ref] = _LiveSingleRootAdmissionV1(
+                admission, authority, lease
+            )
+            return admission
+
+    def _validate_single_root_admission(
+        self,
+        authority: LocalSingleRootAuthorityV1,
+        admission: LocalSingleRootAdmissionV1,
+    ) -> RetainedDirectoryAdmissionV1:
+        self._require_construction_process()
+        if type(admission) is not LocalSingleRootAdmissionV1:
+            raise _closed(LocalIOCodeV1.ADMISSION_INVALID)
+        state = self._live_admissions.get(admission.admission_ref)
+        if (
+            state is None or state.admission is not admission or state.authority is not authority
+            or admission.authority_digest != authority.authority_digest
+            or admission.purpose is not authority.purpose
+            or admission.process_id != os.getpid()
+            or admission.process_id != self._admission_process_id
+            or admission.process_instance_ref != self._admission_process_ref
+            or admission.lease_digest != state.lease.lease_digest
+        ):
+            raise _closed(LocalIOCodeV1.ADMISSION_INVALID)
+        try:
+            validated = self._port.validate_directory_admission(
+                authority.data_directory, state.lease
+            )
+        except LocalIOErrorV1:
+            raise
+        except BaseException:
+            raise _closed(LocalIOCodeV1.IO_FAILED) from None
+        if validated is not state.lease:
+            raise _closed(LocalIOCodeV1.ADMISSION_INVALID)
+        return state.lease
+
+    def release_single_root_admission(
+        self,
+        authority: LocalSingleRootAuthorityV1,
+        admission: LocalSingleRootAdmissionV1,
+    ) -> None:
+        self._require_linux_admission()
+        with self._borrow_lock:
+            self._validate_single_root_authority(authority)
+            lease = self._validate_single_root_admission(authority, admission)
+            if any(parent is authority for _, parent in self._live_borrows.values()):
+                raise _closed(LocalIOCodeV1.BORROW_IN_USE)
+            try:
+                self._port.release_directory_admission(authority.data_directory, lease)
+            finally:
+                del self._live_admissions[admission.admission_ref]
+
+    def _validate_borrow_authority(
+        self, authority: LocalRootAuthorityV1 | LocalSingleRootAuthorityV1
+    ) -> None:
+        if type(authority) is LocalRootAuthorityV1:
+            self._validate_authority(authority)
+        elif type(authority) is LocalSingleRootAuthorityV1:
+            self._validate_single_root_authority(authority)
+        else:
+            raise _closed(LocalIOCodeV1.AUTHORITY_INVALID)
+
     def release_root_authority(self, authority: LocalRootAuthorityV1) -> None:
         self._require_posix()
         with self._borrow_lock:
@@ -634,7 +878,9 @@ class LocalFilesystemV1:
         )
 
     def _record_borrow_issuance(
-        self, borrow: RetainedRootBorrowV1, authority: LocalRootAuthorityV1
+        self,
+        borrow: RetainedRootBorrowV1,
+        authority: LocalRootAuthorityV1 | LocalSingleRootAuthorityV1,
     ) -> None:
         issuance = _BorrowIssuanceV1(
             borrow.schema_version,
@@ -755,6 +1001,43 @@ class LocalFilesystemV1:
                 or not self._borrow_access_allows(authority.data_binding.access, request.access)
             ):
                 raise _closed(LocalIOCodeV1.BORROW_INVALID)
+            return self._issue_borrow_locked(authority, request)
+
+    def borrow_single_root(
+        self,
+        authority: LocalSingleRootAuthorityV1,
+        admission: LocalSingleRootAdmissionV1,
+        request: RetainedRootBorrowRequestV1,
+    ) -> RetainedRootBorrowV1:
+        self._require_posix()
+        try:
+            valid = (
+                type(authority) is LocalSingleRootAuthorityV1
+                and type(admission) is LocalSingleRootAdmissionV1
+                and type(request) is RetainedRootBorrowRequestV1
+                and authority.purpose is SingleRootPurposeV1.PUBLICATION_SPOOL
+                and request.purpose is BorrowPurposeV1.PUBLICATION_SPOOL
+                and request.access is RootAccessV1.READ_CREATE
+                and request.root_authority_digest == authority.authority_digest
+                and request.request_digest == digest_v1(request.canonical_without_digest())
+            )
+        except BaseException:
+            valid = False
+        if not valid:
+            raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        with self._borrow_lock:
+            self._validate_single_root_authority(authority)
+            self._validate_single_root_admission(authority, admission)
+            self._authenticate_binding(authority.data_binding)
+            self._validate_single_root_admission(authority, admission)
+            return self._issue_borrow_locked(authority, request, admission=admission)
+
+    def _issue_borrow_locked(
+        self,
+        authority: LocalRootAuthorityV1 | LocalSingleRootAuthorityV1,
+        request: RetainedRootBorrowRequestV1,
+        admission: LocalSingleRootAdmissionV1 | None = None,
+    ) -> RetainedRootBorrowV1:
             self._borrow_counter += 1
             borrow_ref = f"root-borrow-{self._borrow_counter}"
             body = {
@@ -771,6 +1054,12 @@ class LocalFilesystemV1:
                 digest_v1(body),
             )
             self._live_borrows[borrow_ref] = (borrow, authority)
+            if admission is not None:
+                if type(authority) is not LocalSingleRootAuthorityV1:
+                    raise _closed(LocalIOCodeV1.BORROW_INVALID)
+                self._borrow_admissions[borrow_ref] = _PublicationBorrowBindingV1(
+                    borrow, authority, admission
+                )
             self._borrow_inflight[borrow_ref] = 0
             self._record_borrow_issuance(borrow, authority)
             self._borrow_directory_counter += 1
@@ -796,6 +1085,7 @@ class LocalFilesystemV1:
             return borrow
 
     def _borrow_locked(self, borrow: RetainedRootBorrowV1, purpose: BorrowPurposeV1):
+        self._require_construction_process()
         if (
             type(borrow) is not RetainedRootBorrowV1
             or type(purpose) is not BorrowPurposeV1
@@ -806,6 +1096,7 @@ class LocalFilesystemV1:
             issuance = self._borrow_issuance.get(issued_ref)
             state = self._live_borrows.get(issued_ref)
             authority = None if state is None else state[1]
+            publication_binding = self._borrow_admissions.get(issued_ref)
             request_projection = {
                 "access": borrow.access.value,
                 "purpose": borrow.purpose.value,
@@ -835,6 +1126,15 @@ class LocalFilesystemV1:
                 and authority.data_binding.binding_digest
                 == issuance.data_binding_digest
                 and borrow.purpose is purpose
+                and (
+                    type(authority) is LocalRootAuthorityV1
+                    and publication_binding is None
+                    or type(authority) is LocalSingleRootAuthorityV1
+                    and os.getpid() == self._admission_process_id
+                    and type(publication_binding) is _PublicationBorrowBindingV1
+                    and publication_binding.borrow is borrow
+                    and publication_binding.authority is authority
+                )
             )
         except BaseException:
             valid = False
@@ -843,7 +1143,19 @@ class LocalFilesystemV1:
             if issued_ref is not None:
                 self._invalid_borrow_issuance.add(issued_ref)
             raise _closed(LocalIOCodeV1.BORROW_INVALID)
+        if type(authority) is LocalSingleRootAuthorityV1:
+            self._validate_single_root_authority(authority)
+            self._validate_single_root_admission(authority, publication_binding.admission)
         return state
+
+    def _revalidate_borrow_boundary(
+        self, borrow: RetainedRootBorrowV1, purpose: BorrowPurposeV1
+    ) -> None:
+        if purpose is not BorrowPurposeV1.PUBLICATION_SPOOL:
+            return
+        self._require_construction_process()
+        with self._borrow_lock:
+            self._borrow_locked(borrow, purpose)
 
     def _directory_locked(self, borrow: RetainedRootBorrowV1,
                           directory: BorrowedDirectoryV1) -> RetainedDirectoryV1:
@@ -1219,13 +1531,17 @@ class LocalFilesystemV1:
                 in {
                     BorrowPurposeV1.BUNDLE_SOURCE_READ.value,
                     BorrowPurposeV1.BUNDLE_MOUNT_VERIFY.value,
+                    BorrowPurposeV1.PUBLICATION_SPOOL.value,
                 }
                 and context.access
                 in {RootAccessV1.READ_ONLY.value, RootAccessV1.READ_CREATE.value}
             )
         if action in {"mutation", "durability"}:
             return (
-                context.purpose == BorrowPurposeV1.BUNDLE_DESTINATION_CREATE.value
+                context.purpose in {
+                    BorrowPurposeV1.BUNDLE_DESTINATION_CREATE.value,
+                    BorrowPurposeV1.PUBLICATION_SPOOL.value,
+                }
                 and context.access
                 in {RootAccessV1.CREATE_ONLY.value, RootAccessV1.READ_CREATE.value}
             )
@@ -1369,7 +1685,7 @@ class LocalFilesystemV1:
                     not in {RootAccessV1.READ_ONLY.value, RootAccessV1.READ_CREATE.value}
                 ):
                     raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
-                self._validate_authority(authority)
+                self._validate_borrow_authority(authority)
                 self._authenticate_binding(authority.data_binding)
                 self._borrow_inflight[context.borrow_ref] += 1
                 for directory in context.directories:
@@ -1406,11 +1722,12 @@ class LocalFilesystemV1:
         context = None
         pinned = False
         try:
+            self._require_construction_process()
             with self._borrow_lock:
                 context, authority = self._capture_effect_locked(
                     borrow, purpose, directories, files
                 )
-                self._validate_authority(authority)
+                self._validate_borrow_authority(authority)
                 self._authenticate_binding(authority.data_binding)
                 if not self._purpose_allows_context(context, action):
                     raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
@@ -1421,7 +1738,9 @@ class LocalFilesystemV1:
                     self._borrow_file_inflight[file.issued_ref] += 1
                 pinned = True
             self._reauthenticate_effect(context)
+            self._revalidate_borrow_boundary(borrow, purpose)
             self._verify_admitted_effect(context)
+            self._revalidate_borrow_boundary(borrow, purpose)
             yield context
         finally:
             if context is not None:
@@ -1440,6 +1759,7 @@ class LocalFilesystemV1:
                     )
 
     def root_directory(self, borrow: RetainedRootBorrowV1, *, purpose: BorrowPurposeV1) -> BorrowedDirectoryV1:
+        self._require_construction_process()
         with self._borrow_lock:
             self._borrow_locked(borrow, purpose)
             roots = [item[0] for item in self._borrow_directories.values()
@@ -1450,6 +1770,7 @@ class LocalFilesystemV1:
             return roots[0]
 
     def release_borrow(self, borrow: RetainedRootBorrowV1, *, purpose: BorrowPurposeV1) -> None:
+        self._require_construction_process()
         with self._borrow_lock:
             self._borrow_locked(borrow, purpose)
             has_children = any(
@@ -1478,6 +1799,7 @@ class LocalFilesystemV1:
             self._invalid_borrow_issuance.discard(issued_ref)
             del self._borrow_inflight[borrow.borrow_ref]
             del self._live_borrows[borrow.borrow_ref]
+            self._borrow_admissions.pop(borrow.borrow_ref, None)
 
     @staticmethod
     def _borrow_component(component: str) -> str:
@@ -1527,7 +1849,12 @@ class LocalFilesystemV1:
                     admitted_parent = context.directories[-1]
                     raw_parent = admitted_parent.raw
                     raw = self._port.open_directory_at(raw_parent, component)
-                    if type(raw) is not RetainedDirectoryV1 or not _is_directory(raw.identity):
+                    path_identity = self._port.stat_at(raw_parent, component)
+                    if (
+                        type(raw) is not RetainedDirectoryV1
+                        or not _is_directory(raw.identity)
+                        or path_identity != raw.identity
+                    ):
                         raise _closed(LocalIOCodeV1.PATH_CHANGED)
                     result = self._new_borrowed_directory(
                         context, admitted_parent, component, raw
@@ -1546,6 +1873,7 @@ class LocalFilesystemV1:
             raise _closed(LocalIOCodeV1.IO_FAILED) from None
 
     def close_borrowed_directory(self, borrow, directory, *, purpose):
+        self._require_construction_process()
         context = None
         target = None
         admitted = False
@@ -1556,7 +1884,7 @@ class LocalFilesystemV1:
                     borrow, purpose, (directory,), ()
                 )
                 target = context.directories[-1]
-                self._validate_authority(authority)
+                self._validate_borrow_authority(authority)
                 self._authenticate_binding(authority.data_binding)
                 if not self._purpose_allows_context(context, "close"):
                     raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
@@ -1592,7 +1920,9 @@ class LocalFilesystemV1:
                 self._borrow_inflight[context.borrow_ref] += 1
                 admitted = True
             self._reauthenticate_effect(context)
+            self._revalidate_borrow_boundary(borrow, purpose)
             self._verify_admitted_effect(context)
+            self._revalidate_borrow_boundary(borrow, purpose)
             self._port.close_directory(target.raw)
             succeeded = True
         except LocalIOErrorV1:
@@ -1724,6 +2054,11 @@ class LocalFilesystemV1:
                     admitted_directory = context.directories[-1]
                     raw_directory = admitted_directory.raw
                     raw = self._port.open_read_at(raw_directory, component)
+                    if type(raw) is not OpenFileV1:
+                        raise _closed(LocalIOCodeV1.PATH_CHANGED)
+                    path_identity = self._port.stat_at(raw_directory, component)
+                    if path_identity != raw.identity:
+                        raise _closed(LocalIOCodeV1.PATH_CHANGED)
                     result = self._new_borrowed_file(
                         context, admitted_directory, component, raw, readable=True
                     )
@@ -1751,6 +2086,11 @@ class LocalFilesystemV1:
                     admitted_directory = context.directories[-1]
                     raw_directory = admitted_directory.raw
                     raw = self._port.create_exclusive_at(raw_directory, component)
+                    if type(raw) is not OpenFileV1:
+                        raise _closed(LocalIOCodeV1.PATH_CHANGED)
+                    path_identity = self._port.stat_at(raw_directory, component)
+                    if path_identity != raw.identity:
+                        raise _closed(LocalIOCodeV1.PATH_CHANGED)
                     result = self._new_borrowed_file(
                         context, admitted_directory, component, raw, readable=False
                     )
@@ -1840,6 +2180,7 @@ class LocalFilesystemV1:
             raise _closed(LocalIOCodeV1.IO_FAILED) from None
 
     def close_borrowed_file(self, borrow, file, *, purpose):
+        self._require_construction_process()
         context = None
         target = None
         admitted = False
@@ -1850,7 +2191,7 @@ class LocalFilesystemV1:
                     borrow, purpose, (), (file,)
                 )
                 target = context.files[0]
-                self._validate_authority(authority)
+                self._validate_borrow_authority(authority)
                 self._authenticate_binding(authority.data_binding)
                 if not self._purpose_allows_context(context, "close"):
                     raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
@@ -1860,7 +2201,9 @@ class LocalFilesystemV1:
                 self._borrow_inflight[context.borrow_ref] += 1
                 admitted = True
             self._reauthenticate_effect(context)
+            self._revalidate_borrow_boundary(borrow, purpose)
             self._verify_admitted_effect(context)
+            self._revalidate_borrow_boundary(borrow, purpose)
             self._port.close_file(target.raw)
             succeeded = True
         except LocalIOErrorV1:

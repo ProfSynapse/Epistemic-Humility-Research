@@ -419,3 +419,17 @@ and the user relationship. Protect it.
   arrive. While one runs, the lead stays free for the user: guiding, reviewing,
   and lifting decisions up rather than doing the work itself.
 <!-- PROJECT_ORCHESTRATOR_END -->
+
+## Host Publication Controller Boundary
+
+- Publication-spool directory admission is a Linux Host-controller capability.
+  The controller must not call `fork()` while an admission is active or being
+  released; launch workers with spawn/exec or through a separate provider
+  process instead. An accidental fork invalidates inherited Host filesystem
+  objects, and the child must construct fresh objects.
+- The engine remains filesystem-agnostic. It receives narrow artifact-spool and
+  destination ports, never retained descriptors, admission leases, or local
+  paths.
+- Final destination publication and receipt/tombstone persistence belong to the
+  destination adapter. Host-owned publication state belongs in the main
+  project's Host database, not in the engine submodule.

@@ -10,6 +10,9 @@ from synaptic_host.local_io_v1.model import (
     BorrowedFileV1,
     BorrowedHardlinkPairV1,
     BorrowPurposeV1,
+    LocalAdmissionRootNodeV1,
+    LocalSingleRootAdmissionV1,
+    RetainedDirectoryAdmissionV1,
     LocalIOCodeV1,
     RetainedRootBorrowRequestV1,
     RetainedRootBorrowV1,
@@ -84,6 +87,9 @@ def test_architecture_error_vocabulary_contains_all_six_recovery_codes() -> None
 def test_borrow_error_vocabulary_and_dtos_do_not_expose_host_authority() -> None:
     assert LocalIOCodeV1.BORROW_INVALID.value == "LOCAL_IO_BORROW_INVALID"
     assert LocalIOCodeV1.BORROW_IN_USE.value == "LOCAL_IO_BORROW_IN_USE"
+    assert LocalIOCodeV1.ROOT_IN_USE.value == "LOCAL_IO_ROOT_IN_USE"
+    assert LocalIOCodeV1.ADMISSION_INVALID.value == "LOCAL_IO_ADMISSION_INVALID"
+    assert LocalIOCodeV1.ADMISSION_RELEASE_FAILED.value == "LOCAL_IO_ADMISSION_RELEASE_FAILED"
     forbidden = {
         "absolute_path", "absolute_root", "handle", "handle_ref", "permit",
         "port", "retained_directory", "open_file",
@@ -94,12 +100,16 @@ def test_borrow_error_vocabulary_and_dtos_do_not_expose_host_authority() -> None
         BorrowedDirectoryV1,
         BorrowedFileV1,
         BorrowedHardlinkPairV1,
+        LocalAdmissionRootNodeV1,
+        RetainedDirectoryAdmissionV1,
+        LocalSingleRootAdmissionV1,
     ):
         assert {field.name for field in fields(dto)}.isdisjoint(forbidden)
     assert {purpose.value for purpose in BorrowPurposeV1} == {
         "bundle_source_read",
         "bundle_destination_create",
         "bundle_mount_verify",
+        "publication_spool",
     }
     assert "identity" in {field.name for field in fields(BorrowedDirectoryV1)}
     assert "identity" in {field.name for field in fields(BorrowedFileV1)}
@@ -107,3 +117,18 @@ def test_borrow_error_vocabulary_and_dtos_do_not_expose_host_authority() -> None
         field.name for field in fields(BorrowedHardlinkPairV1)
     }
     assert MAX_BORROWED_HARDLINK_PAIR_BYTES == 1_048_576
+
+
+def test_admission_capability_names_are_exact_and_have_no_lease_aliases() -> None:
+    from synaptic_host.local_io_v1.posix import _FEATURES
+
+    assert {
+        "directory-inode-admission",
+        "nonblocking-directory-flock",
+        "crash-released-admission",
+        "exec-closed-admission",
+    } <= set(_FEATURES)
+    assert not {
+        "nonblocking-root-lease", "fork-safe-root-lease",
+        "nonblocking-root-admission", "fork-revoked-admission",
+    } & set(_FEATURES)

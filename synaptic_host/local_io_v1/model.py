@@ -39,6 +39,9 @@ class LocalIOCodeV1(str, Enum):
     RECOVERY_REQUIRED = "LOCAL_IO_RECOVERY_REQUIRED"
     BORROW_INVALID = "LOCAL_IO_BORROW_INVALID"
     BORROW_IN_USE = "LOCAL_IO_BORROW_IN_USE"
+    ROOT_IN_USE = "LOCAL_IO_ROOT_IN_USE"
+    ADMISSION_INVALID = "LOCAL_IO_ADMISSION_INVALID"
+    ADMISSION_RELEASE_FAILED = "LOCAL_IO_ADMISSION_RELEASE_FAILED"
 
 
 class LocalIOErrorV1(RuntimeError):
@@ -183,6 +186,11 @@ class BorrowPurposeV1(str, Enum):
     BUNDLE_SOURCE_READ = "bundle_source_read"
     BUNDLE_DESTINATION_CREATE = "bundle_destination_create"
     BUNDLE_MOUNT_VERIFY = "bundle_mount_verify"
+    PUBLICATION_SPOOL = "publication_spool"
+
+
+class SingleRootPurposeV1(str, Enum):
+    PUBLICATION_SPOOL = "publication_spool"
 
 
 class CapabilityStatusV1(str, Enum):
@@ -397,6 +405,138 @@ class LocalRootAuthorityV1:
             "data_binding_digest": self.data_binding.binding_digest,
             "data_node": _root_node_identity_v1(self.data_directory.identity),
             "schema": "synaptic-host-root-authority/v1",
+        }
+
+
+def single_root_authority_digest_v1(
+    binding: LocalRootBindingV1,
+    identity: LocalFileIdentityV1,
+    purpose: SingleRootPurposeV1,
+) -> str:
+    if type(binding) is not LocalRootBindingV1 or type(purpose) is not SingleRootPurposeV1:
+        _fail(LocalIOCodeV1.AUTHORITY_INVALID)
+    return digest_v1({
+        "binding_digest": binding.binding_digest,
+        "node": _root_node_identity_v1(identity),
+        "purpose": purpose.value,
+        "schema": "synaptic-host-single-root-authority/v1",
+    })
+
+
+@dataclass(frozen=True, slots=True)
+class LocalSingleRootAuthorityV1:
+    authority_ref: str
+    data_binding: LocalRootBindingV1
+    data_directory: RetainedDirectoryV1
+    purpose: SingleRootPurposeV1
+    authority_digest: str
+
+    def __post_init__(self) -> None:
+        checked_ref(self.authority_ref, LocalIOCodeV1.AUTHORITY_INVALID)
+        if (
+            type(self.data_binding) is not LocalRootBindingV1
+            or type(self.data_directory) is not RetainedDirectoryV1
+            or type(self.purpose) is not SingleRootPurposeV1
+        ):
+            _fail(LocalIOCodeV1.AUTHORITY_INVALID)
+        checked_sha256(self.authority_digest, LocalIOCodeV1.AUTHORITY_INVALID)
+        if self.authority_digest != single_root_authority_digest_v1(
+            self.data_binding, self.data_directory.identity, self.purpose
+        ):
+            _fail(LocalIOCodeV1.AUTHORITY_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, Any]:
+        return {
+            "binding_digest": self.data_binding.binding_digest,
+            "node": _root_node_identity_v1(self.data_directory.identity),
+            "purpose": self.purpose.value,
+            "schema": "synaptic-host-single-root-authority/v1",
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class LocalAdmissionRootNodeV1:
+    device: int
+    inode: int
+    file_type: int
+    node_digest: str
+
+    def __post_init__(self) -> None:
+        if (
+            type(self.device) is not int or self.device < 0
+            or type(self.inode) is not int or self.inode < 0
+            or self.file_type != stat.S_IFDIR
+        ):
+            _fail(LocalIOCodeV1.ADMISSION_INVALID)
+        checked_sha256(self.node_digest, LocalIOCodeV1.ADMISSION_INVALID)
+        if self.node_digest != digest_v1(self.canonical_without_digest()):
+            _fail(LocalIOCodeV1.ADMISSION_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "device": self.device, "file_type": self.file_type,
+            "inode": self.inode,
+            "schema": "synaptic-host-admission-root-node/v1",
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class RetainedDirectoryAdmissionV1:
+    lease_ref: str
+    root_node: LocalAdmissionRootNodeV1
+    process_id: int
+    process_instance_ref: str
+    lease_digest: str
+
+    def __post_init__(self) -> None:
+        checked_ref(self.lease_ref, LocalIOCodeV1.ADMISSION_INVALID)
+        if type(self.root_node) is not LocalAdmissionRootNodeV1 or type(self.process_id) is not int or self.process_id <= 0:
+            _fail(LocalIOCodeV1.ADMISSION_INVALID)
+        checked_ref(self.process_instance_ref, LocalIOCodeV1.ADMISSION_INVALID)
+        checked_sha256(self.lease_digest, LocalIOCodeV1.ADMISSION_INVALID)
+        if self.lease_digest != digest_v1(self.canonical_without_digest()):
+            _fail(LocalIOCodeV1.ADMISSION_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "lease_ref": self.lease_ref,
+            "root_node_digest": self.root_node.node_digest,
+            "process_id": self.process_id,
+            "process_instance_ref": self.process_instance_ref,
+            "schema": "synaptic-host-retained-directory-admission/v1",
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class LocalSingleRootAdmissionV1:
+    admission_ref: str
+    authority_digest: str
+    lease_digest: str
+    purpose: SingleRootPurposeV1
+    process_id: int
+    process_instance_ref: str
+    admission_digest: str
+
+    def __post_init__(self) -> None:
+        checked_ref(self.admission_ref, LocalIOCodeV1.ADMISSION_INVALID)
+        checked_sha256(self.authority_digest, LocalIOCodeV1.ADMISSION_INVALID)
+        checked_sha256(self.lease_digest, LocalIOCodeV1.ADMISSION_INVALID)
+        if type(self.purpose) is not SingleRootPurposeV1 or type(self.process_id) is not int or self.process_id <= 0:
+            _fail(LocalIOCodeV1.ADMISSION_INVALID)
+        checked_ref(self.process_instance_ref, LocalIOCodeV1.ADMISSION_INVALID)
+        checked_sha256(self.admission_digest, LocalIOCodeV1.ADMISSION_INVALID)
+        if self.admission_digest != digest_v1(self.canonical_without_digest()):
+            _fail(LocalIOCodeV1.ADMISSION_INVALID)
+
+    def canonical_without_digest(self) -> dict[str, object]:
+        return {
+            "admission_ref": self.admission_ref,
+            "authority_digest": self.authority_digest,
+            "lease_digest": self.lease_digest,
+            "process_id": self.process_id,
+            "process_instance_ref": self.process_instance_ref,
+            "purpose": self.purpose.value,
+            "schema": "synaptic-host-single-root-admission/v1",
         }
 
 

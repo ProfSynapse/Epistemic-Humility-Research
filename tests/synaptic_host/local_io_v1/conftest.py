@@ -11,12 +11,16 @@ import pytest
 
 from synaptic_host.local_io_v1.filesystem import OpenFileV1
 from synaptic_host.local_io_v1.model import (
+    LocalAdmissionRootNodeV1,
     CreateJournalRecordV1,
     JournalPublishResultV1,
     JournalPublishStatusV1,
     JournalSnapshotStatusV1,
     JournalSnapshotV1,
     LocalFileIdentityV1,
+    LocalIOCodeV1,
+    LocalIOErrorV1,
+    RetainedDirectoryAdmissionV1,
     RetainedDirectoryV1,
     digest_v1,
 )
@@ -130,6 +134,8 @@ class FakePosixFilesystemPortV1:
         self.lose_after: dict[str, int] = {}
         self.callbacks: dict[str, object] = {}
         self.calls: dict[str, int] = {}
+        self.admission_leases: dict[str, tuple[RetainedDirectoryAdmissionV1, str]] = {}
+        self.admission_process_ref = "fake-process-instance"
 
     def _event(self, name: str) -> None:
         self.trace.append(name)
@@ -344,6 +350,45 @@ class FakePosixFilesystemPortV1:
         node.changed_ns += 1
         self._touch_directory(self._directory(directory))
         self._after("unlink_at")
+
+    def acquire_directory_admission(self, directory):
+        handle = self._directory(directory)
+        self._event("acquire_directory_admission")
+        if self.admission_leases:
+            raise LocalIOErrorV1(LocalIOCodeV1.ROOT_IN_USE)
+        identity = self.directory_nodes[handle].identity()
+        node_body = {"device": identity.device, "file_type": stat.S_IFDIR,
+                     "inode": identity.inode,
+                     "schema": "synaptic-host-admission-root-node/v1"}
+        root_node = LocalAdmissionRootNodeV1(
+            identity.device, identity.inode, stat.S_IFDIR, digest_v1(node_body)
+        )
+        lease_ref = f"fake-admission-{len(self.calls)}"
+        body = {
+            "lease_ref": lease_ref,
+            "root_node_digest": root_node.node_digest,
+            "process_id": os.getpid(),
+            "process_instance_ref": self.admission_process_ref,
+            "schema": "synaptic-host-retained-directory-admission/v1",
+        }
+        lease = RetainedDirectoryAdmissionV1(
+            lease_ref, root_node, os.getpid(), self.admission_process_ref,
+            digest_v1(body),
+        )
+        self.admission_leases[lease_ref] = (lease, handle)
+        return lease
+
+    def validate_directory_admission(self, directory, lease):
+        handle = self._directory(directory)
+        state = self.admission_leases.get(getattr(lease, "lease_ref", None))
+        if state is None or state[0] is not lease or state[1] != handle or lease.process_id != os.getpid():
+            raise LocalIOErrorV1(LocalIOCodeV1.ADMISSION_INVALID)
+        return lease
+
+    def release_directory_admission(self, directory, lease):
+        self.validate_directory_admission(directory, lease)
+        del self.admission_leases[lease.lease_ref]
+        self._event("release_directory_admission")
 
     def publish_journal(self, control, mutation_id, expected_previous_digest, record):
         control_handle = self._directory(control)

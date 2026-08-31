@@ -3,16 +3,19 @@
 from __future__ import annotations
 
 import os
+import errno
 import re
 import secrets
 import stat
 import sys
 import threading
 import unicodedata
+from dataclasses import dataclass
 from pathlib import Path
 
 from .filesystem import MAX_DIRECTORY_ENTRIES, OpenFileV1
 from .model import (
+    LocalAdmissionRootNodeV1,
     CapabilityStatusV1,
     CreateJournalRecordV1,
     JournalPublishResultV1,
@@ -23,6 +26,7 @@ from .model import (
     LocalFilesystemCapabilityV1,
     LocalIOCodeV1,
     LocalIOErrorV1,
+    RetainedDirectoryAdmissionV1,
     RetainedDirectoryV1,
     canonical_relative_components_v1,
     canonical_posix_root_component_v1,
@@ -32,10 +36,28 @@ from .model import (
     parse_journal_record_v1,
 )
 
+try:
+    import fcntl as _fcntl
+except ImportError:  # native Windows remains metadata-only
+    _fcntl = None
+
+
+@dataclass(slots=True)
+class _LiveDirectoryAdmissionV1:
+    lease: RetainedDirectoryAdmissionV1
+    directory: RetainedDirectoryV1
+    descriptor: int
+    root_key: tuple[int, int, int, str]
+    state: str = "ACTIVE"
+
 
 _FEATURES = tuple(sorted((
+    "crash-released-admission",
+    "directory-inode-admission",
     "dirfd-open", "dirfd-stat", "exclusive-create", "fsync",
+    "exec-closed-admission",
     "hardlink-at", "nofollow", "retained-handles", "scandir-fd",
+    "nonblocking-directory-flock",
 )))
 
 
@@ -48,17 +70,28 @@ def detect_posix_capability_v1(
         "posix" if os_value == "posix" else "other"
     )
     available = False
-    if family == "posix":
-        required = ("open", "stat", "scandir", "link", "unlink", "mkdir", "fsync")
+    if family == "posix" and platform_value.startswith("linux"):
+        required = (
+            "close", "fstat", "fsync", "getpid", "link", "mkdir", "open",
+            "register_at_fork", "scandir", "stat", "unlink",
+        )
         dirfd_functions = tuple(
             getattr(os, name, None) for name in ("open", "stat", "link", "unlink", "mkdir")
         )
+        supports_dir_fd = getattr(os, "supports_dir_fd", ())
+        supports_follow_symlinks = getattr(os, "supports_follow_symlinks", ())
         available = (
-            all(hasattr(os, name) for name in required)
-            and all(hasattr(os, name) for name in ("O_CLOEXEC", "O_DIRECTORY", "O_NOFOLLOW"))
-            and all(function in os.supports_dir_fd for function in dirfd_functions)
-            and os.stat in os.supports_follow_symlinks
-            and os.link in os.supports_follow_symlinks
+            all(callable(getattr(os, name, None)) for name in required)
+            and all(type(getattr(os, name, None)) is int for name in (
+                "O_CLOEXEC", "O_DIRECTORY", "O_NOFOLLOW", "O_RDONLY",
+            ))
+            and all(function in supports_dir_fd for function in dirfd_functions)
+            and os.stat in supports_follow_symlinks
+            and os.link in supports_follow_symlinks
+            and _fcntl is not None
+            and callable(getattr(_fcntl, "flock", None))
+            and type(getattr(_fcntl, "LOCK_EX", None)) is int
+            and type(getattr(_fcntl, "LOCK_NB", None)) is int
         )
     status = CapabilityStatusV1.AVAILABLE if available else CapabilityStatusV1.UNAVAILABLE
     features = _FEATURES if available else ()
@@ -76,6 +109,32 @@ class PosixRetainedDirfdPortV1:
         self._directories: dict[str, tuple[int, RetainedDirectoryV1]] = {}
         self._files: dict[str, tuple[int, OpenFileV1]] = {}
         self._journal_lock = threading.Lock()
+        self._admission_process_id = os.getpid()
+        self._admission_process_ref = "process-" + secrets.token_hex(16)
+        self.__fork_invalid = False
+        def after_fork_child() -> None:
+            self.__fork_invalid = True
+            for descriptor in self.__admission_fd_snapshot:
+                try:
+                    os.close(descriptor)
+                except OSError:
+                    pass
+            self.__admission_leases = {}
+            self.__admission_fd_snapshot = ()
+            self.__admission_lock = threading.Lock()
+
+        os.register_at_fork(after_in_child=after_fork_child)
+        self.__admission_leases: dict[str, _LiveDirectoryAdmissionV1] = {}
+        self.__admission_fd_snapshot: tuple[int, ...] = ()
+        self.__admission_lock = threading.Lock()
+
+    def _require_construction_process(self) -> None:
+        try:
+            current_pid = os.getpid()
+        except BaseException:
+            raise self._closed(LocalIOCodeV1.CAPABILITY_UNAVAILABLE) from None
+        if self.__fork_invalid or current_pid != self._admission_process_id:
+            raise self._closed(LocalIOCodeV1.ADMISSION_INVALID)
 
     @staticmethod
     def _closed(code: LocalIOCodeV1 = LocalIOCodeV1.IO_FAILED) -> LocalIOErrorV1:
@@ -124,6 +183,7 @@ class PosixRetainedDirfdPortV1:
         return (left.device, left.inode, left.mode) == (right.device, right.inode, right.mode)
 
     def _directory(self, value: RetainedDirectoryV1) -> int:
+        self._require_construction_process()
         if type(value) is not RetainedDirectoryV1:
             raise self._closed(LocalIOCodeV1.AUTHORITY_INVALID)
         retained = self._directories.get(value.handle_ref)
@@ -138,6 +198,7 @@ class PosixRetainedDirfdPortV1:
         return retained[0]
 
     def _file(self, value: OpenFileV1) -> int:
+        self._require_construction_process()
         if type(value) is not OpenFileV1:
             raise self._closed(LocalIOCodeV1.AUTHORITY_INVALID)
         retained = self._files.get(value.handle_ref)
@@ -182,6 +243,7 @@ class PosixRetainedDirfdPortV1:
             raise self._closed() from None
 
     def retain_directory(self, absolute_path: Path) -> RetainedDirectoryV1:
+        self._require_construction_process()
         if not isinstance(absolute_path, Path) or not absolute_path.is_absolute():
             raise self._closed(LocalIOCodeV1.ROOT_INVALID)
         flags = os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW
@@ -294,6 +356,152 @@ class PosixRetainedDirfdPortV1:
             raise
         except OSError:
             raise self._closed() from None
+
+    @staticmethod
+    def _admission_node(value: os.stat_result) -> LocalAdmissionRootNodeV1:
+        file_type = stat.S_IFMT(int(value.st_mode))
+        body = {"device": int(value.st_dev), "file_type": file_type,
+                "inode": int(value.st_ino),
+                "schema": "synaptic-host-admission-root-node/v1"}
+        return LocalAdmissionRootNodeV1(
+            int(value.st_dev), int(value.st_ino), file_type, digest_v1(body)
+        )
+
+    @staticmethod
+    def _admission_root_key(
+        node: LocalAdmissionRootNodeV1,
+    ) -> tuple[int, int, int, str]:
+        return node.device, node.inode, node.file_type, node.node_digest
+
+    def _refresh_admission_fd_snapshot_locked(self) -> None:
+        self.__admission_fd_snapshot = tuple(
+            value.descriptor for value in self.__admission_leases.values()
+            if value.state in {"ACTIVE", "RELEASING"}
+        )
+
+    def acquire_directory_admission(
+        self, directory: RetainedDirectoryV1
+    ) -> RetainedDirectoryAdmissionV1:
+        self._require_construction_process()
+        directory_fd = self._directory(directory)
+        descriptor: int | None = None
+        try:
+            retained_node = self._admission_node(os.fstat(directory_fd))
+        except OSError:
+            raise self._closed(LocalIOCodeV1.IO_FAILED) from None
+        try:
+            descriptor = os.open(
+                ".", os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW,
+                dir_fd=directory_fd,
+            )
+            opened_node = self._admission_node(os.fstat(descriptor))
+            if opened_node != retained_node:
+                raise self._closed(LocalIOCodeV1.ADMISSION_INVALID)
+            try:
+                _fcntl.flock(descriptor, _fcntl.LOCK_EX | _fcntl.LOCK_NB)
+            except OSError as error:
+                if error.errno in {errno.EAGAIN, errno.EWOULDBLOCK}:
+                    raise self._closed(LocalIOCodeV1.ROOT_IN_USE) from None
+                raise self._closed(LocalIOCodeV1.IO_FAILED) from None
+            if self._admission_node(os.fstat(descriptor)) != retained_node:
+                raise self._closed(LocalIOCodeV1.ADMISSION_INVALID)
+            lease_ref = "directory-admission-" + secrets.token_hex(16)
+            body = {"lease_ref": lease_ref, "root_node_digest": retained_node.node_digest,
+                    "process_id": self._admission_process_id,
+                    "process_instance_ref": self._admission_process_ref,
+                    "schema": "synaptic-host-retained-directory-admission/v1"}
+            lease = RetainedDirectoryAdmissionV1(
+                lease_ref, retained_node, self._admission_process_id,
+                self._admission_process_ref, digest_v1(body),
+            )
+            with self.__admission_lock:
+                if any(
+                    value.root_key == self._admission_root_key(retained_node)
+                    and value.state in {"ACTIVE", "RELEASING"}
+                    for value in self.__admission_leases.values()
+                ):
+                    raise self._closed(LocalIOCodeV1.ROOT_IN_USE)
+                self.__admission_leases[lease_ref] = _LiveDirectoryAdmissionV1(
+                    lease,
+                    directory,
+                    descriptor,
+                    self._admission_root_key(retained_node),
+                )
+                self._refresh_admission_fd_snapshot_locked()
+            descriptor = None
+            return lease
+        except LocalIOErrorV1:
+            raise
+        except OSError:
+            raise self._closed(LocalIOCodeV1.IO_FAILED) from None
+        except BaseException:
+            raise self._closed(LocalIOCodeV1.IO_FAILED) from None
+        finally:
+            if descriptor is not None:
+                try:
+                    os.close(descriptor)
+                except OSError:
+                    pass
+
+    def validate_directory_admission(
+        self, directory: RetainedDirectoryV1, lease: RetainedDirectoryAdmissionV1
+    ) -> RetainedDirectoryAdmissionV1:
+        self._require_construction_process()
+        if type(directory) is not RetainedDirectoryV1 or type(lease) is not RetainedDirectoryAdmissionV1:
+            raise self._closed(LocalIOCodeV1.ADMISSION_INVALID)
+        with self.__admission_lock:
+            live = self.__admission_leases.get(lease.lease_ref)
+            if (
+                live is None
+                or live.state != "ACTIVE"
+                or live.lease is not lease
+                or live.directory is not directory
+            ):
+                raise self._closed(LocalIOCodeV1.ADMISSION_INVALID)
+            try:
+                directory_fd = self._directory(directory)
+                if (
+                    self._admission_node(os.fstat(directory_fd))
+                    != lease.root_node
+                    or self._admission_node(os.fstat(live.descriptor))
+                    != lease.root_node
+                ):
+                    raise self._closed(LocalIOCodeV1.ADMISSION_INVALID)
+            except OSError:
+                raise self._closed(LocalIOCodeV1.IO_FAILED) from None
+        return lease
+
+    def release_directory_admission(
+        self, directory: RetainedDirectoryV1, lease: RetainedDirectoryAdmissionV1
+    ) -> None:
+        self._require_construction_process()
+        if type(directory) is not RetainedDirectoryV1 or type(lease) is not RetainedDirectoryAdmissionV1:
+            raise self._closed(LocalIOCodeV1.ADMISSION_INVALID)
+        with self.__admission_lock:
+            live = self.__admission_leases.get(lease.lease_ref)
+            if (
+                live is None
+                or live.state != "ACTIVE"
+                or live.lease is not lease
+                or live.directory is not directory
+            ):
+                raise self._closed(LocalIOCodeV1.ADMISSION_INVALID)
+            self._directory(directory)
+            live.state = "RELEASING"
+        failed = False
+        try:
+            os.close(live.descriptor)
+        except OSError:
+            failed = True
+        finally:
+            with self.__admission_lock:
+                current = self.__admission_leases.get(lease.lease_ref)
+                if current is live:
+                    live.state = "RELEASED_WITH_FAILURE" if failed else "RELEASED"
+                    del self.__admission_leases[lease.lease_ref]
+                    self._refresh_admission_fd_snapshot_locked()
+        if failed:
+            raise self._closed(LocalIOCodeV1.ADMISSION_RELEASE_FAILED)
 
     def mkdir_at(self, directory: RetainedDirectoryV1, component: str) -> bool:
         descriptor = self._directory(directory)
@@ -501,6 +709,7 @@ class PosixRetainedDirfdPortV1:
         expected_previous_digest: str | None,
         record: CreateJournalRecordV1,
     ) -> JournalPublishResultV1:
+        self._require_construction_process()
         if type(record) is not CreateJournalRecordV1 or record.mutation_id != mutation_id:
             raise self._closed(LocalIOCodeV1.JOURNAL_INVALID)
         with self._journal_lock:
@@ -582,6 +791,7 @@ class PosixRetainedDirfdPortV1:
     def snapshot_journal(
         self, control: RetainedDirectoryV1, mutation_id: str, maximum: int
     ) -> JournalSnapshotV1:
+        self._require_construction_process()
         if type(maximum) is not int or not 0 <= maximum <= 5:
             raise self._closed(LocalIOCodeV1.JOURNAL_INVALID)
         directory_fd = self._open_journal_dir(control, mutation_id, create=False)

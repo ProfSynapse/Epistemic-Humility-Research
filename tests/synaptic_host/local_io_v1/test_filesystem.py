@@ -28,6 +28,8 @@ from synaptic_host.local_io_v1.model import (
     LocalRootBindingV1,
     LocalRootPermitV1,
     LocalRootAuthorityV1,
+    LocalSingleRootAuthorityV1,
+    LocalSingleRootAdmissionV1,
     LocalSourceBindingV1,
     RecoveryResultV1,
     RetainedDirectoryV1,
@@ -35,6 +37,7 @@ from synaptic_host.local_io_v1.model import (
     RetainedRootBorrowV1,
     RecoveryStatusV1,
     RootAccessV1,
+    SingleRootPurposeV1,
     MAX_BORROWED_HARDLINK_PAIR_BYTES,
     validate_recovery_result_v1,
     journal_record_bytes_v1,
@@ -118,6 +121,7 @@ def _composition_with_data_access(access: RootAccessV1):
 DESTINATION_PURPOSE = BorrowPurposeV1.BUNDLE_DESTINATION_CREATE
 SOURCE_PURPOSE = BorrowPurposeV1.BUNDLE_SOURCE_READ
 VERIFY_PURPOSE = BorrowPurposeV1.BUNDLE_MOUNT_VERIFY
+SPOOL_PURPOSE = BorrowPurposeV1.PUBLICATION_SPOOL
 
 
 def _borrow(filesystem, authority, access=RootAccessV1.READ_CREATE,
@@ -127,6 +131,125 @@ def _borrow(filesystem, authority, access=RootAccessV1.READ_CREATE,
     )
     borrow = filesystem.borrow_root(authority, request)
     return borrow, filesystem.root_directory(borrow, purpose=purpose)
+
+
+def _single_root_composition(profile="spool-admission"):
+    port = FakePosixFilesystemPortV1()
+    fake_base = Path.cwd() / ".fake-metadata" / profile
+    root_path = fake_base / "spool"
+    port.add_root(root_path, "spool")
+    authenticator = _Authenticator()
+    binding = _binding(root_path, profile, RootAccessV1.READ_CREATE, authenticator)
+    filesystem = LocalFilesystemV1(port, authenticator, native_platform="linux")
+    authority = filesystem.retain_single_root_authority(
+        binding, purpose=SingleRootPurposeV1.PUBLICATION_SPOOL
+    )
+    return port, filesystem, authority
+
+
+def test_single_root_admission_gates_borrow_and_enforces_release_ordering() -> None:
+    port, filesystem, authority = _single_root_composition()
+    request = RetainedRootBorrowRequestV1.build(
+        authority.authority_digest, SPOOL_PURPOSE, RootAccessV1.READ_CREATE
+    )
+    with pytest.raises(LocalIOErrorV1) as broad:
+        filesystem.borrow_root(authority, request)  # type: ignore[arg-type]
+    assert broad.value.code is LocalIOCodeV1.BORROW_INVALID
+    admission = filesystem.acquire_single_root_admission(authority)
+    assert type(admission) is LocalSingleRootAdmissionV1
+    borrow = filesystem.borrow_single_root(authority, admission, request)
+    root = filesystem.root_directory(borrow, purpose=SPOOL_PURPOSE)
+    assert filesystem.list_borrowed_directory(
+        borrow, root, 2, purpose=SPOOL_PURPOSE
+    ) == ()
+    with pytest.raises(LocalIOErrorV1) as admission_in_use:
+        filesystem.release_single_root_admission(authority, admission)
+    assert admission_in_use.value.code is LocalIOCodeV1.BORROW_IN_USE
+    with pytest.raises(LocalIOErrorV1) as authority_in_use:
+        filesystem.release_single_root_authority(authority)
+    assert authority_in_use.value.code is LocalIOCodeV1.BORROW_IN_USE
+    filesystem.release_borrow(borrow, purpose=SPOOL_PURPOSE)
+    filesystem.release_single_root_admission(authority, admission)
+    assert port.directories["dir-spool"] == {}
+    filesystem.release_single_root_authority(authority)
+
+
+def test_single_root_admission_contention_and_released_identity_fail_closed() -> None:
+    _, filesystem, authority = _single_root_composition("spool-contention")
+    first = filesystem.acquire_single_root_admission(authority)
+    with pytest.raises(LocalIOErrorV1) as contention:
+        filesystem.acquire_single_root_admission(authority)
+    assert contention.value.code is LocalIOCodeV1.ROOT_IN_USE
+    filesystem.release_single_root_admission(authority, first)
+    with pytest.raises(LocalIOErrorV1) as released:
+        filesystem.release_single_root_admission(authority, first)
+    assert released.value.code is LocalIOCodeV1.ADMISSION_INVALID
+    filesystem.release_single_root_authority(authority)
+
+
+def test_single_root_release_failure_is_one_shot_and_authority_remains_releasable() -> None:
+    port, filesystem, authority = _single_root_composition("spool-release-failure")
+    admission = filesystem.acquire_single_root_admission(authority)
+    calls = 0
+
+    def failed(directory, lease):
+        nonlocal calls
+        calls += 1
+        port.admission_leases.pop(lease.lease_ref, None)
+        raise LocalIOErrorV1(LocalIOCodeV1.ADMISSION_RELEASE_FAILED)
+
+    port.release_directory_admission = failed
+    with pytest.raises(LocalIOErrorV1) as first:
+        filesystem.release_single_root_admission(authority, admission)
+    assert first.value.code is LocalIOCodeV1.ADMISSION_RELEASE_FAILED
+    with pytest.raises(LocalIOErrorV1) as repeated:
+        filesystem.release_single_root_admission(authority, admission)
+    assert repeated.value.code is LocalIOCodeV1.ADMISSION_INVALID
+    assert calls == 1
+    filesystem.release_single_root_authority(authority)
+
+
+def test_wrong_process_rejects_before_filesystem_borrow_lock_or_port_effect(
+    monkeypatch,
+) -> None:
+    import synaptic_host.local_io_v1.filesystem as filesystem_module
+
+    port, filesystem, authority = _single_root_composition("spool-wrong-process")
+    admission = filesystem.acquire_single_root_admission(authority)
+    request = RetainedRootBorrowRequestV1.build(
+        authority.authority_digest, SPOOL_PURPOSE, RootAccessV1.READ_CREATE
+    )
+    borrow = filesystem.borrow_single_root(authority, admission, request)
+    trace = tuple(port.trace)
+    construction_pid = filesystem._admission_process_id
+    monkeypatch.setattr(filesystem_module.os, "getpid", lambda: construction_pid + 1)
+
+    with pytest.raises(LocalIOErrorV1) as acquisition:
+        filesystem.acquire_single_root_admission(authority)
+    assert acquisition.value.code is LocalIOCodeV1.ADMISSION_INVALID
+    with pytest.raises(LocalIOErrorV1) as effect:
+        filesystem.root_directory(borrow, purpose=SPOOL_PURPOSE)
+    assert effect.value.code is LocalIOCodeV1.ADMISSION_INVALID
+    assert tuple(port.trace) == trace
+
+
+def test_spool_create_rejects_path_substitution_during_port_callback() -> None:
+    port, filesystem, authority = _single_root_composition("spool-create-substitute")
+    admission = filesystem.acquire_single_root_admission(authority)
+    request = RetainedRootBorrowRequestV1.build(
+        authority.authority_digest, SPOOL_PURPOSE, RootAccessV1.READ_CREATE
+    )
+    borrow = filesystem.borrow_single_root(authority, admission, request)
+    root = filesystem.root_directory(borrow, purpose=SPOOL_PURPOSE)
+    port.callbacks["create_exclusive_at"] = lambda: port.add_file(
+        "dir-spool", "payload", b"substitute"
+    )
+
+    with pytest.raises(LocalIOErrorV1) as caught:
+        filesystem.create_borrowed_file(
+            borrow, root, "payload", purpose=SPOOL_PURPOSE
+        )
+    assert caught.value.code is LocalIOCodeV1.PATH_CHANGED
 
 
 def _add_hardlink_pair(port, first="commit", second="companion", payload=b"marker"):
