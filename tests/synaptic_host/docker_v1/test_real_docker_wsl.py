@@ -107,7 +107,11 @@ def _write_storage(project: Path, roots: tuple[str, ...]) -> Path:
 def _profile(payload: bytes) -> DockerProfileV1:
     provider = ProviderRef("docker", "offline-alpine-cpu")
     workload = DockerWorkloadV1(
-        ("sh", "-c", "cat /source/data.json > /artifacts/result"),
+        (
+            "sh",
+            "-c",
+            "cat /source/member-0000 > /artifacts/result; sleep 2",
+        ),
         (),
         _sha(b"alpine-copy-workload-v1"),
     )
