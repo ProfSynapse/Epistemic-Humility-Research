@@ -386,12 +386,9 @@ class DockerHostStartV1:
 
     def _recover(self, preflight, current, start_result, already_verified=False):
         container_ref = preflight["container_ref"]
-        inspect_limit = 1
-        if (
-            start_result is not None
-            and start_result.evidence.outcome is DockerCLIOutcomeV1.SUCCESS
-        ):
-            inspect_limit = _POST_START_INSPECT_LIMIT
+        inspect_limit = (
+            1 if already_verified else _POST_START_INSPECT_LIMIT
+        )
         inspected = None
         for _ in range(inspect_limit):
             inspected = _snapshot_typed(
