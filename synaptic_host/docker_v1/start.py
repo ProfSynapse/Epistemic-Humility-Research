@@ -31,6 +31,7 @@ from .verification import docker_create_projection_matches_v1
 
 
 _CONTAINER_REF = re.compile(r"[0-9a-f]{64}\Z")
+_POST_START_INSPECT_LIMIT = 3
 
 
 class _ProjectionCollisionV1(Exception):
@@ -385,17 +386,27 @@ class DockerHostStartV1:
 
     def _recover(self, preflight, current, start_result, already_verified=False):
         container_ref = preflight["container_ref"]
-        inspected = _snapshot_typed(
-            self._typed_runner.inspect_container(container_ref),
-            DockerContainerInspectResultV1, container_ref,
-        )
-        if inspected.evidence.outcome is not DockerCLIOutcomeV1.SUCCESS:
-            return _indeterminate()
-        if not docker_create_projection_matches_v1(
-            preflight["labels"], preflight["expected"],
-            preflight["environment"], inspected.projection, container_ref,
+        inspect_limit = 1
+        if (
+            start_result is not None
+            and start_result.evidence.outcome is DockerCLIOutcomeV1.SUCCESS
         ):
-            return _collision()
+            inspect_limit = _POST_START_INSPECT_LIMIT
+        inspected = None
+        for _ in range(inspect_limit):
+            inspected = _snapshot_typed(
+                self._typed_runner.inspect_container(container_ref),
+                DockerContainerInspectResultV1, container_ref,
+            )
+            if inspected.evidence.outcome is not DockerCLIOutcomeV1.SUCCESS:
+                return _indeterminate()
+            if not docker_create_projection_matches_v1(
+                preflight["labels"], preflight["expected"],
+                preflight["environment"], inspected.projection, container_ref,
+            ):
+                return _collision()
+            if inspected.projection.state.started:
+                break
         if not inspected.projection.state.started:
             return _indeterminate()
         if already_verified:
