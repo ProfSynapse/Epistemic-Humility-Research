@@ -394,7 +394,11 @@ def _project_container(record: dict, expected_ref: str, request_digest: str,
     if started_at == "0001-01-01T00:00:00Z":
         started = False
     else:
-        datetime.fromisoformat(started_at[:-1] + "+00:00")
+        timestamp = started_at[:-1]
+        if "." in timestamp:
+            whole, fraction = timestamp.rsplit(".", 1)
+            timestamp = f"{whole}.{fraction[:6].ljust(6, '0')}"
+        datetime.fromisoformat(timestamp + "+00:00")
         started = True
     restart_count = _required_int(record, "RestartCount", maximum=2**31 - 1)
     state = DockerContainerStateV1.build(

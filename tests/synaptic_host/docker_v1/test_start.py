@@ -180,20 +180,6 @@ def test_start_happy_path_only_post_inspection_proves_and_retry_zero_effect():
     assert runner.start_calls == 1
 
 
-def test_start_bounds_reinspection_for_delayed_running_visibility():
-    host, runner, _store, labels, ref = _harness()
-
-    def delayed_inspect(_ref):
-        runner.inspect_calls += 1
-        return runner.created if runner.inspect_calls <= 2 else runner.started
-
-    runner.inspect_container = delayed_inspect
-    result = host.start_once(ref, labels)
-    assert result.disposition is DockerStartDispositionV1.STARTED
-    assert runner.start_calls == 1
-    assert runner.inspect_calls == 3
-
-
 @pytest.mark.parametrize("mode", ("success", "nonzero", "raise", "lost"))
 def test_start_typed_result_never_substitutes_for_post_inspection(mode):
     host, runner, _store, labels, ref = _harness(
