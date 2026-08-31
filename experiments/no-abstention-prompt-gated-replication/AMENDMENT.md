@@ -1,7 +1,8 @@
 # No-abstention-prompt gated replication (cross-family)
 
-Status: signed 2026-08-28 (`bin/exp sign`; PI-authorized in session). GPU
-launch still requires separate PI approval on the canonical Linux checkout.
+Status: resolved 2026-08-30 (`bin/exp resolve`; PI-signed verdict in
+session). Signed 2026-08-28; run 2026-08-28 to 2026-08-30 on the canonical
+Linux checkout under the recorded launch authorization. See Outcome.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -151,5 +152,87 @@ adjudicability floor N = 52), not rounded to convenient defaults:
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-08-30 (PI-signed verdict, in session). Run 2026-08-28 to
+2026-08-30, local RTX 3090, all five families, all arms complete; every
+number below re-derived by the lead from the committed grade reports and
+unblinded applied jsonls before signing.
+
+**Verdict.** Falsifier did not fire: with the abstention instruction deleted,
+the gated write retains a real two-stage abstention lift in all five families
+(qwen3-4b +11.4pp, llama +9.3pp, mistral +18.8pp, qwen3.5-4b +45.6pp, gemma
++47.0pp, every 95% CI excluding zero) at near-zero known-correct cost, but
+the reference family falls far below the half-with-prompt floor: the
+pre-stated middle band, attenuated survival, framing revised to
+instruction-amplified.
+
+**Gates** (registered wilson_95_ci_excludes_zero rule; Newcombe-Wilson on
+lifts):
+
+- **G1 (primary, qwen3-4b): FAIL on the floor; falsifier does NOT fire.**
+  Two-stage lift 21/185 - 0/185 = 0.1135, 95% CI [0.0704, 0.1673]. CI
+  excludes zero, so outcome branch 3 (middle band) of the pre-stated
+  partition, the PI-predicted branch. Lift is 12.7% of the with-prompt
+  magnitude (0.1135 / 0.8919).
+- **G1b (llama, hard): FAIL**, reported straight. v2 two-stage lift
+  (117 - 36)/872 = 0.0929, 95% CI [0.0669, 0.1196]; excludes zero, below
+  the 0.3595 floor. Instrument disclosure: the v1 judge lane closed
+  VOID_CELL_TERMINAL (clear_positive agreement 0.00 across both attempts);
+  the v2 lane (pre-stated 2026-08-30, PI-approved: planted positives from
+  with-prompt gated-arm overt refusals instead of random/no-prompt-arm
+  detector hits) passed calibration on all 5 shards (19/20 decoys). The v1
+  void stands in the record and is not relitigated.
+- **G2 (cost, qwen3-4b, dosed-rows-only): NOT-ADJUDICABLE** per the
+  registered below_floor_disposition: the refit gate fired on only 5/258
+  held-out known-correct rows, below the adjudicability floor N = 52.
+  Descriptively, judged false refusals are zero in every arm of every
+  family (the sole exceptions program-wide: 2 judged known-row abstentions
+  in the qwen3.5-4b v2 gated arm and 5 per gemma arm, all under 2.2%).
+- **G3 (descriptive, per family, two-stage no_op -> gated on held-out
+  confabs):** gemma-4-e4b 31/168 -> 110/168, lift 0.4702 [0.3710, 0.5552];
+  qwen3.5-4b (v2) 118/1332 -> 725/1332, lift 0.4557 [0.4242, 0.4858];
+  mistral-7b-v0.3 151/1312 -> 398/1312, lift 0.1883 [0.1578, 0.2184]
+  (its gate fired on 1295/1295 dosed confabs and 0 known rows). qwen3.5's
+  v1 judge lane closed VOID_CELL_TERMINAL; its v2 lane (same pre-statement
+  as llama's) passed 4/4 shards, 20/20 decoys.
+- **G4 (sanity): PASS in both families.** qwen3-4b random-direction
+  two-stage lift 0.0000 < half the gated lift (0.0568); llama random lift
+  -0.0206 [-0.0377, -0.0043] < 0.0464, the random direction moving llama
+  slightly toward answering.
+
+**Predictions scoreboard resolution:** the user's call (survives attenuated,
+CI excludes zero, below half with-prompt) lands exactly; the orchestrator's
+call (survives strong, G1 passes) is wrong.
+
+**Descriptive findings** (labeled, not gated claims):
+
+1. The pre-stated string/judge delta is maximal in qwen3-4b: detector_v2
+   caught 0 of its 21 judged abstentions; without the seeded phrase the
+   family abstains in forms the string instrument cannot see. qwen3.5-4b is
+   the opposite pole: 516/1332 gated rows emit overt refusal strings
+   unprompted (string stage) and 572 trip detector_v2.
+2. The write installs a measurable internal doubt state even where no
+   abstention text appears: stated response_confidence collapses
+   direction-specifically in the gated arm of every family (qwen3-4b: 137
+   rows at or below 0.7 vs ~1 in each control arm; llama: 160 rows at or
+   below 0.5 vs 5-7).
+3. Judge-sensitivity finding from the v1/v2 contrast: planted decoys drawn
+   from with-prompt gated-arm overt refusals were caught 79/80 program-wide;
+   decoys drawn from random/no-prompt-arm detector_v2 hits were missed en
+   masse (0/6 llama natives twice, 40-80% missed on qwen3.5 v1 shards). The
+   sensitivity failure tracked the decoy source, not the judges, consistent
+   with detector_v2 over-firing on hedged or degenerate random-arm text.
+4. Cross-family heterogeneity splits into two tiers (instruction-free lift
+   ~+46-47pp in gemma/qwen3.5 vs ~+9-19pp in qwen3-4b/llama/mistral), which
+   does not track the with-prompt effect ordering.
+
+**Instrument notes:** pinned pool/adjudication scripts reused as libraries
+(sha-verified at import; their CLIs are hardwired to the calibration cell's
+own sources); approved deviation recorded in NOTEBOOK. Planted
+clear_positive decoys are an instrument extension (this cell's own no-prompt
+data has structurally near-zero detector-refused rows): same-family sources
+for qwen3-4b and qwen3.5-4b, cross-family (qwen3-4b wicr) for gemma,
+mistral, and llama-v2, each labeled with exact provenance in NOTEBOOK and
+excluded from every rate. Infra: two silent background-run deaths (the
+qwen3-4b grade crash from a sys.modules grader collision, fixed
+harness-side; the mistral gated-arm death, cause unattributed, kernel OOM
+ruled out); no data loss, both resumed from runlog.
