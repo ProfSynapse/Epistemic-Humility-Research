@@ -33,6 +33,9 @@ from synaptic_host.docker_v1.composition import (
     compose_docker_host_v1,
 )
 from synaptic_host.docker_v1.cli import DockerCLIRunnerV1
+from synaptic_host.docker_v1.control_private import (
+    DockerPrivateStartInvocationV1,
+)
 from synaptic_host.docker_v1.model import (
     DockerCLIEnvironmentV1,
     DockerCLIPolicyV1,
@@ -340,6 +343,7 @@ def test_released_facade_starts_real_offline_pinned_container(
     trace: dict[str, object] = {"inspects": []}
     original_inspect = DockerCLIRunnerV1.inspect_container
     original_start_container = DockerCLIRunnerV1.start_container
+    original_execute_start = DockerPrivateStartInvocationV1.execute_once
     original_start = DockerHostStartV1.start_once
 
     def traced_inspect(self, container_ref):
@@ -377,9 +381,21 @@ def test_released_facade_starts_real_offline_pinned_container(
         }
         return result
 
+    def traced_execute_start(self, runner):
+        try:
+            result = original_execute_start(self, runner)
+        except BaseException as error:
+            trace["start_invocation"] = {"error": type(error).__name__}
+            raise
+        trace["start_invocation"] = {"result": type(result).__name__}
+        return result
+
     monkeypatch.setattr(DockerCLIRunnerV1, "inspect_container", traced_inspect)
     monkeypatch.setattr(
         DockerCLIRunnerV1, "start_container", traced_start_container
+    )
+    monkeypatch.setattr(
+        DockerPrivateStartInvocationV1, "execute_once", traced_execute_start
     )
     monkeypatch.setattr(DockerHostStartV1, "start_once", traced_start)
     facade = compose_docker_host_v1(request)
