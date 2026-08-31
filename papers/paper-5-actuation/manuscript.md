@@ -1623,8 +1623,10 @@ not population effect-size estimates. Key limits:
   instruction amplifies an effect the write produces on its own rather than
   enabling it. The instruction-free effect varies strongly by family:
   Gemma-4-E4B 18.5% to 65.5% two-stage, Qwen3.5-4B 8.9% to 54.4% two-stage,
-  Llama-3.2-3B 4.1% to 13.4% two-stage, with Mistral
-  pending at this draft. Judge-lane calibration voided in two families
+  Mistral-7B-v0.3 11.5% to 30.3% two-stage, and Llama-3.2-3B 4.1% to 13.4%
+  two-stage, every lift's 95% CI excluding zero
+  (experiments/no-abstention-prompt-gated-replication, resolved Outcome).
+  Judge-lane calibration voided in two families
   (Llama, Qwen3.5) on a first pass whose planted decoys were later shown
   unsound; a pre-stated second pass with sound decoys passed calibration in
   both and supplies their two-stage numbers. These cells are exploratory,
