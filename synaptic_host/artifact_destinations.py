@@ -6,8 +6,9 @@ from dataclasses import dataclass, replace
 import hashlib
 import json
 from pathlib import Path
+import re
 from threading import RLock
-from types import FunctionType
+from types import FunctionType, MethodType
 import unicodedata
 from weakref import WeakKeyDictionary
 
@@ -23,8 +24,10 @@ _CONFIG_SCHEMA = "synaptic-host-artifact-destinations/v1"
 _DESTINATION_SCHEMA = "synaptic-host-artifact-destination/v1"
 _ENGINE_SCHEMA = "synaptic-publication-destination/v1"
 _ZERO = "0" * 64
+_DIGEST = re.compile(r"^[0-9a-f]{64}$")
 _MAX_CONFIG_BYTES = 1_048_576
 _MAX_DESTINATIONS = 100
+_MAX_AUTHORITY_BINDINGS = 32
 _MAX_DEPTH = 16
 _BANNED_KEYS = frozenset({
     "access_key", "access_token", "api_key", "credential", "credentials",
@@ -189,6 +192,28 @@ class DestinationAdapterRegistrationV1:
             raise TypeError("adapter type and exact function factory are required")
 
 
+@dataclass(frozen=True, slots=True)
+class ResolvedDestinationAdapterV1:
+    adapter: object
+    authority_bindings: tuple[tuple[str, str], ...]
+
+    def __post_init__(self) -> None:
+        if self.adapter is None or type(self.authority_bindings) is not tuple:
+            raise ValueError("resolved destination adapter binding is invalid")
+        refs = []
+        for item in self.authority_bindings:
+            if (
+                type(item) is not tuple
+                or len(item) != 2
+                or type(item[0]) is not str
+                or type(item[1]) is not str
+                or _DIGEST.fullmatch(item[1]) is None
+            ):
+                raise ValueError("resolved destination adapter binding is invalid")
+            refs.append(_text(item[0], "resolved authority role"))
+        if not refs or tuple(refs) != tuple(sorted(refs)) or len(refs) != len(set(refs)):
+            raise ValueError("resolved destination authority bindings must be unique and ascending")
+
 def _snapshot_policy(value: ArtifactDestinationPolicyV1) -> ArtifactDestinationPolicyV1:
     if type(value) is not ArtifactDestinationPolicyV1:
         raise TypeError("exact destination policy is required")
@@ -225,7 +250,79 @@ def _snapshot_registration(
     )
 
 
-def _construct_adapter(factory: FunctionType, configuration: bytes) -> object:
+def _discover_adapter_callbacks(adapter: object) -> tuple[object, object, object]:
+    try:
+        callbacks = tuple(
+            getattr(adapter, name)
+            for name in ("publish_once", "lookup", "iter_bytes")
+        )
+    except BaseException:
+        pass
+    else:
+        if all(callable(callback) for callback in callbacks):
+            return callbacks  # type: ignore[return-value]
+        raise TypeError("destination adapter is incomplete")
+    raise ValueError("destination adapter callback access failed") from None
+
+
+def _same_adapter_callback(current: object, pinned: object) -> bool:
+    if type(current) is MethodType and type(pinned) is MethodType:
+        return current.__self__ is pinned.__self__ and current.__func__ is pinned.__func__
+    return current is pinned
+
+
+def _reconstruct_resolved_binding(
+    result: object,
+    _binding_type=ResolvedDestinationAdapterV1,
+    _digest_pattern=_DIGEST,
+    _text_check=_text,
+    _binding_limit=_MAX_AUTHORITY_BINDINGS,
+) -> tuple[object, tuple[tuple[str, str], ...]]:
+    if type(result) is not _binding_type:
+        raise TypeError("destination adapter factory returned an invalid binding")
+    invalid = False
+    snapshot_values: list[tuple[str, str]] = []
+    try:
+        adapter = object.__getattribute__(result, "adapter")
+        bindings = object.__getattribute__(result, "authority_bindings")
+        if (
+            type(bindings) is not tuple
+            or not bindings
+            or len(bindings) > _binding_limit
+        ):
+            raise ValueError
+        for item in bindings:
+            if (
+                type(item) is not tuple
+                or len(item) != 2
+                or type(item[0]) is not str
+                or type(item[1]) is not str
+                or _digest_pattern.fullmatch(item[1]) is None
+            ):
+                raise ValueError
+            role = _text_check(item[0], "resolved authority role", 256)
+            snapshot_values.append((role, str(item[1])))
+    except BaseException:
+        invalid = True
+        adapter = None
+    if invalid:
+        raise ValueError("resolved destination adapter binding is invalid") from None
+    snapshot = tuple(snapshot_values)
+    roles = tuple(item[0] for item in snapshot)
+    if roles != tuple(sorted(roles)) or len(roles) != len(set(roles)):
+        raise ValueError("resolved destination adapter binding is invalid")
+    return adapter, snapshot
+
+
+def _construct_adapter(
+    factory: FunctionType,
+    configuration: bytes,
+    declared_configuration_digest: str,
+    _digest_pattern=_DIGEST,
+    _digest=_sha,
+    _callback_probe=_discover_adapter_callbacks,
+    _binding_snapshot=_reconstruct_resolved_binding,
+) -> tuple[object, str, tuple[object, object, object]]:
     try:
         result = factory(configuration)
     except (KeyboardInterrupt, SystemExit):
@@ -233,7 +330,28 @@ def _construct_adapter(factory: FunctionType, configuration: bytes) -> object:
     except Exception:
         pass
     else:
-        return result
+        if (
+            type(declared_configuration_digest) is not str
+            or _digest_pattern.fullmatch(declared_configuration_digest) is None
+        ):
+            raise ValueError("resolved destination adapter binding is invalid")
+        adapter, snapshot = _binding_snapshot(result)
+        callbacks = _callback_probe(adapter)
+        post_failed = False
+        try:
+            post_adapter, post_snapshot = _binding_snapshot(result)
+        except BaseException:
+            post_failed = True
+            post_adapter, post_snapshot = None, ()
+        if post_failed or post_adapter is not adapter or post_snapshot != snapshot:
+            raise ValueError("resolved destination adapter binding changed")
+        return adapter, _digest({
+            "declared_configuration_digest": declared_configuration_digest,
+            "resolved_authorities": [
+                {"role": role, "authority_digest": digest}
+                for role, digest in snapshot
+            ],
+        }), callbacks
     raise ValueError("destination adapter construction failed") from None
 
 
@@ -288,6 +406,7 @@ class _BoundDestinationV1:
     descriptor: AuthenticatedDestinationV1
     adapter: object
     adapter_type: type
+    resolved_configuration_digest: str
     publish_once: object
     lookup: object
     iter_bytes: object
@@ -300,6 +419,8 @@ class _RegistryPinsV1:
     issuer: DestinationEvidenceIssuerV1
     verifier: PublicationEvidenceVerifierV1
     binding_baselines: tuple[tuple[object, ...], ...]
+    callback_probe: object
+    callback_match: object
 
 
 def _registry_pin_accessors():
@@ -355,6 +476,8 @@ class ImmutableArtifactDestinationRegistryV1:
         self._verifier = verifier
         self._issuer_issue = issuer.issue
         self._verifier_verify = verifier.verify
+        callback_probe = _discover_adapter_callbacks
+        callback_match = _same_adapter_callback
         by_ref = {item.adapter_ref: item for item in registration_baselines}
         bindings = []
         for supplied_declaration in config.destinations:
@@ -364,8 +487,10 @@ class ImmutableArtifactDestinationRegistryV1:
                 raise ValueError("destination adapter registration is missing or incompatible")
             declaration_baseline = _snapshot_declaration(declaration)
             registration_baseline = _snapshot_registration(registration)
-            adapter = _construct_adapter(
-                registration.factory, bytes(declaration.configuration_bytes)
+            adapter, resolved_configuration_digest, callbacks = _construct_adapter(
+                registration.factory,
+                bytes(declaration.configuration_bytes),
+                declaration.configuration_digest,
             )
             if (
                 _snapshot_declaration(supplied_declaration) != declaration_baseline
@@ -375,14 +500,11 @@ class ImmutableArtifactDestinationRegistryV1:
                 raise ValueError("destination declaration changed during adapter construction")
             if type(adapter) is not registration.adapter_type:
                 raise TypeError("destination adapter factory returned an invalid type")
-            callbacks = tuple(getattr(adapter, name, None) for name in ("publish_once", "lookup", "iter_bytes"))
-            if any(not callable(callback) for callback in callbacks):
-                raise TypeError("destination adapter is incomplete")
             unsigned = AuthenticatedDestinationV1(
                 _ENGINE_SCHEMA,
                 declaration.destination_ref,
                 declaration.display_name,
-                declaration.configuration_digest,
+                resolved_configuration_digest,
                 declaration.policy.policy_digest,
                 declaration.policy.maximum_artifact_bytes,
                 declaration.policy.maximum_total_bytes,
@@ -398,6 +520,7 @@ class ImmutableArtifactDestinationRegistryV1:
                 raise ValueError("destination descriptor authentication failed")
             bindings.append(_BoundDestinationV1(
                 declaration, descriptor, adapter, registration.adapter_type,
+                resolved_configuration_digest,
                 callbacks[0], callbacks[1], callbacks[2],
             ))
         self._bindings = tuple(bindings)
@@ -408,6 +531,7 @@ class ImmutableArtifactDestinationRegistryV1:
                 replace(item.descriptor),
                 item.adapter,
                 item.adapter_type,
+                item.resolved_configuration_digest,
                 item.publish_once,
                 item.lookup,
                 item.iter_bytes,
@@ -420,6 +544,8 @@ class ImmutableArtifactDestinationRegistryV1:
             self._issuer,
             self._verifier,
             baselines,
+            callback_probe,
+            callback_match,
         ))
 
     def _register_pins(
@@ -442,13 +568,16 @@ class ImmutableArtifactDestinationRegistryV1:
         return pins
 
     def _bound(
-        self, binding: _BoundDestinationV1, baseline: tuple[object, ...]
+        self, binding: _BoundDestinationV1, baseline: tuple[object, ...],
+        callback_probe: object, callback_match: object,
     ) -> tuple[AuthenticatedDestinationV1, object]:
         (
             pinned_binding, pinned_declaration, pinned_descriptor,
-            pinned_adapter, pinned_adapter_type, pinned_publish,
+            pinned_adapter, pinned_adapter_type, pinned_configuration_digest,
+            pinned_publish,
             pinned_lookup, pinned_iter,
         ) = baseline
+        callbacks = callback_probe(binding.adapter)
         if (
             type(binding) is not _BoundDestinationV1
             or binding is not pinned_binding
@@ -456,10 +585,14 @@ class ImmutableArtifactDestinationRegistryV1:
             or replace(binding.descriptor) != pinned_descriptor
             or binding.adapter is not pinned_adapter
             or binding.adapter_type is not pinned_adapter_type
+            or binding.resolved_configuration_digest != pinned_configuration_digest
             or type(binding.adapter) is not pinned_adapter_type
-            or getattr(binding.adapter, "publish_once", None) != pinned_publish
-            or getattr(binding.adapter, "lookup", None) != pinned_lookup
-            or getattr(binding.adapter, "iter_bytes", None) != pinned_iter
+            or any(
+                not callback_match(current, pinned)
+                for current, pinned in zip(
+                    callbacks, (pinned_publish, pinned_lookup, pinned_iter)
+                )
+            )
         ):
             raise ValueError("destination registry binding changed")
         descriptor = replace(binding.descriptor)
@@ -467,7 +600,7 @@ class ImmutableArtifactDestinationRegistryV1:
         if (
             descriptor.destination_ref != declaration.destination_ref
             or descriptor.display_name != declaration.display_name
-            or descriptor.configuration_digest != declaration.configuration_digest
+            or descriptor.configuration_digest != binding.resolved_configuration_digest
             or descriptor.policy_digest != declaration.policy.policy_digest
             or not self._verifier.verify(
                 "publication-destination/v1", descriptor.payload,
@@ -487,14 +620,17 @@ class ImmutableArtifactDestinationRegistryV1:
         )
         if len(matches) != 1:
             raise KeyError("destination was not found")
-        return self._bound(*matches[0])
+        return self._bound(*matches[0], pins.callback_probe, pins.callback_match)
 
     def list(self, limit: int) -> tuple[tuple[AuthenticatedDestinationV1, ...], bool]:
         if type(limit) is not int or not 1 <= limit <= _MAX_DESTINATIONS + 1:
             raise ValueError("destination list limit is invalid")
         pins = self._pins()
         descriptors = tuple(
-            self._bound(item, pins.binding_baselines[index])[0]
+            self._bound(
+                item, pins.binding_baselines[index],
+                pins.callback_probe, pins.callback_match,
+            )[0]
             for index, item in enumerate(pins.bindings)
         )
         return descriptors[:limit], len(descriptors) <= limit
@@ -506,5 +642,6 @@ __all__ = [
     "ArtifactDestinationPolicyV1",
     "DestinationAdapterRegistrationV1",
     "ImmutableArtifactDestinationRegistryV1",
+    "ResolvedDestinationAdapterV1",
     "load_artifact_destination_config_v1",
 ]

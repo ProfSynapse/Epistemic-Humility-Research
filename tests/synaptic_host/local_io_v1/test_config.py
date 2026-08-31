@@ -15,6 +15,9 @@ from synaptic_host.local_io_v1.model import (
 )
 
 
+ROOT = Path(__file__).resolve().parents[3]
+
+
 def _write(path: Path, value: object) -> Path:
     path.write_text(json.dumps(value), encoding="utf-8")
     return path
@@ -58,6 +61,31 @@ def test_two_opaque_project_profiles_are_metadata_only_and_sorted(tmp_path: Path
     assert [item.root_ref for item in registry.list_roots()] == ["opaque-a", "opaque-z"]
     assert registry.resolve("opaque-z").absolute_root == tmp_path / "missing" / "z"
     assert not (tmp_path / "missing").exists()
+
+
+def test_checked_in_registry_separates_publication_data_control_and_spool_roots() -> None:
+    raw = json.loads((ROOT / "training/storage.json").read_text(encoding="utf-8"))
+    by_ref = {item["root_ref"]: item for item in raw["roots"]}
+    expected = {
+        "artifact-local-default": "project://.synaptic/artifacts",
+        "artifact-publication-control": "project://.synaptic/publication-control",
+        "artifact-publication-spool": "project://.synaptic/publication-spool",
+    }
+    assert {key: by_ref[key]["location"] for key in expected} == expected
+    assert all(by_ref[key]["access"] == "read_create" for key in expected)
+    assert len({by_ref[key]["permit_ref"] for key in expected}) == 3
+
+    registry = StorageRegistryV1.load(
+        (ROOT / "training/storage.json").resolve(), project_root=ROOT.resolve()
+    )
+    for root_ref in expected:
+        registry.issue_root_permit(
+            root_ref, authority_ref="test-authority", key_ref="test-key",
+            proof_digest="0" * 64,
+        )
+        assert registry.resolve(root_ref).absolute_root == (
+            ROOT / expected[root_ref].removeprefix("project://")
+        )
 
 
 def test_absolute_root_requires_exact_explicit_authorization(tmp_path: Path) -> None:

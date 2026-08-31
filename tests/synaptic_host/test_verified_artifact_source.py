@@ -74,7 +74,8 @@ def _context(tmp_path: Path) -> ProjectContext:
 
 
 def _source(tmp_path: Path, operations: Operations):
-    verifier, _, issuer = create_publication_evidence_v1(_context(tmp_path))
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    verifier, issuer = authority.verifier, authority.verified_sources
     return (
         AuthenticatedVerifiedArtifactSourceV1(
             runs=RunsAPI(operations), issuer=issuer, verifier=verifier
@@ -166,7 +167,8 @@ def test_open_rejects_role_limit_or_stream_binding_drift(tmp_path: Path) -> None
 
 
 def test_exact_runs_api_and_authority_types_are_required(tmp_path: Path) -> None:
-    verifier, _, issuer = create_publication_evidence_v1(_context(tmp_path))
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    verifier, issuer = authority.verifier, authority.verified_sources
 
     class RunsSubclass(RunsAPI):
         pass

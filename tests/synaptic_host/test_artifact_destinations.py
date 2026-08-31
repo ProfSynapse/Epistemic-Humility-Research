@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,7 @@ from synaptic_host.artifact_destinations import (
     ArtifactDestinationPolicyV1,
     DestinationAdapterRegistrationV1,
     ImmutableArtifactDestinationRegistryV1,
+    ResolvedDestinationAdapterV1,
     load_artifact_destination_config_v1,
 )
 from synaptic_host.publication_authority import create_publication_evidence_v1
@@ -43,16 +45,62 @@ class FutureAdapter(LocalAdapter):
     pass
 
 
-def local_factory(configuration: bytes) -> LocalAdapter:
-    return LocalAdapter(configuration)
+class AttributeBombAdapter(LocalAdapter):
+    def __init__(self, configuration: bytes, *, armed: bool) -> None:
+        super().__init__(configuration)
+        self.armed = armed
+
+    def __getattribute__(self, name: str):
+        if name in {"publish_once", "lookup", "iter_bytes"} and object.__getattribute__(self, "armed"):
+            raise RuntimeError("SECRET-CALLBACK-ATTRIBUTE")
+        return object.__getattribute__(self, name)
 
 
-def hf_factory(configuration: bytes) -> HFAdapter:
-    return HFAdapter(configuration)
+class HostileBindingComparison:
+    def __eq__(self, other: object) -> bool:
+        raise RuntimeError("SECRET-BINDING-COMPARE")
+
+    def __ne__(self, other: object) -> bool:
+        raise RuntimeError("SECRET-BINDING-COMPARE")
 
 
-def future_factory(configuration: bytes) -> FutureAdapter:
-    return FutureAdapter(configuration)
+class BindingMutatingAdapter(LocalAdapter):
+    def __init__(self, configuration: bytes) -> None:
+        super().__init__(configuration)
+        self.result = None
+        self.mutated = False
+
+    def __getattribute__(self, name: str):
+        if name in {"publish_once", "lookup", "iter_bytes"}:
+            mutated = object.__getattribute__(self, "mutated")
+            result = object.__getattribute__(self, "result")
+            if not mutated and result is not None:
+                object.__setattr__(self, "mutated", True)
+                object.__setattr__(
+                    result, "authority_bindings", HostileBindingComparison()
+                )
+        return object.__getattribute__(self, name)
+
+
+def _resolved(adapter: object, configuration: bytes) -> ResolvedDestinationAdapterV1:
+    return ResolvedDestinationAdapterV1(
+        adapter, ((
+            "test-root",
+            hashlib.sha256(b"resolved-authority\0" + configuration).hexdigest(),
+        ),)
+    )
+
+
+def local_factory(configuration: bytes) -> ResolvedDestinationAdapterV1:
+    return _resolved(LocalAdapter(configuration), configuration)
+
+
+def hf_factory(configuration: bytes) -> ResolvedDestinationAdapterV1:
+    return _resolved(HFAdapter(configuration), configuration)
+
+
+def future_factory(configuration: bytes) -> ResolvedDestinationAdapterV1:
+    return _resolved(FutureAdapter(configuration), configuration)
 
 
 def wrong_factory(configuration: bytes) -> object:
@@ -110,7 +158,13 @@ def test_checked_in_destination_config_uses_closed_host_contract() -> None:
     declaration = config.destinations[0]
     assert declaration.adapter_ref == "host.local/v1"
     assert declaration.configuration_schema_version == "synaptic-local-artifact-destination/v1"
-    assert b"project://.synaptic/artifacts" in declaration.configuration_bytes
+    assert json.loads(declaration.configuration_bytes) == {
+        "schema_version": "synaptic-local-artifact-destination/v1",
+        "control_root_ref": "artifact-publication-control",
+        "data_root_ref": "artifact-local-default",
+    }
+    assert b"project://" not in declaration.configuration_bytes
+    assert b'"root"' not in declaration.configuration_bytes
 
 
 def test_same_registry_resolves_local_hf_and_future_adapters(tmp_path: Path) -> None:
@@ -119,7 +173,8 @@ def test_same_registry_resolves_local_hf_and_future_adapters(tmp_path: Path) -> 
         _destination("hf", "hf/v1", "hf-destination/v1", repository_ref="hf://org/model"),
         _destination("local", "local/v1", "local-destination/v1", root="project://artifacts"),
     ]))
-    verifier, issuer, _ = create_publication_evidence_v1(_context(tmp_path))
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    verifier, issuer = authority.verifier, authority.destinations
     registry = ImmutableArtifactDestinationRegistryV1(
         config=config, registrations=_registrations(), issuer=issuer, verifier=verifier
     )
@@ -191,11 +246,194 @@ def test_configuration_or_policy_change_changes_descriptor_identity(tmp_path: Pa
     assert first.policy.policy_digest != second.policy.policy_digest
 
 
+def test_resolved_capability_identity_is_bound_into_destination_descriptor(
+    tmp_path: Path,
+) -> None:
+    config = load_artifact_destination_config_v1(_write(tmp_path, [
+        _destination(
+            "local", "local/v1", "local-destination/v1",
+            data_root_ref="artifact-local-default",
+            control_root_ref="artifact-publication-control",
+        )
+    ]))
+
+    def factory_a(configuration: bytes) -> ResolvedDestinationAdapterV1:
+        return ResolvedDestinationAdapterV1(
+            LocalAdapter(configuration), (("data-root", "a" * 64),)
+        )
+
+    def factory_b(configuration: bytes) -> ResolvedDestinationAdapterV1:
+        return ResolvedDestinationAdapterV1(
+            LocalAdapter(configuration), (("data-root", "b" * 64),)
+        )
+
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    registration_a = (DestinationAdapterRegistrationV1(
+        "local/v1", "local-destination/v1", LocalAdapter, factory_a
+    ),)
+    registration_b = (DestinationAdapterRegistrationV1(
+        "local/v1", "local-destination/v1", LocalAdapter, factory_b
+    ),)
+    first = ImmutableArtifactDestinationRegistryV1(
+        config=config, registrations=registration_a,
+        issuer=authority.destinations, verifier=authority.verifier,
+    ).resolve("local")[0]
+    second = ImmutableArtifactDestinationRegistryV1(
+        config=config, registrations=registration_b,
+        issuer=authority.destinations, verifier=authority.verifier,
+    ).resolve("local")[0]
+    assert first.configuration_digest != second.configuration_digest
+    assert first.configuration_digest not in {"a" * 64, config.destinations[0].configuration_digest}
+    assert second.configuration_digest not in {"b" * 64, config.destinations[0].configuration_digest}
+    assert first.identity_digest != second.identity_digest
+
+
+@pytest.mark.parametrize(
+    "result",
+    [object(), ResolvedDestinationAdapterV1(object(), (("data-root", "a" * 64),))],
+)
+def test_registry_rejects_unsealed_or_wrong_resolved_factory_binding(
+    tmp_path: Path, result: object,
+) -> None:
+    config = load_artifact_destination_config_v1(_write(tmp_path, [
+        _destination("local", "local/v1", "local-destination/v1")
+    ]))
+
+    def factory(configuration: bytes) -> object:
+        return result
+
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    with pytest.raises((TypeError, ValueError), match="invalid binding|invalid type|callback access"):
+        ImmutableArtifactDestinationRegistryV1(
+            config=config,
+            registrations=(DestinationAdapterRegistrationV1(
+                "local/v1", "local-destination/v1", LocalAdapter, factory
+            ),),
+            issuer=authority.destinations, verifier=authority.verifier,
+        )
+
+
+@pytest.mark.parametrize(
+    "mutated",
+    [
+        (),
+        (("", "a" * 64),),
+        ((" spaced ", "a" * 64),),
+        (("control\nrole", "a" * 64),),
+        ((("x" * 257), "a" * 64),),
+        (("data", "A" * 64),),
+        (("data", "a" * 64), ("data", "b" * 64)),
+        (("z", "a" * 64), ("a", "b" * 64)),
+        [("data", "a" * 64)],
+    ],
+)
+def test_factory_result_is_fully_reconstructed_after_hostile_mutation(
+    tmp_path: Path, mutated: object,
+) -> None:
+    config = load_artifact_destination_config_v1(_write(tmp_path, [
+        _destination("local", "local/v1", "local-destination/v1")
+    ]))
+
+    def factory(configuration: bytes) -> ResolvedDestinationAdapterV1:
+        result = ResolvedDestinationAdapterV1(
+            LocalAdapter(configuration), (("data", "a" * 64),)
+        )
+        object.__setattr__(result, "authority_bindings", mutated)
+        return result
+
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    with pytest.raises(ValueError, match="resolved destination adapter binding is invalid"):
+        ImmutableArtifactDestinationRegistryV1(
+            config=config,
+            registrations=(DestinationAdapterRegistrationV1(
+                "local/v1", "local-destination/v1", LocalAdapter, factory
+            ),),
+            issuer=authority.destinations, verifier=authority.verifier,
+        )
+
+
+def test_callback_attribute_failure_is_closed_at_discovery_and_resolution(
+    tmp_path: Path,
+) -> None:
+    config = load_artifact_destination_config_v1(_write(tmp_path, [
+        _destination("local", "local/v1", "local-destination/v1")
+    ]))
+    created: list[AttributeBombAdapter] = []
+
+    def factory(configuration: bytes) -> ResolvedDestinationAdapterV1:
+        adapter = AttributeBombAdapter(configuration, armed=False)
+        created.append(adapter)
+        return ResolvedDestinationAdapterV1(adapter, (("data", "a" * 64),))
+
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    registry = ImmutableArtifactDestinationRegistryV1(
+        config=config,
+        registrations=(DestinationAdapterRegistrationV1(
+            "local/v1", "local-destination/v1", AttributeBombAdapter, factory
+        ),),
+        issuer=authority.destinations, verifier=authority.verifier,
+    )
+    created[0].armed = True
+    with pytest.raises(ValueError, match="^destination adapter callback access failed$") as caught:
+        registry.resolve("local")
+    assert caught.value.__cause__ is None
+    assert caught.value.__context__ is None
+    assert "SECRET" not in str(caught.value)
+
+    def armed_factory(configuration: bytes) -> ResolvedDestinationAdapterV1:
+        return ResolvedDestinationAdapterV1(
+            AttributeBombAdapter(configuration, armed=True), (("data", "a" * 64),)
+        )
+
+    with pytest.raises(ValueError, match="^destination adapter callback access failed$") as caught:
+        ImmutableArtifactDestinationRegistryV1(
+            config=config,
+            registrations=(DestinationAdapterRegistrationV1(
+                "local/v1", "local-destination/v1", AttributeBombAdapter,
+                armed_factory,
+            ),),
+            issuer=authority.destinations, verifier=authority.verifier,
+        )
+    assert caught.value.__cause__ is None
+    assert caught.value.__context__ is None
+    assert "SECRET" not in str(caught.value)
+
+
+def test_post_callback_binding_reread_never_invokes_hostile_equality(
+    tmp_path: Path,
+) -> None:
+    config = load_artifact_destination_config_v1(_write(tmp_path, [
+        _destination("local", "local/v1", "local-destination/v1")
+    ]))
+
+    def factory(configuration: bytes) -> ResolvedDestinationAdapterV1:
+        adapter = BindingMutatingAdapter(configuration)
+        result = ResolvedDestinationAdapterV1(
+            adapter, (("data", "a" * 64),)
+        )
+        adapter.result = result
+        return result
+
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    with pytest.raises(ValueError, match="^resolved destination adapter binding changed$") as caught:
+        ImmutableArtifactDestinationRegistryV1(
+            config=config,
+            registrations=(DestinationAdapterRegistrationV1(
+                "local/v1", "local-destination/v1", BindingMutatingAdapter,
+                factory,
+            ),),
+            issuer=authority.destinations, verifier=authority.verifier,
+        )
+    assert caught.value.__cause__ is None
+    assert caught.value.__context__ is None
+    assert "SECRET-BINDING-COMPARE" not in str(caught.value)
+
 def test_registry_rejects_missing_schema_or_wrong_factory_type(tmp_path: Path) -> None:
     config = load_artifact_destination_config_v1(_write(tmp_path, [
         _destination("local", "local/v1", "local-destination/v1")
     ]))
-    verifier, issuer, _ = create_publication_evidence_v1(_context(tmp_path))
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    verifier, issuer = authority.verifier, authority.destinations
     with pytest.raises(ValueError, match="missing or incompatible"):
         ImmutableArtifactDestinationRegistryV1(
             config=config,
@@ -204,7 +442,7 @@ def test_registry_rejects_missing_schema_or_wrong_factory_type(tmp_path: Path) -
             ),),
             issuer=issuer, verifier=verifier,
         )
-    with pytest.raises(TypeError, match="invalid type"):
+    with pytest.raises(TypeError, match="invalid binding"):
         ImmutableArtifactDestinationRegistryV1(
             config=config,
             registrations=(DestinationAdapterRegistrationV1(
@@ -218,7 +456,8 @@ def test_registry_detects_adapter_callback_substitution(tmp_path: Path) -> None:
     config = load_artifact_destination_config_v1(_write(tmp_path, [
         _destination("local", "local/v1", "local-destination/v1")
     ]))
-    verifier, issuer, _ = create_publication_evidence_v1(_context(tmp_path))
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    verifier, issuer = authority.verifier, authority.destinations
     registry = ImmutableArtifactDestinationRegistryV1(
         config=config,
         registrations=(DestinationAdapterRegistrationV1(
@@ -237,11 +476,12 @@ def test_registry_rejects_factory_time_policy_mutation(tmp_path: Path) -> None:
         _destination("local", "local/v1", "local-destination/v1")
     ]))
 
-    def mutating_factory(configuration: bytes) -> LocalAdapter:
+    def mutating_factory(configuration: bytes) -> ResolvedDestinationAdapterV1:
         object.__setattr__(config.destinations[0].policy, "maximum_artifact_bytes", 2048)
-        return LocalAdapter(configuration)
+        return _resolved(LocalAdapter(configuration), configuration)
 
-    verifier, issuer, _ = create_publication_evidence_v1(_context(tmp_path))
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    verifier, issuer = authority.verifier, authority.destinations
     with pytest.raises(ValueError, match="changed during adapter construction"):
         ImmutableArtifactDestinationRegistryV1(
             config=config,
@@ -257,7 +497,8 @@ def test_registry_rejects_whole_binding_tuple_substitution(tmp_path: Path) -> No
     config = load_artifact_destination_config_v1(_write(tmp_path, [
         _destination("local", "local/v1", "local-destination/v1")
     ]))
-    verifier, issuer, _ = create_publication_evidence_v1(_context(tmp_path))
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    verifier, issuer = authority.verifier, authority.destinations
     registry = ImmutableArtifactDestinationRegistryV1(
         config=config,
         registrations=(DestinationAdapterRegistrationV1(
@@ -272,6 +513,7 @@ def test_registry_rejects_whole_binding_tuple_substitution(tmp_path: Path) -> No
         original.descriptor,
         evil,
         LocalAdapter,
+        original.resolved_configuration_digest,
         evil.publish_once,
         evil.lookup,
         evil.iter_bytes,
@@ -287,7 +529,8 @@ def test_registry_anchor_is_not_redefined_by_module_global_replacement(
     config = load_artifact_destination_config_v1(_write(tmp_path, [
         _destination("local", "local/v1", "local-destination/v1")
     ]))
-    verifier, issuer, _ = create_publication_evidence_v1(_context(tmp_path))
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    verifier, issuer = authority.verifier, authority.destinations
     registry = ImmutableArtifactDestinationRegistryV1(
         config=config,
         registrations=(DestinationAdapterRegistrationV1(
@@ -296,6 +539,10 @@ def test_registry_anchor_is_not_redefined_by_module_global_replacement(
         issuer=issuer, verifier=verifier,
     )
     monkeypatch.setattr(destination_module, "_get_registry_pin", lambda owner: None)
+    monkeypatch.setattr(
+        destination_module, "_discover_adapter_callbacks",
+        lambda adapter: (_ for _ in ()).throw(RuntimeError("SECRET-REPLACEMENT")),
+    )
     assert registry.resolve("local")[0].destination_ref == "local"
 
 
@@ -304,10 +551,11 @@ def test_factory_exception_is_closed_without_secret_or_context(tmp_path: Path) -
         _destination("local", "local/v1", "local-destination/v1")
     ]))
 
-    def broken_factory(configuration: bytes) -> LocalAdapter:
+    def broken_factory(configuration: bytes) -> ResolvedDestinationAdapterV1:
         raise RuntimeError("SECRET-FACTORY-PAYLOAD")
 
-    verifier, issuer, _ = create_publication_evidence_v1(_context(tmp_path))
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    verifier, issuer = authority.verifier, authority.destinations
     with pytest.raises(ValueError, match="^destination adapter construction failed$") as error:
         ImmutableArtifactDestinationRegistryV1(
             config=config,
@@ -324,15 +572,16 @@ def test_factory_exception_is_closed_without_secret_or_context(tmp_path: Path) -
 def test_config_parsing_has_no_adapter_factory_effect(tmp_path: Path) -> None:
     calls = []
 
-    def counted_factory(configuration: bytes) -> LocalAdapter:
+    def counted_factory(configuration: bytes) -> ResolvedDestinationAdapterV1:
         calls.append(configuration)
-        return LocalAdapter(configuration)
+        return _resolved(LocalAdapter(configuration), configuration)
 
     config = load_artifact_destination_config_v1(_write(tmp_path, [
         _destination("local", "local/v1", "local-destination/v1")
     ]))
     assert calls == []
-    verifier, issuer, _ = create_publication_evidence_v1(_context(tmp_path))
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    verifier, issuer = authority.verifier, authority.destinations
     ImmutableArtifactDestinationRegistryV1(
         config=config,
         registrations=(DestinationAdapterRegistrationV1(
@@ -347,7 +596,8 @@ def test_registry_rejects_unknown_destination_and_invalid_limit(tmp_path: Path) 
     config = load_artifact_destination_config_v1(_write(tmp_path, [
         _destination("local", "local/v1", "local-destination/v1")
     ]))
-    verifier, issuer, _ = create_publication_evidence_v1(_context(tmp_path))
+    authority = create_publication_evidence_v1(_context(tmp_path))
+    verifier, issuer = authority.verifier, authority.destinations
     registry = ImmutableArtifactDestinationRegistryV1(
         config=config,
         registrations=(DestinationAdapterRegistrationV1(

@@ -8,7 +8,8 @@
       "adapter_ref": "host.local/v1",
       "configuration": {
         "schema_version": "synaptic-local-artifact-destination/v1",
-        "root": "project://.synaptic/artifacts"
+        "control_root_ref": "artifact-publication-control",
+        "data_root_ref": "artifact-local-default"
       },
       "policy": {
         "maximum_artifact_bytes": 2147483648,

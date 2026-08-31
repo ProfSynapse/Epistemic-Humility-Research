@@ -18,6 +18,24 @@
       "location": "project://training/.local-io-control",
       "access": "read_create",
       "permit_ref": "permit-local-io-control"
+    },
+    {
+      "root_ref": "artifact-local-default",
+      "location": "project://.synaptic/artifacts",
+      "access": "read_create",
+      "permit_ref": "permit-artifact-local-default"
+    },
+    {
+      "root_ref": "artifact-publication-control",
+      "location": "project://.synaptic/publication-control",
+      "access": "read_create",
+      "permit_ref": "permit-artifact-publication-control"
+    },
+    {
+      "root_ref": "artifact-publication-spool",
+      "location": "project://.synaptic/publication-spool",
+      "access": "read_create",
+      "permit_ref": "permit-artifact-publication-spool"
     }
   ]
 }
