@@ -1,9 +1,19 @@
 {
-  "destinations": {
-    "local-default": {
-      "kind": "local",
-      "root": "project://.synaptic/artifacts"
+  "schema_version": "synaptic-host-artifact-destinations/v1",
+  "destinations": [
+    {
+      "schema_version": "synaptic-host-artifact-destination/v1",
+      "destination_ref": "local-default",
+      "display_name": "Local artifacts",
+      "adapter_ref": "host.local/v1",
+      "configuration": {
+        "schema_version": "synaptic-local-artifact-destination/v1",
+        "root": "project://.synaptic/artifacts"
+      },
+      "policy": {
+        "maximum_artifact_bytes": 2147483648,
+        "maximum_total_bytes": 4294967296
+      }
     }
-  },
-  "schema_version": "synaptic-artifact-destinations/v1"
+  ]
 }
