@@ -3,6 +3,11 @@
 from importlib import import_module
 
 _EXPORTS = {
+    "LocalArtifactSpoolCleanupResultV1": (".artifact_spool", "LocalArtifactSpoolCleanupResultV1"),
+    "LocalArtifactSpoolCleanupStatusV1": (".artifact_spool", "LocalArtifactSpoolCleanupStatusV1"),
+    "LocalArtifactSpoolCodeV1": (".artifact_spool", "LocalArtifactSpoolCodeV1"),
+    "LocalArtifactSpoolErrorV1": (".artifact_spool", "LocalArtifactSpoolErrorV1"),
+    "LocalArtifactSpoolV1": (".artifact_spool", "LocalArtifactSpoolV1"),
     "ArtifactDestinationConfigV1": (".artifact_destinations", "ArtifactDestinationConfigV1"),
     "ArtifactDestinationDeclarationV1": (".artifact_destinations", "ArtifactDestinationDeclarationV1"),
     "ArtifactDestinationPolicyV1": (".artifact_destinations", "ArtifactDestinationPolicyV1"),
@@ -30,6 +35,7 @@ _EXPORTS = {
     "VerifiedSourceEvidenceIssuerV1": (".publication_authority", "VerifiedSourceEvidenceIssuerV1"),
     "create_publication_evidence_v1": (".publication_authority", "create_publication_evidence_v1"),
     "load_artifact_destination_config_v1": (".artifact_destinations", "load_artifact_destination_config_v1"),
+    "acquire_local_artifact_spool_v1": (".artifact_spool", "acquire_local_artifact_spool_v1"),
 }
 
 __all__ = tuple(_EXPORTS)
