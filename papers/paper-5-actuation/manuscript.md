@@ -562,8 +562,7 @@ contains the sentence: If the answer is not known to you, say "I don't know
 the answer" rather than guessing. That sentence
 grants the model permission to refuse, and it seeds the exact refusal string
 the narrow instrument of Section 3.6 keys on. The sentence is itself a strong
-actuator: the prompt-vs-training panel in this program's training-regimen
-paper measured the same instruction eliciting 90.89% refusal recall from an
+actuator: the same instruction elicits 90.89% refusal recall from an
 untrained base model that refuses 0% of the same rows without it (Rosenbaum,
 2026b). Every arm of every experiment
 shares the prompt, so the arm-versus-control differentials below are
@@ -1227,18 +1226,20 @@ are percentage points over that row's own undosed baseline; the rows use
 different pools and baselines, so the shared axis compares lifts, not a
 common rate scale.
 
-At the read-selected sites, by contrast, Llama is not shown actuable:
-the gated write fails on format collapse before reaching the refusal
-floor, under narrow and wide instruments alike. The wide instrument does
-credit abstention idioms the narrow detector missed, lifting the best
-well-formed rung from 32.8% to 45.7%, but no well-formed rung reaches the
-0.60 floor: the only doses that push refusal past 0.5 break the output
-format and drag known-correct cost up with them. Unlike Mistral,
-whose narrow-instrument miss is substantially vocabulary coverage, Llama's
-site failure is not an instrument artifact. The Llama split is a
-site split: the same family, gate, and direction recipe that collapses at
-the read-selected depths verifies cleanly at the family's own mid-band
-write site.
+In Llama the write site decides the outcome. At the depths where the
+family's readout is strongest, the sites the shared cross-family recipe
+doses in every family, the gated write fails on format collapse before
+reaching the refusal floor, under narrow and wide instruments alike. The
+wide instrument does credit abstention idioms the narrow detector missed,
+lifting the best well-formed rung from 32.8% to 45.7%, but no well-formed
+rung reaches the 0.60 floor: the only doses that push refusal past 0.5
+break the output format and drag known-correct cost up with them. At the
+family's own mid-band site, the identical gate, direction, and recipe
+verifies cleanly. Unlike Mistral, whose narrow-instrument miss is
+substantially vocabulary coverage, the failure at the read-strongest
+depths is not an instrument artifact. It is a site effect, the
+cross-family form of the dissociation in Section 4.6: where the state is
+best read is not where it is best written.
 
 Llama's entry in the placebo census below is measured at its read-selected
 site, relative depth 0.714, where random directions are suppressive; the
@@ -1599,28 +1600,23 @@ not population effect-size estimates. Key limits:
 - every behavioral number above was measured under a system prompt containing
   an abstention instruction that both permits refusal and supplies the
   literal string the narrow instrument matches (Section 3.7), an instruction
-  the companion prompt-vs-training panel found to be a near-ceiling actuator
-  on its own, 90.89% refusal recall from an untrained base against 0% without
-  it (Rosenbaum, 2026b). An exploratory
-  replication registered after these analyses
-  (experiments/no-abstention-prompt-gated-replication) deletes that sentence
-  and reruns the gated write at each family's frozen operating point, scored
-  under the wide two-stage instrument with the detector threshold refit for
-  the new prompt. Its pre-registered falsifier (no gated-over-control lift in
-  Qwen3-4B) did not fire: the judged lift is 11.4 points, 95% CI [6.8, 15.9],
-  against 89.2 points with the instruction, so in the reference family the
-  instruction amplifies an effect the write produces on its own rather than
-  enabling it. The instruction-free effect varies strongly by family:
-  Gemma-4-E4B 18.5% to 65.5% two-stage, Qwen3.5-4B 8.9% to 54.4% two-stage,
+  that is a near-ceiling actuator on its own: 90.89% refusal recall from an
+  untrained base against 0% without it (Rosenbaum, 2026b). An exploratory
+  replication deletes that sentence and reruns the gated write at each
+  family's frozen operating point, scored under the wide two-stage
+  instrument with the detector threshold refit for the new prompt. In the
+  reference family the judged lift without the instruction is 11.4 points,
+  95% CI [7.0, 16.7], against 89.2 points with it: the instruction
+  amplifies an effect the write produces on its own rather than enabling
+  it. The instruction-free effect varies strongly by family: Gemma-4-E4B
+  18.5% to 65.5% two-stage, Qwen3.5-4B 8.9% to 54.4% two-stage,
   Mistral-7B-v0.3 11.5% to 30.3% two-stage, and Llama-3.2-3B 4.1% to 13.4%
-  two-stage, every lift's 95% CI excluding zero
-  (experiments/no-abstention-prompt-gated-replication, resolved Outcome).
-  Judge-lane calibration voided in two families
-  (Llama, Qwen3.5) on a first pass whose planted decoys were later shown
-  unsound; a pre-stated second pass with sound decoys passed calibration in
-  both and supplies their two-stage numbers. These cells are exploratory,
-  reported separately from every confirmatory number above, and never pooled
-  with them;
+  two-stage, every lift's 95% CI excluding zero. Judge-lane calibration
+  failed in two families (Llama, Qwen3.5) on a first pass whose planted
+  decoys were unsound; a second pass with sound decoys passed calibration
+  in both and supplies their two-stage numbers. These cells are exploratory,
+  reported separately from every confirmatory number above, and never
+  pooled with them;
 - the strongest positive J-space layer-site result is currently surface-local to
   raw-base Qwen3-4B bf16, and the one trained-checkpoint test so far (Appendix
   A) found the band reshaped and its rule-selected mid-band site readable
@@ -1800,7 +1796,7 @@ The success criterion for the next paper-quality claim should be stricter
 than this one, and its same-model leg is already met: the workspace-band
 advantage has replicated same-model at meaningful magnitude (Section 4.6).
 What a successor has to add is support in at least two families, with
-pre-stated cost guards and placebo controls set against each family's
+cost guards and placebo controls set against each family's
 measured null.
 
 ### 6.6 Training does not remove the causal handle
@@ -2014,6 +2010,7 @@ and its recorded status.
 | The archived full-ablation pipeline re-derives under its own instrument on the first seed, with the orthogonalized component reproducing its own separate archived value: the divergence between the two figures is variant identity, not drift or error. Run configurations survive under `archive/experiment/phase1/probe/config/`; row-level outputs stay untracked under public-repo containment | `experiments/caution-ablation-rederivation/AMENDMENT.md` Outcome | Resolved; provenance repair, no promotion on its own |
 | The separate installation question Section 6.6 declines to answer: a bounded pre-registered site sweep on the trained lineage found actuation clearing its held-out gate at all five dose-viable sites, with selectivity not adjudicable at any of them and direction-specificity passing at one site only, so no site satisfies the registered conjunction | `experiments/caution-install-bounded-site-sweep/AMENDMENT.md` Outcome | Resolved; exploratory lead requiring confirmatory replication, no numbers carried into the body |
 | Wide-instrument re-score of the Section 4.5 gated-controller placebo controls and the Section 4.6 layer-site contrast: random-direction specificity ratio 14.5 against the 3.0 floor, permuted-gate known-correct cost excess +20.6pp (95% CI [+14.8, +26.3]), hs23-vs-hs34 layer-site advantage +22.70pp (95% CI [+16.2, +29.7]); all three narrow-detector control conclusions survive unchanged under the wide two-instrument stack, closing the Section 6.4 instrument gap | `experiments/wide-instrument-control-rescore/AMENDMENT.md` Outcome | Exploratory control-validation cell, resolved; confirms existing controls, not a new headline number |
+| Instruction-free replication (Section 6.4): with the abstention sentence deleted from the system prompt, the gated write retains a two-stage abstention lift in all five families (Qwen3-4B +11.4pp, 95% CI [7.0, 16.7], vs 89.2pp with the instruction; Llama +9.3pp; Mistral +18.8pp; Qwen3.5-4B +45.6pp; Gemma +47.0pp; every CI excludes zero) at near-zero known-correct cost, with the reference-family magnitude far below the with-prompt level: the instruction amplifies an effect the write produces on its own | `experiments/no-abstention-prompt-gated-replication/AMENDMENT.md` Outcome | Exploratory replication, resolved; first-pass judge lanes in Llama and Qwen3.5 voided on unsound decoys, second-pass calibration supplies their two-stage numbers |
 
 ## Appendix B. Substrate Coverage Table
 
@@ -2072,6 +2069,7 @@ Generated by `papers/paper-5-actuation/scripts/build_coverage_table.py` (determi
 | `caution-ablation-rederivation` | resolved | UNRESOLVED -- checkpoint.repo empty in experiment.yaml; fallback file(s) inspected (cell.yaml) but no recognizable checkpoint declaration found (repo/model/substrate/family/cell_id, or families.*.id) | UNRESOLVED (hand-read AMENDMENT.md required) | NOT NARRATED IN BODY (front matter + Appendix A provenance row only) |
 | `caution-install-bounded-site-sweep` | resolved | `professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora` @ `8914081dfcec4f1f025f2dbe4195d4f7aa8d210e` | 1 declared / 1 launched (single-substrate cell) | 6.6 |
 | `wide-instrument-control-rescore` | resolved | `unsloth/Qwen3-4B` (revision not recorded) | 1 declared / 1 launched (single-substrate cell) | 4.8, 6.4 |
+| `no-abstention-prompt-gated-replication` | resolved | checkpoint.repo empty in experiment.yaml. DECLARED in cell.yaml: unsloth/Qwen3-4B; Qwen/Qwen3.5-4B; unsloth/Llama-3.2-3B-Instruct; mistralai/Mistral-7B-Instruct-v0.3; google/gemma-4-E4B-it | DECLARED 5 checkpoint(s) (matrix) -- LAUNCHED subset is NOT machine-separable from YAML; see AMENDMENT.md Outcome. Governed verdict field: "Falsifier did not fire: with the abstention instruction deleted, the gated write retains a real two-stage abstention lift in all five families (qwen3-4b +11.4pp, llama +9.3pp, mistral +18.8pp, qwen3.5-4b +45.6pp, gemma +..." | 3.7, 5, 6.1, 6.4 |
 
 <!-- END GENERATED: substrate-coverage-table -->
 

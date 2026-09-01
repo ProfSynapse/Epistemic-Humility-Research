@@ -109,6 +109,7 @@ SECTION_MAP: dict[str, str] = {
     "rr-cross-family-raw-refusal": "4.8, 6.5",
     "llama-atlas-gated-wide-instrument-retest": "4.8",  # content in the cross-family spectrum paragraph
     "wide-instrument-control-rescore": "4.8, 6.4",  # wide re-score of the 6.4 controls; 4.8 qwen sign-opposition at the raw-base point
+    "no-abstention-prompt-gated-replication": "3.7, 5, 6.1, 6.4",  # instruction-free replication; disclosed 3.7, scoped 5/6.1, reported 6.4
     "llama-hs17-direction-specificity": "4.8, 6.5",  # llama mid-band write verified direction-specific; updates escalation items 1 and 4
     "llama-hs17-wide-instrument-rescore": "4.8, 6.5",  # wide-instrument regeneration of the hs17 operating point
     "qwen3-4b-l34-placebo-seed-census": "4.8, 6.4, 7",  # late-site 15-seed census: distributional specificity PASS, sign-consistency FAIL
