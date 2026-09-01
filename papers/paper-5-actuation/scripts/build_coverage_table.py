@@ -89,7 +89,7 @@ SECTION_MAP: dict[str, str] = {
     "oracle-dissociation-prime": "4.3",  # content @461-465
     "divergent-pool-own-readout": "4.3",  # content @469-473
     "probe-as-reward": "4.4",  # content @484-499
-    "doubt-gated-caution-tighten": "4.5",  # content @508-543 (first robust positive)
+    "doubt-gated-caution-tighten": "3.7, 4.5, 6.4",  # first robust positive (4.5); source split + label-noise audit cited in 3.7 and the 6.4 inherited-label bullet
     "ungated-vs-gated-dose-matched": "4.5",  # backtick @520
     "qwen35-4b-midband-doubt-snap": "4.5",  # content @558-562, implicit precursor to -heldout
     "qwen35-4b-midband-heldout": "4.5",  # backtick @563
@@ -153,10 +153,18 @@ def parse_appendix_a_slugs() -> list[tuple[str, str]]:
     if not m:
         raise RuntimeError("Could not locate Appendix A block in manuscript.md")
     rows: list[tuple[str, str]] = []
+    seen: set[str] = set()
     for line in m.group(1).splitlines():
         row = APPENDIX_A_ROW_RE.match(line)
         if row:
-            rows.append((row.group("slug"), row.group("claim").strip()))
+            # A cell may back several Appendix A claims (e.g. an Outcome row
+            # plus a post-resolve addendum row); the coverage table carries
+            # one row per cell, keyed to its first appearance.
+            slug = row.group("slug")
+            if slug in seen:
+                continue
+            seen.add(slug)
+            rows.append((slug, row.group("claim").strip()))
     if not rows:
         raise RuntimeError("Appendix A parse found zero rows -- table format likely changed")
     return rows
