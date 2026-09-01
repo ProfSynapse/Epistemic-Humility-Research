@@ -132,7 +132,7 @@ SECTION_MAP: dict[str, str] = {
     "refusal-axis-ablation-confirmatory": "6.4",  # compact fact in the Limits registration paragraph; numbers in Appendix A
     "caution-install-bounded-site-sweep": "NOT NARRATED IN BODY (front matter + Appendix A only; body narration cut with Sections 6.5-6.7 and 7 per PI ruling 2026-09-01)",
     "caution-ablation-rederivation": "NOT NARRATED IN BODY (front matter + Appendix A provenance row only)",
-    "idk-switch-naming-confirmatory": "4.5, 4.8",
+    "idk-switch-naming-confirmatory": "NOT NARRATED IN BODY (front matter + Appendix A only)",
 }
 
 APPENDIX_A_ROW_RE = re.compile(
