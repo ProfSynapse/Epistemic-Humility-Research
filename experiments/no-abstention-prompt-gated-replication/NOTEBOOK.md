@@ -722,3 +722,5 @@ Open items that BLOCK sign (left as TO_PIN_AT_SIGN in `cell.yaml`):
    lineage).
 4. Freeze G1/G1b numeric floors in `gates.yaml` from the parent with-prompt
    lifts, with derivations.
+
+- 2026-09-01 (post-resolve, paper support): committed `analysis-committed/two_stage_family_summary.json` via the new `build_two_stage_summary.py` — per-family per-arm two-stage held-out confab counts (judge lane of record plus stage-1 detector refusals), asserted equal to the Outcome table at build time. Added so paper 5 Figure 10 (instruction amplification) builds from committed aggregates; no governed number changed.

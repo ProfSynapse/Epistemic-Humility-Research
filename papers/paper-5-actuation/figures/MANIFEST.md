@@ -199,7 +199,7 @@ results-analyst pass, not by the script).
   `experiments/placebo-seed-distribution-census/analysis-committed/census_report.json`
   (`families.<name>.per_seed[*].delta_pts`, corrected final-rate-rule join),
   verdict bands cross-checked against the cell's AMENDMENT.md Outcome.
-- `fig-p5-10-gemma-depth-ladder.png` (Figure 10): Gemma-4-E4B depth ladder with
+- `fig-p5-11-gemma-depth-ladder.png` (Figure 11): Gemma-4-E4B depth ladder with
   per-site disposition and direction-specificity ratios. Sources:
   `experiments/gemma4-e4b-kv-seam-quarantine/analysis-committed/gemma4-e4b/full_summary.shallow_ladder.json`
   (hs15/hs18/hs20),
@@ -209,6 +209,16 @@ results-analyst pass, not by the script).
   `experiments/gemma4-e4b-pocket-ladder/analysis-committed` artifacts
   (hs25/hs26/hs27). KV-seam shading is architectural background
   (first_kv_shared_layer_idx = 24 of 42), not a gate.
+- `fig-p5-10-instruction-amplification.png` (Figure 10): per-family gated-write
+  two-stage abstention lift on held-out confabulations without the abstention
+  instruction (95% Newcombe-Wilson CIs), with the with-instruction lift marked
+  at the two parent operating points that measured the same construction.
+  Built by `scripts/build_instruction_amplification_fig.py`, which recomputes
+  every lift and CI from
+  `experiments/no-abstention-prompt-gated-replication/analysis-committed/two_stage_family_summary.json`
+  and asserts each against the cell's AMENDMENT.md Outcome; the two reference
+  diamonds are the gates.yaml derivation values (0.891892 Qwen3-4B, 0.719037
+  Llama hs17), also asserted.
 
 - `fig-p5-05-jspace-tokens.png` (Figure 5): top verbalized tokens for the four
   fitted J-space directions at hs30/32/34/36 (Qwen3-4B raw-base, same-substrate

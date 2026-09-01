@@ -1,0 +1,111 @@
+{
+  "description": "Two-stage held-out confab abstention counts per family and arm, derived from the judge lanes of record plus stage-1 detector refusals; asserted against the governed AMENDMENT.md Outcome at build time.",
+  "generator": "build_two_stage_summary.py",
+  "families": {
+    "qwen3-4b": {
+      "lane": "qwen3-4b/v2",
+      "arms": {
+        "no_op": {
+          "heldout_confab_n": 185,
+          "judged_n": 185,
+          "judged_refused": 0,
+          "detector_stage1_refused": 0,
+          "two_stage_refused": 0,
+          "two_stage_rate": 0.0
+        },
+        "gated": {
+          "heldout_confab_n": 185,
+          "judged_n": 185,
+          "judged_refused": 21,
+          "detector_stage1_refused": 0,
+          "two_stage_refused": 21,
+          "two_stage_rate": 0.113514
+        }
+      }
+    },
+    "qwen3.5-4b": {
+      "lane": "qwen3.5-4b/v2",
+      "arms": {
+        "no_op": {
+          "heldout_confab_n": 1332,
+          "judged_n": 1263,
+          "judged_refused": 49,
+          "detector_stage1_refused": 69,
+          "two_stage_refused": 118,
+          "two_stage_rate": 0.088589
+        },
+        "gated": {
+          "heldout_confab_n": 1332,
+          "judged_n": 760,
+          "judged_refused": 153,
+          "detector_stage1_refused": 572,
+          "two_stage_refused": 725,
+          "two_stage_rate": 0.544294
+        }
+      }
+    },
+    "llama-3.2-3b": {
+      "lane": "llama-3.2-3b/v2",
+      "arms": {
+        "no_op": {
+          "heldout_confab_n": 872,
+          "judged_n": 859,
+          "judged_refused": 23,
+          "detector_stage1_refused": 13,
+          "two_stage_refused": 36,
+          "two_stage_rate": 0.041284
+        },
+        "gated": {
+          "heldout_confab_n": 872,
+          "judged_n": 830,
+          "judged_refused": 75,
+          "detector_stage1_refused": 42,
+          "two_stage_refused": 117,
+          "two_stage_rate": 0.134174
+        }
+      }
+    },
+    "mistral-7b-v0.3": {
+      "lane": "mistral-7b-v0.3",
+      "arms": {
+        "no_op": {
+          "heldout_confab_n": 1312,
+          "judged_n": 1240,
+          "judged_refused": 79,
+          "detector_stage1_refused": 72,
+          "two_stage_refused": 151,
+          "two_stage_rate": 0.115091
+        },
+        "gated": {
+          "heldout_confab_n": 1312,
+          "judged_n": 1144,
+          "judged_refused": 230,
+          "detector_stage1_refused": 168,
+          "two_stage_refused": 398,
+          "two_stage_rate": 0.303354
+        }
+      }
+    },
+    "gemma-4-e4b": {
+      "lane": "gemma-4-e4b/v2",
+      "arms": {
+        "no_op": {
+          "heldout_confab_n": 168,
+          "judged_n": 163,
+          "judged_refused": 26,
+          "detector_stage1_refused": 5,
+          "two_stage_refused": 31,
+          "two_stage_rate": 0.184524
+        },
+        "gated": {
+          "heldout_confab_n": 168,
+          "judged_n": 140,
+          "judged_refused": 82,
+          "detector_stage1_refused": 28,
+          "two_stage_refused": 110,
+          "two_stage_rate": 0.654762
+        }
+      }
+    }
+  }
+}
