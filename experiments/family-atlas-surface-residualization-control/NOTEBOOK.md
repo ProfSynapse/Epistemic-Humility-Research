@@ -34,3 +34,7 @@ in `experiment.yaml`.
   1.0. The focused unit suite passed 12 tests; the synthetic hs2 plant was
   relocated with normalized deviation 0.02473 against the registered 0.05
   ceiling. These are instrument-validation facts, not experimental outcomes.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 3 files / ~92 KB, built at repo commit 90190c43.
+- HF repo: `professorsynapse/eh-family-atlas-surface-residualization-control` (dataset)
+- HF revision: `80895e395c220b6a8e0f8dec3c290987acfe057e`

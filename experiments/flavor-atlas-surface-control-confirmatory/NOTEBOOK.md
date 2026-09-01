@@ -208,3 +208,7 @@ in `experiment.yaml`.
   `--smoke` self-check passes (synthetic arrays only; no real capture
   touched). Not signed. Not run. `bin/exp sign` and any real launch are the
   lead's call.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 3 files / ~8 KB, built at repo commit 6d2f599f.
+- HF repo: `professorsynapse/eh-flavor-atlas-surface-control-confirmatory` (dataset)
+- HF revision: `5969c6178f68638b8b842b44a62853aef2495f08`

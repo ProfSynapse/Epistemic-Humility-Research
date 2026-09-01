@@ -101,3 +101,7 @@ instrument-resolution-limited at the boundary. M1's Claim 1 falsification
 (bound 2.0 vs floor 2.5) stands; the fine-ladder retest establishes that the
 miss is neither a clean quantization artifact nor a clean real separation but
 sits within the bf16 instrument's own ~4% classification noise.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 6 files / ~42 KB, built at repo commit 7dda42e1.
+- HF repo: `professorsynapse/eh-margin-separation-fine-ladder` (dataset)
+- HF revision: `37c46aa442c496f6435c835e42e9f03ea29d59db`

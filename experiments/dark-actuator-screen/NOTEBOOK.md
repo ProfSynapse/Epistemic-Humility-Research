@@ -301,3 +301,7 @@ decisions summarized below.
      guard, pinned tuner `294a653`) before any full-arm dose ladder.
   5. User GPU-launch approval, naming cells/lane, per project delegation
      norms -- not requested or granted by this build task.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 5 files / ~23 KB, built at repo commit 21cd5c50.
+- HF repo: `professorsynapse/eh-dark-actuator-screen` (dataset)
+- HF revision: `036b18a8e4df97f64618d7bbc5d9bb84bfa97d93`

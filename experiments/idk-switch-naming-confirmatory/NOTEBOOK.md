@@ -248,3 +248,7 @@ systematic direction to the flips at this rate. Judge lane is now
 fully closed out: all registered lane steps (pool hash commit,
 21-shard grading, graded-hash commit, unblind, decoy gate, spot-check,
 stability) executed in the registered order.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 4 files / ~50 KB, built at repo commit eef95bdb.
+- HF repo: `professorsynapse/eh-idk-switch-naming-confirmatory` (dataset)
+- HF revision: `65f44ec119a11991e19a7bb58e844ac2710265b6`

@@ -743,3 +743,7 @@ and the sign-pinned gates.yaml/experiment.yaml bytes retain their legacy
 phrases verbatim — pins are frozen; this entry is the record that those
 occurrences are legacy names. Resolve executed with explicit PI approval
 ("Then resolve, merge and edit papers").
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 5 files / ~14 KB, built at repo commit ed87715b.
+- HF repo: `professorsynapse/eh-caution-ablation-rederivation` (dataset)
+- HF revision: `1a8442c257d67f316144424918e5b7c5246f3a68`

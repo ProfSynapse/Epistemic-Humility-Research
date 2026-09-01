@@ -57,3 +57,7 @@ themselves are unchanged.
    the exclusion set (disjointness from them rests on generation determinism;
    any drift would be common-mode across layers and cannot manufacture the
    layer delta, but could flatter absolute rates).
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 4 files / ~5.24 MB, built at repo commit 79ee2980.
+- HF repo: `professorsynapse/eh-j-space-layer-contrast-replication-qwen3-4b` (dataset)
+- HF revision: `0c77f6f68314ed75695faf8b792b86f7f83bef1f`

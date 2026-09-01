@@ -123,3 +123,7 @@ reads the AmbigQA boundary at 0.6338, within 0.006 of both trained
 checkpoints, so the known-unknown activation is flavor-specific to
 SelfAware-style unanswerability from pretraining, and the G7
 non-transfer is not a post-training warp."
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 3 files / ~4 KB, built at repo commit d1ae66b3.
+- HF repo: `professorsynapse/eh-rawbase-ambigqa-boundary-readout` (dataset)
+- HF revision: `cd46aeeade1ed93253f59dc865b3d4e37d2b00f6`

@@ -250,3 +250,7 @@ reported straight, not padded.
 
 Both result JSONs (aggregates only, containment-checked: counts, AUROCs,
 CIs, gate booleans; no row text) written to analysis-committed/.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 4 files / ~4 KB, built at repo commit 6403972f.
+- HF repo: `professorsynapse/eh-dial-logprob-baseline-v3` (dataset)
+- HF revision: `10a388cf8659e0ff41124e92f8a13710458cfbec`

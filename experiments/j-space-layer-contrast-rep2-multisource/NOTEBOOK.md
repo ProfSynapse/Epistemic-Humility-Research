@@ -137,3 +137,7 @@ in `experiment.yaml`.
   maneuver again.
 
 - (add dated entries as full-run results land)
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 5 files / ~2.34 MB, built at repo commit f06d9a3b.
+- HF repo: `professorsynapse/eh-j-space-layer-contrast-rep2-multisource` (dataset)
+- HF revision: `08a4052d98ad912c0e64a8085b23ec46284b86fc`

@@ -154,3 +154,7 @@ SelfAware), P2 failed (only the AmbigQA half held), neither falsifier
 fired; the pretrained unanswerability code is broad across overt
 flavors and the boundary is overt vs covert unanswerability, with
 AmbigQA unreadable at every layer."
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 3 files / ~25 KB, built at repo commit 48575d27.
+- HF repo: `professorsynapse/eh-flavor-atlas-rawbase` (dataset)
+- HF revision: `25de9c52ce719c5f0e27e806f62da55445b03a57`

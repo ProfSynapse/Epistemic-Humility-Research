@@ -148,3 +148,7 @@ in `experiment.yaml`.
   (grpo_cold_diagnostics.py, pinned) run after eval with
   --eval-refusal-recall-pct from the eval summary. Gate adjudication
   (CG-G0/CG-G1) stays with the lead after both complete.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 5 files / ~10 KB, built at repo commit 3867aca9.
+- HF repo: `professorsynapse/eh-grpo-cold-start-induction` (dataset)
+- HF revision: `0aecac22d8953aa8bd3881f0a47490a26322ba3e`

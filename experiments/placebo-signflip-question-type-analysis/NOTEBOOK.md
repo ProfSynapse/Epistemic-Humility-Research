@@ -146,3 +146,7 @@ in `experiment.yaml`.
   breakdown) + mechanism leg (M1 powered answerable-vs-unanswerable anchor
   projection, M2 cross-family consistency read, M3 analytic realized
   displacement; M3 dropped for llama, no placebo arm exists). Gates BG0-BG2.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 4 files / ~66 KB, built at repo commit ee61d702.
+- HF repo: `professorsynapse/eh-placebo-signflip-question-type-analysis` (dataset)
+- HF revision: `3ba76f647a83662339976c3bc4562cec4868bb24`

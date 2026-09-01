@@ -228,3 +228,7 @@ either GPU stage.
   share-alike disclosure.
 - The activation bundle is a required private-staging artifact. A public release
   additionally requires model-license review and a PI-approved dry-run card.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 5 files / ~7 KB, built at repo commit 54e64547.
+- HF repo: `professorsynapse/eh-family-atlas-surface-matched-pool-control` (dataset)
+- HF revision: `6756754725d1f66a2dfd778043602285d091c39b`

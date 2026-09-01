@@ -275,3 +275,7 @@ user G1+G2 both PASS) are correct on the corrected instrument. Committed
 aggregate analysis-committed/h3_summary.json regenerated from the corrected
 run and re-verified text-free. PR #283 returns to ready with the revised
 resolve.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 3 files / ~11 KB, built at repo commit bba2cee5.
+- HF repo: `professorsynapse/eh-snap-seed-sampled-decode-replication` (dataset)
+- HF revision: `d245c056fa406b4436d735c1c6d40aeab7afc839`

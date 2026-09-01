@@ -41,3 +41,7 @@ in `experiment.yaml`.
     gates/predictions and their provenance, the measured smoke numbers, and
     four explicitly flagged design choices for adjudication. Full extraction
     + fit run authorized only after lead sign + explicit go-ahead.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 3 files / ~18 KB, built at repo commit 153bb0c6.
+- HF repo: `professorsynapse/eh-qualify-mode-separability-base-readout` (dataset)
+- HF revision: `0f927b8989d41a18ffaa74dc66d5e9ade423e5da`

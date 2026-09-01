@@ -137,3 +137,7 @@ HF_HUB_OFFLINE from the as-cached snapshot. Exact greedy-decode
 reproduction across a quantized-kernel stack upgrade is the natural
 suspect, but no diagnostic has been run — this stays a hypothesis, not a
 finding. Verdict wording and terminal status lifted to the PI.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 4 files / ~4 KB, built at repo commit 1a69ed40.
+- HF repo: `professorsynapse/eh-dial-logprob-baseline-v2` (dataset)
+- HF revision: `2ecbeec8a4154786e85e6a2cd1e59d8cf9589c14`

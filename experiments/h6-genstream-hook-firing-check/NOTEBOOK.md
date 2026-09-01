@@ -236,3 +236,7 @@ in `experiment.yaml`.
   run. See the build report for adjudications made during construction
   (off-by-one in decode-call counting, PATH-BESPOKE's structural NOOP
   short-circuit, prompt-rendering scope for the real-run CLI).
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 5 files / ~181 KB, built at repo commit 2cc606a4.
+- HF repo: `professorsynapse/eh-h6-genstream-hook-firing-check` (dataset)
+- HF revision: `bb83bab66d5e259709bad4422165339427759957`

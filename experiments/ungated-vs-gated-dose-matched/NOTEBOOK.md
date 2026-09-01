@@ -89,3 +89,7 @@ in `experiment.yaml`.
   (`git submodule update --init synaptic-tuner` was required before any
   import from `MechInterp.*` or `shared.utilities.run_log` would resolve);
   initializing it to the already-pinned commit produced no diff.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 3 files / ~6 KB, built at repo commit 8862f83e.
+- HF repo: `professorsynapse/eh-ungated-vs-gated-dose-matched` (dataset)
+- HF revision: `d062242ee17f19b275a0699dc04223eb7d73ea2d`

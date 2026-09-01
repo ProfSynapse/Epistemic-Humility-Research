@@ -631,3 +631,7 @@ reason to expect the full real-ladder run (packet's own R_DRAWS=30 across
 2 layers + a 5-layer window + robustness, per scale) to exceed the
 packet's original <8 CPU-hr / <30 min-wall-clock-at-8-workers estimate --
 but this is now moot pending the G_val disposition.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 5 files / ~1.90 MB, built at repo commit 6f4f8eb0.
+- HF repo: `professorsynapse/eh-correctness-geometry-scale-ladder` (dataset)
+- HF revision: `71a2d1d007ad785811a9b6d31dd3f1c62593de44`

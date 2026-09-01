@@ -278,3 +278,7 @@ resolve stamped the manifest (status: falsified, verdict as adjudicated in
 the prior entry); registry regenerated. KG ingest and the paper-3
 axis-level sentence revision are registered follow-ups riding the
 resolution PR and the next paper pass.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 4 files / ~39 KB, built at repo commit e0a132f3.
+- HF repo: `professorsynapse/eh-wrong-answer-cell-power-fix` (dataset)
+- HF revision: `f4c463c8d0531cd0d5e4a999c2f74d7373277c23`

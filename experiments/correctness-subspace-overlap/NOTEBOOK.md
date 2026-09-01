@@ -68,3 +68,7 @@ in `experiment.yaml`.
   robustness 20260721; position restricted to post-generation only; the
   cross-family scale extension deferred and marked out of scope for this
   packet.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 4 files / ~590 KB, built at repo commit 7875556a.
+- HF repo: `professorsynapse/eh-correctness-subspace-overlap` (dataset)
+- HF revision: `16248292584ee5f878d2d252d67e9bf616116d22`

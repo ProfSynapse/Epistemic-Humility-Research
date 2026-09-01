@@ -14,7 +14,7 @@ files:
 new_files: []
 blocker: PI approval per dataset
 created_date: '2026-08-27'
-updated_date: '2026-08-27'
+updated_date: '2026-09-01'
 ---
 ## Description
 Terminal experiments without published exhaust (order tens of cells). Run
@@ -112,3 +112,4 @@ Terminal experiments: 80. Aggregate exhaust already published: 8. UNPUBLISHED: 7
 - 2026-08-27 @claude: batch 1 uploaded (10 aggregate datasets, PI-approved in-conversation); revisions recorded in each NOTEBOOK and docs/public-artifacts.md. 53 buildable cells remain.
 - 2026-08-27 @claude: batch 2 uploaded (10 aggregate datasets, PI-approved in-conversation); revisions recorded. 43 buildable cells remain.
 - 2026-08-27 @claude: batch 3 uploaded (15 aggregate datasets, PI-approved in-conversation); revisions recorded. 28 buildable cells remain.
+- 2026-09-01 @claude: batch 4 uploaded (final 28 backfill cells + no-abstention-prompt-gated-replication = 29 aggregate datasets, PI-approved in-conversation, uploads run by the PI via the prepared script after a classifier block on lead-side upload). All 29 verified live via the HF API; revisions recorded in each NOTEBOOK and docs/public-artifacts.md. Backfill complete: 63/63 buildable cells published; the 9 zero-artifact cells have nothing to package.

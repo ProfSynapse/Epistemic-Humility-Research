@@ -724,3 +724,7 @@ Open items that BLOCK sign (left as TO_PIN_AT_SIGN in `cell.yaml`):
    lifts, with derivations.
 
 - 2026-09-01 (post-resolve, paper support): committed `analysis-committed/two_stage_family_summary.json` via the new `build_two_stage_summary.py` — per-family per-arm two-stage held-out confab counts (judge lane of record plus stage-1 detector refusals), asserted equal to the Outcome table at build time. Added so paper 5 Figure 10 (instruction amplification) builds from committed aggregates; no governed number changed.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 41 files / ~664 KB, built at repo commit 8673cd5b.
+- HF repo: `professorsynapse/eh-no-abstention-prompt-gated-replication` (dataset)
+- HF revision: `07cb25659496715496c6682b5f31d7fc43c3ed08`

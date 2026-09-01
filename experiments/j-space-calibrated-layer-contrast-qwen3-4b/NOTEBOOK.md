@@ -16,3 +16,7 @@ in `experiment.yaml`.
   contrast runner writes only an end-of-run aggregate and is not row-resumable;
   future cells should prefer the generic tuner checkpoint/resume path where
   feasible.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 3 files / ~6 KB, built at repo commit e38646f6.
+- HF repo: `professorsynapse/eh-j-space-calibrated-layer-contrast-qwen3-4b` (dataset)
+- HF revision: `49b01c09cb6371d236c98151f8f55f6c9a4e3fff`

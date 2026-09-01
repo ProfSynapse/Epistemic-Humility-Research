@@ -24,3 +24,7 @@ in `experiment.yaml`.
   0.6608, margin +0.158 [+0.122, +0.192]. Orchestrator pre-run call wrong
   on the base arm (predicted logprob 0.60-0.72, actual 0.820), reported
   straight. Verdict: DATA-STAGE STOP; descriptive-with-caveat only.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 4 files / ~83 KB, built at repo commit a01e3e5e.
+- HF repo: `professorsynapse/eh-dial-logprob-baseline` (dataset)
+- HF revision: `564d6a5de8a36b9b086cb2e3c1e5fc6fba0b97ef`

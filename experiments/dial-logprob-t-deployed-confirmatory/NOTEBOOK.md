@@ -142,3 +142,7 @@ in `experiment.yaml`.
   (95% CI [0.1031, 0.1755], n=1,501).
 - KG ingest of the resolution (typed claim/evidence nodes + manifest `kg:`
   ids) deferred to a follow-up ingest pass, per the resolve checklist.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 3 files / ~4 KB, built at repo commit ca6310fa.
+- HF repo: `professorsynapse/eh-dial-logprob-t-deployed-confirmatory` (dataset)
+- HF revision: `2dfe8f1e0c47bd0c3030430929fba3643a631ce8`

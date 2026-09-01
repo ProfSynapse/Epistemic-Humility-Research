@@ -160,3 +160,7 @@ experiments/common/launch_detached.sh \
 The exact launcher interface must be checked at execution time. Do not substitute
 a direct foreground long run. No GPU flags, devices, or model-loading entrypoints
 exist in this instrument.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 3 files / ~17 KB, built at repo commit 34663f87.
+- HF repo: `professorsynapse/eh-family-atlas-surface-diversity-control` (dataset)
+- HF revision: `d1cc11908f36ec7ba7a35bc5f700da285e530095`

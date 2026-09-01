@@ -38,3 +38,7 @@ Created as the governed follow-up to the G0 stop in
 windows on FIT rows only and does not touch held-out rows. The intended output
 is a selected non-collapsing setpoint per layer, suitable for a later signed
 held-out layer contrast.
+
+- 2026-09-01: aggregate data exhaust published (batch 4 of the backfill, task-56c61a; PI-approved in-conversation 2026-09-01). Copy-everything mirror of analysis-committed plus README + PROVENANCE; aggregate shape, no row text, zero exclusions. 4 files / ~31 KB, built at repo commit 39eb5c4c.
+- HF repo: `professorsynapse/eh-j-space-midband-dose-calibration-qwen3-4b` (dataset)
+- HF revision: `c6eb247b9b8548ec4ebf281bc37b15d45fe9a9eb`
