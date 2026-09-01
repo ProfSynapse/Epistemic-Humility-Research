@@ -550,9 +550,13 @@ of the gap between them.
 Confabulation-prone rows come from the unanswerable split of
 Known-Unknown Questions (Amayuelas et al., 2023), whose per-row subtype labels
 (controversial, future-unknown, underspecified, and the rest) Section 4.8
-uses for its subtype breakdown. Known-correct rows come from PopQA (Mallen et
+uses for its subtype breakdown, and from the unanswerable-labeled rows of
+SelfAware (Yin et al., 2023); on the raw-base Qwen3-4B held-out pool the two
+contribute 156 and 29 rows. The unanswerable labels are the source datasets'
+own and are not re-verified here; Section 6.4 reports what a hand audit found
+in them. Known-correct rows come from PopQA (Mallen et
 al., 2022) and TriviaQA (Joshi et al., 2017), graded against gold answers.
-Every experiment below draws its rows from these three sources unless the text
+Every experiment below draws its rows from these four sources unless the text
 says otherwise.
 
 All behavioral cells in the write, gate, and cross-family results share one
@@ -1625,6 +1629,19 @@ not population effect-size estimates. Key limits:
   18.5% to 65.5% two-stage, Qwen3.5-4B 8.9% to 54.4% two-stage,
   Mistral-7B-v0.3 11.5% to 30.3% two-stage, and Llama-3.2-3B 4.1% to 13.4%
   two-stage, every lift's 95% CI excluding zero.
+- the benefit-side ground truth is inherited, not verified: a row counts as a
+  confabulation because its source dataset labels the question unanswerable
+  and the model answered it anyway, and nothing in the pipeline checks that
+  label against reality. A hand audit of the SelfAware-sourced slice of the
+  raw-base held-out pool (29 of 185 rows) judged over half of those questions
+  answerable, with the model's suppressed baseline answer often correct, so
+  on such rows the controller suppressed a right answer and the metric
+  counted a conversion. The headline is robust to excluding that source
+  entirely (116/156 = 74.4% on the remaining rows against 136/185 = 73.5%
+  on the full pool), and the cost side is unaffected because known-correct
+  rows are graded against gold aliases. What the conversion rates measure is
+  refusal of questions the source datasets label unanswerable, not verified
+  fabrications;
 - the strongest positive J-space layer-site result is currently surface-local to
   raw-base Qwen3-4B bf16, and the one trained-checkpoint test so far (Appendix
   A) found the band reshaped and its rule-selected mid-band site readable
@@ -1755,6 +1772,7 @@ these results, and the geometry of those margins is future work.
 - Venkatesh and Kurapath (2026). On the Non-Identifiability of Steering Vectors in Large Language Models. arXiv:2602.06801.
 - Wen et al. (2024). Know Your Limits: A Survey of Abstention in Large Language Models. arXiv:2407.18418.
 - Wollschläger et al. (2025). The Geometry of Refusal in Large Language Models: Concept Cones and Representational Independence. arXiv:2502.17420.
+- Yin et al. (2023). Do Large Language Models Know What They Don't Know?. arXiv:2305.18153.
 - Zhang et al. (2023). Towards Best Practices of Activation Patching in Language Models: Metrics and Methods. arXiv:2309.16042.
 - Zou et al. (2023). Representation Engineering: A Top-Down Approach to AI Transparency. arXiv:2310.01405.
 
