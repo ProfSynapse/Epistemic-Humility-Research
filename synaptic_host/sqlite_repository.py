@@ -769,9 +769,20 @@ class SqliteTrainingRepository(ModalTrainingRepository):
     ) -> None:
         """Atomically persist one immutable preparation and admitted create."""
 
+        try:
+            detached_preparation = ProviderPreparationRecordV1.from_canonical_bytes(
+                preparation.canonical_bytes
+            )
+            detached_mutation = DockerRunMutationRecordV1.from_canonical_bytes(
+                initial_mutation.canonical_bytes
+            )
+        except Exception:
+            raise ValueError("Docker prepared run pair is invalid") from None
         if (
             type(preparation) is not ProviderPreparationRecordV1
             or type(initial_mutation) is not DockerRunMutationRecordV1
+            or detached_preparation != preparation
+            or detached_mutation != initial_mutation
             or initial_mutation.project_ref != preparation.project_ref
             or initial_mutation.run_id != preparation.run_id
             or initial_mutation.effect_id != preparation.effect_id
@@ -783,6 +794,8 @@ class SqliteTrainingRepository(ModalTrainingRepository):
             )
         ):
             raise ValueError("Docker prepared run pair is invalid")
+        preparation = detached_preparation
+        initial_mutation = detached_mutation
         try:
             with self._transaction() as connection:
                 connection.execute(

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import base64
 import json
 import re
 from dataclasses import dataclass
@@ -10,6 +11,11 @@ from datetime import datetime
 from enum import Enum
 from pathlib import PurePosixPath
 from typing import Mapping
+
+from tuner.execution.foundation_v2.commands import (
+    SubmitCommandV2,
+    parse_exact_command,
+)
 
 from .docker_v1.control_contract import (
     AuthenticatedDockerMutationRecordV1,
@@ -32,6 +38,13 @@ _ARTIFACT_ROLES = (
     "training_metrics",
     "workload_record",
 )
+_ZERO_EXIT_FAILURE_DIAGNOSTICS = frozenset({
+    "ARTIFACT_INVENTORY_MISSING",
+    "ARTIFACT_INVENTORY_INVALID",
+    "ARTIFACT_INTEGRITY_INVALID",
+    "ARTIFACT_SEMANTIC_INVALID",
+    "PROCESS_DEAD",
+})
 
 
 def _canonical(value: object) -> bytes:
@@ -183,6 +196,7 @@ class ProviderPreparationRecordV1:
     cli_policy_digest: str
     destination_ref: str
     destination_declaration_digest: str
+    submit_command_bytes: bytes
     stage: DockerStageProjectionV1
     prepared_at: str
     preparation_digest: str
@@ -200,6 +214,9 @@ class ProviderPreparationRecordV1:
             "cli_policy_digest": self.cli_policy_digest,
             "destination_ref": self.destination_ref,
             "destination_declaration_digest": self.destination_declaration_digest,
+            "submit_command_base64": base64.b64encode(
+                self.submit_command_bytes
+            ).decode("ascii"),
             "stage": self.stage.to_dict(),
             "prepared_at": self.prepared_at,
         }
@@ -218,6 +235,26 @@ class ProviderPreparationRecordV1:
             _digest(getattr(self, name), name)
         if type(self.stage) is not DockerStageProjectionV1:
             raise TypeError("stage must be DockerStageProjectionV1")
+        if (
+            type(self.submit_command_bytes) is not bytes
+            or not 1 <= len(self.submit_command_bytes) <= 262_144
+        ):
+            raise ValueError("submit command bytes are invalid")
+        try:
+            command = parse_exact_command(self.submit_command_bytes)
+        except Exception:
+            raise ValueError("submit command bytes are invalid") from None
+        if (
+            type(command) is not SubmitCommandV2
+            or command.canonical_bytes != self.submit_command_bytes
+            or command.preparation.provider.provider_id != "docker"
+            or command.preparation.project_ref != self.project_ref
+            or command.preparation.run_id != self.run_id
+            or command.preparation.plan_fingerprint != self.plan_fingerprint
+            or command.operation.effect.kind.value != "submit"
+            or command.operation.effect.effect_id != self.effect_id
+        ):
+            raise ValueError("submit command does not bind the preparation")
         _timestamp(self.prepared_at, "prepared_at")
         _digest(self.preparation_digest, "preparation_digest")
         if self.preparation_digest != _seal(
@@ -240,6 +277,13 @@ class ProviderPreparationRecordV1:
     def canonical_bytes(self) -> bytes:
         return _canonical({**self._body(), "preparation_digest": self.preparation_digest})
 
+    @property
+    def submit_command_digest(self) -> str:
+        command = parse_exact_command(self.submit_command_bytes)
+        if type(command) is not SubmitCommandV2:  # pragma: no cover - invariant
+            raise ValueError("submit command bytes are invalid")
+        return command.digest
+
     @classmethod
     def from_canonical_bytes(cls, raw: bytes) -> "ProviderPreparationRecordV1":
         value = _read(raw)
@@ -248,11 +292,21 @@ class ProviderPreparationRecordV1:
             "effect_id", "source_lock_digest", "prepared_docker_plan_digest",
             "endpoint_descriptor_digest", "cli_policy_digest", "destination_ref",
             "destination_declaration_digest", "stage", "prepared_at",
-            "preparation_digest",
+            "submit_command_base64", "preparation_digest",
         })
         exact = _mapping(value, fields, "Docker preparation")
         if exact.pop("schema_version") != "synaptic-host-docker-preparation/v1":
             raise ValueError("unsupported Docker preparation schema")
+        encoded = exact.pop("submit_command_base64")
+        try:
+            if type(encoded) is not str or not encoded:
+                raise ValueError
+            raw = base64.b64decode(encoded, validate=True)
+            if base64.b64encode(raw).decode("ascii") != encoded:
+                raise ValueError
+        except Exception:
+            raise ValueError("submit_command_base64 is invalid") from None
+        exact["submit_command_bytes"] = raw
         exact["stage"] = DockerStageProjectionV1.from_mapping(exact["stage"])
         return cls(**exact)
 
@@ -516,7 +570,11 @@ class DockerRunMutationRecordV1:
         } and self.process_exit_code != 0:
             raise ValueError("successful process phase requires exit code zero")
         if self.phase is DockerRunPhaseV1.PROCESS_FAILED and (
-            self.process_exit_code == 0 or self.diagnostic is None
+            self.diagnostic is None
+            or (
+                self.process_exit_code == 0
+                and self.diagnostic not in _ZERO_EXIT_FAILURE_DIAGNOSTICS
+            )
         ):
             raise ValueError("failed process phase requires a closed diagnostic")
         if self.phase is DockerRunPhaseV1.RECONCILE_REQUIRED:
@@ -669,6 +727,7 @@ def validate_docker_run_transition_v1(
         },
         DockerRunPhaseV1.PROCESS_SUCCEEDED: {
             DockerRunPhaseV1.ARTIFACTS_VERIFIED,
+            DockerRunPhaseV1.PROCESS_FAILED,
         },
         DockerRunPhaseV1.PROCESS_FAILED: set(),
         DockerRunPhaseV1.ARTIFACTS_VERIFIED: set(),
@@ -775,6 +834,21 @@ def validate_docker_run_transition_v1(
                 raise ValueError("process reconciliation continuity is invalid")
         else:
             raise ValueError("Docker reconciliation operation is invalid")
+    elif transition == (
+        DockerRunPhaseV1.PROCESS_SUCCEEDED,
+        DockerRunPhaseV1.PROCESS_FAILED,
+    ):
+        if (
+            create_changed
+            or start_changed
+            or replacement.process_exit_code != 0
+            or replacement.process_observation_digest
+            != current.process_observation_digest
+            or replacement.diagnostic not in _ZERO_EXIT_FAILURE_DIAGNOSTICS
+            or replacement.verified_artifacts
+            or replacement.verified_inventory_digest is not None
+        ):
+            raise ValueError("artifact verification failure continuity is invalid")
     elif create_changed or start_changed:
         raise ValueError("unaffected Docker mutation envelope changed")
     for name in ("container_ref", "submitted_at"):

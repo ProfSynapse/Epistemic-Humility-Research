@@ -775,6 +775,7 @@ def _container_record(container_ref="a" * 64):
         "Id": container_ref, "Name": "/synaptic-job",
         "Image": "sha256:" + "c" * 64,
         "Config": {"Labels": labels, "Env": ["TOKEN=raw-secret"],
+                   "WorkingDir": "/artifacts/tmp",
                    "Cmd": ["python", "raw-secret.py"]},
         "HostConfig": {"NetworkMode": "none", "NanoCpus": 1000000000,
                        "Memory": 4096},
@@ -807,6 +808,7 @@ def _create_command(secret="raw-secret", *, gpu=False):
     arguments.extend((
         "--mount", r"type=bind,source=\\wsl.localhost\Ubuntu\source,destination=/source,readonly",
         "--mount", r"type=bind,source=\\wsl.localhost\Ubuntu\artifacts,destination=/artifacts",
+        "--workdir", "/artifacts/tmp",
         "--env", f"TOKEN={secret}", "sha256:" + "c" * 64,
         "python", "train.py",
     ))
@@ -842,6 +844,26 @@ def test_typed_create_accepts_only_exact_nvidia_device_zero_option():
     assert arguments[index:index + 2] == (
         "--gpus", "driver=nvidia,device=0"
     )
+
+
+@pytest.mark.parametrize(
+    "tokens",
+    (
+        (),
+        ("--workdir", "/source/tmp"),
+        ("--workdir", "/artifacts/../tmp"),
+        ("--workdir", "/artifacts/tmp", "--workdir", "/artifacts/tmp"),
+    ),
+)
+def test_typed_create_rejects_missing_or_drifted_workdir_before_spawn(tokens):
+    arguments = list(_create_command().arguments)
+    index = arguments.index("--workdir")
+    arguments[index:index + 2] = tokens
+    command = DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(arguments))
+    runner, factory = _typed_runner(b"a" * 64)
+    with pytest.raises(DockerPlatformErrorV1):
+        runner.create_container(command, "synaptic-" + "a" * 24)
+    assert factory.calls == []
 
 
 @pytest.mark.parametrize("gpu_tokens", (
@@ -972,11 +994,11 @@ def _create_with(*, cpu="1", memory="4096", env_count=1, workload_count=2):
         index for index, value in enumerate(base)
         if value.startswith("sha256:")
     )
-    base[44:image_index] = [
+    base[46:image_index] = [
         value for index in range(env_count)
         for value in ("--env", f"K{index:02d}=v")
     ]
-    image_index = 44 + env_count * 2
+    image_index = 46 + env_count * 2
     base[image_index + 1:] = tuple(f"arg{index}" for index in range(workload_count))
     return DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(base))
 
@@ -1179,10 +1201,30 @@ def test_typed_container_projection_never_exposes_raw_values():
     assert projection.network_mode == "none"
     assert len(projection.environment.entries) == 1 and projection.argument_count == 2
     assert projection.state.started is False
+    assert projection.working_directory_digest == sha256(
+        b"/artifacts/tmp"
+    ).hexdigest()
     rendered = repr(result)
     for secret in ("raw-secret", "C:\\raw-secret", "/artifacts"):
         assert secret not in rendered
     assert factory.calls[0][0][-4:] == ("inspect", "--type", "container", ref)
+
+
+@pytest.mark.parametrize(
+    "working_directory",
+    (None, "/source/tmp", "/artifacts/../tmp"),
+)
+def test_typed_container_inspect_rejects_missing_or_drifted_workdir(
+    working_directory,
+):
+    record = _container_record()
+    if working_directory is None:
+        del record["Config"]["WorkingDir"]
+    else:
+        record["Config"]["WorkingDir"] = working_directory
+    runner, _ = _typed_runner(json.dumps([record]).encode())
+    with pytest.raises(DockerPlatformErrorV1):
+        runner.inspect_container("a" * 64)
 
 
 @pytest.mark.parametrize("payload", (
@@ -1248,6 +1290,7 @@ def test_container_and_nested_projection_digests_recompute_on_reconstruction():
             entries=(replace(projection.environment.entries[0],
                              value_digest="e" * 64),))),
         lambda: replace(projection, device_requests_digest="e" * 64),
+        lambda: replace(projection, working_directory_digest="e" * 64),
     )
     for mutate in mutations:
         with pytest.raises(DockerPlatformErrorV1) as caught:

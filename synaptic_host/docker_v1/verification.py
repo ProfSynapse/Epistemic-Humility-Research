@@ -29,6 +29,8 @@ def docker_create_projection_matches_v1(
             != specification.device_requests_digest
             or projection.argument_count != specification.argument_count
             or projection.arguments_digest != specification.arguments_digest
+            or projection.working_directory_digest
+            != specification.working_directory_digest
         ):
             return False
         observed_env = {

@@ -553,6 +553,7 @@ def _factory_invocation(*, pairs=(("TOKEN", "raw-secret"),), arguments=("python"
         artifact_path=artifact or _windows_path(
             DockerWSLPathPurposeV1.ARTIFACT_WRITE, "/artifacts"
         ),
+        working_directory="/artifacts/tmp",
         environment=_private_environment(pairs, workload_digest),
         environment_authority=EnvAuthority(),
     )
@@ -581,11 +582,40 @@ def test_private_factory_builds_exact_full_create_argv_in_frozen_order():
         r"type=bind,source=\\wsl.localhost\Ubuntu-22.04\artifacts,destination=/artifacts",
     )
     assert arguments[44:] == (
+        "--workdir", "/artifacts/tmp",
         "--env", "TOKEN=raw-secret", "sha256:" + "b" * 64,
         "python", "train.py",
     )
     assert result.command_digest == runner.command.command_digest
     assert "raw-secret" not in repr(invocation)
+
+
+@pytest.mark.parametrize(
+    "working_directory",
+    ("artifacts/tmp", "/source/tmp", "/artifacts", "/artifacts/../tmp"),
+)
+def test_private_factory_rejects_noncontained_working_directory(
+    working_directory,
+):
+    with pytest.raises(DockerControlContractErrorV1):
+        workload = DockerWorkloadV1(("python",), ("TOKEN",), SHA)
+        DockerPrivateCreateInvocationFactoryV1().build(
+            labels=_factory_labels(),
+            image=DockerImageV1("ignored-ref", "sha256:" + "b" * 64),
+            runtime=DockerRuntimeV1(
+                2, 4096, 60, AcceleratorDeviceRequestV1("cpu", (), ())
+            ),
+            workload=workload,
+            source_path=_windows_path(
+                DockerWSLPathPurposeV1.SOURCE_READ, "/source"
+            ),
+            artifact_path=_windows_path(
+                DockerWSLPathPurposeV1.ARTIFACT_WRITE, "/artifacts"
+            ),
+            working_directory=working_directory,
+            environment=_private_environment((("TOKEN", "raw-secret"),)),
+            environment_authority=EnvAuthority(),
+        )
 
 
 def test_private_factory_gpu_adds_only_exact_device_zero_option():
@@ -610,7 +640,7 @@ def test_private_factory_maximum_env_and_workload_shape_is_within_cli_limit():
     invocation = _factory_invocation(pairs=pairs, arguments=arguments)
     runner = CaptureCreateRunner()
     invocation.execute_once(runner)
-    assert len(runner.command.arguments) == 237
+    assert len(runner.command.arguments) == 239
 
 
 @pytest.mark.parametrize("bad", (",", '"', "\n", "\x01", "e\u0301"))
@@ -667,6 +697,7 @@ def _spec(**changes):
         container_name="synaptic-job", image_digest="sha256:" + "b" * 64,
         runtime_digest=SHA, workload_digest=SHA, argument_count=1,
         arguments_digest=SHA, environment_binding_proof_digest=SHA,
+        working_directory_digest=sha256(b"/artifacts/tmp").hexdigest(),
         mount_resolution_digest=SHA, path_binding_proof_digest=SHA,
         source_windows_path_digest=SHA, source_unc_digest=SHA,
         source_destination_digest=sha256(b"/source").hexdigest(),
@@ -689,6 +720,7 @@ def _spec(**changes):
     {"nano_cpus": 999_999_999}, {"nano_cpus": 1_000_000_001},
     {"nano_cpus": 257_000_000_000}, {"memory_bytes": 0},
     {"memory_bytes": 2**50 + 1}, {"network_mode": "bridge"},
+    {"working_directory_digest": "invalid"},
 ))
 def test_create_spec_engine_bounds_and_fixed_destinations(changes):
     with pytest.raises(DockerControlContractErrorV1):

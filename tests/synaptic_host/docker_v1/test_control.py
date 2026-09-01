@@ -159,6 +159,7 @@ def _one_id_fixture(status=DockerContainerStatusV1.RUNNING, exit_code=0,
         container_name=labels.container_name, image_digest=IMAGE,
         runtime_digest=SHA, workload_digest=SHA, argument_count=1,
         arguments_digest=SHA,
+        working_directory_digest=sha256(b"/artifacts/tmp").hexdigest(),
         environment_binding_proof_digest=auth_env.proof_digest,
         mount_resolution_digest=SHA, path_binding_proof_digest=SHA,
         source_windows_path_digest=SHA, source_unc_digest="c" * 64,
@@ -245,6 +246,7 @@ def _one_id_fixture(status=DockerContainerStatusV1.RUNNING, exit_code=0,
         environment=DockerEnvironmentProjectionV1.build(projected_env),
         argument_count=1, arguments_digest=SHA,
         device_requests_digest=observed_device_requests_digest,
+        working_directory_digest=sha256(b"/artifacts/tmp").hexdigest(),
     )
     container_result = DockerContainerInspectResultV1.build(
         container_ref, request_digest, command, _evidence(command), projection

@@ -2,6 +2,7 @@ from dataclasses import replace
 from types import SimpleNamespace
 
 import pytest
+import synaptic_host.docker_v1.create as create_module
 
 from synaptic_tuner.api.v1.training import AcceleratorDeviceRequestV1
 from tuner.execution.providers.docker_provider_v1.model import (
@@ -80,8 +81,89 @@ def test_create_invalid_input_is_indeterminate_before_any_dependency():
     result = _host().create_once(
         labels=object(), image=object(), runtime=object(), workload=object(),
         source_ref="source", artifact_ref="artifact",
+        working_directory="/artifacts/tmp",
     )
     assert result.disposition is DockerCreateDispositionV1.INDETERMINATE
+
+
+def test_preflight_keeps_raw_workdir_private_and_seals_only_digest(monkeypatch):
+    labels, _ref, _record, expected, _inspected = _one_id_fixture()
+    specification = expected.content.create_specification
+    host = object.__new__(DockerHostCreateV1)
+    resolved = SimpleNamespace(
+        resolution_digest=SHA, source_wsl_private_path="/source",
+        artifact_wsl_root="/artifacts", source_read_only=True,
+    )
+    path_content = SimpleNamespace(
+        labels_digest=labels.digest, source_ref="source",
+        artifact_ref="artifact", mount_resolution_digest=SHA,
+        source_request=SimpleNamespace(posix_path="/source"),
+        artifact_request=SimpleNamespace(posix_path="/artifacts"),
+    )
+    path_binding = SimpleNamespace(content=path_content, proof_digest=SHA)
+    object.__setattr__(host, "_resolve", lambda *_args: resolved)
+    object.__setattr__(host, "_path_binder", SimpleNamespace(
+        bind=lambda *_args: path_binding
+    ))
+    object.__setattr__(host, "_auth", lambda _r, _a, value, _f: value)
+    object.__setattr__(host, "_path_authority", object())
+    object.__setattr__(host, "_environment_authority", object())
+    object.__setattr__(host, "_translate", lambda request: SimpleNamespace(
+        unc_path=("source-unc" if request is path_content.source_request
+                  else "artifact-unc"),
+        path_digest=SHA,
+    ))
+    private_environment = SimpleNamespace(
+        authenticated_binding_snapshot=lambda _authority:
+            expected.content.environment_binding
+    )
+    object.__setattr__(host, "_environment_resolver", SimpleNamespace(
+        resolve=lambda _workload: private_environment
+    ))
+    object.__setattr__(host, "_intent_authority", object())
+    object.__setattr__(host, "_expected_authority", object())
+    object.__setattr__(host, "_endpoint_descriptor_digest", SHA)
+    object.__setattr__(host, "_cli_policy_digest", SHA)
+
+    captured = {}
+
+    class InvocationFactory:
+        def build(self, **kwargs):
+            captured["invocation"] = kwargs
+            return SimpleNamespace(command_digest=SHA)
+
+    class Stop(RuntimeError):
+        pass
+
+    def capture_specification(**kwargs):
+        captured["specification"] = kwargs
+        raise Stop
+
+    monkeypatch.setattr(
+        create_module, "DockerPrivateCreateInvocationFactoryV1",
+        InvocationFactory,
+    )
+    monkeypatch.setattr(
+        create_module.DockerCreateSpecificationV1, "build",
+        capture_specification,
+    )
+    with pytest.raises(Stop):
+        host._preflight(
+            labels, SimpleNamespace(image_digest=specification.image_digest),
+            SimpleNamespace(
+                cpu_count=1, memory_bytes=1024,
+                accelerator_devices=AcceleratorDeviceRequestV1("cpu", (), ()),
+                digest=SHA,
+            ),
+            SimpleNamespace(arguments=("x",), workload_digest=SHA),
+            "source", "artifact", "/artifacts/tmp",
+        )
+    assert captured["invocation"]["working_directory"] == "/artifacts/tmp"
+    assert "working_directory_digest" not in captured["invocation"]
+    assert captured["specification"]["working_directory_digest"] == (
+        __import__("hashlib").sha256(b"/artifacts/tmp").hexdigest()
+    )
+    assert "working_directory" not in captured["specification"]
 
 
 def test_shared_verifier_accepts_exact_fixture_and_rejects_config_drift():
@@ -95,6 +177,15 @@ def test_shared_verifier_accepts_exact_fixture_and_rejects_config_drift():
     object.__setattr__(drifted, "memory_bytes", 2048)
     assert not docker_create_projection_matches_v1(
         labels, expected, environment, drifted, ref, inspected.evidence
+    )
+
+    labels, ref, _record, expected, inspected = _one_id_fixture()
+    object.__setattr__(
+        inspected.projection, "working_directory_digest", "e" * 64
+    )
+    assert not docker_create_projection_matches_v1(
+        labels, expected, expected.content.environment_binding,
+        inspected.projection, ref, inspected.evidence,
     )
 
 
@@ -404,6 +495,7 @@ def _transaction_host(*, publish=DockerExpectedCreatePublishDispositionV1.PUBLIS
         ),
         "workload": DockerWorkloadV1(("x",), ("TOKEN",), SHA),
         "source_ref": "source", "artifact_ref": "artifact",
+        "working_directory": "/artifacts/tmp",
         "resolved": SimpleNamespace(resolution_digest=SHA),
         "path_binding": SimpleNamespace(proof_digest=SHA),
         "source_path": SimpleNamespace(path_digest=SHA, unc_path="source-path"),
@@ -429,6 +521,7 @@ def _call(host):
         ),
         workload=DockerWorkloadV1(("x",), ("TOKEN",), SHA),
         source_ref="source", artifact_ref="artifact",
+        working_directory="/artifacts/tmp",
     )
 
 

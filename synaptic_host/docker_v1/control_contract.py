@@ -529,6 +529,7 @@ class DockerCreateSpecificationV1:
     workload_digest: str
     argument_count: int
     arguments_digest: str
+    working_directory_digest: str
     environment_binding_proof_digest: str
     mount_resolution_digest: str
     path_binding_proof_digest: str
@@ -557,6 +558,7 @@ class DockerCreateSpecificationV1:
         for name in (
             "labels_digest", "owned_labels_projection_digest",
             "runtime_digest", "workload_digest", "arguments_digest",
+            "working_directory_digest",
             "environment_binding_proof_digest", "mount_resolution_digest",
             "path_binding_proof_digest", "source_windows_path_digest",
             "source_unc_digest", "source_destination_digest",

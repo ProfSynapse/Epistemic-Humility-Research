@@ -322,7 +322,7 @@ class DockerPrivateStartInvocationV1:
 class DockerPrivateCreateInvocationFactoryV1:
     def build(
         self, *, labels, image, runtime, workload, source_path,
-        artifact_path, environment, environment_authority,
+        artifact_path, working_directory, environment, environment_authority,
     ):
         try:
             if (
@@ -333,6 +333,12 @@ class DockerPrivateCreateInvocationFactoryV1:
                 or type(source_path) is not DockerWindowsPathV1
                 or type(artifact_path) is not DockerWindowsPathV1
                 or type(environment) is not DockerPrivateWorkloadEnvironmentResolutionV1
+                or type(working_directory) is not str
+                or not working_directory.startswith("/artifacts/")
+                or any(
+                    part in {"", ".", ".."}
+                    for part in working_directory.split("/")[1:]
+                )
             ):
                 raise ValueError
             labels = DockerLabelsV1(**labels.to_dict())
@@ -399,6 +405,7 @@ class DockerPrivateCreateInvocationFactoryV1:
                 f"type=bind,source={docker_safe_unc_v1(source_path.unc_path)},destination=/source,readonly",
                 "--mount",
                 f"type=bind,source={docker_safe_unc_v1(artifact_path.unc_path)},destination=/artifacts",
+                "--workdir", working_directory,
             ))
             for key, value in pairs:
                 arguments.extend(("--env", f"{key}={value}"))

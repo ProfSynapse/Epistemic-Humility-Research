@@ -1,9 +1,22 @@
 from __future__ import annotations
 
 import json
+import base64
 from dataclasses import replace
 
 import pytest
+
+from synaptic_tuner.api.v1.providers import ProviderRef
+from tuner.execution.foundation_v2.commands import (
+    CanonicalProviderPayloadV1,
+    build_submit_command,
+)
+from tuner.execution.foundation_v2.executors import ExecutorDescriptorV1
+from tuner.execution.foundation_v2.preparation import CanonicalPreparationV2
+from tuner.execution.foundation_v2.references import (
+    ExecutionScopeV1,
+    StagePredecessorV2,
+)
 
 from synaptic_host.docker_execution_state import (
     DockerRunMutationRecordV1,
@@ -25,7 +38,44 @@ from synaptic_host.docker_v1.control_contract import (
 
 
 NOW = "2026-09-01T12:00:00Z"
-EFFECT = "effect-docker-1"
+
+
+def _submit_command():
+    provider = ProviderRef("docker", "profile")
+    scope = ExecutionScopeV1("account", "namespace")
+    prepared = CanonicalPreparationV2.build(
+        provider=provider,
+        scope=scope,
+        project_ref="ehr",
+        run_id="run-1",
+        plan_fingerprint="8" * 64,
+        source_digest="9" * 64,
+        workload_digest="a" * 64,
+        runtime_digest="b" * 64,
+        resource_digest="c" * 64,
+        artifact_contract_digest="d" * 64,
+        quote_digest="e" * 64,
+        secret_requirements_digest="f" * 64,
+        execution_binding_digest="1" * 64,
+    )
+    predecessor = StagePredecessorV2(
+        "docker", "profile", "account", "namespace", "ehr", "run-1",
+        "8" * 64, prepared.preparation_digest, "a" * 64,
+        "stage-effect", "2" * 64, "3" * 64,
+    )
+    return build_submit_command(
+        prepared,
+        "submit-nonce",
+        CanonicalProviderPayloadV1.build(
+            "docker", "submit-payload/v2", "a" * 64
+        ),
+        ExecutorDescriptorV1("docker", "executor", "1"),
+        predecessor,
+    )
+
+
+SUBMIT_COMMAND = _submit_command()
+EFFECT = SUBMIT_COMMAND.operation.effect.effect_id
 
 
 def _authenticated(record: DockerMutationRecordV1) -> AuthenticatedDockerMutationRecordV1:
@@ -108,6 +158,7 @@ def preparation() -> ProviderPreparationRecordV1:
         cli_policy_digest="c" * 64,
         destination_ref="local-default",
         destination_declaration_digest="d" * 64,
+        submit_command_bytes=SUBMIT_COMMAND.canonical_bytes,
         stage=stage,
         prepared_at=NOW,
     )
@@ -212,6 +263,39 @@ def test_preparation_and_initial_aggregate_round_trip_exactly() -> None:
     assert DockerRunMutationRecordV1.from_canonical_bytes(
         initial.canonical_bytes
     ) == initial
+    document = json.loads(prepared.canonical_bytes)
+    assert document["submit_command_base64"] == base64.b64encode(
+        SUBMIT_COMMAND.canonical_bytes
+    ).decode("ascii")
+    assert prepared.submit_command_digest == SUBMIT_COMMAND.digest
+
+
+@pytest.mark.parametrize(
+    "encoded",
+    ("", "YQ", "YQ===", "Y Q==", "YQ==\n", "-_=="),
+)
+def test_preparation_rejects_noncanonical_submit_command_base64(encoded) -> None:
+    document = json.loads(preparation().canonical_bytes)
+    document["submit_command_base64"] = encoded
+    raw = json.dumps(
+        document, sort_keys=True, separators=(",", ":")
+    ).encode()
+    with pytest.raises(ValueError, match="submit_command_base64"):
+        ProviderPreparationRecordV1.from_canonical_bytes(raw)
+
+
+def test_preparation_rejects_old_shape_and_command_identity_drift() -> None:
+    document = json.loads(preparation().canonical_bytes)
+    del document["submit_command_base64"]
+    raw = json.dumps(
+        document, sort_keys=True, separators=(",", ":")
+    ).encode()
+    with pytest.raises(ValueError, match="missing or unknown"):
+        ProviderPreparationRecordV1.from_canonical_bytes(raw)
+    with pytest.raises(ValueError, match="bind the preparation"):
+        replace(preparation(), project_ref="other-project")
+    with pytest.raises(ValueError, match="bytes are invalid"):
+        replace(preparation(), submit_command_bytes=b"x" * 262_145)
 
 
 def test_submitted_and_exact_five_artifact_terminal_records_are_closed() -> None:
@@ -276,6 +360,60 @@ def test_exact_authenticated_mutation_transition_chain() -> None:
         )
         validate_docker_run_transition_v1(current, replacement)
         current = replacement
+
+
+def test_process_success_can_close_only_as_exact_artifact_failure() -> None:
+    succeeded = _aggregate(
+        DockerRunPhaseV1.PROCESS_SUCCEEDED, revision=7, previous="f" * 64
+    )
+    values = {
+        name: getattr(succeeded, name)
+        for name in DockerRunMutationRecordV1.__dataclass_fields__
+        if name not in {
+            "record_digest", "phase", "revision", "previous_record_digest",
+            "diagnostic",
+        }
+    }
+    failed = DockerRunMutationRecordV1.build(
+        **values,
+        phase=DockerRunPhaseV1.PROCESS_FAILED,
+        revision=8,
+        previous_record_digest=succeeded.record_digest,
+        diagnostic="ARTIFACT_INTEGRITY_INVALID",
+    )
+    validate_docker_run_transition_v1(succeeded, failed)
+    with pytest.raises(ValueError, match="artifact verification failure"):
+        validate_docker_run_transition_v1(
+            succeeded, replace(
+                failed,
+                process_observation_digest="0" * 64,
+                record_digest=DockerRunMutationRecordV1.build(
+                    **{
+                        name: getattr(failed, name)
+                        for name in DockerRunMutationRecordV1.__dataclass_fields__
+                        if name not in {"record_digest", "process_observation_digest"}
+                    },
+                    process_observation_digest="0" * 64,
+                ).record_digest,
+            )
+        )
+
+    process_dead = DockerRunMutationRecordV1.build(
+        **values,
+        phase=DockerRunPhaseV1.PROCESS_FAILED,
+        revision=8,
+        previous_record_digest=succeeded.record_digest,
+        diagnostic="PROCESS_DEAD",
+    )
+    validate_docker_run_transition_v1(succeeded, process_dead)
+    with pytest.raises(ValueError, match="closed diagnostic"):
+        DockerRunMutationRecordV1.build(
+            **values,
+            phase=DockerRunPhaseV1.PROCESS_FAILED,
+            revision=8,
+            previous_record_digest=succeeded.record_digest,
+            diagnostic="ARBITRARY_ZERO_EXIT_FAILURE",
+        )
 
 
 def test_reconcile_matrix_and_unaffected_envelopes_are_exact() -> None:

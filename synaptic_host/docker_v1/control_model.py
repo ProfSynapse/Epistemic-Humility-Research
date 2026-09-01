@@ -437,6 +437,7 @@ def _container_body(v):
         "request_digest": v["request_digest"],
         "schema_version": "synaptic-host-docker-container-inspect/v1",
         "state_digest": v["state"].projection_digest,
+        "working_directory_digest": v["working_directory_digest"],
     }
 
 
@@ -457,6 +458,7 @@ class DockerContainerInspectProjectionV1:
     argument_count: int
     arguments_digest: str
     device_requests_digest: str
+    working_directory_digest: str
     projection_digest: str
 
     def canonical_without_digest(self):
@@ -465,7 +467,7 @@ class DockerContainerInspectProjectionV1:
             "container_name", "container_ref", "device_requests_digest",
             "environment", "image_digest",
             "memory_bytes", "mounts", "nano_cpus", "network_mode",
-            "owned_labels", "request_digest", "state",
+            "owned_labels", "request_digest", "state", "working_directory_digest",
         )
         return _container_body({name: getattr(self, name) for name in names})
 
@@ -502,6 +504,7 @@ class DockerContainerInspectProjectionV1:
         for value in (
             self.request_digest, self.command_digest, self.arguments_digest,
             self.device_requests_digest,
+            self.working_directory_digest,
         ):
             _sha(value)
         if self.request_digest != docker_typed_request_digest_v1(
@@ -615,6 +618,7 @@ def _snapshot_projection(projection):
             projection.argument_count,
             projection.arguments_digest,
             projection.device_requests_digest,
+            projection.working_directory_digest,
             projection.projection_digest,
         )
     else:

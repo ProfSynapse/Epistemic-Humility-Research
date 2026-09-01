@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import json
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -24,6 +25,17 @@ from synaptic_tuner.api.v1 import (
     RevisionConflict,
     RunAlreadyExists,
     EffectCollision,
+)
+from synaptic_tuner.api.v1.providers import ProviderRef
+from tuner.execution.foundation_v2.commands import (
+    CanonicalProviderPayloadV1,
+    build_submit_command,
+)
+from tuner.execution.foundation_v2.executors import ExecutorDescriptorV1
+from tuner.execution.foundation_v2.preparation import CanonicalPreparationV2
+from tuner.execution.foundation_v2.references import (
+    ExecutionScopeV1,
+    StagePredecessorV2,
 )
 from synaptic_tuner.api.v1.modal import (
     ModalDurablePreparationV1,
@@ -66,6 +78,31 @@ from synaptic_host.docker_v1.control_contract import (
 NOW = "2026-08-26T12:00:00Z"
 
 
+def _docker_submit_command():
+    prepared = CanonicalPreparationV2.build(
+        provider=ProviderRef("docker", "profile"),
+        scope=ExecutionScopeV1("account", "namespace"),
+        project_ref="ehr", run_id="docker-run-1",
+        plan_fingerprint="8" * 64, source_digest="9" * 64,
+        workload_digest="a" * 64, runtime_digest="b" * 64,
+        resource_digest="c" * 64, artifact_contract_digest="d" * 64,
+        quote_digest="e" * 64, secret_requirements_digest="f" * 64,
+        execution_binding_digest="1" * 64,
+    )
+    return build_submit_command(
+        prepared, "submit-nonce",
+        CanonicalProviderPayloadV1.build(
+            "docker", "submit-payload/v2", "a" * 64
+        ),
+        ExecutorDescriptorV1("docker", "executor", "1"),
+        StagePredecessorV2(
+            "docker", "profile", "account", "namespace", "ehr",
+            "docker-run-1", "8" * 64, prepared.preparation_digest,
+            "a" * 64, "stage-effect", "2" * 64, "3" * 64,
+        ),
+    )
+
+
 def _authenticated_mutation(
     record: DockerMutationRecordV1,
 ) -> AuthenticatedDockerMutationRecordV1:
@@ -75,7 +112,8 @@ def _authenticated_mutation(
 
 
 def _docker_pair() -> tuple[ProviderPreparationRecordV1, DockerRunMutationRecordV1]:
-    effect_id = "effect-docker-1"
+    submit_command = _docker_submit_command()
+    effect_id = submit_command.operation.effect.effect_id
     stage = DockerStageProjectionV1(
         "host-stage://" + "1" * 64 + "/source", "2" * 64,
         "host-artifact://" + "1" * 64, "3" * 64, "4" * 64, "5" * 64,
@@ -89,6 +127,7 @@ def _docker_pair() -> tuple[ProviderPreparationRecordV1, DockerRunMutationRecord
         prepared_docker_plan_digest="a" * 64,
         endpoint_descriptor_digest="b" * 64, cli_policy_digest="c" * 64,
         destination_ref="local-default", destination_declaration_digest="d" * 64,
+        submit_command_bytes=submit_command.canonical_bytes,
         stage=stage, prepared_at=NOW,
     )
     create = DockerMutationRecordV1.build(
@@ -116,6 +155,33 @@ def repository(tmp_path: Path) -> SqliteTrainingRepository:
     engine.mkdir(parents=True)
     context = ProjectContext.host(engine_root=engine, project_root=project)
     return SqliteTrainingRepository.from_context(context, clock=lambda: NOW)
+
+
+def test_docker_old_preparation_shape_fails_closed_on_load(tmp_path: Path) -> None:
+    value = repository(tmp_path)
+    preparation, mutation = _docker_pair()
+    value.create(initial_record(
+        project_ref=preparation.project_ref,
+        run_id=preparation.run_id,
+        occurred_at=NOW,
+    ))
+    value.create_docker_prepared_run(preparation, mutation)
+    document = json.loads(preparation.canonical_bytes)
+    del document["submit_command_base64"]
+    old = json.dumps(
+        document, sort_keys=True, separators=(",", ":")
+    ).encode()
+    connection = value._connect()
+    try:
+        connection.execute(
+            "UPDATE provider_preparations SET record_json = ?",
+            (old,),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+    with pytest.raises(RuntimeError, match="persistence is invalid"):
+        value.load_docker_preparation("ehr", "docker-run-1")
 
 
 class _Authenticator:

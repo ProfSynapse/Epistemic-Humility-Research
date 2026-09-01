@@ -164,7 +164,10 @@ class DockerHostCreateV1:
             raise ValueError
         return issued
 
-    def create_once(self, *, labels, image, runtime, workload, source_ref, artifact_ref):
+    def create_once(
+        self, *, labels, image, runtime, workload, source_ref, artifact_ref,
+        working_directory,
+    ):
         try:
             labels = snapshot_docker_labels_v1(labels)
             image = DockerImageV1(image.image_ref, image.image_digest, image.presence_policy)
@@ -184,7 +187,8 @@ class DockerHostCreateV1:
             if labels.effect_kind != "submit" or source_ref == artifact_ref:
                 raise ValueError
             preflight = self._preflight(
-                labels, image, runtime, workload, source_ref, artifact_ref
+                labels, image, runtime, workload, source_ref, artifact_ref,
+                working_directory,
             )
             publish_request = DockerExpectedCreatePublishRequestV1.build(
                 labels.command_digest, labels.digest, preflight["expected"]
@@ -297,7 +301,10 @@ class DockerHostCreateV1:
         except BaseException:
             return _indeterminate()
 
-    def _preflight(self, labels, image, runtime, workload, source_ref, artifact_ref):
+    def _preflight(
+        self, labels, image, runtime, workload, source_ref, artifact_ref,
+        working_directory,
+    ):
         resolved = self._resolve(labels, image, runtime, workload, source_ref, artifact_ref)
         path_binding = self._path_binder.bind(resolved, source_ref, artifact_ref)
         path_binding = self._auth(
@@ -331,6 +338,7 @@ class DockerHostCreateV1:
         invocation = DockerPrivateCreateInvocationFactoryV1().build(
             labels=labels, image=image, runtime=runtime, workload=workload,
             source_path=source_path, artifact_path=artifact_path,
+            working_directory=working_directory,
             environment=private_env,
             environment_authority=self._environment_authority,
         )
@@ -341,6 +349,9 @@ class DockerHostCreateV1:
             runtime_digest=runtime.digest, workload_digest=workload.workload_digest,
             argument_count=len(workload.arguments),
             arguments_digest=docker_arguments_projection_digest_v1(workload.arguments),
+            working_directory_digest=sha256(
+                working_directory.encode("utf-8")
+            ).hexdigest(),
             environment_binding_proof_digest=environment.proof_digest,
             mount_resolution_digest=resolved.resolution_digest,
             path_binding_proof_digest=path_binding.proof_digest,

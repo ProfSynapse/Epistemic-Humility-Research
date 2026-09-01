@@ -162,6 +162,19 @@ def _validate_create_command(command, expected_container_name):
             raise ValueError
     if mount_sources[0] == mount_sources[1]:
         raise ValueError
+    if arguments[index:index + 1] != ("--workdir",):
+        raise ValueError
+    index += 1
+    working_directory = arguments[index]
+    index += 1
+    if (
+        not working_directory.startswith("/artifacts/")
+        or any(
+            part in {"", ".", ".."}
+            for part in working_directory.split("/")[1:]
+        )
+    ):
+        raise ValueError
     env_keys = []
     while index < len(arguments) and arguments[index] == "--env":
         if len(env_keys) >= 64 or index + 1 >= len(arguments):
@@ -366,6 +379,15 @@ def _project_container(record: dict, expected_ref: str, request_digest: str,
         raise ValueError
     image_digest = _required_str(record, "Image", _SHA256_ID)
     config = _required_dict(record, "Config")
+    working_directory = _required_str(config, "WorkingDir")
+    if (
+        not working_directory.startswith("/artifacts/")
+        or any(
+            part in {"", ".", ".."}
+            for part in working_directory.split("/")[1:]
+        )
+    ):
+        raise ValueError
     labels = config.get("Labels")
     if type(labels) is not dict:
         raise ValueError
@@ -472,6 +494,7 @@ def _project_container(record: dict, expected_ref: str, request_digest: str,
         argument_count=len(arguments),
         arguments_digest=docker_arguments_projection_digest_v1(arguments),
         device_requests_digest=device_requests_digest,
+        working_directory_digest=_digest_text(working_directory),
     )
 
 
