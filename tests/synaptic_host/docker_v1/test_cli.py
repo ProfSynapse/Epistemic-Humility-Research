@@ -9,7 +9,10 @@ import pytest
 from tuner.execution.providers.docker_provider_v1.model import DockerLabelsV1
 
 from synaptic_host.docker_v1.cli import DockerCLIRunnerV1
-from synaptic_host.docker_v1.control_contract import docker_owned_label_values_v1
+from synaptic_host.docker_v1.control_contract import (
+    docker_device_requests_projection_digest_v1,
+    docker_owned_label_values_v1,
+)
 from synaptic_host.docker_v1.control_model import (
     OWNED_LABEL_NAMES_V1, OWNED_LABEL_PREFIX_V1,
     DockerImageInspectProjectionV1,
@@ -28,7 +31,7 @@ from synaptic_host.docker_v1.model import (
     DockerCLICommandV1,
     DockerCLIEnvironmentV1,
     DockerCLIOutcomeV1,
-    DockerCLIPolicyV1,
+    DockerCLIPolicyV1, DockerLocalEndpointDescriptorV1,
     DockerCLIVerbV1,
     DockerPlatformCodeV1,
     DockerPlatformErrorV1,
@@ -225,7 +228,9 @@ def _environment():
 def _policy(**changes):
     values = {
         "executable": "C:\\Program Files\\Docker\\docker.exe",
-        "context_ref": "desktop-linux",
+        "endpoint": DockerLocalEndpointDescriptorV1.build(
+            "desktop-linux", "npipe:////./pipe/dockerDesktopLinuxEngine", False
+        ),
         "environment": _environment(),
         "timeout_ms": 10_000,
         "terminate_grace_ms": 100,
@@ -247,8 +252,8 @@ def test_argv_context_shell_and_fresh_environment_are_exact():
     result = DockerCLIRunnerV1(_policy(), popen_factory=factory).run(command)
     argv, kwargs = factory.calls[0]
     assert argv == (
-        "C:\\Program Files\\Docker\\docker.exe", "--context",
-        "desktop-linux", "inspect", "name;echo secret",
+        "C:\\Program Files\\Docker\\docker.exe", "--host",
+        "npipe:////./pipe/dockerDesktopLinuxEngine", "inspect", "name;echo secret",
         "$(not-executed)", "a&b",
     )
     assert kwargs["shell"] is False
@@ -322,7 +327,7 @@ def test_policy_rejects_nonabsolute_executable_and_all_extra_environment():
 
     with pytest.raises(DockerPlatformErrorV1) as caught:
         DockerCLIPolicyV1.build(
-            "C:\\Docker\\docker.exe", "desktop-linux", None
+            "C:\\Docker\\docker.exe", None, None
         )
     assert caught.value.code is DockerPlatformCodeV1.POLICY_INVALID
     for key in ("PATH", "HOME", "USERPROFILE", "APPDATA", "DOCKER_CONTEXT",
@@ -783,7 +788,7 @@ def _container_record(container_ref="a" * 64):
     }
 
 
-def _create_command(secret="raw-secret"):
+def _create_command(secret="raw-secret", *, gpu=False):
     labels = DockerLabelsV1(
         "a" * 64, "docker", "profile", "account", "namespace", "project",
         "run", "a" * 64, "a" * 64, "effect", "submit",
@@ -793,6 +798,8 @@ def _create_command(secret="raw-secret"):
         "--name", labels.container_name, "--pull", "never", "--network", "none",
         "--cpus", "1", "--memory", "4096",
     ]
+    if gpu:
+        arguments.extend(("--gpus", "driver=nvidia,device=0"))
     for name, value in zip(
         OWNED_LABEL_NAMES_V1, docker_owned_label_values_v1(labels), strict=True
     ):
@@ -815,11 +822,47 @@ def test_typed_create_strict_success_and_nonzero_projection_matrix():
     assert factory.calls[0][0][-3:] == (
         "sha256:" + "c" * 64, "python", "train.py"
     )
+    assert "--gpus" not in factory.calls[0][0]
 
     runner, _ = _typed_runner(b"raw provider error", exit_code=7)
     result = runner.create_container(_create_command(), "synaptic-" + "a" * 24)
     assert result.projection is None
     assert result.evidence.outcome is DockerCLIOutcomeV1.NONZERO_EXIT
+
+
+def test_typed_create_accepts_only_exact_nvidia_device_zero_option():
+    runner, factory = _typed_runner(b"a" * 64)
+    result = runner.create_container(
+        _create_command(gpu=True), "synaptic-" + "a" * 24
+    )
+    assert result.projection.container_ref == "a" * 64
+    arguments = factory.calls[0][0]
+    assert arguments.count("--gpus") == 1
+    index = arguments.index("--gpus")
+    assert arguments[index:index + 2] == (
+        "--gpus", "driver=nvidia,device=0"
+    )
+
+
+@pytest.mark.parametrize("gpu_tokens", (
+    ("--gpus",),
+    ("--gpus", "all"),
+    ("--gpus", "device=0"),
+    ("--gpus", "device=1"),
+    ("--gpus", "device=0,driver=nvidia"),
+    ("--gpus", "driver=,device=0"),
+    ("--gpus", '"driver=nvidia,device=0"'),
+    ("--gpus", "driver=nvidia,device=0", "--gpus", "driver=nvidia,device=0"),
+    ("--gpu", "device=0"),
+))
+def test_typed_create_rejects_nonexact_gpu_options_before_spawn(gpu_tokens):
+    arguments = list(_create_command().arguments)
+    arguments[10:10] = gpu_tokens
+    command = DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(arguments))
+    runner, factory = _typed_runner(b"a" * 64)
+    with pytest.raises(DockerPlatformErrorV1):
+        runner.create_container(command, "synaptic-" + "a" * 24)
+    assert factory.calls == []
 
 
 def _start_command(ref="d" * 64):
@@ -1204,11 +1247,82 @@ def test_container_and_nested_projection_digests_recompute_on_reconstruction():
             projection.environment,
             entries=(replace(projection.environment.entries[0],
                              value_digest="e" * 64),))),
+        lambda: replace(projection, device_requests_digest="e" * 64),
     )
     for mutate in mutations:
         with pytest.raises(DockerPlatformErrorV1) as caught:
             mutate()
         _assert_closed_causal_error(caught, DockerPlatformCodeV1.OUTPUT_INVALID)
+
+
+def _exact_gpu_device_request():
+    return {
+        "Driver": "nvidia",
+        "Count": 0,
+        "DeviceIDs": ["0"],
+        "Capabilities": [["gpu"]],
+        "Options": {},
+    }
+
+
+def test_inspect_cpu_device_requests_missing_null_and_empty_normalize_identically():
+    digests = []
+    for marker in ("missing", None, []):
+        record = _container_record()
+        if marker != "missing":
+            record["HostConfig"]["DeviceRequests"] = marker
+        runner, _ = _typed_runner(json.dumps([record]).encode())
+        digests.append(
+            runner.inspect_container("a" * 64).projection.device_requests_digest
+        )
+    assert len(set(digests)) == 1
+    assert digests[0] == docker_device_requests_projection_digest_v1(())
+
+
+def test_inspect_exact_nvidia_device_zero_projection_is_digest_bound():
+    record = _container_record()
+    record["HostConfig"]["DeviceRequests"] = [_exact_gpu_device_request()]
+    runner, _ = _typed_runner(json.dumps([record]).encode())
+    projection = runner.inspect_container("a" * 64).projection
+    assert projection.device_requests_digest == (
+        docker_device_requests_projection_digest_v1(
+            (("nvidia", 0, ("0",), (("gpu",),), ()),)
+        )
+    )
+
+
+@pytest.mark.parametrize("requests", (
+    [{"Driver": "", "Count": 0, "DeviceIDs": ["0"], "Capabilities": [["gpu"]], "Options": {}}],
+    [{"Driver": "amd", "Count": 0, "DeviceIDs": ["0"], "Capabilities": [["gpu"]], "Options": {}}],
+    [{"Driver": "nvidia", "Count": 1, "DeviceIDs": ["0"], "Capabilities": [["gpu"]], "Options": {}}],
+    [{"Driver": "nvidia", "Count": 0, "DeviceIDs": ["1"], "Capabilities": [["gpu"]], "Options": {}}],
+    [{"Driver": "nvidia", "Count": 0, "DeviceIDs": ["0"], "Capabilities": [["compute"]], "Options": {}}],
+    [{"Driver": "nvidia", "Count": 0, "DeviceIDs": ["0"], "Capabilities": [["gpu"]], "Options": {"mode": "exclusive"}}],
+    [_exact_gpu_device_request(), _exact_gpu_device_request()],
+))
+def test_inspect_device_request_value_or_multiplicity_drift_fails_closed(requests):
+    record = _container_record()
+    record["HostConfig"]["DeviceRequests"] = requests
+    runner, _ = _typed_runner(json.dumps([record]).encode())
+    with pytest.raises(DockerPlatformErrorV1):
+        runner.inspect_container("a" * 64)
+
+
+@pytest.mark.parametrize("device_request", (
+    {"Driver": "nvidia", "Count": 0, "DeviceIDs": ["0"], "Capabilities": [["gpu"]], "Options": {}, "Extra": True},
+    {"Driver": "nvidia", "DeviceIDs": ["0"], "Capabilities": [["gpu"]], "Options": {}},
+    {"Driver": "nvidia", "Count": False, "DeviceIDs": ["0"], "Capabilities": [["gpu"]], "Options": {}},
+    {"Driver": "nvidia", "Count": "0", "DeviceIDs": ["0"], "Capabilities": [["gpu"]], "Options": {}},
+    {"Driver": "nvidia", "Count": 0, "DeviceIDs": "0", "Capabilities": [["gpu"]], "Options": {}},
+    {"Driver": "nvidia", "Count": 0, "DeviceIDs": ["0"], "Capabilities": ["gpu"], "Options": {}},
+    {"Driver": "nvidia", "Count": 0, "DeviceIDs": ["0"], "Capabilities": [["gpu"]], "Options": []},
+))
+def test_inspect_unknown_or_malformed_device_request_fails_closed(device_request):
+    record = _container_record()
+    record["HostConfig"]["DeviceRequests"] = [device_request]
+    runner, _ = _typed_runner(json.dumps([record]).encode())
+    with pytest.raises(DockerPlatformErrorV1):
+        runner.inspect_container("a" * 64)
 
 
 def test_environment_projection_is_order_independent_and_keeps_defaults():

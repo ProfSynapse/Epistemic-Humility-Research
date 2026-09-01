@@ -4,6 +4,7 @@ from threading import Lock
 from typing import Protocol
 import re
 
+from synaptic_tuner.api.v1.training import AcceleratorDeviceRequestV1
 from tuner.execution.providers.docker_provider_v1.model import (
     DockerImageV1, DockerLabelsV1, DockerRuntimeV1, DockerWorkloadV1,
 )
@@ -342,7 +343,12 @@ class DockerPrivateCreateInvocationFactoryV1:
             )
             runtime = DockerRuntimeV1(
                 runtime.cpu_count, runtime.memory_bytes, runtime.timeout_seconds,
-                runtime.network_mode, runtime.gpu_enabled,
+                AcceleratorDeviceRequestV1(
+                    runtime.accelerator_devices.kind,
+                    tuple(runtime.accelerator_devices.device_indices),
+                    tuple(runtime.accelerator_devices.capabilities),
+                ),
+                runtime.network_mode,
             )
             workload = DockerWorkloadV1(
                 tuple(workload.arguments), tuple(workload.environment_keys),
@@ -381,6 +387,8 @@ class DockerPrivateCreateInvocationFactoryV1:
                 "--network", "none", "--cpus", str(runtime.cpu_count),
                 "--memory", str(runtime.memory_bytes),
             ]
+            if runtime.accelerator_devices.kind == "nvidia":
+                arguments.extend(("--gpus", "driver=nvidia,device=0"))
             values = docker_owned_label_values_v1(labels)
             for name, value in zip(OWNED_LABEL_NAMES_V1, values, strict=True):
                 arguments.extend((

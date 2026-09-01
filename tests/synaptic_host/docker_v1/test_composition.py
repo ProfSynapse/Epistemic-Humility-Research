@@ -38,7 +38,7 @@ from synaptic_host.docker_v1.authority import (
 from synaptic_host.bundle_io_v1.model import BundleMemberCommandV1
 from synaptic_host.docker_v1.binding import DockerWorkloadEnvironmentPolicyV1
 from synaptic_host.docker_v1.model import (
-    DockerCLIEnvironmentV1, DockerCLIPolicyV1,
+    DockerCLIEnvironmentV1, DockerCLIPolicyV1, DockerLocalEndpointDescriptorV1,
 )
 from synaptic_host.local_io_v1.filesystem import LocalFilesystemV1
 from synaptic_host.security import FileHmacAuthenticator
@@ -343,7 +343,8 @@ def _real_request(tmp_path, *, include_port=False):
         ("TMP", "C:\\Temp"), ("WINDIR", "C:\\Windows"),
     ))
     cli_policy = DockerCLIPolicyV1.build(
-        "C:\\Program Files\\Docker\\docker.exe", "desktop-linux",
+        "C:\\Program Files\\Docker\\docker.exe", DockerLocalEndpointDescriptorV1.build(
+            "desktop-linux", "npipe:////./pipe/dockerDesktopLinuxEngine", False),
         environment, timeout_ms=100, terminate_grace_ms=10,
         stdout_limit=100, stderr_limit=100, combined_limit=200,
     )

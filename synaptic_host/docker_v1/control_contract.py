@@ -6,6 +6,7 @@ from hashlib import sha256
 import re
 import unicodedata
 
+from synaptic_tuner.api.v1.training import AcceleratorDeviceRequestV1
 from tuner.execution.providers.docker_provider_v1.model import (
     AuthenticatedDockerAbsenceV1,
     DockerAbsenceContentV1,
@@ -31,6 +32,93 @@ from .control_model import (
 _CONTAINER_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}\Z")
 _CONTAINER_REF = re.compile(r"[0-9a-f]{64}\Z")
 MAX_WORKLOAD_ENV_ENTRIES_V1 = 64
+
+
+def docker_device_requests_projection_digest_v1(value):
+    """Digest a bounded, immutable projection of Docker DeviceRequests."""
+    try:
+        if type(value) is not tuple or len(value) > 8:
+            raise ValueError
+        projected = []
+        for item in value:
+            if type(item) is not tuple or len(item) != 5:
+                raise ValueError
+            driver, count, device_ids, capabilities, options = item
+            if (
+                type(driver) is not str
+                or not 1 <= len(driver.encode("utf-8")) <= 64
+                or type(count) is not int
+                or not -(2**31) <= count <= 2**31 - 1
+                or type(device_ids) is not tuple
+                or not 1 <= len(device_ids) <= 8
+                or any(
+                    type(device_id) is not str
+                    or not 1 <= len(device_id.encode("utf-8")) <= 64
+                    for device_id in device_ids
+                )
+                or type(capabilities) is not tuple
+                or not 1 <= len(capabilities) <= 8
+                or any(
+                    type(group) is not tuple
+                    or not 1 <= len(group) <= 8
+                    or any(
+                        type(capability) is not str
+                        or not 1 <= len(capability.encode("utf-8")) <= 64
+                        for capability in group
+                    )
+                    for group in capabilities
+                )
+                or type(options) is not tuple
+                or len(options) > 16
+                or tuple(sorted(options)) != options
+                or len({key for key, _ in options}) != len(options)
+                or any(
+                    type(key) is not str
+                    or type(option) is not str
+                    or not 1 <= len(key.encode("utf-8")) <= 64
+                    or len(option.encode("utf-8")) > 256
+                    for key, option in options
+                )
+            ):
+                raise ValueError
+            projected.append({
+                "Capabilities": [list(group) for group in capabilities],
+                "Count": count,
+                "DeviceIDs": list(device_ids),
+                "Driver": driver,
+                "Options": dict(options),
+            })
+        return digest_v1({
+            "device_requests": projected,
+            "schema_version": "synaptic-host-docker-device-requests-projection/v1",
+        })
+    except BaseException:
+        _fail()
+
+
+def docker_accelerator_device_requests_digest_v1(value):
+    """Map the released provider-neutral request to exact Docker evidence."""
+    try:
+        if type(value) is not AcceleratorDeviceRequestV1:
+            raise ValueError
+        rebuilt = AcceleratorDeviceRequestV1(
+            value.kind, tuple(value.device_indices), tuple(value.capabilities)
+        )
+        if rebuilt != value:
+            raise ValueError
+        if rebuilt == AcceleratorDeviceRequestV1("cpu", (), ()):
+            projection = ()
+        elif rebuilt == AcceleratorDeviceRequestV1(
+            "nvidia", (0,), ("gpu",)
+        ):
+            projection = (("nvidia", 0, ("0",), (("gpu",),), ()),)
+        else:
+            raise ValueError
+        return docker_device_requests_projection_digest_v1(projection)
+    except DockerControlContractErrorV1:
+        raise
+    except BaseException:
+        _fail()
 
 
 def docker_safe_unc_v1(value):
@@ -350,7 +438,7 @@ def _snapshot_contract_content(value):
                 value.operation_id, value.operation, value.effect_id,
                 value.engine_command_digest, value.labels_digest,
                 value.container_name, value.create_specification_digest,
-                value.cli_command_digest, value.container_ref,
+                value.cli_command_digest, value.cli_policy_digest, value.container_ref,
                 value.verified_create_record_digest, value.intent_digest,
             )
         if type(value) is DockerMutationRecordV1:
@@ -455,6 +543,8 @@ class DockerCreateSpecificationV1:
     network_mode: str
     nano_cpus: int
     memory_bytes: int
+    device_requests_digest: str
+    endpoint_descriptor_digest: str
     specification_digest: str
 
     def canonical_without_digest(self):
@@ -471,7 +561,9 @@ class DockerCreateSpecificationV1:
             "path_binding_proof_digest", "source_windows_path_digest",
             "source_unc_digest", "source_destination_digest",
             "artifact_windows_path_digest", "artifact_unc_digest",
-            "artifact_destination_digest", "specification_digest",
+            "artifact_destination_digest", "device_requests_digest",
+            "endpoint_descriptor_digest",
+            "specification_digest",
         ):
             _sha(getattr(self, name))
         if (
@@ -528,6 +620,7 @@ class DockerControlIntentV1:
     container_name: str
     create_specification_digest: str
     cli_command_digest: str
+    cli_policy_digest: str
     container_ref: str | None
     verified_create_record_digest: str | None
     intent_digest: str
@@ -541,7 +634,8 @@ class DockerControlIntentV1:
     def __post_init__(self):
         for value in (self.operation_id, self.engine_command_digest,
                       self.labels_digest, self.create_specification_digest,
-                      self.cli_command_digest, self.intent_digest):
+                      self.cli_command_digest, self.cli_policy_digest,
+                      self.intent_digest):
             _sha(value)
         _ref(self.effect_id)
         if (

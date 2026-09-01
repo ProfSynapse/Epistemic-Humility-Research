@@ -8,6 +8,7 @@ import traceback
 
 import pytest
 
+from synaptic_tuner.api.v1.training import AcceleratorDeviceRequestV1
 from tuner.execution.providers.docker_provider_v1.model import (
     AuthenticatedDockerAbsenceV1,
     DockerAbsenceContentV1,
@@ -39,6 +40,8 @@ from synaptic_host.docker_v1.control_contract import (
     DockerMutationRecordV1,
     DockerWorkloadEnvironmentBindingV1,
     DockerWorkloadEnvironmentEntryV1,
+    docker_accelerator_device_requests_digest_v1,
+    docker_device_requests_projection_digest_v1,
     docker_operation_id_v1,
     authenticate_absence_v1,
     authenticate_control_intent_v1,
@@ -533,13 +536,17 @@ class CaptureCreateRunner:
 
 
 def _factory_invocation(*, pairs=(("TOKEN", "raw-secret"),), arguments=("python", "train.py"),
-                        source=None, artifact=None, workload_digest=SHA):
+                        source=None, artifact=None, workload_digest=SHA,
+                        accelerator=None):
     keys = tuple(key for key, _ in pairs)
     workload = DockerWorkloadV1(tuple(arguments), keys, workload_digest)
     return DockerPrivateCreateInvocationFactoryV1().build(
         labels=_factory_labels(),
         image=DockerImageV1("ignored-ref", "sha256:" + "b" * 64),
-        runtime=DockerRuntimeV1(2, 4096, 60), workload=workload,
+        runtime=DockerRuntimeV1(
+            2, 4096, 60,
+            accelerator or AcceleratorDeviceRequestV1("cpu", (), ()),
+        ), workload=workload,
         source_path=source or _windows_path(
             DockerWSLPathPurposeV1.SOURCE_READ, "/source"
         ),
@@ -579,6 +586,22 @@ def test_private_factory_builds_exact_full_create_argv_in_frozen_order():
     )
     assert result.command_digest == runner.command.command_digest
     assert "raw-secret" not in repr(invocation)
+
+
+def test_private_factory_gpu_adds_only_exact_device_zero_option():
+    invocation = _factory_invocation(
+        accelerator=AcceleratorDeviceRequestV1(
+            "nvidia", (0,), ("gpu",)
+        )
+    )
+    runner = CaptureCreateRunner()
+    invocation.execute_once(runner)
+    arguments = runner.command.arguments
+    assert arguments[10:12] == (
+        "--gpus", "driver=nvidia,device=0"
+    )
+    assert arguments.count("--gpus") == 1
+    assert arguments[12:42:2] == ("--label",) * 15
 
 
 def test_private_factory_maximum_env_and_workload_shape_is_within_cli_limit():
@@ -652,6 +675,10 @@ def _spec(**changes):
         artifact_destination_digest=sha256(b"/artifacts").hexdigest(),
         artifact_read_write=True, network_mode="none",
         nano_cpus=1_000_000_000, memory_bytes=1,
+        device_requests_digest=docker_accelerator_device_requests_digest_v1(
+            AcceleratorDeviceRequestV1("cpu", (), ())
+        ),
+        endpoint_descriptor_digest=SHA,
     )
     values.update(changes)
     return DockerCreateSpecificationV1.build(**values)
@@ -670,13 +697,60 @@ def test_create_spec_engine_bounds_and_fixed_destinations(changes):
     assert valid.source_destination_digest == sha256(b"/source").hexdigest()
 
 
+def test_device_request_mapping_and_create_specification_are_digest_bound():
+    cpu = AcceleratorDeviceRequestV1("cpu", (), ())
+    gpu = AcceleratorDeviceRequestV1("nvidia", (0,), ("gpu",))
+    cpu_digest = docker_accelerator_device_requests_digest_v1(cpu)
+    gpu_digest = docker_accelerator_device_requests_digest_v1(gpu)
+    assert cpu_digest == docker_device_requests_projection_digest_v1(())
+    assert gpu_digest == docker_device_requests_projection_digest_v1(
+        (("nvidia", 0, ("0",), (("gpu",),), ()),)
+    )
+    assert cpu_digest != gpu_digest
+    cpu_spec = _spec(device_requests_digest=cpu_digest)
+    gpu_spec = _spec(device_requests_digest=gpu_digest)
+    assert cpu_spec.specification_digest != gpu_spec.specification_digest
+    with pytest.raises(DockerControlContractErrorV1):
+        replace(cpu_spec, device_requests_digest=gpu_digest)
+
+
+def test_device_request_mapping_rejects_unsupported_or_hostile_values():
+    unsupported = (
+        AcceleratorDeviceRequestV1("nvidia", (1,), ("gpu",)),
+        AcceleratorDeviceRequestV1("nvidia", (0, 1), ("gpu",)),
+        AcceleratorDeviceRequestV1("amd", (0,), ("gpu",)),
+        AcceleratorDeviceRequestV1("nvidia", (0,), ("compute",)),
+    )
+    for value in unsupported:
+        with pytest.raises(DockerControlContractErrorV1):
+            docker_accelerator_device_requests_digest_v1(value)
+
+    class Hostile(AcceleratorDeviceRequestV1):
+        pass
+
+    with pytest.raises(DockerControlContractErrorV1):
+        docker_accelerator_device_requests_digest_v1(
+            Hostile("cpu", (), ())
+        )
+
+
+@pytest.mark.parametrize("projection", (
+    (("nvidia", False, ("0",), (("gpu",),), ()),),
+    (("nvidia", "0", ("0",), (("gpu",),), ()),),
+    (("nvidia", ("0",), (("gpu",),), ()),),
+))
+def test_device_request_projection_requires_exact_integer_count(projection):
+    with pytest.raises(DockerControlContractErrorV1):
+        docker_device_requests_projection_digest_v1(projection)
+
+
 def _intent(operation=DockerControlOperationV1.CREATE, **changes):
     effect = "effect"
     values = dict(
         operation_id=docker_operation_id_v1(operation, effect), operation=operation,
         effect_id=effect, engine_command_digest=SHA, labels_digest=SHA,
         container_name="synaptic-job", create_specification_digest=SHA,
-        cli_command_digest=SHA, container_ref=None,
+        cli_command_digest=SHA, cli_policy_digest=SHA, container_ref=None,
         verified_create_record_digest=None,
     )
     if operation is DockerControlOperationV1.START:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from hashlib import sha256
 
+from synaptic_tuner.api.v1.training import AcceleratorDeviceRequestV1
 from tuner.execution.providers.docker_provider_v1.model import (
     DockerCreateDispositionV1, DockerCreateResultV1, DockerImageV1,
     DockerLabelsV1, DockerRuntimeV1, DockerWorkloadV1,
@@ -26,6 +27,7 @@ from .control_contract import (
     authenticate_control_intent_v1, authenticate_create_path_binding_v1,
     authenticate_expected_create_binding_v1, authenticate_mutation_record_v1,
     authenticate_workload_environment_binding_v1,
+    docker_accelerator_device_requests_digest_v1,
     docker_arguments_projection_digest_v1, docker_operation_id_v1,
     docker_owned_labels_projection_digest_v1, snapshot_docker_labels_v1,
     _snapshot_authenticated, _snapshot_contract_content,
@@ -75,6 +77,7 @@ class DockerHostCreateV1:
         environment_resolver, typed_runner, expected_publisher,
         mutation_repository, path_authority, environment_authority,
         intent_authority, expected_authority, record_authority,
+        endpoint_descriptor_digest, cli_policy_digest,
     ):
         self._mount_resolver = mount_resolver
         self._path_binder = path_binder
@@ -88,6 +91,8 @@ class DockerHostCreateV1:
         self._intent_authority = intent_authority
         self._expected_authority = expected_authority
         self._record_authority = record_authority
+        self._endpoint_descriptor_digest = endpoint_descriptor_digest
+        self._cli_policy_digest = cli_policy_digest
         self._pins = {
             "path": self._pin(path_authority),
             "environment": self._pin(environment_authority),
@@ -165,7 +170,12 @@ class DockerHostCreateV1:
             image = DockerImageV1(image.image_ref, image.image_digest, image.presence_policy)
             runtime = DockerRuntimeV1(
                 runtime.cpu_count, runtime.memory_bytes, runtime.timeout_seconds,
-                runtime.network_mode, runtime.gpu_enabled,
+                AcceleratorDeviceRequestV1(
+                    runtime.accelerator_devices.kind,
+                    tuple(runtime.accelerator_devices.device_indices),
+                    tuple(runtime.accelerator_devices.capabilities),
+                ),
+                runtime.network_mode,
             )
             workload = DockerWorkloadV1(
                 tuple(workload.arguments), tuple(workload.environment_keys),
@@ -344,6 +354,10 @@ class DockerHostCreateV1:
             artifact_read_write=True, network_mode="none",
             nano_cpus=runtime.cpu_count * 1_000_000_000,
             memory_bytes=runtime.memory_bytes,
+            device_requests_digest=docker_accelerator_device_requests_digest_v1(
+                runtime.accelerator_devices
+            ),
+            endpoint_descriptor_digest=self._endpoint_descriptor_digest,
         )
         operation_id = docker_operation_id_v1(
             DockerControlOperationV1.CREATE, labels.effect_id
@@ -354,6 +368,7 @@ class DockerHostCreateV1:
             labels_digest=labels.digest, container_name=labels.container_name,
             create_specification_digest=specification.specification_digest,
             cli_command_digest=invocation.command_digest, container_ref=None,
+            cli_policy_digest=self._cli_policy_digest,
             verified_create_record_digest=None,
         )
         auth_intent = self._issue(
@@ -440,10 +455,16 @@ class DockerHostCreateV1:
         )
 
     def _recover(self, preflight, current, create_result, already_verified=False):
+        if (
+            create_result is not None
+            and create_result.evidence.policy_digest != self._cli_policy_digest
+        ):
+            return _indeterminate()
         labels = preflight["labels"]
         inventory = _snapshot_typed(
             self._typed_runner.inventory_exact_name(labels.container_name),
             DockerExactNameInventoryResultV1, labels.container_name,
+            self._cli_policy_digest,
         )
         if inventory.evidence.outcome is not DockerCLIOutcomeV1.SUCCESS:
             return _indeterminate()
@@ -476,12 +497,13 @@ class DockerHostCreateV1:
         inspected = _snapshot_typed(
             self._typed_runner.inspect_container(container_ref),
             DockerContainerInspectResultV1, container_ref,
+            self._cli_policy_digest,
         )
         if inspected.evidence.outcome is not DockerCLIOutcomeV1.SUCCESS:
             return _indeterminate()
         if not docker_create_projection_matches_v1(
             labels, preflight["expected"], preflight["environment"],
-            inspected.projection, container_ref,
+            inspected.projection, container_ref, inspected.evidence,
         ):
             return _collision()
         if already_verified:

@@ -411,9 +411,11 @@ def test_remaining_typed_host_authorities_round_trip(tmp_path, mount_env):
         effect_id="submit-effect", engine_command_digest="3" * 64,
         labels_digest="4" * 64, container_name="synaptic-container",
         create_specification_digest="5" * 64,
-        cli_command_digest="6" * 64, container_ref=None,
+        cli_command_digest="6" * 64, cli_policy_digest="a" * 64,
+        container_ref=None,
         verified_create_record_digest=None,
     )
+    assert intent.cli_policy_digest == "a" * 64
     mutation = DockerMutationRecordV1.build(
         operation_id=operation_id, operation=operation,
         effect_id="submit-effect", control_intent_proof_digest="7" * 64,

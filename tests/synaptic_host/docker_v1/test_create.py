@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from synaptic_tuner.api.v1.training import AcceleratorDeviceRequestV1
 from tuner.execution.providers.docker_provider_v1.model import (
     DockerCreateDispositionV1, DockerImageV1, DockerLabelsV1, DockerRuntimeV1,
     DockerWorkloadV1,
@@ -71,6 +72,7 @@ def _host():
         path_authority=authority, environment_authority=authority,
         intent_authority=authority, expected_authority=authority,
         record_authority=authority,
+        endpoint_descriptor_digest=SHA, cli_policy_digest=SHA,
     )
 
 
@@ -86,12 +88,13 @@ def test_shared_verifier_accepts_exact_fixture_and_rejects_config_drift():
     labels, ref, _record, expected, inspected = _one_id_fixture()
     environment = expected.content.environment_binding
     assert docker_create_projection_matches_v1(
-        labels, expected, environment, inspected.projection, ref
+        labels, expected, environment, inspected.projection, ref,
+        inspected.evidence,
     )
     drifted = inspected.projection
     object.__setattr__(drifted, "memory_bytes", 2048)
     assert not docker_create_projection_matches_v1(
-        labels, expected, environment, drifted, ref
+        labels, expected, environment, drifted, ref, inspected.evidence
     )
 
 
@@ -391,11 +394,14 @@ def _transaction_host(*, publish=DockerExpectedCreatePublishDispositionV1.PUBLIS
         mutation_repository=repository, path_authority=authority,
         environment_authority=authority, intent_authority=authority,
         expected_authority=authority, record_authority=authority,
+        endpoint_descriptor_digest=SHA, cli_policy_digest=SHA,
     )
     preflight = {
         "labels": HARNESS_LABELS,
         "image": DockerImageV1("image", HARNESS_EXPECTED.content.create_specification.image_digest),
-        "runtime": DockerRuntimeV1(1, 1024, 60),
+        "runtime": DockerRuntimeV1(
+            1, 1024, 60, AcceleratorDeviceRequestV1("cpu", (), ())
+        ),
         "workload": DockerWorkloadV1(("x",), ("TOKEN",), SHA),
         "source_ref": "source", "artifact_ref": "artifact",
         "resolved": SimpleNamespace(resolution_digest=SHA),
@@ -418,7 +424,9 @@ def _call(host):
     return host.create_once(
         labels=HARNESS_LABELS,
         image=DockerImageV1("image", HARNESS_EXPECTED.content.create_specification.image_digest),
-        runtime=DockerRuntimeV1(1, 1024, 60),
+        runtime=DockerRuntimeV1(
+            1, 1024, 60, AcceleratorDeviceRequestV1("cpu", (), ())
+        ),
         workload=DockerWorkloadV1(("x",), ("TOKEN",), SHA),
         source_ref="source", artifact_ref="artifact",
     )

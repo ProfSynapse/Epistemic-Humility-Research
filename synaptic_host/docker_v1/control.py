@@ -46,7 +46,7 @@ def _closed():
     raise DockerHostControlErrorV1() from None
 
 
-def _snapshot_typed(value, expected_type, requested_target):
+def _snapshot_typed(value, expected_type, requested_target, policy_digest):
     try:
         if type(value) is not expected_type:
             raise ValueError
@@ -55,7 +55,10 @@ def _snapshot_typed(value, expected_type, requested_target):
             value.command, value.evidence, value.projection,
             value.result_digest,
         )
-        if rebuilt.target != requested_target:
+        if (
+            rebuilt.target != requested_target
+            or rebuilt.evidence.policy_digest != policy_digest
+        ):
             raise ValueError
         if expected_type is DockerExactNameInventoryResultV1 and (
             rebuilt.projection is not None
@@ -78,7 +81,7 @@ class DockerHostControlV1:
     def __init__(
         self, *, typed_cli, mutation_repository, mutation_record_authority,
         expected_catalog, expected_authority, intent_authority,
-        environment_authority, absence_authority,
+        environment_authority, absence_authority, cli_policy_digest,
     ):
         try:
             dependencies = (
@@ -102,6 +105,7 @@ class DockerHostControlV1:
             self._intent_authority = intent_authority
             self._environment_authority = environment_authority
             self._absence_authority = absence_authority
+            self._cli_policy_digest = cli_policy_digest
             self._record_pins = (
                 mutation_record_authority.authority_ref,
                 mutation_record_authority.key_ref,
@@ -153,6 +157,7 @@ class DockerHostControlV1:
             result = _snapshot_typed(
                 self._typed_cli.inspect_image(image.image_digest),
                 DockerImageInspectResultV1, image.image_digest,
+                self._cli_policy_digest,
             )
             if result.evidence.outcome is DockerCLIOutcomeV1.SUCCESS:
                 return result.projection.image_digest == image.image_digest
@@ -185,6 +190,7 @@ class DockerHostControlV1:
             inventory = _snapshot_typed(
                 self._typed_cli.inventory_exact_name(labels.container_name),
                 DockerExactNameInventoryResultV1, labels.container_name,
+                self._cli_policy_digest,
             )
             if inventory.evidence.outcome is not DockerCLIOutcomeV1.SUCCESS:
                 return _indeterminate()
@@ -313,17 +319,20 @@ class DockerHostControlV1:
         if (
             expected.content.labels != request.labels
             or record.content.control_intent_proof_digest != intent.proof_digest
+            or intent.content.cli_policy_digest != self._cli_policy_digest
         ):
             return _indeterminate()
         inspected = _snapshot_typed(
             self._typed_cli.inspect_container(container_ref),
             DockerContainerInspectResultV1, container_ref,
+            self._cli_policy_digest,
         )
         if inspected.evidence.outcome is not DockerCLIOutcomeV1.SUCCESS:
             return _indeterminate()
         projection = inspected.projection
         if not self._matches(
-            request.labels, expected, environment, projection, container_ref
+            request.labels, expected, environment, projection, container_ref,
+            inspected.evidence,
         ):
             return _indeterminate()
         phase = self._phase(projection.state, request.purpose)
@@ -361,9 +370,9 @@ class DockerHostControlV1:
         return returned
 
     @staticmethod
-    def _matches(labels, expected, environment, projection, container_ref):
+    def _matches(labels, expected, environment, projection, container_ref, evidence):
         return docker_create_projection_matches_v1(
-            labels, expected, environment, projection, container_ref
+            labels, expected, environment, projection, container_ref, evidence
         )
 
     @staticmethod

@@ -1185,9 +1185,44 @@ class DockerCLIEnvironmentV1:
 
 
 @dataclass(frozen=True, slots=True)
+class DockerLocalEndpointDescriptorV1:
+    source_context_ref: str
+    host: str
+    tls: bool
+
+    def __post_init__(self) -> None:
+        try:
+            if (
+                self.source_context_ref != "desktop-linux"
+                or self.host != "npipe:////./pipe/dockerDesktopLinuxEngine"
+                or type(self.tls) is not bool
+                or self.tls is not False
+            ):
+                raise ValueError
+        except BaseException:
+            _platform_fail(DockerPlatformCodeV1.POLICY_INVALID)
+
+    def canonical(self) -> dict[str, object]:
+        return {
+            "host": self.host,
+            "schema_version": "synaptic-host-docker-local-endpoint/v1",
+            "source_context_ref": self.source_context_ref,
+            "tls": self.tls,
+        }
+
+    @property
+    def descriptor_digest(self) -> str:
+        return digest_v1(self.canonical())
+
+    @classmethod
+    def build(cls, source_context_ref, host, tls):
+        return cls(source_context_ref, host, tls)
+
+
+@dataclass(frozen=True, slots=True)
 class DockerCLIPolicyV1:
     executable: str
-    context_ref: str
+    endpoint: DockerLocalEndpointDescriptorV1
     environment: DockerCLIEnvironmentV1
     timeout_ms: int
     terminate_grace_ms: int
@@ -1199,9 +1234,15 @@ class DockerCLIPolicyV1:
     def __post_init__(self) -> None:
         try:
             _docker_desktop_wsl_executable_v1(self.executable)
-            checked_ref_v1(self.context_ref, BundleIOCodeV1.COMMAND_INVALID)
-            if type(self.environment) is not DockerCLIEnvironmentV1:
+            if (
+                type(self.endpoint) is not DockerLocalEndpointDescriptorV1
+                or type(self.environment) is not DockerCLIEnvironmentV1
+            ):
                 raise ValueError
+            DockerLocalEndpointDescriptorV1.build(
+                self.endpoint.source_context_ref, self.endpoint.host,
+                self.endpoint.tls,
+            )
             if (
                 type(self.timeout_ms) is not int or not 1 <= self.timeout_ms <= 3_600_000
                 or type(self.terminate_grace_ms) is not int or not 1 <= self.terminate_grace_ms <= 60_000
@@ -1220,7 +1261,7 @@ class DockerCLIPolicyV1:
     def canonical_without_digest(self) -> dict[str, object]:
         return {
             "combined_limit": self.combined_limit,
-            "context_ref": self.context_ref,
+            "endpoint_descriptor_digest": self.endpoint.descriptor_digest,
             "environment_digest": self.environment.environment_digest,
             "executable": self.executable,
             "schema_version": "synaptic-host-docker-cli-policy/v1",
@@ -1230,22 +1271,29 @@ class DockerCLIPolicyV1:
         }
 
     @classmethod
-    def build(cls, executable, context_ref, environment, *, timeout_ms=30_000,
+    def build(cls, executable, endpoint, environment, *, timeout_ms=30_000,
               terminate_grace_ms=1_000, stdout_limit=MAX_DOCKER_STREAM_BYTES_V1,
               stderr_limit=MAX_DOCKER_STREAM_BYTES_V1,
               combined_limit=MAX_DOCKER_COMBINED_BYTES_V1):
         try:
-            if type(environment) is not DockerCLIEnvironmentV1:
+            if (
+                type(endpoint) is not DockerLocalEndpointDescriptorV1
+                or type(environment) is not DockerCLIEnvironmentV1
+            ):
                 raise ValueError
+            endpoint = DockerLocalEndpointDescriptorV1.build(
+                endpoint.source_context_ref, endpoint.host, endpoint.tls,
+            )
             body = {
-                "combined_limit": combined_limit, "context_ref": context_ref,
+                "combined_limit": combined_limit,
+                "endpoint_descriptor_digest": endpoint.descriptor_digest,
                 "environment_digest": environment.environment_digest,
                 "executable": executable,
                 "schema_version": "synaptic-host-docker-cli-policy/v1",
                 "stderr_limit": stderr_limit, "stdout_limit": stdout_limit,
                 "terminate_grace_ms": terminate_grace_ms, "timeout_ms": timeout_ms,
             }
-            return cls(executable, context_ref, environment, timeout_ms,
+            return cls(executable, endpoint, environment, timeout_ms,
                        terminate_grace_ms, stdout_limit, stderr_limit,
                        combined_limit, digest_v1(body))
         except DockerPlatformErrorV1 as error:

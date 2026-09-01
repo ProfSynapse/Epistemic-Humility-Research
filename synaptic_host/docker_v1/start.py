@@ -69,7 +69,7 @@ class DockerHostStartV1:
     def __init__(
         self, *, typed_runner, mutation_repository, expected_catalog,
         expected_authority, intent_authority, environment_authority,
-        record_authority,
+        record_authority, endpoint_descriptor_digest, cli_policy_digest,
     ):
         dependencies = (
             typed_runner, mutation_repository, expected_catalog,
@@ -85,6 +85,8 @@ class DockerHostStartV1:
         self._intent_authority = intent_authority
         self._environment_authority = environment_authority
         self._record_authority = record_authority
+        self._endpoint_descriptor_digest = endpoint_descriptor_digest
+        self._cli_policy_digest = cli_policy_digest
         self._pins = {
             "expected": self._pin(expected_authority),
             "intent": self._pin(intent_authority),
@@ -292,6 +294,9 @@ class DockerHostStartV1:
             or create_intent.content.labels_digest != labels.digest
             or create_intent.content.create_specification_digest
             != expected.content.create_specification.specification_digest
+            or create_intent.content.cli_policy_digest != self._cli_policy_digest
+            or expected.content.create_specification.endpoint_descriptor_digest
+            != self._endpoint_descriptor_digest
             or create_intent.content.container_name != labels.container_name
             or create_record.content.operation is not DockerControlOperationV1.CREATE
             or create_record.content.operation_id != create_operation_id
@@ -305,12 +310,13 @@ class DockerHostStartV1:
         pre_inspected = _snapshot_typed(
             self._typed_runner.inspect_container(container_ref),
             DockerContainerInspectResultV1, container_ref,
+            self._cli_policy_digest,
         )
         if pre_inspected.evidence.outcome is not DockerCLIOutcomeV1.SUCCESS:
             raise ValueError
         if not docker_create_projection_matches_v1(
             labels, expected, environment, pre_inspected.projection,
-            container_ref,
+            container_ref, pre_inspected.evidence,
         ):
             raise _ProjectionCollisionV1
         command = DockerCLICommandV1.build(
@@ -331,6 +337,7 @@ class DockerHostStartV1:
                 expected.content.create_specification.specification_digest
             ),
             cli_command_digest=command.command_digest,
+            cli_policy_digest=self._cli_policy_digest,
             container_ref=container_ref,
             verified_create_record_digest=create_record.content.record_digest,
         )
@@ -384,16 +391,23 @@ class DockerHostStartV1:
         )
 
     def _recover(self, preflight, current, start_result, already_verified=False):
+        if (
+            start_result is not None
+            and start_result.evidence.policy_digest != self._cli_policy_digest
+        ):
+            return _indeterminate()
         container_ref = preflight["container_ref"]
         inspected = _snapshot_typed(
             self._typed_runner.inspect_container(container_ref),
             DockerContainerInspectResultV1, container_ref,
+            self._cli_policy_digest,
         )
         if inspected.evidence.outcome is not DockerCLIOutcomeV1.SUCCESS:
             return _indeterminate()
         if not docker_create_projection_matches_v1(
             preflight["labels"], preflight["expected"],
             preflight["environment"], inspected.projection, container_ref,
+            inspected.evidence,
         ):
             return _collision()
         if not inspected.projection.state.started:

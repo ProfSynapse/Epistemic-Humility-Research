@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from synaptic_tuner.api.v1.providers import ProviderCapabilities, ProviderDescriptor, ProviderRef
+from synaptic_tuner.api.v1.training import AcceleratorDeviceRequestV1
 from tuner.execution.foundation_v2.canonical import canonical_bytes, domain_digest
 from tuner.execution.foundation_v2.commands import (
     CanonicalProviderPayloadV1,
@@ -91,7 +92,10 @@ def _profile(profile_ref: str) -> DockerProfileV1:
             "docker", "docker-reconcile-v1", "1.0.0"
         ),
         image=DockerImageV1("fixture-image", "sha256:" + "a" * 64),
-        runtime=DockerRuntimeV1(2, 1_073_741_824, 3600),
+        runtime=DockerRuntimeV1(
+            2, 1_073_741_824, 3600,
+            AcceleratorDeviceRequestV1("cpu", (), ()),
+        ),
         workload=DockerWorkloadV1(("python", "run.py"), (), D[0]),
         roots=DockerRootsV1("dataset-source", "artifact-root"),
         artifacts=DockerArtifactContractV1(("result",), 1_048_576, 1_048_576),

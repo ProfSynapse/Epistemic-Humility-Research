@@ -4,6 +4,7 @@ from threading import Event
 
 import pytest
 
+from synaptic_tuner.api.v1.training import AcceleratorDeviceRequestV1
 from tuner.execution.foundation_v2.commands import build_submit_command
 from tuner.execution.providers.docker_provider_v1.model import (
     DockerCommandBindingV1,
@@ -100,7 +101,10 @@ def test_exact_create_inputs_resolve_authenticated_logical_mounts(mount_env):
         {"source_ref": "other-source"},
         {"artifact_ref": "other-artifact"},
         {"image": DockerImageV1("other-image", "sha256:" + "a" * 64)},
-        {"runtime": DockerRuntimeV1(3, 1_073_741_824, 3600)},
+        {"runtime": DockerRuntimeV1(
+            3, 1_073_741_824, 3600,
+            AcceleratorDeviceRequestV1("cpu", (), ()),
+        )},
         {"workload": DockerWorkloadV1(("python", "other.py"), (), "1" * 64)},
         {"labels": "wrong-profile"},
     ),

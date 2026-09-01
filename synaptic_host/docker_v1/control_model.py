@@ -424,6 +424,7 @@ def _container_body(v):
         "command_digest": v["command_digest"],
         "container_name": v["container_name"],
         "container_ref": v["container_ref"],
+        "device_requests_digest": v["device_requests_digest"],
         "environment_digest": v["environment"].projection_digest,
         "image_digest": v["image_digest"],
         "memory_bytes": v["memory_bytes"],
@@ -455,12 +456,14 @@ class DockerContainerInspectProjectionV1:
     environment: DockerEnvironmentProjectionV1
     argument_count: int
     arguments_digest: str
+    device_requests_digest: str
     projection_digest: str
 
     def canonical_without_digest(self):
         names = (
             "argument_count", "arguments_digest", "command_digest",
-            "container_name", "container_ref", "environment", "image_digest",
+            "container_name", "container_ref", "device_requests_digest",
+            "environment", "image_digest",
             "memory_bytes", "mounts", "nano_cpus", "network_mode",
             "owned_labels", "request_digest", "state",
         )
@@ -497,7 +500,8 @@ class DockerContainerInspectProjectionV1:
         ):
             _bad()
         for value in (
-            self.request_digest, self.command_digest, self.arguments_digest
+            self.request_digest, self.command_digest, self.arguments_digest,
+            self.device_requests_digest,
         ):
             _sha(value)
         if self.request_digest != docker_typed_request_digest_v1(
@@ -610,6 +614,7 @@ def _snapshot_projection(projection):
             environment,
             projection.argument_count,
             projection.arguments_digest,
+            projection.device_requests_digest,
             projection.projection_digest,
         )
     else:

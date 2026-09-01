@@ -147,6 +147,7 @@ def _harness(*, mode="success", already_started=False, post_started=True):
         expected_catalog=store, expected_authority=authority,
         intent_authority=authority, environment_authority=authority,
         record_authority=authority,
+        endpoint_descriptor_digest=SHA, cli_policy_digest=SHA,
     )
     return host, runner, store, labels, ref
 
@@ -290,6 +291,7 @@ def test_start_rejects_mid_auth_role_object_swap_with_zero_effect(role):
         expected_authority=roots["expected"], intent_authority=roots["intent"],
         environment_authority=roots["environment"],
         record_authority=roots["record"],
+        endpoint_descriptor_digest=SHA, cli_policy_digest=SHA,
     )
     authority.host = host
     result = host.start_once(ref, labels)
@@ -309,6 +311,7 @@ def test_start_rejects_mid_issue_role_object_swap_with_zero_effect(role):
         expected_authority=roots["expected"], intent_authority=roots["intent"],
         environment_authority=roots["environment"],
         record_authority=roots["record"],
+        endpoint_descriptor_digest=SHA, cli_policy_digest=SHA,
     )
     authority.host = host
     result = host.start_once(ref, labels)
@@ -360,6 +363,7 @@ def test_32_hosts_shared_store_issue_exactly_one_start_and_converge():
         expected_catalog=store, expected_authority=authority,
         intent_authority=authority, environment_authority=authority,
         record_authority=authority,
+        endpoint_descriptor_digest=SHA, cli_policy_digest=SHA,
     ) for _ in range(32)]
     with ThreadPoolExecutor(max_workers=32) as pool:
         results = list(pool.map(lambda item: item.start_once(ref, labels), hosts))

@@ -392,6 +392,8 @@ def _prepare(request, live_build):
         intent_authority=request.intent_authority,
         expected_authority=request.expected_authority,
         record_authority=request.mutation_record_authority,
+        endpoint_descriptor_digest=request.cli_policy.endpoint.descriptor_digest,
+        cli_policy_digest=request.cli_policy.policy_digest,
     )
     start = DockerHostStartV1(
         typed_runner=typed_cli,
@@ -401,6 +403,8 @@ def _prepare(request, live_build):
         intent_authority=request.intent_authority,
         environment_authority=request.environment_authority,
         record_authority=request.mutation_record_authority,
+        endpoint_descriptor_digest=request.cli_policy.endpoint.descriptor_digest,
+        cli_policy_digest=request.cli_policy.policy_digest,
     )
     inventory = DockerHostControlV1(
         typed_cli=typed_cli,
@@ -411,6 +415,7 @@ def _prepare(request, live_build):
         intent_authority=request.intent_authority,
         environment_authority=request.environment_authority,
         absence_authority=request.absence_authority,
+        cli_policy_digest=request.cli_policy.policy_digest,
     )
     control = _DockerControlAdapterV1(create, start, inventory)
     evidence = DockerEvidenceAuthorityViewV1(

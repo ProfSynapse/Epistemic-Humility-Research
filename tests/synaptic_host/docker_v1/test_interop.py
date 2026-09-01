@@ -17,7 +17,7 @@ from synaptic_host.docker_v1.interop import (
 from synaptic_host.docker_v1.model import (
     DockerCLICommandV1,
     DockerCLIEnvironmentV1,
-    DockerCLIPolicyV1,
+    DockerCLIPolicyV1, DockerLocalEndpointDescriptorV1,
     DockerCLIVerbV1,
     DockerPlatformCodeV1,
     DockerPlatformErrorV1,
@@ -86,7 +86,8 @@ def _factory(*, lstat=None, popen=None):
 
 def _runner(factory):
     policy = DockerCLIPolicyV1.build(
-        WINDOWS_DOCKER, "desktop-linux", _environment(),
+        WINDOWS_DOCKER, DockerLocalEndpointDescriptorV1.build(
+            "desktop-linux", "npipe:////./pipe/dockerDesktopLinuxEngine", False), _environment(),
         timeout_ms=100, terminate_grace_ms=10, stdout_limit=100,
         stderr_limit=100, combined_limit=200,
     )

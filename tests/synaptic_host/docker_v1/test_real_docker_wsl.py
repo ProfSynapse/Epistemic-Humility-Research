@@ -38,7 +38,7 @@ from synaptic_host.docker_v1.control_private import (
 )
 from synaptic_host.docker_v1.model import (
     DockerCLIEnvironmentV1,
-    DockerCLIPolicyV1,
+    DockerCLIPolicyV1, DockerLocalEndpointDescriptorV1,
 )
 from synaptic_host.docker_v1.start import DockerHostStartV1
 from synaptic_host.local_io_v1.config import StorageRegistryV1
@@ -61,6 +61,7 @@ from synaptic_tuner.api.v1.providers import (
 )
 from synaptic_tuner.api.v1.results import TrainingRunRef
 from synaptic_tuner.api.v1.training_facade import TrainingPreflight
+from synaptic_tuner.api.v1.training import AcceleratorDeviceRequestV1
 from tuner.execution.foundation_v2.executors import (
     AdapterDescriptorV1,
     ExecutorDescriptorV1,
@@ -137,7 +138,10 @@ def _profile(payload: bytes) -> DockerProfileV1:
             "docker", "docker-reconcile-v1", "1.0.0"
         ),
         image=DockerImageV1("alpine:3.20", _IMAGE_DIGEST),
-        runtime=DockerRuntimeV1(1, 67_108_864, 30),
+        runtime=DockerRuntimeV1(
+            1, 67_108_864, 30,
+            AcceleratorDeviceRequestV1("cpu", (), ()),
+        ),
         workload=workload,
         roots=DockerRootsV1("source-root", "artifact-root"),
         artifacts=DockerArtifactContractV1(
@@ -266,7 +270,9 @@ def _request(tmp_path: Path) -> tuple[DockerHostCompositionRequestV1, Path, byte
         environment_overrides=(),
         cli_policy=DockerCLIPolicyV1.build(
             str(_DOCKER_EXE),
-            "desktop-linux",
+            DockerLocalEndpointDescriptorV1.build(
+                "desktop-linux", "npipe:////./pipe/dockerDesktopLinuxEngine", False
+            ),
             environment,
             timeout_ms=30_000,
             terminate_grace_ms=1_000,
@@ -321,7 +327,7 @@ def _request(tmp_path: Path) -> tuple[DockerHostCompositionRequestV1, Path, byte
 
 def _docker(*arguments: str, timeout: int = 30) -> subprocess.CompletedProcess[bytes]:
     return subprocess.run(
-        (str(_DOCKER_EXE), "--context", "desktop-linux", *arguments),
+        (str(_DOCKER_EXE), "--host", "npipe:////./pipe/dockerDesktopLinuxEngine", *arguments),
         stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

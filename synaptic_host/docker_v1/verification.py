@@ -9,12 +9,14 @@ from .model import DockerPlatformErrorV1
 
 
 def docker_create_projection_matches_v1(
-    labels, expected, environment, projection, container_ref,
+    labels, expected, environment, projection, container_ref, evidence,
 ):
     try:
         specification = expected.content.create_specification
         if (
-            projection.container_ref != container_ref
+            evidence.policy_digest
+            != expected.content.intent.content.cli_policy_digest
+            or projection.container_ref != container_ref
             or projection.container_name != labels.container_name
             or projection.image_digest != specification.image_digest
             or projection.owned_labels != docker_owned_label_projections_v1(labels)
@@ -23,6 +25,8 @@ def docker_create_projection_matches_v1(
             or projection.network_mode != "none"
             or projection.nano_cpus != specification.nano_cpus
             or projection.memory_bytes != specification.memory_bytes
+            or projection.device_requests_digest
+            != specification.device_requests_digest
             or projection.argument_count != specification.argument_count
             or projection.arguments_digest != specification.arguments_digest
         ):

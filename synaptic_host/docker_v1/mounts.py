@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from synaptic_tuner.api.v1.training import AcceleratorDeviceRequestV1
 from tuner.execution.coordinator_v1.model import ProviderExecutionBindingV1
 from tuner.execution.foundation_v2.commands import SubmitCommandV2, parse_exact_command
 from tuner.execution.providers.docker_provider_v1.model import (
@@ -138,8 +139,13 @@ class DockerSubmitMountResolverV1:
                 DockerImageV1(image.image_ref, image.image_digest, image.presence_policy),
                 DockerRuntimeV1(
                     runtime.cpu_count, runtime.memory_bytes,
-                    runtime.timeout_seconds, runtime.network_mode,
-                    runtime.gpu_enabled,
+                    runtime.timeout_seconds,
+                    AcceleratorDeviceRequestV1(
+                        runtime.accelerator_devices.kind,
+                        tuple(runtime.accelerator_devices.device_indices),
+                        tuple(runtime.accelerator_devices.capabilities),
+                    ),
+                    runtime.network_mode,
                 ),
                 DockerWorkloadV1(
                     workload.arguments, workload.environment_keys,

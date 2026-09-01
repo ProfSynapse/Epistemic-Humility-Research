@@ -2,6 +2,7 @@ from hashlib import sha256
 
 import pytest
 
+from synaptic_tuner.api.v1.training import AcceleratorDeviceRequestV1
 from tuner.execution.providers.docker_provider_v1.model import (
     AuthenticatedDockerAbsenceV1,
     DockerAbsenceContentV1,
@@ -31,6 +32,8 @@ from synaptic_host.docker_v1.control_contract import (
     DockerMutationRecordV1,
     DockerWorkloadEnvironmentBindingV1,
     DockerWorkloadEnvironmentEntryV1,
+    docker_accelerator_device_requests_digest_v1,
+    docker_device_requests_projection_digest_v1,
     docker_operation_id_v1,
     docker_owned_label_projections_v1,
     docker_owned_labels_projection_digest_v1,
@@ -49,6 +52,9 @@ from synaptic_host.docker_v1.control_model import (
     DockerEnvironmentProjectionV1,
     DockerMountProjectionV1,
     docker_typed_request_digest_v1,
+)
+from synaptic_host.docker_v1.verification import (
+    docker_create_projection_matches_v1,
 )
 from synaptic_host.docker_v1.model import (
     DockerCLICommandV1,
@@ -69,23 +75,27 @@ def _labels(effect_kind="submit"):
     )
 
 
-def _evidence(command, outcome=DockerCLIOutcomeV1.SUCCESS):
+def _evidence(command, outcome=DockerCLIOutcomeV1.SUCCESS, policy_digest=SHA):
     exit_code = 0 if outcome is DockerCLIOutcomeV1.SUCCESS else 1
     empty = sha256(b"").hexdigest()
     body = {
         "command_digest": command.command_digest, "exit_code": exit_code,
-        "outcome": outcome.value, "policy_digest": SHA,
+        "outcome": outcome.value, "policy_digest": policy_digest,
         "schema_version": "synaptic-host-docker-cli-result/v1",
         "stderr_digest": empty, "stderr_size": 0,
         "stdout_digest": empty, "stdout_size": 0,
     }
     return DockerCLIResultV1(
-        command.command_digest, SHA, outcome, exit_code, 0, empty, 0, empty,
+        command.command_digest, policy_digest, outcome, exit_code,
+        0, empty, 0, empty,
         digest_v1(body),
     )
 
 
-def _image_result(outcome=DockerCLIOutcomeV1.SUCCESS, image_digest=IMAGE):
+def _image_result(
+    outcome=DockerCLIOutcomeV1.SUCCESS, image_digest=IMAGE,
+    policy_digest=SHA,
+):
     command = DockerCLICommandV1.build(
         DockerCLIVerbV1.INSPECT, ("--type", "image", image_digest)
     )
@@ -98,7 +108,8 @@ def _image_result(outcome=DockerCLIOutcomeV1.SUCCESS, image_digest=IMAGE):
         ) if outcome is DockerCLIOutcomeV1.SUCCESS else None
     )
     return DockerImageInspectResultV1.build(
-        image_digest, request_digest, command, _evidence(command, outcome), projection
+        image_digest, request_digest, command,
+        _evidence(command, outcome, policy_digest), projection
     )
 
 
@@ -122,8 +133,15 @@ def _inventory_result(labels, refs=()):
 
 
 def _one_id_fixture(status=DockerContainerStatusV1.RUNNING, exit_code=0,
-                    extra_environment=True, labels=None):
+                    extra_environment=True, labels=None, accelerator=None,
+                    observed_device_requests_digest=None):
     labels = labels or _labels()
+    accelerator = accelerator or AcceleratorDeviceRequestV1("cpu", (), ())
+    expected_device_requests_digest = (
+        docker_accelerator_device_requests_digest_v1(accelerator)
+    )
+    if observed_device_requests_digest is None:
+        observed_device_requests_digest = expected_device_requests_digest
     container_ref = "1" * 64
     env_entry = DockerWorkloadEnvironmentEntryV1.build("TOKEN", "expected")
     env_binding = DockerWorkloadEnvironmentBindingV1.build(
@@ -149,6 +167,8 @@ def _one_id_fixture(status=DockerContainerStatusV1.RUNNING, exit_code=0,
         artifact_destination_digest=artifact_destination,
         artifact_read_write=True, network_mode="none",
         nano_cpus=1_000_000_000, memory_bytes=1024,
+        device_requests_digest=expected_device_requests_digest,
+        endpoint_descriptor_digest=SHA,
     )
     operation_id = docker_operation_id_v1(
         DockerControlOperationV1.CREATE, labels.effect_id
@@ -159,6 +179,7 @@ def _one_id_fixture(status=DockerContainerStatusV1.RUNNING, exit_code=0,
         labels_digest=labels.digest, container_name=labels.container_name,
         create_specification_digest=specification.specification_digest,
         cli_command_digest=SHA, container_ref=None,
+        cli_policy_digest=SHA,
         verified_create_record_digest=None,
     )
     auth_intent = AuthenticatedDockerControlIntentV1(
@@ -223,11 +244,52 @@ def _one_id_fixture(status=DockerContainerStatusV1.RUNNING, exit_code=0,
         ), state=state,
         environment=DockerEnvironmentProjectionV1.build(projected_env),
         argument_count=1, arguments_digest=SHA,
+        device_requests_digest=observed_device_requests_digest,
     )
     container_result = DockerContainerInspectResultV1.build(
         container_ref, request_digest, command, _evidence(command), projection
     )
     return labels, container_ref, repository_result, auth_expected, container_result
+
+
+def test_exact_gpu_create_projection_matches_bound_specification():
+    gpu = AcceleratorDeviceRequestV1("nvidia", (0,), ("gpu",))
+    labels, ref, _record, expected, inspected = _one_id_fixture(
+        accelerator=gpu
+    )
+    assert docker_create_projection_matches_v1(
+        labels, expected, expected.content.environment_binding,
+        inspected.projection, ref, inspected.evidence,
+    )
+
+
+@pytest.mark.parametrize("observed", (
+    (),
+    (("nvidia", 1, ("0",), (("gpu",),), ()),),
+    (("amd", 0, ("0",), (("gpu",),), ()),),
+    (("nvidia", 0, ("all",), (("gpu",),), ()),),
+    (("nvidia", 0, ("1",), (("gpu",),), ()),),
+    (("nvidia", 0, ("0", "1"), (("gpu",),), ()),),
+    (("nvidia", 0, ("0",), (("compute",),), ()),),
+    (("nvidia", 0, ("0",), (("gpu", "utility"),), ()),),
+    (("nvidia", 0, ("0",), (("gpu",),), (("mode", "exclusive"),)),),
+    (
+        ("nvidia", 0, ("0",), (("gpu",),), ()),
+        ("nvidia", 0, ("0",), (("gpu",),), ()),
+    ),
+))
+def test_gpu_create_projection_rejects_every_well_formed_device_drift(observed):
+    gpu = AcceleratorDeviceRequestV1("nvidia", (0,), ("gpu",))
+    labels, ref, _record, expected, inspected = _one_id_fixture(
+        accelerator=gpu,
+        observed_device_requests_digest=(
+            docker_device_requests_projection_digest_v1(observed)
+        ),
+    )
+    assert not docker_create_projection_matches_v1(
+        labels, expected, expected.content.environment_binding,
+        inspected.projection, ref, inspected.evidence,
+    )
 
 
 class Authority:
@@ -330,6 +392,7 @@ def _control(cli, repository, catalog=None, absence_authority=None,
         intent_authority=intent_authority or authority,
         environment_authority=environment_authority or authority,
         absence_authority=absence_authority or AbsenceAuthority(),
+        cli_policy_digest=SHA,
     )
 
 
@@ -350,6 +413,14 @@ def test_require_present_rejects_valid_cross_target_result_as_closed_error():
     with pytest.raises(DockerHostControlErrorV1):
         _control(
             TypedCLI(image_result=_image_result(image_digest=other)),
+            Repository(None),
+        ).require_present(DockerImageV1("image", IMAGE))
+
+
+def test_require_present_rejects_policy_digest_mismatch_without_bypass():
+    with pytest.raises(DockerHostControlErrorV1):
+        _control(
+            TypedCLI(image_result=_image_result(policy_digest="f" * 64)),
             Repository(None),
         ).require_present(DockerImageV1("image", IMAGE))
 

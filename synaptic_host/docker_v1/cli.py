@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from hashlib import sha256
 import json
+from dataclasses import dataclass
 from datetime import datetime
 from queue import Empty, Full, Queue
 import re
@@ -20,12 +21,14 @@ from .model import (
     DockerCLIPolicyV1,
     DockerCLIResultV1,
     DockerCLIVerbV1,
+    DockerLocalEndpointDescriptorV1,
     DockerPlatformCodeV1,
     DockerPlatformErrorV1,
 )
 from .ports import DockerPopenFactoryPortV1
 from .control_contract import (
-    docker_arguments_projection_digest_v1, docker_safe_unc_v1,
+    docker_arguments_projection_digest_v1,
+    docker_device_requests_projection_digest_v1, docker_safe_unc_v1,
 )
 from .control_model import (
     OWNED_LABEL_NAMES_V1, OWNED_LABEL_PREFIX_V1,
@@ -109,6 +112,12 @@ def _validate_create_command(command, expected_container_name):
         or str(int(memory)) != memory or not 1 <= int(memory) <= 2**50
     ):
         raise ValueError
+    if arguments[index:index + 1] == ("--gpus",):
+        if arguments[index:index + 2] != (
+            "--gpus", "driver=nvidia,device=0"
+        ):
+            raise ValueError
+        index += 2
     label_values = []
     for label_name in OWNED_LABEL_NAMES_V1:
         if arguments[index:index + 1] != ("--label",):
@@ -300,6 +309,53 @@ def _digest_text(value: str) -> str:
     return sha256(value.encode("utf-8")).hexdigest()
 
 
+def _device_requests_digest(host: dict) -> str:
+    raw = host.get("DeviceRequests")
+    if raw is None or raw == []:
+        return docker_device_requests_projection_digest_v1(())
+    if type(raw) is not list or len(raw) != 1:
+        raise ValueError
+    projected = []
+    required = {"Driver", "Count", "DeviceIDs", "Capabilities", "Options"}
+    for item in raw:
+        if type(item) is not dict or set(item) != required:
+            raise ValueError
+        driver = item["Driver"]
+        count = item["Count"]
+        device_ids = item["DeviceIDs"]
+        capabilities = item["Capabilities"]
+        options = item["Options"]
+        if (
+            type(driver) is not str
+            or type(count) is not int
+            or type(device_ids) is not list
+            or type(capabilities) is not list
+            or type(options) is not dict
+            or any(type(group) is not list for group in capabilities)
+            or any(
+                type(key) is not str or type(value) is not str
+                for key, value in options.items()
+            )
+        ):
+            raise ValueError
+        if (
+            driver != "nvidia"
+            or count != 0
+            or device_ids != ["0"]
+            or capabilities != [["gpu"]]
+            or options != {}
+        ):
+            raise ValueError
+        projected.append((
+            driver,
+            count,
+            tuple(device_ids),
+            tuple(tuple(group) for group in capabilities),
+            tuple(sorted(options.items())),
+        ))
+    return docker_device_requests_projection_digest_v1(tuple(projected))
+
+
 def _project_container(record: dict, expected_ref: str, request_digest: str,
                        command_digest: str) -> DockerContainerInspectProjectionV1:
     container_ref = _required_str(record, "Id", _HEX64)
@@ -357,6 +413,7 @@ def _project_container(record: dict, expected_ref: str, request_digest: str,
     network_mode = _required_str(host, "NetworkMode")
     nano_cpus = _required_int(host, "NanoCpus")
     memory_bytes = _required_int(host, "Memory")
+    device_requests_digest = _device_requests_digest(host)
 
     raw_mounts = record.get("Mounts")
     if type(raw_mounts) is not list or len(raw_mounts) > 64:
@@ -414,7 +471,18 @@ def _project_container(record: dict, expected_ref: str, request_digest: str,
         environment=DockerEnvironmentProjectionV1.build(env_projection),
         argument_count=len(arguments),
         arguments_digest=docker_arguments_projection_digest_v1(arguments),
+        device_requests_digest=device_requests_digest,
     )
+
+
+@dataclass(frozen=True, slots=True)
+class DockerBoundedProcessResultV1:
+    exit_code: int
+    stdout: bytes | None
+    stdout_size: int
+    stdout_digest: str
+    stderr_size: int
+    stderr_digest: str
 
 
 class DockerCLIRunnerV1:
@@ -431,8 +499,12 @@ class DockerCLIRunnerV1:
                 tuple((key, value) for key, value in policy.environment.entries),
                 policy.environment.environment_digest,
             )
+            endpoint = DockerLocalEndpointDescriptorV1.build(
+                policy.endpoint.source_context_ref, policy.endpoint.host,
+                policy.endpoint.tls,
+            )
             self._policy = DockerCLIPolicyV1(
-                policy.executable, policy.context_ref, environment,
+                policy.executable, endpoint, environment,
                 policy.timeout_ms, policy.terminate_grace_ms,
                 policy.stdout_limit, policy.stderr_limit,
                 policy.combined_limit, policy.policy_digest,
@@ -566,16 +638,11 @@ class DockerCLIRunnerV1:
             and second_join_ok
         )
 
-    def _execute(
-        self, command: DockerCLICommandV1, *, capture_stdout: bool,
-    ) -> tuple[DockerCLIResultV1, bytes | None]:
-        command = self._snapshot_command(command)
+    def _execute_argv(
+        self, argv: tuple[str, ...], environment: dict[str, str], *,
+        capture_stdout: bool,
+    ) -> "DockerBoundedProcessResultV1":
         policy = self._policy
-        argv = (
-            policy.executable, "--context", policy.context_ref,
-            command.verb.value, *command.arguments,
-        )
-        environment = {key: value for key, value in policy.environment.entries}
         try:
             events: Queue = Queue(maxsize=_EVENT_QUEUE_DEPTH)
             stopped = Event()
@@ -593,7 +660,7 @@ class DockerCLIRunnerV1:
         readers: list[object] = []
         reaped = False
         trigger: DockerPlatformCodeV1 | None = None
-        result: DockerCLIResultV1 | None = None
+        result: DockerBoundedProcessResultV1 | None = None
         try:
             streams = (process.stdout, process.stderr)
             if any(stream is None for stream in streams):
@@ -669,34 +736,18 @@ class DockerCLIRunnerV1:
                     trigger = DockerPlatformCodeV1.IO_INDETERMINATE
 
             if trigger is None:
-                outcome = (
-                    DockerCLIOutcomeV1.SUCCESS if exit_code == 0
-                    else DockerCLIOutcomeV1.NONZERO_EXIT
-                )
                 stdout_digest = hashes["stdout"].hexdigest()
                 stderr_digest = hashes["stderr"].hexdigest()
-                body = {
-                    "command_digest": command.command_digest,
-                    "exit_code": exit_code,
-                    "outcome": outcome.value,
-                    "policy_digest": policy.policy_digest,
-                    "schema_version": "synaptic-host-docker-cli-result/v1",
-                    "stderr_digest": stderr_digest,
-                    "stderr_size": sizes["stderr"],
-                    "stdout_digest": stdout_digest,
-                    "stdout_size": sizes["stdout"],
-                }
-                result = DockerCLIResultV1(
-                    command.command_digest, policy.policy_digest, outcome,
-                    exit_code, sizes["stdout"], stdout_digest,
-                    sizes["stderr"], stderr_digest, digest_v1(body),
+                result = DockerBoundedProcessResultV1(
+                    exit_code, bytes(captured) if captured is not None else None,
+                    sizes["stdout"], stdout_digest, sizes["stderr"], stderr_digest,
                 )
         except DockerPlatformErrorV1 as error:
             trigger = error.code
         except BaseException:
             trigger = DockerPlatformCodeV1.IO_INDETERMINATE
 
-        if trigger is None and type(result) is not DockerCLIResultV1:
+        if trigger is None and type(result) is not DockerBoundedProcessResultV1:
             trigger = DockerPlatformCodeV1.IO_INDETERMINATE
         if trigger is not None:
             certain = self._cleanup(
@@ -705,7 +756,34 @@ class DockerCLIRunnerV1:
             )
             code = trigger if certain else DockerPlatformCodeV1.TERMINATION_INDETERMINATE
             raise _error(code) from None
-        return result, (bytes(captured) if captured is not None else None)
+        return result
+
+    def _execute(
+        self, command: DockerCLICommandV1, *, capture_stdout: bool,
+    ) -> tuple[DockerCLIResultV1, bytes | None]:
+        command = self._snapshot_command(command)
+        policy = self._policy
+        raw = self._execute_argv(
+            (policy.executable, "--host", policy.endpoint.host,
+             command.verb.value, *command.arguments),
+            {key: value for key, value in policy.environment.entries},
+            capture_stdout=capture_stdout,
+        )
+        outcome = (DockerCLIOutcomeV1.SUCCESS if raw.exit_code == 0
+                   else DockerCLIOutcomeV1.NONZERO_EXIT)
+        body = {
+            "command_digest": command.command_digest, "exit_code": raw.exit_code,
+            "outcome": outcome.value, "policy_digest": policy.policy_digest,
+            "schema_version": "synaptic-host-docker-cli-result/v1",
+            "stderr_digest": raw.stderr_digest, "stderr_size": raw.stderr_size,
+            "stdout_digest": raw.stdout_digest, "stdout_size": raw.stdout_size,
+        }
+        result = DockerCLIResultV1(
+            command.command_digest, policy.policy_digest, outcome, raw.exit_code,
+            raw.stdout_size, raw.stdout_digest, raw.stderr_size,
+            raw.stderr_digest, digest_v1(body),
+        )
+        return result, raw.stdout
 
     def run(self, command: DockerCLICommandV1) -> DockerCLIResultV1:
         result, _ = self._execute(command, capture_stdout=False)
@@ -843,6 +921,33 @@ class DockerCLIRunnerV1:
             raise
         except BaseException:
             raise _error(DockerPlatformCodeV1.OUTPUT_INVALID) from None
+
+@dataclass(frozen=True, slots=True)
+class _DockerProcessBoundsV1:
+    timeout_ms: int
+    terminate_grace_ms: int
+    stdout_limit: int
+    stderr_limit: int
+    combined_limit: int
+
+
+class DockerBoundedProcessRunnerV1(DockerCLIRunnerV1):
+    def __init__(
+        self, *, timeout_ms: int, terminate_grace_ms: int,
+        stdout_limit: int, stderr_limit: int, combined_limit: int,
+        popen_factory: DockerPopenFactoryPortV1 = subprocess.Popen,
+        monotonic=time.monotonic, thread_factory=Thread,
+    ) -> None:
+        self._policy = _DockerProcessBoundsV1(
+            timeout_ms, terminate_grace_ms, stdout_limit, stderr_limit,
+            combined_limit,
+        )
+        self._popen = popen_factory
+        self._monotonic = monotonic
+        self._thread_factory = thread_factory
+
+    def execute(self, argv, environment, *, capture_stdout):
+        return self._execute_argv(argv, environment, capture_stdout=capture_stdout)
 
 
 __all__: tuple[str, ...] = ()
