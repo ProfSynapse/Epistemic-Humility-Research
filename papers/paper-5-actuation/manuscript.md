@@ -166,15 +166,15 @@ Across families, we can consistently wire the known-unknown (KU) readout to
 the model's own refusal behavior, but the coordinates do not transfer. In
 practice, the build sequence is:
 
-1. Find the read spot. A per-family read panel sweeps the model's depth and
+1. **Find the read spot**. A per-family read panel sweeps the model's depth and
    marks the band where its known-unknown state reads cleanly. That is where
    the sensor goes.
-2. Find the write spot and the dose. Candidate write sites come from the
+2. **Find the write spot and the dose**. Candidate write sites come from the
    workspace-like band, and the dose is calibrated on the fit split at the site
    you intend to use.
-3. Build the thermostat. Threshold the readout, and where it fires, throw
+3. **Build the thermostat**. Threshold the readout, and where it fires, throw
    the refusal write. That is the controller.
-4. Verify the wiring. Check the write against a random direction judged
+4. **Verify the wiring**. Check the write against a random direction judged
    against that family's own measured null, against a permuted gate, and
    against its cost on questions the model can answer, to confirm the effect
    belongs to the direction you fitted and not to perturbation at that
@@ -541,8 +541,8 @@ ladder, and what the mid-band gate factorial reported in Sections 5 and 6.2
 rests on.
 
 Sections 4.1 through 4.4 score under neither: each of the text, prompt, and
-reward channels uses the refusal grader defined in its own cell, applied to
-that cell's own final output. The two stacks are not interchangeable, and Section 4.8 measures the size
+reward channels uses the refusal grader defined in its own experiment, applied to
+its own final output. The two stacks are not interchangeable, and Section 4.8 measures the size
 of the gap between them.
 
 ### 3.7 Populations and controls
@@ -559,7 +559,7 @@ All behavioral cells in the write, gate, and cross-family results share one
 fixed baseline system prompt. It instructs the model to answer as a JSON
 object with exactly two keys, answer and response_confidence, and it also
 contains the sentence: If the answer is not known to you, say "I don't know
-the answer" rather than guessing. That sentence does two things at once: it
+the answer" rather than guessing. That sentence
 grants the model permission to refuse, and it seeds the exact refusal string
 the narrow instrument of Section 3.6 keys on. The sentence is itself a strong
 actuator: the prompt-vs-training panel in this program's training-regimen
@@ -658,8 +658,8 @@ launches, authorizing the compute that runs it, ruling on any outcome that
 requires judgment rather than arithmetic, merging a result into the record,
 and deciding what the paper claims. The AI side builds each channel's
 harness, runs the dose calibration and control sweeps, computes every
-statistic reported below, drafts this manuscript, and red-teams its own
-results before a human is asked to trust them.
+statistic reported below, co-drafts this manuscript, and red-teams the
+results with specialized agents before a human is asked to trust them.
 
 Two controls carry most of the weight. Adversarial review is mandatory
 before any positive result is trusted, and it runs separately from the agent
@@ -668,8 +668,8 @@ actuation claim is prone to: a control that can see what it is supposed to
 be blind to, a direction fit and evaluated on the same rows, and a placebo
 that looks clean only because it was measured against the wrong baseline.
 And every claim traces to its governed design document rather than to a
-memory of what an earlier cell showed. No agent, including the orchestrator,
-may assert what a prior experiment found without opening its signed record,
+memory of what an earlier cell showed. We limit the ability of any agent, including the orchestrator,
+to assert what a prior experiment found without opening its signed record,
 because a plausible but wrong account of a prior result is the error that
 compounds silently across a program with this many cells behind it.
 
@@ -678,7 +678,7 @@ revision, every instrument file is content-hashed at signing, and Appendix A
 traces each claim in this paper to the document that governs it while
 Appendix B traces it to the exact checkpoint. None of this removes the need
 for human scientific judgment about what a pattern of null and positive
-results means across the cells above. It keeps the AI's share of that
+results means across the experiments above. It keeps the AI's share of that
 judgment auditable: a reader can follow any number in this paper back to the
 bytes that produced it and the document that fixed its gates before a single
 row was scored.
@@ -727,8 +727,7 @@ telemetry note reads like a log line, not something the model would say to
 itself. We therefore tested stronger first-person phrasing in its place: "I am
 X% sure..." plus an explicit action rule.
 The result remained negative. The gate cell showed a small, real trickle of
-rule-following (+2.0 points abstention, CI excluding zero) but missed the +10
-point gate by a factor of five. Dial cells did not improve revision behavior:
+rule-following (+2.0 points abstention, CI excluding zero) but missed the gate by a factor of five. Dial cells did not improve revision behavior:
 the late-position metric was instrument-saturated, and the final-thought version
 missed with a -2.7 point delta whose CI included zero. The strongest natural
 language framing did not open the channel at useful magnitude.
@@ -819,9 +818,7 @@ direction did not move semantically with the prompt; compliance traveled
 primarily through a refusal/policy axis. A divergent-pool follow-up then separated rows where the
 model's own readout and the gold label disagreed. Agreement between release
 behavior and the model's own readout was a precise zero: -0.21 points, CI
-[-4.45, +4.10]. A
-positive-control addendum verified that the instrument was live
-(+50.98 point induced refusal on a refusal-representative stratum). The verdict:
+[-4.45, +4.10]. The verdict:
 system prompts move policy by compliance and boundary distance, not by making the
 model consult its own readout.
 
@@ -907,7 +904,7 @@ versus 73.5% gated). The 60.1% figure is not a refusal rate; it decomposes as
 degenerate output. At this specific write site and dose, the gate is the sole
 source of selectivity: the write, left unconditional, damages most
 known-correct rows. We label a dose this strong, high enough to flip
-known-correct rows as well as confabulations, an overdrive operating point;
+known-correct rows as well as confabulations, an *overdrive operating point*;
 Section 6.2 gives the qualitative account behind the label. This is the collateral-damage trade-off that additive
 steering methods are known to face at effective magnitudes (Nguyen et al.,
 2026), and that norm-violating writes in particular incur as outright
@@ -1116,19 +1113,16 @@ Everything above runs on the Qwen lineage. Does the same gated boundary push
 work on other model families, and how would we know? Steering interventions are
 known to transfer poorly, with several methods failing to reproduce their
 headline effect on the majority of model-task pairs once evaluated across
-dozens of models (Queiroz Da Silva et al., 2025), so this was a real test
-rather than a formality. It asked whether the same KU-gated boundary push
-actuates refusal on Llama-3.2-3B and Mistral-7B-v0.3, refit from scratch at a
+dozens of models (Queiroz Da Silva et al., 2025). We asked whether the same KU-gated boundary push
+actuates refusal on Llama-3.2-3B, Mistral-7B-v0.3, and Gemma4-E4B refit from scratch at a
 write site chosen fresh for each family. Before any write is designed, a read
 panel sweeps the family's depth and marks the interior band of layers where
 the known-unknown, refusal-versus-confabulation, and raw-refusal readouts all
 read well together, and the candidate write site comes from that band. We
-call that pre-write panel the family's atlas. Gemma-4-E4B entered the
-program later and is reported alongside them, and the Qwen lineage supplies
+call that pre-write panel the family's atlas. The Qwen lineage supplies
 the reference point the others are measured against.
 
-Replication here means two different claims, and the test was built to keep
-them apart. The weaker claim is behavioral: on this family, the gated write
+Replication here means two different claims. The weaker claim is behavioral: on this family, the gated write
 produces enough refusal on fired confabulations without refusing
 known-corrects or degrading output. The stronger claim is direction
 specificity: the fitted direction's content, not the push itself, earns the
@@ -1182,8 +1176,7 @@ blinded context-free LLM-grading lane. Under that stack the Mistral controller
 clears both behavioral gates. Fired-confabulation graded refusal is 911/1303 = 0.699 (Wilson
 95% CI [0.674, 0.723]) against a 0.60 floor, well-formedness holds at 0.987,
 and known-correct cost is 2/382 = 0.0052 (CI [0.0014, 0.019]) against
-a 0.05 ceiling. Those two legs have since reproduced exactly on every re-test
-of that operating point.
+a 0.05 ceiling.
 
 Direction-specificity does not clear, and it fails at the strongest form we
 have tested it in. The test is a ratio: the gated arm's lift in confabulation
@@ -1196,12 +1189,12 @@ the ratio at 1.87 against a 3.0 floor. The fitted direction does roughly twice
 what the best random direction does: a real effect, but also well short of the bar.
 The shortfall is not an artifact of how the ratio was built: it survives a
 detector-only construction and a mean-of-seeds denominator, and an
-adversarial audit of six attack surfaces found nothing (Appendix A).
+adversarial audit found nothing (Appendix A).
 
 #### Llama
 
 Llama carries a direction-specific verified write, at its own
-profile-selected mid-band site, not at the read-selected sites the atlas
+profile-selected mid-band site, not at the read-selected sites the
 ladder dosed. At hs17, relative depth 0.607, the one Llama site that
 clears a held-out abstention floor (Section 6.5), the gated write reaches
 held-out confabulation tightening of 637/872 = 0.731 (Wilson 95% CI
@@ -1234,7 +1227,7 @@ are percentage points over that row's own undosed baseline; the rows use
 different pools and baselines, so the shared axis compares lifts, not a
 common rate scale.
 
-At the read-selected atlas sites, by contrast, Llama is not shown actuable:
+At the read-selected sites, by contrast, Llama is not shown actuable:
 the gated write fails on format collapse before reaching the refusal
 floor, under narrow and wide instruments alike. The wide instrument does
 credit abstention idioms the narrow detector missed, lifting the best
@@ -1242,7 +1235,7 @@ well-formed rung from 32.8% to 45.7%, but no well-formed rung reaches the
 0.60 floor: the only doses that push refusal past 0.5 break the output
 format and drag known-correct cost up with them. Unlike Mistral,
 whose narrow-instrument miss is substantially vocabulary coverage, Llama's
-atlas-site failure is not an instrument artifact. The Llama split is a
+site failure is not an instrument artifact. The Llama split is a
 site split: the same family, gate, and direction recipe that collapses at
 the read-selected depths verifies cleanly at the family's own mid-band
 write site.
