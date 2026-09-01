@@ -582,7 +582,7 @@ grants the model permission to refuse, and it seeds the exact refusal string
 the narrow instrument of Section 3.6 keys on. The sentence is itself a strong
 actuator: the same instruction elicits 90.89% refusal recall from an
 untrained base model that, without it, refuses 0% of the same rows as scored,
-with roughly four to six borderline refusals in a hand audit (Rosenbaum,
+with a hand audit finding roughly 4 to 6% borderline refusals (Rosenbaum,
 2026b). Every arm of every experiment
 shares the prompt, so the arm-versus-control differentials below are
 prompt-controlled; what the shared prompt leaves open is whether the gated
