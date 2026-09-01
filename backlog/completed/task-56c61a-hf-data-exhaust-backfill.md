@@ -1,7 +1,7 @@
 ---
 id: task-56c61a
 title: HF data-exhaust backfill
-status: in-progress
+status: done
 assignee:
 - '@claude'
 tier: P
