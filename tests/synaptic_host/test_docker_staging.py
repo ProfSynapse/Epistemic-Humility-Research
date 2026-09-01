@@ -4,6 +4,7 @@ import hashlib
 import io
 import json
 import os
+import stat
 import subprocess
 import tarfile
 from pathlib import Path
@@ -15,10 +16,14 @@ import pytest
 from synaptic_host.docker_staging import (
     DockerModelInventoryEntryV1,
     _CLOSURE_MANIFEST_SOURCE_PATH,
+    _capture_windows_stage_cleanup,
+    _cleanup_unpromoted_stage,
+    _cleanup_windows_stage,
     _copy_inventory,
     _extract_link_free,
     _git_archive,
     _load_locked_closure,
+    _release_windows_stage,
     _source_manifest,
     _stage_locked_closure,
     _verify_artifact_topology,
@@ -37,6 +42,236 @@ ENGINE_COMMIT = subprocess.run(
     text=True,
     timeout=30,
 ).stdout.strip()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows cleanup policy")
+def test_windows_replay_cleans_readonly_temporary_not_durable_stage(
+    tmp_path: Path,
+) -> None:
+    stage_parent = tmp_path / "stages"
+    stage_parent.mkdir()
+    durable = stage_parent / ("a" * 64)
+    durable.mkdir()
+    durable_file = durable / "source-lock.json"
+    durable_file.write_bytes(b"durable")
+    temporary = stage_parent / "stage-replay"
+    temporary.mkdir()
+    cleanup = _capture_windows_stage_cleanup(stage_parent, temporary)
+    nested = temporary / "source" / "control"
+    nested.mkdir(parents=True)
+    readonly = nested / "source-lock.json"
+    readonly.write_bytes(b"temporary")
+    readonly.chmod(stat.S_IREAD)
+
+    _cleanup_unpromoted_stage(temporary, cleanup)
+
+    assert not temporary.exists()
+    assert durable_file.read_bytes() == b"durable"
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows cleanup policy")
+def test_windows_cleanup_rejects_replaced_root_during_authority_transition(
+    tmp_path: Path,
+) -> None:
+    stage_parent = tmp_path / "stages"
+    stage_parent.mkdir()
+    temporary = stage_parent / "stage-owned"
+    temporary.mkdir()
+    cleanup = _capture_windows_stage_cleanup(stage_parent, temporary)
+    (temporary / "owned.txt").write_bytes(b"owned")
+    original = stage_parent / "captured-original"
+    temporary.rename(original)
+    temporary.mkdir()
+    replacement = temporary / "replacement.txt"
+    replacement.write_bytes(b"replacement")
+
+    with pytest.raises(ValueError, match="transition changed authority"):
+        _cleanup_windows_stage(cleanup)
+
+    assert replacement.read_bytes() == b"replacement"
+    assert (original / "owned.txt").read_bytes() == b"owned"
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows cleanup policy")
+def test_windows_cleanup_blocks_post_inventory_rename_out_and_abort_preserves_tree(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    stage_parent = tmp_path / "stages"
+    stage_parent.mkdir()
+    temporary = stage_parent / "stage-redirect"
+    temporary.mkdir()
+    cleanup = _capture_windows_stage_cleanup(stage_parent, temporary)
+    nested = temporary / "nested"
+    nested.mkdir()
+    external = tmp_path / "external"
+    external.mkdir()
+    owned = nested / "owned.txt"
+    owned.write_bytes(b"owned")
+    escaped = external / "escaped"
+    module_globals = _cleanup_windows_stage.__globals__
+
+    def abort_after_blocked_rename(_captured, _entries):
+        with pytest.raises(PermissionError) as blocked:
+            nested.rename(escaped)
+        assert blocked.value.winerror == 32
+        raise RuntimeError("abort after sharing violation")
+
+    monkeypatch.setitem(
+        module_globals, "_windows_delete_inventory", abort_after_blocked_rename
+    )
+    with pytest.raises(RuntimeError, match="sharing violation"):
+        _cleanup_windows_stage(cleanup)
+
+    assert owned.read_bytes() == b"owned"
+    assert tuple(external.iterdir()) == ()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows cleanup policy")
+def test_windows_cleanup_blocks_post_inventory_rename_out_then_continues(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    stage_parent = tmp_path / "stages"
+    stage_parent.mkdir()
+    temporary = stage_parent / "stage-continue"
+    temporary.mkdir()
+    cleanup = _capture_windows_stage_cleanup(stage_parent, temporary)
+    nested = temporary / "nested"
+    nested.mkdir()
+    (nested / "owned.txt").write_bytes(b"owned")
+    external = tmp_path / "external"
+    external.mkdir()
+    escaped = external / "escaped"
+    module_globals = _cleanup_windows_stage.__globals__
+    original_delete = module_globals["_windows_delete_inventory"]
+
+    def continue_after_blocked_rename(captured, entries):
+        with pytest.raises(PermissionError) as blocked:
+            nested.rename(escaped)
+        assert blocked.value.winerror == 32
+        return original_delete(captured, entries)
+
+    monkeypatch.setitem(
+        module_globals, "_windows_delete_inventory", continue_after_blocked_rename
+    )
+    _cleanup_windows_stage(cleanup)
+
+    assert not temporary.exists()
+    assert tuple(external.iterdir()) == ()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows cleanup policy")
+def test_windows_location_mismatch_fails_before_any_mutation(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    stage_parent = tmp_path / "stages"
+    stage_parent.mkdir()
+    temporary = stage_parent / "stage-location"
+    temporary.mkdir()
+    cleanup = _capture_windows_stage_cleanup(stage_parent, temporary)
+    target = temporary / "readonly.txt"
+    target.write_bytes(b"before")
+    target.chmod(stat.S_IREAD)
+    module_globals = _cleanup_windows_stage.__globals__
+    original_delete = module_globals["_windows_delete_inventory"]
+    original_location = module_globals["_windows_handle_location"]
+
+    def mismatch_before_delete(captured, entries):
+        monkeypatch.setitem(
+            module_globals,
+            "_windows_handle_location",
+            lambda handle: original_location(handle) + "-mismatch"
+        )
+        return original_delete(captured, entries)
+
+    monkeypatch.setitem(
+        module_globals, "_windows_delete_inventory", mismatch_before_delete
+    )
+    with pytest.raises(ValueError, match="location or identity"):
+        _cleanup_windows_stage(cleanup)
+
+    assert target.read_bytes() == b"before"
+    assert target.stat().st_file_attributes & stat.FILE_ATTRIBUTE_READONLY
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows cleanup policy")
+def test_windows_cleanup_never_touches_stage_sibling(tmp_path: Path) -> None:
+    stage_parent = tmp_path / "stages"
+    stage_parent.mkdir()
+    temporary = stage_parent / "stage-owned"
+    temporary.mkdir()
+    cleanup = _capture_windows_stage_cleanup(stage_parent, temporary)
+    (temporary / "owned.txt").write_bytes(b"owned")
+    sibling = stage_parent / "stage-sibling"
+    sibling.mkdir()
+    sibling_file = sibling / "keep.txt"
+    sibling_file.write_bytes(b"keep")
+
+    _cleanup_windows_stage(cleanup)
+
+    assert not temporary.exists()
+    assert sibling_file.read_bytes() == b"keep"
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows cleanup policy")
+def test_windows_cleanup_rejects_post_inventory_file_drift(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    stage_parent = tmp_path / "stages"
+    stage_parent.mkdir()
+    temporary = stage_parent / "stage-drift"
+    temporary.mkdir()
+    cleanup = _capture_windows_stage_cleanup(stage_parent, temporary)
+    target = temporary / "file.txt"
+    target.write_bytes(b"before")
+    module_globals = _cleanup_windows_stage.__globals__
+    original_delete = module_globals["_windows_delete_inventory"]
+
+    def drift_after_inventory(captured, entries):
+        file_entry = next(entry for entry in entries if not entry.metadata.is_directory)
+        basic = module_globals["_windows_basic_info"](file_entry.handle)
+        basic.FileAttributes |= 0x00000002
+        kernel32, _ = module_globals["_windows_native"]()
+        assert kernel32.SetFileInformationByHandle(
+            module_globals["ctypes"].c_void_p(file_entry.handle),
+            module_globals["_FILE_BASIC_INFO_CLASS"],
+            module_globals["ctypes"].byref(basic),
+            module_globals["ctypes"].sizeof(basic),
+        )
+        return original_delete(captured, entries)
+
+    monkeypatch.setitem(
+        module_globals, "_windows_delete_inventory", drift_after_inventory
+    )
+    with pytest.raises(ValueError, match="location or identity"):
+        _cleanup_windows_stage(cleanup)
+
+    assert target.read_bytes() == b"before"
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows cleanup policy")
+def test_windows_promotion_releases_handles_without_deletion(tmp_path: Path) -> None:
+    stage_parent = tmp_path / "stages"
+    stage_parent.mkdir()
+    temporary = stage_parent / "stage-promoted"
+    temporary.mkdir()
+    target = temporary / "keep.txt"
+    target.write_bytes(b"keep")
+    cleanup = _capture_windows_stage_cleanup(stage_parent, temporary)
+
+    _release_windows_stage(cleanup)
+
+    assert cleanup.released is True
+    assert target.read_bytes() == b"keep"
+
+
+def test_non_windows_cleanup_keeps_direct_rmtree_behavior(tmp_path: Path) -> None:
+    temporary = tmp_path / "stage-posix-policy"
+    temporary.mkdir()
+    (temporary / "file.txt").write_bytes(b"content")
+
+    _cleanup_unpromoted_stage(temporary, None)
+
+    assert not temporary.exists()
 
 
 def _git(repository: Path, *arguments: str) -> str:

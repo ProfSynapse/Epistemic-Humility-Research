@@ -10,7 +10,8 @@
     "python_executable_digest": "06950bbe281eade6c8c0a9c6c70e6a9a338e6fb63b641dc3a71b1854e74fc859"
   },
   "model": {
-    "load_in_4bit": false
+    "load_in_4bit": false,
+    "inventory_root_ref": "docker-model-inventory-source"
   },
   "capabilities": {
     "supported_methods": [
@@ -33,10 +34,13 @@
   "network": {
     "mode": "none"
   },
-  "docker_policy_ref": "docker-desktop-wsl-v1",
+  "docker_host": {
+    "policy_ref": "docker-desktop-windows-v1",
+    "wsl_distro": "docker-desktop"
+  },
   "artifacts": {
     "maximum_artifact_bytes": 2147483648,
     "maximum_total_bytes": 4294967296,
-    "cache_admission": false
+    "cache_admission": true
   }
 }

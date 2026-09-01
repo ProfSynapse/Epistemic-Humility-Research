@@ -54,6 +54,7 @@ def _isolated_engine_import_state():
             name == "synaptic_tuner" or name.startswith("synaptic_tuner.")
             or name == "tuner" or name.startswith("tuner.")
             or name == "synaptic_host.docker_staging"
+            or name == "synaptic_host.docker_model_inventory"
             or name == "synaptic_host.docker_training"
             or name == "synaptic_host.docker_prepared_composition"
             or name == "synaptic_host.security"
@@ -77,7 +78,8 @@ def _isolated_engine_import_state():
     for name in original:
         sys.modules.pop(name, None)
     for attribute in (
-        "docker_staging", "docker_training", "docker_prepared_composition",
+        "docker_staging", "docker_model_inventory", "docker_training",
+        "docker_prepared_composition",
         "docker_execution", "docker_execution_state", "security",
         "sqlite_repository", "docker_v1",
     ):
@@ -92,6 +94,7 @@ def _isolated_engine_import_state():
                 name == "synaptic_tuner" or name.startswith("synaptic_tuner.")
                 or name == "tuner" or name.startswith("tuner.")
                 or name == "synaptic_host.docker_staging"
+                or name == "synaptic_host.docker_model_inventory"
                 or name == "synaptic_host.docker_training"
                 or name == "synaptic_host.docker_prepared_composition"
                 or name == "synaptic_host.security"
@@ -114,7 +117,8 @@ def _isolated_engine_import_state():
                 sys.modules.pop(name, None)
         sys.modules.update(original)
         for attribute in (
-            "docker_staging", "docker_training", "docker_prepared_composition",
+            "docker_staging", "docker_model_inventory", "docker_training",
+            "docker_prepared_composition",
             "docker_execution", "docker_execution_state", "security",
             "sqlite_repository", "docker_v1",
         ):
@@ -214,6 +218,20 @@ def clean_project(tmp_path_factory):
     (invalid_project / "training/providers/docker.json").write_bytes(b"{}\n")
     _commit(invalid_project, "invalid Docker profile")
     invalid_ingress = _ingress(invalid_project, engine)
+    from synaptic_host.security import FileHmacAuthenticator
+    from tuner.project.manifest import load_project_manifest
+    context = load_project_manifest(project / "synaptic.yaml").create_context(
+        engine_root=engine, invocation_cwd=project,
+    )
+    FileHmacAuthenticator.for_docker(context, durable_rows_exist=False)
+    shutil.rmtree(project / ".synaptic/state/docker")
+    model_snapshot = (
+        project / ".synaptic/model-inventory"
+        / "models--HuggingFaceTB--SmolLM2-135M-Instruct/snapshots"
+        / "12fd25f77366fa6b3b4b768ec3050bf629380bac"
+    )
+    model_snapshot.mkdir(parents=True)
+    model_snapshot.joinpath("config.json").write_bytes(b"{}\n")
     assert _git(engine, "status", "--porcelain", "--untracked-files=normal") == b""
     assert _git(project, "status", "--porcelain", "--untracked-files=normal") == b""
 
@@ -275,6 +293,40 @@ def test_checked_in_profile_activates_only_nvidia_sft() -> None:
     assert profile.source_mode == "dual_clone_read_only"
     assert profile.network_mode == "none"
     assert profile.cpu_count == 1
+    assert profile.docker_policy_ref == "docker-desktop-windows-v1"
+    assert profile.wsl_distro == "docker-desktop"
+    assert profile.inventory_root_ref == "docker-model-inventory-source"
+    assert profile.cache_admission is True
+
+
+def test_inventory_resolution_failure_precedes_hmac_staging_and_activation(
+    monkeypatch, clean_project,
+) -> None:
+    from synaptic_host import docker_training
+    from synaptic_host.security import ScopedGitRemoteReader
+
+    def unavailable(**_kwargs):
+        raise ValueError("inventory unavailable")
+
+    def forbidden(**_kwargs):
+        raise AssertionError("activation crossed the inventory resolution cut")
+
+    monkeypatch.setattr(
+        docker_training, "resolve_docker_model_inventory_v1", unavailable,
+    )
+    monkeypatch.setattr(docker_training, "_activate_docker_training_v1", forbidden)
+    control_key = (
+        clean_project["project"] / ".synaptic/state/docker/control-hmac.key"
+    )
+    assert not control_key.exists()
+    result = docker_training.execute_docker_training_admission_v1(
+        clean_project["ingresses"][0],
+        project_root=clean_project["project"],
+        engine_root=clean_project["engine"],
+        remote_reader=ScopedGitRemoteReader(runner=clean_project["transport"]),
+    )
+    assert result.code is TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE
+    assert not control_key.exists()
 
 
 def test_outer_main_runs_actual_clean_superproject_path(
@@ -301,7 +353,7 @@ def test_outer_main_runs_actual_clean_superproject_path(
     assert code == 8
     assert result["code"] == "RECONCILE_REQUIRED"
     assert result["status"] == "reconcile_required"
-    assert not (project / ".synaptic").exists()
+    assert not (project / ".synaptic/state/docker").exists()
 
 
 def test_real_clean_superproject_compiles_canonical_plan_then_activates(
@@ -452,7 +504,7 @@ def test_real_clean_superproject_compiles_canonical_plan_then_activates(
     )
     assert hmac.compare_digest(expected_tag, observed["evidence_tag"])
     assert len(clean_project["calls"]) >= 4
-    assert not (project / ".synaptic").exists()
+    assert not (project / ".synaptic/state/docker").exists()
 
 
 def test_source_proof_precedes_invalid_profile_and_dirty_source(
@@ -491,7 +543,7 @@ def test_source_proof_precedes_invalid_profile_and_dirty_source(
     assert dirty.code is TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE
     assert reads == []
     assert dirty.status is TrainingRunCommandStatusV2.UNAVAILABLE
-    assert not (project / ".synaptic").exists()
+    assert not (project / ".synaptic/state/docker").exists()
 
 
 def test_hmac_session_rejects_post_compiler_evidence_mutation(

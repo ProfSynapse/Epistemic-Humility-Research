@@ -1,4 +1,5 @@
 from pathlib import Path, PurePosixPath
+import subprocess
 from types import SimpleNamespace
 import pytest
 
@@ -19,6 +20,7 @@ from synaptic_host.docker_prepared_composition import (
     DockerPreparedCompositionV1,
     DockerPreparedControlBuilderV1,
     DockerPreparedPlatformV1,
+    compose_docker_prepared_platform_v1,
 )
 from synaptic_host.docker_v1.control_contract import DockerCreateAdmissionV1
 from synaptic_host.docker_v1.model import (
@@ -51,6 +53,37 @@ class Repository:
 
     def compare_and_swap_docker_run_mutation(self, *_args, **_kwargs):
         raise AssertionError("preparation mutated durability")
+
+
+def _windows_platform(**changes):
+    observed = {}
+    endpoint = DockerLocalEndpointDescriptorV1.build(
+        "desktop-linux", "npipe:////./pipe/dockerDesktopLinuxEngine", False,
+    )
+
+    def resolve(executable, context_ref, environment):
+        observed.update(
+            executable=executable, context_ref=context_ref,
+            environment=dict(environment),
+        )
+        return endpoint
+
+    arguments = {
+        "docker_policy_ref": "docker-desktop-windows-v1",
+        "wsl_distro": "docker-desktop",
+        "environment": {
+            "PATH": "C:\\Docker", "SystemRoot": "C:\\Windows",
+            "TEMP": "C:\\Temp", "TMP": "C:\\Temp",
+            "WINDIR": "C:\\Windows", "HF_TOKEN": "must-not-forward",
+        },
+        "os_name": "nt",
+        "executable_candidates": lambda _environment: (
+            "C:\\Docker\\docker.exe",
+        ),
+        "endpoint_resolver": resolve,
+    }
+    arguments.update(changes)
+    return compose_docker_prepared_platform_v1(**arguments), observed
 
 
 def _request(tmp_path: Path):
@@ -233,3 +266,67 @@ def test_builder_live_rejects_lost_private_key_before_effects(tmp_path: Path):
     authenticator.key_path.unlink()
     with pytest.raises(ValueError, match="private storage"):
         builder.prepare_admission(request)
+
+
+def test_windows_factory_uses_absolute_cli_exact_endpoint_and_four_key_env():
+    platform, observed = _windows_platform()
+    assert platform.policy.executable == "C:\\Docker\\docker.exe"
+    assert platform.endpoint.host == "npipe:////./pipe/dockerDesktopLinuxEngine"
+    assert platform.endpoint.tls is False
+    assert observed["context_ref"] == "desktop-linux"
+    assert observed["environment"] == {
+        "SystemRoot": "C:\\Windows", "TEMP": "C:\\Temp",
+        "TMP": "C:\\Temp", "WINDIR": "C:\\Windows",
+    }
+    assert platform.policy.environment.entries == tuple(
+        observed["environment"].items()
+    )
+    assert platform.typed_runner._popen is subprocess.Popen
+    assert platform.distro == "docker-desktop"
+
+
+def test_windows_factory_fails_closed_on_posix_or_ambiguous_cli():
+    with pytest.raises(ValueError, match="Windows Docker Host"):
+        _windows_platform(os_name="posix")
+    with pytest.raises(ValueError, match="one absolute"):
+        _windows_platform(executable_candidates=lambda _environment: (
+            "C:\\One\\docker.exe", "C:\\Two\\docker.exe",
+        ))
+
+
+@pytest.mark.parametrize(
+    "executable", ("C:\\Docker\\docker.exe", "C:\\Docker\\DOCKER.EXE"),
+)
+def test_windows_factory_accepts_exact_case_insensitive_docker_basename(
+    executable,
+):
+    platform, observed = _windows_platform(
+        executable_candidates=lambda _environment: (executable,),
+    )
+    assert platform.policy.executable == executable
+    assert observed["executable"] == executable
+
+
+@pytest.mark.parametrize(
+    "executable",
+    (
+        "C:\\Docker\\notdocker.exe",
+        "C:\\Docker\\mydocker.exe",
+        "C:\\Docker\\docker.exe.bak",
+    ),
+)
+def test_windows_factory_rejects_inexact_docker_basename_before_inspection(
+    executable,
+):
+    inspected = []
+
+    def forbidden(*_args):
+        inspected.append(True)
+        raise AssertionError("endpoint inspection crossed executable validation")
+
+    with pytest.raises(ValueError, match="one absolute"):
+        _windows_platform(
+            executable_candidates=lambda _environment: (executable,),
+            endpoint_resolver=forbidden,
+        )
+    assert inspected == []

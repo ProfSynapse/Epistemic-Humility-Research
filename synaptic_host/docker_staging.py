@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import ctypes
 import hashlib
 import json
 import os
 import re
 import shutil
 import stat
+import struct
 import subprocess
 import tarfile
 import tempfile
@@ -176,6 +178,686 @@ def _identity(info: os.stat_result) -> tuple[int, int, int, int, int]:
     return (
         info.st_dev, info.st_ino, info.st_mode, info.st_size, info.st_mtime_ns,
     )
+
+
+_FILE_ATTRIBUTE_READONLY = 0x00000001
+_FILE_ATTRIBUTE_DIRECTORY = 0x00000010
+_FILE_ATTRIBUTE_NORMAL = 0x00000080
+_FILE_ATTRIBUTE_REPARSE_POINT = 0x00000400
+_FILE_LIST_DIRECTORY = 0x00000001
+_FILE_READ_ATTRIBUTES = 0x00000080
+_FILE_WRITE_ATTRIBUTES = 0x00000100
+_DELETE = 0x00010000
+_SYNCHRONIZE = 0x00100000
+_FILE_SHARE_ALL = 0x00000007
+_FILE_SHARE_READ_WRITE = 0x00000003
+_OPEN_EXISTING = 3
+_FILE_OPEN = 1
+_FILE_DIRECTORY_FILE = 0x00000001
+_FILE_SYNCHRONOUS_IO_NONALERT = 0x00000020
+_FILE_NON_DIRECTORY_FILE = 0x00000040
+_FILE_OPEN_REPARSE_POINT = 0x00200000
+_FILE_FLAG_BACKUP_SEMANTICS = 0x02000000
+_FILE_FLAG_OPEN_REPARSE_POINT = 0x00200000
+_OBJ_DONT_REPARSE = 0x00001000
+_FILE_BASIC_INFO_CLASS = 0
+_FILE_STANDARD_INFO_CLASS = 1
+_FILE_ID_INFO_CLASS = 18
+_FILE_ID_EXTD_DIRECTORY_INFO_CLASS = 19
+_FILE_ID_EXTD_DIRECTORY_RESTART_INFO_CLASS = 20
+_FILE_DISPOSITION_INFO_EX_CLASS = 21
+_FILE_DISPOSITION_DELETE = 0x00000001
+_ERROR_NO_MORE_FILES = 18
+_INVALID_HANDLE_VALUE = ctypes.c_void_p(-1).value
+_DIRECTORY_RECORD = struct.Struct("<IIqqqqqqIIII16s")
+
+
+class _UnicodeString(ctypes.Structure):
+    _fields_ = (
+        ("Length", ctypes.c_ushort),
+        ("MaximumLength", ctypes.c_ushort),
+        ("Buffer", ctypes.c_wchar_p),
+    )
+
+
+class _ObjectAttributes(ctypes.Structure):
+    _fields_ = (
+        ("Length", ctypes.c_ulong),
+        ("RootDirectory", ctypes.c_void_p),
+        ("ObjectName", ctypes.POINTER(_UnicodeString)),
+        ("Attributes", ctypes.c_ulong),
+        ("SecurityDescriptor", ctypes.c_void_p),
+        ("SecurityQualityOfService", ctypes.c_void_p),
+    )
+
+
+class _IoStatusValue(ctypes.Union):
+    _fields_ = (("Status", ctypes.c_long), ("Pointer", ctypes.c_void_p))
+
+
+class _IoStatusBlock(ctypes.Structure):
+    _anonymous_ = ("value",)
+    _fields_ = (("value", _IoStatusValue), ("Information", ctypes.c_size_t))
+
+
+class _FileTime(ctypes.Structure):
+    _fields_ = (("Low", ctypes.c_ulong), ("High", ctypes.c_ulong))
+
+
+class _ByHandleFileInformation(ctypes.Structure):
+    _fields_ = (
+        ("FileAttributes", ctypes.c_ulong),
+        ("CreationTime", _FileTime),
+        ("LastAccessTime", _FileTime),
+        ("LastWriteTime", _FileTime),
+        ("VolumeSerialNumber", ctypes.c_ulong),
+        ("FileSizeHigh", ctypes.c_ulong),
+        ("FileSizeLow", ctypes.c_ulong),
+        ("NumberOfLinks", ctypes.c_ulong),
+        ("FileIndexHigh", ctypes.c_ulong),
+        ("FileIndexLow", ctypes.c_ulong),
+    )
+
+
+class _FileIdInfo(ctypes.Structure):
+    _fields_ = (
+        ("VolumeSerialNumber", ctypes.c_ulonglong),
+        ("FileId", ctypes.c_ubyte * 16),
+    )
+
+
+class _FileStandardInfo(ctypes.Structure):
+    _fields_ = (
+        ("AllocationSize", ctypes.c_longlong),
+        ("EndOfFile", ctypes.c_longlong),
+        ("NumberOfLinks", ctypes.c_ulong),
+        ("DeletePending", ctypes.c_ubyte),
+        ("Directory", ctypes.c_ubyte),
+    )
+
+
+class _FileBasicInfo(ctypes.Structure):
+    _fields_ = (
+        ("CreationTime", ctypes.c_longlong),
+        ("LastAccessTime", ctypes.c_longlong),
+        ("LastWriteTime", ctypes.c_longlong),
+        ("ChangeTime", ctypes.c_longlong),
+        ("FileAttributes", ctypes.c_ulong),
+    )
+
+
+class _FileDispositionInfoEx(ctypes.Structure):
+    _fields_ = (("Flags", ctypes.c_ulong),)
+
+
+@dataclass(frozen=True, slots=True)
+class _WindowsHandleMetadataV1:
+    identity: tuple[int, bytes]
+    is_directory: bool
+    attributes: int
+    size: int
+    link_count: int
+
+
+@dataclass(frozen=True, slots=True)
+class _WindowsCleanupEntryV1:
+    handle: int
+    depth: int
+    location: str
+    metadata: _WindowsHandleMetadataV1
+
+
+@dataclass(slots=True)
+class _WindowsStageCleanupV1:
+    parent_handle: int
+    temporary_handle: int
+    parent_identity: tuple[int, bytes]
+    temporary_identity: tuple[int, bytes]
+    parent_location: str
+    temporary_location: str
+    temporary_name: str
+    child_handles: dict[int, int] = field(default_factory=dict, repr=False)
+    cleanup_active: bool = False
+    released: bool = False
+
+
+_WINDOWS_NATIVE: tuple[object, object] | None = None
+
+
+def _windows_native() -> tuple[object, object]:
+    global _WINDOWS_NATIVE
+    if os.name != "nt":
+        raise ValueError("Windows staging cleanup is unavailable")
+    if _WINDOWS_NATIVE is None:
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        ntdll = ctypes.WinDLL("ntdll", use_last_error=True)
+        kernel32.CreateFileW.argtypes = (
+            ctypes.c_wchar_p, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_void_p,
+            ctypes.c_ulong, ctypes.c_ulong, ctypes.c_void_p,
+        )
+        kernel32.CreateFileW.restype = ctypes.c_void_p
+        kernel32.CloseHandle.argtypes = (ctypes.c_void_p,)
+        kernel32.CloseHandle.restype = ctypes.c_int
+        kernel32.GetFileInformationByHandle.argtypes = (
+            ctypes.c_void_p, ctypes.POINTER(_ByHandleFileInformation),
+        )
+        kernel32.GetFileInformationByHandle.restype = ctypes.c_int
+        kernel32.GetFileInformationByHandleEx.argtypes = (
+            ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p, ctypes.c_ulong,
+        )
+        kernel32.GetFileInformationByHandleEx.restype = ctypes.c_int
+        kernel32.GetFinalPathNameByHandleW.argtypes = (
+            ctypes.c_void_p, ctypes.c_wchar_p, ctypes.c_ulong, ctypes.c_ulong,
+        )
+        kernel32.GetFinalPathNameByHandleW.restype = ctypes.c_ulong
+        kernel32.SetFileInformationByHandle.argtypes = (
+            ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p, ctypes.c_ulong,
+        )
+        kernel32.SetFileInformationByHandle.restype = ctypes.c_int
+        ntdll.NtCreateFile.argtypes = (
+            ctypes.POINTER(ctypes.c_void_p), ctypes.c_ulong,
+            ctypes.POINTER(_ObjectAttributes), ctypes.POINTER(_IoStatusBlock),
+            ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_ulong,
+            ctypes.c_ulong, ctypes.c_void_p, ctypes.c_ulong,
+        )
+        ntdll.NtCreateFile.restype = ctypes.c_long
+        _WINDOWS_NATIVE = kernel32, ntdll
+    return _WINDOWS_NATIVE
+
+
+def _windows_component(value: str) -> str:
+    if (
+        type(value) is not str
+        or not value
+        or value in {".", ".."}
+        or value[-1] in {" ", "."}
+        or any(character in value for character in "\\/:\0")
+        or any(ord(character) < 32 for character in value)
+    ):
+        raise ValueError("Windows staging entry name is not canonical")
+    try:
+        encoded = value.encode("utf-16-le")
+    except UnicodeError:
+        raise ValueError("Windows staging entry name is not canonical") from None
+    if not encoded or len(encoded) > 65_534:
+        raise ValueError("Windows staging entry name is not canonical")
+    return value
+
+
+def _windows_close_raw(handle: int) -> None:
+    kernel32, _ = _windows_native()
+    if not kernel32.CloseHandle(ctypes.c_void_p(handle)):
+        raise ValueError("Windows staging handle release failed")
+
+
+def _windows_query_metadata(handle: int) -> _WindowsHandleMetadataV1:
+    kernel32, _ = _windows_native()
+    information = _ByHandleFileInformation()
+    file_id = _FileIdInfo()
+    standard = _FileStandardInfo()
+    if not kernel32.GetFileInformationByHandle(
+        ctypes.c_void_p(handle), ctypes.byref(information)
+    ) or not kernel32.GetFileInformationByHandleEx(
+        ctypes.c_void_p(handle), _FILE_ID_INFO_CLASS,
+        ctypes.byref(file_id), ctypes.sizeof(file_id),
+    ) or not kernel32.GetFileInformationByHandleEx(
+        ctypes.c_void_p(handle), _FILE_STANDARD_INFO_CLASS,
+        ctypes.byref(standard), ctypes.sizeof(standard),
+    ):
+        raise ValueError("Windows staging handle metadata is unavailable")
+    attributes = int(information.FileAttributes)
+    if attributes & _FILE_ATTRIBUTE_REPARSE_POINT:
+        raise ValueError("Windows staging handle is a reparse point")
+    return _WindowsHandleMetadataV1(
+        identity=(int(file_id.VolumeSerialNumber), bytes(file_id.FileId)),
+        is_directory=bool(standard.Directory),
+        attributes=attributes,
+        size=int(standard.EndOfFile),
+        link_count=int(standard.NumberOfLinks),
+    )
+
+
+def _windows_handle_location(handle: int) -> str:
+    kernel32, _ = _windows_native()
+    buffer = ctypes.create_unicode_buffer(32_768)
+    length = kernel32.GetFinalPathNameByHandleW(
+        ctypes.c_void_p(handle), buffer, len(buffer), 0
+    )
+    if length == 0 or length >= len(buffer):
+        raise ValueError("Windows staging handle location is unavailable")
+    location = buffer.value
+    if not location.startswith("\\\\?\\") or location.endswith("\\"):
+        raise ValueError("Windows staging handle location is not canonical")
+    return location
+
+
+def _windows_open_parent(
+    path: Path | str, *, cleanup: bool = False,
+) -> int:
+    kernel32, _ = _windows_native()
+    desired_access = _FILE_LIST_DIRECTORY | _FILE_READ_ATTRIBUTES | _SYNCHRONIZE
+    if cleanup:
+        desired_access |= _FILE_WRITE_ATTRIBUTES | _DELETE
+    handle = kernel32.CreateFileW(
+        str(path),
+        desired_access,
+        _FILE_SHARE_READ_WRITE if cleanup else _FILE_SHARE_ALL,
+        None,
+        _OPEN_EXISTING,
+        _FILE_FLAG_BACKUP_SEMANTICS | _FILE_FLAG_OPEN_REPARSE_POINT,
+        None,
+    )
+    if handle in {None, _INVALID_HANDLE_VALUE}:
+        raise ValueError("Windows staging parent handle is unavailable")
+    return int(handle)
+
+
+def _windows_open_relative(
+    parent_handle: int,
+    name: str,
+    is_directory: bool,
+    *,
+    cleanup: bool = False,
+) -> int:
+    _, ntdll = _windows_native()
+    component = _windows_component(name)
+    encoded = component.encode("utf-16-le")
+    buffer = ctypes.create_unicode_buffer(component)
+    unicode_name = _UnicodeString(
+        Length=len(encoded),
+        MaximumLength=len(encoded) + 2,
+        Buffer=ctypes.cast(buffer, ctypes.c_wchar_p),
+    )
+    attributes = _ObjectAttributes(
+        Length=ctypes.sizeof(_ObjectAttributes),
+        RootDirectory=ctypes.c_void_p(parent_handle),
+        ObjectName=ctypes.pointer(unicode_name),
+        Attributes=_OBJ_DONT_REPARSE,
+        SecurityDescriptor=None,
+        SecurityQualityOfService=None,
+    )
+    status_block = _IoStatusBlock()
+    output = ctypes.c_void_p()
+    desired_access = _FILE_READ_ATTRIBUTES | _SYNCHRONIZE
+    if cleanup:
+        desired_access |= _FILE_WRITE_ATTRIBUTES | _DELETE
+    if is_directory:
+        desired_access |= _FILE_LIST_DIRECTORY
+    options = (
+        (_FILE_DIRECTORY_FILE if is_directory else _FILE_NON_DIRECTORY_FILE)
+        | _FILE_OPEN_REPARSE_POINT
+        | _FILE_SYNCHRONOUS_IO_NONALERT
+    )
+    status = ntdll.NtCreateFile(
+        ctypes.byref(output),
+        desired_access,
+        ctypes.byref(attributes),
+        ctypes.byref(status_block),
+        None,
+        0,
+        _FILE_SHARE_READ_WRITE if cleanup else _FILE_SHARE_ALL,
+        _FILE_OPEN,
+        options,
+        None,
+        0,
+    )
+    if status < 0 or output.value in {None, _INVALID_HANDLE_VALUE}:
+        raise ValueError("Windows staging child handle is unavailable")
+    return int(output.value)
+
+
+def _capture_windows_stage_cleanup(
+    parent: Path, temporary: Path,
+) -> _WindowsStageCleanupV1:
+    parent = Path(parent)
+    temporary = Path(temporary)
+    if (
+        not parent.is_absolute()
+        or not temporary.is_absolute()
+        or temporary.parent != parent
+        or not temporary.name.startswith("stage-")
+        or len(temporary.name) == len("stage-")
+    ):
+        raise ValueError("Windows staging temporary is not a direct stage child")
+    parent_handle = _windows_open_parent(parent)
+    temporary_handle = 0
+    try:
+        parent_metadata = _windows_query_metadata(parent_handle)
+        if not parent_metadata.is_directory:
+            raise ValueError("Windows staging parent is not a directory")
+        temporary_handle = _windows_open_relative(
+            parent_handle, temporary.name, True
+        )
+        temporary_metadata = _windows_query_metadata(temporary_handle)
+        if not temporary_metadata.is_directory:
+            raise ValueError("Windows staging temporary is not a directory")
+        parent_location = _windows_handle_location(parent_handle)
+        temporary_location = _windows_handle_location(temporary_handle)
+        if temporary_location != parent_location + "\\" + temporary.name:
+            raise ValueError("Windows staging temporary location is invalid")
+        return _WindowsStageCleanupV1(
+            parent_handle=parent_handle,
+            temporary_handle=temporary_handle,
+            parent_identity=parent_metadata.identity,
+            temporary_identity=temporary_metadata.identity,
+            parent_location=parent_location,
+            temporary_location=temporary_location,
+            temporary_name=temporary.name,
+        )
+    except BaseException:
+        if temporary_handle:
+            _windows_close_raw(temporary_handle)
+        _windows_close_raw(parent_handle)
+        raise
+
+
+def _windows_directory_records(handle: int) -> tuple[tuple[str, int, int, bytes], ...]:
+    kernel32, _ = _windows_native()
+    records: list[tuple[str, int, int, bytes]] = []
+    seen: set[str] = set()
+    first = True
+    while True:
+        buffer = ctypes.create_string_buffer(64 * 1024)
+        info_class = (
+            _FILE_ID_EXTD_DIRECTORY_RESTART_INFO_CLASS
+            if first else _FILE_ID_EXTD_DIRECTORY_INFO_CLASS
+        )
+        first = False
+        if not kernel32.GetFileInformationByHandleEx(
+            ctypes.c_void_p(handle), info_class, buffer, len(buffer)
+        ):
+            if ctypes.get_last_error() == _ERROR_NO_MORE_FILES:
+                break
+            raise ValueError("Windows staging directory enumeration failed")
+        offset = 0
+        while True:
+            if offset + _DIRECTORY_RECORD.size > len(buffer):
+                raise ValueError("Windows staging directory record is malformed")
+            unpacked = _DIRECTORY_RECORD.unpack_from(buffer, offset)
+            next_offset = unpacked[0]
+            end_of_file = unpacked[6]
+            attributes = unpacked[8]
+            name_length = unpacked[9]
+            reparse_tag = unpacked[11]
+            file_id = unpacked[12]
+            name_start = offset + _DIRECTORY_RECORD.size
+            name_end = name_start + name_length
+            if name_length % 2 or name_end > len(buffer):
+                raise ValueError("Windows staging directory record is malformed")
+            try:
+                name = ctypes.string_at(
+                    ctypes.addressof(buffer) + name_start, name_length
+                ).decode("utf-16-le")
+            except UnicodeError:
+                raise ValueError(
+                    "Windows staging directory record name is malformed"
+                ) from None
+            if name not in {".", ".."}:
+                canonical = _windows_component(name)
+                folded = canonical.casefold()
+                if folded in seen:
+                    raise ValueError("Windows staging directory is ambiguous")
+                seen.add(folded)
+                if (
+                    attributes & _FILE_ATTRIBUTE_REPARSE_POINT
+                    or reparse_tag != 0
+                ):
+                    raise ValueError(
+                        "Windows staging temporary contains a reparse point"
+                    )
+                records.append(
+                    (canonical, int(attributes), int(end_of_file), bytes(file_id))
+                )
+            if next_offset == 0:
+                break
+            if (
+                next_offset < _DIRECTORY_RECORD.size
+                or next_offset % 8
+                or offset + next_offset >= len(buffer)
+            ):
+                raise ValueError("Windows staging directory record is malformed")
+            offset += next_offset
+    return tuple(records)
+
+
+def _windows_acquire_cleanup_authority(cleanup: _WindowsStageCleanupV1) -> None:
+    if cleanup.released or cleanup.cleanup_active:
+        raise ValueError("Windows staging cleanup transition is invalid")
+    cleanup_parent = _windows_open_parent(cleanup.parent_location, cleanup=True)
+    cleanup_temporary = 0
+    try:
+        cleanup_temporary = _windows_open_relative(
+            cleanup_parent, cleanup.temporary_name, True, cleanup=True
+        )
+        parent_metadata = _windows_query_metadata(cleanup_parent)
+        temporary_metadata = _windows_query_metadata(cleanup_temporary)
+        if (
+            parent_metadata.identity != cleanup.parent_identity
+            or not parent_metadata.is_directory
+            or temporary_metadata.identity != cleanup.temporary_identity
+            or not temporary_metadata.is_directory
+            or _windows_handle_location(cleanup_parent) != cleanup.parent_location
+            or _windows_handle_location(cleanup_temporary)
+            != cleanup.temporary_location
+        ):
+            raise ValueError("Windows staging cleanup transition changed authority")
+    except BaseException:
+        if cleanup_temporary:
+            _windows_close_raw(cleanup_temporary)
+        _windows_close_raw(cleanup_parent)
+        raise
+    promotion_temporary = cleanup.temporary_handle
+    promotion_parent = cleanup.parent_handle
+    cleanup.parent_handle = cleanup_parent
+    cleanup.temporary_handle = cleanup_temporary
+    cleanup.cleanup_active = True
+    failure: ValueError | None = None
+    for handle in (promotion_temporary, promotion_parent):
+        try:
+            _windows_close_raw(handle)
+        except ValueError as error:
+            failure = failure or error
+    if failure is not None:
+        raise failure
+
+
+def _windows_cleanup_inventory(
+    cleanup: _WindowsStageCleanupV1,
+) -> tuple[_WindowsCleanupEntryV1, ...]:
+    if cleanup.released:
+        raise ValueError("Windows staging cleanup authority was released")
+    if not cleanup.cleanup_active:
+        _windows_acquire_cleanup_authority(cleanup)
+    parent_metadata = _windows_query_metadata(cleanup.parent_handle)
+    temporary_metadata = _windows_query_metadata(cleanup.temporary_handle)
+    if (
+        parent_metadata.identity != cleanup.parent_identity
+        or not parent_metadata.is_directory
+        or temporary_metadata.identity != cleanup.temporary_identity
+        or not temporary_metadata.is_directory
+    ):
+        raise ValueError("Windows staging cleanup authority changed")
+    entries = [_WindowsCleanupEntryV1(
+        cleanup.temporary_handle,
+        0,
+        cleanup.temporary_location,
+        temporary_metadata,
+    )]
+    pending = [(cleanup.temporary_handle, 0, cleanup.temporary_location)]
+    while pending:
+        directory_handle, depth, directory_location = pending.pop()
+        for name, attributes, size, file_id in _windows_directory_records(
+            directory_handle
+        ):
+            is_directory = bool(attributes & _FILE_ATTRIBUTE_DIRECTORY)
+            handle = _windows_open_relative(
+                directory_handle, name, is_directory, cleanup=True
+            )
+            try:
+                metadata = _windows_query_metadata(handle)
+                location = directory_location + "\\" + name
+                if metadata.identity[1] != file_id:
+                    raise ValueError("Windows staging entry identity changed")
+                if metadata.is_directory != is_directory:
+                    raise ValueError("Windows staging entry type changed")
+                if metadata.attributes != attributes:
+                    raise ValueError("Windows staging entry attributes changed")
+                if not is_directory and metadata.size != size:
+                    raise ValueError("Windows staging file size changed")
+                if _windows_handle_location(handle) != location:
+                    raise ValueError("Windows staging entry location changed")
+                cleanup.child_handles[handle] = depth + 1
+            except BaseException:
+                _windows_close_raw(handle)
+                raise
+            entry = _WindowsCleanupEntryV1(
+                handle, depth + 1, location, metadata
+            )
+            entries.append(entry)
+            if is_directory:
+                pending.append((handle, depth + 1, location))
+    entries.sort(key=lambda entry: entry.depth, reverse=True)
+    return tuple(entries)
+
+
+def _windows_basic_info(handle: int) -> _FileBasicInfo:
+    kernel32, _ = _windows_native()
+    information = _FileBasicInfo()
+    if not kernel32.GetFileInformationByHandleEx(
+        ctypes.c_void_p(handle), _FILE_BASIC_INFO_CLASS,
+        ctypes.byref(information), ctypes.sizeof(information),
+    ):
+        raise ValueError("Windows staging basic metadata is unavailable")
+    return information
+
+
+def _windows_clear_readonly(
+    entry: _WindowsCleanupEntryV1,
+) -> _WindowsHandleMetadataV1:
+    kernel32, _ = _windows_native()
+    current = entry.metadata
+    if current.is_directory or not current.attributes & _FILE_ATTRIBUTE_READONLY:
+        return current
+    basic = _windows_basic_info(entry.handle)
+    if int(basic.FileAttributes) != current.attributes:
+        raise ValueError("Windows staging file attributes changed before cleanup")
+    attributes = current.attributes & ~_FILE_ATTRIBUTE_READONLY
+    if attributes == 0 or attributes == _FILE_ATTRIBUTE_NORMAL:
+        raise ValueError("Windows staging readonly attributes are unsupported")
+    updated = _FileBasicInfo(
+        CreationTime=basic.CreationTime,
+        LastAccessTime=basic.LastAccessTime,
+        LastWriteTime=basic.LastWriteTime,
+        ChangeTime=basic.ChangeTime,
+        FileAttributes=attributes,
+    )
+    if not kernel32.SetFileInformationByHandle(
+        ctypes.c_void_p(entry.handle), _FILE_BASIC_INFO_CLASS,
+        ctypes.byref(updated), ctypes.sizeof(updated),
+    ):
+        raise ValueError("Windows staging readonly attribute clear failed")
+    observed = _windows_query_metadata(entry.handle)
+    expected = _WindowsHandleMetadataV1(
+        identity=current.identity,
+        is_directory=False,
+        attributes=attributes,
+        size=current.size,
+        link_count=current.link_count,
+    )
+    if observed != expected:
+        raise ValueError("Windows staging file changed during readonly clear")
+    return expected
+
+
+def _windows_close_owned(
+    cleanup: _WindowsStageCleanupV1, handle: int,
+) -> None:
+    _windows_close_raw(handle)
+    cleanup.child_handles.pop(handle, None)
+    if cleanup.temporary_handle == handle:
+        cleanup.temporary_handle = 0
+
+
+def _windows_prove_entry(
+    entry: _WindowsCleanupEntryV1,
+    metadata: _WindowsHandleMetadataV1 | None = None,
+) -> None:
+    if (
+        _windows_query_metadata(entry.handle) != (metadata or entry.metadata)
+        or _windows_handle_location(entry.handle) != entry.location
+    ):
+        raise ValueError("Windows staging handle location or identity changed")
+
+
+def _windows_validate_inventory(
+    entries: tuple[_WindowsCleanupEntryV1, ...],
+) -> None:
+    for entry in entries:
+        _windows_prove_entry(entry)
+
+
+def _windows_delete_inventory(
+    cleanup: _WindowsStageCleanupV1,
+    entries: tuple[_WindowsCleanupEntryV1, ...],
+) -> None:
+    kernel32, _ = _windows_native()
+    _windows_validate_inventory(entries)
+    for entry in entries:
+        _windows_prove_entry(entry)
+        admitted = _windows_clear_readonly(entry)
+        _windows_prove_entry(entry, admitted)
+        disposition = _FileDispositionInfoEx(Flags=_FILE_DISPOSITION_DELETE)
+        if not kernel32.SetFileInformationByHandle(
+            ctypes.c_void_p(entry.handle),
+            _FILE_DISPOSITION_INFO_EX_CLASS,
+            ctypes.byref(disposition),
+            ctypes.sizeof(disposition),
+        ):
+            raise ValueError("Windows staging handle disposition failed")
+        _windows_close_owned(cleanup, entry.handle)
+
+
+def _release_windows_stage(cleanup: _WindowsStageCleanupV1) -> None:
+    if cleanup.released:
+        return
+    failure: ValueError | None = None
+    handles = tuple(
+        handle for handle, _depth in sorted(
+            cleanup.child_handles.items(), key=lambda item: item[1], reverse=True
+        )
+    )
+    if cleanup.temporary_handle:
+        handles += (cleanup.temporary_handle,)
+    if cleanup.parent_handle:
+        handles += (cleanup.parent_handle,)
+    cleanup.child_handles.clear()
+    cleanup.temporary_handle = 0
+    cleanup.parent_handle = 0
+    cleanup.released = True
+    for handle in handles:
+        try:
+            _windows_close_raw(handle)
+        except ValueError as error:
+            failure = failure or error
+    if failure is not None:
+        raise failure
+
+
+def _cleanup_windows_stage(cleanup: _WindowsStageCleanupV1) -> None:
+    try:
+        entries = _windows_cleanup_inventory(cleanup)
+        _windows_delete_inventory(cleanup, entries)
+    finally:
+        _release_windows_stage(cleanup)
+
+
+def _cleanup_unpromoted_stage(
+    temporary: Path, windows_cleanup: _WindowsStageCleanupV1 | None,
+) -> None:
+    if windows_cleanup is None:
+        shutil.rmtree(temporary)
+        return
+    _cleanup_windows_stage(windows_cleanup)
 
 
 def _read_direct_regular(path: Path, label: str) -> tuple[bytes, os.stat_result]:
@@ -1003,12 +1685,18 @@ def stage_docker_worker_v1(
     stage_parent = state_root / "docker" / "stages"
     stage_parent.mkdir(parents=True, exist_ok=True)
     temporary = Path(tempfile.mkdtemp(prefix="stage-", dir=stage_parent))
+    windows_cleanup = (
+        _capture_windows_stage_cleanup(stage_parent, temporary)
+        if os.name == "nt"
+        else None
+    )
+    promoted = False
     source = temporary / "source"
     artifacts = temporary / "artifacts"
-    source.mkdir()
-    artifacts.mkdir()
-    _create_artifact_topology(artifacts)
     try:
+        source.mkdir()
+        artifacts.mkdir()
+        _create_artifact_topology(artifacts)
         _extract_link_free(
             _git_archive(context.project_root, source_lock.project_source.commit),
             source / "project",
@@ -1090,6 +1778,10 @@ def stage_docker_worker_v1(
                 temporary.rename(final_stage)
             except FileExistsError:
                 pass
+            else:
+                promoted = True
+                if windows_cleanup is not None:
+                    _release_windows_stage(windows_cleanup)
         _verify_reuse(
             final_source,
             projection,
@@ -1101,8 +1793,8 @@ def stage_docker_worker_v1(
             projection, final_source, final_artifacts, bundle
         )
     finally:
-        if temporary.exists():
-            shutil.rmtree(temporary)
+        if not promoted:
+            _cleanup_unpromoted_stage(temporary, windows_cleanup)
 
 
 __all__ = [

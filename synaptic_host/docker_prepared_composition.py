@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import os
+from pathlib import Path
 import subprocess
 from threading import Thread
 import time
@@ -38,12 +39,8 @@ from .docker_v1.control_contract import (
     DockerExpectedCreatePublishRequestV1,
 )
 from .docker_v1.create import DockerHostCreateV1
-from .docker_v1.cli import DockerCLIRunnerV1
-from .docker_v1.interop import (
-    DockerPrivateWSLInteropChannelV1,
-    DockerWSLExecutableBindingV1,
-    DockerWSLInteropPopenFactoryV1,
-)
+from .docker_v1.cli import DockerBoundedProcessRunnerV1, DockerCLIRunnerV1
+from .docker_v1.endpoint import DockerLocalEndpointResolverV1
 from .docker_v1.memory import InMemoryDockerControlStoreV1
 from .docker_v1.model import (
     DockerCLIEnvironmentV1,
@@ -84,42 +81,77 @@ class DockerPreparedPlatformV1:
 
 
 def compose_docker_prepared_platform_v1(
-    *, environment: dict[str, str] | None = None,
-    lstat=os.lstat, popen_factory=subprocess.Popen,
+    *, docker_policy_ref: str, wsl_distro: str,
+    environment: dict[str, str] | None = None,
+    os_name: str = os.name, executable_candidates=None,
+    endpoint_resolver=None, popen_factory=subprocess.Popen,
     monotonic=time.monotonic, thread_factory=Thread,
 ) -> DockerPreparedPlatformV1:
-    """Bind the fixed local Docker Desktop endpoint to one immutable stage."""
+    """Bind one Windows Docker CLI to the inspected desktop-linux endpoint."""
 
     values = os.environ if environment is None else environment
+    if (
+        os_name != "nt" or docker_policy_ref != "docker-desktop-windows-v1"
+        or type(wsl_distro) is not str or not wsl_distro
+    ):
+        raise ValueError("Windows Docker Host policy is unavailable")
     required = ("SystemRoot", "TEMP", "TMP", "WINDIR")
-    cli_environment = DockerCLIEnvironmentV1.build(
-        tuple((key, values[key]) for key in required)
-    )
-    endpoint = DockerLocalEndpointDescriptorV1.build(
-        "desktop-linux", "npipe:////./pipe/dockerDesktopLinuxEngine", False,
-    )
+    try:
+        cli_environment = DockerCLIEnvironmentV1.build(
+            tuple((key, values[key]) for key in required)
+        )
+        if executable_candidates is None:
+            path_value = values["PATH"]
+            if type(path_value) is not str:
+                raise ValueError
+            candidates = tuple(
+                str((Path(directory) / "docker.exe").resolve(strict=True))
+                for directory in path_value.split(os.pathsep) if directory
+                if (Path(directory) / "docker.exe").is_file()
+            )
+        else:
+            candidates = tuple(executable_candidates(values))
+        unique = {candidate.casefold(): candidate for candidate in candidates}
+        if len(candidates) != 1 or len(unique) != 1:
+            raise ValueError
+        executable = candidates[0]
+        if (
+            type(executable) is not str or not Path(executable).is_absolute()
+            or Path(executable).name.casefold() != "docker.exe"
+        ):
+            raise ValueError
+    except (KeyError, OSError, TypeError, ValueError):
+        raise ValueError("one absolute Windows Docker executable is required") from None
+    effect_environment = dict(cli_environment.entries)
+    if endpoint_resolver is None:
+        bounded = DockerBoundedProcessRunnerV1(
+            timeout_ms=10_000, terminate_grace_ms=1_000,
+            stdout_limit=65_536, stderr_limit=65_536,
+            combined_limit=131_072, popen_factory=popen_factory,
+            monotonic=monotonic, thread_factory=thread_factory,
+        )
+        endpoint = DockerLocalEndpointResolverV1(bounded).resolve(
+            executable, "desktop-linux", effect_environment,
+        )
+    else:
+        endpoint = endpoint_resolver(
+            executable, "desktop-linux", effect_environment,
+        )
+    if (
+        type(endpoint) is not DockerLocalEndpointDescriptorV1
+        or endpoint != DockerLocalEndpointDescriptorV1.build(
+            "desktop-linux", "npipe:////./pipe/dockerDesktopLinuxEngine", False,
+        )
+    ):
+        raise ValueError("Docker desktop-linux endpoint is invalid")
     policy = DockerCLIPolicyV1.build(
-        "/Docker/host/bin/docker.exe", endpoint, cli_environment,
-    )
-    interop_path = values.get("WSL_INTEROP")
-    if type(interop_path) is not str or not interop_path:
-        raise ValueError("WSL interoperability channel is unavailable")
-    executable = DockerWSLExecutableBindingV1.build(policy.executable)
-    channel = DockerPrivateWSLInteropChannelV1.acquire(
-        interop_path, lstat=lstat,
-    )
-    popen = DockerWSLInteropPopenFactoryV1(
-        executable=executable, environment=cli_environment, channel=channel,
-        popen_factory=popen_factory,
+        executable, endpoint, cli_environment,
     )
     runner = DockerCLIRunnerV1(
-        policy, popen_factory=popen, monotonic=monotonic,
+        policy, popen_factory=popen_factory, monotonic=monotonic,
         thread_factory=thread_factory,
     )
-    distro = values.get("WSL_DISTRO_NAME")
-    if type(distro) is not str or not distro:
-        raise ValueError("WSL distribution identity is unavailable")
-    return DockerPreparedPlatformV1(runner, endpoint, policy, distro)
+    return DockerPreparedPlatformV1(runner, endpoint, policy, wsl_distro)
 
 
 class _UnavailableMutationRepositoryV1:

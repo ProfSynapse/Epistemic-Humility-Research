@@ -40,6 +40,7 @@ from .artifact_destinations import (
     artifact_destination_declaration_digest_v1,
 )
 from .docker_provider import DockerProviderProfileV1
+from .docker_model_inventory import resolve_docker_model_inventory_v1
 from .security import ScopedGitRemoteReader
 
 
@@ -647,10 +648,20 @@ def execute_docker_training_admission_v1(
         except BaseException:
             return fail(TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE)
         try:
+            model_inventory = resolve_docker_model_inventory_v1(
+                training_input=ingress.training_input,
+                profile=profile,
+                storage_configuration=storage_blob.content,
+                project_root=project,
+            )
+        except BaseException:
+            return fail(TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE)
+        try:
             result = _activate_docker_training_v1(
                 plan=plan, source_lock=session._verified.source_lock,
                 snapshot=snapshot, context=context,
                 project_ref=manifest.project_id, clock=_utc_now,
+                model_inventory=model_inventory,
             )
         except BaseException:
             return fail(TrainingRunCommandCodeV2.START_UNAVAILABLE)
@@ -664,7 +675,7 @@ def execute_docker_training_admission_v1(
 def _activate_docker_training_v1(
     *, plan: TrainingPlan, source_lock: SourceLock,
     snapshot: _AdmissionSnapshotV1, context: ProjectContext,
-    project_ref: str, clock: Callable[[], str], model_inventory: tuple = (),
+    project_ref: str, clock: Callable[[], str], model_inventory: tuple,
 ):
     """Prepare or advance one deterministic Docker run by one safe service cut."""
 
@@ -712,6 +723,7 @@ def _activate_docker_training_v1(
     if (
         type(model_inventory) is not tuple
         or any(type(item) is not DockerModelInventoryEntryV1 for item in model_inventory)
+        or (snapshot.profile.cache_admission and not model_inventory)
     ):
         raise ValueError("prewarmed Docker model inventory is invalid")
     authenticator = FileHmacAuthenticator.for_docker(
@@ -806,7 +818,10 @@ def _activate_docker_training_v1(
     existing_preparation = repository.load_docker_preparation(
         run.project_ref, run.run_id,
     )
-    platform = compose_docker_prepared_platform_v1()
+    platform = compose_docker_prepared_platform_v1(
+        docker_policy_ref=snapshot.profile.docker_policy_ref,
+        wsl_distro=snapshot.profile.wsl_distro,
+    )
     builder = DockerPreparedControlBuilderV1(
         authenticator=authenticator, platform=platform,
     )

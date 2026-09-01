@@ -36,6 +36,12 @@
       "location": "project://.synaptic/publication-spool",
       "access": "read_create",
       "permit_ref": "permit-artifact-publication-spool"
+    },
+    {
+      "root_ref": "docker-model-inventory-source",
+      "location": "project://.synaptic/model-inventory",
+      "access": "read_only",
+      "permit_ref": "permit-docker-model-inventory-source"
     }
   ]
 }
