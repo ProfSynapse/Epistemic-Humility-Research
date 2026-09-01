@@ -26,7 +26,8 @@ def main(argv: list[str] | None = None) -> int:
     if prepared.provider_ref == "docker":
         return emit_training_run_result_v2(
             dispatch_validated_training_run_v1(
-                prepared, isolated_child_authority=None
+                prepared, isolated_child_authority=None,
+                project_root=project_root, engine_root=engine_root,
             )
         )
     try:

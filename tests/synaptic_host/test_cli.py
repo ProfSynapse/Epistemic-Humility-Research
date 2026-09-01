@@ -94,8 +94,24 @@ def _argv(provider: str = "modal", config: str = "project://training/input.json"
 
 
 def _ingress(tmp_path: Path, provider: str = "modal") -> TrainingRunIngressV1:
+    if provider == "docker":
+        value = prepare_training_run_ingress_v1(
+            _argv(
+                provider,
+                config="project://training/smokes/modal-sft.json",
+                destination="local-default",
+            ),
+            project_root=ROOT,
+            engine_root=ENGINE,
+        )
+        assert type(value) is TrainingRunIngressV1
+        return value
     value = prepare_training_run_ingress_v1(
-        _argv(provider), project_root=_project(tmp_path), engine_root=ENGINE
+        _argv(
+            provider,
+            destination="local-default" if provider == "docker" else "provider-staging",
+        ),
+        project_root=_project(tmp_path), engine_root=ENGINE,
     )
     assert type(value) is TrainingRunIngressV1
     return value
@@ -256,13 +272,13 @@ def test_engine_module_outside_pinned_root_is_bootstrap_unavailable(
     assert result.input_digest is None
 
 
-def test_docker_is_unavailable_only_after_complete_ingress(tmp_path: Path) -> None:
+def test_docker_direct_dispatch_requires_explicit_project_roots(tmp_path: Path) -> None:
     ingress = _ingress(tmp_path, "docker")
     result = dispatch_validated_training_run_v1(
         ingress, isolated_child_authority=None
     )
     assert result.status is TrainingRunCommandStatusV2.UNAVAILABLE
-    assert result.code is TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE
+    assert result.code is TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
     assert result.input_digest == ingress.input_digest
 
 
@@ -332,7 +348,7 @@ def test_docker_dispatch_does_not_read_modal_credentials(monkeypatch, tmp_path: 
         dispatch_validated_training_run_v1(
             ingress, isolated_child_authority=None
         ).code
-        is TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE
+        is TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
     )
 
 
@@ -436,6 +452,7 @@ _RESULT_SHAPES = {
     TrainingRunCommandCodeV2.COMMAND_INVALID: {(False, False, False, False)},
     TrainingRunCommandCodeV2.PROVIDER_INVALID: {(False, False, False, False)},
     TrainingRunCommandCodeV2.DESTINATION_INVALID: {(True, False, False, False)},
+    TrainingRunCommandCodeV2.CAPABILITY_UNSUPPORTED: {(True, True, True, True)},
     TrainingRunCommandCodeV2.CONFIG_REF_INVALID: {(True, False, True, False)},
     TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE: {(True, True, True, False)},
     TrainingRunCommandCodeV2.INPUT_INVALID: {(True, True, True, False)},
@@ -460,6 +477,7 @@ _RESULT_STATUS = {
     TrainingRunCommandCodeV2.CONFIG_REF_INVALID: TrainingRunCommandStatusV2.REJECTED,
     TrainingRunCommandCodeV2.INPUT_INVALID: TrainingRunCommandStatusV2.REJECTED,
     TrainingRunCommandCodeV2.DESTINATION_INVALID: TrainingRunCommandStatusV2.REJECTED,
+    TrainingRunCommandCodeV2.CAPABILITY_UNSUPPORTED: TrainingRunCommandStatusV2.REJECTED,
     TrainingRunCommandCodeV2.PREFLIGHT_REJECTED: TrainingRunCommandStatusV2.REJECTED,
     TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE: TrainingRunCommandStatusV2.UNAVAILABLE,
     TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE: TrainingRunCommandStatusV2.UNAVAILABLE,
@@ -610,7 +628,7 @@ def test_concurrent_dispatch_authentication_converges(tmp_path: Path) -> None:
             )
         )
     assert all(
-        result.code is TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE
+        result.code is TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
         and result.input_digest == ingress.input_digest
         for result in results
     )

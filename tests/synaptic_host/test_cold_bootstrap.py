@@ -37,6 +37,18 @@ def _ingress(
         for name in tuple(sys.modules):
             if name == "synaptic_tuner" or name.startswith("synaptic_tuner."):
                 sys.modules.pop(name, None)
+    if provider == "docker":
+        prepared = prepare_training_run_ingress_v1(
+            [
+                "training", "run", "--provider", "docker", "--config",
+                "project://training/smokes/modal-sft.json", "--destination",
+                "local-default",
+            ],
+            project_root=ROOT,
+            engine_root=ENGINE,
+        )
+        assert type(prepared) is TrainingRunIngressV1
+        return prepared
     project = tmp_path / f"{provider}-{suffix}"
     training = project / "training"
     training.mkdir(parents=True)
@@ -72,7 +84,8 @@ def _ingress(
     prepared = prepare_training_run_ingress_v1(
         [
             "training", "run", "--provider", provider, "--config",
-            "project://training/input.json", "--destination", "provider-staging",
+            "project://training/input.json", "--destination",
+            "local-default" if provider == "docker" else "provider-staging",
         ],
         project_root=project,
         engine_root=ENGINE,
@@ -175,9 +188,20 @@ def test_docker_never_imports_or_calls_launcher(monkeypatch, capsys, tmp_path: P
     fake.ensure_and_reexec = lambda **_kwargs: events.append("launcher")
     monkeypatch.setitem(sys.modules, "synaptic_host.launcher", fake)
     monkeypatch.setattr(entry, "prepare_training_run_ingress_v1", lambda *_a, **_k: ingress)
-    assert entry.main(["training", "run"]) == 4
-    assert events == []
-    assert json.loads(capsys.readouterr().out)["code"] == "PROVIDER_UNAVAILABLE"
+    def dispatch(value, **kwargs):
+        events.append(("docker", value, kwargs))
+        return cli._failure(
+            TrainingRunCommandCodeV2.CAPABILITY_UNSUPPORTED,
+            provider_ref=value.provider_ref, config_ref=value.config_ref,
+            destination_ref=value.destination_ref, input_digest=value.input_digest,
+        )
+    monkeypatch.setattr(entry, "dispatch_validated_training_run_v1", dispatch)
+    assert entry.main(["training", "run"]) == 2
+    assert len(events) == 1 and events[0][0] == "docker"
+    assert events[0][2]["isolated_child_authority"] is None
+    assert events[0][2]["project_root"] == ROOT
+    assert events[0][2]["engine_root"] == ENGINE
+    assert json.loads(capsys.readouterr().out)["code"] == "CAPABILITY_UNSUPPORTED"
 
 
 def test_modal_parent_prepares_before_launcher_and_emits_nothing(

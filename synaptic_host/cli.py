@@ -8,6 +8,7 @@ import json
 import os
 import re
 import stat
+import subprocess
 import sys
 import threading
 import unicodedata
@@ -21,7 +22,10 @@ _INGRESS_SCHEMA = "synaptic-training-run-ingress/v1"
 _RESULT_SCHEMA = "synaptic-training-run-command-result/v2"
 _DESTINATION = "provider-staging"
 _DIGEST = re.compile(r"^[0-9a-f]{64}$")
+_DESTINATION_REF = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
 _COMPONENT = re.compile(r"^[^\\/?#%\x00-\x1f\x7f]+$")
+_GIT_OBJECT = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
+_MAX_GIT_BLOB_BYTES = 64 * 1024 * 1024
 _ENGINE_CONTRACT_CACHE: tuple[Path, object, dict[str, object], object] | None = None
 
 
@@ -40,6 +44,7 @@ class TrainingRunCommandCodeV2(str, Enum):
     CONFIG_UNAVAILABLE = "CONFIG_UNAVAILABLE"
     INPUT_INVALID = "INPUT_INVALID"
     DESTINATION_INVALID = "DESTINATION_INVALID"
+    CAPABILITY_UNSUPPORTED = "CAPABILITY_UNSUPPORTED"
     BOOTSTRAP_UNAVAILABLE = "BOOTSTRAP_UNAVAILABLE"
     CREDENTIALS_UNAVAILABLE = "CREDENTIALS_UNAVAILABLE"
     COMPOSITION_UNAVAILABLE = "COMPOSITION_UNAVAILABLE"
@@ -81,7 +86,15 @@ class TrainingRunIngressV1:
             raise TypeError("ingress envelope digest is invalid")
         if self.provider_ref not in {"modal", "docker"}:
             raise ValueError("ingress provider is invalid")
-        if self.destination_ref != _DESTINATION:
+        if (
+            self.provider_ref == "modal" and self.destination_ref != _DESTINATION
+        ) or (
+            self.provider_ref == "docker"
+            and (
+                self.destination_ref == _DESTINATION
+                or _DESTINATION_REF.fullmatch(self.destination_ref) is None
+            )
+        ):
             raise ValueError("ingress destination is invalid")
         if _DIGEST.fullmatch(self.input_digest) is None:
             raise ValueError("ingress input digest is invalid")
@@ -116,6 +129,40 @@ class TrainingRunIngressV1:
 
 
 @dataclass(frozen=True, slots=True)
+class _CommittedGitBlobV1:
+    source_commit: str
+    path: str
+    git_object_id: str
+    content: bytes
+    sha256: str
+
+    def __post_init__(self) -> None:
+        if type(self.source_commit) is not str or _GIT_OBJECT.fullmatch(self.source_commit) is None:
+            raise ValueError("committed blob source commit is invalid")
+        if (
+            type(self.path) is not str
+            or self.path.startswith(("/", "\\"))
+            or "\\" in self.path
+            or any(part in {"", ".", ".."} for part in self.path.split("/"))
+        ):
+            raise ValueError("committed blob path is invalid")
+        if type(self.git_object_id) is not str or _GIT_OBJECT.fullmatch(self.git_object_id) is None:
+            raise ValueError("committed blob object identity is invalid")
+        if type(self.content) is not bytes or not self.content:
+            raise ValueError("committed blob content is invalid")
+        if (
+            type(self.sha256) is not str
+            or _DIGEST.fullmatch(self.sha256) is None
+            or hashlib.sha256(self.content).hexdigest() != self.sha256
+        ):
+            raise ValueError("committed blob digest is invalid")
+
+    @property
+    def size_bytes(self) -> int:
+        return len(self.content)
+
+
+@dataclass(frozen=True, slots=True)
 class TrainingRunCommandResultV2:
     schema_version: str
     status: TrainingRunCommandStatusV2
@@ -144,6 +191,7 @@ class TrainingRunCommandResultV2:
             TrainingRunCommandCodeV2.CONFIG_REF_INVALID,
             TrainingRunCommandCodeV2.INPUT_INVALID,
             TrainingRunCommandCodeV2.DESTINATION_INVALID,
+            TrainingRunCommandCodeV2.CAPABILITY_UNSUPPORTED,
             TrainingRunCommandCodeV2.PREFLIGHT_REJECTED,
         }
         unavailable = {
@@ -213,6 +261,7 @@ class TrainingRunCommandResultV2:
             TrainingRunCommandCodeV2.COMMAND_INVALID: ((False, False, False, False),),
             TrainingRunCommandCodeV2.PROVIDER_INVALID: ((False, False, False, False),),
             TrainingRunCommandCodeV2.DESTINATION_INVALID: ((True, False, False, False),),
+            TrainingRunCommandCodeV2.CAPABILITY_UNSUPPORTED: full,
             TrainingRunCommandCodeV2.CONFIG_REF_INVALID: ((True, False, True, False),),
             TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE: ((True, True, True, False),),
             TrainingRunCommandCodeV2.INPUT_INVALID: ((True, True, True, False),),
@@ -312,6 +361,8 @@ def _install_ingress_provenance_v1():
         provider_ref: str, config_ref: str, destination_ref: str,
         training_input: object, input_digest: str, source_sha256: str,
         contract_identity_digest: str, envelope_digest: str, bundle: object,
+        project_root: Path | None = None, engine_root: Path | None = None,
+        config_blob: _CommittedGitBlobV1 | None = None,
     ) -> TrainingRunIngressV1:
         value = object.__new__(TrainingRunIngressV1)
         assigned = (
@@ -332,6 +383,16 @@ def _install_ingress_provenance_v1():
             or identity_digest != contract_identity_digest
         ):
             raise ValueError("training run ingress authority is invalid")
+        if provider_ref == "docker":
+            if (
+                not isinstance(project_root, Path)
+                or not isinstance(engine_root, Path)
+                or not project_root.is_absolute()
+                or not engine_root.is_absolute()
+                or type(config_blob) is not _CommittedGitBlobV1
+                or config_blob.sha256 != source_sha256
+            ):
+                raise ValueError("Docker ingress source binding is invalid")
         baseline = tuple(
             field_value for name, field_value in assigned if name != "training_input"
         )
@@ -351,7 +412,7 @@ def _install_ingress_provenance_v1():
         reference = weakref.ref(value, remove)
         record = (
             reference, anchor, baseline, training_input, bundle, input_type,
-            identity_digest,
+            identity_digest, project_root, engine_root, config_blob,
         )
         with lock:
             registry[object_id] = record
@@ -366,7 +427,10 @@ def _install_ingress_provenance_v1():
             if record is None or record[0]() is not value:
                 return None
         try:
-            reference, anchor, baseline, training_input, bundle, input_type, identity_digest = record
+            (
+                reference, anchor, baseline, training_input, bundle, input_type,
+                identity_digest, project_root, engine_root, config_blob,
+            ) = record
             current = (
                 value.provider_ref, value.config_ref, value.destination_ref,
                 value.input_digest, value.source_sha256,
@@ -403,7 +467,7 @@ def _install_ingress_provenance_v1():
             )
             if current != baseline or value.training_input is not training_input:
                 return None
-            return baseline
+            return baseline + (project_root, engine_root, config_blob)
 
     return issue, authenticate
 
@@ -536,6 +600,121 @@ def _read_config(
         return None
 
 
+def _read_committed_git_blob_v1(
+    project_root: Path, project_relative_path: str, *, maximum_bytes: int,
+    expected_commit: str | None = None,
+) -> _CommittedGitBlobV1:
+    """Read one exact regular blob from the project's locked HEAD tree."""
+
+    if (
+        type(project_relative_path) is not str
+        or project_relative_path.startswith(("/", "\\"))
+        or "\\" in project_relative_path
+        or any(part in {"", ".", ".."} for part in project_relative_path.split("/"))
+        or type(maximum_bytes) is not int
+        or not 1 <= maximum_bytes <= _MAX_GIT_BLOB_BYTES
+        or (
+            expected_commit is not None
+            and (type(expected_commit) is not str or _GIT_OBJECT.fullmatch(expected_commit) is None)
+        )
+    ):
+        raise ValueError("committed blob request is invalid")
+    project = Path(project_root).resolve(strict=True)
+    environment = {
+        key: os.environ[key]
+        for key in ("PATH", "SystemRoot", "WINDIR", "COMSPEC", "PATHEXT", "TEMP", "TMP")
+        if key in os.environ
+    }
+    environment.update({
+        "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull,
+        "GIT_CONFIG_SYSTEM": os.devnull, "GIT_TERMINAL_PROMPT": "0",
+        "GCM_INTERACTIVE": "Never", "GIT_OPTIONAL_LOCKS": "0",
+        "LC_ALL": "C", "LANG": "C",
+    })
+
+    def run(maximum_output_bytes: int, *arguments: str) -> bytes:
+        process = None
+        try:
+            process = subprocess.Popen(
+                ("git", "-C", str(project), *arguments),
+                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL, env=environment,
+            )
+            if process.stdout is None:
+                raise ValueError
+            chunks: list[bytes] = []
+            state: dict[str, object] = {"size": 0, "failed": False}
+
+            def drain() -> None:
+                try:
+                    while state["size"] <= maximum_output_bytes:
+                        size = state["size"]
+                        chunk = process.stdout.read(
+                            min(65536, maximum_output_bytes + 1 - size)
+                        )
+                        if not chunk:
+                            break
+                        chunks.append(chunk)
+                        state["size"] = size + len(chunk)
+                        if state["size"] > maximum_output_bytes:
+                            process.kill()
+                            break
+                except BaseException:
+                    state["failed"] = True
+
+            reader = threading.Thread(target=drain, daemon=True)
+            reader.start()
+            try:
+                status = process.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=5)
+                reader.join(timeout=5)
+                raise ValueError("committed blob process exceeded its time bound")
+            reader.join(timeout=5)
+            process.stdout.close()
+            if reader.is_alive() or state["failed"] or status != 0:
+                raise ValueError
+            if state["size"] > maximum_output_bytes:
+                raise ValueError("committed blob output exceeded its bound")
+            return b"".join(chunks)
+        except (OSError, subprocess.SubprocessError, ValueError):
+            if process is not None and process.poll() is None:
+                process.kill()
+                process.wait(timeout=5)
+            raise ValueError("committed blob is unavailable") from None
+
+    head = run(128, "rev-parse", "HEAD").decode("ascii", errors="strict").strip().lower()
+    if _GIT_OBJECT.fullmatch(head) is None or (
+        expected_commit is not None and head != expected_commit.lower()
+    ):
+        raise ValueError("project HEAD differs from the locked source commit")
+    tree = run(4096, "ls-tree", "-z", head, "--", project_relative_path)
+    records = tuple(record for record in tree.split(b"\0") if record)
+    if len(records) != 1:
+        raise ValueError("committed blob is not uniquely present")
+    try:
+        metadata, raw_path = records[0].split(b"\t", 1)
+        mode, kind, object_id = metadata.decode("ascii").split(" ")
+        observed_path = raw_path.decode("utf-8")
+    except (ValueError, UnicodeError):
+        raise ValueError("committed blob tree entry is malformed") from None
+    if (
+        mode not in {"100644", "100755"}
+        or kind != "blob"
+        or observed_path != project_relative_path
+        or _GIT_OBJECT.fullmatch(object_id) is None
+    ):
+        raise ValueError("committed tree entry is not an exact regular blob")
+    content = run(maximum_bytes, "cat-file", "blob", object_id)
+    if not content or len(content) > maximum_bytes:
+        raise ValueError("committed blob size is invalid")
+    return _CommittedGitBlobV1(
+        head, project_relative_path, object_id, content,
+        hashlib.sha256(content).hexdigest(),
+    )
+
+
 def _load_training_input(
     source: bytes, engine_root: Path
 ) -> tuple[object, str, str] | TrainingRunCommandCodeV2:
@@ -579,8 +758,8 @@ def _load_training_input(
                 name: value for name, value in sys.modules.items()
                 if name == "synaptic_tuner" or name.startswith("synaptic_tuner.")
             }
-            if current_modules.keys() != cached_modules.keys() or any(
-                current_modules[name] is not value
+            if any(
+                current_modules.get(name) is not value
                 for name, value in cached_modules.items()
             ):
                 raise RuntimeError
@@ -667,7 +846,16 @@ def _prepare_training_run_ingress_v1(
     provider, config_ref, destination = parsed
     if provider not in {"modal", "docker"}:
         return _failure(TrainingRunCommandCodeV2.PROVIDER_INVALID)
-    if destination != _DESTINATION:
+    destination_invalid = (
+        provider == "modal" and destination != _DESTINATION
+    ) or (
+        provider == "docker"
+        and (
+            destination == _DESTINATION
+            or _DESTINATION_REF.fullmatch(destination) is None
+        )
+    )
+    if destination_invalid:
         return _failure(TrainingRunCommandCodeV2.DESTINATION_INVALID, provider_ref=provider)
     components = _config_components(config_ref)
     if components is None:
@@ -675,14 +863,32 @@ def _prepare_training_run_ingress_v1(
             TrainingRunCommandCodeV2.CONFIG_REF_INVALID,
             provider_ref=provider, destination_ref=destination,
         )
-    loaded = _read_config(project_root, components)
+    try:
+        project = Path(project_root).resolve(strict=True)
+        engine = Path(engine_root).resolve(strict=True)
+    except (OSError, RuntimeError):
+        return _failure(
+            TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,
+            provider_ref=provider, config_ref=config_ref, destination_ref=destination,
+        )
+    config_blob = None
+    if provider == "docker":
+        try:
+            config_blob = _read_committed_git_blob_v1(
+                project, "training/" + "/".join(components), maximum_bytes=65536,
+            )
+            loaded = (config_blob.content, config_blob.sha256)
+        except ValueError:
+            loaded = None
+    else:
+        loaded = _read_config(project, components)
     if loaded is None:
         return _failure(
             TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE,
             provider_ref=provider, config_ref=config_ref, destination_ref=destination,
         )
     source, source_sha256 = loaded
-    parsed_input = _load_training_input(source, engine_root)
+    parsed_input = _load_training_input(source, engine)
     if type(parsed_input) is TrainingRunCommandCodeV2:
         return _failure(
             parsed_input, provider_ref=provider,
@@ -711,7 +917,7 @@ def _prepare_training_run_ingress_v1(
     return _issue_training_run_ingress_v1(
         provider, config_ref, destination, training_input, input_digest,
         source_sha256, contract_identity_digest, envelope_digest,
-        _ENGINE_CONTRACT_CACHE[3],
+        _ENGINE_CONTRACT_CACHE[3], project, engine, config_blob,
     )
 
 
@@ -730,18 +936,50 @@ def dispatch_validated_training_run_v1(
     ingress: TrainingRunIngressV1,
     *,
     isolated_child_authority: object | None,
+    project_root: Path | None = None,
+    engine_root: Path | None = None,
 ) -> TrainingRunCommandResultV2:
     authenticated = _authenticate_training_run_ingress_v1(ingress)
     if authenticated is None:
         return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
     try:
-        provider_ref, config_ref, destination_ref, input_digest, *_unused = authenticated
+        (
+            provider_ref, config_ref, destination_ref, input_digest,
+            _source_sha256, _contract_digest, _ingress_digest,
+            bound_project_root, bound_engine_root, _config_blob,
+        ) = authenticated
         if provider_ref == "docker":
-            return _failure(
-                TrainingRunCommandCodeV2.PROVIDER_UNAVAILABLE,
-                provider_ref=provider_ref, config_ref=config_ref,
-                destination_ref=destination_ref, input_digest=input_digest,
+            if project_root is None or engine_root is None:
+                return _failure(
+                    TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,
+                    provider_ref=provider_ref, config_ref=config_ref,
+                    destination_ref=destination_ref, input_digest=input_digest,
+                )
+            try:
+                supplied_project = Path(project_root).resolve(strict=True)
+                supplied_engine = Path(engine_root).resolve(strict=True)
+            except (OSError, RuntimeError):
+                return _failure(
+                    TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,
+                    provider_ref=provider_ref, config_ref=config_ref,
+                    destination_ref=destination_ref, input_digest=input_digest,
+                )
+            if supplied_project != bound_project_root or supplied_engine != bound_engine_root:
+                return _failure(
+                    TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,
+                    provider_ref=provider_ref, config_ref=config_ref,
+                    destination_ref=destination_ref, input_digest=input_digest,
+                )
+            docker_training = importlib.import_module("synaptic_host.docker_training")
+            result = docker_training.execute_docker_training_admission_v1(
+                ingress, project_root=supplied_project, engine_root=supplied_engine,
             )
+            if (
+                _authenticate_training_run_ingress_v1(ingress) != authenticated
+                or type(result) is not TrainingRunCommandResultV2
+            ):
+                return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
+            return result
         if isolated_child_authority is None:
             return _failure(
                 TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,

@@ -1,0 +1,39 @@
+{
+  "schema_version": "synaptic-docker-host/v1",
+  "profile_ref": "docker-local-admission-v1",
+  "runtime": {
+    "image": "unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update@sha256:5266c57be21059bfb407d80dc2f448868a5c2e2dbe7b2aa27780f48b48cbec39",
+    "dependency_lock_digest": "8273b49a3b613bed82905ac349d2028935269c4d369dd5781a5eb0bad23b874e",
+    "python_implementation": "cpython",
+    "python_version": "3.11.14",
+    "python_executable": "/opt/conda/bin/python3",
+    "python_executable_digest": "06950bbe281eade6c8c0a9c6c70e6a9a338e6fb63b641dc3a71b1854e74fc859"
+  },
+  "model": {
+    "load_in_4bit": false
+  },
+  "capabilities": {
+    "supported_methods": [],
+    "workload_transport": "sealed_file",
+    "source_mode": "dual_clone_read_only"
+  },
+  "accelerator": {
+    "allowed": [
+      "cpu"
+    ],
+    "count_maximum": 1
+  },
+  "resources": {
+    "timeout_seconds_maximum": 3600,
+    "memory_bytes_maximum": 17179869184
+  },
+  "network": {
+    "mode": "none"
+  },
+  "docker_policy_ref": "docker-desktop-wsl-v1",
+  "artifacts": {
+    "maximum_artifact_bytes": 2147483648,
+    "maximum_total_bytes": 4294967296,
+    "cache_admission": false
+  }
+}

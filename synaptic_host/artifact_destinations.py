@@ -375,10 +375,11 @@ def _construct_adapter(
     raise ValueError("destination adapter construction failed") from None
 
 
-def load_artifact_destination_config_v1(path: Path) -> ArtifactDestinationConfigV1:
-    if not isinstance(path, Path) or not path.is_absolute():
-        raise ValueError("absolute destination configuration path is required")
-    raw = path.read_bytes()
+def parse_artifact_destination_config_v1(raw: bytes) -> ArtifactDestinationConfigV1:
+    """Parse an immutable destination registry snapshot."""
+
+    if type(raw) is not bytes:
+        raise TypeError("destination configuration bytes are required")
     if not raw or len(raw) > _MAX_CONFIG_BYTES:
         raise ValueError("destination configuration size is invalid")
     try:
@@ -418,6 +419,12 @@ def load_artifact_destination_config_v1(path: Path) -> ArtifactDestinationConfig
             ),
         ))
     return ArtifactDestinationConfigV1(tuple(declarations))
+
+
+def load_artifact_destination_config_v1(path: Path) -> ArtifactDestinationConfigV1:
+    if not isinstance(path, Path) or not path.is_absolute():
+        raise ValueError("absolute destination configuration path is required")
+    return parse_artifact_destination_config_v1(path.read_bytes())
 
 
 @dataclass(frozen=True, slots=True)
@@ -665,4 +672,5 @@ __all__ = [
     "ImmutableArtifactDestinationRegistryV1",
     "ResolvedDestinationAdapterV1",
     "load_artifact_destination_config_v1",
+    "parse_artifact_destination_config_v1",
 ]
