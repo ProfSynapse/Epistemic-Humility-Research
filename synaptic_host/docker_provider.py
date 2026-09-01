@@ -83,6 +83,7 @@ class DockerProviderProfileV1:
     source_mode: str
     accelerators: tuple[str, ...]
     accelerator_count_maximum: int
+    cpu_count: int
     timeout_seconds_maximum: int
     memory_bytes_maximum: int
     network_mode: str
@@ -109,6 +110,8 @@ class DockerProviderProfileV1:
             raise ValueError("Docker source and workload transports are unsupported")
         if not self.accelerators or self.accelerators != tuple(sorted(self.accelerators)):
             raise ValueError("accelerator policy is invalid")
+        if self.cpu_count != 1:
+            raise ValueError("Docker admission requires exactly one CPU")
         if self.network_mode != "none":
             raise ValueError("Docker admission requires network_mode none")
         _text(self.docker_policy_ref, "docker_policy_ref", pattern=_REF)
@@ -141,7 +144,7 @@ class DockerProviderProfileV1:
             "allowed", "count_maximum",
         }), "Docker accelerator policy")
         resources = _object(root["resources"], frozenset({
-            "timeout_seconds_maximum", "memory_bytes_maximum",
+            "cpu_count", "timeout_seconds_maximum", "memory_bytes_maximum",
         }), "Docker resource policy")
         network = _object(root["network"], frozenset({"mode"}), "Docker network policy")
         artifacts = _object(root["artifacts"], frozenset({
@@ -161,6 +164,7 @@ class DockerProviderProfileV1:
             _text(capabilities["source_mode"], "source_mode"),
             _string_tuple(accelerator["allowed"], "accelerator.allowed"),
             _bounded_integer(accelerator["count_maximum"], "accelerator.count_maximum", minimum=1, maximum=64),
+            _bounded_integer(resources["cpu_count"], "resources.cpu_count", minimum=1, maximum=1),
             _bounded_integer(resources["timeout_seconds_maximum"], "timeout_seconds_maximum", minimum=1, maximum=86400),
             _bounded_integer(resources["memory_bytes_maximum"], "memory_bytes_maximum", minimum=1, maximum=2**63 - 1),
             _text(network["mode"], "network.mode"),
@@ -193,6 +197,7 @@ class DockerProviderProfileV1:
                 "count_maximum": self.accelerator_count_maximum,
             },
             "resources": {
+                "cpu_count": self.cpu_count,
                 "timeout_seconds_maximum": self.timeout_seconds_maximum,
                 "memory_bytes_maximum": self.memory_bytes_maximum,
             },

@@ -17,6 +17,7 @@ from synaptic_tuner.api.v1 import (
     GrantBinding,
     LifecycleEvent,
     LifecyclePhase,
+    InvalidTransition,
     MessageCode,
     ProjectContext,
     ReplayDisposition,
@@ -48,8 +49,65 @@ from tuner.execution.providers.modal.training import (
 )
 from tuner.execution.lifecycle import apply_event, initial_record
 from synaptic_host import SqliteTrainingRepository
+from synaptic_host.docker_execution_state import (
+    DockerRunMutationRecordV1,
+    DockerRunPhaseV1,
+    DockerStageProjectionV1,
+    ProviderPreparationRecordV1,
+)
+from synaptic_host.docker_v1.control_contract import (
+    AuthenticatedDockerMutationRecordV1,
+    DockerControlOperationV1,
+    DockerMutationPhaseV1,
+    DockerMutationRecordV1,
+    docker_operation_id_v1,
+)
 
 NOW = "2026-08-26T12:00:00Z"
+
+
+def _authenticated_mutation(
+    record: DockerMutationRecordV1,
+) -> AuthenticatedDockerMutationRecordV1:
+    return AuthenticatedDockerMutationRecordV1(
+        record, "docker-test", "key-v1", record.record_digest
+    )
+
+
+def _docker_pair() -> tuple[ProviderPreparationRecordV1, DockerRunMutationRecordV1]:
+    effect_id = "effect-docker-1"
+    stage = DockerStageProjectionV1(
+        "host-stage://" + "1" * 64 + "/source", "2" * 64,
+        "host-artifact://" + "1" * 64, "3" * 64, "4" * 64, "5" * 64,
+        "tuner/runtime/manifests/offline-sft-worker-v1.json", "1" * 64,
+        "2" * 64,
+        "6" * 64, "7" * 64,
+    )
+    preparation = ProviderPreparationRecordV1.build(
+        project_ref="ehr", run_id="docker-run-1", plan_fingerprint="8" * 64,
+        effect_id=effect_id, source_lock_digest="9" * 64,
+        prepared_docker_plan_digest="a" * 64,
+        endpoint_descriptor_digest="b" * 64, cli_policy_digest="c" * 64,
+        destination_ref="local-default", destination_declaration_digest="d" * 64,
+        stage=stage, prepared_at=NOW,
+    )
+    create = DockerMutationRecordV1.build(
+        operation_id=docker_operation_id_v1(
+            DockerControlOperationV1.CREATE, effect_id
+        ),
+        operation=DockerControlOperationV1.CREATE,
+        effect_id=effect_id,
+        control_intent_proof_digest="e" * 64,
+        phase=DockerMutationPhaseV1.ADMITTED,
+        revision=1,
+        attempt_count=0,
+        previous_record_digest=None,
+        container_ref=None,
+        verification_result_digest=None,
+    )
+    return preparation, DockerRunMutationRecordV1.initial(
+        preparation, _authenticated_mutation(create)
+    )
 
 
 def repository(tmp_path: Path) -> SqliteTrainingRepository:
@@ -147,6 +205,7 @@ def _prepared_run(
         artifact_contract_digest="d" * 64,
         log_policy_digest="e" * 64,
         invocation_intent_digest="f" * 64,
+        worker_closure_manifest_digest="0" * 64,
         resource_digest=resource_digest,
         quote_digest=quote_digest,
         secret_requirements_digest="1" * 64,
@@ -682,3 +741,185 @@ def test_commit_failure_is_closed_and_never_exposes_a_partial_pair(
     assert observed == (
         (pair.record, pair.preparation) if after_commit else (None, None)
     )
+
+
+def test_v1_to_v2_migration_preserves_existing_modal_bytes(tmp_path: Path) -> None:
+    value = repository(tmp_path)
+    modal = _prepared_run()
+    value.create_modal_prepared_run(modal)
+    with value._transaction() as connection:
+        before_lifecycle = bytes(connection.execute(
+            "SELECT record_json FROM lifecycle_records WHERE run_id = ?",
+            (modal.record.run_id,),
+        ).fetchone()["record_json"])
+        before_preparation = bytes(connection.execute(
+            "SELECT preparation_json FROM modal_preparations WHERE run_id = ?",
+            (modal.record.run_id,),
+        ).fetchone()["preparation_json"])
+        connection.execute("DROP TABLE docker_run_mutations")
+        connection.execute("DROP TABLE provider_preparations")
+        connection.execute(
+            "UPDATE schema_meta SET value = 'synaptic-host-sqlite/v1'"
+        )
+
+    reopened = SqliteTrainingRepository(value.database_path, clock=lambda: NOW)
+    with reopened._transaction() as connection:
+        assert connection.execute(
+            "SELECT value FROM schema_meta WHERE key = 'schema_version'"
+        ).fetchone()["value"] == "synaptic-host-sqlite/v2"
+        assert bytes(connection.execute(
+            "SELECT record_json FROM lifecycle_records WHERE run_id = ?",
+            (modal.record.run_id,),
+        ).fetchone()["record_json"]) == before_lifecycle
+        assert bytes(connection.execute(
+            "SELECT preparation_json FROM modal_preparations WHERE run_id = ?",
+            (modal.record.run_id,),
+        ).fetchone()["preparation_json"]) == before_preparation
+
+
+def test_partial_v2_schema_fails_closed(tmp_path: Path) -> None:
+    value = repository(tmp_path)
+    with value._transaction() as connection:
+        connection.execute("DROP TABLE docker_run_mutations")
+    with pytest.raises(RuntimeError, match="unsupported Synaptic host database schema"):
+        SqliteTrainingRepository(value.database_path, clock=lambda: NOW)
+
+
+def test_docker_preparation_and_initial_create_are_atomic_and_single_claim(
+    tmp_path: Path,
+) -> None:
+    value = repository(tmp_path)
+    preparation, initial = _docker_pair()
+    value.create(
+        initial_record(
+            project_ref=preparation.project_ref,
+            run_id=preparation.run_id,
+            occurred_at=NOW,
+        )
+    )
+
+    def create_once(_: int) -> str:
+        try:
+            value.create_docker_prepared_run(preparation, initial)
+            return "created"
+        except EffectCollision:
+            return "collision"
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        outcomes = tuple(pool.map(create_once, range(2)))
+    assert sorted(outcomes) == ["collision", "created"]
+    assert value.load_docker_preparation("ehr", "docker-run-1") == preparation
+    assert value.load_docker_run_mutation("ehr", "docker-run-1") == initial
+
+
+def test_docker_mutation_cas_binds_revision_and_previous_digest(tmp_path: Path) -> None:
+    value = repository(tmp_path)
+    preparation, initial = _docker_pair()
+    value.create(
+        initial_record(
+            project_ref=preparation.project_ref,
+            run_id=preparation.run_id,
+            occurred_at=NOW,
+        )
+    )
+    value.create_docker_prepared_run(preparation, initial)
+    admitted = initial.create_mutation.content
+    attempted_low_level = DockerMutationRecordV1.build(
+        operation_id=admitted.operation_id,
+        operation=admitted.operation,
+        effect_id=admitted.effect_id,
+        control_intent_proof_digest=admitted.control_intent_proof_digest,
+        phase=DockerMutationPhaseV1.ATTEMPTED,
+        revision=2,
+        attempt_count=1,
+        previous_record_digest=admitted.record_digest,
+        container_ref=None,
+        verification_result_digest=None,
+    )
+    attempted = DockerRunMutationRecordV1.build(
+        project_ref=initial.project_ref,
+        run_id=initial.run_id,
+        effect_id=initial.effect_id,
+        preparation_digest=initial.preparation_digest,
+        phase=DockerRunPhaseV1.CREATE_ATTEMPTED,
+        revision=2,
+        previous_record_digest=initial.record_digest,
+        create_mutation=_authenticated_mutation(attempted_low_level),
+        start_mutation=None,
+        reconcile_operation=None,
+        container_ref=None,
+        submitted_at=None,
+        process_exit_code=None,
+        process_observation_digest=None,
+        diagnostic=None,
+        verified_artifacts=(),
+        verified_inventory_digest=None,
+    )
+    assert value.compare_and_swap_docker_run_mutation(
+        attempted,
+        expected_revision=1,
+        expected_record_digest=initial.record_digest,
+    ) == attempted
+    with pytest.raises(RevisionConflict):
+        value.compare_and_swap_docker_run_mutation(
+            attempted,
+            expected_revision=1,
+            expected_record_digest=initial.record_digest,
+        )
+
+
+def test_docker_cas_rejects_low_level_envelope_discontinuity_atomically(
+    tmp_path: Path,
+) -> None:
+    value = repository(tmp_path)
+    preparation, initial = _docker_pair()
+    value.create(initial_record(
+        project_ref=preparation.project_ref,
+        run_id=preparation.run_id,
+        occurred_at=NOW,
+    ))
+    value.create_docker_prepared_run(preparation, initial)
+    admitted = initial.create_mutation.content
+    attempted_content = DockerMutationRecordV1.build(
+        operation_id=admitted.operation_id,
+        operation=admitted.operation,
+        effect_id=admitted.effect_id,
+        control_intent_proof_digest=admitted.control_intent_proof_digest,
+        phase=DockerMutationPhaseV1.ATTEMPTED,
+        revision=2,
+        attempt_count=1,
+        previous_record_digest=admitted.record_digest,
+        container_ref=None,
+        verification_result_digest=None,
+    )
+    wrong_authority = AuthenticatedDockerMutationRecordV1(
+        attempted_content, "other-authority", "key-v1", attempted_content.record_digest
+    )
+    replacement = DockerRunMutationRecordV1.build(
+        project_ref=initial.project_ref,
+        run_id=initial.run_id,
+        effect_id=initial.effect_id,
+        preparation_digest=initial.preparation_digest,
+        phase=DockerRunPhaseV1.CREATE_ATTEMPTED,
+        revision=2,
+        previous_record_digest=initial.record_digest,
+        create_mutation=wrong_authority,
+        start_mutation=None,
+        reconcile_operation=None,
+        container_ref=None,
+        submitted_at=None,
+        process_exit_code=None,
+        process_observation_digest=None,
+        diagnostic=None,
+        verified_artifacts=(),
+        verified_inventory_digest=None,
+    )
+    with pytest.raises(InvalidTransition):
+        value.compare_and_swap_docker_run_mutation(
+            replacement,
+            expected_revision=initial.revision,
+            expected_record_digest=initial.record_digest,
+        )
+    assert value.load_docker_run_mutation(
+        initial.project_ref, initial.run_id
+    ) == initial

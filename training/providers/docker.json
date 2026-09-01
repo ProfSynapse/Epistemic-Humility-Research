@@ -24,6 +24,7 @@
     "count_maximum": 1
   },
   "resources": {
+    "cpu_count": 1,
     "timeout_seconds_maximum": 3600,
     "memory_bytes_maximum": 17179869184
   },

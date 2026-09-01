@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
+import importlib
 import json
 import shutil
 import subprocess
@@ -42,15 +43,21 @@ INPUT_FIELDS = (
 
 @pytest.fixture(scope="module", autouse=True)
 def _isolated_engine_import_state():
+    host_package = sys.modules["synaptic_host"]
     original = {
         name: value for name, value in sys.modules.items()
         if (
             name == "synaptic_tuner" or name.startswith("synaptic_tuner.")
             or name == "tuner" or name.startswith("tuner.")
+            or name == "synaptic_host.docker_staging"
+            or name == "synaptic_host.docker_training"
         )
     }
     for name in original:
         sys.modules.pop(name, None)
+    for attribute in ("docker_staging", "docker_training"):
+        if hasattr(host_package, attribute):
+            delattr(host_package, attribute)
     cli._ENGINE_CONTRACT_CACHE = None
     try:
         yield
@@ -59,9 +66,17 @@ def _isolated_engine_import_state():
             if (
                 name == "synaptic_tuner" or name.startswith("synaptic_tuner.")
                 or name == "tuner" or name.startswith("tuner.")
+                or name == "synaptic_host.docker_staging"
+                or name == "synaptic_host.docker_training"
             ):
                 sys.modules.pop(name, None)
         sys.modules.update(original)
+        for attribute in ("docker_staging", "docker_training"):
+            module = original.get(f"synaptic_host.{attribute}")
+            if module is not None:
+                setattr(host_package, attribute, module)
+            elif hasattr(host_package, attribute):
+                delattr(host_package, attribute)
         cli._ENGINE_CONTRACT_CACHE = None
 
 
@@ -89,11 +104,17 @@ def clean_project(tmp_path_factory):
     project_url = "https://git.example/product.git"
 
     project.mkdir()
+    engine_commit = _git(
+        ROOT, "rev-parse", "HEAD:synaptic-tuner"
+    ).decode("ascii").strip()
     subprocess.run(
-        ("git", "clone", "--no-hardlinks", str(ENGINE), str(engine)),
+        (
+            "git", "clone", "--shared", "--no-checkout",
+            str(ENGINE), str(engine),
+        ),
         check=True, capture_output=True, timeout=60,
     )
-    _git(engine, "checkout", "-B", "main", "d203ea71cbb9287b1aad87b2bb3011728d73a5f6")
+    _git(engine, "checkout", "--detach", engine_commit)
     subprocess.run(
         ("git", "init", "--bare", str(engine_bare)),
         check=True, capture_output=True, timeout=30,
@@ -111,6 +132,7 @@ def clean_project(tmp_path_factory):
         "training/fixtures/modal-smoke.jsonl",
         "training/providers/docker.json",
         "training/artifacts.json",
+        "training/storage.json",
         "synaptic.yaml",
     )
     for relative in copies:
@@ -189,6 +211,7 @@ def test_checked_in_profile_is_closed_and_declares_no_sft_backend() -> None:
     assert profile.workload_transport == "sealed_file"
     assert profile.source_mode == "dual_clone_read_only"
     assert profile.network_mode == "none"
+    assert profile.cpu_count == 1
 
 
 def test_outer_main_runs_actual_clean_superproject_path(
@@ -318,16 +341,19 @@ def test_real_clean_superproject_compiles_canonical_plan_and_rejects_without_eff
     ) == tuple(item["git_object_id"] for item in lock.inputs)
     manifest = lock.project["manifest"]
     provider = lock.runtime["provider_profile"]
+    storage = lock.runtime["storage_configuration"]
     registry = lock.outputs["destination_registry"]
-    assert tuple(manifest) == tuple(provider) == tuple(registry) == INPUT_FIELDS
-    assert (manifest["kind"], provider["kind"], registry["kind"]) == (
+    assert tuple(manifest) == tuple(provider) == tuple(storage) == tuple(registry) == INPUT_FIELDS
+    assert (manifest["kind"], provider["kind"], storage["kind"], registry["kind"]) == (
         "project-manifest", "docker-provider-profile",
+        "host-storage-configuration",
         "artifact-destination-registry",
     )
     assert lock.runtime["provider_policy_digest"] == lock.configuration["provider_policy_digest"]
     assert lock.outputs["destination_ref"] == "local-default"
     assert len(lock.outputs["destination_declaration_digest"]) == 64
-    for item in (manifest, provider, registry):
+    assert lock.runtime["storage_configuration_digest"] == storage["sha256"]
+    for item in (manifest, provider, storage, registry):
         assert (
             _git(project, "rev-parse", f"{lock.project_source.commit}:{item['path']}")
             .decode("ascii").strip()
@@ -336,6 +362,16 @@ def test_real_clean_superproject_compiles_canonical_plan_and_rejects_without_eff
     assert lock.project_source.dirty is False and lock.project_source.pushed is True
     assert lock.engine_source.dirty is False and lock.engine_source.pushed is True
     assert observed["plan"].execution_source.source_evidence.binds(lock)
+    assert observed["plan"].execution_source.roots == {
+        "engine": "/source/engine",
+        "project": "/source/project",
+        "artifacts": "/artifacts/artifacts",
+        "state": "/artifacts/state",
+        "tracking": "/artifacts/tracking",
+        "cache": "/artifacts/cache",
+        "tmp": "/artifacts/tmp",
+    }
+    assert observed["plan"].execution_source.writable_capability_root == "/artifacts"
     assert observed["validated"][1] is lock
     assert observed["validated"][2] == dict(lock.configuration)
     assert observed["session"]._closed is True
@@ -420,6 +456,127 @@ def test_hmac_session_rejects_post_compiler_evidence_mutation(
     assert result.code is TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE
     assert observed["session"]._closed is True
     assert observed["session"]._key == b""
+
+
+def test_clean_admission_stage_materializes_exact_two_runtime_roots(
+    monkeypatch, clean_project,
+) -> None:
+    docker_training = importlib.import_module("synaptic_host.docker_training")
+    docker_staging = importlib.import_module("synaptic_host.docker_staging")
+    from synaptic_host.security import ScopedGitRemoteReader
+    from tuner.project.manifest import load_project_manifest
+
+    observed = {}
+    replay_checks = []
+    artifact_checks = []
+    original = docker_training.compile_training_plan_v1
+    original_replay = docker_staging._verify_reuse
+    original_artifacts = docker_staging._verify_artifact_topology
+
+    def capture(*, training_input, context, resolver):
+        plan = original(
+            training_input=training_input, context=context, resolver=resolver,
+        )
+        observed["plan"] = plan
+        observed["source_lock"] = resolver.session._verified.source_lock
+        return plan
+
+    def verify_replay(source, projection, closure, manifest_runtime_path):
+        replay_checks.append(source)
+        return original_replay(
+            source, projection, closure, manifest_runtime_path
+        )
+
+    def verify_artifacts(root, inventory):
+        artifact_checks.append(root)
+        return original_artifacts(root, inventory)
+
+    monkeypatch.setattr(docker_training, "compile_training_plan_v1", capture)
+    monkeypatch.setattr(docker_staging, "_verify_reuse", verify_replay)
+    monkeypatch.setattr(
+        docker_staging, "_verify_artifact_topology", verify_artifacts
+    )
+    project = clean_project["project"]
+    result = docker_training.execute_docker_training_admission_v1(
+        clean_project["ingresses"][0],
+        project_root=project,
+        engine_root=clean_project["engine"],
+        remote_reader=ScopedGitRemoteReader(runner=clean_project["transport"]),
+    )
+    assert result.code is TrainingRunCommandCodeV2.CAPABILITY_UNSUPPORTED
+    manifest = load_project_manifest(project / "synaptic.yaml")
+    context = manifest.create_context(
+        engine_root=clean_project["engine"], invocation_cwd=project,
+    )
+    staged = docker_staging.stage_docker_worker_v1(
+        plan=observed["plan"],
+        source_lock=observed["source_lock"],
+        context=context,
+        storage_configuration=(project / "training/storage.json").read_bytes(),
+        model_inventory=(),
+    )
+    assert staged.source_root.joinpath("control/workload.json").read_bytes() == (
+        staged.worker_bundle.canonical_workload_bytes
+    )
+    assert staged.source_root.joinpath("control/source-lock.json").read_bytes() == (
+        observed["source_lock"].canonical_bytes
+    )
+    locked_manifest = subprocess.run(
+        (
+            "git", "-C", str(clean_project["engine"]), "show",
+            observed["source_lock"].engine_source.commit
+            + ":tuner/runtime/manifests/offline-sft-worker-v1.json",
+        ),
+        check=True,
+        capture_output=True,
+    ).stdout
+    runtime_manifest = staged.worker_bundle.closure_manifest_runtime_path
+    runtime_relative = runtime_manifest.relative_to("/source/control")
+    assert staged.source_root.joinpath(
+        "control", *runtime_relative.parts
+    ).read_bytes() == locked_manifest
+    closure_manifest = json.loads(locked_manifest)
+    engine_files = tuple(
+        path for path in staged.source_root.joinpath("engine").rglob("*")
+        if path.is_file()
+    )
+    assert len(engine_files) == closure_manifest["member_count"]
+    assert sum(path.stat().st_size for path in engine_files) == (
+        closure_manifest["payload_bytes"]
+    )
+    assert staged.projection.worker_closure_manifest_path == (
+        "tuner/runtime/manifests/offline-sft-worker-v1.json"
+    )
+    assert staged.projection.worker_closure_manifest_sha256 == hashlib.sha256(
+        locked_manifest
+    ).hexdigest()
+    assert staged.projection.worker_source_closure_digest == (
+        closure_manifest["closure_digest"]
+    )
+    assert observed["plan"].execution_source.environment["PYTHONPATH"] == (
+        "/source/engine"
+    )
+    assert not {
+        "PYTHONPATH", "PYTHONHOME", "PYTHONUSERBASE", "HF_TOKEN",
+    } & set(staged.worker_bundle.dispatch.environment_map)
+    assert staged.artifact_root.name == "artifacts"
+    assert tuple(
+        path.name for path in sorted(staged.artifact_root.iterdir())
+    ) == ("artifacts", "cache", "state", "tmp", "tracking")
+    assert replay_checks == [staged.source_root]
+    assert artifact_checks == [staged.artifact_root]
+    replay = docker_staging.stage_docker_worker_v1(
+        plan=observed["plan"],
+        source_lock=observed["source_lock"],
+        context=context,
+        storage_configuration=(project / "training/storage.json").read_bytes(),
+        model_inventory=(),
+    )
+    assert replay.projection == staged.projection
+    assert replay.source_root == staged.source_root
+    assert replay.artifact_root == staged.artifact_root
+    assert replay_checks == [staged.source_root, replay.source_root]
+    assert artifact_checks == [staged.artifact_root, replay.artifact_root]
 
 
 def test_committed_blob_reader_enforces_call_and_global_bounds(

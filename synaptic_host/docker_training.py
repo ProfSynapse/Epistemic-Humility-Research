@@ -31,6 +31,7 @@ from synaptic_tuner.api.v1 import (
     validate_source_lock_provenance_v1,
 )
 from synaptic_tuner.api.v1.sources import GitSource
+from tuner.project.manifest import load_project_manifest
 
 from .artifact_destinations import (
     ArtifactDestinationDeclarationV1,
@@ -134,6 +135,7 @@ class _AdmissionSnapshotV1:
     dataset_ref: str
     dataset_blob: object
     manifest_blob: object
+    storage_blob: object
 
 
 @dataclass(frozen=True, slots=True)
@@ -233,6 +235,12 @@ class _AdmissionSessionV1:
                     "docker-provider-profile",
                     "project://training/providers/docker.json",
                     snapshot.profile_blob,
+                ),
+                "storage_configuration_digest": snapshot.storage_blob.sha256,
+                "storage_configuration": _descriptor(
+                    "host-storage-configuration",
+                    "project://training/storage.json",
+                    snapshot.storage_blob,
                 ),
             },
             outputs={
@@ -374,12 +382,11 @@ class DockerAdmissionResolverV1:
         snapshot = verified.snapshot
         source_lock = verified.source_lock
         profile = snapshot.profile
-        capability = "/workspace/run/" + source_lock.run_id
         roots = {
-            "engine": "/workspace/engine", "project": "/workspace/project",
-            "artifacts": capability + "/artifacts", "state": capability + "/state",
-            "tracking": capability + "/tracking", "cache": capability + "/cache",
-            "tmp": capability + "/tmp",
+            "engine": "/source/engine", "project": "/source/project",
+            "artifacts": "/artifacts/artifacts", "state": "/artifacts/state",
+            "tracking": "/artifacts/tracking", "cache": "/artifacts/cache",
+            "tmp": "/artifacts/tmp",
         }
         environment = {
             "PATH": "/usr/local/bin:/usr/bin:/bin",
@@ -405,7 +412,7 @@ class DockerAdmissionResolverV1:
             deployment_member_sha256=_sha(
                 b"docker-admission-deployment", source_lock.canonical_bytes,
             ),
-            roots=roots, writable_capability_root=capability,
+            roots=roots, writable_capability_root="/artifacts",
             python_implementation=profile.python_implementation,
             python_version=profile.python_version,
             python_executable=profile.python_executable,
@@ -499,10 +506,10 @@ def execute_docker_training_admission_v1(
         engine = Path(engine_root).resolve(strict=True)
         if project != bound_project or engine != bound_engine:
             raise ValueError
-        context = ProjectContext.host(
-            engine_root=engine, project_root=project,
-            invocation_cwd=project, config_root=project / "training",
-        )
+        manifest = load_project_manifest(project / "synaptic.yaml")
+        if manifest.path.parent.resolve(strict=True) != project:
+            raise ValueError
+        context = manifest.create_context(engine_root=engine, invocation_cwd=project)
         session = _issue_admission_session_v1(
             remote_reader or ScopedGitRemoteReader(), _utc_now,
         )
@@ -564,11 +571,15 @@ def execute_docker_training_admission_v1(
                 project, "synaptic.yaml", maximum_bytes=1_048_576,
                 expected_commit=config_blob.source_commit,
             )
+            storage_blob = _read_committed_git_blob_v1(
+                project, "training/storage.json", maximum_bytes=1_048_576,
+                expected_commit=config_blob.source_commit,
+            )
             snapshot = _AdmissionSnapshotV1(
                 ingress.training_input, input_digest, contract_identity_digest,
                 ingress_digest, project, engine, config_ref, config_blob, profile,
                 profile_blob, destination, destination_blob, dataset_ref,
-                dataset_blob, manifest_blob,
+                dataset_blob, manifest_blob, storage_blob,
             )
             session.bind(snapshot)
             plan = compile_training_plan_v1(

@@ -37,7 +37,42 @@ from synaptic_tuner.api.v1.modal import (
     ModalTrainingRepository,
 )
 
-_SCHEMA_VERSION = "synaptic-host-sqlite/v1"
+from .docker_execution_state import (
+    DockerRunMutationRecordV1,
+    ProviderPreparationRecordV1,
+    validate_docker_run_transition_v1,
+)
+
+_SCHEMA_VERSION_V1 = "synaptic-host-sqlite/v1"
+_SCHEMA_VERSION = "synaptic-host-sqlite/v2"
+
+_BASE_TABLE_COLUMNS = {
+    "schema_meta": ("key", "value"),
+    "lifecycle_records": (
+        "sequence", "project_ref", "run_id", "revision", "record_json",
+    ),
+    "consumed_grants": ("grant_ref", "project_ref", "run_id"),
+    "modal_preparations": (
+        "project_ref", "run_id", "effect_id", "preparation_json",
+    ),
+    "evidence_replay": (
+        "purpose", "issuer_ref", "evidence_ref", "challenge_nonce",
+        "audience_ref", "payload_digest", "expires_at",
+    ),
+}
+_DOCKER_TABLE_COLUMNS = {
+    "provider_preparations": (
+        "project_ref", "run_id", "plan_fingerprint", "preparation_digest",
+        "record_json",
+    ),
+    "docker_run_mutations": (
+        "project_ref", "run_id", "effect_id", "preparation_digest", "phase",
+        "revision", "record_digest", "record_json",
+    ),
+}
+_COEXISTING_TABLES = frozenset({
+    "publication_records_v1", "publication_ownership_nonces_v1",
+})
 
 
 def _utc(value: str) -> datetime:
@@ -103,26 +138,97 @@ class SqliteTrainingRepository(ModalTrainingRepository):
         connection = self._connect()
         try:
             connection.execute("PRAGMA journal_mode = WAL")
-            connection.executescript(
-                """
-                CREATE TABLE IF NOT EXISTS schema_meta (
+            connection.execute("BEGIN IMMEDIATE")
+            tables = {
+                str(row["name"])
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type = 'table'"
+                ).fetchall()
+                if row["name"] != "sqlite_sequence"
+            }
+            unknown = tables - (
+                frozenset(_BASE_TABLE_COLUMNS)
+                | frozenset(_DOCKER_TABLE_COLUMNS)
+                | _COEXISTING_TABLES
+            )
+            if unknown:
+                raise RuntimeError("unsupported Synaptic host database schema")
+            existing = None
+            if "schema_meta" in tables:
+                self._require_table_shapes(connection, _BASE_TABLE_COLUMNS)
+                rows = connection.execute(
+                    "SELECT key, value FROM schema_meta"
+                ).fetchall()
+                if len(rows) != 1 or rows[0]["key"] != "schema_version":
+                    raise RuntimeError("unsupported Synaptic host database schema")
+                existing = rows[0]["value"]
+            elif tables - _COEXISTING_TABLES:
+                raise RuntimeError("unsupported Synaptic host database schema")
+
+            if existing is None:
+                self._create_base_schema(connection)
+                self._create_docker_schema(connection)
+                connection.execute(
+                    "INSERT INTO schema_meta(key, value) VALUES('schema_version', ?)",
+                    (_SCHEMA_VERSION,),
+                )
+            elif existing == _SCHEMA_VERSION_V1:
+                if tables & frozenset(_DOCKER_TABLE_COLUMNS):
+                    raise RuntimeError("unsupported Synaptic host database schema")
+                self._create_docker_schema(connection)
+                connection.execute(
+                    "UPDATE schema_meta SET value = ? WHERE key = 'schema_version'",
+                    (_SCHEMA_VERSION,),
+                )
+            elif existing == _SCHEMA_VERSION:
+                self._require_table_shapes(connection, _DOCKER_TABLE_COLUMNS)
+            else:
+                raise RuntimeError("unsupported Synaptic host database schema")
+
+            self._require_table_shapes(connection, _BASE_TABLE_COLUMNS)
+            self._require_table_shapes(connection, _DOCKER_TABLE_COLUMNS)
+            connection.execute("COMMIT")
+        except BaseException:
+            if connection.in_transaction:
+                connection.execute("ROLLBACK")
+            raise
+        finally:
+            connection.close()
+
+    @staticmethod
+    def _require_table_shapes(
+        connection: sqlite3.Connection,
+        expected: dict[str, tuple[str, ...]],
+    ) -> None:
+        for table, columns in expected.items():
+            observed = tuple(
+                str(row["name"])
+                for row in connection.execute(f"PRAGMA table_info({table})").fetchall()
+            )
+            if observed != columns:
+                raise RuntimeError("unsupported Synaptic host database schema")
+
+    @staticmethod
+    def _create_base_schema(connection: sqlite3.Connection) -> None:
+        statements = (
+            """CREATE TABLE schema_meta (
                     key TEXT PRIMARY KEY,
                     value TEXT NOT NULL
-                );
-                CREATE TABLE IF NOT EXISTS lifecycle_records (
+                )""",
+            """CREATE TABLE lifecycle_records (
                     sequence INTEGER PRIMARY KEY AUTOINCREMENT,
                     project_ref TEXT NOT NULL,
                     run_id TEXT NOT NULL,
                     revision INTEGER NOT NULL CHECK (revision >= 1),
                     record_json BLOB NOT NULL,
                     UNIQUE (project_ref, run_id)
-                );
-                CREATE TABLE IF NOT EXISTS consumed_grants (
+                )""",
+            """CREATE TABLE consumed_grants (
                     grant_ref TEXT PRIMARY KEY,
                     project_ref TEXT NOT NULL,
                     run_id TEXT NOT NULL
-                );
-                CREATE TABLE IF NOT EXISTS modal_preparations (
+                )""",
+            """CREATE TABLE modal_preparations (
                     project_ref TEXT NOT NULL,
                     run_id TEXT NOT NULL,
                     effect_id TEXT NOT NULL UNIQUE,
@@ -131,8 +237,8 @@ class SqliteTrainingRepository(ModalTrainingRepository):
                     FOREIGN KEY (project_ref, run_id)
                         REFERENCES lifecycle_records(project_ref, run_id)
                         ON DELETE RESTRICT
-                );
-                CREATE TABLE IF NOT EXISTS evidence_replay (
+                )""",
+            """CREATE TABLE evidence_replay (
                     purpose TEXT NOT NULL,
                     issuer_ref TEXT NOT NULL,
                     evidence_ref TEXT NOT NULL,
@@ -141,21 +247,42 @@ class SqliteTrainingRepository(ModalTrainingRepository):
                     payload_digest TEXT NOT NULL,
                     expires_at TEXT NOT NULL,
                     PRIMARY KEY (purpose, challenge_nonce)
-                );
-                """
+                )""",
             )
-            existing = connection.execute(
-                "SELECT value FROM schema_meta WHERE key = 'schema_version'"
-            ).fetchone()
-            if existing is None:
-                connection.execute(
-                    "INSERT INTO schema_meta(key, value) VALUES('schema_version', ?)",
-                    (_SCHEMA_VERSION,),
-                )
-            elif existing["value"] != _SCHEMA_VERSION:
-                raise RuntimeError("unsupported Synaptic host database schema")
-        finally:
-            connection.close()
+        for statement in statements:
+            connection.execute(statement)
+
+    @staticmethod
+    def _create_docker_schema(connection: sqlite3.Connection) -> None:
+        connection.execute(
+            """CREATE TABLE provider_preparations (
+                project_ref TEXT NOT NULL,
+                run_id TEXT NOT NULL,
+                plan_fingerprint TEXT NOT NULL,
+                preparation_digest TEXT NOT NULL UNIQUE,
+                record_json BLOB NOT NULL,
+                PRIMARY KEY (project_ref, run_id),
+                FOREIGN KEY (project_ref, run_id)
+                    REFERENCES lifecycle_records(project_ref, run_id)
+                    ON DELETE RESTRICT
+            )"""
+        )
+        connection.execute(
+            """CREATE TABLE docker_run_mutations (
+                project_ref TEXT NOT NULL,
+                run_id TEXT NOT NULL,
+                effect_id TEXT NOT NULL UNIQUE,
+                preparation_digest TEXT NOT NULL,
+                phase TEXT NOT NULL,
+                revision INTEGER NOT NULL CHECK (revision >= 1),
+                record_digest TEXT NOT NULL UNIQUE,
+                record_json BLOB NOT NULL,
+                PRIMARY KEY (project_ref, run_id),
+                FOREIGN KEY (project_ref, run_id)
+                    REFERENCES provider_preparations(project_ref, run_id)
+                    ON DELETE RESTRICT
+            )"""
+        )
 
     @staticmethod
     def _decode(value: bytes) -> LifecycleRecord:
@@ -566,6 +693,205 @@ class SqliteTrainingRepository(ModalTrainingRepository):
                 bytes(row["preparation_json"])
             )
         )
+
+    @staticmethod
+    def _decode_docker_preparation(raw: bytes) -> ProviderPreparationRecordV1:
+        try:
+            return ProviderPreparationRecordV1.from_canonical_bytes(bytes(raw))
+        except Exception:
+            raise RuntimeError("host Docker persistence is invalid") from None
+
+    @staticmethod
+    def _decode_docker_mutation(raw: bytes) -> DockerRunMutationRecordV1:
+        try:
+            return DockerRunMutationRecordV1.from_canonical_bytes(bytes(raw))
+        except Exception:
+            raise RuntimeError("host Docker persistence is invalid") from None
+
+    @classmethod
+    def _load_docker_preparation_in(
+        cls,
+        connection: sqlite3.Connection,
+        project_ref: str,
+        run_id: str,
+    ) -> ProviderPreparationRecordV1 | None:
+        row = connection.execute(
+            """SELECT plan_fingerprint, preparation_digest, record_json
+               FROM provider_preparations
+               WHERE project_ref = ? AND run_id = ?""",
+            (project_ref, run_id),
+        ).fetchone()
+        if row is None:
+            return None
+        record = cls._decode_docker_preparation(row["record_json"])
+        if (
+            record.project_ref != project_ref
+            or record.run_id != run_id
+            or record.plan_fingerprint != row["plan_fingerprint"]
+            or record.preparation_digest != row["preparation_digest"]
+        ):
+            raise RuntimeError("host Docker persistence is invalid")
+        return record
+
+    @classmethod
+    def _load_docker_mutation_in(
+        cls,
+        connection: sqlite3.Connection,
+        project_ref: str,
+        run_id: str,
+    ) -> DockerRunMutationRecordV1 | None:
+        row = connection.execute(
+            """SELECT effect_id, preparation_digest, phase, revision,
+                      record_digest, record_json
+               FROM docker_run_mutations
+               WHERE project_ref = ? AND run_id = ?""",
+            (project_ref, run_id),
+        ).fetchone()
+        if row is None:
+            return None
+        record = cls._decode_docker_mutation(row["record_json"])
+        if (
+            record.project_ref != project_ref
+            or record.run_id != run_id
+            or record.effect_id != row["effect_id"]
+            or record.preparation_digest != row["preparation_digest"]
+            or record.phase.value != row["phase"]
+            or record.revision != row["revision"]
+            or record.record_digest != row["record_digest"]
+        ):
+            raise RuntimeError("host Docker persistence is invalid")
+        return record
+
+    def create_docker_prepared_run(
+        self,
+        preparation: ProviderPreparationRecordV1,
+        initial_mutation: DockerRunMutationRecordV1,
+    ) -> None:
+        """Atomically persist one immutable preparation and admitted create."""
+
+        if (
+            type(preparation) is not ProviderPreparationRecordV1
+            or type(initial_mutation) is not DockerRunMutationRecordV1
+            or initial_mutation.project_ref != preparation.project_ref
+            or initial_mutation.run_id != preparation.run_id
+            or initial_mutation.effect_id != preparation.effect_id
+            or initial_mutation.preparation_digest != preparation.preparation_digest
+            or initial_mutation.revision != 1
+            or initial_mutation
+            != DockerRunMutationRecordV1.initial(
+                preparation, initial_mutation.create_mutation
+            )
+        ):
+            raise ValueError("Docker prepared run pair is invalid")
+        try:
+            with self._transaction() as connection:
+                connection.execute(
+                    """INSERT INTO provider_preparations(
+                           project_ref, run_id, plan_fingerprint,
+                           preparation_digest, record_json
+                       ) VALUES (?, ?, ?, ?, ?)""",
+                    (
+                        preparation.project_ref,
+                        preparation.run_id,
+                        preparation.plan_fingerprint,
+                        preparation.preparation_digest,
+                        preparation.canonical_bytes,
+                    ),
+                )
+                connection.execute(
+                    """INSERT INTO docker_run_mutations(
+                           project_ref, run_id, effect_id, preparation_digest,
+                           phase, revision, record_digest, record_json
+                       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (
+                        initial_mutation.project_ref,
+                        initial_mutation.run_id,
+                        initial_mutation.effect_id,
+                        initial_mutation.preparation_digest,
+                        initial_mutation.phase.value,
+                        initial_mutation.revision,
+                        initial_mutation.record_digest,
+                        initial_mutation.canonical_bytes,
+                    ),
+                )
+        except sqlite3.IntegrityError as exc:
+            raise EffectCollision("Docker preparation collision") from exc
+
+    def load_docker_preparation(
+        self, project_ref: str, run_id: str
+    ) -> ProviderPreparationRecordV1 | None:
+        connection = self._connect()
+        try:
+            return self._load_docker_preparation_in(connection, project_ref, run_id)
+        finally:
+            connection.close()
+
+    def load_docker_run_mutation(
+        self, project_ref: str, run_id: str
+    ) -> DockerRunMutationRecordV1 | None:
+        connection = self._connect()
+        try:
+            return self._load_docker_mutation_in(connection, project_ref, run_id)
+        finally:
+            connection.close()
+
+    def compare_and_swap_docker_run_mutation(
+        self,
+        replacement: DockerRunMutationRecordV1,
+        *,
+        expected_revision: int,
+        expected_record_digest: str,
+    ) -> DockerRunMutationRecordV1:
+        """Advance one aggregate only from the exact prior revision and digest."""
+
+        if type(replacement) is not DockerRunMutationRecordV1:
+            raise TypeError("replacement must be DockerRunMutationRecordV1")
+        if (
+            replacement.revision != expected_revision + 1
+            or replacement.previous_record_digest != expected_record_digest
+        ):
+            raise RevisionConflict("Docker mutation revision")
+        with self._transaction() as connection:
+            current = self._load_docker_mutation_in(
+                connection, replacement.project_ref, replacement.run_id
+            )
+            if current is None:
+                raise RunNotFound("Docker run mutation was not found")
+            if (
+                current.revision != expected_revision
+                or current.record_digest != expected_record_digest
+                or current.effect_id != replacement.effect_id
+                or current.preparation_digest != replacement.preparation_digest
+            ):
+                raise RevisionConflict("Docker mutation revision")
+            try:
+                validate_docker_run_transition_v1(current, replacement)
+            except ValueError:
+                raise InvalidTransition("Docker mutation transition") from None
+            cursor = connection.execute(
+                """UPDATE docker_run_mutations
+                   SET phase = ?, revision = ?, record_digest = ?, record_json = ?
+                   WHERE project_ref = ? AND run_id = ?
+                     AND revision = ? AND record_digest = ?""",
+                (
+                    replacement.phase.value,
+                    replacement.revision,
+                    replacement.record_digest,
+                    replacement.canonical_bytes,
+                    replacement.project_ref,
+                    replacement.run_id,
+                    expected_revision,
+                    expected_record_digest,
+                ),
+            )
+            if cursor.rowcount != 1:
+                raise RevisionConflict("Docker mutation revision")
+            persisted = self._load_docker_mutation_in(
+                connection, replacement.project_ref, replacement.run_id
+            )
+            if persisted != replacement:
+                raise RuntimeError("host Docker persistence is invalid")
+            return persisted
 
     def admit(
         self,
