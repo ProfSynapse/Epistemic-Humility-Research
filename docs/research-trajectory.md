@@ -1,6 +1,6 @@
 # Research Trajectory: Epistemic Humility Program
 
-_Updated 2026-08-27. Replaces the stale 2026-07-08 version. Every claim traces
+_Updated 2026-09-01. Replaces the stale 2026-07-08 version. Every claim traces
 to a protocol doc; nothing is invented. The original Phases 1–4 plan (staged design) is
 preserved in `archive/docs/protocol/research-trajectory.md`._
 
@@ -676,6 +676,29 @@ evidentiary and is tracked at
 `backlog/tasks/task-d342cb-paper-5-submission-prep-mats-fellowship.md` (todo,
 high priority, blocker "PI review"): final PI read, venue formatting, and the
 MATS/fellowship application forms.
+
+**Label-noise audit (2026-08-28) and the instruction-free replication
+(resolved 2026-08-30) revised the framing twice in one week.** The PI's hand
+audit of the 185-row raw-base held-out confab pool found the SelfAware-sourced
+slice (29 rows) more than half answerable, with the model's suppressed
+baseline answer often correct: the benefit-side ground truth is inherited from
+source-dataset unanswerable labels and was never verified. The headline is
+robust to excluding the source (116/156 = 74.4% vs 136/185 = 73.5%); the
+disclosure lives in Paper 5 Section 6.4 and the corrected source list in
+Section 3.7 (PR #591). The same audit surfaced that every behavioral cell ran
+under a shared system prompt that permits refusal and seeds the graded
+string. `experiments/no-abstention-prompt-gated-replication/AMENDMENT.md`
+(all five families at their frozen operating points, prompt with the
+abstention sentence deleted, detector threshold refit, two-stage grading)
+resolved 2026-08-30: the gated write retains a real lift in every family
+(qwen3-4b +11.4pp, llama +9.3, mistral +18.8, qwen3.5 +45.6, gemma +47.0,
+every 95% CI excluding zero) at near-zero cost, but the reference family
+lands at 12.7% of its with-prompt magnitude, the pre-stated middle band. The
+framing of record is now an instruction-amplified controller, wired through
+Paper 5 Sections 3.7, 5 (Figure 10), 6.1, and 6.4. The PI's registered
+attenuated-survival call landed exactly; the orchestrator's survives-strong
+call did not. The registered KUQ-only reporting stratum is still unreported
+(open item; PI ruling pending).
 
 ---
 
