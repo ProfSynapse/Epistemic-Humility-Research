@@ -11,10 +11,11 @@ component: ''
 depends_on: []
 files:
 - papers/paper-5-actuation/manuscript.md
+- papers/paper-5-actuation/scripts/build_coverage_table.py
 new_files: []
 blocker: PI review
 created_date: '2026-08-27'
-updated_date: '2026-08-30'
+updated_date: '2026-09-01'
 ---
 ## Description
 Manuscript is through the figure restructure, voice passes, and the
@@ -34,3 +35,4 @@ audited backlog table (row P5S, audited 2026-08-27).
 - 2026-08-30 @claude: drafted the no-abstention-prompt disclosure edits on branch paper5-no-abstention-disclosure (methods prompt-frame paragraph in 3.7, scope note in Section 5, thermostat qualification in 6.1, exploratory-replication limits bullet in 6.4). Numbers pending final resolve of experiments/no-abstention-prompt-gated-replication; PR held for PI review, no merge before resolve.
 - 2026-08-30 @claude: upgraded the 6.4 bullet to v2 two-stage numbers (qwen3.5 8.9->54.4, llama 4.1->13.4) and merged PR #584 into main on PI direction; manuscript remains a draft pending PI language pass.
 - 2026-08-30 @claude: filled the pending mistral number in the 6.4 bullet from the resolved Outcome (11.5 to 30.3 two-stage) and cited the resolved cell; all five families now final in the manuscript.
+- 2026-09-01 @claude: voice-compliance pass on the confound additions (removed registration vocabulary, companion-handle citation, and body-prose slugs; fixed stale qwen CI to [7.0, 16.7]); reframed Llama site-split paragraph in 4.8 per PI direction; added the instruction-free replication to Appendix A and the coverage table.
