@@ -103,20 +103,20 @@ SECTION_MAP: dict[str, str] = {
     "j-space-token-targeted-refusal-qwen3-4b": "4.7",  # content @645-660
     "h6-genstream-hook-firing-check": "6.4",  # content @1273-1287 (not in Results at all)
     "jspace-family-atlas": "6.3",  # backtick @1222
-    "doubt-snap-cross-family-confirmatory": "6.5",  # backtick @1361
+    "doubt-snap-cross-family-confirmatory": "NOT NARRATED IN BODY (front matter + Appendix A only; body narration cut with Sections 6.5-6.7 and 7 per PI ruling 2026-09-01)",
     "dark-actuator-screen": "4.7",  # folded sentence at end of 4.7 (restructure)
-    "aq-sycophancy-activation-actuator": "6.5",  # number-free future-work sentence, item 8
-    "rr-cross-family-raw-refusal": "4.8, 6.5",
+    "aq-sycophancy-activation-actuator": "NOT NARRATED IN BODY (front matter + Appendix A only; body narration cut with Sections 6.5-6.7 and 7 per PI ruling 2026-09-01)",
+    "rr-cross-family-raw-refusal": "4.8",
     "llama-atlas-gated-wide-instrument-retest": "4.8",  # content in the cross-family spectrum paragraph
     "wide-instrument-control-rescore": "4.8, 6.4",  # wide re-score of the 6.4 controls; 4.8 qwen sign-opposition at the raw-base point
     "no-abstention-prompt-gated-replication": "3.7, 5, 6.1, 6.4",  # instruction-free replication; disclosed 3.7, scoped 5/6.1, reported 6.4
-    "llama-hs17-direction-specificity": "4.8, 6.5",  # llama mid-band write verified direction-specific; updates escalation items 1 and 4
-    "llama-hs17-wide-instrument-rescore": "4.8, 6.5",  # wide-instrument regeneration of the hs17 operating point
-    "qwen3-4b-l34-placebo-seed-census": "4.8, 6.4, 7",  # late-site 15-seed census: distributional specificity PASS, sign-consistency FAIL
-    "rr2-mistral-adjudicated-refusal-confirm": "4.8, 6.5",
-    "abstention-wide-instrument-calibration": "4.8, 6.5",
-    "rr3-corrected-placebo-replication": "4.8, 6.5",
-    "placebo-seed-distribution-census": "4.8, 6.5",
+    "llama-hs17-direction-specificity": "4.8",  # llama mid-band write verified direction-specific
+    "llama-hs17-wide-instrument-rescore": "4.8",  # wide-instrument regeneration of the hs17 operating point
+    "qwen3-4b-l34-placebo-seed-census": "4.8, 6.4",  # late-site 15-seed census: distributional specificity PASS, sign-consistency FAIL
+    "rr2-mistral-adjudicated-refusal-confirm": "4.8",
+    "abstention-wide-instrument-calibration": "4.8",
+    "rr3-corrected-placebo-replication": "4.8",
+    "placebo-seed-distribution-census": "4.8",
     "placebo-signflip-question-type-analysis": "4.8",
     "margin-evidence-responsiveness-worldknown": "4.6, 6.4",  # backtick @592, @1269
     "evidence-response-direction-search": "NOT NARRATED IN BODY (front matter + Appendix A only; "
@@ -125,12 +125,12 @@ SECTION_MAP: dict[str, str] = {
     "gemma4-e4b-pocket-ladder": "4.8, Appendix E",
     # New Appendix A rows from the 2026-08-17 restructure:
     "jlens-trained-checkpoint-midband-ablation": "6.4 (limits bullet only; body narration cut per PI ruling 2026-08-20 -- Appendix A carries the numbers)",
-    "correctness-direction-rotation": "6.5",
-    "correctness-subspace-overlap": "6.5",
-    "correctness-geometry-scale-ladder": "6.5",  # scale-conditional sharpening, opening paragraph
-    "j-space-cross-family-layer-contrast": "6.5",  # per-family mid-band held-out contrast (items 1/2/4); pointed to from the 4.8 llama caution
-    "refusal-axis-ablation-confirmatory": "6.6",
-    "caution-install-bounded-site-sweep": "6.6",
+    "correctness-direction-rotation": "NOT NARRATED IN BODY (front matter + Appendix A only; body narration cut with Sections 6.5-6.7 and 7 per PI ruling 2026-09-01)",
+    "correctness-subspace-overlap": "NOT NARRATED IN BODY (front matter + Appendix A only; body narration cut with Sections 6.5-6.7 and 7 per PI ruling 2026-09-01)",
+    "correctness-geometry-scale-ladder": "NOT NARRATED IN BODY (front matter + Appendix A only; body narration cut with Sections 6.5-6.7 and 7 per PI ruling 2026-09-01)",
+    "j-space-cross-family-layer-contrast": "NOT NARRATED IN BODY (front matter + Appendix A only; body narration cut with Sections 6.5-6.7 and 7 per PI ruling 2026-09-01)",
+    "refusal-axis-ablation-confirmatory": "6.4",  # compact fact in the Limits registration paragraph; numbers in Appendix A
+    "caution-install-bounded-site-sweep": "NOT NARRATED IN BODY (front matter + Appendix A only; body narration cut with Sections 6.5-6.7 and 7 per PI ruling 2026-09-01)",
     "caution-ablation-rederivation": "NOT NARRATED IN BODY (front matter + Appendix A provenance row only)",
     "idk-switch-naming-confirmatory": "4.5, 4.8",
 }
