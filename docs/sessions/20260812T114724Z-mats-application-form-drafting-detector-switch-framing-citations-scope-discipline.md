@@ -5,7 +5,7 @@ title: 'MATS application form drafting: detector-switch framing, citations, scop
   discipline'
 status: active
 created_at: '2026-08-12T11:47:24Z'
-updated_at: '2026-08-28T12:56:27Z'
+updated_at: '2026-09-01T14:11:02Z'
 question: How should the MATS 12.0 form answers present the two-part detector/switch
   architecture accurately, at a high level, with self-contained citations?
 tags: []
@@ -373,6 +373,24 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 017-checkpoint
+  at: '2026-09-01T14:11:02Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Post-resolve doc sweep executed: (1) Paper 5 label-noise limitation +
+    SelfAware source fix + Yin ref merged via PR #591 under task-6109d8 (closed);
+    (2) MATS submission-package limitations closer updated with the instruction-free
+    result (source [26] added), pushed to private repo; (3) prediction-scoreboard
+    row added (no-abstention WIN/LOSS, tally user 6 - orch 7 - ties 5) and research-trajectory
+    updated with audit + instruction-amplified framing, both direct to main. Open:
+    KUQ-only registered stratum still unreported (PI ruling pending); task-77dfe2
+    left open pending that.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # MATS application form drafting: detector-switch framing, citations, scope discipline
 
@@ -469,3 +487,8 @@ _No summary yet._
 - at: `2026-08-28T12:56:27Z`
 - kind: `checkpoint`
 - summary: Amendment no-abstention-prompt-gated-replication SIGNED (PI-authorized in session) and PR #583 MERGED (1ea9e938). Sign blockers closed: render.py wrapper pinned (only-diff assertions, import smoke passed), llama random seed 910016, wide-instrument judge modules sha-pinned, gates frozen with derivations (G1 0.4459, G1b 0.3595, G2 ceiling 0.0698, adjudicability floor N=52). Task-77dfe2 updated and pushed to main (8d882625). Remaining: PI GPU launch approval and run on the canonical Linux checkout, then resolve with both reporting strata.
+### 017-checkpoint - Checkpoint
+
+- at: `2026-09-01T14:11:02Z`
+- kind: `checkpoint`
+- summary: Post-resolve doc sweep executed: (1) Paper 5 label-noise limitation + SelfAware source fix + Yin ref merged via PR #591 under task-6109d8 (closed); (2) MATS submission-package limitations closer updated with the instruction-free result (source [26] added), pushed to private repo; (3) prediction-scoreboard row added (no-abstention WIN/LOSS, tally user 6 - orch 7 - ties 5) and research-trajectory updated with audit + instruction-amplified framing, both direct to main. Open: KUQ-only registered stratum still unreported (PI ruling pending); task-77dfe2 left open pending that.
