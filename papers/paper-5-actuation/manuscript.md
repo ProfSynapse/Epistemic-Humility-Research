@@ -64,10 +64,6 @@ notes: >
 
 # Look Before You Speak: Wiring a Language Model's Answerability Readout to Its Refusal Behavior
 
-*Scope note on "epistemic state": throughout, the phrase names what a linear
-readout of the hidden state reports about answerability and refusal, not a
-claim that the model represents its own doubt as a mental state.*
-
 ---
 
 > *"What I cannot create, I do not understand."*
