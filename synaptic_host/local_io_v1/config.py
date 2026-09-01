@@ -74,17 +74,33 @@ class StorageRegistryV1:
         project_root: Path,
     ) -> "StorageRegistryV1":
         try:
-            if not project_root.is_absolute():
-                raise _closed(LocalIOCodeV1.CONFIG_INVALID)
             raw = config_path.read_bytes()
             if len(raw) > _MAX_CONFIG_BYTES:
                 raise _closed(LocalIOCodeV1.CONFIG_INVALID)
-            value = json.loads(raw.decode("utf-8"), object_pairs_hook=_unique_object)
         except LocalIOErrorV1:
             raise
         except (OSError, UnicodeError):
             raise _closed(LocalIOCodeV1.CONFIG_IO_FAILED) from None
-        except (TypeError, ValueError, json.JSONDecodeError):
+        return cls.from_bytes(raw, project_root=project_root)
+
+    @classmethod
+    def from_bytes(
+        cls,
+        raw: bytes,
+        *,
+        project_root: Path,
+    ) -> "StorageRegistryV1":
+        try:
+            if (
+                type(raw) is not bytes
+                or not project_root.is_absolute()
+                or len(raw) > _MAX_CONFIG_BYTES
+            ):
+                raise _closed(LocalIOCodeV1.CONFIG_INVALID)
+            value = json.loads(raw.decode("utf-8"), object_pairs_hook=_unique_object)
+        except LocalIOErrorV1:
+            raise
+        except (UnicodeError, TypeError, ValueError, json.JSONDecodeError):
             raise _closed(LocalIOCodeV1.CONFIG_INVALID) from None
 
         if type(value) is not dict or set(value) != _TOP_FIELDS:

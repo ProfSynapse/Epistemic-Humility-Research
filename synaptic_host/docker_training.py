@@ -36,6 +36,7 @@ from tuner.project.manifest import load_project_manifest
 from .artifact_destinations import (
     ArtifactDestinationDeclarationV1,
     parse_artifact_destination_config_v1,
+    artifact_destination_declaration_digest_v1,
 )
 from .docker_provider import DockerProviderProfileV1
 from .security import ScopedGitRemoteReader
@@ -82,19 +83,6 @@ def _project_path(reference: str) -> str:
     ):
         raise ValueError("project reference is invalid")
     return value
-
-
-def _destination_declaration_digest(
-    declaration: ArtifactDestinationDeclarationV1,
-) -> str:
-    return _sha(b"synaptic-destination-declaration/v1", _canonical({
-        "destination_ref": declaration.destination_ref,
-        "display_name": declaration.display_name,
-        "adapter_ref": declaration.adapter_ref,
-        "configuration_schema_version": declaration.configuration_schema_version,
-        "configuration_digest": declaration.configuration_digest,
-        "policy_digest": declaration.policy.policy_digest,
-    }))
 
 
 def _descriptor(kind: str, reference: str, blob) -> dict[str, object]:
@@ -245,7 +233,7 @@ class _AdmissionSessionV1:
             },
             outputs={
                 "destination_ref": snapshot.destination.destination_ref,
-                "destination_declaration_digest": _destination_declaration_digest(
+                "destination_declaration_digest": artifact_destination_declaration_digest_v1(
                     snapshot.destination
                 ),
                 "destination_registry": _descriptor(

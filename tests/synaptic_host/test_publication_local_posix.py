@@ -13,7 +13,10 @@ from synaptic_host.local_artifact_destination import (
 )
 from synaptic_host.local_io_v1.filesystem import LocalFilesystemV1
 from synaptic_host.local_io_v1.model import RecoveryResultV1, RecoveryStatusV1
-from synaptic_host.publication_composition import compose_host_publication_v1
+from synaptic_host.publication_composition import (
+    PublicationConfigurationDocumentsV1,
+    compose_host_publication_v1,
+)
 from synaptic_tuner.api.v1 import (
     ProjectContext,
     PublicationRequest,
@@ -143,8 +146,9 @@ def _environment(tmp_path: Path):
         return compose_host_publication_v1(
             context=context,
             runs=runs,
-            destination_config_path=destination_path,
-            storage_config_path=storage_path,
+            configuration=PublicationConfigurationDocumentsV1.from_paths(
+                destination_path=destination_path, storage_path=storage_path
+            ),
             spool_root_ref="artifact-spool",
             clock=lambda: "2026-08-31T12:00:00Z",
             registration_builders=(

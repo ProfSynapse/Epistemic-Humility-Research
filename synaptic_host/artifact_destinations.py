@@ -106,6 +106,22 @@ def _sha(value: object) -> str:
     return hashlib.sha256(_canonical(value)).hexdigest()
 
 
+def artifact_destination_declaration_digest_v1(
+    declaration: "ArtifactDestinationDeclarationV1",
+) -> str:
+    declaration = _snapshot_declaration(declaration)
+    return hashlib.sha256(
+        b"synaptic-destination-declaration/v1\0" + _canonical({
+            "destination_ref": declaration.destination_ref,
+            "display_name": declaration.display_name,
+            "adapter_ref": declaration.adapter_ref,
+            "configuration_schema_version": declaration.configuration_schema_version,
+            "configuration_digest": declaration.configuration_digest,
+            "policy_digest": declaration.policy.policy_digest,
+        })
+    ).hexdigest()
+
+
 @dataclass(frozen=True, slots=True)
 class ArtifactDestinationPolicyV1:
     maximum_artifact_bytes: int
@@ -671,6 +687,7 @@ __all__ = [
     "DestinationAdapterRegistrationV1",
     "ImmutableArtifactDestinationRegistryV1",
     "ResolvedDestinationAdapterV1",
+    "artifact_destination_declaration_digest_v1",
     "load_artifact_destination_config_v1",
     "parse_artifact_destination_config_v1",
 ]

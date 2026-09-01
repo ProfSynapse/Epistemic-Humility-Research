@@ -63,6 +63,26 @@ def test_two_opaque_project_profiles_are_metadata_only_and_sorted(tmp_path: Path
     assert not (tmp_path / "missing").exists()
 
 
+def test_from_bytes_is_the_exact_parser_used_by_path_loading(tmp_path: Path) -> None:
+    value = {
+        "schema_version": "synaptic-host-storage/v1",
+        "roots": [_project_spec()],
+    }
+    path = _write(tmp_path / "storage.json", value)
+    raw = path.read_bytes()
+    from_path = StorageRegistryV1.load(path, project_root=tmp_path)
+    from_bytes = StorageRegistryV1.from_bytes(raw, project_root=tmp_path)
+    for registry in (from_path, from_bytes):
+        registry.issue_root_permit(
+            "opaque-a", authority_ref="authority", key_ref="key",
+            proof_digest="0" * 64,
+        )
+    assert from_path.list_roots() == from_bytes.list_roots()
+    with pytest.raises(LocalIOErrorV1) as caught:
+        StorageRegistryV1.from_bytes(bytearray(raw), project_root=tmp_path)
+    assert caught.value.code is LocalIOCodeV1.CONFIG_INVALID
+
+
 def test_checked_in_registry_separates_publication_data_control_and_spool_roots() -> None:
     raw = json.loads((ROOT / "training/storage.json").read_text(encoding="utf-8"))
     by_ref = {item["root_ref"]: item for item in raw["roots"]}

@@ -17,6 +17,7 @@ from synaptic_host.artifact_destinations import (
 from synaptic_host.artifact_spool import LocalArtifactSpoolCleanupStatusV1
 from synaptic_host.publication_composition import (
     HostPublicationFacadeV1,
+    PublicationConfigurationDocumentsV1,
     compose_host_publication_v1,
 )
 from synaptic_host.publication_store import SqlitePublicationStoreV1
@@ -482,7 +483,7 @@ def test_composition_orders_permit_builders_and_project_store(
         verifier=SimpleNamespace(authority_ref="publication-authority", key_ref="key-v1"),
         destinations=object(), verified_sources=object(),
     )
-    monkeypatch.setattr(composition.StorageRegistryV1, "load", lambda *a, **k: storage)
+    monkeypatch.setattr(composition.StorageRegistryV1, "from_bytes", lambda *a, **k: storage)
     monkeypatch.setattr(composition, "create_publication_evidence_v1", lambda value: evidence)
     monkeypatch.setattr(composition, "PosixRetainedDirfdPortV1", lambda: object())
     monkeypatch.setattr(composition, "LocalFilesystemV1", lambda port, auth: object())
@@ -505,8 +506,9 @@ def test_composition_orders_permit_builders_and_project_store(
     facade = compose_host_publication_v1(
         context=context,
         runs=RunsAPI(_RunsOperations()),
-        destination_config_path=destination_path,
-        storage_config_path=storage_path,
+        configuration=PublicationConfigurationDocumentsV1.from_paths(
+            destination_path=destination_path, storage_path=storage_path
+        ),
         spool_root_ref="spool",
         clock=lambda: "2026-08-31T00:00:00Z",
         registration_builders=(builder,),
@@ -525,18 +527,10 @@ def test_composition_orders_permit_builders_and_project_store(
     assert trace[-2:] == ["cleanup-adapter", "cleanup-spool"]
 
 
-def test_storage_change_fails_before_permit_or_spool(tmp_path, monkeypatch):
+def test_old_path_api_is_rejected_before_permit_or_spool(tmp_path, monkeypatch):
     context = _context(tmp_path)
     destination_path, storage_path = _write_configs(tmp_path)
-    original = storage_path.read_bytes()
     calls = []
-
-    def load(*_args, **_kwargs):
-        storage_path.write_bytes(original + b" ")
-        calls.append("load")
-        return object()
-
-    monkeypatch.setattr(composition.StorageRegistryV1, "load", load)
     monkeypatch.setattr(
         composition, "create_publication_evidence_v1",
         lambda value: calls.append("evidence"),
@@ -545,7 +539,7 @@ def test_storage_change_fails_before_permit_or_spool(tmp_path, monkeypatch):
     def builder(**kwargs):
         raise AssertionError("builder must not run")
 
-    with pytest.raises(RuntimeError, match="^host publication composition failed$"):
+    with pytest.raises(TypeError, match="unexpected keyword argument"):
         compose_host_publication_v1(
             context=context,
             runs=RunsAPI(_RunsOperations()),
@@ -555,7 +549,43 @@ def test_storage_change_fails_before_permit_or_spool(tmp_path, monkeypatch):
             clock=lambda: "2026-08-31T00:00:00Z",
             registration_builders=(builder,),
         )
-    assert calls == ["load"]
+    assert calls == []
+
+
+@pytest.mark.parametrize(
+    ("changed_call", "changed_field"),
+    ((1, "st_ino"), (2, "st_ctime_ns")),
+)
+def test_configuration_reader_rejects_swap_restore_and_restored_mtime(
+    tmp_path, monkeypatch, changed_call, changed_field,
+):
+    destination_path, storage_path = _write_configs(tmp_path)
+    original_fstat = composition.os.fstat
+    calls = 0
+
+    def unstable(descriptor):
+        nonlocal calls
+        current = original_fstat(descriptor)
+        calls += 1
+        if calls != changed_call:
+            return current
+        values = {
+            "st_mode": current.st_mode,
+            "st_size": current.st_size,
+            "st_dev": current.st_dev,
+            "st_ino": current.st_ino,
+            "st_mtime_ns": current.st_mtime_ns,
+            "st_ctime_ns": current.st_ctime_ns,
+            "st_file_attributes": getattr(current, "st_file_attributes", 0),
+        }
+        values[changed_field] += 1
+        return SimpleNamespace(**values)
+
+    monkeypatch.setattr(composition.os, "fstat", unstable)
+    with pytest.raises(ValueError, match="document is invalid"):
+        PublicationConfigurationDocumentsV1.from_paths(
+            destination_path=destination_path, storage_path=storage_path
+        )
 
 
 @pytest.mark.parametrize(
@@ -597,7 +627,7 @@ def test_construction_rollback_cleans_every_acquired_owner_in_order(
         verifier=SimpleNamespace(authority_ref="publication-authority", key_ref="key-v1"),
         destinations=object(), verified_sources=object(),
     )
-    monkeypatch.setattr(composition.StorageRegistryV1, "load", lambda *a, **k: Storage())
+    monkeypatch.setattr(composition.StorageRegistryV1, "from_bytes", lambda *a, **k: Storage())
     monkeypatch.setattr(composition, "create_publication_evidence_v1", lambda value: evidence)
     monkeypatch.setattr(composition, "PosixRetainedDirfdPortV1", lambda: object())
     monkeypatch.setattr(composition, "LocalFilesystemV1", lambda port, auth: object())
@@ -644,8 +674,9 @@ def test_construction_rollback_cleans_every_acquired_owner_in_order(
         compose_host_publication_v1(
             context=context,
             runs=RunsAPI(_RunsOperations()),
-            destination_config_path=destination_path,
-            storage_config_path=storage_path,
+            configuration=PublicationConfigurationDocumentsV1.from_paths(
+                destination_path=destination_path, storage_path=storage_path
+            ),
             spool_root_ref="spool",
             clock=lambda: "2026-08-31T00:00:00Z",
             registration_builders=builders,

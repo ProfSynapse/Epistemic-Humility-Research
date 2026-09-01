@@ -6,6 +6,7 @@ from dataclasses import replace
 import os
 
 import synaptic_host.docker_execution as docker_execution
+import synaptic_host.docker_publication as docker_publication
 import pytest
 
 from synaptic_host.docker_execution import (
@@ -29,6 +30,9 @@ from synaptic_host.docker_v1.control_contract import (
 )
 from tuner.execution.providers.docker_provider_v1.model import (
     DockerCreateDispositionV1, DockerStartDispositionV1,
+)
+from synaptic_tuner.api.v1 import (
+    PublicationRef, PublicationResult, PublicationState, TrainingRunRef,
 )
 
 
@@ -455,7 +459,7 @@ def test_read_regular_rejects_open_handle_and_post_read_identity_drift(
         return current
 
     monkeypatch.setattr(os, "fstat", drift_after_read)
-    with pytest.raises(ValueError, match="changed during read"):
+    with pytest.raises(ValueError, match=r"changed (?:before|during) read"):
         docker_execution._DockerPreparedArtifactVerifierV1._read_regular(path, 8)
 
 
@@ -482,7 +486,7 @@ def test_read_regular_rejects_in_place_mutation_snapshot(tmp_path, monkeypatch):
         return current
 
     monkeypatch.setattr(os, "fstat", mutated_metadata)
-    with pytest.raises(ValueError, match="changed during read"):
+    with pytest.raises(ValueError, match=r"changed (?:before|during) read"):
         docker_execution._DockerPreparedArtifactVerifierV1._read_regular(path, 8)
 
 
@@ -518,3 +522,114 @@ def test_inventory_read_failure_classification_is_deterministic(
     )
     assert result.kind.value == expected_kind
     assert result.diagnostic == expected_diagnostic
+
+
+def test_already_verified_reconcile_performs_one_publication_without_aggregate_write(
+    monkeypatch,
+):
+    repository = Repository(_initial())
+    adapter = DockerAggregateMutationRepositoryV1(
+        repository, project_ref="project", run_id="run", clock=lambda: NOW
+    )
+    create = repository.value.create_mutation
+    create_attempted = _low(
+        DockerControlOperationV1.CREATE, DockerMutationPhaseV1.ATTEMPTED,
+        create.content.record_digest,
+    )
+    adapter.compare_and_swap(_cas(create, create_attempted))
+    create_verified = _low(
+        DockerControlOperationV1.CREATE, DockerMutationPhaseV1.VERIFIED,
+        create_attempted.content.record_digest, "a" * 64,
+    )
+    adapter.compare_and_swap(_cas(create_attempted, create_verified))
+    start = _low(DockerControlOperationV1.START, DockerMutationPhaseV1.ADMITTED)
+    adapter.admit(DockerMutationAdmissionRequestV1.build(
+        start.content.operation_id, start
+    ))
+    start_attempted = _low(
+        DockerControlOperationV1.START, DockerMutationPhaseV1.ATTEMPTED,
+        start.content.record_digest,
+    )
+    adapter.compare_and_swap(_cas(start, start_attempted))
+    start_verified = _low(
+        DockerControlOperationV1.START, DockerMutationPhaseV1.VERIFIED,
+        start_attempted.content.record_digest, "a" * 64,
+    )
+    adapter.compare_and_swap(_cas(start_attempted, start_verified))
+    submitted = repository.value
+    succeeded = docker_execution._aggregate(
+        submitted, phase=DockerRunPhaseV1.PROCESS_SUCCEEDED,
+        process_exit_code=0, process_observation_digest="8" * 64,
+    )
+    repository.compare_and_swap_docker_run_mutation(
+        succeeded, expected_revision=submitted.revision,
+        expected_record_digest=submitted.record_digest,
+    )
+    artifacts = tuple(docker_execution.VerifiedDockerArtifactV1(
+        role, f"{role}.bin", 1, str(index) * 64,
+    ) for index, role in enumerate((
+        "final_model", "tokenizer", "training_lineage", "training_metrics",
+        "workload_record",
+    ), start=1))
+    verified = docker_execution._aggregate(
+        succeeded, phase=DockerRunPhaseV1.ARTIFACTS_VERIFIED,
+        verified_artifacts=artifacts,
+        verified_inventory_digest=docker_execution.verified_inventory_digest_v1(artifacts),
+    )
+    repository.compare_and_swap_docker_run_mutation(
+        verified, expected_revision=succeeded.revision,
+        expected_record_digest=succeeded.record_digest,
+    )
+
+    calls = []
+
+    def publish(_self, *, request, record):
+        calls.append((request, record))
+        return PublicationResult(
+            "synaptic-publication-result/v1",
+            PublicationRef("publication", request.preparation.destination_ref),
+            TrainingRunRef(request.run_id, request.project_ref),
+            PublicationState.VERIFIED, (),
+        )
+
+    monkeypatch.setattr(
+        docker_publication.DockerPublicationCompositionV1, "publish", publish
+    )
+    composition = object.__new__(
+        docker_publication.DockerPublicationCompositionV1
+    )
+
+    class Never:
+        def build(self, *_args):
+            raise AssertionError("Docker controls are not admitted")
+
+        def verify(self, **_kwargs):
+            raise AssertionError("artifact verification is not admitted")
+
+    request = SimpleNamespace(
+        project_ref="project", run_id="run",
+        preparation=SimpleNamespace(
+            preparation_digest="4" * 64, destination_ref="local-default"
+        ),
+    )
+    service = DockerPreparedRunServiceV1(
+        repository=repository, control_factory=Never(),
+        artifact_verifier=Never(), clock=lambda: NOW,
+        publication=composition,
+    )
+    before = repository.value
+    outcome = service.reconcile(request)
+    assert repository.value == before
+    assert calls == [(request, verified)]
+    assert outcome.publication_id == "publication"
+    assert outcome.publication_state == PublicationState.VERIFIED.value
+
+    wrong_destination = PublicationResult(
+        "synaptic-publication-result/v1",
+        PublicationRef("publication", "wrong-destination"),
+        TrainingRunRef("run", "project"), PublicationState.VERIFIED, (),
+    )
+    with pytest.raises(ValueError, match="differs from the Docker run"):
+        DockerPreparedRunOutcomeV1.from_publication(
+            verified, wrong_destination, "local-default"
+        )

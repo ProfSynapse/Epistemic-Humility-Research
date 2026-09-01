@@ -12,6 +12,8 @@ _EXPORTS = {
     "ArtifactDestinationConfigV1": (".artifact_destinations", "ArtifactDestinationConfigV1"),
     "ArtifactDestinationDeclarationV1": (".artifact_destinations", "ArtifactDestinationDeclarationV1"),
     "ArtifactDestinationPolicyV1": (".artifact_destinations", "ArtifactDestinationPolicyV1"),
+    "DockerPublicationCompositionV1": (".docker_publication", "DockerPublicationCompositionV1"),
+    "PublicationConfigurationDocumentsV1": (".publication_composition", "PublicationConfigurationDocumentsV1"),
     "AuthenticatedVerifiedArtifactSourceV1": (".verified_artifact_source", "AuthenticatedVerifiedArtifactSourceV1"),
     "BoundedGrantProvider": (".security", "BoundedGrantProvider"),
     "DestinationAdapterRegistrationV1": (".artifact_destinations", "DestinationAdapterRegistrationV1"),
@@ -39,6 +41,8 @@ _EXPORTS = {
     "load_artifact_destination_config_v1": (".artifact_destinations", "load_artifact_destination_config_v1"),
     "acquire_local_artifact_spool_v1": (".artifact_spool", "acquire_local_artifact_spool_v1"),
     "compose_host_publication_v1": (".publication_composition", "compose_host_publication_v1"),
+    "compose_docker_publication_v1": (".docker_publication", "compose_docker_publication_v1"),
+    "artifact_destination_declaration_digest_v1": (".artifact_destinations", "artifact_destination_declaration_digest_v1"),
 }
 
 __all__ = tuple(_EXPORTS)

@@ -15,6 +15,7 @@ from synaptic_host.artifact_destinations import (
     DestinationAdapterRegistrationV1,
     ImmutableArtifactDestinationRegistryV1,
     ResolvedDestinationAdapterV1,
+    artifact_destination_declaration_digest_v1,
     load_artifact_destination_config_v1,
 )
 from synaptic_host.publication_authority import create_publication_evidence_v1
@@ -203,6 +204,20 @@ def test_checked_in_destination_config_uses_closed_host_contract() -> None:
     }
     assert b"project://" not in declaration.configuration_bytes
     assert b'"root"' not in declaration.configuration_bytes
+
+
+def test_destination_declaration_digest_is_canonical_and_complete() -> None:
+    declaration = load_artifact_destination_config_v1(
+        (ROOT / "training/artifacts.json").resolve()
+    ).destinations[0]
+    digest = artifact_destination_declaration_digest_v1(declaration)
+    assert len(digest) == 64
+    changed = ArtifactDestinationDeclarationV1(
+        declaration.destination_ref, declaration.display_name + " changed",
+        declaration.adapter_ref, declaration.configuration_schema_version,
+        declaration.configuration_bytes, declaration.policy,
+    )
+    assert artifact_destination_declaration_digest_v1(changed) != digest
 
 
 def test_same_registry_resolves_local_hf_and_future_adapters(tmp_path: Path) -> None:

@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .publication_composition import HostPublicationFacadeV1
     from .sqlite_repository import SqliteTrainingRepository
 
-from synaptic_tuner.api.v1 import RevisionConflict
+from synaptic_tuner.api.v1 import PublicationResult, RevisionConflict, TrainingRunRef
 from tuner.execution.foundation_v2.commands import SubmitCommandV2, parse_exact_command
 from tuner.execution.providers.docker_provider_v1.model import (
     DockerCommandBindingV1,
@@ -141,8 +141,8 @@ class DockerPreparedRunOutcomeV1:
     process_exit_code: int | None
     diagnostic: str | None
     verified_artifacts: tuple[VerifiedDockerArtifactV1, ...]
-    publication_id: None = None
-    publication_state: None = None
+    publication_id: str | None = None
+    publication_state: str | None = None
 
     def __new__(cls, *_args: object, **_kwargs: object):
         raise TypeError("Docker prepared run outcomes are factory-issued")
@@ -164,8 +164,7 @@ class DockerPreparedRunOutcomeV1:
             or type(self.verified_artifacts) is not tuple
             or any(type(item) is not VerifiedDockerArtifactV1
                    for item in self.verified_artifacts)
-            or self.publication_id is not None
-            or self.publication_state is not None
+            or ((self.publication_id is None) != (self.publication_state is None))
             or (
                 self.phase is not DockerRunPhaseV1.RECONCILE_REQUIRED
                 and stable != (
@@ -226,6 +225,27 @@ class DockerPreparedRunOutcomeV1:
         }
         for name, value in values.items():
             object.__setattr__(issued, name, value)
+        issued.__post_init__()
+        return issued
+
+    @classmethod
+    def from_publication(
+        cls, record: DockerRunMutationRecordV1, result: PublicationResult,
+        expected_destination_ref: str,
+    ) -> "DockerPreparedRunOutcomeV1":
+        if (
+            type(record) is not DockerRunMutationRecordV1
+            or record.phase is not DockerRunPhaseV1.ARTIFACTS_VERIFIED
+            or type(result) is not PublicationResult
+            or result.run != TrainingRunRef(record.run_id, record.project_ref)
+            or type(expected_destination_ref) is not str
+            or not expected_destination_ref
+            or result.publication.destination_ref != expected_destination_ref
+        ):
+            raise ValueError("publication result differs from the Docker run")
+        issued = cls.from_record(record)
+        object.__setattr__(issued, "publication_id", result.publication.publication_id)
+        object.__setattr__(issued, "publication_state", result.state.value)
         issued.__post_init__()
         return issued
 
@@ -761,7 +781,8 @@ class _DockerPreparedArtifactVerifierV1:
         descriptor = os.open(path, flags)
         try:
             opened = os.fstat(descriptor)
-            if snapshot(opened) != baseline:
+            opened_snapshot = snapshot(opened)
+            if opened_snapshot[:-1] != baseline[:-1]:
                 raise ValueError("artifact changed before read")
             data = bytearray()
             while len(data) <= maximum:
@@ -770,7 +791,7 @@ class _DockerPreparedArtifactVerifierV1:
                     break
                 data.extend(chunk)
             after_read = os.fstat(descriptor)
-            if snapshot(after_read) != baseline:
+            if snapshot(after_read) != opened_snapshot:
                 raise ValueError("artifact changed during read")
             if len(data) != before.st_size or len(data) > maximum:
                 raise ValueError("invalid artifact member")
@@ -964,23 +985,34 @@ class DockerPreparedRunServiceV1:
         self, *, repository: SqliteTrainingRepository,
         control_factory: DockerPreparedControlFactoryPortV1,
         artifact_verifier: _DockerPreparedArtifactVerifierPortV1,
-        clock: Callable[[], str], publication: HostPublicationFacadeV1 | None,
+        clock: Callable[[], str], publication: object | None,
     ) -> None:
+        if publication is not None:
+            from .docker_publication import DockerPublicationCompositionV1
+            if type(publication) is not DockerPublicationCompositionV1:
+                raise ValueError("Docker publication composition is invalid")
         if (
-            publication is not None
-            or not callable(clock)
+            not callable(clock)
             or not callable(getattr(repository, "load_docker_run_mutation", None))
             or not callable(getattr(
                 repository, "compare_and_swap_docker_run_mutation", None
             ))
             or not callable(getattr(control_factory, "build", None))
             or not callable(getattr(artifact_verifier, "verify", None))
+            or (
+                publication is not None
+                and (
+                    not callable(getattr(publication, "publish", None))
+                    or not callable(getattr(publication, "close", None))
+                )
+            )
         ):
-            raise ValueError("Docker Slice A does not support publication")
+            raise ValueError("Docker prepared run service dependencies are invalid")
         self._repository = repository
         self._control_factory = control_factory
         self._artifact_verifier = artifact_verifier
         self._clock = clock
+        self._publication = publication
 
     def _load(self, request: DockerPreparedRunRequestV1):
         record = self._repository.load_docker_run_mutation(
@@ -1070,6 +1102,13 @@ class DockerPreparedRunServiceV1:
 
     def reconcile(self, request: DockerPreparedRunRequestV1) -> DockerPreparedRunOutcomeV1:
         current = self._load(request)
+        if current.phase is DockerRunPhaseV1.ARTIFACTS_VERIFIED:
+            if self._publication is None:
+                return DockerPreparedRunOutcomeV1.from_record(current)
+            result = self._publication.publish(request=request, record=current)
+            return DockerPreparedRunOutcomeV1.from_publication(
+                current, result, request.preparation.destination_ref
+            )
         if current.phase is DockerRunPhaseV1.PROCESS_SUCCEEDED:
             verified = self._artifact_verifier.verify(
                 request=request,

@@ -20,6 +20,10 @@ from synaptic_host.cli import (
     prepare_training_run_ingress_v1,
 )
 from synaptic_host.docker_provider import DockerProviderProfileV1
+from synaptic_host.artifact_destinations import (
+    artifact_destination_declaration_digest_v1,
+    parse_artifact_destination_config_v1,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -352,6 +356,12 @@ def test_real_clean_superproject_compiles_canonical_plan_and_rejects_without_eff
     assert lock.runtime["provider_policy_digest"] == lock.configuration["provider_policy_digest"]
     assert lock.outputs["destination_ref"] == "local-default"
     assert len(lock.outputs["destination_declaration_digest"]) == 64
+    destination = parse_artifact_destination_config_v1(
+        _git(project, "show", f"{lock.project_source.commit}:training/artifacts.json")
+    ).destinations[0]
+    assert lock.outputs["destination_declaration_digest"] == (
+        artifact_destination_declaration_digest_v1(destination)
+    )
     assert lock.runtime["storage_configuration_digest"] == storage["sha256"]
     for item in (manifest, provider, storage, registry):
         assert (
