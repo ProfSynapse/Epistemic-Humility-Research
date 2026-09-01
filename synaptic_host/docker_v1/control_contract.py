@@ -1058,6 +1058,51 @@ class AuthenticatedDockerMutationRecordV1:
         return _envelope_proof(self, lambda x: x.record_digest, "synaptic-host-auth-mutation-record/v1")
 
 
+@dataclass(frozen=True, slots=True)
+class DockerCreateAdmissionV1:
+    """Exact effect-free create admission shared by persistence and replay."""
+
+    expected_create: AuthenticatedDockerExpectedCreateBindingV1
+    create_mutation: AuthenticatedDockerMutationRecordV1
+    admission_digest: str
+
+    def canonical_without_digest(self):
+        return {
+            "create_mutation_proof_digest": self.create_mutation.proof_digest,
+            "expected_create_proof_digest": self.expected_create.proof_digest,
+            "schema_version": "synaptic-host-docker-create-admission/v1",
+        }
+
+    def __post_init__(self):
+        try:
+            expected = _snapshot_authenticated(self.expected_create)
+            mutation = _snapshot_authenticated(self.create_mutation)
+            labels = expected.content.labels
+            intent = expected.content.intent
+            if (
+                type(expected) is not AuthenticatedDockerExpectedCreateBindingV1
+                or type(mutation) is not AuthenticatedDockerMutationRecordV1
+                or mutation.content.operation is not DockerControlOperationV1.CREATE
+                or mutation.content.phase is not DockerMutationPhaseV1.ADMITTED
+                or mutation.content.effect_id != labels.effect_id
+                or mutation.content.operation_id != intent.content.operation_id
+                or mutation.content.control_intent_proof_digest != intent.proof_digest
+                or self.admission_digest != digest_v1(self.canonical_without_digest())
+            ):
+                raise ValueError
+        except BaseException:
+            _fail()
+
+    @classmethod
+    def build(cls, expected_create, create_mutation):
+        body = {
+            "create_mutation_proof_digest": create_mutation.proof_digest,
+            "expected_create_proof_digest": expected_create.proof_digest,
+            "schema_version": "synaptic-host-docker-create-admission/v1",
+        }
+        return cls(expected_create, create_mutation, digest_v1(body))
+
+
 def _snapshot_authenticated(value):
     try:
         if type(value) is AuthenticatedDockerCreatePathBindingV1:

@@ -16,6 +16,7 @@ from .control_contract import (
     DockerAdmissionDispositionV1, DockerAdmissionResultV1,
     DockerCASDispositionV1, DockerCASResultV1,
     DockerControlIntentV1, DockerControlOperationV1,
+    DockerCreateAdmissionV1,
     DockerCreateSpecificationV1, DockerCreateVerificationV1,
     DockerExpectedCreateBindingV1,
     DockerExpectedCreatePublishDispositionV1,
@@ -190,6 +191,13 @@ class DockerHostCreateV1:
                 labels, image, runtime, workload, source_ref, artifact_ref,
                 working_directory,
             )
+            prepared_admission = self.prepare_admission(
+                labels=labels, image=image, runtime=runtime, workload=workload,
+                source_ref=source_ref, artifact_ref=artifact_ref,
+                working_directory=working_directory,
+            )
+            if prepared_admission.expected_create != preflight["expected"]:
+                raise ValueError
             publish_request = DockerExpectedCreatePublishRequestV1.build(
                 labels.command_digest, labels.digest, preflight["expected"]
             )
@@ -212,7 +220,7 @@ class DockerHostCreateV1:
                 ) or published.binding != preflight["expected"]
             ):
                 return _indeterminate()
-            admitted = self._admitted(preflight)
+            admitted = prepared_admission.create_mutation
             admission_request = DockerMutationAdmissionRequestV1.build(
                 admitted.content.operation_id, admitted
             )
@@ -256,7 +264,9 @@ class DockerHostCreateV1:
                 except BaseException:
                     raw_cas = None
                 if raw_cas is None:
-                    return self._recover(preflight, attempted, None)
+                    return self._recover(
+                        preflight, attempted, None, working_directory=working_directory
+                    )
                 cas = DockerCASResultV1(
                     raw_cas.request, raw_cas.disposition, raw_cas.record,
                     raw_cas.result_digest,
@@ -285,21 +295,66 @@ class DockerHostCreateV1:
                         if not self._record_matches(attempted, preflight):
                             return _indeterminate()
                         return self._recover(
-                            preflight, attempted, None, already_verified=True
+                            preflight, attempted, None,
+                            working_directory=working_directory,
+                            already_verified=True,
                         )
                 else:
                     attempted = attempted
             elif current.content.phase is DockerMutationPhaseV1.ATTEMPTED:
                 attempted = current
             elif current.content.phase is DockerMutationPhaseV1.VERIFIED:
-                return self._recover(preflight, current, None, already_verified=True)
+                return self._recover(
+                    preflight, current, None,
+                    working_directory=working_directory,
+                    already_verified=True,
+                )
             else:
                 return _indeterminate()
             if not self._record_matches(attempted, preflight):
                 return _indeterminate()
-            return self._recover(preflight, attempted, create_result)
+            return self._recover(
+                preflight, attempted, create_result,
+                working_directory=working_directory,
+            )
         except BaseException:
             return _indeterminate()
+
+    def prepare_admission(
+        self, *, labels, image, runtime, workload, source_ref, artifact_ref,
+        working_directory,
+    ) -> DockerCreateAdmissionV1:
+        """Derive the exact initial admission without publishing or running Docker."""
+
+        labels = snapshot_docker_labels_v1(labels)
+        image = DockerImageV1(image.image_ref, image.image_digest, image.presence_policy)
+        runtime = DockerRuntimeV1(
+            runtime.cpu_count, runtime.memory_bytes, runtime.timeout_seconds,
+            AcceleratorDeviceRequestV1(
+                runtime.accelerator_devices.kind,
+                tuple(runtime.accelerator_devices.device_indices),
+                tuple(runtime.accelerator_devices.capabilities),
+            ),
+            runtime.network_mode,
+        )
+        workload = DockerWorkloadV1(
+            tuple(workload.arguments), tuple(workload.environment_keys),
+            workload.workload_digest,
+        )
+        if (
+            labels.effect_kind != "submit"
+            or source_ref == artifact_ref
+            or type(working_directory) is not str
+            or not working_directory.startswith("/artifacts/")
+        ):
+            raise ValueError("Docker create admission is invalid")
+        preflight = self._preflight(
+            labels, image, runtime, workload, source_ref, artifact_ref,
+            working_directory,
+        )
+        return DockerCreateAdmissionV1.build(
+            preflight["expected"], self._admitted(preflight)
+        )
 
     def _preflight(
         self, labels, image, runtime, workload, source_ref, artifact_ref,
@@ -465,7 +520,10 @@ class DockerHostCreateV1:
             == preflight["auth_intent"].proof_digest
         )
 
-    def _recover(self, preflight, current, create_result, already_verified=False):
+    def _recover(
+        self, preflight, current, create_result, *, working_directory,
+        already_verified=False,
+    ):
         if (
             create_result is not None
             and create_result.evidence.policy_digest != self._cli_policy_digest
@@ -496,6 +554,7 @@ class DockerHostCreateV1:
             labels, preflight["image"], preflight["runtime"],
             preflight["workload"], preflight["source_ref"],
             preflight["artifact_ref"],
+            working_directory,
         )
         if (
             post["resolved"] != preflight["resolved"]

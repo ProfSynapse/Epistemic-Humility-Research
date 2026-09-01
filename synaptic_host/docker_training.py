@@ -7,7 +7,8 @@ import hashlib
 import hmac
 import json
 import re
-import secrets
+import sqlite3
+import subprocess
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -40,6 +41,12 @@ from .artifact_destinations import (
 )
 from .docker_provider import DockerProviderProfileV1
 from .security import ScopedGitRemoteReader
+
+
+_ARTIFACT_ROLES = (
+    "final_model", "tokenizer", "training_lineage", "training_metrics",
+    "workload_record",
+)
 
 
 _EXECUTION_CONTEXT_SCHEMA = "synaptic-docker-admission-context/v1"
@@ -104,6 +111,53 @@ class _SourceProofV1:
     project_source: GitSource
     engine_source: GitSource
     verified_at: str
+
+
+def _commit_time(repository: Path, commit: str) -> str:
+    try:
+        raw = subprocess.run(
+            ("git", "-C", str(repository), "show", "-s", "--format=%cI", commit),
+            check=True, capture_output=True, timeout=30,
+        ).stdout.decode("ascii").strip()
+        value = datetime.fromisoformat(raw).astimezone(timezone.utc)
+    except (OSError, subprocess.SubprocessError, UnicodeError, ValueError):
+        raise ValueError("project commit timestamp is unavailable") from None
+    return value.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _docker_durable_rows_exist(context: ProjectContext) -> bool:
+    database = context.state_root / "training.sqlite3"
+    if not database.exists():
+        return False
+    connection = None
+    try:
+        connection = sqlite3.connect(
+            f"file:{database.as_posix()}?mode=ro", uri=True, timeout=5,
+        )
+        tables = frozenset(
+            row[0] for row in connection.execute(
+                """SELECT name FROM sqlite_master
+                   WHERE type = 'table' AND name IN (
+                       'provider_preparations', 'docker_run_mutations'
+                   )"""
+            )
+        )
+        expected = frozenset({"provider_preparations", "docker_run_mutations"})
+        if not tables:
+            return False
+        if tables != expected:
+            raise ValueError
+        return connection.execute(
+            """SELECT EXISTS(
+                   SELECT 1 FROM provider_preparations
+                   UNION ALL SELECT 1 FROM docker_run_mutations
+               )"""
+        ).fetchone()[0] == 1
+    except (OSError, sqlite3.Error, TypeError, ValueError):
+        raise ValueError("Docker durability state is unavailable") from None
+    finally:
+        if connection is not None:
+            connection.close()
 
 
 @dataclass(frozen=True, slots=True)
@@ -180,7 +234,8 @@ class _AdmissionSessionV1:
         project_source = self._verified_remote_source(inspected.project_source)
         engine_source = self._verified_remote_source(inspected.engine_source)
         self._proof = _SourceProofV1(
-            project_source, engine_source, self._clock(),
+            project_source, engine_source,
+            _commit_time(context.project_root, project_source.commit),
         )
 
     def bind(self, snapshot: _AdmissionSnapshotV1) -> None:
@@ -258,9 +313,9 @@ class _AdmissionSessionV1:
             gitlink_commit=proof.engine_source.gitlink_commit,
             source_lock_binding=source_lock.binding,
             issuer_ref="host-docker-admission-v1",
-            evidence_ref="admission-" + secrets.token_hex(12),
+            evidence_ref="admission-" + snapshot.ingress_digest[:24],
             audience_ref="docker/" + snapshot.ingress_digest[:32],
-            challenge_nonce="challenge-" + secrets.token_hex(12),
+            challenge_nonce="challenge-" + snapshot.ingress_digest[24:48],
             verified_at=proof.verified_at,
             expires_at=expires_at,
             key_ref="process-docker-admission-v1",
@@ -337,13 +392,21 @@ class _AdmissionSessionV1:
 
 def _issue_admission_session_v1(
     reader: ScopedGitRemoteReader, clock: Callable[[], str],
+    evidence_seed: str,
 ) -> _AdmissionSessionV1:
-    if type(reader) is not ScopedGitRemoteReader or not callable(clock):
+    if (
+        type(reader) is not ScopedGitRemoteReader or not callable(clock)
+        or type(evidence_seed) is not str
+        or re.fullmatch(r"[0-9a-f]{64}", evidence_seed) is None
+    ):
         raise TypeError("scoped remote reader and clock are required")
     value = object.__new__(_AdmissionSessionV1)
     value._reader = reader
     value._clock = clock
-    value._key = secrets.token_bytes(32)
+    value._key = hashlib.sha256(
+        b"synaptic-docker-admission-evidence/v1\0"
+        + evidence_seed.encode("ascii")
+    ).digest()
     value._proof = None
     value._verified = None
     value._consumed = False
@@ -406,7 +469,10 @@ class DockerAdmissionResolverV1:
             python_executable=profile.python_executable,
             python_executable_digest=profile.python_executable_digest,
             environment=environment,
-            secret_requirements_digest=_sha(b"docker-secret-requirements", b"[]"),
+            secret_requirements_digest=hashlib.sha256(_canonical({
+                "schema_version": "synaptic-docker-secret-requirements/v1",
+                "secrets": [],
+            })).hexdigest(),
             provider_runtime_requirements_digest=profile.digest,
         )
         hyperparameters = snapshot.training_input.hyperparameters.to_dict()
@@ -440,7 +506,7 @@ class DockerAdmissionResolverV1:
                 "configuration_digest": snapshot.destination.configuration_digest,
                 "policy_digest": snapshot.destination.policy.policy_digest,
             },
-            "admission_only": True,
+            "admission_only": False,
         })
         return ResolvedTrainingComponents(
             execution_source=source, execution_context=execution_context,
@@ -452,7 +518,7 @@ class DockerAdmissionResolverV1:
                 profile.accelerators[0], 1, profile.timeout_seconds_maximum,
             ),
             artifact_policy=ArtifactPolicy(
-                snapshot.training_input.artifacts.required_kinds,
+                _ARTIFACT_ROLES,
                 snapshot.training_input.artifacts.retain_checkpoints,
             ),
         )
@@ -500,6 +566,7 @@ def execute_docker_training_admission_v1(
         context = manifest.create_context(engine_root=engine, invocation_cwd=project)
         session = _issue_admission_session_v1(
             remote_reader or ScopedGitRemoteReader(), _utc_now,
+            ingress_digest,
         )
     except BaseException:
         return fail(TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE)
@@ -579,12 +646,232 @@ def execute_docker_training_admission_v1(
             session.verify_plan(plan)
         except BaseException:
             return fail(TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE)
-        result = fail(TrainingRunCommandCodeV2.CAPABILITY_UNSUPPORTED)
+        try:
+            result = _activate_docker_training_v1(
+                plan=plan, source_lock=session._verified.source_lock,
+                snapshot=snapshot, context=context,
+                project_ref=manifest.project_id, clock=_utc_now,
+            )
+        except BaseException:
+            return fail(TrainingRunCommandCodeV2.START_UNAVAILABLE)
         if type(result) is not TrainingRunCommandResultV2:
             return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
         return result
     finally:
         session.close()
+
+
+def _activate_docker_training_v1(
+    *, plan: TrainingPlan, source_lock: SourceLock,
+    snapshot: _AdmissionSnapshotV1, context: ProjectContext,
+    project_ref: str, clock: Callable[[], str], model_inventory: tuple = (),
+):
+    """Prepare or advance one deterministic Docker run by one safe service cut."""
+
+    from synaptic_tuner.api.v1 import TrainingRunRef
+    from synaptic_tuner.api.v1.providers import (
+        ProviderCapabilities, ProviderDescriptor, ProviderRef,
+    )
+    from synaptic_tuner.api.v1.training import AcceleratorDeviceRequestV1
+    from tuner.execution.foundation_v2.canonical import canonical_bytes
+    from tuner.execution.foundation_v2.commands import (
+        CanonicalProviderPayloadV1, build_stage_command, build_submit_command,
+    )
+    from tuner.execution.foundation_v2.executors import (
+        AdapterDescriptorV1, ExecutorDescriptorV1,
+    )
+    from tuner.execution.foundation_v2.references import (
+        ExecutionScopeV1, StagePredecessorV2,
+    )
+    from tuner.execution.providers.docker_provider_v1.model import (
+        DockerArtifactContractV1, DockerImageV1, DockerProfileV1,
+        DockerRootsV1, DockerRuntimeV1, DockerWorkloadV1,
+    )
+    from tuner.execution.providers.docker_provider_v1.preparation import (
+        DockerTrainingPreparationBridgeV1,
+    )
+    from .cli import (
+        TrainingRunCommandCodeV2, TrainingRunCommandResultV2,
+        TrainingRunCommandStatusV2,
+    )
+    from .docker_execution import DockerPreparedRunRequestV1
+    from .docker_execution_state import (
+        DockerRunMutationRecordV1, DockerRunPhaseV1,
+        ProviderPreparationRecordV1,
+    )
+    from .docker_prepared_composition import (
+        DockerPreparedCompositionV1, DockerPreparedControlBuilderV1,
+        compose_docker_prepared_platform_v1,
+    )
+    from .docker_staging import (
+        DockerModelInventoryEntryV1, stage_docker_worker_v1,
+    )
+    from .security import FileHmacAuthenticator
+    from .sqlite_repository import EffectCollision, SqliteTrainingRepository
+
+    if (
+        type(model_inventory) is not tuple
+        or any(type(item) is not DockerModelInventoryEntryV1 for item in model_inventory)
+    ):
+        raise ValueError("prewarmed Docker model inventory is invalid")
+    authenticator = FileHmacAuthenticator.for_docker(
+        context, durable_rows_exist=_docker_durable_rows_exist(context),
+    )
+    staging = stage_docker_worker_v1(
+        plan=plan, source_lock=source_lock, context=context,
+        storage_configuration=snapshot.storage_blob.content,
+        model_inventory=model_inventory,
+    )
+    provider = ProviderRef("docker", snapshot.profile.profile_ref)
+    scope = ExecutionScopeV1("local", snapshot.profile.profile_ref)
+    executor = ExecutorDescriptorV1("docker", "docker-local", "1")
+    adapter = AdapterDescriptorV1("docker", "docker-local", "1")
+    image_ref, image_digest = snapshot.profile.image.rsplit("@", 1)
+    resource_digest = hashlib.sha256(canonical_bytes({
+        "accelerator": plan.resources.accelerator,
+        "accelerator_count": plan.resources.accelerator_count,
+        "timeout_seconds": plan.resources.timeout_seconds,
+    })).hexdigest()
+    quote_digest = hashlib.sha256(canonical_bytes({
+        "schema_version": "synaptic-docker-local-quote/v1",
+        "currency": "USD", "amount": "0",
+    })).hexdigest()
+    secret_digest = hashlib.sha256(canonical_bytes({
+        "schema_version": "synaptic-docker-secret-requirements/v1",
+        "secrets": [],
+    })).hexdigest()
+    bundle = staging.worker_bundle
+    profile = DockerProfileV1.build(
+        provider=provider,
+        descriptor=ProviderDescriptor(
+            "synaptic-provider-descriptor/v1", "docker", "Docker", "1.0.0",
+            ProviderCapabilities(True, True, False, True, True, False),
+        ),
+        scope=scope, executor_descriptor=executor, adapter_descriptor=adapter,
+        image=DockerImageV1(image_ref, image_digest),
+        runtime=DockerRuntimeV1(
+            snapshot.profile.cpu_count, snapshot.profile.memory_bytes_maximum,
+            plan.resources.timeout_seconds,
+            AcceleratorDeviceRequestV1("nvidia", (0,), ("gpu",)),
+        ),
+        workload=DockerWorkloadV1(
+            tuple(bundle.dispatch.argv),
+            tuple(sorted(dict(bundle.dispatch.environment))),
+            bundle.workload_sha256,
+        ),
+        roots=DockerRootsV1(
+            staging.projection.source_stage_ref,
+            staging.projection.artifact_stage_ref,
+        ),
+        artifacts=DockerArtifactContractV1(
+            _ARTIFACT_ROLES, snapshot.profile.maximum_artifact_bytes,
+            snapshot.profile.maximum_total_bytes,
+        ),
+        resource_digest=resource_digest, quote_digest=quote_digest,
+        secret_requirements_digest=secret_digest,
+    )
+    run = TrainingRunRef(source_lock.run_id, project_ref)
+    bridge = DockerTrainingPreparationBridgeV1(profile)
+    source_digest = source_lock.binding.source_lock_digest
+    preparation = bridge.prepare(plan, run, source_digest)
+    prepared = bridge.prepared(
+        preparation=preparation, plan=plan, run=run,
+        source_digest=source_digest,
+    )
+    expected_bundle = bridge._expected(plan, run, source_digest)[2]
+    if expected_bundle != bundle:
+        raise ValueError("staged worker bundle differs from the Docker bridge")
+    payload = CanonicalProviderPayloadV1.build(
+        "docker", "stage-payload/v2", bundle.workload_sha256,
+    )
+    stage_command = build_stage_command(
+        preparation, "docker-stage", payload, executor,
+    )
+    predecessor = StagePredecessorV2(
+        "docker", snapshot.profile.profile_ref, scope.account_ref,
+        scope.namespace_ref, run.project_ref, run.run_id, plan.fingerprint,
+        preparation.preparation_digest, bundle.workload_sha256,
+        stage_command.operation.effect.effect_id,
+        staging.projection.source_manifest_digest,
+        staging.projection.worker_projection_digest,
+    )
+    submit = build_submit_command(
+        preparation, "docker-submit",
+        CanonicalProviderPayloadV1.build(
+            "docker", "submit-payload/v2", bundle.workload_sha256,
+        ),
+        executor, predecessor,
+    )
+    repository = SqliteTrainingRepository.from_context(context, clock=clock)
+    existing_preparation = repository.load_docker_preparation(
+        run.project_ref, run.run_id,
+    )
+    platform = compose_docker_prepared_platform_v1()
+    builder = DockerPreparedControlBuilderV1(
+        authenticator=authenticator, platform=platform,
+    )
+    provisional = ProviderPreparationRecordV1.build(
+        project_ref=run.project_ref, run_id=run.run_id,
+        plan_fingerprint=plan.fingerprint,
+        effect_id=submit.operation.effect.effect_id,
+        source_lock_digest=source_digest,
+        prepared_docker_plan_digest=prepared.digest,
+        endpoint_descriptor_digest=platform.endpoint_descriptor_digest,
+        cli_policy_digest=platform.cli_policy_digest,
+        destination_ref=snapshot.destination.destination_ref,
+        destination_declaration_digest=artifact_destination_declaration_digest_v1(
+            snapshot.destination
+        ),
+        submit_command_bytes=submit.canonical_bytes,
+        stage=staging.projection, prepared_at=source_lock.created_at,
+    )
+    request = DockerPreparedRunRequestV1(
+        run.project_ref, run.run_id, provisional, prepared, staging,
+    )
+    composition = DockerPreparedCompositionV1(
+        repository=repository, builder=builder, clock=clock,
+    )
+    admission = composition.prepare_admission(request)
+    initial = DockerRunMutationRecordV1.initial(
+        provisional, admission.create_mutation,
+    )
+    if existing_preparation is None:
+        try:
+            repository.create_docker_prepared_run(provisional, initial)
+        except EffectCollision:
+            existing_preparation = repository.load_docker_preparation(
+                run.project_ref, run.run_id,
+            )
+    if existing_preparation is not None and existing_preparation != provisional:
+        raise ValueError("durable Docker command differs from replay")
+    current = repository.load_docker_run_mutation(run.project_ref, run.run_id)
+    if current is None:
+        raise ValueError("durable Docker aggregate is unavailable")
+    if current.phase in {
+        DockerRunPhaseV1.CREATE_ADMITTED, DockerRunPhaseV1.CREATE_ATTEMPTED,
+        DockerRunPhaseV1.CREATED,
+    }:
+        outcome = composition.submit(request)
+    else:
+        outcome = composition.reconcile(request)
+    submitted = (
+        outcome.container_ref is not None and outcome.submitted_at is not None
+    )
+    code = (
+        TrainingRunCommandCodeV2.SUBMITTED if submitted
+        else TrainingRunCommandCodeV2.RECONCILE_REQUIRED
+    )
+    return TrainingRunCommandResultV2(
+        "synaptic-training-run-command-result/v2",
+        TrainingRunCommandStatusV2.SUBMITTED if submitted
+        else TrainingRunCommandStatusV2.RECONCILE_REQUIRED,
+        code, "docker", snapshot.config_ref,
+        snapshot.destination.destination_ref, snapshot.input_digest,
+        run.project_ref, run.run_id, plan.fingerprint,
+        submit.operation.effect.effect_id,
+        outcome.container_ref if submitted else None,
+        outcome.submitted_at if submitted else None,
+    )
 
 
 __all__ = ["DockerAdmissionResolverV1", "execute_docker_training_admission_v1"]

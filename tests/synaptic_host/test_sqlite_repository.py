@@ -160,11 +160,6 @@ def repository(tmp_path: Path) -> SqliteTrainingRepository:
 def test_docker_old_preparation_shape_fails_closed_on_load(tmp_path: Path) -> None:
     value = repository(tmp_path)
     preparation, mutation = _docker_pair()
-    value.create(initial_record(
-        project_ref=preparation.project_ref,
-        run_id=preparation.run_id,
-        occurred_at=NOW,
-    ))
     value.create_docker_prepared_run(preparation, mutation)
     document = json.loads(preparation.canonical_bytes)
     del document["submit_command_base64"]
@@ -856,13 +851,6 @@ def test_docker_preparation_and_initial_create_are_atomic_and_single_claim(
 ) -> None:
     value = repository(tmp_path)
     preparation, initial = _docker_pair()
-    value.create(
-        initial_record(
-            project_ref=preparation.project_ref,
-            run_id=preparation.run_id,
-            occurred_at=NOW,
-        )
-    )
 
     def create_once(_: int) -> str:
         try:
@@ -876,18 +864,56 @@ def test_docker_preparation_and_initial_create_are_atomic_and_single_claim(
     assert sorted(outcomes) == ["collision", "created"]
     assert value.load_docker_preparation("ehr", "docker-run-1") == preparation
     assert value.load_docker_run_mutation("ehr", "docker-run-1") == initial
+    assert value.load("ehr", "docker-run-1") == initial_record(
+        project_ref=preparation.project_ref,
+        run_id=preparation.run_id,
+        occurred_at=preparation.prepared_at,
+    )
+
+
+def test_docker_atomic_create_rolls_back_all_three_rows(tmp_path: Path) -> None:
+    value = repository(tmp_path)
+    preparation, initial = _docker_pair()
+    with value._transaction() as connection:
+        connection.execute(
+            """CREATE TRIGGER reject_docker_preparation
+               BEFORE INSERT ON provider_preparations
+               BEGIN SELECT RAISE(ABORT, 'reject'); END"""
+        )
+    with pytest.raises(EffectCollision):
+        value.create_docker_prepared_run(preparation, initial)
+    assert value.load(preparation.project_ref, preparation.run_id) is None
+    assert value.load_docker_preparation(
+        preparation.project_ref, preparation.run_id
+    ) is None
+    assert value.load_docker_run_mutation(
+        preparation.project_ref, preparation.run_id
+    ) is None
+
+
+def test_docker_atomic_create_survives_repository_reopen(tmp_path: Path) -> None:
+    value = repository(tmp_path)
+    preparation, initial = _docker_pair()
+    value.create_docker_prepared_run(preparation, initial)
+    reopened = SqliteTrainingRepository(
+        value.database_path, clock=lambda: NOW,
+    )
+    assert reopened.load(preparation.project_ref, preparation.run_id) == initial_record(
+        project_ref=preparation.project_ref,
+        run_id=preparation.run_id,
+        occurred_at=preparation.prepared_at,
+    )
+    assert reopened.load_docker_preparation(
+        preparation.project_ref, preparation.run_id
+    ) == preparation
+    assert reopened.load_docker_run_mutation(
+        preparation.project_ref, preparation.run_id
+    ) == initial
 
 
 def test_docker_mutation_cas_binds_revision_and_previous_digest(tmp_path: Path) -> None:
     value = repository(tmp_path)
     preparation, initial = _docker_pair()
-    value.create(
-        initial_record(
-            project_ref=preparation.project_ref,
-            run_id=preparation.run_id,
-            occurred_at=NOW,
-        )
-    )
     value.create_docker_prepared_run(preparation, initial)
     admitted = initial.create_mutation.content
     attempted_low_level = DockerMutationRecordV1.build(
@@ -939,11 +965,6 @@ def test_docker_cas_rejects_low_level_envelope_discontinuity_atomically(
 ) -> None:
     value = repository(tmp_path)
     preparation, initial = _docker_pair()
-    value.create(initial_record(
-        project_ref=preparation.project_ref,
-        run_id=preparation.run_id,
-        occurred_at=NOW,
-    ))
     value.create_docker_prepared_run(preparation, initial)
     admitted = initial.create_mutation.content
     attempted_content = DockerMutationRecordV1.build(

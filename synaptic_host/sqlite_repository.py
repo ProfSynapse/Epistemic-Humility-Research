@@ -36,6 +36,7 @@ from synaptic_tuner.api.v1.modal import (
     ModalPreparedRunV1,
     ModalTrainingRepository,
 )
+from tuner.execution.lifecycle import initial_record
 
 from .docker_execution_state import (
     DockerRunMutationRecordV1,
@@ -796,8 +797,24 @@ class SqliteTrainingRepository(ModalTrainingRepository):
             raise ValueError("Docker prepared run pair is invalid")
         preparation = detached_preparation
         initial_mutation = detached_mutation
+        lifecycle = initial_record(
+            project_ref=preparation.project_ref,
+            run_id=preparation.run_id,
+            occurred_at=preparation.prepared_at,
+        )
         try:
             with self._transaction() as connection:
+                connection.execute(
+                    """INSERT INTO lifecycle_records(
+                           project_ref, run_id, revision, record_json
+                       ) VALUES (?, ?, ?, ?)""",
+                    (
+                        lifecycle.project_ref,
+                        lifecycle.run_id,
+                        lifecycle.revision,
+                        lifecycle.canonical_bytes,
+                    ),
+                )
                 connection.execute(
                     """INSERT INTO provider_preparations(
                            project_ref, run_id, plan_fingerprint,

@@ -28,7 +28,7 @@ from synaptic_host.artifact_destinations import (
 
 ROOT = Path(__file__).resolve().parents[2]
 ENGINE = ROOT / "synaptic-tuner"
-CONFIG_REF = "project://training/smokes/modal-sft.json"
+CONFIG_REF = "project://training/smokes/docker-sft.json"
 PROVENANCE_KEYS = (
     "training_input_digest",
     "training_contract_identity_digest",
@@ -55,11 +55,32 @@ def _isolated_engine_import_state():
             or name == "tuner" or name.startswith("tuner.")
             or name == "synaptic_host.docker_staging"
             or name == "synaptic_host.docker_training"
+            or name == "synaptic_host.docker_prepared_composition"
+            or name == "synaptic_host.security"
+            or name == "synaptic_host.sqlite_repository"
+            or name == "synaptic_host.docker_v1"
+            or name.startswith("synaptic_host.docker_v1.")
+            or name in {
+                "synaptic_host.docker_execution",
+                "synaptic_host.docker_execution_state",
+                "synaptic_host.docker_v1.authority",
+                "synaptic_host.docker_v1.binding",
+                "synaptic_host.docker_v1.control",
+                "synaptic_host.docker_v1.control_contract",
+                "synaptic_host.docker_v1.create",
+                "synaptic_host.docker_v1.memory",
+                "synaptic_host.docker_v1.prepared",
+                "synaptic_host.docker_v1.start",
+            }
         )
     }
     for name in original:
         sys.modules.pop(name, None)
-    for attribute in ("docker_staging", "docker_training"):
+    for attribute in (
+        "docker_staging", "docker_training", "docker_prepared_composition",
+        "docker_execution", "docker_execution_state", "security",
+        "sqlite_repository", "docker_v1",
+    ):
         if hasattr(host_package, attribute):
             delattr(host_package, attribute)
     cli._ENGINE_CONTRACT_CACHE = None
@@ -72,10 +93,31 @@ def _isolated_engine_import_state():
                 or name == "tuner" or name.startswith("tuner.")
                 or name == "synaptic_host.docker_staging"
                 or name == "synaptic_host.docker_training"
+                or name == "synaptic_host.docker_prepared_composition"
+                or name == "synaptic_host.security"
+                or name == "synaptic_host.sqlite_repository"
+                or name == "synaptic_host.docker_v1"
+                or name.startswith("synaptic_host.docker_v1.")
+                or name in {
+                    "synaptic_host.docker_execution",
+                    "synaptic_host.docker_execution_state",
+                    "synaptic_host.docker_v1.authority",
+                    "synaptic_host.docker_v1.binding",
+                    "synaptic_host.docker_v1.control",
+                    "synaptic_host.docker_v1.control_contract",
+                    "synaptic_host.docker_v1.create",
+                    "synaptic_host.docker_v1.memory",
+                    "synaptic_host.docker_v1.prepared",
+                    "synaptic_host.docker_v1.start",
+                }
             ):
                 sys.modules.pop(name, None)
         sys.modules.update(original)
-        for attribute in ("docker_staging", "docker_training"):
+        for attribute in (
+            "docker_staging", "docker_training", "docker_prepared_composition",
+            "docker_execution", "docker_execution_state", "security",
+            "sqlite_repository", "docker_v1",
+        ):
             module = original.get(f"synaptic_host.{attribute}")
             if module is not None:
                 setattr(host_package, attribute, module)
@@ -132,7 +174,7 @@ def clean_project(tmp_path_factory):
     _git(project, "config", "user.email", "docker-admission@example.invalid")
     _git(project, "config", "user.name", "Docker Admission Test")
     copies = (
-        "training/smokes/modal-sft.json",
+        "training/smokes/docker-sft.json",
         "training/fixtures/modal-smoke.jsonl",
         "training/providers/docker.json",
         "training/artifacts.json",
@@ -143,6 +185,7 @@ def clean_project(tmp_path_factory):
         target = project / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / relative, target)
+    (project / ".gitignore").write_text(".synaptic/\n", encoding="utf-8")
     (project / ".gitmodules").write_text(
         '[submodule "synaptic-tuner"]\n'
         "\tpath = synaptic-tuner\n"
@@ -208,10 +251,26 @@ def _ingress(project: Path, engine: Path) -> TrainingRunIngressV1:
     return value
 
 
-def test_checked_in_profile_is_closed_and_declares_no_sft_backend() -> None:
+def _reconcile_result(*, plan, snapshot, project_ref, **_kwargs):
+    from synaptic_host.cli import TrainingRunCommandResultV2
+
+    return TrainingRunCommandResultV2(
+        "synaptic-training-run-command-result/v2",
+        TrainingRunCommandStatusV2.RECONCILE_REQUIRED,
+        TrainingRunCommandCodeV2.RECONCILE_REQUIRED,
+        "docker", snapshot.config_ref, snapshot.destination.destination_ref,
+        snapshot.input_digest, project_ref, plan.execution_source.run_id,
+        plan.fingerprint, "effect", None, None,
+    )
+
+
+def test_checked_in_profile_activates_only_nvidia_sft() -> None:
     profile = DockerProviderProfileV1.load(project_root=ROOT)
-    assert profile.supported_methods == ()
-    assert profile.supports("sft") is False
+    assert profile.profile_ref == "docker-local-nvidia-sft-v1"
+    assert profile.supported_methods == ("sft",)
+    assert profile.supports("sft") is True
+    assert profile.accelerators == ("nvidia",)
+    assert profile.accelerator_count_maximum == 1
     assert profile.workload_transport == "sealed_file"
     assert profile.source_mode == "dual_clone_read_only"
     assert profile.network_mode == "none"
@@ -222,7 +281,7 @@ def test_outer_main_runs_actual_clean_superproject_path(
     monkeypatch, capsys, clean_project,
 ) -> None:
     from synaptic_host import __main__ as entry
-    from synaptic_host.security import ScopedGitRemoteReader
+    from synaptic_host.security import FileHmacAuthenticator, ScopedGitRemoteReader
 
     project = clean_project["project"]
     monkeypatch.setattr(entry, "__file__", str(project / "synaptic_host/__main__.py"))
@@ -230,18 +289,22 @@ def test_outer_main_runs_actual_clean_superproject_path(
         ScopedGitRemoteReader, "_run",
         staticmethod(clean_project["transport"]),
     )
+    from synaptic_host import docker_training
+    monkeypatch.setattr(
+        docker_training, "_activate_docker_training_v1", _reconcile_result,
+    )
     code = entry.main([
         "training", "run", "--provider", "docker",
         "--config", CONFIG_REF, "--destination", "local-default",
     ])
     result = json.loads(capsys.readouterr().out)
-    assert code == 2
-    assert result["code"] == "CAPABILITY_UNSUPPORTED"
-    assert result["status"] == "rejected"
+    assert code == 8
+    assert result["code"] == "RECONCILE_REQUIRED"
+    assert result["status"] == "reconcile_required"
     assert not (project / ".synaptic").exists()
 
 
-def test_real_clean_superproject_compiles_canonical_plan_and_rejects_without_effects(
+def test_real_clean_superproject_compiles_canonical_plan_then_activates(
     monkeypatch, clean_project,
 ) -> None:
     project = clean_project["project"]
@@ -254,10 +317,7 @@ def test_real_clean_superproject_compiles_canonical_plan_and_rejects_without_eff
     assert swapped.code is TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE
 
     from synaptic_host import docker_training
-    from synaptic_host.docker_v1 import composition as docker_composition
-    from synaptic_host.local_artifact_destination import LocalArtifactDestinationV1
-    from synaptic_host.security import ScopedGitRemoteReader
-    from synaptic_host.sqlite_repository import SqliteTrainingRepository
+    from synaptic_host.security import FileHmacAuthenticator, ScopedGitRemoteReader
     from synaptic_tuner.api.v1 import (
         CanonicalDocument, SourceLock, TrainingPlan, TrainingRequest,
     )
@@ -297,25 +357,22 @@ def test_real_clean_superproject_compiles_canonical_plan_and_rejects_without_eff
         observed["validated"] = (source, source_lock, dict(expected))
         return original_validator(source, source_lock, expected)
 
-    forbidden = lambda *_args, **_kwargs: pytest.fail(
-        "admission crossed a durable or provider effect boundary"
-    )
     monkeypatch.setattr(SourceLock, "__post_init__", record_lock)
     monkeypatch.setattr(docker_training, "compile_training_plan_v1", record_compile)
     monkeypatch.setattr(
         docker_training, "validate_source_lock_provenance_v1", record_validation,
     )
-    monkeypatch.setattr(docker_composition, "compose_docker_host_v1", forbidden)
-    monkeypatch.setattr(SqliteTrainingRepository, "from_context", forbidden)
-    monkeypatch.setattr(LocalArtifactDestinationV1, "publish_once", forbidden)
+    monkeypatch.setattr(
+        docker_training, "_activate_docker_training_v1", _reconcile_result,
+    )
 
     result = docker_training.execute_docker_training_admission_v1(
         ingress, project_root=project, engine_root=engine,
         remote_reader=ScopedGitRemoteReader(runner=clean_project["transport"]),
     )
 
-    assert result.code is TrainingRunCommandCodeV2.CAPABILITY_UNSUPPORTED, observed
-    assert result.status is TrainingRunCommandStatusV2.REJECTED
+    assert result.code is TrainingRunCommandCodeV2.RECONCILE_REQUIRED, observed
+    assert result.status is TrainingRunCommandStatusV2.RECONCILE_REQUIRED
     assert result.input_digest == ingress.input_digest
     assert type(observed["plan"]) is TrainingPlan
     assert type(observed["plan"]).__module__ == "synaptic_tuner.api.v1.training"
@@ -326,7 +383,7 @@ def test_real_clean_superproject_compiles_canonical_plan_and_rejects_without_eff
     assert tuple(item["kind"] for item in lock.inputs) == INPUT_KINDS
     assert all(tuple(item) == INPUT_FIELDS for item in lock.inputs)
     assert tuple(item["path"] for item in lock.inputs) == (
-        "training/smokes/modal-sft.json",
+        "training/smokes/docker-sft.json",
         "training/fixtures/modal-smoke.jsonl",
     )
     assert tuple(item["ref"] for item in lock.inputs) == (
@@ -473,7 +530,7 @@ def test_clean_admission_stage_materializes_exact_two_runtime_roots(
 ) -> None:
     docker_training = importlib.import_module("synaptic_host.docker_training")
     docker_staging = importlib.import_module("synaptic_host.docker_staging")
-    from synaptic_host.security import ScopedGitRemoteReader
+    from synaptic_host.security import FileHmacAuthenticator, ScopedGitRemoteReader
     from tuner.project.manifest import load_project_manifest
 
     observed = {}
@@ -502,6 +559,9 @@ def test_clean_admission_stage_materializes_exact_two_runtime_roots(
         return original_artifacts(root, inventory)
 
     monkeypatch.setattr(docker_training, "compile_training_plan_v1", capture)
+    monkeypatch.setattr(
+        docker_training, "_activate_docker_training_v1", _reconcile_result,
+    )
     monkeypatch.setattr(docker_staging, "_verify_reuse", verify_replay)
     monkeypatch.setattr(
         docker_staging, "_verify_artifact_topology", verify_artifacts
@@ -513,10 +573,13 @@ def test_clean_admission_stage_materializes_exact_two_runtime_roots(
         engine_root=clean_project["engine"],
         remote_reader=ScopedGitRemoteReader(runner=clean_project["transport"]),
     )
-    assert result.code is TrainingRunCommandCodeV2.CAPABILITY_UNSUPPORTED
+    assert result.code is TrainingRunCommandCodeV2.RECONCILE_REQUIRED
     manifest = load_project_manifest(project / "synaptic.yaml")
     context = manifest.create_context(
         engine_root=clean_project["engine"], invocation_cwd=project,
+    )
+    FileHmacAuthenticator.for_docker(
+        context, durable_rows_exist=False,
     )
     staged = docker_staging.stage_docker_worker_v1(
         plan=observed["plan"],
@@ -635,7 +698,8 @@ sys.path.insert(0, {str(ENGINE)!r})
 from synaptic_host.__main__ import main
 raise SystemExit(main([
     'training', 'run', '--provider', 'docker',
-    '--config', {CONFIG_REF!r}, '--destination', 'local-default',
+    '--config', 'project://training/smokes/modal-sft.json',
+    '--destination', 'local-default',
 ]))
 """
     completed = subprocess.run(
@@ -645,3 +709,112 @@ raise SystemExit(main([
     assert completed.returncode == 4
     assert completed.stderr == ""
     assert json.loads(completed.stdout)["code"] == "RESOLUTION_UNAVAILABLE"
+
+
+def test_activation_stages_bridge_bundle_and_persists_initial_pair(
+    monkeypatch, clean_project,
+) -> None:
+    from synaptic_host import docker_prepared_composition, docker_training
+    from synaptic_host.docker_execution import (
+        DockerPreparedRunOutcomeV1, DockerPreparedRunServiceV1,
+    )
+    from synaptic_host.docker_prepared_composition import DockerPreparedPlatformV1
+    from synaptic_host.docker_v1.model import (
+        DockerCLIEnvironmentV1, DockerCLIPolicyV1,
+        DockerLocalEndpointDescriptorV1,
+    )
+    from synaptic_host.security import ScopedGitRemoteReader
+    from synaptic_host.sqlite_repository import SqliteTrainingRepository
+    from tuner.project.manifest import load_project_manifest
+
+    class PreparationOnlyRunner:
+        def create_container(self, *_args, **_kwargs):
+            raise AssertionError("bounded activation crossed the create cut")
+
+        def start_container(self, *_args, **_kwargs):
+            raise AssertionError("bounded activation crossed the start cut")
+
+        def inspect_container(self, *_args, **_kwargs):
+            raise AssertionError("bounded activation inspected Docker")
+
+        def inventory_exact_name(self, *_args, **_kwargs):
+            raise AssertionError("bounded activation inventoried Docker")
+
+    endpoint = DockerLocalEndpointDescriptorV1.build(
+        "desktop-linux", "npipe:////./pipe/dockerDesktopLinuxEngine", False,
+    )
+    environment = DockerCLIEnvironmentV1.build((
+        ("SystemRoot", "C:\\Windows"), ("TEMP", "C:\\Temp"),
+        ("TMP", "C:\\Temp"), ("WINDIR", "C:\\Windows"),
+    ))
+    policy = DockerCLIPolicyV1.build(
+        "/Docker/host/bin/docker.exe", endpoint, environment,
+    )
+    platform = DockerPreparedPlatformV1(
+        PreparationOnlyRunner(), endpoint, policy, "Ubuntu-22.04",
+    )
+    monkeypatch.setattr(
+        docker_prepared_composition, "compose_docker_prepared_platform_v1",
+        lambda **_kwargs: platform,
+    )
+
+    def stop_at_admitted(self, request):
+        record = self._repository.load_docker_run_mutation(
+            request.project_ref, request.run_id,
+        )
+        return DockerPreparedRunOutcomeV1.from_record(record)
+
+    monkeypatch.setattr(DockerPreparedRunServiceV1, "submit", stop_at_admitted)
+    activation_error = {}
+    original_activate = docker_training._activate_docker_training_v1
+
+    def activate(**kwargs):
+        try:
+            return original_activate(**kwargs)
+        except BaseException as error:
+            activation_error["error"] = repr(error)
+            raise
+
+    monkeypatch.setattr(docker_training, "_activate_docker_training_v1", activate)
+    project = clean_project["project"]
+    result = docker_training.execute_docker_training_admission_v1(
+        clean_project["ingresses"][0], project_root=project,
+        engine_root=clean_project["engine"],
+        remote_reader=ScopedGitRemoteReader(runner=clean_project["transport"]),
+    )
+    assert result.code is TrainingRunCommandCodeV2.RECONCILE_REQUIRED, activation_error
+    context = load_project_manifest(project / "synaptic.yaml").create_context(
+        engine_root=clean_project["engine"], invocation_cwd=project,
+    )
+    repository = SqliteTrainingRepository.from_context(
+        context, clock=lambda: "2026-09-01T12:00:00Z",
+    )
+    preparation = repository.load_docker_preparation(
+        result.project_ref, result.run_id,
+    )
+    aggregate = repository.load_docker_run_mutation(
+        result.project_ref, result.run_id,
+    )
+    assert preparation.submit_command_digest
+    assert preparation.stage.source_stage_ref.startswith("host-stage://")
+    assert aggregate.phase.value == "CREATE_ADMITTED"
+    assert aggregate.preparation_digest == preparation.preparation_digest
+    replay = docker_training.execute_docker_training_admission_v1(
+        clean_project["ingresses"][0], project_root=project,
+        engine_root=clean_project["engine"],
+        remote_reader=ScopedGitRemoteReader(runner=clean_project["transport"]),
+    )
+    assert replay.code is TrainingRunCommandCodeV2.RECONCILE_REQUIRED, activation_error
+    assert (
+        replay.project_ref, replay.run_id, replay.plan_fingerprint,
+        replay.effect_id,
+    ) == (
+        result.project_ref, result.run_id, result.plan_fingerprint,
+        result.effect_id,
+    )
+    assert repository.load_docker_preparation(
+        result.project_ref, result.run_id,
+    ) == preparation
+    assert repository.load_docker_run_mutation(
+        result.project_ref, result.run_id,
+    ) == aggregate

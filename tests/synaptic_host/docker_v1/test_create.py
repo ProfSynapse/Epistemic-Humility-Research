@@ -18,6 +18,7 @@ from synaptic_host.docker_v1.control_contract import (
     DockerAdmissionDispositionV1, DockerAdmissionResultV1,
     DockerCASDispositionV1, DockerCASResultV1,
     DockerControlContractErrorV1, DockerCreateVerificationV1,
+    DockerCreateAdmissionV1,
     DockerExpectedCreatePublishDispositionV1,
     DockerExpectedCreatePublishResultV1,
     DockerMutationAdmissionRequestV1, DockerMutationCASRequestV1,
@@ -525,6 +526,33 @@ def _call(host):
     )
 
 
+def _prepare_call(host):
+    return host.prepare_admission(
+        labels=HARNESS_LABELS,
+        image=DockerImageV1(
+            "image", HARNESS_EXPECTED.content.create_specification.image_digest
+        ),
+        runtime=DockerRuntimeV1(
+            1, 1024, 60, AcceleratorDeviceRequestV1("cpu", (), ())
+        ),
+        workload=DockerWorkloadV1(("x",), ("TOKEN",), SHA),
+        source_ref="source", artifact_ref="artifact",
+        working_directory="/artifacts/tmp",
+    )
+
+
+def test_prepare_admission_is_effect_free_and_matches_create_candidate():
+    host, events, invocation = _transaction_host()
+    admission = _prepare_call(host)
+    assert type(admission) is DockerCreateAdmissionV1
+    assert admission.expected_create == HARNESS_EXPECTED
+    assert admission.create_mutation == _record(
+        HARNESS_EXPECTED, DockerMutationPhaseV1.ADMITTED
+    )
+    assert events == []
+    assert invocation.calls == 0
+
+
 def test_create_happy_path_has_exact_transaction_order_and_one_create():
     host, events, invocation = _transaction_host()
     result = _call(host)
@@ -639,7 +667,7 @@ def test_create_authority_pin_swap_after_construction_fails_before_admit():
     host._record_authority.key_ref = "changed"
     result = _call(host)
     assert result.disposition is DockerCreateDispositionV1.INDETERMINATE
-    assert events == ["publish"]
+    assert events == []
     assert invocation.calls == 0
 
 

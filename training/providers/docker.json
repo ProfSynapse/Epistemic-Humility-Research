@@ -1,6 +1,6 @@
 {
   "schema_version": "synaptic-docker-host/v1",
-  "profile_ref": "docker-local-admission-v1",
+  "profile_ref": "docker-local-nvidia-sft-v1",
   "runtime": {
     "image": "unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update@sha256:5266c57be21059bfb407d80dc2f448868a5c2e2dbe7b2aa27780f48b48cbec39",
     "dependency_lock_digest": "8273b49a3b613bed82905ac349d2028935269c4d369dd5781a5eb0bad23b874e",
@@ -13,13 +13,15 @@
     "load_in_4bit": false
   },
   "capabilities": {
-    "supported_methods": [],
+    "supported_methods": [
+      "sft"
+    ],
     "workload_transport": "sealed_file",
     "source_mode": "dual_clone_read_only"
   },
   "accelerator": {
     "allowed": [
-      "cpu"
+      "nvidia"
     ],
     "count_maximum": 1
   },

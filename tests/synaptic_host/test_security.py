@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import os
+import stat
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -15,6 +17,8 @@ from synaptic_host.security import (
 )
 
 NOW = "2026-08-26T12:00:00Z"
+POSIX_ONLY = pytest.mark.skipif(os.name == "nt", reason="POSIX descriptor path")
+WINDOWS_ONLY = pytest.mark.skipif(os.name != "nt", reason="Windows NTFS path")
 
 
 def context(tmp_path: Path) -> ProjectContext:
@@ -42,6 +46,47 @@ def test_host_hmac_key_is_private_stable_and_remote_compatible(tmp_path: Path) -
     assert not value.verify("purpose/v1", b"other", tag, "modal-evidence-v1")
 
 
+def test_docker_hmac_key_is_fixed_stable_and_refuses_rotation(tmp_path: Path) -> None:
+    project_context = context(tmp_path)
+    first = FileHmacAuthenticator.for_docker(
+        project_context, durable_rows_exist=False,
+    )
+    original = first.encoded_key
+    assert first.key_path == (
+        project_context.state_root / "docker" / "control-hmac.key"
+    ).resolve(strict=False)
+    assert first.key_ref == "docker-control-v1"
+    second = FileHmacAuthenticator.for_docker(
+        project_context, durable_rows_exist=True,
+    )
+    assert second.encoded_key == original
+
+    first.key_path.unlink()
+    with pytest.raises(ValueError, match="missing for durable runs"):
+        FileHmacAuthenticator.for_docker(
+            project_context, durable_rows_exist=True,
+        )
+
+
+def test_docker_hmac_key_rejects_linked_directory(
+    tmp_path: Path,
+) -> None:
+    project_context = context(tmp_path)
+    target = tmp_path / "foreign"
+    target.mkdir()
+    docker_directory = project_context.state_root / "docker"
+    docker_directory.parent.mkdir(parents=True)
+    try:
+        docker_directory.symlink_to(target, target_is_directory=True)
+    except OSError:
+        pytest.skip("directory symlinks are unavailable")
+    with pytest.raises(ValueError):
+        FileHmacAuthenticator.for_docker(
+            project_context, durable_rows_exist=False,
+        )
+
+
+@POSIX_ONLY
 def test_initialize_uses_binary_exclusive_create_and_preserves_lf_bytes(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -68,8 +113,9 @@ def test_initialize_uses_binary_exclusive_create_and_preserves_lf_bytes(
     value.initialize()
 
     assert value.key_path.read_bytes() == generated
-    assert len(seen) == 1
-    flags, mode = seen[0]
+    creates = tuple(entry for entry in seen if entry[0] & os.O_CREAT)
+    assert len(creates) == 1
+    flags, mode = creates[0]
     assert flags & binary_flag
     assert flags & os.O_WRONLY
     assert flags & os.O_CREAT
@@ -77,6 +123,7 @@ def test_initialize_uses_binary_exclusive_create_and_preserves_lf_bytes(
     assert mode == 0o600
 
 
+@POSIX_ONLY
 def test_initialize_completes_short_writes(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -100,6 +147,7 @@ def test_initialize_completes_short_writes(
 
 
 @pytest.mark.parametrize("failure", ["zero", "raised"])
+@POSIX_ONLY
 def test_initialize_cleans_up_write_failure_and_can_retry(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str
 ) -> None:
@@ -127,6 +175,7 @@ def test_initialize_cleans_up_write_failure_and_can_retry(
 
 
 @pytest.mark.parametrize("failure", ["generation", "fsync", "close", "validation"])
+@POSIX_ONLY
 def test_initialize_cleans_up_post_create_failure_and_can_retry(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str
 ) -> None:
@@ -160,8 +209,9 @@ def test_initialize_cleans_up_post_create_failure_and_can_retry(
 
         def fail_once(descriptor):
             nonlocal failed
+            metadata = os.fstat(descriptor)
             real_operation(descriptor)
-            if not failed:
+            if not failed and stat.S_ISREG(metadata.st_mode):
                 failed = True
                 raise OSError("synthetic close failure")
 
@@ -186,6 +236,7 @@ def test_initialize_cleans_up_post_create_failure_and_can_retry(
     assert len(value.key_path.read_bytes()) == 32
 
 
+@POSIX_ONLY
 def test_initialize_preserves_replacement_when_close_fails(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -195,7 +246,10 @@ def test_initialize_preserves_replacement_when_close_fails(
     real_close = os.close
 
     def replace_then_fail(descriptor):
+        metadata = os.fstat(descriptor)
         real_close(descriptor)
+        if not stat.S_ISREG(metadata.st_mode):
+            return
         replacement.write_bytes(replacement_bytes)
         os.replace(replacement, value.key_path)
         raise OSError("synthetic close failure")
@@ -208,6 +262,7 @@ def test_initialize_preserves_replacement_when_close_fails(
     assert value.key_path.read_bytes() == replacement_bytes
 
 
+@POSIX_ONLY
 def test_initialize_rejects_different_valid_replacement_without_deleting_it(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -216,16 +271,22 @@ def test_initialize_rejects_different_valid_replacement_without_deleting_it(
     replacement_bytes = b"r" * 32
     replacement = tmp_path / "replacement.key"
     real_close = os.close
+    replaced = False
 
     def replace_after_close(descriptor):
+        nonlocal replaced
+        metadata = os.fstat(descriptor)
         real_close(descriptor)
+        if not stat.S_ISREG(metadata.st_mode) or replaced:
+            return
+        replaced = True
         replacement.write_bytes(replacement_bytes)
         os.replace(replacement, value.key_path)
 
     monkeypatch.setattr(security.secrets, "token_bytes", lambda size: generated)
     monkeypatch.setattr(security.os, "close", replace_after_close)
 
-    with pytest.raises(ValueError, match="publication failed") as caught:
+    with pytest.raises(ValueError, match="private storage") as caught:
         value.initialize()
 
     assert generated.hex() not in str(caught.value)
@@ -233,6 +294,7 @@ def test_initialize_rejects_different_valid_replacement_without_deleting_it(
     assert value.key_path.read_bytes() == replacement_bytes
 
 
+@POSIX_ONLY
 def test_initialize_preserves_primary_error_when_close_and_cleanup_fail(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -243,8 +305,10 @@ def test_initialize_preserves_primary_error_when_close_and_cleanup_fail(
         raise OSError("primary write failure")
 
     def close_then_fail(descriptor):
+        metadata = os.fstat(descriptor)
         real_close(descriptor)
-        raise OSError("secondary close failure")
+        if stat.S_ISREG(metadata.st_mode):
+            raise OSError("secondary close failure")
 
     def fail_unlink(path):
         raise OSError("secondary cleanup failure")
@@ -261,15 +325,18 @@ def test_initialize_preserves_primary_error_when_close_and_cleanup_fail(
 
 
 @pytest.mark.parametrize("existing", ["valid", "malformed", "directory"])
+@POSIX_ONLY
 def test_initialize_never_removes_a_preexisting_path(
     tmp_path: Path, existing: str
 ) -> None:
     value = authenticator(tmp_path)
     value.key_path.parent.mkdir(parents=True)
+    os.chmod(value.key_path.parent, 0o700)
     if existing == "directory":
         value.key_path.mkdir()
     else:
         value.key_path.write_bytes(b"v" * 32 if existing == "valid" else b"bad")
+        os.chmod(value.key_path, 0o600)
 
     if existing == "valid":
         value.initialize()
@@ -280,9 +347,11 @@ def test_initialize_never_removes_a_preexisting_path(
         assert value.key_path.exists()
 
 
+@POSIX_ONLY
 def test_initialize_never_removes_a_preexisting_symlink(tmp_path: Path) -> None:
     value = authenticator(tmp_path)
     value.key_path.parent.mkdir(parents=True)
+    os.chmod(value.key_path.parent, 0o700)
     target = tmp_path / "target.key"
     target.write_bytes(b"t" * 32)
     try:
@@ -290,7 +359,7 @@ def test_initialize_never_removes_a_preexisting_symlink(tmp_path: Path) -> None:
     except OSError as error:
         pytest.skip(f"symlink creation unavailable: {error}")
 
-    with pytest.raises(ValueError, match="regular file"):
+    with pytest.raises(ValueError, match="private storage"):
         value.initialize()
 
     assert value.key_path.is_symlink()
@@ -318,6 +387,152 @@ def test_concurrent_initialization_never_corrupts_or_removes_published_key(
         for outcome in outcomes
     )
     assert len(value.key_path.read_bytes()) == 32
+
+
+def test_private_storage_property_and_every_key_operation_fail_closed_after_drift(
+    tmp_path: Path,
+) -> None:
+    value = authenticator(tmp_path)
+    value.initialize()
+    assert value.private_storage_verified is True
+    tag = value.sign("purpose/v1", b"payload", "test-evidence-v1")
+    value.key_path.write_bytes(b"short")
+
+    with pytest.raises(ValueError, match="private storage"):
+        _ = value.encoded_key
+    with pytest.raises(ValueError, match="private storage"):
+        value.sign("purpose/v1", b"payload", "test-evidence-v1")
+    with pytest.raises(ValueError, match="private storage"):
+        value.verify("purpose/v1", b"payload", tag, "test-evidence-v1")
+    with pytest.raises(ValueError, match="private storage"):
+        value.verify("purpose/v1", b"payload", object(), "test-evidence-v1")
+
+
+def test_private_storage_rejects_permissive_parent_without_repair(
+    tmp_path: Path,
+) -> None:
+    parent = tmp_path / "permissive"
+    parent.mkdir()
+    key = parent / "control.key"
+    key.write_bytes(b"k" * 32)
+    value = FileHmacAuthenticator(key.resolve(), key_ref="test-evidence-v1")
+
+    with pytest.raises(ValueError, match="private storage"):
+        _ = value.private_storage_verified
+    assert key.read_bytes() == b"k" * 32
+
+
+def test_private_storage_rejects_hardlink_after_initial_acceptance(
+    tmp_path: Path,
+) -> None:
+    value = authenticator(tmp_path)
+    value.initialize()
+    assert value.private_storage_verified is True
+    linked = value.key_path.with_name("linked.key")
+    os.link(value.key_path, linked)
+
+    with pytest.raises(ValueError, match="private storage"):
+        _ = value.encoded_key
+
+
+def test_private_storage_rejects_valid_key_replacement_for_bound_authenticator(
+    tmp_path: Path,
+) -> None:
+    value = authenticator(tmp_path)
+    value.initialize()
+    assert value.private_storage_verified is True
+    replacement = FileHmacAuthenticator(
+        value.key_path.with_name("replacement.key"), key_ref="replacement-v1"
+    )
+    replacement.initialize()
+    os.replace(replacement.key_path, value.key_path)
+
+    with pytest.raises(ValueError, match="private storage"):
+        _ = value.private_storage_verified
+    reopened = FileHmacAuthenticator(value.key_path, key_ref="test-evidence-v1")
+    assert reopened.private_storage_verified is True
+
+
+def test_private_storage_rejects_key_symlink_or_reparse_point(tmp_path: Path) -> None:
+    value = authenticator(tmp_path)
+    value.initialize()
+    target = value.key_path.with_name("target.key")
+    target.write_bytes(b"t" * 32)
+    value.key_path.unlink()
+    try:
+        value.key_path.symlink_to(target)
+    except OSError as error:
+        pytest.skip(f"file symlink creation unavailable: {error}")
+
+    with pytest.raises(ValueError, match="private storage"):
+        _ = value.private_storage_verified
+
+
+@POSIX_ONLY
+def test_posix_private_storage_rejects_mode_and_open_replacement(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    value = authenticator(tmp_path)
+    value.initialize()
+    os.chmod(value.key_path, 0o644)
+    with pytest.raises(ValueError, match="private storage"):
+        _ = value.private_storage_verified
+    os.chmod(value.key_path, 0o600)
+    assert value.private_storage_verified is True
+
+    replacement = value.key_path.with_name("replacement.key")
+    replacement.write_bytes(b"r" * 32)
+    os.chmod(replacement, 0o600)
+    real_open = os.open
+    replaced = False
+
+    def replace_after_open(path, flags, mode=0o777):
+        nonlocal replaced
+        descriptor = real_open(path, flags, mode)
+        if Path(path) == value.key_path and not replaced:
+            replaced = True
+            os.replace(replacement, value.key_path)
+        return descriptor
+
+    monkeypatch.setattr(security.os, "open", replace_after_open)
+    with pytest.raises(ValueError, match="private storage"):
+        _ = value.private_storage_verified
+
+
+@WINDOWS_ONLY
+def test_windows_private_storage_creation_reopen_and_default_acl_rejection(
+    tmp_path: Path,
+) -> None:
+    value = authenticator(tmp_path)
+    value.initialize()
+    assert value.private_storage_verified is True
+    reopened = FileHmacAuthenticator(value.key_path, key_ref="test-evidence-v1")
+    assert reopened.private_storage_verified is True
+
+    permissive_key = value.key_path.with_name("default-acl.key")
+    permissive_key.write_bytes(b"p" * 32)
+    permissive = FileHmacAuthenticator(permissive_key, key_ref="permissive-v1")
+    with pytest.raises(ValueError, match="private storage"):
+        _ = permissive.private_storage_verified
+
+
+@WINDOWS_ONLY
+def test_windows_docker_storage_rejects_directory_junction(tmp_path: Path) -> None:
+    project_context = context(tmp_path)
+    target = tmp_path / "junction-target"
+    target.mkdir()
+    junction = project_context.project_root / ".synaptic"
+    completed = subprocess.run(
+        ("cmd.exe", "/d", "/c", "mklink", "/J", str(junction), str(target)),
+        capture_output=True, check=False,
+    )
+    if completed.returncode != 0:
+        pytest.skip("directory junction creation unavailable")
+
+    with pytest.raises(ValueError, match="private storage"):
+        FileHmacAuthenticator.for_docker(
+            project_context, durable_rows_exist=False,
+        )
 
 
 def test_grant_provider_rejects_cost_or_currency_expansion() -> None:
