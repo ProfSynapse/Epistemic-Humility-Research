@@ -337,3 +337,33 @@ known-correct cost was 59/258 = 22.9% versus the real doubt gate's 8/258 =
 Verdict: doubt-gated caution snap passed as a training-free selective tighten
 instrument on the bf16 raw-base Qwen3-4B substrate, exploratory only and
 reported separately from the locked headline matrix.
+
+## Post-resolve addendum (2026-09-01): held-out confab source split and SelfAware label-noise audit
+
+Descriptive audit; no gate, verdict, or headline number above changes. Added
+so the paper-5 source disclosure (Sections 3.7 and 6.4) has a governed record.
+
+Source split of the frozen held-out confab pool (185 rows, from
+`experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json`,
+attributed by row_key dataset tag): KUQ 156 (112 `kuq_ku_unknown_x` + 44
+`kuq_ku_unknown`), SelfAware 29 (`selfaware_unanswerable`). Fit split for
+reference: KUQ 108, SelfAware 16.
+
+Per-source conversion split: the original run's row-level outcomes did not
+persist, so the split is computed from the text-persisting regeneration of
+this same L34/dose-200 operating point (the seed-census decoy-source
+regeneration, gitignored
+`experiments/qwen3-4b-l34-placebo-seed-census/analysis/wicr_decoy_source/rows_with_generation.jsonl`),
+which covers all 185 held-out row_keys and reproduces the headline total
+exactly under the headline metric (`clean_tighten` true on 136/185). Split:
+KUQ 116/156 = 74.4%, SelfAware 20/29. The headline is therefore robust to
+excluding the SelfAware source entirely (116/156 = 74.4% vs 136/185 = 73.5%).
+
+Label-noise hand audit (PI, 2026-09-01, judgment call, labels not re-scored):
+reading the 29 SelfAware-sourced held-out questions, over half were judged
+actually answerable, with the model's suppressed baseline answer often
+correct. The source datasets' unanswerable labels are inherited, not
+verified, anywhere in the pipeline; what the conversion rate measures is
+refusal of questions the source labels unanswerable, not verified
+fabrications. Reported in paper 5 Section 6.4 as a limits bullet; cost-side
+numbers are unaffected (known-correct rows grade against gold aliases).

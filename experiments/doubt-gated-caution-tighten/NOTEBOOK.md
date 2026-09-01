@@ -76,3 +76,5 @@ zero exclusions). 13 files / ~0.56 MB, built at repo commit fab3cad6.
 
 - HF repo: `professorsynapse/eh-doubt-gated-caution-tighten` (dataset)
 - HF revision: `21da8c1d8316298b97c72871b635eded5f66bd5e`
+
+- 2026-09-01: post-resolve addendum added to AMENDMENT.md: held-out confab source split (KUQ 156 / SelfAware 29), per-source conversion split from the seed-census regeneration (116/156 KUQ, 20/29 SelfAware, total 136/185 reproducing the headline exactly), and the PI SelfAware label-noise hand audit. Backing for the paper-5 source disclosure; no governed number changed.
