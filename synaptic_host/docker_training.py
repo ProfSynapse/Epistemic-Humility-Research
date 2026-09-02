@@ -880,6 +880,7 @@ def _activate_docker_training_v1(
         docker_policy_ref=snapshot.profile.docker_policy_ref,
         wsl_distro=snapshot.profile.wsl_distro,
         drive_mount_root=snapshot.profile.drive_mount_root,
+        container_user=snapshot.profile.container_user,
     )
     builder = DockerPreparedControlBuilderV1(
         authenticator=authenticator, platform=platform,

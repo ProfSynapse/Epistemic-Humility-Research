@@ -38,6 +38,7 @@ from .docker_v1.control_contract import (
     DockerExpectedCreatePublishDispositionV1,
     DockerExpectedCreatePublishRequestV1,
 )
+from .docker_v1.control_private import _CONTAINER_USER_V1
 from .docker_v1.create import DockerHostCreateV1
 from .docker_v1.cli import DockerBoundedProcessRunnerV1, DockerCLIRunnerV1
 from .docker_v1.endpoint import DockerLocalEndpointResolverV1
@@ -59,6 +60,7 @@ class DockerPreparedPlatformV1:
     policy: DockerCLIPolicyV1
     distro: str
     drive_mount_root: str
+    container_user: str
 
     def __post_init__(self) -> None:
         if (
@@ -73,6 +75,8 @@ class DockerPreparedPlatformV1:
             or type(self.drive_mount_root) is not str
             or not self.drive_mount_root.startswith("/")
             or self.drive_mount_root.endswith("/")
+            or type(self.container_user) is not str
+            or _CONTAINER_USER_V1.fullmatch(self.container_user) is None
         ):
             raise ValueError("prepared Docker platform is invalid")
 
@@ -87,6 +91,7 @@ class DockerPreparedPlatformV1:
 
 def compose_docker_prepared_platform_v1(
     *, docker_policy_ref: str, wsl_distro: str, drive_mount_root: str,
+    container_user: str,
     environment: dict[str, str] | None = None,
     os_name: str = os.name, executable_candidates=None,
     endpoint_resolver=None, popen_factory=subprocess.Popen,
@@ -102,6 +107,8 @@ def compose_docker_prepared_platform_v1(
         or type(drive_mount_root) is not str
         or not drive_mount_root.startswith("/")
         or drive_mount_root.endswith("/")
+        or type(container_user) is not str
+        or _CONTAINER_USER_V1.fullmatch(container_user) is None
     ):
         raise ValueError("Windows Docker Host policy is unavailable")
     required = ("SystemRoot", "TEMP", "TMP", "WINDIR")
@@ -161,7 +168,7 @@ def compose_docker_prepared_platform_v1(
         thread_factory=thread_factory,
     )
     return DockerPreparedPlatformV1(
-        runner, endpoint, policy, wsl_distro, drive_mount_root,
+        runner, endpoint, policy, wsl_distro, drive_mount_root, container_user,
     )
 
 
@@ -238,6 +245,7 @@ class DockerPreparedControlBuilderV1:
             record_authority=self._record,
             endpoint_descriptor_digest=platform.endpoint_descriptor_digest,
             cli_policy_digest=platform.cli_policy_digest,
+            container_user=platform.container_user,
         )
         admission = create.prepare_admission(
             labels=labels, image=request.prepared_plan.profile.image,

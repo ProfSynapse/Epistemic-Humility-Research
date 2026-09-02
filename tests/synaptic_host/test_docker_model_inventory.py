@@ -95,6 +95,7 @@ def _profile(*, cache_admission: bool = True) -> DockerProviderProfileV1:
                 "policy_ref": "docker-test-policy",
                 "wsl_distro": "Ubuntu-22.04",
                 "drive_mount_root": "/mnt",
+                "container_user": "1000:1000",
             },
             "artifacts": {
                 "maximum_artifact_bytes": 1,

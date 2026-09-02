@@ -37,7 +37,8 @@
   "docker_host": {
     "policy_ref": "docker-desktop-windows-v1",
     "wsl_distro": "Ubuntu-22.04",
-    "drive_mount_root": "/mnt"
+    "drive_mount_root": "/mnt",
+    "container_user": "1000:1000"
   },
   "artifacts": {
     "maximum_artifact_bytes": 2147483648,

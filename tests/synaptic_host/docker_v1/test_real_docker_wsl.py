@@ -264,6 +264,7 @@ def _request(tmp_path: Path) -> tuple[DockerHostCompositionRequestV1, Path, byte
         artifact_wsl_root=str((project / "artifact-data").resolve()),
         artifact_destination_ref="artifact-destination",
         wsl_distro="Ubuntu-22.04",
+        container_user="1000:1000",
         environment_policy=DockerWorkloadEnvironmentPolicyV1.build(
             allowed_keys=()
         ),

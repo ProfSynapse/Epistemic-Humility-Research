@@ -538,7 +538,7 @@ class CaptureCreateRunner:
 
 def _factory_invocation(*, pairs=(("TOKEN", "raw-secret"),), arguments=("python", "train.py"),
                         source=None, artifact=None, workload_digest=SHA,
-                        accelerator=None):
+                        accelerator=None, container_user="1000:1000"):
     keys = tuple(key for key, _ in pairs)
     workload = DockerWorkloadV1(tuple(arguments), keys, workload_digest)
     return DockerPrivateCreateInvocationFactoryV1().build(
@@ -555,6 +555,7 @@ def _factory_invocation(*, pairs=(("TOKEN", "raw-secret"),), arguments=("python"
             DockerWSLPathPurposeV1.ARTIFACT_WRITE, "/artifacts"
         ),
         working_directory="/artifacts/tmp",
+        container_user=container_user,
         environment=_private_environment(pairs, workload_digest),
         environment_authority=EnvAuthority(),
     )
@@ -566,24 +567,27 @@ def test_private_factory_builds_exact_full_create_argv_in_frozen_order():
     runner = CaptureCreateRunner()
     result = invocation.execute_once(runner)
     arguments = runner.command.arguments
-    assert arguments[:12] == (
+    assert arguments[:14] == (
         "--name", labels.container_name, "--pull", "never", "--network",
         "none", "--cpus", "2", "--memory", "4096",
         "--entrypoint", _CONTAINER_ENTRYPOINT_V1,
+        # B-9 (architecture section 18.8(1)): the --user pair joins the FIXED
+        # region, after the entrypoint pair and before the optional --gpus.
+        "--user", "1000:1000",
     )
-    label_tokens = arguments[12:42]
+    label_tokens = arguments[14:44]
     assert label_tokens[::2] == ("--label",) * 15
     assert tuple(
         token.split("=", 1)[0]
         for token in label_tokens[1::2]
     ) == tuple(OWNED_LABEL_PREFIX_V1 + name for name in OWNED_LABEL_NAMES_V1)
-    assert arguments[42:46] == (
+    assert arguments[44:48] == (
         "--mount",
         r"type=bind,source=\\wsl.localhost\Ubuntu-22.04\source,destination=/source,readonly",
         "--mount",
         r"type=bind,source=\\wsl.localhost\Ubuntu-22.04\artifacts,destination=/artifacts",
     )
-    assert arguments[46:] == (
+    assert arguments[48:] == (
         "--workdir", "/artifacts/tmp",
         "--env", "TOKEN=raw-secret", "sha256:" + "b" * 64,
         "python", "train.py",
@@ -615,6 +619,7 @@ def test_private_factory_rejects_noncontained_working_directory(
                 DockerWSLPathPurposeV1.ARTIFACT_WRITE, "/artifacts"
             ),
             working_directory=working_directory,
+            container_user="1000:1000",
             environment=_private_environment((("TOKEN", "raw-secret"),)),
             environment_authority=EnvAuthority(),
         )
@@ -629,11 +634,11 @@ def test_private_factory_gpu_adds_only_exact_device_zero_option():
     runner = CaptureCreateRunner()
     invocation.execute_once(runner)
     arguments = runner.command.arguments
-    assert arguments[12:14] == (
+    assert arguments[14:16] == (
         "--gpus", "driver=nvidia,device=0"
     )
     assert arguments.count("--gpus") == 1
-    assert arguments[14:44:2] == ("--label",) * 15
+    assert arguments[16:46:2] == ("--label",) * 15
 
 
 @pytest.mark.parametrize("accelerator", (None, "nvidia"))
@@ -655,7 +660,12 @@ def test_private_factory_pins_entrypoint_pair_after_memory_on_both_branches(
         "--memory", "4096", "--entrypoint", _CONTAINER_ENTRYPOINT_V1,
     )
     assert arguments.count("--entrypoint") == 1
-    assert (arguments[12:13] == ("--gpus",)) is bool(accelerator)
+    # B-9 (architecture section 18.8(1)): --user is fixed too, so it sits
+    # immediately after the entrypoint pair on BOTH branches and --gpus remains
+    # the only conditional.
+    assert arguments[12:14] == ("--user", "1000:1000")
+    assert arguments.count("--user") == 1
+    assert (arguments[14:15] == ("--gpus",)) is bool(accelerator)
 
 
 def test_private_factory_leaves_the_whole_workload_argv_as_the_cmd():
@@ -688,7 +698,11 @@ def test_private_factory_maximum_env_and_workload_shape_is_within_cli_limit():
     invocation = _factory_invocation(pairs=pairs, arguments=arguments)
     runner = CaptureCreateRunner()
     invocation.execute_once(runner)
-    assert len(runner.command.arguments) == 241
+    # 241 before B-9; the --user pair adds two to the fixed region. The bound
+    # this test exists to defend is the parser's `len(arguments) > 256` gate in
+    # cli.py, so the headroom is asserted too rather than left implicit.
+    assert len(runner.command.arguments) == 243
+    assert len(runner.command.arguments) <= 256
 
 
 @pytest.mark.parametrize("bad", (",", '"', "\n", "\x01", "e\u0301"))

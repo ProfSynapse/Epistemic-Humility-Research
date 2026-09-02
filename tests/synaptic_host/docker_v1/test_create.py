@@ -1,4 +1,5 @@
 from dataclasses import replace
+import inspect
 from types import SimpleNamespace
 
 import pytest
@@ -76,6 +77,7 @@ def _host():
         intent_authority=authority, expected_authority=authority,
         record_authority=authority,
         endpoint_descriptor_digest=SHA, cli_policy_digest=SHA,
+        container_user="1000:1000",
     )
 
 
@@ -88,7 +90,7 @@ def test_create_invalid_input_is_indeterminate_before_any_dependency():
     assert result.disposition is DockerCreateDispositionV1.INDETERMINATE
 
 
-def _preflight_capture(monkeypatch, *, arguments=("x",)):
+def _preflight_capture(monkeypatch, *, arguments=("x",), container_user="1000:1000"):
     labels, _ref, _record, expected, _inspected = _one_id_fixture()
     specification = expected.content.create_specification
     host = object.__new__(DockerHostCreateV1)
@@ -126,6 +128,7 @@ def _preflight_capture(monkeypatch, *, arguments=("x",)):
     object.__setattr__(host, "_expected_authority", object())
     object.__setattr__(host, "_endpoint_descriptor_digest", SHA)
     object.__setattr__(host, "_cli_policy_digest", SHA)
+    object.__setattr__(host, "_container_user", container_user)
 
     captured = {}
 
@@ -161,6 +164,54 @@ def _preflight_capture(monkeypatch, *, arguments=("x",)):
             "source", "artifact", "/artifacts/tmp",
         )
     return captured
+
+
+def test_container_user_is_a_required_constructor_field_with_no_default():
+    # B-9 (architecture section 18.8(4)): the value is bound ONCE on the object.
+    # A default here is what would let the legacy composition path compose a
+    # create command with a user the prepared path did not choose, which is the
+    # silent-divergence class B-4 already cost this workstream.
+    authority = Authority()
+    never = Never()
+    keywords = dict(
+        mount_resolver=never, path_binder=never, path_translator=never,
+        environment_resolver=never, typed_runner=never,
+        expected_publisher=never, mutation_repository=never,
+        path_authority=authority, environment_authority=authority,
+        intent_authority=authority, expected_authority=authority,
+        record_authority=authority,
+        endpoint_descriptor_digest=SHA, cli_policy_digest=SHA,
+    )
+    with pytest.raises(TypeError):
+        DockerHostCreateV1(**keywords)
+    host = DockerHostCreateV1(**keywords, container_user="1000:1000")
+    assert host._container_user == "1000:1000"
+
+
+@pytest.mark.parametrize("container_user", ("1000:1000", "1001:102", "0:0"))
+def test_admission_and_create_cannot_diverge_on_the_container_user(
+    monkeypatch, container_user,
+):
+    # B-9 (architecture section 18.15 item 3): prepare_admission and create_once
+    # reach the argv builder through the SAME _preflight, and _preflight reads
+    # the user off the object rather than off a parameter. So the user the
+    # admission publishes is the user create_once preflights, by construction.
+    # This is the test that fails if someone re-introduces a per-call parameter.
+    # _preflight_capture patches DockerCreateSpecificationV1.build for the whole
+    # call, so it is used ONCE per test; the value is varied by parametrization.
+    captured = _preflight_capture(monkeypatch, container_user=container_user)
+    assert captured["invocation"]["container_user"] == container_user
+
+    source = inspect.getsource(create_module.DockerHostCreateV1)
+    body = source[source.index("def _preflight"):]
+    assert "container_user=self._container_user" in body
+    # Neither entry point may accept a per-call user; both delegate to
+    # _preflight, which is the single reader of the bound value.
+    for name in ("prepare_admission", "create_once"):
+        parameters = inspect.signature(
+            getattr(create_module.DockerHostCreateV1, name)
+        ).parameters
+        assert "container_user" not in parameters
 
 
 def test_preflight_keeps_raw_workdir_private_and_seals_only_digest(monkeypatch):
@@ -510,6 +561,7 @@ def _transaction_host(*, publish=DockerExpectedCreatePublishDispositionV1.PUBLIS
         environment_authority=authority, intent_authority=authority,
         expected_authority=authority, record_authority=authority,
         endpoint_descriptor_digest=SHA, cli_policy_digest=SHA,
+        container_user="1000:1000",
     )
     preflight = {
         "labels": HARNESS_LABELS,

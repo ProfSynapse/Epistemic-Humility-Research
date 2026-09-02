@@ -72,6 +72,7 @@ def _windows_platform(**changes):
         "docker_policy_ref": "docker-desktop-windows-v1",
         "wsl_distro": "Ubuntu-22.04",
         "drive_mount_root": "/mnt",
+        "container_user": "1000:1000",
         "environment": {
             "PATH": "C:\\Docker", "SystemRoot": "C:\\Windows",
             "TEMP": "C:\\Temp", "TMP": "C:\\Temp",
@@ -189,7 +190,7 @@ def test_composition_prepares_exact_initial_admission_without_effects(tmp_path: 
         durable_rows_exist=False,
     )
     platform = DockerPreparedPlatformV1(
-        TypedRunner(), endpoint, policy, "Ubuntu-22.04", "/mnt",
+        TypedRunner(), endpoint, policy, "Ubuntu-22.04", "/mnt", "1000:1000",
     )
     assert platform.endpoint is endpoint
     assert platform.policy is policy
@@ -218,7 +219,7 @@ def test_builder_rejects_durable_platform_digest_drift_before_effects(tmp_path: 
         durable_rows_exist=False,
     )
     platform = DockerPreparedPlatformV1(
-        TypedRunner(), endpoint, policy, "Ubuntu-22.04", "/mnt",
+        TypedRunner(), endpoint, policy, "Ubuntu-22.04", "/mnt", "1000:1000",
     )
     builder = DockerPreparedControlBuilderV1(
         authenticator=authenticator, platform=platform,
@@ -244,7 +245,7 @@ def test_builder_rejects_wrong_authenticator_key_reference(tmp_path: Path):
         DockerPreparedControlBuilderV1(
             authenticator=authenticator,
             platform=DockerPreparedPlatformV1(
-                TypedRunner(), endpoint, policy, "Ubuntu-22.04", "/mnt",
+                TypedRunner(), endpoint, policy, "Ubuntu-22.04", "/mnt", "1000:1000",
             ),
         )
 
@@ -261,7 +262,7 @@ def test_builder_live_rejects_lost_private_key_before_effects(tmp_path: Path):
     builder = DockerPreparedControlBuilderV1(
         authenticator=authenticator,
         platform=DockerPreparedPlatformV1(
-            TypedRunner(), endpoint, policy, "Ubuntu-22.04", "/mnt",
+            TypedRunner(), endpoint, policy, "Ubuntu-22.04", "/mnt", "1000:1000",
         ),
     )
     authenticator.key_path.unlink()
@@ -524,7 +525,7 @@ def _s6_prepared_composition(tmp_path: Path, repository, *, publication):
             durable_rows_exist=False,
         ),
         platform=DockerPreparedPlatformV1(
-            TypedRunner(), endpoint, policy, "Ubuntu-22.04", "/mnt",
+            TypedRunner(), endpoint, policy, "Ubuntu-22.04", "/mnt", "1000:1000",
         ),
     )
     return DockerPreparedCompositionV1(

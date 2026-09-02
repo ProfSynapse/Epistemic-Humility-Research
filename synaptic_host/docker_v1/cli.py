@@ -44,7 +44,7 @@ from .control_model import (
     docker_create_execution_request_digest_v1,
     docker_start_execution_request_digest_v1,
 )
-from .control_private import _CONTAINER_ENTRYPOINT_V1
+from .control_private import _CONTAINER_ENTRYPOINT_V1, _CONTAINER_USER_V1
 
 
 _READ_SIZE = 65_536
@@ -116,6 +116,18 @@ def _validate_create_command(command, expected_container_name):
     if arguments[index:index + 2] != ("--entrypoint", _CONTAINER_ENTRYPOINT_V1):
         raise ValueError
     index += 2
+    # B-9 (architecture section 18.8): assert the SHAPE of the container user,
+    # not its value. The value comes from the committed profile and this parser
+    # has no access to the profile, so exact-token equality is reserved for the
+    # universal constants above (`--network none`, `--entrypoint env`) and this
+    # flag is checked the way `--cpus` and `--memory` already are.
+    if arguments[index:index + 1] != ("--user",):
+        raise ValueError
+    index += 1
+    user = arguments[index]
+    index += 1
+    if _CONTAINER_USER_V1.fullmatch(user) is None:
+        raise ValueError
     if arguments[index:index + 1] == ("--gpus",):
         if arguments[index:index + 2] != (
             "--gpus", "driver=nvidia,device=0"

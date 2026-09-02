@@ -37,6 +37,13 @@ MAX_PRIVATE_ENV_TOTAL_BYTES_V1 = (
 )
 _LOWER_HEX_64_V1 = re.compile(r"[0-9a-f]{64}\Z")
 _CONTAINER_ENTRYPOINT_V1 = "env"
+# B-9 (architecture section 18.8): the create argv declares the container user
+# as a numeric `uid:gid`. Names are refused because a name in `--user` resolves
+# against the IMAGE's `/etc/passwd`, which cannot express the identity that owns
+# the host mount. The value itself is profile-derived, so this grammar is the
+# only thing the platform layer may assert about it; `cli.py` imports this exact
+# pattern rather than restating it.
+_CONTAINER_USER_V1 = re.compile(r"(?:0|[1-9][0-9]{0,6}):(?:0|[1-9][0-9]{0,6})\Z")
 
 
 class DockerPrivateWorkloadEnvironmentResolutionV1:
@@ -323,7 +330,8 @@ class DockerPrivateStartInvocationV1:
 class DockerPrivateCreateInvocationFactoryV1:
     def build(
         self, *, labels, image, runtime, workload, source_path,
-        artifact_path, working_directory, environment, environment_authority,
+        artifact_path, working_directory, container_user, environment,
+        environment_authority,
     ):
         try:
             if (
@@ -342,6 +350,8 @@ class DockerPrivateCreateInvocationFactoryV1:
                 )
                 or "=" in workload.arguments[0]
                 or workload.arguments[0].startswith("-")
+                or type(container_user) is not str
+                or _CONTAINER_USER_V1.fullmatch(container_user) is None
             ):
                 raise ValueError
             labels = DockerLabelsV1(**labels.to_dict())
@@ -396,6 +406,7 @@ class DockerPrivateCreateInvocationFactoryV1:
                 "--network", "none", "--cpus", str(runtime.cpu_count),
                 "--memory", str(runtime.memory_bytes),
                 "--entrypoint", _CONTAINER_ENTRYPOINT_V1,
+                "--user", container_user,
             ]
             if runtime.accelerator_devices.kind == "nvidia":
                 arguments.extend(("--gpus", "driver=nvidia,device=0"))

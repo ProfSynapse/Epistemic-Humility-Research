@@ -790,7 +790,7 @@ def _container_record(container_ref="a" * 64):
     }
 
 
-def _create_command(secret="raw-secret", *, gpu=False):
+def _create_command(secret="raw-secret", *, gpu=False, user="1000:1000"):
     labels = DockerLabelsV1(
         "a" * 64, "docker", "profile", "account", "namespace", "project",
         "run", "a" * 64, "a" * 64, "effect", "submit",
@@ -801,6 +801,8 @@ def _create_command(secret="raw-secret", *, gpu=False):
         "--cpus", "1", "--memory", "4096",
         "--entrypoint", _CONTAINER_ENTRYPOINT_V1,
     ]
+    if user is not None:
+        arguments.extend(("--user", user))
     if gpu:
         arguments.extend(("--gpus", "driver=nvidia,device=0"))
     for name, value in zip(
@@ -937,6 +939,90 @@ def test_typed_create_spawns_with_the_exact_entrypoint_pair_in_position():
     )
 
 
+def _user_variant(kind):
+    arguments = list(_create_command().arguments)
+    # Indices 12 and 13 are the --user pair: it follows the --entrypoint pair
+    # at 10-11 and precedes the optional --gpus.
+    assert arguments[12:14] == ["--user", "1000:1000"]
+    if kind == "absent":
+        del arguments[12:14]
+    elif kind == "flag_typo":
+        arguments[12] = "--User"
+    elif kind == "name_form":
+        arguments[13] = "unsloth:runtimeusers"
+    elif kind == "bare_name":
+        arguments[13] = "unsloth"
+    elif kind == "uid_only":
+        arguments[13] = "1000"
+    elif kind == "empty_value":
+        arguments[13] = ""
+    elif kind == "leading_zero":
+        arguments[13] = "01000:1000"
+    elif kind == "negative":
+        arguments[13] = "-1:1000"
+    elif kind == "out_of_range":
+        arguments[13] = "10000000:1000"
+    elif kind == "three_parts":
+        arguments[13] = "1000:1000:1000"
+    elif kind == "trailing_newline":
+        arguments[13] = "1000:1000\n"
+    elif kind == "duplicated":
+        arguments[14:14] = ["--user", "1000:1000"]
+    else:
+        pair = arguments[12:14]
+        del arguments[12:14]
+        arguments[10:10] = pair
+    return DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(arguments))
+
+
+@pytest.mark.parametrize(
+    "kind",
+    (
+        "absent", "flag_typo", "name_form", "bare_name", "uid_only",
+        "empty_value", "leading_zero", "negative", "out_of_range",
+        "three_parts", "trailing_newline", "duplicated", "before_entrypoint",
+    ),
+)
+def test_typed_create_rejects_a_nonconforming_container_user_before_spawn(kind):
+    # B-9 (architecture section 18.8(2)-(3)): the parser pins the flag token and
+    # the POSITION exactly, and the value by SHAPE. It cannot pin the value,
+    # because the value comes from the committed profile and the parser has no
+    # access to the profile. Names are refused deliberately: a name in --user
+    # resolves against the IMAGE's /etc/passwd and cannot express the identity
+    # that owns the host mount.
+    runner, factory = _typed_runner(b"a" * 64)
+    with pytest.raises(DockerPlatformErrorV1):
+        runner.create_container(_user_variant(kind), "synaptic-" + "a" * 24)
+    assert factory.calls == []
+
+
+@pytest.mark.parametrize("value", ("0:0", "1000:1000", "1001:102", "9999999:0"))
+def test_typed_create_spawns_with_any_numeric_container_user(value):
+    # The positive half of the discriminator above: a parser that refused every
+    # --user would pass every rejection case vacuously.
+    runner, factory = _typed_runner(b"a" * 64)
+    runner.create_container(
+        _create_command(user=value), "synaptic-" + "a" * 24
+    )
+    arguments = factory.calls[0][0]
+    index = arguments.index("--entrypoint")
+    assert arguments[index + 2:index + 4] == ("--user", value)
+
+
+def test_typed_create_spawns_with_the_container_user_pair_in_position():
+    # B-9: --user sits immediately after the entrypoint pair and exactly once,
+    # so --gpus remains the only conditional element of the create argv.
+    runner, factory = _typed_runner(b"a" * 64)
+    runner.create_container(_create_command(gpu=True), "synaptic-" + "a" * 24)
+    arguments = factory.calls[0][0]
+    index = arguments.index("--memory")
+    assert arguments[index + 2:index + 6] == (
+        "--entrypoint", _CONTAINER_ENTRYPOINT_V1, "--user", "1000:1000",
+    )
+    assert arguments.count("--user") == 1
+    assert arguments[index + 6:index + 7] == ("--gpus",)
+
+
 def _start_command(ref="d" * 64):
     return DockerCLICommandV1.build(DockerCLIVerbV1.START, (ref,))
 
@@ -1036,6 +1122,12 @@ def test_typed_create_rejects_malformed_success_without_raw_leak(payload):
     assert "do-not-leak" not in str(caught.value)
 
 
+# The create argv's mount values, derived rather than pinned as literals: the
+# fixed region grew by the B-9 --user pair, and an index literal here would keep
+# passing while pointing at the wrong element.
+_SOURCE_MOUNT_INDEX = list(_create_command().arguments).index("--mount") + 1
+
+
 def _create_with(*, cpu="1", memory="4096", env_count=1, workload_count=2):
     base = list(_create_command().arguments)
     base[7] = cpu
@@ -1044,11 +1136,14 @@ def _create_with(*, cpu="1", memory="4096", env_count=1, workload_count=2):
         index for index, value in enumerate(base)
         if value.startswith("sha256:")
     )
-    base[48:image_index] = [
+    # Derived, not a literal: the fixed region grew by the B-9 --user pair, and
+    # an index literal here would keep passing while asserting the wrong thing.
+    env_index = base.index("--env")
+    base[env_index:image_index] = [
         value for index in range(env_count)
         for value in ("--env", f"K{index:02d}=v")
     ]
-    image_index = 48 + env_count * 2
+    image_index = env_index + env_count * 2
     base[image_index + 1:] = tuple(f"arg{index}" for index in range(workload_count))
     return DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(base))
 
@@ -1164,10 +1259,10 @@ def test_typed_create_semantic_label_and_mount_attacks_do_not_spawn(attack):
         prefix = OWNED_LABEL_PREFIX_V1 + name + "="
         arguments[index + 1] = prefix + ("stage" if attack == "effect" else "f" * 64)
     elif attack == "same_mount":
-        source = arguments[43].split(",destination=", 1)[0]
-        arguments[45] = source + ",destination=/artifacts"
+        source = arguments[_SOURCE_MOUNT_INDEX].split(",destination=", 1)[0]
+        arguments[_SOURCE_MOUNT_INDEX + 2] = source + ",destination=/artifacts"
     else:
-        arguments[43] = (
+        arguments[_SOURCE_MOUNT_INDEX] = (
             r"type=bind,source=\\wsl.localhost\Ubuntu\..\escape,destination=/source,readonly"
         )
     command = DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(arguments))
@@ -1180,7 +1275,7 @@ def test_typed_create_semantic_label_and_mount_attacks_do_not_spawn(attack):
 @pytest.mark.parametrize("forbidden", tuple('<>:"|?*'))
 def test_typed_create_forbidden_unc_component_character_never_spawns(forbidden):
     arguments = list(_create_with().arguments)
-    arguments[43] = (
+    arguments[_SOURCE_MOUNT_INDEX] = (
         "type=bind,source=\\\\wsl.localhost\\Ubuntu\\safe"
         + forbidden + "component,destination=/source,readonly"
     )
@@ -1197,7 +1292,7 @@ def test_typed_create_unc_component_count_exact_neighbors():
         source = "\\\\wsl.localhost\\Ubuntu\\" + "\\".join(
             f"safe-name_{index}" for index in range(count)
         )
-        arguments[43] = (
+        arguments[_SOURCE_MOUNT_INDEX] = (
             f"type=bind,source={source},destination=/source,readonly"
         )
         command = DockerCLICommandV1.build(
@@ -1211,7 +1306,7 @@ def test_typed_create_unc_component_count_exact_neighbors():
     source = "\\\\wsl.localhost\\Ubuntu\\" + "\\".join(
         f"safe{index}" for index in range(129)
     )
-    arguments[43] = f"type=bind,source={source},destination=/source,readonly"
+    arguments[_SOURCE_MOUNT_INDEX] = f"type=bind,source={source},destination=/source,readonly"
     command = DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(arguments))
     runner, factory = _typed_runner(b"a" * 64)
     with pytest.raises(DockerPlatformErrorV1):

@@ -149,6 +149,7 @@ class DockerHostCompositionRequestV1:
     artifact_wsl_root: str
     artifact_destination_ref: str
     wsl_distro: str
+    container_user: str
     environment_policy: DockerWorkloadEnvironmentPolicyV1
     environment_overrides: tuple[tuple[str, str], ...]
     cli_policy: DockerCLIPolicyV1
@@ -394,6 +395,11 @@ def _prepare(request, live_build):
         record_authority=request.mutation_record_authority,
         endpoint_descriptor_digest=request.cli_policy.endpoint.descriptor_digest,
         cli_policy_digest=request.cli_policy.policy_digest,
+        # B-9 (architecture section 18.8(4)): a pass-through, not a fallback.
+        # `DockerHostCreateV1.container_user` takes no default precisely so this
+        # legacy site cannot compose a create command with a user the prepared
+        # path did not choose; its caller must supply the value explicitly.
+        container_user=request.container_user,
     )
     start = DockerHostStartV1(
         typed_runner=typed_cli,

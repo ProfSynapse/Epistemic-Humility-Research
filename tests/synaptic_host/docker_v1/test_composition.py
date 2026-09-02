@@ -372,6 +372,7 @@ def _real_request(tmp_path, *, include_port=False):
         artifact_wsl_root="/mnt/synaptic/artifacts",
         artifact_destination_ref="artifact-destination",
         wsl_distro="Ubuntu-22.04",
+        container_user="1000:1000",
         environment_policy=DockerWorkloadEnvironmentPolicyV1.build(
             allowed_keys=()
         ),

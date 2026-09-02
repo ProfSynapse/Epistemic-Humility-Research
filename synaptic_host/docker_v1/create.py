@@ -78,8 +78,16 @@ class DockerHostCreateV1:
         environment_resolver, typed_runner, expected_publisher,
         mutation_repository, path_authority, environment_authority,
         intent_authority, expected_authority, record_authority,
-        endpoint_descriptor_digest, cli_policy_digest,
+        endpoint_descriptor_digest, cli_policy_digest, container_user,
     ):
+        # B-9 (architecture section 18.8(4)): `container_user` is bound ONCE
+        # here, with no default, rather than threaded through the call
+        # signatures. `prepare_admission` and `create_once` share one
+        # `_preflight`, and admission publishes an expected-create binding that
+        # `create_once` compares against its own preflight, so two call sites
+        # that could be given different users would surface as an opaque
+        # admission rejection. A default would let the legacy composition path
+        # compose a different user in silence.
         self._mount_resolver = mount_resolver
         self._path_binder = path_binder
         self._path_translator = path_translator
@@ -94,6 +102,7 @@ class DockerHostCreateV1:
         self._record_authority = record_authority
         self._endpoint_descriptor_digest = endpoint_descriptor_digest
         self._cli_policy_digest = cli_policy_digest
+        self._container_user = container_user
         self._pins = {
             "path": self._pin(path_authority),
             "environment": self._pin(environment_authority),
@@ -394,6 +403,7 @@ class DockerHostCreateV1:
             labels=labels, image=image, runtime=runtime, workload=workload,
             source_path=source_path, artifact_path=artifact_path,
             working_directory=working_directory,
+            container_user=self._container_user,
             environment=private_env,
             environment_authority=self._environment_authority,
         )
