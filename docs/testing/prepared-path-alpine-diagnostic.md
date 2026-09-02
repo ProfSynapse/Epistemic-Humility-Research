@@ -512,3 +512,491 @@ Everything downstream of the container actually starting the trainer:
 Ordering note for whoever resumes: B-3 and B-1' can be fixed in either order, but
 **B-4 gates any conclusion drawn from a run**, because with B-4 open a run that
 looks healthy for an hour proves nothing.
+
+---
+---
+
+# Run 2 — 2026-09-02, released checkout `48375bc3`
+
+Second execution of the prepared path, from the clean released checkout
+`F:\Code\ehr-release-48375bc3` at commit
+`48375bc39f6880961f742babaf9d96da58ac60bb`, after B-3, B-1' and B-4 were fixed.
+Same Windows host, same Docker Desktop Linux engine, same committed image
+digest. B-2 was known-unfixed going in and was expected to fail at artifact
+verification; that expectation was never reached, because the run stopped
+earlier for a new reason.
+
+## 11. Run 2 verdict by step
+
+| # | Step | Verdict | Evidence |
+|---|------|---------|----------|
+| 1 | Prerequisite 7 — `--entrypoint env` one-off probe | **GREEN** | printed exactly `ok` |
+| 2 | Materialize model inventory | **GREEN** | 25 files, 1 969 841 187 bytes |
+| 3 | Driver `--probe-only` | **GREEN** | P1–P6, B1-bind-probe, A1–A4 all pass |
+| 4 | Real run via the driver | **RED** | cut 1, `RESOLUTION_UNAVAILABLE` |
+| 5 | Section 10.2 durable-row contract | **NOT REACHED** | no row written — see 11.5 |
+| 6 | This report section | done | — |
+
+Overall: **RED**, on a new blocker (**B-6**) that is upstream of everything
+Run 1 found. The three Run 1 blockers are all confirmed fixed.
+
+### 11.1 The three Run 1 fixes are confirmed working
+
+**B-4 (`--entrypoint`) — fixed.** The prerequisite 7 probe
+
+```
+docker.exe --host npipe:////./pipe/dockerDesktopLinuxEngine run --rm \
+  --pull never --network none --entrypoint env <image@sha256:5266c57b…> \
+  /opt/conda/bin/python3 -c "print('ok')"
+```
+
+printed exactly `ok`. In Run 1 the same shape without `--entrypoint` produced
+supervisord starting jupyter, ollama and sshd, and the workload argv was
+discarded. `env` is on the image's PATH, so the `/usr/bin/env` fallback was not
+needed.
+
+**B-3 (CRLF stdin) — fixed.** Inventory materialization completed against the
+real tree, which it had never done before:
+
+| Measurement | Value |
+|---|---|
+| Files | 25 |
+| Total bytes | 1 969 841 187 |
+| Fingerprint | `sha256:0e2a8df272426dd2fc804c6aa4886abf26b060b9dea7ed03aa068266eb58a2c6` |
+
+`--verify-only` then re-ran clean and reported `A4-inventory-link-free`, so
+risk **R6** is resolved: `copyfile` dereferenced the Hugging Face symlinks and
+the resulting tree contains regular files only.
+
+**B-1' (mount source) — fixed.** The driver rendered the mount source from the
+committed profile (`wsl_distro=Ubuntu-22.04`, `drive_mount_root=/mnt`) as
+
+```
+\\wsl.localhost\Ubuntu-22.04\mnt\f\Code\ehr-release-48375bc3
+```
+
+and the bind probe listed 20 entries, first `AGENTS.md`. The Run 1 failure
+(`stat /run/guest-services/distro-services/docker-desktop.sock: no such file or
+directory`) did not recur.
+
+### 11.2 First-ever observations of A1–A4
+
+Section 10 of the design lists these as never-observed. All four ran, and all
+four passed. This closes four open risks.
+
+| Probe | Result | Risk closed |
+|---|---|---|
+| A1 GPU visible | `GPU 0: NVIDIA GeForce RTX 3090 (UUID: GPU-ac4398bb-fc15-d722-b39c-2790b4b5f9cc)` | **R3** — the toolkit accepts the host driver against the image's `NVIDIA_REQUIRE_CUDA` bands |
+| A2 artifacts writable | `unsloth:runtimeusers` created and removed a file over the bind | **R4** |
+| A3 Python version | `3.11.14`, exactly the value the committed profile asserts | **R5** |
+| A4 inventory link-free | pass | **R6** |
+
+### 11.3 The real run — B-6, a new blocker
+
+The driver issued the committed 8-token command:
+
+```
+python.exe -m synaptic_host training run --provider docker \
+  --config project://training/smokes/docker-sft.json --destination local-default
+```
+
+and cut 1 returned:
+
+```
+[cut 1] exit=4 status=unavailable run_id=None phase=None
+FAILED L6-command-refused: the Host returned status=unavailable
+    code=RESOLUTION_UNAVAILABLE on cut 1
+```
+
+No container was created. `docker ps` showed no synaptic container at any point.
+The driver's trainer-log tail reported
+
+```
+none found: F:\Code\ehr-release-48375bc3\.synaptic\state\docker\stages does not exist
+```
+
+which is correct and not itself a defect: the stage directory is created during
+activation, and the run never reached activation.
+
+**Cause, established by instrumented re-issue.** The Host's result envelope
+(`TrainingRunCommandResultV2.to_dict`) carries no detail field, and
+`execute_docker_training_admission_v1` maps three different failures onto
+`RESOLUTION_UNAVAILABLE` behind bare `except BaseException` handlers
+(`synaptic_host/docker_training.py` at the `session.prove`, plan-compile, and
+model-inventory sites). To tell them apart, a scratch harness re-issued the same
+command with those call sites wrapped in memory so the traceback prints before
+the handler swallows it. Nothing on disk was modified. The harness patches the
+module through a `sys.meta_path` hook at import time rather than importing it
+eagerly, because an eager import trips the engine-contract loader's `sys.modules`
+cache invariant and yields `BOOTSTRAP_UNAVAILABLE` instead — a different code,
+which would have misattributed the failure.
+
+The instrumented cut reproduced `RESOLUTION_UNAVAILABLE` with the identical
+envelope and printed:
+
+```
+### session.prove ...
+### EXCEPTION raised inside session.prove ###
+Traceback (most recent call last):
+  File "…\synaptic_host\docker_training.py", line 242, in prove
+    project_source = self._verified_remote_source(inspected.project_source)
+  File "…\synaptic_host\docker_training.py", line 212, in _verified_remote_source
+    raise ValueError("source lacks an exact upstream branch")
+ValueError: source lacks an exact upstream branch
+```
+
+Line 242 is the **project** source, not the engine source.
+
+**Why the branch is absent.** The released checkout is in detached HEAD:
+
+```
+$ git -C F:\Code\ehr-release-48375bc3 status -sb
+## HEAD (no branch)
+$ git -C F:\Code\ehr-release-48375bc3 branch -vv
+* (HEAD detached at 48375bc3)      48375bc3 fix(docker_v1): pass --entrypoint env …
+  feat/submodule-cloud-api-v1-host  48375bc3 [origin/feat/submodule-cloud-api-v1-host] …
+```
+
+`inspect_git_source` derives the branch as
+`git branch --show-current … or None` (`synaptic-tuner/tuner/project/source_bundle.py`).
+Under detached HEAD that command prints an empty string, so `branch` is `None`,
+and `_verified_remote_source` rejects it before any remote read happens.
+
+**The guard is intentional, and the checkout is one step short of satisfying it.**
+The local branch `feat/submodule-cloud-api-v1-host` already exists at exactly the
+checked-out commit and already tracks `origin/feat/submodule-cloud-api-v1-host`.
+Both remote heads were read and both equal the locked commits, so the
+`ls-remote` equality check the guard performs next would pass:
+
+| Repository | Locked commit | `git ls-remote --refs` head | Equal |
+|---|---|---|---|
+| Epistemic-Humility-Research, `refs/heads/feat/submodule-cloud-api-v1-host` | `48375bc39f68…` | `48375bc39f68…` | yes |
+| Synaptic-Tuner, `refs/heads/feat/submodule-cloud-api-v1` | `aec998ee8d6a…` | `aec998ee8d6a…` | yes |
+
+So B-6 is not a Host code defect. The guard is doing exactly its job — refusing
+to admit a run whose source is not identifiable as a pushed named branch. B-6 is
+a **release-procedure and driver-precondition gap**: nothing in the recipe puts
+the released checkout on its branch, and nothing in the preconditions detects
+that it is not.
+
+**An asymmetry worth recording.** The engine submodule is *also* in detached
+HEAD, and that is tolerated, because `GitCliLocalSourceInspector.inspect` reads
+the branch out of the committed `.gitmodules`
+(`submodule."synaptic-tuner".branch = feat/submodule-cloud-api-v1`) and
+substitutes it with `engine_source = replace(engine_source, branch=committed_branch)`.
+The superproject has no equivalent fallback, and none is available to it —
+there is no committed file that names the superproject's own branch. That is why
+the failure lands on the project source and not the engine source, and it is why
+the remedy has to be operational rather than a symmetric code fix.
+
+**Recommended remedy** (not applied — see 11.6): put the released checkout on the
+branch it already has, at the commit it is already on, and add a precondition
+that fails loudly when it is not.
+
+```
+git -C F:\Code\ehr-release-48375bc3 checkout feat/submodule-cloud-api-v1-host
+```
+
+This moves `.git/HEAD` only. The branch points at the same commit, so no tracked
+file changes and the working tree stays byte-identical. Reversible with
+`git checkout --detach 48375bc3`.
+
+The durable half of the remedy belongs in the run recipe: section 9.1 checks
+P1–P6 and none of them looks at HEAD. A **P7** should assert that the project
+checkout is on a branch, that the branch has `origin` as its upstream remote,
+and that `git ls-remote` on that branch equals HEAD — the same three conditions
+the Host is about to enforce, checked before a run is issued rather than
+discovered as an opaque `RESOLUTION_UNAVAILABLE` at cut 1.
+
+### 11.4 B-2 remains unverified, and version evidence was re-captured
+
+The run stopped before the trainer started, so nothing was measured about
+`adapter_config.json` in Run 2. Per the standing rule not to come back empty on
+B-2, the in-image versions were re-captured from the committed image digest with
+a read-only, `--network none`, no-bind, no-GPU container. They are unchanged
+from Run 1:
+
+| Package | Version |
+|---|---|
+| peft | 0.18.0 |
+| transformers | 4.57.1 |
+| unsloth | 2026.1.2 |
+| unsloth_zoo | 2026.1.2 |
+| torch | 2.9.0+cu128 |
+| trl | 0.24.0 |
+| accelerate | 1.12.0 |
+
+The Run 1 finding therefore stands unchanged: `peft 0.18.0` assigns
+`peft_config.base_model_name_or_path = model.__dict__.get("name_or_path", None)`
+unconditionally, which stamps the snapshot path rather than the locked repo id.
+
+### 11.5 Durable state — no row written
+
+This is reported as its own outcome, not as "phase did not advance". There was
+no phase to advance.
+
+```
+$ find F:\Code\ehr-release-48375bc3\.synaptic\state
+No such file or directory
+```
+
+The state directory does not exist, so `training.sqlite3` does not exist, so
+there is no `docker_run_mutations` table and no row in it. The section 10.2
+durable-row contract and the `command_digest` check could not be evaluated and
+remain unverified. The failure occurred during admission, before any durable
+effect is written, which is the correct ordering: a run that cannot prove its
+source must leave no trace.
+
+### 11.6 Cleanliness and what was touched
+
+- Nothing in the released checkout or the worktree was modified beyond this
+  report and the gitignored `scratch/` tree. The detached HEAD was **not**
+  corrected; that is the lead's call, because the released checkout is the
+  evidence.
+- No secrets were read, passed, or logged. No `HF_TOKEN` anywhere. Every
+  container ran `--network none` except the A1 GPU probe, which takes no network
+  either.
+- One stray container from Run 1 (`quizzical_dijkstra`, the version-capture
+  container that B-4's entrypoint hijack left running under supervisord) was
+  removed with `docker rm -f`. Three unrelated pre-existing containers
+  (`cc-test-pg`, `heuristic_lamarr`, `youthful_margulis`) were left alone.
+- Scratch artifacts for this run are under
+  `F:\Code\ehr-release-48375bc3\scratch\test-phase\` — `logs\03-real-run.log`,
+  `logs\04-diagnose-resolution.log`, and the read-only harness
+  `diagnose_resolution.py`.
+
+## 12. What Run 2 changed about what is unproven
+
+Resolved since Run 1: R3 (GPU visibility), R4 (artifact writability), R5 (image
+Python version), R6 (inventory materialization and link-freedom), plus the B-3,
+B-1' and B-4 fixes themselves.
+
+Still unproven, and now blocked behind B-6:
+
+- Everything downstream of admission. The container has still never been created
+  by the prepared path, so the real bind of the stage directory, stage reuse and
+  replay idempotency are all untested.
+- The whole of section 10.2: the durable `docker_run_mutations` row contract,
+  `command_digest`, and the observe/verify/publish cut sequence.
+- B-2 end to end. It has been confirmed by measurement at the library level but
+  never observed on a real SmolLM2 run driven through unsloth's
+  `FastLanguageModel`.
+- Whether the 9p bind is fast enough to move ~1.97 GB of model weights into the
+  container within the run budget.
+
+Ordering note for whoever resumes: **B-6 now gates everything**, in the same way
+B-4 gated Run 1. It is cheap to clear — one `git checkout` plus a P7 precondition
+— and until it is cleared no cut can produce information about anything else.
+
+---
+---
+
+# Run 3 — 2026-09-02, released checkout `48375bc3`, now on its branch
+
+Third execution, after the lead moved `F:\Code\ehr-release-48375bc3` onto
+`feat/submodule-cloud-api-v1-host` to clear B-6. Same commit, same host, same
+image digest.
+
+**Verdict: RED on a new blocker, B-7.** B-6 is confirmed cleared. A second, weaker
+finding (B-8) is recorded as an intermittent risk rather than a blocker. The
+single most useful result is not the failure itself but what an effect-free probe
+established behind it: **B-7 is the last known blocker before activation.**
+
+## 13. Run 3 verdict by step
+
+| # | Step | Verdict |
+|---|------|---------|
+| 0 | Verify the lead's four preconditions | **GREEN** |
+| 4 | Real run through the driver | **RED** — cut 1, `RESOLUTION_UNAVAILABLE` |
+| 5 | Section 10.2 durable-row contract | **NOT REACHED** — still no row |
+| 6 | This report section | done |
+
+### 13.1 B-6 is cleared, verified two ways
+
+The four facts were checked before anything else, and all four hold:
+
+| Fact | Measured |
+|---|---|
+| On a branch | `## feat/submodule-cloud-api-v1-host...origin/feat/submodule-cloud-api-v1-host` |
+| Commit | `48375bc39f6880961f742babaf9d96da58ac60bb` |
+| Upstream | `branch.….remote = origin`, `branch.….merge = refs/heads/feat/submodule-cloud-api-v1-host` |
+| Clean tree, submodule | empty `--porcelain`, submodule ` aec998ee…` (no `+`) |
+
+The stronger confirmation is behavioural. In Run 2 `prove` died at
+`docker_training.py:212` on the branch check. In Run 3 it reaches
+`docker_training.py:214`, the remote read on the next line. The guard that
+blocked Run 2 now passes.
+
+### 13.2 B-7 — the Host's scrubbed environment breaks all networking on Windows
+
+The driver's cut 1 returned the same outward code as Run 2:
+
+```
+[cut 1] exit=4 status=unavailable run_id=None phase=None
+FAILED L6-command-refused: … code=RESOLUTION_UNAVAILABLE on cut 1
+```
+
+Same code, different cause. The instrumented re-issue showed:
+
+```
+  docker_training.py:214 in _verified_remote_source -> self._reader.read_ref(…)
+  security.py:861 in read_ref -> self._runner(("git","ls-remote","--refs",…))
+  security.py:849 in _run -> subprocess.run(…)
+  subprocess.CalledProcessError: … returned non-zero exit status 128
+```
+
+`check=True` discards the child's stderr, so the exit code alone says nothing.
+Reproducing the exact call with the identical environment recovers it:
+
+```
+fatal: unable to access 'https://github.com/ProfSynapse/Epistemic-Humility-Research.git/':
+getaddrinfo() thread failed to start
+```
+
+**Cause.** `ScopedGitRemoteReader._run` (`synaptic_host/security.py:836-848`)
+replaces the child environment with a nine-key allowlist: `PATH`,
+`GIT_TERMINAL_PROMPT`, `GCM_INTERACTIVE`, `GIT_CONFIG_NOSYSTEM`,
+`GIT_CONFIG_GLOBAL`, `GIT_CONFIG_SYSTEM`, `GIT_OPTIONAL_LOCKS`, `LC_ALL`,
+`LANG`. That list is POSIX-shaped. On Windows, Winsock cannot initialise without
+`SystemRoot`, so `getaddrinfo` fails in the child and every remote Git operation
+dies with exit 128.
+
+**Single-variable isolation.** The same argv was run under the exact scrub and
+under the scrub plus one variable at a time:
+
+| Environment | Exit | Result |
+|---|---|---|
+| exact scrub, as the Host builds it | 128 | `getaddrinfo() thread failed to start` |
+| scrub + `SystemRoot` | **0** | `48375bc39f68… refs/heads/feat/submodule-cloud-api-v1-host` |
+| scrub + `TEMP` | 128 | same failure |
+| scrub + `USERPROFILE` | 128 | same failure |
+| scrub + `APPDATA` | 128 | same failure |
+| scrub + `ProgramData` | 128 | same failure |
+| scrub + all of the above | 0 | correct SHA |
+| inherited environment (control) | 0 | correct SHA |
+
+`SystemRoot` alone is necessary and sufficient. `git.exe` resolves fine from
+`PATH` (`C:\Program Files\Git\cmd\git.exe`), so this is not a lookup failure.
+
+**Severity.** There is no operator workaround. `subprocess.run(env=…)` replaces
+the environment wholesale, the reader is constructed with no injected runner, and
+no committed configuration reaches it. Both call sites are affected, since
+`prove` verifies the project source and the engine source through the same
+method. **In its current form the prepared path cannot complete admission on
+Windows at all** — which is the platform this workstream exists to support. This
+is a Host source defect and needs a code fix; it cannot be cleared from the
+run recipe the way B-6 was.
+
+**Suggested shape of the fix** (for the owner, not applied here): on Windows,
+carry `SystemRoot` through into the allowlist. It names `C:\WINDOWS`, carries no
+credential material, and does not re-admit ambient Git configuration, so the
+scrub's security intent is preserved. `SystemDrive`, `windir`, `COMSPEC` and
+`PATHEXT` are the usual companions and are worth considering in the same ruling.
+The fix should be platform-conditioned so the POSIX lane keeps the tighter list.
+
+A second, smaller point for the same owner: `check=True` throws away the child's
+stderr, so a networking failure surfaces as a bare exit code that then collapses
+into `RESOLUTION_UNAVAILABLE`. Capturing stderr into the raised error would have
+turned this diagnosis into one line of log.
+
+### 13.3 The useful result — B-7 is the last known blocker before activation
+
+An **effect-free** probe answered the question the failure would otherwise leave
+open. Two in-memory patches, applied lazily through the same `sys.meta_path`
+hook: `ScopedGitRemoteReader._run` gains `SystemRoot`, simulating the B-7 fix,
+and `_activate_docker_training_v1` raises immediately. Admission is therefore
+exercised in full while no container is created and no durable state is written
+— `docker_training` is effect-free up to activation, and this was confirmed
+afterwards.
+
+With B-7 simulated, the run reaches the deliberate activation stop:
+
+```
+### compile_training_plan_v1 OK
+### resolve_docker_model_inventory_v1 OK
+### ADMISSION COMPLETE — activation deliberately blocked, no container created,
+    no durable state written
+```
+
+Reaching the inventory step proves `session.bind` and `session.verify_plan` both
+passed, since both sit between the plan compile and that call in the same block.
+So every admission stage — source proof, committed-blob checks, destination
+policy, plan compilation, plan verification and model-inventory resolution —
+passes once B-7 is cleared. **The plan compiled for the first time in this
+workstream.** Fixing B-7 should therefore carry the run into activation, where
+the expected B-2 failure at artifact verification finally becomes reachable.
+
+This is a projection from a patched process, not an observation of the shipped
+path, and should be read as such.
+
+### 13.4 B-8 — an intermittent inventory failure, recorded as a risk not a blocker
+
+On the **first** execution of that depth probe, admission failed one step earlier:
+
+```
+  docker_model_inventory.py:262 in resolve_docker_model_inventory_v1
+  docker_model_inventory.py:185 in _inventory_snapshot
+  ValueError: model snapshot changed during inventory
+```
+
+`_inventory_snapshot` records a `(st_dev, st_ino, st_mode, st_nlink, st_size,
+st_mtime_ns, st_ctime_ns)` identity for every directory and file, hashes all 25
+files, then re-stats everything and rejects the inventory if any identity moved.
+
+It did not reproduce. Three subsequent executions of the identical path passed.
+A standalone replication of the two-phase check reported **0 of 4 directory and
+0 of 25 file mismatches**, hashing all 1.97 GB in 1.3 s against a warm cache.
+
+**Honest limits.** I did not capture which path or which field moved, because the
+failure never recurred while instrumented. The evidence is consistent with a
+time-of-check/time-of-use window that widens with a cold read of 1.97 GB from the
+F: drive — the first execution was the only cold one — but that mechanism is a
+hypothesis, not a measurement. What is established is narrower and still worth
+acting on: **this check can reject a valid, unmodified inventory**, it did so
+once, and its failure probability scales with read time. It is a flake in the
+admission path, and a run that trips it fails with the same opaque
+`RESOLUTION_UNAVAILABLE` as everything else. Recommend the owner add the
+offending path and field to the message so the next occurrence is self-diagnosing.
+
+### 13.5 One instrument artifact, recorded so it is not mistaken for a finding
+
+The first depth probe wrapped the admission session in a delegating proxy. It
+failed before `compile_training_plan_v1` was ever called, which briefly looked
+like a fourth blocker. It was not: `DockerAdmissionResolverV1.__post_init__`
+enforces `type(self.session) is not _AdmissionSessionV1`, so the proxy was
+rejected by an exact-type guard. Removing the proxy removed the failure. The
+guard is correct and the harness was wrong.
+
+### 13.6 Durable state — still no row
+
+`F:\Code\ehr-release-48375bc3\.synaptic\state` still does not exist, so there is
+no `training.sqlite3`, no `docker_run_mutations` table and no row. Section 10.2's
+row contract and `command_digest` check remain unverified for a third run. The
+effect-free probes wrote nothing, created no container, and left the tracked tree
+clean, all confirmed after the fact.
+
+### 13.7 Cleanliness
+
+Nothing was modified in the released checkout or the worktree beyond this report
+and the gitignored `scratch/` tree. No secrets were read, passed or logged; the
+one network operation is an unauthenticated `ls-remote` against a public
+repository. New scratch artifacts: `logs/05-run3.log`, `logs/06-diagnose-run3.log`,
+`logs/07-admission-depth.log`, and the read-only probes
+`probe_lsremote_env.py`, `probe_admission_depth.py`, `probe_inventory_toctou.py`.
+
+## 14. What Run 3 changed about what is unproven
+
+Newly established: B-6 is cleared; the plan compiles; every admission stage
+passes once B-7 is simulated. Newly blocked: everything downstream of admission,
+now behind B-7 rather than B-6.
+
+Still unproven, unchanged from Run 2: container creation by the prepared path,
+the stage bind, stage reuse and replay idempotency, the whole of section 10.2,
+B-2 end to end on a real SmolLM2 run, and whether the 9p bind moves ~1.97 GB
+inside the run budget.
+
+Ordering note: **B-7 gates everything**, it needs a source fix rather than an
+operator step, and it is the third platform-conditioned defect in this workstream
+that only a real Windows host could surface — after B-3's CRLF stdin and B-4's
+entrypoint hijack. B-8 should be fixed alongside it but does not gate a run
+attempt.
