@@ -278,6 +278,115 @@ def _check_p6_config_is_committed(project_root: Path, config_ref: str) -> None:
     print(f"    PASS P6-config-committed: {relative} matches the committed blob")
 
 
+def _git(project_root: Path, *arguments: str) -> subprocess.CompletedProcess:
+    """One read-only git.exe call in the project checkout.
+
+    Same resolution P6 uses: the bare name `git.exe`, found on the Windows PATH.
+    This driver deliberately adds no second discovery path.
+    """
+    return _run(["git.exe", "-C", str(project_root), *arguments])
+
+
+def _check_p7_branch_is_publishable(project_root: Path) -> None:
+    """The project checkout must be on a branch that tracks origin at HEAD.
+
+    Blocker B-6, measured on run 2: the released checkout was built by checking
+    out the target sha, which DETACHES HEAD. Publication closure resolves the
+    source through `_verified_remote_source` (`docker_training.py:242`, raising
+    at `:212`), which requires an exact upstream branch, so the run died at cut 1
+    reporting only RESOLUTION_UNAVAILABLE -- a status that names the symptom and
+    not the cause, and cost a full diagnostic cycle to attribute.
+
+    The three conditions below are exactly what that guard needs, checked here
+    where the failure can still say what to do about it. The ENGINE submodule may
+    stay detached: `GitCliLocalSourceInspector` substitutes its branch from the
+    committed `.gitmodules`. The superproject may not.
+
+    This is the only precondition that touches the network, via `ls-remote`.
+    """
+    head = _git(project_root, "rev-parse", "HEAD")
+    if head.returncode != 0:
+        _fail(
+            "P7-git-unavailable",
+            f"git.exe could not read HEAD in {project_root}: {head.stderr.strip()}",
+        )
+    head_sha = head.stdout.strip()
+
+    branch = _git(project_root, "branch", "--show-current")
+    if branch.returncode != 0:
+        _fail(
+            "P7-git-unavailable",
+            f"git.exe could not read the current branch: {branch.stderr.strip()}",
+        )
+    current = branch.stdout.strip()
+    if not current:
+        candidates = _git(
+            project_root, "branch", "--points-at", "HEAD", "--format=%(refname:short)"
+        )
+        names = [n for n in candidates.stdout.split() if n] if candidates.returncode == 0 else []
+        remedy = (
+            f"git checkout {names[0]}"
+            if names
+            else f"git checkout -b <branch> {head_sha[:12]}  # no local branch is at HEAD"
+        )
+        _fail(
+            "P7-detached-head",
+            f"HEAD is detached at {head_sha[:12]}; publication closure needs a branch. "
+            f"Remedy: {remedy}",
+        )
+
+    # The exact read the engine inspector performs (`source_bundle.py:668-675`),
+    # deliberately the same command rather than an equivalent: it consults only
+    # the LOCAL config, so an upstream set in a global or included config would
+    # satisfy `for-each-ref` while still failing the Host.
+    remote = _git(
+        project_root, "config", "--local", "--get", f"branch.{current}.remote"
+    )
+    tracked = remote.stdout.strip() if remote.returncode == 0 else ""
+    if tracked != "origin":
+        detail = f"tracks remote {tracked!r}" if tracked else "has no upstream"
+        _fail(
+            "P7-no-upstream",
+            f"branch {current!r} {detail}; publication closure requires an upstream on "
+            f"origin. Remedy: git branch --set-upstream-to=origin/{current} {current}",
+        )
+
+    # `_verified_remote_source` (`docker_training.py:214-218`) builds the ref from
+    # `source.branch`, which the inspector sets from `git branch --show-current`.
+    # So origin must carry refs/heads/<LOCAL branch name>, even when the upstream
+    # merge ref is spelled differently.
+    listed = _git(project_root, "ls-remote", "origin", f"refs/heads/{current}")
+    if listed.returncode != 0:
+        # ls-remote could not TALK to origin. Distinct from every branch-state
+        # failure below, because pushing would not help and saying so would name
+        # the wrong cause -- the defect P7 exists to avoid.
+        _fail(
+            "P7-origin-unreachable",
+            f"git ls-remote origin refs/heads/{current} could not reach origin: "
+            f"{listed.stderr.strip()}. Remedy: check network access to origin "
+            f"(and credentials, if it is a private remote) and rerun.",
+        )
+    first = listed.stdout.split()
+    remote_sha = first[0] if first else ""
+    if not remote_sha:
+        # Exit 0 with no refs line is git reporting SUCCESSFULLY that origin does
+        # not carry the branch. That is a branch-state problem a push fixes, so it
+        # stays a mismatch rather than joining the unreachable case above.
+        _fail(
+            "P7-remote-mismatch",
+            f"origin has no refs/heads/{current}; publication closure cannot resolve it. "
+            f"Remedy: git push origin {current}",
+        )
+    if remote_sha != head_sha:
+        _fail(
+            "P7-remote-mismatch",
+            f"origin/{current} is {remote_sha[:12]} but HEAD is {head_sha[:12]}; the run "
+            f"would resolve a different commit. Remedy: git push origin {current}",
+        )
+
+    print(f"    PASS P7-branch-publishable: {current} tracks origin at {head_sha[:12]}")
+
+
 # --------------------------------------------------------------------------
 # Mount-source probe (blocker B-1 residual, section 9.1 step 6)
 # --------------------------------------------------------------------------
@@ -688,6 +797,7 @@ def main(argv: list[str] | None = None) -> int:
         profile = _load_profile(project_root)
         distro, drive_mount_root = _check_p5_drive_mount_root(profile)
         _check_p6_config_is_committed(project_root, args.config)
+        _check_p7_branch_is_publishable(project_root)
 
         runtime = profile.get("runtime") or {}
         image = runtime.get("image")

@@ -35,6 +35,15 @@ without starting a container.
    a distro-ext4 root cannot work either, because the stage translator raises
    unless the stage path has a Windows drive. Mount sources are DERIVED from the
    project root, so no storage root can be moved off that drive.
+
+   Build it by cloning the **branch** and then verifying HEAD equals the target
+   sha. Do NOT `git checkout <sha>`: that detaches HEAD, and a detached checkout
+   cannot publish (see prerequisite 8).
+
+   ```
+   git.exe clone --branch <branch> <url> <dir>
+   git.exe -C <dir> rev-parse HEAD    # must equal the target sha
+   ```
 2. **The branch head is published.** The training config is read as a committed
    git blob at the locked project commit, not from the working tree. An edited
    but uncommitted config cannot take effect.
@@ -64,6 +73,39 @@ without starting a container.
    rather than improvising: nothing on this path reads `Config.Entrypoint`
    back, so a daemon that silently ignored the flag would present as blocker
    B-4 all over again (architecture sections 17.9 and 17.11).
+8. **The project checkout is on a branch that tracks `origin` at HEAD.**
+   Publication closure resolves the source through `_verified_remote_source`,
+   which needs an exact upstream branch and refuses otherwise. A detached HEAD
+   surfaces only as `RESOLUTION_UNAVAILABLE` at cut 1, which names the symptom
+   and not the cause — that is blocker B-6, and it cost a full diagnostic cycle
+   on run 2. The driver now checks it as **P7** before anything touches Docker,
+   failing with `P7-detached-head`, `P7-no-upstream`, `P7-remote-mismatch` or
+   `P7-origin-unreachable` and printing the one-line remedy. That last tag is
+   separate on purpose: when `ls-remote` cannot reach origin at all, the remedy is
+   to check network access and rerun, NOT to push. A successful `ls-remote` that
+   lists nothing is a different thing — origin really does not carry the branch —
+   and stays a mismatch that a push fixes. Three conditions, all required:
+
+   ```
+   git.exe -C <root> branch --show-current                       # non-empty
+   git.exe -C <root> config --local --get branch.<branch>.remote # exactly origin
+   git.exe -C <root> ls-remote origin refs/heads/<branch>       # equals HEAD
+   ```
+
+   The **engine submodule may stay detached**: `GitCliLocalSourceInspector`
+   substitutes its branch from the committed `.gitmodules`. The superproject may
+   not. P7 is also the one precondition that touches the network, through
+   `ls-remote`.
+
+   Running the driver from a **working worktree** fails P7 by design: a worktree
+   branch normally has no local upstream, so it is not a publishable source. The
+   released checkout cloned with `--branch` is, and it is the only place a real run
+   belongs. A P7 failure in a worktree is the check working, not a regression.
+
+   The ref is built from the **local** branch name, because the engine inspector
+   sets `GitSource.branch` from `git branch --show-current` and the Host then
+   reads `refs/heads/<that name>` from origin. A local branch pushed to a
+   differently-named remote branch therefore FAILS, even with an upstream set.
 
 ## Materializing the model inventory
 
