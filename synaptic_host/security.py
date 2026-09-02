@@ -28,6 +28,7 @@ from synaptic_tuner.api.v1 import (
 from synaptic_tuner.api.v1.sources import RepositoryLocation
 
 _HEAD_REF = re.compile(r"^refs/heads/[A-Za-z0-9][A-Za-z0-9._/-]{0,254}$")
+_URL_USERINFO = re.compile(r"://[^/\s]*@")
 
 
 def utc_now() -> str:
@@ -39,6 +40,19 @@ def _parse_utc(value: str) -> datetime:
     if parsed.tzinfo is None:
         raise ValueError("timestamp must include a timezone")
     return parsed.astimezone(timezone.utc)
+
+
+def _scrubbed_stderr(raw: bytes | None) -> str:
+    """Bound and de-credential a child's stderr for an operator-facing error.
+
+    Sliced to 512 bytes BEFORE decoding so a hostile remote cannot flood the
+    log, decoded with errors="replace" because a truncated slice can cut a
+    UTF-8 sequence in half, and any "scheme://userinfo@host" is dropped.  The
+    reader already disables credential helpers and prompts, so a credential
+    should never reach here at all; this is the second line, not the first.
+    """
+    text = (raw or b"")[:512].decode("utf-8", errors="replace")
+    return " ".join(_URL_USERINFO.sub("://", text).split())
 
 
 _PRIVATE_STORAGE_ERROR = "HMAC private storage validation failed"
@@ -846,10 +860,25 @@ class ScopedGitRemoteReader:
             "LC_ALL": "C",
             "LANG": "C",
         }
-        completed = subprocess.run(
-            tuple(argv), check=True, capture_output=True, timeout=20,
-            env=environment, stdin=subprocess.DEVNULL,
-        )
+        if os.name == "nt" and "SystemRoot" in os.environ:
+            # Winsock will not initialise without SystemRoot, so ls-remote dies
+            # at DNS with "getaddrinfo() thread failed to start".  SystemDrive,
+            # windir, COMSPEC and PATHEXT were each measured unnecessary and are
+            # deliberately NOT carried: the scrub stays minimal.
+            environment["SystemRoot"] = os.environ["SystemRoot"]
+        try:
+            completed = subprocess.run(
+                tuple(argv), check=True, capture_output=True, timeout=20,
+                env=environment, stdin=subprocess.DEVNULL,
+            )
+        except subprocess.CalledProcessError as failure:
+            # check=True is kept, but the child's own diagnosis is no longer
+            # discarded: a bare "exit 128" costs the next operator a whole
+            # bisect, while the one line Git already wrote names the cause.
+            raise ValueError(
+                f"remote Git read failed with exit {failure.returncode}: "
+                + _scrubbed_stderr(failure.stderr)
+            ) from failure
         if len(completed.stdout) > 4096:
             raise ValueError("remote Git proof exceeded its bound")
         return completed.stdout

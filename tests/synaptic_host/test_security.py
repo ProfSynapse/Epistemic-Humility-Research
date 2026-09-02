@@ -574,3 +574,91 @@ def test_scoped_git_reader_builds_only_the_closed_read_command() -> None:
             canonical_url="https://github.com/example/project.git",
             exact_ref="HEAD",
         )
+
+
+_SCRUBBED_KEYS = {
+    "PATH", "GIT_TERMINAL_PROMPT", "GCM_INTERACTIVE", "GIT_CONFIG_NOSYSTEM",
+    "GIT_CONFIG_GLOBAL", "GIT_CONFIG_SYSTEM", "GIT_OPTIONAL_LOCKS",
+    "LC_ALL", "LANG",
+}
+
+
+def _captured_env(monkeypatch, *, os_name: str, environ: dict) -> dict:
+    """Run the scrubbed reader against a fake child and return the env it built."""
+    seen: dict = {}
+
+    class _Completed:
+        stdout = b""
+
+    def fake_run(argv, **kwargs):
+        seen.update(kwargs["env"])
+        return _Completed()
+
+    monkeypatch.setattr(security.os, "name", os_name)
+    monkeypatch.setattr(security.os, "environ", environ)
+    monkeypatch.setattr(security.subprocess, "run", fake_run)
+    security.ScopedGitRemoteReader._run(("git", "ls-remote"))
+    return seen
+
+
+def test_scoped_git_reader_scrub_carries_system_root_only_on_windows(monkeypatch) -> None:
+    # B-7.  Winsock cannot initialise without SystemRoot, so every remote read
+    # died at DNS on Windows.  Exactly one key earns its way in.
+    posix = _captured_env(
+        monkeypatch, os_name="posix",
+        environ={"PATH": "/usr/bin", "SystemRoot": "C:\\Windows"},
+    )
+    assert set(posix) == _SCRUBBED_KEYS, "the POSIX allowlist must not change"
+
+    windows = _captured_env(
+        monkeypatch, os_name="nt",
+        environ={"PATH": "C:\\bin", "SystemRoot": "C:\\Windows"},
+    )
+    assert set(windows) == _SCRUBBED_KEYS | {"SystemRoot"}
+    assert windows["SystemRoot"] == "C:\\Windows"
+
+    # The four keys measured unnecessary stay out even when the host defines
+    # them, so the scrub cannot quietly widen into a passthrough.
+    defined = _captured_env(
+        monkeypatch, os_name="nt",
+        environ={
+            "PATH": "C:\\bin", "SystemRoot": "C:\\Windows", "SystemDrive": "C:",
+            "windir": "C:\\Windows", "COMSPEC": "C:\\Windows\\system32\\cmd.exe",
+            "PATHEXT": ".COM;.EXE", "USERPROFILE": "C:\\Users\\x",
+        },
+    )
+    assert set(defined) == _SCRUBBED_KEYS | {"SystemRoot"}
+
+    # A Windows host that defines no SystemRoot must not gain a synthesised one.
+    bare = _captured_env(monkeypatch, os_name="nt", environ={"PATH": "C:\\bin"})
+    assert set(bare) == _SCRUBBED_KEYS
+
+
+def test_scoped_git_reader_surfaces_bounded_scrubbed_stderr_on_failure(monkeypatch) -> None:
+    noise = b"Z" * 4096
+
+    def fake_run(argv, **kwargs):
+        raise subprocess.CalledProcessError(
+            128, argv,
+            stderr=(
+                b"fatal: unable to access "
+                b"'https://operator:s3cret@example.com/project.git': "
+                b"getaddrinfo() thread failed to start\n" + noise
+            ),
+        )
+
+    monkeypatch.setattr(security.subprocess, "run", fake_run)
+    with pytest.raises(ValueError) as caught:
+        security.ScopedGitRemoteReader._run(("git", "ls-remote"))
+
+    message = str(caught.value)
+    assert "exit 128" in message
+    # The child's own diagnosis reaches the operator instead of a bare exit code.
+    assert "getaddrinfo() thread failed to start" in message
+    # Bounded: a hostile remote cannot flood the log through this path.
+    assert message.count("Z") < len(noise)
+    assert len(message) < 700
+    # Userinfo is dropped even though the reader disables helpers and prompts,
+    # so a credential should never have reached this slice in the first place.
+    assert "s3cret" not in message and "operator:" not in message
+    assert "https://example.com/project.git" in message
