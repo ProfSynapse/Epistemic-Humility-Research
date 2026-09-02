@@ -194,8 +194,32 @@ if copied == 0:
 '''
 
 
-def _run(argv: list[str], *, stdin_text: str | None = None) -> subprocess.CompletedProcess:
+def _run(
+    argv: list[str], *,
+    stdin_text: str | None = None,
+    stdin_bytes: bytes | None = None,
+) -> subprocess.CompletedProcess:
+    """Run a command, optionally feeding it stdin.
+
+    `stdin_bytes` sends the payload BYTE-EXACT. Use it whenever the child
+    parses what it reads, because `text=True` translates newlines on the way
+    in; see the B-3 note at the container call site. stdout and stderr are
+    decoded either way, so callers always get str.
+    """
     print(f"    $ {subprocess.list2cmdline(argv)}", flush=True)
+    if stdin_bytes is not None:
+        completed = subprocess.run(
+            argv,
+            input=stdin_bytes,
+            capture_output=True,
+            check=False,
+        )
+        return subprocess.CompletedProcess(
+            completed.args,
+            completed.returncode,
+            completed.stdout.decode("utf-8", "replace"),
+            completed.stderr.decode("utf-8", "replace"),
+        )
     return subprocess.run(
         argv,
         input=stdin_text,
@@ -258,7 +282,19 @@ def _materialize(
     # output lines below. This script forwards no credential at all, so the
     # wording costs nothing.
     print("[3/3] running the throwaway container (no -e flag, no credentials forwarded)")
-    completed = _run(argv, stdin_text=shell)
+
+    # B-3: the container shell must receive LF line endings and nothing else.
+    # `subprocess.run(..., text=True)` wraps the child's stdin in a
+    # TextIOWrapper whose default newline handling rewrites "\n" to os.linesep,
+    # so on a Windows host every line arrived as CRLF. dash inside
+    # python:3.12-slim then read `set -eu\r` and died with
+    # "sh: 1: set: Illegal option -", before any of the real work. Encoding
+    # here and sending bytes bypasses that translation on every platform. The
+    # guard makes the invariant explicit rather than implicit in the encoding.
+    payload = shell.encode("utf-8")
+    if b"\r" in payload:
+        _fail("M3-stdin-newlines", "the container shell program contains a CR byte")
+    completed = _run(argv, stdin_bytes=payload)
     if completed.stdout:
         for line in completed.stdout.strip().splitlines():
             print(f"    {line}")
