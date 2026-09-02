@@ -294,7 +294,7 @@ def test_checked_in_profile_activates_only_nvidia_sft() -> None:
     assert profile.network_mode == "none"
     assert profile.cpu_count == 1
     assert profile.docker_policy_ref == "docker-desktop-windows-v1"
-    assert profile.wsl_distro == "docker-desktop"
+    assert profile.wsl_distro == "Ubuntu-22.04"
     assert profile.inventory_root_ref == "docker-model-inventory-source"
     assert profile.cache_admission is True
 

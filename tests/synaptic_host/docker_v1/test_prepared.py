@@ -163,35 +163,41 @@ _WINDOWS_STAGE = PureWindowsPath(
 ) / _STAGE_KEY
 
 
-def test_rendered_mount_source_matches_the_measured_docker_desktop_layout():
-    """Pin the FULL mount source against the measured docker-desktop layout.
+def test_rendered_mount_source_matches_the_committed_ubuntu_layout():
+    """Pin the FULL mount source against the committed profile (B-1').
 
-    Inside the committed ``docker-desktop`` distro the Windows drives are
-    drvfs mounts at ``/mnt/host/{c,e,f}``; ``/mnt/f`` survives only as an
-    empty legacy skeleton, so the pre-fix rendering bound an empty directory.
+    The committed pair is ``Ubuntu-22.04`` with ``drive_mount_root`` ``/mnt``,
+    where ``F:`` appears as drvfs at ``/mnt/f``. The earlier ``docker-desktop``
+    candidate is refuted by measurement, not merely unpreferred: the engine
+    refuses to resolve a source in that distro with "accessing specified distro
+    mount service: stat /run/guest-services/distro-services/docker-desktop.sock:
+    no such file or directory" (host run, task #93).
+
     The end-to-end adapter cannot render this on Linux, because it demands a
     real Windows drive path (``prepared.py`` refuses otherwise), so the pin is
     taken on the translator plus the UNC concatenation the adapter applies.
     Both halves are compared against whole literal strings, never prefixes.
     """
 
-    posix_path = _wsl_path(_WINDOWS_STAGE / "source", "/mnt/host")
+    posix_path = _wsl_path(_WINDOWS_STAGE / "source", "/mnt")
     assert posix_path == (
-        "/mnt/host/f/Code/Toolset-Training/.synaptic/state/docker/stages/"
+        "/mnt/f/Code/Toolset-Training/.synaptic/state/docker/stages/"
         + _STAGE_KEY + "/source"
     )
     assert canonical_wsl_path_v1(posix_path) == posix_path
-    unc = "\\\\wsl.localhost\\" + "docker-desktop" + posix_path.replace("/", "\\")
+    unc = "\\\\wsl.localhost\\" + "Ubuntu-22.04" + posix_path.replace("/", "\\")
     assert unc == (
-        "\\\\wsl.localhost\\docker-desktop\\mnt\\host\\f\\Code\\Toolset-Training"
+        "\\\\wsl.localhost\\Ubuntu-22.04\\mnt\\f\\Code\\Toolset-Training"
         "\\.synaptic\\state\\docker\\stages\\" + _STAGE_KEY + "\\source"
     )
 
 
-def test_rendered_mount_source_honours_the_ubuntu_fallback_root():
-    # The fallback the design keeps reachable by editing one committed value.
-    assert _wsl_path(_WINDOWS_STAGE / "artifacts", "/mnt") == (
-        "/mnt/f/Code/Toolset-Training/.synaptic/state/docker/stages/"
+def test_rendered_mount_source_honours_a_nested_drive_mount_root():
+    # The translator is root-agnostic, which is the property that made B-1' a
+    # committed-value edit rather than a second code change. `/mnt/host` is the
+    # refuted docker-desktop candidate; it still renders, it is just not bound.
+    assert _wsl_path(_WINDOWS_STAGE / "artifacts", "/mnt/host") == (
+        "/mnt/host/f/Code/Toolset-Training/.synaptic/state/docker/stages/"
         + _STAGE_KEY + "/artifacts"
     )
 

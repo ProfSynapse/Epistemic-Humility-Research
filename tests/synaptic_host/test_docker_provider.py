@@ -13,8 +13,8 @@ ROOT = Path(__file__).resolve().parents[2]
 def test_checked_in_docker_profile_binds_windows_host_and_inventory_policy():
     profile = DockerProviderProfileV1.load(project_root=ROOT)
     assert profile.docker_policy_ref == "docker-desktop-windows-v1"
-    assert profile.wsl_distro == "docker-desktop"
-    assert profile.drive_mount_root == "/mnt/host"
+    assert profile.wsl_distro == "Ubuntu-22.04"
+    assert profile.drive_mount_root == "/mnt"
     assert profile.inventory_root_ref
     assert profile.cache_admission is True
     assert profile.to_dict()["docker_host"] == {
@@ -163,8 +163,8 @@ def test_drive_mount_root_refuses_non_canonical_values(value):
 def test_drive_mount_root_refuses_a_distro_name_swapped_into_its_slot():
     # The field sits beside wsl_distro and carries the same type, so a swap of
     # the two values must not pass: only the mount root may be absolute.
-    document = _profile_document_with_root("docker-desktop")
-    document["docker_host"]["wsl_distro"] = "/mnt/host"
+    document = _profile_document_with_root("Ubuntu-22.04")
+    document["docker_host"]["wsl_distro"] = "/mnt"
     with pytest.raises(ValueError):
         DockerProviderProfileV1.from_mapping(document)
 

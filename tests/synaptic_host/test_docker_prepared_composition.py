@@ -70,8 +70,8 @@ def _windows_platform(**changes):
 
     arguments = {
         "docker_policy_ref": "docker-desktop-windows-v1",
-        "wsl_distro": "docker-desktop",
-        "drive_mount_root": "/mnt/host",
+        "wsl_distro": "Ubuntu-22.04",
+        "drive_mount_root": "/mnt",
         "environment": {
             "PATH": "C:\\Docker", "SystemRoot": "C:\\Windows",
             "TEMP": "C:\\Temp", "TMP": "C:\\Temp",
@@ -283,7 +283,7 @@ def test_windows_factory_uses_absolute_cli_exact_endpoint_and_four_key_env():
         observed["environment"].items()
     )
     assert platform.typed_runner._popen is subprocess.Popen
-    assert platform.distro == "docker-desktop"
+    assert platform.distro == "Ubuntu-22.04"
 
 
 def test_windows_factory_fails_closed_on_posix_or_ambiguous_cli():
