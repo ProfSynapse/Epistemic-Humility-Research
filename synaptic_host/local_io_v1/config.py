@@ -41,6 +41,20 @@ def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
     return result
 
 
+def _opens_on_two_separators(value: str) -> bool:
+    """Report whether a path's string form opens on two separators.
+
+    Windows accepts "\\" and "/" interchangeably, so all four pairings name the
+    same family: the UNC share ("\\\\server\\share"), the UNC device form
+    ("\\\\?\\UNC\\server\\share"), the extended-length prefix ("\\\\?\\C:\\...")
+    and the device namespace ("\\\\.\\...").  None of them is a local volume
+    path the retained-handle descent can walk from a project anchor, and a
+    remote share cannot be contained by the project at all.  A SINGLE leading
+    separator is an ordinary POSIX absolute path and stays legal.
+    """
+    return len(value) >= 2 and value[0] in "\\/" and value[1] in "\\/"
+
+
 def _canonical_project_relative(value: object) -> tuple[str, ...]:
     if type(value) is not str or not value.startswith("project://"):
         raise _closed(LocalIOCodeV1.CONFIG_INVALID)
@@ -91,9 +105,15 @@ class StorageRegistryV1:
         project_root: Path,
     ) -> "StorageRegistryV1":
         try:
+            # The anchor itself is refused here, once, so that NEITHER arm below
+            # can produce a share-rooted root: the project arm joins onto
+            # project_root without re-checking it, and is_absolute() alone is
+            # satisfied by a UNC path.  _require_ntfs cannot catch it later --
+            # a remote server reports NTFS for its own volume.
             if (
                 type(raw) is not bytes
                 or not project_root.is_absolute()
+                or _opens_on_two_separators(str(project_root))
                 or len(raw) > _MAX_CONFIG_BYTES
             ):
                 raise _closed(LocalIOCodeV1.CONFIG_INVALID)
@@ -134,16 +154,9 @@ class StorageRegistryV1:
             else:
                 if type(location) is not str:
                     raise _closed(LocalIOCodeV1.CONFIG_INVALID)
-                # Refuse every Win32 name that opens on two separators.  Windows
-                # accepts "\" and "/" interchangeably, so all four pairings name
-                # the same family: the UNC share ("\\server\share"), the UNC
-                # device form ("\\?\UNC\server\share"), the extended-length
-                # prefix ("\\?\C:\...") and the device namespace ("\\.\...").
-                # None of them is a local volume path the retained-handle
-                # descent can walk from a project anchor, and a remote share
-                # cannot be contained by the project at all.  A SINGLE leading
-                # separator is an ordinary POSIX absolute path and stays legal.
-                if len(location) >= 2 and location[0] in "\\/" and location[1] in "\\/":
+                # Refuse every Win32 name that opens on two separators; the
+                # four families it covers are named once at the helper.
+                if _opens_on_two_separators(location):
                     raise _closed(LocalIOCodeV1.CONFIG_INVALID)
                 candidate = Path(location)
                 if not candidate.is_absolute():

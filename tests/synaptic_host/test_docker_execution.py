@@ -742,7 +742,13 @@ def test_absent_publication_cannot_mean_an_unregistered_destination():
     returns = [
         node for node in ast.walk(tree)
         if isinstance(node, ast.Return)
-        # Ignore returns belonging to functions nested inside the factory.
+        # Keep only VALUED returns; the bare ones are collected separately
+        # below and asserted empty. This filter does NOT exclude nested
+        # functions -- ast.walk descends into them -- so the single-return
+        # pin below also requires the factory to declare no nested function
+        # of its own. It declares none today; adding one with a valued
+        # return would redden this test, and the fix then is to narrow the
+        # walk rather than to raise the count.
         and node.value is not None
     ]
     bare = [

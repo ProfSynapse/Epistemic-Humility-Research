@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from synaptic_host.local_io_v1.config import StorageRegistryV1
+from synaptic_host.local_io_v1.config import StorageRegistryV1, _opens_on_two_separators
 from synaptic_host.local_io_v1.model import (
     LocalIOCodeV1,
     LocalIOErrorV1,
@@ -205,3 +205,38 @@ def test_missing_and_oversized_config_errors_do_not_echo_paths(tmp_path: Path) -
     with pytest.raises(LocalIOErrorV1) as caught:
         StorageRegistryV1.load(large, project_root=tmp_path)
     assert caught.value.code is LocalIOCodeV1.CONFIG_INVALID
+
+
+def test_unc_project_root_is_refused_before_either_arm_can_join_onto_it(
+    tmp_path: Path,
+) -> None:
+    # F-1(c).  is_absolute() is satisfied by a UNC path, and the project arm
+    # joins onto project_root without re-checking it, so without the anchor
+    # guard a share-rooted project_root yields a UNC spool root that nothing
+    # downstream refuses -- _require_ntfs cannot catch it, because a remote
+    # server reports NTFS for its own volume.
+    raw = json.dumps(
+        {"schema_version": "synaptic-host-storage/v1", "roots": [_project_spec()]}
+    ).encode("utf-8")
+
+    share = Path("//server/share/proj")
+    # Pin the premise rather than assume it: pathlib preserves the two leading
+    # separators on both flavours (PosixPath keeps "//", WindowsPath renders
+    # "\\\\server\\share\\proj"), so this really does present a UNC anchor on
+    # Linux and on Windows, and it really does pass the is_absolute() check
+    # that is the only anchor validation the guard adds to.
+    assert str(share)[:2] in {"//", "\\\\"}
+    assert share.is_absolute()
+
+    with pytest.raises(LocalIOErrorV1) as caught:
+        StorageRegistryV1.from_bytes(raw, project_root=share)
+    assert caught.value.code is LocalIOCodeV1.CONFIG_INVALID
+
+    # Counter-check against an over-broad refusal: an ordinary absolute anchor
+    # on the running flavour must still parse.  tmp_path rather than a literal
+    # "/proj", because a single leading separator is not absolute on Windows
+    # and the control would then pass for the wrong reason.
+    assert not _opens_on_two_separators(str(tmp_path))
+    assert isinstance(
+        StorageRegistryV1.from_bytes(raw, project_root=tmp_path), StorageRegistryV1
+    )

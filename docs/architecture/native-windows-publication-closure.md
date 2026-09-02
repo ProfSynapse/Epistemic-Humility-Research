@@ -19,11 +19,10 @@ All paths below are relative to that worktree root unless shown absolute.
 > the host tree at commit `85b922fc`, the state this design was written from, and
 > the engine submodule at `aec998ee`. CODE-phase and remediation edits shift these
 > numbers: `filesystem.py`, `docker_training.py` and `docker_execution.py` are all
-> modified in the working tree. `filesystem.py` runs about nine lines higher past
-> `_is_directory`; after remediation cycle 1 `docker_training.py` runs about fifty
-> lines higher past `_activate_docker_training_v1` and `docker_execution.py` about
-> fifty-four lines higher past `DockerPreparedRunOutcomeV1.from_publication`. The
-> citations below are deliberately NOT re-pointed at those working-tree lines.
+> modified in the working tree. The shift is not quantified here on purpose: it is
+> not one number per file, it grows at each insertion point, and any figure written
+> here goes stale at the next commit while the check below does not. The citations
+> below are deliberately NOT re-pointed at those working-tree lines.
 > Re-pointing them would make every one of them wrong against the stated baseline
 > and would quietly retire the `git show` check. Verify a citation with
 > `git show 85b922fc:<path>`, not against the working tree. Checking against a
@@ -599,12 +598,12 @@ The mapping lives outside `_activate_docker_training_v1` for a testability reaso
 worth keeping: the activation cannot run on a non-Windows host — it fails in
 staging on a drive-path check long before this tail — so an inlined mapping would
 have no behavioural coverage on the platform the suite actually runs on. Its
-eight keyword arguments are a smell, but not one a value object fixes: seven of
-the eight are identity fields already travelling together on `snapshot`, `run`,
-`plan` and `submit`, so the shape to reach for later is passing those through
-rather than inventing a carrier that re-lists their fields. Not worth a change
-inside a remediation cycle, and noted here so the next reader does not read the
-long signature as an oversight.
+eight parameters (one positional, seven keyword-only) are a smell, but not one a
+value object fixes: seven of the eight are identity fields already travelling
+together on `snapshot`, `run`, `plan` and `submit`, so the shape to reach for
+later is passing those through rather than inventing a carrier that re-lists
+their fields. Not worth a change inside a remediation cycle, and noted here so
+the next reader does not read the long signature as an oversight.
 
 ### (f) Five-role tuple versus the smoke's two `required_kinds` — NEITHER CHANGES
 

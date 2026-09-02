@@ -511,11 +511,19 @@ def test_admission_reopen_uses_an_empty_name_and_dot_is_still_refused() -> None:
     # regression this test exists to catch. _windows_name is deliberately NOT
     # in the list: it is the validator, and its "." and ".." literals are the
     # rejection set, not a name being passed to an open.
+    #
+    # N-2: _nt_open_relative is walked too. It is the function that actually
+    # issues NtCreateFile, so it is the LAST point at which a name could be
+    # substituted, and a revert that stopped short of the callers would land
+    # there. Its presence costs nothing today -- it carries no dot literal --
+    # and it closes the "routed through one more helper" gap that the
+    # three-function version of this walk could not see.
     for label, function in (
         ("acquire_directory_admission",
          windows.WindowsRetainedHandlePortV1.acquire_directory_admission),
         ("_reopen_by_handle", windows._reopen_by_handle),
         ("_open_relative", windows._open_relative),
+        ("_nt_open_relative", windows._nt_open_relative),
     ):
         dotted = [
             node
@@ -1211,7 +1219,7 @@ def test_storage_config_refuses_the_unc_forms_before_it_asks_pathlib() -> None:
     body = inspect.getsource(config.StorageRegistryV1.from_bytes).splitlines()
     guard = [
         index for index, line in enumerate(body)
-        if 'location[0] in "\\\\/"' in line and 'location[1] in "\\\\/"' in line
+        if "_opens_on_two_separators(location)" in line
     ]
     assert len(guard) == 1, "the two-separator refusal is missing or duplicated"
 
@@ -1219,14 +1227,26 @@ def test_storage_config_refuses_the_unc_forms_before_it_asks_pathlib() -> None:
     assert len(construction) == 1
     assert guard[0] < construction[0], "the UNC refusal must precede Path(location)"
 
-    # Counter-check on the corpus itself: every spelling this guard is meant
-    # to catch really does open on two separators, and the local absolute
-    # forms it must NOT catch do not.
+    # F-1(c): the ANCHOR is refused too, so neither arm can join onto a UNC
+    # project_root.  is_absolute() alone is satisfied by a share path, and the
+    # project arm never re-checks the anchor it joins onto.
+    anchor = [
+        index for index, line in enumerate(body)
+        if "_opens_on_two_separators(str(project_root))" in line
+    ]
+    assert len(anchor) == 1, "the UNC anchor refusal is missing or duplicated"
+    assert anchor[0] < construction[0]
+
+    # Counter-check on the corpus itself, driven through the REAL predicate
+    # rather than a copy of it: every spelling this guard is meant to catch
+    # really does open on two separators, and the local absolute forms it must
+    # NOT catch do not.  Re-implementing the test inline would pass even if the
+    # helper were wrong, which is the whole failure mode this pins.
     for name in ("\\\\server\\share", "//server/share", "\\\\?\\UNC\\server\\share",
                  "\\\\?\\C:\\host", "\\\\.\\PhysicalDrive0", "\\/server/share"):
-        assert name[0] in "\\/" and name[1] in "\\/", name
+        assert config._opens_on_two_separators(name), name
     for name in ("C:\\host\\root", "/srv/project/root", "/a"):
-        assert not (len(name) >= 2 and name[0] in "\\/" and name[1] in "\\/"), name
+        assert not config._opens_on_two_separators(name), name
 
 
 # --- Amendment items: M-7, M-11, and the _reject_collision code flattening ---
