@@ -50,6 +50,7 @@ from synaptic_host.docker_v1.control_contract import (
     authenticate_workload_environment_binding_v1,
 )
 from synaptic_host.docker_v1.control_private import (
+    _CONTAINER_ENTRYPOINT_V1,
     DockerPrivateCreateInvocationFactoryV1,
     DockerPrivateCreateInvocationV1,
     DockerPrivateStartInvocationV1,
@@ -565,23 +566,24 @@ def test_private_factory_builds_exact_full_create_argv_in_frozen_order():
     runner = CaptureCreateRunner()
     result = invocation.execute_once(runner)
     arguments = runner.command.arguments
-    assert arguments[:10] == (
+    assert arguments[:12] == (
         "--name", labels.container_name, "--pull", "never", "--network",
         "none", "--cpus", "2", "--memory", "4096",
+        "--entrypoint", _CONTAINER_ENTRYPOINT_V1,
     )
-    label_tokens = arguments[10:40]
+    label_tokens = arguments[12:42]
     assert label_tokens[::2] == ("--label",) * 15
     assert tuple(
         token.split("=", 1)[0]
         for token in label_tokens[1::2]
     ) == tuple(OWNED_LABEL_PREFIX_V1 + name for name in OWNED_LABEL_NAMES_V1)
-    assert arguments[40:44] == (
+    assert arguments[42:46] == (
         "--mount",
         r"type=bind,source=\\wsl.localhost\Ubuntu-22.04\source,destination=/source,readonly",
         "--mount",
         r"type=bind,source=\\wsl.localhost\Ubuntu-22.04\artifacts,destination=/artifacts",
     )
-    assert arguments[44:] == (
+    assert arguments[46:] == (
         "--workdir", "/artifacts/tmp",
         "--env", "TOKEN=raw-secret", "sha256:" + "b" * 64,
         "python", "train.py",
@@ -627,11 +629,57 @@ def test_private_factory_gpu_adds_only_exact_device_zero_option():
     runner = CaptureCreateRunner()
     invocation.execute_once(runner)
     arguments = runner.command.arguments
-    assert arguments[10:12] == (
+    assert arguments[12:14] == (
         "--gpus", "driver=nvidia,device=0"
     )
     assert arguments.count("--gpus") == 1
-    assert arguments[12:42:2] == ("--label",) * 15
+    assert arguments[14:44:2] == ("--label",) * 15
+
+
+@pytest.mark.parametrize("accelerator", (None, "nvidia"))
+def test_private_factory_pins_entrypoint_pair_after_memory_on_both_branches(
+    accelerator,
+):
+    # B-4 (architecture section 17.6): the pair is in the FIXED region, two
+    # tokens after the --memory pair, so --gpus stays the only conditional.
+    invocation = _factory_invocation(
+        accelerator=(
+            AcceleratorDeviceRequestV1("nvidia", (0,), ("gpu",))
+            if accelerator else None
+        )
+    )
+    runner = CaptureCreateRunner()
+    invocation.execute_once(runner)
+    arguments = runner.command.arguments
+    assert arguments[8:12] == (
+        "--memory", "4096", "--entrypoint", _CONTAINER_ENTRYPOINT_V1,
+    )
+    assert arguments.count("--entrypoint") == 1
+    assert (arguments[12:13] == ("--gpus",)) is bool(accelerator)
+
+
+def test_private_factory_leaves_the_whole_workload_argv_as_the_cmd():
+    # B-4 regression guard for architecture section 17.3: moving argv[0] into
+    # --entrypoint would make CMD argv[1:], so the create verification would
+    # compare a count and a digest that no longer match the specification.
+    arguments = ("/opt/conda/bin/python3", "train.py", "--epochs", "1")
+    invocation = _factory_invocation(arguments=arguments)
+    runner = CaptureCreateRunner()
+    invocation.execute_once(runner)
+    composed = runner.command.arguments
+    image_index = composed.index("sha256:" + "b" * 64)
+    assert composed[image_index + 1:] == arguments
+
+
+@pytest.mark.parametrize(
+    "leading", ("A=B", "PATH=/usr/bin", "-c", "--version", "-")
+)
+def test_private_factory_refuses_workload_argv_env_would_not_exec(leading):
+    # B-4 (architecture section 17.6): env reads a leading NAME=VALUE token as
+    # an assignment and a leading "-" as its own option, so neither can be the
+    # first token of the argv env is asked to exec.
+    with pytest.raises(DockerControlContractErrorV1):
+        _factory_invocation(arguments=(leading, "train.py"))
 
 
 def test_private_factory_maximum_env_and_workload_shape_is_within_cli_limit():
@@ -640,7 +688,7 @@ def test_private_factory_maximum_env_and_workload_shape_is_within_cli_limit():
     invocation = _factory_invocation(pairs=pairs, arguments=arguments)
     runner = CaptureCreateRunner()
     invocation.execute_once(runner)
-    assert len(runner.command.arguments) == 239
+    assert len(runner.command.arguments) == 241
 
 
 @pytest.mark.parametrize("bad", (",", '"', "\n", "\x01", "e\u0301"))

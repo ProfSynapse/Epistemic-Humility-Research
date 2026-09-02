@@ -27,6 +27,7 @@ from synaptic_host.docker_v1.control_contract import (
     authenticate_control_intent_v1, authenticate_create_path_binding_v1,
     authenticate_expected_create_binding_v1, authenticate_mutation_record_v1,
     authenticate_workload_environment_binding_v1,
+    docker_arguments_projection_digest_v1,
 )
 from synaptic_host.docker_v1.create import DockerHostCreateV1
 from synaptic_host.docker_v1.model import DockerCLICommandV1, DockerCLIVerbV1
@@ -87,7 +88,7 @@ def test_create_invalid_input_is_indeterminate_before_any_dependency():
     assert result.disposition is DockerCreateDispositionV1.INDETERMINATE
 
 
-def test_preflight_keeps_raw_workdir_private_and_seals_only_digest(monkeypatch):
+def _preflight_capture(monkeypatch, *, arguments=("x",)):
     labels, _ref, _record, expected, _inspected = _one_id_fixture()
     specification = expected.content.create_specification
     host = object.__new__(DockerHostCreateV1)
@@ -156,15 +157,37 @@ def test_preflight_keeps_raw_workdir_private_and_seals_only_digest(monkeypatch):
                 accelerator_devices=AcceleratorDeviceRequestV1("cpu", (), ()),
                 digest=SHA,
             ),
-            SimpleNamespace(arguments=("x",), workload_digest=SHA),
+            SimpleNamespace(arguments=arguments, workload_digest=SHA),
             "source", "artifact", "/artifacts/tmp",
         )
+    return captured
+
+
+def test_preflight_keeps_raw_workdir_private_and_seals_only_digest(monkeypatch):
+    captured = _preflight_capture(monkeypatch)
     assert captured["invocation"]["working_directory"] == "/artifacts/tmp"
     assert "working_directory_digest" not in captured["invocation"]
     assert captured["specification"]["working_directory_digest"] == (
         __import__("hashlib").sha256(b"/artifacts/tmp").hexdigest()
     )
     assert "working_directory" not in captured["specification"]
+
+
+def test_preflight_specification_still_counts_and_digests_the_whole_argv(
+    monkeypatch,
+):
+    # B-4 (architecture section 17.7): the create argv gains the
+    # "--entrypoint env" pair, but the specification is built over
+    # workload.arguments, so argument_count and arguments_digest do not move.
+    # verification.py compares these against Config.Cmd from docker inspect,
+    # which is still the complete workload argv.
+    arguments = ("/opt/conda/bin/python3", "train.py", "--epochs", "1")
+    captured = _preflight_capture(monkeypatch, arguments=arguments)
+    assert captured["specification"]["argument_count"] == len(arguments)
+    assert captured["specification"]["arguments_digest"] == (
+        docker_arguments_projection_digest_v1(arguments)
+    )
+    assert captured["invocation"]["workload"].arguments == arguments
 
 
 def test_shared_verifier_accepts_exact_fixture_and_rejects_config_drift():

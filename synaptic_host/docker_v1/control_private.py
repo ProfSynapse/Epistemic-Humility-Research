@@ -36,6 +36,7 @@ MAX_PRIVATE_ENV_TOTAL_BYTES_V1 = (
     MAX_WORKLOAD_ENV_ENTRIES_V1 * MAX_DOCKER_ARG_BYTES_V1
 )
 _LOWER_HEX_64_V1 = re.compile(r"[0-9a-f]{64}\Z")
+_CONTAINER_ENTRYPOINT_V1 = "env"
 
 
 class DockerPrivateWorkloadEnvironmentResolutionV1:
@@ -339,6 +340,8 @@ class DockerPrivateCreateInvocationFactoryV1:
                     part in {"", ".", ".."}
                     for part in working_directory.split("/")[1:]
                 )
+                or "=" in workload.arguments[0]
+                or workload.arguments[0].startswith("-")
             ):
                 raise ValueError
             labels = DockerLabelsV1(**labels.to_dict())
@@ -392,6 +395,7 @@ class DockerPrivateCreateInvocationFactoryV1:
                 "--name", labels.container_name, "--pull", "never",
                 "--network", "none", "--cpus", str(runtime.cpu_count),
                 "--memory", str(runtime.memory_bytes),
+                "--entrypoint", _CONTAINER_ENTRYPOINT_V1,
             ]
             if runtime.accelerator_devices.kind == "nvidia":
                 arguments.extend(("--gpus", "driver=nvidia,device=0"))

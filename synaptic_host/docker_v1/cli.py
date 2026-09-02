@@ -44,6 +44,7 @@ from .control_model import (
     docker_create_execution_request_digest_v1,
     docker_start_execution_request_digest_v1,
 )
+from .control_private import _CONTAINER_ENTRYPOINT_V1
 
 
 _READ_SIZE = 65_536
@@ -112,6 +113,9 @@ def _validate_create_command(command, expected_container_name):
         or str(int(memory)) != memory or not 1 <= int(memory) <= 2**50
     ):
         raise ValueError
+    if arguments[index:index + 2] != ("--entrypoint", _CONTAINER_ENTRYPOINT_V1):
+        raise ValueError
+    index += 2
     if arguments[index:index + 1] == ("--gpus",):
         if arguments[index:index + 2] != (
             "--gpus", "driver=nvidia,device=0"

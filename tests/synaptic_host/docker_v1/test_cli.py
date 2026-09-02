@@ -9,6 +9,7 @@ import pytest
 from tuner.execution.providers.docker_provider_v1.model import DockerLabelsV1
 
 from synaptic_host.docker_v1.cli import DockerCLIRunnerV1
+from synaptic_host.docker_v1.control_private import _CONTAINER_ENTRYPOINT_V1
 from synaptic_host.docker_v1.control_contract import (
     docker_device_requests_projection_digest_v1,
     docker_owned_label_values_v1,
@@ -798,6 +799,7 @@ def _create_command(secret="raw-secret", *, gpu=False):
     arguments = [
         "--name", labels.container_name, "--pull", "never", "--network", "none",
         "--cpus", "1", "--memory", "4096",
+        "--entrypoint", _CONTAINER_ENTRYPOINT_V1,
     ]
     if gpu:
         arguments.extend(("--gpus", "driver=nvidia,device=0"))
@@ -879,12 +881,60 @@ def test_typed_create_rejects_missing_or_drifted_workdir_before_spawn(tokens):
 ))
 def test_typed_create_rejects_nonexact_gpu_options_before_spawn(gpu_tokens):
     arguments = list(_create_command().arguments)
-    arguments[10:10] = gpu_tokens
+    arguments[12:12] = gpu_tokens
     command = DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(arguments))
     runner, factory = _typed_runner(b"a" * 64)
     with pytest.raises(DockerPlatformErrorV1):
         runner.create_container(command, "synaptic-" + "a" * 24)
     assert factory.calls == []
+
+
+def _entrypoint_variant(kind):
+    arguments = list(_create_command().arguments)
+    if kind == "absent":
+        del arguments[10:12]
+    elif kind == "flag_typo":
+        arguments[10] = "--entry-point"
+    elif kind == "different_value":
+        arguments[11] = "/bin/sh"
+    elif kind == "empty_reset":
+        arguments[11] = '""'
+    elif kind == "duplicated":
+        arguments[12:12] = ["--entrypoint", _CONTAINER_ENTRYPOINT_V1]
+    else:
+        pair = arguments[10:12]
+        del arguments[10:12]
+        arguments[8:8] = pair
+    return DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(arguments))
+
+
+@pytest.mark.parametrize(
+    "kind",
+    (
+        "absent", "flag_typo", "different_value", "empty_reset", "duplicated",
+        "before_memory",
+    ),
+)
+def test_typed_create_rejects_nonexact_entrypoint_before_spawn(kind):
+    # B-4 (architecture section 17.6): the parser pins the entrypoint token
+    # exactly, the way it pins --network none, so the image can never be
+    # handed an argv it is free to discard.
+    runner, factory = _typed_runner(b"a" * 64)
+    with pytest.raises(DockerPlatformErrorV1):
+        runner.create_container(
+            _entrypoint_variant(kind), "synaptic-" + "a" * 24
+        )
+    assert factory.calls == []
+
+
+def test_typed_create_spawns_with_the_exact_entrypoint_pair_in_position():
+    runner, factory = _typed_runner(b"a" * 64)
+    runner.create_container(_create_command(), "synaptic-" + "a" * 24)
+    arguments = factory.calls[0][0]
+    index = arguments.index("--memory")
+    assert arguments[index + 2:index + 4] == (
+        "--entrypoint", _CONTAINER_ENTRYPOINT_V1,
+    )
 
 
 def _start_command(ref="d" * 64):
@@ -994,11 +1044,11 @@ def _create_with(*, cpu="1", memory="4096", env_count=1, workload_count=2):
         index for index, value in enumerate(base)
         if value.startswith("sha256:")
     )
-    base[46:image_index] = [
+    base[48:image_index] = [
         value for index in range(env_count)
         for value in ("--env", f"K{index:02d}=v")
     ]
-    image_index = 46 + env_count * 2
+    image_index = 48 + env_count * 2
     base[image_index + 1:] = tuple(f"arg{index}" for index in range(workload_count))
     return DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(base))
 
@@ -1110,14 +1160,14 @@ def test_typed_create_semantic_label_and_mount_attacks_do_not_spawn(attack):
     arguments = list(_create_with().arguments)
     if attack in ("effect", "labels_digest"):
         name = "effect-kind" if attack == "effect" else "labels-digest"
-        index = arguments.index("--label", 10 + OWNED_LABEL_NAMES_V1.index(name) * 2)
+        index = arguments.index("--label", 12 + OWNED_LABEL_NAMES_V1.index(name) * 2)
         prefix = OWNED_LABEL_PREFIX_V1 + name + "="
         arguments[index + 1] = prefix + ("stage" if attack == "effect" else "f" * 64)
     elif attack == "same_mount":
-        source = arguments[41].split(",destination=", 1)[0]
-        arguments[43] = source + ",destination=/artifacts"
+        source = arguments[43].split(",destination=", 1)[0]
+        arguments[45] = source + ",destination=/artifacts"
     else:
-        arguments[41] = (
+        arguments[43] = (
             r"type=bind,source=\\wsl.localhost\Ubuntu\..\escape,destination=/source,readonly"
         )
     command = DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(arguments))
@@ -1130,7 +1180,7 @@ def test_typed_create_semantic_label_and_mount_attacks_do_not_spawn(attack):
 @pytest.mark.parametrize("forbidden", tuple('<>:"|?*'))
 def test_typed_create_forbidden_unc_component_character_never_spawns(forbidden):
     arguments = list(_create_with().arguments)
-    arguments[41] = (
+    arguments[43] = (
         "type=bind,source=\\\\wsl.localhost\\Ubuntu\\safe"
         + forbidden + "component,destination=/source,readonly"
     )
@@ -1147,7 +1197,7 @@ def test_typed_create_unc_component_count_exact_neighbors():
         source = "\\\\wsl.localhost\\Ubuntu\\" + "\\".join(
             f"safe-name_{index}" for index in range(count)
         )
-        arguments[41] = (
+        arguments[43] = (
             f"type=bind,source={source},destination=/source,readonly"
         )
         command = DockerCLICommandV1.build(
@@ -1161,7 +1211,7 @@ def test_typed_create_unc_component_count_exact_neighbors():
     source = "\\\\wsl.localhost\\Ubuntu\\" + "\\".join(
         f"safe{index}" for index in range(129)
     )
-    arguments[41] = f"type=bind,source={source},destination=/source,readonly"
+    arguments[43] = f"type=bind,source={source},destination=/source,readonly"
     command = DockerCLICommandV1.build(DockerCLIVerbV1.CREATE, tuple(arguments))
     runner, factory = _typed_runner(b"a" * 64)
     with pytest.raises(DockerPlatformErrorV1):
