@@ -41,14 +41,20 @@ def _identity(path: Path, lstat) -> tuple[int, int, int, int]:
     )
 
 
-def _wsl_path(path: Path) -> str:
+def _wsl_path(path: Path, root: str) -> str:
+    if (
+        type(root) is not str or not root.startswith("/") or root.endswith("/")
+        or "\\" in root
+        or any(part in {"", ".", ".."} for part in root[1:].split("/"))
+    ):
+        raise ValueError("prepared Docker drive mount root is invalid")
     value, drive = path.as_posix(), path.drive
     if len(drive) != 2 or drive[1] != ":" or not value.startswith(drive + "/"):
         raise ValueError("prepared Docker stage requires a Windows drive path")
     relative = value[3:]
     if not relative or any(part in {"", ".", ".."} for part in relative.split("/")):
         raise ValueError("prepared Docker stage path is invalid")
-    return f"/mnt/{drive[0].lower()}/{relative}"
+    return f"{root}/{drive[0].lower()}/{relative}"
 
 
 class DockerPreparedMountAdapterV1:
@@ -57,7 +63,8 @@ class DockerPreparedMountAdapterV1:
     def __init__(
         self, *, request: DockerPreparedRunRequestV1,
         binding: DockerCommandBindingV1, labels: DockerLabelsV1,
-        distro: str, path_authority: object, lstat=os.lstat,
+        distro: str, drive_mount_root: str, path_authority: object,
+        lstat=os.lstat,
     ) -> None:
         if (
             type(request) is not DockerPreparedRunRequestV1
@@ -66,7 +73,11 @@ class DockerPreparedMountAdapterV1:
             or labels != labels_for(binding.identity)
             or binding.plan != request.prepared_plan
             or binding.command_bytes != request.preparation.submit_command_bytes
-            or type(distro) is not str or not distro or not callable(lstat)
+            or type(distro) is not str or not distro or distro.startswith("/")
+            or type(drive_mount_root) is not str
+            or not drive_mount_root.startswith("/")
+            or drive_mount_root.endswith("/")
+            or not callable(lstat)
             or not callable(getattr(path_authority, "issue", None))
             or not callable(getattr(path_authority, "authenticate", None))
         ):
@@ -96,9 +107,10 @@ class DockerPreparedMountAdapterV1:
             raise ValueError("prepared Docker stage changed during derivation")
         self._request, self._binding, self._labels = request, binding, labels
         self._distro, self._path_authority = distro, path_authority
+        self._drive_mount_root = drive_mount_root
         self._lstat, self._tokens = lstat, tokens
-        self._source_wsl_path = _wsl_path(source)
-        self._artifact_wsl_path = _wsl_path(artifacts)
+        self._source_wsl_path = _wsl_path(source, drive_mount_root)
+        self._artifact_wsl_path = _wsl_path(artifacts, drive_mount_root)
         self._source_mapping_digest = self._mapping_digest(
             staging.projection.source_stage_ref, "prepared-source",
             self._source_wsl_path, tokens[-2][1],

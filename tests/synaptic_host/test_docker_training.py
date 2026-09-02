@@ -803,7 +803,7 @@ def test_activation_stages_bridge_bundle_and_persists_initial_pair(
         "/Docker/host/bin/docker.exe", endpoint, environment,
     )
     platform = DockerPreparedPlatformV1(
-        PreparationOnlyRunner(), endpoint, policy, "Ubuntu-22.04",
+        PreparationOnlyRunner(), endpoint, policy, "Ubuntu-22.04", "/mnt",
     )
     monkeypatch.setattr(
         docker_prepared_composition, "compose_docker_prepared_platform_v1",

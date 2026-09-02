@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 import os
 from pathlib import Path
-from pathlib import PurePosixPath
+from pathlib import PurePosixPath, PureWindowsPath
 from types import SimpleNamespace
 
 import pytest
@@ -23,7 +23,10 @@ from synaptic_host.docker_staging import DockerStagingResultV1
 from synaptic_host.docker_v1.control_contract import (
     AuthenticatedDockerCreatePathBindingV1,
 )
-from synaptic_host.docker_v1.prepared import DockerPreparedMountAdapterV1
+from synaptic_host.docker_v1.prepared import (
+    DockerPreparedMountAdapterV1, _wsl_path,
+)
+from synaptic_host.docker_v1.model import canonical_wsl_path_v1
 
 from .conftest import D, _prepared, _profile
 
@@ -97,7 +100,8 @@ def _adapter(tmp_path: Path, *, lstat=os.lstat):
     })())
     adapter = DockerPreparedMountAdapterV1(
         request=request, binding=binding, labels=labels,
-        distro="Ubuntu-22.04", path_authority=PathAuthority(), lstat=lstat,
+        distro="Ubuntu-22.04", drive_mount_root="/mnt",
+        path_authority=PathAuthority(), lstat=lstat,
     )
     return adapter, profile, labels
 
@@ -148,8 +152,58 @@ def test_prepared_adapter_rejects_different_stage_keys(tmp_path: Path):
     with pytest.raises(ValueError, match="topology"):
         DockerPreparedMountAdapterV1(
             request=adapter._request, binding=adapter._binding, labels=labels,
-            distro="Ubuntu-22.04", path_authority=PathAuthority(),
+            distro="Ubuntu-22.04", drive_mount_root="/mnt",
+            path_authority=PathAuthority(),
         )
+
+
+_STAGE_KEY = "a" * 64
+_WINDOWS_STAGE = PureWindowsPath(
+    "F:\\Code\\Toolset-Training\\.synaptic\\state\\docker\\stages"
+) / _STAGE_KEY
+
+
+def test_rendered_mount_source_matches_the_measured_docker_desktop_layout():
+    """Pin the FULL mount source against the measured docker-desktop layout.
+
+    Inside the committed ``docker-desktop`` distro the Windows drives are
+    drvfs mounts at ``/mnt/host/{c,e,f}``; ``/mnt/f`` survives only as an
+    empty legacy skeleton, so the pre-fix rendering bound an empty directory.
+    The end-to-end adapter cannot render this on Linux, because it demands a
+    real Windows drive path (``prepared.py`` refuses otherwise), so the pin is
+    taken on the translator plus the UNC concatenation the adapter applies.
+    Both halves are compared against whole literal strings, never prefixes.
+    """
+
+    posix_path = _wsl_path(_WINDOWS_STAGE / "source", "/mnt/host")
+    assert posix_path == (
+        "/mnt/host/f/Code/Toolset-Training/.synaptic/state/docker/stages/"
+        + _STAGE_KEY + "/source"
+    )
+    assert canonical_wsl_path_v1(posix_path) == posix_path
+    unc = "\\\\wsl.localhost\\" + "docker-desktop" + posix_path.replace("/", "\\")
+    assert unc == (
+        "\\\\wsl.localhost\\docker-desktop\\mnt\\host\\f\\Code\\Toolset-Training"
+        "\\.synaptic\\state\\docker\\stages\\" + _STAGE_KEY + "\\source"
+    )
+
+
+def test_rendered_mount_source_honours_the_ubuntu_fallback_root():
+    # The fallback the design keeps reachable by editing one committed value.
+    assert _wsl_path(_WINDOWS_STAGE / "artifacts", "/mnt") == (
+        "/mnt/f/Code/Toolset-Training/.synaptic/state/docker/stages/"
+        + _STAGE_KEY + "/artifacts"
+    )
+
+
+@pytest.mark.parametrize(
+    "root",
+    ("/mnt/host/", "mnt/host", "/mnt//host", "/mnt/./host", "/mnt/../host",
+     "/mnt\\host", "/", "", "docker-desktop", None),
+)
+def test_wsl_path_refuses_a_non_canonical_drive_mount_root(root):
+    with pytest.raises(ValueError, match="drive mount root"):
+        _wsl_path(_WINDOWS_STAGE / "source", root)
 
 
 def test_prepared_adapter_rejects_simulated_reparse_ancestor(tmp_path: Path):

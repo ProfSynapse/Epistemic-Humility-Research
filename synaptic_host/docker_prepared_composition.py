@@ -58,6 +58,7 @@ class DockerPreparedPlatformV1:
     endpoint: DockerLocalEndpointDescriptorV1
     policy: DockerCLIPolicyV1
     distro: str
+    drive_mount_root: str
 
     def __post_init__(self) -> None:
         if (
@@ -68,6 +69,10 @@ class DockerPreparedPlatformV1:
             or type(self.policy) is not DockerCLIPolicyV1
             or self.policy.endpoint != self.endpoint
             or type(self.distro) is not str or not self.distro
+            or self.distro.startswith("/")
+            or type(self.drive_mount_root) is not str
+            or not self.drive_mount_root.startswith("/")
+            or self.drive_mount_root.endswith("/")
         ):
             raise ValueError("prepared Docker platform is invalid")
 
@@ -81,7 +86,7 @@ class DockerPreparedPlatformV1:
 
 
 def compose_docker_prepared_platform_v1(
-    *, docker_policy_ref: str, wsl_distro: str,
+    *, docker_policy_ref: str, wsl_distro: str, drive_mount_root: str,
     environment: dict[str, str] | None = None,
     os_name: str = os.name, executable_candidates=None,
     endpoint_resolver=None, popen_factory=subprocess.Popen,
@@ -93,6 +98,10 @@ def compose_docker_prepared_platform_v1(
     if (
         os_name != "nt" or docker_policy_ref != "docker-desktop-windows-v1"
         or type(wsl_distro) is not str or not wsl_distro
+        or wsl_distro.startswith("/")
+        or type(drive_mount_root) is not str
+        or not drive_mount_root.startswith("/")
+        or drive_mount_root.endswith("/")
     ):
         raise ValueError("Windows Docker Host policy is unavailable")
     required = ("SystemRoot", "TEMP", "TMP", "WINDIR")
@@ -151,7 +160,9 @@ def compose_docker_prepared_platform_v1(
         policy, popen_factory=popen_factory, monotonic=monotonic,
         thread_factory=thread_factory,
     )
-    return DockerPreparedPlatformV1(runner, endpoint, policy, wsl_distro)
+    return DockerPreparedPlatformV1(
+        runner, endpoint, policy, wsl_distro, drive_mount_root,
+    )
 
 
 class _UnavailableMutationRepositoryV1:
@@ -205,7 +216,8 @@ class DockerPreparedControlBuilderV1:
             raise ValueError("prepared Docker platform differs from durability")
         mount = DockerPreparedMountAdapterV1(
             request=request, binding=binding, labels=labels,
-            distro=platform.distro, path_authority=self._path,
+            distro=platform.distro, drive_mount_root=platform.drive_mount_root,
+            path_authority=self._path,
         )
         environment = tuple(request.staging.worker_bundle.dispatch.environment)
         keys = tuple(sorted(key for key, _value in environment))

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping
@@ -17,6 +18,15 @@ _PYTHON = re.compile(r"^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$")
 _REF = re.compile(r"^[a-z0-9][a-z0-9._/-]{0,127}$")
 _DISTRO = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 _MAX_BYTES = 64 * 1024
+# Bounds restated from `canonical_wsl_path_v1` (`synaptic_host/docker_v1/model.py`)
+# rather than imported. That module pulls `tuner.execution.providers...` and
+# `synaptic_host.bundle_io_v1` in at import time, so importing its constants would
+# give this stdlib-only policy module an import edge into the platform layer and
+# into the engine package. Keep these equal to `MAX_WSL_COMPONENT_BYTES_V1` (240)
+# and to the 128-part bound written inline in `canonical_wsl_path_v1`; the corpus
+# test in `tests/synaptic_host/test_docker_provider.py` fails if they drift.
+_MAX_ROOT_COMPONENT_BYTES = 240
+_MAX_ROOT_PARTS = 128
 
 
 def _object(value: object, fields: frozenset[str], label: str) -> dict[str, object]:
@@ -31,6 +41,39 @@ def _text(value: object, label: str, *, pattern: re.Pattern[str] | None = None) 
     if len(value.encode("utf-8")) > 512 or (pattern is not None and pattern.fullmatch(value) is None):
         raise ValueError(f"{label} is invalid")
     return value
+
+
+def _posix_root(value: object, label: str) -> str:
+    """Admit one absolute POSIX root the WSL path contract can extend.
+
+    The rule is the profile-layer restatement of ``canonical_wsl_path_v1``
+    (``synaptic_host/docker_v1/model.py``) for the root alone, kept local so
+    the declarative policy layer raises ``ValueError`` like every sibling
+    check here and gains no import edge into the platform layer.
+
+    It must refuse everything the path contract refuses, so that a bad root is
+    rejected while loading the profile rather than late, as ``PATH_INVALID``,
+    after staging has already created a stage directory. It cannot promise the
+    composed path is canonical: the drive letter and the stage relative path
+    are appended later and their length is not knowable here, so the composed
+    value is re-checked at ``DockerWSLPathRequestV1``.
+    """
+
+    text = _text(value, label)
+    parts = text[1:].split("/")
+    if (
+        not text.startswith("/") or text.endswith("/") or "\\" in text
+        or unicodedata.normalize("NFC", text) != text
+        or any(part in ("", ".", "..") for part in parts)
+        or any(ord(char) < 32 or ord(char) == 127 for char in text)
+        or len(parts) > _MAX_ROOT_PARTS
+        or any(
+            len(part.encode("utf-8")) > _MAX_ROOT_COMPONENT_BYTES
+            for part in parts
+        )
+    ):
+        raise ValueError(f"{label} must be an absolute POSIX root")
+    return text
 
 
 def _bounded_integer(value: object, label: str, *, minimum: int, maximum: int) -> int:
@@ -91,6 +134,7 @@ class DockerProviderProfileV1:
     network_mode: str
     docker_policy_ref: str
     wsl_distro: str
+    drive_mount_root: str
     maximum_artifact_bytes: int
     maximum_total_bytes: int
     cache_admission: bool
@@ -120,6 +164,7 @@ class DockerProviderProfileV1:
             raise ValueError("Docker admission requires network_mode none")
         _text(self.docker_policy_ref, "docker_policy_ref", pattern=_REF)
         _text(self.wsl_distro, "docker_host.wsl_distro", pattern=_DISTRO)
+        _posix_root(self.drive_mount_root, "docker_host.drive_mount_root")
         if type(self.cache_admission) is not bool:
             raise TypeError("cache_admission must be an exact boolean")
         if self.maximum_artifact_bytes > self.maximum_total_bytes:
@@ -155,7 +200,7 @@ class DockerProviderProfileV1:
         }), "Docker resource policy")
         network = _object(root["network"], frozenset({"mode"}), "Docker network policy")
         docker_host = _object(root["docker_host"], frozenset({
-            "policy_ref", "wsl_distro",
+            "policy_ref", "wsl_distro", "drive_mount_root",
         }), "Docker Host policy")
         artifacts = _object(root["artifacts"], frozenset({
             "maximum_artifact_bytes", "maximum_total_bytes", "cache_admission",
@@ -181,6 +226,7 @@ class DockerProviderProfileV1:
             _text(network["mode"], "network.mode"),
             _text(docker_host["policy_ref"], "docker_host.policy_ref", pattern=_REF),
             _text(docker_host["wsl_distro"], "docker_host.wsl_distro", pattern=_DISTRO),
+            _posix_root(docker_host["drive_mount_root"], "docker_host.drive_mount_root"),
             _bounded_integer(artifacts["maximum_artifact_bytes"], "maximum_artifact_bytes", minimum=1, maximum=2**63 - 1),
             _bounded_integer(artifacts["maximum_total_bytes"], "maximum_total_bytes", minimum=1, maximum=2**63 - 1),
             artifacts["cache_admission"],
@@ -220,6 +266,7 @@ class DockerProviderProfileV1:
             "docker_host": {
                 "policy_ref": self.docker_policy_ref,
                 "wsl_distro": self.wsl_distro,
+                "drive_mount_root": self.drive_mount_root,
             },
             "artifacts": {
                 "maximum_artifact_bytes": self.maximum_artifact_bytes,
