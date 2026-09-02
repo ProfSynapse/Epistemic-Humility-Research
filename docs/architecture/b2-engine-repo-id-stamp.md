@@ -416,3 +416,354 @@ changes any conclusion. The research's substantive claims — the argv plumbing,
 the `save_pretrained` fallback, the verifier predicates, the helper location,
 the unsloth dead block, and the O-4 correction about importability — all held up
 against the tree.
+
+---
+
+## 15. Amendment 2026-09-02 — ruling on B-5 (regenerating the worker closure manifest)
+
+Blocker #116. The B-2 stamp edits `Trainers/sft/train_sft.py`, which is member 8
+of the checked-in content-addressed worker closure
+`tuner/runtime/manifests/offline-sft-worker-v1.json`. The manifest pins that
+file by size and sha256, so the edit invalidates it and every prepared run
+fails at staging until it is regenerated.
+
+### 15.1 The measured state
+
+Measured against the engine working tree on 2026-09-02, with the B-2 edit
+already applied by CODE:
+
+| Item | Manifest records | Working tree |
+|---|---|---|
+| `Trainers/sft/train_sft.py` size | 74 467 | 76 857 |
+| `Trainers/sft/train_sft.py` sha256 | `412b4e33…f540aba` | `a2c4c8fd…` (moves again if CODE edits further) |
+| `payload_bytes` | 683 234 | 685 624 |
+| `closure_digest` | `eeba2f42…41d7d3` | recomputed |
+
+I swept all 66 members against the working tree. **Exactly one member has
+drifted** — `Trainers/sft/train_sft.py`. `Trainers/sft/runtime_v1.py` and
+`Trainers/sft/src/model_loader.py` are also closure members and are also in the
+B-2 blast radius, but neither has moved. `member_count` stays 66, the member set
+and its order are unchanged, and every member is `git_mode` `100644` (there is
+no `100755` member in this closure).
+
+### 15.2 Ruling — option (a), a refresh-in-place generator
+
+Adopt **(a)**: one checked-in script in the engine's `scripts/`, named
+`regenerate_offline_sft_worker_closure.py`, mirroring the
+`capture_*_lock.py` pattern. It **refreshes** the existing manifest; it never
+rebuilds it.
+
+**Why not (b), reviewed hand-regeneration.** Two of the four values are sha256
+digests — one over a 76 KB source file, one over a 66-member canonical JSON
+document. A person cannot compute them by inspection, so (b) is really "run an
+ad hoc snippet and paste the output", which is (a) without review, without a
+fail-closed contract, and without a checked-in artifact the next editor can
+find. The operation also recurs: this is the first closure-member edit of the
+branch, not the last. And the failure is not confined to a wrong digest —
+a hand edit that reflows the JSON breaks the exact-bytes assertion in the
+contract test, and a hand edit that updates `size_bytes` but not
+`payload_bytes` passes casual review yet raises
+`"worker closure totals or ordering are invalid"` inside the container
+(`offline_sft_worker.py:344-356`), after staging, on the real run.
+
+**Why not (c) in the shape it would naturally take.** The tempting third option
+is a self-healing contract test that rewrites the manifest when it mismatches.
+That is closed: the closure manifest is the artifact that decides which code
+runs in the network-disabled container, and a test that repairs its own
+expectation is not a pin. The check must be able to fail.
+
+### 15.3 Member list source of truth
+
+**The existing manifest's own `members[].path` list.** Not a filesystem walk,
+not `pyproject.toml`, not the contract test.
+
+- `pyproject.toml:57` carries only `"tuner.runtime" = ["manifests/offline-sft-worker-v1.json"]`
+  — it declares the manifest as package data and lists no members. It is not a
+  candidate.
+- `tests/contract/test_offline_sft_worker_closure.py:21-88` holds `_MEMBERS`, a
+  hard-coded tuple of all 66 paths. This is the **independent cross-check**, not
+  the source. Tooling must not import a test module to learn what to produce;
+  that would collapse the two independent copies into one and destroy the check.
+
+**Why a filesystem walk is closed.** This is the load-bearing constraint.
+`_iter_staged_files` (`offline_sft_worker.py:372`) enumerates the staged tree in
+the container and the check at `:425-441` requires it to *exactly* equal the
+member set, raising `"staged worker members do not exactly match closure"`. A
+walk-based generator would make closure-widening the default behaviour of the
+tool: add any file under an owned prefix, run the generator, and it silently
+joins the set of code that executes in the container. The contract test's
+`_MEMBERS` tuple would catch it — but late, and the path of least resistance
+under time pressure is to paste the new list into `_MEMBERS` and move on.
+Refresh-in-place makes widening structurally impossible from the tool, so
+widening requires a deliberate two-file edit that a reviewer sees as a diff of
+paths. Design against the failure mode, not the happy path.
+
+### 15.4 The canonical serialization
+
+Two different byte strings are involved and conflating them is the single
+easiest way to produce a manifest that fails only at run time.
+
+**File bytes** (pinned by the contract test at lines 110-117):
+
+```python
+json.dumps(
+    document,
+    sort_keys=True,
+    separators=(",", ":"),
+    ensure_ascii=False,
+    allow_nan=False,
+).encode("utf-8") + b"\n"
+```
+
+**Digest input** (`offline_sft_worker.py:123-139`): the *same* `json.dumps`
+call, over the document with `closure_digest` popped, and **without** the
+trailing newline. `closure_digest` is `sha256` of that.
+
+So: the newline is part of the file and not part of the digest. Top-level keys
+land in alphabetical order and member keys in the order
+`git_mode`, `path`, `sha256`, `size_bytes` as a consequence of `sort_keys`, not
+as an independent rule. Members stay ordered by path in plain `str` sort
+(`offline_sft_worker.py:342` requires `paths == sorted(paths)`); a refresh
+preserves the input order and therefore satisfies this for free.
+
+### 15.5 Exactly which fields change
+
+Four values, and nothing else:
+
+1. `members[<train_sft.py>].sha256`
+2. `members[<train_sft.py>].size_bytes`
+3. `payload_bytes` — the sum over all members
+4. `closure_digest`
+
+Unchanged: `schema_version`, `closure_ref`, `entrypoint`, `trainer_entrypoint`,
+`owned_module_prefixes`, `optional_features`, `member_count`, every member path,
+every `git_mode`, and the member ordering. The six identity fields are re-checked
+verbatim against module constants at `offline_sft_worker.py:301-307`, so a
+generator that touches any of them fails closed at parse.
+
+The generator addresses the member **by path**, never by array index. "Member 8"
+is an ordinal in this document only.
+
+### 15.6 The generator's contract
+
+Default mode is `--check`; `--write` must be explicit. A bare invocation never
+mutates a checked-in artifact. This matches the drift-check idiom the Host repo
+already uses (`bin/sync_skills.py`).
+
+Exit codes, distinct so CI can tell a stale manifest from a broken tool:
+
+| Code | Meaning |
+|---|---|
+| 0 | On-disk bytes already equal the regenerated bytes |
+| 3 | Drift — prints the differing member paths and field names |
+| 125 | Fault — prints a reason code, writes nothing |
+
+Fail-closed conditions, all of which produce 125 and no write:
+
+- Any member path is missing, is a symlink, or is not a regular file.
+- The recomputed path list is not identical to the input list, or is not sorted,
+  or contains a duplicate.
+- A member's POSIX executable bit contradicts its recorded `git_mode`
+  (the staged-tree check at `offline_sft_worker.py:437-441` enforces this in the
+  container; catching it here turns a run-time failure into a tool-time one).
+- Any member exceeds `_MAX_MEMBER_BYTES`, or the total exceeds
+  `_MAX_CLOSURE_BYTES` (64 MiB each, `offline_sft_worker.py:61-62`).
+- **Verify-after-write**: re-read the bytes just written, re-parse them through
+  the production verifier, and confirm the recomputed digest matches. If it does
+  not, restore the original bytes and exit 125. The generator must never leave a
+  manifest on disk that the worker would reject.
+
+The generator must not import the contract test, and must not write any file
+other than the manifest.
+
+### 15.7 Script shape and its two divergences from the capture-lock pattern
+
+Mirror `scripts/capture_hf_training_image_lock.py`: an `_authenticated_repo_root()`
+that refuses a symlinked script, checks `script.name` and
+`script.parent.name == "scripts"`, verifies that anchor files resolve to
+themselves, inserts the authenticated root on `sys.path`, and exits 125 with a
+reason code on any fault. Anchors here: `tuner/runtime/offline_sft_worker.py`
+and `tuner/runtime/manifests/offline-sft-worker-v1.json`.
+
+Two deliberate divergences, both narrowing:
+
+- **No delegation to a new `tuner/` module.** The capture-lock script is thin
+  because `tuner/cloud/hf_training_image_lock.py` is also used by production
+  verification. Here the production verifier already exists — the generator
+  imports `closure_digest` and the identity constants from
+  `tuner/runtime/offline_sft_worker.py` and adds no second implementation of
+  them. A new module under `tuner/` would also sit inside an owned module prefix
+  (`offline_sft_worker.py:34-44`), which is the namespace the worker's import
+  guard governs (`:499`, `:551`); a non-member module there is precisely the
+  shape that guard exists to reject. `scripts/` is outside every owned prefix.
+- **No external inputs.** No `--docker`, no registry, no network. The tool reads
+  the working tree and the manifest and writes the manifest.
+
+### 15.8 How the contract test proves round-trip
+
+`tests/contract/test_offline_sft_worker_closure.py` **already is** the
+round-trip proof and needs no edit. Five assertions compose to it:
+
+| Assertion | What it proves |
+|---|---|
+| `payload == json.dumps(document, …) + b"\n"` | The file is in canonical form, newline included — no reflow survives |
+| `document["closure_digest"] == closure_digest(document)` | The digest is over the document actually written |
+| per-member `size_bytes == len(content)` and `sha256 == sha256(content)` | Every content pin matches the working tree |
+| `payload_bytes == sum(size_bytes)` | The total is consistent |
+| `tuple(paths) == _MEMBERS` and `member_count == len(_MEMBERS) == 66` | The closure did not widen, checked against a copy the tool never reads |
+
+Read together: parse the written bytes, re-derive every value, re-serialize, and
+require byte equality with what is on disk. That is a round trip.
+
+`_MEMBERS` and the literal `66` must **not** be touched by this work. If a future
+change requires touching them, that is a closure-widening decision and needs its
+own ruling, not a generator run.
+
+**One new test is required**, in the same file, and it is the only test change:
+
+```
+test_regenerator_reports_no_drift_on_the_checked_in_manifest
+```
+
+It invokes the script as a subprocess with `sys.executable` in `--check` mode
+and asserts exit 0. This pins the generator itself to the same exact-bytes
+contract that pins the manifest, so a tool that drifts from the canonical form is
+caught in CI rather than at the next regeneration. One function invoking one
+script is not a framework.
+
+### 15.9 The `docs/preparation` prose line
+
+**Leave it unchanged.** `docs/preparation/prepared-path-alpine-diagnostic.md:117`
+reads "Today: 66 members, 683 234 payload bytes, closure digest
+`eeba2f42…41d7d3`". The word "Today" already scopes the claim to the
+observation date, and the observation was true of engine `aec998ee`. Rewriting a
+research document so it tracks a change it predates makes it stop describing the
+commit it measured. The supersession is recorded here instead; section 15.1
+carries the new state.
+
+One citation drift found in that document while checking this: it cites
+`docker_staging.py:32` for `_CLOSURE_MANIFEST_SOURCE_PATH`; the constant is at
+`:33`. Recorded, not corrected, for the same reason.
+
+### 15.10 Confirmation — no Host file pins the digest
+
+**coder-engine's finding is correct, with one refinement worth stating so the
+next person who greps does not misread what they find.**
+
+The literal `eeba2f42` appears in the Host tree exactly twice:
+
+1. `docs/preparation/prepared-path-alpine-diagnostic.md:117` — prose, handled in 15.9.
+2. `scratch/test-phase/wintmp2/docker-admission0/project/synaptic-tuner/tuner/runtime/manifests/offline-sft-worker-v1.json`
+   — a staged copy left by an earlier run. `scratch/` is gitignored
+   (`.gitignore:9`), so this is a run artifact, not a pin. It will be
+   regenerated on the next staging.
+
+No Host **code** pins it, and the design makes pinning unnecessary:
+`docker_staging.py:33` names the manifest by path, `:1180-1182` and `:1239`
+recompute the digest from the locked git blob by popping `closure_digest`, and
+`:1750`/`:1765` pass `worker_source_closure_digest=locked_closure.closure_digest`
+— the expectation is *derived from the blob being verified*, never stored.
+`_parse_manifest` then requires `recorded == observed == expected`
+(`offline_sft_worker.py:308-320`), which is self-consistent by construction for
+any correctly regenerated manifest.
+
+The engine side is equally clean: **zero** occurrences of the digest literal
+anywhere in the engine outside the manifest itself. No test embeds it;
+`tests/runtime/test_offline_sft_worker.py:22` and
+`tests/trainers/sft/test_runtime_v1.py:86` both read the manifest at run time.
+
+**Therefore B-5 needs no Host change.** The submodule pointer move already
+scheduled in section 11 carries the new digest.
+
+### 15.11 Files
+
+Engine (`synaptic-tuner`), all in the same commit as the B-2 trainer edit:
+
+| File | Change |
+|---|---|
+| `scripts/regenerate_offline_sft_worker_closure.py` | New. The generator, per 15.6 and 15.7. |
+| `tuner/runtime/manifests/offline-sft-worker-v1.json` | Regenerated. Four values, per 15.5. |
+| `tests/contract/test_offline_sft_worker_closure.py` | One new test function, per 15.8. `_MEMBERS` untouched. |
+
+Host: none.
+
+**Ordering constraint for CODE.** Run `--write` *after* the trainer edit is
+final. Any further edit to any of the 66 members re-stales the manifest, so run
+`--check` as the last step before committing rather than assuming only
+`train_sft.py` moved. The sweep in 15.1 is a snapshot, not a standing fact.
+
+### 15.12 Residuals
+
+- **R-3.** Nothing outside the contract test enforces that the generator was
+  actually run. A closure-member edit committed without regeneration passes
+  review and fails at the next prepared run. The new test in 15.8 closes this in
+  CI; if this branch has no CI gate, the check is only as good as the person who
+  remembers to run it. Flagging for the deferred ledger, not deciding it — a
+  pre-commit hook is a repo-policy decision above my remit.
+- **R-4.** `optional_features` is pinned to `[]` at
+  `offline_sft_worker.py:306`. The generator writes it through unchanged, so it
+  is inert here, but it is the field a future "add an optional member" request
+  would reach for, and it has no generator support by design.
+
+### 15.13 Correction 2026-09-02 — the 25 test failures are not the stale manifest
+
+Recorded after the ruling above was accepted. I ran the engine suite to check the
+blocker's attribution and it does not hold.
+
+`tests/trainers/sft/test_runtime_v1.py` on this worktree: **34 failed, 42 passed.**
+All 34 share one root cause, and it is neither the stale manifest nor B-2.
+
+- 25 fail with `OfflineSFTWorkerError: staged worker member mode does not match`.
+- 9 fail a `pytest.raises(match=...)` assertion whose observed message is
+  `offline worker closure validation failed` — the same closure error preempting
+  the specific error each negative test meant to provoke.
+
+**Mechanism.** Every one of the 66 members is mode `0o777` on this
+DrvFs/9p Windows-backed mount, so the POSIX executable bit is set on all of them.
+The staged-tree check at `offline_sft_worker.py:438-441` requires
+`executable == (git_mode == "100755")`, and every member is declared `100644`.
+The fixture stages members with `shutil.copy2` (`test_runtime_v1.py:89-93`),
+which preserves mode, so the check raises on **member 1**,
+`Trainers/sft/configs/config.yaml` — a file B-2 never touches — before the
+per-member content check ever reaches `train_sft.py`.
+
+Git disagrees with the filesystem and git is right: this repo has
+`core.filemode = false`, and the index records `100644` for the members.
+The `0o777` is a mount artifact that git is explicitly configured to ignore.
+
+**Three consequences.**
+
+1. **Correction to blocker #116's attribution — itself corrected later the same
+   day.** My first statement here, "regenerating the manifest fixes none of the
+   34", was true of this worktree and wrong as a general claim. There are two
+   independent causes, and the mode artifact *masks* the other one: the loop at
+   `offline_sft_worker.py:430-441` checks content then mode per member, so on a
+   `0o777` mount it raises on member 1, `config.yaml`, before member 8's genuine
+   content mismatch is ever reached. On a mode-correct filesystem the stale
+   manifest is a real and sufficient cause — which is what coder-engine measured
+   on an ext4 git-archive harness, reporting `staged worker member does not
+   match closure` and returning to baseline after regeneration. What stands from
+   the original claim: on this mount the mode failure reproduces on a pristine
+   checkout of `aec998ee` with no B-2 edit, and TEST (#105) therefore runs on an
+   ext4 extraction by lead ruling.
+
+   Verified independently after coder-engine regenerated the manifest: staging
+   all 66 members to ext4 at `0o644` and calling
+   `load_offline_sft_worker_closure` **passes**, while the identical stage at
+   `0o777` still raises `staged worker member mode does not match`. The
+   regenerated manifest is correct, and its `payload_bytes` landed at 685 624 —
+   exactly the arithmetic specified in 15.5.
+
+2. **Correction to 15.6, which is my own error.** The mode fail-closed condition
+   as written consults `path.stat()`, so the generator would refuse on all 66
+   members on this very mount and could never be run here. Amend the oracle:
+   take `git_mode` from `git ls-files -s`, not from a filesystem stat. The field
+   is named `git_mode`, git is its authority, and a stat is the wrong oracle
+   anywhere `core.fileMode` is false. The condition stands, with git as the
+   source: refuse if git's recorded mode disagrees with the manifest's.
+
+3. **For TEST (#105), flagged not decided.** The closure-authenticating tests in
+   this file cannot pass on a Windows-backed mount regardless of B-2 or B-5.
+   Running them meaningfully needs a POSIX-faithful filesystem, so "green on this
+   worktree" is not available for this file and should not be the acceptance
+   gate. Which filesystem TEST uses is above my remit.
