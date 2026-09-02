@@ -1888,11 +1888,17 @@ For `docs/review/native-windows-publication-closure.md`, replacing the two
 entries as written in 18.16:
 
 - **B-9-R1 (Future, engine — rePACT shape now known).** Verified at `4a01fc55`:
-  `allowed_environment` (`tuner/training/methods/sft.py:52-63`) admits none of
-  `HOME`, `XDG_CACHE_HOME`, `TORCH_HOME`, `TRITON_CACHE_DIR`, `TMPDIR`, while
-  admitting all 14 keys the Host passes today. That file is one of the 66 closure
-  members, so the fix is an engine allowlist edit plus closure regeneration plus
-  a pin move — never a Host patch. Caches go to `/tmp`, not `/artifacts`
+  the trainer allowlist is declared in TWO closure members and both must be
+  widened together, the Python list at `tuner/training/methods/sft.py:52-63` and
+  the closed enum at `schemas/synaptic-sft-workload-v1.schema.json`
+  (`properties/runtime_requirements/properties/allowed_environment`), 27
+  identical entries in each. Neither admits `HOME`, `XDG_CACHE_HOME`,
+  `TORCH_HOME`, `TRITON_CACHE_DIR` or `TMPDIR`, while both admit all 14 keys the
+  Host passes today. Widening only the Python list leaves the schema rejecting
+  the four new keys. Both are closure members, so the fix is an engine edit to
+  both copies plus closure regeneration plus a pin move — never a Host patch.
+  (Amended 2026-09-02: the original #136 citation named only the Python copy;
+  coder-engine-r1 found the second at #147 and widened both; engine `ba844137`.) Caches go to `/tmp`, not `/artifacts`
   (18.19). Proposed keys: `HOME=/tmp/home`, `XDG_CACHE_HOME=/tmp/xdg`,
   `TORCH_HOME=/tmp/torch`, `TRITON_CACHE_DIR=/tmp/triton`. Still unproven as
   active; settle from run 5's output, not from argument.
