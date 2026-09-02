@@ -1223,3 +1223,234 @@ platform-conditioned defect this workstream has surfaced that only a real
 Windows host could produce — after B-3's CRLF stdin, B-4's entrypoint hijack and
 B-7's POSIX-shaped environment scrub. Unlike those three it is not in the source
 at all; it is a property of the host the prepared path never declared it needed.
+
+## 17. Run 5 verdict by step
+
+Run 5, 2026-09-02, from the released checkout `F:\Code\ehr-release-ab741054`
+(branch `feat/submodule-cloud-api-v1-host` at `ab741054…`, submodule
+`synaptic-tuner` at `ba844137…`). B-9, B-9-R1 and B-10 are shipped; B-10-R1 was
+to be measured at cut 2.
+
+| # | Step | Verdict | Evidence |
+|---|------|---------|----------|
+| 0 | Released-checkout preconditions | **GREEN** | HEAD `ab74105454ea…`, branch tracks `origin`, `ls-remote` equals HEAD, `--porcelain` empty (0 bytes), submodule `ba844137…` |
+| 1 | Prerequisite 7 — `--entrypoint env` probe | **GREEN** | printed exactly `ok`; image present at the locked digest |
+| 2 | Prerequisite 9 — mount identity | **GREEN** | `/proc/mounts` for `/mnt/f` still `uid=1000,gid=1000,metadata,umask=22,fmask=11`; host unmodified |
+| 3 | Model inventory in the new checkout | **GREEN** | copy route; 25 files, 1 969 841 187 bytes, fingerprint `sha256:0e2a8df2…` |
+| 4 | Driver `--probe-only` | **GREEN** | P1–P8, bind probe and A1–A4 all pass; **A2 passes**, the assertion that stopped run 4 |
+| 5 | Real run, cut 1 | **RED** | `START_UNAVAILABLE`, exit 4; no stage, no container, no durable row |
+| 6 | Cuts 2+ | **NOT REACHED** | the run never left cut 1 |
+| 7 | Section 10.2 durable-row contract | **NOT REACHED** | `.synaptic\state\training.sqlite3` was never created |
+| 8 | This report section | done | — |
+
+**Verdict: RED at activation, on a new blocker, B-11.** B-9 is fixed as far as
+every probe can see. Admission passed for the first time in this workstream.
+Activation then failed before any container existed.
+
+### 17.1 What went right, and it is most of the ladder
+
+Run 4 died at A2 because the container user could not write `/artifacts`. Run 5
+passes A2 with the same bind and the same image, now with `--user 1000:1000`
+from the committed profile:
+
+```
+p8| uid=1000 gid=1000 groups=1000
+p8| WRITABLE
+p8| HOME=/ home-not-writable
+WARN P8-home: HOME is not writable for this user. EXPECTED on this host and NOT a failure
+PASS P8-stage-writable-as-container-user: 1000:1000 wrote and removed a file under the real stage parent
+PASS A2-artifacts-writable: 1000:1000 wrote and removed a file
+```
+
+`WARN P8-home` fired exactly as prerequisite 9 says it would, and is not a
+fault. A1 saw the GPU (`NVIDIA GeForce RTX 3090`), A3 matched the profile at
+full patch level (`3.11.14`), A4 re-verified the inventory fingerprint.
+
+Admission also passed for the first time: the run reached
+`_activate_docker_training_v1`, which means the source proof, the plan compile,
+the plan verify and the model-inventory resolution all succeeded. **B-7's
+SystemRoot fix has therefore now executed for real**, and so has P7 against a
+published branch.
+
+### 17.2 The failure, and the one line that names it
+
+Cut 1, verbatim, with the B10-EVIDENCE pair:
+
+```
+[cut 1] entering with phase=None
+B10-EVIDENCE cut=1 stage=NONE state_nonempty=unknown artifacts_nonempty=unknown tmp_nonempty=unknown tracking_nonempty=unknown
+B10-EVIDENCE cut=1 result=START_UNAVAILABLE status=unavailable exit=4
+[cut 1] exit=4 status=unavailable run_id=None phase=None
+```
+
+The command result carries no message:
+
+```
+{"code":"START_UNAVAILABLE","input_digest":"a74e16532990cb90050403fbcbbab2d6da57df05167d91085b5f55c15c838589","plan_fingerprint":null,"run_id":null,"status":"unavailable",…}
+```
+
+`synaptic_host/docker_training.py:694-696` wraps activation in a bare
+`except BaseException: return fail(START_UNAVAILABLE)`, so the cause never
+reaches stdout. It was recovered by wrapping
+`_activate_docker_training_v1` from a `sys.meta_path` loader hook in a
+gitignored operator probe — no file under `synaptic_host` was modified, and the
+probe reproduced the identical `input_digest` and code, so the harness is
+faithful:
+
+```
+File "…\synaptic_host\docker_training.py", line 809, in _activate_docker_training_v1
+    authenticator = FileHmacAuthenticator.for_docker(
+File "…\synaptic_host\security.py", line 534, in for_docker
+    value._ensure_private_storage_directories()
+File "…\synaptic_host\security.py", line 606, in _ensure_private_storage_directories
+    self._validate_private_directory(directory)
+File "…\synaptic_host\security.py", line 583, in _validate_private_directory
+    raise _private_storage_error() from None
+ValueError: HMAC private storage validation failed
+```
+
+A second probe wrapped `_private_storage_error` to print its raising frame and
+`_validate_private_directory` to print its path:
+
+```
+probe: validating F:\Code\ehr-release-ab741054\.synaptic
+probe: ntfs ok F:\Code\ehr-release-ab741054\.synaptic
+probe: _private_storage_error raised at …\synaptic_host\security.py:373 in _win_validate_acl
+probe: FAILED on F:\Code\ehr-release-ab741054\.synaptic
+```
+
+### 17.3 B-11 — the HMAC private storage root is created by the operator, with an inherited ACL
+
+`FileHmacAuthenticator.for_docker` (`security.py:524-534`) sets the private
+storage root to `<project_root>\.synaptic` and validates the whole chain
+`.synaptic` → `.synaptic\state` → `.synaptic\state\docker`
+(`security.py:585-606`). On Windows each must satisfy `_win_validate_acl`
+(`security.py:349-402`):
+
+- the DACL must be **protected** (`_SE_DACL_PROTECTED`), and
+- the owner must be the current user, and
+- there must be **exactly two** ACEs, neither inherited, each
+  `FILE_ALL_ACCESS`, for the current user and `S-1-5-18`.
+
+That is precisely what `_win_create_private_directory` (`security.py:286-295`)
+produces, via the SDDL `O:<sid>G:<sid>D:P(A;;FA;;;SY)(A;;FA;;;<sid>)`.
+
+But `_ensure_private_storage_directories` **only creates directories that do not
+exist**; it never repairs one that does. And on this path the operator is
+required to create `.synaptic` first:
+
+| Creator | Path | Line |
+|---|---|---|
+| `materialize_model_inventory.py` (prerequisite 3) | `<root>\.synaptic\model-inventory\…` | `dest.mkdir(parents=True, exist_ok=True)` at `:177` |
+| `run_prepared_training.py` P8, added for B-9 | `<root>\.synaptic\state\docker\stages` | stage-parent creation, `--probe-only` included |
+
+Both use `pathlib.Path.mkdir`, which inherits the parent ACL. Measured on the
+failing directory:
+
+| Property | Value |
+|---|---|
+| Owner | `DESKTOP-2A4U5KR\Joseph` (correct — the owner test passes) |
+| `AreAccessRulesProtected` | **False** |
+| ACE count | 11, **every one inherited** (`Administrators`, `SYSTEM`, `Authenticated Users`, `Users`, `CodexSandboxUsers`, …) |
+
+The Host validator refuses all three chain directories:
+
+```
+F:\Code\ehr-release-ab741054\.synaptic:               REFUSED
+F:\Code\ehr-release-ab741054\.synaptic\state:         REFUSED
+F:\Code\ehr-release-ab741054\.synaptic\state\docker:  REFUSED
+```
+
+**This is not caused by the copy shortcut.** The control is
+`F:\Code\ehr-release-48375bc3\.synaptic`, created in run 2 by the documented
+`materialize_model_inventory.py` under Windows Host Python: it carries the
+identical inherited-ACL shape. The documented sequence produces the defect.
+
+**Mechanism, isolated to one variable.** Two throwaway directories in the same
+parent, same volume, same user, differing only in creator, judged by the Host's
+own validator:
+
+```
+A pathlib.Path.mkdir:    REFUSED  (HMAC private storage validation failed)
+B host private creator:  ACCEPTED
+```
+
+`B`'s ACL is exactly `NT AUTHORITY\SYSTEM:(F)` and `DESKTOP-2A4U5KR\Joseph:(F)`,
+non-inherited. Location, volume, NTFS and user are all eliminated; the creator
+is the whole difference.
+
+**The remedy direction is viable on this host.** A protected owner-only
+directory is still fully usable by the rest of the path: WSL sees it as
+`drwxr-xr-x profsynapse:profsynapse` and can write it, and the container reads a
+file inside it over the `wsl.localhost` bind as `uid=1000`. Locking `.synaptic`
+down does not break the inventory bind. The remedy itself is architect-run's
+call; candidates are (i) the Host repairs or protects a chain directory it
+already owns, (ii) the private storage root moves below a directory the operator
+never creates, or (iii) the skill creates `.synaptic` privately before
+prerequisite 3 — but (iii) leaves P8 creating `state` and `state\docker` the
+wrong way, so it is not sufficient alone.
+
+### 17.4 The three measurements this run was to record
+
+All three are **unmeasured**, because the run never reached cut 2 and no
+container was created. Reporting them as anything else would close blockers on
+assumption.
+
+**(a) B-10.** Only cut 1 exists, and its pair is quoted verbatim in 17.2 above.
+`stage=NONE` with `unknown` flags is the documented normal reading before
+staging. **The 19.14 table cannot be applied at all**: there is no cut 2, so
+this is neither the confirmed row nor the deferral row. B-10 remains latent and
+untested on the shipped path.
+
+**(b) B-10-R1.** No stage directory was ever created, so there is no
+`<stage>\artifacts\cache` to list, at cut 2 or at the end. Nothing was written
+under a cache root because activation stopped before staging. B-10-R1 stays
+unproven-as-active, on no evidence from this run.
+
+**(c) B-9-R1.** No training container was created, so `/tmp/torch`,
+`/tmp/triton`, `/tmp/xdg` and `/tmp/home` were never populated and there is
+nothing to `docker exec` into. The container is not "gone"; it never existed.
+The only HOME evidence this run produced is the P8 probe's `HOME=/
+home-not-writable`, which is the pre-existing measurement from task #131 and not
+the trainer's own output that B-9-R1 needs.
+
+### 17.5 B-8 note
+
+`docker_model_inventory.py`'s stat-identity re-check **did not fire**. The run
+reached `_activate_docker_training_v1`, which is downstream of
+`resolve_docker_model_inventory_v1` and of both `RESOLUTION_UNAVAILABLE` gates
+(`docker_training.py:679-686`), so inventory resolution completed cleanly over
+the 1.97 GB tree on the 9p mount.
+
+### 17.6 State preserved
+
+Nothing was cleaned. There is no container to preserve — none was created. There
+is no stage: `.synaptic\state\docker\stages` is empty. There is no durable row:
+`.synaptic\state\training.sqlite3` does not exist. The `.synaptic` tree is left
+with the ACLs it failed on; **no ACL was modified**, so the blocker is
+reproducible as it stands.
+
+### 17.7 What Run 5 changed about what is unproven
+
+Newly proven: `--user 1000:1000` from the committed profile makes the stage
+parent and `/artifacts` writable for the container user (B-9's fix works at the
+probe layer); admission end to end, which had never passed before, so B-7's
+SystemRoot fix and P7 have now executed for real; and the inventory contract
+over 1.97 GB on the 9p mount.
+
+Newly blocked: activation, and therefore everything after it, now behind
+**B-11**. B-9's driver change (P8) is a contributing cause, not a bystander: it
+creates two of the three refused chain directories, and it does so on a
+`--probe-only` pass.
+
+Still unproven, unchanged: container creation by the prepared path, the stage
+bind, stage reuse and replay idempotency, the whole of section 10.2, B-2 end to
+end, the B-5 argv equality against the regenerated closure, B-10, B-10-R1 and
+B-9-R1.
+
+Ordering note: B-11 is the **fifth** platform-conditioned defect this workstream
+has surfaced that only a real Windows host could produce, after B-3's CRLF
+stdin, B-4's entrypoint hijack, B-7's POSIX-shaped environment scrub and B-9's
+DrvFs mount identity. Like B-9 it is a collision between a POSIX-shaped
+assumption and a Windows security primitive; unlike B-9 it is in the source, and
+the source and the operator recipe disagree about who owns `.synaptic`.
