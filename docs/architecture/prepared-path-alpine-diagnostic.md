@@ -1105,3 +1105,551 @@ blocker and outside what the constraints authorize here. I am **naming it, not
 deferring it silently**: it is a decision for the lead and the user, and the
 17.9 probe plus the trainer actually producing output is the interim evidence
 that the flag took effect.
+
+---
+
+## 18. Amendment 2026-09-02 — ruling on B-9 (the container user cannot write the artifact bind)
+
+**Blocker** #128, raised by `test-host` on run 4 (#127; report
+`docs/testing/prepared-path-alpine-diagnostic.md` section 15.4).
+**Baseline for every citation below**: Host worktree at `7546169e`, submodule
+`synaptic-tuner` at `4a01fc55`. Line numbers are read at that commit; re-verify
+against `git show 7546169e:<path>` rather than a working tree that coders are
+editing.
+
+**User ruling 2026-09-02 (option A)**: the machine's `/etc/wsl.conf` stays as it
+is. Acceptance evidence must come from an unmodified host, so the prepared path
+must stop depending on undeclared mount policy. Remedy 1 (host-wide automount
+edit) and remedy 2 (a different distro) are **rejected** and are not reopened
+here. This section rules on remedy 3 and specifies the P8 precondition.
+
+### 18.1 The measured defect, and what it is not
+
+The prepared composition passes **no `--user`**
+(`control_private.py:394-399`), so the container runs as the image's own
+`User=unsloth:runtimeusers` (uid 1001, gid 102) and binds `/artifacts`
+read-write over `\\wsl.localhost\Ubuntu-22.04\mnt\f\...`
+(`control_private.py:410-411`). The pinned distro mounts the project drive with
+`metadata;uid=1000;gid=1000;umask=22;fmask=11`, so DrvFs honours stored POSIX
+modes; a directory with no stored mode presents as `0755` owned by uid 1000 and
+uid 1001 gets `r-x`.
+
+`test-host` isolated it single-variable — same image, same bind shape, same
+default user, only the host-side mode differing: `755` denies, `777` writes —
+and controlled it against run 2's own probe directory, which now fails
+identically. So this is **not** a regression of the new checkout, not a Host
+source defect of the B-7 kind, and not an in-checkout operator step of the B-6
+kind. It is an undeclared **environment precondition**.
+
+One part of the run-4 account is inference and is treated as such: that runs 1-3
+mounted the drive without `metadata`. The earlier mount cannot now be observed.
+**Nothing in this ruling depends on it.** The design below is justified from two
+things that are still measurable: the current mount options, and the composition
+source.
+
+### 18.2 The principle — match the mount's OWNER, do not fight its MODE
+
+The mount presents two separable facts: an **owner identity** (`uid=`, `gid=`)
+and a **mode policy** (`metadata`, `umask=`, `fmask=`). B-9 is a mode-policy
+failure, and every remedy that attacks the mode has to reach a surface the Host
+is not allowed to use. The owner identity is different: it is a mount option,
+it is stable for the life of the mount, and **the owner of a directory has
+`rwx` under every mode policy the mount can present** — `umask=22` gives `755`,
+`umask=77` gives `700`, and a no-`metadata` mount gives `0777`. Owner-matching
+is therefore correct in the current environment, correct in the earlier
+environment run 4 could not reproduce, and correct under any umask a future boot
+might apply.
+
+That is the ruling in one line: **the prepared path stops depending on the
+mount's mode policy by declaring, and adopting, the mount's owner identity.**
+
+### 18.3 Ruling — candidate (a), `--user` from a committed profile field
+
+The prepared composition emits `--user <uid>:<gid>`, sourced from a new
+committed profile field `docker_host.container_user` in
+`training/providers/docker.json`, and the create-argv parser asserts its shape
+at a fixed position. For this host the value is `"1000:1000"`, which is the
+`uid=`/`gid=` pair the report measured in `/proc/mounts` (section 15.4).
+
+Why this and not something cleverer:
+
+- It is the **only lever inside the composition**. Docker's `--mount type=bind`
+  has no uid-remap option on the Docker Desktop WSL2 backend, and group
+  matching cannot help: the directory presents `755`, so the group has no write
+  bit either.
+- It is **policy-independent** (18.2), which is exactly what the user's
+  ruling requires: the design must not assume anything about `wsl.conf`.
+- It **declares** the host fact instead of assuming it. B-9 exists because the
+  prepared path had an unwritten requirement. A profile field converts the
+  unwritten requirement into a committed, auditable, operator-settable value,
+  and P8 fails by name when the value is wrong.
+- It is **secret-free**. The value is two integers. It appears in the prepared
+  command text and in the durable `command_digest` input, and carries no
+  credential.
+
+**Cost in the committed profile.** `docker_host` gains one key. The profile is
+read as a committed git blob at the locked project commit, so the value only
+takes effect once committed **and a new released checkout is built** — the same
+mechanism that governed B-1' (task #100). `profile.digest` changes, and it
+already flows into `provider_runtime_requirements_digest` and
+`provider_policy_digest` (`docker_training.py:484`, `:508`); both are computed
+from the profile, so no committed constant needs updating, only tests that pin
+the digest or the profile's key set.
+
+**Cost in the closure manifest: none, confirmed.**
+`tuner/runtime/manifests/offline-sft-worker-v1.json` is loaded from the engine
+submodule at the locked engine commit (`docker_staging.py:1678-1680`) and its
+members are engine source files; the Host recomputes and compares them. No Host
+file is a member, so no Host-side change can invalidate it. The B-5 regeneration
+ruling (#117) is not reopened.
+
+**Cost in the prepared command text.** Two extra argv elements. The locked
+workload argv is appended unchanged after the image reference
+(`control_private.py:416-417`) and is not touched.
+
+### 18.4 Why candidate (b) is closed — the Host cannot set the presented mode
+
+Candidate (b) was: have the Host create the stage directory group- or
+world-writable. It is refused because no surface the Host is permitted to use
+can set the mode DrvFs presents.
+
+- **Windows Host Python cannot.** `os.chmod` on Windows toggles only the
+  read-only attribute; it does not write the Linux mode. The staging code
+  already knows this and says so in its own shape: `_apply_file_mode` branches
+  on `os.name == "nt"` and sets `stat.S_IREAD` instead of a POSIX mode
+  (`docker_staging.py:161-165`), and `_verify_file_mode` returns `True`
+  unconditionally on Windows (`:168-174`). A design that assumed Windows Python
+  could stamp `0777` would contradict code already written on the premise that
+  it cannot.
+- **The WSL side could, and is out of bounds.** With `metadata`, a WSL-side
+  `chmod` writes the stored mode, which is why `test-host`'s 777 experiment
+  worked. The standing constraint is that WSL is used only for mount
+  translation, and the team lead confirmed that reading on 2026-09-02. Calling
+  `wsl.exe ... chmod` from the staging path would breach it, and would make
+  every run depend on a second interpreter on the host.
+- **A privileged preparation container could, and is worse.** A root container
+  chmod-ing the bind would add a Docker step to a function whose contract is
+  explicitly "without Docker or network I/O" (`docker_staging.py:1658`), and
+  would introduce a privileged container into a path whose whole point is a
+  network-disabled, credential-free, non-root workload.
+- **NTFS ACLs do not reach it.** When no stored mode exists, DrvFs derives the
+  presented mode from the mount's `umask`/`fmask`, not from the ACL. This is
+  consistent with the measurement that creator does not matter: a WSL `mkdir`
+  and a Windows Python `mkdir` present identically.
+
+### 18.5 Why candidate (c) is closed — named volume, tmpfs, or a relocated stage
+
+Rejected on two independent grounds.
+
+- **The staging invariant forbids it.** The stage root must live below the Host
+  state root, which must live below `<project>/.synaptic`
+  (`docker_staging.py:1681-1685`, which raises "Docker staging must remain
+  below Host state"). The project is on the F: drive, so the stage cannot be
+  moved off DrvFs without changing where Host state lives — a far larger change
+  than the blocker.
+- **It would be the compatibility layer the user forbade.** A named volume or
+  tmpfs for `/artifacts` plus a post-run copy inserts a second artifact
+  location, a copy step, and a new failure mode between the trainer's output and
+  the verifier's content-bound contract. It also breaks the identity the
+  verifier depends on: the Host verifies artifacts by reading the same directory
+  it bound. This is exactly the "untouched prepared path" the feature exists to
+  exercise.
+
+### 18.6 Candidate (d) — nothing in the code already provides it
+
+Checked, not assumed. There is **no** user, uid, or run-as support anywhere in
+the Host: a search for `--user`, `"user"`, `user_id`, `uid` and `run_as` across
+`synaptic_host/` returns nothing, and the same search across the engine's
+`tuner/execution/providers/docker_provider_v1/` returns nothing. `DockerRuntimeV1`
+carries cpu, memory, timeout, accelerator devices and network mode only
+(`control_private.py:353-361`). Candidate (d) is empty; the field has to be
+added.
+
+### 18.7 Profile field, not a constant — and why this differs from B-4
+
+Section 17.5 ruled the entrypoint a **constant** because there was one correct
+behaviour that `env` expresses on any POSIX image. That test is applied here and
+comes out the other way. There is no universally correct uid: the right value is
+whatever identity the pinned distro presents as owner of the project drive, and
+that is a property of the host, not of the design. This is B-1-shaped, not
+B-4-shaped, and it takes the B-1 answer — a `docker_host` field beside
+`wsl_distro` and `drive_mount_root`, which already declare *where* the drive
+appears. `container_user` declares *who owns it there*.
+
+Section 17.5's objection to a profile field — that it would force a new
+parameter on the `create_container` Protocol across four sites — does not apply,
+because the value never reaches `create_container`. It reaches the argv builder
+only, by the construction route in 18.8.
+
+### 18.8 Insertion points
+
+**(1) Compose** — `control_private.py`, in the fixed region after the
+`--entrypoint` pair and before the optional `--gpus` branch, so `--gpus` remains
+the only conditional (the rule 17.6 established). The list literal at `:394-399`
+ends:
+
+```python
+"--entrypoint", _CONTAINER_ENTRYPOINT_V1,
+"--user", container_user,
+```
+
+`container_user` is a new keyword-only parameter on
+`DockerPrivateCreateInvocationFactoryV1.build` (`:323-327`), validated inside
+the existing type gate at `:329-346` against the grammar in 18.8(3).
+
+**(2) Validate** — `docker_v1/cli.py`, in `_validate_create_command`, inserted
+immediately after the entrypoint block at `:116-118`:
+
+```python
+if arguments[index:index + 1] != ("--user",):
+    raise ValueError
+index += 1
+user = arguments[index]
+index += 1
+if _CONTAINER_USER_V1.fullmatch(user) is None:
+    raise ValueError
+```
+
+The parser asserts the **shape**, not the value. That matches how the parser
+already treats `--cpus` and `--memory` — bounded digit strings, checked for form
+(`cli.py:99-115`) — while reserving exact-token equality for universal constants
+such as `--network none` and `--entrypoint env`. A profile-derived value cannot
+be value-pinned in a parser that has no access to the profile.
+
+**(3) The grammar.** Numeric only:
+
+```python
+_CONTAINER_USER_V1 = re.compile(r"(?:0|[1-9][0-9]{0,6}):(?:0|[1-9][0-9]{0,6})\Z")
+```
+
+Names are refused deliberately. A name in `--user` resolves against the
+**image's** `/etc/passwd`, which cannot express a host mount identity; only
+numeric ids cross that boundary with their meaning intact.
+
+**(4) Thread the value by construction, not by call.**
+`container_user` becomes a **required keyword-only field on
+`DockerHostCreateV1`** (`docker_v1/create.py`), read by both `prepare_admission`
+and `create_once` when they call `build`.
+
+This is the load-bearing implementation decision, and the reason is
+correctness, not tidiness. The value is consumed at **three** call sites —
+`docker_prepared_composition.py:242-249` (admission) and
+`docker_execution.py:1086-1092` and `:1122-1128` (create and reconcile-create) —
+and admission publishes an expected-create binding that `create_once` compares
+against its own preflight (`create.py:191-199`). If the three sites could be
+given different values, a mismatch would surface as an opaque admission
+rejection. Binding the value once on the object makes divergence impossible by
+construction, and leaves all three call signatures unchanged.
+
+The two production construction sites are
+`docker_prepared_composition.py:231-241` (in scope; pass
+`container_user=platform.container_user` beside the existing
+`endpoint_descriptor_digest` and `cli_policy_digest`, which are already
+platform-derived constructor values) and `docker_v1/composition.py:382-396`
+(the legacy path). **The field takes no default.** A default would let the
+legacy path silently compose a create command with a different user than the
+prepared path — the silent-divergence class this workstream was already bitten
+by in B-4. The legacy site is kept constructible by adding the field to its
+request dataclass (near `composition.py:151`) and passing it through: two lines,
+no fallback, and the prepared path is not routed through it.
+
+**(5) Carry it to the platform and the profile.**
+
+- `docker_prepared_composition.py:55-77`: `DockerPreparedPlatformV1` gains
+  `container_user: str` with the same shape validation, beside `distro` and
+  `drive_mount_root`.
+- `docker_prepared_composition.py:88-106`:
+  `compose_docker_prepared_platform_v1` gains a `container_user` keyword and
+  validates it in the same guard.
+- `docker_training.py:881-882`: pass `container_user=snapshot.profile.container_user`
+  beside the two existing fields.
+- `docker_provider.py`: field at `:136-137`, validation at `:166-167`, the key
+  set at `:202-203` (a `frozenset` — an unlisted key is rejected, so the parser
+  must be extended or the new profile will not load), construction at
+  `:227-229`, and `to_dict` at `:266-269`.
+
+**(6) The stage directory itself is not changed.** `_create_artifact_topology`
+(`docker_staging.py:1438-1443`) and the `mkdtemp`/`mkdir` sequence at
+`:1687-1698` stay exactly as they are. That is the point of the ruling: the
+Host keeps creating the stage the only way it can, and the container is told who
+to be.
+
+### 18.9 Effect on the closure, the fingerprint and the durable row
+
+- **Closure argv equality (`docker_staging.py:1533-1588`): untouched.** It
+  compares `bundle.dispatch.argv` — interpreter, entrypoint and the
+  canonical-workload flags — against a value rebuilt from the locked closure
+  (`:1552-1580`). Docker flags are not in that comparison.
+- **Worker closure manifest: untouched**, per 18.3.
+- **`command_digest` and the `docker_run_mutations` row: changed by value, not
+  by shape.** The create argv gains two elements, so its digest changes. That is
+  the same effect B-4 had and needs no schema change. A run started before this
+  amendment and reconciled after it would see a digest mismatch; there is no such
+  run, because no run has ever reached create (`.synaptic\state` has never
+  existed — report sections 13.6 and 15.6).
+- **`DockerCreateSpecificationV1` (`create.py:400-410`)**: the specification
+  already carries a `working_directory_digest`. A `container_user_digest`
+  alongside it is **optional** and is not required by this ruling; the value is
+  already covered by `command_digest`. If the coder adds it, it is a pure
+  addition and must be listed in the HANDOFF, not slipped in.
+
+### 18.10 The writable-`HOME` question is engine-side and is NOT ruled here
+
+Changing the container's uid raises a second question that must be named rather
+than assumed away: `--user 1000:1000` is an id with no entry in the image's
+`/etc/passwd`, so the runtime sets `HOME=/`, which uid 1000 cannot write. Some
+of the trainer's dependencies write under `Path.home()`.
+
+Most of the risk is already retired by the design as it stands. Every writable
+root is redirected under `/artifacts` (`docker_training.py:444-449`,
+`writable_capability_root="/artifacts"` at `:474`), and `HF_HOME` and
+`TRANSFORMERS_CACHE` are explicitly redirected into `/artifacts/cache`
+(`:461-462`). `PYTHONNOUSERSITE=1` is set (`:452`).
+
+What remains cannot be fixed on the Host, and I am naming that rather than
+recommending a Host edit that would be rejected at runtime. The engine declares
+an environment allowlist at
+`synaptic-tuner/tuner/training/methods/sft.py:52-63`, and it **does not contain
+`HOME` or `TMPDIR`**. The allowlist is enforced, not decorative:
+`Trainers/sft/runtime_v1.py:1145-1157` requires
+`set(planned_environment).issubset(set(allowed_environment))` and raises
+`RuntimeV1Error("resolved runtime environment violates portable requirements")`
+otherwise. So adding `HOME` to the Host's environment dict would be **rejected
+by the engine**. Doing it properly means an engine allowlist change, a new
+engine commit, and — if that file is a closure member — a closure regeneration
+of the B-5 shape. That is a rePACT, not a line in this ruling.
+
+Two things follow, and both are in scope for me to specify:
+
+1. **P8 measures it and reports it, and does not fail on it** (18.11). Whether
+   the workload needs a writable `HOME` is unproven; a non-writable `HOME` is
+   legitimate today, so the correct severity is a warning, not an error.
+2. It goes on the deferred ledger as **B-9-R1** (18.16), to be settled by run 5's
+   own output rather than by argument.
+
+Note also that the offline flags the engine requires
+(`runtime_v1.py:669-670`) are supplied by the engine's own dispatch layer
+(`tuner/runtime/dispatch.py:169-186` sets `HF_HUB_OFFLINE` and
+`TRANSFORMERS_OFFLINE` to `"1"`), not by the Host's environment dict. Their
+absence from `docker_training.py:450-464` is not a defect; I checked before
+filing one.
+
+### 18.11 P8 — `P8-stage-writable-as-container-user`
+
+**What it proves.** That the effective container user the composition will use
+can create, write and delete inside a bind whose source is created the same way,
+and in the same place, as the real stage directory.
+
+**Where the probe directory goes.** Under the real stage parent:
+`<released checkout>\.synaptic\state\docker\stages\p8-probe`, created by the
+driver with Python's `mkdir(parents=True, exist_ok=True)` — the identical call
+the staging code makes at `docker_staging.py:1686`. This is deliberate and
+answers the fidelity requirement directly. The presented mode of a fresh
+directory comes from the mount policy, not from its creator, so a scratch
+throwaway would in fact be equivalent **on this host** — but that equivalence is
+an inference from one measurement, and the stage root is the location that
+actually matters. Probing the real parent removes the inference.
+
+Two consequences the operator must know, and the driver must print:
+
+- A `--probe-only` pass now creates `.synaptic\state\docker\stages` if it does
+  not exist. That is the same directory the run creates anyway, by the same
+  idempotent call, but it changes the "no durable state was written" line that
+  runs 1-4 could report. The driver prints one line saying it created the stage
+  parent.
+- P8 removes **only** its own `p8-probe` directory and the file inside it. It
+  never removes the stage parent, and it never touches an existing stage.
+  It must also never write inside a stage: `_verify_artifact_topology`
+  (`docker_staging.py:1446-1481`) requires the four writable artifact
+  directories to be empty, so a stray probe file inside a stage would break
+  stage reuse.
+
+**How it writes as the image's own user.** One container run, using the same
+two conventions the composition uses — `--entrypoint env` (section 17.2, so the
+image's `entrypoint.sh` cannot discard the argv) and the `--user` value read
+from `docker_host.container_user`:
+
+```
+docker.exe --host npipe:////./pipe/dockerDesktopLinuxEngine run --rm \
+  --pull never --network none \
+  --user <docker_host.container_user> \
+  --mount type=bind,source=<rendered UNC of the p8-probe directory>,destination=/artifacts \
+  --entrypoint env <image@sha256:...> \
+  sh -c 'id; touch /artifacts/.p8probe && rm /artifacts/.p8probe && echo WRITABLE; \
+         printf "HOME=%s " "$HOME"; test -w "$HOME" && echo home-writable || echo home-not-writable'
+```
+
+The UNC is rendered by the driver's existing `_mount_source`
+(`run_prepared_training.py:410-412`), so P8 and the composition agree on the
+mount source by construction.
+
+**Pass condition.** `WRITABLE` in stdout and exit 0. The `id` line is echoed
+into the report so the effective user is evidence, not assumption.
+
+**Warning, not failure.** `home-not-writable` prints a `WARN P8-home` line
+naming B-9-R1 and continues. A non-writable `HOME` is legitimate for a workload
+that never touches it; failing on it would refuse valid configurations.
+
+**Failure message.** It must name the effective user, the rendered UNC, the
+child's stderr, and — this is the part that makes it a precondition rather than
+a symptom — the remedy:
+
+```
+FAILED P8-stage-writable-as-container-user: <user> could not write /artifacts over
+  <UNC>: <stderr>
+  The prepared path requires docker_host.container_user to equal the identity the
+  pinned WSL distro presents as owner of the project drive. Read it with:
+    wsl.exe -d <distro> -- awk '$2=="<drive_mount_root>/<letter>"{print $4}' /proc/mounts
+  and set docker_host.container_user in training/providers/docker.json to that
+  uid:gid, then commit and rebuild the released checkout. This is blocker B-9.
+```
+
+**Position.** After P7 and after the B1 bind probe; before A1. P8 cannot precede
+B1, because it needs a bind that is already proven to resolve — otherwise a
+mount-source fault would surface as a permission message. It precedes every
+assertion because a non-writable stage makes the rest of the run moot. Final
+order: `P1..P7` → `B1` → `P8` → `A1` → `A2` → `A3` → `A4`.
+
+**Relation to A2.** A2 stays exactly where it is, as the last-line check, and is
+amended only in 18.12. The two are not redundant: P8 probes the **stage root**
+and names the **cause and the remedy**; A2 probes a scratch directory and has
+continuity across runs 1-4. The overlap costs one short container run and buys
+a named precondition, which is the hardening P7 gave B-6.
+
+**Skill text.** P8 becomes prerequisite **9** in
+`.skills/host-docker-run/SKILL.md`, written in the style of prerequisite 7
+(`SKILL.md:61-75`): a short statement of the requirement, the copy-pasteable
+command, the expected output, and what to do when it fails.
+
+### 18.12 The driver's A2 must follow the composition
+
+A2 currently hardcodes `--user unsloth:runtimeusers`
+(`run_prepared_training.py:489`). Today that is faithful by coincidence: the
+composition passes no `--user`, so the container runs as the image's default,
+which is that name. **After this amendment it becomes wrong**, and would fail a
+run that the composition would have completed — a false blocker.
+
+A2 must read `docker_host.container_user` from the same profile the composition
+reads and pass that. This is the same principle 17.10 applied to the entrypoint:
+the probes assert the same contract the composition uses. Its pass line changes
+to name the effective user it actually used, rather than the literal
+`unsloth:runtimeusers` (`:501`).
+
+### 18.13 Declaring the environment precondition in words
+
+**Ruled: the skill must declare it; the profile carries the field and nothing
+more.**
+
+After the fix the requirement is no longer "the mount must be world-writable",
+which was a policy the prepared path could not state and could not check. It is
+"`docker_host.container_user` must equal the identity the pinned distro presents
+as owner of the project drive" — a configuration requirement, expressed by a
+named field and enforced by P8.
+
+- **The skill declares it in prose**, in prerequisite 9, because an operator
+  bringing up a new host needs to know how to determine the value. The
+  `/proc/mounts` command in the P8 failure message is the procedure and belongs
+  in the skill text too.
+- **The profile does not gain prose.** JSON carries no comments, and a field
+  named `container_user` sitting beside `wsl_distro` and `drive_mount_root`
+  already reads as what it is. Adding a parallel description key would create a
+  second place for the requirement to go stale.
+- **The report and this section carry the history**, so the next reader learns
+  why the field exists rather than only that it does.
+
+### 18.14 Files each coder touches
+
+**Host coder (composition and profile)** — all paths relative to the Host
+worktree:
+
+| File | Change |
+|---|---|
+| `training/providers/docker.json` | add `docker_host.container_user: "1000:1000"`; touch nothing else, preserve key order |
+| `synaptic_host/docker_provider.py` | field `:136-137`, validation `:166-167`, key set `:202-203`, construction `:227-229`, `to_dict` `:266-269` |
+| `synaptic_host/docker_training.py` | pass `container_user=` at `:881-882` |
+| `synaptic_host/docker_prepared_composition.py` | platform field and guard `:55-77`, factory keyword and guard `:88-106`, constructor argument `:231-241` |
+| `synaptic_host/docker_v1/create.py` | required keyword-only constructor field; pass to `build` at `:393-398` |
+| `synaptic_host/docker_v1/control_private.py` | `build` keyword and guard `:323-346`; argv emission after `:398` |
+| `synaptic_host/docker_v1/cli.py` | `_CONTAINER_USER_V1`; parser block after `:116-118` |
+| `synaptic_host/docker_v1/composition.py` | legacy request field near `:151` and pass-through at `:382-396`, so the legacy site stays constructible; no fallback, no routing change |
+
+**`coder-workflow` (skill and driver)**:
+
+| File | Change |
+|---|---|
+| `.skills/host-docker-run/scripts/run_prepared_training.py` | `_check_p8_stage_writable`, called after the B1 bind probe and before A1; A2 reads `docker_host.container_user` (`:474-501`) |
+| `.skills/host-docker-run/SKILL.md` | prerequisite 9 (P8) in the style of item 7; amend the A2 line under "Early assertions" |
+| mirrors | `python3 bin/sync_skills.py --write --skill host-docker-run`, then `--check --skill host-docker-run`; never hand-edit a mirror |
+
+The two lanes do not collide: no file appears in both lists. They share one
+contract — the profile key name `docker_host.container_user` — which is fixed by
+this section.
+
+**Files that must NOT be touched**: `synaptic-tuner/` in any form (the engine pin
+does not move for this ruling), `tuner/runtime/manifests/offline-sft-worker-v1.json`,
+`docker_staging.py`'s stage creation and topology verification, the closure argv
+equality check, the artifact verifier, the publication composition and the
+destination registry, and any `CLAUDE.md`.
+
+### 18.15 Tests
+
+Host-side, added beside the tests that already pin the create argv:
+
+1. **Composition** — the create argv contains `("--user", "<profile value>")`
+   immediately after the `--entrypoint` pair and before any `--gpus`.
+2. **Parser** — `_validate_create_command` rejects a missing `--user`, a
+   `--user` in the wrong position, a name-form value, an empty value, and an
+   out-of-range value; and accepts the committed shape.
+3. **No divergence** — admission and create compose byte-identical argv for the
+   same inputs. This is the test that would catch a regression of the 18.8(4)
+   construction decision if someone later re-introduces a per-call parameter.
+4. **Profile** — a profile without `container_user` is rejected by
+   `docker_provider.py`'s key set, and a non-numeric value is rejected by the
+   field validation.
+5. **Existing pins** — every test that pins the committed profile's key set, its
+   `to_dict` output, or `profile.digest` is updated with the same strength it had
+   before (`test_docker_provider.py`, `test_prepared.py`,
+   `test_docker_prepared_composition.py`, `test_docker_training.py`,
+   `test_create.py`). Grep first, list every hit and its disposition in the
+   HANDOFF.
+
+There is no automated test for P8: the driver is a checked-in operator script
+outside the package, and its evidence is the pasted probe output in the run
+report.
+
+### 18.16 Deferred ledger entries
+
+For `docs/review/native-windows-publication-closure.md`, under the deferred
+ledger:
+
+- **B-9-R1 (Future, engine).** The prepared path does not give the container a
+  writable `HOME`, and the engine's `allowed_environment`
+  (`tuner/training/methods/sft.py:52-63`) does not admit `HOME` or `TMPDIR`,
+  enforced as a subset check at `Trainers/sft/runtime_v1.py:1145-1157`. Under
+  `--user` the id has no `passwd` entry, so `HOME=/` and is not writable. Not
+  fixable on the Host. Settle from P8's `home-writable` line and run 5's trainer
+  output; if it bites, it is an engine allowlist change plus a Host environment
+  addition plus a closure regeneration of the B-5 shape.
+- **B-9-R2 (Note, pre-existing).** `_verify_artifact_topology`
+  (`docker_staging.py:1446-1481`) requires `artifacts`, `state`, `tmp` and
+  `tracking` to be **empty**, and it runs on the reuse path as well as on fresh
+  staging (`:1791`). A completed run writes into those directories, and a replay
+  recomputes the same `stage_key`, so re-staging after a successful run would
+  raise "artifact writable directory is not empty". Unrelated to B-9 and not
+  introduced by it, but it sits directly on run 5's replay path and on section
+  10.2's stage-reuse contract, which is still unproven.
+- **B-9-R3 (Note).** Nothing reads `Config.User` back from `docker inspect`, so
+  the effective user the daemon applied is not compared against the one
+  requested. This is the same shape as the entrypoint residual in 17.11 and has
+  the same fix and the same cost — a durable-record schema change. Named, not
+  silently deferred.
+- **B-9-R4 (Note).** That runs 1-3 mounted the drive without `metadata` is an
+  inference that can no longer be tested. It is recorded because it explains the
+  timing, and it is load-bearing for nothing in this ruling.
+
+### 18.17 What this ruling does not settle
+
+B-7 and B-2 remain unexecuted on the shipped path: run 4 stopped in the driver's
+assertion block, upstream of the single Host command, so the `SystemRoot` fix and
+the repo-id stamp have still never run for real. B-8 is unchanged. This ruling
+clears the gate in front of them; it is not evidence about them.
