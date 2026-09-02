@@ -524,9 +524,12 @@ def test_inventory_read_failure_classification_is_deterministic(
     assert result.diagnostic == expected_diagnostic
 
 
-def test_already_verified_reconcile_performs_one_publication_without_aggregate_write(
-    monkeypatch,
-):
+def _verified_docker_run_repository():
+    """Drive one prepared run to ARTIFACTS_VERIFIED through the real aggregate path.
+
+    Returns the repository and the verified record it now holds, so a test can
+    exercise the publish cut without rebuilding the whole mutation chain.
+    """
     repository = Repository(_initial())
     adapter = DockerAggregateMutationRepositoryV1(
         repository, project_ref="project", run_id="run", clock=lambda: NOW
@@ -580,6 +583,13 @@ def test_already_verified_reconcile_performs_one_publication_without_aggregate_w
         verified, expected_revision=succeeded.revision,
         expected_record_digest=succeeded.record_digest,
     )
+    return repository, verified
+
+
+def test_already_verified_reconcile_performs_one_publication_without_aggregate_write(
+    monkeypatch,
+):
+    repository, verified = _verified_docker_run_repository()
 
     calls = []
 
@@ -633,3 +643,116 @@ def test_already_verified_reconcile_performs_one_publication_without_aggregate_w
         DockerPreparedRunOutcomeV1.from_publication(
             verified, wrong_destination, "local-default"
         )
+
+
+def test_verified_reconcile_without_a_publication_directs_a_retry_and_writes_nothing():
+    """M-8: the publish cut can no longer report a silent success.
+
+    A `None` publication at `ARTIFACTS_VERIFIED` means one thing: the composition
+    was built for an earlier cut and the aggregate advanced before `reconcile`
+    re-read it. The cut now says so, and leaves the run verified so that a retry
+    holding a real composition still publishes.
+    """
+    repository, verified = _verified_docker_run_repository()
+
+    class Never:
+        def build(self, *_args):
+            raise AssertionError("Docker controls are not admitted")
+
+        def verify(self, **_kwargs):
+            raise AssertionError("artifact verification is not admitted")
+
+    request = SimpleNamespace(
+        project_ref="project", run_id="run",
+        preparation=SimpleNamespace(
+            preparation_digest="4" * 64, destination_ref="local-default"
+        ),
+    )
+    service = DockerPreparedRunServiceV1(
+        repository=repository, control_factory=Never(),
+        artifact_verifier=Never(), clock=lambda: NOW, publication=None,
+    )
+    before = repository.value
+    outcome = service.reconcile(request)
+
+    # The aggregate is untouched, so the cut stays re-runnable and the retry
+    # publishes rather than re-verifying.
+    assert repository.value == before
+    assert repository.value.phase is DockerRunPhaseV1.ARTIFACTS_VERIFIED
+
+    assert outcome.phase is DockerRunPhaseV1.RECONCILE_REQUIRED
+    assert outcome.reconcile_required is True
+    assert outcome.diagnostic == "PUBLICATION_COMPOSITION_ABSENT"
+    assert outcome.published is False
+    assert outcome.publication_id is None
+    assert outcome.publication_state is None
+
+    # The defect was that this outcome was indistinguishable from the outcome of
+    # the reconcile that WRITES ARTIFACTS_VERIFIED and publishes nothing by
+    # design. Pin the distinction, not just the fields.
+    silent = DockerPreparedRunOutcomeV1.from_record(verified)
+    assert silent.phase is DockerRunPhaseV1.ARTIFACTS_VERIFIED
+    assert silent.diagnostic is None
+    assert silent.published is False
+    assert outcome != silent
+
+    # Identity the caller needs in order to retry survives. The closed-phase
+    # fields the outcome invariant forbids at RECONCILE_REQUIRED are dropped,
+    # never faked.
+    assert outcome.project_ref == verified.project_ref
+    assert outcome.run_id == verified.run_id
+    assert outcome.record_digest == verified.record_digest
+    assert outcome.container_ref == silent.container_ref
+    assert outcome.container_ref is not None
+    assert outcome.submitted_at == silent.submitted_at
+    assert outcome.submitted_at is not None
+    assert outcome.process_exit_code is None
+    assert outcome.verified_artifacts == ()
+
+    # The diagnostic is a closed token in this module's existing vocabulary: it
+    # carries no path, no host detail, and no run identity.
+    assert outcome.diagnostic == outcome.diagnostic.upper()
+    assert not set(outcome.diagnostic) & set("/\\.: ")
+    assert verified.run_id not in outcome.diagnostic
+    assert verified.project_ref not in outcome.diagnostic
+
+    with pytest.raises(ValueError, match="reconcile directive is invalid"):
+        DockerPreparedRunOutcomeV1.from_reconcile_directive(verified, "")
+
+
+def test_absent_publication_cannot_mean_an_unregistered_destination():
+    """The second candidate meaning of `publication is None` is unreachable.
+
+    Destinations are registered inside `compose_docker_publication_v1`. That
+    factory either returns a fully bound composition or raises, so a composition
+    that registered nothing never reaches the service, and `None` at the publish
+    cut can only be the stale-composition case the cut now reports. If this ever
+    grows a `None` return, the publish cut's single-meaning comment is wrong and
+    the diagnostic has to distinguish two states.
+    """
+    import ast
+    import inspect
+
+    compose = docker_publication.compose_docker_publication_v1
+    assert (
+        compose.__annotations__["return"] == "DockerPublicationCompositionV1"
+    )
+
+    tree = ast.parse(inspect.getsource(compose))
+    returns = [
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.Return)
+        # Ignore returns belonging to functions nested inside the factory.
+        and node.value is not None
+    ]
+    bare = [
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.Return) and node.value is None
+    ]
+    assert bare == []
+    assert len(returns) == 1
+    assert isinstance(returns[0].value, ast.Name)
+
+    # And every failure path is an exception, not a sentinel.
+    raises = [node for node in ast.walk(tree) if isinstance(node, ast.Raise)]
+    assert len(raises) >= 4

@@ -679,6 +679,57 @@ def execute_docker_training_admission_v1(
         session.close()
 
 
+def _docker_command_result_v1(
+    outcome, *, config_ref: str | None, destination_ref: str | None,
+    input_digest: str | None, project_ref: str | None, run_id: str | None,
+    plan_fingerprint: str | None, effect_id: str | None,
+):
+    """Map one prepared-run outcome onto the outward command result.
+
+    `SUBMITTED` needs three things, not two. The run must carry a container
+    reference and a submit time, AND the cut must not have asked to be run
+    again. Reading `reconcile_required` is what stops a reconcile-required
+    outcome from reporting a submitted run. Two cuts produce that state: the
+    publish cut that found no publication, and the observe-process cut that
+    writes `RECONCILE_REQUIRED` onto a record that already carries a container.
+    Before this, both reported `SUBMITTED`, because the mapping read only for
+    the presence of the two identity fields.
+
+    The container reference is reported on BOTH statuses, because an operator
+    who has to reconcile a run is exactly the reader who needs it. The submit
+    time is not: `TrainingRunCommandResultV2.__post_init__` admits only two
+    operation shapes at `RECONCILE_REQUIRED` (cli.py:296-300), neither of which
+    carries a submit time, so reporting one there would raise. That is a model
+    rule, not a choice made here.
+
+    This lives outside `_activate_docker_training_v1` so the mapping can be
+    tested directly. The activation itself cannot run on a non-Windows host --
+    it fails in staging on a drive-path check long before this tail -- so an
+    inlined mapping would have no behavioural coverage on Linux at all.
+    """
+    from .cli import (
+        TrainingRunCommandCodeV2, TrainingRunCommandResultV2,
+        TrainingRunCommandStatusV2,
+    )
+
+    submitted = (
+        not outcome.reconcile_required
+        and outcome.container_ref is not None
+        and outcome.submitted_at is not None
+    )
+    return TrainingRunCommandResultV2(
+        "synaptic-training-run-command-result/v2",
+        TrainingRunCommandStatusV2.SUBMITTED if submitted
+        else TrainingRunCommandStatusV2.RECONCILE_REQUIRED,
+        TrainingRunCommandCodeV2.SUBMITTED if submitted
+        else TrainingRunCommandCodeV2.RECONCILE_REQUIRED,
+        "docker", config_ref, destination_ref, input_digest,
+        project_ref, run_id, plan_fingerprint, effect_id,
+        outcome.container_ref,
+        outcome.submitted_at if submitted else None,
+    )
+
+
 def _activate_docker_training_v1(
     *, plan: TrainingPlan, source_lock: SourceLock,
     snapshot: _AdmissionSnapshotV1, context: ProjectContext,
@@ -707,10 +758,6 @@ def _activate_docker_training_v1(
     )
     from tuner.execution.providers.docker_provider_v1.preparation import (
         DockerTrainingPreparationBridgeV1,
-    )
-    from .cli import (
-        TrainingRunCommandCodeV2, TrainingRunCommandResultV2,
-        TrainingRunCommandStatusV2,
     )
     from .docker_execution import DockerPreparedRunRequestV1
     from .docker_execution_state import (
@@ -904,23 +951,15 @@ def _activate_docker_training_v1(
         outcome = DockerPreparedCompositionV1(
             repository=repository, builder=builder, clock=clock,
         ).reconcile(request)
-    submitted = (
-        outcome.container_ref is not None and outcome.submitted_at is not None
-    )
-    code = (
-        TrainingRunCommandCodeV2.SUBMITTED if submitted
-        else TrainingRunCommandCodeV2.RECONCILE_REQUIRED
-    )
-    return TrainingRunCommandResultV2(
-        "synaptic-training-run-command-result/v2",
-        TrainingRunCommandStatusV2.SUBMITTED if submitted
-        else TrainingRunCommandStatusV2.RECONCILE_REQUIRED,
-        code, "docker", snapshot.config_ref,
-        snapshot.destination.destination_ref, snapshot.input_digest,
-        run.project_ref, run.run_id, plan.fingerprint,
-        submit.operation.effect.effect_id,
-        outcome.container_ref if submitted else None,
-        outcome.submitted_at if submitted else None,
+    return _docker_command_result_v1(
+        outcome,
+        config_ref=snapshot.config_ref,
+        destination_ref=snapshot.destination.destination_ref,
+        input_digest=snapshot.input_digest,
+        project_ref=run.project_ref,
+        run_id=run.run_id,
+        plan_fingerprint=plan.fingerprint,
+        effect_id=submit.operation.effect.effect_id,
     )
 
 

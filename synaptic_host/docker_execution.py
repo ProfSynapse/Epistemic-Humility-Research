@@ -249,6 +249,38 @@ class DockerPreparedRunOutcomeV1:
         issued.__post_init__()
         return issued
 
+    @classmethod
+    def from_reconcile_directive(
+        cls, record: DockerRunMutationRecordV1, diagnostic: str
+    ) -> "DockerPreparedRunOutcomeV1":
+        """Report that the CALLER must reconcile again, leaving the aggregate alone.
+
+        This is the only factory whose phase may differ from the record's. It
+        exists for the state where a cut cannot be completed with the collaborators
+        it was handed, yet the durable run is healthy and a retry with the right
+        collaborators would succeed. Not writing the record is the point: the run
+        keeps whatever phase it earned, so the next reconcile resumes from there
+        instead of re-doing work the aggregate already records.
+
+        The outcome invariant forbids a closed-phase exit code and a five-artifact
+        inventory outside `ARTIFACTS_VERIFIED`, so both are dropped rather than
+        copied. `container_ref` and `submitted_at` survive, because the invariant
+        admits them at `RECONCILE_REQUIRED` as long as they agree with each other.
+        """
+        if (
+            type(record) is not DockerRunMutationRecordV1
+            or type(diagnostic) is not str
+            or not diagnostic
+        ):
+            raise ValueError("Docker reconcile directive is invalid")
+        issued = cls.from_record(record)
+        object.__setattr__(issued, "phase", DockerRunPhaseV1.RECONCILE_REQUIRED)
+        object.__setattr__(issued, "process_exit_code", None)
+        object.__setattr__(issued, "verified_artifacts", ())
+        object.__setattr__(issued, "diagnostic", diagnostic)
+        issued.__post_init__()
+        return issued
+
     @property
     def failed(self) -> bool:
         return self.phase is DockerRunPhaseV1.PROCESS_FAILED
@@ -1104,7 +1136,27 @@ class DockerPreparedRunServiceV1:
         current = self._load(request)
         if current.phase is DockerRunPhaseV1.ARTIFACTS_VERIFIED:
             if self._publication is None:
-                return DockerPreparedRunOutcomeV1.from_record(current)
+                # Exactly one state reaches here. It is NOT "no destination
+                # registered": destinations are registered inside
+                # `compose_docker_publication_v1`, which raises when one is
+                # missing or does not match the run, so a composition that
+                # registered nothing is never built and never arrives. It is NOT
+                # "not yet verified" either: the branch above already read the
+                # phase as ARTIFACTS_VERIFIED. What is left is a composition
+                # built for a non-publish cut meeting an aggregate that has since
+                # become verified -- the activation reads the phase once to pick
+                # a cut and this reload reads it again, so a concurrent
+                # activation between the two reads leaves the publish cut holding
+                # a composition that was never given a publication.
+                #
+                # Returning the record would be indistinguishable from the
+                # correct outcome of the reconcile that WRITES ARTIFACTS_VERIFIED,
+                # which publishes nothing by design. Direct the caller to
+                # recompose and call again instead. The aggregate is deliberately
+                # left at ARTIFACTS_VERIFIED so that retry still publishes.
+                return DockerPreparedRunOutcomeV1.from_reconcile_directive(
+                    current, "PUBLICATION_COMPOSITION_ABSENT"
+                )
             result = self._publication.publish(request=request, record=current)
             return DockerPreparedRunOutcomeV1.from_publication(
                 current, result, request.preparation.destination_ref

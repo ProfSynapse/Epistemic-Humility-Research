@@ -17,10 +17,15 @@ All paths below are relative to that worktree root unless shown absolute.
 
 > **Citation baseline.** Every `file.py:N` citation in this document is against
 > the host tree at commit `85b922fc`, the state this design was written from, and
-> the engine submodule at `aec998ee`. CODE-phase edits shift these numbers: as of
-> this revision `filesystem.py` and `docker_training.py` are both modified in the
-> working tree, and `filesystem.py` line numbers past `_is_directory` run about
-> nine lines higher there than they do here. Verify a citation with
+> the engine submodule at `aec998ee`. CODE-phase and remediation edits shift these
+> numbers: `filesystem.py`, `docker_training.py` and `docker_execution.py` are all
+> modified in the working tree. `filesystem.py` runs about nine lines higher past
+> `_is_directory`; after remediation cycle 1 `docker_training.py` runs about fifty
+> lines higher past `_activate_docker_training_v1` and `docker_execution.py` about
+> fifty-four lines higher past `DockerPreparedRunOutcomeV1.from_publication`. The
+> citations below are deliberately NOT re-pointed at those working-tree lines.
+> Re-pointing them would make every one of them wrong against the stated baseline
+> and would quietly retire the `git show` check. Verify a citation with
 > `git show 85b922fc:<path>`, not against the working tree. Checking against a
 > live-edited file produces false mismatches that look like documentation errors.
 > Three files are new in this commit and have no state at that baseline:
@@ -29,7 +34,11 @@ All paths below are relative to that worktree root unless shown absolute.
 > `tests/synaptic_host/test_publication_local_windows.py`. Citations to them,
 > including R-7's `windows.py:833` and `windows.py:628`, are against the working
 > tree at commit time, and `git show 85b922fc:<path>` reports
-> `Not a valid object name` for them by construction.
+> `Not a valid object name` for them by construction. Remediation cycle 1 adds two
+> symbols with the same property: `DockerPreparedRunOutcomeV1.from_reconcile_directive`
+> (`docker_execution.py:253`) and `_docker_command_result_v1`
+> (`docker_training.py:682`). They are cited against the working tree, and by name
+> as well as by line so the citation survives the next shift.
 
 ## 1. Executive summary
 
@@ -542,6 +551,61 @@ before the phase is known.
 constant in `docker_training.py`, matching `training/storage.json:35`. No
 configuration file changes.
 
+**Remediation cycle 1 — the publish cut no longer succeeds silently (review
+finding M-8).** The ruling above says `publication=None` stops being the
+production default for the publish cut. That was a statement about the activation
+path only; the service still accepted the combination and returned a bare record,
+which is indistinguishable from the correct outcome of the reconcile that *writes*
+`ARTIFACTS_VERIFIED` and publishes nothing by design. Reaching
+`ARTIFACTS_VERIFIED` with no publication now returns `RECONCILE_REQUIRED` carrying
+the diagnostic `PUBLICATION_COMPOSITION_ABSENT`, built by
+`DockerPreparedRunOutcomeV1.from_reconcile_directive`
+(`docker_execution.py:253`). Two properties of that factory are design
+commitments rather than implementation detail:
+
+- **It is the first outcome whose reported phase differs from the record's, and
+  the decoupling is deliberate.** Every other factory reports the phase the
+  aggregate holds. This one reports `RECONCILE_REQUIRED` while leaving the durable
+  record at `ARTIFACTS_VERIFIED`, so the retry publishes instead of re-verifying
+  work the aggregate already records. Stated explicitly because a reader who
+  assumes reported phase and recorded phase always agree will read the factory as
+  a bug. The outcome invariant forbids a closed-phase exit code and a
+  five-artifact inventory outside `ARTIFACTS_VERIFIED`, so both are dropped rather
+  than copied.
+- **The state it names is narrow and real.** It is not "no destination
+  registered" — `compose_docker_publication_v1` raises on a missing or mismatched
+  destination, so a composition that registered nothing is never built and never
+  arrives. It is not "not yet verified" either, because the branch above already
+  read the phase. What is left is a composition built for a non-publish cut
+  meeting an aggregate that has since become verified, which the two separate
+  phase reads make reachable.
+
+**The command result derives `SUBMITTED` from the outcome, not from two identity
+fields (review finding A-2).** The outward result is built by
+`_docker_command_result_v1` (`docker_training.py:682`), which reports `SUBMITTED`
+only when `not outcome.reconcile_required` holds *in addition to* a container
+reference and a submit time being present. Two cuts produce a reconcile-required
+outcome that still carries a container reference — the publish cut above, and the
+observe-process cut that writes `RECONCILE_REQUIRED` onto a record that already
+has one — and both previously reported `SUBMITTED`. The asymmetry in what the
+result carries is a model rule, not a preference: `container_ref` appears on both
+statuses, because the operator who has to reconcile a run is exactly the reader
+who needs it, while `submitted_at` appears only on `SUBMITTED`, because
+`TrainingRunCommandResultV2.__post_init__` admits just two operation shapes at
+`RECONCILE_REQUIRED` (`cli.py:289-305`) and neither carries a submit time, so
+reporting one there raises.
+
+The mapping lives outside `_activate_docker_training_v1` for a testability reason
+worth keeping: the activation cannot run on a non-Windows host — it fails in
+staging on a drive-path check long before this tail — so an inlined mapping would
+have no behavioural coverage on the platform the suite actually runs on. Its
+eight keyword arguments are a smell, but not one a value object fixes: seven of
+the eight are identity fields already travelling together on `snapshot`, `run`,
+`plan` and `submit`, so the shape to reach for later is passing those through
+rather than inventing a carrier that re-lists their fields. Not worth a change
+inside a remediation cycle, and noted here so the next reader does not read the
+long signature as an oversight.
+
 ### (f) Five-role tuple versus the smoke's two `required_kinds` — NEITHER CHANGES
 
 **Ruling: `training/smokes/docker-sft.json` does not change, and the Host
@@ -716,7 +780,7 @@ is the bundle subsystem rather than publication. Implement it anyway.
 
 | Method | Windows primitive |
 |---|---|
-| `retain_directory(absolute_path)` | Anchor open by path with `FILE_FLAG_BACKUP_SEMANTICS` + `FILE_FLAG_OPEN_REPARSE_POINT` (`docker_staging.py:441-448`), then descend component by component. Drive or UNC prefix replaces the POSIX `/` anchor (gap C3, wholly inside the port). |
+| `retain_directory(absolute_path)` | Anchor open by path with `FILE_FLAG_BACKUP_SEMANTICS` + `FILE_FLAG_OPEN_REPARSE_POINT` (`docker_staging.py:441-448`), then descend component by component. The anchor is a drive prefix and only a drive prefix. Review finding F-1 now refuses every root that opens on two separators — the UNC share, its device form, the extended-length prefix and the device namespace — and requires a non-project root to resolve inside `project_root`. Both guards live in `config.py`, so they are platform-independent and land before the port is ever reached. Gap C3 shrinks accordingly: the drive-versus-`/` anchor difference is still wholly inside the port, but the port never receives a UNC anchor to handle. |
 | `open_directory_at(directory, component)` | `NtCreateFile` with `RootDirectory` = parent handle, `OBJ_DONT_REPARSE`, `FILE_DIRECTORY_FILE` (`docker_staging.py:471-503`). |
 | `close_directory` | `CloseHandle`. |
 | `list_names_at(directory, maximum)` | `GetFileInformationByHandleEx(FILE_ID_BOTH_DIR_INFO)`. Enforce `MAX_DIRECTORY_ENTRIES`. |
@@ -913,10 +977,25 @@ is safe for a reason worth stating: the traversal guarantee never rested on the
 enumeration in the first place. Every descended component is independently
 re-proved by an identity query on its own handle, and the opens still carry
 `OBJ_DONT_REPARSE` and `FILE_OPEN_REPARSE_POINT`. A substituted or reparse-backed
-component is still caught, one component at a time. The published whole-directory
-strictness of the listing operation is untouched. What was removed was an
+component is still caught, one component at a time. What that fix removed was an
 unrelated-neighbour veto: one junction anywhere in a directory disqualifying every
 sibling.
+
+**Remediation cycle 1 finished the narrowing (review finding M-7).** At the
+reviewed commit the veto survived in one more place: `list_names_at` itself
+refused the whole listing if any entry carried the reparse attribute. The claim
+this document made here — that the listing operation's whole-directory strictness
+was untouched and deliberate — described a rule it should not have kept, and it
+contradicted the per-matched-entry invariant stated in section 6.1. The veto is
+now gone (`windows.py:709-728`). What `list_names_at` still refuses is everything
+that is actually the Host's business: a casefold collision (`ROOT_CHANGED`), the
+entry cap (`LIMIT_EXCEEDED`), and an undecodable or malformed record
+(`IO_FAILED`). The redirect boundary sits at open time and is three-deep —
+`_root_component` refuses a reparse point on the matched entry, every open carries
+`OBJ_DONT_REPARSE` with `FILE_OPEN_REPARSE_POINT`, and the opened handle is
+identity-checked. This also restores parity with the POSIX port, whose
+`list_names_at` never carried a reparse check at all, and it un-breaks listing on
+any directory holding a junction, `C:\` included.
 
 *Provenance.* The mask values above were read from the landed implementation,
 recomputed from its own bit constants, and confirmed against Task #24's HANDOFF,
@@ -938,10 +1017,22 @@ Every failure maps onto the existing `LocalIOCodeV1` enum
 | Admission file already held (`ERROR_SHARING_VIOLATION`) | `ROOT_IN_USE` |
 | Anchor component changed, reparse point, identity mismatch during the walk | `ROOT_CHANGED` |
 | Non-absolute or malformed anchor path | `ROOT_INVALID` |
-| Handle-relative open of a child failed | `PATH_INVALID` |
+| Handle-relative open of a child resolved to no object of the requested type — exactly `STATUS_OBJECT_NAME_NOT_FOUND`, `STATUS_OBJECT_PATH_NOT_FOUND`, `STATUS_FILE_IS_A_DIRECTORY`, `STATUS_NOT_A_DIRECTORY` | `PATH_INVALID` |
 | Admission node identity mismatch | `ADMISSION_INVALID` |
 | Journal read-back mismatch | `JOURNAL_INVALID` |
 | Any other Win32 or NT status failure | `IO_FAILED` |
+
+`PATH_INVALID` is a closed set, not a default arm (review finding B-1).
+`_PATH_INVALID_STATUSES` (`windows.py:193-198`) holds exactly the four statuses in
+that row; every other failing status — `ACCESS_DENIED`, `DELETE_PENDING`,
+`REPARSE_POINT_ENCOUNTERED`, resource exhaustion — falls through to the
+`IO_FAILED` row, and so does `STATUS_SUCCESS` returned with a null handle. The
+distinction is load-bearing rather than tidy. `stat_at` continues its two-pass
+probe on `PATH_INVALID` and on nothing else, so a status wrongly admitted to that
+set is reported as absence, and `filesystem.py` turns absence into
+`DEFINITELY_ABSENT`. Adding a status there widens what this port is willing to
+call absent, which is why the set is written as an explicit frozenset rather than
+as whatever the mapping does not name.
 
 Errors stay closed: only the stable code is observable (`model.py:47-49`). No
 Win32 error number, path, or handle value may appear in a message.
@@ -1233,6 +1324,13 @@ role rather than after training.
 3. **Publish cut.** Call reconcile again with the phase already
    `ARTIFACTS_VERIFIED`. Assert a `publication_id` is set and
    `DockerPreparedRunOutcomeV1.published` is `True` (`docker_execution.py:256-258`).
+   **Now enforced (review findings M-8 and A-2).** A smoke that asserted
+   `SUBMITTED` after the publish cut used to pass while publishing nothing. It now
+   fails: a publish cut with no publication returns `RECONCILE_REQUIRED`, and the
+   command result derives `SUBMITTED` from `not outcome.reconcile_required` rather
+   than from a container reference being present. This does not retire the step-2
+   warning, which is about calling reconcile too few times — a different failure,
+   still silent, and still the most likely way this smoke gets misread.
 4. **Durable record.** Assert one row in `publication_records_v1` with the expected
    `destination_ref` (`publication_store.py:162-185`).
 5. **Idempotent replay.** Repeat the identical activation. Assert no second
@@ -1273,17 +1371,24 @@ today. S7 is the only stage requiring a Windows host.
 | R-1 | Directory-entry durability on Windows is NTFS-log-backed, not an independently proven synchronous barrier. | Medium | Barrier is probed per root at first retention, before any mutation through it, and fails closed there. TEST asserts the call succeeds, never crash-durability. Elevating requires a power-loss rig, out of scope. |
 | R-2 | The synthesised `mode` is compared by full value, not only by its file-type nibble: `filesystem.py:417-430` (`_same_node`) and `model.py:747` (full dataclass equality). Both sit on the commit proof (`filesystem.py:3040`) and the recovery proof (`filesystem.py:3259, 3268`). It also enters `registry_digest`. | Medium | Two named module constants, one per file type, byte-identical for every stat of that type. No file attribute may leak into the permission bits; never ACL- or umask-derived. Because `recover_create` compares against a `mode` persisted in the on-disk journal by an earlier process, the constants are part of the journal format and are stable across builds, not merely across a process lifetime. Changing one silently turns resumable mutations into `CONFLICT`. |
 | R-3 | Five-role emission is read from engine source; no container was run. | Low | First check in the acceptance sequence, section 9.3 step 1. |
-| R-4 | **CONFIRMED on a real Windows host (TEST, Task #19).** Was: the admission handle's exact `DesiredAccess` / `ShareAccess` pair is a runtime property not verifiable from source. | Closed | Measured on the host with only the defect-1 open form corrected: a second admission open returns `STATUS_SHARING_VIOLATION` (`0xC0000043`), which maps to `ROOT_IN_USE`; and while that admission is held, both an ordinary directory open and a full `retain_directory` by path still succeed. Both directions hold, which is what this residual required — a denial-only result would also have been produced by a port that excludes everything. TEST proved the kernel is the source of the exclusion by using two separate port instances, so the result cannot come from the in-process live-admission bookkeeping. Closes when the shipped tests go green against the shipped defect fixes; the measurement itself is no longer in doubt. |
+| R-4 | **CONFIRMED on a real Windows host (TEST, Task #19).** Was: the admission handle's exact `DesiredAccess` / `ShareAccess` pair is a runtime property not verifiable from source. | Closed | Measured on the host with only the defect-1 open form corrected: a second admission open returns `STATUS_SHARING_VIOLATION` (`0xC0000043`), which maps to `ROOT_IN_USE`; and while that admission is held, both an ordinary directory open and a full `retain_directory` by path still succeed. Both directions hold, which is what this residual required — a denial-only result would also have been produced by a port that excludes everything. TEST proved the kernel is the source of the exclusion by using two separate port instances, so the result cannot come from the in-process live-admission bookkeeping. Closes when the shipped tests go green against the shipped defect fixes; the measurement itself is no longer in doubt. **Amended in remediation cycle 1 (M-12): the DELETE-axis exclusion is symmetric, and the symmetry cuts inward.** The admission opens with `DELETE` in its `DesiredAccess` and omits `FILE_SHARE_DELETE` from its own share mask, so Windows checks share arithmetic in BOTH directions against every existing handle. The consequence this design must own: any pre-existing handle on the spool root whose share mask omits `FILE_SHARE_DELETE` denies the **Host's own** admission, surfacing as `ROOT_IN_USE`. The holder needs only read access and may be any process — an ordinary backup, indexer or antivirus open qualifies. This is an availability property, not an integrity one, and it is fail-closed: the Host refuses to publish rather than publishing unsafely. **CONFIRMED on a real Windows host (TEST, remediation cycle 1), with a control arm.** Both directions of the symmetry are now measured rather than argued: R-4 measured Host-excludes-others, and this others-exclude-Host direction was measured here. The measurement also pins WHERE the refusal lands, which the argued form did not: `retain_directory` **succeeds**, because that open requests no `DELETE` and so has nothing to arbitrate against the foreign handle's share mask. The refusal arrives one call later, at `acquire_directory_admission`, as `ROOT_IN_USE`. Expect no exception from retention — a test or a diagnosis that watches `retain_directory` for this condition watches the wrong call. |
 | R-5 | `_root_component` requires exact-case path spelling on case-insensitive NTFS. | Low | Stricter than Linux, not weaker. Document that configured absolute paths must match on-disk case. |
-| R-6 | Namespace attachment is not continuously enforced, and the re-retain is a **rebind, not a check**. A different directory placed at the configured spool path between two compositions is accepted silently: no `ROOT_CHANGED`, no `ADMISSION_INVALID`, the replayed publication equals the original, and verify returns `True` (TEST measured the inode changing 831383 to 831397). | Medium | Raised from Low on the lead's ruling after TEST answered it. The S5 line is not crossed: an actor able to substitute the directory across a restart already holds write access to the project directory and could rewrite the SQLite store or the signing key instead, so the exposure sits inside the Host's existing local trust boundary. But the evidence chain attesting `True` about the wrong object is an internal inconsistency this design must own, and POSIX parity does not excuse it, because POSIX has no such chain. Not gating this release. Follow-up F-3 names the fix. The security reviewer at peer-review may overrule this and the user has been informed with the option to override. |
+| R-6 | Namespace attachment is not continuously enforced, and the re-retain is a **rebind, not a check**. A different directory placed at the configured spool path between two compositions is accepted silently: no `ROOT_CHANGED`, no `ADMISSION_INVALID`, the replayed publication equals the original, and verify returns `True` (TEST measured the inode changing 831383 to 831397). | Medium | Raised from Low on the lead's ruling after TEST answered it. The S5 line is not crossed: an actor able to substitute the directory across a restart already holds write access to the project directory and could rewrite the SQLite store or the signing key instead, so the exposure sits inside the Host's existing local trust boundary. But the evidence chain attesting `True` about the wrong object is an internal inconsistency this design must own, and POSIX parity does not excuse it, because POSIX has no such chain. Not gating this release. Follow-up F-3 names the fix. The security reviewer at peer-review may overrule this and the user has been informed with the option to override. **Amended in remediation cycle 1 (M-13): one narrowing, two triggers.** reviewer-security narrowed the exposure — mid-life re-opens ARE identity-checked (`filesystem.py:1576-1590`), so the unbound window is **first retention only**, not the whole life of the root. And the deferral is conditional rather than settled: it becomes gating on either of two triggers. TRIGGER 1, the first production consumer of `verify()` (`publication_composition.py:313`), which today has none anywhere in `synaptic_host/` — the attestation is harmless only while nothing reads it, so the first reader makes F-3 gating. TRIGGER 2, a deployment pointing the spool root at a non-project absolute path. **Trigger 2 was closed later in the same cycle by review finding F-1**, and it is recorded rather than deleted because the reasoning is what matters: when M-13 was written, `config.py` accepted any absolute `location` not starting with `project://`, so the premise that an attacker must already hold project-directory write was a property of the shipped `training/storage.json` and not an invariant the code enforced. F-1 now refuses a root resolving outside `project_root`, and refuses a `..` component, without which the component-wise containment compare would be unsound. The premise is therefore enforced at config parse. Relaxing or removing that check re-opens this trigger. Trigger 1 stands, and either open trigger moves F-3 from deferred to Blocking. |
 | R-7 | The entry cap applies to **ancestors**, not only to the root the Host owns. `_root_component` enumerates the full parent listing for every component during descent (`windows.py:833`), and `MAX_DIRECTORY_ENTRIES = 4096` (`filesystem.py:70`) trips at the 4097th entry (`windows.py:628`, strictly greater). `%TEMP%` on the TEST host holds 4049 entries, so a default `C:` basetemp run has 47 entries of headroom before an unrelated directory fails retention with `LIMIT_EXCEEDED`. | Low | Latent, not observed, and unrelated to any of the three host defects. Production spool roots sit under the project directory, whose ancestors are small; the TEST lane is the exposed path, and only when basetemp defaults to `%TEMP%`. Not a Windows-port regression: POSIX `_root_component` enumerates and caps ancestors identically at the same strictly-greater boundary (`posix.py:166-170`), so this is shared pre-existing behaviour newly exercised because Windows test roots land under a large `%TEMP%` while Linux ones land under a small per-run `/tmp` tree. The failure is loud rather than silent, but the diagnosis misleads: `LIMIT_EXCEEDED` names the Host's own limit while the cause is a directory the Host neither owns nor writes. Follow-up F-4. |
+
+Ids in this table are this document's own sequence. The review document at
+`docs/review/native-windows-publication-closure.md` keeps a *separate* `F-n`
+sequence for review findings, and the two do not correspond — this table's `F-1`
+is a rename, the review's `F-1` is the storage-root containment gap. Rows and
+prose here say "review finding F-n" in full whenever they mean the other one.
 
 | Id | Follow-up, deliberately not in this closure |
 |---|---|
 | F-1 | Rename `PosixFilesystemPortV1` to a platform-neutral name. Cosmetic; competes with the real risk budget of this change. |
 | F-2 | Extend the Windows port to `darwin` and the BSDs, which `_POSIX_PLATFORMS` lists but `_require_linux_admission` excludes today. Unrelated to this closure. |
-| F-3 | **Detect root substitution across a restart (R-6).** Persist the retained root's identity — `FILE_ID_INFO` on Windows, `st_dev` + `st_ino` on POSIX — in the existing journal record at first retention, and compare it on re-retain, raising `ROOT_CHANGED` on mismatch. No new table and no new framework: the journal already carries `LocalFileIdentityV1` values and already compares them on the recovery path, so this reuses a mechanism the design has rather than adding one. Deliberately not in this closure, because it changes a durable record format and belongs with its own migration reasoning. |
+| F-3 | **Detect root substitution across a restart (R-6).** Persist the retained root's identity — `FILE_ID_INFO` on Windows, `st_dev` + `st_ino` on POSIX — in the existing journal record at first retention, and compare it on re-retain, raising `ROOT_CHANGED` on mismatch. No new table and no new framework: the journal already carries `LocalFileIdentityV1` values and already compares them on the recovery path, so this reuses a mechanism the design has rather than adding one. Deliberately not in this closure, because it changes a durable record format and belongs with its own migration reasoning. **Re-scoped in remediation cycle 1 (review finding M-1).** The descent half of this follow-up is already built: `retain_directory` now binds each opened handle to the entry `_root_component` matched, comparing file ids and raising `ROOT_CHANGED` on mismatch (`windows.py:980-990`), which closes the rebind window between matching a name and opening it. Together with reviewer-security's narrowing on R-6 — mid-life re-opens are identity-checked — what F-3 still has to build is only the across-restart half: persist the root identity at first retention, and compare it at the next process's first retention. No descent work remains in its scope. |
 | F-4 | **Stop enumerating ancestors to resolve one component (R-7).** Enumerate-then-match is ownership-grade purity applied to a directory the Host only passes through — the same category error as defect 3, where the reparse veto was narrowed from the whole listing to the matched entry. The descent needs exactly two facts about each ancestor: that the named component exists with the configured spelling, and that it is not a reparse point. Both are obtainable from the component itself — open it handle-relative, then read the canonical on-disk name back off the opened handle and compare — instead of scanning its parent to find it. That also answers whether the cap should apply to ancestors at all: it should not. A cap bounds work over a directory whose size is another owner's property, and no bound over that directory is load-bearing for a descent that names exactly one entry in it. The retained leaf keeps the cap, which is where the Host's ownership and the published `list_names_at` contract actually live. The exact-case guarantee of R-5 survives, because comparing the canonical name off the handle is the same comparison, sourced from the object rather than from its parent. Deliberately not in this closure: it changes the failure modes of a path every retention runs, and the Windows call for reading a handle's canonical name back is named here but not yet verified against this module's existing helpers. |
+| F-5 | **Carry a reason on the command result** (review finding F-6). `RECONCILE_REQUIRED` now reaches the CLI from two distinct causes: a publish cut that found no publication (`PUBLICATION_COMPOSITION_ABSENT`) and an observe-process cut that simply recorded the phase. Only the first is a defect in the caller's composition. The outcome carries a `diagnostic` naming which one it is; `TrainingRunCommandResultV2` has no field to put it in, so the token is dropped at the boundary and an operator learns that a reconcile is required without learning which state they are in. Deliberately not in remediation cycle 1: adding a field to a versioned result type is a schema change governed by that type's own operation-shape rules (`cli.py:289-305`), and it belongs with that change rather than bolted onto a bug fix. |
 
 **Risks that were investigated and closed as non-risks:** cross-platform
 `registry_digest` reproducibility (section 5(c)); lossy 128-bit file id reduction

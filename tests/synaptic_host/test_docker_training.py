@@ -870,3 +870,185 @@ def test_activation_stages_bridge_bundle_and_persists_initial_pair(
     assert repository.load_docker_run_mutation(
         result.project_ref, result.run_id,
     ) == aggregate
+
+
+_A2_EFFECT = "submit-" + "7" * 64
+_A2_CONTAINER = "a" * 64
+_A2_NOW = "2026-09-01T12:00:00Z"
+
+
+def _a2_submitted_record(*, submitted=True):
+    """Build one healthy SUBMITTED aggregate: a container exists and it started.
+
+    This is the record whose outcome the old mapping read as SUBMITTED purely
+    because `container_ref` and `submitted_at` were set. Every A-2 case below is
+    derived from it, so the only thing that varies between them is whether the
+    cut asked to be run again.
+    """
+    from synaptic_host.docker_execution_state import (
+        DockerRunMutationRecordV1, DockerRunPhaseV1,
+    )
+    from synaptic_host.docker_v1.control_contract import (
+        AuthenticatedDockerMutationRecordV1, DockerControlOperationV1,
+        DockerMutationPhaseV1, DockerMutationRecordV1, docker_operation_id_v1,
+    )
+
+    def verified(operation, proof):
+        record = DockerMutationRecordV1.build(
+            operation_id=docker_operation_id_v1(operation, _A2_EFFECT),
+            operation=operation,
+            effect_id=_A2_EFFECT,
+            control_intent_proof_digest=proof,
+            phase=DockerMutationPhaseV1.VERIFIED,
+            revision=3,
+            attempt_count=1,
+            previous_record_digest="a" * 64,
+            container_ref=_A2_CONTAINER,
+            verification_result_digest="3" * 64,
+        )
+        return AuthenticatedDockerMutationRecordV1(
+            record, "authority", "key", record.record_digest
+        )
+
+    def admitted(operation, proof):
+        record = DockerMutationRecordV1.build(
+            operation_id=docker_operation_id_v1(operation, _A2_EFFECT),
+            operation=operation,
+            effect_id=_A2_EFFECT,
+            control_intent_proof_digest=proof,
+            phase=DockerMutationPhaseV1.ADMITTED,
+            revision=1,
+            attempt_count=0,
+            previous_record_digest=None,
+            container_ref=None,
+            verification_result_digest=None,
+        )
+        return AuthenticatedDockerMutationRecordV1(
+            record, "authority", "key", record.record_digest
+        )
+
+    # Revision one must be the canonical CREATE_ADMITTED record, so build that
+    # and advance it the way the service does rather than forging a SUBMITTED
+    # aggregate outright.
+    initial = DockerRunMutationRecordV1.build(
+        project_ref="project", run_id="run", effect_id=_A2_EFFECT,
+        preparation_digest="4" * 64,
+        phase=DockerRunPhaseV1.CREATE_ADMITTED,
+        revision=1, previous_record_digest=None,
+        create_mutation=admitted(DockerControlOperationV1.CREATE, "1" * 64),
+        start_mutation=None,
+        reconcile_operation=None,
+        container_ref=None, submitted_at=None,
+        process_exit_code=None, process_observation_digest=None,
+        diagnostic=None, verified_artifacts=(),
+        verified_inventory_digest=None,
+    )
+    if not submitted:
+        return initial
+    from synaptic_host import docker_execution
+
+    return docker_execution._aggregate(
+        initial, phase=DockerRunPhaseV1.SUBMITTED,
+        create_mutation=verified(DockerControlOperationV1.CREATE, "1" * 64),
+        start_mutation=verified(DockerControlOperationV1.START, "2" * 64),
+        container_ref=_A2_CONTAINER, submitted_at=_A2_NOW,
+    )
+
+
+def _a2_command_result(outcome):
+    from synaptic_host import docker_training
+
+    return docker_training._docker_command_result_v1(
+        outcome,
+        config_ref=CONFIG_REF, destination_ref="local-default",
+        input_digest="5" * 64, project_ref="project", run_id="run",
+        plan_fingerprint="6" * 64, effect_id=_A2_EFFECT,
+    )
+
+
+def test_command_result_is_reconcile_required_when_the_cut_asks_to_be_rerun():
+    """A-2: a reconcile-required outcome can no longer report a submitted run.
+
+    Both cases below carry a container reference and a submit time, so the old
+    predicate reported SUBMITTED for both. The container reference is still
+    reported -- an operator who has to reconcile is the reader who needs it --
+    but the status and the code now tell the truth. The submit time is dropped
+    because TrainingRunCommandResultV2 admits no RECONCILE_REQUIRED shape that
+    carries one (cli.py:296-300).
+    """
+    from synaptic_host import docker_execution
+    from synaptic_host.docker_execution import DockerPreparedRunOutcomeV1
+    from synaptic_host.docker_execution_state import (
+        DockerReconcileOperationV1, DockerRunPhaseV1,
+    )
+
+    record = _a2_submitted_record()
+
+    # Victim one: the M-8 publish cut that found no publication. The aggregate
+    # underneath is untouched, so only the outcome carries the directive.
+    directive = DockerPreparedRunOutcomeV1.from_reconcile_directive(
+        record, "PUBLICATION_COMPOSITION_ABSENT"
+    )
+    assert directive.container_ref == _A2_CONTAINER
+    assert directive.submitted_at == _A2_NOW
+    assert directive.reconcile_required is True
+
+    result = _a2_command_result(directive)
+    assert result.status is TrainingRunCommandStatusV2.RECONCILE_REQUIRED
+    assert result.code is TrainingRunCommandCodeV2.RECONCILE_REQUIRED
+    assert result.provider_job_ref == _A2_CONTAINER
+    assert result.submitted_at is None
+
+    # Victim two: a genuine RECONCILE_REQUIRED record written by the
+    # observe-process cut onto a run that already has a container. This one
+    # predates M-8 and was reported as SUBMITTED too.
+    observed = docker_execution._aggregate(
+        record, phase=DockerRunPhaseV1.RECONCILE_REQUIRED,
+        reconcile_operation=DockerReconcileOperationV1.OBSERVE_PROCESS,
+        diagnostic="PROCESS_OBSERVATION_UNAVAILABLE",
+    )
+    durable = DockerPreparedRunOutcomeV1.from_record(observed)
+    assert durable.container_ref == _A2_CONTAINER
+    assert durable.reconcile_required is True
+
+    durable_result = _a2_command_result(durable)
+    assert durable_result.status is TrainingRunCommandStatusV2.RECONCILE_REQUIRED
+    assert durable_result.code is TrainingRunCommandCodeV2.RECONCILE_REQUIRED
+    assert durable_result.provider_job_ref == _A2_CONTAINER
+    assert durable_result.submitted_at is None
+
+
+def test_command_result_is_unchanged_for_a_healthy_submitted_outcome():
+    """A-2 must not move a run that really was submitted."""
+    from synaptic_host.docker_execution import DockerPreparedRunOutcomeV1
+    from synaptic_host.docker_execution_state import DockerRunPhaseV1
+
+    record = _a2_submitted_record()
+    outcome = DockerPreparedRunOutcomeV1.from_record(record)
+    assert outcome.phase is DockerRunPhaseV1.SUBMITTED
+    assert outcome.reconcile_required is False
+
+    result = _a2_command_result(outcome)
+    assert result.status is TrainingRunCommandStatusV2.SUBMITTED
+    assert result.code is TrainingRunCommandCodeV2.SUBMITTED
+    assert result.provider_job_ref == _A2_CONTAINER
+    assert result.submitted_at == _A2_NOW
+    assert result.project_ref == "project"
+    assert result.run_id == "run"
+
+
+def test_command_result_stays_reconcile_required_without_a_container():
+    """The two identity checks still stand; A-2 only added a third condition."""
+    from synaptic_host.docker_execution import DockerPreparedRunOutcomeV1
+    from synaptic_host.docker_execution_state import DockerRunPhaseV1
+
+    admitted = _a2_submitted_record(submitted=False)
+    assert admitted.phase is DockerRunPhaseV1.CREATE_ADMITTED
+    outcome = DockerPreparedRunOutcomeV1.from_record(admitted)
+    assert outcome.reconcile_required is False
+    assert outcome.container_ref is None
+
+    result = _a2_command_result(outcome)
+    assert result.status is TrainingRunCommandStatusV2.RECONCILE_REQUIRED
+    assert result.provider_job_ref is None
+    assert result.submitted_at is None

@@ -103,9 +103,23 @@ _FILETIME_UNIX_EPOCH_TICKS = 116_444_736_000_000_000
 _MAX_CHUNK_BYTES = 1_048_576
 _MAX_JOURNAL_RECORD_BYTES = 16_384
 
+# NTFS carries at most 255 UTF-16 code units in one path component.
+_MAX_COMPONENT_UTF16_UNITS = 255
+
+# Win32 device names. Reserved with or without an extension and in any case,
+# so "con", "CON.txt" and "com1.log" are all refused along with "CON".
+_RESERVED_DEVICE_NAMES = frozenset(
+    {"CON", "PRN", "AUX", "NUL"}
+    | {f"COM{digit}" for digit in range(1, 10)}
+    | {f"LPT{digit}" for digit in range(1, 10)}
+)
+
 _FEATURES = tuple(sorted((
     "crash-released-admission",
-    "directory-id-admission",
+    # M-11: one neutral vocabulary across both ports. posix.py:56 and the
+    # gate at filesystem.py:578,591 already spell it this way, so the old
+    # "directory-id-admission" was a string the gate did not recognise.
+    "directory-inode-admission",
     "exclusive-create",
     "flush-file-buffers",
     "handle-relative-open",
@@ -162,7 +176,26 @@ _FILE_LINK_INFORMATION_EX_CLASS = 72
 
 _STATUS_OBJECT_NAME_COLLISION = 0xC0000035
 _STATUS_OBJECT_NAME_NOT_FOUND = 0xC0000034
+_STATUS_OBJECT_PATH_NOT_FOUND = 0xC000003A
+_STATUS_FILE_IS_A_DIRECTORY = 0xC00000BA
+_STATUS_NOT_A_DIRECTORY = 0xC0000103
 _STATUS_SHARING_VIOLATION = 0xC0000043
+
+# The ONLY statuses that mean "the name does not resolve to an object of the
+# requested type". They are the closed definition of PATH_INVALID out of
+# _nt_open_relative, and stat_at's two-pass probe treats exactly this set as
+# "keep probing". Every other failing status is a real error and maps to
+# IO_FAILED: a default of PATH_INVALID made ACCESS_DENIED, DELETE_PENDING and
+# resource exhaustion indistinguishable from absence, which stat_at then
+# reported as None and filesystem.py turned into DEFINITELY_ABSENT. Adding a
+# status here therefore widens what the port is willing to call "absent", so
+# add one only when it genuinely means the name did not resolve.
+_PATH_INVALID_STATUSES = frozenset({
+    _STATUS_OBJECT_NAME_NOT_FOUND,
+    _STATUS_OBJECT_PATH_NOT_FOUND,
+    _STATUS_FILE_IS_A_DIRECTORY,
+    _STATUS_NOT_A_DIRECTORY,
+})
 
 _ERROR_NO_MORE_FILES = 18
 _ERROR_SHARING_VIOLATION = 32
@@ -425,9 +458,15 @@ def _close_handle(handle: int) -> None:
 
 
 def _close_handle_quietly(handle: int) -> None:
+    """Best-effort close for cleanup paths.
+
+    Catches Exception, not BaseException: a cleanup helper must not swallow
+    KeyboardInterrupt or SystemExit and turn an interpreter shutdown into a
+    silent continue.
+    """
     try:
         _close_handle(handle)
-    except BaseException:
+    except Exception:
         pass
 
 
@@ -439,7 +478,14 @@ def _flush_handle(handle: int) -> None:
 
 
 def _windows_name(value: str) -> str:
-    """Reject names NTFS cannot carry as one literal component."""
+    """Reject names NTFS cannot carry as one literal component.
+
+    Handle-relative NT opens would accept a reserved device name and a
+    component longer than NTFS allows, because the device mapping and the
+    component-length rule both live in the Win32 layer this port bypasses.
+    They are refused here anyway: a published artifact tree that any ordinary
+    Win32 consumer cannot open afterwards is not a usable tree.
+    """
     if (
         type(value) is not str
         or not value
@@ -447,13 +493,17 @@ def _windows_name(value: str) -> str:
         or value[-1] in {" ", "."}
         or any(character in value for character in "\\/:\0")
         or any(ord(character) < 32 for character in value)
+        or value.split(".", 1)[0].upper() in _RESERVED_DEVICE_NAMES
     ):
         raise _closed(LocalIOCodeV1.PATH_INVALID)
     try:
         encoded = value.encode("utf-16-le")
     except UnicodeError:
         raise _closed(LocalIOCodeV1.PATH_INVALID) from None
-    if not encoded or len(encoded) > 65_534:
+    # NTFS caps one component at 255 UTF-16 code units, which is len(encoded)
+    # halved because every code unit is two bytes. Surrogate pairs count as
+    # the two units NTFS counts them as.
+    if not encoded or len(encoded) > _MAX_COMPONENT_UTF16_UNITS * 2:
         raise _closed(LocalIOCodeV1.PATH_INVALID)
     return value
 
@@ -519,13 +569,18 @@ def _nt_open_relative(
     if status < 0:
         if raw == _STATUS_OBJECT_NAME_COLLISION:
             raise _closed(LocalIOCodeV1.DESTINATION_EXISTS)
-        if raw == _STATUS_OBJECT_NAME_NOT_FOUND:
+        if raw in _PATH_INVALID_STATUSES:
             raise _closed(LocalIOCodeV1.PATH_INVALID)
         if raw == _STATUS_SHARING_VIOLATION:
             raise _closed(LocalIOCodeV1.ROOT_IN_USE)
-        raise _closed(LocalIOCodeV1.PATH_INVALID)
+        # Fail closed. Anything not named above -- ACCESS_DENIED,
+        # DELETE_PENDING, REPARSE_POINT_ENCOUNTERED, INSUFFICIENT_RESOURCES --
+        # is a real failure, never an absence.
+        raise _closed(LocalIOCodeV1.IO_FAILED)
     if output.value in {None, _INVALID_HANDLE_VALUE}:
-        raise _closed(LocalIOCodeV1.PATH_INVALID)
+        # STATUS_SUCCESS with no handle is a broken driver contract, not a
+        # missing name, so it must not reach stat_at as "absent" either.
+        raise _closed(LocalIOCodeV1.IO_FAILED)
     return int(output.value)
 
 
@@ -571,17 +626,23 @@ def _reopen_by_handle(parent_handle: int, *, access: int, share: int) -> int:
     )
 
 
-def _directory_entries(handle: int, maximum: int) -> tuple[tuple[str, bool], ...]:
-    """Enumerate one directory by handle as (name, is_reparse_point) pairs.
+def _directory_entries(handle: int, maximum: int) -> tuple[tuple[str, bool, int], ...]:
+    """Enumerate one directory by handle as (name, is_reparse_point, file_id).
 
     The scan itself, with every structural bound and the case-fold collision
     check, but WITHOUT a verdict on redirects: it reports which entries are
     reparse points and lets the caller decide. ``_directory_names`` keeps the
     strict whole-directory rejection; ``_root_component`` needs a decision
     about ONE named entry instead.
+
+    ``file_id`` is the entry's 128-bit FILE_ID_128 decoded the same way
+    ``_identity_from_information`` decodes FILE_ID_INFO, so it is directly
+    comparable to ``LocalFileIdentityV1.inode``. Carrying it is what lets the
+    descent bind the object it OPENED to the object it ENUMERATED and vetted,
+    rather than trusting that the name still refers to the same object.
     """
     kernel32, _ = _windows_native()
-    entries: list[tuple[str, bool]] = []
+    entries: list[tuple[str, bool, int]] = []
     seen: set[str] = set()
     first = True
     while True:
@@ -606,6 +667,7 @@ def _directory_entries(handle: int, maximum: int) -> tuple[tuple[str, bool], ...
             attributes = unpacked[8]
             name_length = unpacked[9]
             reparse_tag = unpacked[11]
+            file_id = unpacked[12]
             name_start = offset + _DIRECTORY_RECORD.size
             name_end = name_start + name_length
             if name_length % 2 or name_end > len(buffer):
@@ -624,7 +686,10 @@ def _directory_entries(handle: int, maximum: int) -> tuple[tuple[str, bool], ...
                 is_reparse = bool(
                     attributes & _FILE_ATTRIBUTE_REPARSE_POINT or reparse_tag != 0
                 )
-                entries.append((name, is_reparse))
+                entries.append((
+                    name, is_reparse,
+                    int.from_bytes(file_id, "little", signed=False),
+                ))
                 if len(entries) > MAX_DIRECTORY_ENTRIES:
                     raise _closed(LocalIOCodeV1.LIMIT_EXCEEDED)
             if next_offset == 0:
@@ -642,15 +707,25 @@ def _directory_entries(handle: int, maximum: int) -> tuple[tuple[str, bool], ...
 
 
 def _directory_names(handle: int, maximum: int) -> tuple[str, ...]:
-    """Enumerate one directory by handle, rejecting redirects and collisions.
+    """Enumerate one directory by handle, rejecting collisions and overflow.
 
-    Whole-directory strictness: ANY reparse-point entry rejects the listing.
-    This is the behaviour ``list_names_at`` publishes and it is unchanged.
+    M-7: the whole-listing reparse veto is GONE. A reparse-point SIBLING
+    cannot redirect a name the caller never opens, and vetoing the listing on
+    one made every directory containing a junction unlistable -- the C: drive
+    root carries the legacy "Documents and Settings" junction, so this
+    disabled listing on the most common root on the system.
+
+    ``_directory_entries`` still enforces everything that survives: a
+    casefold collision is ROOT_CHANGED, the entry cap is LIMIT_EXCEEDED, and
+    an undecodable or malformed record is IO_FAILED.
+
+    The redirect boundary stays at OPEN time, where it belongs and where it
+    is three-deep: ``_root_component`` refuses a reparse point on the MATCHED
+    entry, every open carries ``OBJ_DONT_REPARSE`` with
+    ``FILE_OPEN_REPARSE_POINT``, and ``_query_identity`` refuses one again on
+    the handle it opened.
     """
-    entries = _directory_entries(handle, maximum)
-    if any(is_reparse for _, is_reparse in entries):
-        raise _closed(LocalIOCodeV1.ROOT_CHANGED)
-    return tuple(name for name, _ in entries)
+    return tuple(name for name, _, _ in _directory_entries(handle, maximum))
 
 
 def _require_ntfs(path: Path) -> None:
@@ -812,10 +887,20 @@ class WindowsRetainedHandlePortV1:
             return result
         except BaseException:
             _close_handle_quietly(handle)
-            raise _closed() from None
+            # Re-raise as the directory sibling does. Collapsing to IO_FAILED
+            # here lost the ROOT_CHANGED that _query_identity raises for a
+            # reparse point, so the same physical condition reported two
+            # different codes depending on which handle kind found it.
+            raise
 
-    def _root_component(self, parent_handle: int, value: str) -> str:
+    def _root_component(self, parent_handle: int, value: str) -> tuple[str, int]:
         """Require the configured spelling to match the on-disk spelling.
+
+        Returns the proven component AND the matched entry's 128-bit file id,
+        so the caller can bind the handle it goes on to open to the entry that
+        was actually vetted here. Without that binding the descent proves only
+        SPELLING and TYPE, and the name could be rebound between this
+        enumeration and the open.
 
         NTFS is case-insensitive, so at most one entry can fold to a given
         value. The check therefore reduces to exact-case agreement, which is
@@ -833,14 +918,14 @@ class WindowsRetainedHandlePortV1:
         entries = _directory_entries(parent_handle, MAX_DIRECTORY_ENTRIES)
         folded = unicodedata.normalize("NFC", component).casefold()
         matches = [
-            (name, is_reparse) for name, is_reparse in entries
+            (name, is_reparse, file_id) for name, is_reparse, file_id in entries
             if unicodedata.normalize("NFC", name).casefold() == folded
         ]
-        if [name for name, _ in matches] != [component]:
+        if [name for name, _, _ in matches] != [component]:
             raise _closed(LocalIOCodeV1.ROOT_CHANGED)
         if matches[0][1]:
             raise _closed(LocalIOCodeV1.ROOT_CHANGED)
-        return component
+        return component, matches[0][2]
 
     # -- protocol surface -------------------------------------------------
 
@@ -885,7 +970,7 @@ class WindowsRetainedHandlePortV1:
             current = int(anchor)
             final_index = len(parts) - 1
             for index, component in enumerate(parts[1:], start=1):
-                checked = self._root_component(current, component)
+                checked, enumerated_id = self._root_component(current, component)
                 child = _open_relative(
                     current, checked, directory=True,
                     access=_DIRECTORY_ACCESS if index == final_index
@@ -893,7 +978,14 @@ class WindowsRetainedHandlePortV1:
                     share=_FILE_SHARE_ALL,
                 )
                 opened = _query_identity(child)
-                if not stat.S_ISDIR(opened.mode):
+                # Bind the OPENED object to the ENUMERATED one. _root_component
+                # proved spelling and refused a reparse point on the entry it
+                # matched, but the open that follows resolves the NAME again,
+                # so without this compare a rebind between the two steps goes
+                # unnoticed and rule 1 above ("re-proves identity at every
+                # component") would not hold. POSIX closes the same window with
+                # its before/opened/after stat triple at posix.py:258-266.
+                if not stat.S_ISDIR(opened.mode) or opened.inode != enumerated_id:
                     _close_handle_quietly(child)
                     raise _closed(LocalIOCodeV1.ROOT_CHANGED)
                 _close_handle_quietly(current)
@@ -958,6 +1050,13 @@ class WindowsRetainedHandlePortV1:
     def stat_at(
         self, directory: RetainedDirectoryV1, component: str
     ) -> LocalFileIdentityV1 | None:
+        """Identify one named child, or report it absent.
+
+        None means ABSENT and nothing else. Only PATH_INVALID continues the
+        probe, and _PATH_INVALID_STATUSES defines that as exactly not-found or
+        wrong-type; every other failure raises. This is the POSIX contract at
+        posix.py:321-328, where only FileNotFoundError yields None.
+        """
         parent = self._directory(directory)
         name = self._component(component)
         for as_directory in (False, True):
@@ -975,6 +1074,12 @@ class WindowsRetainedHandlePortV1:
                 return _query_identity(child)
             finally:
                 _close_handle_quietly(child)
+        # BOTH passes reported PATH_INVALID, and that can only mean absent: a
+        # wrong-type verdict is impossible on both passes, because an existing
+        # object answers the file pass with FILE_IS_A_DIRECTORY only when it IS
+        # a directory (so the directory pass then opens it) and the directory
+        # pass with NOT_A_DIRECTORY only when it is NOT (so the file pass
+        # already opened it). Never both, so the object cannot exist.
         return None
 
     def open_read_at(
@@ -1288,8 +1393,17 @@ class WindowsRetainedHandlePortV1:
                 access=_DIRECTORY_ACCESS, share=_FILE_SHARE_ALL,
             )
         except LocalIOErrorV1 as error:
+            # Same fail-open shape as stat_at, and closed the same way: None
+            # here means the journal directory is ABSENT, and snapshot_journal
+            # publishes that as JournalSnapshotStatusV1.ABSENT. Only
+            # PATH_INVALID may say so. An unreadable directory raises
+            # IO_FAILED and must keep that code rather than be relabelled a
+            # journal-shaped problem, so a real I/O fault is never reported as
+            # a missing journal.
             if error.code is LocalIOCodeV1.PATH_INVALID:
                 return None
+            if error.code is LocalIOCodeV1.IO_FAILED:
+                raise
             raise _closed(LocalIOCodeV1.JOURNAL_INVALID) from None
 
     def _read_all(self, handle: int, limit: int) -> bytes:
@@ -1501,7 +1615,15 @@ class WindowsRetainedHandlePortV1:
         refused if it is one.
         """
         kernel32, _ = _windows_native()
-        if any(live.handle == directory_handle for live in self._admission_leases.values()):
+        # Snapshot under the lock that guards the mapping. Iterating it live
+        # races acquire/release and raises RuntimeError out of unlink_at, which
+        # would escape the closed taxonomy rule 5 states. posix.py:376-380
+        # keeps a lock-refreshed snapshot for the same reason.
+        with self._admission_lock:
+            admitted = frozenset(
+                live.handle for live in self._admission_leases.values()
+            )
+        if directory_handle in admitted:
             raise _closed(LocalIOCodeV1.ADMISSION_INVALID)
         opened = _open_relative(
             directory_handle, name, directory=False,
@@ -1542,14 +1664,24 @@ class WindowsRetainedHandlePortV1:
         try:
             try:
                 records, has_private = self._read_journal_handle(directory_handle, maximum)
-            except LocalIOErrorV1:
+            except LocalIOErrorV1 as error:
+                # Only a journal-shaped disagreement is a CONFLICT. A real I/O
+                # fault keeps IO_FAILED: reporting an unreadable journal as a
+                # conflicting one invites a caller to resolve a conflict that
+                # was never observed. Absence is not reachable here at all --
+                # a missing journal directory returned None above.
+                if error.code is LocalIOCodeV1.IO_FAILED:
+                    raise
                 status = JournalSnapshotStatusV1.CONFLICT
                 records = ()
             else:
+                # records is non-empty in the else arm, so FOUND is the only
+                # verdict it can carry; the ABSENT arm this expression used to
+                # end with was unreachable.
                 status = (
                     JournalSnapshotStatusV1.INDETERMINATE
                     if has_private or not records
-                    else (JournalSnapshotStatusV1.FOUND if records else JournalSnapshotStatusV1.ABSENT)
+                    else JournalSnapshotStatusV1.FOUND
                 )
                 if has_private or not records:
                     records = ()

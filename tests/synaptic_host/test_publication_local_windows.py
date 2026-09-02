@@ -24,6 +24,29 @@ What these tests do and do not prove:
   directory barrier is NTFS-log-backed and is not independently proven by this
   closure. These tests assert the barrier is CALLED and SUCCEEDS, which is what
   the design controls; elevating R-1 needs a power-loss rig and is out of scope.
+
+WHERE THIS SUITE RUNS CHANGES WHAT IT PROVES (M-6):
+
+  This suite is diagnostic for host defect 2 -- the ancestor access mask -- ONLY
+  when pytest's basetemp sits on the SYSTEM volume. Defect 2 was that every
+  ancestor on the way down to a retained root was opened with the leaf's
+  write-flavoured _DIRECTORY_ACCESS, which a non-elevated process cannot obtain
+  on the C: drive root. Under a basetemp on a secondary volume such as the
+  F: drive, where the user does hold write access to the volume root, the
+  buggy mask is granted and every test here passes, so a green run on that
+  arm says nothing about defect 2.
+
+  Consequently a single green arm is not a verification of the ancestor-mask
+  fix. Run this suite on BOTH a system-volume basetemp (the pytest default,
+  under the per-user AppData Local Temp directory) and any secondary-volume
+  basetemp, and treat only the system-volume arm as evidence for defect 2. The
+  Linux-runnable constant and call-site pins in
+  tests/synaptic_host/local_io_v1/test_windows_port_contract.py cover the mask
+  itself; this note is about what the HOST arms can and cannot witness.
+
+  One-line form for the design ledger section 9: "The Windows publication suite
+  is diagnostic for defect 2 only under a system-volume basetemp; a green run
+  on a secondary volume grants the buggy mask and proves nothing about it."
 """
 
 from __future__ import annotations
@@ -458,3 +481,138 @@ def test_first_retain_directory_on_a_non_ntfs_volume_is_capability_unavailable(
     # to the port having been poisoned by the failed attempt.
     retained = port.retain_directory(tmp_path)
     port.close_directory(retained)
+
+
+# --------------------------------------------------------------------------
+# F-4 / R-7 -- the ancestor enumeration cap against a REAL NT enumeration.
+#
+# EVIDENCE CLASS: real-host. This is the twin of
+# test_directory_entries_cap_trips_with_a_stubbed_enumeration in
+# tests/synaptic_host/local_io_v1/test_windows_port_contract.py. That one
+# replaces kernel32 and proves the cap arithmetic and the error mapping; it
+# cannot say anything about a real directory. This one builds real entries on
+# a real NTFS volume and drives the public port surface, so it is the only one
+# of the pair whose green means "NT enumeration trips this bound".
+# --------------------------------------------------------------------------
+@windows_only
+def test_directory_entries_cap_trips_on_a_real_nt_enumeration(tmp_path: Path):
+    """R-7: a directory one entry past the cap is refused, and refused as a bound.
+
+    Both sides of the boundary are built, because a test that only asserted
+    the refusal would pass for a port that refused every directory. Exactly at
+    the cap must come back intact.
+
+    LIMIT_EXCEEDED rather than IO_FAILED is the load-bearing half: a directory
+    that is too large is a bound being hit, not a disk failure, and
+    _reject_collision keys on that distinction.
+    """
+    from synaptic_host.local_io_v1.filesystem import MAX_DIRECTORY_ENTRIES
+
+    port = _windows_port()()
+
+    def enumerate_directory(count: int):
+        directory = tmp_path / f"entries{count}"
+        directory.mkdir()
+        for index in range(count):
+            (directory / f"e{index:06d}").touch()
+        assert len(os.listdir(directory)) == count
+        retained = port.retain_directory(directory)
+        try:
+            return port.list_names_at(retained, MAX_DIRECTORY_ENTRIES)
+        finally:
+            port.close_directory(retained)
+
+    # Exactly at the cap: listed in full.
+    names = enumerate_directory(MAX_DIRECTORY_ENTRIES)
+    assert len(names) == MAX_DIRECTORY_ENTRIES
+    assert len(set(names)) == MAX_DIRECTORY_ENTRIES
+
+    # One past it: refused, with the bound's own code.
+    with pytest.raises(LocalIOErrorV1) as refused:
+        enumerate_directory(MAX_DIRECTORY_ENTRIES + 1)
+    assert refused.value.code is LocalIOCodeV1.LIMIT_EXCEEDED
+
+
+# --------------------------------------------------------------------------
+# M-12 -- the admission exclusion against a FOREIGN handle.
+#
+# EVIDENCE CLASS: real-host, measured. Test 12 above proves the exclusion
+# between two PORT instances. This proves it against a handle the port never
+# created and knows nothing about, which is the only form that rules out the
+# in-process bookkeeping entirely: there is no lease, no port and no
+# RetainedDirectoryV1 on the other side, just a kernel share mode.
+# --------------------------------------------------------------------------
+@windows_only
+def test_a_foreign_handle_without_share_delete_blocks_only_the_admission(
+    tmp_path: Path,
+):
+    """M-12, as measured rather than as predicted.
+
+    The probe was specified as "hold a directory handle whose dwShareMode
+    omits FILE_SHARE_DELETE, attempt retain_directory, assert ROOT_IN_USE".
+    Measured on the host, retain_directory SUCCEEDS and the refusal lands one
+    call later, at acquire_directory_admission. That is correct and is the
+    sharper result: a Windows sharing violation is raised by the ACCESS the
+    new open asks for, and retain_directory deliberately asks for no DELETE
+    (see _DIRECTORY_ACCESS) while acquire_directory_admission is defined by
+    asking for it (_ADMISSION_ACCESS). So the foreign share mode partitions
+    the two calls exactly along the axis the design says carries the
+    exclusion, and the assertion is written against that rather than against
+    the prediction.
+
+    The second arm is the control that makes the first mean something: the
+    SAME foreign handle opened WITH FILE_SHARE_DELETE lets the admission
+    through, so the refusal is attributable to the share mode and not to the
+    mere existence of another handle on the directory.
+    """
+    spool = tmp_path / "spool"
+    spool.mkdir()
+
+    generic_read = 0x80000000
+    share_read, share_write, share_delete = 0x1, 0x2, 0x4
+    open_existing = 3
+    backup_semantics = 0x02000000
+    invalid_handle = ctypes.c_void_p(-1).value
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.CreateFileW.restype = ctypes.c_void_p
+
+    def foreign_handle(share: int) -> int:
+        handle = kernel32.CreateFileW(
+            str(spool), generic_read, share, None, open_existing,
+            backup_semantics, None,
+        )
+        assert handle not in (invalid_handle, None), ctypes.get_last_error()
+        return handle
+
+    port_class = _windows_port()
+
+    # Arm 1: the foreign handle refuses to share DELETE.
+    handle = foreign_handle(share_read | share_write)
+    try:
+        port = port_class()
+        # retain_directory asks for no DELETE, so it is NOT in conflict.
+        retained = port.retain_directory(spool)
+        try:
+            with pytest.raises(LocalIOErrorV1) as denied:
+                port.acquire_directory_admission(retained)
+            assert denied.value.code is LocalIOCodeV1.ROOT_IN_USE
+        finally:
+            port.close_directory(retained)
+    finally:
+        kernel32.CloseHandle(ctypes.c_void_p(handle))
+
+    # Arm 2, the control: the same foreign handle sharing DELETE lets the
+    # admission through. Without this the test would pass for a port that
+    # refused every admission whenever any other handle existed.
+    handle = foreign_handle(share_read | share_write | share_delete)
+    try:
+        port = port_class()
+        retained = port.retain_directory(spool)
+        try:
+            lease = port.acquire_directory_admission(retained)
+            port.release_directory_admission(retained, lease)
+        finally:
+            port.close_directory(retained)
+    finally:
+        kernel32.CloseHandle(ctypes.c_void_p(handle))

@@ -36,7 +36,7 @@ from .artifact_spool import (
     acquire_local_artifact_spool_v1,
 )
 from .local_io_v1.config import StorageRegistryV1
-from .local_io_v1.filesystem import LocalFilesystemV1
+from .local_io_v1.filesystem import LocalFilesystemV1, PosixFilesystemPortV1
 from .publication_authority import create_publication_evidence_v1
 from .publication_store import SqlitePublicationStoreV1
 from .verified_artifact_source import AuthenticatedVerifiedArtifactSourceV1
@@ -391,7 +391,7 @@ def _rollback(
     return failed
 
 
-def _local_filesystem_port_v1() -> object:
+def _local_filesystem_port_v1() -> PosixFilesystemPortV1:
     """Build the retained-handle port for the running platform.
 
     Two branches, one real port each. This is not a compatibility layer: it

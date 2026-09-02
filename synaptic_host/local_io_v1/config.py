@@ -134,10 +134,34 @@ class StorageRegistryV1:
             else:
                 if type(location) is not str:
                     raise _closed(LocalIOCodeV1.CONFIG_INVALID)
+                # Refuse every Win32 name that opens on two separators.  Windows
+                # accepts "\" and "/" interchangeably, so all four pairings name
+                # the same family: the UNC share ("\\server\share"), the UNC
+                # device form ("\\?\UNC\server\share"), the extended-length
+                # prefix ("\\?\C:\...") and the device namespace ("\\.\...").
+                # None of them is a local volume path the retained-handle
+                # descent can walk from a project anchor, and a remote share
+                # cannot be contained by the project at all.  A SINGLE leading
+                # separator is an ordinary POSIX absolute path and stays legal.
+                if len(location) >= 2 and location[0] in "\\/" and location[1] in "\\/":
+                    raise _closed(LocalIOCodeV1.CONFIG_INVALID)
                 candidate = Path(location)
                 if not candidate.is_absolute():
                     raise _closed(LocalIOCodeV1.CONFIG_INVALID)
                 absolute = candidate.absolute()
+                # Containment.  A ".." component would make the component-wise
+                # prefix test below unsound -- "<project>/../etc" passes a parts
+                # compare while naming a path outside the project -- so refuse
+                # it outright.  Normalising it away instead would need
+                # resolve(), and resolve() reads the filesystem and follows
+                # symlinks, neither of which config parsing may do.
+                if ".." in absolute.parts:
+                    raise _closed(LocalIOCodeV1.CONFIG_INVALID)
+                anchor = project_root.absolute().parts
+                # Component-wise, never str.startswith: "/proj-other" must not
+                # count as contained by "/proj".
+                if absolute.parts[: len(anchor)] != anchor:
+                    raise _closed(LocalIOCodeV1.CONFIG_INVALID)
 
             parsed[root_ref] = _RootSpecV1(
                 root_ref, location, absolute, access, permit_ref

@@ -2680,6 +2680,14 @@ class LocalFilesystemV1:
     ) -> bool:
         try:
             names = self._port.list_names_at(directory, MAX_DIRECTORY_ENTRIES + 1)
+        except LocalIOErrorV1:
+            # The port already speaks the closed taxonomy, so its verdict is
+            # the accurate one: LIMIT_EXCEEDED for an oversized directory,
+            # ROOT_CHANGED for a casefold collision. Rewriting both to
+            # IO_FAILED told the caller "the disk failed" for two conditions
+            # that are neither disk nor failure. Same arm order as the
+            # sibling wrapper above at _resolve_parent.
+            raise
         except BaseException:
             raise _closed(LocalIOCodeV1.IO_FAILED) from None
         if type(names) is not tuple or len(names) > MAX_DIRECTORY_ENTRIES or any(type(name) is not str for name in names):

@@ -541,14 +541,23 @@ def test_prepared_activation_publishes_only_when_a_publication_is_wired(
     repository = _S6Repository(record)
     request, destination_ref = _s6_publication_request(tmp_path, record)
 
-    # Gap A as it stands without S6: the verified cut returns unpublished.
+    # Gap A, re-expressed after M-8. Reaching the verified cut without a
+    # publication no longer looks like a completed run: the cut reports
+    # RECONCILE_REQUIRED with a diagnostic and publishes nothing, and the
+    # aggregate keeps ARTIFACTS_VERIFIED so a wired retry still publishes.
+    # (The old pin asserted phase ARTIFACTS_VERIFIED here, which was
+    # indistinguishable from a correct pre-publish cut -- that was the defect.)
     unwired = _s6_prepared_composition(
         tmp_path / "unwired", repository, publication=None,
     )
     unpublished = unwired.reconcile(request)
-    assert unpublished.phase is DockerRunPhaseV1.ARTIFACTS_VERIFIED
+    assert unpublished.phase is DockerRunPhaseV1.RECONCILE_REQUIRED
+    assert unpublished.diagnostic == "PUBLICATION_COMPOSITION_ABSENT"
     assert unpublished.published is False
     assert unpublished.publication_id is None
+    # `_S6Repository.compare_and_swap_docker_run_mutation` raises, so reaching
+    # this line at all proves the cut took no durable write.
+    assert repository.record.phase is DockerRunPhaseV1.ARTIFACTS_VERIFIED
 
     # S6 wired: a real DockerPublicationCompositionV1 reaches the composition.
     facade = _S6Facade()
