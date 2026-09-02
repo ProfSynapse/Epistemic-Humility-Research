@@ -1653,3 +1653,262 @@ B-7 and B-2 remain unexecuted on the shipped path: run 4 stopped in the driver's
 assertion block, upstream of the single Host command, so the `SystemRoot` fix and
 the repo-id stamp have still never run for real. B-8 is unchanged. This ruling
 clears the gate in front of them; it is not evidence about them.
+
+### 18.18 Addendum 2026-09-02 — reconciling 18.10 with the 14 keys the Host already passes
+
+Probe #131 (`test-host`, task #131) confirmed both halves of 18.10's premise on
+the real image: as `--user 1000:1000` the container starts normally, `id` reports
+uid 1000 / gid 1000, `getent passwd 1000` is empty, `HOME=/`, and `/` is not
+writable. It then raised a fair objection: if the engine enforces an environment
+allowlist, how does the Host already pass 14 keys including `HF_HOME`?
+
+There is no contradiction, and the answer is the whole of sub-question 1.
+
+**All 14 keys the Host passes are already inside the allowlist.** The Host's
+environment dict is `docker_training.py:450-464`: `PATH`, `PYTHONNOUSERSITE`,
+`PYTHONSAFEPATH`, `PYTHONPATH`, the seven `SYNAPTIC_*` roots, `HF_HOME`,
+`TRANSFORMERS_CACHE`, `WANDB_DISABLED`. The engine's `allowed_environment` at
+`synaptic-tuner/tuner/training/methods/sft.py:52-63` has 27 entries and contains
+every one of those 14. The subset check at
+`Trainers/sft/runtime_v1.py:1145-1157` therefore passes today. It is a
+*subset* check, not an equality check, so a shorter list is legal and a longer
+one is not.
+
+**Verified at the committed blob `4a01fc55`, the five keys in question are all
+absent:**
+
+| Key | In `allowed_environment` at `4a01fc55`? |
+|---|---|
+| `HOME` | no |
+| `XDG_CACHE_HOME` | no |
+| `TORCH_HOME` | no |
+| `TRITON_CACHE_DIR` | no |
+| `TMPDIR` | no |
+
+**Ruling on sub-question 1: the fix is NOT Host-only.** Adding any of those five
+to `docker_training.py:450-464` makes `planned_environment` a strict superset of
+`allowed_environment`, and `runtime_v1.py:1152-1157` raises
+`RuntimeV1Error("resolved runtime environment violates portable requirements")`.
+The run fails later and less legibly than it does today. This is outside
+`coder-user`'s lane and must not be attempted there.
+
+`tuner/training/methods/sft.py` **is a closure member.** Parsing
+`tuner/runtime/manifests/offline-sft-worker-v1.json` at `4a01fc55` gives
+`member_count 66` and the path is in the member set. So the correct shape is the
+B-5 shape and nothing smaller: edit the allowlist, regenerate the closure
+manifest, new engine commit, submodule pin moved on the Host, new released
+checkout. That is a rePACT, and under the TEST-phase constraint it is a blocker
+to be routed, never a patch.
+
+**There is no Host-side bypass, and I would not design one if there were.** The
+container's environment is not assembled from the Host dict directly at compose
+time. `docker_prepared_composition.py:226-229` takes it from
+`request.staging.worker_bundle.dispatch.environment` — the staged bundle,
+computed by engine code — and `control_private.py:400-401` asserts that the
+materialized pairs' keys equal `workload.environment_keys` exactly, under an
+HMAC binding. Passing a key to the daemon that the declared runtime environment
+does not carry would be a deliberate divergence between what the run says it
+does and what it does. That is the one thing this whole path exists to prevent.
+
+One fact in the engine's favour: `HOME` is not forbidden. The engine's own
+refusal set is `dispatch.py:46-48`, `{"PYTHONHOME", "PYTHONUSERBASE",
+"HF_TOKEN"}`. `HOME` is admissible in principle; it is merely not yet admitted.
+
+### 18.19 Sub-question 2 — the caches go under `/tmp`, and `/artifacts` is foreclosed
+
+`test-host`'s integration note suggested pointing the unredirected caches at
+`roots['cache']` or `roots['tmp']`, on the reasoning that both sit inside
+`writable_capability_root="/artifacts"` and that this is tidier than the engine
+cloud lane's `/tmp`. It is tidier, and it does not work. I am refusing my own
+side's suggestion on measured grounds.
+
+**No subdirectory of `/artifacts` is a legal cache location**, because the stage
+verifier requires that tree to stay byte-exact:
+
+- `_verify_artifact_topology` (`docker_staging.py:1446-1481`) requires the five
+  directory names exactly (`:1473`), then requires `artifacts`, `state`, `tmp`
+  and `tracking` to be **empty** (`:1475-1478`, "artifact writable directory is
+  not empty").
+- For `cache` it calls `_verify_inventory_at` (`:1474`), which walks the tree
+  recursively and demands **set equality on both files and directories**
+  (`:1414` "content-addressed model inventory has missing or extra files";
+  `:1418` "content-addressed model inventory has extra directories").
+
+So a single HuggingFace lock file under `/artifacts/cache/huggingface`, or a
+single triton kernel under `/artifacts/tmp`, fails re-verification. This is not
+a style preference; it is the inventory contract.
+
+**This also means the already-shipped `HF_HOME=/artifacts/cache/huggingface`
+(`docker_training.py:461`) is on the same collision course**, and
+`TRANSFORMERS_CACHE` at `:462` with it. They are legal only for as long as the
+libraries write nothing there. I am naming that; I am not designing it away in
+this addendum, because it is the same defect as 18.20 and belongs with it.
+
+**Does the Host pre-create those directories?** Yes, and it answers `test-host`'s
+open question 2 affirmatively: `_create_artifact_topology`
+(`docker_staging.py:1438-1443`) creates all five of `artifacts`, `cache`,
+`state`, `tmp`, `tracking` before the container starts. It does **not** create
+their subdirectories, and the point is moot given the paragraph above.
+
+**Ruling: `/tmp`.** It is writable for uid 1000 without any new mount (probe
+#131, measured), it is container-local and discarded, which is right for caches
+that carry no durable value on a network-disabled offline run, and it is outside
+every tree the stage verifier inspects. It also has direct precedent inside the
+engine: `tuner/cloud/hf_training_image_lock.py:658-666` and `:708-715` already
+run a foreign uid (`--user 65534:65534`) with `HOME=/tmp/home`, `HF_HOME=/tmp/hf`,
+`XDG_CACHE_HOME=/tmp/xdg`, `TORCH_HOME=/tmp/torch`. `test-host` found that
+precedent and it is the correct one to follow.
+
+I do **not** recommend copying that lane's `--tmpfs /tmp:...` mount. `/tmp` is
+already writable in this image, a new `--tmpfs` would be a new argv token and a
+parser change for no measured gain, and it would compete with the `--user`
+insertion that #134 is landing right now.
+
+### 18.20 A finding outside the four sub-questions — B-9-R2 is run-blocking, not a replay note
+
+This is outside what I was asked and I am stating it as a ruling rather than
+withholding it, because it gates whether run 5 can reach the evidence that
+settles sub-question 4.
+
+When I wrote B-9-R2 in 18.16 I described it as a replay concern. That was too
+narrow. The staging verification is not once per run; it is **once per cut**:
+
+1. `execute_docker_training_admission_v1` (`docker_training.py:535-680`) is the
+   single entry for every cut of the one unchanging Host command. It calls
+   `_activate_docker_training_v1` at `:667`. There is no phase guard between
+   admission and that call — the durable phase is read inside activation, after
+   staging.
+2. `stage_docker_worker_v1` is the first substantive statement of activation
+   (`:790`), before any cut-selection logic.
+3. `stage_docker_worker_v1` runs `_verify_artifact_topology(final_artifacts,
+   model_inventory)` at `docker_staging.py:1791`, on **every** call. The
+   `if not final_stage.exists()` guard at `:1775` governs only promotion of the
+   temporary stage, not verification.
+4. An exception there is caught at `docker_training.py:673-674` and mapped to
+   `START_UNAVAILABLE`.
+
+**Consequence:** the first cut issued after the trainer has written anything
+under `/artifacts/{artifacts,state,tmp,tracking}` — or anything at all under
+`/artifacts/cache` — fails with `START_UNAVAILABLE`. The observe, verify and
+publish cuts of run 5 are exactly those cuts.
+
+**What is proven and what is not.** The code path above is proven by reading it.
+What is *not* observed is a run actually writing there: no run has reached
+training yet. The design intends those writes — `SYNAPTIC_STATE_ROOT`,
+`SYNAPTIC_ARTIFACT_ROOT` and `SYNAPTIC_TRACKING_ROOT` point into those
+directories and exist for no other purpose — but the cut at which it first bites
+is an inference, not a measurement. I am not going to soften that into a
+certainty.
+
+I do not rule the fix here. It is a change to the staging contract (verify only
+on the promotion path, or verify a recorded pre-run digest instead of emptiness),
+not a line, and it is unrelated to B-9. It needs its own blocker and its own
+ruling. **Recommendation to the lead: raise it as B-10 and route it before run
+5**, because if it holds, run 5 cannot produce the observation that sub-question
+4 depends on.
+
+### 18.21 Sub-question 3 — set `HOME`, and set the specific cache keys as well
+
+Both, not one or the other.
+
+`HOME` earns its place because the enumeration argument has now failed twice on
+this workstream: B-7 was an unenumerated environment variable (`SystemRoot`), and
+B-9-R1 is an unenumerated set of cache writers. Setting `HOME` catches the
+writers nobody has listed, which is the class that has actually bitten us.
+`test-host` made this argument in their open question 3 and it is correct.
+
+The specific keys earn their place because an explicit declared environment is
+auditable, and because the engine's own lane already declares them explicitly
+rather than relying on `HOME` alone.
+
+**Proposed key set, for the rePACT to implement — four keys, not five:**
+
+| Key | Value | Basis |
+|---|---|---|
+| `HOME` | `/tmp/home` | mirrors `hf_training_image_lock.py:662` |
+| `XDG_CACHE_HOME` | `/tmp/xdg` | mirrors `:663` |
+| `TORCH_HOME` | `/tmp/torch` | mirrors `:663`; probe #131 measured `torch.hub.get_dir()=/.cache/torch/hub`, unwritable |
+| `TRITON_CACHE_DIR` | `/tmp/triton` | **not** in the engine lane; see below |
+
+`TMPDIR` is deliberately excluded. Probe #131 measured
+`tempfile.gettempdir()=/tmp`, already writable, so adding it would widen the
+allowlist for no measured need. The smallest expansion that is provably required
+is the right one.
+
+`TRITON_CACHE_DIR` is the one key with no precedent in the engine lane, and the
+reason is instructive rather than alarming: that lane locks and verifies an
+image, it never trains, so triton never compiles a kernel there. Our lane does
+train. Probe #131 measured triton's default as `/.triton`, unwritable. Note
+`test-host`'s own honesty flag on that value — it came from an `expanduser`
+fallback, not from triton's API — so the *path* is well-founded but its
+provenance is weaker than torch's.
+
+**Residual, named not hidden:** nothing pre-creates `/tmp/home`, `/tmp/xdg`,
+`/tmp/torch` or `/tmp/triton`. The Host cannot, since `/tmp` is not bound. The
+libraries create their own cache roots with `exist_ok=True`, which is why the
+engine's lane works without pre-creation, but that is a property of those
+libraries rather than a guarantee of ours. It is cheap to confirm from run 5's
+output and expensive to assume.
+
+### 18.22 Sub-question 4 — do not block run 5 on this, and do not run probe-4
+
+**It cannot land this cycle**, because 18.18 shows it is not Host-only. There is
+no version of this that `coder-user` can ship into the next released checkout.
+The choice is therefore not "this cycle vs deferred" but "block run 5 on a
+rePACT vs run and learn".
+
+**Ruling: run.** Ship #134 and #135, build the checkout, run 5.
+
+The reason is that B-9-R1 is still **unproven as active**. Probe #131 measured
+where the caches *would* go; it did not measure whether anything writes to them.
+`test-host` was scrupulous about that distinction and it is the whole of the
+decision. Blocking a released checkout on a rePACT to fix a defect that may be
+latent inverts the cost. Run 5 is the strictly better instrument: it exercises
+the real trainer with the real model, and it has to happen regardless, because
+B-2 and B-7 have still never executed on the shipped path (18.17). If a cache
+write fails, that failure is both the proof that R1 is active and the name of the
+exact variable to admit. If it does not, R1 is latent and stays on the ledger
+with evidence behind it instead of an argument.
+
+**Do not run probe-4 (`import unsloth` as uid 1000).** It does not answer the
+question it is aimed at. Triton compiles kernels at first kernel launch, not at
+import, so a clean import would not show that the triton cache is untouched, and
+a failing import would only show a subset of the writers. It would produce a
+comfortable green with no information in it. Run 5 dominates it at comparable
+cost.
+
+**One sequencing condition.** This ruling assumes run 5 can reach the training
+step. If 18.20 holds, it cannot, and the ordering becomes: settle B-10, then run
+5, then rule on B-9-R1 from its output. I flag that as a dependency rather than
+resolving it, because B-10 is not mine to rule.
+
+### 18.23 Ledger amendments
+
+For `docs/review/native-windows-publication-closure.md`, replacing the two
+entries as written in 18.16:
+
+- **B-9-R1 (Future, engine — rePACT shape now known).** Verified at `4a01fc55`:
+  `allowed_environment` (`tuner/training/methods/sft.py:52-63`) admits none of
+  `HOME`, `XDG_CACHE_HOME`, `TORCH_HOME`, `TRITON_CACHE_DIR`, `TMPDIR`, while
+  admitting all 14 keys the Host passes today. That file is one of the 66 closure
+  members, so the fix is an engine allowlist edit plus closure regeneration plus
+  a pin move — never a Host patch. Caches go to `/tmp`, not `/artifacts`
+  (18.19). Proposed keys: `HOME=/tmp/home`, `XDG_CACHE_HOME=/tmp/xdg`,
+  `TORCH_HOME=/tmp/torch`, `TRITON_CACHE_DIR=/tmp/triton`. Still unproven as
+  active; settle from run 5's output, not from argument.
+- **B-9-R2 (superseded — see B-10).** Escalated from a replay note to a
+  run-blocking finding: staging re-verifies on every cut, not once per run
+  (`docker_training.py:667`, `:790`; `docker_staging.py:1791`), so the first cut
+  after any write under `/artifacts` fails with `START_UNAVAILABLE`. Also
+  forecloses `/artifacts` as a cache location and puts the shipped
+  `HF_HOME=/artifacts/cache/huggingface` (`docker_training.py:461`) on the same
+  collision course. Needs its own ruling.
+
+### 18.24 What this addendum does not settle
+
+It does not rule B-10, and the fix there is a change to the staging contract that
+I have deliberately not sketched, because sketching it inside a B-9 addendum
+would prejudge a ruling that deserves its own candidates. It does not prove that
+any cache is written during a real run; that remains the open measurement and run
+5 is the instrument. It does not touch #134 or #135, which are correct as
+dispatched and should ship unchanged.
