@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import inspect
 import io
 import json
 import os
@@ -30,6 +31,7 @@ from synaptic_host.docker_staging import (
     _verify_inventory_at,
     _verify_worker_closure_binding,
     _verify_staged_closure,
+    stage_docker_worker_v1,
 )
 
 
@@ -539,11 +541,11 @@ def test_artifact_topology_requires_exact_empty_writable_directories(
 ) -> None:
     root = tmp_path / "artifacts-root"
     _empty_artifact_topology(root)
-    _verify_artifact_topology(root, ())
+    _verify_artifact_topology(root, (), expect_unused_artifacts=True)
 
     (root / "state" / "unexpected.json").write_bytes(b"unexpected")
     with pytest.raises(ValueError, match="not empty"):
-        _verify_artifact_topology(root, ())
+        _verify_artifact_topology(root, (), expect_unused_artifacts=True)
 
 
 def test_artifact_topology_rejects_extra_root_and_cache_directories(
@@ -553,11 +555,11 @@ def test_artifact_topology_rejects_extra_root_and_cache_directories(
     _empty_artifact_topology(root)
     (root / "extra").mkdir()
     with pytest.raises(ValueError, match="incomplete or extended"):
-        _verify_artifact_topology(root, ())
+        _verify_artifact_topology(root, (), expect_unused_artifacts=True)
     (root / "extra").rmdir()
     (root / "cache" / "extra-empty").mkdir()
     with pytest.raises(ValueError, match="extra directories"):
-        _verify_artifact_topology(root, ())
+        _verify_artifact_topology(root, (), expect_unused_artifacts=True)
 
 
 def test_artifact_topology_rejects_special_slot_and_reparse_root(
@@ -568,14 +570,107 @@ def test_artifact_topology_rejects_special_slot_and_reparse_root(
     (root / "tracking").rmdir()
     (root / "tracking").write_bytes(b"not-a-directory")
     with pytest.raises(ValueError, match="invalid entry"):
-        _verify_artifact_topology(root, ())
+        _verify_artifact_topology(root, (), expect_unused_artifacts=True)
 
     (root / "tracking").unlink()
     (root / "tracking").mkdir()
     module_globals = _verify_artifact_topology.__globals__
     monkeypatch.setitem(module_globals, "_is_reparse", lambda _info: True)
     with pytest.raises(ValueError, match="redirected or invalid"):
+        _verify_artifact_topology(root, (), expect_unused_artifacts=True)
+
+
+def test_artifact_topology_admits_written_writable_roots_after_the_run_started(
+    tmp_path: Path,
+) -> None:
+    # B-10 (architecture section 19.13 test 1): the post-run cut. Once the run
+    # has started, content under the writable roots is expected, and the caller
+    # says so by passing False.
+    root = tmp_path / "artifacts-root"
+    _empty_artifact_topology(root)
+    (root / "state" / "trainer-state.json").write_bytes(b"{}")
+    (root / "artifacts" / "adapter").mkdir()
+    (root / "tmp" / "scratch").write_bytes(b"scratch")
+    (root / "tracking" / "events.jsonl").write_bytes(b"{}\n")
+
+    _verify_artifact_topology(root, (), expect_unused_artifacts=False)
+
+
+def test_artifact_topology_keeps_identity_checks_when_emptiness_is_relaxed(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    # B-10 (architecture section 19.13 test 2): the load-bearing one. Relaxing
+    # the emptiness precondition must not disable the identity half, so every
+    # case below carries a legitimately non-empty `state` AND an identity
+    # violation, and must still raise. A relaxation that skipped the whole
+    # function would pass test 1 above and fail every assertion here.
+    root = tmp_path / "artifacts-root"
+    _empty_artifact_topology(root)
+    (root / "state" / "trainer-state.json").write_bytes(b"{}")
+
+    (root / "cache" / "extra-empty").mkdir()
+    with pytest.raises(ValueError, match="extra directories"):
+        _verify_artifact_topology(root, (), expect_unused_artifacts=False)
+    (root / "cache" / "extra-empty").rmdir()
+
+    (root / "extra").mkdir()
+    with pytest.raises(ValueError, match="incomplete or extended"):
+        _verify_artifact_topology(root, (), expect_unused_artifacts=False)
+    (root / "extra").rmdir()
+
+    (root / "tracking").rmdir()
+    (root / "tracking").write_bytes(b"not-a-directory")
+    with pytest.raises(ValueError, match="invalid entry"):
+        _verify_artifact_topology(root, (), expect_unused_artifacts=False)
+    (root / "tracking").unlink()
+    (root / "tracking").mkdir()
+
+    module_globals = _verify_artifact_topology.__globals__
+    monkeypatch.setitem(module_globals, "_is_reparse", lambda _info: True)
+    with pytest.raises(ValueError, match="redirected or invalid"):
+        _verify_artifact_topology(root, (), expect_unused_artifacts=False)
+
+
+def test_artifact_topology_still_rejects_a_written_root_before_the_run_starts(
+    tmp_path: Path,
+) -> None:
+    # B-10 (architecture section 19.6): the tamper signal survives. Nothing the
+    # durable record admits before start can explain content here, so the
+    # original message still fires for every one of the four writable roots.
+    for name in ("artifacts", "state", "tmp", "tracking"):
+        root = tmp_path / f"artifacts-root-{name}"
+        _empty_artifact_topology(root)
+        (root / name / "unexpected.json").write_bytes(b"unexpected")
+        with pytest.raises(ValueError, match="not empty"):
+            _verify_artifact_topology(root, (), expect_unused_artifacts=True)
+
+
+def test_artifact_topology_guard_cannot_be_omitted_by_a_caller(
+    tmp_path: Path,
+) -> None:
+    # B-10 (architecture section 19.4): required keyword-only, no default. A
+    # default would let a future call site silently take the permissive branch.
+    root = tmp_path / "artifacts-root"
+    _empty_artifact_topology(root)
+    with pytest.raises(TypeError):
         _verify_artifact_topology(root, ())
+    parameter = inspect.signature(_verify_artifact_topology).parameters[
+        "expect_unused_artifacts"
+    ]
+    assert parameter.kind is inspect.Parameter.KEYWORD_ONLY
+    assert parameter.default is inspect.Parameter.empty
+    staged = inspect.signature(stage_docker_worker_v1).parameters[
+        "expect_unused_artifacts"
+    ]
+    assert staged.kind is inspect.Parameter.KEYWORD_ONLY
+    assert staged.default is inspect.Parameter.empty
+    # The caller's value must reach the verifier rather than being recomputed
+    # or hard-coded inside staging. The end-to-end coupling is already covered:
+    # the spy in test_docker_training.py now declares the keyword as required,
+    # so a stage that failed to forward it would raise TypeError there.
+    assert "expect_unused_artifacts=expect_unused_artifacts" in inspect.getsource(
+        stage_docker_worker_v1
+    )
 
 
 def test_worker_binding_rejects_argv_drift_and_runtime_escape() -> None:

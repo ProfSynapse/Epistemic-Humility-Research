@@ -1446,7 +1446,17 @@ def _create_artifact_topology(root: Path) -> None:
 def _verify_artifact_topology(
     root: Path,
     entries: tuple[DockerModelInventoryEntryV1, ...],
+    *,
+    expect_unused_artifacts: bool,
 ) -> None:
+    # B-10 (architecture section 19.4): this function answers two different
+    # questions in one scan. The checks below are IDENTITY -- is this the stage
+    # we prepared -- and run unconditionally on every cut, because they cover
+    # the tree that determines what executes. Only the final emptiness loop is
+    # about USE, and only the caller knows whether the run has started yet.
+    # `expect_unused_artifacts` is required and takes no default deliberately:
+    # a default would let a future call site silently receive the permissive
+    # branch, which is the one that admits an unverified stage.
     try:
         root_info = root.lstat()
         observed = tuple(os.scandir(root))
@@ -1472,12 +1482,15 @@ def _verify_artifact_topology(
     if tuple(sorted(names)) != _ARTIFACT_DIRECTORY_NAMES:
         raise ValueError("artifact preparation topology is incomplete or extended")
     _verify_inventory_at(entries, root / "cache")
-    for name in _EMPTY_ARTIFACT_DIRECTORY_NAMES:
-        try:
-            if tuple(os.scandir(root / name)):
-                raise ValueError("artifact writable directory is not empty")
-        except OSError:
-            raise ValueError("artifact writable directory is unavailable") from None
+    if expect_unused_artifacts:
+        for name in _EMPTY_ARTIFACT_DIRECTORY_NAMES:
+            try:
+                if tuple(os.scandir(root / name)):
+                    raise ValueError("artifact writable directory is not empty")
+            except OSError:
+                raise ValueError(
+                    "artifact writable directory is unavailable"
+                ) from None
 
 
 def _source_manifest(root: Path) -> tuple[list[dict[str, object]], str]:
@@ -1654,6 +1667,7 @@ def stage_docker_worker_v1(
     context: ProjectContext,
     storage_configuration: bytes,
     model_inventory: tuple[DockerModelInventoryEntryV1, ...],
+    expect_unused_artifacts: bool,
 ) -> DockerStagingResultV1:
     """Materialize one exact two-root worker stage without Docker or network I/O."""
 
@@ -1788,7 +1802,11 @@ def stage_docker_worker_v1(
             locked_closure,
             bundle.closure_manifest_runtime_path,
         )
-        _verify_artifact_topology(final_artifacts, model_inventory)
+        _verify_artifact_topology(
+            final_artifacts,
+            model_inventory,
+            expect_unused_artifacts=expect_unused_artifacts,
+        )
         return DockerStagingResultV1(
             projection, final_source, final_artifacts, bundle
         )

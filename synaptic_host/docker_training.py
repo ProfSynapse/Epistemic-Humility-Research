@@ -458,8 +458,30 @@ class DockerAdmissionResolverV1:
             "SYNAPTIC_TRACKING_ROOT": roots["tracking"],
             "SYNAPTIC_CACHE_ROOT": roots["cache"],
             "SYNAPTIC_TMP_ROOT": roots["tmp"],
+            # B-9-R1 (architecture sections 18.19 and 18.21): the unredirected
+            # cache roots go to /tmp, which is writable for the declared
+            # container user and lies outside every tree the stage verifier
+            # inspects. HOME is set as well as the specific keys, because the
+            # unenumerated-writer class is the one that has actually bitten this
+            # workstream twice. TMPDIR is deliberately absent: /tmp is already
+            # the measured default, so admitting it would widen the engine
+            # allowlist for no need.
+            #
+            # HF_HOME and TRANSFORMERS_CACHE deliberately still point into
+            # /artifacts/cache, and section 19.10's move of them to /tmp is NOT
+            # implemented here. It cannot be a Host-only edit: SourceLockV1
+            # (`synaptic-tuner/tuner/project/execution_source.py:489-502`) pins
+            # both to `roots["cache"] + ...` in `required_environment` and
+            # raises "runtime environment does not bind the exact roots and
+            # isolation" at admission time on any other value. That file is a
+            # closure member, and two further engine sites encode the same pair,
+            # so the move is an engine change and is filed as its own blocker.
             "HF_HOME": roots["cache"] + "/huggingface",
             "TRANSFORMERS_CACHE": roots["cache"] + "/transformers",
+            "HOME": "/tmp/home",
+            "XDG_CACHE_HOME": "/tmp/xdg",
+            "TORCH_HOME": "/tmp/torch",
+            "TRITON_CACHE_DIR": "/tmp/triton",
             "WANDB_DISABLED": "true",
         }
         source = ExecutionSourceV1(
@@ -787,10 +809,31 @@ def _activate_docker_training_v1(
     authenticator = FileHmacAuthenticator.for_docker(
         context, durable_rows_exist=_docker_durable_rows_exist(context),
     )
+    # B-10 (architecture section 19.4): `run` and `repository` are constructed
+    # here rather than further down so the durable phase can be read BEFORE
+    # staging verifies the artifact topology. Both are built only from
+    # parameters of this function, so neither depends on staging. `prior` is the
+    # state before this cut did anything and may legitimately be None on the
+    # first cut; it is NOT the same read as `current` below, which is taken
+    # after the row may have been inserted and must not be None.
+    run = TrainingRunRef(source_lock.run_id, project_ref)
+    repository = SqliteTrainingRepository.from_context(context, clock=clock)
+    prior = repository.load_docker_run_mutation(run.project_ref, run.run_id)
+    # `docker create` does not run the container's process, so these three
+    # phases are exactly the ones in which the writable roots must still be
+    # empty. START_ATTEMPTED is deliberately outside the set: an attempted start
+    # may have succeeded, so the run may already have written. This is the same
+    # set the submit branch below already uses, reused rather than restated so a
+    # future phase cannot desynchronise two notions of "not yet started".
+    expect_unused_artifacts = prior is None or prior.phase in {
+        DockerRunPhaseV1.CREATE_ADMITTED, DockerRunPhaseV1.CREATE_ATTEMPTED,
+        DockerRunPhaseV1.CREATED,
+    }
     staging = stage_docker_worker_v1(
         plan=plan, source_lock=source_lock, context=context,
         storage_configuration=snapshot.storage_blob.content,
         model_inventory=model_inventory,
+        expect_unused_artifacts=expect_unused_artifacts,
     )
     provider = ProviderRef("docker", snapshot.profile.profile_ref)
     scope = ExecutionScopeV1("local", snapshot.profile.profile_ref)
@@ -840,7 +883,6 @@ def _activate_docker_training_v1(
         resource_digest=resource_digest, quote_digest=quote_digest,
         secret_requirements_digest=secret_digest,
     )
-    run = TrainingRunRef(source_lock.run_id, project_ref)
     bridge = DockerTrainingPreparationBridgeV1(profile)
     source_digest = source_lock.binding.source_lock_digest
     preparation = bridge.prepare(plan, run, source_digest)
@@ -872,7 +914,6 @@ def _activate_docker_training_v1(
         ),
         executor, predecessor,
     )
-    repository = SqliteTrainingRepository.from_context(context, clock=clock)
     existing_preparation = repository.load_docker_preparation(
         run.project_ref, run.run_id,
     )

@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import ast
 import base64
 import hashlib
 import hmac
 import importlib
+import inspect
 import json
 import shutil
 import subprocess
 import sys
+import textwrap
 from pathlib import Path
 
 import pytest
@@ -606,9 +609,11 @@ def test_clean_admission_stage_materializes_exact_two_runtime_roots(
             source, projection, closure, manifest_runtime_path
         )
 
-    def verify_artifacts(root, inventory):
+    def verify_artifacts(root, inventory, *, expect_unused_artifacts):
         artifact_checks.append(root)
-        return original_artifacts(root, inventory)
+        return original_artifacts(
+            root, inventory, expect_unused_artifacts=expect_unused_artifacts,
+        )
 
     monkeypatch.setattr(docker_training, "compile_training_plan_v1", capture)
     monkeypatch.setattr(
@@ -639,6 +644,7 @@ def test_clean_admission_stage_materializes_exact_two_runtime_roots(
         context=context,
         storage_configuration=(project / "training/storage.json").read_bytes(),
         model_inventory=(),
+        expect_unused_artifacts=True,
     )
     assert staged.source_root.joinpath("control/workload.json").read_bytes() == (
         staged.worker_bundle.canonical_workload_bytes
@@ -696,12 +702,80 @@ def test_clean_admission_stage_materializes_exact_two_runtime_roots(
         context=context,
         storage_configuration=(project / "training/storage.json").read_bytes(),
         model_inventory=(),
+        expect_unused_artifacts=True,
     )
     assert replay.projection == staged.projection
     assert replay.source_root == staged.source_root
     assert replay.artifact_root == staged.artifact_root
     assert replay_checks == [staged.source_root, replay.source_root]
     assert artifact_checks == [staged.artifact_root, replay.artifact_root]
+
+
+def test_activation_guard_admits_only_the_not_yet_started_phases() -> None:
+    # B-10 (architecture section 19.13 test 3). The predicate is written inline
+    # in `_activate_docker_training_v1` exactly as section 19.4 specifies, so it
+    # is pinned where it is written rather than restated here -- a restatement
+    # would pass against an implementation that classified nothing correctly.
+    # Enumerating every member means a future phase addition fails this test
+    # instead of silently defaulting into the permissive branch.
+    from synaptic_host.docker_execution_state import DockerRunPhaseV1
+
+    docker_training = importlib.import_module("synaptic_host.docker_training")
+
+    assert {member.name for member in DockerRunPhaseV1} == {
+        "CREATE_ADMITTED", "CREATE_ATTEMPTED", "CREATED", "START_ADMITTED",
+        "START_ATTEMPTED", "SUBMITTED", "RECONCILE_REQUIRED",
+        "PROCESS_SUCCEEDED", "PROCESS_FAILED", "ARTIFACTS_VERIFIED",
+    }
+
+    activation = docker_training._activate_docker_training_v1
+    tree = ast.parse(textwrap.dedent(inspect.getsource(activation)))
+    assignments = [
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name)
+            and target.id == "expect_unused_artifacts"
+            for target in node.targets
+        )
+    ]
+    assert len(assignments) == 1
+    predicate = assignments[0].value
+    assert isinstance(predicate, ast.BoolOp)
+    assert isinstance(predicate.op, ast.Or)
+
+    guarded = {
+        node.attr for node in ast.walk(predicate)
+        if isinstance(node, ast.Attribute)
+        and isinstance(node.value, ast.Name)
+        and node.value.id == "DockerRunPhaseV1"
+    }
+    assert guarded == {"CREATE_ADMITTED", "CREATE_ATTEMPTED", "CREATED"}
+    for name in (
+        "START_ADMITTED", "START_ATTEMPTED", "SUBMITTED", "RECONCILE_REQUIRED",
+        "PROCESS_SUCCEEDED", "PROCESS_FAILED", "ARTIFACTS_VERIFIED",
+    ):
+        assert name not in guarded
+
+    # The first cut has no durable row at all. Without the `prior is None`
+    # disjunct a fresh stage would take the permissive branch and never be
+    # checked for emptiness, which is the opposite of the intended default.
+    assert any(
+        isinstance(node, ast.Compare)
+        and len(node.ops) == 1
+        and isinstance(node.ops[0], ast.Is)
+        and isinstance(node.left, ast.Name)
+        and node.left.id == "prior"
+        and isinstance(node.comparators[0], ast.Constant)
+        and node.comparators[0].value is None
+        for node in ast.walk(predicate)
+    )
+
+    # The value is computed here and nowhere else. If activation ever accepted
+    # it as a parameter, a caller could hand staging a phase judgement that the
+    # durable record does not support.
+    assert "expect_unused_artifacts" not in inspect.signature(
+        activation
+    ).parameters
 
 
 def test_committed_blob_reader_enforces_call_and_global_bounds(
