@@ -886,3 +886,222 @@ No disagreement of substance was found between PREPARE and the code. The two
 substantive gaps this document adds — B-1 and B-2 — are gaps in **coverage**,
 not contradictions: PREPARE never examined the committed `wsl_distro` value,
 and never read the trainer body.
+
+---
+
+## 17. Amendment 2026-09-02 — ruling on B-4 (the prepared composition passes no `--entrypoint`)
+
+Raised by `test-host` on the first host run (blocker #97; test report section 5).
+This section is the design ruling. It supersedes nothing above; sections 1-16
+never considered the image's `ENTRYPOINT`, which is the gap.
+
+### 17.1 The measured defect
+
+The committed image has `Entrypoint=["/usr/local/bin/entrypoint.sh"]` and
+`Cmd=null`, and that script ends in `exec /usr/bin/supervisord` without ever
+running `exec "$@"`. The prepared composition appends the locked closure argv
+as **CMD** (`control_private.py:412-413`) and passes no `--entrypoint`, so the
+argv is discarded and the container starts jupyter, ollama and sshd instead of
+the trainer. Measured, not inferred: `test-host` ran the image with a command
+appended and watched supervisord take over.
+
+### 17.2 Ruling: option C — a fixed passthrough entrypoint, CMD unchanged
+
+**Set `--entrypoint env` on the prepared create command and leave the workload
+argv as the whole CMD.**
+
+`env` with no `NAME=VALUE` operands is the POSIX identity: it `exec`s its
+argument vector unchanged, replacing itself, so the container's main process
+becomes exactly `worker.interpreter` running the locked entrypoint script. The
+executed argv is byte-identical to the argv the closure equality check pins at
+`docker_staging.py:1555-1567`, and `Config.Cmd` still holds that argv in full.
+
+I recommend this over both offered options, and the reason is not taste — the
+other two are closed by code.
+
+### 17.3 Why option A as framed is closed
+
+Option A (Host passes the interpreter as the entrypoint, remaining argv as CMD)
+**breaks the create verification**. Two digests are computed over different
+things and then compared:
+
+| Site | Digested over |
+|---|---|
+| `create.py:405-406` | `workload.arguments` — the **full** locked argv |
+| `cli.py:429`, `:494-495` | `config.get("Cmd")` from `docker inspect` — **CMD only** |
+
+`verification.py:30-31` requires `projection.argument_count ==
+specification.argument_count` and the two digests equal. Today they match
+because CMD *is* the whole argv. Move `argv[0]` into `--entrypoint` and CMD
+becomes `argv[1:]`, so the count differs by one and the digests differ. The
+create cut would fail verification on every run.
+
+Making it work would mean editing `create.py:405-406` to digest `arguments[1:]`
+and `cli.py:196` to match — which removes `argv[0]`, the interpreter, from the
+only thing that pins the executed command. That trades a working trainer for a
+weaker pin. Refused.
+
+**The empty reset `--entrypoint ""` is also closed**, and this one is absolute:
+`_argv_token_v1` (`model.py:1021-1032`) rejects any empty argv token, so an
+empty string cannot exist inside a `DockerCLICommandV1`. Allowing it would mean
+weakening a validator that also bans control characters and non-NFC text. Not a
+trade worth making, and not one this feature is authorized to make.
+
+### 17.4 Why option B is closed
+
+Option B (require an image whose entrypoint `exec "$@"`) contradicts the
+committed digest pin at `training/providers/docker.json:5`. It needs a rebuilt
+and re-pinned image, and it relocates a Host contract into a property of an
+image that **nothing on this path verifies** — no code reads
+`Config.Entrypoint`. A silent regression in a future image would resurface this
+same blocker with no signal. The Host, not the image, must guarantee that the
+locked argv runs.
+
+### 17.5 Constant, not a profile field — and why this differs from B-1
+
+B-1 became `docker_host.drive_mount_root` because measurement produced two
+genuinely competing candidates and the design could not pick between them; a
+config value let TEST choose without a second code change. **That reasoning does
+not transfer here.** There is one correct behaviour — run the locked argv with
+no image wrapper — and `env` expresses it on any POSIX image. Making it
+configurable would buy nothing and cost the exactness below.
+
+Define it once:
+
+```python
+_CONTAINER_ENTRYPOINT_V1 = "env"
+```
+
+in `control_private.py`, imported by `cli.py`. A constant lets the create-argv
+parser assert the **exact** token, matching how `--network none`, `--gpus` and
+the owned labels are already treated. A profile field would force either a
+shape-only check or a new parameter on the `create_container` Protocol
+(`ports.py:266`, `cli.py:815`, `control_private.py:189`) — four sites and their
+tests, to make a universal constant look local.
+
+### 17.6 Insertion point
+
+Both edits go in the **fixed** region, after the `--memory` pair and before the
+optional `--gpus` branch, so the parser stays straight-line and `--gpus` remains
+the only conditional.
+
+**Compose** — `control_private.py:391-394`, extend the list literal so it ends:
+
+```python
+"--memory", str(runtime.memory_bytes),
+"--entrypoint", _CONTAINER_ENTRYPOINT_V1,
+```
+
+**Validate** — `cli.py`, insert between the memory block and line 115:
+
+```python
+if arguments[index:index + 2] != ("--entrypoint", _CONTAINER_ENTRYPOINT_V1):
+    raise ValueError
+index += 2
+```
+
+**Guard the `env` operand rule** — `env` treats a leading `NAME=VALUE` token as
+an assignment rather than a program. The locked argv always begins with
+`worker.interpreter`, but that is an invariant to assert, not assume. In
+`control_private.py`, inside the existing type gate at `:330-340`:
+
+```python
+if "=" in workload.arguments[0] or workload.arguments[0].startswith("-"):
+    raise ValueError
+```
+
+`DockerWorkloadV1.__post_init__` already guarantees `arguments` is non-empty, so
+the index is safe.
+
+### 17.7 Effect on the fingerprint and the durable row
+
+- **Closure argv equality (`docker_staging.py:1533-1588`): untouched.** It
+  compares `bundle.dispatch.argv`, a staging-side value. Nothing there changes.
+- **`DockerCreateSpecificationV1`: untouched.** `argument_count` and
+  `arguments_digest` are over `workload.arguments`, which is unchanged.
+- **`command_digest`: changes**, because the create argv gains two tokens. This
+  is self-consistent — the composition, the parser, the label projection and the
+  `docker_run_mutations` row all derive from the same command — and it is the
+  intended signal that the command changed.
+- **Plan fingerprint: unchanged.** It is built from the plan and source lock,
+  not the CLI argv.
+
+### 17.8 Files a coder touches
+
+| File | Change |
+|---|---|
+| `synaptic_host/docker_v1/control_private.py` | `_CONTAINER_ENTRYPOINT_V1` constant; two tokens at `:391-394`; `argv[0]` guard in the gate at `:330-340` |
+| `synaptic_host/docker_v1/cli.py` | import the constant; exact two-token check inserted before `:115` |
+
+Two production files. **No** engine file, no `composition.py`, no
+`DockerHostCreateV1` constructor, no Protocol change, no profile field, no
+schema or durable-row change.
+
+**Must not be touched:** `synaptic-tuner/` (pin `aec998ee`);
+`docker_staging.py:1533-1588`; `create.py:405-406`; `cli.py:429`, `:494-495`;
+`verification.py:30-31`; `model.py:1021-1032`; `docker_v1/composition.py`;
+`training/providers/docker.json`.
+
+### 17.9 Tests
+
+**CODE phase**, added to `tests/synaptic_host/docker_v1/`:
+
+1. `test_control_contract.py` — the composed create argv contains
+   `("--entrypoint", "env")` immediately after the `--memory` pair, on both the
+   GPU and non-GPU branches.
+2. `test_control_contract.py` — CMD is still the complete workload argv:
+   `arguments[image_index + 1:] == workload.arguments`. This is the regression
+   guard for 17.3; it fails if anyone later moves `argv[0]` into the entrypoint.
+3. `test_cli.py` — `_validate_create_command` rejects a command with the
+   entrypoint pair absent, with a different value, and in the wrong position.
+4. `test_control_contract.py` — a workload whose `arguments[0]` contains `=` or
+   starts with `-` is refused (17.6).
+5. `test_create.py` — `DockerCreateSpecificationV1.argument_count` is unchanged
+   by the amendment, pinning that verification still matches.
+
+Existing `test_cli.py` create-command fixtures (`:820`, `:830`, `:837`, `:865`,
+`:886`, `:984`) construct create argv and **will fail** until the pair is added
+to the fixture builder. That is expected, and updating them is in scope.
+
+**TEST phase**: one probe before the first real run, since I could not run
+docker and the image's `env` was never observed:
+
+```
+docker.exe --host <npipe> run --rm --pull never --network none \
+  --entrypoint env <image@sha256:…> /opt/conda/bin/python3 -c "print('ok')"
+```
+
+Expected `ok`. If `env` is absent, the single-token fallback is `/usr/bin/env`;
+if the flag itself misbehaves, stop and report rather than improvising.
+
+### 17.10 The driver's A1-A3 probes
+
+`_assert_a1_gpu` (`run_prepared_training.py:329-333`),
+`_assert_a2_artifacts_writable` (`:353-360`) and `_assert_a3_python_version`
+(`:378-382`) all append a command to the profile image with no entrypoint
+override, so each would start supervisord and time out at 300 s, reporting
+`T1-timeout` for three assertions whose purpose is to name a true cause.
+
+Add `"--entrypoint", "env"` to all three `_run` argv lists, immediately before
+the image reference. The driver must import or restate the same token the
+composition uses so the probes assert the same contract; a comment naming
+`control_private._CONTAINER_ENTRYPOINT_V1` is sufficient, since the driver is a
+checked-in script outside the package. The bind probe is unaffected because it
+uses `python:3.12-slim`. Edit the canonical copy under `.skills/` and re-sync
+mirrors with `bin/sync_skills.py`; never hand-edit a mirror.
+
+### 17.11 Residual: the observed entrypoint is unverified
+
+`cli.py:429` reads `Config.Cmd` only. Nothing reads `Config.Entrypoint` back
+from `docker inspect`, so after this amendment the create argv is pinned by the
+parser and `command_digest`, but the entrypoint the daemon actually applied is
+**not** compared against what was requested. A daemon that silently ignored the
+flag would present as B-4 again.
+
+Closing it means adding an `entrypoint_digest` to
+`DockerCreateSpecificationV1`, the inspect projection and
+`verification.py` — a durable-record schema change, which is larger than this
+blocker and outside what the constraints authorize here. I am **naming it, not
+deferring it silently**: it is a decision for the lead and the user, and the
+17.9 probe plus the trainer actually producing output is the interim evidence
+that the flag took effect.
