@@ -2290,3 +2290,688 @@ source closure and the model inventory, which together determine what executes �
 stays verified on every cut. It also does not settle whether the trainer writes
 early enough for cut 2 to confirm the finding, which is 19.14's third row and
 belongs to run 5.
+
+## 20. Amendment 2026-09-02 — ruling on B-11 (the Host refuses the private storage chain the operator created first)
+
+Run 5 passed every precondition and the whole of admission for the first time in
+this workstream, then failed at activation cut 1 with `START_UNAVAILABLE` and no
+message (report section 17.2). The cause, recovered by test-host from a
+gitignored loader-hook probe that reproduced the same `input_digest`, is that the
+Host refuses its own HMAC private storage root because the operator recipe
+created it first and Windows gave it an inherited access list.
+
+This ruling is written against the authoring baseline `be97a082`. Line numbers
+below are that baseline's; coder-user should expect them to move.
+
+### 20.1 The defect, restated from source
+
+`FileHmacAuthenticator.for_docker` (`security.py:510-543`) fixes the private
+storage root at `<project_root>\.synaptic` (`:523`), requires the host state root
+to be confined below it (`:525-529`), and at `:534` calls
+`_ensure_private_storage_directories`. That method (`:585-606`) derives the chain
+`.synaptic` -> `.synaptic\state` -> `.synaptic\state\docker` and then does two
+different things with it:
+
+- it **creates** only the directories that do not exist (`:595-605`), and
+- it **validates** every directory in the chain unconditionally (`:606`).
+
+Creation and validation do not agree about what a private directory is.
+`_win_create_private_directory` (`:286-295`) creates with the descriptor built at
+`:275`, `O:<sid>G:<sid>D:P(A;;FA;;;SY)(A;;FA;;;<sid>)`. `_win_validate_acl`
+(`:349-403`) demands exactly that shape back: a protected list (`:366-370`), the
+current user as owner (`:371`), exactly two entries (`:382`), each of them
+non-inherited, allow, and full access (`:389-394`), for the current user and
+`S-1-5-18` (`:380`, `:397-401`). An ordinary directory creation produces none of
+that. So any chain directory the Host did not create itself is refused forever,
+and there is no path back: the method never repairs.
+
+Test-host's measurement pins which clause fires. The owner was measured correct,
+and the owner test shares one `if` expression with the protection test at
+`:366-373`, so the failing predicate is the protection bit. The second probe
+printed `ntfs ok` before failing, which clears `_win_require_ntfs` and the
+directory and reparse-point attribute checks at `:406-416`. Report section 17.3
+records the shape: owner correct, protection **False**, eleven entries, every one
+inherited.
+
+The one-variable control in report section 17.3 is what makes this a source
+defect rather than a host quirk. Two directories in the same parent, same volume,
+same user, differing only in creator, judged by the Host's own validator: the
+ordinary creation is REFUSED, the Host private creator is ACCEPTED.
+
+### 20.2 A citation correction, and who actually creates `.synaptic`
+
+Report section 17.3 attributes the first creation to
+`materialize_model_inventory.py:177`. That line is inside a generated program
+that runs **in a container** and writes to `/out`; it never touches a Windows
+path. The Host-side creation is `materialize_model_inventory.py:447`,
+`output_root.mkdir(parents=True, exist_ok=True)`, where `output_root` is
+`<project_root>/.synaptic/model-inventory` (`:431`). Instruction 2 of the
+dispatch inherits the same citation, so this correction propagates: the operator
+call site under discussion is `:447`, not `:177`.
+
+The second creator is the driver's P8 stage-parent step, added for B-9. It calls
+`stage_parent.mkdir(parents=True, exist_ok=True)` on
+`.synaptic\state\docker\stages` (`run_prepared_training.py:582-590`), and its own
+comment at `:585-588` says it mirrors the staging call deliberately, so the probe
+measures the directory the run will use. P8 runs on a `--probe-only` pass, which
+is why a probe-only run leaves the chain refused.
+
+That comment cites `docker_staging.py:1686`. At this baseline `:1686` is a
+storage-schema check; the staging call it means is `:1699-1700`. The citation
+drifted when the B-10 implementation moved the file, and since section 20.13
+edits this docstring anyway, the citation is corrected in the same edit. A second
+Host-side ordinary creation sits at `docker_staging.py:1790`, for the stage's own
+parent. Both are below `docker` and therefore off the validated chain, so neither
+is in this ruling's scope.
+
+So the chain has three directories and three different creators: `.synaptic` from
+prerequisite 3, `state` and `docker` from P8, and `stages` from P8 and from
+staging. Only `stages` is off the validated chain.
+
+### 20.3 The hazard that decides the shape of the fix
+
+The obvious repair is to rewrite the root's access list with the Host's protected
+two-entry descriptor. On Windows that is not a local edit. The documented
+behaviour of the access-control editor family is that setting a list on a
+container **propagates** to existing children: inheritable entries are pushed
+down, and inherited entries that are no longer valid are removed. Every entry on
+the failing directory is inherited, so every entry on its children is too, and
+the Host's descriptor publishes nothing inheritable. Recomputing a child whose
+entries were all inherited from a parent that now publishes nothing leaves that
+child with an **empty** list, which denies all access to everyone. The owner
+keeps only the right to read and rewrite the list, not to read data. This is the
+same trap as removing inheritance from a directory tree in one step.
+
+Two populated subtrees hang below the chain and would be in the blast radius:
+
+| Subtree | Contents | Consequence of an empty list |
+|---|---|---|
+| `.synaptic\model-inventory` | 25 files, 1 969 841 187 bytes, fingerprint `sha256:0e2a8df2…` | the bind that run 5 proved for the first time stops resolving; A4 and the container's own read both fail |
+| `.synaptic\state\docker\stages` | the staged worker bundles | staging cannot write, so no cut can run |
+
+That is the difference between a fix and a regression, and it is not settleable
+from documentation. Measurement **B-11-M1** (task #165) resolves it by applying
+the identical descriptor through three different calls against a populated
+scratch tree and reading the children back. Section 20.8 records the result and
+names the call.
+
+### 20.4 The two failure states the validator cannot currently tell apart
+
+The validator collapses two very different conditions into one refusal, and the
+whole security argument for repair is that they are distinguishable.
+
+**Never protected.** Every entry carries the inherited flag and the list is not
+protected. This state is what the filesystem produces automatically for any
+directory made by an ordinary creation call under an ordinary parent. It records
+no decision by anybody: nobody chose those entries for this object, they are a
+projection of an ancestor. It is the default, and reaching it needs no privilege
+beyond making a directory.
+
+**Tampered.** At least one entry is not inherited, or the list is already
+protected. Writing an explicit entry, or setting protection, requires the right
+to rewrite the list on that object, which means the writer is the owner or was
+granted control. That is a decision by a principal, and it is not the Host's.
+
+The Host may overwrite the first state because there is nothing there to
+destroy and because replacing it can only remove access, never add it: the new
+list names the current user and the local system account and nobody else. The
+Host must not overwrite the second, because doing so would erase the evidence of
+a third party's decision and would turn the repair path into a laundry for a
+directory an attacker had prepared. An attacker cannot forge the first state to
+hide a grant, because a grant they wrote is by definition a non-inherited entry.
+The one move available to them is to place an inheritable grant on an **ancestor**
+so the pre-created directory inherits access for them — and that grant is exactly
+what protecting the directory removes. The repair therefore strictly narrows in
+every case it is permitted to act.
+
+### 20.5 Ruling — candidate (i), and the repair is owned by the ensure path
+
+**Candidate (i) is adopted.** The Host repairs a chain directory it already owns.
+
+**The repair is owned by `_ensure_private_storage_directories` (`:585-606`).**
+Not `for_docker`, and emphatically not `_validate_private_directory` or
+`_win_validate_acl`. The reason is a boundary the test suite already draws:
+`test_private_storage_rejects_permissive_parent_without_repair`
+(`tests/synaptic_host/test_security.py:411-422`) reaches the validator through
+`private_storage_verified` and asserts that a permissive parent is refused
+**without repair**, and every key operation is fail-closed after drift
+(`:392-408`). Verification must stay a pure predicate with no side effects, or
+that guarantee dissolves. The ensure path is the only place in the class whose
+job is already to make the world match the contract, and it is the only place
+that runs before a key is read or written.
+
+`_ensure_private_storage_directories` takes a new **required keyword-only
+parameter `repair: bool` with no default**, in the same shape as section 19.12's
+`expect_unused_artifacts`. Every call site states its intent, and a future call
+site cannot inherit a permissive default by accident.
+
+- `for_docker:534` passes `repair=True`.
+- `initialize:609` passes `repair=False`.
+
+That gating is deliberate and it is what keeps the Modal lane out of this change.
+`FileHmacAuthenticator.from_context` (`:502-508`) points the Modal authenticator
+at `state_root/"modal"`, whose chain is one directory that only the Host ever
+creates: no operator recipe, driver or front end pre-creates it, so the Modal
+lane does not have this defect and gets no new behaviour. The standing constraint
+"no Modal-lane change" is honoured literally. If a Modal front end ever begins
+pre-creating that directory, the fix is to flip one argument.
+
+**The repair never raises.** It either narrows the directory or does nothing, and
+the unconditional validation at `:606` decides the outcome. A refused directory
+fails with the same `ValueError` and the same message as today. This is not a
+silent swallow: a swallow is dangerous when it lets a failure go unnoticed, and
+here the check that matters runs immediately afterwards and is not conditional on
+the repair having succeeded. If the repair cannot act, validation refuses exactly
+as it does now.
+
+### 20.6 The repair predicate, and what stays refused
+
+On Windows the repair may act only when **all** of the following hold, evaluated
+in this order on an open handle, never by path:
+
+1. The object is a directory and is not a reparse point. This is the check
+   already at `:412-416`, and it must run before any list work so
+   `test_windows_docker_storage_rejects_directory_junction` (`test_security.py:520`)
+   keeps refusing a junction.
+2. The owner is the current user. An object owned by another principal is
+   refused unchanged. Repairing it would be theatre: its owner retains the right
+   to rewrite the list and can widen it again immediately.
+3. The list is present and is **not** protected.
+4. **Every** entry in the list carries the inherited flag. Zero non-inherited
+   entries.
+
+If all four hold, the repair writes the descriptor of section 20.8 through the
+call named there. A repaired directory and a Host-created one differ in exactly
+one respect, the inherit flags, and section 20.8 gives the reason: creation
+happens before the directory has children, repair happens after, and inherit
+flags exist only to govern children. Both shapes satisfy the validator, which
+does not inspect those flags. If any clause fails, the repair does nothing and
+validation refuses.
+
+Refused, unchanged, with today's error:
+
+| Condition | Why it stays refused |
+|---|---|
+| owner is not the current user | the owner can re-widen it; repairing hides that |
+| any non-inherited entry present | somebody made a decision on this object; overwriting it is a tamper mask |
+| list already protected but wrong shape | protection is only ever set deliberately |
+| reparse point, junction, or not a directory | shape, not access; the repair fixes access only |
+| no list present at all (a null list grants everyone) | not the never-protected signature; treat as deliberate |
+
+The rule underneath the table is one sentence: **the repair may correct access,
+never shape, and only from the state the filesystem produces by default.**
+
+### 20.7 Why content inside the chain is not a security precondition
+
+The dispatch asks whether the directory must be empty, or may hold Host-authored
+content only, and what foreign content means. On security grounds the answer is
+that content is not a precondition at all, because the repair does not confer
+trust on anything inside.
+
+There is exactly one object below the chain that the Host trusts, and it is the
+control key. It is created with an exclusive create and its own descriptor
+(`_win_open_path` with `create=True`, `:318-330`), and every read validates it
+independently on its own handle: not a directory, not a reparse point, exactly
+one link, exactly 32 bytes, and its own access list checked by the same
+`_win_validate_acl` (`_win_read_private_key`, `:428-460`). A key file planted by
+somebody else carries an inherited list and is refused at `:440`, before a byte
+of it is used. So content cannot become authority, and repairing the directory
+around it changes nothing about that.
+
+Everything else below the chain is either verified by content or rebuilt per run.
+The model inventory is verified by count, size and fingerprint (report section
+17, step 3, and the A4 probe). The stage tree is verified by
+`_verify_artifact_topology` on every cut, which section 19 already rules on.
+"Foreign content" is therefore not a category the repair needs to police, because
+there is no unvalidated trusted object for it to name.
+
+The one reason an emptiness precondition could still be required is not security
+but availability: the propagation hazard of section 20.3. B-11-M1 removed it, so
+there is no precondition on content from either direction.
+
+### 20.8 The Windows call the repair issues, and the descriptor it writes
+
+Measurement B-11-M1 (task #165, scripts and logs at `F:\Code\scratch-b11`) ran
+the identical Host descriptor through three different calls against a populated
+scratch tree built the same way run 5's tree was built, and answered four
+questions per arm with the Host's own validator and the run 5 bind shape.
+
+| Arm | Call | Validator | Owner reads | WSL reads | Container reads |
+|---|---|---|---|---|---|
+| A | `SetNamedSecurityInfoW`, by path | ACCEPT | **NO** | **NO** | **NO** |
+| B | `SetKernelObjectSecurity`, by handle | ACCEPT | yes | yes | yes |
+| C | `SetFileSecurityW`, by path | ACCEPT | yes | yes | yes |
+| D | Host creator first, then ordinary population | ACCEPT | yes | yes | yes |
+| E | arm A's call, descriptor entries made inheritable | ACCEPT | yes | yes | yes |
+
+The hazard of section 20.3 is real and it is arm A. It left
+`model-inventory`, `sub` and `probe.txt` with a list that is present and empty,
+`ace_count 0`, which denies everyone including the owner. Only
+`SetNamedSecurityInfoW` runs the automatic propagator; the children held nothing
+but inherited entries and the Host descriptor publishes nothing inheritable, so
+each child recomputed to nothing.
+
+**Ruling. The repair issues `SetKernelObjectSecurity` on the handle it already
+holds, and writes a protected descriptor whose two entries are inheritable:**
+
+```
+O:<sid>G:<sid>D:P(A;OICI;FA;;;SY)(A;OICI;FA;;;<sid>)
+```
+
+That differs from the creation descriptor at `:275` in exactly one place, the
+inherit flags on both entries, and it is deliberately a **combination** of two
+separately measured facts rather than a copy of any single arm:
+
+- The **call** decides whether children are recomputed. Arm B measured
+  `SetKernelObjectSecurity` as non-propagating: the children came back unchanged
+  at 11 and 7 inherited entries, and readable from Windows, from WSL and from
+  the container as uid 1000.
+- The **descriptor** decides what a recompute would produce. Arm E measured the
+  inheritable form: the root comes back protected with two non-inherited entries
+  at inherit flags `0x03` and the validator still ACCEPTs it, and the children
+  come back with two properly sourced inherited entries and stay readable
+  everywhere.
+
+Those two properties are orthogonal, which is what makes the combination sound:
+the call cannot change what an inheritable entry means, and the descriptor cannot
+change whether the call propagates. Section 20.14's W1 and W5 pin both halves in
+the shipped artifact so the combination is not left as an inference.
+
+**Why the combination beats every single arm.**
+
+- It beats **A** because A is destructive.
+- It beats **C** on shape, not on outcome. C measured identically to B, but it is
+  a path-based call. Every other opening in this module uses a handle opened with
+  the reparse-point flag at `:313`, re-opens and compares identity (`:408-422`),
+  and refuses a junction (`test_security.py:520-535`). A repair that decides on a
+  handle and then writes by path reintroduces exactly the swap the module spends
+  that effort closing, in the one code path whose entire subject is a security
+  boundary. Instruction 1 of the dispatch puts it directly: a repair path must not
+  become a tamper mask.
+- It beats **E** on blast radius and on the same handle argument. E is safe and
+  fully measured end to end, but it propagates, so activating it would rewrite the
+  access lists of 25 inventory files and 1.97 GB of an operator's tree as a side
+  effect of fixing three directories. The repair should do the least that makes
+  the contract hold.
+- It beats **B alone** on test-host's first caveat. After B the children are
+  readable but incoherent: they carry entries marked inherited from a parent that
+  publishes nothing, so any later event that runs the propagator above them
+  reproduces arm A's outcome after the fact. With the inheritable descriptor that
+  same later event recomputes them to the arm E state instead, which is benign
+  and measured. The caveat is not accepted as a residual, it is closed by the
+  descriptor.
+
+So the immediate state is arm B's, the eventual state under any re-propagation is
+arm E's, and arm A's state is unreachable from either.
+
+**Consequences for the rest of this ruling.** There is no content precondition:
+a populated chain is repaired in place, and section 20.7's security argument
+stands on its own. Test-host's second caveat is already satisfied, because the
+loop at `:594-606` covers all three chain directories and run 5 refused all
+three. The repair is order-independent: a protected child is skipped by the
+propagator, and an unprotected one satisfies the predicate either way.
+
+**One finding that is not about the primitive.** In arm A the Host validator
+**ACCEPTed** the root whose subtree it had just destroyed. That is correct
+scoping, since the contract is about the directory and not its contents, but it
+means the validator can never be the acceptance test for the repair. That is why
+W5 exists and why run 6's row 3 in section 20.16 is load-bearing rather than
+ceremonial. Arm F adds the reason it must be caught before merge and not after:
+an owner can reset a damaged child, because an owner keeps the right to rewrite a
+list even under an empty one, but repairing the top child does not repair its
+descendants, so recovery has to walk the whole subtree.
+
+**A claim of mine that the measurement retired.** In arguing that no design was
+correct under both outcomes, I stated that making the entries inheritable would
+push the root to four entries and break the validator's exact-two check. That is
+wrong. `_win_validate_acl` inspects the entry type, the inherited flag and the
+mask (`:389-394`); it does not inspect the inherit flags, and arm E confirms the
+root passes at flags `0x03` with the count still two. The route I closed was
+open. The measurement was still required, because whether that route propagates
+benignly and whether the root still validates were both unknown, but it was
+required for a different reason than the one I gave.
+
+### 20.9 Symmetric behaviour on POSIX
+
+The same absent-versus-existing asymmetry exists on POSIX, so the non-Windows
+path is **not** left untouched.
+
+`_create_private_directory` creates with `os.mkdir(path, 0o700)` (`:550-553`),
+and `_validate_private_directory` demands the effective user as owner and mode
+exactly `0o700` (`:576-577`). A directory a shell or a wrapper created before the
+Host ran carries `0o755` under an ordinary umask and is refused forever, by the
+identical mechanism. It has not been observed because the Host lane that
+pre-creates directories is the Windows one, but the defect is in the shared
+control flow, not in the platform branch.
+
+The POSIX repair is `os.fchmod` on the descriptor `_validate_private_directory`
+already opens, guarded by the same predicate translated:
+
+1. the opened object is a directory and the path is not a symbolic link, using
+   the checks already at `:571-575`,
+2. `st_uid` equals the effective user id,
+3. the mode grants more than `0o700`, and repairing means clearing the extra
+   bits and nothing else.
+
+Owned by another user, or a symbolic link, stays refused. Because POSIX modes do
+not propagate, the hazard of section 20.3 has no POSIX counterpart, and a
+populated directory is repaired with no effect on its children.
+
+The repair acts on the descriptor, not the path, for the same reason the
+validator re-opens and compares identity: a path can be swapped between the
+decision and the action.
+
+### 20.10 Ruling on the operator side — candidate (c), plus a documentation duty
+
+**The operator recipe changes nothing. The Host repair carries it.** Neither
+`materialize_model_inventory.py:447` nor the driver's P8 stage-parent creation
+stops creating the directories, and neither calls the Host's private creator.
+
+The dispatch requires an answer that holds for **any** wrapper or front end that
+touches the project directory before the Host does, and that requirement decides
+it on its own. The Host cannot compel a front end it has never seen to call
+anything. Any rule of the form "creators must use the Host's private creator" is
+unenforceable at exactly the moment it matters, which is the first time somebody
+runs a script this repository did not write. A durable fix must therefore live
+where the Host can guarantee it runs, and that is activation.
+
+The other two options are worse for concrete reasons, not only on principle:
+
+- **Stop creating `.synaptic` (candidate iii).** Not available to prerequisite 3.
+  Its whole job is to write a tree under `.synaptic\model-inventory` before the
+  Host has ever executed, so it must create the parent. Report section 17.3
+  reaches the same conclusion for P8 by a different route.
+- **Call the Host's private creator.** It couples a skill script to the Host's
+  security internals and forces a new public creator onto the module surface. It
+  also changes the access list of the inventory's parent *before* the inventory
+  is written, which changes the shape of the one thing that finally worked in run
+  5, and whether that is safe is arm D of B-11-M1 rather than a known.
+
+Choosing candidate (c) does leave a window in which `.synaptic` is
+group-accessible on a shared machine, between prerequisite 3 and the first
+activation. That window holds no secret: the control key does not exist yet on a
+first run, and on a later run it was created after a repair and is protected and
+independently validated. The inventory inside the window is public model weights
+whose integrity is checked by fingerprint, not by access control.
+
+The complement is therefore a documentation duty, not code. Two places must say
+that a pathlib-created chain is **expected** and is repaired at activation, so
+that a future maintainer does not "fix" P8 by pre-protecting the directory and
+reintroduce the arm-D question:
+
+- the P8 docstring in `run_prepared_training.py` (near `:582-590`), and
+- the `host-docker-run` skill, beside prerequisite 3 and prerequisite 9.
+
+Because the skill tree has generated mirrors, that edit is canonical-first and
+then synced; it is not a mirror edit.
+
+### 20.11 Ruling on surfacing the activation cause
+
+**A log line on stderr. No `cause` field, no new result schema, and no driver
+change.**
+
+The result model is fixed: `_failure` (`cli.py:331-353`) builds a
+`TrainingRunCommandResultV2` with a positional field list and six trailing
+`None`s, and `test_cli.py:468` pins the field-presence shape per code as a
+four-tuple. Adding a field makes it a v3 result, ripples into that table, into
+`__post_init__`'s operation-shape rules, and into every consumer of the JSON
+line, all to carry a diagnostic whose only reader is a person. The dispatch says
+no new result schema unless unavoidable, and it is avoidable.
+
+It is avoidable because the driver **already** surfaces stderr. `_one_cut`
+(`run_prepared_training.py:942-966`) parses the last stdout line as the result
+JSON (`:956-962`) and then prints every stderr line with a `stderr| ` prefix
+(`:963-965`). Run 5's cut 1 printed no such line, which is itself the measurement
+that the Host currently writes nothing. So the whole fix is one line written to
+stderr from inside the Host, and the operator sees it with no driver change at
+all. stdout is untouched, so the result JSON stays byte-identical and the last
+line stays parseable.
+
+There is precedent in this codebase for exactly this shape. B-7's fix made
+`ScopedGitRemoteReader` surface the child's own diagnosis instead of a bare exit
+code, and its test
+(`test_security.py:637-664`) pins the three properties that matter: the cause
+reaches the operator, the text is length-bounded so a hostile source cannot flood
+the log, and credential material is removed even though it should never have
+reached that slice.
+
+**Format.** One line, to stderr, from the two handlers in
+`execute_docker_training_admission_v1`:
+
+```
+synaptic-host: <CODE> <ExceptionClassName> at <package-relative file>:<line> in <function>
+```
+
+For run 5's failure that reads:
+
+```
+synaptic-host: START_UNAVAILABLE ValueError at synaptic_host/security.py:373 in _win_validate_acl
+```
+
+**What it carries, and what it deliberately does not.** The frame is taken from
+the innermost traceback frame whose file lies inside the `synaptic_host` package
+directory, rendered relative to that package's parent so no user directory
+appears. If there is no such frame, the frame renders as `<unknown>`. The
+exception's own text is **excluded entirely**, and that exclusion is the point:
+exception text is not under the Host's control. `FileNotFoundError` and `OSError`
+render an absolute path and the platform's message; several engine errors render
+a value they were checking. A rule that filters that text would be a rule about
+strings nobody in this repository wrote. A frame identity is authored here, is
+stable, and is precisely the information whose absence cost run 5 a cycle and
+cost test-host a loader-hook probe to recover. The line is also length-bounded on
+the same argument as the B-7 precedent.
+
+**Applied to both handlers, not one.** The dispatch names `:695-696`
+(`START_UNAVAILABLE`). The identical bare shape sits four lines above at
+`:686-687` (`RESOLUTION_UNAVAILABLE`), guarding the model-inventory resolution
+that B-8's stat-identity re-check lives behind. Same blindness, same cost if it
+fires, one call each. This is a deliberate and small widening of the dispatch's
+scope and it is flagged as such rather than made quietly.
+
+**Where the code goes.** A module-level helper in `docker_training.py` that takes
+the exception and the code and writes the line; the two handlers call it before
+returning `fail(...)`. `synaptic_host` writes nothing to stderr today, so this is
+new behaviour for the package, and it is confined to two failure paths that
+already return an unavailable result.
+
+### 20.12 Pricing against the standing constraints
+
+| Constraint | Status |
+|---|---|
+| submodule-first, no engine change | held; nothing under `synaptic-tuner` is touched, no closure regeneration, no allowlist change |
+| no downloader, cache framework, compatibility layer, legacy composition fallback | held; none introduced |
+| no new database table, no schema change | held; the durable rows and the result model are untouched, which is the direct reason section 20.11 rules a log line |
+| no Modal-lane change | held by the `repair=False` argument at `initialize:609`; the Modal authenticator's one-directory chain is Host-created and gets no new behaviour |
+| B-10-R1 out of scope | held; nothing here touches `SourceLockV1` or the cache roots |
+| no secrets in the prepared command, staged source, logs, report or inventory | held, and strengthened: the cause line is structurally incapable of carrying a value or an absolute path |
+| container network-disabled and credential-free | held; nothing changes in the composition |
+| Windows Host Python orchestrates only | held; the repair runs in the Host process, no new process is started |
+| B-5 argv equality | unaffected; the composition, the closure and the prepared argv are untouched |
+
+### 20.13 Coder-ready specification
+
+All changes are in the Host repository on `feat/submodule-cloud-api-v1-host`.
+
+**`synaptic_host/security.py`**
+
+1. `_ensure_private_storage_directories` gains a required keyword-only
+   `repair: bool` with no default. In the loop at `:594-606`, when a directory
+   already exists, attempt the repair before validating; when it was just
+   created, do not. Validation at `:606` stays unconditional and stays last.
+2. Add a private repair helper that dispatches on `os.name`, returns `None`
+   always, and raises nothing. It catches `OSError` and `ValueError` and returns.
+   `ValueError` is in that set deliberately: `_private_storage_error()` returns a
+   `ValueError`, and the descriptor construction at `:276-279` raises it, so a
+   repair that reused that construction could otherwise raise out of a helper
+   that must not.
+3. Windows branch: apply the four-part predicate of section 20.6 in order on an
+   open handle, and on success call `SetKernelObjectSecurity` on that same handle
+   with the discretionary-list and protected-discretionary-list information flags,
+   writing the descriptor of section 20.8. Build that descriptor through the same
+   conversion `_win_security_attributes` uses at `:276-279`, from the string of
+   section 20.8, so the two descriptors differ in one visible place and neither is
+   retyped.
+   The repair opens its **own** handle rather than extending `_win_open_path`
+   (`:310-334`), because rewriting a list needs an access right that helper does
+   not request and its three existing callers must not silently acquire. B-11-M1
+   opened with the write-list and read-control rights together plus backup
+   semantics, and that combination is measured to work. Keeping the new access
+   confined to the repair also keeps `_win_open_path` off the changed-files list.
+4. POSIX branch: apply the predicate of section 20.9 and `os.fchmod` the
+   descriptor to `0o700`.
+5. `for_docker:534` passes `repair=True`. `initialize:609` passes `repair=False`.
+6. Do not touch `_validate_private_directory`, `_win_validate_acl`,
+   `_win_validate_directory`, `_win_read_private_key`, `_win_create_private_directory`
+   or `private_storage_verified`. The refusal surface and its message are unchanged.
+
+**`synaptic_host/docker_training.py`**
+
+7. Add a module-level cause helper producing the line of section 20.11.
+8. Call it from the handler at `:686-687` with `RESOLUTION_UNAVAILABLE` and from
+   the handler at `:695-696` with `START_UNAVAILABLE`, before the `return fail(...)`.
+   Both handlers keep their bare `except BaseException` and keep returning the
+   same code: the change is additive.
+
+**`.skills/host-docker-run/` and the driver**
+
+9. Documentation only, per section 20.10: state in the P8 docstring and in the
+   skill that an inherited chain after a `--probe-only` pass is expected and is
+   repaired at activation. Canonical `.skills/` first, then sync the mirrors with
+   the repository's sync script. No behaviour change in the driver, and no change
+   to `materialize_model_inventory.py`.
+
+### 20.14 Tests
+
+Windows-only, marked with the existing `WINDOWS_ONLY` skip, run on the Windows
+Host Python from the released checkout the way the run 5 suite was run. These
+cannot execute in the WSL suite and must not be written so that they silently
+pass there.
+
+| # | Test | Asserts |
+|---|---|---|
+| W1 | a chain directory pre-created by an ordinary `mkdir` is repaired | `for_docker` succeeds; the directory is protected, has exactly two non-inherited full-access entries for the current user and `S-1-5-18`, and **both entries carry the object-inherit and container-inherit flags**. The flag assertion is half of section 20.8's combination and is the half a copy-paste of the creation descriptor would silently lose |
+| W2 | repair is idempotent | a second `for_docker` over the same tree still validates and changes nothing |
+| W3 | a directory carrying one explicit non-inherited entry is refused | `ValueError` matching `private storage`; the entry is still there afterwards, proving the repair did not act |
+| W4 | a directory already protected with the wrong entries is refused | same error; protection is deliberate, so it is the tampered state |
+| W5 | a populated chain survives repair | a file written under `.synaptic` before activation is still readable by the owner after `for_docker` returns, **and its access list is unchanged**. This is the other half of section 20.8's combination, the non-propagating half, and it is the regression guard for section 20.3. Note that the Host validator accepts the root in the destroyed case too, so this test must read the child, not ask the validator |
+
+POSIX, running in the ordinary WSL suite:
+
+| # | Test | Asserts |
+|---|---|---|
+| P1 | a chain directory pre-created at `0o755` and owned by the current user is repaired to `0o700` and validates | the ensure path repairs |
+| P2 | a symbolic link in the chain is refused | shape is never repaired |
+| P3 | `private_storage_verified` still refuses a permissive parent without repairing it | this is the existing `test_security.py:411-422`, unchanged and still green. It is the proof that repair lives only in the ensure path |
+
+Cause line, running in the WSL suite:
+
+| # | Test | Asserts |
+|---|---|---|
+| C1 | the line names the class and the innermost `synaptic_host` frame | the file is package-relative, the function and line appear |
+| C2 | the exception's own text never appears | raise an exception whose message contains an absolute path and a secret-shaped string, assert neither reaches the line, and assert the line's length bound. Mirrors `test_security.py:637-664` |
+| C3 | stdout still carries exactly one parseable result line | the cause goes to stderr only, so the driver's `:956-962` parse is unaffected |
+
+The driver needs no change, but it does need one new test. `_one_cut`'s stderr
+printing at `:963-965` is currently uncovered:
+`tests/skills/host_docker_run/test_run_prepared_training_probes.py` exercises
+stderr only for the P8 failure path (`:389-393`), not for a cut. Add **D1**: a
+fake cut whose stderr carries a cause line, asserting the driver prints it with
+the `stderr| ` prefix and still parses the result JSON from the last stdout line.
+Without D1 the whole of section 20.11 rests on an unpinned behaviour of the file
+this ruling relies on not changing.
+
+### 20.15 Files that must NOT be touched, and the pins on the files that are
+
+| File | Why it stays |
+|---|---|
+| `synaptic-tuner/` in any form | engine is untouched; no allowlist, no schema, no closure regeneration |
+| `synaptic_host/docker_v1/composition.py` | the legacy composition path stays unused |
+| `synaptic_host/cli.py` | no result-schema change; this is the direct consequence of section 20.11 |
+| the committed provider profile | B-9's `container_user` is unchanged |
+| `/etc/wsl.conf` | user ruling of 2026-09-02, option A; acceptance evidence comes from an unmodified host |
+| `/mnt/f/Code/ehr-release-ab741054` and its logs | run 5 state is preserved for reproduction |
+| `materialize_model_inventory.py` | section 20.10 rules the operator side unchanged |
+
+Pins on the files this ruling does change, enumerated so none of them is
+discovered mid-implementation:
+
+| Pin | Location | Disposition |
+|---|---|---|
+| permissive parent refused **without repair** | `test_security.py:411-422` | stays green unchanged; it is the boundary the ruling honours |
+| default access list on a **key file** refused | `test_security.py:503-516` | stays green; the repair is directory-only |
+| directory junction refused | `test_security.py:520-535` | stays green; predicate step 1 runs before any list work |
+| fail-closed after drift | `test_security.py:392-408` | stays green; verification stays a pure predicate |
+| result field-presence shape per code | `test_cli.py:468` and `:489` | stays green; no schema change |
+| constructive `for_docker` uses under `tmp_path` | `test_docker_training.py:229`, `:638`; `test_docker_prepared_composition.py:188`, `:217`, `:239`, `:258`, `:523` | stay green; the repair is a no-op on a directory the Host created |
+| `B10-EVIDENCE` line format | `test_run_prepared_training_probes.py:627-631` | stays green; the driver is unchanged |
+
+### 20.16 What run 6 must observe
+
+**B-11 itself.**
+
+| Row | Observation | Reading |
+|---|---|---|
+| 1 | P8 on `--probe-only` may still leave an inherited chain | **expected**, not a failure. The ruling is Host-repair-only, so the chain is corrected at activation, not at probe time. Run 6 is judged against the design that shipped |
+| 2 | cut 1 reaches the container | `START_UNAVAILABLE` does not recur; the run produces a stage, a durable row and a container reference |
+| 3 | the inventory re-verify still passes **after** activation repaired the chain | re-run the inventory verification once cut 1 has returned, and get the same 25 files, 1 969 841 187 bytes and fingerprint `sha256:0e2a8df2…`. This is the acceptance row for section 20.3 and it is the one that would catch a propagation regression |
+| 4 | if activation fails for any reason, the driver prints a `stderr\|` line naming the frame | this is the acceptance row for section 20.11, and it is the only row that is proved by a failure |
+
+**Unchanged from earlier rulings, and still owed.**
+
+| Blocker | Measurement |
+|---|---|
+| B-10 | the cut-2 evidence line of section 19.14. `state_nonempty=true` with a code other than `START_UNAVAILABLE` confirms the fix; an empty `state` is the deferral row, not a pass |
+| B-10-R1 | list `<stage>\artifacts\cache` at cut 2 and at the end of the run. It stays user-deferred; run 6 measures it, it does not fix it |
+| B-9-R1 | the trainer's own `/tmp` cache landing: `/tmp/torch`, `/tmp/triton`, `/tmp/xdg` and `/tmp/home` populated inside the container. The P8 probe's `HOME=/ home-not-writable` is the pre-existing measurement from task #131 and is not this evidence |
+
+### 20.17 Ledger row
+
+| Row | Content |
+|---|---|
+| 20.1 | B-11. `_ensure_private_storage_directories` (`security.py:585-606`) creates only absent directories and validates all of them, so a chain directory the operator created first is refused forever. Fix: a required keyword-only `repair: bool`, repair permitted only from the never-protected state, owned by the ensure path so verification stays a pure predicate. Windows and POSIX both. No engine change, no schema change, no Modal-lane change |
+| 20.1a | B-11 primitive, measured by B-11-M1 (#165). `SetKernelObjectSecurity` on the handle, with a protected descriptor whose two entries are inheritable. The path-based editor call is DESTRUCTIVE: it empties the access list of every child, unreadable to the owner, to WSL and to the container, while the Host validator still accepts the root |
+| 20.2 | B-11 cause surfacing. `docker_training.py:686-687` and `:695-696` swallow the cause. Fix: one stderr line carrying the exception class and the innermost `synaptic_host` frame, never the exception text. The driver already prints stderr at `run_prepared_training.py:963-965`, so no driver change |
+| 20.3 | Citation correction. Report section 17.3 and dispatch instruction 2 cite `materialize_model_inventory.py:177` as the Host-side creator of `.synaptic`. That line runs in a container against `/out`. The Host-side creator is `:447` |
+| 20.4 | Citation drift. The P8 docstring cites `docker_staging.py:1686` for the staging call it mirrors; at this baseline that is a storage-schema check and the call is `:1699-1700`. Corrected in the same docstring edit as row 20.2's documentation duty |
+
+### 20.18 What this ruling does not settle
+
+It does not make the chain private during the window between prerequisite 3 and
+the first activation. That window is argued safe in section 20.10 rather than
+closed, and the argument depends on the control key not existing yet on a first
+run. If a future front end writes a secret under `.synaptic` before the Host has
+run, the argument lapses and the operator side has to be revisited.
+
+It does not give the Host a way to notice that a chain directory was widened
+*between* activation and the trainer's exit. The validator runs at activation and
+the key is re-validated on every use, so an attack in that window cannot reach
+the key, but the directory itself is not watched.
+
+**It does not re-permission what is already inside the chain, and B-11-M1 made
+one consequence of that concrete.** After the repair the objects that were
+already there keep the access lists they had, which on the measured host means
+eleven inherited entries granting local groups modify access. Two of those
+objects are worth naming. The model inventory is public model weights whose
+integrity is checked by fingerprint, so a permissive list there costs nothing.
+The durable rows database under `state` is a different matter: another local user
+can write it, and the activation path compares a replay against it
+(`docker_training.py:917-918`) and derives the section 19 emptiness predicate
+from its phase. That exposure is **pre-existing**, not created here, and the
+contract this ruling implements is about the directory chain rather than its
+contents. It is recorded as a follow-up rather than fixed as a side effect,
+because the choice to widen the repair into an operator's tree should be made
+deliberately and not fall out of a primitive selection. The inheritable
+descriptor means any later propagation narrows those objects rather than
+destroying them.
+
+It does not make a Host-created chain and a repaired chain identical. A created
+directory publishes nothing inheritable, so objects made under it later get the
+creating process's default list, which B-11-M1 arm D measured as owner, the local
+system account and the logon session, and readable. A repaired directory
+publishes owner and system inheritable. Both satisfy the validator and both are
+readable; closing the difference would mean changing the shared creator, which
+the Modal lane also uses, for no benefit this blocker needs.
+
+It does not address the same never-repaired asymmetry anywhere outside this
+class. The pattern of "create correctly, validate strictly, never reconcile" is a
+shape, and this ruling fixes the one instance that has cost a cycle.
