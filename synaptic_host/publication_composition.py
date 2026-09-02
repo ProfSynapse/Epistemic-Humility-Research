@@ -37,7 +37,6 @@ from .artifact_spool import (
 )
 from .local_io_v1.config import StorageRegistryV1
 from .local_io_v1.filesystem import LocalFilesystemV1
-from .local_io_v1.posix import PosixRetainedDirfdPortV1
 from .publication_authority import create_publication_evidence_v1
 from .publication_store import SqlitePublicationStoreV1
 from .verified_artifact_source import AuthenticatedVerifiedArtifactSourceV1
@@ -392,6 +391,28 @@ def _rollback(
     return failed
 
 
+def _local_filesystem_port_v1() -> object:
+    """Build the retained-handle port for the running platform.
+
+    Two branches, one real port each. This is not a compatibility layer: it
+    adds no re-export, no dual signature, no deprecated wrapper and no
+    degradation path, and neither branch can serve the other platform. On an
+    unsupported platform the constructed port raises CAPABILITY_UNAVAILABLE,
+    which is the behaviour before this closure. The pattern mirrors the
+    os.name branches already used in security.py.
+
+    The imports are branch-local on purpose: a POSIX process must never import
+    the ctypes.WinDLL bindings and a Windows process must never import fcntl.
+    """
+    if os.name == "nt":
+        from .local_io_v1.windows import WindowsRetainedHandlePortV1
+
+        return WindowsRetainedHandlePortV1()
+    from .local_io_v1.posix import PosixRetainedDirfdPortV1
+
+    return PosixRetainedDirfdPortV1()
+
+
 def compose_host_publication_v1(
     *,
     context: ProjectContext,
@@ -430,7 +451,7 @@ def compose_host_publication_v1(
             configuration.storage_bytes, project_root=context.project_root
         )
         evidence = create_publication_evidence_v1(context)
-        filesystem = LocalFilesystemV1(PosixRetainedDirfdPortV1(), storage)
+        filesystem = LocalFilesystemV1(_local_filesystem_port_v1(), storage)
         permit_proof_digest = _permit_proof_digest(
             context, configuration.storage_bytes
         )

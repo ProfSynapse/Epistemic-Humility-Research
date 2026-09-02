@@ -50,6 +50,13 @@ _ARTIFACT_ROLES = (
 )
 
 
+# Storage root that backs the artifact publication spool. Must match the
+# `root_ref` declared at training/storage.json:35; publication resolves the
+# spool through the staged storage configuration, so this constant is the only
+# Host-side name for it and no configuration file participates in the wiring.
+_PUBLICATION_SPOOL_ROOT_REF = "artifact-publication-spool"
+
+
 _EXECUTION_CONTEXT_SCHEMA = "synaptic-docker-admission-context/v1"
 _PROVENANCE_KEYS = (
     "training_input_digest",
@@ -714,6 +721,10 @@ def _activate_docker_training_v1(
         DockerPreparedCompositionV1, DockerPreparedControlBuilderV1,
         compose_docker_prepared_platform_v1,
     )
+    from .docker_publication import compose_docker_publication_v1
+    from .local_artifact_destination import (
+        build_local_artifact_destination_registration_v1,
+    )
     from .docker_staging import (
         DockerModelInventoryEntryV1, stage_docker_worker_v1,
     )
@@ -843,10 +854,7 @@ def _activate_docker_training_v1(
     request = DockerPreparedRunRequestV1(
         run.project_ref, run.run_id, provisional, prepared, staging,
     )
-    composition = DockerPreparedCompositionV1(
-        repository=repository, builder=builder, clock=clock,
-    )
-    admission = composition.prepare_admission(request)
+    admission = builder.prepare_admission(request)
     initial = DockerRunMutationRecordV1.initial(
         provisional, admission.create_mutation,
     )
@@ -866,9 +874,36 @@ def _activate_docker_training_v1(
         DockerRunPhaseV1.CREATE_ADMITTED, DockerRunPhaseV1.CREATE_ATTEMPTED,
         DockerRunPhaseV1.CREATED,
     }:
-        outcome = composition.submit(request)
+        outcome = DockerPreparedCompositionV1(
+            repository=repository, builder=builder, clock=clock,
+        ).submit(request)
+    elif current.phase is DockerRunPhaseV1.ARTIFACTS_VERIFIED:
+        # The publish cut is the only cut that needs a publication, and it is
+        # always a separate reconcile call: from PROCESS_SUCCEEDED reconcile
+        # writes ARTIFACTS_VERIFIED and returns without publishing
+        # (docker_execution.py:1112-1130). Constructing the publication here
+        # rather than above keeps the spool root authority, the admission lease
+        # and the publication store off every submit and observation cut, and
+        # nothing downstream closes the publication for us, so the caller that
+        # creates it must release it.
+        publication = compose_docker_publication_v1(
+            context=context, repository=repository, request=request,
+            clock=clock, spool_root_ref=_PUBLICATION_SPOOL_ROOT_REF,
+            registration_builders=(
+                build_local_artifact_destination_registration_v1,
+            ),
+        )
+        try:
+            outcome = DockerPreparedCompositionV1(
+                repository=repository, builder=builder, clock=clock,
+                publication=publication,
+            ).reconcile(request)
+        finally:
+            publication.close()
     else:
-        outcome = composition.reconcile(request)
+        outcome = DockerPreparedCompositionV1(
+            repository=repository, builder=builder, clock=clock,
+        ).reconcile(request)
     submitted = (
         outcome.container_ref is not None and outcome.submitted_at is not None
     )

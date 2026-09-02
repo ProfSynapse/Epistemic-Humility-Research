@@ -70,6 +70,15 @@ MAX_FILE_BYTES = 1 << 40
 MAX_DIRECTORY_ENTRIES = 4096
 MAX_JOURNAL_RECORDS = 4
 _POSIX_PLATFORMS = ("linux", "darwin", "freebsd", "openbsd", "netbsd")
+# Platforms for which a retained-handle port implementation exists. POSIX is
+# served by PosixRetainedDirfdPortV1; "win32" by WindowsRetainedHandlePortV1.
+# _POSIX_PLATFORMS deliberately gains no members: it still means "POSIX".
+_SUPPORTED_PLATFORMS = _POSIX_PLATFORMS + ("win32",)
+# Platforms whose port can hold a crash-released single-writer directory
+# admission. Linux uses a non-blocking flock on a directory descriptor; win32
+# uses share-mode exclusion on a second open of the same directory handle.
+# darwin and the BSDs remain excluded exactly as before.
+_DIRECTORY_ADMISSION_PLATFORMS = ("linux", "win32")
 
 
 @dataclass(frozen=True, slots=True)
@@ -555,7 +564,7 @@ class LocalFilesystemV1:
             raise _closed(LocalIOCodeV1.ADMISSION_INVALID)
 
     def capability(self) -> LocalFilesystemCapabilityV1:
-        available = self._platform in _POSIX_PLATFORMS and self._port is not None
+        available = self._platform in _SUPPORTED_PLATFORMS and self._port is not None
         platform_family = "posix" if self._platform in _POSIX_PLATFORMS else (
             "windows" if self._platform.startswith("win") else "other"
         )
@@ -570,6 +579,17 @@ class LocalFilesystemV1:
                 "exec-closed-admission",
                 "nonblocking-directory-flock",
             )
+        elif available and self._platform.startswith("win"):
+            # Windows earns exactly the two platform-neutral properties: the OS
+            # closes the admission handle when the process dies, and the
+            # admission is held on a retained directory handle rather than a
+            # path. It claims neither POSIX-named mechanism -- Windows has no
+            # flock and no exec -- because a feature string is hashed into the
+            # capability digest and an unearned entry is unearned evidence.
+            feature_values += (
+                "crash-released-admission",
+                "directory-inode-admission",
+            )
         features = tuple(sorted(feature_values))
         canonical = {
             "features": list(features),
@@ -578,14 +598,16 @@ class LocalFilesystemV1:
         }
         return LocalFilesystemCapabilityV1(platform_family, status, features, digest_v1(canonical))
 
-    def _require_posix(self) -> None:
+    def _require_retained_port(self) -> None:
+        """Admit any platform for which a retained-handle port exists."""
         self._require_construction_process()
-        if self._platform not in _POSIX_PLATFORMS or self._port is None:
+        if self._platform not in _SUPPORTED_PLATFORMS or self._port is None:
             raise _closed(LocalIOCodeV1.CAPABILITY_UNAVAILABLE)
 
-    def _require_linux_admission(self) -> None:
-        self._require_posix()
-        if not self._platform.startswith("linux"):
+    def _require_directory_admission(self) -> None:
+        """Admit only platforms whose port holds a crash-released admission."""
+        self._require_retained_port()
+        if self._platform not in _DIRECTORY_ADMISSION_PLATFORMS:
             raise _closed(LocalIOCodeV1.CAPABILITY_UNAVAILABLE)
 
     def retain_root_authority(
@@ -593,7 +615,7 @@ class LocalFilesystemV1:
         data_binding: LocalRootBindingV1,
         control_binding: LocalRootBindingV1,
     ) -> LocalRootAuthorityV1:
-        self._require_posix()
+        self._require_retained_port()
         if type(data_binding) is not LocalRootBindingV1 or type(control_binding) is not LocalRootBindingV1:
             raise _closed(LocalIOCodeV1.ROOT_INVALID)
         self._authenticate_binding(data_binding)
@@ -672,7 +694,7 @@ class LocalFilesystemV1:
         *,
         purpose: SingleRootPurposeV1,
     ) -> LocalSingleRootAuthorityV1:
-        self._require_linux_admission()
+        self._require_directory_admission()
         if os.getpid() != self._admission_process_id:
             raise _closed(LocalIOCodeV1.ADMISSION_INVALID)
         if (
@@ -715,7 +737,7 @@ class LocalFilesystemV1:
             return authority
 
     def release_single_root_authority(self, authority: LocalSingleRootAuthorityV1) -> None:
-        self._require_linux_admission()
+        self._require_directory_admission()
         with self._borrow_lock:
             self._validate_single_root_authority(authority)
             if any(item.authority is authority for item in self._live_admissions.values()):
@@ -743,7 +765,7 @@ class LocalFilesystemV1:
     def acquire_single_root_admission(
         self, authority: LocalSingleRootAuthorityV1
     ) -> LocalSingleRootAdmissionV1:
-        self._require_linux_admission()
+        self._require_directory_admission()
         with self._borrow_lock:
             self._validate_single_root_authority(authority)
             self._authenticate_binding(authority.data_binding)
@@ -819,7 +841,7 @@ class LocalFilesystemV1:
         authority: LocalSingleRootAuthorityV1,
         admission: LocalSingleRootAdmissionV1,
     ) -> None:
-        self._require_linux_admission()
+        self._require_directory_admission()
         with self._borrow_lock:
             self._validate_single_root_authority(authority)
             lease = self._validate_single_root_admission(authority, admission)
@@ -841,7 +863,7 @@ class LocalFilesystemV1:
             raise _closed(LocalIOCodeV1.AUTHORITY_INVALID)
 
     def release_root_authority(self, authority: LocalRootAuthorityV1) -> None:
-        self._require_posix()
+        self._require_retained_port()
         with self._borrow_lock:
             self._validate_authority(authority)
             if any(parent is authority for _, parent in self._live_borrows.values()):
@@ -965,7 +987,7 @@ class LocalFilesystemV1:
         authority: LocalRootAuthorityV1,
         request: RetainedRootBorrowRequestV1,
     ) -> RetainedRootBorrowV1:
-        self._require_posix()
+        self._require_retained_port()
         if type(request) is not RetainedRootBorrowRequestV1:
             raise _closed(LocalIOCodeV1.BORROW_INVALID)
         try:
@@ -1009,7 +1031,7 @@ class LocalFilesystemV1:
         admission: LocalSingleRootAdmissionV1,
         request: RetainedRootBorrowRequestV1,
     ) -> RetainedRootBorrowV1:
-        self._require_posix()
+        self._require_retained_port()
         try:
             valid = (
                 type(authority) is LocalSingleRootAuthorityV1
@@ -2767,7 +2789,7 @@ class LocalFilesystemV1:
         role: str,
         maximum_bytes: int = MAX_FILE_BYTES,
     ) -> LocalSourceBindingV1:
-        self._require_posix()
+        self._require_retained_port()
         self._validate_authority(authority)
         if not authority.data_binding.access.readable:
             raise _closed(LocalIOCodeV1.ACCESS_MISMATCH)
@@ -2812,7 +2834,7 @@ class LocalFilesystemV1:
         *,
         chunk_size: int = MAX_CHUNK_BYTES,
     ) -> Iterator[bytes]:
-        self._require_posix()
+        self._require_retained_port()
         self._validate_authority(authority)
         if type(source) is not LocalSourceBindingV1 or source.authority_digest != authority.authority_digest:
             raise _closed(LocalIOCodeV1.SOURCE_INVALID)
@@ -2941,7 +2963,7 @@ class LocalFilesystemV1:
         destination: LocalDestinationBindingV1,
         chunks: Iterable[bytes],
     ) -> RecoveryResultV1:
-        self._require_posix()
+        self._require_retained_port()
         self._validate_authority(root_authority)
         if type(create_authority) is not LocalCreateAuthorityV1 or type(destination) is not LocalDestinationBindingV1:
             raise _closed(LocalIOCodeV1.AUTHORITY_INVALID)
@@ -3197,7 +3219,7 @@ class LocalFilesystemV1:
         root_authority: LocalRootAuthorityV1,
         destination: LocalDestinationBindingV1,
     ) -> RecoveryResultV1:
-        self._require_posix()
+        self._require_retained_port()
         self._validate_authority(root_authority)
         if type(destination) is not LocalDestinationBindingV1 or destination.authority_digest != root_authority.authority_digest:
             raise _closed(LocalIOCodeV1.DESTINATION_INVALID)

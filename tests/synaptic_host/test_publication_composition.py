@@ -485,7 +485,7 @@ def test_composition_orders_permit_builders_and_project_store(
     )
     monkeypatch.setattr(composition.StorageRegistryV1, "from_bytes", lambda *a, **k: storage)
     monkeypatch.setattr(composition, "create_publication_evidence_v1", lambda value: evidence)
-    monkeypatch.setattr(composition, "PosixRetainedDirfdPortV1", lambda: object())
+    monkeypatch.setattr(composition, "_local_filesystem_port_v1", lambda: object())
     monkeypatch.setattr(composition, "LocalFilesystemV1", lambda port, auth: object())
     monkeypatch.setattr(
         composition, "acquire_local_artifact_spool_v1",
@@ -629,7 +629,7 @@ def test_construction_rollback_cleans_every_acquired_owner_in_order(
     )
     monkeypatch.setattr(composition.StorageRegistryV1, "from_bytes", lambda *a, **k: Storage())
     monkeypatch.setattr(composition, "create_publication_evidence_v1", lambda value: evidence)
-    monkeypatch.setattr(composition, "PosixRetainedDirfdPortV1", lambda: object())
+    monkeypatch.setattr(composition, "_local_filesystem_port_v1", lambda: object())
     monkeypatch.setattr(composition, "LocalFilesystemV1", lambda port, auth: object())
     monkeypatch.setattr(composition, "acquire_local_artifact_spool_v1", lambda *a: spool)
     monkeypatch.setattr(

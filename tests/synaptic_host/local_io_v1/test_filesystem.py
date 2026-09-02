@@ -2204,17 +2204,23 @@ def test_borrow_pin_is_released_after_closed_underlying_failure() -> None:
     filesystem.release_borrow(borrow, purpose=DESTINATION_PURPOSE)
 
 
-def test_windows_borrow_is_capability_unavailable_without_port_call() -> None:
-    _, filesystem, authority = _composition()
+def test_windows_without_port_borrow_is_capability_unavailable_without_port_call() -> None:
+    # A Windows platform WITH a retained-handle port is now admitted: that is
+    # the whole point of the native-Windows publication closure. What still
+    # fails closed, and what this test pins, is a Windows platform with NO
+    # port. The superseded assertion was that win32 plus a port was
+    # metadata-only.
+    port, filesystem, authority = _composition()
     filesystem._platform = "win32"
+    filesystem._port = None
     request = RetainedRootBorrowRequestV1.build(
         authority.authority_digest, SOURCE_PURPOSE, RootAccessV1.READ_ONLY
     )
-    before = tuple(filesystem._port.trace)
+    before = tuple(port.trace)
     with pytest.raises(LocalIOErrorV1) as caught:
         filesystem.borrow_root(authority, request)
     assert caught.value.code is LocalIOCodeV1.CAPABILITY_UNAVAILABLE
-    assert tuple(filesystem._port.trace) == before
+    assert tuple(port.trace) == before
 
 
 def test_borrow_closed_errors_and_reauthentication_are_zero_call() -> None:
@@ -2733,7 +2739,11 @@ def test_journal_codec_is_canonical_bounded_and_rejects_hostile_bytes() -> None:
         assert caught.value.code is LocalIOCodeV1.JOURNAL_INVALID
 
 
-def test_windows_is_metadata_only_and_all_effects_make_zero_port_calls() -> None:
+def test_windows_without_port_all_effects_are_unavailable_with_zero_port_calls() -> None:
+    # Re-aimed at the no-port case by the native-Windows publication closure.
+    # win32 plus a real port is now a supported configuration, so the former
+    # "Windows is metadata-only" claim is retired; the fail-closed contract
+    # that survives is "no port means no effect".
     port, posix, root = _composition()
     destination = _destination(posix, root)
     source_node = port.add_file("dir-data", "input", b"payload")
@@ -2747,7 +2757,7 @@ def test_windows_is_metadata_only_and_all_effects_make_zero_port_calls() -> None
         hashlib.sha256(b"payload").hexdigest(),
         source_node.identity(),
     )
-    windows = LocalFilesystemV1(port, posix._permit_authenticator, native_platform="win32")
+    windows = LocalFilesystemV1(None, posix._permit_authenticator, native_platform="win32")
     baseline = list(port.trace)
     for operation in (
         lambda: windows.retain_root_authority(root.data_binding, root.control_binding),

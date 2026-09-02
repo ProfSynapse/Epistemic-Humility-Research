@@ -252,3 +252,101 @@ def test_post_durable_indeterminate_recovers_after_full_recomposition(
     assert tuple(environment.data_root.iterdir()) == durable_members
     assert tuple(environment.spool_root.iterdir()) == ()
     reopened.close()
+
+
+# --------------------------------------------------------------------------
+# Residual R-6 -- directory substitution at the configured spool path.
+#
+# The architecture doc (section 11, R-6) leaves this open: "what happens when a
+# different directory occupies the configured path at the next acquisition ...
+# whether a substituted directory is rejected at re-acquisition is not settled
+# by this closure, and should be answered before anyone relies on the re-open
+# as a check rather than as a rebind."
+#
+# ANSWER, measured: SILENTLY REBOUND. Nothing compares the freshly stat'd
+# directory identity against any previously recorded one, so a different
+# directory at the configured path is accepted without complaint.
+#
+# A correction to the doc's premise, verified against the source. R-6 says the
+# binding "is re-established on each admission acquisition, which re-opens by
+# path (filesystem.py:754)". It does not. At 85b922fc, filesystem.py:754 is
+#     lease = self._port.acquire_directory_admission(authority.data_directory)
+# which passes the ALREADY-RETAINED RetainedDirectoryV1 handle. There is no
+# re-open by path anywhere in acquire_single_root_admission. The only re-open
+# by path is in retain_single_root_authority, once per authority, so the
+# realistic substitution window is between two COMPOSITIONS -- a restart --
+# which is what the first test below exercises.
+#
+# These two tests PIN CURRENT BEHAVIOUR. If a later change adds an identity
+# check and turns one of them red, that is a fix, not a regression: update the
+# test to assert the new refusal and close R-6.
+# --------------------------------------------------------------------------
+
+
+@pytest.mark.skipif(os.name != "posix", reason="real Linux retained-dirfd publication")
+def test_r6_substituted_spool_directory_is_rebound_not_detected(tmp_path: Path):
+    """A different directory at the configured spool path is accepted silently."""
+    environment = _environment(tmp_path)
+    spool_root = environment.spool_root
+
+    facade = environment.compose()
+    first = facade.publish(PublicationRequest(environment.run, "local-proof"))
+    assert first.state.value == "verified"
+    identity_before = os.stat(spool_root)
+    facade.close()
+    assert tuple(spool_root.iterdir()) == ()
+
+    # Substitute: move the original aside and put a fresh empty directory at
+    # the configured path. Same path, different inode.
+    spool_root.rename(spool_root.parent / "publication-spool-displaced")
+    spool_root.mkdir()
+    identity_after = os.stat(spool_root)
+    assert identity_before.st_ino != identity_after.st_ino, (
+        "the substitution did not actually change the directory identity, so "
+        "this test would pass without testing anything"
+    )
+
+    # The recomposition does not notice. No ROOT_CHANGED, no ADMISSION_INVALID.
+    reopened = environment.compose()
+    replay = reopened.publish(PublicationRequest(environment.run, "local-proof"))
+    assert replay == first
+    assert reopened.verify(first.publication).verified is True
+    reopened.close()
+    assert tuple(spool_root.iterdir()) == ()
+
+
+@pytest.mark.skipif(os.name != "posix", reason="real Linux retained-dirfd publication")
+def test_r6_admission_reacquisition_uses_the_retained_handle_not_the_path(
+    tmp_path: Path,
+):
+    """The admission re-acquisition cannot see a substitution, by construction.
+
+    This is the mechanism behind the answer above, asserted directly rather
+    than argued: acquire_single_root_admission takes the retained directory
+    handle, so releasing and re-acquiring an admission across a substitution
+    returns a lease bound to the ORIGINAL directory. The retained handle
+    follows the inode, not the name.
+    """
+    from synaptic_host.local_io_v1.posix import PosixRetainedDirfdPortV1
+
+    port = PosixRetainedDirfdPortV1()
+    spool_root = tmp_path / "spool"
+    spool_root.mkdir()
+
+    retained = port.retain_directory(spool_root)
+    identity_before = retained.identity
+
+    lease = port.acquire_directory_admission(retained)
+    port.release_directory_admission(retained, lease)
+
+    # Substitute while no admission is held -- the widest possible window.
+    spool_root.rename(tmp_path / "spool-displaced")
+    (tmp_path / "spool").mkdir()
+    substituted = os.stat(tmp_path / "spool")
+    assert substituted.st_ino != identity_before.inode
+
+    # Re-acquisition succeeds and is still bound to the original directory.
+    regained = port.acquire_directory_admission(retained)
+    assert regained.root_node.node_digest == lease.root_node.node_digest
+    port.release_directory_admission(retained, regained)
+    port.close_directory(retained)
