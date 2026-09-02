@@ -866,6 +866,79 @@ def _surface_trainer_stderr(project_root: Path) -> None:
     )
 
 
+# --------------------------------------------------------------------------
+# B-10 evidence (architecture section 19.14)
+# --------------------------------------------------------------------------
+
+# Inside a stage the artifact root is `<stage>/artifacts`
+# (`docker_staging.py:1755`), and it holds five directories
+# (`_ARTIFACT_DIRECTORY_NAMES` at `:49`). Four of them must be EMPTY or
+# `_verify_artifact_topology` raises "artifact writable directory is not empty"
+# (`:1473-1478`); `cache` is the model inventory and is exempt.
+_ARTIFACT_ROOT_NAME = "artifacts"
+
+# `state` first because section 19.14 names it as the directory to watch. The
+# other three are reported too: the verifier fails on ANY of them, so evidence
+# about `state` alone could mislead if `tmp` is what actually filled.
+_WRITABLE_ARTIFACT_NAMES = ("state", "artifacts", "tmp", "tracking")
+
+
+def _find_stage_directories(project_root: Path) -> list[Path]:
+    """Every staged run directory under the stage parent.
+
+    A stage is identified by carrying an `artifacts` child, which is what
+    `docker_staging.py:1755` builds. `p8-probe` is excluded by name: it is this
+    driver's own probe directory (section 18.11), normally removed at once, and
+    mistaking it for a stage would report emptiness for a directory the run
+    never touches.
+    """
+    parent = project_root.joinpath(*_STAGE_PARENT_PARTS)
+    try:
+        candidates = sorted(entry for entry in parent.iterdir() if entry.is_dir())
+    except OSError:
+        return []
+    return [
+        entry for entry in candidates
+        if entry.name != _P8_PROBE_DIRECTORY
+        and (entry / _ARTIFACT_ROOT_NAME).is_dir()
+    ]
+
+
+def _report_b10_evidence_before_cut(project_root: Path, cut: int) -> None:
+    """Record whether the stage's writable roots are non-empty BEFORE the cut.
+
+    Blocker B-10 (section 19, task #137) is proven by reading and has never been
+    observed: staging re-verifies on every cut, so the first cut issued after the
+    trainer writes under `/artifacts` would fail `START_UNAVAILABLE`. Section
+    19.14 closes it on evidence, and this is half of that evidence. Read-only;
+    it changes nothing about what the cut does.
+    """
+    stages = _find_stage_directories(project_root)
+    if not stages:
+        flags = " ".join(f"{name}_nonempty=unknown" for name in _WRITABLE_ARTIFACT_NAMES)
+        print(f"B10-EVIDENCE cut={cut} stage=NONE {flags}")
+        return
+    for stage in stages:
+        root = stage / _ARTIFACT_ROOT_NAME
+        flags = []
+        for name in _WRITABLE_ARTIFACT_NAMES:
+            try:
+                with os.scandir(root / name) as entries:
+                    value = "true" if any(entries) else "false"
+            except OSError:
+                value = "unreadable"
+            flags.append(f"{name}_nonempty={value}")
+        print(f"B10-EVIDENCE cut={cut} stage={stage} {' '.join(flags)}")
+
+
+def _report_b10_evidence_after_cut(cut: int, exit_code: int, result: dict) -> None:
+    """Record the result code the cut returned, the other half of 19.14."""
+    print(
+        f"B10-EVIDENCE cut={cut} result={result.get('code')} "
+        f"status={result.get('status')} exit={exit_code}"
+    )
+
+
 def _one_cut(python_executable: str, project_root: Path, args) -> tuple[int, dict]:
     """Issue exactly one cut of the unchanging eight-token command."""
     argv = [
@@ -912,7 +985,17 @@ def _drive(python_executable: str, project_root: Path, args) -> None:
             _fail("L2-wall-clock", f"exceeded --max-seconds={args.max_seconds} after {cut - 1} cut(s)")
 
         print(f"\n[cut {cut}] entering with phase={previous_phase}")
+        if cut == 2:
+            # Section 19.14: the stage is fresh at run 5, so cut 1 tells us
+            # nothing. Cut 2 is the first observe cut after submit and the one
+            # that closes B-10. An EMPTY `state` here is a DEFERRAL, not a pass:
+            # the trainer may simply have buffered and not written yet.
+            print("           section 19.14: cut 2 is the cut that closes B-10. "
+                  "state non-empty with a code other than START_UNAVAILABLE "
+                  "confirms the fix; state empty is a DEFERRAL, not a pass.")
+        _report_b10_evidence_before_cut(project_root, cut)
         exit_code, result = _one_cut(python_executable, project_root, args)
+        _report_b10_evidence_after_cut(cut, exit_code, result)
         status = result.get("status")
         run_id = result.get("run_id") or run_id
         phase, run_id = _read_phase(project_root, run_id)

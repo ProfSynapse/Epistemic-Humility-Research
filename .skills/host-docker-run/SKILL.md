@@ -217,6 +217,38 @@ The command result on stdout does **not** carry the durable phase. The phase is
 and the publication row is `publication_records_v1` in the same file. The driver
 opens that file read-only.
 
+### The `B10-EVIDENCE` lines
+
+Around every cut the driver prints two tagged lines. They are read-only
+observations and change nothing about what the cut does. **Quote them verbatim
+in the run report**; blocker B-10 closes on them.
+
+```
+B10-EVIDENCE cut=2 stage=<path> state_nonempty=true artifacts_nonempty=false tmp_nonempty=false tracking_nonempty=false
+B10-EVIDENCE cut=2 result=<code> status=<status> exit=<n>
+```
+
+The first is read **before** the cut is issued, the second **after** it returns.
+`stage=NONE` with `unknown` flags means no stage exists yet, which is normal
+before staging.
+
+Why it matters: staging re-verifies the artifact topology on **every** cut, and
+four of the five directories under `<stage>\artifacts` must be empty, so the
+first cut issued after the trainer writes there would fail
+`START_UNAVAILABLE`. That is B-10. The reading to apply, from architecture
+section 19.14:
+
+| `state` at cut 2 | Cut 2 code | Conclusion |
+|---|---|---|
+| non-empty | not `START_UNAVAILABLE` | B-10 confirmed and fixed |
+| non-empty | `START_UNAVAILABLE` | the fix is wrong or incomplete; re-open with the message |
+| empty | any | **unconfirmed — a deferral, not a pass.** B-10 stays on the ledger as latent |
+
+**Cut 2 is the cut to watch.** The stage is fresh at cut 1, so cut 1 settles
+nothing. The driver prints a reminder at cut 2. The third row is the one most
+easily misreported: if the trainer buffers and writes late, `state` can still be
+empty at cut 2, and that is not evidence that B-10 is absent.
+
 ## Early assertions
 
 Each is cheap and each exists to surface a known unknown with its true cause

@@ -562,6 +562,86 @@ def test_wsl_path_reports_the_callers_cause_tag(check):
     assert str(caught.value).startswith(check + ":")
 
 
+# --------------------------------------------------------------------------
+# B-10 evidence (section 19.14): read-only observation around every cut
+# --------------------------------------------------------------------------
+
+def _make_stage(project_root: Path, name: str) -> Path:
+    """A stage with the five directories `_create_artifact_topology` builds."""
+    root = project_root.joinpath(*driver._STAGE_PARENT_PARTS) / name / "artifacts"
+    for child in ("artifacts", "cache", "state", "tmp", "tracking"):
+        (root / child).mkdir(parents=True)
+    return root
+
+
+def test_b10_evidence_reports_a_non_empty_state_before_the_cut(
+    project_root, capsys
+):
+    root = _make_stage(project_root, "stagekey1")
+    (root / "state" / "written-by-the-trainer").write_text("x", encoding="utf-8")
+
+    driver._report_b10_evidence_before_cut(project_root, 2)
+
+    line = capsys.readouterr().out.strip()
+    assert line.startswith("B10-EVIDENCE cut=2 ")
+    assert "state_nonempty=true" in line
+    # The other three are reported too: the verifier fails on ANY of them, so
+    # evidence about `state` alone could mislead.
+    assert "artifacts_nonempty=false" in line
+    assert "tmp_nonempty=false" in line
+    assert "tracking_nonempty=false" in line
+    assert "stagekey1" in line
+
+
+def test_b10_evidence_says_none_when_no_stage_exists_yet(project_root, capsys):
+    """Normal before staging; it must not read as an empty `state`."""
+    driver._report_b10_evidence_before_cut(project_root, 1)
+    line = capsys.readouterr().out.strip()
+    assert "stage=NONE" in line
+    assert "state_nonempty=unknown" in line
+    assert "state_nonempty=false" not in line
+
+
+def test_b10_evidence_does_not_mistake_the_p8_probe_directory_for_a_stage(
+    project_root, capsys
+):
+    """`p8-probe` is this driver's own directory and the run never writes there.
+
+    Counting it as a stage would report emptiness for a directory that cannot
+    carry the evidence.
+    """
+    stage_parent = project_root.joinpath(*driver._STAGE_PARENT_PARTS)
+    (stage_parent / driver._P8_PROBE_DIRECTORY / "artifacts").mkdir(parents=True)
+    _make_stage(project_root, "stagekey1")
+
+    driver._report_b10_evidence_before_cut(project_root, 2)
+
+    out = capsys.readouterr().out
+    assert driver._P8_PROBE_DIRECTORY not in out
+    assert "stagekey1" in out
+    assert out.count("B10-EVIDENCE") == 1
+
+
+def test_b10_evidence_after_the_cut_carries_the_result_code(capsys):
+    driver._report_b10_evidence_after_cut(
+        2, 2, {"code": "START_UNAVAILABLE", "status": "unavailable"}
+    )
+    line = capsys.readouterr().out.strip()
+    assert line.startswith("B10-EVIDENCE cut=2 ")
+    assert "result=START_UNAVAILABLE" in line
+    assert "status=unavailable" in line
+
+
+def test_the_cut_loop_records_evidence_before_and_after_every_cut():
+    """Both halves must bracket the cut, or the reading cannot be made."""
+    source = _DRIVER.read_text(encoding="utf-8")
+    loop = source.index("for cut in range(1, args.max_cuts + 1):")
+    before = source.index("_report_b10_evidence_before_cut(project_root, cut)", loop)
+    call = source.index("_one_cut(python_executable, project_root, args)", before)
+    after = source.index("_report_b10_evidence_after_cut(", call)
+    assert before < call < after
+
+
 def test_p8_runs_after_the_bind_probe_and_before_the_first_assertion():
     """Order is ruled: P1..P7 -> B1 -> P8 -> A1..A4 (section 18.11).
 
