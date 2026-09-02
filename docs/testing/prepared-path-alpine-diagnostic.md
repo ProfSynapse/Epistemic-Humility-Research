@@ -1000,3 +1000,226 @@ operator step, and it is the third platform-conditioned defect in this workstrea
 that only a real Windows host could surface — after B-3's CRLF stdin and B-4's
 entrypoint hijack. B-8 should be fixed alongside it but does not gate a run
 attempt.
+
+---
+---
+
+# Run 4 — 2026-09-02, released checkout `428496ae`, engine `4a01fc55`
+
+Fourth execution, from the new released checkout
+`F:\Code\ehr-release-428496ae` at commit `428496aeb265…` on
+`feat/submodule-cloud-api-v1-host`, submodule `synaptic-tuner` at `4a01fc55`.
+Both trees clean. This is the first run in which B-7 is fixed in the shipped
+source rather than simulated, and the first that could have reached activation.
+
+**Verdict: RED on a new blocker, B-9,** raised by assertion **A2** during
+`--probe-only`, before any training container was created. B-7 is not reached
+and therefore neither confirmed nor refuted by this run. Every step ahead of A2
+is GREEN, including the first-ever green **P7**.
+
+## 15. Run 4 verdict by step
+
+| # | Step | Verdict | Evidence |
+|---|------|---------|----------|
+| 0 | Released-checkout preconditions | **GREEN** | HEAD `428496ae…`, branch + upstream `origin`, submodule `4a01fc55…`, both `--porcelain` empty (0 bytes) |
+| 1 | Prerequisite 7 — `--entrypoint env` probe | **GREEN** | printed exactly `ok`; image present at the locked digest |
+| 2 | Model inventory in the new checkout | **GREEN** | copy route; 25 files, 1 969 841 187 bytes, fingerprint matches |
+| 3 | Driver `--probe-only` | **RED** | P1–P7 + bind probe + A1 pass; **A2 fails** |
+| 4 | Real run via the driver | **NOT REACHED** | not issued — A2 is the gate |
+| 5 | Section 10.2 durable-row contract | **NOT REACHED** | `.synaptic\state` still does not exist |
+| 6 | This report section | done | — |
+
+### 15.1 Docker Desktop was down and was started
+
+The Linux engine pipe was absent at first contact
+(`open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file
+specified`) and `tasklist` showed zero Docker processes: the host had restarted
+since run 3. Docker Desktop was started and the engine was ready within 10 s
+(`Server 29.3.1 / OS linux`). This is recorded because it is the same restart
+that produced B-9, not because it is a defect.
+
+### 15.2 The inventory was copied, then verified — route recorded
+
+Per the lead's ruling, the 25 files were copied from
+`F:\Code\ehr-release-48375bc3` with `shutil.copyfile` per file (never a
+link-preserving copy) by the gitignored operator script
+`scratch\test-phase\copy_inventory.py`, then verified through the skill.
+
+| Measurement | Value |
+|---|---|
+| Files | 25 |
+| Total bytes | 1 969 841 187 |
+| Source symlinks flattened | 0 |
+| Destination non-regular entries | 0 |
+| Fingerprint | `sha256:0e2a8df272426dd2fc804c6aa4886abf26b060b9dea7ed03aa068266eb58a2c6` |
+
+`--verify-only` reported `OK 25 file(s), 1969841187 byte(s)` and the expected
+fingerprint, so the copy route is sound and the inventory contract at `428496ae`
+is unchanged from `48375bc3`.
+
+### 15.3 P7 passes for the first time on a run that was not hand-corrected
+
+The released checkout was cloned onto its branch rather than moved onto it after
+the fact, so P7 passed on first contact and printed the full triple:
+
+```
+$ git.exe -C F:\Code\ehr-release-428496ae rev-parse HEAD
+$ git.exe -C F:\Code\ehr-release-428496ae branch --show-current
+$ git.exe -C F:\Code\ehr-release-428496ae config --local --get branch.feat/submodule-cloud-api-v1-host.remote
+$ git.exe -C F:\Code\ehr-release-428496ae ls-remote origin refs/heads/feat/submodule-cloud-api-v1-host
+    PASS P7-branch-publishable: feat/submodule-cloud-api-v1-host tracks origin at 428496aeb265
+```
+
+P7 also reached the network and returned, which is the first evidence in this
+workstream of a successful `ls-remote` from the run recipe. It does **not**
+exercise B-7: P7 runs `git.exe` from the driver with an inherited environment,
+whereas B-7 is about the Host's own scrubbed environment inside
+`ScopedGitRemoteReader`. Only admission exercises that, and admission was never
+reached.
+
+### 15.4 B-9 — the container user cannot write `/artifacts` over the bind
+
+```
+    PASS A1-gpu-visible: GPU 0: NVIDIA GeForce RTX 3090 (UUID: GPU-ac4398bb-…)
+
+FAILED A2-artifacts-writable: unsloth:runtimeusers could not write /artifacts
+  over \\wsl.localhost\Ubuntu-22.04\mnt\f\Code\ehr-release-428496ae\scratch\test-phase\a2-artifact-probe:
+  touch: cannot touch '/artifacts/.a2probe': Permission denied
+```
+
+**This is not an artifact of the new checkout or of the copy.** The identical
+probe was run against the *old* checkout's probe directory, which passed in
+run 2, and it now fails the same way. That is the control.
+
+**Cause, established by measurement.** Ubuntu-22.04 carries a persistent
+automount policy:
+
+```
+$ cat /etc/wsl.conf
+[automount]
+options = "metadata,umask=22,fmask=11"
+
+$ awk '$2=="/mnt/f"{print $4}' /proc/mounts
+rw,noatime,aname=drvfs;path=F:\;uid=1000;gid=1000;metadata;umask=22;fmask=11;…
+```
+
+With `metadata`, DrvFs honours stored POSIX modes instead of reporting
+everything world-writable. Every path under `/mnt/f` therefore presents as mode
+`755`, owner `uid=1000`. The container runs as `uid=1001`, so it has only
+`r-x` and cannot create the artifact tree.
+
+The container user is not a driver choice. The prepared composition passes **no
+`--user`** at all (`synaptic_host/docker_v1/control_private.py:394-413`), so the
+container runs as the image's own `User`, and it binds `/artifacts` read-write
+over the same UNC:
+
+```
+image inspect → User=unsloth:runtimeusers
+"--mount", f"type=bind,source={…artifact_path.unc_path},destination=/artifacts"
+```
+
+**Single-variable isolation.** Same image, same bind shape, same default user;
+only the host-side mode differs.
+
+| Host-side directory mode | Container `id` | Result |
+|---|---|---|
+| `755` (uid 1000) | `uid=1001(unsloth) gid=102(runtimeusers)` | `Permission denied` |
+| `777` (uid 1000) | same | `WRITABLE` |
+
+Creator does not matter: a directory made by WSL `mkdir` and one made by Windows
+Host Python both present as `755`, because the mode comes from the mount policy.
+
+**Why runs 1–3 did not see it.** `/etc/wsl.conf` is dated 2026-03-11, so the
+policy is not new, but automount options are applied at **distro boot**. Run 3's
+scratch artifacts are timestamped 09:06–09:12 local; the Ubuntu-22.04 distro's
+current boot is 11:14 local. Runs 1–3 therefore ran under a different distro
+boot. That the earlier boot mounted `/mnt/f` without `metadata` is the inference
+that fits A2's flip from PASS to FAIL; the earlier mount itself was not observed
+and cannot now be.
+
+**Severity and shape.** A2 is doing exactly its job — the assertion exists so a
+non-writable `/artifacts` fails early and by name instead of late and disguised.
+The real run would bind the Host-created stage directory under
+`F:\Code\ehr-release-428496ae\.synaptic\state\docker\stages\…`, on the same
+drive under the same policy, so the trainer would fail at artifact assembly. The
+run was not issued.
+
+B-9 is **not** a Host source defect in the way B-7 was, and it is **not** a
+recipe gap of the B-6 kind that an operator step inside the checkout can clear.
+It is an undeclared **environment precondition**: the prepared path requires that
+the pinned WSL distro expose the project drive in a way the container's non-root
+user can write. Nothing in the committed profile, the preconditions, or the skill
+states that, and nothing detects it before A2.
+
+**Candidate remedies, for the owner to rule on — none applied.**
+
+1. **Host-wide, restores the runs 1–3 environment.** Drop `metadata` (or set
+   `umask=000,fmask=000`) in `/etc/wsl.conf` `[automount]` and `wsl --shutdown`.
+   Cheapest, but it changes file semantics for every project on this machine and
+   is outside the released checkout, so it is the lead's call, not the runner's.
+2. **Profile.** Point `docker_host.wsl_distro` at a distro whose `/mnt/f` mount
+   the container can write. Only `docker-desktop` is also installed and it is
+   already refuted for mount resolution (run 2, section 4). Takes effect only
+   once committed and a new released checkout is built.
+3. **Composition.** Have the prepared composition pass `--user` matching the host
+   owner, or have the Host create the stage directory group- or world-writable.
+   This is a design change to a committed surface and belongs to `architect-run`.
+
+Recommend also adding a **P8** precondition that binds a throwaway directory and
+writes to it as the image's own user, so this fails by name in the precondition
+block rather than at A2 — the same hardening P7 gave B-6.
+
+### 15.5 B-8 did not fire, and could not have
+
+The `docker_model_inventory.py:185` stat-identity re-check is exercised during
+`resolve_docker_model_inventory_v1`, inside admission. Run 4 stopped in the
+driver's assertion block, before any Host command was issued, so admission never
+ran. **B-8 neither fired nor was tested.** It remains an open intermittent risk
+carried forward from run 3, unchanged.
+
+### 15.6 Durable state — still no row, for the fourth run
+
+`F:\Code\ehr-release-428496ae\.synaptic\state` does not exist, so there is no
+`training.sqlite3`, no `docker_run_mutations` table and no row. Section 10.2's
+row contract and the `command_digest` check remain unverified. This run stopped
+even earlier than the previous three: no Host command was issued at all.
+
+### 15.7 Cleanliness
+
+- Nothing was modified in either released checkout or in the worktree beyond
+  this report and the gitignored `scratch/` trees.
+- Both released checkouts remain clean: `git status --porcelain` is 0 bytes for
+  the superproject and for the submodule.
+- No secrets were read, passed or logged. Every container ran `--network none`
+  except the A1 GPU probe, which takes no network. No `HF_TOKEN` anywhere.
+- Two pre-existing exited containers (`eh-grpocold-…-eval-…`,
+  `eh-grpocold-…-train-…`) were left alone. No container was created by this run
+  other than the short-lived probes, all `--rm`.
+- New scratch artifacts under
+  `F:\Code\ehr-release-428496ae\scratch\test-phase\`: `copy_inventory.py`,
+  `perm-experiment\` (the B-9 isolation), and `logs\08-run4-prereq7.log`,
+  `logs\09-run4-inventory-copy.log`, `logs\10-run4-inventory-verify.log`,
+  `logs\11-run4-probe-only.log`. Logs `01`–`07` in that directory are carried
+  over from runs 1–3 by the scaffolding copy and are **not** run-4 evidence.
+
+## 16. What Run 4 changed about what is unproven
+
+Newly established: the copy-plus-verify inventory route is sound at `428496ae`;
+P7 passes on a checkout that was cloned correctly rather than corrected;
+A1 and the mount-source bind still pass after a host restart.
+
+Newly blocked: everything from admission onward, now behind **B-9** rather than
+B-7. B-7's fix is untested on the shipped path — run 4 stopped before admission,
+so the SystemRoot fix has still never executed for real.
+
+Still unproven, unchanged from run 3: container creation by the prepared path,
+the stage bind, stage reuse and replay idempotency, the whole of section 10.2,
+B-2 end to end on a real SmolLM2 run, the B-5 argv equality against the
+regenerated closure manifest, and whether the 9p bind moves ~1.97 GB inside the
+run budget.
+
+Ordering note: **B-9 gates everything**, and it is the fourth
+platform-conditioned defect this workstream has surfaced that only a real
+Windows host could produce — after B-3's CRLF stdin, B-4's entrypoint hijack and
+B-7's POSIX-shaped environment scrub. Unlike those three it is not in the source
+at all; it is a property of the host the prepared path never declared it needed.
