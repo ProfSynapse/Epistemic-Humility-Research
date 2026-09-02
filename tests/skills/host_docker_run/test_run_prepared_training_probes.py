@@ -18,6 +18,7 @@ import ast
 import importlib.util
 import subprocess
 import sys
+import types
 from pathlib import Path
 
 import pytest
@@ -654,3 +655,111 @@ def test_p8_runs_after_the_bind_probe_and_before_the_first_assertion():
     p8 = source.index("_check_p8_stage_writable_as_container_user(", bind)
     a1 = source.index("_assert_a1_gpu(", p8)
     assert p7 < bind < p8 < a1
+
+
+# --------------------------------------------------------------------------
+# D1: a cut's stderr channel (section 20.14, blocker B-11)
+#
+# Section 20.11 rules that the Host surfaces an activation cause as ONE stderr
+# line and adds no `cause` field, because the result model is fixed
+# (`_failure` builds a positional V2 result; `test_cli.py:468` pins field
+# presence per code). That ruling is only viable because the driver already
+# prints stderr with the `stderr| ` prefix and still parses the result from the
+# LAST stdout line -- and until now that behaviour was unpinned: the suite
+# exercised stderr only on the P8 failure path, never for a cut. D1 converts the
+# assumption an entire ruling rests on into a test.
+#
+# `_one_cut` calls `subprocess.run` directly rather than the driver's `_run`, so
+# these cannot reuse the `_fake_docker`/`_run` harness above. The shim is
+# installed on the DRIVER's `subprocess` reference rather than on the real
+# module, so nothing outside the driver sees a replaced `run`.
+# --------------------------------------------------------------------------
+
+# The exact shape section 20.11 specifies, for run 5's failure. Frame identity
+# only: no exception text, no absolute path, no value.
+_CAUSE_LINE = (
+    "synaptic-host: START_UNAVAILABLE ValueError "
+    "at synaptic_host/security.py:373 in _win_validate_acl"
+)
+
+# Written as a literal rather than through `json.dumps` so the fixture's last
+# line is byte-exact and does not depend on a serializer's key order.
+_RESULT_LINE = '{"code": "START_UNAVAILABLE", "status": "unavailable", "run_id": null}'
+
+
+class _CutArgs:
+    """The four attributes `_one_cut` reads off the parsed namespace."""
+
+    provider = "docker"
+    config = "configs/training/tiny.json"
+    destination = "runs/tiny"
+    cut_timeout_seconds = 60
+
+
+def _fake_cut(monkeypatch, *, stdout: str, stderr: str, returncode: int = 2):
+    """Replace only what `_one_cut` reaches for: `run` and `list2cmdline`."""
+
+    def run(argv, **kwargs):
+        return subprocess.CompletedProcess(argv, returncode, stdout, stderr)
+
+    monkeypatch.setattr(
+        driver,
+        "subprocess",
+        types.SimpleNamespace(run=run, list2cmdline=subprocess.list2cmdline),
+    )
+
+
+def test_d1_a_cut_prints_the_stderr_cause_and_still_parses_the_last_stdout_line(
+    monkeypatch, project_root, capsys
+):
+    """The operator sees the cause AND the result still parses (section 20.11).
+
+    The fixture puts a NON-JSON preamble line ahead of the result line on
+    stdout, so "parses the last line" is load-bearing here rather than trivially
+    true: a driver that parsed the first line would return an empty result and
+    this test would fail.
+    """
+    _fake_cut(
+        monkeypatch,
+        stdout="Host chatter that is not JSON\n" + _RESULT_LINE + "\n",
+        stderr=_CAUSE_LINE + "\n",
+    )
+
+    exit_code, result = driver._one_cut("python.exe", project_root, _CutArgs())
+
+    out = capsys.readouterr().out
+    # Verbatim, prefix included: this is the text test-host quotes from a run.
+    assert f"    stderr| {_CAUSE_LINE}" in out
+    assert out.count(_CAUSE_LINE) == 1
+    # stdout is untouched by the cause, so the result JSON still parses.
+    assert exit_code == 2
+    assert result == {
+        "code": "START_UNAVAILABLE",
+        "status": "unavailable",
+        "run_id": None,
+    }
+
+
+def test_d1_the_cause_survives_when_it_is_not_the_only_stderr_line(
+    monkeypatch, project_root, capsys
+):
+    """Every stderr line is printed, not just the first.
+
+    Section 20.11 promises the operator sees the cause. `synaptic_host` writes
+    nothing to stderr today, but the interpreter and any library beneath it can,
+    so the cause is not guaranteed to arrive first or alone. A driver that
+    printed only one line could drop it and every other test would stay green.
+    """
+    _fake_cut(
+        monkeypatch,
+        stdout=_RESULT_LINE + "\n",
+        stderr="a warning from somewhere beneath the Host\n" + _CAUSE_LINE + "\n",
+    )
+
+    exit_code, result = driver._one_cut("python.exe", project_root, _CutArgs())
+
+    out = capsys.readouterr().out
+    assert f"    stderr| {_CAUSE_LINE}" in out
+    assert "    stderr| a warning from somewhere beneath the Host" in out
+    assert exit_code == 2
+    assert result["code"] == "START_UNAVAILABLE"

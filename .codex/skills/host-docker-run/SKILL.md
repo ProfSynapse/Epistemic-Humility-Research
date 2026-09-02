@@ -47,7 +47,13 @@ without starting a container.
 2. **The branch head is published.** The training config is read as a committed
    git blob at the locked project commit, not from the working tree. An edited
    but uncommitted config cannot take effect.
-3. **The model inventory is materialized and link-free.** See below.
+3. **The model inventory is materialized and link-free.** See below. This step
+   creates `.synaptic` before the Host has ever run, and on Windows that
+   directory and everything under it then carries the access list it inherits
+   from the project directory. **That is expected and needs no action from you.**
+   The Host repairs the chain at activation. Do not pre-protect `.synaptic`, and
+   do not change this step to create it differently — see the note under
+   prerequisite 9.
 4. **Docker Desktop with the Linux engine**, context `desktop-linux`, endpoint
    `npipe:////./pipe/dockerDesktopLinuxEngine`. Do not pass an endpoint flag to
    the Host: it probes and re-asserts the descriptor itself.
@@ -136,7 +142,7 @@ without starting a container.
    against the **image's** `/etc/passwd`, which cannot express a host mount
    identity.
 
-   Two things to expect rather than diagnose:
+   Three things to expect rather than diagnose:
 
    - **P8 creates the stage parent.** A `--probe-only` pass now creates
      `.synaptic\state\docker\stages` if it is absent, by the same idempotent call
@@ -150,6 +156,24 @@ without starting a container.
      a warning because a non-writable `HOME` is legitimate for a workload that
      never writes there. It is tracked as **B-9-R1** and settled by the trainer's
      own output, not by this probe.
+   - **An inherited `.synaptic` after a `--probe-only` pass is EXPECTED.** P8
+     creates the stage parent with an ordinary directory call, exactly as
+     prerequisite 3 creates `.synaptic` itself, so on Windows the whole chain
+     carries the access list it inherits from the project directory. The Host
+     **repairs** that chain at activation, from the never-protected state only,
+     and only through the path that creates the storage. So a probe-only pass
+     legitimately leaves an inherited chain behind, and the next real run fixes
+     it. That is blocker **B-11**, which stopped run 5 at cut 1 before the
+     repair existed.
+
+     **Do not pre-protect `.synaptic`, and do not change P8 or the inventory
+     step to create it protected.** Doing so would set the access list of the
+     model inventory's parent *before* the inventory is written, which was never
+     measured, and the path-based form of that call is destructive: it empties
+     the access list of every child, leaving them unreadable to you, to WSL and
+     to the container, while the Host's own validator still accepts the root.
+     The failure is silent and the check stays green, which is why this note
+     exists.
 
 ## Materializing the model inventory
 

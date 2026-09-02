@@ -475,8 +475,8 @@ def _probe_bind_source(
 # field and not a module constant like `_CONTAINER_ENTRYPOINT` above.
 _CONTAINER_USER_KEY = "container_user"
 
-# The REAL stage parent, the one `docker_staging.py:1686` creates with the same
-# idempotent call. Probing it rather than a scratch directory removes an
+# The REAL stage parent, the one `docker_staging.py:1699-1700` creates with the
+# same idempotent call. Probing it rather than a scratch directory removes an
 # inference: the presented mode of a fresh directory comes from the mount policy
 # rather than from its creator, so a throwaway would be equivalent ON THIS HOST,
 # but that equivalence rests on a single measurement (section 18.11).
@@ -578,13 +578,33 @@ def _check_p8_stage_writable_as_container_user(
     proven to resolve, or a mount-source fault would surface as a permission
     message. It precedes every assertion, because a non-writable stage makes the
     rest of the run moot.
+
+    The chain this creates is EXPECTED to be inherited, and that is not a fault
+    (blocker B-11, section 20.10, task #160). The `mkdir` below is an ordinary
+    pathlib call, so on Windows `.synaptic` and everything under it carries the
+    access list it inherits from the project directory. After a `--probe-only`
+    pass that is exactly the state the Host will find. It is not a failure and
+    it needs no operator action: the Host REPAIRS the chain at activation, from
+    the never-protected state only, and only through the path that creates the
+    storage (`for_docker` repairs; `initialize` does not). Section 20.16 row 1
+    judges the run against that design.
+
+    Do NOT "fix" this by pre-protecting `.synaptic` here. Two reasons, both
+    measured rather than argued. Writing a protected list from this script would
+    change the access list of the model inventory's PARENT before the inventory
+    is written, which is the one arm of B-11-M1 (task #165) that was never
+    measured, and it would alter the shape of the only thing that worked in run
+    5. And the path-based form of that call is DESTRUCTIVE: section 20.17 row
+    20.1a records that it empties the access list of every child, leaving them
+    unreadable to the owner, to WSL and to the container, while the Host's own
+    validator still accepts the root -- a silent failure with a green check.
     """
     stage_parent = project_root.joinpath(*_STAGE_PARENT_PARTS)
     existed = stage_parent.is_dir()
     try:
         # The identical idempotent call the staging code makes at
-        # `docker_staging.py:1686`. Matching it is the point: this probe measures
-        # the directory the run will actually use.
+        # `docker_staging.py:1699-1700`. Matching it is the point: this probe
+        # measures the directory the run will actually use.
         stage_parent.mkdir(parents=True, exist_ok=True)
         probe = stage_parent / _P8_PROBE_DIRECTORY
         probe.mkdir(exist_ok=True)
