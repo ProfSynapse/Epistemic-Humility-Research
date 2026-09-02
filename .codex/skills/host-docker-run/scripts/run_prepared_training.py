@@ -86,6 +86,22 @@ _DEFAULT_PROVIDER = "docker"
 # must fail loudly if it is absent rather than silently downloading.
 _PROBE_IMAGE = "python:3.12-slim"
 
+# The prepared composition sets this as the container entrypoint (architecture
+# section 17.2); in the package the token is
+# `synaptic_host.docker_v1.control_private._CONTAINER_ENTRYPOINT_V1`. This driver
+# is a checked-in script OUTSIDE the package, so it restates the token rather
+# than importing it, and the two must not drift.
+#
+# Why any of this is needed: the committed image's ENTRYPOINT is
+# `/usr/local/bin/entrypoint.sh`, which ends in `exec /usr/bin/supervisord` and
+# never runs `exec "$@"`, so an appended command is DISCARDED and the container
+# starts jupyter, ollama and sshd instead (blocker B-4, section 17.1). `env`
+# with no NAME=VALUE operands is the POSIX identity: it execs its argument
+# vector unchanged. Without it these three probes would each start supervisord
+# and time out, reporting T1-timeout for assertions whose whole purpose is to
+# name a true cause.
+_CONTAINER_ENTRYPOINT = "env"
+
 # Conservative loop bounds. Both are arguments; these are the defaults.
 _DEFAULT_MAX_CUTS = 40
 _DEFAULT_MAX_SECONDS = 3600
@@ -202,13 +218,20 @@ def _load_profile(project_root: Path) -> dict:
 def _check_p5_drive_mount_root(profile: dict) -> tuple[str, str]:
     """The committed profile must carry `docker_host.drive_mount_root` (B-1).
 
-    Without it the emitted bind source is
-    `\\\\wsl.localhost\\docker-desktop\\mnt\\f\\...`, and inside the
-    `docker-desktop` distro `/mnt` is that distro's own ext4 while the host
-    drives are drvfs at `/mnt/host/{c,e,f}`. `/mnt/f` survives there as an empty
-    skeleton from a legacy bind, which is worse than absence because it looks
-    plausible. The composition uses `--mount type=bind`, which fails hard on a
-    missing source (`control_private.py:404-407`).
+    Without it the drive mount prefix is a code literal and the emitted bind
+    source cannot be steered from configuration at all. The committed pair is
+    `Ubuntu-22.04` with `/mnt`, which renders
+    `\\\\wsl.localhost\\Ubuntu-22.04\\mnt\\f\\...`. The `docker-desktop`
+    candidate is refuted by measurement: the engine exposes no mount service for
+    that distro and fails with `stat
+    /run/guest-services/distro-services/docker-desktop.sock: no such file or
+    directory`. The composition uses `--mount type=bind`, which fails hard on a
+    missing source (`control_private.py:404-407`), so a wrong pair fails the run
+    rather than silently binding the wrong directory.
+
+    This check reads both values from the profile and asserts only that they are
+    present and non-empty; it never pins a particular pair, so a re-probe that
+    changes the committed value needs no change here.
     """
     docker_host = profile.get("docker_host")
     if not isinstance(docker_host, dict):
@@ -329,6 +352,7 @@ def _assert_a1_gpu(docker: str, endpoint: str, image: str) -> None:
     completed = _run([
         docker, "--host", endpoint, "run", "--rm", "--pull", "never",
         "--gpus", "driver=nvidia,device=0",
+        "--entrypoint", _CONTAINER_ENTRYPOINT,
         image, "nvidia-smi", "-L",
     ])
     if completed.returncode != 0:
@@ -355,6 +379,7 @@ def _assert_a2_artifacts_writable(
         "--network", "none",
         "--user", "unsloth:runtimeusers",
         "--mount", f"type=bind,source={source},target=/artifacts",
+        "--entrypoint", _CONTAINER_ENTRYPOINT,
         image, "sh", "-c",
         "touch /artifacts/.a2probe && rm /artifacts/.a2probe && echo WRITABLE",
     ])
@@ -378,6 +403,7 @@ def _assert_a3_python_version(
     completed = _run([
         docker, "--host", endpoint, "run", "--rm", "--pull", "never",
         "--network", "none",
+        "--entrypoint", _CONTAINER_ENTRYPOINT,
         image, executable, "-c", "import platform; print(platform.python_version())",
     ])
     if completed.returncode != 0:

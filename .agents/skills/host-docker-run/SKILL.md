@@ -49,6 +49,21 @@ without starting a container.
    The CPU branch is unreachable: the trainer spawns a worker that imports
    unsloth at module top level, and `adamw_8bit` plus `bf16: true` have no CPU
    fallback and no override.
+7. **`--entrypoint env` works on the committed image — probe it ONCE before the
+   first real run.** The prepared composition and the A1-A3 probes both rely on
+   it, and the image's own `env` was never observed by the architect. Run:
+
+   ```
+   docker.exe --host npipe:////./pipe/dockerDesktopLinuxEngine run --rm \
+     --pull never --network none --entrypoint env <image@sha256:...> \
+     /opt/conda/bin/python3 -c "print('ok')"
+   ```
+
+   Expect exactly `ok`. If `env` is not on the image's PATH, the single-token
+   fallback is `/usr/bin/env`. If the flag itself misbehaves, STOP and report
+   rather than improvising: nothing on this path reads `Config.Entrypoint`
+   back, so a daemon that silently ignored the flag would present as blocker
+   B-4 all over again (architecture sections 17.9 and 17.11).
 
 ## Materializing the model inventory
 
@@ -128,20 +143,38 @@ rather than let it appear later disguised as something else.
 | A3 | The container's Python matches the profile at full patch level | The trainer demands full patch-level equality and refuses otherwise |
 | A4 | The snapshot exists at the cache path and contains no links | Confirms the inventory design end to end before training starts |
 
+A1, A2 and A3 each pass `--entrypoint env` immediately before the image
+reference, matching the token the prepared composition uses. Without it the
+image's own entrypoint runs `supervisord` and discards the appended command,
+so all three would start jupyter and time out at `T1-timeout` — the exact
+disguised failure these assertions exist to prevent. The bind probe is
+unaffected: it uses `python:3.12-slim`, not the profile image.
+
 The container user in A2 is not a guess: `preparer-host` measured the committed
 image's `User` as `unsloth:runtimeusers` and recorded it in
 `docs/preparation/environment-model-prepared-path-alpine-diagnostic.md`.
 
 The driver also probes the **mount source** before the first real run. The
 emitted bind source is `\\wsl.localhost\<distro>\<drive_mount_root>\<drive>\...`.
-Inside the `docker-desktop` distro, `/mnt` is that distro's own ext4 and the host
-drives are drvfs under `/mnt/host`. A stale `/mnt/f` skeleton can survive there
-from a legacy bind, which is worse than absence because it looks plausible, so
-the probe fails an empty listing as well as a failed bind.
+The committed pair is `Ubuntu-22.04` with `drive_mount_root` `/mnt`, where the
+Windows drives are drvfs at `/mnt/<drive>`, so `F:` renders as
+`\\wsl.localhost\Ubuntu-22.04\mnt\f\...`.
+
+The `docker-desktop` distro was tried first and is **refuted by measurement**,
+not merely unpreferred. Inside it `/mnt` is that distro's own ext4 and the host
+drives are drvfs under `/mnt/host`, but the engine cannot resolve a source there
+at all: it fails with `accessing specified distro mount service: stat
+/run/guest-services/distro-services/docker-desktop.sock: no such file or
+directory`. Do not switch back to it on the theory that a nested root is tidier.
+A stale `/mnt/f` skeleton can also survive in that distro from a legacy bind,
+which is worse than absence because it looks plausible, so the probe fails an
+empty listing as well as a failed bind.
 
 If the probe fails, the fix is a **configuration** change, not a code change:
-switch `docker_host.drive_mount_root` and `wsl_distro` to the fallback pair and
-re-probe. The driver never edits the profile.
+switch `docker_host.drive_mount_root` and `wsl_distro` to another measured pair
+and re-probe. The driver never edits the profile. Because the profile is read as
+a git blob at the locked project commit, a changed value takes effect only once
+it is committed and a new released checkout is built.
 
 ## Reading a failure
 
@@ -170,6 +203,13 @@ observe cut returns the record unchanged. That is not a stall.
   The materialization script is an operator tool, not a Host feature.
 - Do not use the legacy same-process composition facade. The prepared path is
   disjoint from it and stays disjoint by changing nothing.
+- Do not feed a shell program to a container with `subprocess.run(input=<str>,
+  text=True)`. Text mode rewrites `\n` to `os.linesep`, so on Windows the
+  container's `sh` receives CRLF and dies on `set -eu\r` with `Illegal option
+  -`. The translation is the identity on Linux and WSL, so the defect is
+  invisible everywhere except the host that matters. Send bytes; the
+  materialization script does, and guards the invariant as
+  `M3-stdin-newlines`.
 - Do not run the suites with a directory glob. Use explicit test file paths: the
   rtk proxy reports "No tests collected" for globs. Use an explicit 3.11+
   interpreter.
