@@ -1912,3 +1912,351 @@ would prejudge a ruling that deserves its own candidates. It does not prove that
 any cache is written during a real run; that remains the open measurement and run
 5 is the instrument. It does not touch #134 or #135, which are correct as
 dispatched and should ship unchanged.
+
+## 19. Amendment 2026-09-02 — ruling on B-10 (staging re-verifies the artifact topology on every cut)
+
+### 19.1 The defect, restated from source
+
+`execute_docker_training_admission_v1` (`docker_training.py:535-680`) is the
+single entry for every cut of the one unchanging Host command. It calls
+`_activate_docker_training_v1` at `:667` with no phase guard. Staging is that
+function's first substantive statement (`:790`), and
+`stage_docker_worker_v1` runs `_verify_artifact_topology(final_artifacts,
+model_inventory)` at `docker_staging.py:1791` on every call — the
+`if not final_stage.exists()` guard at `:1775` governs only promotion of the
+temporary stage.
+
+`_verify_artifact_topology` (`:1446-1481`) then requires `artifacts`, `state`,
+`tmp` and `tracking` to be **empty** (`:1475-1478`). A training run writes into
+those directories. So the first cut issued after the trainer writes anything
+fails, and `docker_training.py:673-674` maps it to `START_UNAVAILABLE`.
+
+This is pre-existing. B-9 did not introduce it and does not fix it.
+
+### 19.2 Two constraints that eliminate most of the candidate space
+
+**Constraint 1 — staging cannot be skipped on a later cut.** `provisional`
+embeds `stage=staging.projection` (`docker_training.py:901`), `request` carries
+it (`:904`), and `:917-918` raises `"durable Docker command differs from replay"`
+when the replayed `provisional` differs from the stored one. So
+`stage_docker_worker_v1` must still run on every cut and must still return a
+byte-identical projection. Only the **verification** may become conditional, and
+only the part of it that is about use rather than identity.
+
+**Constraint 2 — the phase is not readable where staging happens, but it can
+be.** The repository is opened at `:875` and the mutation row loaded at `:919`,
+roughly 130 lines after the stage call at `:790`. That ordering is not
+load-bearing: `run` (`:843`) is built from `source_lock.run_id` and
+`project_ref`, and `repository` from `context` and `clock`. All four are direct
+parameters of `_activate_docker_training_v1` (`:734-737`), so both statements can
+move above `:790` without depending on staging.
+
+### 19.3 The distinction the contract is missing
+
+`_verify_artifact_topology` does two different jobs in one pass:
+
+| Check | Line | Kind |
+|---|---|---|
+| root is a real directory, not a symlink or reparse point | `:1455-1461` | identity |
+| exactly the five directory names, each a real directory | `:1463-1473` | identity |
+| `/artifacts/cache` equals the model inventory exactly | `:1474` | identity |
+| `artifacts`/`state`/`tmp`/`tracking` are empty | `:1475-1478` | **use state** |
+
+The identity checks answer "is this the stage we prepared". They must run on
+every cut, because they cover the tree that determines what executes. The
+emptiness check answers "has anything run against this stage yet". That is a
+precondition, and only the caller knows whether it holds.
+
+### 19.4 Ruling — candidate (c), with candidate (a) supplying the predicate
+
+They are not competitors. (c) says *what* becomes conditional; (a) says *what it
+is conditional on*. The ruling is both.
+
+**1. `_verify_artifact_topology` takes a required keyword-only parameter.**
+
+```
+def _verify_artifact_topology(
+    root: Path,
+    entries: tuple[DockerModelInventoryEntryV1, ...],
+    *,
+    expect_unused_artifacts: bool,
+) -> None:
+```
+
+The loop at `:1475-1478` runs only when `expect_unused_artifacts` is true.
+Everything above it is untouched and unconditional.
+
+**2. `stage_docker_worker_v1` takes the same required keyword-only parameter**
+under the same name, and forwards it at `:1791`. One term for one thing.
+
+**No default on either.** This is the same rule I applied to `container_user` in
+18.3: a default lets a future caller silently get the weaker behaviour, and the
+weaker behaviour here is the one that admits an unverified stage.
+
+**3. The caller computes it from the durable phase.** In
+`_activate_docker_training_v1`, move `run = TrainingRunRef(...)` (`:843`) and
+`repository = SqliteTrainingRepository.from_context(...)` (`:875`) above the
+stage call at `:790`, and add:
+
+```
+prior = repository.load_docker_run_mutation(run.project_ref, run.run_id)
+expect_unused_artifacts = prior is None or prior.phase in {
+    DockerRunPhaseV1.CREATE_ADMITTED,
+    DockerRunPhaseV1.CREATE_ATTEMPTED,
+    DockerRunPhaseV1.CREATED,
+}
+```
+
+`current = repository.load_docker_run_mutation(...)` at `:919` **stays where it
+is and is not replaced by `prior`.** The two reads have different meanings:
+`prior` is the state before this cut did anything and may legitimately be
+`None`; `current` is read after `create_docker_prepared_run` may have inserted
+the row (`:912`) and must not be `None` (`:920-921`). Collapsing them would make
+the first cut's `None` reachable at `:920`.
+
+### 19.5 Why the boundary sits between `CREATED` and `START_ADMITTED`
+
+`DockerRunPhaseV1` (`docker_execution_state.py:314-324`) is
+`CREATE_ADMITTED, CREATE_ATTEMPTED, CREATED, START_ADMITTED, START_ATTEMPTED,
+SUBMITTED, RECONCILE_REQUIRED, PROCESS_SUCCEEDED, PROCESS_FAILED,
+ARTIFACTS_VERIFIED`.
+
+`docker create` does not run the container's process. A container that has been
+created but never started cannot have written to the bind. So the three phases
+up to and including `CREATED` are exactly the phases in which the writable roots
+must still be empty, and `START_ADMITTED` is the first phase in which a write is
+explicable.
+
+This is corroborated rather than invented: `docker_training.py:922-925` already
+branches on precisely `{CREATE_ADMITTED, CREATE_ATTEMPTED, CREATED}` to choose
+`.submit(request)`. The existing code already draws the line in the same place
+for the same reason. The guard reuses that set rather than introducing a second,
+independently-maintained notion of "not yet started".
+
+`START_ATTEMPTED` falls outside the set, which is the conservative direction: a
+start that was attempted may have succeeded, so the run may have written.
+
+### 19.6 What a crashed run leaves behind — handled without operator cleanup
+
+| Crash window | Durable phase left behind | Writable roots | Guard result |
+|---|---|---|---|
+| before `docker create` | `CREATE_ADMITTED` | empty | emptiness required, holds |
+| during `docker create` | `CREATE_ATTEMPTED` | empty | emptiness required, holds |
+| after create, before the `CREATED` write | `CREATE_ATTEMPTED` | empty | emptiness required, holds |
+| after start, mid-training | `START_ADMITTED`+ | non-empty | emptiness not required, cut proceeds |
+| after training, before publish | `PROCESS_SUCCEEDED` | non-empty | emptiness not required, cut proceeds |
+
+No window requires an operator to delete a stage by hand, which was the failure
+mode I was most worried about in the #139 teachback. The stage_key is recomputed
+from the same inputs, so a crashed run's stage is re-entered rather than
+orphaned, and every re-entry is still identity-verified in full.
+
+**The check is not removed.** In the pre-start window it keeps its full force: a
+stage whose writable roots are non-empty while the phase is still
+`CREATE_ADMITTED` still raises, because nothing that the durable record admits
+can explain that content. That is the tamper signal, and it survives intact.
+
+### 19.7 Why candidate (b) is closed
+
+A recorded verification digest reused on later cuts cannot do the job, and the
+reason is not cost but possibility.
+
+- **For the writable roots it is impossible.** Once the run starts, the Host has
+  no expected value for their contents. It does not know what the trainer will
+  write. A digest recorded pre-run proves only the pre-run state, which the
+  durable phase already proves, more cheaply and without storage.
+- **For the read-only tree it is redundant.** `_verify_reuse` (`:1784-1789`) and
+  `_verify_inventory_at` (`:1474`) already provide exactly that guarantee, on
+  every cut, unconditionally, and this ruling leaves both alone.
+- **It would need somewhere durable to record the digest**, which is a new
+  column or a new table. The standing constraints forbid a new table absent a
+  review proving it unavoidable, and it is not unavoidable — it is unnecessary.
+
+### 19.8 Why a bare phase guard at the activation level is closed
+
+Skipping the `stage_docker_worker_v1` call on later cuts is the obvious cheap
+fix and it is forbidden by Constraint 1 in 19.2. Without a projection there is no
+`provisional`, and `:917-918` raises. Staging must run every time.
+
+### 19.9 The author's intent, and what the tests already pin
+
+`tests/synaptic_host/test_docker_training.py` installs a spy over
+`_verify_artifact_topology` (`:593`, `:605-610`) and asserts at `:691-692` that
+it fired once on the fresh stage, then at `:703-704` that it fired **again** on
+the replay. So the original author did not merely allow re-verification on
+reuse; they pinned it deliberately.
+
+In the #139 teachback I said I would change the ruling if I found this. I have
+found it, and it does not change the ruling — it sharpens it. What the author
+pinned is that a **reused stage is re-verified**, and this ruling keeps that:
+the verifier is still called on every cut and both assertions continue to pass
+unchanged. What the author could not have modelled is that between two calls the
+container may **legitimately** have written, because at the time the contract
+was written the emptiness of the writable roots and the integrity of the stage
+were the same predicate. One command growing several cuts separated them. The
+fix therefore tells the verifier its precondition rather than weakening its
+predicate, which is the disposition I argued for before I knew what the tests
+said.
+
+### 19.10 Candidate (d) — `HF_HOME` and `TRANSFORMERS_CACHE` must move to `/tmp`
+
+Yes, and for a reason that stands on its own even if B-10 were fixed some other
+way.
+
+I checked the hypothesis I flagged in the #139 teachback as most likely to fall,
+and it held. `SYNAPTIC_CACHE_ROOT` is a **read** root, not a scratch root: the
+engine resolves the locked model snapshot at
+`cache_root / "model" / <repository folder> / "snapshots" / <revision>`
+(`tuner/runtime/dispatch.py:189-211`, `Trainers/sft/runtime_v1.py:634-660`). So
+`/artifacts/cache` is an input tree, `_verify_inventory_at` is right to demand
+exact equality, and this ruling keeps that check **unconditional on every cut**.
+
+That decides `HF_HOME`. The only writers pointed into that input tree are the
+Host's own `HF_HOME=/artifacts/cache/huggingface` and
+`TRANSFORMERS_CACHE=/artifacts/cache/transformers` (`docker_training.py:461-462`).
+If they stay, the first HuggingFace write creates a directory under `cache` and
+`_verify_inventory_at` raises `"content-addressed model inventory has extra
+directories"` — a check I am explicitly ruling must never be relaxed. So they
+move, to `/tmp/hf` and `/tmp/transformers`, joining the four keys from 18.21.
+
+**Scope note for `coder-engine-r1`: this does not grow the engine change.**
+`HF_HOME` and `TRANSFORMERS_CACHE` are already in `allowed_environment`
+(`sft.py:52-63`). Changing their **values** needs no allowlist edit and no
+closure regeneration. Only the four new keys do.
+
+### 19.11 Pricing against the standing constraints
+
+| Constraint | Effect |
+|---|---|
+| No compatibility layer, no legacy fallback | None added. `composition.py` is not touched and gains no default. |
+| No new database table | None. The guard reads an existing row through an existing method. |
+| No downloader, no generic cache framework | None. |
+| Closure manifest | **Host-side only, confirmed.** `docker_staging.py` and `docker_training.py` are Host repo files; every closure member is an engine path under `tuner/` or `Trainers/`. No regeneration. |
+| Durable SQLite rows | Schema unchanged. One extra read of an existing row, earlier in the same function. |
+| Plan fingerprint and `provisional` | Unchanged by the guard. `staging.projection` carries digests of the source manifest, worker projection, closure, inventory and storage configuration — none of them covers writable-root emptiness — so the projection is byte-identical and `:917-918` still holds. |
+
+The `/tmp` cache move **does** change the environment dict, and therefore the
+workload digest and the stage key. That is a consequence, not a defect: run 5
+starts from a fresh stage regardless, which is what we want.
+
+### 19.12 Coder-ready specification
+
+**`synaptic_host/docker_staging.py`** (in neither B-9 lane, no collision):
+1. `_verify_artifact_topology` — add required keyword-only
+   `expect_unused_artifacts: bool`; wrap only the `for name in
+   _EMPTY_ARTIFACT_DIRECTORY_NAMES` loop at `:1475-1478` in `if
+   expect_unused_artifacts:`. Change nothing above it.
+2. `stage_docker_worker_v1` (`:1650`) — add the same required keyword-only
+   parameter; forward it at the `:1791` call.
+3. **No new or reworded failure messages.** `"artifact writable directory is not
+   empty"` stays verbatim; it is pinned by `match="not empty"`.
+
+**`synaptic_host/docker_training.py`**, all inside
+`_activate_docker_training_v1`. Anchor by statement, not line number, because
+`coder-user`'s follow-up shifts the numbering:
+4. Move the `run = TrainingRunRef(source_lock.run_id, project_ref)` statement
+   and the `repository = SqliteTrainingRepository.from_context(context,
+   clock=clock)` statement to immediately after the `authenticator = ...` block
+   and before the `staging = stage_docker_worker_v1(...)` call.
+5. Immediately before that call, add the `prior` read and the
+   `expect_unused_artifacts` predicate exactly as written in 19.4, and pass the
+   keyword to `stage_docker_worker_v1`.
+6. Leave `current = repository.load_docker_run_mutation(...)` and its `None`
+   guard where they are.
+
+**Collision map.** `coder-user` owns the environment dict (`:450-464`) and the
+profile pass-through (`:881`); `#134` has landed at `82e6fbd0`, so nothing is
+live there now. The `/tmp` cache move in 19.10 is a `coder-user` edit confined to
+two lines of the environment dict and is disjoint from items 4-6. Either order is
+safe provided they are separate commits.
+
+### 19.13 Tests
+
+**Existing pins that must be updated in the same commit.** Enumerated rather
+than discovered later:
+
+- `tests/synaptic_host/test_docker_staging.py` — six direct calls at `:542`,
+  `:546`, `:556`, `:560`, `:571`, `:578`, across
+  `test_artifact_topology_requires_exact_empty_writable_directories`,
+  `test_artifact_topology_rejects_extra_root_and_cache_directories` and
+  `test_artifact_topology_rejects_special_slot_and_reparse_root`. Each gains
+  `expect_unused_artifacts=True`, which preserves their current meaning exactly.
+- `tests/synaptic_host/test_docker_training.py` — the `verify_artifacts` spy
+  (`:605-610`) must accept and forward the keyword; the two
+  `stage_docker_worker_v1` call sites (`:636`, `:693`) each gain
+  `expect_unused_artifacts=True`. **The assertions at `:691-692` and `:703-704`
+  stay unchanged and must still pass**, because the verifier is still called on
+  both the fresh and the replay path. If either of those assertions has to
+  change, the implementation has drifted from this ruling.
+
+**New tests:**
+
+1. Post-run cut passes: an artifact topology with a file in `state` and
+   `expect_unused_artifacts=False` does not raise.
+2. Identity survives the relaxation — the important one. With
+   `expect_unused_artifacts=False` **and** a non-empty `state`: an extra
+   directory under `cache` still raises `"extra directories"`; an extra root
+   directory still raises `"incomplete or extended"`; a reparse root still
+   raises `"redirected or invalid"`. This pins that the relaxation did not
+   silently disable the identity half.
+3. Predicate: `expect_unused_artifacts` is true for no durable row and for each
+   of `CREATE_ADMITTED`, `CREATE_ATTEMPTED`, `CREATED`; false for
+   `START_ADMITTED`, `START_ATTEMPTED`, `SUBMITTED`, `RECONCILE_REQUIRED`,
+   `PROCESS_SUCCEEDED`, `PROCESS_FAILED`, `ARTIFACTS_VERIFIED`. Enumerate all
+   ten so a future enum addition fails the test rather than defaulting into the
+   permissive branch.
+4. End-to-end replay: after writing a file into `state`, a replay whose durable
+   phase is past `CREATED` succeeds, and a replay whose phase is still `CREATED`
+   raises `"artifact writable directory is not empty"`.
+
+### 19.14 What run 5 must observe to close B-10 on evidence
+
+B-10 is proven by reading and has never been seen. The fix is correct
+independently of that, but the *finding* closes only on an observation.
+
+The stage is fresh at run 5 (19.11), so cut 1 tells us nothing. **The cut to
+watch is the first observe cut after submit — cut 2.**
+
+The driver must record, in this order, at cut 2:
+1. whether `<stage>\artifacts\state` is non-empty on the Host before the cut is
+   issued;
+2. the command result code the cut returns.
+
+Readings:
+
+| `state` at cut 2 | Cut 2 code | Conclusion |
+|---|---|---|
+| non-empty | not `START_UNAVAILABLE` | **B-10 confirmed and fixed.** Close it. |
+| non-empty | `START_UNAVAILABLE` | fix is wrong or incomplete; re-open with the message. |
+| empty | any | **unconfirmed.** The reading stands unrefuted but untested; B-10 stays on the ledger as latent and the next cut with a non-empty `state` settles it. |
+
+The third row is the honest one and I expect it is possible: if the trainer
+buffers and writes late, `state` may still be empty at cut 2. That is not a pass,
+it is a deferral, and it must be reported as one.
+
+### 19.15 Ledger row
+
+- **B-10 (Blocker, ruled).** Staging re-verifies on every cut
+  (`docker_training.py:667`, `:790`; `docker_staging.py:1791`), and
+  `_verify_artifact_topology` requires the four writable roots empty
+  (`:1475-1478`), so the first cut after the trainer writes under `/artifacts`
+  fails `START_UNAVAILABLE` (`docker_training.py:673-674`). Ruled in section 19:
+  the emptiness check becomes conditional on a required keyword-only
+  `expect_unused_artifacts`, computed by the caller from the durable phase
+  (`prior.phase in {CREATE_ADMITTED, CREATE_ATTEMPTED, CREATED}`, or no row);
+  every identity check stays unconditional. `HF_HOME` and `TRANSFORMERS_CACHE`
+  move to `/tmp` alongside the R1 keys, because `/artifacts/cache` is a read root
+  (`dispatch.py:189-211`) whose exact-equality check must never be relaxed. No
+  new table, no schema change, no closure regeneration, projection byte-identical.
+  Closes on run 5 cut 2 per 19.14, and stays open as latent if `state` is empty
+  at that cut.
+
+### 19.16 What this ruling does not settle
+
+It does not make the writable roots tamper-evident after a run starts. That is
+not a gap I am deferring; it is not knowable Host-side, because the Host has no
+expectation for what the trainer writes. The tamper surface that matters — the
+source closure and the model inventory, which together determine what executes —
+stays verified on every cut. It also does not settle whether the trainer writes
+early enough for cut 2 to confirm the finding, which is 19.14's third row and
+belongs to run 5.
