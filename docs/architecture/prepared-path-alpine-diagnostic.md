@@ -1389,9 +1389,9 @@ to be.
   existed — report sections 13.6 and 15.6).
 - **`DockerCreateSpecificationV1` (`create.py:400-410`)**: the specification
   already carries a `working_directory_digest`. A `container_user_digest`
-  alongside it is **optional** and is not required by this ruling; the value is
-  already covered by `command_digest`. If the coder adds it, it is a pure
-  addition and must be listed in the HANDOFF, not slipped in.
+  alongside it is **ruled out** (lead ruling on open question 2, 2026-09-02):
+  `command_digest` already covers the value, so `DockerCreateSpecificationV1`
+  gains no new field. A coder who adds one has left the ruling.
 
 ### 18.10 The writable-`HOME` question is engine-side and is NOT ruled here
 
