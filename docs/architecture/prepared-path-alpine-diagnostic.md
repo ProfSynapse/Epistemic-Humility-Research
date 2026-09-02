@@ -2130,6 +2130,30 @@ move, to `/tmp/hf` and `/tmp/transformers`, joining the four keys from 18.21.
 (`sft.py:52-63`). Changing their **values** needs no allowlist edit and no
 closure regeneration. Only the four new keys do.
 
+**Amendment (lead, 2026-09-02, after coder-user #149).** The scope note above is
+wrong about where the constraint sits. The allowlist admits the two keys, but
+the engine's `SourceLockV1.__post_init__`
+(`tuner/project/execution_source.py:489-502`) builds a `required_environment`
+that pins `HF_HOME` to `roots["cache"] + "/huggingface"` and
+`TRANSFORMERS_CACHE` to `roots["cache"] + "/transformers"` and raises
+`SourceLockError("runtime environment does not bind the exact roots and
+isolation")` on any other value, at admission (`RESOLUTION_UNAVAILABLE`). It is
+a required-subset check: adding the four 18.21 keys is free, changing these two
+values is refused (measured: 3 regressions in
+`tests/synaptic_host/test_docker_training.py` with the move, 0 without). The same
+pair is encoded at `tuner/runtime/verification.py:635-636` and
+`Trainers/sft/runtime_v1.py:1207-1208`; `execution_source.py` is a closure
+member, so the move is the full B-5 shape in the engine, not a Host edit. Filed
+as **B-10-R1 (engine)**, task #153. User ruling (META-BLOCK #154, option A):
+release without the move; run 5 measures whether anything writes under
+`/artifacts/cache` in offline mode with the model resolved from the local
+snapshot. Reading at cut 2: cache inventory-exact through the run means
+unproven-as-active (ledger Future); `"content-addressed model inventory has
+extra directories"` means active, engine rePACT with evidence. That failure
+text is distinguishable from B-10's, which names the writable roots, so the two
+cannot be confused in the B10-EVIDENCE lines. Host `ab929102` ships the four
+keys and leaves `HF_HOME`/`TRANSFORMERS_CACHE` at their 4a01fc55 values.
+
 ### 19.11 Pricing against the standing constraints
 
 | Constraint | Effect |
