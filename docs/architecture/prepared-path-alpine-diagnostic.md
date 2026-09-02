@@ -2975,3 +2975,120 @@ the Modal lane also uses, for no benefit this blocker needs.
 It does not address the same never-repaired asymmetry anywhere outside this
 class. The pattern of "create correctly, validate strictly, never reconcile" is a
 shape, and this ruling fixes the one instance that has cost a cycle.
+
+### 20.19 Addendum — three gaps found during implementation
+
+Two of these are enumeration failures of mine, and they are the same failure
+twice: I listed the instances I had read rather than sweeping the codebase for
+the shape. Section 20.15 applied that discipline to test pins and found every
+one; sections 20.5 and 20.11 did not apply it to call sites or to handlers.
+Citations verified against `be97a082`.
+
+#### 20.19.1 The ensure path has three callers, not two
+
+`_ensure_private_storage_directories` is called from `for_docker:534`,
+`initialize:609` and **`_key:693`**. Section 20.5 named the first two. The
+required keyword-only flag forces a value at the third, so it has to be ruled.
+
+**`_key:693` passes `repair=False`.** This is not a close call; section 20.5's
+own rationale dictates it. `private_storage_verified` is literally
+`self._key(); return True` (`:762-765`), and `encoded_key`, `sign` and `verify`
+all reach the key the same way. If `_key` repaired, then reading the property
+would repair as a side effect, `test_security.py:411-422` would fail by design
+rather than by accident, and the fail-closed-after-drift guarantee at `:392-408`
+would be inverted: drift would be silently corrected instead of detected. The
+repair belongs to the path that makes the world match the contract, never to the
+path that reports whether it does.
+
+Nothing is lost by refusing to repair there. `for_docker` repairs at `:534`
+before it ever touches the key, and both of its continuations — `initialize` at
+`:540` and `_key` at `:542` — re-enter the ensure path afterwards, find a chain
+that is already valid, and no-op.
+
+This is also the clearest evidence that the required flag with no default was the
+right shape. A default would have handed `_key` whatever that default was, and on
+a permissive default it would have silently broken the drift guarantee with no
+diff to review.
+
+#### 20.19.2 The cause line moves into `fail`, and covers every handler
+
+Section 20.11 said two handlers, and widened the dispatch's one to two. A sweep
+of `execute_docker_training_admission_v1` for the shape finds **seven**, and
+every one of them converts an exception into an outward result:
+
+| Handler | Code returned | Stage it guards |
+|---|---|---|
+| `:601-602` | `COMPOSITION_UNAVAILABLE` | issuing the admission session |
+| `:609-610` | `RESOLUTION_UNAVAILABLE` | proving the source |
+| `:623-624` | `COMPOSITION_UNAVAILABLE` | config and profile blobs |
+| `:647-648` | `DESTINATION_INVALID` | destination config and policy |
+| `:677-678` | `RESOLUTION_UNAVAILABLE` | dataset, manifest and storage blobs, plan compile, plan verify |
+| `:686-687` | `RESOLUTION_UNAVAILABLE` | model inventory resolution |
+| `:695-696` | `START_UNAVAILABLE` | activation |
+
+The collapse is worse than section 20.11 described. `RESOLUTION_UNAVAILABLE` is
+returned by three different handlers and `COMPOSITION_UNAVAILABLE` by two, so the
+outward code does not even identify which stage failed, let alone why. B-7 was
+swallowed by one of the early three and cost a cycle; B-11 was swallowed by the
+last and cost another. Leaving four of them blind would bank the same cost again.
+
+**Ruling: the emission moves into the local `fail` closure at `:580-584`, and is
+guarded on there being an exception currently being handled.** One edit, not
+seven. Every handler is covered because every handler returns through `fail`, a
+future handler cannot forget it, and the single non-exception caller at `:587`
+emits nothing because no exception is active there. This supersedes section
+20.11's two-site instruction and section 20.13 item 8, and it makes the diff
+smaller than the ruling it replaces.
+
+The closure is local to Docker admission. `_failure` in `cli.py:331-353` is
+shared with the Modal lane and stays untouched, so the no-Modal-lane-change
+constraint still holds. The line's content, its exclusions and its length bound
+are unchanged from section 20.11: the code, the exception class, and the
+innermost frame inside the Host package rendered package-relative, never the
+exception's own text.
+
+Test C1 gains one case: a failure raised in an early stage produces a line naming
+that stage's frame, so the test pins that the coverage is the closure's and not
+one handler's.
+
+**Scope note, made openly.** The dispatch named one handler, section 20.11 named
+two, the coders found a third, and the sweep finds seven. That is growth, and it
+is the lead's call to trim. If it is trimmed, the coherent smaller shape is the
+three on the path this workstream's blockers actually live on, `:677`, `:686` and
+`:695`, kept as explicit per-handler calls. What should not happen is keeping the
+closure form but excluding handlers, since the whole benefit of the closure is
+that it cannot be selective.
+
+#### 20.19.3 A fourth row for the 19.14 reading table
+
+Section 19.14 gives three readings for cut 2, and all three presuppose that a cut
+2 happened and that the stage existed so `state` could be read. The driver
+produces a fourth outcome that none of them covers: **no evidence**. It arises
+two ways, both seen already: cut 1 is refused and the loop exits, so no cut-2
+line is emitted at all; or a line is emitted with the stage absent or lacking its
+artifacts child, so the flag reads `unknown` rather than `true` or `false`.
+
+Read the driver's own flag, and read it as three values, not two:
+
+| `state_nonempty` at cut 2 | Cut 2 code | Row | Conclusion |
+|---|---|---|---|
+| `true` | not `START_UNAVAILABLE` | 19.14 row 1 | B-10 confirmed and fixed |
+| `true` | `START_UNAVAILABLE` | 19.14 row 2 | fix wrong or incomplete; re-open |
+| `false` | any | 19.14 row 3 | deferral: unrefuted but untested |
+| `unknown`, or no cut-2 line | any | **20.19.3** | **no evidence** |
+
+The distinction between the deferral row and this one is not pedantic. A deferral
+asserts something about the trainer, that it may have buffered and not written
+yet, and that assertion presupposes a trainer ran. No evidence asserts nothing at
+all: the run never reached the measurement point. Reading `unknown` as `empty`
+would file a run that never started as a statement about trainer timing.
+
+Consequences when this row is drawn. B-10's ledger state is completely unchanged,
+neither confirmed nor deferred nor weakened. The run's verdict belongs to whatever
+blocker stopped it and not to B-10. And the run does not count against B-10's
+evidence budget, so the next run still owes the cut-2 observation.
+
+Run 5 was exactly this row, and report section 17.4 read it correctly in prose
+before the row existed: no cut 2, so neither the confirmed row nor the deferral
+row applies. Naming it means run 6 is read mechanically instead of relying on the
+reporter noticing.
