@@ -106,6 +106,50 @@ without starting a container.
    sets `GitSource.branch` from `git branch --show-current` and the Host then
    reads `refs/heads/<that name>` from origin. A local branch pushed to a
    differently-named remote branch therefore FAILS, even with an upstream set.
+9. **`docker_host.container_user` equals the identity the pinned distro presents
+   as owner of the project drive.** The prepared composition emits it as
+   `--user <uid>:<gid>`. This is a configuration requirement, not a code one, and
+   it exists because the container writes `/artifacts` over a `wsl.localhost`
+   bind. The distro mounts the drive with `metadata`, so DrvFs honours stored
+   POSIX modes: a fresh directory presents `0755` owned by the mount's `uid=`,
+   and any other user gets `r-x`. That is blocker B-9, which stopped run 4 at
+   assertion A2. Matching the OWNER rather than the mode is what makes this
+   correct under any `umask` the mount can present.
+
+   Read the value on the host, from the mount itself:
+
+   ```
+   wsl.exe -d Ubuntu-22.04 -- awk '$2=="/mnt/f"{print $4}' /proc/mounts
+   ```
+
+   Expect an options string containing `uid=1000,gid=1000`; those two numbers are
+   the value. Substitute the committed `wsl_distro` and
+   `<drive_mount_root>/<drive letter>` if either differs. Set the field in
+   `training/providers/docker.json`, commit, and rebuild the released checkout —
+   the profile is read as a git blob at the locked project commit, so an
+   uncommitted edit cannot take effect.
+
+   The driver checks it as **P8**, after the bind probe and before A1, failing
+   with `P8-container-user-missing`, `P8-container-user-shape` or
+   `P8-stage-writable-as-container-user` and printing the `/proc/mounts` command
+   as the remedy. Only numeric `uid:gid` is accepted: a name in `--user` resolves
+   against the **image's** `/etc/passwd`, which cannot express a host mount
+   identity.
+
+   Two things to expect rather than diagnose:
+
+   - **P8 creates the stage parent.** A `--probe-only` pass now creates
+     `.synaptic\state\docker\stages` if it is absent, by the same idempotent call
+     the staging code makes. A run creates it anyway, but "no durable state was
+     written" no longer holds for a probe-only pass. The driver prints one line
+     when it creates it. P8 removes only its own `p8-probe` directory, never a
+     stage, because stage reuse requires the artifact directories to be empty.
+   - **`WARN P8-home` fires on every pass today, and is not a fault.** A numeric
+     `--user` has no `/etc/passwd` entry, so the runtime sets `HOME=/`, which the
+     user cannot write. That was measured directly on the committed image. It is
+     a warning because a non-writable `HOME` is legitimate for a workload that
+     never writes there. It is tracked as **B-9-R1** and settled by the trainer's
+     own output, not by this probe.
 
 ## Materializing the model inventory
 
@@ -181,7 +225,7 @@ rather than let it appear later disguised as something else.
 | # | Assertion | Why |
 |---|---|---|
 | A1 | GPU visible inside the container | The image's `NVIDIA_REQUIRE_CUDA` bands top out below the host driver, so a toolkit rejection would look unrelated |
-| A2 | `/artifacts` writable by the non-root container user `unsloth:runtimeusers` over a `wsl.localhost` bind | A read-only `/artifacts` fails late and confusingly |
+| A2 | `/artifacts` writable over a `wsl.localhost` bind by the container user the profile declares | A read-only `/artifacts` fails late and confusingly |
 | A3 | The container's Python matches the profile at full patch level | The trainer demands full patch-level equality and refuses otherwise |
 | A4 | The snapshot exists at the cache path and contains no links | Confirms the inventory design end to end before training starts |
 
@@ -192,9 +236,17 @@ so all three would start jupyter and time out at `T1-timeout` — the exact
 disguised failure these assertions exist to prevent. The bind probe is
 unaffected: it uses `python:3.12-slim`, not the profile image.
 
-The container user in A2 is not a guess: `preparer-host` measured the committed
-image's `User` as `unsloth:runtimeusers` and recorded it in
-`docs/preparation/environment-model-prepared-path-alpine-diagnostic.md`.
+**P8 runs before A1**, after the bind probe, so the full order is `P1..P7` →
+`B1` → `P8` → `A1` → `A2` → `A3` → `A4`. P8 and A2 are not redundant: P8 probes
+the real **stage parent** and names the cause and the remedy for B-9, while A2
+probes a scratch directory and keeps its continuity across earlier runs.
+
+The container user in A2 is **read from `docker_host.container_user`**, the same
+field the prepared composition uses, so the probe asserts the contract the run
+will actually use. It used to be the hard-coded `unsloth:runtimeusers`, which
+`preparer-host` had measured as the committed image's own `User`. That was
+faithful only while the composition passed no `--user` at all; once it emits one,
+a hard-coded name would fail a run the composition would have completed.
 
 The driver also probes the **mount source** before the first real run. The
 emitted bind source is `\\wsl.localhost\<distro>\<drive_mount_root>\<drive>\...`.

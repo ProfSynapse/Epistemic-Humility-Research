@@ -5,6 +5,13 @@ Runs the preconditions and the early assertions from
 probes the mount source, then re-issues ONE unchanged command until the durable
 phase stops advancing.
 
+Order: `P1..P7` -> `B1` -> `P8` -> `A1` -> `A2` -> `A3` -> `A4` (section 18.11).
+`P8` proves the container user can write the real stage parent; it is placed
+after `B1` because it needs a bind already proven to resolve, and before the
+assertions because a non-writable stage makes the rest of the run moot. Note
+that `P8` CREATES `.synaptic\\state\\docker\\stages` if it is absent, so a
+`--probe-only` pass is no longer free of durable state.
+
 The command, and why it never varies
 ------------------------------------
     python.exe -m synaptic_host training run \\
@@ -391,25 +398,32 @@ def _check_p7_branch_is_publishable(project_root: Path) -> None:
 # Mount-source probe (blocker B-1 residual, section 9.1 step 6)
 # --------------------------------------------------------------------------
 
-def _wsl_path(path: Path, root: str) -> str:
-    """Restatement of `docker_v1/prepared.py:44-57` (`_wsl_path`)."""
+def _wsl_path(path: Path, root: str, *, check: str) -> str:
+    """Restatement of `docker_v1/prepared.py:44-57` (`_wsl_path`).
+
+    `check` is the CALLER's cause tag. Three probes render a mount source
+    through here, and a fault must report the name of the probe that was
+    running, not the name of whichever probe happened to be written first.
+    Reporting a wrong cause is the defect P7 split its own tags to avoid, and a
+    shared literal here would have re-introduced it.
+    """
     if (
         not root.startswith("/") or root.endswith("/") or "\\" in root
         or any(part in {"", ".", ".."} for part in root[1:].split("/"))
     ):
-        _fail("B1-bind-probe", f"drive mount root {root!r} is invalid")
+        _fail(check, f"drive mount root {root!r} is invalid")
     value, drive = path.as_posix(), path.drive
     if len(drive) != 2 or drive[1] != ":" or not value.startswith(drive + "/"):
-        _fail("B1-bind-probe", f"{path} is not a Windows drive path")
+        _fail(check, f"{path} is not a Windows drive path")
     relative = value[3:]
     if not relative or any(part in {"", ".", ".."} for part in relative.split("/")):
-        _fail("B1-bind-probe", f"{path} has an invalid relative part")
+        _fail(check, f"{path} has an invalid relative part")
     return f"{root}/{drive[0].lower()}/{relative}"
 
 
-def _mount_source(path: Path, *, distro: str, root: str) -> str:
+def _mount_source(path: Path, *, distro: str, root: str, check: str) -> str:
     """Restatement of the UNC concatenation at `docker_v1/prepared.py:235`."""
-    return "\\\\wsl.localhost\\" + distro + _wsl_path(path, root).replace("/", "\\")
+    return "\\\\wsl.localhost\\" + distro + _wsl_path(path, root, check=check).replace("/", "\\")
 
 
 def _probe_bind_source(
@@ -423,7 +437,9 @@ def _probe_bind_source(
     `Ubuntu-22.04` and re-probe (section 6.3). This driver never edits the
     profile; that field belongs to the B-1 implementation.
     """
-    source = _mount_source(project_root, distro=distro, root=root)
+    source = _mount_source(
+        project_root, distro=distro, root=root, check="B1-bind-probe"
+    )
     print(f"    rendered mount source: {source}")
     completed = _run([
         docker, "--host", endpoint, "run", "--rm", "--pull", "never",
@@ -445,6 +461,216 @@ def _probe_bind_source(
             "symptom, which looks plausible and is not the real drive",
         )
     print(f"    PASS B1-bind-probe: {len(listed)} entr(y|ies) visible, e.g. {listed[0]!r}")
+
+
+# --------------------------------------------------------------------------
+# Precondition P8 (blocker B-9, architecture section 18.11)
+# --------------------------------------------------------------------------
+
+# The committed profile declares the identity the pinned WSL distro presents as
+# OWNER of the project drive, and the prepared composition emits it as `--user`
+# (section 18.3). This driver restates the KEY NAME only and reads the VALUE on
+# every run, because there is no universally correct uid: it is a property of
+# the host, not of the design (section 18.7). That is also why this is a profile
+# field and not a module constant like `_CONTAINER_ENTRYPOINT` above.
+_CONTAINER_USER_KEY = "container_user"
+
+# The REAL stage parent, the one `docker_staging.py:1686` creates with the same
+# idempotent call. Probing it rather than a scratch directory removes an
+# inference: the presented mode of a fresh directory comes from the mount policy
+# rather than from its creator, so a throwaway would be equivalent ON THIS HOST,
+# but that equivalence rests on a single measurement (section 18.11).
+_STAGE_PARENT_PARTS = (".synaptic", "state", "docker", "stages")
+_P8_PROBE_DIRECTORY = "p8-probe"
+_P8_PROBE_FILE = ".p8probe"
+
+
+def _read_container_user(profile: dict) -> str:
+    """The committed `docker_host.container_user`, or a named failure.
+
+    Deliberately separate from P5. P5 answers WHERE the drive appears; this
+    answers WHO owns it there, and the two land in different commits: the field
+    arrives with the Host composition change (task #134). Until it does, a run
+    must say which change is missing rather than raising `KeyError`. That is the
+    shape P5 already uses for blocker B-1 (`:244-248`).
+
+    Read here, in the precondition block, rather than beside the probe below, so
+    a missing field costs nothing: it fails before anything touches Docker.
+
+    The shape check is light on purpose. The Host's create-argv parser holds the
+    authoritative grammar (section 18.8(3)); restating its exact bounds here
+    would be a second copy free to drift. What is worth catching early is the
+    NAME form, because a name in `--user` resolves against the IMAGE's
+    `/etc/passwd` and cannot express a host mount identity at all.
+    """
+    docker_host = profile.get("docker_host")
+    if not isinstance(docker_host, dict):
+        _fail("P8-container-user-missing", "profile has no docker_host section")
+    value = docker_host.get(_CONTAINER_USER_KEY)
+    if not isinstance(value, str) or not value:
+        _fail(
+            "P8-container-user-missing",
+            "docker_host.container_user is missing from the committed profile, so the "
+            "prepared composition cannot emit --user and blocker B-9 is unfixed "
+            "(task #134). A failure here before that change lands is this check "
+            "working, not a regression: the field takes effect only once it is "
+            "committed AND a new released checkout is built.",
+        )
+    halves = value.split(":")
+    if len(halves) != 2 or not all(half.isdigit() for half in halves):
+        _fail(
+            "P8-container-user-shape",
+            f"docker_host.container_user is {value!r}; it must be numeric uid:gid. "
+            "A name resolves against the IMAGE's /etc/passwd and cannot express the "
+            "identity of a host mount, so the Host parser refuses it (section 18.8).",
+        )
+    print(f"    PASS P8-container-user: {value}")
+    return value
+
+
+def _remove_p8_probe(probe: Path) -> None:
+    """Remove ONLY the probe directory and ONLY the probe file inside it.
+
+    Never the stage parent, and never a stage. `_verify_artifact_topology`
+    (`docker_staging.py:1446-1481`) requires the four writable artifact
+    directories to be EMPTY, and section 18.18's B-10 finding is that it runs on
+    EVERY cut rather than once per run, so a stray probe file left inside a stage
+    would break the run at the next cut, not merely at re-staging.
+
+    Two exact names, no recursive delete, and a failure here is reported rather
+    than escalated: leaving a directory behind is cheap, and removing the wrong
+    one is not.
+    """
+    leftover = probe / _P8_PROBE_FILE
+    try:
+        if leftover.exists():
+            leftover.unlink()
+        probe.rmdir()
+    except OSError as error:
+        print(f"    NOTE could not remove the probe directory {probe}: {error}")
+
+
+def _check_p8_stage_writable_as_container_user(
+    docker: str,
+    endpoint: str,
+    image: str,
+    project_root: Path,
+    *,
+    distro: str,
+    root: str,
+    container_user: str,
+) -> None:
+    """The container user can write a bind whose source is a real stage sibling.
+
+    Blocker B-9, measured on run 4 (task #128): the pinned distro mounts the
+    project drive `metadata;uid=1000;gid=1000;umask=22;fmask=11`, so DrvFs
+    honours stored POSIX modes and a fresh directory presents 0755 owned by uid
+    1000. The composition passed no `--user`, the container ran as the image's
+    own uid 1001, and `/artifacts` was r-x.
+
+    The ruling (section 18.2) matches the mount's OWNER rather than fighting its
+    MODE, because the owner has `rwx` under every mode policy the mount can
+    present -- `umask=22` gives 755, `umask=77` gives 700, a no-`metadata` mount
+    gives 0777. So the failure below is a CONFIGURATION failure with a named
+    remedy, not a code failure.
+
+    Ordered after P7 and after the B1 bind probe: this needs a bind already
+    proven to resolve, or a mount-source fault would surface as a permission
+    message. It precedes every assertion, because a non-writable stage makes the
+    rest of the run moot.
+    """
+    stage_parent = project_root.joinpath(*_STAGE_PARENT_PARTS)
+    existed = stage_parent.is_dir()
+    try:
+        # The identical idempotent call the staging code makes at
+        # `docker_staging.py:1686`. Matching it is the point: this probe measures
+        # the directory the run will actually use.
+        stage_parent.mkdir(parents=True, exist_ok=True)
+        probe = stage_parent / _P8_PROBE_DIRECTORY
+        probe.mkdir(exist_ok=True)
+    except OSError as error:
+        _fail(
+            "P8-stage-writable-as-container-user",
+            f"the Host could not create {stage_parent}: {error}",
+        )
+    if existed:
+        print(f"    stage parent already present: {stage_parent}")
+    else:
+        print(f"    CREATED the stage parent {stage_parent}")
+        print(
+            "    NOTE a --probe-only pass now creates that directory. A run creates it "
+            "anyway, by this same idempotent call, but 'no durable state was written' "
+            "no longer holds for a probe-only pass (section 18.11)."
+        )
+
+    source = _mount_source(
+        probe, distro=distro, root=root,
+        check="P8-stage-writable-as-container-user",
+    )
+    print(f"    rendered mount source: {source}")
+    # `id` is echoed so the effective user is EVIDENCE in the run report rather
+    # than an assumption. The HOME pair answers B-9-R1 and never fails the run.
+    program = (
+        "id; "
+        f"touch /artifacts/{_P8_PROBE_FILE} && rm /artifacts/{_P8_PROBE_FILE} "
+        "&& echo WRITABLE; "
+        'printf "HOME=%s " "$HOME"; '
+        'test -w "$HOME" && echo home-writable || echo home-not-writable'
+    )
+    try:
+        completed = _run([
+            docker, "--host", endpoint, "run", "--rm", "--pull", "never",
+            "--network", "none",
+            "--user", container_user,
+            # `destination=` rather than `target=`, matching the spelling the
+            # prepared composition itself uses (`control_private.py:410-411`).
+            "--mount", f"type=bind,source={source},destination=/artifacts",
+            "--entrypoint", _CONTAINER_ENTRYPOINT,
+            image, "sh", "-c", program,
+        ])
+    finally:
+        _remove_p8_probe(probe)
+
+    for line in completed.stdout.strip().splitlines():
+        print(f"    p8| {line}")
+    if completed.returncode != 0 or "WRITABLE" not in completed.stdout:
+        # P3 has already refused a root without a drive letter, so this is
+        # normally present. Defended anyway: a failure message that raises
+        # IndexError would replace the named cause with an unrelated traceback,
+        # which is the opposite of what this check exists to do.
+        drive = project_root.drive
+        drive_letter = drive[0].lower() if drive else "<drive letter>"
+        _fail(
+            "P8-stage-writable-as-container-user",
+            f"{container_user} could not write /artifacts over {source}: "
+            f"{completed.stderr.strip()}\n"
+            "  The prepared path requires docker_host.container_user to equal the "
+            "identity the\n"
+            "  pinned WSL distro presents as owner of the project drive. Read it with:\n"
+            f"    wsl.exe -d {distro} -- awk '$2==\"{root}/{drive_letter}\""
+            "{print $4}' /proc/mounts\n"
+            "  and set docker_host.container_user in training/providers/docker.json to "
+            "that\n"
+            "  uid:gid, then commit and rebuild the released checkout. This is "
+            "blocker B-9.",
+        )
+
+    if "home-not-writable" in completed.stdout:
+        # A WARNING, never a failure (section 18.10). `--user` names an id with no
+        # `/etc/passwd` entry, so the runtime sets HOME=/. test-host measured
+        # exactly that on task #131, so this line is EXPECTED on every pass today.
+        # Failing on it would refuse a configuration that is legitimate for a
+        # workload that never writes there.
+        print(
+            "    WARN P8-home: HOME is not writable for this user. EXPECTED on this "
+            "host and NOT a failure -- --user names an id with no /etc/passwd entry, "
+            "so HOME=/ (measured, task #131). Deferred as B-9-R1; settled by run 5's "
+            "trainer output, not here."
+        )
+    print(
+        f"    PASS P8-stage-writable-as-container-user: {container_user} wrote and "
+        f"removed a file under the real stage parent"
+    )
 
 
 # --------------------------------------------------------------------------
@@ -472,21 +698,35 @@ def _assert_a1_gpu(docker: str, endpoint: str, image: str) -> None:
 
 
 def _assert_a2_artifacts_writable(
-    docker: str, endpoint: str, image: str, project_root: Path, *, distro: str, root: str
+    docker: str, endpoint: str, image: str, project_root: Path,
+    *, distro: str, root: str, container_user: str
 ) -> None:
-    """`/artifacts` writable by the container's non-root user over a bind.
+    """`/artifacts` writable by the container's user over a bind.
 
-    The artifact directory is mounted writable and the container runs as
-    `unsloth:runtimeusers`. A read-only `/artifacts` fails late and confusingly.
-    The probe writes into a scratch directory, never into a stage.
+    The artifact directory is mounted writable, and a read-only `/artifacts`
+    fails late and confusingly. The probe writes into a scratch directory, never
+    into a stage.
+
+    The user is READ FROM THE PROFILE, not hardcoded. This probe used to pass
+    `unsloth:runtimeusers`, the image's own default, which was faithful only
+    while the composition passed no `--user` at all. Once it emits
+    `docker_host.container_user` (section 18.3), a hardcoded name would fail a
+    run the composition would have completed -- a false blocker. Section 17.10:
+    the probes assert the same contract the composition uses.
+
+    P8 above is not made redundant by this. P8 probes the real STAGE parent and
+    names the cause and the remedy; A2 probes a scratch directory and has
+    continuity across runs 1-4.
     """
     probe_root = project_root / "scratch" / "test-phase" / "a2-artifact-probe"
     probe_root.mkdir(parents=True, exist_ok=True)
-    source = _mount_source(probe_root, distro=distro, root=root)
+    source = _mount_source(
+        probe_root, distro=distro, root=root, check="A2-artifacts-writable"
+    )
     completed = _run([
         docker, "--host", endpoint, "run", "--rm", "--pull", "never",
         "--network", "none",
-        "--user", "unsloth:runtimeusers",
+        "--user", container_user,
         "--mount", f"type=bind,source={source},target=/artifacts",
         "--entrypoint", _CONTAINER_ENTRYPOINT,
         image, "sh", "-c",
@@ -495,10 +735,10 @@ def _assert_a2_artifacts_writable(
     if completed.returncode != 0 or "WRITABLE" not in completed.stdout:
         _fail(
             "A2-artifacts-writable",
-            f"unsloth:runtimeusers could not write /artifacts over {source}: "
+            f"{container_user} could not write /artifacts over {source}: "
             f"{completed.stderr.strip()}",
         )
-    print("    PASS A2-artifacts-writable: unsloth:runtimeusers wrote and removed a file")
+    print(f"    PASS A2-artifacts-writable: {container_user} wrote and removed a file")
 
 
 def _assert_a3_python_version(
@@ -778,7 +1018,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cut-timeout-seconds", type=int, default=900)
     parser.add_argument(
         "--probe-only", action="store_true",
-        help="run the preconditions, the bind probe and A1-A4, then stop.",
+        help=(
+            "run the preconditions, the bind probe, P8 and A1-A4, then stop. "
+            "P8 CREATES the stage parent if it is absent, so a probe-only pass is "
+            "no longer free of durable state."
+        ),
     )
     args = parser.parse_args(argv)
 
@@ -798,6 +1042,7 @@ def main(argv: list[str] | None = None) -> int:
         distro, drive_mount_root = _check_p5_drive_mount_root(profile)
         _check_p6_config_is_committed(project_root, args.config)
         _check_p7_branch_is_publishable(project_root)
+        container_user = _read_container_user(profile)
 
         runtime = profile.get("runtime") or {}
         image = runtime.get("image")
@@ -812,11 +1057,20 @@ def main(argv: list[str] | None = None) -> int:
             distro=distro, root=drive_mount_root,
         )
 
+        # After P7 AND after the bind probe, before A1: P8 needs a bind already
+        # proven to resolve, or a mount-source fault would surface as a
+        # permission message (section 18.11).
+        print("\n=== stage writability as the container user (blocker B-9) ===")
+        _check_p8_stage_writable_as_container_user(
+            args.docker, args.endpoint, image, project_root,
+            distro=distro, root=drive_mount_root, container_user=container_user,
+        )
+
         print("\n=== early assertions (section 10.1) ===")
         _assert_a1_gpu(args.docker, args.endpoint, image)
         _assert_a2_artifacts_writable(
             args.docker, args.endpoint, image, project_root,
-            distro=distro, root=drive_mount_root,
+            distro=distro, root=drive_mount_root, container_user=container_user,
         )
         _assert_a3_python_version(
             args.docker, args.endpoint, image, python_executable, python_version

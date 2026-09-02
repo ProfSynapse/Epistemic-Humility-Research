@@ -14,6 +14,7 @@ no network and no Docker are involved.
 
 from __future__ import annotations
 
+import ast
 import importlib.util
 import subprocess
 import sys
@@ -251,3 +252,325 @@ def test_p7_is_wired_into_the_precondition_block_after_p6():
     # `def _probe_bind_source(`.
     bind = source.index("_probe_bind_source(", p7)
     assert p6 < p7 < bind, "P7 must run after P6 and before the first Docker probe"
+
+
+# --------------------------------------------------------------------------
+# P8 (blocker B-9): the container user can write the real stage parent
+#
+# The probe runs one container. These tests replace the driver's `_run`, so no
+# Docker is involved; what is under test is the argv the driver BUILDS, the
+# cause tag it reports, and the filesystem it touches.
+# --------------------------------------------------------------------------
+
+_USER = "1000:1000"
+_DISTRO = "Ubuntu-22.04"
+_ROOT = "/mnt"
+_IMAGE = "example.invalid/img@sha256:" + "ab" * 32
+
+
+def _fake_docker(returncode: int = 0, stdout: str = "", stderr: str = ""):
+    """A `_run` replacement that records the argv it was handed."""
+    calls: list[list[str]] = []
+
+    def run(argv, *, timeout=300):
+        calls.append(list(argv))
+        return _completed(argv, returncode, stdout, stderr)
+
+    run.calls = calls  # type: ignore[attr-defined]
+    return run
+
+
+def _windows_root(tmp_path: Path) -> Path:
+    """A project root the driver will accept as a Windows drive path.
+
+    `_wsl_path` requires `Path.drive` to be a drive letter, which a POSIX
+    `tmp_path` never has. Only the RENDERING needs the drive, so the mkdir side
+    of the probe is exercised against `tmp_path` in the tests that care about
+    the filesystem, and the rendering is exercised separately.
+    """
+    return tmp_path
+
+
+_P8_OK = (
+    "uid=1000 gid=1000 groups=1000\n"
+    "WRITABLE\n"
+    "HOME=/ home-not-writable\n"
+)
+
+
+def _run_p8(monkeypatch, project_root: Path, fake, *, user: str = _USER) -> None:
+    monkeypatch.setattr(driver, "_run", fake)
+    monkeypatch.setattr(
+        driver, "_mount_source",
+        lambda path, *, distro, root, check: f"\\\\wsl.localhost\\{distro}\\rendered",
+    )
+    driver._check_p8_stage_writable_as_container_user(
+        "docker.exe", "npipe://x", _IMAGE, project_root,
+        distro=_DISTRO, root=_ROOT, container_user=user,
+    )
+
+
+def test_p8_passes_and_reports_the_effective_user_as_evidence(
+    monkeypatch, project_root, capsys
+):
+    fake = _fake_docker(stdout=_P8_OK)
+    _run_p8(monkeypatch, project_root, fake)
+    out = capsys.readouterr().out
+    assert "PASS P8-stage-writable-as-container-user" in out
+    assert _USER in out
+    # `id` is echoed so the effective user is evidence in the report, not an
+    # assumption. Section 18.11.
+    assert "uid=1000 gid=1000" in out
+
+
+def test_p8_probes_the_real_stage_parent_and_removes_only_its_own_directory(
+    monkeypatch, project_root
+):
+    """It must create the stage parent and leave it, taking only `p8-probe`.
+
+    `_verify_artifact_topology` (`docker_staging.py:1446-1481`) requires the
+    writable artifact directories to be EMPTY, and it runs on every cut (section
+    18.18, B-10), so a probe that left a file inside a stage would break the run
+    at the next cut.
+    """
+    stage_parent = project_root.joinpath(*driver._STAGE_PARENT_PARTS)
+    survivor = stage_parent / "an-existing-stage"
+    survivor.mkdir(parents=True)
+
+    _run_p8(monkeypatch, project_root, _fake_docker(stdout=_P8_OK))
+
+    assert stage_parent.is_dir(), "P8 must not remove the stage parent"
+    assert survivor.is_dir(), "P8 must never touch an existing stage"
+    assert not (stage_parent / driver._P8_PROBE_DIRECTORY).exists()
+
+
+def test_p8_creates_the_stage_parent_and_says_so(monkeypatch, project_root, capsys):
+    """The fidelity cost the ruling accepted must be printed, not silent.
+
+    A --probe-only pass now writes durable state, which changes the line runs
+    1-4 could report (section 18.11).
+    """
+    _run_p8(monkeypatch, project_root, _fake_docker(stdout=_P8_OK))
+    out = capsys.readouterr().out
+    assert "CREATED the stage parent" in out
+    assert "no durable state was written" in out
+
+
+def test_p8_does_not_claim_to_have_created_an_existing_stage_parent(
+    monkeypatch, project_root, capsys
+):
+    project_root.joinpath(*driver._STAGE_PARENT_PARTS).mkdir(parents=True)
+    _run_p8(monkeypatch, project_root, _fake_docker(stdout=_P8_OK))
+    out = capsys.readouterr().out
+    assert "CREATED the stage parent" not in out
+    assert "already present" in out
+
+
+def test_p8_uses_the_profile_user_and_the_composition_conventions(
+    monkeypatch, project_root
+):
+    """The argv must carry the profile's user, `--entrypoint env`, and `--network none`.
+
+    Section 17.10: the probes assert the same contract the composition uses.
+    `destination=` matches the spelling at `control_private.py:410-411`.
+    """
+    fake = _fake_docker(stdout=_P8_OK)
+    _run_p8(monkeypatch, project_root, fake)
+    argv = fake.calls[0]  # type: ignore[attr-defined]
+    assert argv[argv.index("--user") + 1] == _USER
+    assert argv[argv.index("--entrypoint") + 1] == driver._CONTAINER_ENTRYPOINT
+    assert "--network" in argv and argv[argv.index("--network") + 1] == "none"
+    assert argv[argv.index("--entrypoint") + 2] == _IMAGE
+    mount = argv[argv.index("--mount") + 1]
+    assert mount.endswith(",destination=/artifacts")
+    assert "--pull" in argv and argv[argv.index("--pull") + 1] == "never"
+
+
+def test_p8_failure_names_the_user_the_source_the_stderr_and_the_remedy(
+    monkeypatch, project_root
+):
+    fake = _fake_docker(
+        returncode=1, stderr="touch: cannot touch '/artifacts/.p8probe': Permission denied"
+    )
+    with pytest.raises(driver.CheckFailure) as caught:
+        _run_p8(monkeypatch, project_root, fake)
+    message = str(caught.value)
+    assert message.startswith("P8-stage-writable-as-container-user:")
+    assert _USER in message
+    assert "wsl.localhost" in message
+    assert "Permission denied" in message
+    # The remedy is what makes this a precondition rather than a symptom.
+    assert "/proc/mounts" in message
+    assert _DISTRO in message
+    assert "docker_host.container_user" in message
+    assert "B-9" in message
+
+
+def test_p8_removes_its_probe_directory_even_when_the_container_fails(
+    monkeypatch, project_root
+):
+    with pytest.raises(driver.CheckFailure):
+        _run_p8(monkeypatch, project_root, _fake_docker(returncode=1))
+    stage_parent = project_root.joinpath(*driver._STAGE_PARENT_PARTS)
+    assert not (stage_parent / driver._P8_PROBE_DIRECTORY).exists()
+
+
+def test_p8_home_not_writable_warns_and_does_not_fail(
+    monkeypatch, project_root, capsys
+):
+    """B-9-R1 is a WARNING by ruling (section 18.10), and it fires on every pass.
+
+    A numeric `--user` has no `/etc/passwd` entry, so HOME=/ and is unwritable;
+    that was measured on the committed image. Failing on it would refuse a
+    configuration that is legitimate for a workload that never writes there.
+    """
+    _run_p8(monkeypatch, project_root, _fake_docker(stdout=_P8_OK))
+    out = capsys.readouterr().out
+    assert "WARN P8-home" in out
+    assert "B-9-R1" in out
+    assert "PASS P8-stage-writable-as-container-user" in out
+
+
+def test_p8_stays_quiet_about_home_when_home_is_writable(
+    monkeypatch, project_root, capsys
+):
+    stdout = "uid=0 gid=0\nWRITABLE\nHOME=/root home-writable\n"
+    _run_p8(monkeypatch, project_root, _fake_docker(stdout=stdout))
+    out = capsys.readouterr().out
+    assert "WARN P8-home" not in out
+
+
+def test_p8_fails_when_the_container_exits_zero_without_writing(
+    monkeypatch, project_root
+):
+    """Exit 0 is not enough: the `sh -c` chain can succeed while the touch did not."""
+    stdout = "uid=1000 gid=1000\nHOME=/ home-not-writable\n"
+    with pytest.raises(driver.CheckFailure) as caught:
+        _run_p8(monkeypatch, project_root, _fake_docker(returncode=0, stdout=stdout))
+    assert str(caught.value).startswith("P8-stage-writable-as-container-user:")
+
+
+# --------------------------------------------------------------------------
+# Reading `docker_host.container_user` from the committed profile
+# --------------------------------------------------------------------------
+
+def test_container_user_is_read_from_the_profile():
+    profile = {"docker_host": {"wsl_distro": _DISTRO, "container_user": _USER}}
+    assert driver._read_container_user(profile) == _USER
+
+
+def test_missing_container_user_names_the_unlanded_host_change_not_a_keyerror(
+    project_root
+):
+    """The field and this driver land in different commits.
+
+    Until the Host change lands, a run must say WHICH change is missing rather
+    than raising `KeyError`. Same shape P5 uses for blocker B-1.
+    """
+    with pytest.raises(driver.CheckFailure) as caught:
+        driver._read_container_user({"docker_host": {"wsl_distro": _DISTRO}})
+    message = str(caught.value)
+    assert message.startswith("P8-container-user-missing:")
+    assert "B-9" in message
+    assert "released checkout" in message
+
+
+def test_a_name_form_container_user_is_refused_with_the_reason():
+    """A name resolves against the IMAGE's /etc/passwd and cannot express a mount identity."""
+    with pytest.raises(driver.CheckFailure) as caught:
+        driver._read_container_user(
+            {"docker_host": {"container_user": "unsloth:runtimeusers"}}
+        )
+    message = str(caught.value)
+    assert message.startswith("P8-container-user-shape:")
+    assert "/etc/passwd" in message
+
+
+# --------------------------------------------------------------------------
+# A2 must follow the composition, not the image's old default (section 18.12)
+# --------------------------------------------------------------------------
+
+def test_a2_passes_the_profile_user_rather_than_the_image_default(
+    monkeypatch, project_root
+):
+    """The hard-coded `unsloth:runtimeusers` becomes a FALSE BLOCKER after B-9.
+
+    It was faithful only while the composition passed no `--user`. Once it emits
+    one, a hard-coded name fails a run the composition would have completed.
+    """
+    fake = _fake_docker(stdout="WRITABLE\n")
+    monkeypatch.setattr(driver, "_run", fake)
+    monkeypatch.setattr(
+        driver, "_mount_source",
+        lambda path, *, distro, root, check: "\\\\wsl.localhost\\rendered",
+    )
+    driver._assert_a2_artifacts_writable(
+        "docker.exe", "npipe://x", _IMAGE, project_root,
+        distro=_DISTRO, root=_ROOT, container_user=_USER,
+    )
+    argv = fake.calls[0]  # type: ignore[attr-defined]
+    assert argv[argv.index("--user") + 1] == _USER
+    assert "unsloth:runtimeusers" not in argv
+
+
+def test_no_literal_container_user_survives_in_executable_code():
+    """The old name may be EXPLAINED in prose but never PASSED to docker.
+
+    Checked over the AST rather than the file text, because the A2 docstring
+    records why the hard-coded value was wrong and that history is worth
+    keeping. Docstrings are excluded; every other string constant is not.
+    """
+    tree = ast.parse(_DRIVER.read_text(encoding="utf-8"))
+    docstrings = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Module, ast.FunctionDef, ast.ClassDef)):
+            continue
+        body = getattr(node, "body", None)
+        if (
+            body
+            and isinstance(body[0], ast.Expr)
+            and isinstance(body[0].value, ast.Constant)
+            and isinstance(body[0].value.value, str)
+        ):
+            docstrings.add(id(body[0].value))
+    literals = [
+        node.value for node in ast.walk(tree)
+        if isinstance(node, ast.Constant)
+        and isinstance(node.value, str)
+        and id(node) not in docstrings
+    ]
+    assert "unsloth:runtimeusers" not in literals
+
+
+# --------------------------------------------------------------------------
+# Cause tags: a fault inside a probe must report THAT probe's name
+# --------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    "check",
+    ["B1-bind-probe", "A2-artifacts-writable", "P8-stage-writable-as-container-user"],
+)
+def test_wsl_path_reports_the_callers_cause_tag(check):
+    """Three probes render a mount source through `_wsl_path`.
+
+    A shared literal tag would make a fault inside one probe report another
+    probe's name, which is the wrong-cause defect P7 split its own tags to
+    avoid.
+    """
+    with pytest.raises(driver.CheckFailure) as caught:
+        driver._wsl_path(Path("/not/a/windows/path"), _ROOT, check=check)
+    assert str(caught.value).startswith(check + ":")
+
+
+def test_p8_runs_after_the_bind_probe_and_before_the_first_assertion():
+    """Order is ruled: P1..P7 -> B1 -> P8 -> A1..A4 (section 18.11).
+
+    P8 cannot precede B1, because it needs a bind already proven to resolve or a
+    mount-source fault would surface as a permission message.
+    """
+    source = _DRIVER.read_text(encoding="utf-8")
+    p7 = source.index("_check_p7_branch_is_publishable(project_root)")
+    bind = source.index("_probe_bind_source(", p7)
+    p8 = source.index("_check_p8_stage_writable_as_container_user(", bind)
+    a1 = source.index("_assert_a1_gpu(", p8)
+    assert p7 < bind < p8 < a1
