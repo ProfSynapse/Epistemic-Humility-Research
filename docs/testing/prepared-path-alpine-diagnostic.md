@@ -1454,3 +1454,259 @@ stdin, B-4's entrypoint hijack, B-7's POSIX-shaped environment scrub and B-9's
 DrvFs mount identity. Like B-9 it is a collision between a POSIX-shaped
 assumption and a Windows security primitive; unlike B-9 it is in the source, and
 the source and the operator recipe disagree about who owns `.synaptic`.
+
+## 18. Run 6 verdict by step
+
+Run 6, 2026-09-03, from the released checkout `F:\Code\ehr-release-e00ab662`
+(branch `feat/submodule-cloud-api-v1-host` at `e00ab662…`, submodule
+`synaptic-tuner` at `ba844137…`, unchanged since run 5). The B-11 repair and the
+activation cause line are shipped. Rows 1–5 of architecture section 20.16 are
+the checklist.
+
+| # | Step | Verdict | Evidence |
+|---|------|---------|----------|
+| 0 | Released-checkout preconditions | **GREEN** | HEAD `e00ab66220478424d88ff221ff8db6a0d8a9cd86`, branch tracks `origin`, `ls-remote` equals HEAD, `--porcelain` empty, submodule `ba844137361c158c3eed441f8d33389e66ff54f3` |
+| 1 | Prerequisite 7 — `--entrypoint env` probe | **GREEN** | printed exactly `ok`; image present at the locked digest, `User=unsloth:runtimeusers`, `Entrypoint=["/usr/local/bin/entrypoint.sh"]` |
+| 2 | Prerequisite 9 — mount identity | **GREEN** | `/proc/mounts` for `/mnt/f` still `uid=1000,gid=1000,metadata,umask=22,fmask=11`; profile `container_user=1000:1000`; host unmodified |
+| 3 | Model inventory in the new checkout | **GREEN** | copy route from `ehr-release-ab741054` then `--verify-only`; 25 files, 1 969 841 187 bytes, fingerprint `sha256:0e2a8df2…` |
+| 4 | Driver `--probe-only` | **GREEN** | P1–P3, P5–P8, bind probe and A1–A4 all pass; `WARN P8-home` as documented |
+| 5 | Real run, cut 1 — private storage | **GREEN** | the chain is repaired and the Host's own validator then ACCEPTS all three members |
+| 6 | Real run, cut 1 — staging | **RED** | `START_UNAVAILABLE`, exit 4, in `_git_archive`; no stage, no container, no durable row |
+| 7 | Cuts 2+ | **NOT REACHED** | the run never left cut 1 |
+| 8 | Section 10.2 durable-row contract | **NOT REACHED** | `.synaptic\state\training.sqlite3` was never created |
+| 9 | This report section | done | — |
+
+**Verdict: B-11 is CLEARED by direct measurement, and run 6 is RED at staging on
+a new blocker, B-12.** The repair did exactly what section 20 designed it to do.
+The failure moved two stages later, to a bound that no previous run could reach.
+
+### 18.1 Environment
+
+Windows Host Python `C:\Users\Joseph\AppData\Local\Programs\Python\Python312\python.exe`;
+absolute `docker.exe` at `C:\Program Files\Docker\Docker\resources\bin\docker.exe`;
+explicit endpoint `npipe:////./pipe/dockerDesktopLinuxEngine` (context
+`desktop-linux`, server `linux/amd64`, engine 29.3.1); `nvidia` runtime present;
+WSL used only for mount translation. No host conda, no venv. Operator
+scaffolding under `scratch/test-phase`, gitignored and untracked.
+
+### 18.2 Probe output
+
+```
+    PASS P1-single-docker: C:\Program Files\Docker\Docker\resources\bin\docker.exe
+    PASS P2-endpoint: npipe:////./pipe/dockerDesktopLinuxEngine
+    PASS P3-drive-letter-root: F:
+    PASS P5-drive-mount-root: distro=Ubuntu-22.04 root=/mnt
+    PASS P6-config-committed: training/smokes/docker-sft.json matches the committed blob
+    PASS P7-branch-publishable: feat/submodule-cloud-api-v1-host tracks origin at e00ab6622047
+    PASS P8-container-user: 1000:1000
+    PASS B1-bind-probe: 20 entr(y|ies) visible, e.g. 'AGENTS.md'
+    CREATED the stage parent F:\Code\ehr-release-e00ab662\.synaptic\state\docker\stages
+    p8| uid=1000 gid=1000 groups=1000
+    p8| WRITABLE
+    p8| HOME=/ home-not-writable
+    WARN P8-home: HOME is not writable for this user. EXPECTED on this host and NOT a failure
+    PASS P8-stage-writable-as-container-user: 1000:1000 wrote and removed a file under the real stage parent
+    PASS A1-gpu-visible: GPU 0: NVIDIA GeForce RTX 3090 (UUID: GPU-ac4398bb-fc15-d722-b39c-2790b4b5f9cc)
+    PASS A2-artifacts-writable: 1000:1000 wrote and removed a file
+    PASS A3-python-version: 3.11.14
+    OK  25 file(s), 1969841187 byte(s)
+    OK  inventory fingerprint sha256:0e2a8df272426dd2fc804c6aa4886abf26b060b9dea7ed03aa068266eb58a2c6
+    PASS A4-inventory-link-free
+
+OK  --probe-only: every precondition and early assertion passed.
+```
+
+There is no `P4` line. The driver's precondition set runs `P1 P2 P3 P5 P6 P7`
+then `B1` then `P8`; P4 does not exist in the shipped driver. Noted because
+section 20.21 proposes adding one.
+
+### 18.3 The cut, verbatim
+
+```
+[cut 1] entering with phase=None
+B10-EVIDENCE cut=1 stage=NONE state_nonempty=unknown artifacts_nonempty=unknown tmp_nonempty=unknown tracking_nonempty=unknown
+    stderr| synaptic-host: START_UNAVAILABLE ValueError at synaptic_host/docker_staging.py:1299 in _git_archive
+B10-EVIDENCE cut=1 result=START_UNAVAILABLE status=unavailable exit=4
+[cut 1] exit=4 status=unavailable run_id=None phase=None
+
+--- trainer.stderr.log (read this before diagnosing anything else) ---
+    none found under F:\Code\ehr-release-e00ab662\.synaptic\state\docker\stages
+    If the trainer never started, the failure is upstream of the container.
+```
+
+That single stderr line is the run's most valuable output. It is the section 20
+cause reporter working exactly as specified, and it converted what would have
+been another blind `START_UNAVAILABLE` cycle into a diagnosis in minutes. Run 5
+needed a `sys.meta_path` probe to learn as much.
+
+### 18.4 Section 20.16 rows 1–5
+
+| Row | Expectation | Result | Evidence |
+|---|---|---|---|
+| 1 | An inherited chain on `.synaptic` after `--probe-only` is EXPECTED and is not a failure | **GREEN** | after the probe pass all three chain members read `protected=False`, 11 entries, every one `inherited=True`; the Host's own validator REFUSED all three. That is the documented pre-state, and the probe still exited 0 |
+| 2 | Activation at cut 1 repairs the chain and reaches the container | **PARTIAL** | the repair half is GREEN and measured (row 5). The container half is **not reached**: staging fails after the repair, so no container was created |
+| 3 | The inventory re-verifies after the activation repair (25 files, 1 969 841 187 bytes, `sha256:0e2a8df2…`) | **GREEN** | re-ran `--verify-only` after cut 1, i.e. after the repair: `OK 25 file(s), 1969841187 byte(s)`, `OK inventory fingerprint sha256:0e2a8df272426dd2fc804c6aa4886abf26b060b9dea7ed03aa068266eb58a2c6` |
+| 4 | If an activation cut fails, the stderr cause line names code, exception class and innermost package-relative frame, with no exception text and no absolute operator path | **GREEN** | `synaptic-host: START_UNAVAILABLE ValueError at synaptic_host/docker_staging.py:1299 in _git_archive`. Code, class and package-relative frame present; no exception message; no absolute path; no secret |
+| 5 | Per-directory protected flag and DACL entry count after cut 1 | **GREEN, and equal to the predicted end state** | see 18.5 |
+
+Row 3 carries one ordering caveat worth stating plainly. In the shipped code the
+in-run model-inventory resolution (`docker_training.py:757`) runs **before**
+activation (`:765`) and therefore before the repair (`:889`), so the run's own
+resolution is not itself a post-repair measurement. The row is answered instead
+by an explicit post-cut-1 `--verify-only`, which is a stronger instrument for
+the question the row actually asks: does the inventory survive the repair?
+It does, byte for byte.
+
+### 18.5 Row 5 readback
+
+Read-only throughout, with the same reader used for the B-11-M1 measurement and
+the step 0 experiment, so these numbers are comparable to those line for line.
+
+Before activation, after `--probe-only`:
+
+| node | protected | entries | inherited |
+|---|---|---|---|
+| `.synaptic` (chain root) | False | 11 | 11 |
+| `state` (chain) | False | 11 | 11 |
+| `state\docker` (chain) | False | 11 | 11 |
+| `model-inventory` (non-chain) | False | 11 | 11 |
+
+Immediately after cut 1:
+
+| node | protected | entries | inherited |
+|---|---|---|---|
+| `.synaptic` (chain root) | **True** | **2** | 0 |
+| `state` (chain) | **True** | **2** | 0 |
+| `state\docker` (chain) | **True** | **2** | 0 |
+| `model-inventory` (non-chain) | False | 11 | **11** |
+
+Each chain member carries exactly `NT AUTHORITY\SYSTEM` and the owner
+`DESKTOP-2A4U5KR\Joseph`, both `FILE_ALL_ACCESS`, both non-inherited, both at
+flags `0x03` (`OBJECT_INHERIT|CONTAINER_INHERIT`). Every node remained readable
+and listable. **No emptied access list anywhere**, so the arm A shape did not
+occur and no STOP condition fired.
+
+The Host's own validator, run read-only over the chain after cut 1:
+
+```
+F:\Code\ehr-release-e00ab662\.synaptic: ACCEPTED
+F:\Code\ehr-release-e00ab662\.synaptic\state: ACCEPTED
+F:\Code\ehr-release-e00ab662\.synaptic\state\docker: ACCEPTED
+```
+
+This is exactly the end state the step 0 experiment predicted for `F:`, to the
+flag. It also answers 20.16 row 5's second job: `model-inventory` came back
+**not protected with its 11 entries still inherited**, not protected-with-explicit
+entries, so `F:` does not behave like the temp volume and **B-11-R1 is not live
+on the real tree**.
+
+### 18.6 Defect found: B-12, the project archive bound
+
+`synaptic_host/docker_staging.py`:
+
+- `:45` `_MAX_PROJECT_ARCHIVE_BYTES = 256 * 1024 * 1024`
+- `:1296` `def _git_archive(repository, commit)`
+- `:1298` `if not raw or len(raw) > _MAX_PROJECT_ARCHIVE_BYTES:`
+- `:1299` `raise ValueError("exact project Git archive exceeds its bound")`
+- `:1715` call site, `_git_archive(context.project_root, source_lock.project_source.commit)` — the **superproject** at the locked commit
+
+Measured, read-only, with `git.exe archive --format=tar HEAD`:
+
+| quantity | bytes | |
+|---|---|---|
+| archive of the project at HEAD | 412 794 880 | 393.7 MiB |
+| `_MAX_PROJECT_ARCHIVE_BYTES` | 268 435 456 | 256.0 MiB |
+| overshoot | 144 359 424 | 137.7 MiB |
+
+The archive is non-empty, so of line 1298's two predicates it is the size one
+that fired. Line 1299 is a single message shared by both predicates, so the
+message alone cannot distinguish an empty archive from an oversized one; the
+measurement above is what separates them.
+
+Composition of the 389.0 MiB of tracked blobs (5 922 files), by top-level path:
+
+| MiB | files | path |
+|---|---|---|
+| 222.2 | 91 | `datasets` |
+| 74.1 | 2 247 | `experiments` |
+| 65.6 | 230 | `papers` |
+| 9.7 | 863 | `archive` |
+| 5.2 | 1 668 | `library` |
+| 2.6 | 120 | `docs` |
+
+The four largest single blobs are a 25.0 MiB preference-mixture JSONL, a 23.7 MiB
+analysis CSV, and two evaluation JSONLs of 21.3 MiB and 19.4 MiB.
+
+**This defect is not new; it was masked.** The run-5 checkout `ab741054`
+archives to 412 682 240 bytes, also 137.6 MiB over the same bound. Run 5 failed
+at B-11 two stages earlier, so the archive step was never reached. Growth
+between the two checkouts is 0.11 MiB, which is the B-11 change set itself. Every
+run before run 5 died earlier still. B-12 has therefore been latent since the
+prepared path was written, and clearing B-11 is what made it reachable.
+
+The repository is a research monorepo whose tracked datasets and papers are the
+bulk of it. Whether the correct resolution is a larger bound, an archive scoped
+to what the workload needs, or a documented project-shape precondition is an
+architecture question, not a test one; nothing was patched.
+
+### 18.7 Measurements (a), (b), (c)
+
+**(a) B-10, per 19.14 as amended by 20.19.3.** Every `B10-EVIDENCE` line the run
+produced, verbatim, and there are only two:
+
+```
+B10-EVIDENCE cut=1 stage=NONE state_nonempty=unknown artifacts_nonempty=unknown tmp_nonempty=unknown tracking_nonempty=unknown
+B10-EVIDENCE cut=1 result=START_UNAVAILABLE status=unavailable exit=4
+```
+
+There is **no cut 2**. The run never left cut 1, so cut 2 lands in the four-row
+table's **"no evidence"** row: the cut-2 line is absent. That is where run 5
+landed too, and for the same structural reason, an earlier blocker. B-10 stays
+on the ledger as latent and is neither confirmed nor refuted by run 6.
+`<stage>/artifacts/state/runtime-v1-inventory.json` does not exist at cut 2
+because no stage was ever created: `.synaptic\state\docker\stages` is empty.
+
+**(b) B-10-R1.** Not measurable this run. There is no `<stage>\artifacts\cache`
+tree to list at cut 2 or at the end, because staging failed before the stage was
+promoted and the temporary stage was removed. The failure text
+`content-addressed model inventory has extra directories` did **not** appear.
+B-10-R1 remains unproven-as-active, exactly as before run 6.
+
+**(c) B-9-R1.** Not measurable this run. The training container was never
+created, so nothing wrote to `/tmp/torch`, `/tmp/triton`, `/tmp/xdg` or
+`/tmp/home`, and there are no container logs to read. The only B-9-R1 signal run
+6 produced is the same `WARN P8-home` (`HOME=/`, not writable) that the probe
+has printed since run 5.
+
+### 18.8 B-8 note
+
+`synaptic_host/docker_model_inventory.py` re-checks stat identity around every
+file read (`_identity` at `:37`, `_opened_identity` at `:49`, and the
+before/open/after comparison at `:94`–`:114`). It did **not** fire. A failure
+there raises inside `resolve_docker_model_inventory_v1`, which
+`docker_training.py:757-763` converts to `RESOLUTION_UNAVAILABLE`; the observed
+code was `START_UNAVAILABLE` from activation, two stages later, so resolution
+completed and the re-check passed over all 25 files on the 9p mount.
+
+### 18.9 What run 6 changed about what is unproven
+
+Newly proven: the B-11 repair, end to end on the real tree, with the chain
+repaired to the Host's own two-entry protected form and its own validator
+accepting all three members afterwards; the one-level effect measured on a
+populated `.synaptic`, with `model-inventory` untouched and still inherited; the
+inventory surviving the repair byte for byte; and the activation cause line,
+which turned a blind failure code into a file, line and frame.
+
+Newly blocked: staging, and therefore everything after it, behind **B-12**.
+
+Still unproven, unchanged: container creation by the prepared path, the stage
+bind, stage reuse and replay idempotency, the whole of section 10.2, B-2 end to
+end, the B-5 argv equality against the regenerated closure, B-10, B-10-R1 and
+B-9-R1. Six runs in, the prepared path has still never created a training
+container.
+
+Ordering note: unlike B-3, B-4, B-7, B-9 and B-11, **B-12 is not
+platform-conditioned**. A 393.7 MiB project archive exceeds a 256 MiB bound on
+every operating system. It is the first blocker in this workstream that a Linux
+lane could have found, and the reason it survived this long is depth: five
+platform defects stood in front of it.
