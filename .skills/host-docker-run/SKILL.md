@@ -335,6 +335,28 @@ nothing. The driver prints a reminder at cut 2. The third row is the one most
 easily misreported: if the trainer buffers and writes late, `state` can still be
 empty at cut 2, and that is not evidence that B-10 is absent.
 
+### The `CAPTURE` lines
+
+Around cut 1 only, the driver subscribes to `docker events` before the cut is
+issued and reports what it saw afterwards. This is the architecture section
+22.11 row 4 first-container capture, using the corrected instrument required by
+section 23.5 row 2: an event stream rather than a poll, because run 8's
+container lived 0.7 s under a 1 s sample, and **no image-name filter**, because
+the prepared composition creates from a digest-pinned reference that never
+prints a repository tag. Matching happens in the driver, on the `synaptic-`
+container name or on any `ai.synapticlabs.tuner.v1.` label, so a non-match is
+counted and printed instead of vanishing.
+
+```
+CAPTURE container events parsed=7 matched=1 other=6 unparseable=0 stream file: <path>
+CAPTURE container id=<12 hex> name=synaptic-<...> matched_on=name events=create,start,die
+```
+
+Read `matched=0` with `parsed>0` as a **miss** and quote the `other|` lines; only
+`parsed=0` means the stream itself saw nothing, and `capture-unavailable` means no
+stream ran at all. The capture never gates the run: the cut's own result codes
+remain the acceptance.
+
 ## Early assertions
 
 Each is cheap and each exists to surface a known unknown with its true cause

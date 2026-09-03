@@ -16,9 +16,11 @@ from __future__ import annotations
 
 import ast
 import importlib.util
+import json
 import os
 import subprocess
 import sys
+import time
 import types
 from pathlib import Path
 
@@ -1318,3 +1320,383 @@ def test_p11_runs_after_p3_and_before_the_tree_is_read():
     p11 = source.index("_check_p11_package_resolves_under_project_root(args.python", p3)
     profile = source.index("profile = _load_profile(project_root)", p11)
     assert p3 < p11 < profile
+
+
+# --------------------------------------------------------------------------
+# The first-container capture (22.11 row 4, 23.5 row 2, follow-up #219)
+# --------------------------------------------------------------------------
+#
+# Run 8's poller missed a container that existed. Two causes: it narrowed on the
+# image field, which a digest-pinned reference never prints, and it sampled at
+# 1 s against a 0.7 s life. Fakes over `_run` would prove neither the
+# subscription nor the parse, because both live in a real child's stdout. So the
+# lifecycle tests below run a REAL fake `docker.exe`: `Popen` with stdout to a
+# file, terminate, parse, then inspect and logs. Same pattern as the P11
+# fixtures, and no `os.name` skipif -- process lifecycle is not Windows-specific.
+
+_CAPTURED_ID = "8dda2cee75a7" + "0" * 52
+_CAPTURED_NAME = "synaptic-95d3dbda863cb9bdd7db30b4"
+_UNRELATED_ID = "ff11223344556677" + "0" * 48
+
+
+def _event(action: str, identifier: str, attributes: dict) -> str:
+    """One `docker events --format {{json .}}` line."""
+    return json.dumps({
+        "status": action,
+        "id": identifier,
+        "Type": "container",
+        "Action": action,
+        "Actor": {"ID": identifier, "Attributes": attributes},
+        "scope": "local",
+        "time": 1756900000,
+    })
+
+
+_OURS = {
+    "name": _CAPTURED_NAME,
+    # A digest-pinned reference, exactly the shape that made run 8's
+    # image-name filter match nothing.
+    "image": "sha256:1f2e3d4c5b6a7988990011223344556677889900aabbccddeeff001122334455",
+    "ai.synapticlabs.tuner.v1.run-id": "run-9",
+}
+_THEIRS = {"name": "gracious_hopper", "image": "python:3.12-slim"}
+
+_RUN8_STREAM = [
+    _event("create", _UNRELATED_ID, _THEIRS),
+    _event("create", _CAPTURED_ID, _OURS),
+    _event("start", _CAPTURED_ID, _OURS),
+    _event("die", _CAPTURED_ID, dict(_OURS, exitCode="31")),
+]
+
+_TRAINER_STDERR = [f"trainer line {index}" for index in range(1, 131)]
+
+_FAKE_DOCKER = '''#!{python}
+import json, sys, time
+
+ARGV_LOG = {argv_log!r}
+STREAM = {stream!r}
+EMPTY_STREAM = {empty_stream!r}
+INSPECT = {inspect!r}
+STDERR = {stderr!r}
+
+argv = sys.argv[1:]
+with open(ARGV_LOG, "a", encoding="utf-8") as handle:
+    handle.write(json.dumps(argv) + "\\n")
+
+if "events" in argv:
+    if "--until" in argv:
+        # The bounded replay: print the window and exit on our own.
+        for line in STREAM:
+            sys.stdout.write(line + "\\n")
+        sys.stdout.flush()
+        raise SystemExit(0)
+    if not EMPTY_STREAM:
+        for line in STREAM:
+            sys.stdout.write(line + "\\n")
+            sys.stdout.flush()
+    # `docker events` never exits on its own.
+    while True:
+        time.sleep(0.05)
+
+if "inspect" in argv:
+    sys.stdout.write(json.dumps(INSPECT) + "\\n")
+    raise SystemExit(0)
+
+if "logs" in argv:
+    for line in STDERR:
+        sys.stderr.write(line + "\\n")
+    raise SystemExit(0)
+
+raise SystemExit(9)
+'''
+
+_INSPECT_RECORD = {
+    "Name": "/" + _CAPTURED_NAME,
+    "Image": "sha256:1f2e3d4c5b6a7988990011223344556677889900aabbccddeeff001122334455",
+    "Config": {"Image": "synapticlabs/offline-sft@sha256:1f2e3d4c"},
+    "State": {
+        "Status": "exited",
+        "ExitCode": 31,
+        "StartedAt": "2026-09-03T18:22:41.101Z",
+        "FinishedAt": "2026-09-03T18:22:41.803Z",
+    },
+}
+
+
+def _write_fake_docker(tmp_path: Path, *, empty_stream: bool = False) -> tuple[Path, Path]:
+    """Write an executable fake `docker` and the file it logs its argv into."""
+    argv_log = tmp_path / "docker-argv.jsonl"
+    script = tmp_path / "docker"
+    script.write_text(
+        _FAKE_DOCKER.format(
+            python=sys.executable,
+            argv_log=str(argv_log),
+            stream=_RUN8_STREAM,
+            empty_stream=empty_stream,
+            inspect=_INSPECT_RECORD,
+            stderr=_TRAINER_STDERR,
+        ),
+        encoding="utf-8",
+    )
+    script.chmod(0o755)
+    if not os.access(script, os.X_OK):
+        pytest.skip(
+            "this temporary filesystem does not honour the executable bit, so a "
+            "real fake docker child cannot be launched here"
+        )
+    return script, argv_log
+
+
+def _await_stream(capture: dict, lines: int, seconds: float = 10.0) -> None:
+    """Wait for the child to write, the way the cut's own duration does."""
+    deadline = time.monotonic() + seconds
+    path = capture["path"]
+    while time.monotonic() < deadline:
+        try:
+            if len(path.read_text(encoding="utf-8").splitlines()) >= lines:
+                return
+        except OSError:
+            pass
+        time.sleep(0.05)
+
+
+def _argv_log(path: Path) -> list[list[str]]:
+    if not path.exists():
+        return []
+    return [
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+
+
+# --- the real-subprocess lifecycle ----------------------------------------
+
+def test_the_capture_really_records_the_container_from_a_live_event_stream(
+    tmp_path, capsys
+):
+    """End to end over a real child: subscribe, terminate, parse, read back."""
+    docker, argv_log = _write_fake_docker(tmp_path)
+    capture = driver._start_container_capture(str(docker), "npipe://test")
+    assert capture["unavailable"] is None
+    _await_stream(capture, len(_RUN8_STREAM))
+    driver._stop_container_capture(capture)
+    driver._report_first_container(str(docker), "npipe://test", capture)
+
+    out = capsys.readouterr().out
+    assert "matched=1" in out
+    assert _CAPTURED_ID[:12] in out
+    assert _CAPTURED_NAME in out
+    assert "matched_on=name" in out
+    assert "create,start,die" in out
+    # The container's record survived its exit, because there is no `rm`.
+    assert "exit=31" in out
+    assert "2026-09-03T18:22:41.803Z" in out
+    # Head and tail of the trainer's stderr, with the middle named as omitted.
+    assert "trainer line 1" in out and "trainer line 130" in out
+    assert "line(s) omitted" in out
+    assert "trainer line 65" not in out
+    # No bounded replay was needed, because the live stream matched.
+    assert "bounded replay" not in out
+    # The unrelated container was SEEN and COUNTED, not silently dropped.
+    assert "other=1" in out and "gracious_hopper" in out
+    # The observer used three read-only verbs and nothing else. The driver
+    # always calls `docker --host <endpoint> <verb> ...`, so the verb is the
+    # third token. `rm` in particular must never appear: the Host has no `rm`,
+    # and removing the container is what would destroy this evidence.
+    calls = _argv_log(argv_log)
+    assert {entry[2] for entry in calls} == {"events", "inspect", "logs"}
+    assert not any("rm" in entry for entry in calls)
+
+
+def test_a_stream_that_loses_its_buffer_still_yields_the_container_by_replay(
+    tmp_path, capsys
+):
+    """The kill-mid-stream shape, which is the one Windows may produce.
+
+    If terminating the child costs whatever it had buffered, the file is empty
+    and the live subscription found nothing. The bounded `--until` replay re-reads
+    the same window with a command that exits on its own, so no signal and no
+    flush behaviour is involved. Without this the run 9 capture would report the
+    same silence run 8 did.
+    """
+    docker, argv_log = _write_fake_docker(tmp_path, empty_stream=True)
+    capture = driver._start_container_capture(str(docker), "npipe://test")
+    driver._stop_container_capture(capture)
+    assert capture["path"].read_text(encoding="utf-8").strip() == ""
+
+    driver._report_first_container(str(docker), "npipe://test", capture)
+    out = capsys.readouterr().out
+    assert "matched=0" in out          # the live stream
+    assert "bounded replay" in out
+    assert _CAPTURED_NAME in out       # recovered anyway
+    assert "exit=31" in out
+    replays = [entry for entry in _argv_log(argv_log) if "--until" in entry]
+    assert len(replays) == 1
+    assert "--since" in replays[0]
+
+
+def test_a_stream_that_cannot_start_is_capture_unavailable_and_never_raises(
+    tmp_path, capsys
+):
+    """The run's result codes are the acceptance; the capture is evidence."""
+    missing = tmp_path / "no-such-docker.exe"
+    capture = driver._start_container_capture(str(missing), "npipe://test")
+    assert capture["unavailable"] is not None
+    assert capture["process"] is None
+    driver._stop_container_capture(capture)
+    driver._report_first_container(str(missing), "npipe://test", capture)
+    assert "capture-unavailable" in capsys.readouterr().out
+
+
+# --- the ruling on the server-side filter ---------------------------------
+
+def test_the_only_server_side_filter_is_the_container_type(tmp_path):
+    """Every narrowing happens client-side, where a non-match can be counted.
+
+    Run 8's defect was not a badly chosen filter value. It was that a narrowing
+    applied UPSTREAM turns a miss into silence, and silence read as absence. So
+    neither key, and no image reference, may appear in the argv at all.
+    """
+    capture = driver._start_container_capture(
+        str(tmp_path / "no-such-docker.exe"), "npipe://test"
+    )
+    argv = capture["argv"]
+    filters = [argv[index + 1] for index, item in enumerate(argv) if item == "--filter"]
+    assert filters == ["type=container"]
+    joined = " ".join(argv)
+    assert driver._CONTAINER_NAME_PREFIX not in joined
+    assert driver._HOST_LABEL_PREFIX not in joined
+    assert "image" not in joined and "unsloth" not in joined
+    assert "--since" in argv and argv[argv.index("--since") + 1].isdigit()
+
+
+# --- the parser -----------------------------------------------------------
+
+def test_the_parser_keys_on_the_container_name_prefix():
+    matched, parsed, others, unparseable = driver._parse_container_events(
+        "\n".join(_RUN8_STREAM)
+    )
+    assert parsed == 4 and len(others) == 1 and unparseable == []
+    entry = matched[_CAPTURED_ID]
+    assert entry["matched_on"] == "name"
+    assert entry["name"] == _CAPTURED_NAME
+    assert entry["actions"] == ["create", "start", "die"]
+
+
+def test_the_parser_falls_back_to_the_host_label_when_the_name_does_not_match():
+    """The name prefix is a convention; the label prefix is a set key.
+
+    `control_model.py:18` defines it and `control_private.py:414-417` emits
+    fifteen of them, so a container whose name convention ever changes is still
+    ours.
+    """
+    attributes = {
+        "name": "gracious_hopper",
+        "ai.synapticlabs.tuner.v1.run-id": "run-9",
+        "ai.synapticlabs.tuner.v1.effect-id": "effect-1",
+    }
+    matched, parsed, others, _ = driver._parse_container_events(
+        _event("create", _CAPTURED_ID, attributes)
+    )
+    assert parsed == 1 and others == []
+    # Sorted, so the reported key is stable across runs.
+    assert matched[_CAPTURED_ID]["matched_on"] == "ai.synapticlabs.tuner.v1.effect-id"
+
+
+def test_the_parser_counts_a_miss_separately_from_an_empty_stream():
+    """Zero of N must not look like zero. That distinction IS the fix."""
+    matched, parsed, others, _ = driver._parse_container_events(
+        "\n".join(_event("create", _UNRELATED_ID, _THEIRS) for _ in range(3))
+    )
+    assert matched == {} and parsed == 3 and len(others) == 3
+
+    matched, parsed, others, _ = driver._parse_container_events("")
+    assert matched == {} and parsed == 0 and others == []
+
+
+def test_the_parser_reports_a_malformed_line_instead_of_dropping_the_stream():
+    """The child's stderr shares the file, so a daemon error lands here.
+
+    Reporting it is the diagnosis; a strict parser would either crash or discard
+    the well-formed lines around it.
+    """
+    text = "\n".join([
+        "Cannot connect to the Docker daemon at npipe:////./pipe/x.",
+        _event("create", _CAPTURED_ID, _OURS),
+        "{not json",
+    ])
+    matched, parsed, others, unparseable = driver._parse_container_events(text)
+    assert parsed == 1 and len(matched) == 1
+    assert len(unparseable) == 2
+    assert unparseable[0].startswith("Cannot connect")
+
+
+def test_the_parser_tolerates_an_event_with_no_actor_section():
+    matched, parsed, others, unparseable = driver._parse_container_events(
+        json.dumps({"status": "create", "id": _UNRELATED_ID, "Type": "container"})
+    )
+    assert parsed == 1 and matched == {} and unparseable == []
+    assert others == [f"create id={_UNRELATED_ID[:12]} name=?"]
+
+
+def test_the_matched_key_helper_refuses_an_unrelated_container():
+    assert driver._capture_matched_key(_THEIRS) is None
+    assert driver._capture_matched_key({}) is None
+    assert driver._capture_matched_key({"name": None}) is None
+
+
+# --- placement in the cut loop --------------------------------------------
+
+class _Args:
+    docker = "docker.exe"
+    endpoint = "npipe://test"
+    provider = "docker"
+    config = "project://x.json"
+    destination = "local-default"
+    max_cuts = 6
+    max_seconds = 600
+    cut_interval_seconds = 0
+    cut_timeout_seconds = 900
+
+
+def _drive_with_recorded_capture(monkeypatch, tmp_path, *, cut_raises=False):
+    order: list[str] = []
+    monkeypatch.setattr(driver, "_report_b10_evidence_before_cut", lambda *a: None)
+    monkeypatch.setattr(driver, "_report_b10_evidence_after_cut", lambda *a: None)
+    monkeypatch.setattr(driver, "_read_phase",
+                        lambda *a: ("ARTIFACTS_VERIFIED", "run-9"))
+    monkeypatch.setattr(driver, "_read_publications", lambda *a: 1)
+    monkeypatch.setattr(driver.time, "sleep", lambda *a: None)
+    monkeypatch.setattr(
+        driver, "_start_container_capture",
+        lambda *a: (order.append("start"), {"marker": True})[1],
+    )
+    monkeypatch.setattr(driver, "_stop_container_capture",
+                        lambda capture: order.append("stop"))
+    monkeypatch.setattr(driver, "_report_first_container",
+                        lambda *a: order.append("report"))
+
+    def one_cut(*_args):
+        order.append("cut")
+        if cut_raises and len(order) < 4:
+            raise subprocess.TimeoutExpired("python.exe", 900)
+        return 0, {"status": "submitted", "run_id": "run-9"}
+
+    monkeypatch.setattr(driver, "_one_cut", one_cut)
+    return order
+
+
+def test_the_capture_brackets_cut_1_and_only_cut_1(monkeypatch, tmp_path):
+    """Cut 1 is the only cut that can create the container."""
+    order = _drive_with_recorded_capture(monkeypatch, tmp_path)
+    driver._drive("python.exe", tmp_path, _Args())
+    assert order == ["start", "cut", "stop", "report", "cut"]
+
+
+def test_a_cut_that_raises_still_yields_its_capture(monkeypatch, tmp_path):
+    """A run that dies at cut 1 is the run whose container nobody has seen."""
+    order = _drive_with_recorded_capture(monkeypatch, tmp_path, cut_raises=True)
+    with pytest.raises(subprocess.TimeoutExpired):
+        driver._drive("python.exe", tmp_path, _Args())
+    assert order == ["start", "cut", "stop", "report"]

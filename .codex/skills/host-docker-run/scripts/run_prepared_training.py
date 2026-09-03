@@ -79,6 +79,7 @@ import os
 import sqlite3
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -1366,6 +1367,361 @@ def _report_b10_evidence_after_cut(cut: int, exit_code: int, result: dict) -> No
     )
 
 
+# --------------------------------------------------------------------------
+# First-container capture (section 22.11 row 4, 23.5 row 2, follow-up #219)
+# --------------------------------------------------------------------------
+#
+# Run 8 created the first container this path has ever produced and the capture
+# still missed it live. Two independent causes, and the instrument has to answer
+# both or it repeats the failure:
+#
+#   1. the poller filtered `docker ps` on the image field containing `unsloth`,
+#      but the prepared composition creates from a DIGEST-PINNED reference which
+#      never prints that repository tag, so the filter matched nothing;
+#   2. the container lived 0.7 s, under a 1 s sampling window.
+#
+# Cause 2 is why this subscribes to `docker events` instead of polling: an event
+# stream has no sampling window. Cause 1 is the more important one, because a
+# narrowing applied UPSTREAM turns a miss into silence, and silence read exactly
+# like "no container yet". So the SERVER-side filter stays as broad as the ruling
+# allows -- `--filter type=container` and nothing else -- and every narrowing
+# happens here, where a non-match can be COUNTED and PRINTED. Zero matches out of
+# N container events looks nothing like zero events, which is the whole point.
+#
+# Keys, per the ruling on #229. The container name prefix is primary: run 8's
+# container was `synaptic-95d3dbda863cb9bdd7db30b4` and `--name` comes from
+# `control_private.py:405`. The Host ALSO sets fifteen labels under
+# `ai.synapticlabs.tuner.v1.` (`control_model.py:18-25`, emitted at `:414-417`),
+# which arrive as extra `Actor.Attributes` keys, so a container whose name
+# convention ever changes is still matched on the label. Which key matched is
+# reported. Neither key is ever sent to the server.
+#
+# The instrument is an OBSERVER. It adds no Host verb, never calls `docker rm`,
+# does not touch the prepared command or the composition, and cannot fail the
+# run: every path here reports and returns, and a stream that will not start is
+# the `capture-unavailable` tag. The run's own result codes remain the
+# acceptance; this is evidence.
+
+_CONTAINER_NAME_PREFIX = "synaptic-"
+_HOST_LABEL_PREFIX = "ai.synapticlabs.tuner.v1."
+_CAPTURE_HEAD_LINES = 50
+_CAPTURE_TAIL_LINES = 50
+_CAPTURE_SHOWN_UNPARSEABLE = 5
+_CAPTURE_SHOWN_OTHERS = 10
+_CAPTURE_STOP_SECONDS = 10
+
+
+def _capture_matched_key(attributes: dict) -> tuple[str, str] | None:
+    """Which key identifies this as ours, or None.
+
+    `name` first because it is the ruling's primary key; the Host label prefix
+    second. Sorted so the reported key is stable across runs.
+    """
+    name = attributes.get("name")
+    if isinstance(name, str) and name.startswith(_CONTAINER_NAME_PREFIX):
+        return "name", name
+    for key in sorted(attributes):
+        if key.startswith(_HOST_LABEL_PREFIX):
+            return key, str(attributes[key])
+    return None
+
+
+def _parse_container_events(text: str) -> tuple[dict, int, list[str], list[str]]:
+    """Parse an events stream tolerantly.
+
+    Returns (matched by container id, container events parsed, one line per
+    non-matching event, unparseable lines).
+
+    Tolerant on purpose. The child's stderr is merged into the same file, so a
+    `Cannot connect to the Docker daemon` line lands here as an unparseable line
+    and gets REPORTED rather than swallowed -- which is the diagnosis an operator
+    needs, and is cheaper than a second file. A malformed line must never cost
+    the well-formed lines around it.
+    """
+    matched: dict[str, dict] = {}
+    parsed = 0
+    others: list[str] = []
+    unparseable: list[str] = []
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        try:
+            record = json.loads(line)
+        except ValueError:
+            unparseable.append(line)
+            continue
+        if not isinstance(record, dict):
+            unparseable.append(line)
+            continue
+        parsed += 1
+        actor = record.get("Actor")
+        actor = actor if isinstance(actor, dict) else {}
+        attributes = actor.get("Attributes")
+        attributes = attributes if isinstance(attributes, dict) else {}
+        identifier = str(actor.get("ID") or record.get("id") or "")
+        action = str(record.get("Action") or record.get("status") or "?")
+        hit = _capture_matched_key(attributes)
+        if hit is None:
+            others.append(
+                f"{action} id={identifier[:12] or '?'} "
+                f"name={attributes.get('name', '?')}"
+            )
+            continue
+        entry = matched.setdefault(
+            identifier,
+            {
+                "id": identifier,
+                "name": str(attributes.get("name", "")),
+                "image": str(attributes.get("image", "")),
+                "matched_on": hit[0],
+                "actions": [],
+            },
+        )
+        entry["actions"].append(action)
+    return matched, parsed, others, unparseable
+
+
+def _start_container_capture(docker: str, endpoint: str) -> dict:
+    """Subscribe to container events BEFORE the cut that creates the container.
+
+    `docker events` never exits on its own, so it cannot go through `_run`, which
+    blocks. It needs `Popen`, and its stdout goes to a FILE rather than a pipe:
+    nothing has to drain a pipe while cut 1 blocks for minutes, so there is no
+    buffer to deadlock on.
+
+    `--since` is a timestamp taken HERE, one second back, because `Popen` returns
+    before `docker.exe` has connected to the daemon. A create event landing in
+    that gap would otherwise be lost -- the same class of miss the run 8 poller
+    had, arriving by a different door.
+
+    Never raises. A stream that will not start is recorded as `capture-unavailable`
+    and the run continues.
+    """
+    since = str(int(time.time()) - 1)
+    argv = [
+        docker, "--host", endpoint, "events",
+        "--since", since,
+        "--filter", "type=container",
+        "--format", "{{json .}}",
+    ]
+    capture: dict = {
+        "argv": argv, "since": since,
+        "path": None, "process": None, "stream": None, "unavailable": None,
+    }
+    try:
+        handle, path = tempfile.mkstemp(
+            prefix="host-docker-run-events-", suffix=".jsonl"
+        )
+        os.close(handle)
+        capture["path"] = Path(path)
+        capture["stream"] = open(path, "wb")
+        print(f"    $ {subprocess.list2cmdline(argv)}", flush=True)
+        capture["process"] = subprocess.Popen(
+            argv, stdout=capture["stream"], stderr=subprocess.STDOUT,
+        )
+    except (OSError, ValueError) as error:
+        capture["unavailable"] = f"{type(error).__name__}: {error}"
+        stream = capture.get("stream")
+        if stream is not None:
+            try:
+                stream.close()
+            except OSError:
+                pass
+            capture["stream"] = None
+        print(
+            "CAPTURE capture-unavailable: the container event stream could not "
+            f"start ({capture['unavailable']}). The run continues; the capture is "
+            "evidence, not acceptance"
+        )
+        return capture
+    print(
+        f"CAPTURE listening on {endpoint} since={since} "
+        "filter=type=container (server-side); the name prefix "
+        f"{_CONTAINER_NAME_PREFIX!r} and the label prefix "
+        f"{_HOST_LABEL_PREFIX!r} are matched HERE, never sent to the server. "
+        f"stream file: {capture['path']}"
+    )
+    return capture
+
+
+def _stop_container_capture(capture: dict) -> None:
+    """End the subscription. Never raises, never blocks the run for long."""
+    process = capture.get("process")
+    if process is not None:
+        try:
+            process.terminate()
+            process.wait(timeout=_CAPTURE_STOP_SECONDS)
+        except subprocess.TimeoutExpired:
+            try:
+                process.kill()
+                process.wait(timeout=_CAPTURE_STOP_SECONDS)
+            except (OSError, subprocess.TimeoutExpired) as error:
+                print(f"    NOTE could not stop the event stream: {error}")
+        except OSError as error:
+            print(f"    NOTE could not stop the event stream: {error}")
+    stream = capture.get("stream")
+    if stream is not None:
+        try:
+            stream.close()
+        except OSError:
+            pass
+        capture["stream"] = None
+
+
+def _replay_container_events(docker: str, endpoint: str, since: str) -> str:
+    """Re-read the same window with a bounded, self-terminating command.
+
+    The fallback for one specific failure: terminating the streaming child loses
+    whatever it had buffered but not yet flushed. `--until` in the past makes
+    `docker events` print the window and exit on its own, so no signal is
+    involved and nothing depends on flush-on-terminate. Issued ONLY when the
+    stream yielded no match, so it costs one command in the case that would
+    otherwise repeat run 8.
+    """
+    argv = [
+        docker, "--host", endpoint, "events",
+        "--since", since,
+        "--until", str(int(time.time())),
+        "--filter", "type=container",
+        "--format", "{{json .}}",
+    ]
+    try:
+        completed = _run(argv, timeout=120)
+    except (OSError, subprocess.SubprocessError) as error:
+        print(f"    NOTE bounded event replay failed: {error}")
+        return ""
+    if completed.returncode != 0:
+        print(
+            f"    NOTE bounded event replay exited {completed.returncode}: "
+            f"{(completed.stderr or '').strip() or 'no output'}"
+        )
+    return completed.stdout or ""
+
+
+def _report_captured_container(docker: str, endpoint: str, entry: dict) -> None:
+    """Read the container's record and its stderr after the cut.
+
+    Both survive the container's exit because the Host verb set is version,
+    create, start, stop, inspect, ps and logs -- there is no `rm`, so nothing
+    removes the container and a 0.7 s life is not a reason to lose its record.
+    """
+    identifier = entry["id"]
+    print(
+        f"CAPTURE container id={identifier[:12]} name={entry['name'] or '?'} "
+        f"matched_on={entry['matched_on']} events={','.join(entry['actions'])}"
+    )
+    try:
+        completed = _run(
+            [docker, "--host", endpoint, "inspect", "--format", "{{json .}}",
+             identifier],
+            timeout=120,
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        print(f"    NOTE inspect failed: {error}")
+        completed = None
+    if completed is not None and completed.returncode == 0:
+        try:
+            record = json.loads(completed.stdout.strip() or "{}")
+        except ValueError:
+            record = {}
+        state = record.get("State") if isinstance(record.get("State"), dict) else {}
+        config = record.get("Config") if isinstance(record.get("Config"), dict) else {}
+        print(
+            f"    inspect name={record.get('Name', '?')} "
+            f"image={record.get('Image', '?')} "
+            f"config_image={config.get('Image', '?')}"
+        )
+        print(
+            f"    inspect status={state.get('Status', '?')} "
+            f"exit={state.get('ExitCode', '?')} "
+            f"started={state.get('StartedAt', '?')} "
+            f"finished={state.get('FinishedAt', '?')}"
+        )
+        if state.get("Status") == "running":
+            print(
+                "    NOTE the container is still running, so the exit code above "
+                "is not final; read it again after the next cut"
+            )
+    elif completed is not None:
+        print(
+            f"    NOTE inspect exited {completed.returncode}: "
+            f"{(completed.stderr or '').strip() or 'no output'}"
+        )
+    try:
+        completed = _run([docker, "--host", endpoint, "logs", identifier], timeout=180)
+    except (OSError, subprocess.SubprocessError) as error:
+        print(f"    NOTE logs failed: {error}")
+        return
+    if completed.returncode != 0:
+        print(f"    NOTE logs exited {completed.returncode}")
+    lines = (completed.stderr or "").splitlines()
+    print(f"    stderr lines: {len(lines)} (stdout lines: {len((completed.stdout or '').splitlines())})")
+    if len(lines) <= _CAPTURE_HEAD_LINES + _CAPTURE_TAIL_LINES:
+        shown = [(index, line) for index, line in enumerate(lines, start=1)]
+    else:
+        shown = [(index, line) for index, line in enumerate(lines[:_CAPTURE_HEAD_LINES], start=1)]
+        shown.append((0, f"... {len(lines) - _CAPTURE_HEAD_LINES - _CAPTURE_TAIL_LINES} line(s) omitted ..."))
+        shown.extend(
+            (len(lines) - _CAPTURE_TAIL_LINES + offset + 1, line)
+            for offset, line in enumerate(lines[-_CAPTURE_TAIL_LINES:])
+        )
+    for index, line in shown:
+        print(f"    stderr|{index if index else '':>5} {line}")
+
+
+def _report_first_container(docker: str, endpoint: str, capture: dict) -> None:
+    """Turn the captured stream into the 22.11 row 4 reading. Never raises."""
+    if capture.get("unavailable") is not None:
+        print(
+            "CAPTURE capture-unavailable: no event stream was running for cut 1 "
+            f"({capture['unavailable']})"
+        )
+        return
+    path = capture.get("path")
+    text = ""
+    if path is not None:
+        try:
+            text = Path(path).read_text(encoding="utf-8", errors="replace")
+        except OSError as error:
+            print(f"    NOTE could not read the event stream file: {error}")
+    matched, parsed, others, unparseable = _parse_container_events(text)
+    print(
+        f"CAPTURE container events parsed={parsed} matched={len(matched)} "
+        f"other={len(others)} unparseable={len(unparseable)} "
+        f"stream file: {path}"
+    )
+    for line in others[:_CAPTURE_SHOWN_OTHERS]:
+        print(f"    other| {line}")
+    if len(others) > _CAPTURE_SHOWN_OTHERS:
+        print(f"    other| ... {len(others) - _CAPTURE_SHOWN_OTHERS} more not shown")
+    for line in unparseable[:_CAPTURE_SHOWN_UNPARSEABLE]:
+        print(f"    unparseable| {line}")
+    if len(unparseable) > _CAPTURE_SHOWN_UNPARSEABLE:
+        print(
+            f"    unparseable| ... {len(unparseable) - _CAPTURE_SHOWN_UNPARSEABLE} "
+            "more not shown"
+        )
+    if not matched:
+        replayed = _replay_container_events(docker, endpoint, capture["since"])
+        if replayed:
+            matched, parsed, others, unparseable = _parse_container_events(replayed)
+            print(
+                f"CAPTURE bounded replay parsed={parsed} matched={len(matched)} "
+                f"other={len(others)} unparseable={len(unparseable)}"
+            )
+    if not matched:
+        print(
+            f"CAPTURE no container matched. {parsed} container event(s) were seen "
+            "in the window, so this is a MISS, not an empty stream: read the "
+            "'other|' lines above for the names that did arrive. If parsed is 0 "
+            "as well, the stream itself saw nothing"
+        )
+        return
+    for entry in matched.values():
+        _report_captured_container(docker, endpoint, entry)
+
+
 def _one_cut(python_executable: str, project_root: Path, args) -> tuple[int, dict]:
     """Issue exactly one cut of the unchanging eight-token command."""
     argv = [
@@ -1420,8 +1776,23 @@ def _drive(python_executable: str, project_root: Path, args) -> None:
             print("           section 19.14: cut 2 is the cut that closes B-10. "
                   "state non-empty with a code other than START_UNAVAILABLE "
                   "confirms the fix; state empty is a DEFERRAL, not a pass.")
+        capture: dict | None = None
+        if cut == 1:
+            # Started BEFORE the cut that creates the container, because cut 1
+            # is the only cut that can create it and run 8's container lived
+            # 0.7 s (section 22.11 row 4, 23.5 row 2, follow-up #219).
+            capture = _start_container_capture(args.docker, args.endpoint)
         _report_b10_evidence_before_cut(project_root, cut)
-        exit_code, result = _one_cut(python_executable, project_root, args)
+        try:
+            exit_code, result = _one_cut(python_executable, project_root, args)
+        finally:
+            # In the `finally` so a cut that times out still yields its capture:
+            # a run that dies at cut 1 is exactly the run whose container nobody
+            # has ever seen. Neither call raises, so neither can mask the cut's
+            # own failure.
+            if capture is not None:
+                _stop_container_capture(capture)
+                _report_first_container(args.docker, args.endpoint, capture)
         _report_b10_evidence_after_cut(cut, exit_code, result)
         status = result.get("status")
         run_id = result.get("run_id") or run_id
