@@ -3458,3 +3458,364 @@ Items 2 through 9 stand as written.
 #### 20.21.10 Ledger row
 
 Row 20.5 is added to the section 20.17 table, where the rest of the ledger lives.
+
+## 21. Amendment 2026-09-03 — ruling on B-12 (the prepared path stages the whole superproject)
+
+Citations in this section are against Host `86e2a86c` and engine `ba844137`, the
+tree this ruling was written from. Section 20 and its amendments are B-11 and
+B-11-R1 and are unaffected by anything here.
+
+### 21.1 The measurement
+
+Run 6 (#174, report section 18) cleared B-11 on the real tree and then failed at
+staging:
+
+```
+stderr| synaptic-host: START_UNAVAILABLE ValueError at synaptic_host/docker_staging.py:1299 in _git_archive
+```
+
+`_git_archive` (`docker_staging.py:1296-1300`) runs `git archive --format=tar
+<commit>` over the whole repository and raises when `not raw or len(raw) >
+_MAX_PROJECT_ARCHIVE_BYTES` (`:1298`, bound at `:45`). The call site is
+`:1714-1717`, which archives `context.project_root` at
+`source_lock.project_source.commit` into `source/project`.
+
+| Quantity | Value |
+|---|---|
+| archive at `e00ab662` | 412,794,880 bytes |
+| archive at `ab741054` (run 5) | 412,682,240 bytes |
+| bound `_MAX_PROJECT_ARCHIVE_BYTES` | 268,435,456 bytes |
+| overshoot | 144,359,424 bytes |
+| `datasets/` tracked blobs | 222.2 MiB |
+| `experiments/` tracked blobs | 74.1 MiB |
+| `papers/` tracked blobs | 65.6 MiB |
+
+The archive is non-empty, so it is the size half of `:1298` that fires. The run-5
+checkout is over the bound too, so B-12 is latent since the path was written and
+was masked by B-11, not introduced by it. It is the first platform-independent
+blocker in this workstream: nothing about it depends on Windows, on the volume,
+or on the ACL work of section 20.
+
+### 21.2 Severity, and why nothing caught it
+
+The three trees that blow the bound are the wrapping project's research corpus.
+None of them is read by the trainer. The prepared path was staging 393.7 MiB of
+papers and datasets to deliver, as this section establishes, one JSONL fixture.
+
+Nothing caught it because the bound is only reachable through a real project. The
+constructive tests build small trees under `tmp_path`, so the archive is
+kilobytes and the predicate never fires. This is the same shape as B-11-R1's test
+gap, and worth naming as a class: **a bound whose only realistic trigger is the
+size of the operator's own repository cannot be exercised by a fixture that
+builds the repository.** Section 21.14 rules the test that closes it.
+
+### 21.3 What the container actually reads from `/source/project`
+
+The sweep, since this is the fact the whole ruling turns on.
+
+The staged tree is presented to the container as three roots. `_layout`
+(`:1515-1531`) maps `source/engine` to `/source/engine` and `source/project` to
+`/source/project`, both read-only, and the writable set to `/artifacts/*`.
+`docker_training.py:445-457` sets `PYTHONPATH` and `SYNAPTIC_ENGINE_ROOT` to
+`/source/engine` and `SYNAPTIC_PROJECT_ROOT` to `/source/project`.
+
+**All executable code comes from the engine, never from the project.**
+`PYTHONPATH` is `/source/engine` alone (asserted again at `:1689`), and the
+worker's module set is projected from the locked closure
+(`offline_sft_worker.py:464,500,550`), which is staged by digest from the engine
+repository at `:1718-1721`.
+
+**The model comes from the cache.** `_require_local_model_snapshot`
+(`runtime_v1.py:654-659`) resolves the snapshot under `roots.cache`, which is
+`/artifacts/cache`, populated by `_copy_inventory` at `:1722`.
+
+**The control surface comes from `/source/control`,** written at `:1723-1747`:
+`source-lock.json`, `storage.json`, `workload.json` as canonical bytes, and the
+closure manifest. The workload is therefore delivered to the container as control
+bytes, not read from the project tree.
+
+**That leaves exactly one project read.** `runtime_v1.py:1074-1094` requires the
+workload's dataset ref to start with `project://`, resolves it under
+`roots.project` through `_resolve_relative` (`:909-932`), and then verifies two
+things: that `dataset.revision` equals the locked project commit, and that the
+file's SHA-256 equals the recorded `content_digest`. There is no directory walk of
+the project root and no second read. The only other constraint on the root is
+structural: `roots.engine` and `roots.project` must be distinct and must not
+overlap the writable roots (`:886-906`).
+
+The smoke workload confirms the shape: `training/smokes/docker-sft.json` names
+`"dataset": {"ref": "project://training/fixtures/modal-smoke.jsonl"}` and takes
+its model from a Hugging Face ref resolved out of the inventory.
+
+**Conclusion: the container reads one file from `/source/project`.** Staging
+393.7 MiB to deliver it is the defect, stated without reference to any bound.
+
+### 21.4 Ruling
+
+**Stage the project inputs the source lock already records, by digest, and retire
+the whole-tree archive for the project.**
+
+The scope is the set of project-relative paths carried in
+`source_lock.inputs`, which `docker_training.py:278-281` populates with exactly
+two descriptors, `training-config` and `training-dataset`, each built by
+`_descriptor` (`:104-116`) and therefore already carrying `path`,
+`git_object_id`, `size_bytes` and `sha256`.
+
+`source/project` is created and populated with those members at their recorded
+project-relative paths, each payload verified against its recorded size and
+digest before it is written, and the staged tree verified to contain those
+members and nothing else. `_git_archive` and the whole-tree extraction of the
+project are removed from this path.
+
+This satisfies every constraint the mission set. The subset is **derived**, from
+the workload through admission, with no operator knob. It is **exact**: the lock
+pins the commit, each descriptor pins the blob, and the Host now checks the blob
+rather than trusting a tar. It is **reproducible**: two runs at the same lock
+stage the same bytes by construction. It is **verifiable from the lock**: the
+descriptors are the lock. And the bound stays real, as section 21.7 rules.
+
+### 21.5 Why the scope is the lock's input set, not my reading of the engine
+
+Section 21.3 establishes that today only the dataset is read. The scope ruled
+above also stages the training config, which no engine read currently requires.
+That is deliberate and it is the one place this ruling is not minimal.
+
+The reason is a boundary question, not a size question. If the Host scoped to
+"what I determined the engine reads", then the Host's staging correctness would
+depend on the engine's internals, and the engine is a submodule that moves on its
+own pin. An engine change that began reading its config from the project root
+would turn a correct Host into a silently wrong one, and the failure would land
+in a container, at a version boundary, far from the code that caused it. If the
+Host instead scopes to "what the lock records this run as consuming", the Host
+depends on a contract it owns and writes, and an engine that wants more must
+either use a path the lock records or fail loudly.
+
+The two files together are a few kilobytes. The size argument does not
+distinguish them; the ownership argument does.
+
+### 21.6 The mechanism, which is not a new one
+
+`_git_selected_blobs` (`:1092-1105`) already runs `git archive --format=tar
+<commit> -- <paths>`, the pathspec-scoped form, and already parses the result
+into a path-keyed mapping. It is the mechanism the **engine closure** is staged
+with. `_git_blob_metadata` (`:1049`) and `_git_blob` (`:1083`) already read a
+single blob by object id at a commit with an exact size check.
+
+So the ruling introduces no new primitive. It composes two paths this file
+already proves: the pathspec-scoped read that stages the closure, and the
+digest-verified write-then-reverify that `_stage_locked_closure` and
+`_verify_staged_closure` (`:1259-1293`) perform. The project becomes the third
+consumer of a shape that is twice-shipped, rather than the only consumer of a
+whole-tree archive.
+
+Reading by pathspec at the commit, rather than from the working tree, also keeps
+the existing property that staging never depends on the state of the operator's
+checkout.
+
+### 21.7 What the bound now measures
+
+`_MAX_PROJECT_ARCHIVE_BYTES` at `:45` stops being a bound on the operator's
+repository and becomes a bound on the staged input set. It is not raised. It is
+not lowered either, because a legitimate dataset can be large and the point of
+the ruling is that the Host no longer has an opinion about the size of the
+project.
+
+Three checks remain and all stay real:
+
+| Bound | Site | What it now measures |
+|---|---|---|
+| `_MAX_PROJECT_ARCHIVE_BYTES` | `:45` | total bytes of the staged project inputs |
+| `_MAX_PROJECT_EXPANDED_BYTES` | `:46` | unchanged in meaning; now trivially satisfied |
+| `_MAX_PROJECT_ENTRIES` | `:47` | number of staged project inputs |
+
+The per-member size check is stronger than any of them, because each member's
+length is compared to the size the lock recorded, which is an equality rather
+than a ceiling.
+
+### 21.8 The cause line
+
+`:1298` and `:1304` share one message across two predicates, so run 6's cause
+line named a frame but not a reason, and a human had to measure the archive to
+learn which half fired. Split them.
+
+| Condition | Message |
+|---|---|
+| the read produced no bytes | `exact project input is empty` |
+| a member's length differs from the recorded size | `exact project input differs from its locked size` |
+| a member's digest differs from the recorded digest | `exact project input differs from its locked digest` |
+| the staged set does not equal the recorded set | `staged project inputs contain missing or extra files` |
+| the total exceeds the bound | `exact project inputs exceed their bound` |
+
+These are staging messages, not new result codes. The activation cause line of
+section 20.11 already carries the class and the innermost frame, so the split
+buys the reader the reason at no schema cost. No exception text reaches the
+operator, per section 20.11, so these strings must stay free of paths and values.
+
+### 21.9 A workload that references a path outside the scope
+
+It cannot happen by construction, and that is the point: the scope is derived
+from the workload, so the workload's own references define it. What can happen is
+that a path the workload names is not a regular blob at the locked commit, and
+that is already refused at admission by `_git_blob_metadata` (`:1067-1072`),
+before a lock is issued.
+
+The residual case is a **future** engine reading a project path the lock does not
+record. That fails in the container with `project path reference does not exist`
+(`runtime_v1.py:928`), which is loud, names the path, and is correct: the Host
+did not stage it because nothing declared it. Section 21.18 records this as the
+seam to watch.
+
+### 21.10 SourceLockV1 does not change
+
+Stated explicitly because the mission asked. **No schema change, no lock version
+bump, no new field, no engine change, no closure regeneration.**
+
+The scope is not new information. `docker_training.py:266-307` already records
+every project-relative file this run touches, each as a full descriptor. The
+ruling reads a field that is already written and already digested into the lock's
+canonical bytes. That the answer was already in the lock is the strongest
+evidence that scoping is the intended shape rather than a workaround.
+
+`SourceLockV1.mode` stays `"superproject"` (`:259`). It describes the source
+topology the lock was proved against, not the volume of bytes staged from it.
+
+### 21.11 Rejected alternatives
+
+| Rejected | Why |
+|---|---|
+| **raise `_MAX_PROJECT_ARCHIVE_BYTES`** | declined by the user on #180, and the reason holds independently: it moves the cliff instead of removing it, and makes success depend on how large the wrapping repository happens to be. The engine must be wrappable by any project, so any bound over a whole project is a bound on the user's research, which the Host has no business setting |
+| **a documented project-shape precondition** | declined on #180. It exports the constraint to every wrapping project and contradicts wrappable-by-any-project. It also cannot be enforced, only documented, which makes it a class of blocker that only appears in someone else's repository |
+| **`.gitattributes` `export-ignore` on the large trees** | it would work today and is one line, but it puts the Host's staging correctness in a file the wrapping project owns and can edit, and it silently changes what `git archive` produces everywhere else. Correctness must not depend on an operator-editable file that has other purposes |
+| **operator-declared allowlist in the provider profile** | the lead confirmed the derived reading on #181. A declared allowlist adds a knob whose wrong setting fails inside a container, and a schema change, to express something admission already computes |
+| **scope to the dataset alone** | minimal, but ties Host staging to a reading of engine internals across a submodule pin. Section 21.5 |
+| **keep the whole-tree archive and stream it** | the bytes are not needed at all; making it cheaper to move them is solving the wrong problem |
+
+### 21.12 Coder-ready specification
+
+All changes in `synaptic_host/docker_staging.py` unless stated.
+
+1. Add a private helper that stages the project inputs. It takes the repository
+   path, the locked commit, and the input descriptors from the lock. It reads the
+   members with `_git_selected_blobs` (`:1092`) using the descriptor paths as the
+   pathspec, and for each descriptor compares the returned payload's length to
+   `size_bytes` and its SHA-256 to `sha256` before writing. Raise the matching
+   message from section 21.8 on any mismatch.
+2. Write each member with `_write_new_regular` under a parent obtained from
+   `_ensure_direct_parent`, and apply the file mode the same way
+   `_stage_locked_closure` does at `:1273-1274`. Keep the
+   `is_relative_to(destination)` escape check of `:1271-1272`.
+3. Re-verify after writing, in the shape of `_verify_staged_closure`
+   (`:1278-1293`): walk the staged project root, assert the set of relative paths
+   equals the descriptor set exactly, and re-read each file to compare length and
+   digest. The re-read is not redundant with step 1; it is what makes the staged
+   tree, rather than the payload in memory, the thing that was verified.
+4. Enforce the bounds of section 21.7 over the descriptor set: total bytes
+   against `_MAX_PROJECT_ARCHIVE_BYTES` and count against `_MAX_PROJECT_ENTRIES`,
+   before any write.
+5. Replace the call at `:1714-1717` with a call to the new helper, passing
+   `context.project_root`, `source_lock.project_source.commit` and the lock's
+   input descriptors, and destination `source / "project"`. Keep its position:
+   before `_stage_locked_closure` and `_copy_inventory`, so the ordering of the
+   three staged roots is unchanged.
+6. Delete `_git_archive` (`:1296-1300`) if step 5 leaves it with no callers, and
+   confirm that by sweeping for the name rather than assuming. Leave
+   `_extract_link_free` (`:1303-1346`) in place only if another caller exists;
+   sweep for that too. Do not delete either on the strength of this sentence.
+7. Split the shared messages per section 21.8. Do not add a result code, do not
+   touch `cli.py`, do not change the activation cause reporter.
+8. Do not change `_source_manifest` (`:1496-1512`). It digests what is staged, so
+   it follows the new scope automatically, and the re-verify at `:1648-1654`
+   compares it against the projection recorded from the same walk. This
+   self-consistency is why no recorded digest has to be recomputed anywhere.
+
+### 21.13 Driver and skill changes
+
+**One driver probe, coder-workflow's.** Add a pre-run check that reports the
+total size of the locked project inputs, so an operator sees the staged volume
+before issuing a run rather than after a failed cut. It reports; it does not
+gate, because the Host owns the refusal.
+
+**Skill text.** The `host-docker-run` prerequisites currently say nothing about
+project size, and after this ruling they should say nothing about it either. Add
+one paragraph stating the opposite of what an operator might now assume: the
+prepared path stages only the inputs the workload names, so the size of the
+project is not a precondition and `.gitattributes` must not be used to shape it.
+Canonical `.skills/` first, then the sync script.
+
+**No change** to `run_prepared_training.py` cut handling, to
+`materialize_model_inventory.py`, or to the B10-EVIDENCE line.
+
+### 21.14 Tests
+
+| # | Test | Asserts |
+|---|---|---|
+| S1 | a project whose tracked content greatly exceeds `_MAX_PROJECT_ARCHIVE_BYTES` stages successfully when its inputs are small | the acceptance test for B-12. It must build a repository whose archive exceeds the bound, which is the fixture the existing tests never built. Generate incompressible bytes rather than committing a large file |
+| S2 | the staged project root contains exactly the lock's input paths and nothing else | the scope is a set equality, not a subset. This is the test that fails if a future change reintroduces a whole-tree stage |
+| S3 | a descriptor whose recorded digest does not match the blob at the commit is refused | the digest check is load-bearing and is checked before the write |
+| S4 | a descriptor whose recorded size does not match is refused with the size message, and an empty read is refused with the empty message | the section 21.8 split; two predicates, two distinguishable messages |
+| S5 | the staged dataset is byte-identical to the blob at the locked commit, with the working tree dirtied at that path first | staging reads the commit, never the checkout |
+| S6 | two consecutive stages of the same lock produce the same source manifest digest | reproducibility, and it pins that the scope itself is inside the digest |
+
+S1 is the one that matters. Without it this ruling is verified only by tests that
+could not have failed before it.
+
+### 21.15 Pins and do-not-touch
+
+| File | Why it stays |
+|---|---|
+| `synaptic-tuner/` in any form | no engine change, no allowlist, no schema, no closure regeneration |
+| `synaptic_host/cli.py` | no result-schema change; section 21.8 is staging text only |
+| `synaptic_host/docker_v1/composition.py` | the legacy path stays unused |
+| the committed provider profile | no new field; the scope is derived, not declared |
+| `materialize_model_inventory.py` | the inventory path is untouched |
+| `/etc/wsl.conf` | user ruling of 2026-09-02 |
+| the released checkouts and `F:\Code\scratch-b11` | preserved as evidence |
+
+| Pin | Location | Disposition |
+|---|---|---|
+| source manifest digest recorded and re-verified | `:1648-1654`, `:1748-1760` | stays green; both sides derive from the same walk |
+| worker closure binding | `:1738-1740` | stays green; the engine root is untouched |
+| inventory staging and its cap | `:1349-1357` | stays green |
+| `PYTHONPATH` equals `/source/engine` | `:1689` | stays green; this ruling makes it more true, not less |
+| dual-clone roots distinct | `runtime_v1.py:886` | stays green; `source/project` still exists and is still distinct |
+| constructive staging tests under `tmp_path` | the existing suite | stay green; small projects stage the same way |
+
+### 21.16 What run 7 must observe
+
+| Row | Observation | Reading |
+|---|---|---|
+| 1 | cut 1 passes staging | the acceptance row for B-12. A stage directory exists and a container reference is produced |
+| 2 | the staged `source\project` tree, listed in full | it must contain exactly the two locked input paths. Anything else, and the scope is not what this section ruled |
+| 3 | the staged dataset's SHA-256 | equals the `training-dataset` descriptor's `sha256` in `control\source-lock.json` |
+| 4 | the container reaches the trainer and the dataset digest check passes | `runtime_v1.py:1088-1094` is the engine's independent confirmation that the scoped stage delivered the right bytes |
+| 5 | everything section 20.16 rows 1 to 5 and the B-10, B-10-R1 and B-9-R1 measurements ask for | all of them have been blocked behind staging for two runs and become measurable for the first time |
+
+Row 5 is the reason this blocker mattered: B-9's `--user`, B-9-R1's `/tmp`
+caches, B-10's cut-2 evidence and B-10-R1's cache tree have never been observed,
+because no container has ever been created on this path.
+
+### 21.17 Ledger row
+
+| Row | Content |
+|---|---|
+| 21.1 | B-12. `_git_archive` (`docker_staging.py:1296-1300`) staged the whole superproject at the locked commit; 412,794,880 bytes against the 268,435,456 bound at `:45`, raise at `:1299`, call at `:1714-1717`. Latent since the path was written, masked by B-11, platform-independent. The container reads exactly one file from `/source/project`, the workload's `project://` dataset (`runtime_v1.py:1074-1094`); code comes from `/source/engine`, the model from `/artifacts/cache`, the workload from `/source/control`. Fix: stage the project inputs the lock already records (`docker_training.py:278-281`), by digest, using the existing `_git_selected_blobs` and the `_stage_locked_closure` verify shape. No SourceLockV1 change, no engine change, no bound raise. The bound now measures the staged input set. Shared two-predicate messages at `:1298` and `:1304` split per section 21.8 |
+
+### 21.18 What this ruling does not settle
+
+**The engine could grow a project read the lock does not record.** Today the
+contract is implicit: the engine happens to read only what admission happens to
+record. This ruling makes the Host's half explicit and leaves the engine's half
+where it was. The failure mode is loud and correct, so it is not a blocker, but
+the seam is real and it is the natural subject of a later engine-side rule that
+project reads must come from the recorded input set.
+
+**Whether `git archive` at a pathspec is byte-reproducible across git versions**
+is not settled and no longer matters. The ruling verifies payloads against
+recorded digests and re-verifies the staged files, so reproducibility rests on
+the digests rather than on the tar. That is the substantive reason to prefer the
+digest-verified form over trusting a scoped archive, beyond its being the shape
+already shipped twice.
+
+**The `mode` field stays `"superproject"`.** If a future topology stages a
+project that is not a superproject, that field and this scope will need to be
+read together, and they are currently independent.
