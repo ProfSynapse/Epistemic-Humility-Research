@@ -2782,6 +2782,14 @@ returning `fail(...)`. `synaptic_host` writes nothing to stderr today, so this i
 new behaviour for the package, and it is confined to two failure paths that
 already return an unavailable result.
 
+**Addendum 2026-09-03, after run 7 — see section 22.14.** The innermost in-package
+frame is the wrong frame whenever the exception is raised inside a shared
+raise-only helper: run 7 printed `endpoint.py:21 in _fail` rather than the
+deciding `endpoint.py:98 in resolve`. Section 22.14 rules that the line records
+the deepest **two** in-package frames, deciding frame last, and enumerates the
+eight helpers across the package that have this shape. Nothing else in section
+20.11 changes.
+
 ### 20.12 Pricing against the standing constraints
 
 | Constraint | Status |
@@ -3398,10 +3406,18 @@ That is safe in the wedge scenario specifically, and the reason is worth writing
 down rather than trusting: the wedge can only fire while a chain member is still
 in the never-protected state, which after any successful activation it is not, so
 a wedged tree has never completed an activation and therefore holds no control key
-and no durable rows. If durable rows do exist, `for_docker:705-706` raises on a
-missing key instead, and deletion is **not** safe. An operator who sees the cause
-line naming the validator frame should check for durable rows before deleting
-anything.
+and no durable rows. ~~If durable rows do exist, `for_docker:705-706` raises on a
+missing key instead, and deletion is **not** safe.~~ **Struck 2026-09-03 — that
+guard cannot fire on this deletion.** Deleting `.synaptic\state` removes
+`training.sqlite3`, `docker\control-hmac.key` and `modal\evidence-hmac.key`
+together, so the missing-key-plus-existing-rows condition at `security.py:705-706`
+is unreachable by it, and nothing in the Host refuses the deletion. The
+instruction stands; only the reason changes. **The operator's own check is the
+only guard, and the concrete check is whether
+`.synaptic\state\training.sqlite3` exists.** An operator who sees the cause line
+naming a private storage frame should make that check before deleting anything.
+See section 22.12, and `.skills/host-docker-run/SKILL.md:390-394`, which already
+carries the corrected reason.
 
 One cost of the ruling, on the affected volume only, stated because it is real:
 repairing `docker` first converts `docker`'s own children, so the stage tree and
@@ -3833,3 +3849,571 @@ already shipped twice.
 **The `mode` field stays `"superproject"`.** If a future topology stages a
 project that is not a superproject, that field and this scope will need to be
 read together, and they are currently independent.
+
+## 22. Amendment 2026-09-03 — ruling on B-13 (the prepared composition asks the operator's home for an endpoint it already knows)
+
+Every line and file citation in this section was read at Host `9e63924e`, which is
+`9eb2b90b` plus the skill paragraph of #194. That is the citation baseline; a
+later coder editing these files should re-derive line numbers rather than trust
+these, and the identifiers are stable even when the numbers move.
+
+### 22.1 What B-13 is, stated from the code rather than from the symptom
+
+`compose_docker_prepared_platform_v1` builds its Docker CLI environment from an
+exact four-key tuple:
+
+```python
+required = ("SystemRoot", "TEMP", "TMP", "WINDIR")          # docker_prepared_composition.py:114
+cli_environment = DockerCLIEnvironmentV1.build(
+    tuple((key, values[key]) for key in required)
+)
+```
+
+`DockerCLIEnvironmentV1.__post_init__` enforces that tuple by **equality**, not by
+subset (`model.py:1144`):
+
+```python
+expected_keys = ("SystemRoot", "TEMP", "TMP", "WINDIR")
+if (... or tuple(key for key, _ in self.entries) != expected_keys):
+    raise ValueError
+```
+
+so the tuple is sealed at both ends: the composition cannot pass a fifth key and
+the model would refuse it if it did.
+
+The composition then **discovers** the endpoint (`:149`):
+
+```python
+endpoint = DockerLocalEndpointResolverV1(bounded).resolve(
+    executable, "desktop-linux", effect_environment,
+)
+```
+
+`resolve` (`endpoint.py:62-98`) spawns `docker.exe context inspect --format
+{{json .}} desktop-linux` under that four-key environment. With no `USERPROFILE`
+the CLI has no home, resolves `.docker\contexts\meta\<hash>\meta.json`
+**relative**, and exits 1. The non-zero exit fails the check at `endpoint.py:71`,
+the bare handler at `:97` calls `_fail()` at `:98`, and `_fail` (`:20-21`) raises
+`DockerPlatformErrorV1` with its **default** code `OUTPUT_INVALID`, which the
+admission path renders as `START_UNAVAILABLE`.
+
+Six lines later the composition asserts what it just discovered against two
+constants (`:156-162`):
+
+```python
+if (
+    type(endpoint) is not DockerLocalEndpointDescriptorV1
+    or endpoint != DockerLocalEndpointDescriptorV1.build(
+        "desktop-linux", "npipe:////./pipe/dockerDesktopLinuxEngine", False,
+    )
+):
+    raise ValueError("Docker desktop-linux endpoint is invalid")
+```
+
+and `DockerLocalEndpointDescriptorV1.__post_init__` independently refuses any
+other `source_context_ref`, any other host and any `tls` but `False`. **The
+discovery is therefore constrained to return exactly one value or raise.** That
+is the shape of the defect: the path spends its only dependency on the operator's
+profile to learn a constant it already has written down twice.
+
+The failure is not a regression. The tuple is byte-identical at `ab741054`,
+`e00ab662` and `9eb2b90b`, and test-host reproduced the identical frame and code
+from all three preserved checkouts on the same day (#192, log 11). It was latent
+and unreachable behind B-11 and then B-12, exactly as B-12 was latent behind
+B-11.
+
+### 22.2 Why `docker run` and `docker create` do not fail, as a structural fact
+
+test-host measured that `docker --host npipe://... run` and `create` both succeed
+under the bare four keys (#196, log 13). That measurement is right, and the code
+says something stronger than a measurement can: **there is exactly one place in
+the Host that builds a `docker.exe` argv**, and it always writes `--host`.
+`DockerCLIRunnerV1._execute` (`cli.py:800-810`):
+
+```python
+raw = self._execute_argv(
+    (policy.executable, "--host", policy.endpoint.host,
+     command.verb.value, *command.arguments),
+    {key: value for key, value in policy.environment.entries},
+    capture_stdout=capture_stdout,
+)
+```
+
+`run`, `create_container`, `start_container`, `inventory_exact_name` and the
+image and container inspections all route through it. A repository-wide search
+for `--host` finds that one site. So every verb the Host can emit —
+`create`, `start`, `stop`, `inspect`, `ps`, `logs` — names its endpoint
+explicitly and never consults the per-user context store. `context inspect`,
+which runs in `endpoint.py` **before a policy exists**, is the only call in the
+whole path that needs a home directory.
+
+This upgrades the first assumption in my teachback from *measured for two verbs*
+to *structural for all of them*, and it is what makes the ruling below narrow
+rather than hopeful.
+
+### 22.3 Severity, and why nothing caught it
+
+`tests/synaptic_host/docker_v1/test_endpoint.py` injects a fake `popen_factory`
+returning canned stdout. A stubbed process cannot fail on this defect: the test
+is green before the fix and green after it. This is the **third** defect in this
+workstream whose whole content is the shape of a scrubbed child environment, and
+all three were found by execution and none by the suite:
+
+| Blocker | The key that was missing | Found by |
+|---|---|---|
+| B-7 | `SystemRoot` in `ScopedGitRemoteReader`'s environment; Winsock cannot initialise without it | run 3 |
+| B-9-R1 | `HOME`, `XDG_CACHE_HOME`, `TORCH_HOME`, `TRITON_CACHE_DIR` in the engine allowlist | probe #131 |
+| B-13 | `USERPROFILE` for one `docker.exe` child | run 7 |
+
+Section 21.2 already adopted the rule that a bound whose only realistic trigger
+is the operator's environment shape needs a fixture that reaches that shape.
+B-13 is its sibling and forces the wider form, ruled in 22.10.
+
+### 22.4 Remedy A, priced
+
+Remedy A admits `USERPROFILE` at `docker_prepared_composition.py:114` and
+`model.py:1144`. test-host established it is mechanically legal: the key passes
+the name screen at `model.py:1157-1161` (no `DOCKER_` prefix, no `TOKEN`, `AUTH`
+or `PROXY` substring) and its value passes `_windows_drive_path_v1`. It left the
+digest cost unpriced. Priced here:
+
+`DockerCLIEnvironmentV1.environment_digest` is `digest_v1` over the entries
+(`model.py:1176-1182`). `DockerCLIPolicyV1.canonical_without_digest` includes
+`environment_digest` (`model.py:1265`), so `policy_digest` moves with it.
+`policy_digest` is written into **every** `DockerCLIResultV1` body
+(`cli.py:815`) and, more importantly, is compared against durability:
+`DockerPreparedControlBuilderV1._assemble` refuses a platform whose
+`cli_policy_digest` differs from the one recorded in the preparation
+(`docker_prepared_composition.py:219-221`).
+
+The good news, from the sweep the lead asked for: **`environment_digest` appears
+in zero tests.** It cannot be pinned to a literal, because `policy_digest` also
+covers `executable` (`model.py:1266`), which is a machine-specific absolute path.
+So the digest is computed on both sides everywhere it is used and there are no
+pinned digest fixtures to move. What remedy A actually moves is:
+
+| Site | What changes |
+|---|---|
+| `docker_prepared_composition.py:114` | the `required` tuple becomes five keys |
+| `docker_v1/model.py:1144` | `expected_keys` becomes five keys |
+| `tests/synaptic_host/docker_v1/test_cli.py:262` | `assert set(kwargs["env"]) == {...}`, an exact-set assertion, must gain the key |
+| `tests/synaptic_host/docker_v1/test_cli.py:222`, `:429`, `:445` | four-entry fixtures |
+| `tests/synaptic_host/docker_v1/test_composition.py:342` | four-entry fixture |
+| `tests/synaptic_host/docker_v1/test_interop.py:34` | four-entry fixture |
+| `tests/synaptic_host/docker_v1/test_real_docker_wsl.py:240` | four-entry fixture |
+| `tests/synaptic_host/test_docker_prepared_composition.py:77`, `:164`, `:280` | source environment and two fixtures |
+| `tests/synaptic_host/test_docker_training.py:1175` | four-entry fixture |
+| any durable preparation record written before the change | its `cli_policy_digest` no longer matches; run 8 uses a fresh clone so none exist |
+
+That is two production lines and about ten test sites. It is a smaller change
+than test-host feared. **It is still the wrong one**, for a reason that is not
+about size:
+
+`USERPROFILE` in `DockerCLIEnvironmentV1` is carried by `policy.environment` into
+`_execute` and therefore into **every** `docker.exe` the Host ever spawns, not
+just the one call that needs it. Section 22.2 shows none of the others needs it.
+Giving a home to `create`, `start`, `stop`, `inspect`, `ps` and `logs` means each
+of them will read `%USERPROFILE%\.docker\config.json`, which is where the Docker
+CLI keeps `auths` and a `credsStore`. The Host does not own that file and cannot
+constrain it. The standing constraint says a widening of the hardened environment
+needs a stated reason; the honest statement for remedy A would be *"six calls
+that do not need a home get one so that a seventh call can learn a constant"*,
+and that reason does not survive being written down.
+
+### 22.5 Remedy B, and why it is disqualified
+
+Remedy B drops the endpoint inspection entirely. The lead ruled the question that
+decides it: an early clean failure when Docker Desktop is down **is** a
+requirement of this path, because a wrapper or a desktop front end must be able
+to say "Docker Desktop is not running" before staging rather than after a
+`docker create` fails. Remedy B as stated deletes the pre-flight and is
+therefore refused.
+
+### 22.6 The ruling — construct the endpoint, then probe the daemon
+
+**The composition stops asking the context store for a value it already asserts,
+and starts asking the daemon the question it actually wants answered. The
+four-key tuple does not change and nothing gains a dependency on the operator's
+profile.**
+
+Three changes in `docker_prepared_composition.py`, in order:
+
+1. **Construct the descriptor.** Replace the `:142-155` resolver block with
+
+   ```python
+   endpoint = DockerLocalEndpointDescriptorV1.build(
+       "desktop-linux", "npipe:////./pipe/dockerDesktopLinuxEngine", False,
+   )
+   ```
+
+   This is a value the `:156-162` assertion already demanded and the descriptor's
+   own `__post_init__` already enforces. The assertion at `:156-162` stays exactly
+   as it is. It is now trivially true, and it stays because it is the written
+   statement of what the constant must be; deleting it would move that statement
+   into a builder call where a future edit could change it silently.
+
+2. **Probe the daemon** after `policy` and `runner` exist (`:163-169`), through
+   the ordinary `_execute` path so the call carries `--host` and needs no home:
+
+   ```python
+   liveness = runner.run(
+       DockerCLICommandV1.build(
+           DockerCLIVerbV1.VERSION, ("--format", "{{.Server.Version}}"),
+       )
+   )
+   if liveness.outcome is not DockerCLIOutcomeV1.SUCCESS:
+       raise ValueError("Docker desktop-linux daemon is unavailable")
+   ```
+
+   `DockerCLIVerbV1.VERSION` **already exists** (`model.py:1012`) and is used
+   nowhere, so no enum changes. `--format` and `{{.Server.Version}}` are ordinary
+   argv tokens under `_argv_token_v1` (`model.py:1021-1032`): NFC, printable, well
+   inside the byte bound.
+
+3. **Delete the `endpoint_resolver` injection parameter** (`:97`) and the
+   `DockerLocalEndpointResolverV1` import (`:44`), because nothing calls them any
+   more.
+
+Three properties make this the ruling rather than a preference:
+
+- **It widens nothing.** The tuple, `environment_digest`, `policy_digest` and
+  every durable preparation record are untouched, so the ten test sites in 22.4
+  all stand and no digest moves.
+- **It asks a better question.** `docker context inspect` reads a JSON file on
+  disk. It answers "is a context store readable", which is true whether or not
+  Docker Desktop is running. `docker --host <pipe> version --format
+  {{.Server.Version}}` fails unless a daemon answers on that pipe. If the claim in
+  22.7 holds, today's pre-flight does not detect the condition the lead requires
+  and this one detects it for the first time.
+- **It improves the cause line for free.** The failure now raises `ValueError`
+  from `compose_docker_prepared_platform_v1` itself, so the innermost
+  `synaptic_host` frame is the deciding line rather than the shared raise helper
+  that 22.14 is about.
+
+**Not the narrow-augmentation alternative, and why it was considered.** There is
+an in-repo precedent for adding one key to one child without touching the sealed
+tuple: `DockerWSLInteropPopenFactoryV1.__call__` builds `delegated_environment =
+dict(environment.entries)` and adds `WSL_INTEROP` at the spawn boundary
+(`interop.py:350-352`), inside a factory that re-verifies its own configuration
+before and after (`_configuration_exact`, `:294-317`). That seam would let the
+context inspection keep its home while `create` and the rest stay homeless, and
+it is the right shape for a key a specific child mechanically requires. It is
+**not** used here, because it still gives one child the operator's profile in
+order to learn a constant, and 22.1 shows the constant does not need learning.
+The precedent is recorded because the next person who needs one extra key for one
+child should find it rather than reach for the tuple.
+
+### 22.7 What the ruling gives up, and the one claim that must be measured
+
+The discovery today asserts one thing the construction does not: that Docker
+Desktop's own `desktop-linux` context currently names that pipe with no TLS
+material. After this ruling the Host asserts the pipe by construction and proves
+it by talking to it. If an operator has reconfigured `desktop-linux` to point
+somewhere else, the Host will no longer notice — it will simply keep using the
+pipe it was always going to use, and the liveness probe will tell it whether
+something is listening there. That is a deliberate narrowing and it is stated
+rather than hidden.
+
+**One claim in 22.6 is a design claim, not a measurement, and it must be
+falsified or confirmed before this section's second bullet is quoted as fact:**
+that `docker context inspect desktop-linux` succeeds while Docker Desktop is
+stopped. The check is cheap and belongs to test-host, not to the coder:
+
+> Stop Docker Desktop. With the environment limited to the four keys **plus**
+> `USERPROFILE`, run `docker.exe context inspect --format {{json .}}
+> desktop-linux` and record the exit code, then run `docker.exe --host
+> npipe:////./pipe/dockerDesktopLinuxEngine version --format {{.Server.Version}}`
+> under the bare four keys and record its exit code. The prediction is exit 0 for
+> the first and non-zero for the second.
+
+If the prediction holds, the ruling strictly improves the pre-flight. If
+`context inspect` also fails with the daemon stopped, the ruling is a lateral
+move on diagnosis and still correct on every other ground in 22.6, and this
+paragraph should be corrected rather than quietly dropped.
+
+### 22.8 Pricing against the standing constraints
+
+| Constraint | Status |
+|---|---|
+| submodule-first, no engine change | held; nothing under `synaptic-tuner` is touched, no closure regeneration, no allowlist change |
+| no downloader, cache framework, compatibility layer, new database table, legacy composition fallback | held; none introduced |
+| do not route through `synaptic_host/docker_v1/composition.py` | held; the legacy composition is not touched and does not use the resolver |
+| the hardened CLI environment is a security surface; widening needs a stated reason | held, and the point of the ruling: **nothing is widened**, the four-key tuple is byte-identical after the fix |
+| no new dependency on the operator's profile if the composition can avoid it | held; the composition avoids it entirely |
+| training container network-disabled and credential-free | unaffected; this is the Host-side `docker.exe` environment and never reaches a container |
+| no secrets in the prepared command, staged source, logs or inventory | held; the liveness probe's stdout is a version string, and the failure message names no path |
+| no new result schema, no new platform code | held; the failure is a `ValueError` in the composition's own idiom (`:113`, `:140`, `:162`), so `DockerPlatformCodeV1` and the per-code result-shape table at `test_cli.py:468` do not move |
+
+### 22.9 Files to touch, and files that must not be touched
+
+**Touch:**
+
+| File | Change |
+|---|---|
+| `synaptic_host/docker_prepared_composition.py` | `:44` drop the resolver import; `:97` drop `endpoint_resolver`; `:142-155` construct the descriptor; after `:169` add the liveness probe and its `ValueError`; add the two imports the probe needs (`DockerCLICommandV1`, `DockerCLIVerbV1`, `DockerCLIOutcomeV1`) if they are not already imported |
+| `tests/synaptic_host/test_docker_prepared_composition.py` | `:85` and `:332` use `endpoint_resolver`; both change shape. `:332`'s `endpoint_resolver=forbidden` becomes a `popen_factory` that fails the test if the composition spawns anything but the liveness probe |
+
+**Do not touch, and the reason for each:**
+
+| File | Why |
+|---|---|
+| `synaptic_host/docker_v1/model.py` | the four-key tuple at `:1144`, the digest at `:1176-1182` and the policy digest at `:1265` are the things the ruling exists to leave alone. `DockerCLIVerbV1.VERSION` at `:1012` is used, not added |
+| `synaptic_host/docker_v1/cli.py` | `_execute` at `:800-810` already emits `--host`; the ruling depends on that and changes nothing in it |
+| `synaptic_host/docker_v1/endpoint.py` | becomes dead production code, reachable only from its own test. **Leave it and its tests in place for this change.** Deleting a module in the same commit that ships the fix widens the diff immediately before the highest-stakes run in the workstream. Filed as a follow-up in 22.16 |
+| `synaptic_host/docker_v1/composition.py` | the legacy composition, off limits by standing constraint, and it does not use the resolver |
+| `synaptic_host/security.py`, `synaptic_host/docker_staging.py` | B-11/B-11-R1 and B-12 surfaces; unrelated. The one exception is the Y-B disposition in 22.15, which is *no code change* |
+| `tests/synaptic_host/docker_v1/test_endpoint.py` | it tests the module that stays; it neither passes nor fails differently |
+| `tests/synaptic_host/docker_v1/test_cli.py:262`, and the nine four-entry environment fixtures listed in 22.4 | untouched precisely because the tuple does not change. If a coder finds themselves editing any of them, the ruling has been misread |
+
+### 22.10 Tests, and the standing rule this defect forces
+
+**Standing rule, extending 21.2.** *A defect whose whole content is the shape of a
+child process's environment cannot be caught by a test that supplies the child.*
+21.2 said a bound triggered only by the operator's environment shape needs a
+fixture that reaches that shape. B-7, B-9-R1 and B-13 add the execution half: when
+the thing under test is what a real program does when a key is absent, a stub
+returning canned bytes tests the stub. Such a surface needs **either** a test that
+drives a real child under the exact shipped environment, **or** an assertion on
+the environment tuple itself against a named list of what the child requires.
+
+Applied here:
+
+| # | Test | Asserts |
+|---|---|---|
+| E1 | the composition builds successfully with a `popen_factory` that records every argv and environment it is handed | exactly **one** child is spawned; its argv is `(executable, "--host", "npipe:////./pipe/dockerDesktopLinuxEngine", "version", "--format", "{{.Server.Version}}")`; the environment handed to it has key set exactly `{"SystemRoot", "TEMP", "TMP", "WINDIR"}`. This is the tuple-assertion half of the standing rule and it is the test that would have failed on B-13 |
+| E2 | the same, with the recording factory returning a non-zero exit for the liveness probe | `ValueError` naming the daemon, raised from `compose_docker_prepared_platform_v1`, and **no** platform object returned |
+| E3 | the composition never spawns `context inspect` | the recorded argv set contains no `context` verb. A regression guard: this is the defect, pinned by absence |
+| E4 | **real `docker.exe`**, Windows only: compose the platform under the exact shipped four-key environment and assert it returns a `DockerPreparedPlatformV1` | this is the execution half. It is the only test in the suite that can fail on a B-13-shaped defect |
+
+**Gating for E4.** `tests/synaptic_host/docker_v1/test_real_docker_wsl.py` already
+exists and is the established home for a test that needs a real Docker; E4 belongs
+beside it rather than in a new file. It skips when `os.name != "nt"`, and it skips
+when no single `docker.exe` resolves on `PATH` — reusing the composition's own
+candidate rule at `:119-138` rather than inventing a second one, so the skip
+condition cannot drift from the thing being tested. It must **not** skip merely
+because the daemon is down: with the daemon down, E4's expected outcome is the
+`ValueError` from 22.6 step 2, which is exactly the behaviour the lead requires
+and is worth asserting. A skip that swallows a daemon-down run would reintroduce
+the blindness this rule exists to remove.
+
+E4 is not a substitute for E1. E1 runs everywhere and states the contract; E4 runs
+on one machine and proves the contract matches reality. The standing rule asks for
+one of the two and this ruling takes both, because the family now has three
+members.
+
+### 22.11 Acceptance for run 8
+
+Run 8 runs from a **fresh** release clone. `F:\Code\ehr-release-9eb2b90b` is
+evidence and is not reused.
+
+| Row | Proves | Reading |
+|---|---|---|
+| 1 | B-13 closed | cut 1 gets past the composition. Concretely: no `START_UNAVAILABLE` whose cause line names `docker_prepared_composition.py` or `endpoint.py`, and a container reference exists |
+| 2 | the environment did not widen | the driver records the composition's child environment key set, or failing that the reviewer confirms `docker_prepared_composition.py:114` is unchanged in the diff. The key set is four |
+| 3 | the pre-flight still fires | the 22.7 measurement, run once before the run proper: `context inspect` with the daemon stopped, and the `--host version` probe with the daemon stopped |
+| 4 | **the first container ever created on this path** | see below |
+| 5 | 20.16 rows 1-5 and 21.16 rows 1-3 still hold | B-11, B-11-R1 and B-12 did not regress |
+
+**What row 4 must capture**, because it is the first time and everything behind it
+has been unmeasurable for ten cycles. At cut 1, after creation and start:
+
+- the full `docker create` argv the Host emitted, scrubbed, so B-9's `--user
+  1000:1000` is finally observed **on the prepared composition** rather than on the
+  driver's probe container;
+- `id` inside the container, and whether `/artifacts` is writable by that user
+  (B-9);
+- `HOME`, `XDG_CACHE_HOME`, `TORCH_HOME`, `TRITON_CACHE_DIR`, `HF_HOME` and
+  `TRANSFORMERS_CACHE` as the container sees them (B-9-R1, B-10-R1);
+- the container's exit status and the last of its stderr;
+- at cut 2, the four-row B-10 reading of 20.19 — and per that section an **absent**
+  cut-2 line is the absent row, not the deferral row.
+
+Cut 2 is the first opportunity to measure B-10, B-10-R1, B-2 adapter equality,
+publication and replay. None of them are gated by this ruling and none of them
+should be reported as passing on a run that stops before them.
+
+### 22.12 Amendment — 20.21.6's mechanism was wrong; the instruction stands
+
+Found by coder-workflow in the #193 teachback, verified by the lead at `9eb2b90b`,
+recorded on #175 as `mechanism_finding_20_21_6`.
+
+Section 20.21.6 says that when durable rows exist, `for_docker` at
+`security.py:705-706` raises on the missing control key, so deleting
+`.synaptic\state` is unsafe. **That raise cannot fire after the deletion 20.21.6
+recommends.** `state_root` is `project_root/.synaptic/state`; the rows database is
+`state_root/training.sqlite3` (`docker_training.py:138`, absent means
+`_docker_durable_rows_exist` returns `False` at `:139-140`); the control key is
+`state/docker/control-hmac.key` (`security.py:691-692`); and the Modal evidence key
+is `state/modal/evidence-hmac.key` (`security.py:669`). Deleting `.synaptic\state`
+removes all three **together**, so the `:705-706` guard — which needs a missing key
+*and* existing rows — is unreachable by that deletion. It is reachable only by
+deleting `state\docker` or the key file alone while leaving `training.sqlite3`.
+
+**The instruction stands and the reason is replaced.** Nothing in the Host refuses
+the deletion; the operator's own check is the only guard. The concrete check is the
+existence of `.synaptic\state\training.sqlite3`. The shipped skill text already
+carries the corrected reason (`.skills/host-docker-run/SKILL.md:390-394`, commit
+`9e63924e`), and 20.21.6 is reconciled to it rather than the other way round.
+
+The paragraph in 20.21.6 beginning "That is safe in the wedge scenario
+specifically" is corrected in place. Its first clause — that a wedged tree has
+never completed an activation and so holds no control key and no durable rows —
+remains true and remains the reason the deletion is safe in the wedge case. The
+clause that follows it, "If durable rows do exist, `for_docker:705-706` raises on a
+missing key instead", is **struck**: that guard cannot fire on this deletion.
+
+### 22.13 Amendment — the cause line carries no exception text, anywhere in section 20
+
+Recorded on #194 as `acceptance.second_correction_recorded`.
+
+`_report_admission_cause` (`docker_training.py:583-613`) emits the code value, the
+exception **class name**, and the innermost `synaptic_host` frame. Its docstring
+(`:593-599`) excludes the exception's own text deliberately and says why. So
+`_PRIVATE_STORAGE_ERROR`, the string `"HMAC private storage validation failed"` at
+`security.py:58`, **never reaches the operator**. Any guidance that tells an
+operator to look for that wording is wrong.
+
+Section 20.11 is already correct on this point: `:2759-2770` states the exclusion
+and the ledger row at `:2950` says "never the exception text". Section 20.21.6 is
+already correct: it directs the operator to a cause line that names a private
+storage **frame**. The one place in this document that quotes the string,
+`:3270`, is describing what the call raises inside the process, not what an
+operator will see, and it stands. (These four line numbers are as of this
+commit, after the 20.11 and 20.21.6 edits it carries.) **This amendment therefore changes no text; it
+records the audit of section 20 that found nothing to change, so the question is
+not re-opened.** If a future section tells an operator to match on a message, this
+paragraph is the reason it is wrong.
+
+### 22.14 Amendment — 20.11 addendum: the cause line names a shared raise helper
+
+test-host's run 7 recommendation. The line run 7 printed, verbatim:
+
+```
+stderr| synaptic-host: START_UNAVAILABLE DockerPlatformErrorV1 at synaptic_host/docker_v1/endpoint.py:21 in _fail
+```
+
+`endpoint.py:21` is the body of a two-line helper called from three sites in that
+module (`:38` `POLICY_INVALID`, `:60` `POLICY_INVALID`, `:98` `OUTPUT_INVALID`).
+`_innermost_package_frame` (`docker_training.py:561-580`) walks the traceback and
+keeps the **deepest** in-package frame, which for a helper that raises inside its
+own body is the helper, never the caller. The deciding frame — `endpoint.py:98 in
+resolve` — is the helper's immediate caller and is also inside the package.
+
+**This is not local to `endpoint.py`.** The raise-inside-a-helper idiom appears in
+eight modules: `_fail` in `bundle_io_v1/model.py:50`, `docker_v1/composition.py:110`,
+`docker_v1/control_contract.py:181`, `docker_v1/endpoint.py:20`,
+`docker_v1/interop.py:87`, `docker_v1/model.py:44`, `local_io_v1/model.py:66`, and
+`_platform_fail` at `docker_v1/model.py:596-597`, which alone has 28 call sites.
+The `_error`/`_failure` variants (`docker_v1/cli.py:230`, `mounts.py:52`,
+`paths.py:19`, `source.py:41`, `bundle.py:50`) **return** the error and are raised
+at the call site, so their frame is already the deciding one and they are not
+affected.
+
+Three candidate fixes and the ruling:
+
+1. *Skip frames whose whole body is a raise* — needs introspection of a code
+   object to decide what a function "is". Refused: a rule about function bodies
+   will misfire on the first helper that gains a second line.
+2. *Inline `_fail`* — correct for `endpoint.py`, three lines. But the same defect
+   lives at 28 more sites behind `_platform_fail` and at six other helpers.
+   Inlining them all deletes a package-wide idiom to improve a diagnostic. Refused
+   as disproportionate.
+3. **Record the deepest two in-package frames.** Ruled. `_innermost_package_frame`
+   keeps the deepest frame and additionally the one before it, and the line renders
+   as
+
+   ```
+   synaptic-host: <CODE> <Class> at <file>:<line> in <fn>, from <file>:<line> in <fn>
+   ```
+
+   with the `, from ...` clause omitted when there is no second in-package frame.
+   It needs no knowledge of which functions are helpers, it fixes all eight at
+   once, and it degrades to today's line exactly where today's line is already
+   right.
+
+**Test surface, checked.** The existing pins survive: `test_docker_training.py:1455`
+and `:1517` use `startswith`; `:1493` asserts equality on the `<unknown>` case,
+where there is no frame at all and nothing is appended;
+`test_run_prepared_training_probes.py:681` matches a prefix. The 400-byte bound at
+`docker_training.py:558` already covers the longer line. One new test is owed: a
+raise from inside a helper renders both frames, deciding frame last after the
+comma.
+
+**Ordering with 22.6.** After the ruling in 22.6 the B-13 failure raises from
+`compose_docker_prepared_platform_v1` itself, so this particular line would have
+been right without this amendment. The amendment stands anyway: the next shared
+helper to fire will not be in the composition, and a diagnostic that is right by
+accident is the thing this workstream keeps paying for.
+
+A forward reference to this subsection is added at the end of 20.11.
+
+### 22.15 Y-B — the expanded bound is unreachable; document it, do not remove it
+
+Audit #190 found `_MAX_PROJECT_EXPANDED_BYTES` at `docker_staging.py:1396`
+provably unreachable. Confirmed by reading: `_verify_staged_project_inputs` sums
+`len(payload)` over the same descriptors whose `size_bytes` the pre-write check
+already summed and bounded at `_MAX_PROJECT_ARCHIVE_BYTES` (256 MiB) at `:1338`,
+and each payload is asserted equal to its descriptor's `size_bytes` at `:1391`
+before being added at `:1395`. The running total at `:1396` therefore cannot exceed
+the total at `:1338`, which cannot exceed 256 MiB, which is less than 512 MiB. The
+audit is right.
+
+**Ruling: keep it, and document it as defence in depth. No code change.**
+
+Removal is not free, and the enumeration is the argument:
+
+| Site | What removal touches |
+|---|---|
+| `synaptic_host/docker_staging.py:46` | the constant |
+| `synaptic_host/docker_staging.py:1395-1397` | the accumulator and its check |
+| `.skills/host-docker-run/scripts/run_prepared_training.py:305` | the driver's mirrored constant |
+| the same file in `.agents/`, `.claude/` and `.codex/` skill mirrors | three generated copies, regenerated by the sync script |
+| `.skills/host-docker-run/scripts/run_prepared_training.py:302-303` | the comment stating the Host's values and the driver's move in one change |
+| `tests/skills/host_docker_run/test_run_prepared_training_probes.py:930` | asserts the constant equals 512 MiB |
+
+Eight files to delete a constant nobody can reach. Against that, keeping it costs
+one comparison per staged input on a set the lock bounds to a handful, and it is a
+second bound on a loop that writes to disk — the classic place for a belt whose
+condition is not knowable at the point where it is checked. B-12's own history
+argues for keeping it: the reachability proof depends on `:1338` continuing to
+enforce the summed size before the verify walk, which is a property of the code
+that landed in `86e2a86c` and is not enforced anywhere. If a later change moves the
+pre-write check, the belt becomes load-bearing again silently.
+
+The disposition is a **comment at `:1396`**, not a deletion, saying that the check
+is unreachable while `:1338` bounds the same sum first, and that it is retained as
+defence in depth against that ordering changing. The driver's mirrored constant
+stays for the same reason and because `:302-303` already binds the two to move
+together.
+
+### 22.16 Ledger rows and follow-ups
+
+Rows for the section 20.17 ledger, kept with the rest of the ledger:
+
+| Row | Content |
+|---|---|
+| 22.1 | B-13. `docker_prepared_composition.py:149` discovers an endpoint it asserts against constants six lines later, using a `context inspect` that needs the operator's home the four-key environment does not carry. Fix: construct the descriptor, probe the daemon with a `--host`-explicit `version`, widen nothing. No engine change, no schema change, no new platform code |
+| 22.2 | B-13 test rule. The scrubbed-environment family (B-7, B-9-R1, B-13) forces the execution half of 21.2: assert the tuple, or drive a real child, or both |
+| 22.3 | 20.11 addendum. The cause line records the deepest **two** in-package frames, so a shared raise helper no longer hides the deciding line |
+| 22.4 | Y-B. `_MAX_PROJECT_EXPANDED_BYTES` retained as documented defence in depth; removal costs eight files for an unreachable constant |
+
+Follow-ups:
+
+- **`docker_v1/endpoint.py` becomes dead production code.** After run 8 confirms
+  the liveness probe, the module and `tests/synaptic_host/docker_v1/test_endpoint.py`
+  should be removed together. Not in the fix commit, for the reason in 22.9.
+- **The 22.7 measurement** belongs to test-host and gates only the second bullet of
+  22.6, not the fix.
+- Carried and unaffected by this section: #170 (durable rows database ACEs), #184
+  (the engine seam from 21.18), audit #172's Y-1 and Y-2, and the non-blocking
+  B-11-M1 A/B measurement of 20.20.4 and 20.21.4.
+
+### 22.17 Risks
+
+| Risk | Reading |
+|---|---|
+| The liveness probe is a new child process on the critical path, before staging | it is one short-lived call through the same bounded runner every other call uses, with the same timeout and stream bounds from `DockerCLIPolicyV1.build`'s defaults. It cannot hang longer than the policy allows |
+| `--format {{.Server.Version}}` output shape changes across Docker versions | the ruling asserts the **outcome**, not the output. `DockerCLIOutcomeV1.SUCCESS` is exit 0. Nothing parses the version string, and nothing should start |
+| Removing the context inspection hides a genuinely misconfigured context | stated and accepted in 22.7. The pipe was never an open question; it is asserted by two constants and the descriptor's own constructor |
+| E4 needs a machine with Docker Desktop, so CI cannot run it | that is the whole point of the standing rule in 22.10, and E1 is the everywhere-half that states the same contract. A suite where only E1 runs is strictly better than today's, where neither exists |
+| The fix lands immediately before the first container this path has ever created, so a regression here is expensive | the diff is confined to one function in one file plus its tests; the module it stops calling is left in place; and E3 pins the defect by absence |
