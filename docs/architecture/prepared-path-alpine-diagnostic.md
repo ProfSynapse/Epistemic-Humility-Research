@@ -4161,7 +4161,7 @@ paragraph should be corrected rather than quietly dropped.
 | `synaptic_host/docker_v1/cli.py` | `_execute` at `:800-810` already emits `--host`; the ruling depends on that and changes nothing in it |
 | `synaptic_host/docker_v1/endpoint.py` | becomes dead production code, reachable only from its own test. **Leave it and its tests in place for this change.** Deleting a module in the same commit that ships the fix widens the diff immediately before the highest-stakes run in the workstream. Filed as a follow-up in 22.16 |
 | `synaptic_host/docker_v1/composition.py` | the legacy composition, off limits by standing constraint, and it does not use the resolver |
-| `synaptic_host/security.py`, `synaptic_host/docker_staging.py` | B-11/B-11-R1 and B-12 surfaces; unrelated. The one exception is the Y-B disposition in 22.15, which is *no code change* |
+| `synaptic_host/security.py`, `synaptic_host/docker_staging.py` | B-11/B-11-R1 and B-12 surfaces; unrelated. The one exception is the Y-B disposition in 22.15, which is **comment only, no behaviour change**. Corrected 2026-09-03 (audit #206 YELLOW-2, #208 step 1): this row first read "no code change", which contradicted 22.15's ruling of a comment at `docker_staging.py:1396`. 22.15 governs. See section 23.6 |
 | `tests/synaptic_host/docker_v1/test_endpoint.py` | it tests the module that stays; it neither passes nor fails differently |
 | `tests/synaptic_host/docker_v1/test_cli.py:262`, and the nine four-entry environment fixtures listed in 22.4 | untouched precisely because the tuple does not change. If a coder finds themselves editing any of them, the ruling has been misread |
 
@@ -4209,7 +4209,7 @@ evidence and is not reused.
 | Row | Proves | Reading |
 |---|---|---|
 | 1 | B-13 closed | cut 1 gets past the composition. Concretely: no `START_UNAVAILABLE` whose cause line names `docker_prepared_composition.py` or `endpoint.py`, and a container reference exists |
-| 2 | the environment did not widen | the driver records the composition's child environment key set, or failing that the reviewer confirms `docker_prepared_composition.py:114` is unchanged in the diff. The key set is four |
+| 2 | the environment did not widen | the driver records the composition's child environment key set, or failing that the reviewer confirms the `required` tuple in `docker_prepared_composition.py` is unchanged in the diff. The key set is four. **Citation corrected 2026-09-03: the tuple is at `:116`, not the `:114` this row first named.** The B-13 fix itself moved it by two lines, so a reader following the old number lands on the closing paren of the policy guard. Section 22's other `:114` citations are correct as they stand, because 22's preamble pins its citation baseline at `9e63924e`; this row is the exception because it is an instruction to an operator reading the CURRENT tree |
 | 3 | the pre-flight still fires | the 22.7 measurement, run once before the run proper: `context inspect` with the daemon stopped, and the `--host version` probe with the daemon stopped |
 | 4 | **the first container ever created on this path** | see below |
 | 5 | 20.16 rows 1-5 and 21.16 rows 1-3 still hold | B-11, B-11-R1 and B-12 did not regress |
@@ -4417,3 +4417,193 @@ Follow-ups:
 | Removing the context inspection hides a genuinely misconfigured context | stated and accepted in 22.7. The pipe was never an open question; it is asserted by two constants and the descriptor's own constructor |
 | E4 needs a machine with Docker Desktop, so CI cannot run it | that is the whole point of the standing rule in 22.10, and E1 is the everywhere-half that states the same contract. A suite where only E1 runs is strictly better than today's, where neither exists |
 | The fix lands immediately before the first container this path has ever created, so a regression here is expensive | the diff is confined to one function in one file plus its tests; the module it stops calling is left in place; and E3 pins the defect by absence |
+
+## 23. Amendment 2026-09-03 — ruling on B-14 (the engine checks a file mode the mandated mount cannot report)
+
+Engine citations are at the pinned commit `ba844137`, and name two files:
+`tuner/runtime/offline_sft_worker.py` and `Trainers/sft/runtime_v1.py`. Host
+citations are at worktree `1ddd9e09`. Run 8 evidence is under
+`F:\Code\ehr-release-38256c03\scratch\test-phase\logs\`.
+
+### 23.1 The finding
+
+Run 8 created the first container this path has ever produced
+(`8dda2cee75a7`). It lived 0.7 seconds and exited 31 with one stderr line,
+`SFT_RUNTIME_V1_REJECTED`, because the engine rejected its own staged worker.
+
+`load_offline_sft_worker_closure` proves each member twice. First by content
+(`offline_sft_worker.py:434-437`): the payload length must equal `size_bytes`
+and its sha256 must equal the recorded digest, compared with
+`hmac.compare_digest`. Then, and only when `os.name == "posix"` (`:438-441`):
+
+```python
+if os.name == "posix":
+    executable = bool(path.stat().st_mode & 0o111)
+    if executable != (member.git_mode == "100755"):
+        raise OfflineSFTWorkerError("staged worker member mode does not match")
+```
+
+All 66 members record `100644` and every one presents as `0o744` inside the
+container, so the first member raises.
+
+The path from that raise to exit 31 is four hops, and all four are by design.
+`_authenticate_worker_closure` calls the loader at `runtime_v1.py:517` and wraps
+anything it throws as `RuntimeV1Error("offline worker closure validation failed")`
+at `:526`. Its caller at `:963` catches that and `:965-966` stamps the stage
+`runtime_workload_engine_rejected`, which the exit table at `:129-142` maps to
+31. The top-level handler at `:2161-2163` prints the bare marker and returns the
+code. The reason string is never printed. That is why test-host recovered the
+frame in a read-only probe container rather than from the run itself
+(`25-b14-diag-full.log`), and it is worth recording that a correct suppression
+policy cost a full diagnostic cycle here.
+
+**Mechanism.** The stage is on `F:` through the Ubuntu-22.04 DrvFs automount
+(`9p aname=drvfs;path=F:\;uid=1000;gid=1000;metadata;umask=22;fmask=11`). With
+`metadata`, DrvFs stores a real POSIX mode only for files **written from
+Linux**; a Windows-written file has none and falls back to a synthesized `0744`,
+which has owner-execute set. The Host stages with Windows Python, so every
+member is Windows-written and every member therefore reads as executable
+(`26-b14-modes.log`).
+
+**The counter-test is what makes this certain**, and it is the reason no further
+measurement is owed. test-host copied the same staged tree from WSL so the modes
+became 644/755, changed nothing else — same bytes, same image, same environment,
+same binds — and the identical probe printed `DECODE_AND_VALIDATE OK`
+(`27-b14-countertest-modes-normalized.log`). One variable, moved in both
+directions, on the same mount.
+
+Closure integrity is **not** implicated, and the two must not be confused:
+recorded, observed and environment-expected digests are all `fddd281b`, and all
+66 member hashes and sizes match. The bytes were always right. Only the
+filesystem's account of a mode was wrong, on a filesystem that cannot give
+another answer.
+
+### 23.2 What the exec-bit equality was for
+
+**There is no recorded rationale.** `git log -L 434,442:tuner/runtime/offline_sft_worker.py`
+returns exactly one commit: `c0cec778`, "Close offline SFT execution path", the
+commit that created the file. The predicate arrived with the module, carried no
+comment then, has carried none since, and no later commit has touched those
+lines. This section states that plainly rather than hedging it as "no rationale
+found", because the search was exhaustive over the line range and the absence is
+itself the finding.
+
+Its purpose therefore has to be read from the use sites, and `git_mode` has only
+six mentions in the module: the field set at `:58`, the dataclass field at
+`:170`, the parser at `:329`, `:333` and `:341`, and the predicate at `:440`.
+Two readers, then — a parser that constrains the value to `{"100644", "100755"}`
+and the predicate that compares it to the filesystem. Nothing else in the engine
+reads it.
+
+**It has no security purpose the digest does not already cover, because nothing
+executes a staged member.** The closure's trainer entrypoint is invoked as
+`runpy.run_path(str(trainer), run_name="__main__")` (`:639`), after `sys.path`
+and `sys.argv` are set at `:634` and `:638`. It is imported and run in-process,
+never spawned as a program. A mode bit that no `exec` consults cannot decide
+what runs. The engine's own defence of what runs is import-origin based and sits
+either side of that call — `install_owned_module_guard` at `:632`, then
+`verify_loaded_owned_module_origins` at `:640` — and both key on the closure,
+not on a file mode. Setting the execute bit on a staged file therefore buys an
+attacker nothing the content digest does not already bound, and clearing it
+costs nothing.
+
+The one honest thing the predicate did do is worth naming, because removing it
+removes it: it was the only check comparing the staged tree against anything
+outside a member's own bytes. A sha256 is over content and is silent about how
+the medium presents that content, so the predicate was in effect a canary for
+the staging medium altering member metadata. That canary is worth nothing here,
+for a specific reason: run 8 established that this medium alters it
+**unconditionally and identically for all 66 members**, so on this path the
+signal has no information left to carry. That is a judgment about this mount,
+and it is written as one rather than as a general claim about mode checks.
+
+### 23.3 The ruling — remove the equality
+
+**Delete `offline_sft_worker.py:438-441` outright. `git_mode` stays in the
+manifest, the parser keeps validating it to the two-value set, and nothing else
+changes.**
+
+The conditional alternative — compare only where the filesystem preserves modes
+— is refused. Any such rule needs a way to know which case it is in, and every
+candidate is a new layer: reading the mount table, writing a sentinel file and
+reading its mode back, or carrying a Host-supplied "modes are real" flag into
+the container. Each adds a mechanism whose own failure modes then need testing,
+to guard a property with no consumer, on the same visit where the user has asked
+whether this path is over-engineered. Deleting four lines answers that question
+in the right direction. A detection layer answers it in the wrong one.
+
+**Why the manifest does not move, and why B-5 stays closed.** `git_mode` remains
+a recorded field, and it remains tamper-evident: `closure_digest` (`:134-139`)
+digests the whole document with only the `closure_digest` key popped, so every
+member's `git_mode` participates in the authoritative digest. Removing the
+predicate stops the engine comparing that record to the filesystem; it does not
+turn the record into unverified decoration. `_MEMBER_FIELDS`, the schema, the
+member count and the digest are all untouched, so `offline-sft-worker-v1.json`
+stays byte-identical and **no closure regeneration is required**. The B-5
+procedure is not invoked, and the locked manifest is not reopened.
+
+**What still proves a member.** Its path is in the closure's expected set and
+the staged set equals that set exactly (`:426-429`); `_require_unredirected_path`
+runs per member (`:432`); its length equals `size_bytes` and its sha256 matches
+(`:434-437`); and the whole manifest is digest-checked against the
+environment-supplied expectation. Four checks remain. One goes.
+
+### 23.4 Test spec
+
+Red-first: T1 must fail before the change and pass after.
+
+| # | Test | Asserts |
+|---|---|---|
+| T1 | a staged member recording `git_mode` `100644` whose file mode is `0o744` | `load_offline_sft_worker_closure` returns the closure. This is the acceptance test, and it must be written to fail against the current engine — that failure is what proves the fixture actually reaches the predicate rather than short-circuiting earlier |
+| T2 | the same fixture with one member's byte length changed | still raises `OfflineSFTWorkerError("staged worker member does not match closure")`. The size branch is untouched and must be shown untouched |
+| T3 | the same fixture with one member's content edited to preserve its length | still raises the same error, on the sha256 branch |
+| T4 | a member recording `100755` presented as `0o644` | authenticates. The ruling is that the mode is not compared **in either direction**, not that executable members are now tolerated |
+
+T4 is the one a hurried implementation gets wrong, by relaxing the check to "an
+executable file may record `100644`" instead of deleting the comparison. That
+half-measure still fails on a Linux-staged tree whose recorded `100755` member
+lands non-executable, and it leaves a predicate with no consumer behind.
+
+These tests are `os.name == "posix"` territory by construction, so they run in
+the engine's Linux suite and are silent on Windows, where the predicate never
+fired. The rest of the suite is unchanged: nothing else asserts on member modes,
+and the parser tests for the `{100644, 100755}` value set stay, because the
+field stays.
+
+### 23.5 Do not touch, and run 9 acceptance
+
+| File or surface | Why |
+|---|---|
+| `offline-sft-worker-v1.json` and every closure digest | the manifest format does not change; regenerating here would re-run the B-5 cycle for nothing |
+| `_MEMBER_FIELDS` (`:58`), the member dataclass (`:167-172`), the parser (`:325-341`) | `git_mode` stays recorded and stays validated |
+| the content checks at `:434-437` and the set equality at `:426-429` | these now carry the whole proof; T2 and T3 pin them |
+| `runtime_v1.py` — the wrap at `:526`, the stage stamp at `:963-966`, the exit table at `:129-142` | correct as they are. Exit 31 was an accurate report of a real rejection, not a defect |
+| the Host, all of it | B-14 is engine-side. The B-1' mount ruling in particular stands and is not reopened; remedies H and W were refused at #217 for that reason |
+| the released checkouts and `F:\Code\scratch-b11` | evidence |
+
+Run 9 acceptance:
+
+| Row | Reading |
+|---|---|
+| 1 | **B-14 closed.** The container gets past `_authenticate_worker_closure`. It either reaches the trainer or fails at something later; either is closure for B-14. A repeat of exit 31 is not |
+| 2 | first-container capture per 22.11 row 4, using the corrected instrument of #219 — `docker events` or `docker wait`, and no image-name filter, because run 8's poller filtered `ps` on a repo tag that a digest-pinned reference never prints, and a 1 s poll cannot see a 0.7 s container |
+| 3 | the B-10 four-row reading at cut 2 per 20.19. An absent cut-2 line is the **absent** row, not the deferral row |
+| 4 | B-9 `--user` on the real composition, B-9-R1 `/tmp` caches, B-10-R1 cache tree and B-2 adapter equality are all still unmeasured, all sit behind row 1, and none may be reported as passing on a run that stops before reaching them |
+
+### 23.6 Follow-ups
+
+- **Y-B is settled** (audit #206 YELLOW-2, #208 step 1): 22.15 governs, the
+  comment at `docker_staging.py:1396` is the disposition, and 22.9's do-not-touch
+  row is corrected in this same commit from "no code change" to "comment only,
+  no behaviour change". coder-user adds that comment in the B-14 audit batch.
+- **22.11 row 2's citation is corrected** in this same commit from `:114` to
+  `:116`. The B-13 fix moved the tuple by two lines. Section 22's other `:114`
+  citations stand, because that section pins its citation baseline at `9e63924e`
+  in its preamble; row 2 is the exception because it is an instruction to an
+  operator reading the current tree.
+- **The absent rationale is itself an input to #209.** A predicate shipped with
+  no comment, guarding a property with no consumer, which then blocked the first
+  container this path ever produced, is the shape of thing a simplification
+  review exists to find. Section 23.2 is the first entry.
+- Carried and unaffected by this ruling: #170, #184, #204, #207, and audit
+  #172's Y-1 and Y-2 (Y-2 now at `docker_training.py:613`).
