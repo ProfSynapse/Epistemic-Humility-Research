@@ -40,12 +40,14 @@ from .docker_v1.control_contract import (
 )
 from .docker_v1.control_private import _CONTAINER_USER_V1
 from .docker_v1.create import DockerHostCreateV1
-from .docker_v1.cli import DockerBoundedProcessRunnerV1, DockerCLIRunnerV1
-from .docker_v1.endpoint import DockerLocalEndpointResolverV1
+from .docker_v1.cli import DockerCLIRunnerV1
 from .docker_v1.memory import InMemoryDockerControlStoreV1
 from .docker_v1.model import (
+    DockerCLICommandV1,
     DockerCLIEnvironmentV1,
+    DockerCLIOutcomeV1,
     DockerCLIPolicyV1,
+    DockerCLIVerbV1,
     DockerLocalEndpointDescriptorV1,
 )
 from .docker_v1.prepared import DockerPreparedMountAdapterV1
@@ -94,10 +96,10 @@ def compose_docker_prepared_platform_v1(
     container_user: str,
     environment: dict[str, str] | None = None,
     os_name: str = os.name, executable_candidates=None,
-    endpoint_resolver=None, popen_factory=subprocess.Popen,
+    popen_factory=subprocess.Popen,
     monotonic=time.monotonic, thread_factory=Thread,
 ) -> DockerPreparedPlatformV1:
-    """Bind one Windows Docker CLI to the inspected desktop-linux endpoint."""
+    """Bind one Windows Docker CLI to the constructed desktop-linux endpoint."""
 
     values = os.environ if environment is None else environment
     if (
@@ -138,21 +140,15 @@ def compose_docker_prepared_platform_v1(
             raise ValueError
     except (KeyError, OSError, TypeError, ValueError):
         raise ValueError("one absolute Windows Docker executable is required") from None
-    effect_environment = dict(cli_environment.entries)
-    if endpoint_resolver is None:
-        bounded = DockerBoundedProcessRunnerV1(
-            timeout_ms=10_000, terminate_grace_ms=1_000,
-            stdout_limit=65_536, stderr_limit=65_536,
-            combined_limit=131_072, popen_factory=popen_factory,
-            monotonic=monotonic, thread_factory=thread_factory,
-        )
-        endpoint = DockerLocalEndpointResolverV1(bounded).resolve(
-            executable, "desktop-linux", effect_environment,
-        )
-    else:
-        endpoint = endpoint_resolver(
-            executable, "desktop-linux", effect_environment,
-        )
+    # B-13 (architecture section 22.6 step 1).  The endpoint is CONSTRUCTED from
+    # the two constants the assertion below already demands, never read from the
+    # operator's context store: `docker context inspect` resolves `.docker` under
+    # the CLI's home directory, and the hardened environment deliberately carries
+    # no home.  The assertion stays because it is the written statement of what
+    # the constant must be.
+    endpoint = DockerLocalEndpointDescriptorV1.build(
+        "desktop-linux", "npipe:////./pipe/dockerDesktopLinuxEngine", False,
+    )
     if (
         type(endpoint) is not DockerLocalEndpointDescriptorV1
         or endpoint != DockerLocalEndpointDescriptorV1.build(
@@ -167,6 +163,19 @@ def compose_docker_prepared_platform_v1(
         policy, popen_factory=popen_factory, monotonic=monotonic,
         thread_factory=thread_factory,
     )
+    # B-13 (22.6 step 2).  Constructing the endpoint removed the only call that
+    # proved anything about the daemon, so prove it here, through `_execute` so
+    # the argv carries `--host` and needs no home.  This runs under the policy
+    # runner's 30_000 ms bound rather than the deleted resolver's own 10_000 ms
+    # one, so the worst case against a HUNG daemon is 30 s; that is the bound
+    # every other docker.exe call on this path already carries.
+    liveness = runner.run(
+        DockerCLICommandV1.build(
+            DockerCLIVerbV1.VERSION, ("--format", "{{.Server.Version}}"),
+        )
+    )
+    if liveness.outcome is not DockerCLIOutcomeV1.SUCCESS:
+        raise ValueError("Docker desktop-linux daemon is unavailable")
     return DockerPreparedPlatformV1(
         runner, endpoint, policy, wsl_distro, drive_mount_root, container_user,
     )

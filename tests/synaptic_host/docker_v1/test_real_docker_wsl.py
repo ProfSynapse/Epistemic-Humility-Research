@@ -27,6 +27,10 @@ from synaptic_host.docker_v1.authority import (
     DockerWSLRootMappingHmacAuthorityV1,
     DockerWorkloadEnvironmentBindingHmacAuthorityV1,
 )
+from synaptic_host.docker_prepared_composition import (
+    DockerPreparedPlatformV1,
+    compose_docker_prepared_platform_v1,
+)
 from synaptic_host.docker_v1.binding import DockerWorkloadEnvironmentPolicyV1
 from synaptic_host.docker_v1.composition import (
     DockerHostCompositionRequestV1,
@@ -468,3 +472,60 @@ def test_released_facade_starts_real_offline_pinned_container(
             assert removed.returncode == 0, removed.stderr.decode(
                 "utf-8", "replace"
             )
+
+
+# ---------------------------------------------------------------------------
+# E4 — B-13, architecture section 22.10, the EXECUTION half of the standing
+# rule.  Every other test of the prepared composition supplies the child, so
+# none of them can fail on a defect whose whole content is what a real
+# `docker.exe` does when a key is absent.  This one launches the real binary
+# under the exact shipped four-key environment.
+# ---------------------------------------------------------------------------
+
+
+_SHIPPED_ENVIRONMENT_KEYS = ("SystemRoot", "TEMP", "TMP", "WINDIR")
+
+
+@pytest.mark.skipif(
+    os.name != "nt", reason="real docker.exe under the Windows Host environment"
+)
+def test_real_windows_composition_under_the_shipped_four_key_environment():
+    """E4 — compose against a real `docker.exe` and assert, never skip, on the
+    daemon.
+
+    Three outcomes, and only the first is a skip:
+
+    * the composition's OWN executable-candidate rule finds no single
+      `docker.exe` -> skip.  The rule is EXERCISED rather than mirrored, so the
+      skip condition cannot drift from the thing under test.
+    * the daemon does not answer on the pipe -> the 22.6 `ValueError`.  Daemon
+      down is an expected outcome and is asserted.  A skip here would
+      reintroduce exactly the blindness B-13 was hiding in.
+    * the daemon answers -> a `DockerPreparedPlatformV1` bound to the
+      constructed endpoint.
+    """
+
+    missing = [key for key in ("PATH", *_SHIPPED_ENVIRONMENT_KEYS)
+               if key not in os.environ]
+    assert not missing, f"the Windows Host is missing {missing}"
+    values = {key: os.environ[key]
+              for key in ("PATH", *_SHIPPED_ENVIRONMENT_KEYS)}
+    try:
+        platform = compose_docker_prepared_platform_v1(
+            docker_policy_ref="docker-desktop-windows-v1",
+            wsl_distro="Ubuntu-22.04",
+            drive_mount_root="/mnt",
+            container_user="1000:1000",
+            environment=values,
+        )
+    except ValueError as error:
+        if str(error) == "one absolute Windows Docker executable is required":
+            pytest.skip("no single docker.exe on PATH (composition's own rule)")
+        assert str(error) == "Docker desktop-linux daemon is unavailable"
+        return
+    assert type(platform) is DockerPreparedPlatformV1
+    assert platform.endpoint.host == "npipe:////./pipe/dockerDesktopLinuxEngine"
+    assert platform.endpoint.tls is False
+    assert tuple(
+        key for key, _ in platform.policy.environment.entries
+    ) == _SHIPPED_ENVIRONMENT_KEYS

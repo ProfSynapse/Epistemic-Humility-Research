@@ -1,3 +1,4 @@
+import os
 from pathlib import Path, PurePosixPath
 import subprocess
 from types import SimpleNamespace
@@ -55,19 +56,59 @@ class Repository:
         raise AssertionError("preparation mutated durability")
 
 
-def _windows_platform(**changes):
-    observed = {}
-    endpoint = DockerLocalEndpointDescriptorV1.build(
-        "desktop-linux", "npipe:////./pipe/dockerDesktopLinuxEngine", False,
-    )
+class _ProbeStream:
+    def __init__(self, payload: bytes = b""):
+        self._chunks = [payload] if payload else []
 
-    def resolve(executable, context_ref, environment):
-        observed.update(
-            executable=executable, context_ref=context_ref,
-            environment=dict(environment),
+    def read(self, _size):
+        return self._chunks.pop(0) if self._chunks else b""
+
+    def close(self):
+        pass
+
+
+class _ProbeProcess:
+    def __init__(self, exit_code: int, stdout: bytes):
+        self.stdout, self.stderr = _ProbeStream(stdout), _ProbeStream()
+        self._exit_code = exit_code
+
+    def wait(self, timeout=None):
+        return self._exit_code
+
+    def terminate(self):
+        pass
+
+    def kill(self):
+        pass
+
+
+class RecordingPopenFactory:
+    """Record every child the composition spawns; answer as `docker version`.
+
+    B-13 (architecture section 22.10).  The composition no longer inspects the
+    operator's context store, so its ONLY child is the liveness probe.  A
+    factory that records `argv` and the `env` it is handed is therefore the
+    whole evidence surface for E1 (the argv and the environment KEY SET), E2 (a
+    non-zero probe) and E3 (no `context` verb anywhere).
+
+    This is deliberately the stub half of the 22.10 standing rule: a stub
+    returning canned bytes tests the stub, which is exactly why E4 exists
+    beside it and drives a real `docker.exe`.
+    """
+
+    def __init__(self, exit_code: int = 0, stdout: bytes = b"27.0.0\n"):
+        self.exit_code, self.stdout = exit_code, stdout
+        self.spawns: list[dict[str, object]] = []
+
+    def __call__(self, argv, **kwargs):
+        self.spawns.append(
+            {"argv": tuple(argv), "environment": dict(kwargs["env"])}
         )
-        return endpoint
+        return _ProbeProcess(self.exit_code, self.stdout)
 
+
+def _windows_platform(**changes):
+    factory = RecordingPopenFactory()
     arguments = {
         "docker_policy_ref": "docker-desktop-windows-v1",
         "wsl_distro": "Ubuntu-22.04",
@@ -82,10 +123,11 @@ def _windows_platform(**changes):
         "executable_candidates": lambda _environment: (
             "C:\\Docker\\docker.exe",
         ),
-        "endpoint_resolver": resolve,
+        "popen_factory": factory,
     }
     arguments.update(changes)
-    return compose_docker_prepared_platform_v1(**arguments), observed
+    factory = arguments["popen_factory"]
+    return compose_docker_prepared_platform_v1(**arguments), factory
 
 
 def _request(tmp_path: Path):
@@ -271,19 +313,26 @@ def test_builder_live_rejects_lost_private_key_before_effects(tmp_path: Path):
 
 
 def test_windows_factory_uses_absolute_cli_exact_endpoint_and_four_key_env():
-    platform, observed = _windows_platform()
+    platform, factory = _windows_platform()
     assert platform.policy.executable == "C:\\Docker\\docker.exe"
     assert platform.endpoint.host == "npipe:////./pipe/dockerDesktopLinuxEngine"
     assert platform.endpoint.tls is False
-    assert observed["context_ref"] == "desktop-linux"
-    assert observed["environment"] == {
+    # B-13: the context ref is now a constructed constant, not a value read back
+    # from `docker context inspect`, so it is asserted on the descriptor itself.
+    assert platform.endpoint.source_context_ref == "desktop-linux"
+    assert factory.spawns[0]["environment"] == {
         "SystemRoot": "C:\\Windows", "TEMP": "C:\\Temp",
         "TMP": "C:\\Temp", "WINDIR": "C:\\Windows",
     }
     assert platform.policy.environment.entries == tuple(
-        observed["environment"].items()
+        factory.spawns[0]["environment"].items()
     )
-    assert platform.typed_runner._popen is subprocess.Popen
+    assert platform.typed_runner._popen is factory
+    # The test injects its factory, so the production default is pinned here
+    # rather than on the built runner.
+    assert compose_docker_prepared_platform_v1.__kwdefaults__[
+        "popen_factory"
+    ] is subprocess.Popen
     assert platform.distro == "Ubuntu-22.04"
 
 
@@ -302,11 +351,11 @@ def test_windows_factory_fails_closed_on_posix_or_ambiguous_cli():
 def test_windows_factory_accepts_exact_case_insensitive_docker_basename(
     executable,
 ):
-    platform, observed = _windows_platform(
+    platform, factory = _windows_platform(
         executable_candidates=lambda _environment: (executable,),
     )
     assert platform.policy.executable == executable
-    assert observed["executable"] == executable
+    assert factory.spawns[0]["argv"][0] == executable
 
 
 @pytest.mark.parametrize(
@@ -320,18 +369,107 @@ def test_windows_factory_accepts_exact_case_insensitive_docker_basename(
 def test_windows_factory_rejects_inexact_docker_basename_before_inspection(
     executable,
 ):
-    inspected = []
+    spawned = []
 
-    def forbidden(*_args):
-        inspected.append(True)
-        raise AssertionError("endpoint inspection crossed executable validation")
+    def forbidden(argv, **_kwargs):
+        spawned.append(tuple(argv))
+        raise AssertionError("a child crossed executable validation")
 
     with pytest.raises(ValueError, match="one absolute"):
         _windows_platform(
             executable_candidates=lambda _environment: (executable,),
-            endpoint_resolver=forbidden,
+            popen_factory=forbidden,
         )
-    assert inspected == []
+    assert spawned == []
+
+
+# ---------------------------------------------------------------------------
+# E1-E3 — B-13, architecture section 22.10.
+#
+# Standing rule (22.10, extending 21.2): a defect whose whole content is the
+# SHAPE of a child process's environment cannot be caught by a test that
+# supplies the child.  Such a surface needs either a test that drives a real
+# child under the exact shipped environment, or an assertion on the tuple
+# itself against a named list of what the child requires.  E1-E3 are the
+# tuple-assertion half and run everywhere; E4 in
+# tests/synaptic_host/docker_v1/test_real_docker_wsl.py is the execution half
+# and runs on the Windows Host only.
+# ---------------------------------------------------------------------------
+
+
+# LANE.  E1-E3 exercise the same `_windows_platform` helper as the four tests
+# above, and that family is WINDOWS-ONLY by construction: the composition
+# validates its executable candidate with `pathlib.Path`, whose flavour follows
+# the RUNNING interpreter rather than the `os_name` argument, and
+# `DockerCLIPolicyV1` then requires an uppercase-drive Windows path for the
+# same string (`_windows_drive_path_v1`).  No single literal is both absolute
+# under POSIX `Path` and a Windows drive path, so there is no lane-portable
+# fixture short of changing production validation, which 22.9 forbids.  The
+# four tests above are simply RED in the WSL lane at and before aa841609;
+# that is pre-existing and left alone.  E1-E3 declare the gate instead, so a
+# WSL run reports them as skipped rather than adding three failures a reader
+# would have to sort from real ones.  This is a PLATFORM gate, not the daemon
+# gate 22.10 forbids: E4 still refuses to skip when the daemon is down.
+_WINDOWS_LANE = pytest.mark.skipif(
+    os.name != "nt",
+    reason="the prepared Windows composition validates Windows-drive paths",
+)
+
+
+@_WINDOWS_LANE
+def test_composition_spawns_exactly_one_child_and_it_is_the_liveness_probe():
+    """E1 — one child, its exact argv, and its exact environment key set.
+
+    This is the test that would have failed on B-13.  The deleted `context
+    inspect` child was a SECOND spawn, it carried no `--host`, and it needed a
+    home directory that the four-key tuple deliberately does not supply.
+    """
+
+    platform, factory = _windows_platform()
+    assert type(platform) is DockerPreparedPlatformV1
+    assert len(factory.spawns) == 1
+    assert factory.spawns[0]["argv"] == (
+        "C:\\Docker\\docker.exe",
+        "--host", "npipe:////./pipe/dockerDesktopLinuxEngine",
+        "version", "--format", "{{.Server.Version}}",
+    )
+    assert set(factory.spawns[0]["environment"]) == {
+        "SystemRoot", "TEMP", "TMP", "WINDIR",
+    }
+
+
+@_WINDOWS_LANE
+def test_composition_refuses_when_the_liveness_probe_exits_non_zero():
+    """E2 — a daemon that does not answer is a ValueError from the composition.
+
+    The frame matters as much as the message: 22.6 raises here rather than in
+    the shared platform raise helper, so the innermost `synaptic_host` frame in
+    the cause line is the deciding line.
+    """
+
+    factory = RecordingPopenFactory(exit_code=1, stdout=b"")
+    produced = []
+    with pytest.raises(ValueError, match="desktop-linux daemon is unavailable") as error:
+        produced.append(_windows_platform(popen_factory=factory)[0])
+    assert produced == []
+    assert error.traceback[-1].name == "compose_docker_prepared_platform_v1"
+    assert len(factory.spawns) == 1
+
+
+@_WINDOWS_LANE
+def test_composition_never_spawns_a_docker_context_verb():
+    """E3 — the B-13 defect itself, pinned by ABSENCE.
+
+    A regression guard: if the endpoint ever goes back to being read from the
+    operator's context store, a `context` verb reappears in the recorded argv
+    set and this fails.  The `assert factory.spawns` guards against the vacuous
+    green where nothing was spawned at all.
+    """
+
+    _platform, factory = _windows_platform()
+    assert factory.spawns
+    for spawn in factory.spawns:
+        assert "context" not in spawn["argv"]
 
 
 # ---------------------------------------------------------------------------
