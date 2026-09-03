@@ -1330,9 +1330,17 @@ def test_p11_runs_after_p3_and_before_the_tree_is_read():
 # image field, which a digest-pinned reference never prints, and it sampled at
 # 1 s against a 0.7 s life. Fakes over `_run` would prove neither the
 # subscription nor the parse, because both live in a real child's stdout. So the
-# lifecycle tests below run a REAL fake `docker.exe`: `Popen` with stdout to a
-# file, terminate, parse, then inspect and logs. Same pattern as the P11
-# fixtures, and no `os.name` skipif -- process lifecycle is not Windows-specific.
+# lifecycle tests below run a REAL fake `docker`: `Popen` with stdout to a file,
+# terminate, parse, then inspect and logs.
+#
+# These run on BOTH platforms and skip on neither. The first version of this
+# block said "no `os.name` skipif, process lifecycle is not Windows-specific",
+# and that sentence was the defect: the LIFECYCLE is portable but the thing that
+# makes a file executable is not, so a POSIX-shaped fake could not launch on the
+# very platform the driver ships on and both tests failed there while a guard
+# aimed at a different question stayed silent (audit #236 RED-1). What varies
+# per platform is the launcher alone; `_write_fake_docker` owns that difference
+# and documents what the Windows shape costs.
 
 _CAPTURED_ID = "8dda2cee75a7" + "0" * 52
 _CAPTURED_NAME = "synaptic-95d3dbda863cb9bdd7db30b4"
@@ -1370,10 +1378,10 @@ _RUN8_STREAM = [
 
 _TRAINER_STDERR = [f"trainer line {index}" for index in range(1, 131)]
 
-_FAKE_DOCKER = '''#!{python}
-import json, sys, time
+_FAKE_DOCKER = '''import json, sys, time
 
 ARGV_LOG = {argv_log!r}
+STREAM_SECONDS = {stream_seconds!r}
 STREAM = {stream!r}
 EMPTY_STREAM = {empty_stream!r}
 INSPECT = {inspect!r}
@@ -1394,9 +1402,14 @@ if "events" in argv:
         for line in STREAM:
             sys.stdout.write(line + "\\n")
             sys.stdout.flush()
-    # `docker events` never exits on its own.
-    while True:
+    # `docker events` never exits on its own, so the fake blocks here too.
+    # BOUNDED rather than `while True`: on Windows the driver's terminate
+    # reaches the .cmd shim and not this process, so an unbounded loop would
+    # outlive the test session as an orphan. See _write_fake_docker.
+    deadline = time.time() + STREAM_SECONDS
+    while time.time() < deadline:
         time.sleep(0.05)
+    raise SystemExit(0)
 
 if "inspect" in argv:
     sys.stdout.write(json.dumps(INSPECT) + "\\n")
@@ -1423,28 +1436,80 @@ _INSPECT_RECORD = {
 }
 
 
+_FAKE_STREAM_SECONDS = 30
+
+
 def _write_fake_docker(tmp_path: Path, *, empty_stream: bool = False) -> tuple[Path, Path]:
-    """Write an executable fake `docker` and the file it logs its argv into."""
+    """Write a fake `docker` the driver can really execute, on either platform.
+
+    The Python body is identical on both; only the launcher differs, because
+    "an executable file" is not the same object on the two platforms. On POSIX
+    the body goes into one file named `docker` under a `#!` shebang, chmod
+    0o755, and the driver launches it directly. On Windows a `docker.cmd` shim
+    forwards `%*` to the body, because a shebang is a POSIX kernel feature and
+    an extension-less text file is not a Win32 image: the POSIX shape raised
+    `OSError WinError 193` on the host and both lifecycle tests failed there
+    (audit #236 RED-1 on commit 9223346c).
+
+    What the Windows shim costs, all three measured on the host at Python
+    3.13.9 before this fixture was written rather than reasoned about:
+
+    - **argv survives it intact.** `--filter type=container`, the `--since` and
+      `--until` digit strings, and `--format {{json .}}` with its embedded
+      space all round-trip byte for byte through `%*` under 3.13's batch-file
+      quoting, and the exit code propagates. The argv-log assertions below
+      therefore still mean on Windows exactly what they mean on POSIX.
+    - **the process tree changes.** `cmd.exe` becomes the driver's direct child
+      and this body is a grandchild, so `Popen.terminate` reaps the shim and
+      leaves the body running: the measured heartbeat kept advancing after
+      terminate returned. **On Windows the two lifecycle tests are therefore
+      evidence about the MATCHING and about the bounded REPLAY, and NOT about
+      terminate.** On POSIX they cover terminate as well, because there the
+      fake is the direct child. Nobody should read a green Windows run as proof
+      of the terminate path; run 9 is where that gets exercised for real. The
+      body's stream loop is time-bounded so the grandchild cannot outlive the
+      session.
+    - **reading is unaffected.** The driver reads the stream file successfully
+      while the grandchild still holds it open for writing.
+
+    There is no single-process alternative on Windows. The driver puts `--host`
+    at argv[1], and the interpreter rejects that as an unknown option and exits
+    2 before any startup hook could run, whether invoked as `python.exe` or as
+    a copy named `docker.exe`. Both were measured.
+    """
     argv_log = tmp_path / "docker-argv.jsonl"
-    script = tmp_path / "docker"
-    script.write_text(
-        _FAKE_DOCKER.format(
-            python=sys.executable,
-            argv_log=str(argv_log),
-            stream=_RUN8_STREAM,
-            empty_stream=empty_stream,
-            inspect=_INSPECT_RECORD,
-            stderr=_TRAINER_STDERR,
-        ),
-        encoding="utf-8",
+    body = _FAKE_DOCKER.format(
+        argv_log=str(argv_log),
+        stream_seconds=_FAKE_STREAM_SECONDS,
+        stream=_RUN8_STREAM,
+        empty_stream=empty_stream,
+        inspect=_INSPECT_RECORD,
+        stderr=_TRAINER_STDERR,
     )
-    script.chmod(0o755)
-    if not os.access(script, os.X_OK):
-        pytest.skip(
-            "this temporary filesystem does not honour the executable bit, so a "
-            "real fake docker child cannot be launched here"
+    if os.name == "nt":
+        implementation = tmp_path / "docker_impl.py"
+        implementation.write_text(body, encoding="utf-8")
+        launcher = tmp_path / "docker.cmd"
+        launcher.write_text(
+            "@echo off\r\n"
+            f'"{sys.executable}" "{implementation}" %*\r\n'
+            "exit /b %ERRORLEVEL%\r\n",
+            encoding="utf-8",
         )
-    return script, argv_log
+        return launcher, argv_log
+
+    launcher = tmp_path / "docker"
+    launcher.write_text(f"#!{sys.executable}\n" + body, encoding="utf-8")
+    launcher.chmod(0o755)
+    if not os.access(launcher, os.X_OK):
+        pytest.skip(
+            "POSIX only: this temporary filesystem refused the executable bit, "
+            "which a DrvFs or noexec mount does, so the shebang launcher cannot "
+            "run here. This guard covers the exec-bit case ALONE. It is not a "
+            "platform guard: Windows takes the .cmd branch above, which needs no "
+            "executable bit, and a Windows failure must never reach this line"
+        )
+    return launcher, argv_log
 
 
 def _await_stream(capture: dict, lines: int, seconds: float = 10.0) -> None:
@@ -1480,6 +1545,8 @@ def test_the_capture_really_records_the_container_from_a_live_event_stream(
     capture = driver._start_container_capture(str(docker), "npipe://test")
     assert capture["unavailable"] is None
     _await_stream(capture, len(_RUN8_STREAM))
+    # On Windows this reaps the .cmd shim, not the fake; see _write_fake_docker.
+    # What this test proves there is the MATCHING, not the terminate path.
     driver._stop_container_capture(capture)
     driver._report_first_container(str(docker), "npipe://test", capture)
 
