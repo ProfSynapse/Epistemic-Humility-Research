@@ -742,7 +742,7 @@ def windows_acl(path: Path) -> dict:
 
 
 @WINDOWS_ONLY
-def test_windows_repairs_a_chain_directory_the_operator_created_first(
+def test_windows_repairs_a_chain_root_the_operator_created_first(
     tmp_path: Path,
 ) -> None:
     project_context = context(tmp_path)
@@ -903,6 +903,101 @@ def test_windows_populated_chain_survives_the_repair(tmp_path: Path) -> None:
     assert windows_acl(root)["protected"] is True
 
 
+@WINDOWS_ONLY
+def test_windows_repairs_a_whole_chain_the_operator_created_first(
+    tmp_path: Path,
+) -> None:
+    """B-11-R1 (architecture section 20.21.7, test W6).
+
+    The acceptance gate of the ruling.  W1 pre-creates the chain ROOT only, so
+    the shipped root-first loop never had a member two to walk into, and the
+    suite passed on the very volume where activation wedges.  This fixture
+    pre-creates EVERY member, which is the shape the operator recipe and the
+    driver probe actually leave behind.
+
+    The fixture must stay on `tmp_path`, because the effect is a property of
+    the volume.  Where the inherited set propagates, setting the protected
+    list on `.synaptic` converts its immediate children to explicit and
+    protected, so a root-first repair meets member two in a state section 20.6
+    clauses 3 and 4 refuse, and the chain wedges for good.  Relocating this
+    fixture off the temporary volume is exactly how it would go green without
+    ever reaching the state it exists to test, so the drive is asserted rather
+    than assumed.
+    """
+    import tempfile
+
+    fixture_drive = os.path.splitdrive(str(tmp_path))[0]
+    assert fixture_drive.lower() == os.path.splitdrive(
+        tempfile.gettempdir()
+    )[0].lower(), (
+        "W6 must run on the temporary volume, where the inherited set "
+        f"propagates; the fixture resolved to {fixture_drive}"
+    )
+
+    project_context = context(tmp_path)
+    root = project_context.project_root / ".synaptic"
+    state = root / "state"
+    docker = state / "docker"
+    docker.mkdir(parents=True)
+    stages = docker / "stages"
+    stages.mkdir()
+    sidecar = root / "recipe.txt"
+    sidecar.write_bytes(b"operator")
+
+    # Prove the FIXTURE is the state under test before repairing it, member by
+    # member.  Without this the test would still pass if the whole chain
+    # happened to arrive already protected, and it would pass for the wrong
+    # reason.
+    chain = (root, state, docker)
+    for member in chain:
+        before = windows_acl(member)
+        assert before["protected"] is False, member.name
+        assert before["entries"], "fixture is not the inherited-list state"
+        assert all(entry["inherited"] for entry in before["entries"])
+        assert before["owner"] == security._win_current_user_sid()
+    before_stages = windows_acl(stages)
+    before_sidecar = windows_acl(sidecar)
+
+    value = FileHmacAuthenticator.for_docker(
+        project_context, durable_rows_exist=False,
+    )
+    assert value.private_storage_verified is True
+
+    for member in chain:
+        after = windows_acl(member)
+        assert after["protected"] is True, member.name
+        assert after["owner"] == security._win_current_user_sid()
+        assert len(after["entries"]) == 2, member.name
+        assert {entry["sid"] for entry in after["entries"]} == {
+            security._win_current_user_sid(), "S-1-5-18",
+        }
+        for entry in after["entries"]:
+            assert entry["inherited"] is False
+            assert entry["mask"] == security._FILE_ALL_ACCESS
+            assert entry["flags"] == (
+                OBJECT_INHERIT_ACE | CONTAINER_INHERIT_ACE
+            ), member.name
+
+    # The non-chain nodes carry the tamper-mask guard.  Section 20.14 W5
+    # measured that a repair freezes an immediate child in place: every
+    # security identifier and every access mask survives, and only the
+    # inherited flag is cleared.  What must never happen is the path-based
+    # editor's outcome, an emptied list, so the property pinned here is the
+    # preservation of the grants rather than the preservation of the flags.
+    for node, was in ((stages, before_stages), (sidecar, before_sidecar)):
+        now = windows_acl(node)
+        assert [
+            (entry["sid"], entry["mask"]) for entry in now["entries"]
+        ] == [
+            (entry["sid"], entry["mask"]) for entry in was["entries"]
+        ], node.name
+        assert now["entries"] != [], node.name
+    assert sidecar.read_bytes() == b"operator"
+    assert sorted(item.name for item in docker.iterdir()) == [
+        "control-hmac.key", "stages",
+    ]
+
+
 @POSIX_ONLY
 def test_posix_repairs_a_permissive_chain_directory(tmp_path: Path) -> None:
     project_context = context(tmp_path)
@@ -916,6 +1011,44 @@ def test_posix_repairs_a_permissive_chain_directory(tmp_path: Path) -> None:
     )
     assert value.private_storage_verified is True
     assert stat.S_IMODE(os.stat(root).st_mode) == 0o700
+
+
+@POSIX_ONLY
+def test_posix_repairs_a_permissive_whole_chain(tmp_path: Path) -> None:
+    """B-11-R1 (architecture section 20.21.7, test P4).
+
+    The POSIX twin of W6, on the same whole-chain fixture.  Mode bits carry no
+    propagation, so this lane cannot reproduce the wedge; what it pins is that
+    the two-pass order did not change the outcome on the platform where the
+    shipped root-first order was already correct, and that repairing a member
+    still leaves the nodes outside the chain alone.
+    """
+    project_context = context(tmp_path)
+    root = project_context.project_root / ".synaptic"
+    state = root / "state"
+    docker = state / "docker"
+    docker.mkdir(parents=True)
+    stages = docker / "stages"
+    stages.mkdir()
+    sidecar = root / "recipe.txt"
+    sidecar.write_bytes(b"operator")
+
+    chain = (root, state, docker)
+    for member in chain:
+        os.chmod(member, 0o755)
+        assert stat.S_IMODE(os.stat(member).st_mode) == 0o755
+    os.chmod(stages, 0o755)
+    os.chmod(sidecar, 0o644)
+
+    value = FileHmacAuthenticator.for_docker(
+        project_context, durable_rows_exist=False,
+    )
+    assert value.private_storage_verified is True
+    for member in chain:
+        assert stat.S_IMODE(os.stat(member).st_mode) == 0o700, member.name
+    assert stat.S_IMODE(os.stat(stages).st_mode) == 0o755
+    assert stat.S_IMODE(os.stat(sidecar).st_mode) == 0o644
+    assert sidecar.read_bytes() == b"operator"
 
 
 @POSIX_ONLY

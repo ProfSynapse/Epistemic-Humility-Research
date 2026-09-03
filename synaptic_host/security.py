@@ -829,6 +829,21 @@ class FileHmacAuthenticator:
         ancestors created below are equally the Host's own.  Validation stays
         unconditional and stays last, so the outcome is decided by the same
         check as before, whether or not a repair ran.
+
+        B-11-R1 (architecture section 20.21.9) splits this into two passes,
+        because repairing one member can alter another.  On a volume whose
+        inherited list propagates, publishing the protected list on `.synaptic`
+        converts its immediate children to explicit and protected entries; a
+        single root-first pass therefore meets member two carrying the Host's
+        own footprint and refuses it under section 20.6 clauses 3 and 4, and
+        the chain wedges permanently because every later call refuses it again.
+        Section 20.6 reads the filesystem's default state, and that premise is
+        only true while the Host has not written below the member it is about
+        to judge.  Pass A repairs leaf first, over `reversed(chain)`, so every
+        member is judged before anything above it can touch it.  Pass B is the
+        creation and validation loop, unchanged apart from losing its repair
+        branch: it still creates missing members root first, and it still
+        validates every member unconditionally and last.
         """
         root = self._private_storage_root
         leaf = self.key_path.parent
@@ -838,6 +853,14 @@ class FileHmacAuthenticator:
             raise _private_storage_error() from None
         cursor = root
         chain = (root,) + tuple(root.joinpath(*relative.parts[:index]) for index in range(1, len(relative.parts) + 1))
+        if repair:
+            # Pass A, leaf first.  A member the Host would create below does
+            # not exist yet and is not repaired; one that exists carries
+            # whatever list the filesystem gave it, and is repaired before any
+            # write higher up the chain can reach it.
+            for directory in reversed(chain):
+                if directory.exists():
+                    self._repair_private_directory(directory)
         for directory in chain:
             if not directory.exists():
                 parent = directory.parent
@@ -850,8 +873,6 @@ class FileHmacAuthenticator:
                     for ancestor in reversed(missing):
                         self._create_private_directory(ancestor)
                 self._create_private_directory(directory)
-            elif repair:
-                self._repair_private_directory(directory)
             self._validate_private_directory(directory)
 
     def initialize(self) -> None:
