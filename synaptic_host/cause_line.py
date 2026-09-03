@@ -56,10 +56,30 @@ def _package_root() -> Path:
 
 
 def _innermost_package_frame(error: BaseException) -> str:
-    """Render the deepest traceback frame that lies inside this package."""
+    """Render the deepest TWO traceback frames that lie inside this package.
+
+    Section 22.14 (#207).  One frame is not enough because of an idiom this
+    package uses in eight modules: a two-line `_fail`/`_platform_fail` helper
+    whose whole body is a raise.  The deepest in-package frame for such a
+    raise is the helper itself, which is the same frame for all 28 call sites
+    behind `_platform_fail` and tells the reader nothing.  The frame that
+    DECIDES the failure is the helper's caller, one step out.
+
+    So the deepest two are kept and rendered
+
+        <file>:<line> in <fn>, from <file>:<line> in <fn>
+
+    with the deciding frame last, after the comma.  The `, from ...` clause is
+    omitted when there is no second in-package frame, so this degrades to the
+    20.11 line exactly where the 20.11 line is already right.  22.14 refused
+    the two alternatives on purpose: introspecting a code object to decide
+    what counts as a "helper" misfires the moment a helper gains a second
+    line, and inlining the idiom at 34 sites deletes a package-wide pattern to
+    improve a diagnostic.
+    """
 
     package = _package_root()
-    location = "<unknown>"
+    located: list[str] = []
     frames = getattr(error, "__traceback__", None)
     while frames is not None:
         code = frames.tb_frame.f_code
@@ -69,12 +89,17 @@ def _innermost_package_frame(error: BaseException) -> str:
         except (OSError, ValueError):
             inside = False
         if inside:
-            location = "{}:{} in {}".format(
+            located.append("{}:{} in {}".format(
                 filename.relative_to(package.parent).as_posix(),
                 frames.tb_lineno, code.co_name,
-            )
+            ))
         frames = frames.tb_next
-    return location
+
+    if not located:
+        return "<unknown>"
+    if len(located) == 1:
+        return located[0]
+    return "{}, from {}".format(located[-1], located[-2])
 
 
 def _missing_module_clause(error: BaseException) -> str:

@@ -562,9 +562,10 @@ def _report_admission_cause(error: BaseException, code) -> None:
     B-11 (architecture section 20.11).  Run 5 failed at activation with
     `START_UNAVAILABLE` and no message at all; recovering the cause cost a
     cycle and a purpose-built probe.  This carries the exception's CLASS and
-    the innermost frame inside `synaptic_host`, rendered relative to the
-    package's parent so no user directory appears, and `<unknown>` when no
-    such frame exists.
+    the deepest TWO frames inside `synaptic_host` (section 22.14), rendered
+    relative to the package's parent so no user directory appears, with the
+    second clause omitted when there is only one such frame and `<unknown>`
+    when there is none.
 
     The exception's own text is excluded ENTIRELY, and that exclusion is the
     point: the text is not authored here.  `OSError` renders an absolute path

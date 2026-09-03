@@ -269,3 +269,81 @@ def test_dispatch_reports_the_import_failure_and_leaves_the_envelope_alone(
     assert "'tuner'" in line
     assert "Traceback" not in completed.stderr
     assert str(_RELEASE_ROOT) not in completed.stderr
+def _raise_through_an_in_package_helper() -> BaseException:
+    """An error whose two deepest frames are both inside the package.
+
+    This reproduces 22.14's idiom with real package code rather than a stub:
+    `_package_root` raises in its own two-line body, and `_innermost_package_frame`
+    is its caller.  Under a one-frame renderer the caller is invisible, which
+    is exactly the defect 22.14 was raised for -- the `_platform_fail` helper
+    at `docker_v1/model.py:596` reports the same frame for all 28 of its call
+    sites.
+    """
+
+    original = cause_line._ROOT_PACKAGE
+    try:
+        cause_line._ROOT_PACKAGE = "a_package_that_is_not_imported"
+        try:
+            cause_line._innermost_package_frame(ValueError("ignored"))
+        except RuntimeError as error:
+            return error
+    finally:
+        cause_line._ROOT_PACKAGE = original
+    raise AssertionError("the sabotaged anchor did not raise")
+
+
+def test_a_raise_inside_a_helper_renders_both_frames_deciding_frame_last(
+    capsys,
+) -> None:
+    """The test 22.14 owes, and its negative half in the same place.
+
+    22.14 rules the deepest TWO in-package frames, rendered
+
+        at <file>:<line> in <fn>, from <file>:<line> in <fn>
+
+    with the DECIDING frame -- the helper's caller -- last, after the comma,
+    and the clause omitted when there is no second in-package frame.
+
+    Both directions are asserted from one fixture on purpose.  A renderer that
+    always appended a second clause would satisfy the positive half alone, and
+    a renderer that never appended one would satisfy the negative half alone;
+    only the pair distinguishes them.  The ORDER is asserted too, because a
+    renderer that emitted the same two frames reversed would pass every
+    membership check while naming the useless frame as the deciding one.
+    """
+
+    two_frames = _raise_through_an_in_package_helper()
+
+    cause_line.report_cause_line_v1(
+        two_frames, TrainingRunCommandCodeV2.START_UNAVAILABLE,
+    )
+    line = capsys.readouterr().err.strip()
+
+    assert line.startswith("synaptic-host: START_UNAVAILABLE RuntimeError at ")
+    location = line.split(" at ", 1)[1]
+    deepest, _, deciding = location.partition(", from ")
+    assert deciding, "the second in-package frame was not rendered"
+    assert deepest.endswith(" in _package_root"), deepest
+    assert deciding.endswith(" in _innermost_package_frame"), deciding
+    for half in (deepest, deciding):
+        assert half.startswith("synaptic_host/cause_line.py:"), half
+
+    # The negative half.  Called straight from this test file, `_package_root`
+    # is the ONLY in-package frame, so there is nothing to append and the
+    # clause must not appear.  Same helper, same renderer, opposite verdict.
+    try:
+        original = cause_line._ROOT_PACKAGE
+        cause_line._ROOT_PACKAGE = "a_package_that_is_not_imported"
+        try:
+            cause_line._package_root()
+        except RuntimeError as error:
+            one_frame = error
+    finally:
+        cause_line._ROOT_PACKAGE = original
+
+    cause_line.report_cause_line_v1(
+        one_frame, TrainingRunCommandCodeV2.START_UNAVAILABLE,
+    )
+    solo = capsys.readouterr().err.strip()
+    assert ", from " not in solo, solo
+    assert solo.endswith(" in _package_root"), solo

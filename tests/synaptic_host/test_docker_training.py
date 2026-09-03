@@ -1613,4 +1613,11 @@ def test_admission_cause_covers_a_handler_far_above_the_activation_stage(
     # A real frame, package-relative, and the source-proof stage's own -- not
     # the activation stage, and not the "<unknown>" a foreign raise produces.
     assert " at synaptic_host/docker_training.py:" in line
-    assert line.endswith(" in prove")
+    # Section 22.14 renders the deepest TWO in-package frames, deciding frame
+    # last after the comma, so this site now names the stage AND its caller.
+    # It used to end at `prove`; 22.14's own "Test surface, checked" survey
+    # did not list this pin, and this is the one place in the suite where the
+    # second clause actually appears.  Both halves are asserted rather than
+    # relaxing to a substring: the ORDER is the ruling.
+    assert " in prove, from synaptic_host/docker_training.py:" in line
+    assert line.endswith(" in execute_docker_training_admission_v1")
