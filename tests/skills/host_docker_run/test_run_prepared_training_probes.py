@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import ast
 import importlib.util
+import os
 import subprocess
 import sys
 import types
@@ -1105,3 +1106,215 @@ def test_p10_key_set_is_restated_from_the_host_with_a_citation():
     )
     assert "docker_prepared_composition.py:116" in source
     assert "model.py:1144" in source
+
+
+# --------------------------------------------------------------------------
+# P11-package-under-project-root (task #215)
+#
+# Run 8 nearly exercised a worktree while every checkout identity check reported
+# the release commit. P6, P7 and P9 all answer "which tree is this?"; none
+# answers "which tree will the code come from?".
+# --------------------------------------------------------------------------
+
+_RELEASE_MARKER = "release"
+_DECOY_MARKER = "decoy"
+
+
+def _make_package(root: Path, name: str = "synaptic_host", *,
+                  namespace: bool = False) -> Path:
+    """Create a tree containing `synaptic_host`, regular or namespace."""
+    package = root / name
+    package.mkdir(parents=True)
+    if not namespace:
+        (package / "__init__.py").write_text("MARK = 'x'\n", encoding="utf-8")
+    return package
+
+
+def _fake_resolution(answer: str, *, returncode: int = 0, seen: dict | None = None):
+    """A `_run` replacement answering P11's child."""
+
+    def run(argv, *, timeout=300, env=None, cwd=None):
+        assert argv[1] == "-c", argv
+        assert "find_spec" in argv[2], argv
+        if seen is not None:
+            seen["cwd"] = cwd
+            seen["env"] = env
+            seen["python"] = argv[0]
+        return _completed(argv, returncode, answer)
+
+    return run
+
+
+def _run_p11(monkeypatch, project_root: Path, fake) -> None:
+    monkeypatch.setattr(driver, "_run", fake)
+    driver._check_p11_package_resolves_under_project_root("python.exe", project_root)
+
+
+# --- the fixture that REACHES the bound (standing rule 21.2) ---------------
+#
+# The fakes below prove the driver's branch logic and prove NOTHING about
+# sys.path ordering, which is the entire mechanism. These two run a real child.
+# No os.name skipif: sys.path[0] insertion is platform-independent, so this
+# executes for real in the WSL lane instead of being unexecuted-platform
+# evidence.
+
+def test_the_working_directory_really_does_precede_pythonpath(tmp_path, monkeypatch):
+    """THE mechanism. If this ever fails, P11 is guarding a fiction."""
+    release, decoy = tmp_path / "release", tmp_path / "decoy"
+    _make_package(release)
+    _make_package(decoy)
+
+    def resolve(cwd: Path) -> str:
+        completed = subprocess.run(
+            [sys.executable, "-c", driver._PACKAGE_RESOLUTION_SCRIPT],
+            text=True, capture_output=True, check=False, cwd=str(cwd),
+            env={**os.environ, "PYTHONPATH": str(decoy)},
+        )
+        assert completed.returncode == 0, completed.stderr
+        return completed.stdout.strip()
+
+    # cwd carries the package: cwd wins even though PYTHONPATH names another.
+    from_release = resolve(release)
+    assert from_release.startswith("ORIGIN ")
+    assert str(release) in from_release and str(decoy) not in from_release
+
+    # cwd carries NOTHING: the fallback to PYTHONPATH is SILENT. This half is
+    # the dangerous one, and it is what run 8 hit.
+    neutral = tmp_path / "neutral"
+    neutral.mkdir()
+    from_neutral = resolve(neutral)
+    assert from_neutral.startswith("ORIGIN ")
+    assert str(decoy) in from_neutral
+
+
+def test_a_bare_directory_really_resolves_as_a_namespace_package(tmp_path):
+    """Why the probe reads find_spec and not __file__.
+
+    A namespace package's `__file__` is None, so `Path(module.__file__)` would
+    raise TypeError on exactly the wrong-tree shape the probe exists to catch,
+    turning a refusal into a crash.
+    """
+    root = tmp_path / "root"
+    _make_package(root, namespace=True)
+    completed = subprocess.run(
+        [sys.executable, "-c", driver._PACKAGE_RESOLUTION_SCRIPT],
+        text=True, capture_output=True, check=False, cwd=str(root),
+        env={key: value for key, value in os.environ.items() if key != "PYTHONPATH"},
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.strip().startswith("NAMESPACE ")
+
+
+# --- branch logic ---------------------------------------------------------
+
+def test_p11_passes_when_the_package_resolves_under_the_project_root(
+    monkeypatch, tmp_path, capsys
+):
+    origin = tmp_path / "synaptic_host" / "__init__.py"
+    _run_p11(monkeypatch, tmp_path, _fake_resolution(f"ORIGIN {origin}"))
+
+    out = capsys.readouterr().out
+    assert "PASS P11-package-under-project-root" in out
+
+
+def test_p11_refuses_a_package_resolved_outside_the_project_root(
+    monkeypatch, tmp_path
+):
+    """THE red case: the exact shape run 8 hit.
+
+    The message must name BOTH paths, because the whole failure is that they
+    differ while every other check reports that they agree.
+    """
+    project_root = tmp_path / "ehr-release-38256c03"
+    project_root.mkdir()
+    elsewhere = tmp_path / "_worktrees" / "host-clean" / "synaptic_host" / "__init__.py"
+
+    with pytest.raises(driver.CheckFailure) as raised:
+        _run_p11(monkeypatch, project_root, _fake_resolution(f"ORIGIN {elsewhere}"))
+
+    message = str(raised.value)
+    assert message.startswith("P11-wrong-tree")
+    assert str(project_root) in message
+    assert "_worktrees" in message  # named because it RESOLVED there, not by rule
+    assert "PYTHONPATH" in message
+
+
+def test_p11_does_not_refuse_a_worktree_root_on_the_path_component_alone(
+    monkeypatch, tmp_path
+):
+    """Containment is the rule; the `_worktrees` substring is NOT.
+
+    test-host's wrapper asserted `not _worktrees` as a proxy for containment.
+    Carrying that over would refuse a legitimate --probe-only pass from a
+    worktree, and P7 already refuses a worktree for a real run because a
+    worktree branch has no local upstream. Lead ruling on #216.
+    """
+    project_root = tmp_path / "_worktrees" / "host-clean"
+    project_root.mkdir(parents=True)
+    origin = project_root / "synaptic_host" / "__init__.py"
+
+    _run_p11(monkeypatch, project_root, _fake_resolution(f"ORIGIN {origin}"))
+
+
+def test_p11_refuses_a_namespace_package_and_names_the_location(
+    monkeypatch, tmp_path
+):
+    location = tmp_path / "synaptic_host"
+    with pytest.raises(driver.CheckFailure) as raised:
+        _run_p11(monkeypatch, tmp_path, _fake_resolution(f"NAMESPACE {location}"))
+
+    message = str(raised.value)
+    assert message.startswith("P11-namespace-package")
+    assert str(location) in message
+    assert "__init__.py" in message
+
+
+def test_p11_refuses_when_nothing_named_synaptic_host_is_importable(
+    monkeypatch, tmp_path
+):
+    with pytest.raises(driver.CheckFailure) as raised:
+        _run_p11(monkeypatch, tmp_path, _fake_resolution("MISSING"))
+    assert str(raised.value).startswith("P11-package-not-found")
+
+
+def test_p11_refuses_when_the_child_itself_fails(monkeypatch, tmp_path):
+    with pytest.raises(driver.CheckFailure) as raised:
+        _run_p11(monkeypatch, tmp_path, _fake_resolution("", returncode=1))
+    assert str(raised.value).startswith("P11-resolution-failed")
+
+
+def test_p11_runs_the_child_in_the_project_root_and_inherits_the_environment(
+    monkeypatch, tmp_path
+):
+    """It must reproduce the cut's child, not P10's.
+
+    `_one_cut` passes cwd=project_root and NO env, so P11 must pass the same
+    cwd and leave env None. Restricting the environment the way P10 does would
+    answer for a shape no run uses, and omitting cwd would answer for the
+    driver's own directory rather than the root under test.
+    """
+    seen: dict = {}
+    origin = tmp_path / "synaptic_host" / "__init__.py"
+    monkeypatch.setattr(driver, "_run", _fake_resolution(f"ORIGIN {origin}", seen=seen))
+
+    driver._check_p11_package_resolves_under_project_root("py.exe", tmp_path)
+
+    assert seen["cwd"] == str(tmp_path)
+    assert seen["env"] is None
+    assert seen["python"] == "py.exe"
+
+
+def test_p11_uses_the_same_interpreter_the_cut_will_use():
+    """`--python` feeds both `_drive` and P11; a different one proves nothing."""
+    source = _DRIVER.read_text(encoding="utf-8")
+    assert "_check_p11_package_resolves_under_project_root(args.python, project_root)" in source
+    assert "_drive(args.python, project_root, args)" in source
+
+
+def test_p11_runs_after_p3_and_before_the_tree_is_read():
+    """Which code will run is settled before what it is configured to do."""
+    source = _DRIVER.read_text(encoding="utf-8")
+    p3 = source.index("_check_p3_drive_letter_root(project_root)\n        #")
+    p11 = source.index("_check_p11_package_resolves_under_project_root(args.python", p3)
+    profile = source.index("profile = _load_profile(project_root)", p11)
+    assert p3 < p11 < profile

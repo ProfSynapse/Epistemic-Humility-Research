@@ -44,6 +44,29 @@ without starting a container.
    git.exe clone --branch <branch> <url> <dir>
    git.exe -C <dir> rev-parse HEAD    # must equal the target sha
    ```
+1b. **Launch from the released checkout itself.** `cd` into the release root
+   before running either command, and do not set `PYTHONPATH` to another tree.
+   Python puts the working directory at `sys.path[0]`, ahead of `PYTHONPATH`, so
+   the working directory DECIDES which `synaptic_host` a run imports. The
+   dangerous half is the silent one: if the directory you launch from has no
+   `synaptic_host`, the child falls through to `PYTHONPATH` and imports a
+   different tree with no warning at all, while every check that reports a
+   commit still reports the release commit. Those checks answer "which tree is
+   this?"; none of them answers "which tree will the code come from?".
+
+   This is not hypothetical. It happened on run 8: the first wrapper invocation
+   imported the package from a development worktree while the checkout identity
+   reported the released commit.
+
+   The driver checks it as **P11**, after P3 and before it reads the tree,
+   failing with `P11-wrong-tree` and naming BOTH paths, or with
+   `P11-package-not-found` / `P11-namespace-package` when the released checkout
+   is incomplete. It resolves the package through `importlib.util.find_spec`,
+   in a child using the same interpreter and the same working directory a real
+   cut uses. The rule is containment under the project root you gave the
+   driver, nothing more: running from a worktree is not refused by P11, and does
+   not need to be, because P7 already refuses a worktree for a real run.
+
 2. **The branch head is published.** The training config is read as a committed
    git blob at the locked project commit, not from the working tree. An edited
    but uncommitted config cannot take effect.
@@ -332,7 +355,8 @@ disguised failure these assertions exist to prevent. The bind probe is
 unaffected: it uses `python:3.12-slim`, not the profile image.
 
 **P8 runs before A1**, after the bind probe, so the full order is `P1` → `P2` →
-`P10` → `P3..P7` → `P9` → `B1` → `P8` → `A1` → `A2` → `A3` → `A4`. P10 sits
+`P10` → `P3` → `P11` → `P5..P7` → `P9` → `B1` → `P8` → `A1` → `A2` → `A3` →
+`A4`. P10 sits
 directly after P2 because a stopped engine should cost one command, not a full
 sweep including P7's network read. P8 and A2 are not redundant: P8 probes
 the real **stage parent** and names the cause and the remedy for B-9, while A2

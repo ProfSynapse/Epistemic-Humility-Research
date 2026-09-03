@@ -153,7 +153,8 @@ def _fail(check: str, detail: str) -> None:
 
 
 def _run(
-    argv: list[str], *, timeout: int = 300, env: dict[str, str] | None = None
+    argv: list[str], *, timeout: int = 300, env: dict[str, str] | None = None,
+    cwd: str | None = None,
 ) -> subprocess.CompletedProcess:
     """Run a child and capture it. `env` REPLACES the environment when given.
 
@@ -163,11 +164,16 @@ def _run(
     child runs under a hardened environment of exactly four keys
     (`docker_prepared_composition.py:116`). An inherited environment would make
     P10 a weaker check than the thing it stands in for.
+
+    `cwd` matters for exactly one probe too. P11 must run where the cut runs,
+    because Python puts the working directory at `sys.path[0]` and the working
+    directory therefore DECIDES which `synaptic_host` is imported (task #215).
+    Every other probe is indifferent to it.
     """
     print(f"    $ {subprocess.list2cmdline(argv)}", flush=True)
     return subprocess.run(
         argv, text=True, capture_output=True, check=False, timeout=timeout,
-        env=env,
+        env=env, cwd=cwd,
     )
 
 
@@ -329,6 +335,117 @@ def _load_profile(project_root: Path) -> dict:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
         _fail("P4-profile", f"{path} could not be read: {error}")
+
+
+# The child P11 runs. It resolves the package the way the import system will,
+# WITHOUT importing it: `find_spec` answers for a package whose `__init__`
+# would fail, and it distinguishes the three outcomes that matter here. Reading
+# `synaptic_host.__file__` instead would raise TypeError on a namespace package,
+# whose `__file__` is None -- exactly the wrong-tree shape this probe exists to
+# catch, turned into a crash.
+_PACKAGE_RESOLUTION_SCRIPT = (
+    "import importlib.util as u\n"
+    "s = u.find_spec('synaptic_host')\n"
+    "if s is None:\n"
+    "    print('MISSING')\n"
+    "elif s.origin:\n"
+    "    print('ORIGIN ' + s.origin)\n"
+    "else:\n"
+    "    print('NAMESPACE ' + '|'.join(s.submodule_search_locations or ()))\n"
+)
+
+
+def _check_p11_package_resolves_under_project_root(
+    python_executable: str, project_root: Path
+) -> None:
+    """The `synaptic_host` a run will import comes from the project root given.
+
+    Found by test-host during run 8 (task #211): its wrapper imported
+    `synaptic_host` from a WORKTREE while every checkout identity check reported
+    the release commit. Nothing was wrong with those checks. P6 reads the
+    committed config blob, P7 proves HEAD is the published commit and P9 reads
+    blobs at that commit, so all three answer the question "which tree is this?"
+    -- and none answers "which tree will the code come from?".
+
+    The mechanism, measured on this interpreter rather than taken from the
+    report: Python puts the working directory at `sys.path[0]` and PYTHONPATH
+    after it, so with a package in the working directory that package wins; with
+    NO package in the working directory the child falls through to PYTHONPATH
+    and imports a different tree with no warning of any kind. The silent
+    fallback is the dangerous half. `_one_cut` sets `cwd=project_root`, so a
+    release root that carries the package is safe; a root that does not is not.
+
+    This probe reproduces the cut's child exactly: the SAME interpreter
+    (`--python`, default `sys.executable`) and the SAME `cwd`, and it INHERITS
+    the operator's environment because `_one_cut` passes no `env`. That is the
+    opposite of P10, which passes a restricted four-key environment because it
+    mirrors the composition's docker child. A probe under the wrong environment
+    would answer for a shape no run uses.
+
+    Four named refusals, one per remedy:
+
+    - `P11-resolution-failed`: the child itself did not run.
+    - `P11-package-not-found`: nothing named `synaptic_host` is importable from
+      the project root at all. The remedy is the checkout, not the path.
+    - `P11-namespace-package`: the name resolved to a directory with no
+      `__init__.py`. Measured (PEP 420): such a directory does NOT shadow a real
+      package further along the path, so this state means the root's own package
+      is not importable and some other tree is one PYTHONPATH entry away from
+      being used instead.
+    - `P11-wrong-tree`: it resolved somewhere outside the project root. The
+      message names BOTH paths, because the whole failure is that they differ
+      while every other check says they agree.
+
+    Containment under the given project root is the rule. There is deliberately
+    NO refusal on a `_worktrees` path component: that substring was a proxy for
+    containment in test-host's wrapper, it would refuse a legitimate
+    `--probe-only` pass from a worktree, and P7 already refuses a worktree for a
+    real run because a worktree branch has no local upstream.
+
+    Ordered after P3, which has just proven the root is a Windows drive path,
+    and before P5/P6/P7, which read that tree: knowing WHICH code will run
+    should precede reading what it is configured to do.
+    """
+    completed = _run(
+        [python_executable, "-c", _PACKAGE_RESOLUTION_SCRIPT],
+        timeout=60, cwd=str(project_root),
+    )
+    if completed.returncode != 0:
+        _fail(
+            "P11-resolution-failed",
+            f"{python_executable} could not resolve synaptic_host from {project_root}: "
+            f"{completed.stderr.strip() or 'no output'}",
+        )
+    answer = completed.stdout.strip()
+    if answer == "MISSING":
+        _fail(
+            "P11-package-not-found",
+            f"no synaptic_host is importable from {project_root}. The run would "
+            "import nothing at all. Check that the released checkout is complete",
+        )
+    if answer.startswith("NAMESPACE "):
+        _fail(
+            "P11-namespace-package",
+            f"synaptic_host resolved to a directory with no __init__.py: "
+            f"{answer[len('NAMESPACE '):]}. The project root's own package is not "
+            "importable, so any tree on PYTHONPATH would be used instead. Check "
+            "that the released checkout is complete",
+        )
+    if not answer.startswith("ORIGIN "):
+        _fail(
+            "P11-resolution-failed",
+            f"unexpected resolution output {answer!r} from {python_executable}",
+        )
+    resolved = Path(answer[len("ORIGIN "):]).resolve()
+    if project_root != resolved and project_root not in resolved.parents:
+        _fail(
+            "P11-wrong-tree",
+            f"synaptic_host resolves to {resolved}, which is NOT under the project "
+            f"root {project_root}. The run would exercise that tree while every "
+            "commit check reported this one. Launch from the released checkout, "
+            "and check PYTHONPATH",
+        )
+    print(f"    PASS P11-package-under-project-root: {resolved}")
 
 
 def _check_p5_drive_mount_root(profile: dict) -> tuple[str, str]:
@@ -1437,6 +1554,10 @@ def main(argv: list[str] | None = None) -> int:
         # precondition sweep including P7's network read.
         _check_p10_daemon_alive(args.docker, args.endpoint)
         _check_p3_drive_letter_root(project_root)
+        # After P3, which has just proven the root's SHAPE, and before P5/P6/P7,
+        # which read that tree's CONTENT. Knowing which code a run will import
+        # should precede reading what it is configured to do (task #215).
+        _check_p11_package_resolves_under_project_root(args.python, project_root)
         profile = _load_profile(project_root)
         distro, drive_mount_root = _check_p5_drive_mount_root(profile)
         _check_p6_config_is_committed(project_root, args.config)
