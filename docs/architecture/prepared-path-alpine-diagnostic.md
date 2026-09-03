@@ -3574,6 +3574,20 @@ rather than trusting a tar. It is **reproducible**: two runs at the same lock
 stage the same bytes by construction. It is **verifiable from the lock**: the
 descriptors are the lock. And the bound stays real, as section 21.7 rules.
 
+**Which failure this design is actually defending against.** The obvious worry
+about narrowing a scope is that it drops a file the container needs. That worry is
+misplaced: a missing input fails loudly and immediately, inside the container,
+naming the path (`runtime_v1.py:928`), and the operator learns it on the first
+run. The failure that deserves the engineering is the quiet one, and it is the
+opposite shape: **a scope that is not itself covered by a digest**, which would
+let two runs at the same lock stage different trees and report success both
+times. Every mechanical choice below follows from that. The scope lives in the
+lock rather than beside it; each member is checked against a recorded digest
+before it is written and again after; and the source manifest digests the staged
+tree rather than an expectation of it, so the scope cannot drift out from under
+the thing that verifies it. Test S6 is the pin for exactly this, and it is the
+test to keep if any other is ever dropped.
+
 ### 21.5 Why the scope is the lock's input set, not my reading of the engine
 
 Section 21.3 establishes that today only the dataset is read. The scope ruled
