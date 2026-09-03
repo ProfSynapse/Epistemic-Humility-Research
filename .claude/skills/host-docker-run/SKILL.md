@@ -338,6 +338,55 @@ GPU, mount, or image problem.
 A second reason a run looks broken when it is not: while the container runs, the
 observe cut returns the record unchanged. That is not a stall.
 
+### `P9-locked-project-inputs`, and why project size is not a precondition
+
+**The prepared path stages only the inputs the workload names, so the size of
+your project is not a precondition.** Staging copies the two files the source
+lock records for this run, the training config and the workload's dataset, each
+read at the locked commit and checked against the digest the lock recorded. It
+does not archive the repository. A research corpus, a datasets directory or a
+folder of papers sitting beside the training config costs the run nothing,
+because none of it is ever staged.
+
+This is worth stating because the opposite used to be true, and the failure was
+expensive. Run 6 archived the whole superproject at the locked commit,
+412,794,880 bytes against a 256 MiB staging bound, and the run died before any
+container existed (blocker B-12). The natural conclusion from that failure is
+"keep the project small", and it is the wrong one. **Do not use `.gitattributes`
+to shape what gets staged**, do not split the repository for this reason, and do
+not prune history to get under a bound. The bound still exists, but section 21.7
+repurposed it: it now measures the staged input set, so the only thing that can
+exceed it is a genuinely enormous dataset, and the remedy for that is a smaller
+dataset, not a smaller repository.
+
+The driver reports the number before a run is issued, as **P9**, after P7 and
+before the bind probe:
+
+```
+    P9-locked-project-inputs: derived by the DRIVER at <commit>
+    P9-INPUT kind=training-config path=training/smokes/docker-sft.json bytes=1089
+    P9-INPUT kind=training-dataset path=training/fixtures/modal-smoke.jsonl bytes=638
+    P9-TOTAL count=2 bytes=1727 archive_bound=268435456 entries_bound=20000
+    PASS P9-locked-project-inputs: ...
+```
+
+Three things to expect rather than diagnose:
+
+- **P9 never stops a run.** It reports; the Host owns the refusal and admission
+  is the gate. Over the bound it prints `WARN` and the run still proceeds to the
+  point where admission decides. A `WARN` here is a prediction, not a verdict.
+- **It says `derived by the DRIVER` because it is a second derivation.** The
+  authoritative set is the one admission writes into the lock. The driver
+  resolves the same pair independently, before a run exists to read a lock from,
+  so the line names the commit and both paths deliberately: if it ever disagrees
+  with the staged `source\project` tree, that disagreement should be visible
+  rather than inferred. Section 21.4 names exactly this kind of quiet
+  disagreement as the thing the design guards against.
+- **`SKIP` means no number, and that is deliberate.** If the probe cannot read
+  the commit or resolve the dataset ref it says so and reports nothing, rather
+  than printing a total it is not sure of. Nothing downstream re-checks P9's
+  arithmetic, so a plausible wrong number would travel further than no number.
+
 ## Do not
 
 - Do not create a host conda environment or venv. Everything model-related runs

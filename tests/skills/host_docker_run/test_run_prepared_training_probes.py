@@ -763,3 +763,170 @@ def test_d1_the_cause_survives_when_it_is_not_the_only_stderr_line(
     assert "    stderr| a warning from somewhere beneath the Host" in out
     assert exit_code == 2
     assert result["code"] == "START_UNAVAILABLE"
+
+
+# --------------------------------------------------------------------------
+# P9: the locked project inputs (section 21.13, blocker B-12)
+#
+# B-12: the prepared path archived the WHOLE superproject at the locked commit,
+# 412,794,880 bytes against a 256 MiB bound, so staging refused before any
+# container existed. Section 21.4 rules that staging stages only the two
+# descriptors `source_lock.inputs` records. P9 reports what that set costs
+# BEFORE a run is issued.
+#
+# P9 REPORTS AND NEVER GATES (21.13: the Host owns the refusal, admission is
+# the gate), so the central test here is the negative one: a total far over the
+# bound must still return normally. A probe that quietly grew a gate would
+# refuse runs the Host would have accepted.
+#
+# The probe derives the pair itself, because the lock is built during admission
+# and there is no pre-run artifact to read. Section 21.4's addendum at 070995cc
+# names quiet divergence as the failure worth engineering against, so the line
+# must say it is the DRIVER's derivation and name the commit and both paths --
+# that is what makes a disagreement with the Host's staged manifest visible
+# rather than something a human has to infer.
+# --------------------------------------------------------------------------
+
+_CONFIG_REF = "project://training/smokes/docker-sft.json"
+_CONFIG_REL = "training/smokes/docker-sft.json"
+_DATASET_REL = "training/fixtures/modal-smoke.jsonl"
+_COMMIT = "e00ab662aa11bb22cc33dd44ee55ff6677889900"
+
+
+def _fake_git_inputs(*, config_size="1089", dataset_size="638",
+                     config_body=None, rev_parse_rc=0, cat_file_rc=0):
+    """Answer the three git reads P9 makes: rev-parse, cat-file -s, cat-file -p.
+
+    Keyed on the subcommand at argv[3], the same shape `_fake_git` uses, because
+    the driver always calls `git.exe -C <root> <subcommand> ...`.
+    """
+    if config_body is None:
+        config_body = '{"dataset": {"ref": "project://' + _DATASET_REL + '"}}'
+
+    def run(argv, *, timeout=300):
+        assert argv[0] == "git.exe" and argv[1] == "-C", argv
+        subcommand = argv[3]
+        if subcommand == "rev-parse":
+            if rev_parse_rc:
+                return _completed(argv, rev_parse_rc, "", "fatal: not a git repository")
+            return _completed(argv, 0, _COMMIT)
+        if subcommand == "cat-file":
+            if cat_file_rc:
+                return _completed(argv, cat_file_rc, "", "fatal: path does not exist")
+            spec = argv[-1]
+            if argv[4] == "-s":
+                return _completed(argv, 0, config_size if _CONFIG_REL in spec else dataset_size)
+            return _completed(argv, 0, config_body)
+        raise AssertionError(f"unexpected git subcommand: {argv}")
+
+    return run
+
+
+def _run_p9(monkeypatch, project_root: Path, fake) -> None:
+    monkeypatch.setattr(driver, "_run", fake)
+    driver._check_p9_locked_project_inputs(project_root, _CONFIG_REF)
+
+
+def test_p9_reports_both_locked_inputs_and_their_total(
+    monkeypatch, project_root, capsys
+):
+    _run_p9(monkeypatch, project_root, _fake_git_inputs())
+
+    out = capsys.readouterr().out
+    assert "training-config" in out and _CONFIG_REL in out
+    assert "training-dataset" in out and _DATASET_REL in out
+    # The total is the SUM of the two descriptors, not either one alone.
+    assert "bytes=1727" in out
+    assert "count=2" in out
+    assert "PASS P9-locked-project-inputs" in out
+
+
+def test_p9_names_the_commit_and_says_the_derivation_is_the_drivers(
+    monkeypatch, project_root, capsys
+):
+    """Section 21.4's addendum: quiet divergence is the failure to engineer against.
+
+    The probe is a second derivation of a scope the Host owns. It cannot cause a
+    wrong stage, but it can produce a wrong REPORT, so the line must carry
+    enough to be checked against the staged source manifest by hand.
+    """
+    _run_p9(monkeypatch, project_root, _fake_git_inputs())
+
+    out = capsys.readouterr().out
+    assert _COMMIT in out
+    assert "DRIVER" in out
+
+
+def test_p9_does_not_gate_when_the_total_exceeds_the_host_bound(
+    monkeypatch, project_root, capsys
+):
+    """THE test for 21.13. Over the bound it WARNs and returns; it never exits.
+
+    The Host owns the refusal. A probe that grew a gate here would refuse runs
+    admission would have accepted, and would do it from a copy of a constant
+    whose meaning section 21.7 already moved once.
+    """
+    over = str(driver._MAX_PROJECT_ARCHIVE_BYTES + 1)
+    fake = _fake_git_inputs(config_size=over, dataset_size="1")
+
+    # Returns normally: no CheckFailure, no SystemExit, no exception at all.
+    _run_p9(monkeypatch, project_root, fake)
+
+    out = capsys.readouterr().out
+    assert "WARN P9-locked-project-inputs" in out
+    assert "PASS P9-locked-project-inputs" not in out
+    # It must say WHO refuses and that this probe does not, so the operator does
+    # not read the WARN as a stop the driver made.
+    assert "admission" in out.lower()
+    assert "does not gate" in out
+
+
+def test_p9_skips_with_a_named_reason_when_git_is_unavailable(
+    monkeypatch, project_root, capsys
+):
+    """A plausible wrong number is worse than no number for a reporting probe.
+
+    Nothing downstream re-checks P9's arithmetic, so a total read at the wrong
+    commit would travel into the run report unchallenged.
+    """
+    _run_p9(monkeypatch, project_root, _fake_git_inputs(rev_parse_rc=128))
+
+    out = capsys.readouterr().out
+    assert "SKIP P9-locked-project-inputs" in out
+    assert "bytes=" not in out
+
+
+def test_p9_reports_the_config_when_the_dataset_ref_cannot_be_resolved(
+    monkeypatch, project_root, capsys
+):
+    """Partial knowledge is reported as partial, never completed by guessing."""
+    fake = _fake_git_inputs(config_body='{"no_dataset_key": true}')
+    _run_p9(monkeypatch, project_root, fake)
+
+    out = capsys.readouterr().out
+    assert "training-config" in out
+    assert "unresolved" in out
+    # No total, because a total over an incomplete set is a wrong number.
+    assert "count=2" not in out
+
+
+def test_p9_runs_after_p7_and_before_the_bind_probe():
+    """Ordering: P9 reads the commit P7 has just proven is the published one."""
+    source = _DRIVER.read_text(encoding="utf-8")
+    p7 = source.index("_check_p7_branch_is_publishable(project_root)")
+    p9 = source.index("_check_p9_locked_project_inputs(", p7)
+    bind = source.index("_probe_bind_source(", p9)
+    assert p7 < p9 < bind
+
+
+def test_p9_bounds_are_restated_from_the_host_with_a_citation():
+    """Restated, not imported; the citation is what an auditor follows.
+
+    A skill script does not import synaptic_host. The cost of restating is that
+    the copy can drift, so the comment must name the file and lines it mirrors.
+    """
+    source = _DRIVER.read_text(encoding="utf-8")
+    assert driver._MAX_PROJECT_ARCHIVE_BYTES == 256 * 1024 * 1024
+    assert driver._MAX_PROJECT_EXPANDED_BYTES == 512 * 1024 * 1024
+    assert driver._MAX_PROJECT_ENTRIES == 20_000
+    assert "docker_staging.py:45-47" in source

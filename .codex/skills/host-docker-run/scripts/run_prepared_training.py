@@ -294,6 +294,187 @@ def _git(project_root: Path, *arguments: str) -> subprocess.CompletedProcess:
     return _run(["git.exe", "-C", str(project_root), *arguments])
 
 
+# Restated from `docker_staging.py:45-47`. Section 21.7 repurposes the first and
+# third: after B-12 they bound the STAGED INPUT SET, not the operator's
+# repository. Restated rather than imported, because a skill script does not
+# import `synaptic_host` and this driver has never taken that seam. The cost of
+# restating is that the copy can drift, so the coupling is named in the task
+# #188 handoff for the auditor: if the Host's values move, this block moves in
+# the same change.
+_MAX_PROJECT_ARCHIVE_BYTES = 256 * 1024 * 1024
+_MAX_PROJECT_EXPANDED_BYTES = 512 * 1024 * 1024
+_MAX_PROJECT_ENTRIES = 20_000
+
+_PROJECT_REF_PREFIX = "project://"
+
+
+def _project_relative(ref: str) -> str | None:
+    """`project://<path>` -> `<path>`, or None when the ref is not a project ref.
+
+    Deliberately separate from P6's inline slicing (`:274-275`), which is scoped
+    to `project://training/` because that is all a config ref is ever spelled
+    as. A dataset ref is author-supplied and need not sit under `training/`, so
+    this one refuses rather than mis-slices.
+    """
+    if not ref.startswith(_PROJECT_REF_PREFIX):
+        return None
+    relative = ref[len(_PROJECT_REF_PREFIX):]
+    return relative or None
+
+
+def _blob_size_at(project_root: Path, commit: str, relative: str) -> int | None:
+    """`git cat-file -s <commit>:<path>`, or None if it cannot be read."""
+    completed = _git(project_root, "cat-file", "-s", f"{commit}:{relative}")
+    if completed.returncode != 0:
+        return None
+    try:
+        return int(completed.stdout.strip())
+    except ValueError:
+        return None
+
+
+def _check_p9_locked_project_inputs(project_root: Path, config_ref: str) -> None:
+    """Report what the prepared path will stage from the project. Never gates.
+
+    Blocker B-12 (task #179), measured on run 6: staging archived the WHOLE
+    superproject at the locked commit, 412,794,880 bytes against the 256 MiB
+    bound at `docker_staging.py:45`, and refused before any container existed.
+    Section 21.4 rules that staging stages only the descriptors
+    `source_lock.inputs` already records -- `training-config` and
+    `training-dataset` (`docker_training.py:278-281`) -- so the staged volume is
+    now a property of the WORKLOAD, not of the repository. This probe puts that
+    number in front of the operator BEFORE a run is issued, instead of after a
+    failed cut.
+
+    It REPORTS. It never gates, never exits and never raises (section 21.13:
+    the Host owns the refusal, admission is the gate). A driver-side gate would
+    be a second opinion about a set the driver does not own and cannot see at
+    admission time, and it would enforce a copy of a constant whose meaning
+    section 21.7 has already moved once.
+
+    Where the descriptors come from, since there is no pre-run lock artifact to
+    read -- the lock is built DURING admission:
+
+    - `training-config` is `--config`, already on the prepared command.
+    - `training-dataset` is that config's own `dataset.ref`, which is what
+      admission resolves as `ingress.training_input.dataset.ref`
+      (`docker_training.py:727`).
+
+    Both are read at the LOCKED COMMIT rather than from the working tree, which
+    is the same source of truth admission uses (`_read_committed_git_blob_v1`
+    reads the commit) and the property section 21.6 keeps.
+
+    That makes this a SECOND derivation of a scope the Host owns, and section
+    21.4's addendum names quiet divergence -- two things that should agree,
+    disagreeing, with success reported both times -- as the failure worth
+    engineering against. So the report says it is the DRIVER's derivation and
+    names the commit and both paths, which is what lets a human check it against
+    the staged source manifest instead of inferring agreement. For the same
+    reason it SKIPs with a named reason rather than printing a number it is not
+    sure of: nothing downstream re-checks this arithmetic.
+
+    Ordered after P7, which has just proven HEAD is the published commit this
+    reads at, and before the bind probe.
+    """
+    completed = _git(project_root, "rev-parse", "HEAD")
+    if completed.returncode != 0 or not completed.stdout.strip():
+        print(
+            "    SKIP P9-locked-project-inputs: git.exe could not resolve HEAD "
+            f"({completed.stderr.strip() or 'no output'}); no size is reported "
+            "rather than one read at an unknown commit"
+        )
+        return
+    commit = completed.stdout.strip()
+
+    config_relative = _project_relative(config_ref)
+    if config_relative is None:
+        print(
+            f"    SKIP P9-locked-project-inputs: --config {config_ref!r} is not a "
+            f"{_PROJECT_REF_PREFIX} reference, so the locked input set cannot be derived"
+        )
+        return
+
+    print(f"    P9-locked-project-inputs: derived by the DRIVER at {commit}")
+
+    config_size = _blob_size_at(project_root, commit, config_relative)
+    if config_size is None:
+        print(
+            f"    SKIP P9-locked-project-inputs: {config_relative} is not readable "
+            f"at {commit}; P6 checks the working tree, this reads the commit"
+        )
+        return
+    print(f"    P9-INPUT kind=training-config path={config_relative} bytes={config_size}")
+
+    dataset_relative = _dataset_relative_from_config(project_root, commit, config_relative)
+    if dataset_relative is None:
+        print(
+            "    WARN P9-locked-project-inputs: the dataset ref is unresolved, so the "
+            "total is NOT reported; the config above is one of two locked inputs. "
+            "This probe reports and does not gate, so the run is unaffected and "
+            "admission remains the gate."
+        )
+        return
+    dataset_size = _blob_size_at(project_root, commit, dataset_relative)
+    if dataset_size is None:
+        print(
+            f"    WARN P9-locked-project-inputs: {dataset_relative} is not readable at "
+            f"{commit}, so the dataset size is unresolved and no total is reported. "
+            "The Host would refuse this at admission; this probe does not gate."
+        )
+        return
+    print(f"    P9-INPUT kind=training-dataset path={dataset_relative} bytes={dataset_size}")
+
+    total = config_size + dataset_size
+    count = 2
+    within = total <= _MAX_PROJECT_ARCHIVE_BYTES and count <= _MAX_PROJECT_ENTRIES
+    print(
+        f"    P9-TOTAL count={count} bytes={total} "
+        f"archive_bound={_MAX_PROJECT_ARCHIVE_BYTES} entries_bound={_MAX_PROJECT_ENTRIES}"
+    )
+    if within:
+        print(
+            f"    PASS P9-locked-project-inputs: {total} byte(s) in {count} input(s), "
+            "which is what the prepared path stages from the project. The SIZE OF THE "
+            "PROJECT is not part of this number and is not a precondition."
+        )
+        return
+    print(
+        f"    WARN P9-locked-project-inputs: {total} byte(s) in {count} input(s) exceeds "
+        f"the Host's staging bound ({_MAX_PROJECT_ARCHIVE_BYTES} bytes, "
+        f"{_MAX_PROJECT_ENTRIES} entries). Admission will refuse this run at "
+        "docker_staging.py; this probe reports and does not gate. Shrink the workload's "
+        "dataset, not the repository."
+    )
+
+
+def _dataset_relative_from_config(
+    project_root: Path, commit: str, config_relative: str
+) -> str | None:
+    """The config's own `dataset.ref`, read at the locked commit.
+
+    This follows the workload contract section 21.3 documents, not staging
+    logic: the ref is a literal in a committed file, and admission reads the
+    same value. Returns None rather than guessing, so an unresolvable dataset is
+    reported as unresolved instead of being completed by inference.
+    """
+    completed = _git(project_root, "cat-file", "-p", f"{commit}:{config_relative}")
+    if completed.returncode != 0:
+        return None
+    try:
+        document = json.loads(completed.stdout)
+    except ValueError:
+        return None
+    if type(document) is not dict:
+        return None
+    dataset = document.get("dataset")
+    if type(dataset) is not dict:
+        return None
+    reference = dataset.get("ref")
+    if type(reference) is not str:
+        return None
+    return _project_relative(reference)
+
+
 def _check_p7_branch_is_publishable(project_root: Path) -> None:
     """The project checkout must be on a branch that tracks origin at HEAD.
 
@@ -1145,6 +1326,10 @@ def main(argv: list[str] | None = None) -> int:
         distro, drive_mount_root = _check_p5_drive_mount_root(profile)
         _check_p6_config_is_committed(project_root, args.config)
         _check_p7_branch_is_publishable(project_root)
+        # After P7, which has just proven HEAD is the published commit, and
+        # before the bind probe. Reports the staged project volume (blocker
+        # B-12, section 21.13); it never gates.
+        _check_p9_locked_project_inputs(project_root, args.config)
         container_user = _read_container_user(profile)
 
         runtime = profile.get("runtime") or {}
