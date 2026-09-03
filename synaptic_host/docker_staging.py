@@ -1393,6 +1393,16 @@ def _verify_staged_project_inputs(
         if hashlib.sha256(payload).hexdigest() != descriptor["sha256"]:
             raise ValueError("exact project input differs from its locked digest")
         total += len(payload)
+        # Y-B (architecture section 22.15).  UNREACHABLE as the code
+        # stands.  `_stage_locked_project_inputs` already sums the same
+        # descriptors' `size_bytes` and bounds that sum by
+        # _MAX_PROJECT_ARCHIVE_BYTES (256 MiB) before anything is written,
+        # and the equality above pins each payload to its descriptor's
+        # `size_bytes`, so this running total cannot exceed 256 MiB and can
+        # never reach 512 MiB.  Retained as defence in depth rather than
+        # deleted: the whole proof rests on that earlier bound running
+        # FIRST, which nothing enforces, so a later change that moves or
+        # drops it makes this belt load-bearing again silently.
         if total > _MAX_PROJECT_EXPANDED_BYTES:
             raise ValueError("exact project inputs exceed their bound")
 
