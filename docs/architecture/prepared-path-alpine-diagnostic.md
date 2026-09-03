@@ -4660,3 +4660,254 @@ Run 9 acceptance:
   review exists to find. Section 23.2 is the first entry.
 - Carried and unaffected by this ruling: #170, #184, #204, #207, and audit
   #172's Y-1 and Y-2 (Y-2 now at `docker_training.py:613`).
+
+## 24. Amendment 2026-09-03 — ruling on B-15 (one entry path never establishes the engine root)
+
+Every line and file citation in this section was read at Host `a2b242e9` and
+engine `994c4a48`, the pin that release carries. That is the citation baseline;
+a later coder should re-derive line numbers rather than trust these. Run 9
+evidence is `F:\Code\ehr-release-a2b242e9\scratch\test-phase\logs` 10-14 and
+`probe/`.
+
+### 24.1 What B-15 is, stated from the code
+
+Run 9 was the first run made with the documented invocation and nothing else:
+cwd the release root, `python -m synaptic_host training run --provider docker`,
+`PYTHONPATH` unset per prerequisite 1b. It stopped at cut 1 with an all-null
+envelope and exit 4, before any container. Log 11 is the whole of what the
+operator saw:
+
+```
+{"code":"INTERNAL_FAILURE","config_ref":null,...,"status":"unavailable",...}
+```
+
+The probe in log 12 recovered the exception the envelope does not carry:
+
+```
+File "...\synaptic_host\cli.py", line 973, in dispatch_validated_training_run_v1
+  docker_training = importlib.import_module("synaptic_host.docker_training")
+File "...\synaptic_host\docker_training.py", line 18, in <module>
+  from synaptic_tuner.api.v1 import (
+File "...\synaptic-tuner\synaptic_tuner\api\v1\__init__.py", line 162, in __getattr__
+  value = getattr(import_module(f"{__name__}.{module_name}"), name)
+File "...\synaptic-tuner\synaptic_tuner\api\v1\training.py", line 25, in <module>
+  from .sources import ExecutionSourceV1
+File "...\synaptic-tuner\synaptic_tuner\api\v1\sources.py", line 3, in <module>
+  from tuner.project.execution_source import (
+ModuleNotFoundError: No module named 'tuner'
+```
+
+**The mechanism is narrower than "the import needs the engine root", and the
+narrow version is what the fix has to satisfy.** The engine ships two sibling
+top-level packages, `synaptic_tuner/` and `tuner/`. By the time cut 1 runs,
+`synaptic_tuner` and its `api.v1` package are already resident in `sys.modules`,
+because the contract loader imported `synaptic_tuner.api.v1.training_input_loader`
+during ingress. So `docker_training.py:18` resolves its module from `sys.modules`
+with no path lookup, and the lazy `__getattr__` at `api/v1/__init__.py:158-164`
+resolves `training` through the resident package's own `__path__`. Only at
+`sources.py:3` does a **top-level** name appear that was never imported, and a
+top-level import consults `sys.path`. That is the single point of failure.
+
+**Why the path is empty of the engine root there.** I enumerated every
+`sys.path` site in `synaptic_host` and there are exactly two.
+`cli.py:743` inserts the engine root at position 0 and `:748-750` deletes it in
+a `finally`, so the window closes as soon as the contract loader has its two
+files. `launcher.py:43` is the other, and it is not a live mutation at all: it
+is line 43 of `_FIXED_BOOTSTRAP` (`:38-46`), a string a re-executed child
+interpreter runs. `__main__.py:26-32` returns `dispatch_validated_training_run_v1`
+directly for `provider_ref == "docker"` and never reaches the launcher. The
+docker lane therefore runs its whole life in the parent process, and after
+`cli.py:750` that process holds no engine root.
+
+### 24.2 Why eight runs passed, and why prerequisite 1b was right
+
+Runs 1 to 8 inherited the engine root from the operator's own wrapper. Run 8's
+is explicit: `winpy-release.sh:8-9` sets `WSLENV=PYTHONPATH` and
+`PYTHONPATH=$WINROOT;$WINROOT\synaptic-tuner`. The Host's missing establishment
+was invisible for eight runs because the operator was supplying it.
+
+Prerequisite 1b removed that, and removing it was right. #215 added the
+wrong-tree import guard because cwd precedes `PYTHONPATH`, and run 8 nearly
+exercised the worktree while every commit check reported the released checkout.
+A `PYTHONPATH` that names two roots is exactly the shape that makes which-tree
+questions hard to answer. So run 9 is not a regression; it is the first run
+whose environment did not paper over a Host defect, which is what a clean
+invocation is for. The counter-test in log 13 confirms the attribution with one
+variable: unset raises, engine root set imports cleanly.
+
+**This is not a regression of the audited change set.** The engine's `api/v1`
+is untouched across `ba844137..994c4a48`, and `cli.py` and `docker_training.py`
+are byte-identical across `38256c03..a2b242e9`.
+
+### 24.3 Ruling one — one establishment, at the point every provider crosses
+
+**Establish the engine root on `sys.path` once inside
+`dispatch_validated_training_run_v1`, immediately after the bound-root equality
+check at `cli.py:967-972` and before the docker import at `:973`, and keep it
+for the life of the process. Append it; do not insert it at position 0.**
+
+That point is chosen for four reasons, and the first is the one that matters.
+
+1. **It is downstream of validation.** `:955-972` resolves the supplied
+   project and engine roots and refuses with `BOOTSTRAP_UNAVAILABLE` unless they
+   equal the roots bound at module scope. Establishing the path after that check
+   means the process never gains an import root that was not already proven to
+   be the bound one. Establishing it in `__main__.main()` at `:19-23`, which was
+   the other candidate, would put the path in place before that proof.
+2. **Every provider crosses it.** Both branches of the dispatch are below
+   `:972`, so this is one policy for the lane rather than a docker-only one.
+3. **The suite crosses it too.** Tests call this function directly, so the
+   establishment is exercised by the existing suite rather than only by a
+   process launched the documented way.
+4. **It is idempotent and leaves the contract loader alone.** Adding a path
+   entry imports nothing, so the `:738-742` refusal (no `synaptic_tuner` module
+   may be resident yet) still holds. If `:743` later inserts the same string at
+   position 0, the `finally` at `:749-750` deletes that position-0 copy and the
+   appended entry survives. `cli.py:743-750` needs no edit.
+
+**Append, not insert at position 0, and this is not a style preference.** The
+release root and the engine root both contain `docs/`, `scripts/` and `tests/`,
+and the engine additionally carries `Tools/` where the project carries `tools/`,
+which are the same name on a case-insensitive Windows filesystem. Giving the
+engine root precedence over the project root would let the engine tree shadow
+project modules by name. Appending makes the project win every collision, and
+nothing the engine needs is ambiguous.
+
+**No rationale was ever recorded for the transient window at `cli.py:743-750`.**
+It arrived in `5299746e` (2026-08-29, "Add cold neutral training ingress") with
+no accompanying doc line. `docs/architecture` carries exactly two mentions of
+`sys.path` and neither is about this: `b2-engine-repo-id-stamp.md:584` is the
+closure regenerator's authenticated repo root, and `:4500` of this file is the
+engine's `runpy` entrypoint. As in 23.2, this section says that plainly
+rather than hedging. Read from the code, the insert at position 0 is a
+**precedence** guarantee for the contract loader, so that the two identity-checked
+files resolve from the bound engine and not from cwd, and the origin checks at
+`:769-787` confirm they did. The delete is not an import-surface bound: the same
+process imports the engine again at `docker_training.py:18` after `:750` has
+removed the root, so the window never bounded **what** may be imported from the
+engine, only **when**. Under runs 1 to 8 that later import resolved through the
+operator's `PYTHONPATH`. A window that a later import walks straight past is not
+a security property, and the ruling does not treat it as one.
+
+**Why the rejected shapes lose.**
+
+- **(i) route provider docker through the launcher.** Withdrawn by the lead once
+  `launcher.py:43` was read in place. That line lives inside `_FIXED_BOOTSTRAP`
+  for a re-executed, pinned CPython 3.11.15 child obtained through a uv archive
+  download (`:27-32`). Routing the docker lane through it would add a downloader
+  to a lane that has none, against a standing constraint.
+- **(ii) the docker branch establishes and keeps its own root.** It fixes the
+  symptom and leaves the asymmetry: the lane would then have a docker policy, a
+  contract-loader policy and a launcher-child policy, three where the defect is
+  that one entry path was forgotten. The user has asked whether this path is
+  over-engineered; adding a fourth site answers that in the wrong direction. The
+  ruled shape has the same diff size and removes the asymmetry instead.
+
+**What the fix must NOT do.** No `PYTHONPATH` prerequisite returns for
+operators. No compatibility layer, no downloader, no route through legacy
+`composition.py`. No change to the ingress provenance closure `cli.py` builds at
+module scope, and none to `_ENGINE_CONTRACT_CACHE` or the identity checks at
+`:726-736` and `:769-787`. No engine change: the ruling is Host-only, and the
+engine's two-package layout is a fact to accommodate, not to edit.
+
+### 24.4 Ruling two — the envelope does not widen; the cause line does
+
+**The `INTERNAL_FAILURE` envelope keeps its fields. The Host reports the cause
+on stderr, by extending the mechanism section 20.11 already ruled for admission,
+and that mechanism gains one field: the missing module name.**
+
+Widening the envelope is refused on its own merits. `TrainingRunCommandResultV2`
+is rebuilt field-for-field and compared for equality at `:1055-1063`, and again
+at `:1072-1081` where a mismatch raises before the JSON is written. That JSON is
+the contract the driver parses. A diagnostic field
+would change a result schema in order to carry text that is not a result, and
+`_failure(INTERNAL_FAILURE)` is called bare at seven sites (`:981`, `:991`,
+`:1052`, `:1054`, `:1063`, `:1066`, `:1071`), only one of which has an exception
+to name. Six of them would carry a null diagnostic forever.
+
+The Host already solved this exact problem once. `_report_admission_cause`
+(`docker_training.py:583-613`) writes one stderr line carrying the exception's
+**class** and an authored frame identity, excludes the exception's text entirely
+because that text is not authored here, bounds the line at 400 characters, and
+leaves stdout byte-identical so the result JSON stays the last parseable line.
+Every one of those arguments applies unchanged at `cli.py:1065-1066`. Reusing it
+removes an asymmetry rather than adding a policy, which is the same disposition
+as ruling one.
+
+Two things the reuse must handle, and they are the whole of the work.
+
+1. **The helper cannot live where it lives now.** `docker_training.py` imports
+   the engine at module scope, so `cli.py` cannot import from it, least of all
+   to report that importing it failed. Put the renderer in a small Host-internal
+   module with no engine import, and have both `cli.py` and `docker_training.py`
+   use it. That is one new file of roughly thirty lines, not a layer.
+2. **An import failure has no in-package frame, so the frame alone says
+   `<unknown>`.** The authored, useful identity here is the missing module name,
+   which `ModuleNotFoundError` carries as `.name`. It is a dotted identifier
+   produced by CPython, never a path and never operator text, so it passes the
+   same test the class name passes. The line adds it when, and only when, the
+   exception is a `ModuleNotFoundError` with a string `.name`.
+
+Still excluded, on 20.11's reasoning unchanged: the exception's own text, any
+traceback, and any absolute path. Amendment 22.14 (#207) is still owed and will
+change how frames are rendered; the new site inherits whatever 22.14 lands
+rather than forking its own renderer.
+
+### 24.5 Test spec, red-first at `a2b242e9`
+
+The standing rule 21.2 governs: a bound whose only realistic trigger is the
+operator's environment shape needs a fixture that reaches that shape. `PYTHONPATH`
+is exactly such a bound, and no in-process test can reach it, because the parent
+pytest process already has whatever path the developer's environment gave it.
+
+| # | Test | Asserts |
+|---|---|---|
+| P1 | a CHILD process, `subprocess.run` with a scrubbed environment (`PYTHONPATH` removed, not emptied), cwd set to a release-shaped temporary layout: a project root holding `synaptic_host/` with `synaptic-tuner/` beside it, running the documented `-m synaptic_host training run --provider docker` invocation | the run gets past `cli.py:973`. This is the acceptance test and it must fail before the change |
+| P2 | the same child, envelope parsed from stdout | on any failure the envelope is non-null in `provider_ref`, `config_ref`, `destination_ref` and `input_digest` where the code path had them, and the stderr carries one `synaptic-host:` cause line |
+| P3 | in-process, an injected `ImportError` at the `:973` import site | the cause line names the exception class and, for a `ModuleNotFoundError`, the missing module name; it carries no absolute path and no traceback |
+| P4 | in-process, the contract loader path | `_ENGINE_CONTRACT_CACHE` behaviour and the origin checks at `:769-787` are unchanged with the engine root already appended, which is the regression this fix could plausibly cause |
+
+**P1 must run the whole invocation, not just `import synaptic_host.docker_training`,
+and this is the trap.** Log 13's arm A, which imports the module in a fresh
+process, reports `No module named 'synaptic_tuner'` at `docker_training.py:18`.
+The real run in log 12 reports `No module named 'tuner'` four frames deeper. The
+two differ because ingress preparation has already made `synaptic_tuner`
+resident by the time cut 1 runs. A fixture that stops at the bare import tests a
+shallower failure, and a change that satisfies it could leave the real one
+standing.
+
+### 24.6 Do not touch, and run 10 acceptance
+
+| File or surface | Why |
+|---|---|
+| `cli.py:743-750` and `_ENGINE_CONTRACT_CACHE` | the ruled establishment is idempotent with them; P4 pins that |
+| the identity checks at `:726-736` and `:769-787` | these are what make the contract loader's resolution trustworthy |
+| the module-scope ingress provenance closure | named out of scope by the dispatch and unrelated |
+| `launcher.py` and `_FIXED_BOOTSTRAP` | the Modal lane is correct as it stands |
+| `TrainingRunCommandResultV2` and its rebuild-and-compare sites | ruling two turns on not widening this |
+| the engine, all of it | B-15 is Host-only; the two sibling top-level packages are a fact to accommodate |
+| the operator wrapper's environment | `PYTHONPATH` does not come back |
+
+Run 10 acceptance, carrying 23.5's rows with row 0 added:
+
+| Row | Reading |
+|---|---|
+| 0 | **B-15 closed.** The docker import at `cli.py:973` succeeds with `PYTHONPATH` unset, and any failure at any later cut emits a non-null envelope plus one `synaptic-host:` cause line. An all-null envelope is a fail whatever else the run does |
+| 1 | **B-14's runtime half, unread since run 9 stopped before it.** The container gets past the loader-member gate and `_authenticate_worker_closure`, reaching the trainer or failing later; a repeat of exit 31 is not closure |
+| 2 | first-container capture per 22.11 row 4 with #219's instrument, now events-based |
+| 3 | the B-10 four-row reading at cut 2 per 20.19; an absent cut-2 line is the **absent** row, not the deferral row |
+| 4 | B-9 `--user`, B-9-R1 `/tmp` caches, B-10-R1 cache tree and B-2 adapter equality all still unmeasured, all behind rows 0 and 1, none to be reported as passing on a run that stops before them |
+
+### 24.7 Follow-ups
+
+- **#219, the capture's `matched=0` reading.** Run 9 produced no container at
+  all, so a `matched=0` is ambiguous as it stands. The guidance must distinguish
+  no-container-was-created from a container-was-created-but-the-match-failed,
+  using the census diff the driver already holds rather than a new instrument.
+- **#207 (amendment 22.14)** is still owed and now has a second consumer: the
+  cause line at `cli.py:1065-1066` uses the same renderer.
+- **The entry-point inventory is an input to #209.** Three places decide import
+  roots for this system, in three different ways, and the defect was that one
+  entry path was not on anyone's list. That inventory, not the individual fix,
+  is what the simplification review should read.
+- Carried and unaffected: #170, #184, and audit #172's Y-1 and Y-2.
