@@ -3092,3 +3092,123 @@ Run 5 was exactly this row, and report section 17.4 read it correctly in prose
 before the row existed: no cut 2, so neither the confirmed row nor the deferral
 row applies. Naming it means run 6 is read mechanically instead of relying on the
 reporter noticing.
+
+### 20.20 Amendment — the two probes do not conflict, and 20.8's mechanism was wrong
+
+coder-user's W5 draft asserted that a child's access list is unchanged after the
+repair, and it failed on the Windows host. Their isolated probe of the shipped
+helper found that the immediate child **directory** keeps every entry with its
+identity and mask intact, but its entries lose the inherited marking and the
+child becomes protected. The grandchild directory, the child file and the deep
+file are untouched. Nothing is emptied and no grant is removed.
+
+That reads as a contradiction of B-11-M1 arm B, which reported the immediate
+child directory unchanged at eleven inherited entries and unprotected. It is not
+one.
+
+#### 20.20.1 The hidden variable is the descriptor, not the call
+
+B-11-M1's arms A to D all used the Host's **non-inheritable** descriptor,
+`D:P(A;;FA;;;SY)(A;;FA;;;<sid>)`, obtained by calling the Host's own descriptor
+builder and round-tripping it. Arm E was the only arm with the inheritable form,
+and arm E changed the **call** at the same time. So the arms measured two
+diagonal points, never the corner:
+
+| | non-inheritable descriptor | inheritable descriptor |
+|---|---|---|
+| path call | arm A, destructive | arm E, benign, propagates fully |
+| handle call | arm B, children untouched | **the ruled combination — unmeasured** |
+
+Section 20.8 ruled that empty corner. coder-user has now measured it, on the
+shipped helper, and it does not behave as section 20.8 predicted.
+
+**The orthogonality claim is retired.** Section 20.8 argued that the call decides
+whether children are recomputed and the descriptor decides what a recompute
+produces, so the two could be combined freely. The descriptor's inherit flags
+change what the handle call does to children, so the axes are not independent and
+the warrant does not hold. This is the second claim of mine this section has
+retired, and unlike the first it is the one my own handoff named as the risk:
+the halves were measured, the whole was not, and that is exactly where it broke.
+
+#### 20.20.2 What the combined behaviour appears to be
+
+Read together, the two probes support one account, offered as a reading rather
+than a guarantee. Setting a list that publishes inheritable entries obliges the
+system to reconcile them against children that already exist. It does the least
+destructive thing available at one level: instead of overwriting a child's
+entries, which would lose grants, it converts that child's inherited entries to
+explicit ones and marks the child protected, preserving its effective access and
+removing it from the inheritance relationship. Once the child is protected there
+is nothing left to reconcile beneath it, which is why the effect stops at one
+level and why files, which cannot be containers for further inheritance, are not
+touched.
+
+Section 20.19.2 is the model for how much weight to put on that: it is a reading
+that fits both measurements, and 20.20.4 names the one experiment that would
+confirm or kill it.
+
+#### 20.20.3 What changes, and what does not
+
+**The ruled primitive does not change.** The handle call with the inheritable
+descriptor stays. Every reason section 20.8 gave for the handle rather than the
+path survives untouched, because those were about junction following and the
+swap window, not about propagation. And the measured outcome is benign on the
+axis that matters: no object is emptied, no grant is removed, every node stays
+readable and listable.
+
+**Section 20.8's closing sentence is struck.** "The immediate state is arm B's,
+the eventual state is arm E's, and arm A's state is unreachable from either" is
+false in its first two clauses. The correct statement is narrower and, on the
+safety axis, stronger:
+
+> The immediate state preserves every grant at every level. Immediate child
+> directories become protected, which removes them from the repaired parent's
+> inheritance relationship, so no later propagation from that parent can reach
+> them — benign or destructive. Arm A's state remains unreachable, which was the
+> point.
+
+Test-host's incoherence caveat is therefore closed more firmly than section 20.8
+claimed, and by a different route. Section 20.8 promised that a later propagation
+would narrow the children; in fact a later propagation cannot reach them at all.
+
+**One consequence is worth stating plainly, because it is the cost.** An
+immediate child directory's grants are frozen as explicit and protected, so they
+will never narrow on their own. For the model inventory that costs nothing, since
+its contents are public weights verified by fingerprint. For the state directory
+it is moot, because the chain repairs it next. It does not change follow-up #170,
+whose subject is a file and therefore untouched by this effect either way.
+
+**W5 as coder-user rewrote it is correct and is adopted.** Pinning grant and mask
+preservation plus listability is the right assertion, and it still fails on an
+emptied list, which is the regression the test exists to catch. The original
+"access list unchanged" wording was my error, not an implementation defect: it
+encoded section 20.8's prediction rather than the property that matters.
+
+**Run 6 row 3 does not change, and it matters more than before.** Re-verifying
+the inventory after activation is now the only end-to-end check that this
+one-level effect is harmless on the real tree rather than on a scratch analogue.
+Add one cheap row beside it:
+
+| Row | Observation | Reading |
+|---|---|---|
+| 5 | after cut 1, record the protected flag and entry count for the three chain directories and for `.synaptic\model-inventory` | the chain directories should each show the Host's two inheritable entries; the inventory should show its original entries preserved and marked explicit. Any emptied list is a stop |
+
+#### 20.20.4 The measurement that would settle the mechanism
+
+Not blocking. The shipped behaviour is already measured benign on the real
+helper, and run 6 observes the real tree. But the account in 20.20.2 is a reading
+of two probes taken on differently shaped trees, and this section now asserts it,
+so it should be confirmed by an experiment that varies one thing:
+
+On one tree, in the B-11-M1 harness, apply the handle call to the root twice on
+two identical copies, once with the non-inheritable descriptor and once with the
+inheritable one, and read back five nodes each: root, child directory, grandchild
+directory, child file, deep file. If the inherit flags are the cause, the
+non-inheritable copy reproduces arm B exactly and the inheritable copy reproduces
+coder-user's result. If both copies show the conversion, the cause is the tree
+shape or the harness and 20.20.2 is wrong.
+
+A second, cheaper question worth the same trip: apply the full three-directory
+chain repair to a tree shaped like the real one and read every node, so run 6's
+row 5 has a predicted end state to be compared against rather than merely
+recorded.
