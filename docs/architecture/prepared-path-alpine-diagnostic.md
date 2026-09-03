@@ -2501,6 +2501,14 @@ Refused, unchanged, with today's error:
 The rule underneath the table is one sentence: **the repair may correct access,
 never shape, and only from the state the filesystem produces by default.**
 
+That sentence carries a premise, and section 20.21 exists because the shipped
+code violated it. "The state the filesystem produces by default" means a state no
+actor decided, and the Host is an actor. If the repair of one chain member can
+alter the state of another, then walking the chain in the wrong order makes the
+Host observe its own footprint at the next member and refuse it as somebody's
+decision. The predicate is correct; the traversal order is what has to keep its
+premise true. Section 20.21.5 rules that order.
+
 ### 20.7 Why content inside the chain is not a security precondition
 
 The dispatch asks whether the directory must be empty, or may hold Host-authored
@@ -2915,7 +2923,7 @@ discovered mid-implementation:
 | 2 | cut 1 reaches the container | `START_UNAVAILABLE` does not recur; the run produces a stage, a durable row and a container reference |
 | 3 | the inventory re-verify still passes **after** activation repaired the chain | re-run the inventory verification once cut 1 has returned, and get the same 25 files, 1 969 841 187 bytes and fingerprint `sha256:0e2a8df2…`. This is the acceptance row for section 20.3 and it is the one that would catch a propagation regression |
 | 4 | if activation fails for any reason, the driver prints a `stderr\|` line naming the frame | this is the acceptance row for section 20.11, and it is the only row that is proved by a failure |
-| 5 | after cut 1, record the protected flag and entry count for the three chain directories and for `.synaptic\model-inventory` | added by section 20.20.3, which retired section 20.8's propagation argument. The chain directories should each show the Host's two inheritable entries; the inventory should show its original entries preserved and marked explicit. **An emptied access list is a stop** — it is the destructive arm A shape, and it fails test W5 as well
+| 5 | after cut 1, record the protected flag, entry count and entry flags for the three chain directories and for `.synaptic\model-inventory` | corrected by section 20.21.8. The chain directories should each show protected with exactly two non-inherited full-access entries at flags `0x03`; the inventory should show its original entries preserved and still marked inherited, NOT converted and NOT protected, which is the measured F: end state of section 20.21.1. This row is now a **volume discriminator**: an inventory that comes back protected with explicit entries means the real tree behaves like the temp volume and B-11-R1 is live on it, which is a stop of its own. **An emptied access list is a stop** either way — it is the destructive arm A shape, and it fails test W5 as well
 
 **Unchanged from earlier rulings, and still owed.**
 
@@ -2934,6 +2942,7 @@ discovered mid-implementation:
 | 20.2 | B-11 cause surfacing. `docker_training.py:686-687` and `:695-696` swallow the cause. Fix: one stderr line carrying the exception class and the innermost `synaptic_host` frame, never the exception text. The driver already prints stderr at `run_prepared_training.py:963-965`, so no driver change |
 | 20.3 | Citation correction. Report section 17.3 and dispatch instruction 2 cite `materialize_model_inventory.py:177` as the Host-side creator of `.synaptic`. That line runs in a container against `/out`. The Host-side creator is `:447` |
 | 20.4 | Citation drift. The P8 docstring cites `docker_staging.py:1686` for the staging call it mirrors; at this baseline that is a storage-schema check and the call is `:1699-1700`. Corrected in the same docstring edit as row 20.2's documentation duty |
+| 20.5 | B-11-R1. The shipped chain repair walks root first. On volumes where an ancestor's protected list is reconciled against existing children, repairing `.synaptic` converts `.synaptic\state` to protected with explicit entries, which section 20.6 must refuse and the validator rejects, wedging the chain permanently and unreachably. Measured absent on `F:` and present on the Windows temp volume, three trials each; `pytest tmp_path` is on the failing volume and the suite passes anyway because every fixture pre-creates the root alone. Fix: repair leaf first in a pass of its own, conditional on W6, fallback variant 3. Discriminator between the two volume classes stated as observed, with `SE_DACL_AUTO_INHERITED` on the child as the hypothesis and a one-read falsifier |
 
 ### 20.18 What this ruling does not settle
 
@@ -3175,9 +3184,15 @@ would narrow the children; in fact a later propagation cannot reach them at all.
 **One consequence is worth stating plainly, because it is the cost.** An
 immediate child directory's grants are frozen as explicit and protected, so they
 will never narrow on their own. For the model inventory that costs nothing, since
-its contents are public weights verified by fingerprint. For the state directory
-it is moot, because the chain repairs it next. It does not change follow-up #170,
-whose subject is a file and therefore untouched by this effect either way.
+its contents are public weights verified by fingerprint.
+
+**Two sentences that stood here are struck; see section 20.21.** They claimed the
+freeze was moot for the state directory because the chain repairs it next, and
+that follow-up #170 was unaffected because its subject is a file. Both are false.
+The freeze on a chain member is not moot, it is disqualifying, and it is the whole
+of B-11-R1. Files are converted too on the volume where the effect fires, so #170's
+subject is reached after all. This is the third claim in this neighbourhood that
+was asserted from a mechanism rather than measured, and the count is the point.
 
 **W5 as coder-user rewrote it is correct and is adopted.** Pinning grant and mask
 preservation plus listability is the right assertion, and it still fails on an
@@ -3193,6 +3208,10 @@ Add one cheap row beside it:
 | Row | Observation | Reading |
 |---|---|---|
 | 5 | after cut 1, record the protected flag and entry count for the three chain directories and for `.synaptic\model-inventory` | the chain directories should each show the Host's two inheritable entries; the inventory should show its original entries preserved and marked explicit. Any emptied list is a stop |
+
+The inventory half of that row is **superseded by section 20.21.8**: on `F:` the
+inventory is not converted at all, so its entries stay inherited. The row as it
+now stands in section 20.16 is the one run 6 is judged against.
 
 #### 20.20.4 The measurement that would settle the mechanism
 
@@ -3213,3 +3232,229 @@ A second, cheaper question worth the same trip: apply the full three-directory
 chain repair to a tree shaped like the real one and read every node, so run 6's
 row 5 has a predicted end state to be compared against rather than merely
 recorded.
+
+### 20.21 Amendment — the freeze is volume-dependent, and root-first wedges the chain permanently (B-11-R1)
+
+Test-host's step 0 (task #174, `metadata.step0_result`; scripts and logs under
+`F:\Code\scratch-b11\step0`) drove the shipped `_ensure_private_storage_directories`
+on synthetic trees, three trials per variant, with the real helpers imported
+read-only from the released checkout. It falsified my ordering prediction on `F:`
+and confirmed the defect on the Windows temp volume. The deciding variable is
+neither the order nor the descriptor. It is the volume.
+
+#### 20.21.1 What was measured
+
+On `F:\Code\scratch-b11\step0`, the shipped root-first order and both proposed
+reorderings **all pass**, and land in an identical end state:
+
+| Node | End state on `F:` |
+|---|---|
+| `.synaptic`, `state`, `docker` | protected, exactly two non-inherited entries, `SYSTEM` and the current user, `FILE_ALL_ACCESS`, flags `0x03` |
+| `model-inventory` | **untouched**: not protected, 11 entries, all still inherited |
+| grandchild directory | untouched, 11 inherited |
+| grandchild file, immediate child file | untouched, 7 inherited |
+
+Nothing is converted, nothing is protected, nothing is emptied, at any node
+outside the chain. The inherited set `F:` carries has mixed flags: `0x13`, `0x10`
+and `0x1B`.
+
+On a tree under `C:\Users\...\AppData\Local\Temp`, the same code and the same
+call **raises** `ValueError("HMAC private storage validation failed")`, three of
+three. Repairing `.synaptic` converts its immediate children to explicit and
+protected. `state` then arrives carrying three explicit entries, fails clauses 3
+and 4 of section 20.6, is therefore not repaired, and validation rejects it.
+`docker` is never reached. That volume's inherited set is three entries, all
+`0x13`.
+
+An immediate child **file**, `marker.txt`, is converted too.
+
+#### 20.21.2 The severity: the repair creates a state its own predicate must refuse
+
+This is worse than B-11, and the difference is worth naming precisely.
+
+B-11 was *refused until fixed*. The operator's directory carried a state the
+validator would not accept, and a fix in the Host made it acceptable. B-11-R1 is
+*refused forever, and unreachable by the repair*. Once `state` has been converted
+it is protected with zero inherited entries, which is exactly the shape section
+20.6 rules a deliberate third-party decision. `_win_never_protected` can never
+admit it again. Test-host confirmed the permanence directly: three consecutive
+`ensure(repair=True)` calls on the same wedged tree all raise.
+
+So the repair, on the affected volume, manufactures the one state its own
+predicate is written to refuse, on the object it is trying to fix, and then
+refuses it. The recovery the predicate leaves available is manual ACL surgery,
+which the operator recipe explicitly tells operators not to perform.
+
+The suite does not see any of this. `pytest`'s `tmp_path` lives on the volume
+where the effect fires, so the Windows tests **run in the failing environment and
+pass**, purely because every fixture pre-creates the chain root alone
+(`test_security.py:750`, and `:864-867` adds a sibling, not a chain member) and
+lets the Host create members two and three, which then carry the private
+descriptor and need no repair. The environment was never the gap. The fixture was.
+
+#### 20.21.3 Two corrections to section 20.20.2
+
+**Files are converted.** Section 20.20.2 said files are not touched because they
+cannot be containers for further inheritance. `marker.txt` was converted. The
+claim is wrong, and it is wrong structurally rather than partially: containment
+was the stated *reason* the effect stops at one level, and the file case shows the
+effect is not about containment at all. Whatever bounds it, it is not that.
+
+**Follow-up #170 is reached.** That follow-up records that the durable rows
+database keeps inherited entries after repair. On the affected volume it does not
+keep them; it gets them frozen explicit and protected when `docker` is repaired.
+Neither outcome is private, so the follow-up's subject is unchanged, but its
+description is now wrong on one volume class and should be restated when it is
+picked up.
+
+#### 20.21.4 What decides whether the freeze fires
+
+**Stated as observed, because I have asserted a mechanism twice in this section
+and been wrong twice.** What is measured is that two NTFS volumes on the same
+machine, running the same code, differ: on one the effect fires on every
+immediate child including files, on the other it fires on nothing at all.
+
+The data supports one hypothesis worth testing, offered as a hypothesis:
+
+> The discriminator is the **child's own descriptor control bits**, specifically
+> `SE_DACL_AUTO_INHERITED` (`0x0400`), not the ACE flags and not the entry count.
+> That bit is what marks an object as participating in automatic inheritance and
+> therefore eligible to be recomputed when an ancestor's list changes. An object
+> whose descriptor lacks it is exempt, which would explain why a whole tree on
+> `F:` is inert while a whole tree on the temp volume is not, and why files behave
+> the same as directories, since the bit is not about containment.
+
+The falsifier is one cheap read: **before** repairing the parent, call
+`GetSecurityDescriptorControl` on the immediate child on both volumes and compare
+the `SE_DACL_AUTO_INHERITED` bit. If the temp child has it set and the `F:` child
+does not, the hypothesis survives and the effect has a name. If both agree, it is
+wrong and the discriminator is something else, and the honest position is the
+observed one above.
+
+The ACE-flag difference is the other candidate and I put less weight on it. `F:`
+carries `0x10` entries, inherited but not inheritable, and `0x1B` entries, which
+are inherit-only and do not apply to the object itself; the temp volume carries
+only `0x13`. That is a real difference, but it describes what the child would
+publish downward, and the effect under study is what happens **to** the child.
+
+**Nothing in the fix depends on resolving this.** The ruling below must be, and
+is, volume-independent. Detecting the volume class and branching on it is
+explicitly refused: it would put a Windows-version-and-filesystem inference on the
+path that decides whether private storage is private.
+
+#### 20.21.5 Ruling — two-pass leaf-first, conditional, with a named fallback
+
+**Repair leaf first, in a pass of its own, before the existing loop.**
+
+Shape. Pass A, over `reversed(chain)`: if the member exists and `repair` is true,
+repair it. Pass B: the existing loop at `security.py:841-855` with the `elif
+repair` branch removed, so it creates missing members root first and validates
+every member unconditionally and last. Evaluating existence in pass A, before any
+creation, is also a more faithful reading of section 20.13 item 1 than the shipped
+code: a member that exists at entry is pre-existing, one created in pass B is the
+Host's own.
+
+Why this and not a wider predicate. The predicate distinguishes states the
+filesystem produced from states an actor decided. Widening it to accept the shape
+the Host itself just produced would make the code unable to tell its own footprint
+from a third party's, which is the tamper mask the predicate exists to prevent.
+Reordering keeps the predicate exactly as it is, and section 20.6's new paragraph
+records why the order is a correctness property rather than a style choice.
+
+Why not change the descriptor. Making the repair descriptor non-inheritable would
+also stop the freeze, and root-first would then work. It is refused: it reopens
+section 20.8's combination, invalidates W1's flag assertions and W5's directory
+clause, and discards the one property the inheritable descriptor was chosen for.
+Ordering is smaller and reversible.
+
+**This ruling is conditional, and the condition is not satisfied yet.** Variants 2
+and 3 were run only on `F:`, where nothing propagates, so they demonstrated only
+that the reorderings are harmless on an inert volume. The step that actually
+matters — that repairing a parent leaves an **already-protected** child alone —
+was never exercised, because on `F:` no child is ever protected by a repair. My
+stated falsifier was not run.
+
+The acceptance test is therefore **W6 on `tmp_path`** (section 20.21.7), which
+runs on the volume where the effect fires. If W6 passes, this ruling is
+confirmed by the only measurement that could have refuted it. If W6 fails, the
+fallback is variant 3 and it is not a preference but a consequence: in a
+straight-line chain, if a parent's write disturbs an already-protected child, then
+no traversal order can avoid it, because every member except the root is some
+member's child. The decision would then have to leave the loop — evaluate the
+predicate on every member before any write, then repair in any order — accepting
+that each write is authorised by a stale observation and that the write to member
+two overwrites a protected list. **Coder-user must not choose between these.** W6
+chooses.
+
+#### 20.21.6 What the fix does not do, and the operator recovery
+
+The fix prevents new wedges. It does not heal an existing one: a `state` that is
+already protected with foreign explicit entries is refused by clause 3 whatever
+the order, which is correct, because from inside the process that state is
+indistinguishable from a third party's decision.
+
+Recovery for an already-wedged tree is to **delete `.synaptic\state` and re-run**.
+That is safe in the wedge scenario specifically, and the reason is worth writing
+down rather than trusting: the wedge can only fire while a chain member is still
+in the never-protected state, which after any successful activation it is not, so
+a wedged tree has never completed an activation and therefore holds no control key
+and no durable rows. If durable rows do exist, `for_docker:705-706` raises on a
+missing key instead, and deletion is **not** safe. An operator who sees the cause
+line naming the validator frame should check for durable rows before deleting
+anything.
+
+One cost of the ruling, on the affected volume only, stated because it is real:
+repairing `docker` first converts `docker`'s own children, so the stage tree and
+the durable rows database are frozen with the operator's broad entries made
+explicit and permanent. Under the shipped order the pass wedged before reaching
+them. This is not a regression introduced by the ordering — it is follow-up #170's
+subject arriving one level deeper, and it is why 20.21.3 says that follow-up needs
+restating.
+
+#### 20.21.7 Tests
+
+| # | Test | Asserts |
+|---|---|---|
+| W6 | **the whole chain pre-created by an ordinary `mkdir`**, on `tmp_path`: `.synaptic`, `state`, `docker`, plus a `stages` child and one immediate child file under `.synaptic` | `for_docker` succeeds; all three chain members end protected with exactly two non-inherited full-access entries at flags `0x03`; the non-chain child keeps every security identifier and mask it had, emptied for none. This is the acceptance test for section 20.21.5 and it must run on `tmp_path` rather than a fixture volume of its own choosing, because `tmp_path` is the volume where the effect fires |
+| P4 | the same whole-chain fixture on POSIX at `0o755` | all three repaired to `0o700` and validated. Passes today; it pins the order-independence that POSIX gets for free, so a later reordering cannot quietly break it |
+
+W1 is renamed to say **root**, not "a chain directory". Reading its current name
+as chain coverage is what made this gap invisible for a whole release cycle, and a
+name that overstates a fixture is a defect in the test even when the assertions are
+right.
+
+W2 through W5, the POSIX tests, the cause-line tests and D1 are unaffected, and so
+is every pin in section 20.15: the reordering changes neither the predicate, the
+descriptor, the validator, the refusal surface nor the error.
+
+#### 20.21.8 Section 20.16 row 5, corrected
+
+Row 5 predicted the inventory would end "preserved and marked explicit". On `F:`
+it ends preserved and still **inherited**, because nothing propagates there at
+all. The row is corrected in place, and it gains a second job: it now discriminates
+which volume class the real tree is in. An inventory that comes back protected with
+explicit entries means `F:` behaves like the temp volume, B-11-R1 is live on the
+real tree, and that is a stop in its own right. The emptied-list stop condition is
+unchanged and was unmet everywhere in step 0.
+
+Run 6 proceeds on `F:` with the variant 1 `F:` readback of section 20.21.1 as row
+5's predicted end state. B-11-R1 does not gate run 6; it gates feature closure and
+the next release.
+
+#### 20.21.9 Replacement for section 20.13 item 1
+
+> 1. `_ensure_private_storage_directories` keeps its required keyword-only
+>    `repair: bool` with no default, and splits into two passes. **Pass A**
+>    iterates `reversed(chain)`; for each member that exists at entry, and only
+>    when `repair` is true, it calls the repair helper. **Pass B** is the loop as
+>    it stands at `security.py:841-855` with the `elif repair` branch removed: it
+>    creates missing members root first and calls `_validate_private_directory` on
+>    every member, unconditionally and last. No other behaviour changes. The repair
+>    helper, the predicate, the descriptor, the validator and the error are all
+>    untouched.
+
+Items 2 through 9 stand as written.
+
+#### 20.21.10 Ledger row
+
+Row 20.5 is added to the section 20.17 table, where the rest of the ledger lives.
