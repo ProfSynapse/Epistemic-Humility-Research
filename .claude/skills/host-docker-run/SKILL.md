@@ -54,9 +54,48 @@ without starting a container.
    The Host repairs the chain at activation. Do not pre-protect `.synaptic`, and
    do not change this step to create it differently — see the note under
    prerequisite 9.
-4. **Docker Desktop with the Linux engine**, context `desktop-linux`, endpoint
-   `npipe:////./pipe/dockerDesktopLinuxEngine`. Do not pass an endpoint flag to
-   the Host: it probes and re-asserts the descriptor itself.
+4. **Docker Desktop with the Linux engine RUNNING**, context `desktop-linux`,
+   endpoint `npipe:////./pipe/dockerDesktopLinuxEngine`. Do not pass an endpoint
+   flag to the Host. It does not read your context store at all: the prepared
+   composition CONSTRUCTS that endpoint from the two constants above and asserts
+   them (`docker_prepared_composition.py:149-158`), then proves the daemon alive
+   with an explicit `--host` version probe. That is blocker B-13.
+
+   **The daemon check is the version probe, and nothing else.** Run it once
+   before the first run of a session:
+
+   ```
+   docker.exe --host npipe:////./pipe/dockerDesktopLinuxEngine version \
+     --format "{{.Server.Version}}"
+   ```
+
+   Expect exit 0 and a version string; `29.3.1` when this was measured. Exit 1
+   means the engine is not up, whatever else reports otherwise.
+
+   **`docker context inspect` and `docker desktop status` do NOT prove the
+   engine is up.** With Docker Desktop stopped, `docker.exe context inspect
+   desktop-linux` still exits **0**, with stdout byte-identical to the running
+   case, because it reads a local config store and never opens the pipe.
+   `docker desktop status` and `docker desktop start` also misreport while the
+   engine is absent. All three were measured with the engine stopped and again
+   with it running (section 22.7). Do not substitute any of them for the probe.
+
+   The driver checks this as **P10**, immediately after P2 and before anything
+   else, failing with `P10-daemon-unavailable` and printing the remedy. P2 and
+   P10 are not redundant: P2 proves the endpoint CONSTANT is the one the Host
+   will assert, P10 proves that endpoint ANSWERS.
+
+   P10 issues the probe under the composition's own child environment, which is
+   exactly `SystemRoot`, `TEMP`, `TMP` and `WINDIR` by construction
+   (`docker_prepared_composition.py:116`, enforced by `docker_v1/model.py:1144`
+   and asserted by test E1 on every suite run), so **you never check that key set
+   yourself** and a widening of it would fail the suite rather than a run. It
+   carries **no `USERPROFILE`**, deliberately, and that absence is exactly what
+   B-13 was: with no home, `docker context inspect` resolves a relative `.docker`
+   path and exits 1. If one of the four keys is missing from your own shell, the
+   driver fails with `P10-environment-incomplete` and names the key, because the
+   Host folds that case into a message about the docker executable instead
+   (`docker_prepared_composition.py:145`).
 5. **Exactly one `docker.exe` on the Windows PATH.** WSL carries two other
    docker binaries and they must not be the ones found. The composition counts
    candidates and raises unless there is exactly one.
@@ -292,8 +331,10 @@ so all three would start jupyter and time out at `T1-timeout` — the exact
 disguised failure these assertions exist to prevent. The bind probe is
 unaffected: it uses `python:3.12-slim`, not the profile image.
 
-**P8 runs before A1**, after the bind probe, so the full order is `P1..P7` →
-`B1` → `P8` → `A1` → `A2` → `A3` → `A4`. P8 and A2 are not redundant: P8 probes
+**P8 runs before A1**, after the bind probe, so the full order is `P1` → `P2` →
+`P10` → `P3..P7` → `P9` → `B1` → `P8` → `A1` → `A2` → `A3` → `A4`. P10 sits
+directly after P2 because a stopped engine should cost one command, not a full
+sweep including P7's network read. P8 and A2 are not redundant: P8 probes
 the real **stage parent** and names the cause and the remedy for B-9, while A2
 probes a scratch directory and keeps its continuity across earlier runs.
 
@@ -337,6 +378,40 @@ GPU, mount, or image problem.
 
 A second reason a run looks broken when it is not: while the container runs, the
 observe cut returns the record unchanged. That is not a stall.
+
+### The cause line carries a class and a frame, never a message
+
+An activation failure prints one line like this:
+
+```
+    stderr| synaptic-host: START_UNAVAILABLE ValueError at synaptic_host/security.py:422 in _win_validate_acl
+```
+
+Four fields, and only four: the durable result code, the exception CLASS, the
+in-package file and line, and the enclosing function.
+
+**The exception's own message text is not in that line, and is not anywhere else
+you can see.** It is excluded deliberately (`_report_admission_cause`,
+`docker_training.py:583-613`). Several of those messages are written for the
+Host's own callers and name a condition you did not cause: a missing environment
+key surfaces as a complaint about the docker executable
+(`docker_prepared_composition.py:145`). So **never match on message text.**
+Nothing in this skill asks you to look for a phrase, and any procedure that does
+is matching a string the operator never receives. Match on the class and the
+frame.
+
+The frame is the part that identifies the failure. The line number moves
+whenever anything above it changes, so read `file` and `in <function>` as the
+identity and treat the number as a pointer into the current source.
+
+*One paragraph, to be deleted when follow-up #207 lands.* Today the frame is the
+**deepest** in-package frame (`_innermost_package_frame`,
+`docker_training.py:561-580`). Several modules define a shared reporter called
+`_fail`, and `docker_v1/model.py` also has `_platform_fail`. When the deepest
+frame is one of those, the line names the messenger rather than the cause and
+tells you almost nothing on its own; read the CALLER of that frame. Amendment
+22.14 replaces the single frame with the deepest two, which removes this step.
+Until it lands, expect it.
 
 ### `P9-locked-project-inputs`, and why project size is not a precondition
 

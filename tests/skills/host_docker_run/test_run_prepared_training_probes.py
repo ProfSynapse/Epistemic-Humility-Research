@@ -930,3 +930,178 @@ def test_p9_bounds_are_restated_from_the_host_with_a_citation():
     assert driver._MAX_PROJECT_EXPANDED_BYTES == 512 * 1024 * 1024
     assert driver._MAX_PROJECT_ENTRIES == 20_000
     assert "docker_staging.py:45-47" in source
+
+
+# --------------------------------------------------------------------------
+# P10-daemon-alive (blocker B-13, section 22.7)
+#
+# `docker context inspect` is not a daemon check: with Docker Desktop stopped it
+# exits 0 with stdout byte-identical to the running case (measurement #203). The
+# explicit `--host ... version` probe is the only one that separates the two
+# states, and P10 issues it under the composition's own four-key environment.
+# --------------------------------------------------------------------------
+
+_ENDPOINT = "npipe:////./pipe/dockerDesktopLinuxEngine"
+_DOCKER = r"C:\Program Files\Docker\Docker\resources\bin\docker.exe"
+_SERVER_VERSION = "29.3.1"
+
+
+def _fake_version(*, returncode: int = 0, stdout: str = _SERVER_VERSION,
+                  stderr: str = "", seen: dict | None = None):
+    """A `_run` replacement answering the version probe and recording its call."""
+
+    def run(argv, *, timeout=300, env=None):
+        assert argv[0] == _DOCKER, argv
+        assert argv[1:3] == ["--host", _ENDPOINT], argv
+        assert argv[3] == "version", argv
+        assert "--format" in argv and "{{.Server.Version}}" in argv, argv
+        if seen is not None:
+            seen["argv"] = argv
+            seen["env"] = env
+        return _completed(argv, returncode, stdout, stderr)
+
+    return run
+
+
+def _four_keys(monkeypatch, **overrides):
+    """Put exactly the composition's four keys in the environment."""
+    values = {"SystemRoot": r"C:\Windows", "TEMP": r"C:\Temp",
+              "TMP": r"C:\Temp", "WINDIR": r"C:\Windows"}
+    values.update(overrides)
+    for key, value in values.items():
+        if value is None:
+            monkeypatch.delenv(key, raising=False)
+        else:
+            monkeypatch.setenv(key, value)
+
+
+def test_p10_passes_and_reports_the_server_version(monkeypatch, capsys):
+    _four_keys(monkeypatch)
+    monkeypatch.setattr(driver, "_run", _fake_version())
+
+    driver._check_p10_daemon_alive(_DOCKER, _ENDPOINT)
+
+    out = capsys.readouterr().out
+    assert "PASS P10-daemon-alive" in out
+    assert _SERVER_VERSION in out
+
+
+def test_p10_fails_clean_when_the_probe_exits_non_zero(monkeypatch, capsys):
+    """THE red case. Exit 1 is the stopped-engine shape measured in #203.
+
+    It must raise a NAMED failure, not fall through to the rest of the sweep:
+    every later precondition would then report its own unrelated symptom.
+    """
+    _four_keys(monkeypatch)
+    monkeypatch.setattr(
+        driver, "_run",
+        _fake_version(returncode=1, stdout="",
+                      stderr="error during connect: open //./pipe/... "
+                             "The system cannot find the file specified."),
+    )
+
+    with pytest.raises(driver.CheckFailure) as raised:
+        driver._check_p10_daemon_alive(_DOCKER, _ENDPOINT)
+
+    message = str(raised.value)
+    assert message.startswith("P10-daemon-unavailable")
+    assert "exit 1" in message
+    # The remedy, and the two commands that would lie to the operator here.
+    assert "Docker Desktop" in message
+    assert "context inspect" in message
+    assert "desktop status" in message
+
+
+def test_p10_runs_the_probe_under_exactly_the_compositions_four_keys(monkeypatch):
+    """The environment IS the B-13 variable, so an inherited one is a weaker check.
+
+    A probe run under the operator's own environment carries USERPROFILE and
+    would pass in precisely the case the Host fails.
+    """
+    _four_keys(monkeypatch)
+    monkeypatch.setenv("USERPROFILE", r"C:\Users\operator")
+    seen: dict = {}
+    monkeypatch.setattr(driver, "_run", _fake_version(seen=seen))
+
+    driver._check_p10_daemon_alive(_DOCKER, _ENDPOINT)
+
+    assert set(seen["env"]) == set(driver._COMPOSITION_ENVIRONMENT_KEYS)
+    assert "USERPROFILE" not in seen["env"]
+
+
+def test_p10_reports_key_names_and_never_key_values(monkeypatch, capsys):
+    """No secrets in probe output. The key set is the fact; the values are not."""
+    _four_keys(monkeypatch, TEMP=r"C:\Users\operator\AppData\Local\Temp")
+    monkeypatch.setattr(driver, "_run", _fake_version())
+
+    driver._check_p10_daemon_alive(_DOCKER, _ENDPOINT)
+
+    out = capsys.readouterr().out
+    for key in driver._COMPOSITION_ENVIRONMENT_KEYS:
+        assert key in out
+    assert r"C:\Users\operator\AppData\Local\Temp" not in out
+    assert r"C:\Windows" not in out
+
+
+def test_p10_names_the_missing_key_the_host_would_not_name(monkeypatch):
+    """A separate tag because the remedy is the shell, not Docker.
+
+    A missing key reaches the Host as a KeyError folded into
+    `one absolute Windows Docker executable is required`
+    (`docker_prepared_composition.py:145`), which sends the operator after the
+    wrong thing entirely.
+    """
+    _four_keys(monkeypatch, WINDIR=None)
+
+    def unreachable(argv, *, timeout=300, env=None):
+        raise AssertionError("the probe must not run with an incomplete environment")
+
+    monkeypatch.setattr(driver, "_run", unreachable)
+
+    with pytest.raises(driver.CheckFailure) as raised:
+        driver._check_p10_daemon_alive(_DOCKER, _ENDPOINT)
+
+    message = str(raised.value)
+    assert message.startswith("P10-environment-incomplete")
+    assert "WINDIR" in message
+
+
+def test_p10_does_not_gate_on_an_empty_version_with_a_zero_exit(monkeypatch, capsys):
+    """The ruling makes a NON-ZERO exit the gate. Zero with no version is unmeasured.
+
+    Refusing there would be the driver inventing a condition the Host's own
+    liveness check does not have (`docker_prepared_composition.py:172-178`
+    tests the outcome, not the payload).
+    """
+    _four_keys(monkeypatch)
+    monkeypatch.setattr(driver, "_run", _fake_version(stdout=""))
+
+    driver._check_p10_daemon_alive(_DOCKER, _ENDPOINT)
+
+    out = capsys.readouterr().out
+    assert "WARN P10-daemon-alive" in out
+    assert "PASS P10-daemon-alive" not in out
+
+
+def test_p10_runs_after_p2_and_before_every_other_precondition():
+    """Ordering: a stopped engine costs one command, not a full sweep."""
+    source = _DRIVER.read_text(encoding="utf-8")
+    call = source.index("_check_p10_daemon_alive(args.docker, args.endpoint)")
+    p2 = source.index("_check_p2_endpoint(args.docker", 0)
+    p3 = source.index("_check_p3_drive_letter_root(project_root)", call)
+    assert p2 < call < p3
+
+
+def test_p10_key_set_is_restated_from_the_host_with_a_citation():
+    """Restated, not imported; the driver has never taken the synaptic_host seam.
+
+    The contract itself is enforced by `DockerCLIEnvironmentV1.__post_init__`
+    (`docker_v1/model.py:1144`) and asserted by test E1, so this driver does not
+    re-derive it. It only has to name where the copy came from.
+    """
+    source = _DRIVER.read_text(encoding="utf-8")
+    assert driver._COMPOSITION_ENVIRONMENT_KEYS == (
+        "SystemRoot", "TEMP", "TMP", "WINDIR",
+    )
+    assert "docker_prepared_composition.py:116" in source
+    assert "model.py:1144" in source

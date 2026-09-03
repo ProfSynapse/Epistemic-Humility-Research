@@ -109,6 +109,19 @@ _PROBE_IMAGE = "python:3.12-slim"
 # name a true cause.
 _CONTAINER_ENTRYPOINT = "env"
 
+# The exact environment the prepared composition hands its docker.exe children
+# (`docker_prepared_composition.py:116`, enforced by
+# `docker_v1/model.py:1144` and asserted by test E1). Restated here, not
+# imported: this driver is a checked-in script outside the package and has
+# never taken that seam. P10 is the only probe that uses it.
+#
+# Deliberately NO `USERPROFILE`. That absence is blocker B-13: without a home,
+# `docker context inspect` resolves a RELATIVE `.docker` path and exits 1, so
+# the composition constructs the endpoint from constants instead and proves the
+# daemon with an explicit `--host` version probe (section 22.6). P10 issues that
+# same probe, under that same environment, before a run is issued.
+_COMPOSITION_ENVIRONMENT_KEYS = ("SystemRoot", "TEMP", "TMP", "WINDIR")
+
 # Conservative loop bounds. Both are arguments; these are the defaults.
 _DEFAULT_MAX_CUTS = 40
 _DEFAULT_MAX_SECONDS = 3600
@@ -139,10 +152,22 @@ def _fail(check: str, detail: str) -> None:
     raise CheckFailure(f"{check}: {detail}")
 
 
-def _run(argv: list[str], *, timeout: int = 300) -> subprocess.CompletedProcess:
+def _run(
+    argv: list[str], *, timeout: int = 300, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess:
+    """Run a child and capture it. `env` REPLACES the environment when given.
+
+    Every probe but P10 inherits this process's environment, which is the
+    operator's own shell. P10 alone passes an explicit `env`, because its whole
+    purpose is to reproduce the child the prepared composition issues, and that
+    child runs under a hardened environment of exactly four keys
+    (`docker_prepared_composition.py:116`). An inherited environment would make
+    P10 a weaker check than the thing it stands in for.
+    """
     print(f"    $ {subprocess.list2cmdline(argv)}", flush=True)
     return subprocess.run(
-        argv, text=True, capture_output=True, check=False, timeout=timeout
+        argv, text=True, capture_output=True, check=False, timeout=timeout,
+        env=env,
     )
 
 
@@ -196,6 +221,90 @@ def _check_p2_endpoint(docker: str, context_name: str, expected: str) -> None:
     if actual != expected:
         _fail("P2-endpoint", f"expected {expected!r}, got {actual!r}")
     print(f"    PASS P2-endpoint: {actual}")
+
+
+def _check_p10_daemon_alive(docker: str, endpoint: str) -> None:
+    """The engine answers the SAME probe the composition uses to prove it alive.
+
+    Blocker B-13, section 22.7. `docker context inspect` is NOT a daemon check:
+    test-host measured it with Docker Desktop STOPPED (task #203) and it exits 0
+    with stdout byte-identical to the running case, because it reads a local
+    config store and never opens the pipe. `docker desktop status` and
+    `docker desktop start` also misreport while the engine is absent. The
+    explicit `--host ... version --format {{.Server.Version}}` probe is the only
+    one of the three that separates the two states: exit 1 stopped, exit 0
+    running (29.3.1 measured).
+
+    So P2 proving the endpoint CONSTANT and P10 proving the endpoint ANSWERS are
+    two different facts, and only the second one is a daemon check.
+
+    This is the same command the prepared composition issues at
+    `docker_prepared_composition.py:172-178` after constructing the endpoint,
+    run under the same four-key environment. Reproducing the composition's child
+    exactly is the point: the environment IS the B-13 variable, and a probe under
+    the operator's own inherited environment would pass in the one case the Host
+    fails.
+
+    Two tags, because the remedies differ:
+
+    - `P10-environment-incomplete`: one of the four keys is absent from the
+      operator's environment, so the composition's own child cannot be built.
+      The Host reports this as `one absolute Windows Docker executable is
+      required` (`docker_prepared_composition.py:145`, a `KeyError` folded into
+      that one message), which names the executable and not the missing key.
+      This probe names the key instead. The remedy is the shell, not Docker.
+    - `P10-daemon-unavailable`: the probe ran and the engine did not answer.
+      The remedy is to start Docker Desktop and wait for the Linux engine.
+
+    Key NAMES are printed; values never are. Ordered right after P2 and before
+    everything else, so a stopped engine costs one command rather than a full
+    precondition sweep including P7's network read.
+    """
+    missing = [
+        key for key in _COMPOSITION_ENVIRONMENT_KEYS if not os.environ.get(key)
+    ]
+    if missing:
+        _fail(
+            "P10-environment-incomplete",
+            f"the prepared composition requires {len(_COMPOSITION_ENVIRONMENT_KEYS)} "
+            f"environment keys and this shell is missing {', '.join(missing)}; "
+            "the Host folds that into a message about the docker executable, so "
+            "it would not name the key. Run from a normal Windows shell",
+        )
+    environment = {key: os.environ[key] for key in _COMPOSITION_ENVIRONMENT_KEYS}
+    print(
+        "    P10-daemon-alive: child environment keys = "
+        f"{', '.join(_COMPOSITION_ENVIRONMENT_KEYS)} "
+        f"({len(_COMPOSITION_ENVIRONMENT_KEYS)} keys, names only, no values); "
+        "restated from docker_prepared_composition.py:116"
+    )
+    completed = _run(
+        [docker, "--host", endpoint, "version", "--format", "{{.Server.Version}}"],
+        env=environment,
+    )
+    if completed.returncode != 0:
+        _fail(
+            "P10-daemon-unavailable",
+            f"exit {completed.returncode} from the version probe against {endpoint}: "
+            f"{(completed.stderr or completed.stdout).strip() or 'no output'}. "
+            "Start Docker Desktop and wait for the Linux engine, then re-run. "
+            "Do NOT read `docker context inspect` or `docker desktop status` as "
+            "proof: section 22.7 measured both reporting success with the engine "
+            "stopped",
+        )
+    version = completed.stdout.strip()
+    if not version:
+        # Reported, not gated. The ruling makes a NON-ZERO exit the gate, and a
+        # zero exit with no version is a shape nobody has measured; refusing a
+        # run on it would be this driver inventing a condition the Host does not
+        # have.
+        print(
+            "    WARN P10-daemon-alive: the probe exited 0 but printed no server "
+            "version. The Host's own liveness check accepts this, so the run is "
+            "not gated on it; treat an unexpected later failure as related"
+        )
+        return
+    print(f"    PASS P10-daemon-alive: server {version} answered on {endpoint}")
 
 
 def _check_p3_drive_letter_root(project_root: Path) -> None:
@@ -1321,6 +1430,12 @@ def main(argv: list[str] | None = None) -> int:
         print("=== preconditions (section 9.1) ===")
         _check_p1_single_docker(args.docker)
         _check_p2_endpoint(args.docker, args.context, args.endpoint)
+        # Immediately after P2 and before everything else. P2 proves the
+        # endpoint CONSTANT; P10 proves the endpoint ANSWERS, which `docker
+        # context inspect` cannot (section 22.7, measurement #203). Placing it
+        # here means a stopped engine costs one command instead of a full
+        # precondition sweep including P7's network read.
+        _check_p10_daemon_alive(args.docker, args.endpoint)
         _check_p3_drive_letter_root(project_root)
         profile = _load_profile(project_root)
         distro, drive_mount_root = _check_p5_drive_mount_root(profile)
