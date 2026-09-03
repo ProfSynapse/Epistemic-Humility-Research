@@ -2915,6 +2915,7 @@ discovered mid-implementation:
 | 2 | cut 1 reaches the container | `START_UNAVAILABLE` does not recur; the run produces a stage, a durable row and a container reference |
 | 3 | the inventory re-verify still passes **after** activation repaired the chain | re-run the inventory verification once cut 1 has returned, and get the same 25 files, 1 969 841 187 bytes and fingerprint `sha256:0e2a8df2…`. This is the acceptance row for section 20.3 and it is the one that would catch a propagation regression |
 | 4 | if activation fails for any reason, the driver prints a `stderr\|` line naming the frame | this is the acceptance row for section 20.11, and it is the only row that is proved by a failure |
+| 5 | after cut 1, record the protected flag and entry count for the three chain directories and for `.synaptic\model-inventory` | added by section 20.20.3, which retired section 20.8's propagation argument. The chain directories should each show the Host's two inheritable entries; the inventory should show its original entries preserved and marked explicit. **An emptied access list is a stop** — it is the destructive arm A shape, and it fails test W5 as well
 
 **Unchanged from earlier rulings, and still owed.**
 
