@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import inspect
-import io
 import json
 import os
 import stat
 import subprocess
-import tarfile
 from pathlib import Path
 from pathlib import PurePosixPath
 from types import SimpleNamespace
@@ -21,12 +19,11 @@ from synaptic_host.docker_staging import (
     _cleanup_unpromoted_stage,
     _cleanup_windows_stage,
     _copy_inventory,
-    _extract_link_free,
-    _git_archive,
     _load_locked_closure,
     _release_windows_stage,
     _source_manifest,
     _stage_locked_closure,
+    _stage_locked_project_inputs,
     _verify_artifact_topology,
     _verify_inventory_at,
     _verify_worker_closure_binding,
@@ -286,35 +283,271 @@ def _git(repository: Path, *arguments: str) -> str:
     ).stdout.strip()
 
 
-def test_git_archive_reads_the_exact_commit_not_worktree_bytes(tmp_path: Path) -> None:
+# B-12 (architecture section 21.12).  `_git_archive` and `_extract_link_free`
+# are gone with the whole-superproject stage they served.  The two tests that
+# covered them are retired by the lead's ruling on task #187: S5 below
+# re-expresses "staging reads the commit, never the worktree" on the path that
+# now stages, and S7 re-expresses the link refusal, which is now
+# `_git_selected_blobs` refusing a member that is not a regular blob at the
+# locked commit rather than a tar extractor refusing a SYMTYPE entry.
+
+
+def _descriptor(kind: str, path: str, payload: bytes) -> dict[str, object]:
+    """One `source_lock.inputs` entry, in the shape `docker_training._descriptor`
+    writes it (docker_training.py:104-116)."""
+
+    return {
+        "kind": kind,
+        "ref": "project://" + path,
+        "path": path,
+        "git_object_id": "0" * 40,
+        "size_bytes": len(payload),
+        "sha256": hashlib.sha256(payload).hexdigest(),
+    }
+
+
+@pytest.fixture
+def locked_inputs_repository(tmp_path: Path):
+    """A repository holding the two project inputs a source lock records."""
+
     repository = tmp_path / "repository"
-    repository.mkdir()
+    (repository / "training/smokes").mkdir(parents=True)
+    (repository / "training/fixtures").mkdir(parents=True)
+    config = b'{"method": "sft"}\n'
+    dataset = b'{"messages": []}\n'
+    (repository / "training/smokes/docker-sft.json").write_bytes(config)
+    (repository / "training/fixtures/modal-smoke.jsonl").write_bytes(dataset)
+    # Bulk content the lock does not record.  Small here: S1 in
+    # tests/synaptic_host/test_docker_training.py carries the real bound.
+    (repository / "datasets").mkdir()
+    (repository / "datasets/corpus.bin").write_bytes(b"unstaged" * 64)
     _git(repository, "init", "-b", "main")
     _git(repository, "config", "user.email", "staging@example.invalid")
     _git(repository, "config", "user.name", "Staging Test")
-    source = repository / "source.txt"
-    source.write_text("committed\n", encoding="utf-8")
-    _git(repository, "add", "source.txt")
+    _git(repository, "add", "-A")
     _git(repository, "commit", "-m", "fixture")
     commit = _git(repository, "rev-parse", "HEAD")
-    source.write_text("uncommitted\n", encoding="utf-8")
+    descriptors = (
+        _descriptor(
+            "training-config", "training/smokes/docker-sft.json", config,
+        ),
+        _descriptor(
+            "training-dataset", "training/fixtures/modal-smoke.jsonl", dataset,
+        ),
+    )
+    return SimpleNamespace(
+        path=repository,
+        commit=commit,
+        descriptors=descriptors,
+        config=config,
+        dataset=dataset,
+    )
 
-    destination = tmp_path / "destination"
-    _extract_link_free(_git_archive(repository, commit), destination)
 
-    assert (destination / "source.txt").read_text(encoding="utf-8") == "committed\n"
+def test_staged_project_inputs_are_exactly_the_locked_set(
+    tmp_path: Path, locked_inputs_repository,
+) -> None:
+    """B-12 (section 21.14 test S2), at the helper rather than through a run."""
+
+    destination = tmp_path / "project"
+    _stage_locked_project_inputs(
+        locked_inputs_repository.path,
+        locked_inputs_repository.commit,
+        locked_inputs_repository.descriptors,
+        destination,
+    )
+
+    assert {
+        path.relative_to(destination).as_posix()
+        for path in destination.rglob("*") if path.is_file()
+    } == {
+        descriptor["path"]
+        for descriptor in locked_inputs_repository.descriptors
+    }
+    assert not (destination / "datasets").exists()
 
 
-def test_link_free_extraction_rejects_symlinks(tmp_path: Path) -> None:
-    payload = io.BytesIO()
-    with tarfile.open(fileobj=payload, mode="w") as archive:
-        member = tarfile.TarInfo("redirect")
-        member.type = tarfile.SYMTYPE
-        member.linkname = "outside"
-        archive.addfile(member)
+def test_staged_project_input_digest_mismatch_is_refused_before_any_write(
+    tmp_path: Path, locked_inputs_repository,
+) -> None:
+    """B-12 (section 21.14 test S3).
 
-    with pytest.raises(ValueError, match="link or special"):
-        _extract_link_free(payload.getvalue(), tmp_path / "destination")
+    The digest is compared to the blob at the commit before the destination
+    exists, so a refusal leaves nothing staged.  Asserting the destination is
+    absent is what distinguishes "checked before the write" from "checked
+    after"; a check that ran afterwards would pass the message assertion.
+    """
+
+    config, dataset = locked_inputs_repository.descriptors
+    tampered = dict(dataset)
+    tampered["sha256"] = hashlib.sha256(b"other").hexdigest()
+    destination = tmp_path / "project"
+
+    with pytest.raises(ValueError, match="differs from its locked digest"):
+        _stage_locked_project_inputs(
+            locked_inputs_repository.path,
+            locked_inputs_repository.commit,
+            (config, tampered),
+            destination,
+        )
+
+    assert not destination.exists()
+
+
+def test_staged_project_input_size_and_empty_read_have_distinct_messages(
+    tmp_path: Path, locked_inputs_repository,
+) -> None:
+    """B-12 (section 21.14 test S4), the section 21.8 split.
+
+    Two predicates, two messages.  The empty case is a committed zero-byte
+    input whose descriptor records the truth about it, so only the emptiness
+    predicate can fire; recording a wrong size instead would have reported the
+    size message and left the empty branch unmeasured.
+    """
+
+    config, dataset = locked_inputs_repository.descriptors
+    resized = dict(dataset)
+    resized["size_bytes"] = dataset["size_bytes"] + 1
+    with pytest.raises(ValueError, match="differs from its locked size"):
+        _stage_locked_project_inputs(
+            locked_inputs_repository.path,
+            locked_inputs_repository.commit,
+            (config, resized),
+            tmp_path / "resized",
+        )
+
+    empty_path = "training/fixtures/empty.jsonl"
+    locked_inputs_repository.path.joinpath(empty_path).write_bytes(b"")
+    _git(locked_inputs_repository.path, "add", "-A")
+    _git(locked_inputs_repository.path, "commit", "-m", "empty input")
+    commit = _git(locked_inputs_repository.path, "rev-parse", "HEAD")
+    empty = _descriptor("training-dataset", empty_path, b"")
+    assert empty["size_bytes"] == 0
+
+    with pytest.raises(ValueError, match="is empty"):
+        _stage_locked_project_inputs(
+            locked_inputs_repository.path, commit, (config, empty),
+            tmp_path / "empty",
+        )
+
+
+def test_staged_project_input_reads_the_commit_not_the_dirty_worktree(
+    tmp_path: Path, locked_inputs_repository,
+) -> None:
+    """B-12 (section 21.14 test S5).
+
+    Dirty the checkout at the dataset path first.  The staged bytes must equal
+    the blob at the locked commit, which the recorded digest also asserts, so
+    the equality is stated against `git show` rather than against the constant
+    the fixture happens to hold.
+    """
+
+    dataset_path = "training/fixtures/modal-smoke.jsonl"
+    locked_inputs_repository.path.joinpath(dataset_path).write_bytes(
+        b'{"messages": ["uncommitted"]}\n'
+    )
+    destination = tmp_path / "project"
+
+    _stage_locked_project_inputs(
+        locked_inputs_repository.path,
+        locked_inputs_repository.commit,
+        locked_inputs_repository.descriptors,
+        destination,
+    )
+
+    committed = subprocess.run(
+        (
+            "git", "-C", str(locked_inputs_repository.path), "show",
+            f"{locked_inputs_repository.commit}:{dataset_path}",
+        ),
+        check=True, capture_output=True, timeout=30,
+    ).stdout
+    staged = destination.joinpath(*PurePosixPath(dataset_path).parts)
+    assert staged.read_bytes() == committed
+    assert staged.read_bytes() != locked_inputs_repository.path.joinpath(
+        dataset_path
+    ).read_bytes()
+
+
+def test_staging_the_same_locked_inputs_twice_gives_one_manifest_digest(
+    tmp_path: Path, locked_inputs_repository,
+) -> None:
+    """B-12 (section 21.14 test S6), the pin section 21.4 names.
+
+    The risk the ruling engineers against is a scope that is not covered by a
+    digest, which would let two runs at the same lock stage different trees and
+    report success both times.  `_source_manifest` walks what was staged, so
+    equality of its digest across two stages is what makes the scope itself
+    part of the recorded identity.
+    """
+
+    digests = []
+    for index in range(2):
+        destination = tmp_path / f"project-{index}"
+        _stage_locked_project_inputs(
+            locked_inputs_repository.path,
+            locked_inputs_repository.commit,
+            locked_inputs_repository.descriptors,
+            destination,
+        )
+        _entries, digest = _source_manifest(destination)
+        digests.append(digest)
+
+    assert digests[0] == digests[1]
+    # Counter-test the equality: the digest is a function of what was staged,
+    # not a constant. A tree with one more file must digest differently, or the
+    # assertion above would hold for a manifest that measured nothing.
+    other = tmp_path / "project-other"
+    _stage_locked_project_inputs(
+        locked_inputs_repository.path,
+        locked_inputs_repository.commit,
+        locked_inputs_repository.descriptors,
+        other,
+    )
+    other.joinpath("extra.txt").write_bytes(b"extra\n")
+    assert _source_manifest(other)[1] != digests[0]
+
+
+def test_staged_project_input_that_is_a_symlink_at_the_commit_is_refused(
+    tmp_path: Path, locked_inputs_repository,
+) -> None:
+    """B-12 (section 21.14, the link property ported from the retired
+    `test_link_free_extraction_rejects_symlinks` by the lead's ruling on #187).
+
+    A descriptor naming a path that is not a regular blob at the locked commit
+    is refused by `_git_selected_blobs`, before anything is written.  Committed
+    with `git update-index` so the property holds on a host whose filesystem
+    will not create a symlink.
+    """
+
+    link_path = "training/fixtures/redirect.jsonl"
+    blob = subprocess.run(
+        (
+            "git", "-C", str(locked_inputs_repository.path),
+            "hash-object", "-w", "--stdin",
+        ),
+        input=b"../../../outside", check=True, capture_output=True, timeout=30,
+    ).stdout.decode("ascii").strip()
+    _git(
+        locked_inputs_repository.path, "update-index", "--add",
+        "--cacheinfo", f"120000,{blob},{link_path}",
+    )
+    _git(locked_inputs_repository.path, "commit", "-m", "symlink input")
+    commit = _git(locked_inputs_repository.path, "rev-parse", "HEAD")
+    assert _git(
+        locked_inputs_repository.path, "ls-tree", commit, "--", link_path,
+    ).split()[0] == "120000"
+    descriptor = _descriptor("training-dataset", link_path, b"../../../outside")
+    destination = tmp_path / "project"
+
+    with pytest.raises(ValueError, match="invalid member"):
+        _stage_locked_project_inputs(
+            locked_inputs_repository.path, commit,
+            (locked_inputs_repository.descriptors[0], descriptor),
+            destination,
+        )
+
+    assert not destination.exists()
 
 
 def test_model_inventory_is_explicit_sorted_and_content_authenticated(

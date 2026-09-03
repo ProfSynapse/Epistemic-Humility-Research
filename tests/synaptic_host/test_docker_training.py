@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import ast
 import base64
+import contextlib
 import hashlib
 import hmac
 import importlib
 import inspect
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -270,6 +272,82 @@ def _ingress(project: Path, engine: Path) -> TrainingRunIngressV1:
     )
     assert type(value) is TrainingRunIngressV1, getattr(value, "code", None)
     return value
+
+
+_ENGINE_BOUND_HOST_ATTRIBUTES = (
+    "docker_staging", "docker_model_inventory", "docker_training",
+    "docker_prepared_composition",
+    "docker_execution", "docker_execution_state", "security",
+    "sqlite_repository", "docker_v1",
+)
+
+
+def _is_engine_bound_module(name: str) -> bool:
+    """True for a module whose identity is tied to ONE engine checkout.
+
+    The same set `_isolated_engine_import_state` swaps: the engine packages
+    themselves, and the `synaptic_host` modules that hold direct references to
+    engine types.  Those references are identity-checked, not duck-typed --
+    `resolve_docker_model_inventory_v1` (docker_model_inventory.py:205)
+    requires `type(training_input) is TrainingInputV1` -- so a module bound to
+    the first engine import rejects an input parsed by the second.
+    """
+    return bool(
+        name == "synaptic_tuner" or name.startswith("synaptic_tuner.")
+        or name == "tuner" or name.startswith("tuner.")
+        or name == "synaptic_host.docker_v1"
+        or name.startswith("synaptic_host.docker_v1.")
+        or name in {
+            f"synaptic_host.{attribute}"
+            for attribute in _ENGINE_BOUND_HOST_ATTRIBUTES
+        }
+    )
+
+
+@contextlib.contextmanager
+def _second_engine_checkout():
+    """Admit a SECOND engine root for the duration of the block.
+
+    `cli._load_training_input` admits exactly one engine root per process: a
+    warm contract cache refuses a different root (cli.py:755) and a cold one
+    refuses to import while any `synaptic_tuner` module is resident
+    (cli.py:737-742).  Both refusals return BOOTSTRAP_UNAVAILABLE.  A project
+    that carries its own submodule checkout is a legitimate second root -- the
+    source proof requires it, since `prove` compares the engine HEAD against
+    the project's own gitlink (docker_training.py:238-241) -- so swap the
+    cache and every engine-bound module out for the block, and put the first
+    root's set back afterwards so the rest of the module keeps the state the
+    `clean_project` fixture warmed.
+
+    Every engine-bound module must be re-imported INSIDE the block; a
+    reference taken before it belongs to the other engine.
+    """
+    host_package = sys.modules["synaptic_host"]
+    saved_cache = cli._ENGINE_CONTRACT_CACHE
+    saved_modules = {
+        name: value for name, value in sys.modules.items()
+        if _is_engine_bound_module(name)
+    }
+    for name in saved_modules:
+        del sys.modules[name]
+    for attribute in _ENGINE_BOUND_HOST_ATTRIBUTES:
+        if hasattr(host_package, attribute):
+            delattr(host_package, attribute)
+    cli._ENGINE_CONTRACT_CACHE = None
+    try:
+        yield
+    finally:
+        for name in tuple(sys.modules):
+            if _is_engine_bound_module(name):
+                del sys.modules[name]
+        sys.modules.update(saved_modules)
+        for attribute in _ENGINE_BOUND_HOST_ATTRIBUTES:
+            module = saved_modules.get(f"synaptic_host.{attribute}")
+            if module is not None:
+                setattr(host_package, attribute, module)
+            elif hasattr(host_package, attribute):
+                delattr(host_package, attribute)
+        cli._ENGINE_CONTRACT_CACHE = saved_cache
 
 
 def _reconcile_result(*, plan, snapshot, project_ref, **_kwargs):
@@ -709,6 +787,230 @@ def test_clean_admission_stage_materializes_exact_two_runtime_roots(
     assert replay.artifact_root == staged.artifact_root
     assert replay_checks == [staged.source_root, replay.source_root]
     assert artifact_checks == [staged.artifact_root, replay.artifact_root]
+
+
+# B-12 (architecture section 21.14, test S1).  The bound this fixture exists
+# to cross is _MAX_PROJECT_ARCHIVE_BYTES, 256 MiB, at docker_staging.py:45.
+#
+# DO NOT shrink this fixture by patching the bound.  Section 21.2 records why
+# nothing caught B-12 for the whole life of the prepared path: the bound is
+# only reachable through a real project, every constructive test builds a
+# kilobyte tree under tmp_path, and so the predicate never fired.  A test that
+# lowers the bound to make its fixture cheap re-creates exactly that blind
+# spot -- it would pass against a Host that still archives the whole
+# superproject, because the thing it measures is no longer the thing that
+# broke.  This is the second instance of that class in two imPACT cycles, the
+# first being B-11-R1's chain fixture, so the cost here is deliberate and is
+# the point.  The payload is incompressible because `git archive` emits an
+# uncompressed tar of the blobs; random bytes make the archive size track the
+# file size instead of tracking how well zlib did.
+_B12_BULK_BYTES = 272 * 1024 * 1024
+
+
+@pytest.fixture(scope="module")
+def oversized_project(clean_project, tmp_path_factory):
+    """A real project whose archive exceeds the bound, with tiny locked inputs.
+
+    Cloned from `clean_project` so the manifest, the smoke workload, the
+    provider profile and the submodule gitlink are the committed ones, then
+    given a research corpus of its own.  This is the shape section 21.1
+    measured on the operator's repository: 393.7 MiB of tracked content that
+    the container never reads, wrapped around a JSONL fixture that it does.
+    """
+    base = tmp_path_factory.mktemp("docker-b12")
+    project = base / "project"
+    bare = base / "oversized-remote.git"
+    url = "https://git.example/oversized.git"
+    subprocess.run(
+        (
+            "git", "clone", "--no-hardlinks",
+            str(clean_project["project"]), str(project),
+        ),
+        check=True, capture_output=True, timeout=300,
+    )
+    _git(project, "config", "user.email", "docker-admission@example.invalid")
+    _git(project, "config", "user.name", "Docker Admission Test")
+    engine = project / "synaptic-tuner"
+    engine_commit = _git(
+        project, "rev-parse", "HEAD:synaptic-tuner"
+    ).decode("ascii").strip()
+    engine_url = _git(
+        clean_project["engine"], "config", "remote.origin.url",
+    ).decode("ascii").strip()
+    subprocess.run(
+        (
+            "git", "clone", "--shared", "--no-checkout",
+            str(ENGINE), str(engine),
+        ),
+        check=True, capture_output=True, timeout=300,
+    )
+    _git(engine, "checkout", "--detach", engine_commit)
+    _git(engine, "config", "remote.origin.url", engine_url)
+    _git(engine, "config", "branch.main.remote", "origin")
+    _git(engine, "config", "branch.main.merge", "refs/heads/main")
+    bulk = project / "datasets" / "corpus.bin"
+    bulk.parent.mkdir(parents=True, exist_ok=True)
+    with bulk.open("wb") as handle:
+        remaining = _B12_BULK_BYTES
+        while remaining > 0:
+            chunk = min(remaining, 8 * 1024 * 1024)
+            handle.write(os.urandom(chunk))
+            remaining -= chunk
+    for arguments in (
+        ("add", "-A"), ("commit", "-m", "oversized research corpus"),
+    ):
+        subprocess.run(
+            ("git", "-C", str(project), *arguments),
+            check=True, capture_output=True, timeout=900,
+        )
+    subprocess.run(
+        ("git", "init", "--bare", str(bare)),
+        check=True, capture_output=True, timeout=30,
+    )
+    subprocess.run(
+        ("git", "-C", str(project), "push", str(bare), "HEAD:refs/heads/main"),
+        check=True, capture_output=True, timeout=900,
+    )
+    _git(project, "remote", "set-url", "origin", url)
+    _git(project, "config", "branch.main.remote", "origin")
+    _git(project, "config", "branch.main.merge", "refs/heads/main")
+
+    def transport(argv) -> bytes:
+        arguments = tuple(argv)
+        assert arguments[:3] == ("git", "ls-remote", "--refs")
+        if arguments[3] != url:
+            return clean_project["transport"](argv)
+        return subprocess.run(
+            ("git", "ls-remote", "--refs", str(bare), arguments[4]),
+            check=True, capture_output=True, timeout=30,
+        ).stdout
+
+    # The offline model snapshot admission resolves through
+    # `docker-model-inventory-source` (training/storage.json).  It lives under
+    # the gitignored `.synaptic/`, so cloning the project does not bring it.
+    model_snapshot = (
+        project / ".synaptic/model-inventory"
+        / "models--HuggingFaceTB--SmolLM2-135M-Instruct/snapshots"
+        / "12fd25f77366fa6b3b4b768ec3050bf629380bac"
+    )
+    model_snapshot.mkdir(parents=True)
+    model_snapshot.joinpath("config.json").write_bytes(b"{}\n")
+
+    assert _git(
+        project, "status", "--porcelain", "--untracked-files=normal",
+    ) == b""
+    return {
+        "project": project, "engine": engine,
+        "transport": transport, "bulk": bulk,
+    }
+
+
+def test_oversized_project_stages_only_its_locked_inputs(
+    monkeypatch, oversized_project,
+) -> None:
+    """B-12 acceptance (architecture section 21.14, tests S1 and S2).
+
+    S1: a project whose tracked content greatly exceeds the staging bound
+    stages successfully, because the staged set is the two inputs the lock
+    records rather than the whole superproject at the locked commit.  Before
+    section 21.12 this raised at docker_staging.py:1299 from the call at
+    :1714-1717, which is how run 6 died.
+
+    S2: the staged project root holds exactly the lock's input paths and
+    nothing else.  The assertion is a set EQUALITY, so a future change that
+    reintroduces a whole-tree stage fails here even though S1 would still
+    pass on a large enough bound.
+    """
+    project = oversized_project["project"]
+    engine = oversized_project["engine"]
+    observed = {}
+
+    with _second_engine_checkout():
+        # The ingress FIRST, before any other engine-bound import.  It is the
+        # call that loads the contract, and cli.py:737-742 refuses to load one
+        # while any `synaptic_tuner` module is resident, so an earlier import
+        # of a host module that pulls the engine in would poison it.
+        ingress = _ingress(project, engine)
+        docker_training = importlib.import_module(
+            "synaptic_host.docker_training"
+        )
+        docker_staging = importlib.import_module("synaptic_host.docker_staging")
+        from synaptic_host.security import (
+            FileHmacAuthenticator, ScopedGitRemoteReader,
+        )
+        from tuner.project.manifest import load_project_manifest
+
+        original = docker_training.compile_training_plan_v1
+
+        def capture(*, training_input, context, resolver):
+            plan = original(
+                training_input=training_input,
+                context=context,
+                resolver=resolver,
+            )
+            observed["plan"] = plan
+            observed["source_lock"] = resolver.session._verified.source_lock
+            return plan
+
+        monkeypatch.setattr(docker_training, "compile_training_plan_v1", capture)
+        monkeypatch.setattr(
+            docker_training, "_activate_docker_training_v1", _reconcile_result,
+        )
+        result = docker_training.execute_docker_training_admission_v1(
+            ingress,
+            project_root=project,
+            engine_root=engine,
+            remote_reader=ScopedGitRemoteReader(
+                runner=oversized_project["transport"]
+            ),
+        )
+        assert result.code is TrainingRunCommandCodeV2.RECONCILE_REQUIRED
+
+        # Prove the FIXTURE is over the bound before staging it, at the same
+        # commit staging reads.  Without this the test would pass on a project
+        # that never crossed the bound, which is the failure mode section 21.2
+        # names and the reason this fixture is expensive.
+        source_lock = observed["source_lock"]
+        archive = subprocess.run(
+            (
+                "git", "-C", str(project), "archive", "--format=tar",
+                source_lock.project_source.commit,
+            ),
+            check=True, capture_output=True, timeout=900,
+        ).stdout
+        measured = len(archive)
+        bound = docker_staging._MAX_PROJECT_ARCHIVE_BYTES
+        assert measured > bound, (
+            f"fixture archive is {measured} bytes, which does not exceed the "
+            f"{bound} byte staging bound"
+        )
+        inputs = source_lock.inputs
+        assert tuple(descriptor["kind"] for descriptor in inputs) == INPUT_KINDS
+        assert sum(
+            descriptor["size_bytes"] for descriptor in inputs
+        ) < 1024 * 1024
+
+        context = load_project_manifest(project / "synaptic.yaml").create_context(
+            engine_root=engine, invocation_cwd=project,
+        )
+        FileHmacAuthenticator.for_docker(context, durable_rows_exist=False)
+        staged = docker_staging.stage_docker_worker_v1(
+            plan=observed["plan"],
+            source_lock=source_lock,
+            context=context,
+            storage_configuration=(
+                project / "training/storage.json"
+            ).read_bytes(),
+            model_inventory=(),
+            expect_unused_artifacts=True,
+        )
+
+        root = staged.source_root / "project"
+        assert {
+            path.relative_to(root).as_posix()
+            for path in root.rglob("*") if path.is_file()
+        } == {descriptor["path"] for descriptor in inputs}
+        assert not (root / "datasets").exists()
 
 
 def test_activation_guard_admits_only_the_not_yet_started_phases() -> None:

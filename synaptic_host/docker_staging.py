@@ -1293,57 +1293,108 @@ def _verify_staged_closure(root: Path, closure: _LockedClosureV1) -> None:
             raise ValueError("staged worker closure differs from its manifest")
 
 
-def _git_archive(repository: Path, commit: str) -> bytes:
-    raw = _git(repository, ("archive", "--format=tar", _commit(commit)))
-    if not raw or len(raw) > _MAX_PROJECT_ARCHIVE_BYTES:
-        raise ValueError("exact project Git archive exceeds its bound")
-    return raw
+def _stage_locked_project_inputs(
+    repository: Path,
+    commit: str,
+    descriptors: tuple[dict[str, object], ...],
+    destination: Path,
+) -> None:
+    """Stage exactly the project inputs the source lock records.
 
+    B-12 (architecture section 21.12 items 1-4).  The prepared path used to
+    archive the whole superproject at the locked commit, so a project large
+    enough to hold research data could not be staged at all even though the
+    container reads exactly one file from `/source/project` (section 21.3).
+    The scope is now the lock's own `inputs` descriptors, which admission
+    already wrote and already digested (section 21.10), so nothing new is
+    trusted and no schema moves.
 
-def _extract_link_free(raw: bytes, destination: Path) -> None:
-    if type(raw) is not bytes or not raw or len(raw) > _MAX_PROJECT_ARCHIVE_BYTES:
-        raise ValueError("exact project Git archive exceeds its bound")
-    try:
-        archive = tarfile.open(fileobj=BytesIO(raw), mode="r:")
-    except tarfile.TarError:
-        raise ValueError("exact project Git archive is invalid") from None
+    Each member is read from the commit with `_git_selected_blobs`, never from
+    the checkout, and its length and digest are compared to the recorded
+    descriptor BEFORE it is written.  `_git_selected_blobs` also refuses a
+    member that is not a regular blob at that commit (a symlink, a device, a
+    duplicate), which is the property the retired link-free extraction carried.
+
+    The bounds of section 21.7 are unchanged in value and now measure the
+    staged input set rather than the operator's repository.
+    """
+
+    if type(descriptors) is not tuple or not descriptors:
+        raise ValueError("staged project inputs contain missing or extra files")
+    paths: list[str] = []
+    total = 0
+    for descriptor in descriptors:
+        path = descriptor["path"]
+        size = descriptor["size_bytes"]
+        digest = descriptor["sha256"]
+        if type(path) is not str or type(digest) is not str:
+            raise ValueError("staged project inputs contain missing or extra files")
+        if type(size) is not int or size < 0:
+            raise ValueError("exact project input differs from its locked size")
+        paths.append(path)
+        total += size
+    if len(set(paths)) != len(paths):
+        raise ValueError("staged project inputs contain missing or extra files")
+    if len(paths) > _MAX_PROJECT_ENTRIES or total > _MAX_PROJECT_ARCHIVE_BYTES:
+        raise ValueError("exact project inputs exceed their bound")
+
+    selected = _git_selected_blobs(repository, commit, tuple(paths))
+    for descriptor in descriptors:
+        _, payload = selected[descriptor["path"]]
+        if not payload:
+            raise ValueError("exact project input is empty")
+        if len(payload) != descriptor["size_bytes"]:
+            raise ValueError("exact project input differs from its locked size")
+        if hashlib.sha256(payload).hexdigest() != descriptor["sha256"]:
+            raise ValueError("exact project input differs from its locked digest")
+
     try:
         destination.mkdir()
     except OSError:
         raise ValueError("project staging destination is not fresh") from None
-    count = 0
+    for descriptor in descriptors:
+        mode, payload = selected[descriptor["path"]]
+        relative = _safe_relative(descriptor["path"], "locked project input")
+        parent = _ensure_direct_parent(destination, relative.parent)
+        target = parent / relative.name
+        if not target.absolute().is_relative_to(destination.absolute()):
+            raise ValueError("staged project input escapes its destination")
+        _write_new_regular(target, payload)
+        _apply_file_mode(target, executable=mode == "100755")
+    _verify_staged_project_inputs(destination, descriptors)
+
+
+def _verify_staged_project_inputs(
+    root: Path, descriptors: tuple[dict[str, object], ...],
+) -> None:
+    """Re-verify the staged project root against the lock's descriptors.
+
+    B-12 (architecture section 21.12 item 3), in the shape of
+    `_verify_staged_closure`.  The set equality is the assertion that makes
+    the scope a scope: a stage that wrote anything the lock does not record
+    fails here.  Re-reading is not redundant with the pre-write check; it is
+    what makes the staged tree, rather than the payload that was in memory,
+    the thing that was verified.
+    """
+
+    staged = _walk_regular_files(root, "staged project inputs")
+    files = [path.relative_to(root).as_posix() for path in staged]
+    recorded = {descriptor["path"] for descriptor in descriptors}
+    if set(files) != recorded or len(files) != len(recorded):
+        raise ValueError("staged project inputs contain missing or extra files")
     total = 0
-    seen: set[str] = set()
-    with archive:
-        for member in archive:
-            count += 1
-            if count > _MAX_PROJECT_ENTRIES:
-                raise ValueError("exact project Git archive has too many entries")
-            relative = _safe_relative(member.name.rstrip("/"), "archive member")
-            name = relative.as_posix()
-            if name in seen:
-                raise ValueError("exact project Git archive contains duplicate entries")
-            seen.add(name)
-            if member.isdir():
-                _ensure_direct_parent(destination, relative)
-                continue
-            if not member.isreg():
-                raise ValueError("exact project Git archive contains a link or special file")
-            total += member.size
-            if total > _MAX_PROJECT_EXPANDED_BYTES:
-                raise ValueError("exact project Git archive exceeds its expanded bound")
-            parent = _ensure_direct_parent(destination, relative.parent)
-            target = parent / relative.name
-            if not target.absolute().is_relative_to(destination.absolute()):
-                raise ValueError("project archive member escapes its destination")
-            handle = archive.extractfile(member)
-            if handle is None:
-                raise ValueError("exact project Git archive member is unavailable")
-            payload = handle.read(member.size + 1)
-            if len(payload) != member.size:
-                raise ValueError("exact project Git archive member is truncated")
-            _write_new_regular(target, payload)
-            _apply_file_mode(target, executable=bool(member.mode & 0o111))
+    for descriptor in descriptors:
+        target = root.joinpath(*PurePosixPath(descriptor["path"]).parts)
+        payload, _info = _read_direct_regular(target, "staged project input")
+        if not payload:
+            raise ValueError("exact project input is empty")
+        if len(payload) != descriptor["size_bytes"]:
+            raise ValueError("exact project input differs from its locked size")
+        if hashlib.sha256(payload).hexdigest() != descriptor["sha256"]:
+            raise ValueError("exact project input differs from its locked digest")
+        total += len(payload)
+        if total > _MAX_PROJECT_EXPANDED_BYTES:
+            raise ValueError("exact project inputs exceed their bound")
 
 
 def _copy_inventory(
@@ -1711,8 +1762,10 @@ def stage_docker_worker_v1(
         source.mkdir()
         artifacts.mkdir()
         _create_artifact_topology(artifacts)
-        _extract_link_free(
-            _git_archive(context.project_root, source_lock.project_source.commit),
+        _stage_locked_project_inputs(
+            context.project_root,
+            source_lock.project_source.commit,
+            source_lock.inputs,
             source / "project",
         )
         _stage_locked_closure(
