@@ -9,6 +9,7 @@ import json
 import re
 import sqlite3
 import subprocess
+import sys
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -554,6 +555,64 @@ class DockerAdmissionResolverV1:
         )
 
 
+_CAUSE_LINE_LIMIT = 400
+
+
+def _innermost_package_frame(error: BaseException) -> str:
+    """Render the deepest traceback frame that lies inside this package."""
+
+    package = Path(__file__).resolve().parent
+    location = "<unknown>"
+    frames = getattr(error, "__traceback__", None)
+    while frames is not None:
+        code = frames.tb_frame.f_code
+        try:
+            filename = Path(code.co_filename).resolve()
+            inside = filename.is_relative_to(package)
+        except (OSError, ValueError):
+            inside = False
+        if inside:
+            location = "{}:{} in {}".format(
+                filename.relative_to(package.parent).as_posix(),
+                frames.tb_lineno, code.co_name,
+            )
+        frames = frames.tb_next
+    return location
+
+
+def _report_admission_cause(error: BaseException, code) -> None:
+    """Write one line naming WHERE admission failed, to stderr, and return.
+
+    B-11 (architecture section 20.11).  Run 5 failed at activation with
+    `START_UNAVAILABLE` and no message at all; recovering the cause cost a
+    cycle and a purpose-built probe.  This carries the exception's CLASS and
+    the innermost frame inside `synaptic_host`, rendered relative to the
+    package's parent so no user directory appears, and `<unknown>` when no
+    such frame exists.
+
+    The exception's own text is excluded ENTIRELY, and that exclusion is the
+    point: the text is not authored here.  `OSError` renders an absolute path
+    and the platform's message, and several engine errors render a value they
+    were checking, so a rule that filtered it would be a rule about strings
+    nobody in this repository wrote.  A frame identity is authored here and is
+    stable.  The line is length-bounded on the same argument that bounds a
+    child process's stderr elsewhere in the Host.
+
+    Only stderr is written.  stdout stays byte-identical, so the result JSON
+    remains the last parseable line, and the driver already prints stderr with
+    its own prefix, so no driver change is needed and no result field is
+    added.
+    """
+    try:
+        location = _innermost_package_frame(error)
+    except BaseException:
+        location = "<unknown>"
+    line = "synaptic-host: {} {} at {}".format(
+        getattr(code, "value", code), type(error).__name__, location,
+    )
+    print(line[:_CAUSE_LINE_LIMIT], file=sys.stderr)
+
+
 def execute_docker_training_admission_v1(
     ingress, *, project_root: Path, engine_root: Path,
     remote_reader: ScopedGitRemoteReader | None = None,
@@ -578,6 +637,24 @@ def execute_docker_training_admission_v1(
     ) = baseline
 
     def fail(code):
+        # B-11 (architecture section 20.19.2, superseding section 20.11's
+        # two-site instruction and section 20.13 item 8).  Every one of this
+        # function's seven bare handlers converts an exception into an outward
+        # result through this closure, and three of them return the same code,
+        # so the code alone does not identify the stage.  Emitting here is one
+        # edit that covers all seven and that a handler added later cannot
+        # forget; emitting per handler was both larger and selective.
+        #
+        # The guard is what keeps the one non-exception caller silent: the
+        # provider check below returns through `fail` with no exception being
+        # handled, and `sys.exc_info()` carries a value only inside an active
+        # except block.  A caller that invoked admission from within its own
+        # except block would make the guard read true, which is one reason the
+        # line reports the frame it actually found instead of asserting a
+        # stage.
+        error = sys.exc_info()[1]
+        if error is not None:
+            _report_admission_cause(error, code)
         return _failure(
             code, provider_ref=provider_ref, config_ref=config_ref,
             destination_ref=destination_ref, input_digest=input_digest,
@@ -693,6 +770,9 @@ def execute_docker_training_admission_v1(
                 model_inventory=model_inventory,
             )
         except BaseException:
+            # B-11.  This is the handler that swallowed run 5's cause and cost
+            # the cycle.  It needs no call of its own: it returns through
+            # `fail`, which emits for every handler (section 20.19.2).
             return fail(TrainingRunCommandCodeV2.START_UNAVAILABLE)
         if type(result) is not TrainingRunCommandResultV2:
             return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)

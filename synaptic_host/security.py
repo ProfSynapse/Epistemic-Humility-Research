@@ -79,6 +79,11 @@ if os.name == "nt":
     _GENERIC_READ = 0x80000000
     _GENERIC_WRITE = 0x40000000
     _READ_CONTROL = 0x00020000
+    # B-11 (architecture section 20.13 item 3): the right to rewrite a
+    # discretionary access list.  It is deliberately NOT added to
+    # `_win_open_path`'s desired access -- the repair opens its own handle so
+    # that helper's three existing callers cannot acquire this silently.
+    _WRITE_DAC = 0x00040000
     _FILE_SHARE_READ = 0x00000001
     _CREATE_NEW = 1
     _OPEN_EXISTING = 3
@@ -90,6 +95,7 @@ if os.name == "nt":
     _SE_FILE_OBJECT = 1
     _OWNER_SECURITY_INFORMATION = 0x00000001
     _DACL_SECURITY_INFORMATION = 0x00000004
+    _PROTECTED_DACL_SECURITY_INFORMATION = 0x80000000
     _SE_DACL_PROTECTED = 0x1000
     _ACL_SIZE_INFORMATION_CLASS = 2
     _ACCESS_ALLOWED_ACE_TYPE = 0
@@ -97,6 +103,17 @@ if os.name == "nt":
     _TOKEN_QUERY = 0x0008
     _TOKEN_USER_CLASS = 1
     _SDDL_REVISION_1 = 1
+    # The private-directory shape, written once for creation and once for the
+    # B-11 repair (architecture section 20.8).  They are adjacent so the ONE
+    # place they differ is visible: the repair's entries carry OICI, the
+    # object-inherit and container-inherit flags.  Creation happens before the
+    # directory has children and repair happens after, and inherit flags exist
+    # only to govern children; `_win_validate_acl` does not inspect them, so
+    # both shapes validate identically.  The repair's flags are what make any
+    # LATER event that runs the inheritance propagator recompute the children
+    # to a benign, measured state instead of an empty one.
+    _CREATE_SDDL = "O:{sid}G:{sid}D:P(A;;FA;;;SY)(A;;FA;;;{sid})"
+    _REPAIR_SDDL = "O:{sid}G:{sid}D:P(A;OICI;FA;;;SY)(A;OICI;FA;;;{sid})"
     _ERROR_ALREADY_EXISTS = 183
     _ERROR_FILE_EXISTS = 80
 
@@ -227,6 +244,17 @@ if os.name == "nt":
         wintypes.LPVOID, wintypes.DWORD, ctypes.POINTER(wintypes.LPVOID),
     )
     _ADVAPI32.GetAce.restype = wintypes.BOOL
+    # B-11 (architecture section 20.8).  The repair writes through the HANDLE
+    # form deliberately.  `SetNamedSecurityInfoW`, the path-based editor, runs
+    # the automatic inheritance propagator: B-11-M1 measured it recomputing
+    # every child whose entries were all inherited down to a present-but-EMPTY
+    # list that denies the owner too, while this module's own validator still
+    # accepted the repaired root.  No path-based access-list editor belongs on
+    # this code path.
+    _ADVAPI32.SetKernelObjectSecurity.argtypes = (
+        wintypes.HANDLE, wintypes.DWORD, wintypes.LPVOID,
+    )
+    _ADVAPI32.SetKernelObjectSecurity.restype = wintypes.BOOL
 
 
     def _win_close(handle: int) -> None:
@@ -269,18 +297,29 @@ if os.name == "nt":
             _win_close(token.value)
 
 
-    def _win_security_attributes() -> tuple[_SECURITY_ATTRIBUTES, int]:
-        user_sid = _win_current_user_sid()
+    def _win_descriptor_from_sddl(template: str) -> int:
+        """Convert one private-directory SDDL template into a descriptor.
+
+        Shared by creation and by the B-11 repair so each shape is written in
+        exactly one place and the two cannot drift apart through a retyped
+        copy (architecture section 20.13 item 3).  The caller owns the
+        returned pointer and must release it with `LocalFree`.
+        """
         descriptor = wintypes.LPVOID()
-        sddl = f"O:{user_sid}G:{user_sid}D:P(A;;FA;;;SY)(A;;FA;;;{user_sid})"
         if not _ADVAPI32.ConvertStringSecurityDescriptorToSecurityDescriptorW(
-            sddl, _SDDL_REVISION_1, ctypes.byref(descriptor), None
+            template.format(sid=_win_current_user_sid()),
+            _SDDL_REVISION_1, ctypes.byref(descriptor), None,
         ):
             raise _private_storage_error()
+        return descriptor.value
+
+
+    def _win_security_attributes() -> tuple[_SECURITY_ATTRIBUTES, int]:
+        descriptor = _win_descriptor_from_sddl(_CREATE_SDDL)
         attributes = _SECURITY_ATTRIBUTES(
             ctypes.sizeof(_SECURITY_ATTRIBUTES), descriptor, False
         )
-        return attributes, descriptor.value
+        return attributes, descriptor
 
 
     def _win_create_private_directory(path: Path) -> None:
@@ -425,6 +464,128 @@ if os.name == "nt":
             _win_close(first)
 
 
+    def _win_never_protected(handle: int) -> bool:
+        """Report clauses 2 to 4 of the B-11 repair predicate, on this handle.
+
+        Architecture section 20.6.  True only for the state the filesystem
+        produces by itself: the owner is the current user, the access list is
+        present and is NOT protected, and EVERY entry carries the inherited
+        flag.  That state records nobody's decision -- the entries are a
+        projection of an ancestor, and reaching it needs no privilege beyond
+        making a directory.
+
+        Every other state is somebody's decision and returns False, so the
+        caller leaves the object exactly as it is and `_win_validate_acl`
+        refuses it with today's error.  An explicit entry or a set protection
+        bit both require the right to rewrite the list on this object, so
+        overwriting either would erase a third party's decision and turn the
+        repair into a tamper mask.  A NULL list is not this signature at all:
+        it grants everyone, so it is treated as deliberate and refused.
+
+        A present but EMPTY list satisfies the entry clause vacuously and is
+        admitted deliberately.  It grants nobody anything, so no grant can be
+        hiding in it, and it is the state an ordinary creation leaves under a
+        parent that publishes nothing inheritable.  This is also the shape a
+        propagation accident leaves behind, and repairing it is the correct
+        outcome rather than an accident of the wording.
+        """
+        owner = wintypes.LPVOID()
+        dacl = wintypes.LPVOID()
+        descriptor = wintypes.LPVOID()
+        result = _ADVAPI32.GetSecurityInfo(
+            handle, _SE_FILE_OBJECT,
+            _OWNER_SECURITY_INFORMATION | _DACL_SECURITY_INFORMATION,
+            ctypes.byref(owner), None, ctypes.byref(dacl), None,
+            ctypes.byref(descriptor),
+        )
+        if result != 0 or not descriptor.value:
+            if descriptor.value:
+                _KERNEL32.LocalFree(descriptor)
+            return False
+        try:
+            control = wintypes.WORD()
+            revision = wintypes.DWORD()
+            if (
+                not owner.value
+                or not dacl.value
+                or not _ADVAPI32.GetSecurityDescriptorControl(
+                    descriptor, ctypes.byref(control), ctypes.byref(revision)
+                )
+                or control.value & _SE_DACL_PROTECTED
+                or _win_sid_string(owner) != _win_current_user_sid()
+            ):
+                return False
+            size = _ACL_SIZE_INFORMATION()
+            if not _ADVAPI32.GetAclInformation(
+                dacl, ctypes.byref(size), ctypes.sizeof(size),
+                _ACL_SIZE_INFORMATION_CLASS,
+            ):
+                return False
+            for index in range(size.AceCount):
+                pointer = wintypes.LPVOID()
+                if not _ADVAPI32.GetAce(dacl, index, ctypes.byref(pointer)):
+                    return False
+                header = ctypes.cast(pointer, ctypes.POINTER(_ACE_HEADER)).contents
+                if not header.AceFlags & _INHERITED_ACE:
+                    return False
+            return True
+        finally:
+            _KERNEL32.LocalFree(descriptor)
+
+
+    def _win_repair_private_directory(path: Path) -> None:
+        """Narrow one never-protected chain directory to the private shape.
+
+        B-11 (architecture sections 20.6 and 20.8).  The repair may correct
+        ACCESS, never SHAPE, and only from the state the filesystem produces
+        by default.  Clause 1 of the predicate runs first and here: the object
+        must be a directory and must not be a reparse point, so a junction is
+        rejected before any access-list work happens.  Clauses 2 to 4 are
+        `_win_never_protected`.  If any clause fails the function returns
+        having changed nothing, and the caller's unconditional validation
+        refuses the directory exactly as it does today.
+
+        The write is `SetKernelObjectSecurity` on the handle opened here.  A
+        path-based editor is never used: B-11-M1 measured that family running
+        the inheritance propagator and recomputing every child whose entries
+        were all inherited down to an empty list, denying the owner, WSL and
+        the container alike, while this module's validator still accepted the
+        root.  Writing by handle also keeps the decision and the action on one
+        opened object, which is the same swap-resistance the validator buys by
+        re-opening and comparing identity.
+
+        The handle is this function's OWN.  `_win_open_path` is deliberately
+        not extended: rewriting a list needs `_WRITE_DAC`, and that helper's
+        three existing callers must not acquire it silently.
+        """
+        handle = _KERNEL32.CreateFileW(
+            str(path), _WRITE_DAC | _READ_CONTROL, _FILE_SHARE_READ, None,
+            _OPEN_EXISTING,
+            _FILE_FLAG_OPEN_REPARSE_POINT | _FILE_FLAG_BACKUP_SEMANTICS, None,
+        )
+        if handle == _INVALID_HANDLE_VALUE:
+            raise _private_storage_error()
+        descriptor = None
+        try:
+            _identity, attributes, _links, _size = _win_file_info(handle)
+            if (
+                not attributes & _FILE_ATTRIBUTE_DIRECTORY
+                or attributes & _FILE_ATTRIBUTE_REPARSE_POINT
+                or not _win_never_protected(handle)
+            ):
+                return
+            descriptor = _win_descriptor_from_sddl(_REPAIR_SDDL)
+            _ADVAPI32.SetKernelObjectSecurity(
+                handle,
+                _DACL_SECURITY_INFORMATION | _PROTECTED_DACL_SECURITY_INFORMATION,
+                descriptor,
+            )
+        finally:
+            if descriptor is not None:
+                _KERNEL32.LocalFree(descriptor)
+            _win_close(handle)
+
+
     def _win_read_private_key(path: Path) -> tuple[bytes, tuple[int, int]]:
         _win_require_ntfs(path)
         first = _win_open_path(path, directory=False)
@@ -531,7 +692,13 @@ class FileHmacAuthenticator:
         key_path = directory / "control-hmac.key"
         value = cls(key_path, key_ref="docker-control-v1")
         value._private_storage_root = mutable
-        value._ensure_private_storage_directories()
+        # B-11: the only call site that repairs.  The operator recipe creates
+        # `.synaptic` before the Host has ever run and the driver's probe pass
+        # creates `state` and `state\docker`, so this chain routinely exists
+        # already and carries whatever list the filesystem gave it.  The Modal
+        # authenticator (`from_context`) is deliberately not in this position:
+        # its chain is one directory that only the Host creates.
+        value._ensure_private_storage_directories(repair=True)
         try:
             key_path.lstat()
         except FileNotFoundError:
@@ -551,6 +718,61 @@ class FileHmacAuthenticator:
             os.mkdir(path, 0o700)
         except FileExistsError:
             pass
+
+    @staticmethod
+    def _repair_private_directory(path: Path) -> None:
+        """Narrow one already-existing chain directory, or do nothing at all.
+
+        B-11 (architecture section 20.5).  This helper is REQUIRED never to
+        raise.  It either narrows the directory or leaves it untouched, and
+        the caller's unconditional validation decides the outcome
+        immediately afterwards; a directory the repair could not act on fails
+        with the same error and the same message as before this existed.
+        That is not a silent swallow, because the check that matters is not
+        conditional on the repair having succeeded.
+
+        `ValueError` is caught alongside `OSError` deliberately:
+        `_private_storage_error()` returns a `ValueError` and the descriptor
+        conversion raises one, so the primitives this reuses could otherwise
+        escape from a helper whose contract is to raise nothing.
+
+        POSIX (architecture section 20.9) has the same absent-versus-existing
+        asymmetry for the same reason, so it is not left untouched: creation
+        uses mode 0o700 and validation demands exactly 0o700, so a directory a
+        shell made under an ordinary umask is refused forever.  The repair
+        acts on the descriptor rather than the path, because a path can be
+        swapped between the decision and the action, and it clears the extra
+        bits and nothing else.  Another user's directory, or a symbolic link,
+        stays refused.  POSIX modes do not propagate, so the Windows
+        propagation hazard has no counterpart here and a populated directory
+        is repaired with no effect on its children.
+        """
+        try:
+            if os.name == "nt":
+                _win_repair_private_directory(path)
+                return
+            before = os.lstat(path)
+            if stat.S_ISLNK(before.st_mode) or not stat.S_ISDIR(before.st_mode):
+                return
+            flags = (
+                os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+                | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
+            )
+            descriptor = os.open(path, flags)
+            try:
+                opened = os.fstat(descriptor)
+                mode = stat.S_IMODE(opened.st_mode)
+                if (
+                    stat.S_ISDIR(opened.st_mode)
+                    and _same_stat(before, opened)
+                    and opened.st_uid == os.geteuid()
+                    and mode & ~0o700
+                ):
+                    os.fchmod(descriptor, mode & 0o700)
+            finally:
+                os.close(descriptor)
+        except (OSError, ValueError):
+            return
 
     @staticmethod
     def _validate_private_directory(path: Path) -> None:
@@ -582,7 +804,32 @@ class FileHmacAuthenticator:
         except (FileNotFoundError, OSError, ValueError):
             raise _private_storage_error() from None
 
-    def _ensure_private_storage_directories(self) -> None:
+    def _ensure_private_storage_directories(self, *, repair: bool) -> None:
+        """Make the private storage chain exist and match the contract.
+
+        B-11 (architecture section 20.5).  This method owns the repair, and
+        the validator emphatically does not.  Verification has to stay a pure
+        predicate: the moment a verification call can change the world, every
+        later "it was verified" claim means "it was verified, or made to
+        verify", and no caller can tell which.  The ensure path is the only
+        place in this class whose job is already to make the world match the
+        contract, and the only one that runs before a key is read or written.
+
+        `repair` is keyword-only, required, and takes no default, in the same
+        shape as the artifact-topology guard: every call site states its
+        intent, and a future call site cannot inherit the permissive branch by
+        accident.  `for_docker` passes True because the operator recipe and
+        the driver both create parts of this chain before the Host ever runs.
+        `initialize` and `_key` pass False; `_key` is what
+        `private_storage_verified` calls, so passing True there would put a
+        side effect inside verification and dissolve the boundary above.
+
+        Repair is attempted ONLY on a directory that already existed.  One the
+        Host just created already carries the private descriptor, and the
+        ancestors created below are equally the Host's own.  Validation stays
+        unconditional and stays last, so the outcome is decided by the same
+        check as before, whether or not a repair ran.
+        """
         root = self._private_storage_root
         leaf = self.key_path.parent
         try:
@@ -603,10 +850,15 @@ class FileHmacAuthenticator:
                     for ancestor in reversed(missing):
                         self._create_private_directory(ancestor)
                 self._create_private_directory(directory)
+            elif repair:
+                self._repair_private_directory(directory)
             self._validate_private_directory(directory)
 
     def initialize(self) -> None:
-        self._ensure_private_storage_directories()
+        # B-11: no repair here.  `for_docker` has already run the repairing
+        # pass when it reaches this method, and every other caller reaches
+        # `initialize` for a chain the Host itself is creating.
+        self._ensure_private_storage_directories(repair=False)
         generated = secrets.token_bytes(32)
         if not isinstance(generated, bytes) or len(generated) != 32:
             raise ValueError("evidence key generation failed")
@@ -690,7 +942,13 @@ class FileHmacAuthenticator:
     def _key(self, key_ref: str | None = None) -> bytes:
         if key_ref is not None and key_ref != self.key_ref:
             raise ValueError("evidence key reference mismatch")
-        self._ensure_private_storage_directories()
+        # B-11: repair=False, and this is the call site that keeps the
+        # boundary honest.  `private_storage_verified` is exactly `self._key()`,
+        # so repairing here would mean a verification call could change the
+        # world, and a permissive parent would be silently narrowed instead of
+        # refused.  Architecture section 20.5 does not enumerate this site;
+        # False is the value its own argument requires.
+        self._ensure_private_storage_directories(repair=False)
         if os.name == "nt":
             try:
                 value, identity = _win_read_private_key(self.key_path)

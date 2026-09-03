@@ -1127,3 +1127,184 @@ def test_command_result_stays_reconcile_required_without_a_container():
     assert result.status is TrainingRunCommandStatusV2.RECONCILE_REQUIRED
     assert result.provider_job_ref is None
     assert result.submitted_at is None
+
+
+# B-11 (architecture section 20.14 C1 to C3, and section 20.19.2 for the
+# closure form and C1's added early-stage case).  The admission cause line.
+
+
+def test_admission_cause_line_names_the_class_and_innermost_host_frame(
+    capsys, tmp_path: Path,
+) -> None:
+    docker_training = importlib.import_module("synaptic_host.docker_training")
+    from synaptic_host.security import FileHmacAuthenticator
+
+    try:
+        FileHmacAuthenticator._validate_private_directory(tmp_path / "absent")
+    except ValueError as error:
+        caught = error
+
+    docker_training._report_admission_cause(
+        caught, TrainingRunCommandCodeV2.START_UNAVAILABLE,
+    )
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    line = captured.err.strip()
+    assert line.startswith("synaptic-host: START_UNAVAILABLE ValueError at ")
+    # Package-relative, so no user directory can appear, and precise enough to
+    # replace the loader-hook probe that recovering run 5's cause required.
+    assert "synaptic_host/security.py:" in line
+    assert line.endswith(" in _validate_private_directory")
+
+
+def test_admission_cause_line_never_carries_the_exception_text(capsys) -> None:
+    docker_training = importlib.import_module("synaptic_host.docker_training")
+
+    class LoudFailure(Exception):
+        pass
+
+    secret_shaped = "AKIA" + "Z" * 36
+    absolute = "C:\\Users\\operator\\project\\.synaptic\\state"
+    try:
+        raise LoudFailure(
+            "{} rejected {} {}".format(absolute, secret_shaped, "N" * 4096)
+        )
+    except LoudFailure as error:
+        caught = error
+
+    docker_training._report_admission_cause(
+        caught, TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE,
+    )
+    line = capsys.readouterr().err.strip()
+
+    # The exception's own text is excluded ENTIRELY.  It is not authored here:
+    # an OSError renders an absolute path and a platform message, and engine
+    # errors render the value they were checking.
+    assert secret_shaped not in line
+    assert absolute not in line and "operator" not in line
+    assert "N" * 32 not in line
+    # Bounded on the same argument that bounds a child process's stderr.
+    assert len(line) <= docker_training._CAUSE_LINE_LIMIT
+    # The class survives; the frame is unknown because the raise is outside
+    # the package, which is exactly when no location may be invented.
+    assert line == (
+        "synaptic-host: RESOLUTION_UNAVAILABLE LoudFailure at <unknown>"
+    )
+
+
+def test_admission_cause_leaves_stdout_a_single_parseable_result_line(
+    capsys,
+) -> None:
+    docker_training = importlib.import_module("synaptic_host.docker_training")
+
+    print(json.dumps({"code": "START_UNAVAILABLE", "status": "FAILED"}))
+    try:
+        raise RuntimeError("engine detail that must not be echoed")
+    except RuntimeError as error:
+        docker_training._report_admission_cause(
+            error, TrainingRunCommandCodeV2.START_UNAVAILABLE,
+        )
+
+    captured = capsys.readouterr()
+    lines = [line for line in captured.out.splitlines() if line.strip()]
+    # The driver parses the LAST stdout line as the result JSON and prints
+    # stderr separately, so the cause must not disturb stdout at all.
+    assert len(lines) == 1
+    assert json.loads(lines[-1])["code"] == "START_UNAVAILABLE"
+    assert captured.err.strip().startswith(
+        "synaptic-host: START_UNAVAILABLE RuntimeError at "
+    )
+    assert "engine detail" not in captured.err
+
+
+def test_the_cause_line_is_emitted_from_fail_and_from_nowhere_else() -> None:
+    """Pin the wiring of section 20.19.2: one guarded call, inside `fail`.
+
+    The helper being correct is worthless if a handler does not call it, and
+    the failure it guards is a silent one -- an empty stderr, which is exactly
+    what run 5 produced.  The ruling's whole argument for the closure is that
+    it cannot be selective, so this pins both halves of that: the emission has
+    exactly one call site and it is inside `fail`, and every bare handler
+    returns through `fail` rather than around it.  A handler added later that
+    returned `_failure` directly would be blind again, and would fail here.
+    """
+    docker_training = importlib.import_module("synaptic_host.docker_training")
+
+    source = textwrap.dedent(
+        inspect.getsource(
+            docker_training.execute_docker_training_admission_v1
+        )
+    )
+    admission = ast.parse(source).body[0]
+    closures = [
+        node for node in ast.walk(admission)
+        if isinstance(node, ast.FunctionDef) and node.name == "fail"
+    ]
+    assert len(closures) == 1
+
+    def emissions(root):
+        return [
+            node for node in ast.walk(root)
+            if isinstance(node, ast.Call)
+            and getattr(node.func, "id", None) == "_report_admission_cause"
+        ]
+
+    assert len(emissions(admission)) == 1
+    assert len(emissions(closures[0])) == 1
+
+    # The guard is what keeps the one non-exception caller silent.  Without it
+    # the provider check would print a line naming no failure at all.
+    guards = [
+        node for node in ast.walk(closures[0])
+        if isinstance(node, ast.Call)
+        and getattr(node.func, "attr", None) == "exc_info"
+        and getattr(getattr(node.func, "value", None), "id", None) == "sys"
+    ]
+    assert len(guards) == 1
+
+    # Every handler, counted.  Section 20.19.2 found seven where the ruling it
+    # amends had named two; the count is asserted so that adding an eighth is
+    # a decision someone makes here rather than an omission nobody sees.
+    handlers = [
+        node for node in ast.walk(admission)
+        if isinstance(node, ast.ExceptHandler)
+    ]
+    assert len(handlers) == 7
+    for handler in handlers:
+        assert len(handler.body) == 1
+        statement = handler.body[0]
+        assert isinstance(statement, ast.Return)
+        assert isinstance(statement.value, ast.Call)
+        assert getattr(statement.value.func, "id", None) == "fail"
+
+
+def test_admission_cause_covers_a_handler_far_above_the_activation_stage(
+    capsys, clean_project,
+) -> None:
+    """Section 20.19.2: the coverage is the closure's, not one handler's.
+
+    This drives the source-proof handler.  It sits four stages above the
+    activation handler B-11 was reported from, it shares its outward code with
+    two other handlers, and it has no emission of its own.  If the line were
+    wired per handler as section 20.11 first instructed, this stderr would be
+    empty -- the exact silence that cost run 5 a cycle.  The frame named is
+    the stage's own, which is the whole reason the code alone is not enough.
+    """
+    from synaptic_host import docker_training
+    from synaptic_host.security import ScopedGitRemoteReader
+
+    result = docker_training.execute_docker_training_admission_v1(
+        clean_project["invalid_ingress"],
+        project_root=clean_project["invalid_project"],
+        engine_root=clean_project["engine"],
+        remote_reader=ScopedGitRemoteReader(runner=clean_project["transport"]),
+    )
+    assert result.code is TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE
+
+    captured = capsys.readouterr()
+    line = captured.err.strip().splitlines()[-1]
+    assert line.startswith("synaptic-host: RESOLUTION_UNAVAILABLE ")
+    # A real frame, package-relative, and the source-proof stage's own -- not
+    # the activation stage, and not the "<unknown>" a foreign raise produces.
+    assert " at synaptic_host/docker_training.py:" in line
+    assert line.endswith(" in prove")

@@ -662,3 +662,299 @@ def test_scoped_git_reader_surfaces_bounded_scrubbed_stderr_on_failure(monkeypat
     # so a credential should never have reached this slice in the first place.
     assert "s3cret" not in message and "operator:" not in message
     assert "https://example.com/project.git" in message
+
+
+# B-11 (architecture section 20.14).  W1 to W5 are Windows-only and carry the
+# existing WINDOWS_ONLY skip, so under WSL they SKIP rather than pass: every
+# assertion below sits unconditionally in the test body, so none of them can
+# go green by vacuity on a platform that cannot execute the primitive.
+OBJECT_INHERIT_ACE = 0x01
+CONTAINER_INHERIT_ACE = 0x02
+
+
+def windows_acl(path: Path) -> dict:
+    """Read one object's owner, protection bit and entries, by handle.
+
+    The tests read the access list themselves rather than asking
+    `private_storage_verified`, because B-11-M1 measured the validator
+    ACCEPTING a root whose whole subtree the path-based editor had just
+    emptied.  The validator is scoped to the directory, so it can never be the
+    acceptance test for a repair that must not touch the children.
+    """
+    import ctypes
+    from ctypes import wintypes
+
+    handle = security._win_open_path(path, directory=path.is_dir())
+    try:
+        owner = wintypes.LPVOID()
+        dacl = wintypes.LPVOID()
+        descriptor = wintypes.LPVOID()
+        result = security._ADVAPI32.GetSecurityInfo(
+            handle, security._SE_FILE_OBJECT,
+            security._OWNER_SECURITY_INFORMATION
+            | security._DACL_SECURITY_INFORMATION,
+            ctypes.byref(owner), None, ctypes.byref(dacl), None,
+            ctypes.byref(descriptor),
+        )
+        assert result == 0 and descriptor.value and owner.value and dacl.value
+        try:
+            control = wintypes.WORD()
+            revision = wintypes.DWORD()
+            assert security._ADVAPI32.GetSecurityDescriptorControl(
+                descriptor, ctypes.byref(control), ctypes.byref(revision)
+            )
+            size = security._ACL_SIZE_INFORMATION()
+            assert security._ADVAPI32.GetAclInformation(
+                dacl, ctypes.byref(size), ctypes.sizeof(size),
+                security._ACL_SIZE_INFORMATION_CLASS,
+            )
+            entries = []
+            for index in range(size.AceCount):
+                pointer = wintypes.LPVOID()
+                assert security._ADVAPI32.GetAce(
+                    dacl, index, ctypes.byref(pointer)
+                )
+                ace = ctypes.cast(
+                    pointer, ctypes.POINTER(security._ACCESS_ALLOWED_ACE)
+                ).contents
+                sid_pointer = (
+                    ctypes.addressof(ace)
+                    + security._ACCESS_ALLOWED_ACE.SidStart.offset
+                )
+                entries.append({
+                    "sid": security._win_sid_string(sid_pointer),
+                    "type": int(ace.Header.AceType),
+                    "flags": int(ace.Header.AceFlags),
+                    "mask": int(ace.Mask),
+                    "inherited": bool(
+                        ace.Header.AceFlags & security._INHERITED_ACE
+                    ),
+                })
+            return {
+                "protected": bool(control.value & security._SE_DACL_PROTECTED),
+                "owner": security._win_sid_string(owner),
+                "entries": entries,
+            }
+        finally:
+            security._KERNEL32.LocalFree(descriptor)
+    finally:
+        security._win_close(handle)
+
+
+@WINDOWS_ONLY
+def test_windows_repairs_a_chain_directory_the_operator_created_first(
+    tmp_path: Path,
+) -> None:
+    project_context = context(tmp_path)
+    root = project_context.project_root / ".synaptic"
+    root.mkdir()
+
+    # Prove the FIXTURE is the state under test before repairing it.  Without
+    # this the test would still pass if tmp_path happened to sit somewhere
+    # that produces a different list, and it would pass for the wrong reason.
+    before = windows_acl(root)
+    assert before["protected"] is False
+    assert before["entries"], "fixture is not the inherited-list state"
+    assert all(entry["inherited"] for entry in before["entries"])
+    assert before["owner"] == security._win_current_user_sid()
+
+    value = FileHmacAuthenticator.for_docker(
+        project_context, durable_rows_exist=False,
+    )
+    assert value.private_storage_verified is True
+
+    after = windows_acl(root)
+    assert after["protected"] is True
+    assert after["owner"] == security._win_current_user_sid()
+    assert len(after["entries"]) == 2
+    assert {entry["sid"] for entry in after["entries"]} == {
+        security._win_current_user_sid(), "S-1-5-18",
+    }
+    for entry in after["entries"]:
+        assert entry["inherited"] is False
+        assert entry["mask"] == security._FILE_ALL_ACCESS
+        # Half of section 20.8's combination, and the half a copy-paste of the
+        # CREATION descriptor would silently lose.  Without these flags the
+        # children carry entries marked inherited from a parent that publishes
+        # nothing, so any later propagation empties them.
+        assert entry["flags"] & OBJECT_INHERIT_ACE
+        assert entry["flags"] & CONTAINER_INHERIT_ACE
+
+
+@WINDOWS_ONLY
+def test_windows_repair_is_idempotent(tmp_path: Path) -> None:
+    project_context = context(tmp_path)
+    root = project_context.project_root / ".synaptic"
+    root.mkdir()
+
+    FileHmacAuthenticator.for_docker(project_context, durable_rows_exist=False)
+    first = windows_acl(root)
+
+    again = FileHmacAuthenticator.for_docker(
+        project_context, durable_rows_exist=True,
+    )
+    assert again.private_storage_verified is True
+    assert windows_acl(root) == first
+
+
+@WINDOWS_ONLY
+def test_windows_refuses_a_chain_directory_carrying_an_explicit_entry(
+    tmp_path: Path,
+) -> None:
+    project_context = context(tmp_path)
+    root = project_context.project_root / ".synaptic"
+    root.mkdir()
+    completed = subprocess.run(
+        ("icacls", str(root), "/grant", "*S-1-5-32-545:(RX)"),
+        capture_output=True, check=False,
+    )
+    if completed.returncode != 0:
+        pytest.skip("explicit access entry could not be written")
+
+    before = windows_acl(root)
+    explicit = [
+        entry for entry in before["entries"] if not entry["inherited"]
+    ]
+    assert explicit, "fixture did not produce a non-inherited entry"
+
+    with pytest.raises(ValueError, match="private storage"):
+        FileHmacAuthenticator.for_docker(
+            project_context, durable_rows_exist=False,
+        )
+
+    # Somebody made a decision on this object.  The entry is still there,
+    # which is what proves the repair did not act rather than acted and failed.
+    after = windows_acl(root)
+    assert after["protected"] is False
+    assert [
+        entry for entry in after["entries"] if not entry["inherited"]
+    ] == explicit
+
+
+@WINDOWS_ONLY
+def test_windows_refuses_a_chain_directory_already_protected_wrongly(
+    tmp_path: Path,
+) -> None:
+    project_context = context(tmp_path)
+    root = project_context.project_root / ".synaptic"
+    root.mkdir()
+    completed = subprocess.run(
+        ("icacls", str(root), "/inheritance:r",
+         "/grant", "*S-1-5-32-545:(F)"),
+        capture_output=True, check=False,
+    )
+    if completed.returncode != 0:
+        pytest.skip("protected access list could not be written")
+
+    before = windows_acl(root)
+    assert before["protected"] is True
+
+    # Protection is only ever set deliberately, so this is the tampered state
+    # and it stays refused with today's error.
+    with pytest.raises(ValueError, match="private storage"):
+        FileHmacAuthenticator.for_docker(
+            project_context, durable_rows_exist=False,
+        )
+    assert windows_acl(root) == before
+
+
+@WINDOWS_ONLY
+def test_windows_populated_chain_survives_the_repair(tmp_path: Path) -> None:
+    project_context = context(tmp_path)
+    root = project_context.project_root / ".synaptic"
+    root.mkdir()
+    inventory = root / "model-inventory"
+    inventory.mkdir()
+    child = inventory / "probe.txt"
+    child.write_bytes(b"inventory")
+
+    before_child = windows_acl(child)
+    before_inventory = windows_acl(inventory)
+
+    FileHmacAuthenticator.for_docker(project_context, durable_rows_exist=False)
+
+    # The regression guard for the propagation hazard.  This reads the CHILD,
+    # not the validator: the path-based editor left the root acceptable to the
+    # validator while emptying every list below it, so asking the validator
+    # here would report success on a destroyed tree.
+    #
+    # Section 20.14 W5 pins the FILE, and the file is untouched: same content,
+    # byte-identical list, still inherited and still unprotected.
+    assert child.read_bytes() == b"inventory"
+    assert windows_acl(child) == before_child
+
+    # The intermediate DIRECTORY is a measured exception the ruling did not
+    # anticipate.  Setting a protected list on the chain root by handle also
+    # freezes the immediate child directories: their entries keep every
+    # security identifier and every access mask, but the inherited flag is
+    # cleared and their own list becomes protected.  No grant is removed and
+    # nothing is emptied, which is what separates this from the path-based
+    # editor's outcome, so the property pinned here is the preservation of the
+    # grants rather than the preservation of the flags.
+    after_inventory = windows_acl(inventory)
+    assert [
+        (entry["sid"], entry["mask"]) for entry in after_inventory["entries"]
+    ] == [
+        (entry["sid"], entry["mask"]) for entry in before_inventory["entries"]
+    ]
+    assert after_inventory["entries"] != []
+    assert sorted(item.name for item in inventory.iterdir()) == ["probe.txt"]
+
+    assert windows_acl(root)["protected"] is True
+
+
+@POSIX_ONLY
+def test_posix_repairs_a_permissive_chain_directory(tmp_path: Path) -> None:
+    project_context = context(tmp_path)
+    root = project_context.project_root / ".synaptic"
+    root.mkdir()
+    os.chmod(root, 0o755)
+    assert stat.S_IMODE(os.stat(root).st_mode) == 0o755
+
+    value = FileHmacAuthenticator.for_docker(
+        project_context, durable_rows_exist=False,
+    )
+    assert value.private_storage_verified is True
+    assert stat.S_IMODE(os.stat(root).st_mode) == 0o700
+
+
+@POSIX_ONLY
+def test_posix_symbolic_link_in_the_chain_is_never_repaired(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "elsewhere"
+    target.mkdir()
+    os.chmod(target, 0o755)
+    project_context = context(tmp_path)
+    link = project_context.project_root / ".synaptic"
+    link.symlink_to(target, target_is_directory=True)
+
+    # Shape is never repaired, only access, so this stays refused.
+    with pytest.raises(ValueError, match="private storage"):
+        FileHmacAuthenticator.for_docker(
+            project_context, durable_rows_exist=False,
+        )
+    assert link.is_symlink()
+    assert stat.S_IMODE(os.stat(target).st_mode) == 0o755
+
+
+def test_ensure_private_storage_requires_an_explicit_repair_intent() -> None:
+    """The guard cannot be omitted, and verification never repairs.
+
+    Two properties in one place.  The parameter is keyword-only and has NO
+    default, so a future call site cannot inherit the permissive branch by
+    accident; and `_key`, which is what `private_storage_verified` calls,
+    passes False, which is what keeps verification a pure predicate.
+    """
+    import inspect
+
+    signature = inspect.signature(
+        FileHmacAuthenticator._ensure_private_storage_directories
+    )
+    parameter = signature.parameters["repair"]
+    assert parameter.kind is inspect.Parameter.KEYWORD_ONLY
+    assert parameter.default is inspect.Parameter.empty
+
+    source = inspect.getsource(FileHmacAuthenticator._key)
+    assert "_ensure_private_storage_directories(repair=False)" in source
+    assert "repair=True" not in source
