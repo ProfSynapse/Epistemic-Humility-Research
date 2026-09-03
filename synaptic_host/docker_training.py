@@ -40,6 +40,7 @@ from .artifact_destinations import (
     parse_artifact_destination_config_v1,
     artifact_destination_declaration_digest_v1,
 )
+from .cause_line import report_cause_line_v1
 from .docker_provider import DockerProviderProfileV1
 from .docker_model_inventory import resolve_docker_model_inventory_v1
 from .security import ScopedGitRemoteReader
@@ -555,31 +556,6 @@ class DockerAdmissionResolverV1:
         )
 
 
-_CAUSE_LINE_LIMIT = 400
-
-
-def _innermost_package_frame(error: BaseException) -> str:
-    """Render the deepest traceback frame that lies inside this package."""
-
-    package = Path(__file__).resolve().parent
-    location = "<unknown>"
-    frames = getattr(error, "__traceback__", None)
-    while frames is not None:
-        code = frames.tb_frame.f_code
-        try:
-            filename = Path(code.co_filename).resolve()
-            inside = filename.is_relative_to(package)
-        except (OSError, ValueError):
-            inside = False
-        if inside:
-            location = "{}:{} in {}".format(
-                filename.relative_to(package.parent).as_posix(),
-                frames.tb_lineno, code.co_name,
-            )
-        frames = frames.tb_next
-    return location
-
-
 def _report_admission_cause(error: BaseException, code) -> None:
     """Write one line naming WHERE admission failed, to stderr, and return.
 
@@ -602,15 +578,15 @@ def _report_admission_cause(error: BaseException, code) -> None:
     remains the last parseable line, and the driver already prints stderr with
     its own prefix, so no driver change is needed and no result field is
     added.
+
+    The renderer itself now lives in `cause_line.py` (section 24.4).  It had
+    to leave this module: this module imports the engine at module scope, so
+    `cli.py` could not reuse it -- least of all to report that importing this
+    module failed.  The name is kept here for the callers and the pins that
+    already reference it.
     """
-    try:
-        location = _innermost_package_frame(error)
-    except BaseException:
-        location = "<unknown>"
-    line = "synaptic-host: {} {} at {}".format(
-        getattr(code, "value", code), type(error).__name__, location,
-    )
-    print(line[:_CAUSE_LINE_LIMIT], file=sys.stderr)
+
+    report_cause_line_v1(error, code)
 
 
 def execute_docker_training_admission_v1(

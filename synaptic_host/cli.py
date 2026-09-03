@@ -1091,7 +1091,26 @@ def dispatch_validated_training_run_v1(
         if rebuilt != result:
             return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
         return rebuilt
-    except BaseException:
+    except BaseException as error:
+        # B-15 (section 24.4).  This catch used to swallow the cause whole:
+        # run 9 reported INTERNAL_FAILURE exit 4 with an all-null envelope and
+        # an EMPTY stderr, so the operator learned that a run failed and
+        # nothing about where.  The envelope does NOT widen -- it is the
+        # contract the driver parses, it is rebuilt and equality-checked, and
+        # six of the seven bare failure sites have no exception to name -- so
+        # the cause goes to stderr on the mechanism 20.11 already ruled.
+        #
+        # Imported here rather than at module scope: this module deliberately
+        # takes no relative import while it is cold.  Guarded because a
+        # diagnostic that can fail the path it diagnoses is worse than none.
+        try:
+            from .cause_line import report_cause_line_v1
+
+            report_cause_line_v1(
+                error, TrainingRunCommandCodeV2.INTERNAL_FAILURE,
+            )
+        except BaseException:
+            pass
         return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
 
 

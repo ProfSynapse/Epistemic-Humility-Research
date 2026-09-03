@@ -1486,7 +1486,11 @@ def test_admission_cause_line_never_carries_the_exception_text(capsys) -> None:
     assert absolute not in line and "operator" not in line
     assert "N" * 32 not in line
     # Bounded on the same argument that bounds a child process's stderr.
-    assert len(line) <= docker_training._CAUSE_LINE_LIMIT
+    # The renderer moved to `cause_line.py` in section 24.4; the bound is
+    # read from its new home rather than through a re-export shim.
+    from synaptic_host import cause_line
+
+    assert len(line) <= cause_line._CAUSE_LINE_LIMIT
     # The class survives; the frame is unknown because the raise is outside
     # the package, which is exactly when no location may be invented.
     assert line == (

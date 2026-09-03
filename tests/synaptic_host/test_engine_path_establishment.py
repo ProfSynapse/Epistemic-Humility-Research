@@ -107,17 +107,43 @@ def test_documented_invocation_gets_past_the_docker_training_import() -> None:
 
     # Before the establishment this is INTERNAL_FAILURE exit 4 with an
     # all-null envelope and an empty stderr, which is precisely how B-15
-    # presented in run 9.  Getting past `cli.py:973` means the import
-    # resolved; the run may still fail later for want of a daemon, and any
-    # such failure carries a different code.
+    # presented in run 9.
     assert envelope["code"] != "INTERNAL_FAILURE", (
         "cut 1 still dies at the docker_training import; "
         "stderr={!r}".format(completed.stderr[-400:])
     )
-    # The engine name that B-15 actually failed on must not appear as an
+    # The engine name B-15 actually failed on must not appear as an
     # unresolved import anywhere in the child's diagnostics.
     assert "No module named 'tuner'" not in completed.stderr
     assert "No module named 'synaptic_tuner'" not in completed.stderr
+
+    # POSITIVE evidence that the run got past `cli.py:973`, and not merely
+    # that it failed differently.  "Not INTERNAL_FAILURE" is too weak on its
+    # own: a layout that fails at ingress (no git checkout, say) reports
+    # CONFIG_UNAVAILABLE and would satisfy it while never reaching the import
+    # at all -- measured, in a scratch tree, where exactly that produced a
+    # false green.  These four refs are populated by the authenticated
+    # ingress that `:973` sits below, so a non-null set can only be read
+    # downstream of it.  This is also 24.5's P2, asserted here rather than as
+    # a separate test because it is the same child run.
+    for field in ("provider_ref", "config_ref", "destination_ref",
+                  "input_digest"):
+        assert envelope[field] is not None, (
+            "envelope[{!r}] is null, so the run never reached the import; "
+            "code={} stderr={!r}".format(
+                field, envelope["code"], completed.stderr[-400:],
+            )
+        )
+    assert envelope["provider_ref"] == "docker"
+
+    # P2's other half: a failure downstream of the import carries exactly one
+    # cause line, where B-15 carried none at all.
+    if envelope["status"] != "submitted":
+        causes = [
+            line for line in completed.stderr.splitlines()
+            if line.startswith("synaptic-host: ")
+        ]
+        assert len(causes) == 1, completed.stderr[-400:]
 
 
 def test_engine_root_is_appended_last_and_never_duplicated(
