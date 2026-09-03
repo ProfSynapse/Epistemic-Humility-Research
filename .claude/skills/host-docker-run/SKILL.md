@@ -387,6 +387,53 @@ Three things to expect rather than diagnose:
   than printing a total it is not sure of. Nothing downstream re-checks P9's
   arithmetic, so a plausible wrong number would travel further than no number.
 
+### A wedged `.synaptic` chain, and the one case where deleting state is the remedy
+
+**Before you delete anything under `.synaptic`, check whether
+`.synaptic\state\training.sqlite3` exists.** Your own check is the only guard
+here. Nothing in the Host performs it for you, and nothing refuses the deletion.
+
+The symptom is an activation failure whose cause line names a private storage
+frame:
+
+```
+    stderr| synaptic-host: START_UNAVAILABLE ValueError at synaptic_host/security.py:422 in _win_validate_acl
+```
+
+The line number moves with the clause that refused; the frame is the part that
+identifies this. **The validator's own message is not in the output.** The cause
+line carries the exception's class and frame only, and excludes the text
+deliberately, so searching your console for the wording of the failure finds
+nothing.
+
+This is the B-11-R1 wedge. It happens only on a volume where a directory's
+access list propagates to children that already exist, so `F:` has never
+produced it. A wedged `state` is protected and carries entries the Host did not
+write, which from inside the process is indistinguishable from a third party's
+decision. The validator refuses it, and no later repair can reach it. The
+two-pass leaf-first repair prevents new wedges; it does not heal one that
+already exists.
+
+**The check: does `.synaptic\state\training.sqlite3` exist?**
+
+- **No: delete `.synaptic\state` and re-run.** The repair recreates the chain.
+  This is safe in the wedge case specifically, and the reason is worth keeping
+  rather than trusting: the wedge can only fire while a chain member is still in
+  its never-protected state, which no tree that has completed an activation is.
+  A genuinely wedged tree has therefore never completed one, and holds no
+  durable rows and no key.
+- **Yes: stop and report. Do not delete.** `state` holds the durable rows
+  database (`training.sqlite3`), the Docker control key
+  (`docker\control-hmac.key`) and the Modal evidence key
+  (`modal\evidence-hmac.key`). Deleting the directory removes all three
+  together, silently and permanently, and the next run mints a fresh key as
+  though nothing had been lost. There is no prompt, no refusal, and no way
+  back.
+
+One thing to expect rather than diagnose: **the remedy is narrow.** Deleting
+`.synaptic\state` answers this one cause line on a propagating volume. It is not
+a general recovery step, and it is not a way to clear an unrelated failure.
+
 ## Do not
 
 - Do not create a host conda environment or venv. Everything model-related runs
