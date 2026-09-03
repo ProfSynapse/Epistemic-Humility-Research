@@ -347,15 +347,35 @@ prints a repository tag. Matching happens in the driver, on the `synaptic-`
 container name or on any `ai.synapticlabs.tuner.v1.` label, so a non-match is
 counted and printed instead of vanishing.
 
+Alongside the stream the driver takes a **census** of container ids, `ps -a`
+with no filter, once before cut 1 and once after it. The census is what makes
+`matched=0` readable: `parsed` counts every container event in the window,
+including this driver's own `--rm` probes, so a non-zero `parsed` never proved
+that a container existed (section 24.7, follow-up #219).
+
 ```
 CAPTURE container events parsed=7 matched=1 other=6 unparseable=0 stream file: <path>
+CAPTURE verdict=matched 1 container(s) captured. census before=3 after=4 created=1
 CAPTURE container id=<12 hex> name=synaptic-<...> matched_on=name events=create,start,die
 ```
 
-Read `matched=0` with `parsed>0` as a **miss** and quote the `other|` lines; only
-`parsed=0` means the stream itself saw nothing, and `capture-unavailable` means no
-stream ran at all. The capture never gates the run: the cut's own result codes
-remain the acceptance.
+One of four verdicts is printed, and only the first three are readings:
+
+- `verdict=matched` — the container was captured; the lines that follow are its
+  id, image, exit code, timestamps and stderr.
+- `verdict=no-container` — the census did not grow, so nothing was ever created.
+  This is **not** a match failure. Read the Host envelope and the
+  `synaptic-host:` cause line; the match keys are not the suspect. Run 9 was
+  this case and the old two-state reading called it a miss.
+- `verdict=match-failed` — the census grew and no key matched. Now the keys are
+  the suspect: check the `synaptic-` name prefix and the
+  `ai.synapticlabs.tuner.v1.` label paths, and read the `created|` ids and the
+  `other|` names.
+- `verdict=census-unavailable` — `ps` did not answer, so the report says the
+  reading is ambiguous rather than guessing between the two above.
+
+`capture-unavailable` is separate again: no event stream ran at all. The capture
+never gates the run; the cut's own result codes remain the acceptance.
 
 ## Early assertions
 

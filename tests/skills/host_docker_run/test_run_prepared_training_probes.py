@@ -1378,6 +1378,19 @@ _RUN8_STREAM = [
 
 _TRAINER_STDERR = [f"trainer line {index}" for index in range(1, 131)]
 
+# Two censuses: what `ps -a` answers before cut 1, and what it answers after.
+# The default pair GROWS by the captured container, which is what a run that
+# really composes one looks like.
+_FOREIGN_ID = "0d0d0d0d0d0d0d0d" + "0" * 48
+_DEFAULT_CENSUSES = [[_FOREIGN_ID], [_FOREIGN_ID, _CAPTURED_ID]]
+
+# Run 9's own shape: container events arrived, none of them ours, and the
+# census never grew because composition was never reached.
+_FOREIGN_ONLY_STREAM = [
+    _event("create", _UNRELATED_ID, _THEIRS),
+    _event("die", _UNRELATED_ID, _THEIRS),
+]
+
 _FAKE_DOCKER = '''import json, sys, time
 
 ARGV_LOG = {argv_log!r}
@@ -1386,10 +1399,31 @@ STREAM = {stream!r}
 EMPTY_STREAM = {empty_stream!r}
 INSPECT = {inspect!r}
 STDERR = {stderr!r}
+PS_CENSUSES = {ps_censuses!r}
+PS_FAILS = {ps_fails!r}
 
 argv = sys.argv[1:]
 with open(ARGV_LOG, "a", encoding="utf-8") as handle:
     handle.write(json.dumps(argv) + "\\n")
+
+if "ps" in argv:
+    # The census. Successive calls answer successive entries of PS_CENSUSES, so
+    # one fake serves both the pre-cut and the post-cut reading; the count comes
+    # from the argv log this process has already appended to.
+    if PS_FAILS:
+        sys.stderr.write("Cannot connect to the Docker daemon\\n")
+        raise SystemExit(1)
+    seen = 0
+    with open(ARGV_LOG, encoding="utf-8") as handle:
+        for line in handle:
+            if line.strip() and "ps" in json.loads(line):
+                seen += 1
+    index = seen - 1
+    if index > len(PS_CENSUSES) - 1:
+        index = len(PS_CENSUSES) - 1
+    for identifier in PS_CENSUSES[index]:
+        sys.stdout.write(identifier + "\\n")
+    raise SystemExit(0)
 
 if "events" in argv:
     if "--until" in argv:
@@ -1439,7 +1473,14 @@ _INSPECT_RECORD = {
 _FAKE_STREAM_SECONDS = 30
 
 
-def _write_fake_docker(tmp_path: Path, *, empty_stream: bool = False) -> tuple[Path, Path]:
+def _write_fake_docker(
+    tmp_path: Path,
+    *,
+    empty_stream: bool = False,
+    stream: list[str] | None = None,
+    ps_censuses: list[list[str]] | None = None,
+    ps_fails: bool = False,
+) -> tuple[Path, Path]:
     """Write a fake `docker` the driver can really execute, on either platform.
 
     The Python body is identical on both; only the launcher differs, because
@@ -1481,10 +1522,12 @@ def _write_fake_docker(tmp_path: Path, *, empty_stream: bool = False) -> tuple[P
     body = _FAKE_DOCKER.format(
         argv_log=str(argv_log),
         stream_seconds=_FAKE_STREAM_SECONDS,
-        stream=_RUN8_STREAM,
+        stream=_RUN8_STREAM if stream is None else stream,
         empty_stream=empty_stream,
         inspect=_INSPECT_RECORD,
         stderr=_TRAINER_STDERR,
+        ps_censuses=_DEFAULT_CENSUSES if ps_censuses is None else ps_censuses,
+        ps_fails=ps_fails,
     )
     if os.name == "nt":
         implementation = tmp_path / "docker_impl.py"
@@ -1567,12 +1610,17 @@ def test_the_capture_really_records_the_container_from_a_live_event_stream(
     assert "bounded replay" not in out
     # The unrelated container was SEEN and COUNTED, not silently dropped.
     assert "other=1" in out and "gracious_hopper" in out
-    # The observer used three read-only verbs and nothing else. The driver
+    # The first of the three verdicts (section 24.7). A match needs no census
+    # to interpret it, but the census is still read and still printed, so the
+    # three verdict lines are one vocabulary rather than two.
+    assert "verdict=matched" in out
+    assert "verdict=no-container" not in out and "verdict=match-failed" not in out
+    # The observer used four read-only verbs and nothing else. The driver
     # always calls `docker --host <endpoint> <verb> ...`, so the verb is the
     # third token. `rm` in particular must never appear: the Host has no `rm`,
     # and removing the container is what would destroy this evidence.
     calls = _argv_log(argv_log)
-    assert {entry[2] for entry in calls} == {"events", "inspect", "logs"}
+    assert {entry[2] for entry in calls} == {"events", "inspect", "logs", "ps"}
     assert not any("rm" in entry for entry in calls)
 
 
@@ -1614,6 +1662,116 @@ def test_a_stream_that_cannot_start_is_capture_unavailable_and_never_raises(
     driver._stop_container_capture(capture)
     driver._report_first_container(str(missing), "npipe://test", capture)
     assert "capture-unavailable" in capsys.readouterr().out
+
+
+# --- the census verdict (#219, section 24.7) ------------------------------
+#
+# `matched=0` had two readings and the world has three. Run 9 created no
+# container at all (B-15 stopped the Host before composition) and the report
+# still told the reader that a container had been seen and the KEYS had failed,
+# because `parsed>0` counted the driver's own `--rm` probe containers replayed
+# by `--since`. The discriminator is a census of container ids taken before
+# cut 1 and again after it: a census that did not grow means nothing was ever
+# created, which is a question about the Host envelope, not about the keys.
+
+
+def test_a_census_that_did_not_grow_reads_as_no_container_not_a_match_failure(
+    tmp_path, capsys
+):
+    """Run 9's exact shape: container events arrived and none of them were ours."""
+    docker, _argv = _write_fake_docker(
+        tmp_path,
+        stream=_FOREIGN_ONLY_STREAM,
+        ps_censuses=[[_FOREIGN_ID], [_FOREIGN_ID]],
+    )
+    capture = driver._start_container_capture(str(docker), "npipe://test")
+    _await_stream(capture, len(_FOREIGN_ONLY_STREAM))
+    driver._stop_container_capture(capture)
+    driver._report_first_container(str(docker), "npipe://test", capture)
+
+    out = capsys.readouterr().out
+    # Events WERE seen, which is exactly what made the old reading wrong.
+    assert "matched=0" in out and "parsed=2" in out
+    assert "verdict=no-container" in out
+    assert "created=0" in out
+    # The guidance sends the reader upstream of composition, not at the keys.
+    assert "before composition" in out
+    assert "synaptic-host:" in out
+    assert "verdict=match-failed" not in out
+    assert "created|" not in out
+
+
+def test_a_census_that_grew_with_nothing_matched_reads_as_match_failed(
+    tmp_path, capsys
+):
+    """A container WAS created and no key found it: the keys are the suspect."""
+    docker, _argv = _write_fake_docker(
+        tmp_path,
+        stream=_FOREIGN_ONLY_STREAM,
+        ps_censuses=[[_FOREIGN_ID], [_FOREIGN_ID, _CAPTURED_ID]],
+    )
+    capture = driver._start_container_capture(str(docker), "npipe://test")
+    _await_stream(capture, len(_FOREIGN_ONLY_STREAM))
+    driver._stop_container_capture(capture)
+    driver._report_first_container(str(docker), "npipe://test", capture)
+
+    out = capsys.readouterr().out
+    assert "matched=0" in out
+    assert "verdict=match-failed" in out
+    assert "created=1" in out
+    # The id itself is printed, so the reader can inspect the container the
+    # capture could not name.
+    assert f"created| {_CAPTURED_ID}" in out
+    assert "name prefix" in out
+    assert "verdict=no-container" not in out
+
+
+def test_a_census_that_cannot_be_read_degrades_and_never_fails_the_run(
+    tmp_path, capsys
+):
+    """A `ps` failure degrades exactly like `capture-unavailable`.
+
+    It must not invent a verdict it cannot support: with no census the report
+    falls back to the ambiguous reading and SAYS it is ambiguous, rather than
+    guessing between the two answers.
+    """
+    docker, _argv = _write_fake_docker(
+        tmp_path, stream=_FOREIGN_ONLY_STREAM, ps_fails=True
+    )
+    capture = driver._start_container_capture(str(docker), "npipe://test")
+    assert capture["unavailable"] is None       # the STREAM still started
+    assert capture["census_before"] is None
+    assert capture["census_error"] is not None
+    _await_stream(capture, len(_FOREIGN_ONLY_STREAM))
+    driver._stop_container_capture(capture)
+    driver._report_first_container(str(docker), "npipe://test", capture)
+
+    out = capsys.readouterr().out
+    assert "verdict=census-unavailable" in out
+    assert "verdict=no-container" not in out
+    assert "verdict=match-failed" not in out
+
+
+def test_the_census_is_read_only_and_narrows_nothing_on_the_server(tmp_path):
+    """`ps` is the fourth observer verb and it carries no filter and no `rm`.
+
+    Same ruling as the event stream (#236 item 4): the only server-side filter
+    on this instrument is `type=container` on `events`. A census that filtered
+    would repeat run 8's defect in a new place, because a filtered census that
+    matches nothing is indistinguishable from a daemon with no containers.
+    """
+    docker, argv_log = _write_fake_docker(tmp_path)
+    capture = driver._start_container_capture(str(docker), "npipe://test")
+    driver._stop_container_capture(capture)
+
+    census = [entry for entry in _argv_log(argv_log) if "ps" in entry]
+    assert len(census) == 1
+    argv = census[0]
+    assert "--filter" not in argv
+    assert "rm" not in argv
+    joined = " ".join(argv)
+    assert driver._CONTAINER_NAME_PREFIX not in joined
+    assert driver._HOST_LABEL_PREFIX not in joined
 
 
 # --- the ruling on the server-side filter ---------------------------------

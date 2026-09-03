@@ -1409,6 +1409,8 @@ _CAPTURE_TAIL_LINES = 50
 _CAPTURE_SHOWN_UNPARSEABLE = 5
 _CAPTURE_SHOWN_OTHERS = 10
 _CAPTURE_STOP_SECONDS = 10
+_CENSUS_SHOWN_IDS = 10
+_CENSUS_TIMEOUT_SECONDS = 60
 
 
 def _capture_matched_key(attributes: dict) -> tuple[str, str] | None:
@@ -1482,6 +1484,32 @@ def _parse_container_events(text: str) -> tuple[dict, int, list[str], list[str]]
     return matched, parsed, others, unparseable
 
 
+def _container_census(docker: str, endpoint: str) -> tuple[set[str] | None, str | None]:
+    """Every container id the daemon holds, or None plus the reason it is unknown.
+
+    Read-only, unfiltered, id-only. Unfiltered for the same reason the event
+    stream is (section 22.11 row 4): a narrowing applied on the SERVER turns a
+    miss into silence, and a filtered census that answers nothing looks exactly
+    like a daemon holding no containers. `-a` because the container this exists
+    to notice may already have exited -- run 8's lived 0.7 s. Never raises; a
+    failure degrades exactly like `capture-unavailable` and the run continues.
+    """
+    argv = [
+        docker, "--host", endpoint, "ps", "-a", "--no-trunc", "--format", "{{.ID}}",
+    ]
+    try:
+        completed = _run(argv, timeout=_CENSUS_TIMEOUT_SECONDS)
+    except (OSError, subprocess.SubprocessError) as error:
+        return None, f"{type(error).__name__}: {error}"
+    if completed.returncode != 0:
+        detail = (completed.stderr or "").strip() or "no output"
+        return None, f"the census exited {completed.returncode}: {detail}"
+    identifiers = {
+        line.strip() for line in (completed.stdout or "").splitlines() if line.strip()
+    }
+    return identifiers, None
+
+
 def _start_container_capture(docker: str, endpoint: str) -> dict:
     """Subscribe to container events BEFORE the cut that creates the container.
 
@@ -1498,6 +1526,10 @@ def _start_container_capture(docker: str, endpoint: str) -> dict:
     Never raises. A stream that will not start is recorded as `capture-unavailable`
     and the run continues.
     """
+    # The census FIRST, so `--since` is taken as late as possible: `ps` is a
+    # child process, and the window between that timestamp and `Popen` is the
+    # one gap the stream cannot see.
+    census_before, census_error = _container_census(docker, endpoint)
     since = str(int(time.time()) - 1)
     argv = [
         docker, "--host", endpoint, "events",
@@ -1508,6 +1540,7 @@ def _start_container_capture(docker: str, endpoint: str) -> dict:
     capture: dict = {
         "argv": argv, "since": since,
         "path": None, "process": None, "stream": None, "unavailable": None,
+        "census_before": census_before, "census_error": census_error,
     }
     try:
         handle, path = tempfile.mkstemp(
@@ -1670,6 +1703,56 @@ def _report_captured_container(docker: str, endpoint: str, entry: dict) -> None:
         print(f"    stderr|{index if index else '':>5} {line}")
 
 
+def _report_census_verdict(
+    before: set[str] | None, after: set[str] | None, error: str | None,
+    parsed: int, matched_count: int,
+) -> None:
+    """Say which of the three worlds this is, and never guess between two.
+
+    Run 9's reading had two states and the world has three. `matched=0` with
+    `parsed>0` was reported as a MISS, which sent the reader to the match keys;
+    but `parsed` counts every container event in the window INCLUDING this
+    driver's own `--rm` probes, so a run that died before composition read as a
+    key failure. Run 9 was exactly that. The census diff separates them: a
+    census that did not grow means no container was ever created, which is a
+    question about the Host envelope, not about the keys (section 24.7).
+    """
+    if before is None or after is None:
+        print(
+            f"CAPTURE verdict=census-unavailable ({error}). Without a census "
+            f"the reading is ambiguous: {parsed} container event(s) were seen "
+            f"and {matched_count} matched, which is EITHER a run that never "
+            "composed a container OR a match that failed"
+        )
+        return
+    created = sorted(after - before)
+    counts = f"census before={len(before)} after={len(after)} created={len(created)}"
+    if matched_count:
+        print(
+            f"CAPTURE verdict=matched {matched_count} container(s) captured. "
+            f"{counts}"
+        )
+        return
+    if not created:
+        print(
+            f"CAPTURE verdict=no-container {counts}. Nothing was created at "
+            "all, so this is NOT a match failure: the run stopped before "
+            "composition. Read the Host envelope and the `synaptic-host:` "
+            f"cause line, not the match keys; the {parsed} event(s) in the "
+            "window are this driver's own probes"
+        )
+        return
+    print(
+        f"CAPTURE verdict=match-failed {counts}. A container WAS created and no "
+        "key matched it: suspect the container name prefix or the label field "
+        "paths, and read the 'other|' lines above for the names that arrived"
+    )
+    for identifier in created[:_CENSUS_SHOWN_IDS]:
+        print(f"    created| {identifier}")
+    if len(created) > _CENSUS_SHOWN_IDS:
+        print(f"    created| ... {len(created) - _CENSUS_SHOWN_IDS} more not shown")
+
+
 def _report_first_container(docker: str, endpoint: str, capture: dict) -> None:
     """Turn the captured stream into the 22.11 row 4 reading. Never raises."""
     if capture.get("unavailable") is not None:
@@ -1710,14 +1793,13 @@ def _report_first_container(docker: str, endpoint: str, capture: dict) -> None:
                 f"CAPTURE bounded replay parsed={parsed} matched={len(matched)} "
                 f"other={len(others)} unparseable={len(unparseable)}"
             )
-    if not matched:
-        print(
-            f"CAPTURE no container matched. {parsed} container event(s) were seen "
-            "in the window, so this is a MISS, not an empty stream: read the "
-            "'other|' lines above for the names that did arrive. If parsed is 0 "
-            "as well, the stream itself saw nothing"
-        )
-        return
+    # The post-cut census. This runs in the `finally` beside the stop, so it
+    # reads the daemon after the only cut that can have created the container.
+    census_after, census_error = _container_census(docker, endpoint)
+    _report_census_verdict(
+        capture.get("census_before"), census_after,
+        capture.get("census_error") or census_error, parsed, len(matched),
+    )
     for entry in matched.values():
         _report_captured_container(docker, endpoint, entry)
 
