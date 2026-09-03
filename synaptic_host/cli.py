@@ -932,6 +932,34 @@ def prepare_training_run_ingress_v1(
         return _failure(TrainingRunCommandCodeV2.INTERNAL_FAILURE)
 
 
+def _establish_engine_import_root(engine_root: Path) -> None:
+    """Put the bound engine root on `sys.path` once, appended, for good.
+
+    B-15 (architecture section 24.3).  The contract loader at `:743-750`
+    inserts this root and deletes it again, and provider `docker` then
+    re-imports the engine at `docker_training.py:18` with nothing left to
+    resolve it.  Runs 1 to 8 hid that because the operator's wrapper exported
+    `PYTHONPATH`; the documented invocation does not, and run 9 died at cut 1
+    on the top-level name `tuner`.
+
+    APPENDED, never inserted at position 0, and that is not a style choice.
+    The release root and the engine root both carry `docs/`, `scripts/` and
+    `tests/`, and the engine's `Tools/` is the project's `tools/` on a
+    case-insensitive Windows filesystem.  Appending makes the project win
+    every collision, and nothing the engine needs is ambiguous.
+
+    Adding a path entry imports nothing, so the `:738-742` refusal that no
+    `synaptic_tuner` may be resident yet still holds, and if `:743` later
+    inserts this same string at position 0 its `finally` deletes that
+    position-0 copy while this appended entry survives.  `:743-750` needs no
+    edit.
+    """
+
+    entry = str(engine_root)
+    if entry not in sys.path:
+        sys.path.append(entry)
+
+
 def dispatch_validated_training_run_v1(
     ingress: TrainingRunIngressV1,
     *,
@@ -970,6 +998,7 @@ def dispatch_validated_training_run_v1(
                     provider_ref=provider_ref, config_ref=config_ref,
                     destination_ref=destination_ref, input_digest=input_digest,
                 )
+            _establish_engine_import_root(supplied_engine)
             docker_training = importlib.import_module("synaptic_host.docker_training")
             result = docker_training.execute_docker_training_admission_v1(
                 ingress, project_root=supplied_project, engine_root=supplied_engine,
