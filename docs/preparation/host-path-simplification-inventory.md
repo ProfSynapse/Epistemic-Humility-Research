@@ -27,6 +27,22 @@ forward would produce a ruling against symbols that do not exist.
 | `--user 1000:1000` is the container user | The value is **profile-derived, not a constant**. The grammar admits any `uid:gid` | `synaptic_host/docker_v1/control_private.py:46`; profile field at `synaptic_host/docker_prepared_composition.py:65` |
 | B-7 would be removed by dropping `docker.exe` | **False.** B-7 is in a `git` child, not a docker child | `synaptic_host/security.py:1123` `class ScopedGitRemoteReader`, `:1130` `_run`, `:1142-1147` the `SystemRoot` carry, `:1149` `subprocess.run`, `:1169` `git ls-remote`. See section 3.4. |
 
+**A fifth correction, against my own earlier work.** `docs/preparation/b16-unsloth-import-spike.md:378` says the
+B-16 remedy makes "the recorded child environment key set (section 22.11 row 2) gains one key". That is wrong,
+and it is wrong in a way this document must not repeat. There are **two distinct environment sets** and the
+spike doc conflated them:
+
+| Set | Size | Who receives it | Can it gain a key? |
+|---|---|---|---|
+| The `docker.exe` CLI **child** environment | **4** (`SystemRoot`, `TEMP`, `TMP`, `WINDIR`) | the `docker.exe` process on the Windows host | **No.** Fixed by tuple equality at `docker_v1/model.py:1144-1149`. This is layer 1.6. |
+| The **container** environment | **19** | the process inside the container | Yes. This is where `USER=synaptic` went. This is layer 1.3. |
+
+The B-16 `USER` key went into the 19-key container set, never into the 4-key CLI set. The correction landed in
+commit `c6828a65` ("Correct the B-16 test spec's reading of the CLI child key set") against the test spec, **not
+against my spike document, which still carries the error at HEAD**. The inventory below keeps the two sets
+strictly separate, at 1.3 and 1.6. Flagging it because the architect may read the spike doc as background, and
+because a costing that merges those two layers would be wrong about both.
+
 One further scale correction. The brief says the Host is "25 modules, 17,255 lines". That is the top level
 only. The package has three subpackages.
 
@@ -457,7 +473,7 @@ rather than on the evidence.
 | B-4 | #97 | P | — | run 1 | run 2 | CLI verb/create argv | **2 production files** |
 | B-5 | #116 | P | — | after run 2 | procedural | worker closure manifest | procedure, not a diff |
 | B-6 | #118 | H | — | run 2 | run 3 | operator procedure | not stated |
-| B-7 | #120 **open** | W | — | run 3 | fixed #121, **never exercised** | scrubbed git child env | not stated |
+| B-7 | #120 **open** | W | — | run 3 | fixed #121, **never exercised** | scrubbed git child env | **+37/-4 plus 88 test lines** [memory] |
 | B-8 | — | *unclassifiable* | — | — | — | — | no task, no subject, 2 mentions |
 | B-9 | #128 **open** | W | — | run 4 | shipped run 5, observed run 8 | container user | **8 Host + 2 driver files** |
 | B-9-R1 | #141/#147 | E | W | probe #131 | shipped run 5 | engine allowlist + cache keys | 2 engine files + regen + pin |
@@ -543,11 +559,36 @@ Three caveats the architect must carry with that number:
 Runs 1 through 7 produced no container at all. The first container was created on **run 8** (#218), the
 first training on **run 11** (#279). Eleven runs to one training step.
 
+**A recorded claim that this table contradicts, and the architect will meet it.** pact-memory carries a
+"spine lesson 78" which states the blocker layers moved outward in a readable order, and then concludes:
+*"Each layer was only reachable once the one before it cleared, which is why no blocker could have been
+found earlier by better review."* The ordering half is a useful summary and I reproduce it in 2.7. **The
+conclusion is false, on the record's own evidence, on two independent counts:**
+
+1. **Six blockers were found by reading, not by running** (the table above). B-1, B-2, B-5, B-9-R2, B-10 and
+   B-10-R1 were all identified without a run reaching them. B-10 in particular was found by reading before
+   run 5 and is *still latent*. So review did find blockers early, repeatedly.
+2. **B-12 was latent from the day the path was written and was masked by B-11** (#179's own subject line
+   says so). It was reachable by reading a constant against a directory size at any point in the preceding
+   eleven weeks.
+
+The distinction matters for the review because the lesson, if believed, argues that the blocker count was
+unavoidable and therefore says nothing about the design. The record does not support that. This document
+takes no position on how *many* of the twenty-one were avoidable; it only establishes that the claim
+"none were" is contradicted by the ledger it was drawn from.
+
 ### 2.6 META-BLOCK cycles
 
 A negative finding first, because it bounds what can be said. **The two ledgers contain the string
 `META-BLOCK` exactly twice**, both referring to #154 (diag:2147, review:203). The diagnostic contains no
 numbered imPACT cycle list. The numbering exists only in task titles.
+
+**pact-memory does not close the gap either, and it contradicts itself.** The secretary reports two spine
+entities that disagree: one says "Raised twice on feature #73: #138 at imPACT cycle 3 and #154 at imPACT
+cycle 4", the other says "META-BLOCK cycles 7-9: Tasks #161 (B-11), #176 (B-11-R1), #180 (B-12)". Both are
+partial and the first is stale on its count. The secretary's explicit guidance was to build the enumeration
+from the task list rather than from memory, which is what the table below does. Treat the cycle numbers as
+task-title archaeology, not as a governed series.
 
 | Cycle | Task | Subject | Trigger |
 |---|---|---|---|
@@ -564,17 +605,92 @@ numbered imPACT cycle list. The numbering exists only in task titles.
 twenty-one blockers, eleven numbered cycles, and the first training on run 11.** The brief was written
 after run 8 and has not been updated; the architect should not carry its counts.
 
+### 2.7 The recorded rationale, and the rationale that is not recorded
+
+I asked the secretary for the stated purpose of the hardening: a threat model, a reproducibility goal, an
+audit goal, anything a costing exercise could weigh a layer against. **There is none.** The secretary
+searched all four pact-memory records for this task and reports no user ruling stating a threat model, a
+reproducibility goal, or an audit goal for any layer in section 1. This is the single most important
+epistemic fact in this document and it shapes how section 1's two consumer columns must be read: **they are
+my reconstruction of what each layer buys, not a comparison against a stated requirement.**
+
+Three things *are* recorded, and the architect should have all three, in their correct status.
+
+**(a) A layer ordering, whose last element is superseded.** Spine lesson 78, verbatim: the blocker layers
+"have moved outward in a readable order: composition and mounts (B-1 to B-4), engine closure and environment
+(B-5, B-9-R1, B-10-R1, B-14), Windows filesystem and ACL (B-9, B-11, B-11-R1), platform-independent Host
+logic (B-12, B-13, B-15), and now the IMAGE itself (B-16)." The first four groupings are current and useful.
+**The fifth is superseded by my own B-16 spike:** the record now carries `layer: image` alongside
+`layer_corrected: composition (uid/passwd interaction), not image`, on probe 1 and probe 8 evidence. B-16 is
+not an image blocker. And B-10-R2 appears in the taxonomy not at all; it is Host verify-cut ordering, which
+reads either as a sixth position or as a late member of the platform-independent group. Lesson 78's
+concluding clause is separately false, per 2.5.
+
+**(b) One recorded statement about which layer actually does the work.** From the B-14 arc: *"the engine's
+real defence of what runs is import-origin based on either side of that call
+(`install_owned_module_guard :632`, `verify_loaded_owned_module_origins :640`), keyed on the closure and not
+on a file mode."* That is the reasoning that justified deleting the exec-bit predicate, and it is the only
+recorded instance of a layer being priced against the property it was supposed to provide. It is a useful
+template for what this review is being asked to do twelve more times.
+
+**(c) One recorded design principle, for the environment scrub.** From the B-7 arc: *"Carrying the whole
+Windows core set would have been easy and would have made the scrub stop being a scrub."* This is the
+closest thing in the record to a stated intent for layers 1.3 and 1.6.
+
+**What the architect must not do with this silence.** Spine lesson 77, verbatim: *"THE USER RULED THE ORDER,
+NOT THE QUESTION: run 8 first, then a plan-mode simplification review of the local Docker Host path before
+the cloud smokes. The lead's position going into that review is that the security posture is right-sized and
+that the alternative to evaluate is a Docker Engine API client in place of the docker.exe wrapper."*
+
+Read that carefully. The user ruled **sequencing**. The claim that the posture is *right-sized* is **the
+lead's position, not a user ruling** — and it is the exact claim this review exists to test. It must not
+enter the review as a premise. The user's own words on #209 pull the other way: *"are we over thinking all
+this stuff? are we over engineering?"* and, per #286's brief, *"dont just go along with that i honestly
+dont know."*
+
+**And the silence is not evidence.** The user ruled that product-context and business-motivation statements
+made in conversation are conversation-only and are not to be saved, and the secretary has honoured that
+across every harvest. So the absence of a recorded purpose is **partly by design** and is *not* evidence
+that the user lacks one. Inferring "there was no threat model" from what memory happens to contain would be
+inferring it from an exclusion rule. That is why question 1 in 5.2 is addressed to the user and not answered
+here.
+
 ---
 
 ## 3. THE DOCKER ENGINE API ALTERNATIVE
 
 **Status of this section: research only. Nothing here has been executed.** No pipe was opened, no HTTP
-request was issued, no container was created by any route other than the existing one. Claims about the
-transport are read from source and specification, and are marked accordingly. My B-16 spike settled every
-claim by executing against an image already on the host; that method does not transfer here, and I have not
-substituted confidence for measurement.
+request was issued, no container was created by any route other than the existing one. My B-16 spike settled
+every claim by executing against an image already on the host; that method does not transfer here, and I
+have not substituted confidence for measurement.
+
+**Confidence tags, per the lead's ruling on this task.** Every claim below carries one of three tags. Read
+the section at the confidence the tag states, not at the confidence the prose implies.
+
+| Tag | Means |
+|---|---|
+| **[SOURCE]** | Read from source in this tree at `557ce1be`, or from the pinned engine submodule. As reliable as any other citation in this document. |
+| **[SPEC]** | Read from an external published document: the Moby `swagger.yaml` (API 1.56) or docker-py's own source. Authoritative for what the API and that client declare, not evidence about *this* host. |
+| **[UNVERIFIED-BY-EXECUTION]** | A behavioural claim about what would happen if the transport changed. Nothing was run to establish it. **A ruling must not rest on one of these without a spike.** |
+
+Tags are applied **per table** where every row of that table shares one provenance, and **per row** where a
+table mixes them. Every subsection below carries its provenance line. The unverified claims are gathered
+again in **3.7** so the architect can see the whole exposure in one place rather than collecting it while
+reading; **3.7 is the authoritative list, and it has seven entries.**
+
+One measured fact exists and is worth separating, because it is the only thing here anyone has actually run.
+Recorded in pact-memory, reported by the secretary on this task: `docker.exe context ls` shows
+`desktop-linux` as current, bound to `npipe:////./pipe/dockerDesktopLinuxEngine`, and a `-H <npipe> version`
+call returned engine **29.3.1, linux/amd64**. It was promoted into the record precisely because the endpoint
+had been, in the lead's words, "a CLAIM with no measured provenance". So the pipe answers HTTP-shaped
+requests today. **[MEASURED, secondhand]** — I did not run it, and it establishes only that the endpoint is
+live, not that a stdlib client can drive it.
 
 ### 3.1 What the current path actually needs `docker.exe` for
+
+*Provenance: the argv and output-handling columns are **[SOURCE]**. The "Engine API equivalent" column is
+**[SPEC]**, read from the Moby `swagger.yaml`; that an endpoint exists is not a claim that swapping to it
+behaves identically.*
 
 Five live verbs. Two more are declared and dead.
 
@@ -600,6 +716,9 @@ Every argv is prefixed identically at `cli.py:806-807`:
 
 ### 3.2 What text parsing would disappear
 
+*Provenance: every row is **[SOURCE]**, except the judgement that these sites would collapse rather than be
+replaced by equivalent JSON handling, which is **[UNVERIFIED-BY-EXECUTION]** (U-7).*
+
 Six sites parse CLI text that the HTTP API returns as structured JSON.
 
 | Site | `file:line` | What goes away |
@@ -615,6 +734,10 @@ The last row is the largest single saving and the least obvious: roughly 120 lin
 output arrives as two raw pipes from a child process.
 
 ### 3.3 What it would cost
+
+*Provenance: docker-py's dependency list and its `NpipeSocket` behaviour are **[SPEC]**. The table of
+primitives already bound in this tree is **[SOURCE]**. Every statement about what a new client would need at
+runtime is **[UNVERIFIED-BY-EXECUTION]** (U-1 to U-4).*
 
 **Two routes, and they price very differently.**
 
@@ -682,22 +805,25 @@ that must run on a user's machine without a Python toolchain, that difference is
 
 This is where the premise in #209 and in the brief for this task needs correcting.
 
-| Blocker | Eliminated by the Engine API? | Why |
-|---|---|---|
-| **B-13** | **Yes, outright** | The blocker is `docker context inspect` needing a home directory. An HTTP client reads no config file, resolves no context, and has no home. The endpoint is already a constant at `docker_prepared_composition.py:150`. |
-| **the four-key sealing itself** | **Yes** | The layer exists only because there is a `docker.exe` child to seal an environment for. No child, no child environment: ~138 lines and 12 tests go with it, and with them the whole "scrubbed environment" failure class *for docker*. |
-| **B-4** | **Weakened, not eliminated** | `POST /containers/create` takes `Entrypoint` as an explicit JSON field rather than a flag you can omit. The decision to override the image's entrypoint is still one someone has to make. |
-| **B-7** | **NO. The premise is wrong.** | B-7 is not a docker child. `ScopedGitRemoteReader._run` (`security.py:1130`) scrubs the environment for **`git ls-remote`** (`:1169`) via `subprocess.run` (`:1149`); the `SystemRoot` carry is at `:1142-1147`. Admission reads a git remote whatever the docker transport is. B-7 is untouched. |
-| **B-9** | **NO, and this must be said precisely** | The DrvFs bind is the same object under either transport. `POST /containers/create` carries `HostConfig.Binds` and `User` with the same semantics as `--mount` and `--user`. The mount still presents uid 1000; the container still must adopt it. **No part of B-9 changes.** |
-| **B-16** | **No** | Downstream of `--user`, which is unchanged. |
-| **B-14** | **No** | Engine-side, and about DrvFs file modes. |
-| **B-1 / B-1'** | **No** | The bind-source mapping into the WSL distro is a property of Docker Desktop, not of the client. |
+| Blocker | Eliminated by the Engine API? | Confidence | Why |
+|---|---|---|---|
+| **B-13** | **Yes, outright** | **[SOURCE]** for the mechanism, **[UNVERIFIED-BY-EXECUTION]** for "an HTTP client would not need it" | The blocker is `docker context inspect` needing a home directory. An HTTP client reads no config file, resolves no context, and has no home. The endpoint is already a constant at `docker_prepared_composition.py:150`. |
+| **the four-key sealing itself** | **Yes** | **[SOURCE]** | The layer exists only because there is a `docker.exe` child to seal an environment for. No child, no child environment: ~138 lines and 12 tests go with it, and with them the whole "scrubbed environment" failure class *for docker*. This one is structural, not behavioural: the layer's only consumer is the subprocess spawn at `docker_v1/cli.py:691-695`. |
+| **B-4** | **Weakened, not eliminated** | **[SPEC]** | `POST /containers/create` takes `Entrypoint` as an explicit JSON field rather than a flag you can omit (swagger:8412). The decision to override the image's entrypoint is still one someone has to make. |
+| **B-7** | **NO. The premise is wrong.** | **[SOURCE]** | B-7 is not a docker child. `ScopedGitRemoteReader._run` (`security.py:1130`) scrubs the environment for **`git ls-remote`** (`:1169`) via `subprocess.run` (`:1149`); the `SystemRoot` carry is at `:1142-1147`. Admission reads a git remote whatever the docker transport is. B-7 is untouched. This is the strongest claim in the section: it rests on reading, not on prediction. |
+| **B-9** | **NO, and this must be said precisely** | **[SOURCE]** for the Host side, **[SPEC]** for the API equivalence | The DrvFs bind is the same object under either transport. `POST /containers/create` carries `HostConfig.Binds` and `User` (swagger:8412) with the same declared semantics as `--mount` and `--user`. The mount still presents uid 1000; the container still must adopt it. **No part of B-9 changes.** |
+| **B-16** | **No** | **[SOURCE]** | Downstream of `--user`, which is unchanged. |
+| **B-14** | **No** | **[SOURCE]** | Engine-side, and about DrvFs file modes. |
+| **B-1 / B-1'** | **No** | **[UNVERIFIED-BY-EXECUTION]** | The bind-source mapping into the WSL distro is a property of Docker Desktop rather than of the client, but I did not test the mapping through the API. |
 
 **Net: one blocker of twenty-one eliminated outright, plus the removal of one ~138-line layer and one
 failure class.** The brief's estimate of "B-7, B-13, part of B-9" overstates it by roughly a factor of
 three. B-13 alone is the honest answer, and the layer deletion is the honest bonus.
 
 ### 3.5 What the engine would have to know: nothing
+
+*Provenance: **[SOURCE]** throughout. This subsection is a negative search result over the pinned submodule,
+not a prediction.*
 
 Searched the submodule directly.
 
@@ -717,6 +843,9 @@ makes it, procedurally, one of the cheapest structural changes available in this
 notable contrast with every environment-key change, each of which costs the full B-5 shape.
 
 ### 3.6 What publication reads from `cache/` after training
+
+*Provenance: **[SOURCE]** throughout, and independent of the transport question. This subsection stands
+whether or not the Engine API is ever adopted.*
 
 The decisive question for ruling B-10-R2 against B-10-R1. The answer is short.
 
@@ -767,6 +896,25 @@ The comment at `:1513-1520` classifies everything before `:1546` as identity tha
 every cut", and only the emptiness loop as being "about USE". **Line 1545 is inside the unconditional
 block, and it is a USE check wearing an identity check's clothes.** That is the finding.
 
+### 3.7 The seven unverified claims, gathered
+
+Per the lead's ruling, the whole execution exposure of section 3 in one place. **Nothing was run to
+establish any of these.** If a recommendation depends on one, it depends on a prediction.
+
+| # | Claim | Where | What would settle it |
+|---|---|---|---|
+| U-1 | A stdlib `http.client` connection can be driven over the pipe handle by assigning a duck-typed socket to `conn.sock` | 3.3 Route B | Open the pipe with the existing `CreateFileW` binding, issue `GET /v1.56/version`, read the response |
+| U-2 | Overlapped I/O is *required*, not optional, for a safe timeout | 3.3 cost 1 | Same spike with the daemon deliberately unresponsive |
+| U-3 | The pipe's default byte-mode is safe to assume without `SetNamedPipeHandleState` | 3.3 cost 3 | `GetNamedPipeInfo` on a live handle |
+| U-4 | `ERROR_PIPE_BUSY` retry behaviour matters in practice on this host | 3.3 cost 2 | Concurrent connections against the pipe |
+| U-5 | `HostConfig.Binds` reproduces the DrvFs bind behaviour identically to `--mount` | 3.4 B-9, B-1 | One container created through the API with the same bind |
+| U-6 | An HTTP client genuinely needs no home directory or config discovery, so B-13 cannot recur in another form | 3.4 B-13 | The same spike, run with `USERPROFILE` absent |
+| U-7 | The six text-parse sites collapse cleanly rather than being replaced by equivalent JSON-shape handling | 3.2 | Writing one endpoint's replacement and diffing the line count |
+
+**U-1 and U-2 are the load-bearing pair.** They decide whether the stdlib route is cheap or expensive, and
+therefore whether the dependency question in 5.2 has to be asked at all. One spike settles both. Everything
+else in this table is a detail by comparison.
+
 ---
 
 ## 4. Consultation
@@ -816,6 +964,13 @@ I am naming the trade-offs, not resolving them.
 
 ### 4.4 Risks and concerns
 
+- **There is no stated requirement to cost these layers against, and that is the largest risk to this whole
+  review.** Section 2.7 establishes it: no recorded threat model, reproducibility goal or audit goal exists
+  for any layer. So section 1's two consumer columns are my reconstruction, not a comparison against a
+  requirement, and a verdict built on them inherits that. Two specific traps follow. First, the lead's
+  "right-sized" position is not a user ruling and must not be treated as a premise. Second, memory's silence
+  on purpose is partly a deliberate exclusion rule, so it is not evidence that no purpose exists. The clean
+  resolution is question 1 in 5.2, answered by the user, before the verdicts harden.
 - **Section 3 is unverified by execution.** No pipe was opened. The overlapped-I/O cost, the byte-mode
   assumption and the `ERROR_PIPE_BUSY` behaviour are read from docker-py's source and the Moby spec, not
   measured here. A ruling that turns on transport feasibility should be gated on a spike, not on this
@@ -864,7 +1019,7 @@ Not a recommendation about the layers. A recommendation about how to rule on the
 | POSIX/macOS transport unexamined | There is no `unix://` string in `synaptic_host/`; the endpoint layer is Windows-only by construction | Read what the Modal and HF Jobs providers assume before designing a portable endpoint |
 | Modal and HF Jobs providers not inventoried | `modal_provider.py` (1,077), `modal_resolver.py` (775), `modal_training.py` (660) are 2,512 lines that reuse these same layers, and #209 places this review *before* that work | A second inventory pass, or an explicit decision to rule on the local path alone |
 | B-8 unidentified | It is a gap in the blocker series | Search the task history outside #84-#280 |
-| Per-blocker line counts | The ledgers record files touched but almost never lines; only B-14 (4 lines) and B-15 (~30) are numeric | `git log --stat` over the fix commits, which I did not run because the release clones are out of bounds for me |
+| Per-blocker line counts | The ledgers record files touched but almost never lines. Numeric at HEAD: B-14 (4 lines), B-15 (~30), and B-7 (+37/-4 plus 88 test lines, from pact-memory). **B-13's fix size is recorded nowhere**, in the ledgers or in memory; only its shape is. | `git log --stat` over the fix commits, which I did not run because the release clones are out of bounds for me |
 
 ### 5.2 Questions for the user
 
