@@ -642,7 +642,14 @@ def test_staged_worker_closure_rejects_extra_output(tmp_path: Path) -> None:
         _verify_staged_closure(destination, closure)
 
 
-def test_inventory_verification_rejects_extra_cache_files(tmp_path: Path) -> None:
+def test_inventory_verification_rejects_extra_files_in_the_model_subtree(
+    tmp_path: Path,
+) -> None:
+    # B-10-R2 (review section 3.3): this test asserted the whole-root behaviour
+    # before the scoping, with the extra file at `cache/extra.bin`. The
+    # verifier's destination is now the inventory's own subtree, so both the
+    # copy destination and the violation move under `model/`. A sibling of that
+    # subtree is covered by V1 instead.
     source = tmp_path / "model.bin"
     source.write_bytes(b"model")
     entry = DockerModelInventoryEntryV1(
@@ -651,9 +658,9 @@ def test_inventory_verification_rejects_extra_cache_files(tmp_path: Path) -> Non
     destination = tmp_path / "cache"
     destination.mkdir()
     _copy_inventory((entry,), destination)
-    (destination / "extra.bin").write_bytes(b"extra")
+    (destination / "model" / "extra.bin").write_bytes(b"extra")
     with pytest.raises(ValueError, match="missing or extra"):
-        _verify_inventory_at((entry,), destination)
+        _verify_inventory_at((entry,), destination / "model")
 
 
 def test_inventory_copy_rejects_redirected_destination_parent(
@@ -781,16 +788,26 @@ def test_artifact_topology_requires_exact_empty_writable_directories(
         _verify_artifact_topology(root, (), expect_unused_artifacts=True)
 
 
-def test_artifact_topology_rejects_extra_root_and_cache_directories(
+def test_artifact_topology_rejects_extra_root_and_model_directories(
     tmp_path: Path,
 ) -> None:
+    # B-10-R2 (review section 3.3): this test asserted the whole-root behaviour
+    # before the scoping, with the extra directory at `cache/extra-empty`. That
+    # is now admitted, and the assertion moves to the same violation inside the
+    # verified subtree. The five-name topology equality is untouched.
     root = tmp_path / "artifacts-root"
     _empty_artifact_topology(root)
     (root / "extra").mkdir()
     with pytest.raises(ValueError, match="incomplete or extended"):
         _verify_artifact_topology(root, (), expect_unused_artifacts=True)
     (root / "extra").rmdir()
+
     (root / "cache" / "extra-empty").mkdir()
+    _verify_artifact_topology(root, (), expect_unused_artifacts=True)
+    (root / "cache" / "extra-empty").rmdir()
+
+    (root / "cache" / "model").mkdir()
+    (root / "cache" / "model" / "extra-empty").mkdir()
     with pytest.raises(ValueError, match="extra directories"):
         _verify_artifact_topology(root, (), expect_unused_artifacts=True)
 
@@ -841,10 +858,16 @@ def test_artifact_topology_keeps_identity_checks_when_emptiness_is_relaxed(
     _empty_artifact_topology(root)
     (root / "state" / "trainer-state.json").write_bytes(b"{}")
 
-    (root / "cache" / "extra-empty").mkdir()
+    # B-10-R2 (review section 3.3): the identity violation moves inside the
+    # verified subtree, because a sibling of it is now admitted by design. The
+    # property under test is unchanged: relaxing emptiness must not disable the
+    # identity half.
+    (root / "cache" / "model").mkdir()
+    (root / "cache" / "model" / "extra-empty").mkdir()
     with pytest.raises(ValueError, match="extra directories"):
         _verify_artifact_topology(root, (), expect_unused_artifacts=False)
-    (root / "cache" / "extra-empty").rmdir()
+    (root / "cache" / "model" / "extra-empty").rmdir()
+    (root / "cache" / "model").rmdir()
 
     (root / "extra").mkdir()
     with pytest.raises(ValueError, match="incomplete or extended"):
@@ -904,6 +927,159 @@ def test_artifact_topology_guard_cannot_be_omitted_by_a_caller(
     assert "expect_unused_artifacts=expect_unused_artifacts" in inspect.getsource(
         stage_docker_worker_v1
     )
+
+
+def _model_inventory_entry(tmp_path: Path) -> DockerModelInventoryEntryV1:
+    source = tmp_path / "model.bin"
+    source.write_bytes(b"model")
+    return DockerModelInventoryEntryV1(
+        "model/models--org--repo/snapshots/rev/file.bin",
+        source,
+        5,
+        hashlib.sha256(b"model").hexdigest(),
+    )
+
+
+def _artifact_topology_with_inventory(
+    root: Path, entries: tuple[DockerModelInventoryEntryV1, ...],
+) -> Path:
+    # Returns the staged snapshot directory, which is where every V-test that
+    # violates the inventory has to put its violation for the violation to be
+    # inside the verified subtree.
+    _empty_artifact_topology(root)
+    _copy_inventory(entries, root / "cache")
+    return root / "cache" / "model" / "models--org--repo" / "snapshots" / "rev"
+
+
+def test_artifact_topology_admits_sibling_cache_trees_at_the_verify_cut(
+    tmp_path: Path,
+) -> None:
+    # B-10-R2 (review section 3.3, test V1): the verify cut after training. The
+    # trainer writes cache/huggingface and cache/transformers under the engine's
+    # HF_HOME and TRANSFORMERS_CACHE pin. Both are siblings of the inventory,
+    # no engine resolution reads them, and the verifier must not see them.
+    root = tmp_path / "artifacts-root"
+    entry = _model_inventory_entry(tmp_path)
+    _artifact_topology_with_inventory(root, (entry,))
+    (root / "state" / "trainer-state.json").write_bytes(b"{}")
+    (root / "cache" / "huggingface").mkdir()
+    (root / "cache" / "huggingface" / "x").write_bytes(b"x")
+    (root / "cache" / "transformers").mkdir()
+    (root / "cache" / "transformers" / "y").write_bytes(b"y")
+
+    _verify_artifact_topology(root, (entry,), expect_unused_artifacts=False)
+
+
+def test_artifact_topology_rejects_altered_inventory_bytes_after_the_run(
+    tmp_path: Path,
+) -> None:
+    # B-10-R2 (review section 3.3, test V2). ACCEPTANCE TEST FOR THE RULING:
+    # this is the post-training cut, so `expect_unused_artifacts` is False. An
+    # implementation that moved the call under the guard instead of scoping it
+    # would never reach the comparison and would fail here.
+    root = tmp_path / "artifacts-root"
+    entry = _model_inventory_entry(tmp_path)
+    snapshot = _artifact_topology_with_inventory(root, (entry,))
+    (root / "cache" / "huggingface").mkdir()
+    (root / "cache" / "huggingface" / "x").write_bytes(b"x")
+
+    staged = snapshot / "file.bin"
+    os.chmod(staged, 0o644)
+    staged.write_bytes(b"other")
+
+    with pytest.raises(ValueError, match="differs from preparation"):
+        _verify_artifact_topology(root, (entry,), expect_unused_artifacts=False)
+
+
+def test_artifact_topology_rejects_a_deleted_inventory_file_after_the_run(
+    tmp_path: Path,
+) -> None:
+    # B-10-R2 (review section 3.3, test V3).
+    root = tmp_path / "artifacts-root"
+    entry = _model_inventory_entry(tmp_path)
+    snapshot = _artifact_topology_with_inventory(root, (entry,))
+    (root / "cache" / "huggingface").mkdir()
+    (root / "cache" / "huggingface" / "x").write_bytes(b"x")
+
+    staged = snapshot / "file.bin"
+    os.chmod(staged, 0o644)
+    staged.unlink()
+
+    with pytest.raises(ValueError, match="missing or extra"):
+        _verify_artifact_topology(root, (entry,), expect_unused_artifacts=False)
+
+
+def test_artifact_topology_rejects_an_extra_file_inside_the_model_subtree(
+    tmp_path: Path,
+) -> None:
+    # B-10-R2 (review section 3.3, test V4). ACCEPTANCE TEST FOR THE RULING:
+    # anti-injection is preserved exactly where it means something. A stray file
+    # inside a model snapshot directory could change what a loader picks up, and
+    # the post-training cut is when it would appear.
+    root = tmp_path / "artifacts-root"
+    entry = _model_inventory_entry(tmp_path)
+    snapshot = _artifact_topology_with_inventory(root, (entry,))
+    (root / "cache" / "huggingface").mkdir()
+    (root / "cache" / "huggingface" / "x").write_bytes(b"x")
+
+    (snapshot / "injected.bin").write_bytes(b"injected")
+
+    with pytest.raises(ValueError, match="missing or extra"):
+        _verify_artifact_topology(root, (entry,), expect_unused_artifacts=False)
+
+
+def test_artifact_topology_rejects_an_extra_directory_inside_the_model_subtree(
+    tmp_path: Path,
+) -> None:
+    # B-10-R2 (review section 3.3, test V5).
+    root = tmp_path / "artifacts-root"
+    entry = _model_inventory_entry(tmp_path)
+    snapshot = _artifact_topology_with_inventory(root, (entry,))
+    (root / "cache" / "transformers").mkdir()
+    (root / "cache" / "transformers" / "y").write_bytes(b"y")
+
+    (snapshot / "injected").mkdir()
+
+    with pytest.raises(ValueError, match="extra directories"):
+        _verify_artifact_topology(root, (entry,), expect_unused_artifacts=False)
+
+
+def test_artifact_topology_still_rejects_a_written_artifacts_root_before_the_run(
+    tmp_path: Path,
+) -> None:
+    # B-10-R2 (review section 3.3, test V6): the guard's other half is
+    # untouched. The pre-run cut still refuses a writable root that already has
+    # content, and the inventory verifies cleanly on the same call.
+    root = tmp_path / "artifacts-root"
+    entry = _model_inventory_entry(tmp_path)
+    _artifact_topology_with_inventory(root, (entry,))
+    _verify_artifact_topology(root, (entry,), expect_unused_artifacts=True)
+
+    (root / "artifacts" / "unexpected.json").write_bytes(b"unexpected")
+
+    with pytest.raises(ValueError, match="not empty"):
+        _verify_artifact_topology(root, (entry,), expect_unused_artifacts=True)
+
+
+def test_artifact_topology_treats_an_absent_model_subtree_as_an_empty_one(
+    tmp_path: Path,
+) -> None:
+    # B-10-R2 (review section 3.3, test V7): the ONE test outside the 3.4 list.
+    # `_copy_inventory` builds `cache/model` lazily, one parent at a time, so an
+    # inventory with no entries never creates the subtree at all and the walk
+    # would otherwise fail on a missing root. The tolerance branch treats an
+    # absent subtree as an empty one, and this pins BOTH directions of that:
+    # empty over absent passes, non-empty over absent still fails. Without the
+    # second assertion the branch would be indistinguishable from a skip.
+    root = tmp_path / "artifacts-root"
+    _empty_artifact_topology(root)
+    assert not (root / "cache" / "model").exists()
+
+    _verify_artifact_topology(root, (), expect_unused_artifacts=False)
+
+    entry = _model_inventory_entry(tmp_path)
+    with pytest.raises(ValueError, match="missing or extra"):
+        _verify_artifact_topology(root, (entry,), expect_unused_artifacts=False)
 
 
 def test_worker_binding_rejects_argv_drift_and_runtime_escape() -> None:

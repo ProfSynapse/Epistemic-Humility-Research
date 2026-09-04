@@ -48,6 +48,15 @@ _MAX_PROJECT_ENTRIES = 20_000
 _MAX_INVENTORY_FILES = 20_000
 _ARTIFACT_DIRECTORY_NAMES = ("artifacts", "cache", "state", "tmp", "tracking")
 _EMPTY_ARTIFACT_DIRECTORY_NAMES = ("artifacts", "state", "tmp", "tracking")
+# B-10-R2 (review section 3.3): the content-addressed model inventory occupies
+# one subtree of `cache`, and the value is already written down twice. The
+# engine reads `--model-cache-dir {cache}/model` at
+# `synaptic-tuner/tuner/runtime/verification.py:675`, and this Host builds every
+# entry under the same prefix at `docker_model_inventory.py:259-262`. Construct
+# it here rather than discovering it by scanning the staged tree at runtime:
+# that is the B-13 precedent, and a discovered prefix would follow whatever the
+# container wrote instead of what preparation projected.
+_MODEL_INVENTORY_PREFIX = "model"
 _FORBIDDEN_DISPATCH_ENVIRONMENT = frozenset({
     "PYTHONPATH", "PYTHONHOME", "PYTHONUSERBASE", "HF_TOKEN",
 })
@@ -1459,26 +1468,63 @@ def _copy_inventory(
 def _verify_inventory_at(
     entries: tuple[DockerModelInventoryEntryV1, ...], destination: Path,
 ) -> None:
-    directories, files = _walk_tree(
-        destination, "content-addressed model inventory"
-    )
+    # B-10-R2 (review section 3.3): `destination` is the inventory's own
+    # subtree, `cache/model`, NOT the cache root. Entry paths carry the
+    # `model/` prefix, so they are stripped here to be compared against a walk
+    # rooted at that subtree. The contract this narrows to is "the inventory's
+    # subtree contains the inventory and nothing else"; siblings of the subtree
+    # are not this function's business, because no engine resolution reads them.
+    scoped_entries: list[tuple[str, DockerModelInventoryEntryV1]] = []
+    expected_directories: set[str] = set()
+    for entry in entries:
+        relative = PurePosixPath(entry.relative_path)
+        if len(relative.parts) < 2 or relative.parts[0] != _MODEL_INVENTORY_PREFIX:
+            raise ValueError(
+                "content-addressed model inventory entry is outside "
+                f"{_MODEL_INVENTORY_PREFIX}/: {entry.relative_path}"
+            )
+        scoped = PurePosixPath(*relative.parts[1:])
+        scoped_entries.append((scoped.as_posix(), entry))
+        for depth in range(1, len(scoped.parts)):
+            expected_directories.add(PurePosixPath(*scoped.parts[:depth]).as_posix())
+    try:
+        destination.lstat()
+    except FileNotFoundError:
+        # `_copy_inventory` creates the subtree lazily, one parent at a time,
+        # so an inventory with no entries never brings `cache/model` into
+        # existence. An absent subtree is an empty one; it is not a licence to
+        # skip the comparison, which still fails below for a non-empty
+        # inventory. Deliberately NOT `OSError`: a permission failure or any
+        # other `lstat` error is not an absent subtree, and swallowing it here
+        # would let the verify cut answer "empty" to a question it could not
+        # actually ask.
+        directories: tuple[Path, ...] = ()
+        files: tuple[Path, ...] = ()
+    except OSError:
+        # Every other `lstat` failure keeps the contract it had before this
+        # subtree scoping existed. This mirrors `_walk_tree` at :110-113, which
+        # converts any `lstat` OSError into this same ValueError under the same
+        # label, so an unreadable subtree still reaches the caller as a topology
+        # cause rather than escaping as a raw OSError.
+        raise ValueError(
+            "content-addressed model inventory is unavailable"
+        ) from None
+    else:
+        directories, files = _walk_tree(
+            destination, "content-addressed model inventory"
+        )
     observed = {
         path.relative_to(destination).as_posix(): path
         for path in files
     }
-    expected_directories: set[str] = set()
-    for entry in entries:
-        relative = PurePosixPath(entry.relative_path)
-        for depth in range(1, len(relative.parts)):
-            expected_directories.add(PurePosixPath(*relative.parts[:depth]).as_posix())
-    if set(observed) != {entry.relative_path for entry in entries}:
+    if set(observed) != {scoped for scoped, _entry in scoped_entries}:
         raise ValueError("content-addressed model inventory has missing or extra files")
     if {
         path.relative_to(destination).as_posix() for path in directories
     } != expected_directories:
         raise ValueError("content-addressed model inventory has extra directories")
-    for entry in entries:
-        target = observed[entry.relative_path]
+    for scoped, entry in scoped_entries:
+        target = observed[scoped]
         try:
             payload, info = _read_direct_regular(
                 target, "content-addressed model inventory"
@@ -1542,7 +1588,15 @@ def _verify_artifact_topology(
         names.append(entry.name)
     if tuple(sorted(names)) != _ARTIFACT_DIRECTORY_NAMES:
         raise ValueError("artifact preparation topology is incomplete or extended")
-    _verify_inventory_at(entries, root / "cache")
+    # B-10-R2 (review section 3.3): scoped to the inventory's own subtree, and
+    # deliberately still OUTSIDE the guard below. `cache` is a writable mount
+    # (`_layout`, read_only=False) and is excluded from
+    # `_EMPTY_ARTIFACT_DIRECTORY_NAMES`, so the container may write siblings
+    # such as `cache/huggingface` under the engine's HF cache pin. The domain
+    # narrows; the schedule does not. Moving this call under the guard would
+    # prove the inventory once, before the run, and never again on the tree
+    # that determines what executes.
+    _verify_inventory_at(entries, root / "cache" / _MODEL_INVENTORY_PREFIX)
     if expect_unused_artifacts:
         for name in _EMPTY_ARTIFACT_DIRECTORY_NAMES:
             try:
