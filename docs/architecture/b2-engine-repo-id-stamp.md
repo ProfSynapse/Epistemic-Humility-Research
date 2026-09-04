@@ -718,7 +718,7 @@ All 34 share one root cause, and it is neither the stale manifest nor B-2.
   `offline worker closure validation failed` — the same closure error preempting
   the specific error each negative test meant to provoke.
 
-**Mechanism.** Every one of the 66 members is mode `0o777` on this
+**Mechanism.** Every one of the 66 members is mode `0o744` on this
 DrvFs/9p Windows-backed mount, so the POSIX executable bit is set on all of them.
 The staged-tree check at `offline_sft_worker.py:438-441` requires
 `executable == (git_mode == "100755")`, and every member is declared `100644`.
@@ -729,7 +729,16 @@ per-member content check ever reaches `train_sft.py`.
 
 Git disagrees with the filesystem and git is right: this repo has
 `core.filemode = false`, and the index records `100644` for the members.
-The `0o777` is a mount artifact that git is explicitly configured to ignore.
+The `0o744` is a mount artifact that git is explicitly configured to ignore.
+
+*Correction 2026-09-04, secretary harvest #257 and B-14 (#217).* This subsection
+first recorded the measured mode as `0o777`. The mount synthesizes `0o744` for
+Windows-written files, and B-14 re-measured it as `0o744` for all 66 members.
+**The mechanism is unchanged**: `0o744` sets the owner execute bit exactly as
+`0o777` would, so the predicate at `offline_sft_worker.py:438-441` still fails on
+every member declared `100644`. Only the value was wrong. The `0o777` at the end
+of consequence 1 below is **not** corrected: that figure describes a deliberate
+`chmod` in an ext4 control stage, not a reading taken from this mount.
 
 **Three consequences.**
 
@@ -738,7 +747,7 @@ The `0o777` is a mount artifact that git is explicitly configured to ignore.
    34", was true of this worktree and wrong as a general claim. There are two
    independent causes, and the mode artifact *masks* the other one: the loop at
    `offline_sft_worker.py:430-441` checks content then mode per member, so on a
-   `0o777` mount it raises on member 1, `config.yaml`, before member 8's genuine
+   `0o744` mount it raises on member 1, `config.yaml`, before member 8's genuine
    content mismatch is ever reached. On a mode-correct filesystem the stale
    manifest is a real and sufficient cause — which is what coder-engine measured
    on an ext4 git-archive harness, reporting `staged worker member does not

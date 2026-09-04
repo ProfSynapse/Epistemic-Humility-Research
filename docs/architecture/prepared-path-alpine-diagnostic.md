@@ -4332,12 +4332,36 @@ Three candidate fixes and the ruling:
    right.
 
 **Test surface, checked.** The existing pins survive: `test_docker_training.py:1455`
-and `:1517` use `startswith`; `:1493` asserts equality on the `<unknown>` case,
+and `:1521` use `startswith`; `:1497` asserts equality on the `<unknown>` case,
 where there is no frame at all and nothing is appended;
-`test_run_prepared_training_probes.py:681` matches a prefix. The 400-byte bound at
+`test_run_prepared_training_probes.py:684` matches a prefix. The 400-byte bound at
 `docker_training.py:558` already covers the longer line. One new test is owed: a
 raise from inside a helper renders both frames, deciding frame last after the
 comma.
+
+*Correction 2026-09-04, audit #253 G8 and a test-host question.* The paragraph
+above was incomplete and its line numbers had drifted. Three items.
+
+1. **Two `endswith` pins were omitted and they do not behave alike.**
+   `test_docker_training.py:1459` pins `" in _validate_private_directory"` and
+   **survives** the change: that raise has one in-package frame, so nothing is
+   appended after it. `:1616` pinned `" in prove"` and **cannot** survive,
+   because `prove` has an in-package caller and therefore renders a second
+   frame. coder-user repointed `:1616` at `f0278a52` to assert both frames and
+   their order; audit #253 judged the repointed test strictly stronger than the
+   pin it replaced.
+2. **Line drift inside one commit.** `:1493` is now `:1497`, `:1517` is now
+   `:1521`, and the probes pin is `:684`, not `:681`. Corrected above. Every
+   citation in this subsection drifted without any of them being edited, which
+   is an input to #209 and the reason section 25 cites by symbol.
+3. **The render order is confirmed.** The shipped line is
+   `at <deepest>, from <caller>`, so the **deciding** frame is named first and
+   the caller follows the comma. The sentence above says "deciding frame last
+   after the comma", which describes 22.14's ruled intent and not the shipped
+   render; the shipped render governs. `_innermost_package_frame` has since
+   moved out of `docker_training.py` into `cause_line.py` per section 24.4,
+   so its `:561-580` citation above is correct only at this subsection's
+   baseline.
 
 **Ordering with 22.6.** After the ruling in 22.6 the B-13 failure raises from
 `compose_docker_prepared_platform_v1` itself, so this particular line would have
@@ -4821,9 +4845,19 @@ is rebuilt field-for-field and compared for equality at `:1055-1063`, and again
 at `:1072-1081` where a mismatch raises before the JSON is written. That JSON is
 the contract the driver parses. A diagnostic field
 would change a result schema in order to carry text that is not a result, and
-`_failure(INTERNAL_FAILURE)` is called bare at seven sites (`:981`, `:991`,
-`:1052`, `:1054`, `:1063`, `:1066`, `:1071`), only one of which has an exception
-to name. Six of them would carry a null diagnostic forever.
+`_failure(INTERNAL_FAILURE)` is called bare at **fourteen** sites inside
+`dispatch_validated_training_run_v1` (`:944`, `:981`, `:991`, `:1003`, `:1005`,
+`:1023`, `:1025`, `:1033`, `:1036`, `:1046`, `:1052`, `:1054`, `:1063`,
+`:1066`), only one of which has an exception to name. Thirteen of them would
+carry a null diagnostic forever.
+
+*Correction 2026-09-04, audit #253 YELLOW-1.* This paragraph first said seven
+sites and listed `:1071` among them. By AST at `a2b242e9` the function spans
+`:935-1066` and holds fourteen bare sites; `:1071` is an assignment inside
+`emit_training_run_result_v2`, not a bare return. **The argument rests on the
+ratio, not on the count**, so the correction strengthens it rather than
+disturbing it: one site in fourteen can name an exception, so a diagnostic field
+on the envelope would be null at thirteen sites instead of six.
 
 The Host already solved this exact problem once. `_report_admission_cause`
 (`docker_training.py:583-613`) writes one stderr line carrying the exception's
@@ -4841,12 +4875,19 @@ Two things the reuse must handle, and they are the whole of the work.
    to report that importing it failed. Put the renderer in a small Host-internal
    module with no engine import, and have both `cli.py` and `docker_training.py`
    use it. That is one new file of roughly thirty lines, not a layer.
-2. **An import failure has no in-package frame, so the frame alone says
-   `<unknown>`.** The authored, useful identity here is the missing module name,
-   which `ModuleNotFoundError` carries as `.name`. It is a dotted identifier
-   produced by CPython, never a path and never operator text, so it passes the
-   same test the class name passes. The line adds it when, and only when, the
-   exception is a `ModuleNotFoundError` with a string `.name`.
+2. **The frames say where the import was attempted; only the module name says
+   what was missing.** The authored, useful identity here is the missing module
+   name, which `ModuleNotFoundError` carries as `.name`. It is a dotted
+   identifier produced by CPython, never a path and never operator text, so it
+   passes the same test the class name passes. The line adds it when, and only
+   when, the exception is a `ModuleNotFoundError` with a string `.name`.
+
+   *Correction 2026-09-04.* This item first asserted that an import failure has
+   **no** in-package frame, so the frame alone would render `<unknown>`. That
+   premise is wrong, and coder-user measured it at the real cut: there are
+   **two** in-package frames, the deepest `docker_training.py:18` in `<module>`
+   and then `cli.py:973` in `dispatch_validated_training_run_v1`. The
+   conclusion is unchanged and stands on the ground restated above.
 
 Still excluded, on 20.11's reasoning unchanged: the exception's own text, any
 traceback, and any absolute path. Amendment 22.14 (#207) is still owed and will
@@ -4862,10 +4903,29 @@ pytest process already has whatever path the developer's environment gave it.
 
 | # | Test | Asserts |
 |---|---|---|
-| P1 | a CHILD process, `subprocess.run` with a scrubbed environment (`PYTHONPATH` removed, not emptied), cwd set to a release-shaped temporary layout: a project root holding `synaptic_host/` with `synaptic-tuner/` beside it, running the documented `-m synaptic_host training run --provider docker` invocation | the run gets past `cli.py:973`. This is the acceptance test and it must fail before the change |
-| P2 | the same child, envelope parsed from stdout | on any failure the envelope is non-null in `provider_ref`, `config_ref`, `destination_ref` and `input_digest` where the code path had them, and the stderr carries one `synaptic-host:` cause line |
+| P1 | a CHILD process, `subprocess.run` with a scrubbed environment (`PYTHONPATH` removed, not emptied), running the documented `-m synaptic_host training run --provider docker` invocation | the run gets past `cli.py:973`. This is the acceptance test and it must fail before the change |
+| P2 | the same child, envelope parsed from stdout | at a cut that binds them, the envelope is non-null in `provider_ref`, `config_ref`, `destination_ref` and `input_digest`, and the stderr carries one `synaptic-host:` cause line |
 | P3 | in-process, an injected `ImportError` at the `:973` import site | the cause line names the exception class and, for a `ModuleNotFoundError`, the missing module name; it carries no absolute path and no traceback |
 | P4 | in-process, the contract loader path | `_ENGINE_CONTRACT_CACHE` behaviour and the origin checks at `:769-787` are unchanged with the engine root already appended, which is the regression this fix could plausibly cause |
+
+*Corrections 2026-09-04, from counter-test #251.* Three wordings in this
+subsection were wrong or ambiguous and are ruled here.
+
+1. **P1's fixture does not move, and the phrase "a release-shaped temporary
+   layout" is withdrawn from the P1 row.** The child resolves its roots from
+   the tree `cli.__file__` came from, not from its cwd, so building a temporary
+   project-root layout beside the test would not change what P1 exercises. The
+   property P1 actually pins is the scrubbed `PYTHONPATH`, and that is now all
+   the row claims.
+2. **P2 asserts only at cuts that carry the fields.** The original "where the
+   code path had them" was ambiguous at `cli.py:1066`, where the four names are
+   bound inside the `try` and are therefore unbound when that cut fires. Ruled:
+   **`:1066` stays null-shaped**, that is not a defect, and P2 makes no
+   assertion there.
+3. **P1's negative name assertions target the renderer's own phrasing.** They
+   assert against what `cause_line.py` emits, not against a string authored in
+   the test, so a later change to the render format fails the renderer's tests
+   rather than silently passing P1.
 
 **P1 must run the whole invocation, not just `import synaptic_host.docker_training`,
 and this is the trap.** Log 13's arm A, which imports the module in a fresh
@@ -4900,10 +4960,14 @@ Run 10 acceptance, carrying 23.5's rows with row 0 added:
 
 ### 24.7 Follow-ups
 
-- **#219, the capture's `matched=0` reading.** Run 9 produced no container at
-  all, so a `matched=0` is ambiguous as it stands. The guidance must distinguish
-  no-container-was-created from a container-was-created-but-the-match-failed,
-  using the census diff the driver already holds rather than a new instrument.
+- **#219, the capture's `matched=0` reading. Shipped.** Run 9 produced no
+  container at all, so a `matched=0` was ambiguous as it stood, and the guidance
+  had to distinguish no-container-was-created from
+  a-container-was-created-but-the-match-failed.
+  *Correction 2026-09-04:* this bullet first said the driver **already held** a
+  census the guidance could read. It did not; the run-9 census was test-host's
+  manual log. Ruling B on #249 shipped a real `ps -a` census before and after
+  the run, with four verdicts, at `4da73909`.
 - **#207 (amendment 22.14)** is still owed and now has a second consumer: the
   cause line at `cli.py:1065-1066` uses the same renderer.
 - **The entry-point inventory is an input to #209.** Three places decide import
@@ -4911,3 +4975,334 @@ Run 10 acceptance, carrying 23.5's rows with row 0 added:
   entry path was not on anyone's list. That inventory, not the individual fix,
   is what the simplification review should read.
 - Carried and unaffected: #170, #184, and audit #172's Y-1 and Y-2.
+
+## 25. Amendment 2026-09-04 — ruling on B-16 (the container runs as a uid the image's password database does not name)
+
+Every line and file citation in this section was read at engine `994c4a48` and
+Host `f0278a52`, the pin and the release run 10 carried. That is the citation
+baseline; a later coder should re-derive line numbers rather than trust these.
+Where this section cites a symbol as well as a line, the symbol is the durable
+half: every citation in section 24 drifted inside a single commit, which is an
+input to #209 and the reason for the change of habit here. The six corrections
+that land with this section carry their own measured baselines and name them.
+Spike evidence is `docs/preparation/b16-unsloth-import-spike.md` at `b1c80149`
+and the probe transcripts under `scratch/b16-spike/` in this worktree.
+
+### 25.1 What B-16 is, stated from the measurement
+
+Run 10 from `ehr-release-f0278a52` reached the real trainer for the first time.
+Container `ad2a2e607028` exited 23 at
+`synaptic-tuner/Trainers/sft/train_sft.py:137`, on
+`from unsloth import is_bfloat16_supported`.
+
+**The image is not broken and the engine's gates did not fire. The import fails
+only because the composition runs the container as a uid that the image's
+`/etc/passwd` does not name.** The pinned image
+`unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update`
+(`sha256:5266c57be21059bfb407d80dc2f448868a5c2e2dbe7b2aa27780f48b48cbec39`)
+defines its own user as `unsloth`, uid 1001, gid 102. B-9 ruled `--user
+1000:1000` so the container user could write `/artifacts` across the DrvFs bind.
+Probe 1 ran the image with no overrides and imported cleanly, exit 0. Probe 8
+added `--user 1000:1000` and nothing else, and reproduced the failure, exit 1.
+Probe 3 ran the full run-10 environment plus that uid and reproduced it
+identically. Probes 5, 6 and 7 varied the other three groups of run-10 overrides
+and all exited 0. The uid is the entire trigger.
+
+The mechanism, measured at probe 13, is a swallowed first failure that poisons a
+registry a later import then re-enters.
+
+1. `unsloth_zoo/temporary_patches/common.py:74` imports
+   `torch._inductor.async_compile` inside a bare `try`.
+2. `torch/_inductor/codecache.py` registers the cache-artifact type `'inductor'`
+   at `:1121`, then dies at `:2560` inside `default_cache_dir()`, which calls
+   `getpass.getuser()`, which falls through to `pwd.getpwuid(1000)` and raises
+   `KeyError` because 1000 is not in the image's password database.
+3. Python removes the partly-executed module from `sys.modules`, but the
+   registration performed at step 2 lives on `CacheArtifactFactory._artifact_types`
+   and survives. Probe 13 printed both halves of that state directly:
+   `codecache in sys.modules: False` and
+   `registered types: ['autotune', 'inductor', 'pgo']`.
+4. unsloth's bare `except:` prints
+   `Unsloth: Failed editing tqdm to replace Inductor Compilation:` and continues,
+   so nothing downstream knows the import died.
+5. `unsloth_zoo/temporary_patches/utils.py:107` later imports
+   `transformers.processing_utils`, which reaches
+   `quantizer_torchao.py:39 import torchao`, which re-executes `codecache`. The
+   second registration of `'inductor'` trips the assert at
+   `torch/compiler/_cache.py:75`. `utils.py:128` re-raises it as a bare
+   `Exception`, which is the traceback run 10 recorded.
+
+The upstream report is pytorch/pytorch#140765, closed 2026-05-19. Its
+`TORCHINDUCTOR_CACHE_DIR` workaround does not apply here: `cache_dir()` honours
+that variable, but `default_cache_dir()` calls `getpass.getuser()`
+unconditionally before the variable is consulted. The spike measured that as
+remedy A3 and it failed. Remedy A4, importing `torchao` first to force the
+registration into a healthy module, also failed: it unmasks the `KeyError`
+rather than avoiding it.
+
+**This is a consequence of the B-9 fix, not a defect in it.** B-9 is correct and
+stays. What B-9 could not know is that a third-party image would resolve its own
+uid against its own password database during an import.
+
+### 25.2 Ruling — one environment key, `USER=synaptic`, admitted in both copies of the engine allowlist
+
+**The Host sets exactly one additional environment key on the container,
+`USER`, to the fixed literal `synaptic`. The engine admits `USER` in its trainer
+allowlist. Nothing else changes.** This is remedy A1 of the spike and the user's
+direction of 2026-09-04.
+
+**Why one key and why `USER`.** `getpass.getuser()` in the CPython 3.11 standard
+library scans four names and returns the first whose value is non-empty, before
+it imports `pwd` at all:
+
+```python
+for name in ('LOGNAME', 'USER', 'LNAME', 'USERNAME'):
+    user = os.environ.get(name)
+    if user:
+        return user
+import pwd
+return pwd.getpwuid(os.getuid())[0]
+```
+
+Any one of the four short-circuits the lookup, so one key is sufficient. `USER`
+is ruled rather than the set of four for two reasons. The image sets none of
+them, so one is enough today; and if some future image sets `LOGNAME` to a
+non-empty value, that value is returned and the lookup short-circuits there
+instead, so `USER` alone remains sufficient in that case too. The hardened
+container environment is a security surface under the standing constraint, and
+the smallest widening that closes the defect is one key. Admitting four to close
+one is the shape this workstream has refused before, at `TMPDIR` in B-9-R1.
+
+**Why the value is `synaptic` and why it is not an account name.** The value is
+consumed at exactly one place: `default_cache_dir()` sanitizes it into a path
+component under the temp root and names a cache directory with it. It is never
+resolved against a password database, never compared to a uid, never used for
+ownership, and never written into an artifact. `synaptic` is ruled as a fixed
+literal for that reason: it is filesystem-safe on every platform, it is not the
+name of any account in the pinned image or on the Host, and it carries no lookup
+semantics that a later reader could mistake for an identity. It also makes the
+Host test in 25.5 and the 22.11 row 2 key-set evidence unambiguous, which an
+unpinned "any non-empty string" would not.
+
+**Where it goes in the Host, by symbol.** The container environment is the
+`environment` dict built inside `DockerAdmissionResolverV1.resolve` in
+`synaptic_host/docker_training.py`. At the baseline the dict opens at `:452` and
+closes at `:488`, with `TRITON_CACHE_DIR` at `:486`; the durable identity is the
+`environment` local inside `DockerAdmissionResolverV1.resolve`, and the key
+belongs beside the B-9-R1 cache keys, under a comment naming B-16 in the same
+form the B-9-R1 block already uses at `:463-470`.
+
+That dict is handed to `ExecutionSourceV1(environment=environment, ...)` at
+`:503`. `SourceLockV1.__post_init__`
+(`synaptic-tuner/tuner/project/execution_source.py:489-502`) requires the map to
+bind eleven exact keys and raises
+`SourceLockError("runtime environment does not bind the exact roots and isolation")`
+otherwise, but it does not forbid additional keys. `USER` therefore passes the
+source lock untouched, and no change is needed there.
+
+**The engine allowlist has TWO copies, and both are load-bearing at runtime.**
+The dispatch named one. Task #147, which implemented B-9-R1, found the second
+and raised it as an open question that was never answered; sections 18.18 to
+18.24 record only the first, so a coder reading that precedent as written would
+edit one file and be surprised. Recording both is part of this ruling.
+
+| # | Copy | What it is |
+|---|---|---|
+| 1 | `allowed_environment` inside `_runtime_requirements()`, `synaptic-tuner/tuner/training/methods/sft.py:52-63` | the Python list compiled into the workload document, 31 entries today |
+| 2 | the closed enum at `/properties/runtime_requirements/properties/allowed_environment/items/enum` in `synaptic-tuner/schemas/synaptic-sft-workload-v1.schema.json` | the same 31 keys, as a JSON Schema `enum` on the array's items |
+
+Both are enforced inside the container, at two different gates, with two
+different exit codes. I traced both rather than inheriting the claim from the
+B-9-R1 precedent, because if the allowlist had turned out to be a document-shape
+check the whole engine half of this ruling would have been unnecessary.
+
+| Gate | Symbol | Fires when | Error and stage |
+|---|---|---|---|
+| Schema | `_validate_schema`, `Trainers/sft/runtime_v1.py:530-550`, called from `decode_and_validate_workload` at `:968` | the compiled `allowed_environment` list contains a key the enum does not admit | `RuntimeV1Error("workload failed the SFT v1 schema")`, stage `runtime_workload_schema_rejected`, exit **32** |
+| Subset | `build_trainer_invocation`, `Trainers/sft/runtime_v1.py:1052`, the check at `:1153` | the planned container environment is not a subset of `allowed_environment` | `RuntimeV1Error("resolved runtime environment violates portable requirements")`, wrapped at `:1399-1401`, stage `runtime_invocation_rejected`, exit **22** |
+
+The subset gate reads
+`set(planned_environment).issubset(set(allowed_environment))`, where
+`planned_environment` is the execution source's own
+`runtime.environment.variables` map. That is the direction that matters: an
+extra key the allowlist does not admit is a failure, not an ignored value. So
+the Host key without the engine list gives exit 22, and the engine list without
+the schema enum gives exit 32. Both edits are required and neither is defensive.
+
+`_validate_portable_runtime_requirements` at `:176-223` also inspects the list,
+but only for shape: it checks that the entries are non-empty unique strings. It
+never checks membership and is not a third gate.
+
+### 25.3 Why the other remedies are rejected
+
+**A2, moving `docker_host.container_user` to the image's own `1001:102`, is
+rejected.** It is smaller on paper: one profile value, no engine change, no
+closure regeneration, no pin move. It is larger in fact. B-9 chose `1000:1000`
+so the container user could write the staged `/artifacts` tree across the DrvFs
+bind, and B-9's entire acceptance, the B-9-R1 cache readings and the P8
+stage-writability probe all rest on that choice. **The spike did not measure
+whether uid 1001 can write that tree over the mandated mount**, and until
+someone does, A2 trades a measured defect for an unmeasured one. It is also
+brittle in the same way the image-pin move is: it depends on the image's
+password database, so the next image with a different internal uid reopens
+B-16. If a later reader wants to revisit A2, the gate on it is that single
+measurement, and it is cheap.
+
+**Moving the image pin to a newer tag is rejected, on measurement rather than on
+version risk.** `unsloth/unsloth:latest` imports cleanly under `--user
+1000:1000`, which looks like a fix. It is a coincidence: that image's
+`/etc/passwd` happens to contain `ubuntu:x:1000:1000`, so the lookup succeeds.
+Probe 27 ran it under `--user 4242:4242`, unmapped in both images, and it
+reproduced the identical duplicate-registration assert; probe 26 was the control
+and reproduced it in the pinned image. **The falsification test for any candidate
+image is an unmapped uid, not uid 1000**, and it has already been run. torchao is
+`0.14.0` in both images, so torchao was never the variable. A pin move would
+also carry torch 2.9.0 to 2.10.0 and unsloth 2026.1.2 to 2026.5.9, invalidating
+the image half of every prior acceptance row, and would leave the defect latent
+until the next time `container_user` changes.
+
+**A derived image is rejected as unnecessary**, and would in any case be the
+compatibility layer the standing constraint forbids without a review proving it
+unavoidable. Four in-image remedies work; three of them are one line.
+
+### 25.4 Closure regeneration and the pin move
+
+Both engine files this ruling edits are members of the locked offline worker
+closure, so the manifest is regenerated. This is the third time the B-5
+procedure runs on this feature, after B-9-R1 (#147) and B-14 (#226).
+
+- Manifest: `synaptic-tuner/tuner/runtime/manifests/offline-sft-worker-v1.json`.
+- Current `closure_digest`:
+  `e1b9793bf8b5745483d86439abed5345d80118840ee6669281372d17281a15dc`. It changes.
+- Member count: **66, expected unchanged.** No file is added or removed.
+- Members whose `size_bytes` and `sha256` move: **two**, `tuner/training/methods/sft.py`
+  and `schemas/synaptic-sft-workload-v1.schema.json`. `git_mode` does not move
+  for either. Both are already listed in the closure contract test's member
+  inventory at `synaptic-tuner/tests/contract/test_offline_sft_worker_closure.py`.
+- Procedure: `docs/architecture/b2-engine-repo-id-stamp.md` section 15,
+  unchanged. Use only `scripts/regenerate_offline_sft_worker_closure.py` (15.2);
+  the member list's source of truth is the existing manifest's own
+  `members[].path`, refresh in place, never walk the tree (15.3); exactly four
+  values per member may move (15.5); `--check` is the default and `--write` is
+  explicit (15.6).
+- **Ordering, per 15.11: run the bare `--check` as the last step before
+  committing, and do not assume only the expected members moved.** The generator
+  uses `git ls-files -s` as its `git_mode` oracle, so it needs a git index; run
+  it from a real checkout, not from an export.
+- The Host then moves the submodule pin to the new engine commit on
+  `feat/submodule-cloud-api-v1`, and a release is cut from the Host branch.
+
+The regeneration is not bookkeeping. It is a precondition of the fix running at
+all: an un-regenerated manifest fails `_authenticate_worker_closure` inside the
+container before the trainer starts, which is the same coupling section 23.3 had
+to be corrected to state.
+
+### 25.5 Test spec, red-first
+
+Standing rule 21.2 governs: a bound whose only realistic trigger is the
+operator's environment shape needs a fixture that reaches that shape. B-16's
+trigger is a uid absent from a password database, and the rule's question is
+whether any fixture short of a container can reach it.
+
+| # | Lane | Test | Asserts |
+|---|---|---|---|
+| E1 | engine | the compiled workload's `runtime_requirements` | `"USER"` is in `allowed_environment`, the list has no duplicates, and a key that was never admitted (use `"TMPDIR"`, which 18.24 deliberately excluded) is absent. Sibling of the existing `test_allowed_environment_admits_the_redirected_cache_roots_and_not_tmpdir` at `tests/training/test_sft_compilation.py:177-195`; extend that file rather than starting another |
+| E2 | engine | **the two copies agree** | the set of `allowed_environment` in `_runtime_requirements()` equals the set in the schema's `items.enum`. This pin does not exist today and is the reason #147 was surprised. It must fail before the schema is edited and pass after |
+| E3 | engine | the subset gate rejects an unlisted key | a planned environment carrying a key outside `allowed_environment` raises `RuntimeV1Error` at `build_trainer_invocation`. Pins the direction of the gate, which is the whole justification for the engine half of this ruling |
+| H1 | Host | the container environment dict | it carries `USER` bound to the exact literal `synaptic`, and its key set is the previous key set plus exactly one key. Assert the delta, not a new absolute list, so the test says what changed |
+| H2 | Host | 22.11 row 2 | the recorded child key set gains exactly one key and no other key moves |
+
+**E1, E2 and H1 must be red before the change.** E2 is red in a way worth
+naming: at the moment the Python list admits `USER` and the schema enum does not,
+E2 fails and so does every workload compilation, which is the correct order to
+discover it in.
+
+**Rule 21.2's fixture question, ruled: no unit-level fixture can prove B-16 is
+closed, and none should be written to imply it can.** A test may monkeypatch
+`pwd.getpwuid` to raise `KeyError` and assert that `getpass.getuser()` returns
+the environment value instead, but that test proves a property of the CPython
+standard library, not a property of this system. The behaviour under test is a
+third-party import chain inside a pinned image running as a uid the image does
+not name, and the honest reproduction is the spike's own one-line probe:
+
+```
+docker.exe run --rm --network none --gpus all --user 1000:1000 \
+  --entrypoint /opt/conda/bin/python3 <image@digest> \
+  -c "from unsloth import is_bfloat16_supported"
+```
+
+with and without `-e USER=synaptic`. That probe is already recorded in the spike
+and needs no new instrument. **The only proof that B-16 is closed on the real
+path is run 11 row 0.** E1, E2, E3, H1 and H2 prove that the ruled change was
+made correctly and that the two gates will admit it; they do not and cannot
+prove that the import passes.
+
+### 25.6 Run 11 acceptance
+
+Run 11 runs from a release cut after the engine push and the pin move.
+
+| Row | Reading |
+|---|---|
+| 0 | **B-16 closed.** The import at `synaptic-tuner/Trainers/sft/train_sft.py:137` succeeds and the trainer proceeds past it. A repeat of exit 23 with the `torch/compiler/_cache.py:75` assert is not closure. **Reading rule: green is the import passing. A later failure of the same class, anything that resolves a uid against the image's password database further into training, is a NEW blocker, not B-16 reopened.** The ruled change closes the `getpass.getuser()` path and nothing wider; see 25.7 |
+| 1 | **B-14's runtime half and the closure, re-proved at the new digest.** The container gets past `_authenticate_worker_closure` and the loader-member gate with the regenerated manifest. Exit 31 is a regression in the regeneration, not in B-16; exit 32 or exit 22 means one of the two allowlist copies was missed |
+| 2 | B-15 stays closed: the docker import at `cli.py:973` succeeds with `PYTHONPATH` unset, and any failure at any cut emits a non-null envelope plus one `synaptic-host:` cause line. An all-null envelope is a fail whatever else the run does |
+| 3 | first-container capture per 22.11 row 4 with #219's instrument, events-based, with the census verdict line |
+| 4 | the B-10 four-row reading at cut 2 per 20.19; an absent cut-2 line is the **absent** row, not the deferral row. B-10 is still latent |
+| 5 | the 22.11 row 2 child key set, recorded, showing exactly one added key against run 10 |
+| 6 | B-9 `--user 1000:1000` unchanged and still writing `/artifacts`; B-9-R1 `/tmp` caches, B-10-R1 cache tree and B-2 adapter equality all still behind row 0, none to be reported as passing on a run that stops before them |
+
+The census expectation is **five containers** across the run, unchanged from run
+10's shape.
+
+### 25.7 Do not touch, and the residual this ruling does not close
+
+| File or surface | Why |
+|---|---|
+| `docker_host.container_user`, still `1000:1000` | this is A2, rejected in 25.3; changing it reopens B-9, B-9-R1 and P8 on an unmeasured premise |
+| the B-9-R1 `/tmp` cache keys `HOME`, `XDG_CACHE_HOME`, `TORCH_HOME`, `TRITON_CACHE_DIR` | they are correct and unrelated; `TMPDIR` stays excluded per 18.24 and is E1's negative |
+| `HF_HOME` and `TRANSFORMERS_CACHE` | pinned by `SourceLockV1.__post_init__`; moving them is B-10-R1 (#153), a separate blocker |
+| the image pin and its digest | rejected in 25.3 on probes 26 and 27 |
+| `cli.py:743-750` and `_ENGINE_CONTRACT_CACHE` | section 24's ruling one is idempotent with them and P4 pins that |
+| the section 24 `sys.path` establishment in `dispatch_validated_training_run_v1` | B-15 is closed; this ruling touches no import root |
+| `cause_line.py` and the cause-line renderer | 22.14 and 24.4 govern it; the corrections below are to the prose, not the code |
+| the closure manifest format, and `git_mode` in it | B-14 removed the exec-bit predicate; the field stays as recorded data (23.3) |
+| everything else in the engine | the two allowlist copies are the whole engine change |
+
+**Follow-ups, and the one thing A1 does not close.**
+
+- **The residual, stated plainly. A1 closes the `getpass.getuser()` path only.**
+  Anything further into the trainer that calls `pwd.getpwuid()` or
+  `os.getlogin()` directly still fails under an unmapped uid, and the spike did
+  not survey for such a call (its open question 3). If run 11 fails past the
+  import at that class of defect, the pre-registered next move is a uid mapping
+  inside the container, not another environment key, and it is a new blocker
+  under the reading rule in row 0.
+- **The two-copy allowlist is now recorded (25.2), which answers #147's open
+  question 1.** Sections 18.18 to 18.24 still describe the B-9-R1 change as
+  though the allowlist were one file. They are not rewritten here; 25.2 is the
+  correction of record and E2 is the pin that stops the omission recurring.
+- **Report the swallowed exception upstream to unsloth.** The bare `except:` at
+  `unsloth_zoo/temporary_patches/common.py:74` is what turned a one-line
+  environment defect into a full run to diagnose. This is not on the critical
+  path and is filed as courtesy, not as work.
+- **#209 input.** Every line citation in section 24 drifted inside a single
+  commit, and three of the six corrections landing with this section are pure
+  line drift. Cite by symbol; the simplification review should read that as
+  evidence about the citation habit, not only about the code.
+- Carried and unaffected: #170, #184, #207's landed renderer, #219's shipped
+  census, and audit #172's Y-1 and Y-2.
+
+### 25.8 Execution sequence and owners
+
+| # | Step | Owner | Gate |
+|---|---|---|---|
+| 1 | engine: admit `USER` in both allowlist copies; add E1, E2, E3 red-first; regenerate the closure per 25.4; bare `--check` last | coder-engine-r1, branch `feat/submodule-cloud-api-v1` | E2 red before the schema edit; `--check` exit 0 after |
+| 2 | engine suite from an ext4 checkout at the new commit | test-engineer | suite green, regeneration verified |
+| 3 | push the engine | team-lead | after step 2 |
+| 4 | Host: add `USER: "synaptic"` to the `environment` dict in `DockerAdmissionResolverV1.resolve` with a B-16 comment; add H1, H2 red-first; move the submodule pin | coder-user, Host worktree branch | H1 red before the edit |
+| 5 | independent audit of the engine commit, the Host commit and the pin move | auditor-run | before release |
+| 6 | push the Host and cut `ehr-release-<sha>` | team-lead | after step 5 |
+| 7 | run 11 from the released checkout, rows 0 to 6 per 25.6 | test-host | row 0 is the blocker gate |
+
+Steps 1 and 4 are not parallel: the Host pin move in step 4 needs the engine
+commit from step 3.
