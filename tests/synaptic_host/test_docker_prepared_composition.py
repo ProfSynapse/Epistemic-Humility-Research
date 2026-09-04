@@ -1039,7 +1039,7 @@ def test_wiring_checker_detects_a_close_demoted_to_an_except_handler():
 # docker.exe CHILD PROCESS environment.
 #
 # B-16 binds USER in the CONTAINER environment, which the composition hands to
-# `docker run` as a `-e` argument on the argv.  It is NOT an environment
+# `docker create` as an `--env` argument on the argv.  It is NOT an environment
 # variable of the docker.exe child, whose hardened environment is the four-key
 # tuple built at the `DockerCLIEnvironmentV1.build` call in
 # `compose_docker_prepared_platform_v1`.  Adding the container key therefore

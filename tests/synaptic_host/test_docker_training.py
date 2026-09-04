@@ -789,6 +789,151 @@ def test_clean_admission_stage_materializes_exact_two_runtime_roots(
     assert artifact_checks == [staged.artifact_root, replay.artifact_root]
 
 
+def _admitted_stage(monkeypatch, clean_project, *, expect_unused_artifacts=True):
+    """Drive real admission and one real stage, returning both halves.
+
+    B-17 (architecture section 26.4).  P1 and P9 need the whole
+    `stage_docker_worker_v1` path rather than the staging helper in isolation,
+    because the read they are about is the Host's own publication phase
+    reading the staged source root.  The `clean_project` fixture is the only
+    harness that builds a lock with a real `outputs.destination_registry`, so
+    those two tests live here and P2-P8 stay at the helper in
+    `test_docker_staging.py`, which section 26.4 names as the default site.
+    """
+
+    docker_training = importlib.import_module("synaptic_host.docker_training")
+    docker_staging = importlib.import_module("synaptic_host.docker_staging")
+    from synaptic_host.security import FileHmacAuthenticator, ScopedGitRemoteReader
+    from tuner.project.manifest import load_project_manifest
+
+    observed = {}
+    original = docker_training.compile_training_plan_v1
+
+    def capture(*, training_input, context, resolver):
+        plan = original(
+            training_input=training_input, context=context, resolver=resolver,
+        )
+        observed["plan"] = plan
+        observed["source_lock"] = resolver.session._verified.source_lock
+        return plan
+
+    monkeypatch.setattr(docker_training, "compile_training_plan_v1", capture)
+    monkeypatch.setattr(
+        docker_training, "_activate_docker_training_v1", _reconcile_result,
+    )
+    project = clean_project["project"]
+    result = docker_training.execute_docker_training_admission_v1(
+        clean_project["ingresses"][0],
+        project_root=project,
+        engine_root=clean_project["engine"],
+        remote_reader=ScopedGitRemoteReader(runner=clean_project["transport"]),
+    )
+    assert result.code is TrainingRunCommandCodeV2.RECONCILE_REQUIRED
+    context = load_project_manifest(project / "synaptic.yaml").create_context(
+        engine_root=clean_project["engine"], invocation_cwd=project,
+    )
+    FileHmacAuthenticator.for_docker(context, durable_rows_exist=False)
+
+    def stage():
+        return docker_staging.stage_docker_worker_v1(
+            plan=observed["plan"],
+            source_lock=observed["source_lock"],
+            context=context,
+            storage_configuration=(
+                project / "training/storage.json"
+            ).read_bytes(),
+            model_inventory=(),
+            expect_unused_artifacts=expect_unused_artifacts,
+        )
+
+    return observed["source_lock"], stage
+
+
+def test_b17_publish_cut_reads_the_staged_destination_registry(
+    monkeypatch, clean_project,
+) -> None:
+    """P1 (architecture section 26.4), the acceptance test for B-17.
+
+    Run 12 reached the first publish cut ever attempted on this path and
+    returned START_UNAVAILABLE.  `_configuration_for_request`
+    (`docker_publication.py:342`) takes the staged source root and reads
+    `("project", "training", "artifacts.json")` from it (`:347-349`);
+    `_read_regular` (`:102`) `lstat`s the path before opening it (`:105`), so
+    an absent file raises `FileNotFoundError` out of the stat.  The file was
+    absent because `_stage_locked_project_inputs` was handed
+    `source_lock.inputs`, which admission populates with exactly two
+    descriptors, while the lock records this file at
+    `outputs.destination_registry` (`docker_training.py:304-308`).
+
+    The read below is the publication's own, not a restatement of the staging
+    scope, so this is run 12 in a unit test.  The expected bytes are stated
+    against the descriptor the lock records rather than against a constant,
+    which pins the staged bytes to what admission digested.
+    """
+
+    docker_publication = importlib.import_module(
+        "synaptic_host.docker_publication"
+    )
+    source_lock, stage = _admitted_stage(monkeypatch, clean_project)
+    registry = source_lock.outputs["destination_registry"]
+    assert registry["path"] == "training/artifacts.json"
+
+    staged = stage()
+
+    payload = docker_publication._read_regular(
+        staged.source_root,
+        ("project", "training", "artifacts.json"),
+        docker_publication._MAX_CONFIG_BYTES,
+    )
+    assert len(payload) == registry["size_bytes"]
+    assert hashlib.sha256(payload).hexdigest() == registry["sha256"]
+
+
+def test_b17_staged_registry_flows_into_the_manifest_and_survives_reuse(
+    monkeypatch, clean_project,
+) -> None:
+    """P9 (architecture section 26.4).
+
+    Section 21.4's S6 property, restated at the new scope: `_source_manifest`
+    walks the staged tree rather than an expectation of it, and the same walk
+    produces the digest written into `control/source-manifest.json` and the
+    one `_verify_reuse` re-derives.  A third staged project file therefore
+    flows into both sides at once, which is why this fix needs no manifest
+    work -- and this test is what makes that a measurement rather than a
+    claim.
+
+    The reuse half is the load-bearing one: the second stage runs
+    `_verify_reuse` against the tree the first stage wrote, so a scope that
+    drifted between the two would fail here rather than silently report
+    success twice.  26.4 names P9 as the test to keep if any other is dropped.
+    """
+
+    docker_staging = importlib.import_module("synaptic_host.docker_staging")
+    source_lock, stage = _admitted_stage(monkeypatch, clean_project)
+    registry_path = source_lock.outputs["destination_registry"]["path"]
+
+    staged = stage()
+
+    recorded = json.loads(
+        staged.source_root.joinpath("control/source-manifest.json").read_bytes()
+    )
+    entries, digest = docker_staging._source_manifest(staged.source_root)
+    assert recorded["manifest_digest"] == digest
+    assert recorded["entries"] == entries
+    # The staged registry is IN the walk both sides share.  Without this line
+    # the equality above would hold for a manifest that never saw the file.
+    staged_project = sorted(
+        entry["relative_path"] for entry in entries
+        if entry["relative_path"].startswith("project/")
+    )
+    assert f"project/{registry_path}" in staged_project, staged_project
+    assert len(staged_project) == 3, staged_project
+
+    replay = stage()
+    assert replay.projection == staged.projection
+    assert replay.source_root == staged.source_root
+
+
 # B-16 (architecture section 25.2).  The pre-B-16 container environment key
 # set, recorded here so H1 below can state its assertion as a DELTA.  The fix
 # adds exactly one key; a later addition must fail the "gained exactly USER"
@@ -814,8 +959,10 @@ def test_container_environment_binds_user_and_gains_exactly_that_one_key(
     image's `/etc/passwd` cannot answer for the `--user 1000:1000` uid.
 
     The key set is asserted as a delta against `_ENVIRONMENT_KEYS_BEFORE_B16`:
-    exactly one key gained, none lost.  `SourceLockV1.__post_init__` requires
-    eleven exact keys and forbids no others, so the added key passes admission,
+    exactly one key gained, none lost.  `ExecutionSourceV1.__post_init__`
+    (`execution_source.py:358`, dict literal at `:489-500`, equality at
+    `:501-502`) requires thirteen exact keys and forbids no others, so the
+    added key passes admission,
     which is precisely why nothing else would have caught a second one.
     """
 
@@ -977,10 +1124,12 @@ def test_oversized_project_stages_only_its_locked_inputs(
     section 21.12 this raised at docker_staging.py:1299 from the call at
     :1714-1717, which is how run 6 died.
 
-    S2: the staged project root holds exactly the lock's input paths and
+    S2: the staged project root holds exactly the paths the lock records and
     nothing else.  The assertion is a set EQUALITY, so a future change that
     reintroduces a whole-tree stage fails here even though S1 would still
-    pass on a large enough bound.
+    pass on a large enough bound.  Section 26.3 (B-17) widened that recorded
+    set from the two inputs to the inputs plus `outputs.destination_registry`;
+    the equality below tracks the widening without loosening.
     """
     project = oversized_project["project"]
     engine = oversized_project["engine"]
@@ -1066,11 +1215,19 @@ def test_oversized_project_stages_only_its_locked_inputs(
             expect_unused_artifacts=True,
         )
 
+        # B-17 (architecture section 26.3) widened the staged scope by exactly
+        # one recorded descriptor, so the expected set is the union the ruling
+        # defines.  It is rebuilt here from the lock's OWN two records rather
+        # than from `_locked_project_descriptors`, which would make the
+        # equality tautological against the helper that drove the stage.  The
+        # assertion stays a set EQUALITY, so S2 still fails on a change that
+        # reintroduces a whole-tree stage.
+        registry_path = source_lock.outputs["destination_registry"]["path"]
         root = staged.source_root / "project"
         assert {
             path.relative_to(root).as_posix()
             for path in root.rglob("*") if path.is_file()
-        } == {descriptor["path"] for descriptor in inputs}
+        } == {descriptor["path"] for descriptor in inputs} | {registry_path}
         assert not (root / "datasets").exists()
 
 

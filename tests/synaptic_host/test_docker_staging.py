@@ -20,12 +20,14 @@ from synaptic_host.docker_staging import (
     _cleanup_windows_stage,
     _copy_inventory,
     _load_locked_closure,
+    _locked_project_descriptors,
     _release_windows_stage,
     _source_manifest,
     _stage_locked_closure,
     _stage_locked_project_inputs,
     _verify_artifact_topology,
     _verify_inventory_at,
+    _verify_staged_project_inputs,
     _verify_worker_closure_binding,
     _verify_staged_closure,
     stage_docker_worker_v1,
@@ -315,8 +317,15 @@ def locked_inputs_repository(tmp_path: Path):
     (repository / "training/fixtures").mkdir(parents=True)
     config = b'{"method": "sft"}\n'
     dataset = b'{"messages": []}\n'
+    # B-17 (architecture section 26.3).  The destination registry is a third
+    # committed project file the lock records at `outputs.destination_registry`
+    # rather than among `inputs`.  It is committed here and left out of
+    # `descriptors` so S1-S6 keep measuring the two-input scope exactly as
+    # before; only the B-17 tests build a lock that carries it.
+    registry = b'{"destinations": [{"ref": "local-default"}]}\n'
     (repository / "training/smokes/docker-sft.json").write_bytes(config)
     (repository / "training/fixtures/modal-smoke.jsonl").write_bytes(dataset)
+    (repository / "training/artifacts.json").write_bytes(registry)
     # Bulk content the lock does not record.  Small here: S1 in
     # tests/synaptic_host/test_docker_training.py carries the real bound.
     (repository / "datasets").mkdir()
@@ -341,7 +350,32 @@ def locked_inputs_repository(tmp_path: Path):
         descriptors=descriptors,
         config=config,
         dataset=dataset,
+        registry=registry,
+        registry_descriptor=_descriptor(
+            "artifact-destination-registry", "training/artifacts.json", registry,
+        ),
     )
+
+
+def _lock(inputs, registry) -> SimpleNamespace:
+    """A source lock stand-in carrying only what the union reads.
+
+    B-17 (architecture section 26.4).  `_locked_project_descriptors` reads
+    `inputs` and `outputs` and nothing else, and `SourceLock.from_dict`
+    normalizes both to exact JSON built-ins (`source_bundle.py:428-430` through
+    `_snapshot_json_value`, :127-144), so a tuple of plain dicts beside a plain
+    dict is the real shape rather than a convenient one.  `outputs` also
+    carries the two sibling keys admission writes (`docker_training.py:299-308`)
+    so a helper that read the wrong key would not pass by accident.
+    """
+
+    outputs = {
+        "destination_ref": "local-default",
+        "destination_declaration_digest": "0" * 64,
+    }
+    if registry is not None:
+        outputs["destination_registry"] = registry
+    return SimpleNamespace(inputs=tuple(inputs), outputs=outputs)
 
 
 def test_staged_project_inputs_are_exactly_the_locked_set(
@@ -548,6 +582,216 @@ def test_staged_project_input_that_is_a_symlink_at_the_commit_is_refused(
         )
 
     assert not destination.exists()
+
+
+# B-17 (architecture section 26.4), tests P2-P8.  P1 and P9 need the whole
+# `stage_docker_worker_v1` drive and live in `test_docker_training.py`; the
+# seven below exercise `_locked_project_descriptors` and the staging function
+# it feeds, which is where every branch of the union lives.
+
+
+def _stage_union(repository, destination, *, inputs=None, registry=...):
+    """Stage through the union exactly as `stage_docker_worker_v1` does."""
+
+    lock = _lock(
+        repository.descriptors if inputs is None else inputs,
+        repository.registry_descriptor if registry is ... else registry,
+    )
+    _stage_locked_project_inputs(
+        repository.path,
+        repository.commit,
+        _locked_project_descriptors(lock),
+        destination,
+    )
+    return lock
+
+
+def test_locked_registry_digest_mismatch_is_refused_before_any_write(
+    tmp_path: Path, locked_inputs_repository,
+) -> None:
+    """P2 (section 26.4).
+
+    The registry goes through the SAME pre-write digest gate as an input,
+    rather than beside it.  This is half of the pair that kills the one wrong
+    implementation which would still make P1 green: writing the registry file
+    directly would never reach `_stage_locked_project_inputs`'s comparison at
+    `:1355-1358` and so could not raise this message.  The destination is
+    asserted absent for the reason S3 gives -- a check that ran after the
+    write would satisfy the message assertion on its own.
+    """
+
+    tampered = dict(locked_inputs_repository.registry_descriptor)
+    tampered["sha256"] = hashlib.sha256(b"other").hexdigest()
+    destination = tmp_path / "project"
+
+    with pytest.raises(ValueError, match="differs from its locked digest"):
+        _stage_union(
+            locked_inputs_repository, destination, registry=tampered,
+        )
+
+    assert not destination.exists()
+
+
+def test_locked_registry_size_mismatch_is_refused(
+    tmp_path: Path, locked_inputs_repository,
+) -> None:
+    """P3 (section 26.4), the size half of the 21.8 message split."""
+
+    resized = dict(locked_inputs_repository.registry_descriptor)
+    resized["size_bytes"] = resized["size_bytes"] + 1
+    destination = tmp_path / "project"
+
+    with pytest.raises(ValueError, match="differs from its locked size"):
+        _stage_union(locked_inputs_repository, destination, registry=resized)
+
+    assert not destination.exists()
+
+
+def test_locked_outputs_without_a_destination_registry_are_refused(
+    locked_inputs_repository,
+) -> None:
+    """P4 (section 26.4), the registry-absent test.
+
+    Refusing here rather than skipping is the ruling.  The publish cut reads
+    the file unconditionally, so a skip would reproduce B-17 several cuts
+    later from a frame that knows nothing about the lock.
+    """
+
+    lock = _lock(locked_inputs_repository.descriptors, None)
+
+    with pytest.raises(
+        ValueError,
+        match="locked project outputs do not record the destination registry",
+    ):
+        _locked_project_descriptors(lock)
+
+
+@pytest.mark.parametrize(
+    "damage",
+    (
+        pytest.param({"sha256": None}, id="missing-sha256"),
+        pytest.param({"size_bytes": "614"}, id="size-as-str"),
+        pytest.param({"path": ""}, id="empty-path"),
+        pytest.param({"path": None}, id="missing-path"),
+    ),
+)
+def test_malformed_destination_registry_gives_the_absent_message(
+    locked_inputs_repository, damage,
+) -> None:
+    """P5 (section 26.4).  One message for one condition.
+
+    `SourceLock.from_dict` guarantees `outputs` is a mapping
+    (`source_bundle.py:413-415`) but validates none of its inner keys, so the
+    helper checks the descriptor itself.  Present-but-unusable and absent are
+    the same condition to a caller -- the lock does not record a usable
+    registry descriptor -- so they share one message rather than inviting a
+    reader to distinguish two.  `size_bytes` as a `str` is the case a
+    truthiness check would have let through.
+    """
+
+    damaged = dict(locked_inputs_repository.registry_descriptor)
+    for field, value in damage.items():
+        if value is None:
+            del damaged[field]
+        else:
+            damaged[field] = value
+    lock = _lock(locked_inputs_repository.descriptors, damaged)
+
+    with pytest.raises(
+        ValueError,
+        match="locked project outputs do not record the destination registry",
+    ):
+        _locked_project_descriptors(lock)
+
+
+def test_registry_already_among_the_inputs_stages_two_files_not_three(
+    tmp_path: Path, locked_inputs_repository,
+) -> None:
+    """P6 (section 26.4), the de-duplication pin.
+
+    A lock that records the same path in both places is internally consistent
+    when the digests agree, so it must stage, not refuse.  The de-duplication
+    is pinned at helper level rather than left to the duplicate-path refusal
+    at `:1345-1346`, which would turn a coincidence into a failure.  The
+    count is asserted on the staged tree AND on the union, so a helper that
+    de-duplicated by accident downstream would not pass.
+    """
+
+    config = locked_inputs_repository.descriptors[0]
+    lock = _lock(locked_inputs_repository.descriptors, dict(config))
+
+    assert _locked_project_descriptors(lock) == locked_inputs_repository.descriptors
+
+    destination = tmp_path / "project"
+    _stage_union(
+        locked_inputs_repository, destination, registry=dict(config),
+    )
+    staged = {
+        path.relative_to(destination).as_posix()
+        for path in destination.rglob("*") if path.is_file()
+    }
+    assert staged == {
+        descriptor["path"]
+        for descriptor in locked_inputs_repository.descriptors
+    }
+    assert len(staged) == 2
+    assert not (destination / "training/artifacts.json").exists()
+
+
+def test_registry_disagreeing_with_an_input_at_the_same_path_is_refused(
+    locked_inputs_repository,
+) -> None:
+    """P7 (section 26.4).
+
+    The same path recorded twice with different content means the lock
+    disagrees with itself.  Staging must not pick a winner, so it refuses with
+    its own message rather than silently preferring either record.
+    """
+
+    config = locked_inputs_repository.descriptors[0]
+    conflicting = dict(config)
+    conflicting["sha256"] = hashlib.sha256(b"other").hexdigest()
+    lock = _lock(locked_inputs_repository.descriptors, conflicting)
+
+    with pytest.raises(
+        ValueError,
+        match="locked project inputs disagree with the destination registry",
+    ):
+        _locked_project_descriptors(lock)
+
+
+def test_staged_project_tree_is_exactly_the_three_recorded_paths(
+    tmp_path: Path, locked_inputs_repository,
+) -> None:
+    """P8 (section 26.4).  The B-12 set equality still holds at the new scope.
+
+    This is the other half of the P2 pair.  A direct write of the registry
+    file would leave the staged tree with a member the descriptors passed to
+    `_verify_staged_project_inputs` do not name, and the set equality at
+    `:1392` would refuse it.  Asserting the re-verification passes over the
+    union is therefore an assertion about the union, not a restatement of the
+    walk above it.
+    """
+
+    destination = tmp_path / "project"
+    lock = _stage_union(locked_inputs_repository, destination)
+    union = _locked_project_descriptors(lock)
+
+    assert len(union) == 3
+    assert union[-1] == locked_inputs_repository.registry_descriptor
+    assert {
+        path.relative_to(destination).as_posix()
+        for path in destination.rglob("*") if path.is_file()
+    } == {
+        "training/smokes/docker-sft.json",
+        "training/fixtures/modal-smoke.jsonl",
+        "training/artifacts.json",
+    }
+    assert destination.joinpath("training/artifacts.json").read_bytes() == (
+        locked_inputs_repository.registry
+    )
+    assert not (destination / "datasets").exists()
+    _verify_staged_project_inputs(destination, union)
 
 
 def test_model_inventory_is_explicit_sorted_and_content_authenticated(

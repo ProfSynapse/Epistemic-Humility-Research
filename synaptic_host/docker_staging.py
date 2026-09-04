@@ -1302,6 +1302,72 @@ def _verify_staged_closure(root: Path, closure: _LockedClosureV1) -> None:
             raise ValueError("staged worker closure differs from its manifest")
 
 
+def _locked_project_descriptors(
+    source_lock: SourceLock,
+) -> tuple[dict[str, object], ...]:
+    """The project descriptors this path stages, derived from the lock alone.
+
+    B-17 (architecture section 26.3).  B-12 staged `source_lock.inputs` and
+    nothing else, but the Host's own publication phase is a second consumer of
+    the staged source root: `_configuration_for_request`
+    (`docker_publication.py:342`) reads `project/training/artifacts.json` from
+    it at `:347-349`.  The lock records that file at
+    `outputs.destination_registry` (`docker_training.py:304-308`), in the same
+    `_descriptor` shape as an input and digested by the same admission, so the
+    union below adds nothing the lock does not already carry and already
+    digest.  Section 21.4's trust argument is preserved: the scope stays
+    derived from the lock, exact, and verifiable from the lock alone.
+
+    Sited outside `_stage_locked_project_inputs` deliberately.  That function
+    keeps one reason to change -- how a recorded descriptor becomes a staged
+    file -- and this one carries the other -- which recorded descriptors this
+    path stages.  Every property B-12 gave the inputs therefore covers the
+    registry with no new code: the pre-write size and digest equality, the
+    read from the commit, and the set-equality re-verification of the staged
+    tree.
+
+    Refusing an absent or malformed registry rather than skipping it is the
+    ruling, not caution.  The publish cut reads that file unconditionally, so
+    skipping would reproduce B-17 several cuts later from a frame that knows
+    nothing about the lock.  Admission writes the descriptor on the
+    unconditional bind path, so the refusal is unreachable today; it is a
+    contract pin, in the same spirit as the Y-B belt retained below, and for
+    the same reason -- the proof of unreachability rests on another
+    function's behaviour, which nothing enforces.
+    """
+
+    inputs = tuple(source_lock.inputs)
+    outputs = source_lock.outputs
+    registry = outputs.get("destination_registry") if type(outputs) is dict else None
+    if (
+        type(registry) is not dict
+        or type(registry.get("path")) is not str
+        or not registry["path"]
+        or type(registry.get("size_bytes")) is not int
+        or type(registry.get("sha256")) is not str
+    ):
+        raise ValueError(
+            "locked project outputs do not record the destination registry"
+        )
+    for descriptor in inputs:
+        if descriptor.get("path") != registry["path"]:
+            continue
+        # The registry is already among the inputs.  Append nothing: a blind
+        # append would turn this coincidence into the duplicate-path refusal
+        # below.  A differing digest or size means the lock disagrees with
+        # itself, and staging must not pick a winner between two of its own
+        # records.
+        if (
+            descriptor.get("size_bytes") == registry["size_bytes"]
+            and descriptor.get("sha256") == registry["sha256"]
+        ):
+            return inputs
+        raise ValueError(
+            "locked project inputs disagree with the destination registry"
+        )
+    return inputs + (registry,)
+
+
 def _stage_locked_project_inputs(
     repository: Path,
     commit: str,
@@ -1829,13 +1895,18 @@ def stage_docker_worker_v1(
         _stage_locked_project_inputs(
             context.project_root,
             source_lock.project_source.commit,
-            source_lock.inputs,
+            _locked_project_descriptors(source_lock),
             source / "project",
         )
         _stage_locked_closure(
             locked_closure,
             source / "engine",
         )
+        # The copier takes the cache ROOT and writes entry paths under it
+        # verbatim, `model/` prefix included; the verifier takes the
+        # `cache/model` SUBTREE and strips that prefix.  The two destinations
+        # differ by one component on purpose -- see the B-10-R2 comment on
+        # `_verify_inventory_at` (audit #297 YELLOW-2).
         inventory_digest = _copy_inventory(model_inventory, artifacts / "cache")
         control = source / "control"
         control.mkdir()
