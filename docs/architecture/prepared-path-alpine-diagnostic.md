@@ -4363,6 +4363,27 @@ above was incomplete and its line numbers had drifted. Three items.
    so its `:561-580` citation above is correct only at this subsection's
    baseline.
 
+*Correction 2026-09-04, audit #275 YELLOW-3, repointed at `636aa90f`.* Every
+line citation in this subsection, including those in the correction above, was
+measured before `557ce1be` and has drifted. Repointed by symbol, which is the
+durable half:
+
+| Cited above | Symbol at `636aa90f` | Line |
+|---|---|---|
+| `test_docker_training.py:1455` (`startswith`) | `test_admission_cause_line_names_the_class_and_innermost_host_frame` (`:1499`) | `:1516` |
+| `test_docker_training.py:1459` (`endswith " in _validate_private_directory"`) | the same test | `:1520` |
+| `test_docker_training.py:1497` (equality on the `<unknown>` case) | `test_admission_cause_line_never_carries_the_exception_text` (`:1523`) | `:1558` |
+| `test_docker_training.py:1521` (`startswith`) | `test_admission_cause_covers_a_handler_far_above_the_activation_stage` (`:1648`) | `:1673` |
+| `test_docker_training.py:1616` (the repointed `" in prove"` pin) | the same test | `:1683`, now asserting `" in prove, from synaptic_host/docker_training.py:"` |
+| `test_run_prepared_training_probes.py:684` (prefix) | `test_p8_runs_after_the_bind_probe_and_before_the_first_assertion` (`:649`) | `:684` |
+| `docker_training.py:558` (the 400-byte bound) | `_CAUSE_LINE_LIMIT` in `synaptic_host/cause_line.py` | `:37` |
+
+The one new test this subsection said was owed has landed:
+`test_a_raise_inside_a_helper_renders_both_frames_deciding_frame_last`
+(`tests/synaptic_host/test_cause_line.py:295`) partitions the rendered location
+on `", from "` and asserts each half, and pins that a single in-package frame
+renders no comma at all.
+
 **Ordering with 22.6.** After the ruling in 22.6 the B-13 failure raises from
 `compose_docker_prepared_platform_v1` itself, so this particular line would have
 been right without this amendment. The amendment stands anyway: the next shared
@@ -5110,6 +5131,28 @@ bind eleven exact keys and raises
 otherwise, but it does not forbid additional keys. `USER` therefore passes the
 source lock untouched, and no change is needed there.
 
+*Correction 2026-09-04, audit #275 YELLOW-1 and test-host's run 12 reading,
+measured at engine `ce539b70` and Host `636aa90f`.* Two corrections to the
+paragraph above; neither changes what it rules. **First**, the class is
+`ExecutionSourceV1` (`synaptic-tuner/tuner/project/execution_source.py:358`),
+not `SourceLockV1`, which is not a symbol in that module; its `__post_init__`
+binds **thirteen** exact keys, not eleven, in the dict literal at `:489-500`
+with the equality that enforces it at `:501-502`. The thirteen are
+`PYTHONNOUSERSITE`, `PYTHONSAFEPATH`, `PYTHONPATH`, `SYNAPTIC_ENGINE_ROOT`,
+`SYNAPTIC_PROJECT_ROOT`, `SYNAPTIC_ARTIFACT_ROOT`, `SYNAPTIC_STATE_ROOT`,
+`SYNAPTIC_TRACKING_ROOT`, `SYNAPTIC_CACHE_ROOT`, `SYNAPTIC_TMP_ROOT`, `HF_HOME`,
+`TRANSFORMERS_CACHE` and `WANDB_DISABLED`. The load-bearing claim survives: the
+check is an equality over required keys and forbids no others, so `USER` passes
+admission untouched. **Second**, the Host citations describe the pre-fix
+baseline. At `636aa90f` the `environment` dict opens at `:452`,
+`TRITON_CACHE_DIR` is at `:486`, the B-16 comment at `:487` and
+`USER: "synaptic"` at `:488`, so the dict closes at `:489`; and it is handed to
+`ExecutionSourceV1(...)` at `:491`, not `:503`. The shipped location is what
+this section ruled. The same "eleven exact keys" error and the same wrong class
+name appear in the H1 docstring
+(`tests/synaptic_host/test_docker_training.py:817-818`), which is code and is
+owed to coder-user; section 26.7 carries the item.
+
 **The engine allowlist has TWO copies, and both are load-bearing at runtime.**
 The dispatch named one. Task #147, which implemented B-9-R1, found the second
 and raised it as an open question that was never answered; sections 18.18 to
@@ -5379,3 +5422,434 @@ a non-regression pin, matching H2 as re-specified in 25.5.
 
 Steps 1 and 4 are not parallel: the Host pin move in step 4 needs the engine
 commit from step 3.
+
+## 26. Amendment 2026-09-04 — ruling on B-17 (the publish cut reads a project file the staged scope does not carry)
+
+Every line and file citation in this section was read at Host `636aa90f`, the
+release run 12 was cut from, with the engine pin `ce539b70` untouched. That is
+the citation baseline. Drift on `docker_staging.py` is **not uniform** — the
+corrections in 26.7 record one citation pair in that file that moved by 54 lines
+while another pair two lines above it moved by 46 — so a later reader must
+re-derive by symbol and never by offset. Every citation below names its symbol
+first and its line second.
+
+### 26.1 What B-17 is, stated from the code rather than from the symptom
+
+Run 12 (#303) is the first run on this path ever to reach the publish cut. It
+returned `START_UNAVAILABLE status=unavailable exit=4` with the cause line
+
+```
+synaptic-host: START_UNAVAILABLE FileNotFoundError at synaptic_host/docker_publication.py:105 in _read_regular, from synaptic_host/docker_publication.py:347 in _configuration_for_request
+```
+
+which is the two-frame render section 22.14 ruled, deciding frame first.
+
+`_configuration_for_request` (`docker_publication.py:342`) takes the staged
+source root from the request (`:345`) and reads two documents from it: the
+destination registry at `("project", "training", "artifacts.json")` (`:347-349`)
+and the storage configuration at `("control", "storage.json")` (`:350`). The
+first read fails. `_read_regular` (`:102`) `lstat`s the path before opening it
+(`:105`), so an absent file raises `FileNotFoundError` out of the stat rather
+than out of the open, which is why the deepest frame names `_read_regular` and
+not `os.open`.
+
+The file is absent because B-12 scoped the staged project tree.
+`_stage_locked_project_inputs` (`docker_staging.py:1305`) stages exactly the
+descriptors it is handed, and `stage_docker_worker_v1` hands it
+`source_lock.inputs` (`:1829-1834`), which admission populates with exactly two
+entries, `training-config` and `training-dataset`
+(`docker_training.py:279-282`). `training/artifacts.json` exists at the locked
+commit, 614 bytes, and is absent from `source/project`.
+
+**The file is nevertheless recorded in the lock, and already digested.**
+Admission builds the same descriptor shape for it at
+`outputs.destination_registry` (`docker_training.py:304-308`) from the blob it
+read at `:682-685`, so the lock carries its `path`, `git_object_id`,
+`size_bytes` and `sha256` (`_descriptor`, `:105-116`). Staging reads `inputs`
+and nothing else. That is the whole defect: a one-field gap between what
+admission records and what staging consumes.
+
+**Why nothing caught it, and why it is not a regression.** Section 21.3 took a
+sweep before ruling B-12 and concluded "the container reads one file from
+`/source/project`". That sweep was correct and its conclusion is still true. Its
+**frame** was the container. `_stage_locked_project_inputs` inherited the frame
+into its own docstring — "the container reads exactly one file from
+`/source/project` (section 21.3)" (`:1316`) — and the sentence is true about the
+container and false about the system, because the Host's own publication phase
+is a second consumer of the same staged root. Latent since B-12 landed at
+`9eb2b90b` (run 7); unreachable until run 12 because every run in between died
+at an earlier gate. Ruling (4) did not cause it; ruling (4) removed the gate
+above it.
+
+**#184 is this, arriving from the other side.** Section 21.18 named the seam as
+"the engine could grow a project read the lock does not record" and filed it as
+FOLLOW-UP #184. The realisation is a Host consumer reading a project path the
+lock **does** record and staging does not carry, which is the same seam with the
+recorded/staged halves swapped. #184 is folded into #304 and closed by this
+ruling for the Host half; 26.6 records what remains of the engine half.
+
+### 26.2 Census: every read rooted at the staged source root
+
+The mission for this ruling is a census rather than a patch, because the
+question B-17 raises is not "is `artifacts.json` missing" but "how many more are
+there". Method first, so an auditor can re-run it.
+
+**Method.** Seven passes over `synaptic_host/` at `636aa90f`, `__pycache__`
+excluded. Run from the worktree root:
+
+```
+grep -rn --include=*.py "source_root" synaptic_host/
+grep -rn --include=*.py "/source/project" synaptic_host/
+grep -rn --include=*.py '"project"' synaptic_host/
+grep -rn --include=*.py "_read_regular(" synaptic_host/
+grep -rn --include=*.py 'source / "' synaptic_host/
+grep -rn --include=*.py "_read_direct_regular(\|_walk_regular_files(" synaptic_host/
+grep -rn --include=*.py "_read_committed_git_blob_v1(" synaptic_host/docker_training.py
+```
+
+The first three find the stage's project subtree by every name it is reachable
+under; the next three find every content read in the package regardless of the
+root it is rooted at, so a consumer that reaches the stage through a differently
+named local cannot hide; the last separates reads of the **commit** from reads
+of the **stage**, which is the distinction the whole ruling turns on. Pass 5
+returns 10 hits, pass 6 returns 13, pass 1 returns 16; the union after removing
+definitions and duplicates is the table below.
+
+**Hits, classified.**
+
+| # | Site | Rooted at | What it reads | Lock records the path | B-12 staging carries it |
+|---|---|---|---|---|---|
+| 1 | `_configuration_for_request` (`docker_publication.py:342`), read at `:347-349` | staged source root | `project/training/artifacts.json` | **yes**, `outputs.destination_registry` (`docker_training.py:304-308`) | **NO — this is B-17** |
+| 2 | `_configuration_for_request`, read at `:350` | staged source root | `control/storage.json` | yes, `runtime.storage_configuration` (`:293-297`), but the staged copy is written from the committed storage bytes at `docker_staging.py:1845` | yes, as control |
+| 3 | `_verify_reuse` (`docker_staging.py:1739`), reads at `:1750-1758` | staged source root | `control/source-manifest.json`, `control/preparation-projection.json`, the control copy of the closure manifest | control plane, written by staging itself | yes |
+| 4 | `_source_manifest` (`docker_staging.py:1613-1619`), called at `:1763` and `:1865` | staged source root | a walk of **every** staged source file, including the project subtree, hashed into the manifest digest | derived, not recorded | yes, by construction |
+| 5 | `_verify_staged_closure(source / "engine", …)` (`:1774`, definition `:1259`) | staged source root | the engine closure members | yes, the locked closure | yes |
+| 6 | `_verify_control_files(source / "control", …)` (`:1775`, definition `:1719`) | staged source root | set equality over the control directory | control plane | yes |
+| 7 | `_verify_staged_project_inputs` (`:1376`), called at `:1373` | staged project subtree | re-reads exactly the descriptors it was handed | `inputs` | yes |
+| 8 | the container's dataset read, `runtime_v1.py:1074-1094` resolving the workload's `project://` ref | `/source/project` | `training/fixtures/modal-smoke.jsonl` | yes, `inputs` | yes |
+| 9 | `prepared.py:90`, `binding.py:350-372`, `capability_assembly.py:659-702` | staged source root | **no content**: identity, topology and mount-path derivation only | n/a | n/a |
+
+**Reads that are NOT rooted at the stage, recorded so the census cannot be
+misread.** Admission reads six project files at `docker_training.py:668`,
+`:674`, `:682`, `:707`, `:711`, `:715`, all through
+`_read_committed_git_blob_v1` and therefore from the **locked commit in the
+operator's repository**, never from the stage. `docker_execution.py:860` and
+`:939` read `state/runtime-v1-inventory.json` and the inventory members from the
+**artifact** root (`:854`), not the source root.
+
+**Result: exactly one unstaged consumer, and it is row 1.** Every other read
+rooted at the staged source root reads something staging itself writes, or
+something the lock records and B-12 already carries, or nothing at all.
+
+**The three other project paths the lock records stay unstaged, and that is the
+ruling, not an omission.** Admission records `project.manifest`
+(`project://synaptic.yaml`, `:272-275`), `runtime.provider_profile`
+(`project://training/providers/docker.json`, `:287-291`) and
+`runtime.storage_configuration` (`project://training/storage.json`,
+`:293-297`). The census finds no consumer of any of them rooted at the stage:
+each is read at admission from the commit, and `storage.json` reaches both the
+container and the publish cut as **control** bytes written at
+`docker_staging.py:1845`, not as a project file. Staging what nothing reads
+would widen the scope B-12 narrowed and buy nothing, so it is declined.
+
+**One line for the class, since the instance is now closed twice over.** A
+future consumer of the staged project tree must be **both lock-recorded and
+staged**; recorded alone is what B-17 is, and staged alone is what B-12 removed.
+The census above is the instrument for that check and is cheap to re-run.
+
+### 26.3 Ruling — stage the descriptor admission already digests
+
+**Stage the `outputs.destination_registry` descriptor beside the `inputs`
+descriptors, and change nothing else about how staging works.**
+
+**Where.** `stage_docker_worker_v1` (`docker_staging.py:1778`), at the call to
+`_stage_locked_project_inputs` (`:1829-1834`). The union is built by a new
+module-level helper, `_locked_project_descriptors(source_lock)`, sited beside
+`_stage_locked_project_inputs`, and the call becomes
+
+```
+_stage_locked_project_inputs(
+    context.project_root,
+    source_lock.project_source.commit,
+    _locked_project_descriptors(source_lock),
+    source / "project",
+)
+```
+
+`_stage_locked_project_inputs` itself is **unchanged**. That is the point of
+siting the union outside it: the staging function keeps one reason to change
+(how a recorded descriptor becomes a staged file) and the helper carries the
+other (which recorded descriptors this path stages), and the helper is testable
+without a repository.
+
+**What the helper does.**
+
+1. Start from `tuple(source_lock.inputs)`, order preserved.
+2. Read `source_lock.outputs["destination_registry"]`. `SourceLock.from_dict`
+   guarantees `outputs` is a mapping (`synaptic-tuner/tuner/project/source_bundle.py:413-415`)
+   but validates none of its inner keys, so the helper checks the descriptor
+   itself: present, a mapping, and carrying a non-empty `str` `path`, an `int`
+   `size_bytes` and a `str` `sha256` — the fields `_descriptor`
+   (`docker_training.py:105-116`) writes.
+3. **Registry absent or malformed: raise** `"locked project outputs do not
+   record the destination registry"`. It is a staging message in the 21.8 shape,
+   free of paths and values.
+4. **Path already among the inputs:** append nothing. `_stage_locked_project_inputs`
+   refuses duplicate paths (`:1345-1346`), so a blind append would turn a
+   coincidence into a refusal.
+5. **Path among the inputs with a different `size_bytes` or `sha256`: raise**
+   `"locked project inputs disagree with the destination registry"`. The lock is
+   internally inconsistent and staging must not choose a winner.
+6. Otherwise append the registry descriptor last, so the staged set is
+   deterministic and reads the same way in a digest assertion.
+
+**Why refusing on an absent registry is the right shape rather than skipping
+it.** On this path the publish cut reads that file unconditionally, at
+composition time (`compose_docker_publication_v1:454`) and again inside
+`publish` (`:396`), with no fallback. Skipping would reproduce B-17 exactly: a
+`FileNotFoundError` several cuts later, from a frame that knows nothing about
+the lock. Refusing converts it into a named refusal at the layer that read the
+lock and can say why. Admission always writes the descriptor (`:304-308` is on
+the unconditional `bind` path), so the branch is unreachable today; it is a
+contract pin, in the same spirit as the Y-B belt retained at `:1405-1416` and
+for the same stated reason — the proof of unreachability rests on another
+function's behaviour, which nothing enforces.
+
+**The digest check is reused, not re-implemented.** Every property B-12 gave the
+inputs now covers the registry with no new code: the pathspec read from the
+commit (`_git_selected_blobs`, `:1350`), the pre-write size and digest equality
+(`:1355-1358`), the write and mode application (`:1371-1372`), and the
+re-verification of the staged tree by set equality and re-hash
+(`_verify_staged_project_inputs`, `:1373` and `:1376-1416`). Nothing is newly
+trusted: the bytes are checked against a digest admission computed, exactly as
+the two inputs are.
+
+**B-12's trust argument is preserved verbatim.** Section 21.4 defends against a
+scope that is not itself covered by a digest. The union is over descriptors the
+lock already carries and already digests, so the scope remains derived from the
+lock, exact, reproducible at a given lock, and verifiable from the lock alone.
+No schema change, no lock version bump, no new field, no operator knob.
+
+**The source manifest follows automatically.** `_source_manifest` (`:1613-1619`)
+walks the staged tree rather than an expectation of it, and the same walk
+produces the digest written at `:1865-1871` and the one re-derived at `:1763`,
+so a third staged project file flows into both sides at once and `_verify_reuse`
+stays green. This is the property 21.4 called out as the reason the scope cannot
+drift out from under the thing that verifies it, and it is why this fix needs no
+manifest work.
+
+**Bounds are unchanged in value.** `_MAX_PROJECT_ARCHIVE_BYTES` (`:45`),
+`_MAX_PROJECT_EXPANDED_BYTES` (`:46`) and `_MAX_PROJECT_ENTRIES` (`:47`) keep
+their values and their 21.7 meaning; the staged set goes from two entries to
+three, and from a few kilobytes to a few kilobytes plus 614 bytes.
+
+**A non-local `destination_ref` is not reachable on this path, and the ruling
+does not depend on it.** The staged file is the destination **registry**, not a
+destination's payload, so which destination a run selects does not change what
+staging must carry. Today the committed `training/artifacts.json` declares
+exactly one destination, `local-default` with adapter `host.local/v1`;
+`_validate_configuration_binding` (`docker_publication.py:354-372`) requires
+exactly one declaration matching the request's `destination_ref` with an equal
+declaration digest, and admission refuses `provider-staging` outright
+(`docker_training.py:693`). So no non-local destination can be selected without
+first adding a declaration to that committed file, and if one were added this
+fix would carry unchanged, because the staged bytes are the registry whatever it
+declares. What remains untested is the publication behaviour **after** a non-local
+declaration exists; that is out of scope here and named in 26.6.
+
+**Rejected alternatives.**
+
+| Rejected | Why |
+|---|---|
+| **stage every descriptor the lock records** (`project.manifest`, both `runtime` descriptors, `inputs`, `outputs`) | closes the same instance, but stages three files the census proves nothing reads from the stage. It re-widens the scope B-12 narrowed, and the widening is invisible in review because each added file is individually harmless |
+| **read `artifacts.json` at publish time from the operator's repository at the locked commit** | the publish cut would then depend on the operator's checkout being present and unmodified at publish time, which staging exists precisely to stop depending on. It also splits one file's provenance across two mechanisms |
+| **carry the registry bytes through the control plane, beside `storage.json`** | plausible, and it is what `storage.json` does. Declined because it would make the publish cut's `("project","training","artifacts.json")` read wrong rather than satisfied, forcing a change in `docker_publication.py` as well; and because the registry is a project file the lock records by path, so staging it at its recorded path keeps one file in one place |
+| **make the publish cut tolerate an absent registry** | it would publish without validating the destination declaration against the digest admission recorded, which is the check `_validate_configuration_binding` exists to perform |
+
+### 26.4 Test spec, red-first
+
+All in `tests/synaptic_host/test_docker_staging.py` unless named otherwise.
+P1 is the run-12 shape and is the acceptance test for the ruling.
+
+| # | Test subject | Asserts |
+|---|---|---|
+| P1 | Stage a worker from a lock whose two `inputs` are present at the commit and whose `outputs.destination_registry` names a third committed file; then read `("project","training","artifacts.json")` under the staged source root | The file is present with the recorded bytes, and the read succeeds. **Red before the change**: today the staged project tree holds two files and the read raises `FileNotFoundError`. This is run 12 in a unit test |
+| P2 | Same lock, but the registry descriptor's `sha256` does not match the blob at the commit | Raises `"exact project input differs from its locked digest"`. Proves the registry goes through the same pre-write digest gate as an input, not beside it |
+| P3 | Same lock, but the registry descriptor's `size_bytes` does not match | Raises `"exact project input differs from its locked size"` |
+| P4 | `outputs` carries no `destination_registry` key | Raises `"locked project outputs do not record the destination registry"`. **The registry-absent test** |
+| P5 | `outputs["destination_registry"]` is present but malformed (missing `sha256`, or `size_bytes` a `str`) | Same message as P4. One message for one condition: the lock does not record a usable registry descriptor |
+| P6 | The registry descriptor's `path` equals one of the `inputs` paths, with equal `size_bytes` and `sha256` | Stages **two** files, not three, and does not raise. Pins the de-duplication at helper level rather than letting `:1345-1346` decide |
+| P7 | The registry descriptor's `path` equals an input path with a different `sha256` | Raises `"locked project inputs disagree with the destination registry"` |
+| P8 | After a successful stage, walk `source/project` | Contains exactly the three recorded paths and nothing else, and `_verify_staged_project_inputs` passes over the union. The B-12 set-equality property still holds at the new scope |
+| P9 | After a successful stage, the source manifest digest recorded at `:1865-1871` equals the digest `_source_manifest` re-derives, and `_verify_reuse` passes | The third staged file flows into both sides of the manifest. This is the S6 property of section 21.4 restated at the new scope, and it is the test to keep if any other is dropped |
+
+P1 must be observed red before the helper exists. P2 and P8 are the pair that
+would fail if a coder implemented this by writing the file directly instead of
+routing it through `_stage_locked_project_inputs`, which is the one wrong
+implementation that would still make P1 green.
+
+### 26.5 Run 13 acceptance
+
+Run 13 is issued from a fresh release checkout `ehr-release-<sha>` at the Host
+sha the fix lands on, engine pin `ce539b70` unmoved.
+
+| Row | Observation | Reading |
+|---|---|---|
+| 0 | Cut 6, the publish cut, returns a result other than the B-17 refusal, and the run leaves `ARTIFACTS_VERIFIED` | The acceptance row for B-17. A different failure at a later frame is progress and a new blocker, not a failure of this row |
+| 1 | The staged `source\project` tree, listed in full at the publish cut | Exactly three files: the two locked inputs and `training/artifacts.json`. Anything else and the scope is not what 26.3 ruled |
+| 2 | The staged `training/artifacts.json` sha256 | Equals the `destination_registry` descriptor's `sha256` in `control\source-lock.json`, which is `dd0627d47c06cfc45627e3cc8904e085e7892e1a41255ac8fec38aa026219070` at `636aa90f` for a 614-byte file |
+| 3 | Publication completes and the run reaches a published state | The first successful publication on this path. Everything below has never been observed |
+| 4 | **No path under `cache/` appears in the publication trace** | Review 3.5 row 4's second half, owed since run 12 recorded it unmeasurable. Record the trace and the search that was run, not a bare verdict; an absent trace is not a pass |
+| 5 | The B-10 four-row reading at cut 2, and the `cache/` tree listing at the verify cut | Rows 1 and 3 of review 3.5 re-observed, so the ruling (4) property is not disturbed by a run that goes further than any before it |
+| 6 | The submodule pin is `ce539b70` at both ends of the release range, and `git diff --submodule=short` over the range is empty | No engine commit, no closure regeneration, no pin move. A diff against the pinned baseline, not a count |
+
+Row 4 is the row this ruling is spending a release to make measurable, so it is
+the row most worth recording carefully.
+
+### 26.6 Out of scope, and what this ruling does not settle
+
+| Out of scope | Why |
+|---|---|
+| `_MAX_PROJECT_ARCHIVE_BYTES` and the other two bounds | unchanged in value and in 21.7 meaning; three small files do not approach them |
+| any engine change | the engine reads nothing new; the consumer is the Host's own publication phase |
+| closure regeneration | no closure member is touched |
+| the submodule pin | stays at `ce539b70` |
+| `docker_publication.py` | the read at `:347-349` is correct as written; the stage was wrong, not the reader |
+| `SourceLockV1` / `ExecutionSourceV1` schema | the union reads fields the lock already carries |
+| staging `synaptic.yaml`, `training/providers/docker.json`, `training/storage.json` | 26.2: nothing reads them from the stage |
+
+**What is not settled.**
+
+- **The engine half of the 21.18 seam remains open.** An engine that grows a
+  read of a project path the lock records nowhere still fails loudly in the
+  container (`runtime_v1.py:928`) and is still not covered by an admission-side
+  contract. #184 is closed for the Host half only; the engine half should be
+  re-filed if it is still wanted after run 13.
+- **Publication with a non-local destination declaration is untested.** 26.3
+  shows it is unreachable today and that the fix is independent of it. The first
+  run that adds a second declaration to the committed registry is the one that
+  must measure it.
+- **The checkpoint-versus-final-model asymmetry in the B-2 stamp** raised at run
+  11 and again as open question 5 on #303 is untouched here and is still owed a
+  ruling before anything publishes from a checkpoint.
+
+### 26.7 Corrections landing with this section
+
+Batched here so the documents are touched once. Each records what it was, what
+it is, and the baseline it was measured at.
+
+**C1 — 25.2, the required-environment key count and the class name.** The
+paragraph at 25.2 says `SourceLockV1.__post_init__`
+(`synaptic-tuner/tuner/project/execution_source.py:489-502`) "requires the map
+to bind eleven exact keys". Three errors. The class is **`ExecutionSourceV1`**
+(`execution_source.py:358`); `SourceLockV1` is not a symbol in that module. The
+map binds **thirteen** keys, not eleven: `PYTHONNOUSERSITE`, `PYTHONSAFEPATH`,
+`PYTHONPATH`, `SYNAPTIC_ENGINE_ROOT`, `SYNAPTIC_PROJECT_ROOT`,
+`SYNAPTIC_ARTIFACT_ROOT`, `SYNAPTIC_STATE_ROOT`, `SYNAPTIC_TRACKING_ROOT`,
+`SYNAPTIC_CACHE_ROOT`, `SYNAPTIC_TMP_ROOT`, `HF_HOME`, `TRANSFORMERS_CACHE`,
+`WANDB_DISABLED`. And the citation is the dict literal at `:489-500` with the
+equality that enforces it at `:501-502`, not `:489-502` for both. The claim the
+paragraph rests on is unaffected: the check is an equality over required keys
+and forbids no others, so `USER` still passes admission. Measured at engine
+`ce539b70`. Audit #275 YELLOW-1.
+
+**C2 — 25.2, the Host line citations at `636aa90f`.** The paragraph describes
+the pre-fix baseline, where the `environment` dict in
+`DockerAdmissionResolverV1.resolve` closed at `:488`. At `636aa90f` the dict
+opens at `:452`, `TRITON_CACHE_DIR` is at `:486`, the B-16 comment is at `:487`
+and `USER: "synaptic"` is at `:488`, so the dict now closes at `:489`; and the
+dict is handed to `ExecutionSourceV1(...)` at `:491`, not at `:503`. The
+shipped location matches what 25.2 ruled — beside the B-9-R1 cache keys, under a
+comment naming B-16.
+
+**C3 — 22.14, the test citations, repointed by symbol.** Every line citation in
+22.14 and in its 2026-09-04 correction was measured before `557ce1be` and has
+drifted. Repointed at `636aa90f`, symbol first:
+
+| 22.14 cited | Symbol at `636aa90f` | Line |
+|---|---|---|
+| `test_docker_training.py:1455` (`startswith`) | `test_admission_cause_line_names_the_class_and_innermost_host_frame` (`:1499`) | assertion at `:1516` |
+| `test_docker_training.py:1459` (`endswith " in _validate_private_directory"`) | same test | `:1520` |
+| `test_docker_training.py:1497` (equality on the `<unknown>` case) | `test_admission_cause_line_never_carries_the_exception_text` (`:1523`) | `<unknown>` literal at `:1558` |
+| `test_docker_training.py:1521` (`startswith`) | `test_admission_cause_covers_a_handler_far_above_the_activation_stage` (`:1648`) | `:1673` |
+| `test_docker_training.py:1616` (the repointed `" in prove"` pin) | same test | `:1683`, now asserting `" in prove, from synaptic_host/docker_training.py:"` |
+| `test_run_prepared_training_probes.py:684` (prefix) | `test_p8_runs_after_the_bind_probe_and_before_the_first_assertion` (`:649`) | `:684` |
+| `docker_training.py:558` (the 400-byte bound) | `_CAUSE_LINE_LIMIT` in `synaptic_host/cause_line.py` | `:37` |
+
+The owed test named at the end of 22.14 has landed: a raise from inside a helper
+renders both frames, pinned by
+`test_a_raise_inside_a_helper_renders_both_frames_deciding_frame_last`
+(`tests/synaptic_host/test_cause_line.py:295`), which partitions the rendered
+location on `", from "` and asserts each half. Audit #275 YELLOW-3.
+
+**C4 — review 3.3, the `docker_staging.py` citations, repointed by symbol.**
+`host-path-simplification-review.md` 3.3 cites `:1545` for the scoped
+`_verify_inventory_at` call and `:1546` for the `expect_unused_artifacts` guard.
+At `636aa90f` those are `:1599` and `:1600`. The drift on this file is **not
+uniform**: the identity-versus-use comment at `:1513-1520` and the five-name
+topology equality at `:1543` moved by 46 lines, while the scoped call and the
+guard two lines below them moved by 54, because the B-10-R2 comment block now at
+`:1591-1598` was inserted between them; and `_verify_inventory_at`'s body was
+rewritten in place, so its `:1474`/`:1476-1479` citations cannot be repointed by
+any offset at all. A reader who added a constant would land wrong three ways.
+Symbol table at `636aa90f`:
+
+| Review 3.3 cited | Symbol | Line |
+|---|---|---|
+| `:49-50` (constant siting) | `_ARTIFACT_DIRECTORY_NAMES` / `_MODEL_INVENTORY_PREFIX` | `:49` / `:59` |
+| `:1474`, `:1476-1479` (file and directory set equality) | `_verify_inventory_at` | `:1468`, body through `:1552` |
+| `:1513-1520` (the identity-versus-use comment) | `_verify_artifact_topology` | comment at `:1559-1566` |
+| `:1543` (five-name topology equality) | `_verify_artifact_topology` | `:1589-1590` |
+| `:1545` (the scoped inventory call) | `_verify_artifact_topology` | **`:1599`** |
+| `:1546` (the `expect_unused_artifacts` guard) | `_verify_artifact_topology` | **`:1600`** |
+| `:1576-1591`, `:1581` (`cache` in the writable tuple) | `_layout` | `:1630`, names at `:1635` |
+
+The same `:1545`/`:1546` pair appears in the #303 dispatch brief; that copy is
+the lead's to correct.
+
+**C5 — review 3.3, the absent-subtree sentence.** Audit #297 YELLOW-1. Review
+3.3 rules the verifier down to `cache/model` without saying what happens when
+that subtree does not exist, which it does not when the inventory is empty,
+because `_copy_inventory` creates parents lazily. The shipped code answers it at
+`_verify_inventory_at` (`docker_staging.py:1490-1500`): an absent subtree is
+treated as an **empty** one, the comparison still runs and still fails for a
+non-empty inventory, and the `except` is deliberately `FileNotFoundError` rather
+than `OSError`, so a permission failure is not silently reported as "empty".
+Both directions are pinned by
+`test_artifact_topology_treats_an_absent_model_subtree_as_an_empty_one`
+(`tests/synaptic_host/test_docker_staging.py:1064`), the one test outside the
+3.4 list.
+
+**C6 — review 3.5 row 1, the tree the trainer actually writes.** Row 1 reads
+"`cache/huggingface` and `cache/transformers` exist and are non-empty at that
+cut". `cache/transformers` has never been observed on this workload: run 11 and
+run 12 both found exactly two subtrees under `cache/`, `model` and
+`huggingface`. Per the lead's ruling on #303, the row reads on
+**`cache/huggingface`**, and an absent `cache/transformers` is neither a failure
+nor a partial. Row 1 fails only if `cache/huggingface` is absent or empty at
+that cut, or the cut fails. The row's purpose is unchanged: it is the control
+that proves the tolerated sibling writes were present when the verify cut
+passed, so row 0 is not green by absence.
+
+**Three items in this batch are code and are NOT landed here.** They belong to
+coder-user and are listed so nothing is dropped:
+
+| Item | Site at `636aa90f` | Source |
+|---|---|---|
+| the H1 docstring repeats the "eleven exact keys" error and the `SourceLockV1` name corrected in C1 | `tests/synaptic_host/test_docker_training.py:817-818` | #277, audit #275 YELLOW-1 |
+| the H2 comment says `docker run -e`; the code path is `docker create --env` | the H2 test's comment | #277, audit #275 YELLOW-2 |
+| one line at the `_copy_inventory` call site (`:1839`) or on `_copy_inventory` (`:1419`) naming that the copier takes the cache **root** while the verifier takes the **subtree**, pointing at the verifier's comment | `docker_staging.py:1839` / `:1419` | audit #297 YELLOW-2, `#277 metadata.additional_corrections_owed_3` |
+
+### 26.8 Execution sequence, owners and ledger
+
+| # | Step | Owner | Gate |
+|---|---|---|---|
+| 1 | Host: add `_locked_project_descriptors`, route the `:1829-1834` call through it, tests P1-P9 red-first on P1; land the three code corrections from 26.7 in the same commit or a sibling commit, not silently | coder-user, Host worktree branch | P1 red before the helper exists |
+| 2 | independent audit of the change set against this section | auditor-run | before push |
+| 3 | both-lane counter-test (WSL and Windows), P1-P9 plus failing-set identity against the pre-fix baseline | test-engineer | before push |
+| 4 | push the Host and cut `ehr-release-<sha>` | team-lead | after steps 2 and 3 |
+| 5 | run 13 from the released checkout, rows 0-6 per 26.5 | test-host | row 0 is the blocker gate; row 4 is the measurement owed since run 12 |
+
+| Row | Content |
+|---|---|
+| 26.1 | B-17. `_configuration_for_request` (`docker_publication.py:342`) reads `("project","training","artifacts.json")` from the staged source root at `:347-349`; `_read_regular` (`:102`) raises `FileNotFoundError` at the `lstat` on `:105`. `_stage_locked_project_inputs` (`docker_staging.py:1305`) is handed `source_lock.inputs` at `:1829-1834`, two descriptors, and the file is recorded instead at `outputs.destination_registry` (`docker_training.py:304-308`), 614 bytes, digested at admission. Latent since `9eb2b90b` (run 7), unreachable until run 12 reached the first publish cut; not a regression in ruling (4). Census (26.2): one unstaged consumer, seven grep passes, nine classified hits. Fix: union the `destination_registry` descriptor into the staged set through `_locked_project_descriptors`, reusing the B-12 pre-write digest check and set-equality re-verify unchanged. No schema change, no engine change, no closure regeneration, no pin move, bounds unchanged. FOLLOW-UP #184 folded in for the Host half |

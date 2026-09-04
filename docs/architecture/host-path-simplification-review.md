@@ -287,6 +287,37 @@ there.
 3. **Line `:1545` stays outside the `expect_unused_artifacts` guard.** This is the point of the ruling.
 4. `:1543`'s five-name topology equality is untouched. `:1546`'s emptiness loop is untouched.
 
+*Correction 2026-09-04, batched with section 26 of the diagnostic; repointed at
+Host `636aa90f`, and audit #297 YELLOW-1.* **The line citations above have
+drifted, and not uniformly**, so a reader must repoint by symbol rather than by
+adding an offset: the identity-versus-use comment and the five-name topology
+equality moved by 46 lines, while the scoped call and the guard two lines below
+them moved by 54, because the B-10-R2 comment block now at `:1591-1598` was
+inserted between them. `_verify_inventory_at`'s body was rewritten in place and
+cannot be repointed by any offset at all.
+
+| Cited above | Symbol at `636aa90f` | Line |
+|---|---|---|
+| `:49-50` (constant siting) | `_ARTIFACT_DIRECTORY_NAMES`, `_MODEL_INVENTORY_PREFIX` | `:49`, `:59` |
+| `:1474`, `:1476-1479` (file and directory set equality) | `_verify_inventory_at` | `:1468`, body through `:1552` |
+| `:1513-1520` (the identity-versus-use comment) | `_verify_artifact_topology` | `:1559-1566` |
+| `:1543` (five-name topology equality) | `_verify_artifact_topology` | `:1589-1590` |
+| `:1545` (the scoped inventory call) | `_verify_artifact_topology` | **`:1599`** |
+| `:1546` (the `expect_unused_artifacts` guard) | `_verify_artifact_topology` | **`:1600`** |
+| `:1576-1591`, `:1581` (`cache` in the writable tuple) | `_layout` | `:1630`, names at `:1635` |
+
+**And the ruling did not say what an absent `cache/model` subtree means.** It
+can be absent: `_copy_inventory` creates parents lazily, so an inventory with no
+entries never brings the subtree into existence. The shipped code answers it at
+`_verify_inventory_at` (`docker_staging.py:1490-1500`) — an absent subtree is
+treated as an **empty** one, the comparison still runs and still fails for a
+non-empty inventory, and the `except` is deliberately `FileNotFoundError` rather
+than `OSError` so that a permission failure is not reported as "empty". Both
+directions are pinned by
+`test_artifact_topology_treats_an_absent_model_subtree_as_an_empty_one`
+(`tests/synaptic_host/test_docker_staging.py:1064`), the one test outside the
+3.4 list.
+
 **What is preserved.** Exact-set identity over the inventory, on every cut, including after training:
 no missing file, no extra file, no extra directory, every byte hashed. Anti-injection within the subtree is
 intact, which matters because a stray file inside a model snapshot directory could change what a loader
@@ -332,7 +363,7 @@ They are the acceptance test for the ruling, not just for the code.
 | Row | Observation |
 |---|---|
 | 0 | The verify cut after a completed training returns success, not `START_UNAVAILABLE`. B-10-R2 cleared. |
-| 1 | `cache/huggingface` and `cache/transformers` exist and are non-empty at that cut, and the run still succeeds. |
+| 1 | `cache/huggingface` exists and is non-empty at that cut, and the run still succeeds. List every tree under `cache/` with file counts. An absent `cache/transformers` is neither a failure nor a partial: run 11 and run 12 both found exactly `model` and `huggingface`, and this row was reworded to the tree the trainer actually writes per the lead's ruling on #303. The row is the control that proves the tolerated sibling writes were present when the verify cut passed, so row 0 is not green by absence. |
 | 2 | Every file under `cache/model` matches the preparation projection by sha256 at the verify cut. |
 | 3 | The B-10 four-row table reads at cut 2 exactly as it did at run 11. The phase guard is unaffected. |
 | 4 | Publication completes; no path under `cache/` appears in the publication trace. |
