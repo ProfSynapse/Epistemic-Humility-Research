@@ -5084,6 +5084,16 @@ semantics that a later reader could mistake for an identity. It also makes the
 Host test in 25.5 and the 22.11 row 2 key-set evidence unambiguous, which an
 unpinned "any non-empty string" would not.
 
+*Correction 2026-09-04.* The clause just above first named "the 22.11 row 2
+key-set evidence" as a place the pinned literal removes ambiguity. That naming
+is wrong, for the reason set out in the 25.5 and 25.6 corrections below: 22.11
+row 2 records the key set of the **docker.exe CLI child process**, the
+four-entry `required` tuple at
+`synaptic_host/docker_prepared_composition.py:116`, and not the container's
+environment. Adding `USER` to the container dict cannot move that key set. Read
+the clause as: the pinned literal makes the Host test in 25.5 and the
+run-record evidence in 25.6 row 5 unambiguous.
+
 **Where it goes in the Host, by symbol.** The container environment is the
 `environment` dict built inside `DockerAdmissionResolverV1.resolve` in
 `synaptic_host/docker_training.py`. At the baseline the dict opens at `:452` and
@@ -5237,6 +5247,55 @@ path is run 11 row 0.** E1, E2, E3, H1 and H2 prove that the ruled change was
 made correctly and that the two gates will admit it; they do not and cannot
 prove that the import passes.
 
+*Correction 2026-09-04 — H2 re-specified, E3 recorded as satisfied by an
+existing test plus one new arm, and the run-time instrument named.* Three items
+above were written against a wrong reading of 22.11 row 2. coder-user's
+teachback on #267 caught it.
+
+**H2 as first written was unsatisfiable.** Row 2 of 22.11 records the
+environment of the **docker.exe CLI child process**, the four-entry `required`
+tuple at `synaptic_host/docker_prepared_composition.py:116`. It does not record
+the container's environment. Adding `USER` to the container dict therefore
+cannot make that key set gain a key. H2 is re-specified as a **non-regression
+pin**: the CLI child key set stays at four and does not gain `USER`. It is green
+before the change and green after, by design, so it is not a red-first test and
+must not be counted as one. The red-first delta for this ruling is carried by H1
+alone, and the "E1, E2 and H1 must be red before the change" sentence above is
+correct as it stands.
+
+**E3 is satisfied by a pair, not by one new test.** The negative arm already
+exists: `test_runtime_rejects_a_dispatch_environment_key_outside_the_allowlist`
+at `synaptic-tuner/tests/trainers/sft/test_runtime_v1.py:665`, which drives
+`build_trainer_invocation` with `TMPDIR` and asserts the refusal. The positive
+arm is coder-engine-r1's new test in the same file, landed at `ce539b70`, which
+drives the same entry point with `USER` and asserts it is admitted. Both belong
+in that file because the roughly 260-line fixture that assembles a workload and
+reaches `build_trainer_invocation` lives there; a new file would have to
+duplicate it for nothing.
+
+**Where the container key delta IS observable at run time.** The container
+environment dict is expanded into the prepared argv one key at a time at
+`synaptic_host/docker_v1/control_private.py:425-426`, as
+`("--env", f"{key}={value}")`. The spelling is the long form `--env`, not `-e`,
+and the verb is `DockerCLIVerbV1.CREATE`, that is `docker create` and not
+`docker run`; the command is assembled at `control_private.py:429-431`. The
+prepared path does reach that builder:
+`synaptic_host/docker_prepared_composition.py:247` constructs
+`DockerHostCreateV1` (imported at `:42`), `:259` calls `prepare_admission`,
+which reaches `synaptic_host/docker_v1/create.py:368 _preflight` and then
+`create.py:402 DockerPrivateCreateInvocationFactoryV1().build(...)`. The legacy
+`synaptic_host/docker_v1/composition.py` is not on this path.
+
+The driver does **not** capture the create argv as a run artifact today, so the
+argv is a code-level fact and not a run-record observable. The run-record
+observable is the post-run container inspect the driver already collects, in its
+`Config.Env`. The grep string is `USER=synaptic`. Read it as a **diff against
+run 10's inspect, never as a count**: `Config.Env` is the union of the Host's
+`--env` keys and the image's own baked-in environment, and run 10's carries 66
+entries, most of them the image's NVIDIA and CUDA variables. The image is
+digest-pinned and unchanged between run 10 and run 11, so the diff of the two
+`Config.Env` lists is exactly one added entry when this ruling lands correctly.
+
 ### 25.6 Run 11 acceptance
 
 Run 11 runs from a release cut after the engine push and the pin move.
@@ -5253,6 +5312,20 @@ Run 11 runs from a release cut after the engine push and the pin move.
 
 The census expectation is **five containers** across the run, unchanged from run
 10's shape.
+
+*Correction 2026-09-04 — row 5 rewritten.* Row 5 first read "the 22.11 row 2
+child key set, recorded, showing exactly one added key against run 10". That row
+is unreadable, for the reason given in the 25.5 correction: 22.11 row 2 is the
+docker.exe CLI child environment, four keys at
+`synaptic_host/docker_prepared_composition.py:116`, which this ruling does not
+touch. Row 5 reads instead:
+
+| Row | Reading |
+|---|---|
+| 5 | the **container's** environment, recorded, gains exactly one key against run 10. The instrument is the post-run container inspect's `Config.Env`, diffed against run 10's inspect; the grep string is `USER=synaptic`. Do not count entries: `Config.Env` is the union of the Host's `--env` keys and the image's own environment, 66 entries at run 10. The key reaches the container as `--env USER=synaptic` on the `docker create` argv, built at `synaptic_host/docker_v1/control_private.py:426`. The argv is not captured as a run artifact, so the inspect is the observable |
+
+The 22.11 row 2 CLI-child reading is unchanged and stays where it is. Here it is
+a non-regression pin, matching H2 as re-specified in 25.5.
 
 ### 25.7 Do not touch, and the residual this ruling does not close
 
