@@ -789,6 +789,67 @@ def test_clean_admission_stage_materializes_exact_two_runtime_roots(
     assert artifact_checks == [staged.artifact_root, replay.artifact_root]
 
 
+# B-16 (architecture section 25.2).  The pre-B-16 container environment key
+# set, recorded here so H1 below can state its assertion as a DELTA.  The fix
+# adds exactly one key; a later addition must fail the "gained exactly USER"
+# line and name the new key, not produce an opaque whole-set diff that a
+# reader has to sort by eye.
+_ENVIRONMENT_KEYS_BEFORE_B16 = frozenset({
+    "PATH", "PYTHONNOUSERSITE", "PYTHONSAFEPATH", "PYTHONPATH",
+    "SYNAPTIC_ENGINE_ROOT", "SYNAPTIC_PROJECT_ROOT", "SYNAPTIC_ARTIFACT_ROOT",
+    "SYNAPTIC_STATE_ROOT", "SYNAPTIC_TRACKING_ROOT", "SYNAPTIC_CACHE_ROOT",
+    "SYNAPTIC_TMP_ROOT", "HF_HOME", "TRANSFORMERS_CACHE", "HOME",
+    "XDG_CACHE_HOME", "TORCH_HOME", "TRITON_CACHE_DIR", "WANDB_DISABLED",
+})
+
+
+def test_container_environment_binds_user_and_gains_exactly_that_one_key(
+    monkeypatch, clean_project,
+) -> None:
+    """H1 (section 25.2) -- USER is bound to the exact literal, and only USER.
+
+    `getpass.getuser()` returns the first non-empty value of LOGNAME, USER,
+    LNAME, USERNAME BEFORE it imports `pwd`, so binding USER in the container
+    environment stops the fall-through to `pwd.getpwuid(1000)` that the pinned
+    image's `/etc/passwd` cannot answer for the `--user 1000:1000` uid.
+
+    The key set is asserted as a delta against `_ENVIRONMENT_KEYS_BEFORE_B16`:
+    exactly one key gained, none lost.  `SourceLockV1.__post_init__` requires
+    eleven exact keys and forbids no others, so the added key passes admission,
+    which is precisely why nothing else would have caught a second one.
+    """
+
+    from synaptic_host import docker_training
+    from synaptic_host.security import ScopedGitRemoteReader
+
+    original = docker_training.compile_training_plan_v1
+    observed = {}
+
+    def capture(*, training_input, context, resolver):
+        plan = original(
+            training_input=training_input, context=context, resolver=resolver,
+        )
+        observed["plan"] = plan
+        return plan
+
+    monkeypatch.setattr(docker_training, "compile_training_plan_v1", capture)
+    monkeypatch.setattr(
+        docker_training, "_activate_docker_training_v1", _reconcile_result,
+    )
+    result = docker_training.execute_docker_training_admission_v1(
+        clean_project["ingresses"][0],
+        project_root=clean_project["project"],
+        engine_root=clean_project["engine"],
+        remote_reader=ScopedGitRemoteReader(runner=clean_project["transport"]),
+    )
+    assert result.code is TrainingRunCommandCodeV2.RECONCILE_REQUIRED
+    environment = observed["plan"].execution_source.environment
+    assert environment["USER"] == "synaptic"
+    observed_keys = frozenset(environment)
+    assert observed_keys - _ENVIRONMENT_KEYS_BEFORE_B16 == frozenset({"USER"})
+    assert _ENVIRONMENT_KEYS_BEFORE_B16 - observed_keys == frozenset()
+
+
 # B-12 (architecture section 21.14, test S1).  The bound this fixture exists
 # to cross is _MAX_PROJECT_ARCHIVE_BYTES, 256 MiB, at docker_staging.py:45.
 #

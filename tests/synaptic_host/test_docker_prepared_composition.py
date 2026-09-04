@@ -1032,3 +1032,114 @@ def test_wiring_checker_detects_a_close_demoted_to_an_except_handler():
     assert "publication is not closed in a finally" in _s6_wiring_findings(
         _s6_sabotage(demote_close_to_except)
     )
+
+
+# ---------------------------------------------------------------------------
+# H2 (B-16, architecture section 25.2 and 25.5) -- non-regression pin on the
+# docker.exe CHILD PROCESS environment.
+#
+# B-16 binds USER in the CONTAINER environment, which the composition hands to
+# `docker run` as a `-e` argument on the argv.  It is NOT an environment
+# variable of the docker.exe child, whose hardened environment is the four-key
+# tuple built at the `DockerCLIEnvironmentV1.build` call in
+# `compose_docker_prepared_platform_v1`.  Adding the container key therefore
+# cannot move this set, and this pin is green before and after the fix BY
+# DESIGN.  It exists to make the distinction falsifiable: it fails the moment
+# someone "fixes" B-16 by widening the CLI child environment instead, which is
+# the widening that B-13 already had to be walked back from.
+#
+# The behavioural half of this coverage is E1
+# (`test_composition_spawns_exactly_one_child_and_it_is_the_liveness_probe`),
+# but E1 and every other spawn-reaching test carry `_WINDOWS_LANE`, so they
+# report SKIPPED on the WSL lane rather than green -- measured: with a
+# POSIX-absolute candidate the composition clears the executable gate and then
+# fails DOCKER_PLATFORM_POLICY_INVALID before any spawn, so no lane-portable
+# behavioural fixture exists without changing production validation, which
+# 22.9 forbids.  This pin is the lane-independent half: it reads the shipped
+# source, so it is genuinely green on BOTH lanes, and it is counter-tested
+# below against a sabotaged copy.
+
+
+def _b16_cli_environment_keys(source: str) -> tuple[str, ...]:
+    """The docker.exe child's environment key tuple, read at its build call.
+
+    Anchored on the `DockerCLIEnvironmentV1.build` CALL rather than on the
+    local name `required`, so a rename cannot make this reader return nothing
+    and silently pass.  Every shape it does not understand raises.
+    """
+
+    tree = ast.parse(source)
+    build = next(
+        (
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "build"
+            and _s6_callee_name(node.func.value) == "DockerCLIEnvironmentV1"
+        ),
+        None,
+    )
+    if build is None or len(build.args) != 1 or build.keywords:
+        raise AssertionError("no single-argument DockerCLIEnvironmentV1.build")
+    iterator = next(
+        (
+            node.iter for node in ast.walk(build.args[0])
+            if isinstance(node, ast.comprehension)
+        ),
+        build.args[0],
+    )
+    if isinstance(iterator, ast.Name):
+        assigned = [
+            statement.value for statement in ast.walk(tree)
+            if isinstance(statement, ast.Assign)
+            and any(
+                isinstance(target, ast.Name) and target.id == iterator.id
+                for target in statement.targets
+            )
+        ]
+        if len(assigned) != 1:
+            raise AssertionError(
+                "the CLI environment key tuple is not bound exactly once"
+            )
+        iterator = assigned[0]
+    if not isinstance(iterator, (ast.Tuple, ast.List)):
+        raise AssertionError("the CLI environment keys are not a literal tuple")
+    keys = []
+    for element in iterator.elts:
+        if not (
+            isinstance(element, ast.Constant) and type(element.value) is str
+        ):
+            raise AssertionError("a CLI environment key is not a string literal")
+        keys.append(element.value)
+    return tuple(keys)
+
+
+def test_cli_child_environment_stays_four_keys_and_never_gains_the_user_key():
+    """H2 -- the docker.exe child keeps its four keys and does not gain USER."""
+
+    keys = _b16_cli_environment_keys(
+        inspect.getsource(compose_docker_prepared_platform_v1)
+    )
+    assert keys == ("SystemRoot", "TEMP", "TMP", "WINDIR")
+    assert len(keys) == 4
+    assert "USER" not in keys
+
+
+def test_cli_environment_reader_detects_a_user_key_added_to_the_tuple():
+    """Counter-test: the pin above would fail if USER were added here."""
+
+    source = inspect.getsource(compose_docker_prepared_platform_v1)
+    tree = ast.parse(source)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Tuple) and [
+            element.value for element in node.elts
+            if isinstance(element, ast.Constant)
+        ] == ["SystemRoot", "TEMP", "TMP", "WINDIR"]:
+            node.elts.append(ast.Constant(value="USER"))
+            break
+    else:
+        raise AssertionError("no CLI environment key tuple to sabotage")
+    ast.fix_missing_locations(tree)
+    sabotaged = _b16_cli_environment_keys(ast.unparse(tree))
+    assert sabotaged == ("SystemRoot", "TEMP", "TMP", "WINDIR", "USER")
+    assert "USER" in sabotaged

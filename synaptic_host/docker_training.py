@@ -484,6 +484,8 @@ class DockerAdmissionResolverV1:
             "XDG_CACHE_HOME": "/tmp/xdg",
             "TORCH_HOME": "/tmp/torch",
             "TRITON_CACHE_DIR": "/tmp/triton",
+            # B-16 (section 25.2): getpass.getuser() reads USER before pwd.
+            "USER": "synaptic",
             "WANDB_DISABLED": "true",
         }
         source = ExecutionSourceV1(
