@@ -18,6 +18,17 @@ read from `git show 06aa7177:synaptic_host/docker_staging.py`**, not from the wo
 numbers do not drift as that edit lands. My peer pinned the same two files the same way; its line
 numbers for them sit a few lines from mine, so where that matters I name the symbol as well.
 
+**Dual citation against `043b0554`.** `coder-verifier`'s edit has since landed as `043b0554`
+(`docker_staging.py` is 1,939 lines there against 1,899 at `06aa7177`). Every `docker_staging.py`
+citation below now carries the `043b0554` line beside the `06aa7177` line, and **appendix A** is the
+full symbol-to-line map at both commits so a reader can repoint any citation I did not annotate inline.
+The `06aa7177` number stays first because it is the baseline this document was written and reviewed
+against; re-verifying these citations against a working tree still under edit manufactures failures.
+**One correction, and it is mine, not drift.** Three places in the draft said the source-manifest digest
+comparison "fails at `:1717`". At `06aa7177` the `observed_digest` clause is `:1715`, `:1717` is the
+unrelated `closure_bytes` clause, and the `raise` is `:1719`. The argument survives untouched; the
+citation did not. It is corrected in section 1.7, section 3.4 and section 7.4.
+
 **Nothing was executed.** No code changed, nothing staged, committed or pushed. No container, image,
 daemon or socket was touched. The one measurement in this consultation is my peer's `GET /version` over
 the WSL socket (inv:2.1), tagged Docker-Desktop-on-Windows-through-WSL; I cite it and did not reproduce
@@ -171,7 +182,7 @@ the mechanism that produced B-13 does not exist. Section 2.3 uses this.
 ### 1.4 The staged source-manifest digest is platform-dependent by construction
 
 ```
-docker_staging.py:917-918 (@06aa7177)   _mode_projection
+docker_staging.py:917-920 (@06aa7177; :926-929 @043b0554)   _mode_projection
     if os.name == "nt":
         return "windows-regular"
     return f"posix-{stat.S_IMODE(info.st_mode):04o}"
@@ -195,19 +206,20 @@ the opposite direction from the one my peer expected.
 ### 1.5 The two file-mode call sites are vacuous on Windows and live on POSIX
 
 `rev:1.1` establishes that `_verify_file_mode` returns `True` unconditionally on `nt`
-(`docker_staging.py:168-174` @`06aa7177`), that its two call sites are `:1289` and `:1492`, and that all
+(`docker_staging.py:168-174` @`06aa7177`, `:177-183` @`043b0554`), that its two call sites are `:1289`
+and `:1492` (`:1298` and `:1538` @`043b0554`), and that all
 66 closure members carry `git_mode` `100644`. I confirm all three. The half `rev` does not draw, because
 it was ruling for Windows, is that `_apply_file_mode` acts on **both** platforms:
 
 ```
-docker_staging.py:161-165 (@06aa7177)   _apply_file_mode
+docker_staging.py:161-165 (@06aa7177; :170-174 @043b0554)   _apply_file_mode
     path.chmod(stat.S_IREAD if os.name == "nt" else 0o444)
 ```
 
 | | Windows | Linux and macOS |
 |---|---|---|
-| Exec-bit arm (`:1289`, in `_verify_staged_closure`) | vacuous **by platform** | live by platform, unexercised **by data** (66/66 are `100644`) |
-| Read-only arm (`:1492`, in `_verify_inventory_at`) | vacuous **by platform** | **live and exercised**, `0o444` really set and really checked |
+| Exec-bit arm (`:1289`, `:1298` @`043b0554`, in `_verify_staged_closure`) | vacuous **by platform** | live by platform, unexercised **by data** (66/66 are `100644`) |
+| Read-only arm (`:1492`, `:1538` @`043b0554`, in `_verify_inventory_at`) | vacuous **by platform** | **live and exercised**, `0o444` really set and really checked |
 
 `rev:4.8` deletes the exec-bit arm as free and adds: "if non-Windows execution later enters scope,
 reintroduce it there deliberately." Q4 fired that clause on the same day the ruling was written. Section
@@ -250,7 +262,7 @@ This is the finding that settles section 3.4, and I went looking for it only bec
 its digest **one statement before** it calls the closure verifier:
 
 ```
-docker_staging.py:1710-1720 (@06aa7177)
+docker_staging.py:1709-1720 (@06aa7177; :1763-1774 @043b0554)
     observed_entries, observed_digest = _source_manifest(source)
     if (
         ...
@@ -261,18 +273,21 @@ docker_staging.py:1710-1720 (@06aa7177)
     _verify_staged_closure(source / "engine", closure)
 ```
 
-`_source_manifest` walks recursively (`:1559` calls `_walk_regular_files`, which calls `_walk_tree`), so
+`_source_manifest` walks recursively (`:1559`, `:1613` @`043b0554`, calls `_walk_regular_files`, which
+calls `_walk_tree`), so
 `source/engine` is a subtree of the tree it digests, and by section 1.4 every entry carries
 `platform_mode`, which on POSIX is the file's real four-digit mode.
 
 **Therefore, on POSIX, any mode change to any staged source file, including the exec bit of any closure
-member, flips `observed_digest` and fails at `:1717`, before `_verify_staged_closure` is even called.**
+member, flips the `observed_digest` clause at `:1715` and raises at `:1719`, before
+`_verify_staged_closure` at `:1720` is even called.**
 The exec-bit check at `:1289` is redundant with a strictly stronger check that runs first, and the
 stronger one covers all 66 members' full modes rather than one bit of the zero members whose `git_mode`
 is `100755`. [SOURCE]
 
 Two boundaries on this claim, stated because they are the parts that could be wrong. It holds for the
-**source** stage only: `_verify_inventory_at` operates on `root / "cache"` (`:1545`), a different tree
+**source** stage only: `_verify_inventory_at` operates on `root / "cache"` (`:1545`, `:1599`
+@`043b0554`), a different tree
 under the artifacts topology which the source manifest does not cover, and that tree keeps its own
 read-only arm at `:1492`, which nobody proposes deleting. And it holds **only on POSIX**: on Windows
 `_mode_projection` returns the constant `"windows-regular"`, so the digest carries no mode information
@@ -434,6 +449,15 @@ independent trigger: if the product ever requires container log streaming or att
 bounded-drain design (`cli.py:723`, `:758`) is the wrong shape and the API is the right one. Today
 `docker_publication.py:275-276` refuses logs, so that requirement does not exist.
 
+**This second trigger interacts with a free deletion, and the interaction must survive into the plan.**
+`preparer-posix` accepts ruling (6) partly BECAUSE logs are refused and `DockerVerb.LOGS` has zero call
+sites, and rev:4.8 lists that verb among the free deletions. Both are correct today. But once the verb
+is deleted, a future log-streaming requirement would find neither the capability nor this trigger, and
+the transport question would be re-opened from scratch with the evidence gone. The deletion is still
+right; what must not be lost is the record of WHY it was free. Whoever lands the rev:4.8 deletions
+should carry this trigger into the deletion's own commit message or the plan's revisit list, so the
+condition that made the deletion free is the same condition that would reverse it.
+
 ### 2.4 Correction forced by my peer's research: the endpoint is a candidate list, not a constant
 
 My draft of this section ruled that the endpoint predicate must stay closed as a set of two literals,
@@ -555,11 +579,22 @@ Three constraints belong in any CODE task's scope, and the third is new since th
   reformat across two lines, any move of that call breaks it while the behaviour is correct.
 - The excision has **three** call sites (`security.py:701` repairing, `:882` and `:972` validating), not
   one.
-- **`FileHmacAuthenticator` is the Modal providers' only Host import** (inv:2.5), so the split must not
-  disturb its constructors `from_context` (`:664`) and `for_docker` (`:672`). `for_docker` is the only
-  call site passing `repair=True` (`:701`), which makes it the sharpest seam. The split is provider-safe
-  by construction because Q1 A keeps the HMAC half, but that is a property to preserve deliberately, not
-  a coincidence to rely on.
+- **The provider-shared boundary is FOUR symbols, not one.** My first draft said `FileHmacAuthenticator`
+  was the Modal providers' only Host import; `preparer-posix` corrected that from the tree and I accept
+  the correction, and I re-read the tree to confirm it: `modal_training.py:46-51` imports
+  `BoundedGrantProvider`, `FileHmacAuthenticator`, `ScopedGitRemoteReader` and `utc_now` in one
+  `from .security import (...)` block. The layer-5 split must be scoped against all four, not one.
+- **The two constructors belong to different paths, and only one of them is the providers'.**
+  `from_context` (`security.py:664`) is the Modal path's, called at `modal_training.py:518`;
+  `for_docker` (`security.py:672`) is the Docker path's, called at `docker_training.py:868`. So the
+  PROVIDER-safety constraint is on `from_context`, while `for_docker` is Docker-path-internal. `for_docker` is still the only call site passing `repair=True` (`:701`) and
+  therefore still the sharpest seam, but it is a Docker-path seam, not a provider seam. That narrows the
+  cross-provider risk of the split and it also means the two concerns must not be conflated in the CODE
+  task's scope.
+- **One shared symbol carries a Windows branch, and it is inert on POSIX.**
+  `ScopedGitRemoteReader._run` (`security.py:1130`) holds the B-7 `nt` arm at `:1142` that carries
+  `SystemRoot` into the scrubbed environment. It is dead on POSIX rather than forked, so it creates no provider divergence, but a
+  reader sweeping the shared four for platform branches will find it and should not file it as one.
 
 ### 3.3 What to do once, portably, rather than twice
 
@@ -567,7 +602,7 @@ Three constraints belong in any CODE task's scope, and the third is new since th
 |---|---|---|---|
 | `DockerVerb.STOP`, `DockerVerb.LOGS` (`model.py:1015`, `:1018`) | delete, 2 lines, zero call sites | identical on POSIX | **Once, now, on the Windows path.** Genuinely platform-independent. |
 | Four-key tuple to required subset (`model.py:1144-1149`) | relax, about 10 lines | the whole validator is absent on POSIX (1.3) | **Windows-only, and no longer urgent.** Section 6 Q5. |
-| Exec-bit arm (`docker_staging.py:1289`) | delete, "no property lost on Windows" | live on POSIX (1.5) | **Delete, on a different argument, in the POSIX cycle.** Section 3.4. |
+| Exec-bit arm (`docker_staging.py:1289`, `:1298` @`043b0554`) | delete, "no property lost on Windows" | live on POSIX (1.5) | **Delete, on a different argument, in the POSIX cycle.** Section 3.4. |
 | Layer 5 ACL chain (Q1/Q2) | split, about 490 plus 800 lines | Windows-only machinery (3.2) | **Once, portably, POSIX-first**, own cycle, security-engineer review. |
 | Driver freeze (Q5 A) | docs only | six probes are Windows-shell-shaped | **Once, now.** Platform-neutral. |
 
@@ -587,9 +622,10 @@ the two plans are executed independently.
 section 1.7, which says the property is already held, and held better, by something that runs first.
 
 On POSIX, `_verify_prepared_stage` re-derives the source manifest over the whole staged source tree and
-compares its digest at `docker_staging.py:1717`, **before** calling `_verify_staged_closure` at `:1720`.
+compares its digest at `docker_staging.py:1715` and raises at `:1719`, **before** calling
+`_verify_staged_closure` at `:1720`.
 By section 1.4 every entry in that manifest carries `platform_mode`, which on POSIX is the file's real
-mode. So a filesystem that clamps modes anywhere under the source stage fails at `:1717` with
+mode. So a filesystem that clamps modes anywhere under the source stage fails at `:1719` with
 `"content-addressed Docker stage differs from preparation"`, covering all 66 members' full modes, not
 one bit of the zero members whose `git_mode` is `100755`. The exec-bit check cannot fire on a tree that
 already failed the digest.
@@ -599,10 +635,11 @@ staged member, because the engine loads them via `runpy.run_path` in process; an
 defence against a substituted module is import-origin based, not mode based. My peer agrees on the
 first (inv:3.5 failure mode 3).
 
-**Ruling: delete the exec-bit call site at `docker_staging.py:1289`. Keep `_verify_file_mode` itself and
-its read-only call site at `:1492`.** The mode-integrity property my peer is protecting survives in two
+**Ruling: delete the exec-bit call site at `docker_staging.py:1289` (`:1298` @`043b0554`). Keep
+`_verify_file_mode` itself and its read-only call site at `:1492` (`:1538` @`043b0554`).** The mode-integrity property my peer is protecting survives in two
 stronger forms: the source-manifest digest for the source tree, and the read-only arm for the artifacts
-cache tree, which `_verify_inventory_at(entries, root / "cache")` (`:1545`) covers and which is the arm
+cache tree, which `_verify_inventory_at(entries, root / "cache")` (`:1545`, `:1599` @`043b0554`) covers
+and which is the arm
 that actually fires on data. Nothing is lost and one redundant check goes.
 
 **Two consequences that are not optional.** First, this ruling is *conditional on ruling (9)*: it is
@@ -688,7 +725,8 @@ in flight as #290 and a POSIX plan that appeared to disturb it would be a false 
 the same verdict from the interface side (inv:7).
 
 **The read-only arm becomes live and is the one to watch.** Per section 1.5, `_apply_file_mode(...,
-read_only=True)` really sets `0o444` on POSIX and `:1492` really checks it. Predicted failure mode,
+read_only=True)` really sets `0o444` on POSIX and `:1492` (`:1538` @`043b0554`) really checks it.
+Predicted failure mode,
 flagged as a prediction: if anything alters an inventory file's mode between preparation and the verify
 cut, the cut fails on POSIX where it passed on Windows. My peer's mount-clamping cases (inv:3.5) are the
 plausible mechanism. This is section 5.4 row 5.
@@ -887,12 +925,16 @@ to specify and an operator's to run; and the five questions in section 6.
   at `docker_provider.py:144-145`, `:175`.
 - `_CONTAINER_USER_V1` (`docker_prepared_composition.py:112-113`) admits a derived uid and gid rather
   than the literal `1000:1000` (4.1).
-- `docker_staging.py:1289` is deleted; `_mode_projection` gains a comment (3.4, 3.5).
+- `docker_staging.py:1289` (`:1298` @`043b0554`) is deleted; `_mode_projection` gains a comment
+  (3.4, 3.5).
 
 **Contracts that do NOT change and must be protected:** the closure manifest and its digest; the
 `_ARTIFACT_DIRECTORY_NAMES` topology; the thirteen required environment keys; the engine contract in both
-directions; `ExecutionSourceV1`; `FileHmacAuthenticator.from_context` and `.for_docker` (3.2); and the
-legacy `docker_v1/composition.py` route, out of scope entirely.
+directions; `ExecutionSourceV1`; the FOUR provider-shared `security.py` symbols
+`FileHmacAuthenticator`, `BoundedGrantProvider`, `ScopedGitRemoteReader` and `utc_now`, of which
+`FileHmacAuthenticator.from_context` is the constructor the Modal path uses and `.for_docker` the one
+the Docker path uses at `docker_training.py:868` (3.2); and the legacy `docker_v1/composition.py`
+route, out of scope entirely.
 
 **Host to engine stays one-directional.** The engine never learns the transport
 (`providers/docker_provider_v1/ports.py:1`: "No shell, daemon client, or SDK is imported here"). Rulings
@@ -931,7 +973,8 @@ section 5.4 row 7 is an acceptance row.
   predicate independently, which raises my confidence in the predicate but not in the reachability chain,
   which only I traced.
 - **Section 1.7 is load-bearing and one day old.** Ruling (9) and the exec-bit deletion both rest on the
-  ordering of `docker_staging.py:1717` and `:1720` and on `_source_manifest` walking recursively. Both
+  ordering of `docker_staging.py:1715-1719` and `:1720` and on `_source_manifest` walking recursively.
+  Both
   are cited; both should be re-read by whoever implements the deletion, because if the digest comparison
   ever moves after the closure verifier the argument inverts.
 - **I am recommending a deletion whose justification I changed.** `rev:4.8` deleted the exec-bit arm
@@ -960,6 +1003,45 @@ keeping the `docker` CLI, and take the first Linux run against the nine rows in 
 migrate the transport: on POSIX the Engine API deletes nothing, because the layer it was going to delete
 does not exist there, and it costs 2,540 lines of finished, portable subprocess-lifecycle tests that the
 CLI keeps.
+
+---
+
+## Appendix A — `docker_staging.py` symbol-to-line map
+
+Every symbol this document cites, at both commits. `06aa7177` is the citation baseline; `043b0554` is
+`coder-verifier`'s landed ruling-(4) edit. Derived by locating each symbol in `git show <sha>:` output,
+not by adding an offset: the drift is **not** uniform. Sites above `_verify_inventory_at` moved by +9,
+sites from the read-only verify call onward moved by +46 to +54, because the edit inserted in two
+places.
+
+| Symbol or site | `06aa7177` | `043b0554` | Cited in |
+|---|---|---|---|
+| `_walk_regular_files` def | 135 | 144 | 1.7 |
+| `_apply_file_mode` def | 161 | 170 | 1.5, 3.4 |
+| `_verify_file_mode` def | 168 | 177 | 1.5, 3.3, 3.4 |
+| `_mode_projection` def (body 917-920 / 926-929) | 917 | 926 | 1.4, 3.5 |
+| `_apply_file_mode(path, executable=False)` | 914 | 923 | 3.4 |
+| `_verify_staged_closure` def | 1278 | 1287 | 1.7, 3.4 |
+| closure `_apply_file_mode(target, executable=member.git_mode == "100755")` | 1274 | 1283 | 3.4 |
+| **exec-bit `_verify_file_mode(...)` call — the site ruling (9) deletes** | **1289** | **1298** | 1.5, 1.7, 3.3, 3.4, 7.2 |
+| `_apply_file_mode(target, executable=mode == "100755")` | 1363 | 1372 | 3.4 |
+| inventory `_apply_file_mode(target, executable=False, read_only=True)` | 1452 | 1461 | 4.2 |
+| `_verify_inventory_at` def | 1459 | 1468 | 1.7, 3.4 |
+| **read-only `_verify_file_mode(info, executable=False, read_only=True)` — the site that STAYS** | **1492** | **1538** | 1.5, 1.7, 3.4, 4.2 |
+| `_verify_inventory_at(entries, root / "cache")` | 1545 | 1599 | 1.7, 3.4 |
+| `_source_manifest` def | 1557 | 1611 | 1.7 |
+| `_walk_regular_files(root, "staged source")` call | 1559 | 1613 | 1.7 |
+| `"platform_mode": _mode_projection(info)` | 1570 | 1624 | 1.4, 1.7, 3.5 |
+| `_digest(b"synaptic-host-docker-source-manifest/v1", entries)` | 1572 | 1626 | 1.7 |
+| `observed_entries, observed_digest = _source_manifest(source)` | 1709 | 1763 | 1.7, 3.4 |
+| **`or observed_digest != projection.source_manifest_digest` — the digest clause** | **1715** | **1769** | 1.7, 3.4, 7.4 |
+| `or closure_bytes != closure.manifest_bytes` | 1717 | 1771 | (not cited; this is the line the draft wrongly named) |
+| **`raise ValueError("content-addressed Docker stage differs from preparation")`** | **1719** | **1773** | 1.7, 3.4 |
+| **`_verify_staged_closure(source / "engine", closure)`** | **1720** | **1774** | 1.7, 3.4, 7.4 |
+
+The two bold rows at `:1715` and `:1720` carry ruling (9) and the exec-bit ruling. The ordering claim is
+that the digest comparison at `:1715` raises at `:1719` **before** `_verify_staged_closure` is called at
+`:1720`, and that ordering is preserved verbatim at `043b0554` (`:1769` / `:1773` / `:1774`).
 
 ---
 

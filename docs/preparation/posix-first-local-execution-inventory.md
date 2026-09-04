@@ -14,6 +14,12 @@
 `tests/synaptic_host/test_docker_staging.py` under task #290. Every line number I give for those two
 files is at HEAD `06aa7177` and will shift. I did not touch them.
 
+**Repoint, 2026-09-04.** That shift happened: `coder-verifier`'s ruling (4) landed as `043b0554`.
+Every `docker_staging.py` cite below now carries its defining symbol and its `043b0554` line beside
+the `06aa7177` line, so the citation survives the next shift too. The symbol is authoritative; the
+numbers are a convenience. Nothing in the *content* of this document changed in the repoint — the
+two substantive corrections are the dated paragraphs under 1.4 and 3.5.
+
 ---
 
 ## 0. Corrections the architect must not inherit
@@ -123,7 +129,7 @@ negative result in this document: **no POSIX transport exists to extend. It must
 | W5 | `docker_v1/paths.py` + the WSL types in `model.py` + `binding.py` + `prepared.py` | `DockerWSLPathTranslatorV1` and an HMAC-authenticated WSL root-mapping registry: `DockerWSLRootMappingV1`, `AuthenticatedDockerWSLRootMappingV1`, `DockerWSLRootMappingHmacAuthorityV1`, `DockerWSLPathPurposeV1`, `DockerWSLInteropCodeV1`, `DockerPrivateWSLInteropChannelV1`. | 125 + 808 + 251 + a share of `model.py` (70 WSL lines) | **By construction.** The whole concept is drive-letter-to-`/mnt/<x>` translation. `[SOURCE]` |
 | W6 | `security.py:19-649` | The Windows ACL block: 20 distinct Win32 calls through `ctypes.WinDLL` (`CreateFileW`, `CreateDirectoryW`, `GetSecurityInfo`, `SetKernelObjectSecurity`, `GetAclInformation`, `GetAce`, `ConvertStringSecurityDescriptorToSecurityDescriptorW`, `OpenProcessToken`, `GetTokenInformation`, `ConvertSidToStringSidW`, `GetVolumeInformationW`, …). Notably it does **not** call `SetNamedSecurityInfoW`; `security.py:248` records that the path-based editor was deliberately rejected after B-11-M1. | ~609 incl. ~32 dispatch lines | **By construction, and dead on POSIX today.** The POSIX arms already exist beside it (0.3). `[SOURCE]` |
 | W7 | `local_io_v1/windows.py` | The native-Windows retained-handle port: 122 `ctypes` references, `NtCreateFile`, `NtSetInformationFile`/`FileLinkInformationEx`, `GetFileInformationByHandleEx`, triple reparse-point defense, an NTFS-by-name requirement at `:745`. | 1,699 | **By construction, and already isolated.** Its POSIX sibling exists and is complete. `[SOURCE]` |
-| W8 | `docker_staging.py:335-...` `_windows_native()` | `if os.name != "nt": raise ValueError("Windows staging cleanup is unavailable")`, then binds `kernel32`/`ntdll`. 93 `ctypes` references in this file. | ~93 ctypes lines | **By construction, with a POSIX arm already present at the call site**: `:1805-1809` passes `None` when not `nt`. Deleting it costs nothing on POSIX. `[SOURCE]` |
+| W8 | `docker_staging.py:335-...` `_windows_native()` (`043b0554:336`) | `if os.name != "nt": raise ValueError("Windows staging cleanup is unavailable")`, then binds `kernel32`/`ntdll`. 93 `ctypes` references in this file. | ~93 ctypes lines | **By construction, with a POSIX arm already present at the call site**: `:1805-1809` (`043b0554:1816-1820`) passes `None` when not `nt`. Deleting it costs nothing on POSIX. `[SOURCE]` |
 
 **Windows-only-by-construction subtotal.** Roughly 355 + 40 + 20 + 374 + 1,184 + 609 + 1,699 + ~93
 ≈ **4,374 lines**, about 10.9% of the 40,109-line package. This is a *bound on what must be replaced
@@ -139,9 +145,9 @@ nothing but their own exclusion.
 | P2 | `security.py:714, 751, 780, 886, 973` | Five if/else dispatches. POSIX side: `os.mkdir(path, 0o700)`; `os.fchmod(fd, mode & 0o700)` guarded by uid and non-symlink checks; exact `S_IMODE == 0o700` validation; key create `O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC` at `0o600`; key read with lstat/open/fstat triple check incl. `nlink == 1` and `size == 32`. | **Portable, POSIX arm is the stronger half.** `[SOURCE]` |
 | P3 | `security.py:1142-1147` `ScopedGitRemoteReader._run` | Nine-key scrub plus `SystemRoot` only when `os.name == "nt"`. The comment records that `SystemDrive`, `windir`, `COMSPEC`, `PATHEXT` were each measured unnecessary. POSIX simply omits the tenth key. | **Portable as written.** This is B-7's fix and it is already platform-correct. `[SOURCE]` |
 | P4 | `cli.py:623-627` | Seven-key git scrub, but each key is guarded `if key in os.environ`. On POSIX only `PATH` survives, which is what git needs. | **Portable by construction of the guard.** `[SOURCE]` |
-| P5 | `docker_staging.py:170-174` `_apply_file_mode` | `path.chmod(stat.S_IREAD if os.name == "nt" else 0o444)`, else `0o755`/`0o644`. | **Portable.** `[SOURCE]` |
-| P6 | `docker_staging.py:177-183` `_verify_file_mode` | `if os.name == "nt": return True`. Otherwise requires `S_IMODE == 0o444 / 0o755 / 0o644` exactly. Called at `:1298` and `:1526`. | **Portable, and this is the one that changes meaning.** See 3.5. `[SOURCE]` |
-| P7 | `docker_staging.py:926-929` `_mode_projection` | `"windows-regular"` on nt, else `f"posix-{S_IMODE:04o}"`. | **Portable, but the value is not.** See 1.4. `[SOURCE]` |
+| P5 | `docker_staging.py:170-174` `_apply_file_mode` (`043b0554:170-174`) | `path.chmod(stat.S_IREAD if os.name == "nt" else 0o444)`, else `0o755`/`0o644`. | **Portable.** `[SOURCE]` |
+| P6 | `docker_staging.py:177-183` `_verify_file_mode` (`043b0554:177-183`) | `if os.name == "nt": return True`. Otherwise requires `S_IMODE == 0o444 / 0o755 / 0o644` exactly. Called at `:1298` (closure arm, `043b0554:1298`) and `:1526` (read-only arm, `043b0554:1538`). | **Portable, and it does change meaning — but see the 2026-09-04 correction under 3.5, which withdraws my recommendation.** `[SOURCE]` |
+| P7 | `docker_staging.py:926-929` `_mode_projection` (`043b0554:926-929`) | `"windows-regular"` on nt, else `f"posix-{S_IMODE:04o}"`. | **Portable, but the value is not.** See 1.4. `[SOURCE]` |
 | P8 | `local_io_v1/filesystem.py:72-81, 494, 567-591` | `_POSIX_PLATFORMS = ("linux","darwin","freebsd","openbsd","netbsd")`, `_SUPPORTED_PLATFORMS` adds `win32`, `_DIRECTORY_ADMISSION_PLATFORMS = ("linux","win32")`. Capability reporting only; never selects a module. | **Portable.** Note `darwin` is already declared supported here. `[SOURCE]` |
 
 ### 1.3 The macOS gate — one predicate, and it is the smallest high-value finding in this document
@@ -166,13 +172,14 @@ body's own assertions are the specification, and whether `os.supports_dir_fd` an
 
 ### 1.4 A cross-platform digest divergence, stated precisely and not overstated
 
-`docker_staging.py:1612` puts `_mode_projection(info)` into the `platform_mode` field of every
-source-manifest entry, and `:1614` digests the list under
+`docker_staging.py:1612` (`_source_manifest`, `043b0554:1624`) puts `_mode_projection(info)` into
+the `platform_mode` field of every source-manifest entry, and `:1614` (`043b0554:1626`) digests the
+list under
 `b"synaptic-host-docker-source-manifest/v1"` `[SOURCE]`. Therefore **the source-manifest digest of
 byte-identical trees differs between Windows and POSIX** — `"windows-regular"` versus `"posix-0644"`.
 
 What this does *not* mean: it is not a latent blocker today. The digest is written at `:1853-1877`
-and re-verified at `:1751-1757` against the projection recorded **in the same run on the same
+(`043b0554:1865-1877`) and re-verified at `:1751-1757` (`043b0554:1763-1773`) against the projection recorded **in the same run on the same
 machine**, and flows onward only as `mount_verification_digest` (`docker_v1/prepared.py:162`) within
 that run. I found no golden constant and no cross-machine comparison. `[MEASURED]` — the consumer
 sweep was `/usr/bin/grep -rn 'source-manifest\|source_manifest\|platform_mode' synaptic_host
@@ -183,6 +190,17 @@ one produced on another — a cloud lane reproducing a local stage, a cached sta
 machines, a recorded expected value in a release record — the comparison fails for a reason that
 looks like corruption. The architect should decide now whether `platform_mode` belongs in a digest
 at all.
+
+**Correction, 2026-09-04 (preparer-posix).** The last sentence above is answered, and my own lean
+was wrong. `platform_mode` **stays in the digest**, ruled by architect-posix and verified by me
+against the tree. The reason is the one given in the 3.5 correction below: on POSIX `platform_mode`
+carries every staged file's real four-digit mode, and the source-manifest digest is re-verified
+before the closure verifier runs, so the projection *is* the source stage's mode coverage. Removing
+it and deleting the closure-arm exec-bit call site are individually defensible and jointly fatal —
+together they leave the source stage with no mode coverage at all. The divergence documented above
+is still real and still bites the first design that compares a staging digest across machines; it is
+a constraint on any future cross-machine digest scheme, not a cleanup to perform. Everything else in
+1.4 stands as measured.
 
 ### 1.5 The portable remainder
 
@@ -459,11 +477,13 @@ mode, which the Host does not currently ask about.
 
 ### 3.5 The exec-bit check goes live — and what it would then do
 
-`docker_staging.py:177-183` returns `True` unconditionally on `nt`. On POSIX it becomes a real
+`docker_staging.py:177-183` (`_verify_file_mode`, `043b0554:177-183`) returns `True`
+unconditionally on `nt`. On POSIX it becomes a real
 predicate requiring `S_IMODE(info.st_mode)` to equal exactly `0o444` (read-only), `0o755`
 (executable) or `0o644`. `[SOURCE]`
 
-**It should pass, because the Host sets those modes itself.** `_apply_file_mode` (`:170-174`)
+**It should pass, because the Host sets those modes itself.** `_apply_file_mode` (`:170-174`,
+`043b0554:170-174`)
 chmods every staged file to the same constants that `_verify_file_mode` then checks, and `chmod` is
 not filtered by umask. The apply/verify pair is self-consistent by construction, and both run
 host-side on the staging directory before any container exists. `[SOURCE]`
@@ -484,6 +504,36 @@ The prior review classified this check as **vacuous** and listed it among the fr
 property. **Deleting it as "free" before the POSIX port would remove a check that is about to start
 doing work.** This is a direct, actionable conflict between the two plans and the architect should
 rule on it: my recommendation is to keep it and let the port bring it to life.
+
+**Correction, 2026-09-04 (preparer-posix). I withdraw the recommendation in the paragraph above.**
+The measured facts in 3.5 all stand: the check is vacuous on `nt`, live on POSIX, and the
+apply/verify pair is self-consistent. The *inference* from them was wrong. Architect-posix ruled
+DELETE for the closure-arm call site (`:1298`), and I verified the argument from the tree rather
+than accepting it on report:
+
+- `_walk_tree` is recursive — it drives a `pending` stack that pushes every directory — so
+  `_source_manifest(source)` digests the whole `source/` tree, `source/engine` included.
+- In `_verify_prepared_stage` the digest is computed and compared **before** the closure verifier
+  runs on that same subtree: `_source_manifest(source)` at `043b0554:1763`, the `observed_digest`
+  comparison at `:1769`, then `_verify_staged_closure(source / "engine", closure)` at `:1774`.
+- On POSIX `platform_mode` carries each file's full four-digit mode, so the earlier check covers the
+  property I wanted to protect in a strictly stronger form: the full modes of every staged file,
+  versus one bit of the closure members — all 66 of which record `git_mode 100644`, so the
+  `executable=True` arm never fires for them anyway.
+
+The disposition therefore is: **delete the closure-arm call site at `:1298`; keep `_verify_file_mode`
+itself and its read-only call site at `043b0554:1538`**, which covers a tree the source manifest does
+not digest; and **keep `platform_mode`** per the 1.4 correction. The two changes are coupled and must
+be ruled together.
+
+My residual concern survives and is honoured by ruling (9): the deletion must not ship in the
+post-run-12 free-deletions commit **under the vacuity reason**, because it is not free there. It is
+safe only in the presence of `platform_mode`, and that dependency has to be recorded where the
+deletion happens.
+
+**Method lesson.** Before arguing that a check must be kept because a property would otherwise be
+lost, look for a check *earlier in the same function* that already covers that property more
+completely. I did not, and that single omission produced both this finding and the 1.4 lean.
 
 ---
 
@@ -563,6 +613,8 @@ ruling on sequencing.
   shares. Its constructors `from_context` (`:664`) and `for_docker` (`:672`) are the contract; the
   source-scraping pin at `test_security.py:1091-1092` is the tripwire.
 - **`_MODEL_INVENTORY_PREFIX` / `_verify_inventory_at`** in `docker_staging.py` are being edited
+  (that edit has since landed as `043b0554`: `_MODEL_INVENTORY_PREFIX` at `:59`, `_verify_inventory_at`
+  at `:1468`, call site at `:1599`)
   concurrently by `coder-verifier` under ruling (4). Platform-independent; no interaction with this
   work beyond line-number drift.
 
@@ -573,7 +625,7 @@ ruling on sequencing.
 | Transport on POSIX | keep the CLI; Engine API over the unix socket | **Engine API is now cheap enough to be the default**, but the CLI is not the liability it was on Windows | Route B's Windows cost was ctypes + unverified overlapped I/O; on POSIX it is stdlib and measured (2.1). The remaining cost is the log demultiplexer alone (2.3) |
 | Endpoint representation | pinned constant; ordered candidate list honouring `DOCKER_HOST` | **Candidate list** | A pinned constant is wrong for macOS Docker Desktop and wrong for every rootless Linux user (2.4) |
 | `--user` value | literal `1000:1000`; derived from `os.getuid()`; daemon-mode-dependent | **Derived, pending the rootless answer (Q2)** | Rootless inverts the remedy (3.4) |
-| Exec-bit check `_verify_file_mode` | delete as a free deletion (review 4.8); keep | **Keep** | It is vacuous only on Windows; the port brings it to life (3.5). Direct conflict with the other plan |
+| Exec-bit check `_verify_file_mode` | delete as a free deletion (review 4.8); keep | ~~**Keep**~~ — **WITHDRAWN 2026-09-04**, see the correction under 3.5 | The vacuity reading was right and the inference wrong: the source-manifest digest already covers the property, more completely. Delete the closure-arm call site, keep the function and its read-only call site, keep `platform_mode` |
 | `platform_mode` in the digest | keep; remove | **Remove, or rule explicitly that digests never cross machines** | 1.4 |
 | Windows layers W1-W8 | delete; keep behind a branch | **User decision (Q4 above)** | ~4,374 lines |
 | macOS capability gate | widen `posix.py:73`; leave Linux-only | **Widen, after measuring the three `os.supports_*` facts** | 1.3; the package contradicts itself about `darwin` today |
@@ -583,7 +635,7 @@ ruling on sequencing.
 | risk | likelihood | impact | mitigation |
 |---|---|---|---|
 | B-16 is assumed Windows-specific and the `USER` binding is dropped in the port | **High** | High — the first Linux run dies in the unsloth import for a cause already solved | State in the ruling that B-16 is an image property, class D/G (3.2, 4) |
-| The exec-bit check is deleted as "free" before the port | **High if the two plans are executed independently** | Medium — a real check silently disappears | 3.5; the architect rules once, for both plans |
+| The exec-bit check is deleted as "free" before the port | **Reframed 2026-09-04** — the deletion is correct, the *reason* is the risk | Medium — deleting it together with `platform_mode` leaves the source stage with no mode coverage | 3.5 correction; the two changes are coupled and ruled together (ruling (9)) |
 | A pinned unix socket path ships and breaks macOS default installs and all rootless users | Medium | High | 2.4; candidate list |
 | The macOS gate is widened without measuring `os.supports_dir_fd` on darwin | Medium | High — `posix.py`'s own assertions are the specification and would start failing at runtime instead of reporting UNAVAILABLE | 1.3; measure first |
 | `test_security.py:1091-1092` source pin trips mid-refactor during the layer-5 split | High if unbriefed | Low | Carry the pin in the CODE task scope, as the prior plan already says |
@@ -603,7 +655,10 @@ ruling on sequencing.
    implementations, a factory that never cross-imports. It already works, it is already tested
    platform-neutrally against a fake, and it is the house style.
 5. **Widen `posix.py:73` as its own small, measured change**, not folded into the transport work.
-6. **Freeze the exec-bit deletion** until the port lands, and reconcile review 4.8 against 3.5.
+6. ~~**Freeze the exec-bit deletion** until the port lands, and reconcile review 4.8 against 3.5.~~
+   **Superseded 2026-09-04** (see the correction under 3.5): delete the closure-arm call site, keep
+   `_verify_file_mode` and its read-only call site, keep `platform_mode`, and hold the deletion out
+   of the free-deletions commit because it is conditional on `platform_mode`, not free.
 7. **Do the free deletions once, portably, after the port shape is ruled** — which is what the
    prior plan's S4 note already says, and this inventory does not disturb it.
 
