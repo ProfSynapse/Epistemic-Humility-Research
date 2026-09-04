@@ -293,8 +293,8 @@ intact, which matters because a stray file inside a model snapshot directory cou
 picks up.
 
 **What is lost.** The ability to notice an extra file in `cache/` but *outside* `model/`. That property is
-already unavailable — `cache` is a writable mount and the container is entitled to write there — and it is
-worth nothing: the engine resolves models from `{cache}/model`, so a sibling cannot enter the model
+already unavailable — `cache` is a writable mount and the container is entitled to write there — and its remaining
+value is diagnostic, not protective (see §3.6): the engine resolves models from `{cache}/model`, so a sibling cannot enter the model
 resolution path.
 
 **Release count: one.** No engine change, no closure regeneration, no pin move.
