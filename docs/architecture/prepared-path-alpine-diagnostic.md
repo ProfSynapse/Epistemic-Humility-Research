@@ -6158,6 +6158,55 @@ oblige the docstring to document a known blindness inside the file this ruling
 just repaired, which is the same edit as removing the blindness. Coder item,
 carried in 27.12 with test `C6`. The publish-path count becomes **seven** sites.
 
+**Correction 2026-09-05 — a third blind spot in the instrument, and what
+"seven" counts (peer review #362, #364, #367).** The two corrections above
+record that this census leaks in two ways. There is a third, and it is the same
+kind of gap: **the census states its predicate correctly and implements a
+narrower proxy.** The stated predicate is "classify by whether the raise
+executes with an exception in flight"; the implementation is an AST search for
+`raise ... from None`. A `raise X` with **no `from` clause at all**, reached
+after a handler that only set a flag, destroys the cause identically and matches
+no `from None` pattern, so it is invisible to the instrument and absent from
+every count it produced. Re-running the sweep at the *stated* predicate over the
+publish-path files, and reading each hit, found two such sites.
+
+*`artifact_destinations.py:396` — ruled no change; the destruction is
+deliberate.* The handler at `:390-393` binds no exception and sets
+`post_failed` (`:389`, `:392-394`), and the raise at `:396` carries no `from`.
+But
+`test_post_callback_binding_reread_never_invokes_hostile_equality`
+(`tests/synaptic_host/test_artifact_destinations.py:486-488`) asserts
+`__cause__` is `None`, `__context__` is `None`, **and** that the hostile
+adapter's marker does not appear in `str(exc)`. The absent chain is a pinned
+**non-leak property**, not a defect: a hostile adapter's exception is exactly
+what must not be carried out of this frame. *Reviewer conflict, and its
+resolution.* architect-review (#362) and coder-review (#364) both read the site
+as a destruction and recommended chaining it; test-review (#367) measured the
+pin. Resolved in test-review's favour by direct read of the assertions. The
+lesson is narrower than "read the tests": a destroyed cause is a **defect or a
+feature depending on whether anything downstream is untrusted**, and only the
+test recorded which.
+
+*`docker_staging.py:1784` — repaired in this bundle.* Same shape, no pinned
+property, and inside a function this arc had already repaired for B-17. In
+`_verify_worker_closure_binding` the handler sets `valid = False` and the raise
+carries no `from`. **Cited against `7c4c83a4:1781-1784`**, the baseline this
+correction was written from, and by symbol as well as line, because the repair
+itself moves these lines and a later reader checking the numbers against a
+repaired tree would find the frame shifted. Chained under 27.4's rule with a
+red-first test, by coder-review.
+
+*What "seven" counts.* 27.2 closes by saying the publish-path count becomes
+**seven**. That figure is produced by the `from None` instrument and is not
+established by it, because the instrument cannot see either site recorded here.
+**Read "seven" as the number of sites the `from None` census could reach, not as
+the size of the destroyed-cause family on the publish path.** That family is at
+least **nine** on the files swept, of which `:396` is deliberate and stays and
+`:1784` is now repaired. The sweep was scoped to the publish-path files, so nine
+is a floor and not a total. Two prior corrections to this census were evidence
+that the instrument leaks; they were not evidence that the leaks were all known.
+
+
 ### 27.3 Ruling — the composition ensures the declared roots it is about to retain
 
 **The storage layer does not create roots, and `read_create` does not say it
@@ -6306,6 +6355,23 @@ registration builders retain `artifact-publication-control` and
 attempt 4 proved the composition only completes when all three exist. Ensuring
 once, before any permit is issued, covers every retainer without the composition
 having to know which builder needs which root.
+
+*The two private edges this ruling takes, and their disposition (`ARCH-M3`,
+peer review #362).* Step 3 reaches
+`FileHmacAuthenticator._create_private_directory` (`security.py:712-713`, a
+`@staticmethod`) from `publication_composition.py:274`, so a module-level
+private name is called across a module boundary; audit #332 ruled it **the
+minimum**, on the ground that the only alternative that removes the private name
+is a public wrapper in `security.py`, which is strictly larger and touches a
+module this change set otherwise leaves alone. The audit cited the call at
+`:268`, which was its line before the Y1 deletion moved it. And the paragraph
+above says the private return type is "recorded so the audit rules on it" —
+**the audit has since ruled**: `_RootSpecV1` does not matter today because
+`list_declared_roots` is a pure insertion, its sole consumer is in-package, and
+the Host has no external consumers, so minting a public spec type would exceed
+what the amendment authorized. Read that flag as resolved, not pending. Both
+edges re-open on one condition: an out-of-package consumer of either name.
+
 
 ### 27.4 Ruling — the cause chain at the six in-scope sites
 
@@ -6777,6 +6843,57 @@ section was written and is not true now. All seven landed in `5d816658`, on top
 of this document's own commit `bae922ae`, audited GREEN by #347. Read that
 sentence as the record of what this docs commit owed, not as the state of the
 tree.
+
+**Ruling 2026-09-05 — the refusal that replaced the walk is permanent, and
+nesting is served by declaration (peer review `TEST-M1`; #362, #367).** The peer
+review asked whether the refusal at `_create_private_chain`
+(`publication_composition.py:269-273`) is the intended permanent behaviour or
+whether nesting must be supported. **Ruled: permanent. Keep it.** But the
+refusal is *not* "a nested declared root is refused", and a test written to that
+weaker sentence would pin the wrong property. The precise rule is that **nesting
+is supported by declaration, never by walking.** A declared creatable root under
+`.synaptic` is created when its parent is the private root, when its parent
+already exists, or when its parent is **itself a declared creatable root** under
+`.synaptic`. The refusal fires only when the parent is absent *and* undeclared,
+which is a gap in the declaring document.
+
+*The mechanism, and why the third case works.* `sorted(absent)` at `:236` orders
+an ancestor before its descendant, so a declared intermediate is created first
+and the child's `parent.is_dir()` is true when its turn comes. Verified over
+20000 random path pairs, including separator-adjacent sibling names (`a-b`,
+`a.b`) where byte order could plausibly have broken it; it holds, because an
+ancestor is always a strict string prefix of its descendant. **This strengthens
+the deletion rather than qualifying it.** Reason 2 above said the walk's one
+future was a future 27.3 had already refused; the sharper statement is that the
+walk had no reachable job left at all. The declared-intermediate case is served
+by the ensure loop's own ordering without it, so the only work the walk could
+still have done was creating **undeclared** intermediates — exactly the side
+effect 27.3 refused.
+
+*Reachability, measured at `7c4c83a4`.* The tracked `training/storage.json`
+declares seven roots. `creatable` is `CREATE_ONLY` or `READ_CREATE`
+(`local_io_v1/model.py:181-182`), which drops the two `read_only` roots, and the
+containment test drops the three under `training/`. Exactly three are both
+creatable and inside `.synaptic` — `artifacts`, `publication-control` and
+`publication-spool` — and **all three are direct children**, so the refusal
+branch cannot fire on the shipped document. It is a guard against a document
+that does not exist yet, not a live restriction. That is precisely why it needs
+a test rather than a run to pin it: no run will ever reach it.
+
+*What `TEST-M1` must pin: both arms.* (a) *Refusal*: declare
+`.synaptic/nested/child` `read_create` and do **not** declare `.synaptic/nested`;
+expect the named failure carrying the parent path. (b) *Success*: declare **both**
+`.synaptic/nested` and `.synaptic/nested/child` `read_create`; expect both
+created. **Arm (b) is the load-bearing one.** A refusal-only test passes against
+an implementation that refuses *every* nested root, which is the opposite of this
+ruling, so without (b) the test cannot tell the shipped behaviour from the
+behaviour ruled against. Both arms must build their own `roots=` tuple; the
+default fixture reaches neither. Sent to coder-review before this paragraph was
+written, so `TEST-M1` is not blocked on the docs commit.
+
+*Re-open condition.* If a future declaration nests, the answer is to declare the
+intermediate root. Reinstating the ancestor walk stays refused.
+
 
 **Follow-ups this closure hands on.** #339, the publication receipt's
 `recorded_at` of `2013-11-22T15:29:11Z` against history events timestamped
