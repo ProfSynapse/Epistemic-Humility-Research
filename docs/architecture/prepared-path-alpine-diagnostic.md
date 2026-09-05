@@ -6905,6 +6905,26 @@ overload, unaffected — the code never fired on this run. Separately, B-10 clos
 on this run's evidence once its row is read at the right cut; see the correction
 in 19.14.
 
+**Amendment 2026-09-05 — a SECOND coder commit is owed, this one for section 28
+(#397, coder-review).** The table above is closed: all seven of its items landed
+in `5d816658`, as its own correction records. This paragraph opens a separate
+one and does not reopen that table. Section 28 and its amendments rule a change
+to the destination-configuration parser; the code and the tests are dispatched
+to coder-review as `#397`, and the docs commit carrying this paragraph lands
+beside it.
+
+| # | Item | Where | Ruled in |
+|---|---|---|---|
+| 1 | Declare the per-version allowed key set as a module-level constant, and a literal mapping from `configuration_schema_version` to it | `artifact_destinations.py`, beside the banned-name constants at `:32-41` | 28.3, 28.4 |
+| 2 | Refuse at parse between `:433` and `:439`: a version absent from the mapping, and a mapped version whose key set differs. Keep the depth-wide banned-name scan unchanged | `artifact_destinations.py:430-439` | 28.4, 28.6 |
+| 3 | The adapter asserts equality against the same constant, so the parser and the adapter cannot drift | `local_artifact_destination.py:133` | 28.4 |
+| 4 | The six red-first tests of 28.7, including test 5 (the nested level stays covered) and test 6 (an unmapped version, quantified over the table) | beside the existing destination tests | 28.7, and its correction |
+
+**The commit sha is filled in by the lead when it lands**, in the shape the
+correction above used for `5d816658`. Until then this table records what is
+owed and not what exists — the same tense the original table carried before its
+own correction, and the same trap. Read it as the dispatch, not as the tree.
+
 ## 28. Amendment 2026-09-05 — ruling on SEC-M1 (destination configuration is a reference channel, and the one subtree the Host parser does not own)
 
 Peer review #357 filed SEC-M1 (security-review, #365) as Minor, "invariant
@@ -7194,6 +7214,23 @@ the operator holds the document the version came from. If a later ruling gives
 this module positional context in its messages, it should give it to all of
 them rather than to this one.
 
+**Correction 2026-09-05 — the token interpolated at `:48` is a parameter, not a
+module constant (security-review #394).** The amendment above says every refusal
+in `artifact_destinations.py` interpolates only a caller-supplied literal name
+"and at `:48` a module constant". The second half is wrong. READ by AST at
+`da8db95b`, where the module is byte-identical to `7ccfc719` because `da8db95b`
+is docs-only: `_text` is declared at `:44` as `(value, name, maximum: int =
+256)`, and `:48` raises `f"{name} exceeds {maximum} UTF-8 bytes"`, so `maximum`
+is a PARAMETER carrying a default, not a module constant. The module's fourteen
+module-level names do not include it, and `:78` passes `4096` explicitly for
+configuration text.
+
+**The ruling is unaffected and the correction slightly strengthens it.** What
+the withholding argument needs is that no PARSED VALUE is interpolated, and
+`maximum` is a bound supplied by the calling code rather than anything read out
+of a destination document. Both tokens interpolated at `:48` are supplied by the
+caller, which is the same property under a more accurate name.
+
 ### 28.7 Ruling (5) — the test shape, red-first
 
 1. **Positive control, per schema version.** For each schema version in the
@@ -7246,6 +7283,30 @@ table live in `artifact_destinations.py`, because
 cycle; and the parser cannot consult registrations, because
 `publication_composition.py:538` runs before `:560`.
 
+**Correction 2026-09-05 — three `_fields` call sites, not four, and test 6's
+red-first premise is now READ (security-review #394).** Two items, both about
+the citation in the amendment above rather than about test 6 itself.
+
+*The count.* The amendment says "the four `_fields` call sites in 28.2's table".
+There are THREE. READ by AST at `da8db95b`: `_fields` is called at `:418`,
+`:423` and `:434`. 28.2's table has four ROWS, but its fourth row (`:430`) is
+`_configuration`, the denylist — which is the entire point that table makes. The
+sentence conflated table rows with call sites.
+
+*The upgrade, from INFERRED to READ.* That miscounted sentence carried the
+amendment's only INFERRED mark: test 6's red-first premise, that no
+version-keyed table exists at this commit. It is now **READ**, on two
+independent measurements. Security-review scanned for mapping-shaped names and
+`dict` or `frozenset` literals; I re-measured by AST over the whole module, at
+every nesting rather than at module level only. Every `frozenset` is one of the
+two banned-name sets (`:32`, `:37`), an inline expected set belonging to one of
+the three `_fields` calls, or the `frozenset(keys)` conversion at `:58`. Every
+`dict` literal is either an empty accumulator (`:64`, `:82`) or a record keyed
+by fixed field names for digesting (`:114`, `:140`, `:177`, `:397`, `:400`). No
+mapping keyed by a configuration schema version exists anywhere in the module.
+So an unmapped version parses successfully today, and test 6 is red before the
+change as measured rather than as inferred.
+
 ### 28.8 Ruling (6) — migration
 
 **Fail closed, naming the key. I agree with the dispatch's default, and the
@@ -7292,6 +7353,39 @@ input, and this ruling does not close it. It is bounded by 28.5 keeping values
 uninspected and by 22.14 excluding exception text from the cause line, but a
 factory that interpolates a value into its own message would still be a leak on a
 different channel, and it deserves its own pass when a second adapter exists.
+
+**Amendment 2026-09-05 — the adapter-factory question above is now MEASURED,
+and what each census actually enumerates (#392, security-review #394).** The
+paragraph above is superseded on its first sentence and stands on its last: the
+question was measured twice, over two different modules, after this subsection
+was written.
+
+*What was measured.* In `local_artifact_destination.py`, the only adapter that
+exists, all **33** raise sites are non-interpolating: each raises an enum-coded
+closure apart from a literal `TypeError` at `:201` and a bare `ValueError` at
+`:123`, and an AST scan for f-strings and concatenation inside the raised
+expression returns zero (#392). In `artifact_destinations.py`, security-review's
+census over **59** raise sites found **6** that interpolate, and separately
+found all **17** `name` arguments to be string literals (#394).
+
+*Read the two numbers together, because they answer different questions.* Both
+censuses enumerate RAISE SITES; the claim 28.6 rests on is about PARSED VALUES.
+Six interpolating sites is therefore not a counter-example. What those six
+interpolate is the caller-supplied literal `name` and the `maximum` bound —
+exactly the pair the 28.6 correction above disentangles — and no message in
+either module interpolates anything read out of a destination document. A reader
+who takes "6 interpolating" as contradicting 28.6's amendment has read a count
+of sites as a count of leaks.
+
+*The scope of the answer, and what stays open.* This closes the question for the
+adapter that exists, not for adapters that do not; the last sentence of the
+paragraph above still governs, and a second adapter still owes its own pass.
+Separately, one item from security-review's #389 stays OPEN until the refusal is
+implemented: whether an unmapped configuration schema version can reach a
+durable record through the two registry-free consumers
+(`docker_publication.py:364-368`, `docker_training.py:686-695`). Neither
+reviewer measured it. It is moot once 28.4's amendment is implemented, and it is
+not moot before then.
 
 ### 28.10 Out of scope
 
