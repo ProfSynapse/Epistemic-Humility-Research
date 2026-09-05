@@ -6972,6 +6972,52 @@ for a destination that is actually resolved, while every DECLARED destination is
 parsed, digested and snapshotted. An unknown key on a declared-but-unused
 destination is therefore never adapter-checked at all.
 
+**Correction 2026-09-05 — the clause above is false on the registry path
+(security-review #389).** The paragraph ends "the factory runs only for a
+destination that is actually resolved" and concludes "An unknown key on a
+declared-but-unused destination is therefore never adapter-checked at all." The
+conclusion is wrong and its premise is wrong with it.
+
+*What was measured, READ at `7ccfc719`.* `ImmutableArtifactDestinationRegistryV1`
+loops over EVERY declaration in the parsed document at
+`artifact_destinations.py:539`. `:541-543` raises `destination adapter
+registration is missing or incompatible` when no registration matches the
+declaration's `adapter_ref`, or when the matched registration's
+`configuration_schema_version` differs from the declaration's. `:546` then calls
+`_construct_adapter` UNCONDITIONALLY, which calls `factory(configuration)` at
+`:376`. For the only adapter in the tree that factory is
+`local_artifact_destination.py:597-633`, which calls `_parse_config` at `:603`,
+whose `:133` enforces the exact key set and `:134` the schema equality. So the
+adapter's key check runs at registry CONSTRUCTION, for every declared
+destination, before any destination is resolved.
+
+*What falsifies the clause, precisely.* It is the unconditional factory call at
+`:546`, not the gate at `:542-543`. That gate compares
+`configuration_schema_version` and inspects no key, so it is an unknown-VERSION
+gate. Crediting it with a key check would replace one wrong sentence with
+another.
+
+*The corrected claim, and what survives unchanged.* The ORDERING gap survives on
+every path, and the ordering gap is what SEC-M1 is about.
+`parse_artifact_destination_config_v1` canonicalizes each declaration at `:444`,
+`configuration_digest` is computable at `:174-177`, and `_snapshot_declaration`
+(`:261-273`) copies the bytes verbatim — all before any registry exists, because
+`publication_composition.py:538` parses and the registration builders run at
+`:560`. An unknown key still reaches canonicalization, the digest and the
+snapshot before any adapter sees it.
+
+*And two consumers build no registry at all, READ.*
+`docker_publication.py:364-368` parses the whole document and selects by
+`destination_ref`; `docker_training.py:686-695` does the same. Neither
+constructs a registration and neither calls a factory, so on those two paths NO
+destination is adapter-checked, selected or not. Both parse the ENTIRE document,
+so every declaration in it is canonicalized and digested there as well.
+
+The registry's late generic gate is therefore not a substitute for the
+parse-time allowlist. It fires after the bytes are fixed, it reports one message
+for a missing registration and for a version mismatch alike, and on two of the
+three consumers it does not fire at all.
+
 ### 28.3 Ruling (1) — the shape
 
 **Destination configuration is a REFERENCE channel and MUST NOT be a credential
@@ -7058,6 +7104,38 @@ Adding a cloud destination is therefore: declare the constant, add the mapping
 entry, and have the adapter assert equality against the same constant. Nothing
 is downloaded, cached, versioned or made backward compatible.
 
+**Amendment 2026-09-05 — an unmapped schema version is refused, and a permissive
+lookup is non-conforming (security-review #389).** The table above enumerates the
+versions that exist and the paragraphs after it rule how a future one is added.
+Neither says what happens when a configuration declares a version the mapping
+does not hold. That case is ruled here.
+
+**A `configuration_schema_version` ABSENT from the literal mapping is REFUSED.**
+The refusal sits at the parse site, between `artifact_destinations.py:433` where
+the version is read and `:439` where `ArtifactDestinationDeclarationV1` is
+constructed. `_canonical(config)` at `:444` is an argument INSIDE that
+constructor call, which spans `:439-449`, so refusing before `:439` already
+refuses before canonicalization; these are not two separate requirements (READ).
+
+**A permissive lookup is NON-CONFORMING.** Named as a shape: `allowed =
+MAPPING.get(version)` followed by a key-set check performed only when `allowed`
+is not `None`. Also non-conforming are `.get` with a default key set and any
+form that falls through to the depth-wide banned-name scan alone. The
+non-conforming shape satisfies every test 28.7 ruled before this amendment,
+which is why 28.7 gains a sixth.
+
+**This holds even though 28.8 records the migration cost as zero.** An unmapped
+version is not a migration and that zero does not cover it. 28.8 measures
+configurations that declare a KNOWN version and an unexpected KEY. A version the
+Host does not know is a refusal on its own terms, not a migration to be costed.
+
+**Why the case is reachable, READ.** `:433` accepts any nonempty text within
+`_text`'s 256-byte bound that carries no Unicode control characters (`:44-51`),
+and it does not consult the mapping. `__post_init__` at `:171-172` then compares
+the configuration's own `schema_version` to the declaration's, which is the same
+value `:433` read, so the binding never refuses the pair. Nothing else on the
+parse path examines the version.
+
 ### 28.5 Ruling (3) — values are not inspected, and that is deliberate
 
 **No new value predicate.** Values keep exactly the inspection they have:
@@ -7094,6 +7172,28 @@ class and frame as it always does. These are two channels, and the dispatch's
 wording conflates them. Read the requirement as: the key is recoverable by the
 operator, the value is recoverable by nobody, and 22.14 is unchanged.
 
+**Amendment 2026-09-05 — the unmapped-version refusal WITHHOLDS the version
+string (security-review #389).** 28.4's amendment adds a refusal that names no
+offending key, because the offending thing is the version itself. Its message
+shape is ruled here, and the choice is stated rather than left open.
+
+**The version string is withheld.** The message is a fixed string naming the
+condition and interpolates nothing. The reason is the rule this subsection
+already states: `configuration_schema_version` is a configuration VALUE, so
+naming it in a message is the value interpolation 28.6 forbids, however unlikely
+a credential in that particular field may seem. The module's measured discipline
+agrees (READ): every refusal in `artifact_destinations.py` interpolates only a
+caller-supplied literal name, and at `:48` a module constant. Not one
+interpolates a parsed value.
+
+**The cost is stated rather than hidden.** With more than one destination
+declared, the message does not say WHICH declaration carried the unknown
+version. That is the same cost `:429` already pays for `destination schema is
+invalid`, so this conforms to the file rather than adding a new deficiency, and
+the operator holds the document the version came from. If a later ruling gives
+this module positional context in its messages, it should give it to all of
+them rather than to this one.
+
 ### 28.7 Ruling (5) — the test shape, red-first
 
 1. **Positive control, per schema version.** For each schema version in the
@@ -7118,6 +7218,33 @@ operator, the value is recoverable by nobody, and 22.14 is unchanged.
    refuses it. This is what proves the name check was retained rather than
    replaced, and it is the test most likely to be dropped by an implementer who
    reads "allowlist" as "instead of".
+
+**Amendment 2026-09-05 — test 6, the unmapped schema version (security-review
+#389).** Tests 1 to 5 above quantify over the versions IN the mapping. A
+permissive implementation therefore passes all five while leaving an unmapped
+version unconstrained at parse. Test 6 closes that, and its quantifier is the
+point of it.
+
+6. **An unmapped `configuration_schema_version` is refused at parse.** A
+   declaration whose configuration carries a schema version that is NOT a key of
+   the literal table is refused; no `ArtifactDestinationDeclarationV1` is
+   constructed for it; and the message conforms to 28.6's amendment, naming the
+   condition and interpolating neither the version nor any other value. The test
+   quantifies over the TABLE by asserting a version outside it, so it must fail
+   against the non-conforming shape 28.4's amendment names. A suite that only
+   iterates the table's keys does not satisfy this item.
+
+**Red-first is available without mutation.** No such mapping exists in the tree
+on 2026-09-05, so an unmapped version parses successfully today and the test is
+red before the change. This is INFERRED from the absence of any version-keyed
+table at `7ccfc719`: the four `_fields` call sites in 28.2's table are the only
+key-set checks the parser performs.
+
+28.7's other constraints are unchanged and carry to test 6. The constant and the
+table live in `artifact_destinations.py`, because
+`local_artifact_destination.py:29-33` imports from it and the reverse would
+cycle; and the parser cannot consult registrations, because
+`publication_composition.py:538` runs before `:560`.
 
 ### 28.8 Ruling (6) — migration
 
