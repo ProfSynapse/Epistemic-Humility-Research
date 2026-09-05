@@ -7355,10 +7355,17 @@ factory that interpolates a value into its own message would still be a leak on 
 different channel, and it deserves its own pass when a second adapter exists.
 
 **Amendment 2026-09-05 — the adapter-factory question above is now MEASURED,
-and what each census actually enumerates (#392, security-review #394).** The
+and what the censuses actually enumerate (#392, security-review #394).** The
 paragraph above is superseded on its first sentence and stands on its last: the
 question was measured twice, over two different modules, after this subsection
 was written.
+
+*The predicate first, because the two counts below are easy to read as
+contradicting each other.* Both censuses enumerate RAISE SITES. The claim 28.6
+rests on is about PARSED VALUES. A count of interpolating sites is therefore not
+a count of leaks, and a nonzero one is not a counter-example. Read in the other
+order, "6 interpolating" looks like it refutes 28.6's amendment; it does not
+touch it.
 
 *What was measured.* In `local_artifact_destination.py`, the only adapter that
 exists, all **33** raise sites are non-interpolating: each raises an enum-coded
@@ -7366,16 +7373,23 @@ closure apart from a literal `TypeError` at `:201` and a bare `ValueError` at
 `:123`, and an AST scan for f-strings and concatenation inside the raised
 expression returns zero (#392). In `artifact_destinations.py`, security-review's
 census over **59** raise sites found **6** that interpolate, and separately
-found all **17** `name` arguments to be string literals (#394).
-
-*Read the two numbers together, because they answer different questions.* Both
-censuses enumerate RAISE SITES; the claim 28.6 rests on is about PARSED VALUES.
-Six interpolating sites is therefore not a counter-example. What those six
+found all **17** `name` arguments to be string literals (#394). What those six
 interpolate is the caller-supplied literal `name` and the `maximum` bound —
 exactly the pair the 28.6 correction above disentangles — and no message in
-either module interpolates anything read out of a destination document. A reader
-who takes "6 interpolating" as contradicting 28.6's amendment has read a count
-of sites as a count of leaks.
+either module interpolates anything read out of a destination document.
+
+*Why the discriminator is structural and not string safety (security-review
+#394).* The message shape ruled in 28.6 names the offending KEY and withholds
+the VERSION. The reason cannot be that the version is the less safe string to
+print, because both go through the same validator under the same bound: the key
+at `:84` and the version at `:433` both call `_text` without a `maximum`
+argument, so both take its default 256 bytes, and both are held to all three of
+its guards — nonempty and unstripped-equal at `:45-46`, the byte bound at
+`:47-48`, and the ban on Unicode C-category characters at `:49-50`. Whatever
+safety that validator confers, it confers on both equally. The discriminator is
+therefore structural, and 28.6 should be read that way: the key is a NAME this
+parser owns and can enumerate, and the version is a configuration VALUE the
+operator supplied.
 
 *The scope of the answer, and what stays open.* This closes the question for the
 adapter that exists, not for adapters that do not; the last sentence of the
