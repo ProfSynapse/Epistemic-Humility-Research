@@ -5906,11 +5906,21 @@ walked `__context__`. The real exception is `LocalIOErrorV1`
 
 ```
 publication_composition.py:464  acquire_local_artifact_spool_v1
-  artifact_spool.py:631         retain_single_root_authority
+  artifact_spool.py:633         retain_single_root_authority
     local_io_v1/filesystem.py:709  self._port.retain_directory(binding.absolute_root)
       local_io_v1/windows.py:973   retain_directory
         local_io_v1/windows.py:925 _root_component
 ```
+
+**Amendment 2026-09-05 — the block above cited `:631`; the call is at `:633`.**
+`:631` binds `failure_code = LocalArtifactSpoolCodeV1.IO_FAILED`, and
+`retain_single_root_authority` is two lines below it. The block is corrected.
+This is an off-by-two carried in from the measurement's own prose, not citation
+drift: the line numbers in this section are pinned to `dcdf8571`, the baseline
+it was written against, and `artifact_spool.py` is being edited by the B-18 fix
+as this amendment lands, so re-resolving the citation against a working tree
+yields a third number again. Read it by symbol and treat the baseline as the
+tiebreak.
 
 **The arm.** `_root_component` enumerates the parent directory and refuses
 unless the match list is exactly `[component]` (`:920-925`). A component that
@@ -6116,22 +6126,67 @@ sited beside `_permit_proof_digest` in `publication_composition.py` and called
 once, immediately after `storage` is built at `:450-452` and before
 `issue_root_permit` at `:458`.
 
-1. Enumerate with `storage.list_roots()` (`local_io_v1/config.py:240`), which
-   already returns every declared `LocalRootBindingV1` in sorted order and
-   already refuses a registry whose resolved set and declared set disagree
-   (`:241-242`).
-2. Select the bindings that are **both** `binding.access.creatable` **and**
-   resolve inside `context.project_root / ".synaptic"`, tested with
+1. Enumerate with `storage.list_declared_roots()`
+   (`local_io_v1/config.py:245`), which returns every root the document
+   declares, in sorted order, whether or not a permit has been issued for it.
+   See the amendment below: `list_roots` cannot run at this call site.
+2. Select the declarations that are **both** `declared.access.creatable` **and**
+   whose `declared.absolute_root` resolves inside
+   `context.project_root / ".synaptic"`, tested with
    `os.path.commonpath` in the same shape `for_docker` already uses to confine
    the Docker key (`security.py:683-690`).
-3. For each selected binding, create the directory if it is absent, parents
-   first, using the same primitive the private chain uses —
-   `_win_create_private_directory` on Windows and `os.mkdir(path, 0o700)`
-   elsewhere, which is exactly `FileHmacAuthenticator._create_private_directory`
-   (`security.py:712-720`). Reuse it; do not re-implement it.
+3. For each selected declaration, create the directory **only if it is absent**
+   and **only the root itself**, using the same primitive the private chain
+   uses — `_win_create_private_directory` on Windows and
+   `os.mkdir(path, 0o700)` elsewhere, which is exactly
+   `FileHmacAuthenticator._create_private_directory` (`security.py:712-720`).
+   Reuse it; do not re-implement it.
 4. **Do not repair, do not validate, and do not touch a directory that already
    exists.** An existing root is left exactly as found and `retain_directory`
    proves its identity a moment later, as it does today.
+
+**Amendment 2026-09-05 — the enumerator, and the two implementation decisions
+confirmed.** Three changes to the numbered list above, each measured during the
+fix (#328) rather than argued.
+
+*The enumerator.* Step 1 as first written called `storage.list_roots()` and
+praised the very property that makes it unusable here: that it "already refuses
+a registry whose resolved set and declared set disagree". At this call site that
+refusal is not a safety rail, it is the wall. `list_roots` answers with
+*bindings*, and a binding exists only once `issue_root_permit` has recorded one
+(`config.py:222`), so the guard at `:241-242` raises `ROOT_UNAUTHORIZED` whenever
+the issued count differs from the declared count. The ensure runs before any
+permit is issued, by construction, so the counts always differ and `list_roots`
+always raises there — measured, with `R1`-`R4` failing and the newly restored
+cause chain naming `config.py:242`. Step 1 now reads
+`storage.list_declared_roots()` (`:245`), a public accessor added beside it that
+returns the parsed declarations in sorted order whether or not permits exist. It
+grants no authority: a declaration carries no permit, so nothing it returns can
+be resolved, authenticated, retained or borrowed. `list_roots` is untouched,
+keeps its guard, and had no production caller to disturb.
+
+*Flagged for the audit, not ruled here.* The accessor is public but its element
+type is not, so the composition reads two fields off a private record across a
+module boundary. That is a narrower seam than the private `_specs` read it
+replaced, which was rejected at teachback as a second private edge, and nothing
+returned can be mutated or exercised. It is recorded so the audit rules on it
+with the fact in front of it rather than discovering it.
+
+*The helper never creates `.synaptic`.* Step 3's "parents first" is withdrawn.
+`create_publication_evidence_v1` (`:453`) runs before the ensure and mints the
+key under `.synaptic/state/publication` through the B-11 chain, so the parent
+exists by the time the ensure runs, on every real path and in `R1`'s recipe. The
+B-11 chain stays the only creator of `.synaptic`. If the parent is absent the
+helper raises a clear error naming it — never `from None`, which would
+reintroduce the exact blindness 27.4 exists to remove — rather than creating it.
+A helper that makes its own parent is a second creator of the private root, and
+B-11 is the standing record of what two creators cost.
+
+*Existence-check-then-skip, per root.* Step 4's "do not touch what exists" is
+implemented as a check before each creation rather than as a caught collision,
+so `R3` holds on both branches without depending on what the Windows creation
+primitive does when the directory is already there — a path this section has not
+read and should not have to.
 
 **Why the `.synaptic` predicate is the boundary and not a convenience.** The
 Host owns `.synaptic`; it does not own the project working tree. A rule that
@@ -6157,9 +6212,9 @@ platform branches already exist behind `_create_private_directory` and the POSIX
 side is `os.mkdir(path, 0o700)`, which is what
 `docs/plans/posix-first-local-execution-plan.md` will need unchanged. Nothing in
 this ruling names a Windows API, a DACL, or a drive letter; the helper is
-`storage.list_roots()`, a `commonpath` test, and an existing creation primitive.
-On the POSIX port the same three directories are created with mode 0700 and the
-same retain then proves them.
+`storage.list_declared_roots()`, a `commonpath` test, and an existing creation
+primitive. On the POSIX port the same three directories are created with mode
+0700 and the same retain then proves them.
 
 **Why the ensure sits before `issue_root_permit` and not just before `:464`.**
 Two of the three roots are not retained by the composition at all: the
@@ -6283,6 +6338,17 @@ of four and passed the moment the three directories existed.
 do not invent a new marker. **Leave untouched** the S-series and P-series union
 tests from sections 21 and 26 — nothing in this change touches staging.
 
+**Amendment 2026-09-05 — how `R1` and `C1` are gated.** Gate them on the
+measured POSIX answer, never on an assumption. Measure
+`acquire_local_artifact_spool_v1` against an absent root on
+`PosixFilesystemPortV1` first. If POSIX refuses an absent root as Windows does,
+`R1` and `C1` stay **ungated** and are red on both lanes before the fix, which is
+the stronger outcome because it makes the reproduction platform-independent. If
+the refusal proves Windows-only, gate `R1` to `nt`, capture its red-first output
+on the Windows lane and record it verbatim, and have test-engineer re-verify on
+both lanes. A test is never gated to make a lane look green: the gate follows the
+measurement, and the measurement is reported either way.
+
 `R1` and `C1` are the two that must be red first. `R1` is red for the arm and
 `C1` is red for the blindness, and between them they are the whole of B-18.
 
@@ -6316,6 +6382,13 @@ tests from sections 21 and 26 — nothing in this change touches staging.
 - **`opaque-local-io-control`'s dead declaration** is 27.6's follow-up question.
 - **No repair, no validation, no ACL narrowing of the three new roots.** 27.3
   gives the reason: repair is what wedged the temp volume in B-11-R1.
+- **One primitive is added, and it is the only one.**
+  `StorageRegistryV1.list_declared_roots()` (`local_io_v1/config.py:245`) is new
+  public surface on the storage layer, and it is the single addition this ruling
+  makes anywhere. It is listed among the things not done because it is the
+  exception to them: every other part of 27.3 reuses a primitive that already
+  existed. It reads the parsed document and grants nothing, so the 20.5 boundary
+  stands — a pure read is not a side effect.
 
 ### 27.10 Corrections landing with this section
 
@@ -6396,4 +6469,4 @@ staging, not one written after it. This is code and is not landed here.
 
 | Row | Content |
 |---|---|
-| 27.1 | B-18. `compose_host_publication_v1` (`publication_composition.py:416`) re-raises `from None` at `:517`; the real exception is `LocalIOErrorV1 LOCAL_IO_ROOT_CHANGED` at `local_io_v1/windows.py:925` `_root_component`, via `:464` → `artifact_spool.py:631` → `filesystem.py:709` → `windows.py:973`. Arm: the three `read_create` roots declared in `control/storage.json` are created by nothing — verified by three writer searches over `synaptic_host`, the driver and the operator recipe — and `_root_component` reports a missing leaf with the same code as a rebind. Census (27.2): 348 `from None` sites, 306 keep the cause, 41 outside a handler, 1 in a `finally`; six in scope on the publish path, and `verified_artifact_source.py:178` excluded because no cause exists there. Fix: `_ensure_declared_private_roots` creates the declared creatable roots under `.synaptic` before any permit is issued, with no repair and no validation; and the six sites bind the original and raise from it. No engine change, no closure regeneration, no pin move, no `storage.json` change. `ROOT_CHANGED` overload and the dead `opaque-local-io-control` declaration are bounded follow-ups |
+| 27.1 | B-18. `compose_host_publication_v1` (`publication_composition.py:416`) re-raises `from None` at `:517`; the real exception is `LocalIOErrorV1 LOCAL_IO_ROOT_CHANGED` at `local_io_v1/windows.py:925` `_root_component`, via `:464` → `artifact_spool.py:633` → `filesystem.py:709` → `windows.py:973`. Arm: the three `read_create` roots declared in `control/storage.json` are created by nothing — verified by three writer searches over `synaptic_host`, the driver and the operator recipe — and `_root_component` reports a missing leaf with the same code as a rebind. Census (27.2): 348 `from None` sites, 306 keep the cause, 41 outside a handler, 1 in a `finally`; six in scope on the publish path, and `verified_artifact_source.py:178` excluded because no cause exists there. Fix: `_ensure_declared_private_roots` creates the declared creatable roots under `.synaptic` before any permit is issued, with no repair and no validation; and the six sites bind the original and raise from it. No engine change, no closure regeneration, no pin move, no `storage.json` change. `ROOT_CHANGED` overload and the dead `opaque-local-io-control` declaration are bounded follow-ups |
