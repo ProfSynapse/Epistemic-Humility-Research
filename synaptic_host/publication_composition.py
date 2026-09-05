@@ -39,6 +39,7 @@ from .local_io_v1.config import StorageRegistryV1
 from .local_io_v1.filesystem import LocalFilesystemV1, PosixFilesystemPortV1
 from .publication_authority import create_publication_evidence_v1
 from .publication_store import SqlitePublicationStoreV1
+from .security import FileHmacAuthenticator
 from .verified_artifact_source import AuthenticatedVerifiedArtifactSourceV1
 
 
@@ -54,6 +55,10 @@ _CLOSED = "CLOSED"
 
 def _failed(message: str) -> RuntimeError:
     return RuntimeError(message)
+
+
+def _lexical_absolute(path: Path) -> Path:
+    return Path(os.path.abspath(os.fspath(path)))
 
 
 def _host_context(value: ProjectContext) -> ProjectContext:
@@ -186,6 +191,81 @@ def _permit_proof_digest(
     digest.update(len(storage_config_bytes).to_bytes(8, "big"))
     digest.update(storage_config_bytes)
     return digest.hexdigest()
+
+
+def _ensure_declared_private_roots(
+    storage: StorageRegistryV1, context: ProjectContext,
+) -> None:
+    """Create the declared creatable storage roots that live under `.synaptic`.
+
+    Section 27.3 of `docs/architecture/prepared-path-alpine-diagnostic.md`.  The
+    storage document declares `read_create` roots below the Host's private
+    storage root, but nothing on the publish path ever created them, so the
+    first `retain_single_root_authority` on an absent directory refused with
+    `LOCAL_IO_ROOT_CHANGED` (B-18).  This creates exactly the absent ones.
+
+    Two deliberate limits.  It never creates `.synaptic` itself: the evidence
+    authority mints that chain one statement earlier through the B-11 repair,
+    and a missing parent here means the caller ran out of order, so it is
+    reported rather than papered over.  And it never repairs, validates, or
+    narrows a root that already exists -- an existing directory is skipped
+    whatever its mode or ACL, which leaves B-11 the sole owner of repair.
+
+    Roots outside `.synaptic` (the project's training inputs and outputs) stay
+    the operator's to create; only the private subtree is ours.
+    """
+    private_root = _lexical_absolute(context.project_root / ".synaptic")
+    absent: list[Path] = []
+    # Declared roots, not bindings: `list_roots` refuses until every root holds
+    # a permit, and this necessarily runs before the first one is issued.
+    for declared in storage.list_declared_roots():
+        if not declared.access.creatable:
+            continue
+        resolved = _lexical_absolute(declared.absolute_root)
+        if resolved == private_root or not _within(resolved, private_root):
+            continue
+        if resolved.exists():
+            continue
+        absent.append(resolved)
+    if not absent:
+        return
+    if not private_root.is_dir():
+        raise _failed(
+            "host publication private storage root is missing: " + str(private_root)
+        )
+    for root in sorted(absent):
+        _create_private_chain(root, private_root)
+
+
+def _within(path: Path, ancestor: Path) -> bool:
+    """Report whether `path` lies inside `ancestor`, lexically.
+
+    The `os.path.commonpath` shape is the one `security.py` uses to confine the
+    Docker control key below the private storage root.
+    """
+    try:
+        return os.path.commonpath((str(path), str(ancestor))) == str(ancestor)
+    except ValueError:
+        return False
+
+
+def _create_private_chain(root: Path, private_root: Path) -> None:
+    """Create `root` and any absent ancestor strictly below `private_root`.
+
+    Parents first, so a declared root nested two levels below `.synaptic` does
+    not fail on a missing intermediate.  Creation goes through the same
+    primitive the private storage chain uses, so a root created here carries the
+    private mode (POSIX `0o700`) or the protected DACL (Windows) from birth.
+    """
+    chain: list[Path] = []
+    for ancestor in (root, *root.parents):
+        if ancestor == private_root:
+            break
+        chain.append(ancestor)
+    for ancestor in reversed(chain):
+        if ancestor.exists():
+            continue
+        FileHmacAuthenticator._create_private_directory(ancestor)
 
 
 def _installation_type():
@@ -451,6 +531,7 @@ def compose_host_publication_v1(
             configuration.storage_bytes, project_root=context.project_root
         )
         evidence = create_publication_evidence_v1(context)
+        _ensure_declared_private_roots(storage, context)
         filesystem = LocalFilesystemV1(_local_filesystem_port_v1(), storage)
         permit_proof_digest = _permit_proof_digest(
             context, configuration.storage_bytes
@@ -512,9 +593,13 @@ def compose_host_publication_v1(
     except (KeyboardInterrupt, SystemExit):
         _rollback(store, tuple(installations), spool)
         raise
-    except BaseException:
+    except BaseException as error:
+        # B-18 (section 27.4, site 1).  The rollback runs first, exactly as
+        # before; only the cause changes.  `from error` keeps the deepest
+        # in-package frame reachable for the 22.14 renderer, which is what run
+        # 13's cut 6 needed and did not have.
         _rollback(store, tuple(installations), spool)
-        raise _failed("host publication composition failed") from None
+        raise _failed("host publication composition failed") from error
 
 
 __all__ = [

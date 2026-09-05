@@ -287,18 +287,22 @@ def _snapshot_registration(
 
 
 def _discover_adapter_callbacks(adapter: object) -> tuple[object, object, object]:
+    # B-18 (section 27.4, site 3).  The final raise sits after the try
+    # statement, where the handler's `as` binding no longer exists, so the
+    # handler copies the original into `cause` and the raise chains from it.
+    cause: BaseException | None = None
     try:
         callbacks = tuple(
             getattr(adapter, name)
             for name in ("publish_once", "lookup", "iter_bytes")
         )
-    except BaseException:
-        pass
+    except BaseException as error:
+        cause = error
     else:
         if all(callable(callback) for callback in callbacks):
             return callbacks  # type: ignore[return-value]
         raise TypeError("destination adapter is incomplete")
-    raise ValueError("destination adapter callback access failed") from None
+    raise ValueError("destination adapter callback access failed") from cause
 
 
 def _same_adapter_callback(current: object, pinned: object) -> bool:
@@ -317,6 +321,8 @@ def _reconstruct_resolved_binding(
     if type(result) is not _binding_type:
         raise TypeError("destination adapter factory returned an invalid binding")
     invalid = False
+    # B-18 (section 27.4, site 4).  Same deferred-raise shape as site 3.
+    cause: BaseException | None = None
     snapshot_values: list[tuple[str, str]] = []
     try:
         adapter = object.__getattribute__(result, "adapter")
@@ -338,11 +344,14 @@ def _reconstruct_resolved_binding(
                 raise ValueError
             role = _text_check(item[0], "resolved authority role", 256)
             snapshot_values.append((role, str(item[1])))
-    except BaseException:
+    except BaseException as error:
         invalid = True
         adapter = None
+        cause = error
     if invalid:
-        raise ValueError("resolved destination adapter binding is invalid") from None
+        raise ValueError(
+            "resolved destination adapter binding is invalid"
+        ) from cause
     snapshot = tuple(snapshot_values)
     roles = tuple(item[0] for item in snapshot)
     if roles != tuple(sorted(roles)) or len(roles) != len(set(roles)):
@@ -359,12 +368,16 @@ def _construct_adapter(
     _callback_probe=_discover_adapter_callbacks,
     _binding_snapshot=_reconstruct_resolved_binding,
 ) -> tuple[object, str, tuple[object, object, object]]:
+    # B-18 (section 27.4, site 5).  The trailing raise is reachable only when
+    # the factory raised, and it sits outside the handler, so the factory's
+    # exception is carried out in `cause` rather than dropped.
+    cause: BaseException | None = None
     try:
         result = factory(configuration)
     except (KeyboardInterrupt, SystemExit):
         raise
-    except Exception:
-        pass
+    except Exception as error:
+        cause = error
     else:
         if (
             type(declared_configuration_digest) is not str
@@ -388,7 +401,7 @@ def _construct_adapter(
                 for role, digest in snapshot
             ],
         }), callbacks
-    raise ValueError("destination adapter construction failed") from None
+    raise ValueError("destination adapter construction failed") from cause
 
 
 def parse_artifact_destination_config_v1(raw: bytes) -> ArtifactDestinationConfigV1:

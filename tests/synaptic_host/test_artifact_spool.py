@@ -23,6 +23,8 @@ from synaptic_host.artifact_spool import (
 from synaptic_host.local_io_v1.model import (
     BorrowPurposeV1,
     LocalFileIdentityV1,
+    LocalIOCodeV1,
+    LocalIOErrorV1,
     LocalRootBindingV1,
     LocalRootPermitV1,
     RootAccessV1,
@@ -644,3 +646,77 @@ def test_real_linux_capability_lifecycle(tmp_path) -> None:
     spool._release_finished(reference)
     assert spool.cleanup_owned().status is LocalArtifactSpoolCleanupStatusV1.CLEANED
     assert tuple(tmp_path.iterdir()) == ()
+
+
+class _AbsentRootFilesystem:
+    """Filesystem whose retain refuses, as both real ports do for an absent root.
+
+    Measured at 4b39e61f on the POSIX port: `retain_single_root_authority`
+    against a binding whose directory does not exist raises
+    `LocalIOErrorV1(LocalIOCodeV1.ROOT_CHANGED)`, the same code and type the
+    Windows port raises through `_root_component` (measurement #320).  The
+    double reproduces that refusal so C1 runs on both lanes; the real-port
+    arm below proves the premise on the lane that can execute it.
+    """
+
+    def __init__(self) -> None:
+        self.trace: list[str] = []
+        self.error = LocalIOErrorV1(LocalIOCodeV1.ROOT_CHANGED)
+
+    def retain_single_root_authority(self, binding, *, purpose):
+        self.trace.append("retain-authority")
+        raise self.error
+
+    def acquire_single_root_admission(self, authority):
+        raise AssertionError("admission must not be reached")
+
+    def release_borrow(self, borrow, *, purpose):
+        self.trace.append("release-borrow")
+
+    def release_single_root_admission(self, authority, admission):
+        self.trace.append("release-admission")
+
+    def release_single_root_authority(self, authority):
+        self.trace.append("release-authority")
+
+
+def test_c1_absent_root_failure_carries_the_local_io_cause() -> None:
+    """C1 (section 27.7): the spool failure names the refusal that produced it.
+
+    Before the 27.4 site-2 change this reddens because `acquire_local_artifact
+    _spool_v1` raises `from None` OUTSIDE both handlers, so neither `__cause__`
+    nor `__context__` is bound and the `LocalIOErrorV1` is unrecoverable.
+
+    The second assertion is the ruling's "the cleanup sequence still ran".  A
+    retain that refuses leaves `authority`, `admission` and `borrow` all None,
+    so the sequence traverses and releases NOTHING; asserting an invoked
+    release here would assert something that cannot happen.  What is
+    observable, and what is pinned, is that no release was attempted and the
+    failure code the handler chose survived the traversal unchanged.
+    """
+
+    filesystem = _AbsentRootFilesystem()
+    with pytest.raises(LocalArtifactSpoolErrorV1) as raised:
+        acquire_local_artifact_spool_v1(filesystem, _binding())
+    assert raised.value.__cause__ is filesystem.error
+    assert type(raised.value.__cause__) is LocalIOErrorV1
+    assert raised.value.code is LocalArtifactSpoolCodeV1.IO_FAILED
+    assert filesystem.trace == ["retain-authority"]
+
+
+@pytest.mark.skipif(os.name != "posix", reason="real retained-dirfd integration")
+def test_c1_real_port_absent_root_carries_the_local_io_cause(tmp_path) -> None:
+    """C1's premise on the real port: an absent root really is refused.
+
+    Pairs with the double-driven test above.  Without this arm the double
+    would be asserting a refusal nobody had measured through the production
+    port; with it, the refusal and the cause chain are pinned separately.
+    """
+
+    filesystem = LocalFilesystemV1(
+        PosixRetainedDirfdPortV1(), _Authenticator(), native_platform="linux"
+    )
+    with pytest.raises(LocalArtifactSpoolErrorV1) as raised:
+        acquire_local_artifact_spool_v1(filesystem, _binding_at(tmp_path / "absent"))
+    assert type(raised.value.__cause__) is LocalIOErrorV1
+    assert raised.value.__cause__.code is LocalIOCodeV1.ROOT_CHANGED

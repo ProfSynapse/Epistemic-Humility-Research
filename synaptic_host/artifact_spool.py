@@ -629,6 +629,12 @@ def acquire_local_artifact_spool_v1(
 
     authority = admission = borrow = None
     failure_code = LocalArtifactSpoolCodeV1.IO_FAILED
+    # B-18 (section 27.4, site 2).  The failure is re-raised after the cleanup
+    # sequence, outside both handlers, so the original cannot be named there:
+    # Python deletes an `except ... as` binding when its handler exits.  Each
+    # handler copies the original into this separate name instead, and the
+    # deferred raise chains from it.  The cleanup order is unchanged.
+    cause: BaseException | None = None
     try:
         authority = filesystem.retain_single_root_authority(
             binding, purpose=SingleRootPurposeV1.PUBLICATION_SPOOL
@@ -648,8 +654,10 @@ def acquire_local_artifact_spool_v1(
         return facade
     except LocalArtifactSpoolErrorV1 as error:
         failure_code = error.code
-    except BaseException:
+        cause = error
+    except BaseException as error:
         failure_code = LocalArtifactSpoolCodeV1.IO_FAILED
+        cause = error
     cleanup_failed = False
     if borrow is not None:
         try:
@@ -668,7 +676,7 @@ def acquire_local_artifact_spool_v1(
             cleanup_failed = True
     if cleanup_failed:
         failure_code = LocalArtifactSpoolCodeV1.IO_FAILED
-    raise _closed(failure_code) from None
+    raise _closed(failure_code) from cause
 
 
 __all__ = [

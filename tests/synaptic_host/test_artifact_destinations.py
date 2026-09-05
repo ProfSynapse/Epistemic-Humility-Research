@@ -405,9 +405,17 @@ def test_factory_result_is_fully_reconstructed_after_hostile_mutation(
         )
 
 
-def test_callback_attribute_failure_is_closed_at_discovery_and_resolution(
+def test_callback_attribute_failure_is_closed_in_its_message_at_both_sites(
     tmp_path: Path,
 ) -> None:
+    """The message never quotes the adapter's payload; B-18 restores the chain.
+
+    Before section 27.4 site 3 this also asserted `__cause__ is None`.  The
+    guarantee it was really protecting is the message, and that is unchanged and
+    still asserted below: "SECRET" never appears in what the caller reads.  The
+    originating AttributeError now reaches `__cause__` so a failed publish names
+    which attribute refused, which is the whole of B-18.
+    """
     config = load_artifact_destination_config_v1(_write(tmp_path, [
         _destination("local", "local/v1", "local-destination/v1")
     ]))
@@ -429,8 +437,7 @@ def test_callback_attribute_failure_is_closed_at_discovery_and_resolution(
     created[0].armed = True
     with pytest.raises(ValueError, match="^destination adapter callback access failed$") as caught:
         registry.resolve("local")
-    assert caught.value.__cause__ is None
-    assert caught.value.__context__ is None
+    assert str(caught.value.__cause__) == "SECRET-CALLBACK-ATTRIBUTE"
     assert "SECRET" not in str(caught.value)
 
     def armed_factory(configuration: bytes) -> ResolvedDestinationAdapterV1:
@@ -447,8 +454,7 @@ def test_callback_attribute_failure_is_closed_at_discovery_and_resolution(
             ),),
             issuer=authority.destinations, verifier=authority.verifier,
         )
-    assert caught.value.__cause__ is None
-    assert caught.value.__context__ is None
+    assert str(caught.value.__cause__) == "SECRET-CALLBACK-ATTRIBUTE"
     assert "SECRET" not in str(caught.value)
 
 
@@ -599,7 +605,15 @@ def test_registry_anchor_is_not_redefined_by_module_global_replacement(
     assert registry.resolve("local")[0].destination_ref == "local"
 
 
-def test_factory_exception_is_closed_without_secret_or_context(tmp_path: Path) -> None:
+def test_factory_exception_is_closed_in_its_message_but_chains_its_cause(
+    tmp_path: Path,
+) -> None:
+    """Section 27.4 site 5, from the registry rather than the helper.
+
+    The payload must not reach the message and does not.  It does now reach
+    `__cause__`, deliberately: a destination adapter factory that refuses is the
+    ordinary failure here, and before B-18 its reason was discarded outright.
+    """
     config = load_artifact_destination_config_v1(_write(tmp_path, [
         _destination("local", "local/v1", "local-destination/v1")
     ]))
@@ -618,8 +632,9 @@ def test_factory_exception_is_closed_without_secret_or_context(tmp_path: Path) -
             issuer=issuer,
             verifier=verifier,
         )
-    assert error.value.__cause__ is None
-    assert error.value.__context__ is None
+    assert type(error.value.__cause__) is RuntimeError
+    assert str(error.value.__cause__) == "SECRET-FACTORY-PAYLOAD"
+    assert "SECRET" not in str(error.value)
 
 
 def test_config_parsing_has_no_adapter_factory_effect(tmp_path: Path) -> None:
@@ -672,3 +687,62 @@ def test_direct_config_objects_remain_exact_and_immutable() -> None:
     with pytest.raises(TypeError):
         DestinationAdapterRegistrationV1("a", "b", LocalAdapter, LocalAdapter)
     assert policy.policy_digest == policy.policy_digest
+
+
+def test_c3_adapter_construction_failure_carries_the_factory_exception() -> None:
+    """C3 of section 27.7 (site 5).
+
+    `_construct_adapter` defers its translation until after the try statement,
+    where the handler's `as` binding is already gone, so before B-18 the
+    factory's exception was dropped entirely.  A factory raising is the ordinary
+    way a destination adapter fails, and its message is the only thing that says
+    why.
+    """
+    failure = ValueError("factory refused this configuration")
+
+    def refusing_factory(configuration: bytes):
+        raise failure
+
+    with pytest.raises(ValueError) as raised:
+        destination_module._construct_adapter(
+            refusing_factory, b"{}", "0" * 64,
+        )
+    assert str(raised.value) == "destination adapter construction failed"
+    assert raised.value.__cause__ is failure
+
+
+def test_c4_callback_probe_failure_carries_the_attribute_error() -> None:
+    """C4 of section 27.7, site 3.
+
+    An adapter whose attribute access raises (rather than merely being absent)
+    is the case the handler covers; the raise that reports it sits outside the
+    handler, so the original needs carrying out explicitly.
+    """
+    failure = AttributeError("adapter attribute access refused")
+
+    class RefusingAdapter:
+        def __getattr__(self, name):
+            raise failure
+
+    with pytest.raises(ValueError) as raised:
+        destination_module._discover_adapter_callbacks(RefusingAdapter())
+    assert str(raised.value) == "destination adapter callback access failed"
+    assert raised.value.__cause__ is failure
+
+
+def test_c4_resolved_binding_failure_carries_the_original() -> None:
+    """C4 of section 27.7, site 4.
+
+    The binding reconstruction raises a bare `ValueError` from inside its own
+    try block for each malformed field, then reports a single generic message
+    after the handler.  Chaining keeps the inner raise's position in the
+    traceback, which is what distinguishes a bad digest from a bad role.
+    """
+    binding = ResolvedDestinationAdapterV1(LocalAdapter(b"{}"), (("role", "0" * 64),))
+    object.__setattr__(binding, "authority_bindings", ("not-a-pair",))
+    with pytest.raises(ValueError) as raised:
+        destination_module._reconstruct_resolved_binding(binding)
+    assert str(raised.value) == "resolved destination adapter binding is invalid"
+    assert raised.value.__cause__ is not None
+    assert type(raised.value.__cause__) is ValueError
+    assert raised.value.__cause__ is not raised.value

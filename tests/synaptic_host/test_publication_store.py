@@ -154,23 +154,33 @@ def test_list_closes_index_metadata_drift(
     assert captured.value.__context__ is None
 
 
-def test_sqlite_error_is_closed_without_exception_links(
+def test_c5_sqlite_error_is_closed_in_its_message_but_carries_its_cause(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """C5 of section 27.7.  The message stays closed; the chain is restored.
+
+    Before B-18 this asserted `__cause__ is None`, which is what section 27.4
+    site 6 removes.  The guarantee that actually matters is unchanged and is
+    still asserted here: the raised message is exactly the generic one and never
+    quotes the SQLite detail.  What changes is that the detail now reaches the
+    traceback as `__cause__`, which is the whole point of the B-18 fix -- an
+    operator reading a failed publish sees which SQLite error caused it.
+    """
     store = SqlitePublicationStoreV1(
         (tmp_path / "training.sqlite3").resolve(), session_ref="a" * 64,
     )
+    failure = sqlite3.OperationalError("private database detail")
 
     def fail_connect():
-        raise sqlite3.OperationalError("private database detail")
+        raise failure
 
     monkeypatch.setattr(store, "_connect", fail_connect)
     with pytest.raises(
         RuntimeError, match="^host publication persistence failed$",
     ) as captured:
         store.get("1" * 64)
-    assert captured.value.__cause__ is None
-    assert captured.value.__context__ is None
+    assert captured.value.__cause__ is failure
+    assert "private database detail" not in str(captured.value)
 
 
 def test_expired_lease_cannot_be_resurrected_by_delayed_heartbeat(
@@ -220,10 +230,20 @@ def test_close_stops_all_owned_heartbeat_threads(tmp_path: Path) -> None:
     assert store._heartbeats == {}
 
 
-def test_initialization_sqlite_error_is_closed_without_links(tmp_path: Path) -> None:
+def test_c5_initialization_sqlite_error_is_closed_but_carries_its_cause(
+    tmp_path: Path,
+) -> None:
+    """The C5 contract on the initialization path, which uses the same site.
+
+    `_initialize` is the one method the decorator lets run on a closed store, so
+    it reaches `_closed_persistence_failure` through the same statement and gets
+    the same chain.  Asserting it here keeps both arms of site 6 pinned.
+    """
+    failure = sqlite3.OperationalError("private initialization detail")
+
     class BrokenStore(SqlitePublicationStoreV1):
         def _connect(self):
-            raise sqlite3.OperationalError("private initialization detail")
+            raise failure
 
     with pytest.raises(
         RuntimeError, match="^host publication persistence failed$",
@@ -232,8 +252,8 @@ def test_initialization_sqlite_error_is_closed_without_links(tmp_path: Path) -> 
             (tmp_path / "training.sqlite3").resolve(),
             session_ref="a" * 64,
         )
-    assert captured.value.__cause__ is None
-    assert captured.value.__context__ is None
+    assert captured.value.__cause__ is failure
+    assert "private initialization detail" not in str(captured.value)
 
 
 def test_close_waits_for_blocked_heartbeat_to_finish(

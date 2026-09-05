@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 from threading import Event, Thread
 from types import SimpleNamespace
@@ -14,7 +15,13 @@ from synaptic_host.artifact_destinations import (
     DestinationAdapterInstallationV1,
     DestinationAdapterRegistrationV1,
 )
-from synaptic_host.artifact_spool import LocalArtifactSpoolCleanupStatusV1
+from synaptic_host.artifact_spool import (
+    LocalArtifactSpoolCleanupStatusV1,
+    LocalArtifactSpoolV1,
+)
+from synaptic_host.local_artifact_destination import (
+    build_local_artifact_destination_registration_v1,
+)
 from synaptic_host.publication_composition import (
     HostPublicationFacadeV1,
     PublicationConfigurationDocumentsV1,
@@ -471,6 +478,11 @@ def test_composition_orders_permit_builders_and_project_store(
     installation = _installation(registration, trace)
 
     class Storage:
+        def list_declared_roots(self):
+            # Declares nothing, so `_ensure_declared_private_roots` finds no
+            # creatable root under `.synaptic` and never touches the filesystem.
+            return ()
+
         def issue_root_permit(self, root_ref, **kwargs):
             trace.append(("permit", root_ref, kwargs))
 
@@ -617,6 +629,11 @@ def test_construction_rollback_cleans_every_acquired_owner_in_order(
     installation = _installation(registration, trace)
 
     class Storage:
+        def list_declared_roots(self):
+            # See the note on the sibling double: an empty declaration keeps
+            # `_ensure_declared_private_roots` inert for this test.
+            return ()
+
         def issue_root_permit(self, *args, **kwargs):
             return object()
 
@@ -694,3 +711,223 @@ def test_exports_are_narrow():
     assert "PublicationOperationsV1" not in synaptic_host.__all__
     assert "ArtifactsAPI" not in synaptic_host.__all__
     assert not hasattr(HostPublicationFacadeV1, "artifacts")
+
+
+# ---------------------------------------------------------------------------
+# B-18 (architecture section 27) -- R1-R4, the declared-root ensure.
+#
+# The storage and destination documents below are the bytes run 13 actually
+# staged, copied in from the read-only reference stage rather than referenced
+# from it, so no test reaches into a release clone.  The seven roots matter as
+# a set: three are `read_create` under `.synaptic` and are what 27.3 creates;
+# `opaque-training-output` (`create_only`) and `opaque-local-io-control`
+# (`read_create`) are creatable but live in the operator's working tree, and
+# `docker-model-inventory-source` is under `.synaptic` but is `read_only`.  A
+# helper that used either half of the predicate alone would act on the wrong
+# set, which is what R4 pins.
+# ---------------------------------------------------------------------------
+
+_DECLARED_ROOTS = (
+    ("opaque-training-input", "project://training/input", "read_only"),
+    ("opaque-training-output", "project://training/output", "create_only"),
+    ("opaque-local-io-control", "project://training/.local-io-control", "read_create"),
+    ("artifact-local-default", "project://.synaptic/artifacts", "read_create"),
+    (
+        "artifact-publication-control",
+        "project://.synaptic/publication-control",
+        "read_create",
+    ),
+    (
+        "artifact-publication-spool",
+        "project://.synaptic/publication-spool",
+        "read_create",
+    ),
+    ("docker-model-inventory-source", "project://.synaptic/model-inventory", "read_only"),
+)
+
+_ENSURED_ROOTS = (
+    ".synaptic/artifacts",
+    ".synaptic/publication-control",
+    ".synaptic/publication-spool",
+)
+
+
+def _write_declared_configs(tmp_path: Path, roots=_DECLARED_ROOTS) -> tuple[Path, Path]:
+    destination = tmp_path / "declared-artifacts.json"
+    storage = tmp_path / "declared-storage.json"
+    destination.write_text(
+        json.dumps({
+            "schema_version": "synaptic-host-artifact-destinations/v1",
+            "destinations": [{
+                "schema_version": "synaptic-host-artifact-destination/v1",
+                "destination_ref": "local-default",
+                "display_name": "Local artifacts",
+                "adapter_ref": "host.local/v1",
+                "configuration": {
+                    "schema_version": "synaptic-local-artifact-destination/v1",
+                    "control_root_ref": "artifact-publication-control",
+                    "data_root_ref": "artifact-local-default",
+                },
+                "policy": {
+                    "maximum_artifact_bytes": 2147483648,
+                    "maximum_total_bytes": 4294967296,
+                },
+            }],
+        }),
+        encoding="utf-8",
+    )
+    storage.write_text(
+        json.dumps({
+            "schema_version": "synaptic-host-storage/v1",
+            "roots": [
+                {
+                    "root_ref": root_ref,
+                    "location": location,
+                    "access": access,
+                    "permit_ref": f"permit-{root_ref}",
+                }
+                for root_ref, location, access in roots
+            ],
+        }),
+        encoding="utf-8",
+    )
+    return destination.resolve(), storage.resolve()
+
+
+def _compose_declared(tmp_path: Path, monkeypatch, roots=_DECLARED_ROOTS):
+    # The module-level autouse `_installation_contract` fixture points
+    # `_spool_type` at the `_Spool` double so the lifecycle tests can drive
+    # cleanup without a real root.  R1-R4 compose the REAL spool, so the
+    # production predicate at `publication_composition.py:252` has to be back
+    # in place or the facade rejects its own spool.
+    monkeypatch.setattr(composition, "_spool_type", lambda: LocalArtifactSpoolV1)
+    context = _context(tmp_path)
+    destination_path, storage_path = _write_declared_configs(tmp_path, roots)
+    return compose_host_publication_v1(
+        context=context,
+        runs=RunsAPI(_RunsOperations()),
+        configuration=PublicationConfigurationDocumentsV1.from_paths(
+            destination_path=destination_path, storage_path=storage_path,
+        ),
+        spool_root_ref="artifact-publication-spool",
+        clock=lambda: "2026-09-05T00:00:00Z",
+        registration_builders=(
+            build_local_artifact_destination_registration_v1,
+        ),
+    ), context
+
+
+def test_r1_fresh_project_root_composes_and_creates_the_declared_roots(tmp_path, monkeypatch):
+    """R1 (section 27.7): run 13's cut 6, as a unit test.
+
+    Red before the change: the three declared `read_create` roots under
+    `.synaptic` are never created by anything, `retain_directory` opens
+    `_OPEN_EXISTING`, and the composition fails.  This is the acceptance test
+    for 27.3 and the arm half of B-18.
+    """
+
+    facade, context = _compose_declared(tmp_path, monkeypatch)
+    try:
+        assert type(facade) is HostPublicationFacadeV1
+        for relative in _ENSURED_ROOTS:
+            assert (context.project_root / relative).is_dir(), relative
+    finally:
+        facade.close()
+
+
+@pytest.mark.skipif(os.name != "posix", reason="POSIX directory mode")
+def test_r2_ensured_roots_carry_the_private_creation_mode(tmp_path, monkeypatch):
+    """R2: pins the creation primitive, not merely the outcome.
+
+    `FileHmacAuthenticator._create_private_directory` is `os.mkdir(path,
+    0o700)` on this branch, so a helper that created the directories with any
+    other primitive (or with default permissions) reddens here even though R1
+    would still pass.
+    """
+
+    facade, context = _compose_declared(tmp_path, monkeypatch)
+    try:
+        for relative in _ENSURED_ROOTS:
+            mode = (context.project_root / relative).stat().st_mode & 0o777
+            assert mode == 0o700, (relative, oct(mode))
+    finally:
+        facade.close()
+
+
+def test_r3_pre_existing_root_is_not_repaired_or_modified(tmp_path, monkeypatch):
+    """R3: "do not repair" -- an existing root is left exactly as found.
+
+    The directory is created by the test with ordinary permissions before the
+    composition runs.  27.3 forbids repair, validation and ACL narrowing, so
+    the composition must succeed and must leave the mode untouched.  The
+    helper therefore tests existence and skips rather than relying on the
+    creation primitive being idempotent, whose Windows branch is not read here.
+    """
+
+    project = tmp_path / "project"
+    (project / ".synaptic" / "publication-control").mkdir(parents=True)
+    (project / ".synaptic" / "publication-control").chmod(0o755)
+    before = (project / ".synaptic" / "publication-control").stat()
+
+    facade, context = _compose_declared(tmp_path, monkeypatch)
+    try:
+        after = (context.project_root / ".synaptic" / "publication-control").stat()
+        assert after.st_ino == before.st_ino
+        if os.name == "posix":
+            assert after.st_mode & 0o777 == 0o755
+    finally:
+        facade.close()
+
+
+def test_r4_creatable_roots_outside_synaptic_are_not_created(tmp_path, monkeypatch):
+    """R4: pins the `.synaptic` predicate.
+
+    `opaque-local-io-control` and `opaque-training-output` are both creatable
+    and both live in the operator's working tree.  #325 proved the first has
+    no consumer anywhere in the clone, so a helper that created every
+    creatable root would write two directories nothing retains into a tree the
+    Host does not own.  Asserting their absence is what would have caught that.
+    """
+
+    facade, context = _compose_declared(tmp_path, monkeypatch)
+    try:
+        assert not (context.project_root / "training" / ".local-io-control").exists()
+        assert not (context.project_root / "training" / "output").exists()
+        assert not (context.project_root / "training").exists()
+        assert not (context.project_root / ".synaptic" / "model-inventory").exists()
+    finally:
+        facade.close()
+
+
+def test_c2_composition_failure_carries_the_original_as_its_cause(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    """C2 of section 27.7 (site 1).
+
+    Run 13's cut 6 reported the swallowing site and nothing else, because the
+    handler at the end of `compose_host_publication_v1` raised `from None`.  The
+    forced failure here stands in for whatever fails inside the try block: what
+    is pinned is that the original reaches the caller as `__cause__`, so the
+    22.14 renderer has a deepest in-package frame to name.
+    """
+    failure = RuntimeError("forced inner failure")
+
+    def fail(*args, **kwargs):
+        raise failure
+
+    monkeypatch.setattr(composition, "create_publication_evidence_v1", fail)
+    context = _context(tmp_path)
+    destination_path, storage_path = _write_declared_configs(tmp_path, _DECLARED_ROOTS)
+    with pytest.raises(RuntimeError) as raised:
+        compose_host_publication_v1(
+            context=context,
+            runs=RunsAPI(_RunsOperations()),
+            configuration=PublicationConfigurationDocumentsV1.from_paths(
+                destination_path=destination_path, storage_path=storage_path,
+            ),
+            spool_root_ref="artifact-publication-spool",
+            clock=lambda: "2026-09-05T00:00:00Z",
+            registration_builders=(build_local_artifact_destination_registration_v1,),
+        )
+    assert str(raised.value) == "host publication composition failed"
+    assert raised.value.__cause__ is failure

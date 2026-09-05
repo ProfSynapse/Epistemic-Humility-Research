@@ -31,12 +31,24 @@ from synaptic_tuner.api.v1.publication import (
 _LEASE_SECONDS = 30.0
 
 
-def _closed_persistence_failure() -> None:
-    raise RuntimeError("host publication persistence failed") from None
+def _closed_persistence_failure(cause: BaseException | None = None) -> None:
+    """Raise the persistence failure, chaining `cause` when the caller has one.
+
+    B-18 (section 27.4, site 6).  The parameter defaults to `None` so the four
+    call sites that genuinely have no originating exception to name are
+    unchanged; only the decorator below, which does have one, passes it.
+    """
+    raise RuntimeError("host publication persistence failed") from cause
 
 
 def _close_sqlite_errors(function):
-    """Translate SQLite failures after leaving the active exception context."""
+    """Translate SQLite failures after leaving the active exception context.
+
+    The translation is deliberately deferred until after the `except` block so
+    the raise does not run inside the SQLite handler.  That places it beyond the
+    handler's `as` binding, so the handler copies the original into `cause` and
+    the translated error chains from it rather than from nothing.
+    """
     @wraps(function)
     def closed(*args, **kwargs):
         owner = args[0]
@@ -47,12 +59,14 @@ def _close_sqlite_errors(function):
                     and function.__name__ != "_initialize"):
                 raise RuntimeError("host publication store is closed")
             failed = False
+            cause: BaseException | None = None
             try:
                 return function(*args, **kwargs)
-            except sqlite3.Error:
+            except sqlite3.Error as error:
                 failed = True
+                cause = error
             if failed:
-                _closed_persistence_failure()
+                _closed_persistence_failure(cause)
             raise AssertionError("unreachable")
 
         if lock is None:

@@ -241,3 +241,20 @@ class StorageRegistryV1:
         if len(self._roots) != len(self._specs):
             raise _closed(LocalIOCodeV1.ROOT_UNAUTHORIZED)
         return tuple(self._roots[key] for key in sorted(self._roots))
+
+    def list_declared_roots(self) -> tuple[_RootSpecV1, ...]:
+        """Every root the document declares, whether or not it holds a permit.
+
+        `list_roots` above answers with *bindings*, and a binding only exists
+        once its permit has been issued, so it refuses outright until every
+        declared root has one.  That makes it unusable to a caller that must act
+        on the declaration itself before any permit exists -- B-18's creation of
+        the absent private storage roots runs before `issue_root_permit` by
+        construction, because the spool root cannot be retained until its
+        directory is there.
+
+        This grants no authority.  A spec carries no permit, so nothing returned
+        here can be resolved, authenticated, retained or borrowed; it is the
+        parsed document, read-only, in declaration-ref order.
+        """
+        return tuple(self._specs[key] for key in sorted(self._specs))
