@@ -5671,6 +5671,16 @@ declaration exists; that is out of scope here and named in 26.6.
 All in `tests/synaptic_host/test_docker_staging.py` unless named otherwise.
 P1 is the run-12 shape and is the acceptance test for the ruling.
 
+*Correction 2026-09-05, batched with section 27 (27.10 D2); audit #313 YELLOW-1.*
+**P1 and P9 are sited in `tests/synaptic_host/test_docker_training.py`, and the
+reason belongs here rather than only in the commit message.** `clean_project` is
+the only harness that builds a source lock carrying a real destination registry,
+so a test that needs a third lock-recorded descriptor has to sit beside it; P1
+and P9 also need the whole `stage_docker_worker_v1` drive, which the staging
+tests do not exercise. The remaining tests exercise `_locked_project_descriptors`
+and the staging function it feeds, where every branch of the union lives. The
+test file records the same split at `test_docker_staging.py:587-590`.
+
 | # | Test subject | Asserts |
 |---|---|---|
 | P1 | Stage a worker from a lock whose two `inputs` are present at the commit and whose `outputs.destination_registry` names a third committed file; then read `("project","training","artifacts.json")` under the staged source root | The file is present with the recorded bytes, and the read succeeds. **Red before the change**: today the staged project tree holds two files and the read raises `FileNotFoundError`. This is run 12 in a unit test |
@@ -5840,6 +5850,19 @@ coder-user and are listed so nothing is dropped:
 | the H2 comment says `docker run -e`; the code path is `docker create --env` | the H2 test's comment | #277, audit #275 YELLOW-2 |
 | one line at the `_copy_inventory` call site (`:1839`) or on `_copy_inventory` (`:1419`) naming that the copier takes the cache **root** while the verifier takes the **subtree**, pointing at the verifier's comment | `docker_staging.py:1839` / `:1419` | audit #297 YELLOW-2, `#277 metadata.additional_corrections_owed_3` |
 
+*Correction 2026-09-05, batched with section 27 (27.10 D1).* **All three rows
+above are discharged.** Coder-user landed them in the B-17 fix commit, so the
+heading "are code and are NOT landed here" is true only of the moment this
+section was written. Verified at `dcdf8571`: the H1 docstring now reads
+"thirteen exact keys" and cites `:501-502`
+(`tests/synaptic_host/test_docker_training.py:964`), and `SourceLockV1` appears
+nowhere under `tests/`; the H2 comment now says the composition hands `USER` to
+`docker create` as an `--env` argument, and a repository-wide search for
+`docker run -e` returns nothing; the copier/verifier asymmetry line is at
+`docker_staging.py:1905`. The H2 row above also names the wrong file: the H2
+test is in `tests/synaptic_host/test_docker_prepared_composition.py`
+(`:1038-1049`), not `test_docker_training.py`.
+
 ### 26.8 Execution sequence, owners and ledger
 
 | # | Step | Owner | Gate |
@@ -5853,3 +5876,524 @@ coder-user and are listed so nothing is dropped:
 | Row | Content |
 |---|---|
 | 26.1 | B-17. `_configuration_for_request` (`docker_publication.py:342`) reads `("project","training","artifacts.json")` from the staged source root at `:347-349`; `_read_regular` (`:102`) raises `FileNotFoundError` at the `lstat` on `:105`. `_stage_locked_project_inputs` (`docker_staging.py:1305`) is handed `source_lock.inputs` at `:1829-1834`, two descriptors, and the file is recorded instead at `outputs.destination_registry` (`docker_training.py:304-308`), 614 bytes, digested at admission. Latent since `9eb2b90b` (run 7), unreachable until run 12 reached the first publish cut; not a regression in ruling (4). Census (26.2): one unstaged consumer, seven grep passes, nine classified hits. Fix: union the `destination_registry` descriptor into the staged set through `_locked_project_descriptors`, reusing the B-12 pre-write digest check and set-equality re-verify unchanged. No schema change, no engine change, no closure regeneration, no pin move, bounds unchanged. FOLLOW-UP #184 folded in for the Host half |
+
+## 27. Amendment 2026-09-05 — ruling on B-18 (the publish composition destroys its own cause, and nothing creates the storage roots it retains)
+
+Every line and file citation in this section was read at Host `dcdf8571`, the
+commit run 13 was released from and the commit the worktree carries. That is
+the citation baseline. Citations name their symbol first and their line second,
+because drift on these files has already been shown to be non-uniform (26.7 C4
+records one pair that moved by 54 lines while a pair two lines above it moved by
+46). Re-derive by symbol, never by offset.
+
+Two rulings land here. 27.3 says who creates the declared storage roots that
+nothing creates today. 27.4 says how the cause chain is restored at the sites
+that destroyed it. They are one release because either alone leaves the path
+either still broken or still unnamable.
+
+### 27.1 What B-18 is, stated from the code rather than from the symptom
+
+Run 13 (#316) is the first run on this path ever to reach cut 6. It returned
+`START_UNAVAILABLE` naming `compose_host_publication_v1`
+(`publication_composition.py:517`), which is the handler, not the defect. The
+handler catches `BaseException` over a try block spanning `:446-:511` and
+re-raises `_failed("host publication composition failed") from None`.
+
+Measurement #320 called the real composition against a fresh project root and
+walked `__context__`. The real exception is `LocalIOErrorV1`
+`LOCAL_IO_ROOT_CHANGED`, innermost in-package frame `_root_component`
+(`local_io_v1/windows.py:925`), reached along
+
+```
+publication_composition.py:464  acquire_local_artifact_spool_v1
+  artifact_spool.py:631         retain_single_root_authority
+    local_io_v1/filesystem.py:709  self._port.retain_directory(binding.absolute_root)
+      local_io_v1/windows.py:973   retain_directory
+        local_io_v1/windows.py:925 _root_component
+```
+
+**The arm.** `_root_component` enumerates the parent directory and refuses
+unless the match list is exactly `[component]` (`:920-925`). A component that
+does not exist produces an empty match list, so a **missing directory** is
+reported as `ROOT_CHANGED`, the same code the function returns for a spelling
+mismatch and for a reparse point (`:926-927`), and the same code
+`retain_directory` returns for an identity rebind (`:988-990`). The spool root
+resolves to `<project>/.synaptic/publication-spool` and does not exist. Every
+ancestor exists; only the leaf is missing.
+
+The staged `control/storage.json` declares three roots with access
+`read_create`: `artifact-publication-spool` at `project://.synaptic/publication-spool`,
+`artifact-publication-control` at `project://.synaptic/publication-control`,
+and `artifact-local-default` at `project://.synaptic/artifacts`. **Nothing
+creates any of them.** #320 measured this rather than inferring it: creating the
+spool root alone flips `retain_single_root_authority` from `ROOT_CHANGED` to a
+returned authority, and creating all three makes `compose_host_publication_v1`
+return a `HostPublicationFacadeV1` that closes cleanly. The release clone has
+none of the three.
+
+**The writer search, required by the lead's ruling at teachback before the
+phrase "never created by anything" may be used.** Three passes at `dcdf8571`:
+`rtk proxy grep -rn 'publication-spool\|publication-control\|artifact-local-default'
+--include='*.py' synaptic_host/` returns one hit, the constant
+`_PUBLICATION_SPOOL_ROOT_REF` (`docker_training.py:59`), which is a *reference
+name*, not a path. `rtk proxy grep -rn 'mkdir\|makedirs' --include='*.py'
+synaptic_host/` returns twenty-nine hits, none of which names any of the three:
+they are the staging tree (`docker_staging.py`), the launcher payload, the
+Modal provider, the two database parents, and the local_io ports' own
+`mkdir_at`/`mkdir_borrowed`, which create entries *inside* an already retained
+root. The same grep over `.skills/host-docker-run/` returns seven hits, all in
+the inventory materializer and the run driver's probe roots. So the claim is
+measured on three surfaces: no Host module, no driver, and no operator recipe
+step creates these directories. #325 adds the confirming negative from the other
+side: the only declared root that exists in the clone is
+`docker-model-inventory-source`, which is `read_only` and was created by the
+operator's inventory step.
+
+**Why fixing `:517` alone would not have been enough.** #320's `__context__`
+walk returned two levels and stopped. Depth 0 is the `RuntimeError` at `:517`;
+depth 1 is a `LocalArtifactSpoolErrorV1` `LOCAL_ARTIFACT_SPOOL_IO_FAILED` whose
+innermost frame is `acquire_local_artifact_spool_v1`
+(`artifact_spool.py:671`). Depth 1 has no `__context__` at all, because that
+raise is a different and worse shape than `:517`: the two `except` blocks at
+`:649-652` only **bind** `failure_code` and then fall out, and
+`raise _closed(failure_code) from None` at `:671` executes **outside every
+handler**, so no implicit chaining occurs. At `:517` the cause is *hidden* and
+recoverable; at `:671` it is *destroyed*. A fix that restored only `:517` would
+have surfaced `LOCAL_ARTIFACT_SPOOL_IO_FAILED` and stopped there, which names a
+code and not a defect, and run 14 would have bought one more release for the
+same blindness.
+
+**Why nothing caught it, and why it is not a regression.** The path has never
+reached cut 6 before. Ruling (4) removed the gate above it and B-17 removed the
+gate above that; neither caused this. The defect family is the third of its
+kind: B-11 (section 20) was an activation cause swallowed, B-15 (section 24) was
+an import failure swallowed to `INTERNAL_FAILURE`, and the cause renderer 22.14
+exists because of them. B-18 is the first where the swallow is *inside* the
+Host's own composition and the fix is therefore about the composition's own
+handlers rather than about the renderer.
+
+### 27.2 Census: every `from None` in `synaptic_host`
+
+The question B-18 raises is not "is `:517` swallowing" but "how many more are
+there", so this is a census and its method is mechanical rather than a reading.
+Two properties decide each site and neither is visible by eye at scale, so both
+were computed.
+
+**Method.** `raise X from None` sets `__suppress_context__` and clears
+`__cause__`; whether `__context__` is bound is decided at run time by whether an
+exception is being handled at the raise. #320 verified the underlying property
+in isolation on the interpreter in use (CPython 3.12.7): inside an `except`,
+`from None` is display suppression, not removal. So the census classifies by
+whether the raise executes with an exception in flight, approximated first
+lexically by AST and then corrected by reading the callers of every helper.
+
+```
+# lexical pass, re-runnable
+python3 - <<'PY'
+import ast, pathlib, collections
+root = pathlib.Path('synaptic_host')
+rows = []
+for p in sorted(root.rglob('*.py')):
+    if '__pycache__' in str(p): continue
+    class V(ast.NodeVisitor):
+        def __init__(self): self.h, self.f = [], []
+        def visit_ExceptHandler(self, n):
+            self.h.append(n); [self.visit(c) for c in n.body]; self.h.pop()
+        def visit_Try(self, n):
+            [self.visit(c) for c in n.body]; [self.visit(c) for c in n.handlers]
+            [self.visit(c) for c in n.orelse]
+            self.f.append(n); [self.visit(c) for c in n.finalbody]; self.f.pop()
+        def visit_Raise(self, n):
+            if isinstance(n.cause, ast.Constant) and n.cause.value is None:
+                rows.append((str(p), n.lineno,
+                             'in_handler' if self.h else ('in_finally' if self.f else 'outside')))
+            self.generic_visit(n)
+    V().visit(ast.parse(p.read_text(encoding='utf-8')))
+print(len(rows), collections.Counter(r[2] for r in rows))
+PY
+```
+
+**Result at `dcdf8571`: 348 sites.** 306 are lexically inside an `except`
+handler, 41 are outside every handler, and 1 is inside a `finally`
+(`docker_v1/source.py:119`).
+
+The 306 are **not** defects. A `from None` inside a handler keeps the original
+on `__context__` with its traceback intact, which is exactly how #320 recovered
+depth 1. They suppress the *display* of the chain, which is a deliberate message
+discipline (21.8: staging and storage messages carry no paths or values), and
+they cost nothing to a reader who walks `__context__`. Leaving all 306 is the
+narrow-fix answer and it is also the correct one.
+
+The lexical pass over-reports the 41. A raise inside a helper *called from* a
+handler still has an exception in flight, so it survives; a raise reached after
+a handler that only set a flag does not. Every one of the 41 was therefore read.
+Three classes result.
+
+| Class | Shape | Cause | Count |
+|---|---|---|---|
+| **A** | `raise ... from None` lexically inside `except` | survives on `__context__` | 306 |
+| **B** | handler binds a flag or `pass`es, the raise executes after it | **destroyed** | see below |
+| **C** | raise on ordinary control flow with no exception ever in flight | nothing to preserve; not a defect | see below |
+
+**The publish path.** The import closure of `docker_publication` (the cut-6
+entry) and of `local_artifact_destination` (the registration builder passed in
+at `:468-:470`) covers twenty-four modules; the executed set inside
+`compose_host_publication_v1`'s try block is twelve. Class B and C sites within
+that tree, each read individually:
+
+| Site | Class | Reading |
+|---|---|---|
+| `artifact_spool.py:671` `acquire_local_artifact_spool_v1` | **B** | handlers at `:649-652` bind `failure_code` only; the raise is outside them. Measured destroyed by #320 |
+| `artifact_destinations.py:391` `_construct_adapter` | **B** | `except Exception: pass` at `:366-367` discards the factory's exception; the raise at `:391` is the fall-through. Reached in #320 attempt 3 once the spool root existed |
+| `artifact_destinations.py:301` `_discover_adapter_callbacks` | **B** | `except BaseException: pass` at `:295-296`, raise at `:301` |
+| `artifact_destinations.py:345` `_reconstruct_resolved_binding` | **B** | `except BaseException: invalid = True` at `:341-343`, raise at `:345` |
+| `publication_store.py:35` via `_close_sqlite_errors` `:55` | **B** | `except sqlite3.Error: failed = True` at `:52-53`, helper called at `:55`. The decorator's own docstring at `:39` says it translates "after leaving the active exception context", so the destruction is deliberate and documented |
+| `verified_artifact_source.py:178` `_closed` | **C** | every caller (`:184`, `:188`, `:196`, `:200`, `:220`, `:226`, `:232`, `:242`, `:253`, `:259`) invokes it from ordinary control flow after a predicate returns false. No exception exists to preserve. **Not in scope**, and a census that stopped at the lexical pass would have wrongly included it |
+| `publication_composition.py:517` | A, but | lexically in a handler, so the cause survives — yet the composition is the outermost frame the operator sees, and a chain nobody prints is a chain nobody reads. In scope for a different reason than the others |
+
+**Off the publish path.** The remaining destroyed-cause sites are
+`bundle_io_v1/bundle.py` (7), `docker_v1/control_private.py` (9),
+`docker_v1/binding.py` (2), `docker_v1/facade.py` (2), `modal_resolver.py` (2),
+`sqlite_repository.py` (3), and one each in `cli.py`, `docker_v1/cli.py`,
+`docker_v1/composition.py`, `docker_v1/control.py`,
+`docker_v1/control_contract.py`, `docker_v1/control_model.py`,
+`docker_v1/interop.py`, `docker_v1/model.py`, `launcher.py` and
+`modal_provider.py`. **Disposition: leave them.** The narrow-fix constraint and
+the one-release sequencing bound this change to what cut 6 can reach, and none
+of these executes inside `compose_host_publication_v1`. `sqlite_repository.py`
+`:610` and `:648` carry the identical flag-then-raise idiom as
+`publication_store.py` and are the first candidates if the idiom is ever ruled
+as a family; that is recorded as a follow-up in 27.9, not done here.
+
+### 27.3 Ruling — the composition ensures the declared roots it is about to retain
+
+**The storage layer does not create roots, and `read_create` does not say it
+does.** `RootAccessV1.creatable` (`local_io_v1/model.py:180-182`) is consumed at
+`filesystem.py:623`, `:899`, `:1005` and `:2912`, and every one of those gates
+the creation of entries **inside** an already-retained root. `retain_directory`
+opens with `_OPEN_EXISTING` (`windows.py:964`) and re-proves identity at every
+component. So `read_create` describes what may be done within the root once it
+is held; the root's own existence is a **precondition** of retaining it. The
+mode's name is not a lie, and my teachback's prediction that the storage layer
+owed the creation is **retired**: the definition decides it the other way.
+
+**Candidate A, the storage layer creates on retain when access is
+`read_create`. Rejected.** It would put a side effect inside the one operation
+whose whole job is to prove that a path is what it was. Section 20.5 already
+ruled this boundary for the private-storage chain in almost the same words —
+"verification has to stay a pure predicate: the moment a verification call can
+change the world, every later 'it was verified' claim means 'it was verified, or
+made to verify', and no caller can tell which" (`security.py:811-814`). A
+`retain_directory` that creates cannot distinguish a root that was there from a
+root it just made, which is precisely the distinction `_root_component` exists to
+draw. It would also silently convert `ROOT_CHANGED` from a refusal into a
+creation for the reparse-point and spelling cases.
+
+**Candidate C, extend the B-11 private-storage chain. Rejected.**
+`_ensure_private_storage_directories` (`security.py:807`) walks a **linear**
+chain from `_private_storage_root` down to `key_path.parent` (`:848-855`); under
+`for_docker` that is `.synaptic` → `.synaptic/state` → `.synaptic/state/docker`
+(`:684`, `:691-694`). The three publication roots are **siblings** of `state`,
+not members of any chain to a key, so they do not fit the shape without changing
+what the chain means. Worse, joining the chain would subject them to
+`_validate_private_directory` and to the repairing pass, and B-11-R1 is the
+standing proof of what that costs: on a volume whose inherited list propagates,
+repairing a parent converts its children to explicit protected entries, section
+20.6 then refuses them, and the chain wedges permanently — invisible to the
+Windows suite because the fixture pre-created only the root. Adding three
+directories to a validated, repaired chain to fix a missing-directory bug buys
+three new ways to wedge.
+
+**Ruling: candidate B, and its exact shape.** `compose_host_publication_v1`
+(`publication_composition.py:416`) ensures the declared roots it is about to
+retain, before it retains them, with a new module-level helper
+
+```
+_ensure_declared_private_roots(storage, context)
+```
+
+sited beside `_permit_proof_digest` in `publication_composition.py` and called
+once, immediately after `storage` is built at `:450-452` and before
+`issue_root_permit` at `:458`.
+
+1. Enumerate with `storage.list_roots()` (`local_io_v1/config.py:240`), which
+   already returns every declared `LocalRootBindingV1` in sorted order and
+   already refuses a registry whose resolved set and declared set disagree
+   (`:241-242`).
+2. Select the bindings that are **both** `binding.access.creatable` **and**
+   resolve inside `context.project_root / ".synaptic"`, tested with
+   `os.path.commonpath` in the same shape `for_docker` already uses to confine
+   the Docker key (`security.py:683-690`).
+3. For each selected binding, create the directory if it is absent, parents
+   first, using the same primitive the private chain uses —
+   `_win_create_private_directory` on Windows and `os.mkdir(path, 0o700)`
+   elsewhere, which is exactly `FileHmacAuthenticator._create_private_directory`
+   (`security.py:712-720`). Reuse it; do not re-implement it.
+4. **Do not repair, do not validate, and do not touch a directory that already
+   exists.** An existing root is left exactly as found and `retain_directory`
+   proves its identity a moment later, as it does today.
+
+**Why the `.synaptic` predicate is the boundary and not a convenience.** The
+Host owns `.synaptic`; it does not own the project working tree. A rule that
+created *every* declared creatable root would create
+`training/.local-io-control` inside the operator's checkout, which #325 has now
+shown is a declared root with **no consumer anywhere in the clone**. Creating
+directories in a tree the Host does not own, for a root nothing retains, is a
+side effect nobody asked for. The predicate is checkable in one line, it selects
+exactly the three roots that fail today, and it excludes the one root that would
+otherwise be created for no reason.
+
+**Why not repair.** Every reason B-11 needed repair is absent here. The chain
+directories were pre-created by the operator recipe and the driver
+(`security.py:695-700`), so the Host met a foreign ACL. Nothing creates these
+three, so the Host is always the creator, and a directory it creates already
+carries the descriptor it wants. If a future operator does pre-create one, the
+worst case is the pre-B-11 behaviour for a directory that holds no key: the
+identity check still runs and still refuses a substituted root. Repair is what
+wedged the temp volume; leaving it out is what keeps 27.3 narrow.
+
+**Portability, so the ruling does not bake in a Windows-only shape.** The two
+platform branches already exist behind `_create_private_directory` and the POSIX
+side is `os.mkdir(path, 0o700)`, which is what
+`docs/plans/posix-first-local-execution-plan.md` will need unchanged. Nothing in
+this ruling names a Windows API, a DACL, or a drive letter; the helper is
+`storage.list_roots()`, a `commonpath` test, and an existing creation primitive.
+On the POSIX port the same three directories are created with mode 0700 and the
+same retain then proves them.
+
+**Why the ensure sits before `issue_root_permit` and not just before `:464`.**
+Two of the three roots are not retained by the composition at all: the
+registration builders retain `artifact-publication-control` and
+`artifact-local-default` (`local_artifact_destination.py:604`, `:608`), and
+attempt 4 proved the composition only completes when all three exist. Ensuring
+once, before any permit is issued, covers every retainer without the composition
+having to know which builder needs which root.
+
+### 27.4 Ruling — the cause chain at the six in-scope sites
+
+The shape is the same everywhere: **bind the original in the handler and raise
+from it.** `from None` is kept only where there is genuinely no cause.
+
+| # | Site | Today | Required |
+|---|---|---|---|
+| 1 | `publication_composition.py:517` | `except BaseException: _rollback(...); raise _failed(...) from None` | `except BaseException as error: _rollback(...); raise _failed(...) from error`. The cause already survives on `__context__`; binding it makes the chain printed rather than merely recoverable |
+| 2 | `artifact_spool.py:649-671` | handlers bind `failure_code`; `raise _closed(failure_code) from None` runs outside them | bind the exception as well as the code (`except LocalArtifactSpoolErrorV1 as error:` / `except BaseException as error:`), keep the existing cleanup sequence at `:653-670` exactly as it is, and raise `from error`. **The capture must happen inside the handler**; moving the raise into the handler instead would change the cleanup order and is not what is being asked |
+| 3 | `artifact_destinations.py:295-301` | `except BaseException: pass` | `except BaseException as error:` and raise from it at `:301` |
+| 4 | `artifact_destinations.py:341-345` | `except BaseException: invalid = True` | bind the error alongside the flag and raise from it at `:345` |
+| 5 | `artifact_destinations.py:362-391` | `except Exception: pass` at `:366-367` | bind the factory's exception and raise from it at `:391`. This is the site #320 reached in attempt 3, so it is on the run-14 path if anything about the destination is wrong |
+| 6 | `publication_store.py:52-55` with `:34-35` | `except sqlite3.Error: failed = True`, then `_closed_persistence_failure()` | pass the bound error into the helper and raise from it. The docstring at `:39` that describes translating "after leaving the active exception context" is corrected in the same commit: leaving the context is the defect, not the design |
+
+**What the operator then reads.** The cause renderer of 22.14 prints the deepest
+two in-package frames as `at <deepest>, from <caller>`. With the chain restored
+and the roots absent, cut 6 would render `at _root_component, from
+retain_directory` with `LOCAL_IO_ROOT_CHANGED` — which names the defect's
+location precisely. After 27.3 lands, that state is not reachable on this path,
+so run 14's log should carry no cause line at cut 6 at all. The chain is
+insurance against the *next* B-18, which Learning II on this domain says to
+expect one layer deeper.
+
+**Message discipline is unchanged.** No message gains a path or a value. The
+21.8 shape holds; only the `from` target changes.
+
+### 27.5 The overloaded `LOCAL_IO_ROOT_CHANGED` code — bounded follow-up, not ruled now
+
+`_root_component` returns `ROOT_CHANGED` for a missing component (`:924`), a
+spelling or case mismatch (`:924`), and a reparse point (`:926-927`), and
+`retain_directory` returns it again for an identity rebind (`:988-990`). A
+reader holding the code alone cannot tell a never-created directory from a
+substituted one.
+
+The instruction is to rule now only if the cause line cannot otherwise name a
+missing directory. It cannot: the cause line names frames and a code, and 21.8
+keeps paths out of messages. But the ambiguity stops being **reachable on this
+path** once 27.3 lands, because the only producer of the missing-directory case
+at cut 6 is the absence the ensure removes. Ruling the code split in the same
+release would change a refusal predicate that four other call sites depend on,
+for a case the same release makes unreachable. **Disposition: bounded follow-up
+after run 14**, with the shape already decided so it is not re-litigated — give
+`_root_component` a distinct code for an *empty* match list, leave the
+mismatched and reparse cases on `ROOT_CHANGED`, and mirror it in
+`local_io_v1/posix.py`. #325 adds the detail that makes the follow-up small:
+only `read_create` roots can reach the defect at all, because
+`retain_single_root_authority` refuses any binding whose purpose is not
+`PUBLICATION_SPOOL` or whose access is not `READ_CREATE` at
+`filesystem.py:700-705`, so `read_only` and `create_only` roots fail earlier and
+differently with `AUTHORITY_INVALID`.
+
+### 27.6 Generality — the mechanism is root-agnostic; today's blast radius is three
+
+Probe #325 landed before this commit, so the conditional sentence the lead
+authorised is not needed and the answer is folded in.
+
+**`opaque-local-io-control` (`project://training/.local-io-control`, also
+`read_create`) has no consumer anywhere in the clone.** The literal appears in
+exactly two files, `training/storage.json` and its byte-identical staged copy
+`control/storage.json`, and in no Python module, driver, skill or test. The four
+`issue_root_permit` call sites are `docker_model_inventory.py:231`,
+`local_artifact_destination.py:604` and `:608`, and
+`publication_composition.py:458`; none names it. It does not exist in the clone
+after run 13 and git does not track it. Creator attribution is therefore **not
+applicable rather than unresolved**: nothing created it because nothing retains
+it, and run 13 trained successfully without it.
+
+Counterfactually — and #325 labels this as such, because the enum admits no
+purpose other than `PUBLICATION_SPOOL` so a non-spool retain cannot be built —
+retaining it with the spool's shape reproduces the failure exactly, at
+`windows.py:925`, and creating the directory first flips it to a returned
+authority.
+
+**So the finding is general and the fix is bounded.** The failing mechanism
+lives in `local_io_v1` and is indifferent to which root it is asked for; every
+absent `read_create` root fails identically. The set that is actually retained
+today is the three publication roots, which is what 27.3 creates. The `.synaptic`
+predicate is what keeps the fix from acting on the fourth.
+
+**Disposition of the dead declaration.** `opaque-local-io-control` is a declared
+root with no consumer. It is not removed here: `training/storage.json` is a
+committed project document, 27.9 keeps storage.json out of this change, and
+removing a declaration is not a prerequisite for anything run 14 does. Recorded
+as a follow-up question for the operator's own document rather than a Host
+change.
+
+**What run 13's success implies.** It implies nothing about
+`training/.local-io-control`, because the directory was never needed. The only
+declared root that exists in the clone is `docker-model-inventory-source`, which
+is `read_only` and was created by the operator's inventory materialization step.
+That supports the reading that the Host creates no declared storage root at all
+today, which is the gap 27.3 closes for the three it must.
+
+### 27.7 Tests required of coder-user, red-first
+
+The reproduction is #320's recipe, which failed deterministically four times out
+of four and passed the moment the three directories existed.
+
+| # | Subject | Asserts |
+|---|---|---|
+| **R1** | Fresh empty project root; `ProjectContext.host(engine_root=..., project_root=...)`; `PublicationConfigurationDocumentsV1` from the staged bytes; `compose_host_publication_v1` with `spool_root_ref="artifact-publication-spool"` and `registration_builders=(build_local_artifact_destination_registration_v1,)` | Returns a `HostPublicationFacadeV1` that closes cleanly, and the three roots exist afterwards. **Red before the change**: raises the composition failure. This is run 13 in a unit test and it is the acceptance test for 27.3 |
+| **R2** | The same, then assert `.synaptic/publication-spool`, `.synaptic/publication-control` and `.synaptic/artifacts` exist and, on POSIX, carry mode 0700 | Pins the creation primitive, not just the outcome |
+| **R3** | A project root where one of the three already exists, created by the test with ordinary permissions | The composition still succeeds and the pre-existing directory is **not** modified. Pins "do not repair" |
+| **R4** | A registry declaring a creatable root outside `.synaptic` | That root is **not** created. Pins the `.synaptic` predicate, and is the test that would have caught a helper that acted on `training/.local-io-control` |
+| **C1** | `acquire_local_artifact_spool_v1` against a binding whose root is absent | The raised `LocalArtifactSpoolErrorV1` has `__cause__` that is the `LocalIOErrorV1`, and the cleanup sequence still ran. **Red before the change**: `__cause__` and `__context__` are both `None` |
+| **C2** | `compose_host_publication_v1` forced to fail inside its try block | The raised failure's `__cause__` is the original, not `None` |
+| **C3** | `_construct_adapter` with a factory that raises | `__cause__` is the factory's exception (site 5) |
+| **C4** | `_discover_adapter_callbacks` and `_reconstruct_resolved_binding` on invalid input | `__cause__` is the original (sites 3 and 4) |
+| **C5** | A store operation forced to raise `sqlite3.Error` | The translated `RuntimeError` carries the `sqlite3.Error` as `__cause__` (site 6) |
+
+**Platform gating.** Gate as the suite already gates Windows `local_io` tests;
+do not invent a new marker. **Leave untouched** the S-series and P-series union
+tests from sections 21 and 26 — nothing in this change touches staging.
+
+`R1` and `C1` are the two that must be red first. `R1` is red for the arm and
+`C1` is red for the blindness, and between them they are the whole of B-18.
+
+### 27.8 Run 14 acceptance rows
+
+| Row | Content | Reading |
+|---|---|---|
+| **0** | Cut 6 returns neither the B-18 composition failure nor `ROOT_CHANGED`, and the publication completes: status `published`, `ARTIFACTS_VERIFIED` left behind | The blocker gate. Anything else and B-18 is not cleared |
+| **1** | The first publication trace exists and contains **no path under `cache/`** | Review 3.5 row 4's second half, owed since run 12 to the first successful publication and still owed |
+| **2** | `.synaptic/publication-spool`, `.synaptic/publication-control` and `.synaptic/artifacts` all exist under the clone after the run, and their ACLs are recorded | 27.3's arm, observed rather than assumed |
+| **3** | If any cut fails, its cause line names two in-package frames per 22.14 and the chain is printed | 27.4. A pass here is also readable on a green run: no cause line at all |
+| **4** | Container census is **eight** | Seven before run 13's six plus run 14; preserve all of them |
+| **5** | Submodule pin is `ce539b70` at both ends | No engine change and no pin move in this release |
+| **6** | The rows that carry over from 26.5: B-17 staging still green, the staged project tree holds three files, training still reaches one step | Regression cover for the previous two releases |
+
+### 27.9 Out of scope, and why
+
+- **No engine change, no closure regeneration, no pin move.** Nothing here
+  touches `synaptic-tuner`. The pin stays `ce539b70`.
+- **No `storage.json` change.** 27.3 deliberately reads the declarations rather
+  than editing them, so the committed project document and its staged copy are
+  untouched. This is worth stating because the alternative — declaring the roots
+  differently, or adding a "create me" flag — was available and was not taken:
+  it would put a Host implementation detail into an operator-facing document.
+- **The 41 minus 6 destroyed-cause sites off the publish path stay as they are**,
+  per 27.2. Follow-up recorded: the flag-then-raise idiom is a family
+  (`publication_store.py`, `sqlite_repository.py:610`/`:648`, and the
+  `docker_v1/control_private.py` group), and if it is ever ruled as a family that
+  is its own change with its own release, not a rider on this one.
+- **The `ROOT_CHANGED` overload** is 27.5's bounded follow-up.
+- **`opaque-local-io-control`'s dead declaration** is 27.6's follow-up question.
+- **No repair, no validation, no ACL narrowing of the three new roots.** 27.3
+  gives the reason: repair is what wedged the temp volume in B-11-R1.
+
+### 27.10 Corrections landing with this section
+
+Batched so the document is touched once. Checking each owed item against
+`dcdf8571` before writing it changed what is owed, so the state of every item is
+recorded rather than assumed.
+
+**Already landed, and 26.7 is stale in saying otherwise.** 26.7 ends with a
+table of three items headed "Three items in this batch are code and are NOT
+landed here", assigned to coder-user. All three were landed in the B-17 fix
+commit. Verified at `dcdf8571`: the H1 docstring now reads "thirteen exact
+keys" and cites `:501-502` (`tests/synaptic_host/test_docker_training.py:964`),
+and `SourceLockV1` no longer appears anywhere under `tests/`; the H2 comment now
+says the composition hands `USER` to `docker create` as an `--env` argument
+(`tests/synaptic_host/test_docker_prepared_composition.py:1038-1049`), and
+`rtk proxy grep -rn 'docker run -e' --include='*.py' tests/ synaptic_host/`
+returns nothing; and the copier/verifier asymmetry line is in place at
+`docker_staging.py:1905`, reading that the copier takes the cache ROOT while the
+verifier takes the subtree. **D1**: 26.7's table is marked discharged, with
+those three sites recorded. Its H2 row also cited the wrong file
+(`test_docker_training.py`); the H2 test is in
+`test_docker_prepared_composition.py`, and that is corrected while the row is
+marked. This discharges `#277 metadata.additional_corrections_owed_3` and the
+code half of `_5`.
+
+**Already landed at `6319f637`.** Both items of
+`#277 metadata.additional_corrections_owed_4` are in the tree as 26.7 C4 and C6:
+the review 3.3 repoint to `:1599`/`:1600` with a symbol table, and review 3.5
+row 1 reworded to `cache/huggingface`. The residue is the `#303` brief's copy of
+the stale pair, which is the lead's.
+
+**D2 — 26.4, why P1 and P9 are sited outside `test_docker_staging.py`.** 26.4
+says all tests are in `test_docker_staging.py` unless named otherwise and then
+names two that are not, without saying why. The reason is now recorded in the
+ruling as well as in the code: `clean_project` is the only harness that builds a
+lock carrying a real destination registry, so a test needing a third
+lock-recorded descriptor has to be sited beside it, and P1 and P9 also need the
+whole `stage_docker_worker_v1` drive. The test file already states this at
+`tests/synaptic_host/test_docker_staging.py:587-590`; the ruling did not.
+Audit `#313` YELLOW-1.
+
+**D3 — the `_stage_locked_project_inputs` docstring. Still owed, and its
+citation had drifted.** `#277` cites `docker_staging.py:1316`. At `dcdf8571` the
+function is at `:1371` and the sentence is at `:1382`, because
+`_locked_project_descriptors` now occupies `:1305`. The sentence still reads
+"the container reads exactly one file from `/source/project` (section 21.3)",
+which is the inherited frame error 26.1 diagnosed and is now also numerically
+wrong: the staged set is three files. **Ruled wording**, for coder-user to land:
+the staged scope is the lock's `inputs` plus the destination registry the lock
+records at `outputs.destination_registry`; the container reads one of those
+files and the Host's own publication phase reads another; cite section 26.2 for
+the consumer census rather than 21.3, which was scoped to the container. This is
+code and is not landed here.
+
+**D4 — P8's docstring names the wrong mechanism. Still owed.**
+`tests/synaptic_host/test_docker_staging.py:766-773` says a direct write of the
+registry file "would leave the staged tree with a member the descriptors passed
+to `_verify_staged_project_inputs` do not name, and the set equality at `:1392`
+would refuse it". Counter-test `#314` finding 2 measured otherwise: under the
+shortcut the test actually takes, the write lands after the staging call has
+already re-verified, so P8 reddens on its own union cardinality assertion
+(`len(union) == 3` at `:780`) rather than on the set equality. The test bites as
+written; only the prose is wrong, which is the worse failure of the two because
+a reader trusts it to explain why the test is safe to change. **Ruled wording**,
+for coder-user: say that P8 reddens because the union's cardinality changes, and
+that the set-equality re-verify is what refuses a member written *during*
+staging, not one written after it. This is code and is not landed here.
+
+### 27.11 Execution sequence, owners and ledger
+
+| # | Step | Owner | Gate |
+|---|---|---|---|
+| 1 | Host: add `_ensure_declared_private_roots` and call it before `issue_root_permit`; restore the cause chain at the six sites of 27.4; land D3 and D4; tests R1-R4 and C1-C5 with R1 and C1 red first | coder-user, Host worktree branch | R1 and C1 red before the change |
+| 2 | independent audit against this section | auditor-run | before push |
+| 3 | both-lane counter-test, R1-R4 and C1-C5 plus failing-set identity against the pre-fix baseline | test-engineer | before push |
+| 4 | push the Host and cut `ehr-release-<sha>` | team-lead | after steps 2 and 3 |
+| 5 | run 14 from the released checkout, rows 0-6 per 27.8 | test-host | row 0 is the blocker gate; row 1 is the measurement owed since run 12 |
+
+| Row | Content |
+|---|---|
+| 27.1 | B-18. `compose_host_publication_v1` (`publication_composition.py:416`) re-raises `from None` at `:517`; the real exception is `LocalIOErrorV1 LOCAL_IO_ROOT_CHANGED` at `local_io_v1/windows.py:925` `_root_component`, via `:464` → `artifact_spool.py:631` → `filesystem.py:709` → `windows.py:973`. Arm: the three `read_create` roots declared in `control/storage.json` are created by nothing — verified by three writer searches over `synaptic_host`, the driver and the operator recipe — and `_root_component` reports a missing leaf with the same code as a rebind. Census (27.2): 348 `from None` sites, 306 keep the cause, 41 outside a handler, 1 in a `finally`; six in scope on the publish path, and `verified_artifact_source.py:178` excluded because no cause exists there. Fix: `_ensure_declared_private_roots` creates the declared creatable roots under `.synaptic` before any permit is issued, with no repair and no validation; and the six sites bind the original and raise from it. No engine change, no closure regeneration, no pin move, no `storage.json` change. `ROOT_CHANGED` overload and the dead `opaque-local-io-control` declaration are bounded follow-ups |
